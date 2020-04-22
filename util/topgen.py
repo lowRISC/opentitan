@@ -31,15 +31,16 @@ genhdr = '''// Copyright lowRISC contributors.
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 '''
 
+SRCTREE_TOP = Path(__file__).parent.parent
 
-def generate_top(top, tpl_filename):
-    top_rtl_tpl = Template(filename=tpl_filename)
+def generate_top(top, tpl_filename, **kwargs):
+    top_tpl = Template(filename=tpl_filename)
 
     try:
-        out_rtl = top_rtl_tpl.render(top=top)
+        return top_tpl.render(top=top, **kwargs)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
-    return out_rtl
+        return ""
 
 
 def generate_xbars(top, out_path):
@@ -614,27 +615,38 @@ def main():
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
-        top_tplpath = tpl_path / ("top_%s.sv.tpl" % (top_name))
-        out_top = generate_top(completecfg, str(top_tplpath))
 
-        rtl_path = out_path / 'rtl/autogen'
-        rtl_path.mkdir(parents=True, exist_ok=True)
-        top_path = rtl_path / ("top_%s.sv" % top_name)
+        def render_template(out_name_tpl, out_dir, **other_info):
+            top_tplpath = tpl_path / ((out_name_tpl + '.tpl') % (top_name))
+            template_contents = generate_top(completecfg, str(top_tplpath), **other_info)
 
-        with top_path.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_top)
+            rendered_dir = out_path / out_dir
+            rendered_dir.mkdir(parents=True, exist_ok=True)
+            rendered_path = rendered_dir / (out_name_tpl % (top_name))
 
-        # C header
-        top_tplpath = tpl_path / ("top_%s.h.tpl" % top_name)
-        out_cheader = generate_top(completecfg, str(top_tplpath))
+            with rendered_path.open(mode='w', encoding='UTF-8') as fout:
+                fout.write(template_contents)
 
-        sw_path = out_path / "sw/autogen"
-        sw_path.mkdir(parents=True, exist_ok=True)
-        cheader_path = sw_path / ("top_%s.h" % top_name)
+            return rendered_path
 
-        with cheader_path.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_cheader)
+        # SystemVerilog Top:
+        # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
+        render_template('top_%s.sv', 'rtl/autogen')
 
+        # C Header + C File
+        # The C file needs some information from when the header is generated,
+        # so we keep this in a dictionary here.
+        c_gen_info = {}
+
+        # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
+        cheader_path = render_template('top_%s.h', 'sw/autogen', c_gen_info=c_gen_info)
+
+        # Save the relative header path into `c_gen_info`
+        rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
+        c_gen_info["header_path"] = str(rel_header_path)
+
+        # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
+        cimpl_path = render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
 
 if __name__ == "__main__":
     main()
