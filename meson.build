@@ -110,4 +110,15 @@ hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
 hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson')
 hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson')
 
+# Top Earlgrey library (top_earlgrey)
+# The sources for this are generated into the hw hierarchy.
+top_earlgrey = declare_dependency(
+  link_with: static_library(
+    'top_earlgrey_ot',
+    sources: [
+      'hw/top_earlgrey/sw/autogen/top_earlgrey.c',
+    ],
+  )
+)
+
 subdir('sw')
