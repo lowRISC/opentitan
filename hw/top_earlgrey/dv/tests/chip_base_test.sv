@@ -27,6 +27,9 @@ class chip_base_test extends dv_base_test #(
     void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
     cfg.m_uart_agent_cfg.en_logger = cfg.en_uart_logger;
     cfg.m_uart_agent_cfg.logger_msg_id  = "SW_LOGS";
+
+    // Set the sw_test_timeout_ns knob from plusarg if available.
+    void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
   endfunction : build_phase
 
 endclass : chip_base_test

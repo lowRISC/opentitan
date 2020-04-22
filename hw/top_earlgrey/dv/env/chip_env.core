@@ -15,6 +15,8 @@ filesets:
       - lowrisc:dv:mem_bkdr_if
       - lowrisc:dv:sw_logger_if
     files:
+      - sw_test_status_pkg.sv
+      - sw_test_status_if.sv
       - chip_env_pkg.sv
       - chip_tl_seq_item.sv: {is_include_file: true}
       - chip_env_cfg.sv: {is_include_file: true}
@@ -26,6 +28,7 @@ filesets:
       - seq_lib/chip_vseq_list.sv: {is_include_file: true}
       - seq_lib/chip_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_test_base_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
