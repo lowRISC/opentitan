@@ -7,6 +7,7 @@ r"""Top Module Generator
 import argparse
 import logging as log
 import sys
+import subprocess
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
@@ -647,6 +648,19 @@ def main():
 
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
         cimpl_path = render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
+
+        # Format C header and implementation after creation
+        subprocess.run(["clang-format", "-i", str(cheader_path), str(cimpl_path)],
+                        check=True,
+                        cwd=str(SRCTREE_TOP))
+        # Fix the C header guard, which will have the wrong name
+        subprocess.run(["util/fix_include_guard.py", str(cheader_path)],
+                        universal_newlines=True,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        check=True,
+                        cwd=str(SRCTREE_TOP))
+
 
 if __name__ == "__main__":
     main()
