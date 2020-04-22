@@ -1232,241 +1232,289 @@
       name: gpio_gpio
       width: 32
       type: interrupt
+      module_name: gpio
     }
     {
       name: uart_tx_watermark
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_watermark
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_tx_empty
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_overflow
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_frame_err
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_break_err
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_timeout
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: uart_rx_parity_err
       width: 1
       type: interrupt
+      module_name: uart
     }
     {
       name: spi_device_rxf
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: spi_device_rxlvl
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: spi_device_txlvl
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: spi_device_rxerr
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: spi_device_rxoverflow
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: spi_device_txunderflow
       width: 1
       type: interrupt
+      module_name: spi_device
     }
     {
       name: flash_ctrl_prog_empty
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: flash_ctrl_prog_lvl
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: flash_ctrl_rd_full
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: flash_ctrl_rd_lvl
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: flash_ctrl_op_done
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: flash_ctrl_op_error
       width: 1
       type: interrupt
+      module_name: flash_ctrl
     }
     {
       name: hmac_hmac_done
       width: 1
       type: interrupt
+      module_name: hmac
     }
     {
       name: hmac_fifo_empty
       width: 1
       type: interrupt
+      module_name: hmac
     }
     {
       name: hmac_hmac_err
       width: 1
       type: interrupt
+      module_name: hmac
     }
     {
       name: alert_handler_classa
       width: 1
       type: interrupt
+      module_name: alert_handler
     }
     {
       name: alert_handler_classb
       width: 1
       type: interrupt
+      module_name: alert_handler
     }
     {
       name: alert_handler_classc
       width: 1
       type: interrupt
+      module_name: alert_handler
     }
     {
       name: alert_handler_classd
       width: 1
       type: interrupt
+      module_name: alert_handler
     }
     {
       name: nmi_gen_esc0
       width: 1
       type: interrupt
+      module_name: nmi_gen
     }
     {
       name: nmi_gen_esc1
       width: 1
       type: interrupt
+      module_name: nmi_gen
     }
     {
       name: nmi_gen_esc2
       width: 1
       type: interrupt
+      module_name: nmi_gen
     }
     {
       name: nmi_gen_esc3
       width: 1
       type: interrupt
+      module_name: nmi_gen
     }
     {
       name: usbdev_pkt_received
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_pkt_sent
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_disconnected
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_host_lost
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_link_reset
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_link_suspend
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_link_resume
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_av_empty
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_rx_full
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_av_overflow
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_link_in_err
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_rx_crc_err
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_rx_pid_err
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_rx_bitstuff_err
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_frame
       width: 1
       type: interrupt
+      module_name: usbdev
     }
     {
       name: usbdev_connected
       width: 1
       type: interrupt
+      module_name: usbdev
     }
   ]
   alert_module:
@@ -1480,6 +1528,7 @@
       width: 1
       type: alert
       async: 0
+      module_name: hmac
     }
   ]
   pinmux:
@@ -1525,6 +1574,7 @@
         name: spi_device_sck
         width: 1
         type: input
+        module_name: spi_device
         pad:
         [
           {
@@ -1537,6 +1587,7 @@
         name: spi_device_csb
         width: 1
         type: input
+        module_name: spi_device
         pad:
         [
           {
@@ -1549,6 +1600,7 @@
         name: spi_device_mosi
         width: 1
         type: input
+        module_name: spi_device
         pad:
         [
           {
@@ -1561,6 +1613,7 @@
         name: spi_device_miso
         width: 1
         type: output
+        module_name: spi_device
         pad:
         [
           {
@@ -1573,6 +1626,7 @@
         name: uart_rx
         width: 1
         type: input
+        module_name: uart
         pad:
         [
           {
@@ -1585,6 +1639,7 @@
         name: uart_tx
         width: 1
         type: output
+        module_name: uart
         pad:
         [
           {
@@ -1597,6 +1652,7 @@
         name: usbdev_sense
         width: 1
         type: input
+        module_name: usbdev
         pad:
         [
           {
@@ -1609,6 +1665,7 @@
         name: usbdev_se0
         width: 1
         type: output
+        module_name: usbdev
         pad:
         [
           {
@@ -1621,6 +1678,7 @@
         name: usbdev_pullup
         width: 1
         type: output
+        module_name: usbdev
         pad:
         [
           {
@@ -1633,6 +1691,7 @@
         name: usbdev_tx_mode_se
         width: 1
         type: output
+        module_name: usbdev
         pad:
         [
           {
@@ -1645,6 +1704,7 @@
         name: usbdev_suspend
         width: 1
         type: output
+        module_name: usbdev
         pad:
         [
           {
@@ -1657,6 +1717,7 @@
         name: usbdev_d
         width: 1
         type: inout
+        module_name: usbdev
         pad:
         [
           {
@@ -1669,6 +1730,7 @@
         name: usbdev_dp
         width: 1
         type: inout
+        module_name: usbdev
         pad:
         [
           {
@@ -1681,6 +1743,7 @@
         name: usbdev_dn
         width: 1
         type: inout
+        module_name: usbdev
         pad:
         [
           {
@@ -1698,6 +1761,7 @@
         name: gpio_gpio
         width: 32
         type: inout
+        module_name: gpio
       }
     ]
   }
