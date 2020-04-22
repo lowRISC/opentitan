@@ -43,7 +43,7 @@ tock_raw = custom_target(
   output: target,
   console: true,
   build_always_stale: true,
-  build_by_default: false,
+  build_by_default: true,
 )
 
 tock_elf = custom_target(
@@ -53,7 +53,7 @@ tock_elf = custom_target(
   input: tock_raw,
   output: 'opentitan.elf',
   build_always_stale: true,
-  build_by_default: false,
+  build_by_default: true,
 )
 
 tock_bin = custom_target(
@@ -70,7 +70,7 @@ tock_bin = custom_target(
   input: tock_elf,
   output: 'opentitan.bin',
   build_always_stale: true,
-  build_by_default: false,
+  build_by_default: true,
 )
 
 custom_target(
@@ -80,6 +80,6 @@ custom_target(
   depends: [tock_elf, tock_bin],
   output: 'tock',
   build_always_stale: true,
-  build_by_default: false,
+  build_by_default: true,
 )
 
