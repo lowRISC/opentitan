@@ -73,7 +73,7 @@ void base_log_internal_core(log_fields_t log, ...) {
  * Indicates the fixed location in RAM for SW logging for DV.
  * TODO: Figure aout a better place to put this.
  */
-static const uintptr_t kSwLogDvAddr = 0x1000fffc;
+static const uintptr_t kSwDvLogAddr = 0x1000fffc;
 
 /**
  * Logs `log and the values that follow in an efficient, DV-testbench
@@ -86,7 +86,7 @@ static const uintptr_t kSwLogDvAddr = 0x1000fffc;
  * @param ... format parameters matching the format string.
  */
 void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...) {
-  mmio_region_t log_device = mmio_region_from_addr(kSwLogDvAddr);
+  mmio_region_t log_device = mmio_region_from_addr(kSwDvLogAddr);
   mmio_region_write32(log_device, 0x0, (uintptr_t)log);
 
   va_list args;

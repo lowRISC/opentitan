@@ -119,7 +119,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
       static const log_fields_t kLogFields =                     \
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
       base_log_internal_dv(&kLogFields,                          \
-                           GET_NUM_VARIABLE_ARGS(__VA_ARGS__),   \
+                           GET_NUM_VARIABLE_ARGS(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
       log_fields_t log_fields =                                  \
@@ -134,7 +134,8 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 #define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
   {                                                                       \
     .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
-    .nargs = GET_NUM_VARIABLE_ARGS(__VA_ARGS__), .format = "" _format "", \
+    .nargs = GET_NUM_VARIABLE_ARGS(_format, ##__VA_ARGS__),               \
+    .format = "" _format "",                                              \
   }
 
 /**
