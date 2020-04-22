@@ -18,10 +18,12 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual pins_if#(1) bootstrap_vif;
 
   // sw logger related
-  string sw_types[]   = '{"rom", "sw"};
-  sw_logger_vif       sw_logger_vif[string];
-  string              sw_images[string];
-  string              sw_log_files[string];
+  string sw_types[]         = '{"rom", "sw"};
+  sw_logger_vif             sw_logger_vif[string];
+  string                    sw_images[string];
+  string                    sw_log_files[string];
+  virtual sw_test_status_if sw_test_status_vif;
+  uint                      sw_test_timeout_ns = 2_000_000; // 2ms
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
@@ -45,24 +47,26 @@ class chip_env_cfg extends dv_base_env_cfg #(.RAL_T(chip_reg_block));
 
   `uvm_object_new
 
-  // TODO review value for csr_base_addr, csr_addr_map_size
   virtual function void initialize_csr_addr_map_size();
     this.csr_addr_map_size = 1 << TL_AW;
   endfunction : initialize_csr_addr_map_size
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-
     chip_mem_e mems[] = {Rom, FlashBank0, FlashBank1};
 
     super.initialize(csr_base_addr);
     // create uart agent config obj
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
+
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
+
     // create tl agent config obj
     m_cpu_d_tl_agent_cfg = tl_agent_cfg::type_id::create("m_cpu_d_tl_agent_cfg");
+
     m_cpu_d_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
     // initialize the mem_bkdr_if vifs we want for this chip
     foreach (mems[mem]) begin

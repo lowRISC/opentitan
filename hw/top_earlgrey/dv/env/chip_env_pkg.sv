@@ -15,6 +15,7 @@ package chip_env_pkg;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import chip_ral_pkg::*;
+  import sw_test_status_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -24,21 +25,14 @@ package chip_env_pkg;
   parameter NUM_GPIOS = 16;
 
   // SW constants
-  parameter bit [TL_AW-1:0] SW_LOG_DV_ADDR = 32'h1000fffc;
-  parameter bit [TL_AW-1:0] SW_TEST_STATUS_ADDR = 32'h1000fff8;
+  parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR = 32'h1000fffc;
+  parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR = 32'h1000fff8;
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual mem_bkdr_if           mem_bkdr_vif;
   typedef virtual sw_logger_if          sw_logger_vif;
 
-  // enum to indicate cpu test pass / fail status
-  typedef enum bit [15:0] {
-    CpuUnderReset   = 16'hffff,   // cpu is held under reset
-    CpuTestRunning  = 16'hb004,   // cpu test running
-    CpuTestPass     = 16'hff00,   // cpu test passed
-    CpuTestFail     = 16'h00ff    // cpu test failed
-  } cpu_test_state_e;
-
+  // Types of memories in the chip.
   typedef enum {
     Rom,
     Ram,
