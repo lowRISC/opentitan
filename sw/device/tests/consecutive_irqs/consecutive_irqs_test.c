@@ -13,9 +13,9 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-#define PLIC_TARGET kDifPlicTargetIbex0
+#define PLIC_TARGET kTopEarlgreyPlicTargetIbex0
 
 #define PLIC_PRIORITY_MIN 0u
 #define PLIC_PRIORITY_MAX 3u
@@ -54,12 +54,12 @@ static const buffer_sink_t kPolledUartSink = {
  * Services UART interrupts, sets the appropriate flags that are used to
  * determine success or failure of the test.
  */
-static void handler_uart_isr(const dif_irq_claim_data_t *data) {
+static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
   const dif_uart_t *uart = &uart0;
 
   dif_uart_interrupt_t uart_irq;
-  switch (data->source) {
-    case kDifPlicIrqIdUartRxOverflow:
+  switch (interrupt_id) {
+    case kTopEarlgreyPlicIrqIdUartRxOverflow:
       uart_irq = kDifUartInterruptRxOverflow;
 
       // It is an error if this IRQ is asserted more than once.
@@ -69,7 +69,7 @@ static void handler_uart_isr(const dif_irq_claim_data_t *data) {
         uart_rx_overflow_handled = true;
       }
       break;
-    case kDifPlicIrqIdUartTxEmpty:
+    case kTopEarlgreyPlicIrqIdUartTxEmpty:
       uart_irq = kDifUartInterruptTxEmpty;
 
       // It is an error if this IRQ is asserted more than once.
@@ -98,20 +98,22 @@ static void handler_uart_isr(const dif_irq_claim_data_t *data) {
  */
 void handler_irq_external(void) {
   // Claim the IRQ by reading the Ibex specific CC register.
-  dif_irq_claim_data_t claim_data;
-  if (!dif_plic_irq_claim(&plic0, PLIC_TARGET, &claim_data)) {
+  dif_plic_irq_id_t interrupt_id;
+  if (!dif_plic_irq_claim(&plic0, PLIC_TARGET, &interrupt_id)) {
     LOG_FATAL_AND_ABORT("ISR is not implemented!");
   }
 
   // Check if the interrupted peripheral is UART.
-  if (claim_data.peripheral != kDifPlicPeripheralUart) {
+  top_earlgrey_plic_peripheral_t peripheral_id =
+      top_earlgrey_plic_interrupt_for_peripheral[interrupt_id];
+  if (peripheral_id != kTopEarlgreyPlicPeripheralUart) {
     LOG_FATAL_AND_ABORT("ISR interrupted peripheral is not UART!");
   }
-  handler_uart_isr(&claim_data);
+  handle_uart_isr(interrupt_id);
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
-  if (!dif_plic_irq_complete(&plic0, &claim_data)) {
+  if (!dif_plic_irq_complete(&plic0, PLIC_TARGET, &interrupt_id)) {
     LOG_FATAL_AND_ABORT("Unable to complete the IRQ request!");
   }
 }
@@ -161,24 +163,24 @@ static bool uart_configure_irqs(dif_uart_t *uart) {
  */
 static bool plic_configure_irqs(dif_plic_t *plic) {
   // Set IRQ triggers to be level triggered
-  if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartRxOverflow,
+  if (!dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
                                      kDifPlicDisable)) {
     LOG_ERROR("RX overflow trigger type set failed!");
     return false;
   }
-  if (!dif_plic_irq_trigger_type_set(plic, kDifPlicIrqIdUartTxEmpty,
+  if (!dif_plic_irq_trigger_type_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
                                      kDifPlicDisable)) {
     LOG_ERROR("TX empty trigger type set failed!");
     return false;
   }
 
   // Set IRQ priorities to MAX
-  if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartRxOverflow,
+  if (!dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
                                  PLIC_PRIORITY_MAX)) {
     LOG_ERROR("priority set for RX overflow failed!");
     return false;
   }
-  if (!dif_plic_irq_priority_set(plic, kDifPlicIrqIdUartTxEmpty,
+  if (!dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
                                  PLIC_PRIORITY_MAX)) {
     LOG_ERROR("priority set for TX empty failed!");
     return false;
@@ -191,13 +193,13 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
   }
 
   // Enable IRQs in PLIC
-  if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartRxOverflow, PLIC_TARGET,
-                               kDifPlicEnable)) {
+  if (!dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+                               PLIC_TARGET, kDifPlicEnable)) {
     LOG_ERROR("interrupt Enable for RX overflow failed!");
     return false;
   }
-  if (!dif_plic_irq_enable_set(plic, kDifPlicIrqIdUartTxEmpty, PLIC_TARGET,
-                               kDifPlicEnable)) {
+  if (!dif_plic_irq_enable_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+                               PLIC_TARGET, kDifPlicEnable)) {
     LOG_ERROR("interrupt Enable for TX empty failed!");
     return false;
   }

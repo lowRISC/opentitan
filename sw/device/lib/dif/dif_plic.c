@@ -11,6 +11,14 @@
 #include "rv_plic_regs.h"  // Generated.
 #include "sw/device/lib/base/mmio.h"
 
+// If either of these static assertions fail, then the assumptions in this DIF
+// implementation should be revisited. In particular, `plic_target_reg_offsets`
+// may need updating,
+_Static_assert(RV_PLIC_PARAM_NUMSRC == 81,
+               "PLIC instantiation parameters have changed.");
+_Static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
+               "PLIC instantiation parameters have changed.");
+
 // The highest interrupt priority.
 #define RV_PLIC_MAX_PRIORITY 0x3u
 
@@ -44,73 +52,28 @@ typedef struct plic_target_reg_offset {
   ptrdiff_t threshold; /*<< Threshold register offset. */
 } plic_target_reg_offset_t;
 
-/**
- * PLIC peripheral IRQ range.
- *
- * PLIC IRQ source IDs are grouped together by a peripheral they belong to.
- * Meaning that all IRQ IDs of the same peripheral are guaranteed to be
- * consecutive. This data type is used to store IRQ ID ranges of a peripheral.
- */
-typedef struct plic_peripheral_range {
-  dif_plic_irq_id_t first_irq_id; /*<< The first IRQ ID of a peripheral. */
-  dif_plic_irq_id_t last_irq_id;  /*<< The last IRQ ID of a peripheral. */
-} plic_peripheral_range_t;
-
-// An array of target specific set of register offsets. Every supported PLIC
-// target must have an entry in this array.
+// This array gives a way of getting the target-specific register offsets from
+// a `dif_plic_target_t`.
+//
+// There should be an instance of `plic_target_reg_offset_t` for each possible
+// target, so there should be `RV_PLIC_PARAM_NUMTARGET` entries in this array.
+// The `i`th entry should contain the offsets of the `i`th target specific
+// registers:
+// - `RV_PLIC_IE<i>0_REG_OFFSET` (the first IE reg for target `i`).
+// - `RV_PLIC_CC<i>_REG_OFFSET`
+// - `RV_PLIC_THRESHOLD<i>_REG_OFFSET`
 static const plic_target_reg_offset_t plic_target_reg_offsets[] = {
-        [kDifPlicTargetIbex0] =
+        [0] =
             {
                 .ie = RV_PLIC_IE00_REG_OFFSET,
                 .cc = RV_PLIC_CC0_REG_OFFSET,
                 .threshold = RV_PLIC_THRESHOLD0_REG_OFFSET,
             },
 };
-
-// An array of IRQ source ID ranges per peripheral. Every peripheral supported
-// by the PLIC, must have an entry in this array.
-static const plic_peripheral_range_t plic_peripheral_ranges[] = {
-        [kDifPlicPeripheralGpio] =
-            {
-                .first_irq_id = kDifPlicIrqIdGpio0,
-                .last_irq_id = kDifPlicIrqIdGpio31,
-            },
-        [kDifPlicPeripheralUart] =
-            {
-                .first_irq_id = kDifPlicIrqIdUartTxWatermark,
-                .last_irq_id = kDifPlicIrqIdUartRxParityErr,
-            },
-        [kDifPlicPeripheralSpiDevice] =
-            {
-                .first_irq_id = kDifPlicIrqIdSpiDeviceRxF,
-                .last_irq_id = kDifPlicIrqIdSpiDeviceTxUnderflow,
-            },
-        [kDifPlicPeripheralFlashCtrl] =
-            {
-                .first_irq_id = kDifPlicIrqIdFlashCtrlProgEmpty,
-                .last_irq_id = kDifPlicIrqIdFlashCtrlOpError,
-            },
-        [kDifPlicPeripheralHmac] =
-            {
-                .first_irq_id = kDifPlicIrqIdHmacDone,
-                .last_irq_id = kDifPlicIrqIdHmacErr,
-            },
-        [kDifPlicPeripheralAlertHandler] =
-            {
-                .first_irq_id = kDifPlicIrqIdAlertHandlerClassA,
-                .last_irq_id = kDifPlicIrqIdAlertHandlerClassD,
-            },
-        [kDifPlicPeripheralNmiGen] =
-            {
-                .first_irq_id = kDifPlicIrqIdNmiGenEsc0,
-                .last_irq_id = kDifPlicIrqIdNmiGenEsc3,
-            },
-        [kDifPlicPeripheralUsbDev] =
-            {
-                .first_irq_id = kDifPlicIrqIdUsbDevPktReceived,
-                .last_irq_id = kDifPlicIrqIdUsbDevConnected,
-            },
-};
+_Static_assert(
+    sizeof(plic_target_reg_offsets) / sizeof(*plic_target_reg_offsets) ==
+        RV_PLIC_PARAM_NUMTARGET,
+    "There should be an entry in plic_target_reg_offsets for every target");
 
 /**
  * Get a number of IE, IP or LE registers (IE00, IE01, ...).
@@ -119,10 +82,10 @@ static const plic_peripheral_range_t plic_peripheral_ranges[] = {
  * accommodate all the bits (1 bit per IRQ source).
  */
 static size_t plic_num_irq_reg(void) {
-  size_t register_num = kDifPlicIrqIdLast / PLIC_ID_TO_INDEX_REG_SIZE;
+  size_t register_num = RV_PLIC_PARAM_NUMSRC / PLIC_ID_TO_INDEX_REG_SIZE;
 
   // Determine whether there are remaining IRQ sources that have a register.
-  if ((kDifPlicIrqIdLast % PLIC_ID_TO_INDEX_REG_SIZE) != 0) {
+  if ((RV_PLIC_PARAM_NUMSRC % PLIC_ID_TO_INDEX_REG_SIZE) != 0) {
     ++register_num;
   }
 
@@ -185,14 +148,6 @@ static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
 }
 
 /**
- * Get a total number of priority registers (one for every IRQ source).
- *
- * As PRIO0 register is not used, last IRQ + 1 is the total number of
- * priority register.
- */
-static size_t plic_num_priority_reg(void) { return kDifPlicIrqIdLast + 1; }
-
-/**
  * Get a PRIO register offset (PRIO0, PRIO1, ...) from an IRQ source ID.
  *
  * There is one PRIO register per IRQ source, this function calculates the IRQ
@@ -222,14 +177,14 @@ static void plic_reset(const dif_plic_t *plic) {
   }
 
   // Clear all of the priority registers.
-  for (int i = 0; i < plic_num_priority_reg(); ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
     ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
   // Clear all of the target threshold registers.
-  for (dif_plic_target_t target = kDifPlicTargetIbex0;
-       target <= kDifPlicTargetLast; ++target) {
+  for (dif_plic_target_t target = 0; target < RV_PLIC_PARAM_NUMTARGET;
+       ++target) {
     ptrdiff_t offset = plic_target_reg_offsets[target].threshold;
     mmio_region_write32(plic->base_addr, offset, 0);
   }
@@ -253,7 +208,8 @@ bool dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic) {
 bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
                              dif_plic_target_t target,
                              dif_plic_enable_t enable) {
-  if (plic == NULL) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
+      target >= RV_PLIC_PARAM_NUMTARGET) {
     return false;
   }
 
@@ -275,7 +231,7 @@ bool dif_plic_irq_enable_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
 bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
                                    dif_plic_irq_id_t irq,
                                    dif_plic_enable_t enable) {
-  if (plic == NULL) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC) {
     return false;
   }
 
@@ -296,7 +252,8 @@ bool dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
 
 bool dif_plic_irq_priority_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
                                uint32_t priority) {
-  if (plic == NULL || priority > RV_PLIC_MAX_PRIORITY) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
+      priority > RV_PLIC_MAX_PRIORITY) {
     return false;
   }
 
@@ -309,7 +266,8 @@ bool dif_plic_irq_priority_set(const dif_plic_t *plic, dif_plic_irq_id_t irq,
 bool dif_plic_target_threshold_set(const dif_plic_t *plic,
                                    dif_plic_target_t target,
                                    uint32_t threshold) {
-  if (plic == NULL || threshold > RV_PLIC_MAX_PRIORITY) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
+      threshold > RV_PLIC_MAX_PRIORITY) {
     return false;
   }
 
@@ -322,7 +280,7 @@ bool dif_plic_target_threshold_set(const dif_plic_t *plic,
 bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
                                      dif_plic_irq_id_t irq,
                                      dif_plic_flag_t *status) {
-  if (plic == NULL || status == NULL) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC || status == NULL) {
     return false;
   }
 
@@ -340,8 +298,8 @@ bool dif_plic_irq_pending_status_get(const dif_plic_t *plic,
 }
 
 bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
-                        dif_irq_claim_data_t *claim_data) {
-  if (plic == NULL || claim_data == NULL) {
+                        dif_plic_irq_id_t *claim_data) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET || claim_data == NULL) {
     return false;
   }
 
@@ -349,34 +307,22 @@ bool dif_plic_irq_claim(const dif_plic_t *plic, dif_plic_target_t target,
   ptrdiff_t cc_offset = plic_target_reg_offsets[target].cc;
   uint32_t irq_id = mmio_region_read32(plic->base_addr, cc_offset);
 
-  // Validate an IRQ source, and determine which peripheral it belongs to.
-  dif_plic_irq_id_t irq_src = (dif_plic_irq_id_t)irq_id;
-  for (dif_plic_peripheral_t peripheral = kDifPlicPeripheralGpio;
-       peripheral <= kDifPlicPeripheralLast; ++peripheral) {
-    if (irq_src < plic_peripheral_ranges[peripheral].first_irq_id ||
-        irq_src > plic_peripheral_ranges[peripheral].last_irq_id) {
-      continue;
-    }
-
-    claim_data->peripheral = peripheral;
-    claim_data->source = irq_src;
-    claim_data->cc_offset = cc_offset;
-    return true;
-  }
-
-  return false;
+  // Return the IRQ ID directly.
+  *claim_data = irq_id;
+  return true;
 }
 
-bool dif_plic_irq_complete(const dif_plic_t *plic,
-                           const dif_irq_claim_data_t *complete_data) {
-  if (plic == NULL || complete_data == NULL) {
+bool dif_plic_irq_complete(const dif_plic_t *plic, dif_plic_target_t target,
+                           const dif_plic_irq_id_t *complete_data) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
+      complete_data == NULL) {
     return false;
   }
 
   // Write back the claimed IRQ ID to the target specific CC register,
   // to notify the PLIC of the IRQ completion.
-  mmio_region_write32(plic->base_addr, complete_data->cc_offset,
-                      (uint32_t)complete_data->source);
+  ptrdiff_t cc_offset = plic_target_reg_offsets[target].cc;
+  mmio_region_write32(plic->base_addr, cc_offset, (uint32_t)*complete_data);
 
   return true;
 }
