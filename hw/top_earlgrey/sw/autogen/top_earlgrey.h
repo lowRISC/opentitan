@@ -87,6 +87,102 @@
 #define PINMUX_GPIO_GPIO_31_OUT 34
 
 /**
+ * Base address for uart peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_UART_BASE_ADDR 0x40000000u
+
+/**
+ * Base address for gpio peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40010000u
+
+/**
+ * Base address for spi_device peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40020000u
+
+/**
+ * Base address for flash_ctrl peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x40030000u
+
+/**
+ * Base address for rv_timer peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40080000u
+
+/**
+ * Base address for aes peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_AES_BASE_ADDR 0x40110000u
+
+/**
+ * Base address for hmac peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_HMAC_BASE_ADDR 0x40120000u
+
+/**
+ * Base address for rv_plic peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x40090000u
+
+/**
+ * Base address for pinmux peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PINMUX_BASE_ADDR 0x40070000u
+
+/**
+ * Base address for alert_handler peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40130000u
+
+/**
+ * Base address for nmi_gen peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x40140000u
+
+/**
+ * Base address for usbdev peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40150000u
+
+/**
  * PLIC Interrupt source peripheral enumeration.
  *
  * Enumeration used to determine which peripheral asserted the corresponding

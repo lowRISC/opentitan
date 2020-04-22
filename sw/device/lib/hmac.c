@@ -4,10 +4,12 @@
 
 #include "sw/device/lib/hmac.h"
 
-#include "hmac_regs.h"  // Generated.
 #include "sw/device/lib/common.h"
 
-#define HMAC0_BASE_ADDR 0x40120000
+#include "hmac_regs.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#define HMAC0_BASE_ADDR TOP_EARLGREY_HMAC_BASE_ADDR
 #define HMAC_FIFO_MAX 16
 #define HMAC_FIFO_GROUP_SIZE HMAC_FIFO_MAX / 2
 

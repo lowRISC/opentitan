@@ -7,9 +7,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/common.h"
 
-#define PINMUX0_BASE_ADDR 0x40070000
-
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pinmux_regs.h"  // Generated.
+
+#define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_BASE_ADDR
 
 static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
                             uint32_t mask, uint32_t start_v) {

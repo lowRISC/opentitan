@@ -17,6 +17,7 @@ sw_lib_uart = declare_dependency(
       sw_lib_base_print,
       sw_lib_runtime_ibex,
       dif_uart,
+      top_earlgrey,
     ],
   )
 )
@@ -28,6 +29,9 @@ sw_lib_flash_ctrl = declare_dependency(
     sources: [
       hw_ip_flash_ctrl_reg_h,
       'flash_ctrl.c',
+    ],
+    dependencies: [
+      top_earlgrey,
     ]
   )
 )
@@ -39,6 +43,9 @@ sw_lib_pinmux = declare_dependency(
     sources: [
       hw_top_earlgrey_pinmux_reg_h,
       'pinmux.c',
+    ],
+    dependencies: [
+      top_earlgrey,
     ]
   )
 )
@@ -50,6 +57,9 @@ sw_lib_aes = declare_dependency(
     sources: [
       hw_ip_aes_reg_h,
       'aes.c',
+    ],
+    dependencies: [
+      top_earlgrey,
     ]
   )
 )
@@ -65,6 +75,7 @@ sw_lib_hmac = declare_dependency(
     ],
     dependencies: [
       sw_lib_mem,
+      top_earlgrey,
     ]
   )
 )
@@ -113,7 +124,10 @@ sw_lib_rv_timer = declare_dependency(
       hw_ip_rv_timer_reg_h,
       'rv_timer.c',
     ],
-    dependencies: [sw_lib_runtime_ibex],
+    dependencies: [
+      sw_lib_runtime_ibex,
+      top_earlgrey,
+    ],
   )
 )
 
@@ -124,6 +138,9 @@ sw_lib_spi_device = declare_dependency(
     sources: [
       hw_ip_spi_device_reg_h,
       'spi_device.c',
+    ],
+    dependencies: [
+      top_earlgrey,
     ]
   )
 )
@@ -140,6 +157,7 @@ sw_lib_usb = declare_dependency(
     ],
     dependencies: [
       sw_lib_uart,
+      top_earlgrey,
     ]
   )
 )

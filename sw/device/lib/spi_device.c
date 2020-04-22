@@ -4,11 +4,12 @@
 
 #include "sw/device/lib/spi_device.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"  // Generated.
 
 #include "sw/device/lib/common.h"
 
-#define SPI_DEVICE0_BASE_ADDR 0x40020000
+#define SPI_DEVICE0_BASE_ADDR TOP_EARLGREY_SPI_DEVICE_BASE_ADDR
 #define SPID_SRAM_ADDR SPI_DEVICE_BUFFER(0)
 #define SPID_RXF_BASE 0x000
 #define SPID_RXF_SIZE 0x400

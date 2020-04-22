@@ -13,7 +13,8 @@
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"  // TODO: Wrap uart in DEBUG macros.
 
-#define GPIO0_BASE_ADDR 0x40010000u
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 #define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
 
 /* Checks if flash is blank to determine if bootstrap is needed. */
@@ -27,8 +28,8 @@ static int bootstrap_requested(void) {
   }
   // Initialize GPIO device
   dif_gpio_t gpio;
-  dif_gpio_config_t gpio_config = {.base_addr =
-                                       mmio_region_from_addr(GPIO0_BASE_ADDR)};
+  dif_gpio_config_t gpio_config = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
   dif_gpio_init(&gpio_config, &gpio);
   // Read pin
   uint32_t gpio_in;

@@ -6,8 +6,10 @@
 
 #include "sw/device/lib/common.h"
 
-#define USBDEV_BASE_ADDR 0x40150000
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "usbdev_regs.h"  // Generated.
+
+#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
 #define EXTRACT(n, f) ((n >> USBDEV_##f##_OFFSET) & USBDEV_##f##_MASK)
 

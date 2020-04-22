@@ -8,7 +8,8 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
-#define UART0_BASE_ADDR 0x40000000
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_uart_t uart0;
 
@@ -20,7 +21,7 @@ void uart_init(unsigned int baud) {
       .parity = kDifUartParityEven,
   };
 
-  mmio_region_t base_addr = mmio_region_from_addr(UART0_BASE_ADDR);
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   (void)dif_uart_init(base_addr, &config, &uart0);
 }
 
