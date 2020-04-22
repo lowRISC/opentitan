@@ -458,7 +458,7 @@ def amend_interrupt(top):
 
         log.info("Adding interrupts from module %s" % ip[0]["name"])
         top["interrupt"] += list(
-            map(partial(add_prefix_to_signal, prefix=m.lower()),
+            map(partial(add_module_prefix_to_signal, module=m.lower()),
                 ip[0]["interrupt_list"]))
 
 
@@ -480,7 +480,7 @@ def amend_alert(top):
 
         log.info("Adding alert from module %s" % ip[0]["name"])
         top["alert"] += list(
-            map(partial(add_prefix_to_signal, prefix=m.lower()),
+            map(partial(add_module_prefix_to_signal, module=m.lower()),
                 ip[0]["alert_list"]))
 
 
@@ -513,7 +513,7 @@ def amend_pinmux_io(top):
 
         # convert signal with module name
         signals = list(
-            map(partial(add_prefix_to_signal, prefix=mname), signals))
+            map(partial(add_module_prefix_to_signal, module=mname), signals))
         # Parse how many pads are assigned
         if not "pad" in e:
             raise SystemExit("Should catch pad field in validate.py!")
@@ -577,22 +577,22 @@ def amend_pinmux_io(top):
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_prefix_to_signal,
-                                prefix=m["name"].lower()),
+                        partial(add_module_prefix_to_signal,
+                                module=m["name"].lower()),
                         m["available_input_list"])))
             pinmux["outputs"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_prefix_to_signal,
-                                prefix=m["name"].lower()),
+                        partial(add_module_prefix_to_signal,
+                                module=m["name"].lower()),
                         m["available_output_list"])))
             pinmux["inouts"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
                     map(
-                        partial(add_prefix_to_signal,
-                                prefix=m["name"].lower()),
+                        partial(add_module_prefix_to_signal,
+                                module=m["name"].lower()),
                         m["available_inout_list"])))
 
         elif len(tokens) == 2:

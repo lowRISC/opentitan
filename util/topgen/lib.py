@@ -117,15 +117,16 @@ def get_signal_by_name(module, name):
     return result
 
 
-def add_prefix_to_signal(signal, prefix):
-    """Add prefix to module signal format { name: "sig_name", width: NN }
+def add_module_prefix_to_signal(signal, module):
+    """Add module prefix to module signal format { name: "sig_name", width: NN }
     """
     result = deepcopy(signal)
 
     if "name" not in signal:
         raise SystemExit("signal {} doesn't have name field".format(signal))
 
-    result["name"] = prefix + "_" + signal["name"]
+    result["name"] = module + "_" + signal["name"]
+    result["module_name"] = module
 
     return result
 
