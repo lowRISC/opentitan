@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0`
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
 
 #include <stdbool.h>
 
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/testing/test_status.h"
 
 /**
  * Runtime assertion macros with log.h integration.
@@ -26,7 +27,7 @@
   do {                                       \
     if (!(condition)) {                      \
       LOG_ERROR("CHECK-fail: " __VA_ARGS__); \
-      abort();                               \
+      test_status_set(kTestStatusFailed);    \
     }                                        \
   } while (false)
 
@@ -39,4 +40,4 @@
  */
 #define CHECKZ(value, ...) CHECK((value) == 0, ##__VA_ARGS__)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_

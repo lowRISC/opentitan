@@ -9,6 +9,7 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
+#include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 
 static dif_gpio_t gpio;
@@ -28,6 +29,12 @@ int main(int argc, char **argv) {
   // Add DATE and TIME because I keep fooling myself with old versions
   LOG_INFO("Hello World!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
+
+  // End the test here for DV simulation, since the rest of the code is more
+  // appropriate for an FPGA demonstration.
+  if (kDeviceType == kDeviceSimDV) {
+    test_status_set(kTestStatusPassed);
+  }
 
   demo_gpio_startup(&gpio);
 

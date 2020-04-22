@@ -8,7 +8,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     sources: ['hello_world.c'],
     name_suffix: 'elf',
     dependencies: [
-      sw_examples_demos, 
+      sw_examples_demos,
       sw_lib_runtime_hart,
       sw_lib_base_print,
       sw_lib_base_log,
@@ -20,6 +20,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       riscv_crt,
       sw_lib_irq_handlers,
       device_lib,
+      sw_lib_testing_test_status,
     ],
   )
 

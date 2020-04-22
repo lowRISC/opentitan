@@ -13,6 +13,7 @@
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/spi_device.h"
+#include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 
 /**
@@ -26,6 +27,7 @@
 extern struct { void (*entry)(void); } _flash_header;
 
 void _boot_start(void) {
+  test_status_set(kTestStatusInBootRom);
   pinmux_init();
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
@@ -36,7 +38,7 @@ void _boot_start(void) {
   if (bootstrap_err != 0) {
     LOG_ERROR("Bootstrap failed with status code: %d", bootstrap_err);
     // Currently the only way to recover is by a hard reset.
-    return;
+    test_status_set(kTestStatusFailed);
   }
 
   LOG_INFO("Boot ROM initialisation has completed, jump into flash!");
