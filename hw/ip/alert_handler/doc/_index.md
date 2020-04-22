@@ -754,16 +754,18 @@ This is achieved by asserting `ping_en_i` at the escalation sender module.
 A ping request is encoded as a single cycle pulse on the `esc_tx_o.esc_p/n` outputs.
 Hence, the receiver module will not decode this single cycle pulse as an escalation enable message, but it will respond to it with a "1010" pattern on the `esc_rx_i.resp_p/n` lines.
 The escalation sender module will assert `ping_ok_o` if that pattern is received correctly after one cycle of latency.
-Otherwise the LFSR timer will raise a "pingfail" alert after the programmable timeout is reached.
+Otherwise, the escalation sender will first assert `integ_fail_o` later, after the programmable ping timeout is reached, the LFSR timer will raise a "pingfail" alert.
+The `integ_fail_o` triggers in this case since "no ping response" and "wrong ping response" are ambiguous in this setting, and it has been decided to not suppress integrity failures when expecting a ping response.
+
 This mechanism is illustrated below from the viewpoint of the sender module.
 
 {{< wavejson >}}
 {
   signal: [
     { name: 'clk_i',           wave: 'p..............' },
-    { name: 'ping_en_i',       wave: '01....0|.1.0...' ,  node: '.a'},
+    { name: 'ping_en_i',       wave: '01....0|.1.....' ,  node: '.a'},
     { name: 'ping_ok_o',       wave: '0....10|.......' ,  node: '.....e....g'},
-    { name: 'integ_fail_o',    wave: '0......|.......' },
+    { name: 'integ_fail_o',    wave: '0......|..10101' },
     { name: 'esc_en_i',        wave: '0......|.......' },
     { name: 'esc_rx_i.resp_p', wave: '0.1010.|.......' ,  node: '..c..d....f'},
     { name: 'esc_rx_i.resp_n', wave: '1.0101.|.......' },
@@ -790,6 +792,8 @@ Note that the escalation signal always takes precedence, and the `ping_en_i`
 will just be acknowledged with `ping_ok_o` in case `esc_en_i` is already
 asserted. An ongoing ping sequence will be aborted immediately.
 
+Another thing to note is that the ping and escalation response sequences have to start _exactly_ one cycle after either a ping or escalation event has been signalled.
+Otherwise the escalation sender will assert `integ_fail_o` immediately.
 
 # Programmers Guide
 
