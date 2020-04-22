@@ -437,6 +437,8 @@ module prim_lfsr #(
   // this can be disabled if unused in order to not distort coverage
   if (ExtSeedSVA) begin : gen_ext_seed_sva
     // check that external seed is correctly loaded into the state
+    // rst_ni is used directly as part of the pre-condition since the usage of rst_ni
+    // in disable_iff is unsampled.  See #1985 for more details
     `ASSERT(ExtDefaultSeedInputCheck_A, (seed_en_i && rst_ni) |=> lfsr_q == $past(seed_i))
   end
 
