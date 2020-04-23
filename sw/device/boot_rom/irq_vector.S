@@ -53,10 +53,12 @@
  * Default exception handler; loops forever.
  */
 exception_handler:
+  wfi
   j exception_handler
 
 /**
  * Default interrupt handler; loops forever.
  */
 default_irq_handler:
+  wfi
   j default_irq_handler
