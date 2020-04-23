@@ -5,7 +5,18 @@
 #ifndef OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_H_
 #define OPENTITAN_SW_DEVICE_BOOT_ROM_BOOTSTRAP_H_
 
-#include "sw/device/boot_rom/bootstrap_msgs.h"
+/**
+ * A bootstrap error representing a flash erase failure.
+ */
+#define E_BS_ERASE 10
+/**
+ * A bootstrap error representing unexpectedly empty flash.
+ */
+#define E_BS_NOTEMPTY 11
+/**
+ * A bootstrap error representing a flash write error.
+ */
+#define E_BS_WRITE 12
 
 /**
  * Bootstrap Flash with payload received on SPI device.
