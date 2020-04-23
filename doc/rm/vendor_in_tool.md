@@ -20,6 +20,7 @@ positional arguments:
 
 optional arguments:
   -h, --help         show this help message and exit
+  --update, -U       Update locked version of repository with upstream changes
   --refresh-patches  Refresh the patches from the patch repository
   --commit, -c       Commit the changes
   --verbose, -v      Verbose
@@ -100,10 +101,31 @@ In the example vendor description file below, the mpsse directory is populated f
 }
 ```
 
+## Updating and The Vendor Lock File
+
+In order to document which version of a repositoy has been cloned and committed to the repository with the vendor tool, a vendor lock file is stored in `vendor/<vendor>_<name>.lock.hjson`.
+This contains only the upstream information, including the URL and the exact git revision that was cloned.
+
+Beyond just documentation, this enables users to re-clone the previously-cloned upstream repository -- including re-applying patches, choosing subdirectories, and excluding additional files -- without having to integrate any upstream changes.
+Indeed the default behaviour of the vendor tool is to use the upstream information from `<vendor>_<name>.lock.hjson` if this file exists.
+
+Once the lock file exists, the vendor tool will only use the upstream information in `<vendor>_<name>.vendor.json` if the `--update` command-line option is used.
+
 ## Examples
 
-### Update code and commit the new code
+### Re-clone code and apply new file exclusions or patches
+
 ```command
 $ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v --commit
+$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v
+```
+
+### Update code and commit the new code
+
+This will generate a commit message based off the git shortlog between the
+previously cloned revision and the newly cloned revision of the repository.
+
+```command
+$ cd $REPO_TOP
+$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v --update --commit
 ```
