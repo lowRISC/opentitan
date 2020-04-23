@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0`
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
 
 #include <stdbool.h>
 
@@ -23,12 +23,17 @@
  * @param ... arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECK(condition, ...)                \
-  do {                                       \
-    if (!(condition)) {                      \
-      LOG_ERROR("CHECK-fail: " __VA_ARGS__); \
-      test_status_set(kTestStatusFailed);    \
-    }                                        \
+#define CHECK(condition, ...)                 \
+  do {                                        \
+    if (!(condition)) {                       \
+      LOG_ERROR("CHECK-fail: " __VA_ARGS__);  \
+      /* Currently, this macro will call into \
+         the test failure code, which logs    \
+         "FAIL" and aborts. In the future,    \
+         we will try to condition on whether  \
+         or not this is a test.*/             \
+      test_status_set(kTestStatusFailed);     \
+    }                                         \
   } while (false)
 
 /**
@@ -40,4 +45,4 @@
  */
 #define CHECKZ(value, ...) CHECK((value) == 0, ##__VA_ARGS__)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CHECK_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
