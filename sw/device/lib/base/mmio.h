@@ -237,6 +237,24 @@ inline void mmio_region_nonatomic_set_mask32(mmio_region_t base,
 }
 
 /**
+ * Sets the bits in `mask` from the MMIO region `base` at the given offset.
+ *
+ * This function is like `nonatomic_set_mask32`, but does not perform a
+ * read, for use with write-only memory.
+ *
+ * @param base the region to mask.
+ * @param offset the offset to apply the mask at, in bytes.
+ * @param mask the mask to set on the selected register.
+ * @param mask_index mask position within the selected register.
+ */
+inline void mmio_region_write_only_set_mask32(mmio_region_t base,
+                                              ptrdiff_t offset, uint32_t mask,
+                                              uint32_t mask_index) {
+  uint32_t value = (mask << mask_index);
+  mmio_region_write32(base, offset, value);
+}
+
+/**
  * Sets the `field` from the MMIO region `base` at the given `offset`.
  *
  * This function performs a non-atomic read-write-modify operation on a
@@ -253,6 +271,24 @@ inline void mmio_region_nonatomic_set_field32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               bitfield_field32_t field) {
   uint32_t register_value = mmio_region_read32(base, offset);
+  register_value = bitfield_set_field32(register_value, field);
+  mmio_region_write32(base, offset, register_value);
+}
+
+/**
+ * Sets the `field` from the MMIO region `base` at the given `offset`.
+ *
+ * This function is like `nonatomic_set_field32`, but does not perform a
+ * read, for use with write-only memory.
+ *
+ * @param base the region to set the field in.
+ * @param offset the offset to set the field at, in bytes.
+ * @param field field within selected register field to be set.
+ */
+inline void mmio_region_write_only_set_field32(mmio_region_t base,
+                                               ptrdiff_t offset,
+                                               bitfield_field32_t field) {
+  uint32_t register_value = 0;
   register_value = bitfield_set_field32(register_value, field);
   mmio_region_write32(base, offset, register_value);
 }
@@ -286,6 +322,24 @@ inline void mmio_region_nonatomic_set_bit32(mmio_region_t base,
                                             ptrdiff_t offset,
                                             uint32_t bit_index) {
   mmio_region_nonatomic_set_mask32(base, offset, 0x1, bit_index);
+}
+
+/**
+ * Sets the `bit_index`th bit in the MMIO region `base` at the given offset.
+ *
+ * This function is like `nonatomic_set_bit32`, but does not perform a read, for
+ * use with write-only memory.
+ *
+ * There is no `write_only_clear32`, since such a function would be a no-op.
+ *
+ * @param base the region to mask.
+ * @param offset the offset to apply the mask at.
+ * @param bit_index the bit to set.
+ */
+inline void mmio_region_write_only_set_bit32(mmio_region_t base,
+                                             ptrdiff_t offset,
+                                             uint32_t bit_index) {
+  mmio_region_write_only_set_mask32(base, offset, 0x1, bit_index);
 }
 
 #ifdef __cplusplus
