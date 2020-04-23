@@ -636,10 +636,17 @@ def main():
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
         render_template('top_%s.sv', 'rtl/autogen')
 
-        # C Header + C File
+        # C Header + C File + Clang-format file
         # The C file needs some information from when the header is generated,
         # so we keep this in a dictionary here.
         c_gen_info = {}
+
+        # 'clang-format' -> 'sw/autogen/.clang-format'
+        cformat_tplpath = tpl_path / 'clang-format'
+        cformat_dir = out_path / 'sw/autogen'
+        cformat_dir.mkdir(parents=True, exist_ok=True)
+        cformat_path = cformat_dir / '.clang-format'
+        cformat_path.write_text(cformat_tplpath.read_text())
 
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
         cheader_path = render_template('top_%s.h', 'sw/autogen', c_gen_info=c_gen_info)
@@ -651,10 +658,6 @@ def main():
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
         cimpl_path = render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
 
-        # Format C header and implementation after creation
-        subprocess.run(["clang-format", "-i", str(cheader_path), str(cimpl_path)],
-                        check=True,
-                        cwd=str(SRCTREE_TOP))
         # Fix the C header guard, which will have the wrong name
         subprocess.run(["util/fix_include_guard.py", str(cheader_path)],
                         universal_newlines=True,

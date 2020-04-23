@@ -118,7 +118,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-  top_earlgrey_plic_interrupt_for_peripheral[${len(c_gen_info["interrupt_id_map"])}];
+    top_earlgrey_plic_interrupt_for_peripheral[${len(c_gen_info["interrupt_id_map"])}];
 
 /**
  * PLIC external interrupt target.
