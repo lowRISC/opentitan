@@ -509,7 +509,7 @@ class Regressions(Modes):
                 # which case, skip
                 if run_mode_obj.name in sim_cfg.en_run_modes:
                     continue
-                self.run_opts.extend(run_mode_obj.run_opts)
+                regression_obj.run_opts.extend(run_mode_obj.run_opts)
 
             # Unpack tests
             if regression_obj.tests == []:
