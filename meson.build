@@ -118,6 +118,7 @@ hw_ip_rv_timer_reg_h = gen_hw_hdr.process('hw/ip/rv_timer/data/rv_timer.hjson')
 hw_ip_uart_reg_h = gen_hw_hdr.process('hw/ip/uart/data/uart.hjson')
 hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
 hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson')
+hw_top_earlgrey_padctrl_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/padctrl/data/autogen/padctrl.hjson')
 hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson')
 
 # Top Earlgrey library (top_earlgrey)
