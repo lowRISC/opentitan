@@ -44,13 +44,7 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
-  // this interfaces allows the testbench to disable some assertions
-  // by driving the corresponding pin to 1'b0
-  wire tlul_assert_ctrl, disable_sva;
-  pins_if #(1) tlul_assert_ctrl_if(tlul_assert_ctrl);
-  // the interface may be uninitialized, in which case the assertions
-  // shall be enabled, hence the explicit check for 1'b0
-  assign disable_sva = (tlul_assert_ctrl === 1'b0);
+  bit disable_sva;
 
   logic [7:0]  a_mask, d_mask;
   logic [63:0] a_data, d_data;
@@ -288,7 +282,7 @@ module tlul_assert #(
     bit tlul_assert_en;
     uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_assert_en");
     uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en);
-    force tlul_assert_ctrl = tlul_assert_en; // TODO to clean up
+    disable_sva = !tlul_assert_en;
   end
 `endif
 `endif

@@ -518,4 +518,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                        $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;)
     return mask;
   endfunction
+
+  // enable/disable tl_assert
+  virtual function void set_tl_assert_en(bit enable, string path = "*");
+    uvm_config_db#(bit)::set(null, path, "tlul_assert_en", enable);
+  endfunction
+
 endclass

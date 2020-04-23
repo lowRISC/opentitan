@@ -11,7 +11,6 @@
    initial begin \
      force ``tl_name``_tl_if.h2d = ``path``.tl_``tl_name``_o; \
      force ``path``.tl_``tl_name``_i = ``tl_name``_tl_if.d2h; \
-     force ``path``.tlul_assert_device_``tl_name``.tlul_assert_ctrl = tlul_assert_ctrl; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if); \
    end
@@ -21,7 +20,6 @@
    initial begin \
      force ``tl_name``_tl_if.d2h = ``path``.tl_``tl_name``_o; \
      force ``path``.tl_``tl_name``_i = ``tl_name``_tl_if.h2d; \
-     force ``path``.tlul_assert_host_``tl_name``.tlul_assert_ctrl = tlul_assert_ctrl; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if); \
    end
