@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 /**
- * Masked field for use in 32-bit bitfields.
+ * Masked field offset for 32-bit bitfields, with optional value.
  *
  * `index` represents a shift in bits starting from the 0 bit of a given 32-bit
  * bitfield. It is used to zero the memory inside this bitfield by applying an
@@ -25,18 +25,35 @@
 typedef struct bitfield_field32 {
   uint32_t mask;  /**< The field mask. */
   uint32_t index; /**< The field position within a bitfield. */
-  uint32_t value; /**< The field value to be written. */
+  uint32_t
+      value; /**< The field value to be written, if using a `set` function. */
 } bitfield_field32_t;
 
 /**
- * Sets `field` in the `bitfield`.
+ * Gets `field` in `bitfield`.
  *
- * This function uses the bitfield_field32 type `field` to set a value
+ * This function uses the `field` parameter to get a value at the given
+ * offset (and mask) in `bitfield`. Only `mask` and `index` are used;
+ * `value` is ignored.
+ *
+ * @param bitfield Bitfield to get the field from.
+ * @param field Field to read out from.
+ * @return The read value, zero-extended to 32 bits.
+ */
+inline uint32_t bitfield_get_field32(uint32_t bitfield,
+                                     bitfield_field32_t field) {
+  return (bitfield >> field.index) & field.mask;
+}
+
+/**
+ * Sets `field` in `bitfield`.
+ *
+ * This function uses the `field` parameter to set a value
  * at a given offset in `bitfield`. The relevant portion of `bitfield`
  * is zeroed before the value is set.
  *
  * @param bitfield Bitfield to set the field in.
- * @param field field within selected register field to be set.
+ * @param field Field within selected register field to be set.
  * @return The 32-bit resulting bitfield.
  */
 inline uint32_t bitfield_set_field32(uint32_t bitfield,
