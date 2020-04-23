@@ -4,101 +4,122 @@
 
 #include "sw/device/boot_rom/bootstrap.h"
 
+#include "sw/device/boot_rom/spiflash_frame.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
-#include "sw/device/lib/common.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/hw_sha256.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
-#include "sw/device/lib/uart.h"  // TODO: Wrap uart in DEBUG macros.
 
 #define GPIO0_BASE_ADDR 0x40010000u
 #define GPIO_BOOTSTRAP_BIT_MASK 0x00020000u
 
-/* Checks if flash is blank to determine if bootstrap is needed. */
-/* TODO: Update this to check bootstrap pin instead in Verilator. */
-static int bootstrap_requested(void) {
+/**
+ * Check if flash is blank to determine if bootstrap is needed.
+ *
+ * TODO: Update this to check bootstrap pin instead in Verilator.
+ */
+static bool bootstrap_requested(void) {
   // The following flash empty-sniff-check is done this way due to the lack of
   // clear eflash reset in SIM environments.
   if (kDeviceType == kDeviceSimVerilator) {
-    return !!(REG32(FLASH_MEM_BASE_ADDR) == 0 ||
-              REG32(FLASH_MEM_BASE_ADDR) == 0xFFFFFFFF);
+    mmio_region_t flash_region = mmio_region_from_addr(FLASH_MEM_BASE_ADDR);
+    uint32_t value = mmio_region_read32(flash_region, 0x0);
+    return value == 0 || value == UINT32_MAX;
   }
-  // Initialize GPIO device
+
+  // Initialize GPIO device.
   dif_gpio_t gpio;
   dif_gpio_config_t gpio_config = {.base_addr =
                                        mmio_region_from_addr(GPIO0_BASE_ADDR)};
   dif_gpio_init(&gpio_config, &gpio);
-  // Read pin
+
   uint32_t gpio_in;
   dif_gpio_all_read(&gpio, &gpio_in);
-  return !!(gpio_in & GPIO_BOOTSTRAP_BIT_MASK);
+  return (gpio_in & GPIO_BOOTSTRAP_BIT_MASK) != 0;
 }
 
-/* Erase all flash, and verify blank. */
+/**
+ * Erase all flash, and verify blank.
+ */
 static int erase_flash(void) {
-  if (flash_bank_erase(FLASH_BANK_0)) {
+  if (flash_bank_erase(FLASH_BANK_0) != 0) {
     return E_BS_ERASE;
   }
-  if (flash_bank_erase(FLASH_BANK_1)) {
+  if (flash_bank_erase(FLASH_BANK_1) != 0) {
     return E_BS_ERASE;
   }
-  if (!flash_check_empty()) {
+  if (flash_check_empty() == 0) {
     return E_BS_NOTEMPTY;
   }
+
   return 0;
 }
 
-/* Calculates SHA256 hash of received data and compares it against recieved
- * hash. Returns 0 if both hashes are identical. */
-static int check_frame_hash(const frame_t *f) {
-  static uint32_t hash[8];
-  uint32_t result = 0;
-  hw_SHA256_hash((uint8_t *)&f->hdr.frame_num, RAW_BUFFER_SIZE - 32,
-                 (uint8_t *)hash);
-  for (int i = 0; i < 8; ++i) {
-    result |= hash[i] ^ f->hdr.hash[i];
-  }
-  return result;
+/**
+ * Compares the SHA256 hash of the recieved data with the recieved hash.
+ *
+ * Returns true if the hashes match.
+ */
+static bool check_frame_hash(const spiflash_frame_t *frame) {
+  uint8_t hash[sizeof(frame->header.hash)];
+  uint8_t *data = ((uint8_t *)frame) + sizeof(hash);
+  hw_SHA256_hash(data, sizeof(spiflash_frame_t) - sizeof(hash), hash);
+
+  return memcmp(hash, frame->header.hash, sizeof(hash)) == 0;
 }
 
-/* Processes frames received via spid interface and writes them to flash. */
+/**
+ * Load spiflash frames from the SPI interface.
+ *
+ * This function checks that the sequence numbers and hashes of the frames are
+ * correct before programming them into flash.
+ * */
 static int bootstrap_flash(void) {
-  static frame_t f;
-  static uint8_t ack[32] = {0};
-  uint32_t expected_frame_no = 0;
-  for (;;) {
-    if (spid_bytes_available() >= sizeof(f)) {
-      spid_read_nb(&f, sizeof(f));
-      LOG_INFO("Processing frame no: %d exp no: %d", f.hdr.frame_num,
-               expected_frame_no);
+  uint8_t ack[SHA256_DIGEST_SIZE] = {0};
+  uint32_t expected_frame_num = 0;
+  while (true) {
+    if (spid_bytes_available() >= sizeof(spiflash_frame_t)) {
+      spiflash_frame_t frame;
+      spid_read_nb(&frame, sizeof(spiflash_frame_t));
 
-      if (FRAME_NO(f.hdr.frame_num) == expected_frame_no) {
-        if (check_frame_hash(&f)) {
-          LOG_ERROR("Detected hash mismatch on frame: %d", f.hdr.frame_num);
+      uint32_t frame_num = SPIFLASH_FRAME_NUM(frame.header.frame_num);
+      LOG_INFO("Processing frame #%d, expecting #%d", frame_num,
+               expected_frame_num);
+
+      if (frame_num == expected_frame_num) {
+        if (!check_frame_hash(&frame)) {
+          LOG_ERROR("Detected hash mismatch on frame #%d", frame_num);
           spid_send(ack, sizeof(ack));
           continue;
         }
 
-        hw_SHA256_hash(&f, sizeof(f), ack);
+        hw_SHA256_hash(&frame, sizeof(spiflash_frame_t), ack);
         spid_send(ack, sizeof(ack));
 
-        if (expected_frame_no == 0) {
-          flash_default_region_access(/*rd_en=*/1, /*prog_en=*/1,
-                                      /*erase_en=*/1);
-          int rv = erase_flash();
-          if (rv) {
-            return rv;
+        if (expected_frame_num == 0) {
+          flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
+                                      /*erase_en=*/true);
+          int flash_error = erase_flash();
+          if (flash_error != 0) {
+            return flash_error;
           }
+          LOG_INFO("Flash erase successful");
         }
-        if (flash_write(f.hdr.flash_offset, f.data, ARRAYSIZE(f.data))) {
+
+        if (flash_write(frame.header.flash_offset, frame.data,
+                        SPIFLASH_FRAME_DATA_WORDS) != 0) {
           return E_BS_WRITE;
         }
 
-        ++expected_frame_no;
-        if (f.hdr.frame_num & FRAME_EOF_MARKER) {
-          break;
+        ++expected_frame_num;
+        if (SPIFLASH_FRAME_IS_EOF(frame.header.frame_num)) {
+          LOG_INFO("Bootstrap: DONE!");
+          return 0;
         }
       } else {
         // Send previous ack if unable to verify current frame.
@@ -106,8 +127,6 @@ static int bootstrap_flash(void) {
       }
     }
   }
-  LOG_INFO("bootstrap: DONE!");
-  return 0;
 }
 
 int bootstrap(void) {
@@ -120,13 +139,15 @@ int bootstrap(void) {
   flash_init_block();
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
-  int rv = bootstrap_flash();
-  if (rv) {
-    rv |= erase_flash();
+  int error = bootstrap_flash();
+  if (error != 0) {
+    error |= erase_flash();
+    LOG_ERROR("Bootstrap error: 0x%x", error);
   }
 
   // Always make sure to revert flash_ctrl access to default settings.
   // bootstrap_flash enables access to flash to perform update.
-  flash_default_region_access(/*rd_en=*/0, /*prog_en=*/0, /*erase_en=*/0);
-  return rv;
+  flash_default_region_access(/*rd_en=*/false, /*prog_en=*/false,
+                              /*erase_en=*/false);
+  return error;
 }
