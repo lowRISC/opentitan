@@ -90,7 +90,7 @@ With this description file written, the `util/vendor` tool can do its job.
 
 ```command
 $ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose
+$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --update
 INFO: Cloning upstream repository https://github.com/lowRISC/ibex.git @ master
 INFO: Cloned at revision 7728b7b6f2318fb4078945570a55af31ee77537a
 INFO: Copying upstream sources to /home/philipp/src/opentitan/hw/vendor/lowrisc_ibex
@@ -118,6 +118,7 @@ $ cat hw/vendor/lowrisc_ibex.lock.hjson
 ```
 
 The lock file should be committed together with the code itself to make the import step reproducible at any time.
+This import step can be reproduced by running the `util/vendor` tool without the `--update` flag.
 
 After running `util/vendor`, the code in your local working copy is updated to the latest upstream version.
 Next is testing: run simulations, syntheses, or other tests to ensure that the new code works as expected.
@@ -140,7 +141,8 @@ Instead of running `util/vendor` first, and then manually creating a Git commit,
 
 ```command
 $ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --commit
+$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
+    --verbose --update --commit
 ```
 
 This command updates the "lowrisc_ibex" code, and creates a Git commit from it.
@@ -158,7 +160,8 @@ $ git stash
 $ # Create a new branch for the pull request
 $ git checkout -b update-ibex-code upstream/master
 $ # Update lowrisc_ibex and create a commit
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --commit
+$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
+    --verbose --update --commit
 $ # Push the new branch to your fork
 $ git push origin update-ibex-code
 $ # Restore changes in working directory (if anything was stashed before)
@@ -316,6 +319,9 @@ exclude_from_upstream: [
 ]
 ```
 
+If you want to add more files to `exclude_from_upstream`, just update this section of the `.vendor.hjson` file and re-run the vendor tool without `--update`.
+The repository will be re-cloned without pulling in upstream updates, and the file exclusions and patches specified in the vendor file will be applied.
+
 ## How to add patches on top of the imported code
 
 In some cases the upstream code must be modified before it can be used.
@@ -340,6 +346,8 @@ To apply patches on top of vendored code, do the following:
    - Patches are applied relative to the base directory of the imported code.
    - The first directory component of the filename in a patch is stripped, i.e. they are applied with the `-p1` argument of `patch`.
    - Patches are applied with `git apply`, making all extended features of Git patches available (e.g. renames).
+
+If you want to add more patches and re-apply them without updating the upstream repository, add them to the patches directory and re-run the vendor tool without `--update`.
 
 ## How to manage patches in a Git repository
 
@@ -382,7 +390,7 @@ The last step is automated by the `util/vendor` tool through its `--refresh-patc
 3. Run the `util/vendor` tool with the `--refresh-patches` argument.
    It will first check out the patch repository and convert all commits which are in the `rev_patched` branch and not in the `rev_base` branch into patch files.
    These patch files are then stored in the patch directory.
-   After that, the vendoring process continues as usual: all patches are applied and if instructed by the `--commit` flag, a commit is created.
+   After that, the vendoring process continues as usual: changes from the upstream repository are downloaded if `--update` passed, all patches are applied, and if instructed by the `--commit` flag, a commit is created.
    This commit now also includes the updated patch files.
 
 To update the patches you can use all the usual Git tools in the forked repository.
