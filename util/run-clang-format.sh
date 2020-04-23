@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 find sw hw \
-    -not \( -path '*/vendor' -prune \) \
-    -not \( -path 'sw/coremark' -prune \) \
     \( -name '*.cpp' \
     -o -name '*.cc' \
     -o -name '*.c' \
@@ -16,8 +14,6 @@ find sw hw \
 # clang-format cannot fix them for us, so this requires manual work.
 braces_missing=$(
     find sw hw \
-       -not \( -path '*/vendor' -prune \) \
-       -not \( -path 'sw/coremark' -prune \) \
         \( -name '*.cpp' \
         -o -name '*.cc' \
         -o -name '*.c' \

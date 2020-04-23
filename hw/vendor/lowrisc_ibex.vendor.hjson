@@ -17,6 +17,8 @@
     'shared/rtl/prim_assert.sv',
     // vendor/lowrisc_ip contains things from the OpenTitan repository, leaving
     // it in can cause conflicts
-    'vendor/lowrisc_ip'
+    'vendor/lowrisc_ip',
+    // We shouldn't reformat upstream code
+    '.clang-format',
   ]
 }
