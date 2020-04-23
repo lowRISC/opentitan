@@ -14,7 +14,7 @@ class xbar_error_test extends xbar_base_test;
 
   virtual task run_phase(uvm_phase phase);
     // disable assertions for TL errors
-    cfg.tlul_assert_ctrl_vif.drive(0);
+    uvm_config_db#(bit)::set(null, "*", "tlul_assert_en", 0);
     super.run_phase(phase);
   endtask : run_phase
 endclass : xbar_error_test

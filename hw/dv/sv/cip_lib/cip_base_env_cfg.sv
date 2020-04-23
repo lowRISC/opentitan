@@ -10,7 +10,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // common interfaces - intrrupts and alerts
   intr_vif              intr_vif;
   devmode_vif           devmode_vif;
-  tlul_assert_ctrl_vif  tlul_assert_ctrl_vif;
 
   // only security IP can support devmode. If supported, override it to 1 in initialize()
   bit                   has_devmode = 1;

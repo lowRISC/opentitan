@@ -38,10 +38,6 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
                                                              cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(tlul_assert_ctrl_vif)::get(this, "", "tlul_assert_ctrl_vif",
-          cfg.tlul_assert_ctrl_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get tlul_assert_ctrl_vif from uvm_config_db")
-    end
 
     // create components
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);

@@ -120,17 +120,12 @@ virtual task tl_read_mem_err();
   end
 endtask
 
-virtual function void disable_tl_assert(string path = "*");
-  uvm_config_db#(bit)::set(null, path, "tlul_assert_en", 0);
-endfunction
-
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   bit test_mem_err_byte_write = (cfg.mem_ranges.size > 0) && !cfg.en_mem_byte_write;
   bit test_mem_err_read       = (cfg.mem_ranges.size > 0) && !cfg.en_mem_read;
-  cfg.tlul_assert_ctrl_vif.drive(1'b0); // TODO to clean up
-  disable_tl_assert();
 
+  set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     if (cfg.en_devmode == 1) begin
@@ -159,7 +154,7 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
     join
     if (do_wait_clk) cfg.clk_rst_vif.wait_clks($urandom_range(500, 10_000));
   end // for
-  cfg.tlul_assert_ctrl_vif.drive(1'b1);
+  set_tl_assert_en(.enable(1));
 endtask : run_tl_errors_vseq
 
 `undef create_tl_access_error_case

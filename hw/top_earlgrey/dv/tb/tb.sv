@@ -50,7 +50,6 @@ module tb;
   pins_if #(1) bootstrap_if(.pins(bootstrap));
   spi_if spi_if(.rst_n(rst_n));
   tl_if   cpu_d_tl_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(1) tlul_assert_ctrl_if(tlul_assert_ctrl);
   uart_if uart_if();
   jtag_if jtag_if();
 
@@ -180,8 +179,6 @@ module tb;
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent*", "vif", jtag_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", cpu_d_tl_if);
-    uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
-                                              tlul_assert_ctrl_if);
 
     // Strap pins
     uvm_config_db#(virtual pins_if #(1))::set(

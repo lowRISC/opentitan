@@ -11,8 +11,6 @@ module tb;
 
   wire clk, rst_n;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  wire tlul_assert_ctrl;
-  pins_if #(1) tlul_assert_ctrl_if(tlul_assert_ctrl);
 
   // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core
   `include "tb__xbar_connect.sv"
@@ -21,8 +19,6 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(tlul_assert_ctrl_vif)::set(null, "*.env", "tlul_assert_ctrl_vif",
-                                              tlul_assert_ctrl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
