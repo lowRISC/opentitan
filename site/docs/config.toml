@@ -43,6 +43,7 @@ ignoreFiles = [
   ".*\\.txt$",
   ".*\\.xdc$",
   ".*\\.yml$",
+  ".*\\.clang-format$",
   "/__pycache__/*",
   "/build/*",
   "/hw/vendor/*",
