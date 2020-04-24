@@ -4,11 +4,7 @@
  */
 
 /* CSS for reports.opentitan.org.
- * This is currently uploaded to reports.opentitan.org/css/style,css. It is
- * referenced by all results published to the reports server for some basic
- * styling. After making any change to this file, it needs to be manually
- * copied over so that the new changes are reflected in the results pages.
- * gsutil cp <this-file> gs://reports.opentitan.org/css/style.css
+ * This is referenced by all results published to the reports server for some basic styling.
  */
 
 .results {
@@ -18,10 +14,8 @@
   padding-right: 40px;
   margin: 0 auto;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  padding-top: 15px;
 }
 
 .results p {
@@ -38,6 +32,7 @@
 
 .results h1, .results h2, .results h3 {
   text-align: center;
+  padding-bottom: 15px;
 }
 
 .results table {
@@ -48,7 +43,7 @@
   text-align: center;
   vertical-align: middle;
   display: table;
-  table-layout: auto
+  table-layout: auto;
 }
 
 .results th {
@@ -74,7 +69,7 @@
 
 /* Color encoding for percentages. */
 .cna  {
-  color: 000000;
+  color: #000000;
   background-color: #f8f8f8;
 }
 
