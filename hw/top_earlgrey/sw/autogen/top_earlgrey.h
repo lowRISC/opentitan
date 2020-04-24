@@ -167,6 +167,22 @@
 #define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40130000u
 
 /**
+ * Base address for pwrmgr peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x400A0000u
+
+/**
+ * Base address for rstmgr peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x400B0000u
+
+/**
  * Base address for nmi_gen peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -181,6 +197,7 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40150000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.

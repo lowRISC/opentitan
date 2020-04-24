@@ -34,6 +34,7 @@ genhdr = '''// Copyright lowRISC contributors.
 
 SRCTREE_TOP = Path(__file__).parent.parent
 
+
 def generate_top(top, tpl_filename, **kwargs):
     top_tpl = Template(filename=tpl_filename)
 
@@ -621,7 +622,8 @@ def main():
 
         def render_template(out_name_tpl, out_dir, **other_info):
             top_tplpath = tpl_path / ((out_name_tpl + '.tpl') % (top_name))
-            template_contents = generate_top(completecfg, str(top_tplpath), **other_info)
+            template_contents = generate_top(completecfg, str(top_tplpath),
+                                             **other_info)
 
             rendered_dir = out_path / out_dir
             rendered_dir.mkdir(parents=True, exist_ok=True)
@@ -649,22 +651,25 @@ def main():
         cformat_path.write_text(cformat_tplpath.read_text())
 
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
-        cheader_path = render_template('top_%s.h', 'sw/autogen', c_gen_info=c_gen_info)
+        cheader_path = render_template('top_%s.h',
+                                       'sw/autogen',
+                                       c_gen_info=c_gen_info)
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
         c_gen_info["header_path"] = str(rel_header_path)
 
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
-        cimpl_path = render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
+        render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
 
         # Fix the C header guard, which will have the wrong name
-        subprocess.run(["util/fix_include_guard.py", str(cheader_path)],
-                        universal_newlines=True,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        check=True,
-                        cwd=str(SRCTREE_TOP))
+        subprocess.run(["util/fix_include_guard.py",
+                        str(cheader_path)],
+                       universal_newlines=True,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL,
+                       check=True,
+                       cwd=str(SRCTREE_TOP))
 
 
 if __name__ == "__main__":
