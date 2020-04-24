@@ -6,12 +6,7 @@ r"""Command-line tool to parse and process testplan Hjson
 
 """
 import argparse
-import logging as log
-import os
 import sys
-from pathlib import PurePath
-
-import hjson
 
 from testplanner import testplan_utils
 

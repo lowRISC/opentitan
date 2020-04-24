@@ -5,16 +5,14 @@ r"""Command-line tool to parse and process testplan Hjson into a data structure
     The data structure is used for expansion inline within DV plan documentation
     as well as for annotating the regression results.
 """
-import logging as log
 import os
 import sys
-from pathlib import PurePath
 
 import hjson
 import mistletoe
 from tabulate import tabulate
 
-from .class_defs import *
+from .class_defs import Testplan, TestplanEntry
 
 
 def parse_testplan(filename):
@@ -30,7 +28,8 @@ def parse_testplan(filename):
         if key == "import_testplans":
             imported_testplans = obj[key]
         elif key != "entries":
-            if key == "name": name = obj[key]
+            if key == "name":
+                name = obj[key]
             substitutions.append({key: obj[key]})
     for imported_testplan in imported_testplans:
         obj = merge_dicts(
@@ -38,7 +37,8 @@ def parse_testplan(filename):
 
     testplan = Testplan(name=name)
     for entry in obj["entries"]:
-        if not TestplanEntry.is_valid_entry(entry): sys.exit(1)
+        if not TestplanEntry.is_valid_entry(entry):
+            sys.exit(1)
         testplan_entry = TestplanEntry(name=entry["name"],
                                        desc=entry["desc"],
                                        milestone=entry["milestone"],
@@ -110,7 +110,7 @@ def gen_html_regr_results_table(testplan, regr_results, outbuf):
 def parse_regr_results(filename):
     obj = parse_hjson(filename)
     # TODO need additional syntax checks
-    if not "test_results" in obj.keys():
+    if "test_results" not in obj.keys():
         print("Error: key \'test_results\' not found")
         sys, exit(1)
     return obj

@@ -7,7 +7,6 @@ Utility functions common across dvsim.
 
 import logging as log
 import os
-import pprint
 import re
 import shlex
 import subprocess
@@ -63,7 +62,8 @@ def run_cmd_with_timeout(cmd, timeout=-1, exit_on_failure=1):
 
     if status != 0:
         log.error("cmd \"%s\" exited with status %d", cmd, status)
-        if exit_on_failure == 1: sys.exit(status)
+        if exit_on_failure == 1:
+            sys.exit(status)
 
     return (result, status)
 
@@ -90,8 +90,10 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
     If var has wildcards specified within {..}, find and substitute them.
     '''
     def subst(wildcard, mdict):
-        if wildcard in mdict.keys(): return mdict[wildcard]
-        else: return None
+        if wildcard in mdict.keys():
+            return mdict[wildcard]
+        else:
+            return None
 
     if "{eval_cmd}" in var:
         idx = var.find("{eval_cmd}") + 11
@@ -133,7 +135,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
                     else:
                         # Check if the wildcard exists as an environment variable
                         env_var = os.environ.get(item)
-                        if env_var is not None: subst_list[item] = env_var
+                        if env_var is not None:
+                            subst_list[item] = env_var
                         elif not ignore_error:
                             log.error(
                                 "Substitution for the wildcard \"%s\" not found",
@@ -254,7 +257,7 @@ def htmc_color_pc_cells(text):
     def color_cell(cell, cclass, indicator="%"):
         op = cell.replace("<td", "<td class=\"" + cclass + "\"")
         # Remove the indicator.
-        op = re.sub(r"\s*" + indicator + "\s*", "", op)
+        op = re.sub(r"\s*" + indicator + r"\s*", "", op)
         return op
 
     # List of 'not applicable' identifiers.
@@ -262,12 +265,11 @@ def htmc_color_pc_cells(text):
     na_list_patterns = '|'.join(na_list)
 
     # List of floating point patterns: '0', '0.0' & '.0'
-    fp_patterns = "[\+\-]?\d+\.?\d*"
+    fp_patterns = r"[\+\-]?\d+\.?\d*"
 
     patterns = fp_patterns + '|' + na_list_patterns
     indicators = "%|%u|G|B|E|W|EN|WN"
-    match = re.findall(
-        r"(<td.*>\s*(" + patterns + ")\s+(" + indicators + ")\s*</td>)", text)
+    match = re.findall(r"(<td.*>\s*(" + patterns + r")\s+(" + indicators + r")\s*</td>)", text)
     if len(match) > 0:
         subst_list = {}
         fp_nums = []
@@ -278,20 +280,23 @@ def htmc_color_pc_cells(text):
             fp_num = item[1]
             indicator = item[2]
             # Skip if fp_num is already processed.
-            if (fp_num, indicator) in fp_nums: continue
+            if (fp_num, indicator) in fp_nums:
+                continue
             fp_nums.append((fp_num, indicator))
-            if fp_num in na_list: subst = color_cell(cell, "cna", indicator)
+            if fp_num in na_list:
+                subst = color_cell(cell, "cna", indicator)
             else:
                 # Item is a fp num.
                 try:
                     fp = float(fp_num)
                 except ValueError:
-                    log.error("Percentage item \"%s\" in cell \"%s\" is not an " + \
+                    log.error("Percentage item \"%s\" in cell \"%s\" is not an "
                               "integer or a floating point number", fp_num, cell)
                     continue
                 # Percentage, colored.
                 if indicator == "%":
-                    if fp >= 0.0 and fp < 10.0: subst = color_cell(cell, "c0")
+                    if fp >= 0.0 and fp < 10.0:
+                        subst = color_cell(cell, "c0")
                     elif fp >= 10.0 and fp < 20.0:
                         subst = color_cell(cell, "c1")
                     elif fp >= 20.0 and fp < 30.0:

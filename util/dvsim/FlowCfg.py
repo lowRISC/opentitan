@@ -1,19 +1,19 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""
-Class describing a flow configuration object
-"""
 
 import datetime
 import logging as log
+import os
 import pprint
 from shutil import which
+import subprocess
+import sys
 
 import hjson
 
-from Deploy import *
-from utils import *
+from Deploy import Deploy
+from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
 
 
 # Interface class for extensions.
@@ -148,8 +148,7 @@ class FlowCfg():
         # This is a master cfg only if it has a single key called "use_cfgs"
         # which contains a list of actual flow cfgs.
         hjson_cfg_dict_keys = hjson_dict.keys()
-        return ("use_cfgs" in hjson_cfg_dict_keys and \
-                type(hjson_dict["use_cfgs"]) is list)
+        return ("use_cfgs" in hjson_cfg_dict_keys and type(hjson_dict["use_cfgs"]) is list)
 
     def resolve_hjson_raw(self, hjson_dict):
         attrs = self.__dict__.keys()
@@ -176,10 +175,10 @@ class FlowCfg():
                     defaults = scalar_types[type(hjson_dict_val)]
                     if self_val == hjson_dict_val:
                         rm_hjson_dict_keys.append(key)
-                    elif self_val in defaults and not hjson_dict_val in defaults:
+                    elif self_val in defaults and hjson_dict_val not in defaults:
                         setattr(self, key, hjson_dict_val)
                         rm_hjson_dict_keys.append(key)
-                    elif not self_val in defaults and not hjson_dict_val in defaults:
+                    elif self_val not in defaults and hjson_dict_val not in defaults:
                         # check if key exists in command line args, use that, or
                         # throw conflicting error
                         # TODO, may throw the conflicting error but choose one and proceed rather
@@ -236,7 +235,7 @@ class FlowCfg():
 
         # Parse imported cfgs
         for cfg_file in import_cfgs:
-            if not cfg_file in self.imported_cfg_files:
+            if cfg_file not in self.imported_cfg_files:
                 self.imported_cfg_files.append(cfg_file)
                 # Substitute wildcards in cfg_file files since we need to process
                 # them right away.
@@ -262,7 +261,8 @@ class FlowCfg():
                 elif type(entry) is dict:
                     # Treat this as a cfg expanded in-line
                     temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
-                    if not temp_cfg_file: continue
+                    if not temp_cfg_file:
+                        continue
                     self.cfgs.append(
                         self.create_instance(temp_cfg_file, self.proj_root,
                                              self.args))
@@ -292,14 +292,14 @@ class FlowCfg():
 
         name = idict["name"] if "name" in idict.keys() else None
         if not name:
-            log.error(
-                "In-line entry in use_cfgs list does not contain " + \
-                "a \"name\" key (will be skipped!):\n%s", idict)
+            log.error("In-line entry in use_cfgs list does not contain "
+                      "a \"name\" key (will be skipped!):\n%s",
+                      idict)
             return None
 
         # Check if temp cfg file already exists
-        temp_cfg_file = self.scratch_root + "/." + self.branch + "__" + \
-                        name + "_cfg.hjson"
+        temp_cfg_file = (self.scratch_root + "/." + self.branch + "__" +
+                         name + "_cfg.hjson")
 
         # Create the file and dump the dict as hjson
         log.log(VERBOSE, "Dumping inline cfg \"%s\" in hjson to:\n%s", name,
@@ -308,9 +308,9 @@ class FlowCfg():
             with open(temp_cfg_file, "w") as f:
                 f.write(hjson.dumps(idict, for_json=True))
         except Exception as e:
-            log.error(
-                "Failed to hjson-dump temp cfg file\"%s\" for \"%s\"" + \
-                "(will be skipped!) due to:\n%s", temp_cfg_file, name, e)
+            log.error("Failed to hjson-dump temp cfg file\"%s\" for \"%s\""
+                      "(will be skipped!) due to:\n%s",
+                      temp_cfg_file, name, e)
             return None
 
         # Return the temp cfg file created
@@ -331,8 +331,7 @@ class FlowCfg():
 
             # Process override one by one
             for item in overrides:
-                if type(item) is dict and set(item.keys()) == set(
-                    ["name", "value"]):
+                if type(item) is dict and set(item.keys()) == {"name", "value"}:
                     ov_name = item["name"]
                     ov_value = item["value"]
                     if ov_name not in overrides_dict.keys():
@@ -344,7 +343,7 @@ class FlowCfg():
                             ov_name, overrides_dict[ov_name], ov_value)
                         sys.exit(1)
                 else:
-                    log.error("\"overrides\" is a list of dicts with {\"name\": <name>, " + \
+                    log.error("\"overrides\" is a list of dicts with {\"name\": <name>, "
                               "\"value\": <value>} pairs. Found this instead:\n%s",
                               str(item))
                     sys.exit(1)
@@ -358,7 +357,7 @@ class FlowCfg():
                           ov_name, orig_value, ov_value)
                 setattr(self, ov_name, ov_value)
             else:
-                log.error("The type of override value \"%s\" for \"%s\" mismatches " + \
+                log.error("The type of override value \"%s\" for \"%s\" mismatches "
                           "the type of original value \"%s\"",
                           ov_value, ov_name, orig_value)
                 sys.exit(1)
@@ -375,8 +374,10 @@ class FlowCfg():
                     exports_dict.update(item)
                 elif type(item) is str:
                     [key, value] = item.split(':', 1)
-                    if type(key) is not str: key = str(key)
-                    if type(value) is not str: value = str(value)
+                    if type(key) is not str:
+                        key = str(key)
+                    if type(value) is not str:
+                        value = str(value)
                     exports_dict.update({key.strip(): value.strip()})
                 else:
                     log.error("Type error in \"exports\": %s", str(item))
@@ -460,7 +461,8 @@ class FlowCfg():
             results.append(result)
             self.errors_seen |= item.errors_seen
 
-        if self.is_master_cfg: self.gen_results_summary()
+        if self.is_master_cfg:
+            self.gen_results_summary()
         self.gen_email_html_summary()
 
     def gen_results_summary(self):
@@ -469,7 +471,8 @@ class FlowCfg():
         return
 
     def _get_results_page_link(self, link_text):
-        if not self.args.publish: return link_text
+        if not self.args.publish:
+            return link_text
         results_page_url = self.results_server_page.replace(
             self.results_server_prefix, self.results_server_url_prefix)
         return "[%s](%s)" % (link_text, results_page_url)
@@ -543,8 +546,8 @@ class FlowCfg():
                 old_results_ts = ts.strftime(tf)
 
             old_results_dir = self.results_server_path + "/" + old_results_ts
-            cmd = self.results_server_cmd + " mv " + self.results_server_dir + \
-                  " " + old_results_dir
+            cmd = (self.results_server_cmd + " mv " + self.results_server_dir +
+                   " " + old_results_dir)
             log.log(VERBOSE, cmd)
             cmd_output = subprocess.run(cmd,
                                         shell=True,
@@ -579,7 +582,8 @@ class FlowCfg():
         for rdir in results_dirs:
             dirname = rdir.replace(self.results_server_path, '')
             dirname = dirname.replace('/', '')
-            if dirname == "latest": continue
+            if dirname == "latest":
+                continue
             rdirs.append(dirname)
         rdirs.sort(reverse=True)
 
@@ -614,8 +618,8 @@ class FlowCfg():
         rm_cmd += "/bin/rm -rf " + results_html_file + "; "
 
         log.info("Publishing results to %s", results_page_url)
-        cmd = self.results_server_cmd + " cp " + results_html_file + " " + \
-              self.results_server_page + "; " + rm_cmd
+        cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
+               self.results_server_page + "; " + rm_cmd)
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,
@@ -632,7 +636,8 @@ class FlowCfg():
         for item in self.cfgs:
             item._publish_results()
 
-        if self.is_master_cfg: self.publish_results_summary()
+        if self.is_master_cfg:
+            self.publish_results_summary()
 
     def publish_results_summary(self):
         '''Public facing API for publishing md format results to the opentitan web server.
@@ -652,8 +657,8 @@ class FlowCfg():
         rm_cmd = "/bin/rm -rf " + results_html_file + "; "
 
         log.info("Publishing results summary to %s", results_page_url)
-        cmd = self.results_server_cmd + " cp " + results_html_file + " " + \
-              self.results_summary_server_page + "; " + rm_cmd
+        cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
+               self.results_summary_server_page + "; " + rm_cmd)
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,

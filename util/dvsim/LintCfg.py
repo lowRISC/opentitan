@@ -5,16 +5,14 @@ r"""
 Class describing lint configuration object
 """
 
+import hjson
 import logging as log
-import sys
 from pathlib import Path
 
 from tabulate import tabulate
 
-from Deploy import *
-from Modes import *
 from OneShotCfg import OneShotCfg
-from utils import *
+from utils import subst_wildcards
 
 
 # helper function for printing messages
@@ -24,7 +22,6 @@ def _print_msg_list(msg_list_name, msg_list):
         md_results += "### %s\n" % msg_list_name
         md_results += "```\n"
         for msg in msg_list:
-            msg_parts = msg.split()
             md_results += msg + "\n\n"
         md_results += "```\n"
     return md_results
@@ -209,7 +206,7 @@ class LintCfg(OneShotCfg):
                                              self.result["lint_errors"])
                 fail_msgs += _print_msg_list("Lint Warnings",
                                              self.result["lint_warnings"])
-                #fail_msgs += _print_msg_list("Lint Infos", results["lint_infos"])
+                # fail_msgs += _print_msg_list("Lint Infos", results["lint_infos"])
 
         if len(table) > 1:
             self.results_md = results_str + tabulate(

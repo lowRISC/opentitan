@@ -5,15 +5,19 @@ r"""
 Class describing simulation configuration object
 """
 
-import logging as log
+import os
+import subprocess
 import sys
 from collections import OrderedDict
 
-from Deploy import *
+import logging as log
+from tabulate import tabulate
+
+from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, RunTest, Deploy
 from FlowCfg import FlowCfg
-from Modes import *
-from testplanner import class_defs, testplan_utils
-from utils import *
+from Modes import BuildModes, Modes, Regressions, RunModes, Tests
+from testplanner import testplan_utils
+from utils import VERBOSE, find_and_substitute_wildcards
 
 
 class SimCfg(FlowCfg):
@@ -53,13 +57,18 @@ class SimCfg(FlowCfg):
         self.map_full_testplan = args.map_full_testplan
 
         # Disable cov if --build-only is passed.
-        if self.build_only: self.cov = False
+        if self.build_only:
+            self.cov = False
 
         # Set default sim modes for unpacking
-        if self.waves is True: self.en_build_modes.append("waves")
-        if self.cov is True: self.en_build_modes.append("cov")
-        if self.profile != 'none': self.en_build_modes.append("profile")
-        if self.xprop_off is not True: self.en_build_modes.append("xprop")
+        if self.waves is True:
+            self.en_build_modes.append("waves")
+        if self.cov is True:
+            self.en_build_modes.append("cov")
+        if self.profile != 'none':
+            self.en_build_modes.append("profile")
+        if self.xprop_off is not True:
+            self.en_build_modes.append("xprop")
 
         # Options built from cfg_file files
         self.project = ""
@@ -254,7 +263,8 @@ class SimCfg(FlowCfg):
         def prune_items(items, marked_items):
             pruned_items = []
             for item in items:
-                if item not in marked_items: pruned_items.append(item)
+                if item not in marked_items:
+                    pruned_items.append(item)
             return pruned_items
 
         # Check if there are items to run
@@ -431,7 +441,8 @@ class SimCfg(FlowCfg):
         # TODO: add support for html
         def retrieve_result(name, results):
             for item in results:
-                if name == item["name"]: return item
+                if name == item["name"]:
+                    return item
             return None
 
         def gen_results_sub(items, results, fail_msgs):
@@ -443,7 +454,6 @@ class SimCfg(FlowCfg):
             This list of dicts is directly consumed by the Testplan::results_table
             method for testplan mapping / annotation.
             '''
-            if items == []: return (results, fail_msgs)
             for item in items:
                 if item.status == "F":
                     fail_msgs += item.fail_msg
@@ -454,7 +464,8 @@ class SimCfg(FlowCfg):
                     if result is None:
                         result = {"name": item.name, "passing": 0, "total": 0}
                         results.append(result)
-                    if item.status == "P": result["passing"] += 1
+                    if item.status == "P":
+                        result["passing"] += 1
                     result["total"] += 1
                 (results, fail_msgs) = gen_results_sub(item.sub, results,
                                                        fail_msgs)
@@ -463,7 +474,8 @@ class SimCfg(FlowCfg):
         regr_results = []
         fail_msgs = ""
         deployed_items = self.deploy
-        if self.cov: deployed_items.append(self.cov_merge_deploy)
+        if self.cov:
+            deployed_items.append(self.cov_merge_deploy)
         (regr_results, fail_msgs) = gen_results_sub(deployed_items,
                                                     regr_results, fail_msgs)
 
@@ -536,14 +548,16 @@ class SimCfg(FlowCfg):
 
         # sim summary result has 5 columns from each SimCfg.results_summary
         header = ["Name", "Passing", "Total", "Pass Rate"]
-        if self.cov: header.append('Coverage')
+        if self.cov:
+            header.append('Coverage')
         table = [header]
         colalign = ("center", ) * len(header)
         for item in self.cfgs:
             row = []
             for title in item.results_summary:
                 row.append(item.results_summary[title])
-            if row == []: continue
+            if row == []:
+                continue
             table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
@@ -564,8 +578,8 @@ class SimCfg(FlowCfg):
 
             log.info("Publishing coverage results to %s",
                      results_server_dir_url)
-            cmd = self.results_server_cmd + " -m cp -R " + \
-                  self.cov_report_deploy.cov_report_dir + " " + self.results_server_dir
+            cmd = (self.results_server_cmd + " -m cp -R " +
+                   self.cov_report_deploy.cov_report_dir + " " + self.results_server_dir)
             try:
                 cmd_output = subprocess.run(args=cmd,
                                             shell=True,

@@ -18,7 +18,6 @@ import logging as log
 import os
 import subprocess
 import sys
-from pathlib import Path
 from signal import SIGINT, signal
 
 import Deploy
@@ -83,6 +82,7 @@ def resolve_branch(arg_branch):
                 "Failed to find current git branch. Setting it to \"default\"")
             arg_branch = "default"
     return (arg_branch)
+
 
 # Get the project root directory path - this is used to construct the full paths
 def get_proj_root():

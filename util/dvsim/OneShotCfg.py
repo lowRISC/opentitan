@@ -6,13 +6,14 @@ Class describing a one-shot build configuration object
 """
 
 import logging as log
+import os
 import sys
 from collections import OrderedDict
 
-from Deploy import *
+from Deploy import CompileOneShot
 from FlowCfg import FlowCfg
-from Modes import *
-from utils import *
+from Modes import BuildModes, Modes
+from utils import find_and_substitute_wildcards
 
 
 class OneShotCfg(FlowCfg):
