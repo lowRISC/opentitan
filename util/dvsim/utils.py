@@ -16,6 +16,7 @@ from collections import OrderedDict
 
 import hjson
 import mistletoe
+from premailer import transform
 
 # For verbose logging
 VERBOSE = 15
@@ -186,7 +187,7 @@ def find_and_substitute_wildcards(sub_dict,
     return sub_dict
 
 
-def md_results_to_html(title, css_path, md_text):
+def md_results_to_html(title, css_file, md_text):
     '''Convert results in md format to html. Add a little bit of styling.
     '''
     html_text = "<!DOCTYPE html>\n"
@@ -194,9 +195,6 @@ def md_results_to_html(title, css_path, md_text):
     html_text += "<head>\n"
     if title != "":
         html_text += "  <title>{}</title>\n".format(title)
-    if css_path != "":
-        html_text += "  <link rel=\"stylesheet\" type=\"text/css\""
-        html_text += " href=\"{}\"/>\n".format(css_path)
     html_text += "</head>\n"
     html_text += "<body>\n"
     html_text += "<div class=\"results\">\n"
@@ -205,6 +203,13 @@ def md_results_to_html(title, css_path, md_text):
     html_text += "</body>\n"
     html_text += "</html>\n"
     html_text = htmc_color_pc_cells(html_text)
+    # this function converts css style to inline html style
+    # set cssutils logging to critical because `style.css` is incompatible
+    # with css level 2.1 checking. But these ERRORs do not affect the inline
+    # style coversion. TODO: fix the errors from cssutils
+    html_text = transform(html_text,
+                          external_styles=css_file,
+                          cssutils_logging_level=log.CRITICAL)
     return html_text
 
 

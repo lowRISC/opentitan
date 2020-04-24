@@ -79,7 +79,7 @@ class FlowCfg():
         self.results_server_prefix = ""
         self.results_server_url_prefix = ""
         self.results_server_cmd = ""
-        self.results_server_css_path = ""
+        self.css_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "style.css")
         self.results_server_path = ""
         self.results_server_dir = ""
         self.results_server_html = ""
@@ -482,8 +482,7 @@ class FlowCfg():
             gen_results = self.results_summary_md
         else:
             gen_results = self.results_md
-        results_html = md_results_to_html(self.results_title, self.results_server_css_path,
-                                          gen_results)
+        results_html = md_results_to_html(self.results_title, self.css_file, gen_results)
         results_html_file = self.scratch_root + "/email.html"
         f = open(results_html_file, 'w')
         f.write(results_html)
@@ -612,8 +611,7 @@ class FlowCfg():
         results_html_file = self.scratch_path + "/results_" + self.timestamp + ".html"
         f = open(results_html_file, 'w')
         f.write(
-            md_results_to_html(self.results_title,
-                               self.results_server_css_path, results_md))
+            md_results_to_html(self.results_title, self.css_file, results_md))
         f.close()
         rm_cmd += "/bin/rm -rf " + results_html_file + "; "
 
@@ -650,9 +648,7 @@ class FlowCfg():
         # First, write the results html file temporarily to the scratch area.
         f = open(results_html_file, 'w')
         f.write(
-            md_results_to_html(self.results_title,
-                               self.results_server_css_path,
-                               self.results_summary_md))
+            md_results_to_html(self.results_title, self.css_file, self.results_summary_md))
         f.close()
         rm_cmd = "/bin/rm -rf " + results_html_file + "; "
 

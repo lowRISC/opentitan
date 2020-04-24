@@ -14,6 +14,7 @@ mako
 # Ubuntu 16.04.
 meson >= 0.51.0, != 0.53.0, <0.54.0 # minimum matches version in meson.build
 mistletoe>=0.7.2
+premailer
 pyelftools
 pyftdi
 pygments
