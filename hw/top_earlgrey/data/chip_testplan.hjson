@@ -3,18 +3,1318 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "chip"
+
+  // Replicate CSR and mem tests over TL and JTAG interfaces.
+  intf: ["_tl", "_jtag"]
+
+  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/enable_reg_testplan.hjson",
                      "hw/dv/tools/testplans/shadow_reg_errors_testplan.hjson",
                      "hw/dv/tools/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson"]
+
   entries: [
+    //////////////////////////////////////////////////////////////////////////////////
+    // IO Peripherals                                                               //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, RV_DM, PATTGEN, PWM //
+    //////////////////////////////////////////////////////////////////////////////////
+
+    // UART (pre-verified IP) integration tests:
     {
-      name: sanity
-      desc: ''' Basic hello world type test.
+      name: chip_uart_tx_rx
+      desc: '''Verify transmission of data over the TX and RX port.
+
+            SW test sends a known payload over the TX port. The testbench, at the same time
+            sends a known payload over RX. On reception, both payloads are checked for integrity.
+            SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
+            Choosing the max supported baud rate for the UART is sufficient.
+            Verify each UART instance at the chip level independently.
             '''
       milestone: V1
-      tests: ["chip_sanity"]
+      tests: ["chip_uart_tx_rx"]
+    }
+    {
+      name: chip_uart_rx_overflow
+      desc: '''Verify the RX overflow interrupt.
+
+            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
+            ignores the received the data to allow the RX overflow interrupt to assert.
+            Verify each UART instance at the chip level independently.
+            '''
+      milestone: V1
+      tests: ["chip_uart_tx_rx"]
+    }
+
+    // GPIO (pre-verified IP) integration tests:
+    {
+      name: chip_gpio_out
+      desc: '''Verify GPIO outputs.
+
+            SW test configures the GPIO to be in the output mode. The test walks a 1 through the
+            pins. The testbench checks the value for correctness.
+            '''
+      milestone: V1
+      tests: []
+    }
+    {
+      name: chip_gpio_in
+      desc: '''Verify GPIO inputs.
+
+            The SW test configures the GPIO to be in input mode and enables all of them to generate
+            an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
+            interrupt corresponding to the right pin is seen.
+            '''
+      milestone: V1
+      tests: []
+    }
+
+    // SPI_DEVICE (pre-verified IP) integration tests:
+    {
+      name: chip_spi_device_tx_rx
+      desc: '''Verify the transmission of data on the chip's SPI device port.
+
+            The testbench sends a known payload over the chip's SPI device input port. The SW test,
+            at the same time sends a known payload out over the chip's SPI device output port. On
+            reception, both payloads are checked for integrity. SW validates the reception of RX
+            fifo full, RX fifo over level, TX fifo under level, RX overflow and TX underflow
+            interrupts. Run with min and max SPI clk frequencies. Also, run with single, dual and
+            quad SPI modes. Also, ensure that the spi_device does not recieve transactions when the
+            csb is high.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_spi_device_eeprom
+      desc: '''Verify the SPI device in EEPROM mode.
+
+            SW puts the SPI device in EEPROM mode and allows a firmware image (a.k.a. a known
+            payload) to be downloaded into the in-built EEPROM. SW verifies the integrity of the
+            payload upon reception by reading the EEPROM. Details TBD since the feature is NA yet.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // SPI_HOST (pre-verified IP) integration tests:
+    {
+      name: chip_spi_host_tx_rx
+      desc: '''Verify the transmission of data on the chip's SPI host port.
+
+             Details TBD. Run with min and max SPI clk frequencies. Also, run with single, dual,
+             and quad SPI modes.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_spi_pass_through
+      desc: '''Verifies the pass through mode from an end-to-end perspective.
+
+            SW configures the SPI device and host in pass through mode. The testbench sends a random
+            payload over the SPI device interface and verifies its integrity on the SPI host
+            interface.  Run with min and max SPI clk frequencies. Also, run with single, dual,
+            and quad SPI modes. Details TBD.
+      '''
+      milestone: V2
+      tests: []
+    }
+
+    // I2C (pre-verified IP) integration tests:
+    {
+      name: chip_i2c_host_tx_rx
+      desc: '''Verify the transmission of data over the chip's I2C host interface.
+
+            The SW test writes a known data over the chip's I2C host interface, which is verified by
+            the testbench (which acts as the I2C device). Likewise, SW test then reads and verifies
+            a known data. SW validates the reception of RX watermark, FMT overflow, RX overflow,
+            NAK, FMT watermark and trans complete interrupts (the SW test / testbench work together
+            to create those scenarios).
+            Verify all instances of I2C in the chip independently.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_i2c_device_tx_rx
+      desc: '''Verify the transmission of data over the chip's I2C device interface.
+
+            The testbench writes a known data over the chip's I2C device interface, which is
+            verified by the SW test for correctness. Testbench then reads and verifies
+            a known data. SW validates the reception of TBD interrupts (the SW test / testbench
+            create those scenarios).
+            Verify all instances of I2C in the chip independently.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // USB (pre-verified IP) integration tests:
+    {
+      name: chip_usb_fs_se_tx_rx
+      desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
+            this test, the enablement of USB pullup is also expected to be verified.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_usb_fs_df_tx_rx
+      desc: '''Verify the transmission of data over the USB at full speed. As a part of this test,
+            the enablement of USB pullup is also expected to be verified. In this test, the USB is
+            configured in differential mode.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_usb_vbus
+      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
+
+            TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_usb_suspend
+      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
+
+            TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_usb_suspend
+      desc: '''Same as the above, but tested with low power entry/exit.
+
+            TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PINMUX (pre-verified IP) integration tests:
+    {
+      name: chip_pin_mux
+      desc: '''Verify the MIO muxing at input and output sides.
+
+            SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
+            moment, GPIOs are the only mux inputs.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_pin_mio_dio_val
+      desc: '''Verify the MIO output values in deep sleep state.
+
+            SW programs the MIO OUTSEL CSRs to to ensure that in deep sleep it randomly picks
+            between tie-0, tie-1 or hi-Z for all muxed outputs coming from non-AON IPs. If an AON
+            peripheral output is muxed, then that peripheral's output is selected to ensure in deep
+            sleep the peripheral can continue its signaling even in deep sleep. The testbench
+            verifies the correctness of the reflected values once the chip goes into deep sleep.
+            This is replicated for DIO pins as well.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_pin_wake
+      desc: '''Verify pin wake up from deep sleep state.
+
+            Verify one of the 8 possible MIO or DIO pad inputs (randomly configured) can cause the
+            chip to wake up from sleep state. Verifying wake on posedge is sufficient for the chip
+            level integration testing. Upon wake up, SW reads the wake cause CSR to verify
+            correctness.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PADCTRL tests:
+    {
+      name: chip_padctrl_attributes
+      desc: '''Verify pad attribute settings for all MIO and DIO pads.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // RV_DM (JTAG) tests:
+    {
+      name: chip_rv_dm_cpu_debug_mem
+      desc: '''Verify access to the debug mem from the CPU.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_jtag_debug_mem
+      desc: '''Verify access to the debug mem from the external JTAG interface.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_cpu_debug_req
+      desc: '''Verify debug request to Ibex while it is actively executing.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_ndm_reset_req
+      desc: '''Verify non-debug reset req initiated from RV_DM when the chip is awake.
+
+            Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
+            values. Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_rv_dm_ndm_reset_req
+      desc: '''Verify non-debug reset req initiated from RV_DM when the chip is in deep sleep.
+
+            Read CSRs / mem within all IPs in the chip to ensure that they are reset to the original
+            values. Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            There are also other modules such as clk, pwr, rstmgr which survive this reset. Verify
+            those as well.
+
+            TODO: `rv_dm` currently is not on the AON domain, so this feature does not exist ATM.
+            Need discussion with SW/Nuvoton.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_jtag_tap_sel
+      desc: '''Verify ability to select all available TAPs.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rv_dm_lc_disabled
+      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
+
+            Verify that the debug mem is inaccessible from the CPU as well as external JTAG.
+            Details TBD. X-ref'ed with the LC tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PATTGEN (pre-verified IP) integration tests:
+    {
+      name: chip_pattgen_ios
+      desc: '''Verify pattern generation to chip output pads.
+
+            SW programs pattgen to generate distinct patterns on both groups. SW programs pinmux to
+            select pattgen outputs to be routed. SW validates the reception of patt_done interrupts.
+            Testbench verifies the correctness of the pattern seen on the IO pins.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PWM (pre-verified IP) integration tests:
+    {
+      name: chip_sleep_pwm_ios_val
+      desc: '''Verify PWM signaling to chip output pads during deep sleep
+
+            PWM is in the AON domain. During deep sleep, we should be able to signal the 3 external
+            LEDs that are connected to the PWM signals. Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    ///////////////////////////////////////////////////////////////
+    // System Peripherals                                        //
+    // TIMER, WDOG, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_MGR //
+    ///////////////////////////////////////////////////////////////
+
+    // RV_TIMER (pre-verified IP) integration tests:
+    {
+      name: chip_timer
+      desc: '''Verify the timeout interrupt from all timer instances.
+
+            The SW test configures the RV_TIMER to generate interrupt after a set timeout. The SW
+            test validates the received interrupt. The testbench verifies that the interrupt was
+            fired only after the timeout elapsed.
+            Verify all instances of the RV_Timer.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_aon_timer_wake
+      desc: '''Verify the timer in the AON domain can wake up the chip from sleep.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // WATCHDOG (pre-verified IP) integration tests:
+    {
+      name: chip_wdog_bark
+      desc: '''Verify the watchdog bark reception in awake state.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_wdog_bite
+      desc: '''Verify the watchdog bite causing reset in awake state.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_wdog_bark_wake
+      desc: '''Verify the watchdog bark wake up from sleep state.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_wdog_bite_wake
+      desc: '''Verify the watchdog bite reset from sleep state.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PLIC (pre-verified IP) integration tests:
+    {
+      name: chip_plic_all_irqs
+      desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
+
+            The automated SW test enables all interrupts at the PLIC to interrupt the core. It uses
+            the `intr_test` CSR in each peripheral to mock assert an interrupt, looping through all
+            available interrupts in that peripheral. The ISR verifies that the right interrupt
+            occurred. This is used as a catch-all interrupt test for all peripheral integration
+            testing within which functionally asserting an interrupt is hard to achieve or not of
+            high value.
+            '''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: chip_plic_sw_irq
+      desc: '''Verify the SW interrupt to the CPU.
+
+            Enable all peripheral interrupts at PLIC. Enable all types of interrupt at the CPU core.
+            Write to the MSIP CSR to generate a SW interrupt to the CPU. Verify that the only
+            interrupt that is seen is the SW interrupt.
+            '''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: chip_plic_nmi_irq
+      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
+
+            TBD if multiple NMI irqs are OR-ed into the CPU (example - NMI from alert handler and
+            the watchdog bark), then map each test to this testpoint.
+            '''
+      milestone: V2
+      tests: [""]
+    }
+
+    // CLKMGR tests:
+    {
+      name: chip_sw_clk_off_trans
+      desc: '''Verify the ability to turn off the transactional clock via SW.
+
+             Ensure that activity in any of the IPs running on this clock prevents the clock from
+             actually being turned off. Verify that turning off this clock does not affect the other
+             derived clocks.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sw_clk_off_peri
+      desc: '''Verify the ability to turn off the peripheral clock via SW.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_clk_div
+      desc: '''Verify clk division logic is working correctly.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PWRMGR tests:
+    {
+      name: chip_pwrmgr_cold_boot
+      desc: '''Verify the cold boot sequence through the wiggling of `por_rst_n`.
+
+            This mainly ensures that both FSMs are properly reset on the POR signal. Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into normal sleep state and be reset by ALL reset req
+            sources.
+
+            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_deep_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into deep sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_deep_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
+            sources.
+
+            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_all_reset_reqs
+      desc: '''Verify that the chip can be reset by ALL available reset sources.
+
+            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_bad_main_pok
+      desc: '''Verify the effect of main_pok de-assertion in the middle of low power entry / exit
+            FSM transition.
+
+            The main_pok from AST is randomly forced to flip while in the middle of a FSM
+            transition. This is done on all normal / deep sleep / reset request tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_b2b_sleep_reset_req
+      desc: '''Verify that the pwrmge sequences sleep_req and reset req coming in almost at the same
+            time, one after the other.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_debug_sleep
+      desc: '''Verify that when the chip being in "debuggable" state prevent the low power entry.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_wake_req_disabled
+      desc: '''Verify that the chip cannot be woken up from sleep from a wake up source that is
+            disabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_reset_req_disabled
+      desc: '''Verify that the chip cannot be reset from a reset source that is disabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_reset_req_disabled
+      desc: '''Verify that the chip cannot be woken up from sleep from a reset source that is
+            disabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_disabled
+      desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_wake_up_fall_through
+      desc: '''Verify that the chip sleep falls through when an interrupt arrives just in time
+            before the pwrmgr iniitates the low power entry.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_pwrmgr_sleep_abort
+      desc: '''Verify that the chip sleep transition aborts due to an active flash / lifecycle / OTP
+            transaction.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+
+    // RSTMGR tests:
+
+    // ALERT_HANDLER (pre-verified IP) integration tests:
+    {
+      name: chip_alert_handler_alerts
+      desc: '''Verify all alerts coming into the alert_handler.
+
+            X-ref'ed with all IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_irqs
+      desc: '''Verify all classes of alert handler interrupts to the CPU.
+
+
+            Program each alert to cause an interrupt in each class. SW validates the reception of
+            the interrupt. X-ref'ed with all IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_esc_irqs
+      desc: '''Verify all alert handler escalation irqs.
+
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_entropy
+      desc: '''Verify the alert handler entropy input to ensure pseudo-random ping timer.
+
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_crashdump
+      desc: '''Verify the alert handler crashdump signal.
+
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_ping_fail
+      desc: '''Verify the alert ping failure results in an escalation.
+
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // LC_MANAGER (pre-verified IP) integration tests:
+
+
+    ///////////////////////////////////////////////////////
+    // Security Peripherals                              //
+    // AES, HMAC, KMAC, CSRNG, ENTROPY_SRC, KEYMGR, OTBN //
+    ///////////////////////////////////////////////////////
+
+    // AES (pre-verified IP) integration tests:
+    {
+      name: chip_aes_enc
+      desc: '''Verify the AES operation.
+
+            Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
+            computation to start. Wait for the AES operation to complete by polling the status
+            register (or interrupt if available). Check the digest registers for correctness against
+            the expected digest value.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aes_shadow_reg_alert
+      desc: '''Verify shadow reg alert from AES.
+
+            Inject a storage error via backdoor to generate this alert signal while the SW is
+            actively executing some piece of code. Verify alert propagation to an NMI.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aes_idle
+      desc: '''Verify AES idle signaling to clkmgr.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // HMAC (pre-verified IP) integration tests:
+    {
+      name: chip_hmac_enc
+      desc: '''Verify HMAC / SHA256 operation.
+
+            SW test verifies SHA256 operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW validates the reception of hmac done and fifo empty interrupts.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_hmac_alert
+      desc: '''Verify alert from HMAC.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_hmac_idle
+      desc: '''Verify HMAC idle signaling to clkmgr.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // KMAC pre-verified IP) integration tests:
+    {
+      name: chip_kmac_enc
+      desc: '''Verify the SHA3 operation.
+
+            SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_sram_uncorrectable_alert
+      desc: '''Verify the SRAM uncorrectable alert from KMAC.
+
+            Inject 2 bit errors within the SRAM inside KMAC via backdoor and ensure that this alert
+            propagates to an NMI.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_sram_data_parity_alert
+      desc: '''Verify the data parity alert from KMAC.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_keymgr_key_data
+      desc: '''Verify the keymgr interface to KMAC.
+
+            X-ref'ed with keymgr test.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_idle
+      desc: '''Verify KMAC idle signaling to clkmgr.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // CSRNG tests:
+    {
+      name: chip_csrng_cmd
+      desc: '''Verify the cmd interface to CSRNG.
+
+            Details TBD. SW test validates the reception of cmd req done interrupt.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_csrng_entropy_src
+      desc: '''Verify the interface to entropy_src.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_csrng_fuse
+      desc: '''Verify the fuse input to CSRNG.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // ENTROPY_SRC (pre-verified IP) integration tests:
+    {
+      name: chip_entropy_src_ast_rng_req
+      desc: '''Verify the RNG req to ast.
+
+            Details TBD. SW test validates the reception of the entropy valid interrupt.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_entropy_src_fuse
+      desc: '''Verify the fuse input entropy_src.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // KEYMGR (pre-verified IP) integration tests:
+
+    // OTBN (pre-verified IP) integration tests:
+    {
+      name: chip_otbn_op
+      desc: '''Verify an OTBN operation.
+
+            SW test directs the BIGNUM engine to perform an operation. The BIGNUM SW image is
+            backdoor loaded into OTBN IMEM. SW validates the reception of the otbn done interrupt.
+            SW also verifies the correctness of the OTBN operation using a reference model. Details
+            TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_imem_uncorrectable_alert
+      desc: '''Verify the imem uncorrectable alert from OTBN.
+
+            Inject 2 bit errors within the IMEM SRAM inside OTBN via backdoor and ensure that this
+            alert propagates to an NMI.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_dmem_uncorrectable_alert
+      desc: '''Verify the dmem uncorrectable alert from OTBN.
+
+            Inject 2 bit errors within the DMEM SRAM inside OTBN via backdoor and ensure that this
+            alert propagates to an NMI.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_reg_uncorrectable_alert
+      desc: '''Verify the reg uncorrectable alert from OTBN.
+
+            Details TBD. Ensure that this alert propagates to an NMI.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_mem_encr
+      desc: '''Verify the encryption of the mem within OTBN using the key provided by the OTP.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otbn_idle
+      desc: '''Verify OTBN idle signaling to clkmgr.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    ////////////////////////////////////////////////
+    // Memory & Controllers                       //
+    // ROM, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
+    ////////////////////////////////////////////////
+
+    // ROM (pre-verified IP) integration tests:
+    // TODO: Not sure if this will really be a pre-verified IP. If not, then more tests are needed
+    // at the chip level.
+    {
+      name: chip_rom_access
+      desc: '''Verify access to the rom.
+
+            Verify that the CPU can fetch instructions from the ROM. Nothing extra needs to be done
+            here - all SW tests do this anyway.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rom_security_features
+      desc: '''Verify ROM security / ECC features if available.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // SRAM (pre-verified IP) integration tests:
+    {
+      name: chip_sram_access
+      desc: '''Verify access to the SRAM.
+
+            Verify that the CPU can fetch data from the SRAM. Nothing extra needs to be done
+            here - all SW tests do this anyway.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_scramble
+      desc: '''Verify scrambling of the SRAM data.
+
+            SW enables scrambling within the SRAM. Ensure that the data written to the SRAM is
+            scrambled and likewise, when read from the SRAM is de-scrambled correctly via backdoor.
+            The key and nonce for the scrambling is supplied by the OTP.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_ret_access
+      desc: '''Verify access to the retention SRAM.
+
+            Verify that the CPU can fetch data from the retention SRAM.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sram_ret_scramble
+      desc: '''Verify scrambling of the retention SRAM data.
+
+            SW enables scrambling within the retention SRAM. Ensure that the data written to the
+            SRAM is scrambled and likewise, when read from the SRAM is de-scrambled correctly via
+            backdoor. The key and nonce for the scrambling is supplied by the OTP.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_sram_ret_contents
+      desc: '''Verify that the data within the retention SRAM survives low power entry-exit.
+
+            Ensure that the data within the retention SRAM survives ALL low power entry-exit
+            variations.
+
+            TODO: how to deal with the scramble keys on low power exit?
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // OTP (pre-verified IP) integration tests:
+    // TODO: more testing needed on OTP.
+    {
+      name: chip_otp_init
+      desc: '''Verify the OPT initialization on chip power up.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_keys
+      desc: '''Verify the proliferation of keys to security peripherals.
+
+            Ensure that the correct set of keys are provided to sram, sram_ret, flash, keymgr and
+            the OTBN. X-ref'ed with those individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_lc_program
+      desc: '''Verify the OTP program req from LC.
+
+            Ensure that the correct set of keys are provided to sram, sram_ret, flash, keymgr and
+            the OTBN. X-ref'ed with those individual IP tests.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // FLASH (pre-verified IP) integration tests:
+    {
+      name: chip_flash_host_access
+      desc: '''Verify access to the flash mem.
+
+            Verify that the CPU can read the flash mem contents.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_flash_ctrl_ops
+      desc: '''Verify flash ctrl ops.
+
+            Verify that the CPU can read / program and erase the flash mem. Pick an operation on
+            both data and info partitions. Erase both, bank and page. SW validates the reception of
+            prog empty, prog level, rd full, rd level and op done interrupts.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_flash_ctrl_scramble
+      desc: '''Verify flash scrambling via the controller.
+
+            Verify that the CPU can program and read back data via the flash ctrl with scrambling
+            enabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_flash_scramble
+      desc: '''Verify flash scrambling via the host interface.
+
+            Verify that the CPU read data from the flash with scrambling enabled.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_flash_ast_pwr_dwn
+      desc: '''Verify that power down signaling from AST to flash.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_flash_test_mode
+      desc: '''Verify that flash test mode and flash volt signaling from chip IOs.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+
+    //////////////////////
+    // CrOS Peripherals //
+    // RBOX, DCD        //
+    //////////////////////
+
+    // RBOX (pre-verified IP) integration tests:
+    {
+      name: chip_rbox_key_pass_through
+      desc: '''Verify pass through of key in to key out.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_pwrb_pass_through
+      desc: '''Verify pass through of power button signal in to out.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_ac_present_in
+      desc: '''Verify the RBOX can detect AC present input.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_batt_en_out
+      desc: '''Verify the RBOX can signal battery enabled output.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_ec_entering_rw_in
+      desc: '''Verify the RBOX can detect EC entering RW mode input.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_ec_in_rw_out
+      desc: '''Verify the RBOX can signal EC in RW mode output.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_rbox_ec_reset_l_out
+      desc: '''Verify the RBOX can signal EC reset output.
+
+             Verify EC reset pulse duration. Verify open drain when not active. Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_rbox_ios_val
+      desc: '''Verify the RBOX can signal EC reset output.
+
+             Verify EC reset pulse duration. Verify open drain when not active. Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+
+    // DCD (pre-verified IP) integration tests:
+    {
+      name: chip_sleep_dcd_ast_adc_pd
+      desc: '''Verify that in deep sleep, DCD can signal the ADC within the AST to power down.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sleep_dcd_debug_cable_wake
+      desc: '''Verify that the debug cable detection logic can wake up the chip from sleep.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_dcd_ast_adc
+      desc: '''Verify that the DCD can use the ADC within AST to know the voltage level.
+
+             Details TBD. SW test validates the reception of debug cable update interrupt.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_dcd_por_l
+      desc: '''Verify the POR reset input to DCD.
+
+             This sort of also tracks the testing of DCD surviving low power entry/exit.
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+
+    ////////////////////////
+    // Analog Peripherals //
+    // AST, SENSOR_CTRL   //
+    ////////////////////////
+
+    // AST (pre-verified IP) integration tests:
+    {
+      name: chip_ast_clk_outputs
+      desc: '''Verify that the AST generates the 4 clocks when requested by the clkmgr.
+
+            Verify the clock frequencies are reasonably accurate. Verify that when the clkmgr
+            deasserts the enable (on account of low power entry), the clocks are turned off. Verify
+            that when turned on (low power exit), the clocks are glitch free.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ast_clk_rst_inputs
+      desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ast_sys_clk_jitter
+      desc: '''Verify that the AST sys clk jitter control.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ast_usb_clk_calib
+      desc: '''Verify the USB clk calibration signaling.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_ast_alerts
+      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
+
+             X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
+             '''
+      milestone: V2
+      tests: []
+    }
+
+    // SENSOR_CTRL tests:
+    {
+      name: chip_sensor_ctrl_ast_alerts
+      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_sensor_ctrl_ast_status
+      desc: '''Verify the io power ok status from AST.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+
+    ////////////////////////////
+    // System level scenarios //
+    ////////////////////////////
+
+    {
+      name: chip_sw_boot
+      desc: '''Verify the full flash image download with bootstrap signal set.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_secure_boot
+      desc: '''Verify the secure boot flow.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_prod_os
+      desc: '''Run the OpenTitan TockOS that will be deployed in production.
+
+             Run the TockOS image in DV. The advantage of doing so is running Tock with the full
+             suite of design assertions and other checks in place in the DV environment.
+             '''
+      milestone: V2
+      tests: ["chip_opentitan_tock"]
+    }
+    {
+      name: chip_lc_walkthrough
+      desc: '''Walk through the life cycle stages reseting the chip each time.
+
+             Verify that the features that should indeed be disabled are indeed disabled.
+             '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_device_ownership
+      desc: '''Walk through device ownership stages and flows.
+
+             Details TBD.
+             '''
+      milestone: V2
+      tests: []
     }
   ]
 }
