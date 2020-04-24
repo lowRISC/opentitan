@@ -188,12 +188,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // check if escalation signal's duration length is correct
   virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
-    `uvm_info(`gfn, $sformatf("esc signal_%0d triggered, cycle cnt is %0d", esc_sig_i, cycle_cnt),
-              UVM_LOW)
     if (ral.regen.get_mirrored_value()) begin
       // if ping response enabled, will not check cycle count if esc ping is enabled
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
+      `uvm_info(`gfn, $sformatf("esc signal_%0d triggered, cycle cnt is %0d",
+                                esc_sig_i, cycle_cnt), UVM_LOW)
     end
     esc_cnter_per_signal[esc_sig_i] = 0;
     esc_sig_class[esc_sig_i] = 0;
