@@ -91,6 +91,10 @@
       ACTIVE state) for any reason.
       ''',
 
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclWrite"]
+
       fields: [
         { bits: "0",
           name: "EN",
@@ -131,6 +135,8 @@
                 '''
             },
           ]
+          tags: [// This bit self clears after being written.  It also may trigger a low power entry
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         },
 
         { bits: "4",
@@ -221,7 +227,10 @@
           ''',
           resval: "0",
         },
-      ]
+      ],
+      tags: [// This bit triggers a payload synchronization and self clears when complete.
+             // Do not write this bit as there will be side effects and the value will not persist
+             "excl:CsrNonInitTests:CsrExclWrite"]
     },
 
     { name: "WAKEUP_EN_REGWEN",
