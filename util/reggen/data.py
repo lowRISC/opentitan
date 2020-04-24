@@ -8,7 +8,6 @@ from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 # helper funtion that strips trailing number from name
 # TODO: this is a workaround, should solve this in validate.py
 def _get_basename(name):
-    outname = ""
     for (k, c) in enumerate(name[::-1]):
         if not str.isdigit(c):
             return name[0:len(name) - k]
@@ -158,8 +157,8 @@ class Reg():
         # or if this is the last multiregister level in a nested multiregister
         if not isinstance(self, MultiReg):
             dims = [len(self.get_fields_flat())]
-        if  isinstance(self, MultiReg) and   \
-            not isinstance(self.fields[0], MultiReg):
+        if isinstance(self, MultiReg) and\
+           not isinstance(self.fields[0], MultiReg):
             if self.ishomog:
                 dims = [len(self.get_fields_flat())]
             else:

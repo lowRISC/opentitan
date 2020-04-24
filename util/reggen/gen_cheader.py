@@ -7,7 +7,6 @@ Generate C header from validated register JSON tree
 
 import io
 import logging as log
-import re
 import sys
 import textwrap
 import warnings
@@ -47,9 +46,10 @@ def gen_define(name, args, body, existing_defines, indent='  '):
     Arguments:
     name - Name of the #define
     args - List of arguments for the define, provide an empty list if there are
-    none
+        none
     body - Body of the #define
-    existing_defines - set of already generated define names. Error if `name` is in `existing_defines`.
+    existing_defines - set of already generated define names.
+        Error if `name` is in `existing_defines`.
     indent - Gives string to prepend on any new lines produced by
     wrapping (default '  ')
 
@@ -245,29 +245,31 @@ def gen_cdefine_multireg(outstr, register, component, regwidth, rnames,
                              existing_defines)
 
 
-def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth, existing_defines):
+def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
+                                 existing_defines):
     fieldlsb = interrupt['bitinfo'][2]
     iname = interrupt['name']
     defname = as_define(component + '_INTR_COMMON_' + iname)
 
     if interrupt['bitinfo'][1] == 1:
         # single bit
-        genout(outstr,
-                gen_define(defname, [], str(fieldlsb), existing_defines))
+        genout(outstr, gen_define(defname, [], str(fieldlsb),
+                                  existing_defines))
     else:
         # multiple bits (unless it is the whole register)
         if interrupt['bitinfo'][1] != regwidth:
             mask = interrupt['bitinfo'][0] >> fieldlsb
             genout(
                 outstr,
-                gen_define(defname + '_MASK', [], hex(mask),
-                            existing_defines))
+                gen_define(defname + '_MASK', [], hex(mask), existing_defines))
             genout(
                 outstr,
                 gen_define(defname + '_OFFSET', [], str(fieldlsb),
-                            existing_defines))
+                           existing_defines))
 
-def gen_cdefines_interrupts(outstr, regs, component, regwidth, existing_defines):
+
+def gen_cdefines_interrupts(outstr, regs, component, regwidth,
+                            existing_defines):
     # no_auto_intr_regs controls whether interrupt registers are automatically
     # generated from the interrupt_list. This key could be 'true' or 'false',
     # but might also be True or False (the python booleans).
@@ -290,7 +292,8 @@ def gen_cdefines_interrupts(outstr, regs, component, regwidth, existing_defines)
     interrupts = regs.get('interrupt_list', [])
     genout(outstr, format_comment(first_line("Common Interrupt Offsets")))
     for intr in interrupts:
-        gen_cdefines_interrupt_field(outstr, intr, component, regwidth, existing_defines)
+        gen_cdefines_interrupt_field(outstr, intr, component, regwidth,
+                                     existing_defines)
     genout(outstr, '\n')
 
 
@@ -313,7 +316,8 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
     gen_cdefines_module_params(outstr, regs, component, regwidth,
                                existing_defines)
 
-    gen_cdefines_interrupts(outstr, regs, component, regwidth, existing_defines)
+    gen_cdefines_interrupts(outstr, regs, component, regwidth,
+                            existing_defines)
 
     for x in registers:
         if 'reserved' in x:
@@ -348,7 +352,7 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
     if src_copy != '':
         genout(outfile, '// Copyright information found in source file:\n')
         genout(outfile, '// ' + src_copy + '\n\n')
-    if src_lic != None:
+    if src_lic is not None:
         genout(outfile, '// Licensing information found in source file:\n')
         for line in src_lic.splitlines():
             genout(outfile, '// ' + line + '\n')

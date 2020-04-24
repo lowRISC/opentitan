@@ -5,8 +5,6 @@
 Generates the documentation for the register tool
 
 """
-import sys
-
 from reggen import validate
 
 
@@ -199,7 +197,7 @@ doc_tail = """
 
 
 def doc_tbl_head(outfile, use):
-    if (use != None):
+    if use is not None:
         genout(outfile, "\nKey | Kind | Type | Description of Value\n")
         genout(outfile, "--- | ---- | ---- | --------------------\n")
     else:
@@ -208,7 +206,7 @@ def doc_tbl_head(outfile, use):
 
 
 def doc_tbl_line(outfile, key, use, desc):
-    if use != None:
+    if use is not None:
         genout(
             outfile, key + " | " + validate.key_use[use] + " | " +
             validate.val_types[desc[0]][0] + " | " + desc[1] + "\n")
@@ -233,9 +231,9 @@ def document(outfile):
     for x in validate.hwaccess_permitted:
         doc_tbl_line(outfile, x, None, validate.hwaccess_permitted[x][0])
 
-    genout(outfile,
-           "\n\nThe top level of the JSON is a group containing "\
-           "the following keys:\n")
+    genout(
+        outfile, "\n\nThe top level of the JSON is a group containing "
+        "the following keys:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.top_required:
         doc_tbl_line(outfile, x, 'r', validate.top_required[x])
@@ -256,9 +254,9 @@ def document(outfile):
         doc_tbl_line(outfile, x, 'a', validate.reg_added[x])
     genout(outfile, register_example)
 
-    genout(outfile,
-           "\n\nIn the fields list each field definition is a group "\
-           "containing:\n")
+    genout(
+        outfile, "\n\nIn the fields list each field definition is a group "
+        "containing:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.field_required:
         doc_tbl_line(outfile, x, 'r', validate.field_required[x])
@@ -278,8 +276,8 @@ def document(outfile):
         doc_tbl_line(outfile, x, 'a', validate.enum_added[x])
 
     genout(
-        outfile, "\n\nThe list of registers may include single entry groups "\
-          "to control the offset, open a window or generate registers:\n")
+        outfile, "\n\nThe list of registers may include single entry groups "
+        "to control the offset, open a window or generate registers:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.list_optone:
         doc_tbl_line(outfile, x, 'o', validate.list_optone[x])

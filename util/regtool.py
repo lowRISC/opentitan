@@ -7,13 +7,11 @@ r"""Command-line tool to validate and convert register hjson
 """
 import argparse
 import logging as log
-import os
 import re
 import sys
 from pathlib import PurePath
 
 import hjson
-import pkg_resources
 
 from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_html, gen_json,
                     gen_rtl, gen_fpv, gen_selfdoc, validate, version)
@@ -70,9 +68,10 @@ def main():
     parser.add_argument('-f',
                         action='store_true',
                         help='Output as FPV CSR rw assertion module')
-    parser.add_argument('--outdir', '-t',
-                        help='Target directory for generated RTL, '\
-                             'tool uses ../rtl if blank.')
+    parser.add_argument('--outdir',
+                        '-t',
+                        help='Target directory for generated RTL; '
+                        'tool uses ../rtl if blank.')
     parser.add_argument('--outfile',
                         '-o',
                         type=argparse.FileType('w'),
@@ -107,15 +106,24 @@ def main():
 
     verbose = args.verbose
 
-    if args.j: format = 'json'
-    elif args.c: format = 'compact'
-    elif args.d: format = 'html'
-    elif args.doc: format = 'doc'
-    elif args.r: format = 'rtl'
-    elif args.s: format = 'dv'
-    elif args.f: format = 'fpv'
-    elif args.cdefines: format = 'cdh'
-    elif args.ctdefines: format = 'cth'
+    if args.j:
+        format = 'json'
+    elif args.c:
+        format = 'compact'
+    elif args.d:
+        format = 'html'
+    elif args.doc:
+        format = 'doc'
+    elif args.r:
+        format = 'rtl'
+    elif args.s:
+        format = 'dv'
+    elif args.f:
+        format = 'fpv'
+    elif args.cdefines:
+        format = 'cdh'
+    elif args.ctdefines:
+        format = 'cth'
 
     if (verbose):
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
@@ -197,13 +205,13 @@ def main():
         lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
         for line in srcfull.splitlines():
             mat = copy.match(line)
-            if mat != None:
+            if mat is not None:
                 src_copy += mat.group(1)
             mat = spdx.match(line)
-            if mat != None:
+            if mat is not None:
                 found_spdx = mat.group(1)
             mat = lunder.match(line)
-            if mat != None:
+            if mat is not None:
                 found_lunder = mat.group(1)
         if found_lunder:
             src_lic = found_lunder
