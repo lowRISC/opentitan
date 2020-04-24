@@ -26,6 +26,8 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   int      max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
 
+  uvm_verbosity verbosity = UVM_LOW;
+
   constraint enable_one_alert_c {
     $onehot(alert_en);
   }
@@ -61,7 +63,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
       `uvm_info(`gfn,
           $sformatf("starting seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
-          i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), UVM_LOW)
+          i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
 
       // write initial settings (enable and mapping csrs)
       alert_handler_init(.intr_en(intr_en), .alert_en(alert_en), .alert_class(alert_class_map),
