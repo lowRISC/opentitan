@@ -228,6 +228,7 @@ def get_clk_name(clk):
     else:
         return "clk_{}_i".format(clk)
 
+
 def get_reset_path(resets, name):
     """Return the appropriate reset path given name
     """

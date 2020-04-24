@@ -66,9 +66,11 @@ top_added = {}
 
 pinmux_required = {}
 pinmux_optional = {
-    'num_mio': ['d', 'Number of Multiplexed IOs'\
-                ' If padctrl is used, this value will be replaced with #pads'\
-                ' - #DIO'],
+    'num_mio': [
+        'd', 'Number of Multiplexed IOs'
+        ' If padctrl is used, this value will be replaced with #pads'
+        ' - #DIO'
+    ],
     'dio_modules': ['l', 'List of Dedicated IOs.'],
     'mio_modules': ['l', 'List of Multiplexed IPs/IOs'],
     'nc_modules': ['l', 'List of NotConnected IOs'],
@@ -172,19 +174,23 @@ def check_clock_groups(top):
 
         # Check sw_cg values are valid
         if group['sw_cg'] not in ['yes', 'no', 'hint']:
-            log.error("Incorrect attribute for sw_cg: {}".format(group['sw_cg']))
+            log.error("Incorrect attribute for sw_cg: {}".format(
+                group['sw_cg']))
             error += 1
 
         # Check combination of sw_cg and unique are valid
         unique = group['unique'] if 'unique' in group else 'no'
         if group['sw_cg'] == 'no' and unique != 'no':
-            log.error("Incorrect attribute combination.  When sw_cg is no, unique must be no")
+            log.error(
+                "Incorrect attribute combination.  When sw_cg is no, unique must be no"
+            )
             error += 1
 
         if error:
             break
 
     return error
+
 
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # all defined clock/reset nets
@@ -308,8 +314,7 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
                   (prefix, inst['name']))
 
     missing_port = [
-        port for port in top['clock_srcs'].keys()
-        if port not in inst_port_list
+        port for port in top['clock_srcs'].keys() if port not in inst_port_list
     ]
 
     if missing_port:
@@ -319,8 +324,7 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
         [log.error("%s" % port) for port in missing_port]
 
     missing_net = [
-        net for port, net in top['clock_srcs'].items()
-        if net not in clock_srcs
+        net for port, net in top['clock_srcs'].items() if net not in clock_srcs
     ]
 
     if missing_net:
@@ -342,26 +346,26 @@ def validate_top(top, ipobjs, xbarobjs):
 
     component = top['name']
 
-    ## MODULE check
+    # MODULE check
     err, ip_idxs = check_target(top, ipobjs, Target(TargetType.MODULE))
     error += err
 
-    ## XBAR check
+    # XBAR check
     err, xbar_idxs = check_target(top, xbarobjs, Target(TargetType.XBAR))
     error += err
 
-    ## MEMORY check
+    # MEMORY check
 
-    ## Clock / Reset check
+    # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
 
-    ## Clock group check
+    # Clock group check
     error += check_clock_groups(top)
 
-    ## RV_PLIC check
+    # RV_PLIC check
 
-    ## PINMUX & PADS check
-    if not "padctrl" in top:
+    # PINMUX & PADS check
+    if "padctrl" not in top:
         log.warning("padsctrl field doesn't exist in top. Skipping pads \
                      generation. Top input/output are directly connected from \
                      peripherals.")
@@ -369,7 +373,7 @@ def validate_top(top, ipobjs, xbarobjs):
     else:
         error += check_padctrl(top, component)
 
-    if not "pinmux" in top:
+    if "pinmux" not in top:
         log.warning("Top {} has no 'pinmux' field. Please consider specifying \
                         pinmux and pads configuration")
         top["pinmux"] = OrderedDict()
