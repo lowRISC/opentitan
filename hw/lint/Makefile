@@ -16,6 +16,7 @@ REPORT_DIR ?= reports
 
 IPS ?=  ip-aes                 \
         ip-alert_handler       \
+        ip-clkmgr              \
         ip-flash_ctrl          \
         ip-gpio                \
         ip-hmac                \
