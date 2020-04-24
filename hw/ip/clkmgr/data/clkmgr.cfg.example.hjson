@@ -1,0 +1,118 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// The following is an example configuration of the clock attribute structure needed
+// by clkmgr.
+// This same format is generated as part of topgen.
+
+// Clock Group attributes
+// name: name of group.
+//
+// sw_cfg: whether software is allowed to gate the clock
+// "no"   - software is not allowed to gate clocks
+// "yes"  - software is allowed to gate clocks
+// "hint" - software can provide a hint, and hw controls the rest
+//
+// unique: whether each module in the group can be separately gated
+//         if sw_cfg is "no", this field has no meaning
+// "yes"  - each clock is individually controlled
+// "no"   - the group is controlled as one single unit
+//
+// The powerup and proc groups are unique.
+// The powerup group of clocks do not need through the clock
+// controller as they manage clock controller behavior
+// The proc group is not peripheral, and direclty hardwired
+
+{
+  clocks:
+  {
+    srcs:
+    [
+      {
+        name: main
+        freq: "100000000"
+      }
+      {
+        name: fixed
+        freq: "100000000"
+      }
+      {
+        name: usb_48mhz
+        freq: "48000000"
+      }
+    ]
+    groups:
+    [
+      {
+        name: powerup
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_powerup: fixed
+          clk_main_powerup: main
+          clk_usb_48mhz_powerup: usb_48mhz
+        }
+      }
+      {
+        name: trans
+        sw_cg: hint
+        unique: yes
+        clocks:
+        {
+          clk_main_aes: main
+          clk_main_hmac: main
+        }
+      }
+      {
+        name: infra
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_main_infra: main
+          clk_fixed_infra: fixed
+        }
+      }
+      {
+        name: secure
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_secure: fixed
+          clk_main_secure: main
+        }
+      }
+      {
+        name: peri
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_fixed_peri: fixed
+          clk_usb_48mhz_peri: usb_48mhz
+        }
+      }
+      {
+        name: timers
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_fixed_timers: fixed
+        }
+      }
+      {
+        name: proc
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_proc_main: main
+        }
+      }
+    ]
+  }
+}

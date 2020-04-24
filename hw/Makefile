@@ -8,6 +8,7 @@ REG_OUTPUT_SW_DIR ?= ${REG_OUTPUT_DIR}/sw
 
 IPS ?= aes           \
        alert_handler \
+       clkmgr        \
        flash_ctrl    \
        gpio          \
        hmac          \
