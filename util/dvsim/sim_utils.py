@@ -66,13 +66,15 @@ def xcelium_cov_summary_table(buf):
             values = []
             cov_total = None
             for metric in items.keys():
-                if items[metric]['total'] == 0: values.append("-- %")
+                if items[metric]['total'] == 0:
+                    values.append("-- %")
                 else:
                     value = items[metric]['covered'] / items[metric][
                         'total'] * 100
                     value = "{0:.2f} %".format(round(value, 2))
                     values.append(value)
-                    if metric == 'Score': cov_total = value
+                    if metric == 'Score':
+                        cov_total = value
             return [metrics, values], cov_total, None
 
     # If we reached here, then we were unable to extract the coverage.

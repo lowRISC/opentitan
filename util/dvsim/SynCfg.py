@@ -6,15 +6,13 @@ Class describing synthesis configuration object
 """
 
 import logging as log
-import sys
 from pathlib import Path
 
+import hjson
 from tabulate import tabulate
 
-from Deploy import *
-from Modes import *
 from OneShotCfg import OneShotCfg
-from utils import *
+from utils import subst_wildcards
 
 
 class SynCfg(OneShotCfg):
@@ -243,7 +241,8 @@ class SynCfg(OneShotCfg):
 
                     # go through submodules
                     for name in self.result["area"]["instances"].keys():
-                        if name == self.result["top"]: continue
+                        if name == self.result["top"]:
+                            continue
                         row = [name]
                         for field in ["comb", "buf", "reg", "macro", "total"]:
                             row += [
@@ -329,11 +328,11 @@ class SynCfg(OneShotCfg):
 
                     total_power = sum(power)
 
-                    row = [_create_entry(power[0], 1.0E-3) + " / " + \
+                    row = [_create_entry(power[0], 1.0E-3) + " / " +
                            _create_entry(power[0], 1.0E-3, total_power),
-                           _create_entry(power[1], 1.0E-3) + " / " + \
+                           _create_entry(power[1], 1.0E-3) + " / " +
                            _create_entry(power[1], 1.0E-3, total_power),
-                           _create_entry(power[2], 1.0E-3) + " / " + \
+                           _create_entry(power[2], 1.0E-3) + " / " +
                            _create_entry(power[2], 1.0E-3, total_power),
                            _create_entry(total_power, 1.0E-3)]
 

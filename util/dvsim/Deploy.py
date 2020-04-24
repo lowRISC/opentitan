@@ -1,24 +1,22 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""
-Classes
-"""
 
 import logging as log
+import os
 import pprint
 import random
 import re
 import shlex
+import subprocess
 import sys
 import time
 from collections import OrderedDict
 
-import hjson
 from tabulate import tabulate
 
-from sim_utils import *
-from utils import *
+from sim_utils import get_cov_summary_table
+from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
 
 
 class Deploy():
@@ -47,7 +45,8 @@ class Deploy():
             return pprint.pformat(self.__dict__)
         else:
             ret = self.cmd
-            if self.sub != []: ret += "\nSub:\n" + str(self.sub)
+            if self.sub != []:
+                ret += "\nSub:\n" + str(self.sub)
             return ret
 
     def __str__(self):
@@ -104,13 +103,13 @@ class Deploy():
 
         ddict_keys = ddict.keys()
         for key in self.mandatory_cmd_attrs.keys():
-            if self.mandatory_cmd_attrs[key] == False:
+            if self.mandatory_cmd_attrs[key] is False:
                 if key in ddict_keys:
                     setattr(self, key, ddict[key])
                     self.mandatory_cmd_attrs[key] = True
 
         for key in self.mandatory_misc_attrs.keys():
-            if self.mandatory_misc_attrs[key] == False:
+            if self.mandatory_misc_attrs[key] is False:
                 if key in ddict_keys:
                     setattr(self, key, ddict[key])
                     self.mandatory_misc_attrs[key] = True
@@ -171,7 +170,8 @@ class Deploy():
         args = shlex.split(self.cmd)
         try:
             # If renew_odir flag is True - then move it.
-            if self.renew_odir: self.odir_limiter(odir=self.odir)
+            if self.renew_odir:
+                self.odir_limiter(odir=self.odir)
             os.system("mkdir -p " + self.odir)
             # Dump all env variables for ease of debug.
             with open(self.odir + "/env_vars", "w") as f:
@@ -192,7 +192,8 @@ class Deploy():
             Deploy.dispatch_counter += 1
         except IOError:
             log.error('IO Error: See %s', self.log)
-            if self.log_fd: self.log_fd.close()
+            if self.log_fd:
+                self.log_fd.close()
             self.status = "K"
 
     def odir_limiter(self, odir, max_odirs=-1):
@@ -233,7 +234,8 @@ class Deploy():
                 dirs = dirs.replace('\n', ' ')
                 list_dirs = dirs.split()
                 num_dirs = len(list_dirs)
-                if max_odirs == -1: max_odirs = self.max_odirs
+                if max_odirs == -1:
+                    max_odirs = self.max_odirs
                 num_rm_dirs = num_dirs - max_odirs
                 if num_rm_dirs > -1:
                     rm_dirs = run_cmd(find_cmd +
@@ -276,7 +278,8 @@ class Deploy():
                 self.status = "F"
 
             # Return if status is fail - no need to look for pass patterns.
-            if self.status == 'F': return
+            if self.status == 'F':
+                return
 
             # If fail patterns were not found, ensure pass patterns indeed were.
             for pass_pattern in self.pass_patterns:
@@ -292,7 +295,6 @@ class Deploy():
 
     # Recursively set sub-item's status if parent item fails
     def set_sub_status(self, status):
-        if self.sub == []: return
         for sub_item in self.sub:
             sub_item.status = status
             sub_item.set_sub_status(status)
@@ -305,13 +307,12 @@ class Deploy():
             new_link = self.sim_cfg.links[self.status] + "/" + self.odir_ln
             cmd = "ln -s " + self.odir + " " + new_link + "; "
             cmd += "rm " + old_link
-            try:
-                os.system(cmd)
-            except Exception as e:
+            if os.system(cmd):
                 log.error("Cmd \"%s\" could not be run", cmd)
 
     def get_status(self):
-        if self.status != "D": return
+        if self.status != "D":
+            return
         if self.process.poll() is not None:
             self.log_fd.close()
             self.set_status()
@@ -328,7 +329,8 @@ class Deploy():
         if self.status == "D" and self.process.poll() is None:
             self.kill_remote_job()
             self.process.kill()
-            if self.log_fd: self.log_fd.close()
+            if self.log_fd:
+                self.log_fd.close()
             self.status = "K"
         # recurisvely kill sub target
         elif len(self.sub):
@@ -339,7 +341,7 @@ class Deploy():
         '''
         If jobs are run in remote server, need to use another command to kill them.
         '''
-        #TODO: Currently only support lsf, may need to add support for GCP later.
+        # TODO: Currently only support lsf, may need to add support for GCP later.
 
         # If use lsf, kill it by job ID.
         if re.match("^bsub", self.sim_cfg.job_prefix):
@@ -350,7 +352,7 @@ class Deploy():
             if rslt != "":
                 job_id = rslt.split('Job <')[1].split('>')[0]
                 try:
-                    p = subprocess.run(["bkill", job_id], check=True)
+                    subprocess.run(["bkill", job_id], check=True)
                 except Exception as e:
                     log.error("%s: Failed to run bkill\n", e)
 
@@ -367,8 +369,10 @@ class Deploy():
 
         incr_hh = False
         Deploy.ss, incr_mm = _incr_ovf_60(Deploy.ss)
-        if incr_mm: Deploy.mm, incr_hh = _incr_ovf_60(Deploy.mm)
-        if incr_hh: Deploy.hh += 1
+        if incr_mm:
+            Deploy.mm, incr_hh = _incr_ovf_60(Deploy.mm)
+        if incr_hh:
+            Deploy.hh += 1
 
     @staticmethod
     def deploy(items):
@@ -470,7 +474,8 @@ class Deploy():
         while not all_done:
             # Get status of dispatched items.
             for item in dispatched_items:
-                if item.status == "D": item.get_status()
+                if item.status == "D":
+                    item.get_status()
                 if item.status != status[item.target][item]:
                     print_status_flag = True
                     if item.status != "D":
@@ -716,7 +721,8 @@ class RunTest(Deploy):
         # first. If --fixed-seed <val> is also passed, the subsequent tests
         # (once the custom seeds are consumed) will be run with the fixed seed.
         if not RunTest.seeds:
-            if RunTest.fixed_seed: return RunTest.fixed_seed
+            if RunTest.fixed_seed:
+                return RunTest.fixed_seed
             for i in range(1000):
                 seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)

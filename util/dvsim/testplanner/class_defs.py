@@ -32,7 +32,8 @@ class TestplanEntry():
         self.desc = desc
         self.milestone = milestone
         self.tests = tests
-        if not self.do_substitutions(substitutions): sys.exit(1)
+        if not self.do_substitutions(substitutions):
+            sys.exit(1)
 
     @staticmethod
     def is_valid_entry(kv_pairs):
@@ -40,7 +41,7 @@ class TestplanEntry():
         from it.
         '''
         for field in TestplanEntry.fields:
-            if not field in kv_pairs.keys():
+            if field not in kv_pairs.keys():
                 print(
                     "Error: input key-value pairs does not contain all of the ",
                     "required fields to create an entry:\n", kv_pairs,
@@ -65,7 +66,8 @@ class TestplanEntry():
         key=value pairs provided by the substitutions arg. If wildcards are present but no
         replacement is available, then the wildcards are replaced with an empty string.
         '''
-        if substitutions == []: return True
+        if substitutions == []:
+            return True
         for kv_pair in substitutions:
             resolved_tests = []
             [(k, v)] = kv_pair.items()
@@ -98,7 +100,8 @@ class TestplanEntry():
                                 return False
                 else:
                     resolved_tests.append(test)
-            if resolved_tests != []: self.tests = resolved_tests
+            if resolved_tests != []:
+                self.tests = resolved_tests
 
         # if wildcards have no available replacements in substitutions arg, then
         # replace with empty string
@@ -108,7 +111,8 @@ class TestplanEntry():
             if len(match) > 0:
                 for item in match:
                     resolved_tests.append(test.replace("{" + item + "}", ""))
-        if resolved_tests != []: self.tests = resolved_tests
+        if resolved_tests != []:
+            self.tests = resolved_tests
         return True
 
     def map_regr_results(self, regr_results, map_full_testplan=True):
@@ -183,7 +187,8 @@ class Testplan():
     def add_entry(self, entry):
         '''add a new entry into the testplan
         '''
-        if self.entry_exists(entry): sys.exit(1)
+        if self.entry_exists(entry):
+            sys.exit(1)
         self.entries.append(entry)
 
     def sort(self):
@@ -226,7 +231,8 @@ class Testplan():
                                            "passing": 0,
                                            "total": 0
                                        }])
-            if ms != "N.A.": totals[ms].tests = []
+            if ms != "N.A.":
+                totals[ms].tests = []
 
         for entry in self.entries:
             regr_results = entry.map_regr_results(regr_results,
@@ -236,7 +242,7 @@ class Testplan():
         # extract unmapped tests from regr_results and create 'unmapped' entry
         unmapped_regr_results = []
         for regr_result in regr_results:
-            if not "mapped" in regr_result.keys():
+            if "mapped" not in regr_result.keys():
                 unmapped_regr_results.append(regr_result)
 
         unmapped = TestplanEntry(
@@ -265,7 +271,8 @@ class Testplan():
         regressions = {}
         for entry in self.entries:
             # Skip if milestone is "n.a."
-            if entry.milestone not in entry.milestones[1:]: continue
+            if entry.milestone not in entry.milestones[1:]:
+                continue
             # if ms key doesnt exist, create one
             if entry.milestone not in regressions.keys():
                 regressions[entry.milestone] = []
@@ -314,10 +321,13 @@ class Testplan():
         for entry in self.entries:
             milestone = entry.milestone
             entry_name = entry.name
-            if milestone == "N.A.": milestone = ""
-            if entry_name == "N.A.": entry_name = ""
+            if milestone == "N.A.":
+                milestone = ""
+            if entry_name == "N.A.":
+                entry_name = ""
             for test in entry.tests:
-                if test["total"] == 0: pass_rate = "-- %"
+                if test["total"] == 0:
+                    pass_rate = "-- %"
                 else:
                     pass_rate = test["passing"] / test["total"] * 100
                     pass_rate = "{0:.2f} %".format(round(pass_rate, 2))
