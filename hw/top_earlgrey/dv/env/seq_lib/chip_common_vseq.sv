@@ -16,6 +16,13 @@ class chip_common_vseq extends chip_base_vseq;
     cfg.jtag_spi_n_vif.drive(1'b0);
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
+    // TODO rstmgr takes some time to release reset for IPs. Need to find a better way to know when
+    // reset is released by rstmgr
+    cfg.clk_rst_vif.wait_clks(100);
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body

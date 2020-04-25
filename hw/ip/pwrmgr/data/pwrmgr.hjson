@@ -104,6 +104,9 @@
           resval: "1",
         },
       ]
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
     },
 
 
@@ -201,6 +204,8 @@
           ]
         },
       ],
+      tags: [// The regwen for this reg is RO. CSR seq can't support to check this reg
+             "excl:CsrNonInitTests:CsrExclCheck"]
     },
 
     { name: "CFG_CDC_SYNC",
@@ -228,6 +233,9 @@
           resval: "0",
         },
       ]
+      tags: [// This bit triggers a payload synchronization and self clears when complete.
+             // Do not write this bit as there will be side effects and the value will not persist
+             "excl:CsrNonInitTests:CsrExclCheck"]
     },
 
     { name: "WAKEUP_EN_REGWEN",
@@ -380,10 +388,9 @@
           ''',
         },
       ]
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
     },
-
-
-
-
   ]
 }
