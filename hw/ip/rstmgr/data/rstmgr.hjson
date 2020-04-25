@@ -101,6 +101,8 @@
             resval: 1,
         },
       ]
+      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+             "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "USB_REGEN",
@@ -117,6 +119,8 @@
             resval: 1,
         },
       ]
+      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+             "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "RST_SPI_DEVICE_N",
@@ -135,6 +139,8 @@
             resval: 1,
         },
       ]
+      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+             "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "RST_USB_N",
@@ -153,6 +159,8 @@
             resval: 1,
         },
       ]
+      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+             "excl:CsrAllTests:CsrExclWrite"]
     }
   ]
 }

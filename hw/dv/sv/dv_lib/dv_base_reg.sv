@@ -74,6 +74,7 @@ class dv_base_reg extends uvm_reg;
         // rw.value is a dynamic array
         "W1C": if (rw.value[0][0] == 1'b1) set_locked_regs_access("RO");
         "W0C": if (rw.value[0][0] == 1'b0) set_locked_regs_access("RO");
+        "RO": ; // if RO, it's updated by design, need to predict in scb
         default:`uvm_fatal(`gtn, $sformatf("enable register invalid access %s", field_access))
       endcase
     end
