@@ -81,6 +81,13 @@
       sw_dir: examples/hello_world
     }
     {
+      name: chip_aes_test
+      uvm_test_seq: chip_sw_test_base_vseq
+      sw_name: aes_test
+      sw_dir: tests
+      run_opts: ["+sw_test_timeout_ns=15000000"]
+    }
+    {
       name: chip_flash_test
       uvm_test_seq: chip_sw_test_base_vseq
       sw_name: flash_test
