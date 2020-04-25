@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/common.h"
-#include "sw/device/lib/uart.h"
+#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/testing/test_main.h"
 
 // The following plaintext, key and ciphertext are extracted from Appendix C of
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
@@ -25,17 +25,14 @@ static const uint8_t cipher_text_gold_32_1[16] = {
     0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
     0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89};
 
-int main(int argc, char **argv) {
-  bool has_error = false;
-
+bool test_main(void) {
   // Wait for AES unit being idle
   while (!aes_idle()) {
   }
 
   uint8_t buffer[16];
 
-  uart_init(kUartBaudrate);
-  uart_send_str("Running AES test\r\n");
+  LOG_INFO("Running AES test");
 
   // Setup AES config
   aes_cfg_t aes_cfg = {
@@ -52,9 +49,9 @@ int main(int argc, char **argv) {
 
   // Check against golden cipher text
   for (int i = 0; i < 16; i++) {
-    if (cipher_text_gold_32_1[i] != buffer[i]) {
-      has_error = true;
-    }
+    CHECK(cipher_text_gold_32_1[i] == buffer[i],
+          "Encoded cipher_text[%d] mismatched: exp = %x, actual = %x", i,
+          cipher_text_gold_32_1[i], buffer[i]);
   }
 
   // Decode
@@ -65,19 +62,13 @@ int main(int argc, char **argv) {
 
   // Check against input plain text
   for (int i = 0; i < 16; i++) {
-    if (plain_text_1[i] != buffer[i]) {
-      has_error = true;
-    }
+    CHECK(plain_text_1[i] == buffer[i],
+          "Decoded plain_text[%d] mismatched: exp = %x, actual = %x", i,
+          plain_text_1[i], buffer[i]);
   }
 
   // Clear
   aes_clear();
 
-  if (has_error) {
-    uart_send_str("FAIL!\r\n");
-  } else {
-    uart_send_str("PASS!\r\n");
-  }
-
-  return 0;
+  return true;
 }
