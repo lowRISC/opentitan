@@ -2,10 +2,60 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-subdir('dif')
+sw_tests = {}
 
-subdir('aes')
+subdir('dif')
 subdir('flash_ctrl')
 subdir('hmac')
 subdir('rv_timer')
 subdir('consecutive_irqs')
+
+aes_test_lib = declare_dependency(
+  link_with: static_library(
+    'aes_test_lib',
+    sources: ['aes_test.c'],
+    dependencies: [
+      sw_lib_aes,
+      sw_lib_uart,
+      sw_lib_mem,
+    ],
+  ),
+)
+
+sw_tests += {
+  'aes_test': aes_test_lib
+}
+
+foreach sw_test_name, sw_test_lib : sw_tests
+  foreach device_name, device_lib : sw_lib_arch_core_devices
+    sw_test_elf = executable(
+      sw_test_name + '_' + device_name,
+      sources: ['main.c'],
+      name_suffix: 'elf',
+      dependencies: [
+        riscv_crt,
+        sw_lib_base_log,
+        sw_test_lib,
+        device_lib,
+        sw_lib_testing_test_status,
+      ],
+    )
+
+    sw_test_embedded = custom_target(
+      sw_test_name + '_' + device_name,
+      command: make_embedded_target,
+      input: sw_test_elf,
+      output: make_embedded_target_outputs,
+      build_by_default: true,
+    )
+
+    custom_target(
+      sw_test_name + '_export_' + device_name,
+      command: export_embedded_target,
+      input: [sw_test_elf, sw_test_embedded],
+      output: sw_test_name + '_export_' + device_name,
+      build_always_stale: true,
+      build_by_default: true,
+    )
+  endforeach
+endforeach
