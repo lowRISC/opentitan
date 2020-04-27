@@ -29,6 +29,7 @@ filesets:
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
       - rtl/prim_flop_2sync.sv
+      - rtl/prim_sync_reqack.sv
       - rtl/prim_keccak.sv
       - rtl/prim_lfsr.sv
       - rtl/prim_packer.sv
