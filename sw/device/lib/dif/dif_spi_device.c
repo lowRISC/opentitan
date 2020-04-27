@@ -149,13 +149,11 @@ dif_spi_device_result_t dif_spi_device_irq_reset(const dif_spi_device_t *spi) {
     return kDifSpiDeviceResultBadArg;
   }
 
-  dif_spi_device_result_t err;
+  // Clear all interrupts at once.
+  mmio_region_write32(spi->base_addr, SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                      UINT32_MAX);
 
-  err = dif_spi_device_irq_clear_all(spi);
-  if (err != kDifSpiDeviceResultOk) {
-    return err;
-  }
-  err = dif_spi_device_set_irq_levels(spi, 0x80, 0x00);
+  dif_spi_device_result_t err = dif_spi_device_set_irq_levels(spi, 0x80, 0x00);
   if (err != kDifSpiDeviceResultOk) {
     return err;
   }
@@ -202,14 +200,36 @@ dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
 }
 
 dif_spi_device_result_t dif_spi_device_irq_clear_all(
-    const dif_spi_device_t *spi) {
+    const dif_spi_device_t *spi, dif_spi_device_irq_type_t type) {
   if (spi == NULL) {
     return kDifSpiDeviceResultBadArg;
   }
 
+  uint32_t bit_index = 0;
+  switch (type) {
+    case kDifSpiDeviceIrqTypeRxFull:
+      bit_index = SPI_DEVICE_INTR_STATE_RXF;
+      break;
+    case kDifSpiDeviceIrqTypeRxAboveLevel:
+      bit_index = SPI_DEVICE_INTR_STATE_RXLVL;
+      break;
+    case kDifSpiDeviceIrqTypeTxBelowLevel:
+      bit_index = SPI_DEVICE_INTR_STATE_TXLVL;
+      break;
+    case kDifSpiDeviceIrqTypeRxError:
+      bit_index = SPI_DEVICE_INTR_STATE_RXERR;
+      break;
+    case kDifSpiDeviceIrqTypeRxOverflow:
+      bit_index = SPI_DEVICE_INTR_STATE_RXOVERFLOW;
+      break;
+    case kDifSpiDeviceIrqTypeTxUnderflow:
+      bit_index = SPI_DEVICE_INTR_STATE_TXUNDERFLOW;
+      break;
+  }
+
   // The state register is a write-one-clear register.
   mmio_region_write32(spi->base_addr, SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                      UINT32_MAX);
+                      1 << bit_index);
 
   return kDifSpiDeviceResultOk;
 }

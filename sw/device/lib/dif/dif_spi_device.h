@@ -142,10 +142,11 @@ dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
  * Clears all active interrupt bits.
  *
  * @param spi A SPI device.
+ * @type Which IRQ type to clear.
  * @return The result of the operation.
  */
-dif_spi_device_result_t dif_spi_device_irq_clear_all(
-    const dif_spi_device_t *spi);
+dif_spi_device_result_t dif_spi_device_irq_clear(
+    const dif_spi_device_t *spi, dif_spi_device_irq_type_t type);
 
 /**
  * Enable or disable a particular interrupt.
