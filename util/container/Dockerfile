@@ -65,6 +65,7 @@ COPY --from=verilator /tools/verilator/${VERILATOR_VERSION} verilator/${VERILATO
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    clang-format-3.8 \
     git \
     gnupg2 \
     libc6-i386 \
