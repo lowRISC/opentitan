@@ -61,16 +61,16 @@ data and send outgoing data to the `data_o` port.
 
 {{< wavejson >}}
 { signal: [
-  { name: 'valid_i',      wave: '01.01.....0.'},
-  { name: 'data_i[3:0]',  wave: 'x==x===.==x.', data:'0 1 2 3 4 5 6'},
-  { name: 'mask_i[3:0]',  wave: 'x==x===.==x.', data:'F F F F F F F'},
-  { name: 'ready_o',      wave: '1.....01....'},
-  { name: 'valid_o',      wave: '0.10101..010'},
-  { name: 'data_o[5:0]',  wave: 'x.=x=x=.=x=x', data:'10h 08h 03h 15h 06h'},
-  { name: 'mask_o[5:0]',  wave: 'x.=x=x=.=x=x', data:'3Fh 3Fh 3Fh 3Fh Fh '},
-  { name: 'ready_i',      wave: '1.....01....'},
-  { name: 'flush_i',      wave: '0.........10'},
-  { name: 'flush_done_o', wave: '0.........10'},
+  { name: 'valid_i',      wave: '01.01......0.'},
+  { name: 'data_i[3:0]',  wave: 'x==x===.===x.', data:'0h 1h 2h 3h 4h 5h 6h 7h'},
+  { name: 'mask_i[3:0]',  wave: 'x==x===.===x.', data:'Fh Fh Fh Fh Fh Fh Ch Ch'},
+  { name: 'ready_o',      wave: '1.....01.....'},
+  { name: 'valid_o',      wave: '0.10101..0.10'},
+  { name: 'data_o[5:0]',  wave: 'x.=x=x=.=x.=x', data:'10h 08h 03h 15h 05h'},
+  { name: 'mask_o[5:0]',  wave: 'x.=x=x=.=x.=x', data:'3Fh 3Fh 3Fh 3Fh 0Fh '},
+  { name: 'ready_i',      wave: '1.....01.....'},
+  { name: 'flush_i',      wave: '0..........10'},
+  { name: 'flush_done_o', wave: '0..........10'},
   ],
 
   head:{
@@ -90,6 +90,10 @@ is asserted, it combines `0h` and incoming data `1h` and creates output `10h`
 `prim_packer` deasserts `ready_o` to indicate it cannot accept further data.
 `ready_o` is deasserted when `ready_i` is deasserted and there is insufficient
 internal storage available to store incoming data, as shown in cycle 6 above.
+
+At cycle 9 and 10, `mask_i` is used to only load 2 bits of data into the packer
+each cycle. This is to show how the packer allows misaligned writes (smaller
+than `InW`) to be packed together.
 
 At the end of the sequence, `flush_i` is asserted, and the remaining data is
 drained. In this case, `mask_o` isn't full to indicate only partial data is
