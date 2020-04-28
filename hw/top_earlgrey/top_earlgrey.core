@@ -109,3 +109,7 @@ targets:
     parameters:
       - SYNTHESIS=true
     toplevel: top_earlgrey
+
+  formal:
+    <<: *default_target
+    toplevel: top_earlgrey
