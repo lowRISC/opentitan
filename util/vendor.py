@@ -173,7 +173,7 @@ def format_list_to_str(list, width=70):
 
 
 def refresh_patches(desc):
-    if not 'patch_repo' in desc:
+    if 'patch_repo' not in desc:
         log.fatal('Unable to refresh patches, patch_repo not set in config.')
         sys.exit(1)
 
@@ -273,7 +273,7 @@ def git_add_commit(repo_base, paths, commit_msg):
                        check=True,
                        universal_newlines=True,
                        input=commit_msg)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         log.warning("Unable to create commit. Are there no changes?")
 
 
@@ -351,7 +351,6 @@ def main(argv):
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
     desc['_base_dir'] = vendor_file_base_dir
-
 
     desc_file_stem = desc_file_path.name.rsplit('.', 2)[0]
     lock_file_path = desc_file_path.with_name(desc_file_stem + '.lock.hjson')
