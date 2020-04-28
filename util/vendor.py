@@ -297,17 +297,13 @@ def refresh_patches(desc):
 
 def _export_patches(patchrepo_clone_url, target_patch_dir, upstream_rev,
                     patched_rev):
-    clone_dir = Path(tempfile.mkdtemp())
-    try:
+    with tempfile.TemporaryDirectory() as clone_dir:
         clone_git_repo(patchrepo_clone_url, clone_dir, patched_rev)
         rev_range = 'origin/' + upstream_rev + '..' + 'origin/' + patched_rev
         cmd = ['git', 'format-patch', '-o', str(target_patch_dir), rev_range]
         if not verbose:
             cmd += ['-q']
         subprocess.run(cmd, cwd=str(clone_dir), check=True)
-
-    finally:
-        shutil.rmtree(str(clone_dir), ignore_errors=True)
 
 
 def import_from_upstream(upstream_path, target_path, exclude_files=[]):
@@ -482,8 +478,7 @@ def main(argv):
     if args.refresh_patches:
         refresh_patches(desc)
 
-    clone_dir = Path(tempfile.mkdtemp())
-    try:
+    with tempfile.TemporaryDirectory() as clone_dir:
         # clone upstream repository
         upstream_new_rev = clone_git_repo(desc.upstream.url, clone_dir, rev=desc.upstream.rev)
 
@@ -581,9 +576,6 @@ def main(argv):
             commit_paths.append(lock_file_path)
 
             git_add_commit(commit_paths, commit_msg)
-
-    finally:
-        shutil.rmtree(str(clone_dir), ignore_errors=True)
 
     log.info('Import finished')
 
