@@ -1506,7 +1506,7 @@
       rstmgr.cpu
       pwrmgr.pwr_cpu
     ]
-    ext: []
+    external: []
   }
   xbar:
   [
@@ -3091,6 +3091,7 @@
         index: -1
       }
     ]
+    external: []
     definitions:
     [
       {

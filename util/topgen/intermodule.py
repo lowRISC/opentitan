@@ -231,10 +231,14 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', sig["struct"]), ('signame', sig_name),
                              ('width', sig["width"]), ('type', sig["type"])]))
 
-    if "ext" not in topcfg["inter_module"]:
-        topcfg["inter_module"]["ext"] = []
+    if "external" not in topcfg["inter_module"]:
+        topcfg["inter_module"]["external"] = []
+        topcfg["inter_signal"]["external"] = []
 
-    for s in topcfg["inter_module"]["ext"]:
+    if "external" not in topcfg["inter_signal"]:
+        topcfg["inter_signal"]["external"] = []
+
+    for s in topcfg["inter_module"]["external"]:
         sig_m, sig_s, sig_i = filter_index(s)
         assert sig_i is -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
@@ -242,12 +246,32 @@ def elab_intermodule(topcfg: OrderedDict):
         sig["top_signame"] = sig_name
         if "index" not in sig:
             sig["index"] = -1
-        # TODO: Create top port
 
-        log.warning(
-            "Currently external signal {instname}.{signame} isn't supported. "
-            "Use it at the top manually".format(instname=sig["inst_name"],
-                                                signame=sig["name"]))
+        # Add the port definition to top external ports
+        # TODO: Handle the suffix `_i`, `_o` correctly.
+        # For now, external doesn't create _i, _o
+        if sig["type"] == "req_rsp":
+            topcfg["inter_signal"]["external"].append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"] + "_req"),
+                             ('signame', sig_name + "_req"),
+                             ('width', sig["width"]), ('type', sig["type"]),
+                             ('direction',
+                              'out' if sig['act'] == "req" else 'in')]))
+            topcfg["inter_signal"]["external"].append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"] + "_rsp"),
+                             ('signame', sig_name + "_rsp"),
+                             ('width', sig["width"]), ('type', sig["type"]),
+                             ('direction',
+                              'in' if sig['act'] == "req" else 'out')]))
+        else:  # uni
+            topcfg["inter_signal"]["external"].append(
+                OrderedDict([('package', sig["package"]),
+                             ('struct', sig["struct"]), ('signame', sig_name),
+                             ('width', sig["width"]), ('type', sig["type"]),
+                             ('direction',
+                              'out' if sig['act'] == "req" else 'in')]))
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions
@@ -486,7 +510,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 .format(req_struct["width"], rsps_width))
             error += 1
 
-    for item in topcfg["inter_module"]["top"] + topcfg["inter_module"]["ext"]:
+    for item in topcfg["inter_module"]["top"] + topcfg["inter_module"][
+            "external"]:
         sig_m, sig_s, sig_i = filter_index(item)
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))

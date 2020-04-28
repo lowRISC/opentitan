@@ -263,7 +263,7 @@
     'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu'],
 
     // ext is to create port in the top.
-    'ext': [],
+    'external': [],
   },
 
   debug_mem_base_addr: "0x1A110000",

@@ -12,6 +12,8 @@ num_mio_inout = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["i
 
 num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
 
+num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
+
 max_miolength = max([len(x["name"]) for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] + top["pinmux"]["inouts"]])
 max_diolength = max([len(x["name"]) for x in top["pinmux"]["dio"]])
 
@@ -58,6 +60,13 @@ module top_${top["name"]} #(
   output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_o,
   output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_en_o,
     % endif
+  % endfor
+% endif
+% if num_im != 0:
+
+  // Inter-module Signal External type
+  % for sig in top["inter_signal"]["external"]:
+  ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 % endif
 
