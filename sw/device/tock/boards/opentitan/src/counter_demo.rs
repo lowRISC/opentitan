@@ -4,6 +4,8 @@
 
 //! A simple alarm implementation to display a binary counter over GPIO.
 
+use tock_deps::kernel as kernel;
+
 use core::cell::Cell;
 use kernel::hil::time::{Alarm, AlarmClient, Frequency};
 use kernel::debug;

@@ -1,5 +1,7 @@
 //! Timer driver.
 
+use tock_deps::kernel as kernel;
+
 use kernel::common::cells::OptionalCell;
 use kernel::common::registers::{register_bitfields, register_structs, ReadWrite, WriteOnly};
 use kernel::common::StaticRef;

@@ -1,5 +1,7 @@
 //! UART driver.
 
+use tock_deps::kernel as kernel;
+
 use core::cell::Cell;
 
 use kernel::common::cells::OptionalCell;
@@ -312,7 +314,7 @@ impl hil::uart::Receive<'a> for Uart<'a> {
         ReturnCode::FAIL
     }
 
-    fn receive_word(&self) -> ReturnCode {
+    fn receive_word(&self) -> kernel::ReturnCode {
         ReturnCode::FAIL
     }
 }

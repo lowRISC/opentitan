@@ -1,5 +1,7 @@
 //! Platform Level Interrupt Control peripheral driver.
 
+use tock_deps::kernel as kernel;
+
 use kernel::common::registers::{register_bitfields, register_structs, ReadOnly, ReadWrite};
 use kernel::common::StaticRef;
 

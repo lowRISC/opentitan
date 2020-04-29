@@ -1,3 +1,6 @@
+use tock_deps::kernel as kernel;
+use tock_deps::rv32i as rv32i;
+
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use core::str;

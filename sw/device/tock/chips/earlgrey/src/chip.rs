@@ -1,9 +1,11 @@
 //! High-level setup and interrupt mapping for the chip.
 
+use tock_deps::kernel as kernel;
+use tock_deps::rv32i as rv32i;
+
 use core::fmt::Write;
 use core::hint::unreachable_unchecked;
 
-use kernel;
 use kernel::common::registers::FieldValue;
 use kernel::debug;
 use rv32i::csr::{mcause, mie::mie, mip::mip, mtvec::mtvec, CSR};

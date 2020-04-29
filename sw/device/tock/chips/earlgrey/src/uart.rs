@@ -1,3 +1,5 @@
+use tock_deps::kernel as kernel;
+
 use kernel::common::StaticRef;
 use opentitan_common::uart::{Uart, UartRegisters};
 

@@ -18,8 +18,5 @@ opt-level = "z"
 debug = true
 
 [dependencies]
-components = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
-rv32i = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
-capsules = { git = "https://github.com/tock/tock", rev = "d37ef3d2"}
-kernel = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
 earlgrey = { path = "../../chips/earlgrey" }
+tock_deps = { path = "../../tock_deps" }

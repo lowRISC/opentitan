@@ -1,5 +1,7 @@
 //! General Purpose Input/Output driver.
 
+use tock_deps::kernel as kernel;
+
 use kernel::common::cells::OptionalCell;
 use kernel::common::registers::{
     register_bitfields, register_structs, Field, ReadOnly, ReadWrite, WriteOnly,

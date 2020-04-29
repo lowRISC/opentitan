@@ -6,6 +6,11 @@
 #![no_main]
 #![feature(asm)]
 
+use tock_deps::kernel as kernel;
+use tock_deps::capsules as capsules;
+use tock_deps::components as components;
+use tock_deps::rv32i as rv32i;
+
 use capsules::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
 use kernel::capabilities;
 use kernel::common::dynamic_deferred_call::{DynamicDeferredCall, DynamicDeferredCallClientState};

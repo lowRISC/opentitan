@@ -6,6 +6,4 @@ edition = "2018"
 
 [dependencies]
 opentitan_common = { path = "../opentitan_common" }
-rv32i = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
-kernel = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
-
+tock_deps = { path = "../../tock_deps" }

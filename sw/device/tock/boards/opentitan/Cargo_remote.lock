@@ -22,9 +22,8 @@ dependencies = [
 name = "earlgrey"
 version = "0.1.0"
 dependencies = [
- "kernel",
  "opentitan_common",
- "rv32i",
+ "tock_deps",
 ]
 
 [[package]]
@@ -45,20 +44,15 @@ dependencies = [
 name = "opentitan"
 version = "0.1.0"
 dependencies = [
- "capsules",
- "components",
  "earlgrey",
- "kernel",
- "rv32i",
+ "tock_deps",
 ]
 
 [[package]]
 name = "opentitan_common"
 version = "0.1.0"
 dependencies = [
- "kernel",
- "rv32i",
- "tock_rt0",
+ "tock_deps",
 ]
 
 [[package]]
@@ -89,6 +83,17 @@ source = "git+https://github.com/tock/tock?rev=d37ef3d2#d37ef3d2df9957d5e52591e2
 name = "tock-registers"
 version = "0.5.0"
 source = "git+https://github.com/tock/tock?rev=d37ef3d2#d37ef3d2df9957d5e52591e20d6e7839410f174d"
+
+[[package]]
+name = "tock_deps"
+version = "0.1.0"
+dependencies = [
+ "capsules",
+ "components",
+ "kernel",
+ "rv32i",
+ "tock_rt0",
+]
 
 [[package]]
 name = "tock_rt0"

@@ -1,0 +1,12 @@
+[package]
+name = "tock_deps"
+version = "0.1.0"
+authors = ["Silvestrs Timofejevs <silvestrst@lowrisc.org>"]
+edition = "2018"
+
+[dependencies]
+components = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+rv32i = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+capsules = { git = "https://github.com/tock/tock", rev = "d37ef3d2"}
+kernel = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+tock_rt0 = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }

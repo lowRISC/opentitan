@@ -1,5 +1,7 @@
 //! GPIO instantiation.
 
+use tock_deps::kernel as kernel;
+
 use core::ops::{Index, IndexMut};
 
 use kernel::common::StaticRef;
