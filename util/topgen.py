@@ -294,23 +294,80 @@ def generate_plic(top, out_path):
 def generate_pinmux(top, out_path):
     topname = top["name"]
     # MIO Pads
-    num_mio = top["pinmux"]["num_mio"]
-    if num_mio <= 0:
-        log.warning(
-            "No PINMUX is generated. The top %s has no multiplexed IO ports." %
-            top["name"])
+    n_mio_pads = top["pinmux"]["num_mio"]
+    if n_mio_pads <= 0:
+        # TODO: add support for no MIO case
+        log.error(
+            "Topgen does currently not support generation of a top " +
+            "without a pinmux.")
+        return
+
+    # Get number of wakeup detectors
+    if "num_wkup_detect" in top["pinmux"]:
+        num_wkup_detect = top["pinmux"]["num_wkup_detect"]
+    else:
+        num_wkup_detect = 1
+
+    if num_wkup_detect <= 0:
+        # TODO: add support for no wakeup counter case
+        log.error(
+            "Topgen does currently not support generation of a top " +
+            "without DIOs.")
+        return
+
+    if "wkup_cnt_width" in top["pinmux"]:
+        wkup_cnt_width = top["pinmux"]["wkup_cnt_width"]
+    else:
+        wkup_cnt_width = 8
+
+    if wkup_cnt_width <= 1:
+        log.error("Wakeup counter width must be greater equal 2.")
         return
 
     # Total inputs/outputs
-    num_inputs = sum(
-        [x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"]])
-    num_outputs = sum(
-        [x["width"] if "width" in x else 1 for x in top["pinmux"]["outputs"]])
-    num_inouts = sum(
-        [x["width"] if "width" in x else 1 for x in top["pinmux"]["inouts"]])
+    # Validation ensures that the width field is present.
+    num_mio_inputs = sum(
+        [x["width"] for x in top["pinmux"]["inputs"]])
+    num_mio_outputs = sum(
+        [x["width"] for x in top["pinmux"]["outputs"]])
+    num_mio_inouts = sum(
+        [x["width"] for x in top["pinmux"]["inouts"]])
 
-    n_periph_in = num_inouts + num_inputs
-    n_periph_out = num_inouts + num_outputs
+    num_dio_inputs = sum(
+        [x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
+    num_dio_outputs = sum(
+        [x["width"] if x["type"] == "output" else 0 for x in top["pinmux"]["dio"]])
+    num_dio_inouts = sum(
+        [x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]])
+
+    n_mio_periph_in = num_mio_inouts + num_mio_inputs
+    n_mio_periph_out = num_mio_inouts + num_mio_outputs
+    n_dio_periph_in = num_dio_inouts + num_dio_inputs
+    n_dio_periph_out = num_dio_inouts + num_dio_outputs
+    n_dio_pads = num_dio_inouts + num_dio_inputs + num_dio_outputs
+
+    if n_dio_pads <= 0:
+        # TODO: add support for no DIO case
+        log.error(
+            "Topgen does currently not support generation of a top " +
+            "without DIOs.")
+        return
+
+    log.info("Generating pinmux with following info from hjson:")
+    log.info("num_mio_inputs:  %d" % num_mio_inputs)
+    log.info("num_mio_outputs: %d" % num_mio_outputs)
+    log.info("num_mio_inouts:  %d" % num_mio_inouts)
+    log.info("num_dio_inputs:  %d" % num_dio_inputs)
+    log.info("num_dio_outputs: %d" % num_dio_outputs)
+    log.info("num_dio_inouts:  %d" % num_dio_inouts)
+    log.info("num_wkup_detect: %d" % num_wkup_detect)
+    log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
+    log.info("This translates to:")
+    log.info("n_mio_periph_in:  %d" % n_mio_periph_in)
+    log.info("n_mio_periph_out: %d" % n_mio_periph_out)
+    log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
+    log.info("n_dio_periph_out: %d" % n_dio_periph_out)
+    log.info("n_dio_pads:       %d" % n_dio_pads)
 
     # Target path
     #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
@@ -333,9 +390,22 @@ def generate_pinmux(top, out_path):
     with tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            out = hjson_tpl.render(n_periph_in=n_periph_in,
-                                   n_periph_out=n_periph_out,
-                                   n_mio_pads=num_mio)
+            # TODO: pass in information about always-on peripherals
+            # TODO: pass in information on which DIOs can be selected
+            # as wakeup signals
+            # TODO: pass in signal names such that we can introduce
+            # named enums for select signals
+            out = hjson_tpl.render(n_mio_periph_in=n_mio_periph_in,
+                                   n_mio_periph_out=n_mio_periph_out,
+                                   n_mio_pads=n_mio_pads,
+                                   # each DIO has in, out and oe wires
+                                   # some of these have to be tied off in the
+                                   # top, depending on the type.
+                                   n_dio_periph_in=n_dio_pads,
+                                   n_dio_periph_out=n_dio_pads,
+                                   n_dio_pads=n_dio_pads,
+                                   n_wkup_detect=num_wkup_detect,
+                                   wkup_cnt_width=wkup_cnt_width)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PINMUX HJSON: %s" % out)

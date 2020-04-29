@@ -564,6 +564,8 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
         if obj["act"] == "rsp" and suffix == "req":
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
+        if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
+            return "1'b0"
         if obj["act"] == "rcv" and suffix == "":
             return "{package}::{struct}_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())

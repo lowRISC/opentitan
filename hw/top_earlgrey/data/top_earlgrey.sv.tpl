@@ -6,10 +6,14 @@
 import re
 import topgen.lib as lib
 
-num_mio_input = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"]])
-num_mio_output = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["outputs"]])
-num_mio_inout = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inouts"]])
+num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
+num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
+num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
+num_mio = top["pinmux"]["num_mio"]
 
+num_dio_inputs = sum([x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
+num_dio_outputs = sum([x["width"] if x["type"] == "output" else 0 for x in top["pinmux"]["dio"]])
+num_dio_inouts = sum([x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]])
 num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
 
 num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
@@ -43,24 +47,17 @@ module top_${top["name"]} #(
   input               jtag_td_i,
   output              jtag_td_o,
 
-% if top["pinmux"]["num_mio"] != 0:
+% if num_mio != 0:
   // Multiplexed I/O
-  input        ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_in_i,
-  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_out_o,
-  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_oe_o,
+  input        ${lib.bitarray(num_mio, max_sigwidth)} mio_in_i,
+  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_out_o,
+  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_oe_o,
 % endif
 % if num_dio != 0:
-
   // Dedicated I/O
-  % for sig in top["pinmux"]["dio"]:
-    % if sig["type"] in ["input", "inout"]:
-  input        ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_i,
-    % endif
-    % if sig["type"] in ["output", "inout"]:
-  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_o,
-  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_en_o,
-    % endif
-  % endfor
+  input        ${lib.bitarray(num_dio, max_sigwidth)} dio_in_i,
+  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_out_o,
+  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
 % endif
 % if num_im != 0:
 
@@ -142,9 +139,12 @@ module top_${top["name"]} #(
 % endfor
 
   // Signals
-  logic [${num_mio_input + num_mio_inout -1}:0] m2p;
-  logic [${num_mio_output + num_mio_inout -1}:0] p2m;
-  logic [${num_mio_output + num_mio_inout -1}:0] p2m_en;
+  logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio2periph;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] periph2mio;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] periph2mio_en;
+  logic [${num_dio - 1}:0] dio2periph;
+  logic [${num_dio - 1}:0] periph2dio;
+  logic [${num_dio - 1}:0] periph2dio_en;
 % for m in top["module"]:
   // ${m["name"]}
   % for p_in in m["available_input_list"] + m["available_inout_list"]:
@@ -591,13 +591,21 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
     % if m["type"] == "pinmux":
 
-      .periph_to_mio_i      (p2m    ),
-      .periph_to_mio_oe_i   (p2m_en ),
-      .mio_to_periph_o      (m2p    ),
+      .periph_to_mio_i      (periph2mio    ),
+      .periph_to_mio_oe_i   (periph2mio_en ),
+      .mio_to_periph_o      (mio2periph    ),
 
-      .mio_out_o            (mio_out_o),
-      .mio_oe_o             (mio_oe_o ),
-      .mio_in_i             (mio_in_i ),
+      .mio_out_o,
+      .mio_oe_o,
+      .mio_in_i,
+
+      .periph_to_dio_i      (periph2dio    ),
+      .periph_to_dio_oe_i   (periph2dio_en ),
+      .dio_to_periph_o      (dio2periph    ),
+
+      .dio_out_o,
+      .dio_oe_o,
+      .dio_in_i,
     % endif
     % if m["type"] == "alert_handler":
       // TODO: wire this to hardware debug circuit
@@ -665,36 +673,55 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
 % if "pinmux" in top:
   // Pinmux connections
-  % if num_mio_output + num_mio_inout != 0:
-  assign p2m = {
+  % if num_mio_outputs + num_mio_inouts != 0:
+  assign periph2mio = {
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_d2p${"" if loop.last else ","}
     % endfor
   };
-  assign p2m_en = {
+  assign periph2mio_en = {
   % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
   % endfor
   };
   % endif
-  % if num_mio_input + num_mio_inout != 0:
+  % if num_mio_inputs + num_mio_inouts != 0:
   assign {
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
     cio_${sig["name"]}_p2d${"" if loop.last else ","}
     % endfor
-  } = m2p;
+  } = mio2periph;
   % endif
 % endif
 
 % if num_dio != 0:
+  // Dedicated IO connections
+  // Tie off output and output enable of input-only DIOs
+  assign periph2dio = {
   % for sig in top["pinmux"]["dio"]:
-  % if sig["type"] in ["input", "inout"]:
-  assign ${lib.ljust("cio_" + sig["name"] + "_p2d", max_diolength+9)} = dio_${sig["name"]}_i;
-  % endif
-  % if sig["type"] in ["output", "inout"]:
-  assign ${lib.ljust("dio_" + sig["name"] + "_o",   max_diolength+9)} = cio_${sig["name"]}_d2p;
-  assign ${lib.ljust("dio_" + sig["name"] + "_en_o",max_diolength+9)} = cio_${sig["name"]}_en_d2p;
-  % endif
+    % if sig["type"] in ["output", "inout"]:
+    cio_${sig["name"]}_d2p${"" if loop.last else ","}
+    % else:
+    ${sig["width"]}'b0${"" if loop.last else ","}
+    % endif
+  % endfor
+  };
+
+  assign periph2dio_en = {
+  % for sig in top["pinmux"]["dio"]:
+    % if sig["type"] in ["output", "inout"]:
+    cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
+    % else:
+    ${sig["width"]}'b0${"" if loop.last else ","}
+    % endif
+  % endfor
+  };
+
+  // No need to connect output-only DIOs
+  % for k, sig in enumerate(top["pinmux"]["dio"]):
+    % if sig["type"] in ["input", "inout"]:
+  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio2periph[${num_dio - 1 - k}];
+    % endif
   % endfor
 % endif
 
