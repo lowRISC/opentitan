@@ -26,34 +26,10 @@ module top_earlgrey #(
   input        [31:0] mio_in_i,
   output logic [31:0] mio_out_o,
   output logic [31:0] mio_oe_o,
-
   // Dedicated I/O
-  input               dio_spi_device_sck_i,
-  input               dio_spi_device_csb_i,
-  input               dio_spi_device_mosi_i,
-  output logic        dio_spi_device_miso_o,
-  output logic        dio_spi_device_miso_en_o,
-  input               dio_uart_rx_i,
-  output logic        dio_uart_tx_o,
-  output logic        dio_uart_tx_en_o,
-  input               dio_usbdev_sense_i,
-  output logic        dio_usbdev_se0_o,
-  output logic        dio_usbdev_se0_en_o,
-  output logic        dio_usbdev_pullup_o,
-  output logic        dio_usbdev_pullup_en_o,
-  output logic        dio_usbdev_tx_mode_se_o,
-  output logic        dio_usbdev_tx_mode_se_en_o,
-  output logic        dio_usbdev_suspend_o,
-  output logic        dio_usbdev_suspend_en_o,
-  input               dio_usbdev_d_i,
-  output logic        dio_usbdev_d_o,
-  output logic        dio_usbdev_d_en_o,
-  input               dio_usbdev_dp_i,
-  output logic        dio_usbdev_dp_o,
-  output logic        dio_usbdev_dp_en_o,
-  input               dio_usbdev_dn_i,
-  output logic        dio_usbdev_dn_o,
-  output logic        dio_usbdev_dn_en_o,
+  input        [13:0] dio_in_i,
+  output logic [13:0] dio_out_o,
+  output logic [13:0] dio_oe_o,
 
   input               scanmode_i  // 1 for Scan
 );
@@ -146,9 +122,12 @@ module top_earlgrey #(
   logic clk_proc_main;
 
   // Signals
-  logic [31:0] m2p;
-  logic [31:0] p2m;
-  logic [31:0] p2m_en;
+  logic [31:0] mio2periph;
+  logic [31:0] periph2mio;
+  logic [31:0] periph2mio_en;
+  logic [13:0] dio2periph;
+  logic [13:0] periph2dio;
+  logic [13:0] periph2dio_en;
   // uart
   logic        cio_uart_rx_p2d;
   logic        cio_uart_tx_d2p;
@@ -648,16 +627,32 @@ module top_earlgrey #(
       .tl_i (tl_pinmux_d_h2d),
       .tl_o (tl_pinmux_d_d2h),
 
-      .periph_to_mio_i      (p2m    ),
-      .periph_to_mio_oe_i   (p2m_en ),
-      .mio_to_periph_o      (m2p    ),
+      // Inter-module signals
+      .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
+      .lc_pinmux_strap_o(),
+      .sleep_en_i(1'b0),
+      .aon_wkup_req_o(),
 
-      .mio_out_o            (mio_out_o),
-      .mio_oe_o             (mio_oe_o ),
-      .mio_in_i             (mio_in_i ),
+      .periph_to_mio_i      (periph2mio    ),
+      .periph_to_mio_oe_i   (periph2mio_en ),
+      .mio_to_periph_o      (mio2periph    ),
+
+      .mio_out_o,
+      .mio_oe_o,
+      .mio_in_i,
+
+      .periph_to_dio_i      (periph2dio    ),
+      .periph_to_dio_oe_i   (periph2dio_en ),
+      .dio_to_periph_o      (dio2periph    ),
+
+      .dio_out_o,
+      .dio_oe_o,
+      .dio_in_i,
 
       .clk_i (clk_main_secure),
-      .rst_ni (rstmgr_resets.rst_sys_n)
+      .clk_aon_i (clk_fixed_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n),
+      .rst_aon_ni (rstmgr_resets.rst_sys_fixed_n)
   );
 
   alert_handler u_alert_handler (
@@ -914,42 +909,61 @@ module top_earlgrey #(
   );
 
   // Pinmux connections
-  assign p2m = {
+  assign periph2mio = {
     cio_gpio_gpio_d2p
   };
-  assign p2m_en = {
+  assign periph2mio_en = {
     cio_gpio_gpio_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d
-  } = m2p;
+  } = mio2periph;
 
-  assign cio_spi_device_sck_p2d     = dio_spi_device_sck_i;
-  assign cio_spi_device_csb_p2d     = dio_spi_device_csb_i;
-  assign cio_spi_device_mosi_p2d    = dio_spi_device_mosi_i;
-  assign dio_spi_device_miso_o      = cio_spi_device_miso_d2p;
-  assign dio_spi_device_miso_en_o   = cio_spi_device_miso_en_d2p;
-  assign cio_uart_rx_p2d            = dio_uart_rx_i;
-  assign dio_uart_tx_o              = cio_uart_tx_d2p;
-  assign dio_uart_tx_en_o           = cio_uart_tx_en_d2p;
-  assign cio_usbdev_sense_p2d       = dio_usbdev_sense_i;
-  assign dio_usbdev_se0_o           = cio_usbdev_se0_d2p;
-  assign dio_usbdev_se0_en_o        = cio_usbdev_se0_en_d2p;
-  assign dio_usbdev_pullup_o        = cio_usbdev_pullup_d2p;
-  assign dio_usbdev_pullup_en_o     = cio_usbdev_pullup_en_d2p;
-  assign dio_usbdev_tx_mode_se_o    = cio_usbdev_tx_mode_se_d2p;
-  assign dio_usbdev_tx_mode_se_en_o = cio_usbdev_tx_mode_se_en_d2p;
-  assign dio_usbdev_suspend_o       = cio_usbdev_suspend_d2p;
-  assign dio_usbdev_suspend_en_o    = cio_usbdev_suspend_en_d2p;
-  assign cio_usbdev_d_p2d           = dio_usbdev_d_i;
-  assign dio_usbdev_d_o             = cio_usbdev_d_d2p;
-  assign dio_usbdev_d_en_o          = cio_usbdev_d_en_d2p;
-  assign cio_usbdev_dp_p2d          = dio_usbdev_dp_i;
-  assign dio_usbdev_dp_o            = cio_usbdev_dp_d2p;
-  assign dio_usbdev_dp_en_o         = cio_usbdev_dp_en_d2p;
-  assign cio_usbdev_dn_p2d          = dio_usbdev_dn_i;
-  assign dio_usbdev_dn_o            = cio_usbdev_dn_d2p;
-  assign dio_usbdev_dn_en_o         = cio_usbdev_dn_en_d2p;
+  // Dedicated IO connections
+  // Tie off output and output enable of input-only DIOs
+  assign periph2dio = {
+    1'b0,
+    1'b0,
+    1'b0,
+    cio_spi_device_miso_d2p,
+    1'b0,
+    cio_uart_tx_d2p,
+    1'b0,
+    cio_usbdev_se0_d2p,
+    cio_usbdev_pullup_d2p,
+    cio_usbdev_tx_mode_se_d2p,
+    cio_usbdev_suspend_d2p,
+    cio_usbdev_d_d2p,
+    cio_usbdev_dp_d2p,
+    cio_usbdev_dn_d2p
+  };
+
+  assign periph2dio_en = {
+    1'b0,
+    1'b0,
+    1'b0,
+    cio_spi_device_miso_en_d2p,
+    1'b0,
+    cio_uart_tx_en_d2p,
+    1'b0,
+    cio_usbdev_se0_en_d2p,
+    cio_usbdev_pullup_en_d2p,
+    cio_usbdev_tx_mode_se_en_d2p,
+    cio_usbdev_suspend_en_d2p,
+    cio_usbdev_d_en_d2p,
+    cio_usbdev_dp_en_d2p,
+    cio_usbdev_dn_en_d2p
+  };
+
+  // No need to connect output-only DIOs
+  assign cio_spi_device_sck_p2d    = dio2periph[13];
+  assign cio_spi_device_csb_p2d    = dio2periph[12];
+  assign cio_spi_device_mosi_p2d   = dio2periph[11];
+  assign cio_uart_rx_p2d           = dio2periph[9];
+  assign cio_usbdev_sense_p2d      = dio2periph[7];
+  assign cio_usbdev_d_p2d          = dio2periph[2];
+  assign cio_usbdev_dp_p2d         = dio2periph[1];
+  assign cio_usbdev_dn_p2d         = dio2periph[0];
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
