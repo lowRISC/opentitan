@@ -8,7 +8,10 @@
 
 module aes #(
   parameter bit AES192Enable = 1,    // Can be 0 (disable), or 1 (enable).
-  parameter     SBoxImpl     = "lut" // Can be "lut" (LUT-based SBox), or "canright".
+  parameter     SBoxImpl     = "lut" // Can be "lut" (LUT-based SBox), "canright",
+                                     // "canright_masked_noreuse", or "canright_masked".
+                                     // Note: Currently, constant masks are used, this is
+                                     // of course not secure.
 ) (
   input                     clk_i,
   input                     rst_ni,

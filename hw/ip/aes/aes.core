@@ -22,7 +22,10 @@ filesets:
       - rtl/aes_sub_bytes.sv
       - rtl/aes_sbox.sv
       - rtl/aes_sbox_lut.sv
+      - rtl/aes_sbox_canright_pkg.sv
       - rtl/aes_sbox_canright.sv
+      - rtl/aes_sbox_canright_masked_noreuse.sv
+      - rtl/aes_sbox_canright_masked.sv
       - rtl/aes_shift_rows.sv
       - rtl/aes_mix_columns.sv
       - rtl/aes_mix_single_column.sv
