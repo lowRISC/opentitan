@@ -55,13 +55,6 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
-  ////////////////////////////////////////////////////
-  // Power up group - feedthrough
-  ////////////////////////////////////////////////////
-
-  assign clocks_o.clk_fixed_powerup = clk_fixed_i;
-  assign clocks_o.clk_main_powerup = clk_main_i;
-  assign clocks_o.clk_usb_48mhz_powerup = clk_usb_48mhz_i;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -80,7 +73,7 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_usb_48mhz_root;
   logic clk_usb_48mhz_en;
 
-  prim_clock_gating_sync i_main_sync (
+  prim_clock_gating_sync i_main_cg (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .test_en_i(dft_i.test_en),
@@ -88,7 +81,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
-  prim_clock_gating_sync i_fixed_sync (
+  prim_clock_gating_sync i_fixed_cg (
     .clk_i(clk_fixed_i),
     .rst_ni(rst_fixed_ni),
     .test_en_i(dft_i.test_en),
@@ -96,7 +89,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_fixed_en),
     .clk_o(clk_fixed_root)
   );
-  prim_clock_gating_sync i_usb_48mhz_sync (
+  prim_clock_gating_sync i_usb_48mhz_cg (
     .clk_i(clk_usb_48mhz_i),
     .rst_ni(rst_usb_48mhz_ni),
     .test_en_i(dft_i.test_en),
@@ -155,23 +148,41 @@ module clkmgr import clkmgr_pkg::*; (
   // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
   // if the clkmgr is always on, can use por synced directly
   // if not, then need to generate something ahead of lc/sys
+  logic clk_fixed_peri_sw_en;
+  logic clk_usb_48mhz_peri_sw_en;
 
-  prim_clock_gating_sync i_clk_fixed_peri_sync (
-    .clk_i(clk_fixed_root),
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_fixed_peri_sw_en_sync (
+    .clk_i(clk_fixed_i),
     .rst_ni(rst_fixed_ni),
+    .d(reg2hw.clk_enables.clk_fixed_peri_en.q),
+    .q(clk_fixed_peri_sw_en)
+  );
+
+  prim_clock_gating i_clk_fixed_peri_cg (
+    .clk_i(clk_fixed_i),
+    .en_i(clk_fixed_peri_sw_en & clk_fixed_en),
     .test_en_i(dft_i.test_en),
-    .async_en_i(reg2hw.clk_enables.clk_fixed_peri_en.q),
-    .en_o(), // should this be fedback for software?
     .clk_o(clocks_o.clk_fixed_peri)
   );
-  prim_clock_gating_sync i_clk_usb_48mhz_peri_sync (
-    .clk_i(clk_usb_48mhz_root),
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_usb_48mhz_peri_sw_en_sync (
+    .clk_i(clk_usb_48mhz_i),
     .rst_ni(rst_usb_48mhz_ni),
+    .d(reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
+    .q(clk_usb_48mhz_peri_sw_en)
+  );
+
+  prim_clock_gating i_clk_usb_48mhz_peri_cg (
+    .clk_i(clk_usb_48mhz_i),
+    .en_i(clk_usb_48mhz_peri_sw_en & clk_usb_48mhz_en),
     .test_en_i(dft_i.test_en),
-    .async_en_i(reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
-    .en_o(), // should this be fedback for software?
     .clk_o(clocks_o.clk_usb_48mhz_peri)
   );
+
 
   ////////////////////////////////////////////////////
   // Software hint group
@@ -193,15 +204,15 @@ module clkmgr import clkmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1)
   ) i_clk_main_aes_hint_sync (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .d(reg2hw.clk_hints.clk_main_aes_hint.q),
     .q(clk_main_aes_hint)
   );
 
-  prim_clock_gating i_clk_main_aes_sync (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_aes_en),
+  prim_clock_gating i_clk_main_aes_cg (
+    .clk_i(clk_main_i),
+    .en_i(clk_main_aes_en & clk_main_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_main_aes)
   );
@@ -211,15 +222,15 @@ module clkmgr import clkmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1)
   ) i_clk_main_hmac_hint_sync (
-    .clk_i(clk_main_root),
+    .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .d(reg2hw.clk_hints.clk_main_hmac_hint.q),
     .q(clk_main_hmac_hint)
   );
 
-  prim_clock_gating i_clk_main_hmac_sync (
-    .clk_i(clk_main_root),
-    .en_i(clk_main_hmac_en),
+  prim_clock_gating i_clk_main_hmac_cg (
+    .clk_i(clk_main_i),
+    .en_i(clk_main_hmac_en & clk_main_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_main_hmac)
   );

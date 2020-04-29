@@ -28,7 +28,7 @@
     },
 
     { struct:  "pwr_clk",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "pwr_clk",
       act:     "req",
       package: "pwrmgr_pkg",

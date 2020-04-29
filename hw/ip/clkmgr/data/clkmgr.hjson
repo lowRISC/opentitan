@@ -16,6 +16,12 @@
     "clk_fixed_i",
     "clk_usb_48mhz_i",
   ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_main_ni"
+    "rst_fixed_ni"
+    "rst_usb_48mhz_ni"
+  ]
   bus_device: "tlul",
   regwidth: "32",
   param_list: [
@@ -34,6 +40,12 @@
       name:    "clocks",
       act:     "req",
       package: "clkmgr_pkg",
+    },
+
+    { struct:  "pwr_clk",
+      type:    "req_rsp",
+      name:    "pwr",
+      act:     "rsp",
     },
 
     { struct:  "clk_dft",
