@@ -1,3 +1,6 @@
+use tock::kernel;
+use tock::rv32i;
+
 use core::fmt::Write;
 use core::panic::PanicInfo;
 use core::str;
@@ -23,7 +26,7 @@ impl Write for Writer {
 impl IoWrite for Writer {
     fn write(&mut self, buf: &[u8]) {
         unsafe {
-            ibex::uart::UART0.transmit_sync(buf);
+            earlgrey::uart::UART0.transmit_sync(buf);
         }
     }
 }
@@ -34,8 +37,8 @@ impl IoWrite for Writer {
 #[panic_handler]
 pub unsafe extern "C" fn panic_fmt(pi: &PanicInfo) -> ! {
     // turn off the non panic leds, just in case
-    let first_led = &mut led::LedLow::new(&mut ibex::gpio::PORT[7]);
-    gpio::Pin::make_output(&ibex::gpio::PORT[7]);
+    let first_led = &mut led::LedLow::new(&mut earlgrey::gpio::PORT[7]);
+    gpio::Pin::make_output(&earlgrey::gpio::PORT[7]);
 
     let writer = &mut WRITER;
 
