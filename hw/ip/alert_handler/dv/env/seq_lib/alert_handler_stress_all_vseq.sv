@@ -10,18 +10,20 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
   `uvm_object_new
 
   task body();
-    // TODO: add ping_rsp_fail and entropy test sequences
+    bit entropy_test_flag; // this flag ensures entropy test only runs once due to its long runtime
     string seq_names[] = {"alert_handler_sanity_vseq",
                           "alert_handler_random_alerts_vseq",
                           "alert_handler_random_classes_vseq",
                           "alert_handler_esc_intr_timeout_vseq",
                           "alert_handler_esc_alert_accum_vseq",
-                          "alert_handler_entropy_vseq",
-                          "alert_handler_sig_int_fail_vseq"};
+                          "alert_handler_sig_int_fail_vseq",
+                          "alert_handler_entropy_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence            seq;
       alert_handler_base_vseq alert_vseq;
-      uint                    seq_idx = $urandom_range(0, seq_names.size - 1);
+      uint seq_idx = entropy_test_flag ? $urandom_range(0, seq_names.size - 2) :
+                                         $urandom_range(0, seq_names.size - 1);
+      if (seq_names[seq_idx] == "alert_handler_entropy_vseq") entropy_test_flag = 1;
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(alert_vseq, seq)
