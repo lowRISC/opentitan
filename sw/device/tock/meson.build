@@ -10,7 +10,11 @@ build_type = 'release'
 tock_board_dir = meson.source_root() / 'sw/device/tock/boards/opentitan'
 toolchain_file = tock_board_dir / 'rust-toolchain'
 manifest_path = tock_board_dir / 'Cargo.toml'
-lock_path = tock_board_dir / 'Cargo.lock'
+
+# Used to choose local or upstream Tock OS dependencies.
+tock_deps_path = meson.source_root() / 'sw/device/tock/tock_deps'
+tock_deps_manifest = tock_deps_path / 'Cargo.toml'
+tock_deps_lock = tock_deps_path / 'Cargo.lock'
 
 rust_flags = '-C link-arg=-Tlayout.ld ' + \
 '-C linker=rust-lld ' + \
@@ -21,12 +25,12 @@ rust_flags = '-C link-arg=-Tlayout.ld ' + \
 build_tock_cmd = meson.source_root() / 'util/build_tock.sh'
 
 if tock_local
-  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_local.toml', manifest_path)
-  run_command('touch', tock_board_dir / 'Cargo_local.lock')
-  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_local.lock', lock_path)
+  run_command('ln', '-s', '-f', tock_deps_path / 'Cargo_local.toml', tock_deps_manifest)
+  run_command('touch', tock_deps_path / 'Cargo_local.lock')
+  run_command('ln', '-s', '-f', tock_deps_path / 'Cargo_local.lock', tock_deps_lock)
 else
-  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_remote.toml', manifest_path)
-  run_command('ln', '-s', '-f', tock_board_dir / 'Cargo_remote.lock', lock_path)
+  run_command('ln', '-s', '-f', tock_deps_path / 'Cargo_remote.toml', tock_deps_manifest)
+  run_command('ln', '-s', '-f', tock_deps_path / 'Cargo_remote.lock', tock_deps_lock)
 endif
 
 tock_raw = custom_target(
