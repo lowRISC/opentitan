@@ -143,6 +143,8 @@
         },
       ]
     },
+
+// TODO(#1412):
 // This multireg is temporarily removed until the nested multireg compact feature is fully implemented.
 // Until then, use only one register wen for all flash regions.
 // Another alternative solution is to move flash into topgen, this may have to be done anyways.
