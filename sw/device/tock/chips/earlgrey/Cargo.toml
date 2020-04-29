@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "earlgrey"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[dependencies]
+opentitan_common = { path = "../opentitan_common" }
+tock = { path = "../../tock" }
