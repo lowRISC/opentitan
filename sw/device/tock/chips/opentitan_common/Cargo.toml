@@ -1,0 +1,10 @@
+[package]
+name = "opentitan_common"
+version = "0.1.0"
+authors = ["Tock Project Developers <tock-dev@googlegroups.com>"]
+edition = "2018"
+
+[dependencies]
+rv32i = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+kernel = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+tock_rt0 = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }

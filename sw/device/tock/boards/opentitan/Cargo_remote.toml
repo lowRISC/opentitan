@@ -18,9 +18,8 @@ opt-level = "z"
 debug = true
 
 [dependencies]
-components = { git = "https://github.com/tock/tock" }
-rv32i = { git = "https://github.com/tock/tock" }
-capsules = { git = "https://github.com/tock/tock" }
-kernel = { git = "https://github.com/tock/tock" }
-ibex = { git = "https://github.com/tock/tock" }
-lowrisc = { git = "https://github.com/tock/tock" }
+components = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+rv32i = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+capsules = { git = "https://github.com/tock/tock", rev = "d37ef3d2"}
+kernel = { git = "https://github.com/tock/tock", rev = "d37ef3d2" }
+earlgrey = { path = "../../chips/earlgrey" }
