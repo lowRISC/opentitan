@@ -58,6 +58,46 @@ module top_earlgrey_nexysvideo (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
+  // TODO: instantiate padring and route these signals through that module
+  logic [13:0] dio_in;
+  logic [13:0] dio_out;
+  logic [13:0] dio_oe;
+
+  assign dio_in = {cio_spi_device_sck_p2d,
+                   cio_spi_device_csb_p2d,
+                   cio_spi_device_mosi_p2d,
+                   1'b0,
+                   cio_uart_rx_p2d,
+                   1'b0,
+                   cio_usbdev_sense_p2d,
+                   1'b0,
+                   1'b0,
+                   1'b0,
+                   1'b0,
+                   cio_usbdev_d_p2d,
+                   cio_usbdev_dp_p2d,
+                   cio_usbdev_dn_p2d};
+
+  assign cio_usbdev_dn_d2p = dio_out[0];
+  assign cio_usbdev_dp_d2p = dio_out[1];
+  assign cio_usbdev_d_d2p  = dio_out[2];
+  assign cio_usbdev_suspend_d2p = dio_out[3];
+  assign cio_usbdev_tx_mode_se_d2p = dio_out[4];
+  assign cio_usbdev_pullup_d2p = dio_out[5];
+  assign cio_usbdev_se0_d2p = dio_out[6];
+  assign cio_uart_tx_d2p = dio_out[8];
+  assign cio_spi_device_miso_d2p = dio_out[10];
+
+  assign cio_usbdev_dn_en_d2p = dio_oe[0];
+  assign cio_usbdev_dp_en_d2p = dio_oe[1];
+  assign cio_usbdev_d_en_d2p  = dio_oe[2];
+  assign cio_usbdev_suspend_en_d2p = dio_oe[3];
+  assign cio_usbdev_tx_mode_se_en_d2p = dio_oe[4];
+  assign cio_usbdev_pullup_en_d2p = dio_oe[5];
+  assign cio_usbdev_se0_en_d2p = dio_oe[6];
+  assign cio_uart_tx_en_d2p = dio_oe[8];
+  assign cio_spi_device_miso_en_d2p = dio_oe[10];
+
   // Top-level design
   top_earlgrey #(
     .IbexPipeLine(1)
@@ -73,38 +113,15 @@ module top_earlgrey_nexysvideo (
     .jtag_td_i                  (cio_jtag_tdi_p2d),
     .jtag_td_o                  (cio_jtag_tdo_d2p),
 
+    // Multiplexed I/O
     .mio_in_i                   (cio_gpio_p2d),
     .mio_out_o                  (cio_gpio_d2p),
     .mio_oe_o                   (cio_gpio_en_d2p),
 
-    .dio_uart_rx_i              (cio_uart_rx_p2d),
-    .dio_uart_tx_o              (cio_uart_tx_d2p),
-    .dio_uart_tx_en_o           (cio_uart_tx_en_d2p),
-
-    .dio_spi_device_sck_i       (cio_spi_device_sck_p2d),
-    .dio_spi_device_csb_i       (cio_spi_device_csb_p2d),
-    .dio_spi_device_mosi_i      (cio_spi_device_mosi_p2d),
-    .dio_spi_device_miso_o      (cio_spi_device_miso_d2p),
-    .dio_spi_device_miso_en_o   (cio_spi_device_miso_en_d2p),
-
-    .dio_usbdev_sense_i         (cio_usbdev_sense_p2d),
-    .dio_usbdev_se0_o           (cio_usbdev_se0_d2p),
-    .dio_usbdev_se0_en_o        (cio_usbdev_se0_en_d2p),
-    .dio_usbdev_pullup_o        (cio_usbdev_pullup_d2p),
-    .dio_usbdev_pullup_en_o     (cio_usbdev_pullup_en_d2p),
-    .dio_usbdev_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
-    .dio_usbdev_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
-    .dio_usbdev_suspend_o       (cio_usbdev_suspend_d2p),
-    .dio_usbdev_suspend_en_o    (cio_usbdev_suspend_en_d2p),
-    .dio_usbdev_d_i             (cio_usbdev_d_p2d),
-    .dio_usbdev_d_o             (cio_usbdev_d_d2p),
-    .dio_usbdev_d_en_o          (cio_usbdev_d_en_d2p),
-    .dio_usbdev_dp_i            (cio_usbdev_dp_p2d),
-    .dio_usbdev_dp_o            (cio_usbdev_dp_d2p),
-    .dio_usbdev_dp_en_o         (cio_usbdev_dp_en_d2p),
-    .dio_usbdev_dn_i            (cio_usbdev_dn_p2d),
-    .dio_usbdev_dn_o            (cio_usbdev_dn_d2p),
-    .dio_usbdev_dn_en_o         (cio_usbdev_dn_en_d2p),
+    // Dedicated I/O
+    .dio_in_i                   (dio_in),
+    .dio_out_o                  (dio_out),
+    .dio_oe_o                   (dio_oe),
 
     .scanmode_i                 (1'b0) // 1 for Scan
   );

@@ -153,9 +153,9 @@
     { name: "pinmux",
       type: "pinmux",
       clock: "main",
-      clock_srcs: {clk_i: "main"},
+      clock_srcs: {clk_i: "main", clk_aon_i: "fixed"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_fixed"},
       base_addr: "0x40070000",
       generated: "true"
     },
@@ -341,6 +341,14 @@
     //  to 0, and the output/OE signals will be floating (or connected to
     //  unused signal). `rv_plic` is special module, shouldn't be defined here.
     nc_modules: ["rv_timer", "hmac"]
+
+    // Number of wakeup detectors to instantiate, and bitwidth for the wakeup
+    // counters. Note that all MIO pad inputs are connected to the wakeup detectors,
+    // and there is no way to disable this. DIO inputs on the other hand are by
+    // default not connected.
+    // TODO: need to add mechanism to mark them as wakeup pins.
+    num_wkup_detect: 8
+    wkup_cnt_width:  8
 
     // Below fields are generated.
     // inputs: [
