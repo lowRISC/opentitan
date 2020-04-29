@@ -183,6 +183,14 @@
 #define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x400B0000u
 
 /**
+ * Base address for clkmgr peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x400C0000u
+
+/**
  * Base address for nmi_gen peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

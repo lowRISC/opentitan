@@ -11,6 +11,11 @@
   datawidth: "32"
   clocks:
   {
+    hier_paths:
+    {
+      top: clkmgr_clocks.
+      ext: ""
+    }
     srcs:
     [
       {
@@ -30,17 +35,19 @@
     [
       {
         name: powerup
+        src: ext
         sw_cg: no
         unique: no
         clocks:
         {
-          clk_fixed_powerup: fixed
-          clk_main_powerup: main
-          clk_usb_48mhz_powerup: usb_48mhz
+          clk_fixed_i: fixed
+          clk_i: main
+          clk_usb_48mhz_i: usb_48mhz
         }
       }
       {
         name: trans
+        src: top
         sw_cg: hint
         unique: yes
         clocks:
@@ -51,6 +58,7 @@
       }
       {
         name: infra
+        src: top
         sw_cg: no
         unique: no
         clocks:
@@ -61,6 +69,7 @@
       }
       {
         name: secure
+        src: top
         sw_cg: no
         unique: no
         clocks:
@@ -71,6 +80,7 @@
       }
       {
         name: peri
+        src: top
         sw_cg: yes
         unique: no
         clocks:
@@ -81,6 +91,7 @@
       }
       {
         name: timers
+        src: top
         sw_cg: no
         unique: no
         clocks:
@@ -90,6 +101,7 @@
       }
       {
         name: proc
+        src: no
         sw_cg: no
         unique: no
         clocks:
@@ -159,6 +171,11 @@
         rst_ni: sys_fixed
       }
       base_addr: 0x40000000
+      clock_group: secure
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_fixed_secure
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -280,11 +297,6 @@
       ]
       alert_list: []
       scan: "false"
-      clock_group: secure
-      clock_connections:
-      {
-        clk_i: clk_fixed_secure
-      }
     }
     {
       name: gpio
@@ -299,6 +311,10 @@
         rst_ni: sys_fixed
       }
       base_addr: 0x40010000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_fixed_peri
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -329,10 +345,6 @@
       ]
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_fixed_peri
-      }
     }
     {
       name: spi_device
@@ -347,6 +359,10 @@
         rst_ni: spi_device
       }
       base_addr: 0x40020000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_fixed_peri
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -454,10 +470,6 @@
       ]
       alert_list: []
       scan: "true"
-      clock_connections:
-      {
-        clk_i: clk_fixed_peri
-      }
     }
     {
       name: flash_ctrl
@@ -472,6 +484,10 @@
         rst_ni: lc
       }
       base_addr: 0x40030000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_infra
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -569,10 +585,6 @@
           index: -1
         }
       ]
-      clock_connections:
-      {
-        clk_i: clk_main_infra
-      }
     }
     {
       name: rv_timer
@@ -587,6 +599,10 @@
         rst_ni: sys_fixed
       }
       base_addr: 0x40080000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_fixed_timers
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -603,10 +619,6 @@
       ]
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_fixed_timers
-      }
     }
     {
       name: aes
@@ -621,6 +633,10 @@
         rst_ni: sys
       }
       base_addr: 0x40110000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_aes
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -630,10 +646,6 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_main_aes
-      }
     }
     {
       name: hmac
@@ -648,6 +660,10 @@
         rst_ni: sys
       }
       base_addr: 0x40120000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_hmac
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -703,10 +719,6 @@
         }
       ]
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_main_hmac
-      }
     }
     {
       name: rv_plic
@@ -722,6 +734,10 @@
       }
       base_addr: 0x40090000
       generated: "true"
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -731,10 +747,6 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_main_secure
-      }
     }
     {
       name: pinmux
@@ -753,6 +765,11 @@
       }
       base_addr: 0x40070000
       generated: "true"
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+        clk_aon_i: clkmgr_clocks.clk_fixed_secure
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -792,11 +809,6 @@
           index: -1
         }
       ]
-      clock_connections:
-      {
-        clk_i: clk_main_secure
-        clk_aon_i: clk_fixed_secure
-      }
     }
     {
       name: alert_handler
@@ -817,6 +829,10 @@
         EscCntDw: 32
         AccuCntDw: 16
         LfsrSeed: 0x7FFFFFFF
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -877,15 +893,10 @@
       ]
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_main_secure
-      }
     }
     {
       name: pwrmgr
       type: pwrmgr
-      clock: main
       clock_srcs:
       {
         clk_i: fixed
@@ -898,7 +909,11 @@
         rst_slow_ni: por
       }
       base_addr: 0x400A0000
-      generated: "true"
+      clock_connections:
+      {
+        clk_i: clk_fixed_i
+        clk_slow_i: clk_fixed_i
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -946,11 +961,13 @@
         }
         {
           struct: pwr_clk
-          type: uni
+          type: req_rsp
           name: pwr_clk
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          top_signame: pwrmgr_pwr_clk
           index: -1
         }
         {
@@ -1001,16 +1018,10 @@
           index: -1
         }
       ]
-      clock_connections:
-      {
-        clk_i: clk_fixed_powerup
-        clk_slow_i: clk_fixed_powerup
-      }
     }
     {
       name: rstmgr
       type: rstmgr
-      clock: main
       clock_srcs:
       {
         clk_i: fixed
@@ -1024,7 +1035,13 @@
         rst_ni: rst_ni
       }
       base_addr: 0x400B0000
-      generated: "true"
+      clock_connections:
+      {
+        clk_i: clk_fixed_i
+        clk_main_i: clk_i
+        clk_fixed_i: clk_fixed_i
+        clk_usb_i: clk_usb_48mhz_i
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1088,13 +1105,86 @@
           index: -1
         }
       ]
+    }
+    {
+      name: clkmgr
+      type: clkmgr
+      clock_srcs:
+      {
+        clk_i: fixed
+        clk_main_i: main
+        clk_fixed_i: fixed
+        clk_usb_48mhz_i: usb_48mhz
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por
+        rst_main_ni: por
+        rst_fixed_ni: por
+        rst_usb_48mhz_ni: por
+      }
+      base_addr: 0x400C0000
+      generated: "true"
       clock_connections:
       {
-        clk_i: clk_fixed_powerup
-        clk_main_i: clk_main_powerup
-        clk_fixed_i: clk_fixed_powerup
-        clk_usb_i: clk_usb_48mhz_powerup
+        clk_i: clk_fixed_i
+        clk_main_i: clk_i
+        clk_fixed_i: clk_fixed_i
+        clk_usb_48mhz_i: clk_usb_48mhz_i
       }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: clkmgr_out
+          type: uni
+          name: clocks
+          act: req
+          package: clkmgr_pkg
+          inst_name: clkmgr
+          width: 1
+          top_signame: clkmgr_clocks
+          index: -1
+        }
+        {
+          struct: pwr_clk
+          type: req_rsp
+          name: pwr
+          act: rsp
+          inst_name: clkmgr
+          width: 1
+          package: pwrmgr_pkg
+          top_signame: pwrmgr_pwr_clk
+          index: -1
+        }
+        {
+          struct: clk_dft
+          type: uni
+          name: dft
+          act: rcv
+          package: clkmgr_pkg
+          inst_name: clkmgr
+          index: -1
+        }
+        {
+          struct: clk_hint_status
+          type: uni
+          name: status
+          act: rcv
+          package: clkmgr_pkg
+          inst_name: clkmgr
+          index: -1
+        }
+      ]
     }
     {
       name: nmi_gen
@@ -1109,6 +1199,10 @@
         rst_ni: sys
       }
       base_addr: 0x40140000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1168,10 +1262,6 @@
       ]
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_main_secure
-      }
     }
     {
       name: usbdev
@@ -1188,6 +1278,11 @@
         rst_usb_48mhz_ni: usb
       }
       base_addr: 0x40150000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_fixed_peri
+        clk_usb_48mhz_i: clkmgr_clocks.clk_usb_48mhz_peri
+      }
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1437,11 +1532,6 @@
       ]
       alert_list: []
       scan: "false"
-      clock_connections:
-      {
-        clk_i: clk_fixed_peri
-        clk_usb_48mhz_i: clk_usb_48mhz_peri
-      }
     }
   ]
   memory:
@@ -1463,7 +1553,7 @@
       size: 0x4000
       clock_connections:
       {
-        clk_i: clk_main_infra
+        clk_i: clkmgr_clocks.clk_main_infra
       }
     }
     {
@@ -1482,7 +1572,7 @@
       size: 0x10000
       clock_connections:
       {
-        clk_i: clk_main_infra
+        clk_i: clkmgr_clocks.clk_main_infra
       }
     }
     {
@@ -1516,7 +1606,7 @@
       ]
       clock_connections:
       {
-        clk_i: clk_main_infra
+        clk_i: clkmgr_clocks.clk_main_infra
       }
     }
   ]
@@ -1532,12 +1622,17 @@
       [
         rstmgr.pwr
       ]
+      pwrmgr.pwr_clk:
+      [
+        clkmgr.pwr
+      ]
     }
     top:
     [
       rstmgr.resets
       rstmgr.cpu
       pwrmgr.pwr_cpu
+      clkmgr.clocks
     ]
     external: []
   }
@@ -1559,8 +1654,8 @@
       }
       clock_connections:
       {
-        clk_main_i: clk_main_infra
-        clk_fixed_i: clk_fixed_infra
+        clk_main_i: clkmgr_clocks.clk_main_infra
+        clk_fixed_i: clkmgr_clocks.clk_fixed_infra
       }
       connections:
       {
@@ -1739,6 +1834,10 @@
               base_addr: 0x400B0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x400C0000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -1875,7 +1974,7 @@
       }
       clock_connections:
       {
-        clk_peri_i: clk_fixed_infra
+        clk_peri_i: clkmgr_clocks.clk_fixed_infra
       }
       connections:
       {
@@ -1888,6 +1987,7 @@
           usbdev
           pwrmgr
           rstmgr
+          clkmgr
         ]
       }
       nodes:
@@ -2015,6 +2115,23 @@
           [
             {
               base_addr: 0x400B0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: clkmgr
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: clkmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400C0000
               size_byte: 0x1000
             }
           ]
@@ -3036,11 +3153,13 @@
       }
       {
         struct: pwr_clk
-        type: uni
+        type: req_rsp
         name: pwr_clk
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        top_signame: pwrmgr_pwr_clk
         index: -1
       }
       {
@@ -3142,6 +3261,46 @@
         index: -1
       }
       {
+        struct: clkmgr_out
+        type: uni
+        name: clocks
+        act: req
+        package: clkmgr_pkg
+        inst_name: clkmgr
+        width: 1
+        top_signame: clkmgr_clocks
+        index: -1
+      }
+      {
+        struct: pwr_clk
+        type: req_rsp
+        name: pwr
+        act: rsp
+        inst_name: clkmgr
+        width: 1
+        package: pwrmgr_pkg
+        top_signame: pwrmgr_pwr_clk
+        index: -1
+      }
+      {
+        struct: clk_dft
+        type: uni
+        name: dft
+        act: rcv
+        package: clkmgr_pkg
+        inst_name: clkmgr
+        index: -1
+      }
+      {
+        struct: clk_hint_status
+        type: uni
+        name: status
+        act: rcv
+        package: clkmgr_pkg
+        inst_name: clkmgr
+        index: -1
+      }
+      {
         struct: flash
         type: req_rsp
         name: flash_ctrl
@@ -3185,6 +3344,20 @@
         type: req_rsp
       }
       {
+        package: pwrmgr_pkg
+        struct: pwr_clk_req
+        signame: pwrmgr_pwr_clk_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_clk_rsp
+        signame: pwrmgr_pwr_clk_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
         package: rstmgr_pkg
         struct: rstmgr_out
         signame: rstmgr_resets
@@ -3202,6 +3375,13 @@
         package: pwrmgr_pkg
         struct: pwr_cpu
         signame: pwrmgr_pwr_cpu
+        width: 1
+        type: uni
+      }
+      {
+        package: clkmgr_pkg
+        struct: clkmgr_out
+        signame: clkmgr_clocks
         width: 1
         type: uni
       }

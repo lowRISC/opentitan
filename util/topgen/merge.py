@@ -422,6 +422,7 @@ def amend_clocks(top: OrderedDict):
        Amend the clock connections of each entry to reflect the actual gated clock
     """
     clks_attr = top['clocks']
+    clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
 
     # Default assignments
@@ -454,10 +455,22 @@ def amend_clocks(top: OrderedDict):
         # unique property of each group
         unique = clks_attr['groups'][cg_idx]['unique']
 
+        # src property of each group
+        src = clks_attr['groups'][cg_idx]['src']
+
         for port, clk in ep['clock_srcs'].items():
             ep_clks.append(clk)
 
-            if unique == "yes":
+            hier_name = clk_paths[src]
+
+            if src == 'ext':
+                # clock comes from top ports
+                if clk == 'main':
+                    clk_name = "clk_i"
+                else:
+                    clk_name = "clk_{}_i".format(clk)
+
+            elif unique == "yes":
                 # new unqiue clock name
                 clk_name = "clk_{}_{}".format(clk, ep_name)
 
@@ -469,7 +482,7 @@ def amend_clocks(top: OrderedDict):
             clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
 
             # add clock connections
-            clock_connections[port] = clk_name
+            clock_connections[port] = hier_name + clk_name
 
         # Add to endpoint structure
         ep['clock_connections'] = clock_connections
@@ -674,7 +687,7 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
     # Assign clocks into appropriate groups
     # Note, amend_ip references clock information to establish async handling
     # as part of alerts.
-    amend_clocks(gencfg)
+    # amend_clocks(gencfg)
 
     # Add path names to declared resets
     amend_resets(gencfg)

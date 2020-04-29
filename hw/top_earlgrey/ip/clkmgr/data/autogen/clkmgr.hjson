@@ -1,15 +1,16 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 // TODO: This module is only a draft implementation that covers most of the rstmgr
 // functoinality but is incomplete
 
-<%
-clks_attr = cfg['clocks']
-srcs = clks_attr['srcs']
-grps = clks_attr['groups']
-num_grps = len(grps)
-%>
+
 
 # CLKMGR register template
 #
@@ -17,15 +18,15 @@ num_grps = len(grps)
   name: "CLKMGR",
   clock_primary: "clk_i",
   other_clock_list: [
-% for src in srcs:
-    "clk_${src['name']}_i",
-% endfor
+    "clk_main_i",
+    "clk_fixed_i",
+    "clk_usb_48mhz_i",
   ],
   reset_primary: "rst_ni",
   other_reset_list: [
-% for src in srcs:
-    "rst_${src['name']}_ni"
-% endfor
+    "rst_main_ni"
+    "rst_fixed_ni"
+    "rst_usb_48mhz_ni"
   ]
   bus_device: "tlul",
   regwidth: "32",
@@ -33,7 +34,7 @@ num_grps = len(grps)
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "${num_grps}",
+      default: "7",
       local: "true"
     },
   ],
@@ -78,21 +79,28 @@ num_grps = len(grps)
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in sw_clks:
         {
-          bits: "${loop.index}",
-          name: "${clk.upper()}_EN",
+          bits: "0",
+          name: "CLK_FIXED_PERI_EN",
           resval: 1,
           desc: '''
-            0 ${clk.upper()} is disabled.
-            1 ${clk.upper()} is enabled.
+            0 CLK_FIXED_PERI is disabled.
+            1 CLK_FIXED_PERI is enabled.
           '''
         }
-% endfor
+        {
+          bits: "1",
+          name: "CLK_USB_48MHZ_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_USB_48MHZ_PERI is disabled.
+            1 CLK_USB_48MHZ_PERI is enabled.
+          '''
+        }
       ]
       // the CLK_ENABLE register cannot be written, otherwise there is the potential clocks could be
       // disabled and the system will hang
-      tags: ["excl:CsrAllTests:CsrExclAll"]
+      tags: ["excl:CsrAllTests:CsrExclWrite:CsrExclWriteCheck"]
     },
 
     { name: "CLK_HINTS",
@@ -107,21 +115,28 @@ num_grps = len(grps)
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks:
         {
-          bits: "${loop.index}",
-          name: "${clk.upper()}_HINT",
+          bits: "0",
+          name: "CLK_MAIN_AES_HINT",
           resval: 1,
           desc: '''
-            0 ${clk.upper()} can be disabled.
-            1 ${clk.upper()} is enabled.
+            0 CLK_MAIN_AES can be disabled.
+            1 CLK_MAIN_AES is enabled.
           '''
         }
-% endfor
+        {
+          bits: "1",
+          name: "CLK_MAIN_HMAC_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_HMAC can be disabled.
+            1 CLK_MAIN_HMAC is enabled.
+          '''
+        }
       ]
       // the CLK_HINT register cannot be written, otherwise there is the potential clocks could be
       // disabled and the system will hang
-      tags: ["excl:CsrAllTests:CsrExclAll"]
+      tags: ["excl:CsrAllTests:CsrExclWrite:CsrExclWriteCheck"]
     },
 
     { name: "CLK_HINTS_STATUS",
@@ -133,17 +148,24 @@ num_grps = len(grps)
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-% for clk in hint_clks:
         {
-          bits: "${loop.index}",
-          name: "${clk.upper()}_VAL",
+          bits: "0",
+          name: "CLK_MAIN_AES_VAL",
           resval: 1,
           desc: '''
-            0 ${clk.upper()} is disabled.
-            1 ${clk.upper()} is enabled.
+            0 CLK_MAIN_AES is disabled.
+            1 CLK_MAIN_AES is enabled.
           '''
         }
-% endfor
+        {
+          bits: "1",
+          name: "CLK_MAIN_HMAC_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_HMAC is disabled.
+            1 CLK_MAIN_HMAC is enabled.
+          '''
+        }
       ]
     },
   ]

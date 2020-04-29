@@ -9,9 +9,16 @@
   datawidth: "32",  # 32-bit datawidth
 
   // This is the clock data strcture of the design.
+  // The hier path refers to the clock reference path (struct / port)
+  //   - The top/ext desgination follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
+
+    hier_paths: {
+      top: "clkmgr_clocks.", // top level is a struct
+      ext: "",               // ext is a port of the clock name
+    },
 
     srcs: [
       { name: "main",      freq: "100000000" }
@@ -21,6 +28,10 @@
 
     // Clock Group attributes
     // name: name of group.
+    //
+    // src: The hierarchical source of the clock
+    // "ext"  - clock is supplied from a port of the top module
+    // "top"  - clock is supplied from a net inside the top module
     //
     // sw_cfg: whether software is allowed to gate the clock
     // "no"   - software is not allowed to gate clocks
@@ -38,13 +49,14 @@
     // The proc group is not peripheral, and direclty hardwired
 
     groups: [
-      { name: "powerup", sw_cg: "no"                   }
-      { name: "trans",   sw_cg: "hint", unique: "yes", }
-      { name: "infra",   sw_cg: "no",                  }
-      { name: "secure",  sw_cg: "no"                   }
-      { name: "peri",    sw_cg: "yes",  unique: "no"   }
-      { name: "timers",  sw_cg: "no"                   }
+      { name: "powerup", src:"ext", sw_cg: "no"                   }
+      { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
+      { name: "infra",   src:"top", sw_cg: "no",                  }
+      { name: "secure",  src:"top", sw_cg: "no"                   }
+      { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   }
+      { name: "timers",  src:"top", sw_cg: "no"                   }
       { name: "proc",
+        src: "no"
         sw_cg: "no"
         unique: "no"
         clocks: {
@@ -174,20 +186,25 @@
     }
     { name: "pwrmgr",
       type: "pwrmgr",
-      clock: "main",
       clock_srcs: {clk_i: "fixed", clk_slow_i: "fixed"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por", rst_slow_ni: "por"},
       base_addr: "0x400A0000",
-      generated: "true"
+
     },
     { name: "rstmgr",
       type: "rstmgr",
-      clock: "main",
       clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_i: "usb_48mhz"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
+    },
+    { name: "clkmgr",
+      type: "clkmgr",
+      clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_48mhz_i: "usb_48mhz"},
+      clock_group: "powerup",
+      reset_connections: {rst_ni: "por", rst_main_ni: "por", rst_fixed_ni: "por", rst_usb_48mhz_ni: "por"},
+      base_addr: "0x400C0000",
       generated: "true"
     },
     // dummy module to capture the alert handler escalation signals
@@ -255,12 +272,13 @@
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu'],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks'],
 
     // ext is to create port in the top.
     'external': [],

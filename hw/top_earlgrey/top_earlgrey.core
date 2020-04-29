@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:uart:0.1
       - lowrisc:top_earlgrey:alert_handler_reg
+      - lowrisc:top_earlgrey:clkmgr
       - lowrisc:ip:alert_handler_component
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
