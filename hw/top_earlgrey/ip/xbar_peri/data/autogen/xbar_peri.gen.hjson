@@ -20,7 +20,7 @@
   }
   clock_connections:
   {
-    clk_peri_i: clk_fixed_infra
+    clk_peri_i: clkmgr_clocks.clk_fixed_infra
   }
   connections:
   {
@@ -33,6 +33,7 @@
       usbdev
       pwrmgr
       rstmgr
+      clkmgr
     ]
   }
   nodes:
@@ -160,6 +161,23 @@
       [
         {
           base_addr: 0x400B0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: clkmgr
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: clkmgr
+      addr_range:
+      [
+        {
+          base_addr: 0x400C0000
           size_byte: 0x1000
         }
       ]

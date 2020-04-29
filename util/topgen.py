@@ -18,10 +18,7 @@ from mako.template import Template
 
 import tlgen
 from reggen import gen_dv, gen_rtl, gen_fpv, validate
-from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top
-
-# Filter from IP list but adding generated hjson
-filter_list = ['rv_plic', 'pinmux', 'alert_handler']
+from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top, amend_clocks
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -423,6 +420,78 @@ def generate_pinmux(top, out_path):
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
+def generate_clkmgr(top, cfg_path, out_path):
+
+    # Target paths
+    rtl_path = out_path / 'ip/clkmgr/rtl/autogen'
+    rtl_path.mkdir(parents=True, exist_ok=True)
+    data_path = out_path / 'ip/clkmgr/data/autogen'
+    data_path.mkdir(parents=True, exist_ok=True)
+
+    # Template paths
+    hjson_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.hjson.tpl'
+    rtl_tpl   = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
+    pkg_tpl   = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
+
+    hjson_out = data_path / 'clkmgr.hjson'
+    rtl_out   = rtl_path / 'clkmgr.sv'
+    pkg_out   = rtl_path / 'clkmgr_pkg.sv'
+
+    tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
+    outputs = [hjson_out, rtl_out, pkg_out]
+    names = ['clkmgr.hjson', 'clkmgr.sv', 'clkmgr_pkg.sv']
+
+    # clock classification
+    grps = top['clocks']['groups']
+
+    ft_clks = OrderedDict()
+    rg_clks = OrderedDict()
+    sw_clks = OrderedDict()
+    hint_clks = OrderedDict()
+
+    ft_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
+                 if grp['name'] == 'powerup'}
+
+    # root-gate clocks
+    rg_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
+                 if grp['name'] != 'powerup' and grp['sw_cg'] == 'no'}
+
+    # direct sw control clocks
+    sw_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
+                 if grp['sw_cg'] == 'yes'}
+
+    # sw hint clocks
+    hint_clks = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
+                 if grp['sw_cg'] == 'hint'}
+
+
+    out = StringIO()
+    for idx, tpl in enumerate(tpls):
+        with tpl.open(mode='r', encoding='UTF-8') as fin:
+            tpl = Template(fin.read())
+            try:
+                out = tpl.render(cfg=top,
+                                 ft_clks=ft_clks,
+                                 rg_clks=rg_clks,
+                                 sw_clks=sw_clks,
+                                 hint_clks=hint_clks)
+            except:  # noqa: E722
+                log.error(exceptions.text_error_template().render())
+
+        if out == "":
+            log.error("Cannot generate {}".format(names[idx]))
+            return
+
+        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
+            fout.write(genhdr + out)
+
+    # Generate reg files
+    with open(str(hjson_out), 'r') as out:
+        hjson_obj = hjson.load(out,
+                               use_decimal=True,
+                               object_pairs_hook=OrderedDict)
+    validate.validate(hjson_obj)
+    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 def generate_top_ral(top, ip_objs, out_path):
     # construct top ral block
@@ -571,6 +640,7 @@ def main():
         outdir = Path(args.outdir)
 
     out_path = Path(outdir)
+    cfg_path = Path(args.topcfg).parents[1]
 
     if not args.no_gen_hjson or args.hjson_only:
         # load top configuration
@@ -582,28 +652,38 @@ def main():
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
+        # Create filtered list
+        filter_list = [module['name'] for module in topcfg['module']
+                       if 'generated' in module and module['generated'] == 'true']
+        log.info("Filtered list is {}".format(filter_list))
+
         topname = topcfg["name"]
 
         # Sweep the IP directory and gather the config files
         ip_dir = Path(__file__).parents[1] / 'hw/ip'
         ips = search_ips(ip_dir)
 
-        # exclude rv_plic (to use top_${topname} one) and
+        # exclude filtered IPs (to use top_${topname} one) and
         ips = [x for x in ips if not x.parents[1].name in filter_list]
+
+        # Hack alert
+        # Generate clkmgr.hjson here so that it can be included below
+        # Unlike other generated hjsons, clkmgr thankfully does not require
+        # ip.hjson information.  All the information is embedded within
+        # the top hjson file
+        amend_clocks(topcfg)
+        generate_clkmgr(topcfg, cfg_path, out_path)
 
         # It may require two passes to check if the module is needed.
         # TODO: first run of topgen will fail due to the absent of rv_plic.
         # It needs to run up to amend_interrupt in merge_top function
         # then creates rv_plic.hjson then run xbar generation.
         hjson_dir = Path(args.topcfg).parent
-        rv_plic_hjson = hjson_dir.parent / 'ip/rv_plic/data/autogen/rv_plic.hjson'
-        ips.append(rv_plic_hjson)
 
-        pinmux_hjson = hjson_dir.parent / 'ip/pinmux/data/autogen/pinmux.hjson'
-        ips.append(pinmux_hjson)
-
-        alert_handler_hjson = hjson_dir.parent / 'ip/alert_handler/data/autogen/alert_handler.hjson'
-        ips.append(alert_handler_hjson)
+        for ip in filter_list:
+            log.info("Appending {}".format(ip))
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(ip,ip)
+            ips.append(ip_hjson)
 
         # load Hjson and pass validate from reggen
         try:
@@ -679,6 +759,7 @@ def main():
         if args.alert_handler_only:
             sys.exit()
 
+    # Generate Pinmux
     generate_pinmux(completecfg, out_path)
 
     # Generate xbars

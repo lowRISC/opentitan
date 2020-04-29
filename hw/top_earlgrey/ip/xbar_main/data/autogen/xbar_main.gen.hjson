@@ -22,8 +22,8 @@
   }
   clock_connections:
   {
-    clk_main_i: clk_main_infra
-    clk_fixed_i: clk_fixed_infra
+    clk_main_i: clkmgr_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_clocks.clk_fixed_infra
   }
   connections:
   {
@@ -184,7 +184,7 @@
         }
         {
           base_addr: 0x400A0000
-          size_byte: 0x20000
+          size_byte: 0x21000
         }
         {
           base_addr: 0x40150000

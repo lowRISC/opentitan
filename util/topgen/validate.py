@@ -91,6 +91,7 @@ padctrl_added = {}
 
 clock_groups_required = {
     'name': ['s', 'name of clock group'],
+    'src': ['s', 'yes, no. This clock group is directly from source'],
     'sw_cg': ['s', 'yes, no, hint. Software clock gate attributes'],
 }
 clock_groups_optional = {
@@ -178,6 +179,12 @@ def check_clock_groups(top):
         if group['sw_cg'] not in ['yes', 'no', 'hint']:
             log.error("Incorrect attribute for sw_cg: {}".format(
                 group['sw_cg']))
+            error += 1
+
+        # Check combination of src and sw are valid
+        if group['src'] =='yes' and group['sw_cg'] != 'no':
+            log.error("Invalid combination of src and sw_cg: {} and {}".format(
+                group['src'], group['sw_cg']))
             error += 1
 
         # Check combination of sw_cg and unique are valid

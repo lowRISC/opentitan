@@ -25,7 +25,9 @@ max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["in
 max_sigwidth = len("{}".format(max_sigwidth))
 
 clks_attr = top['clocks']
-
+cpu_clk = top['clocks']['hier_paths']['top'] + "clk_proc_main"
+cpu_rst = top["reset_paths"]["sys"]
+dm_rst = top["reset_paths"]["lc"]
 %>\
 module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0
@@ -131,13 +133,6 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
-  //clock wires declaration
-% for clock_group in clks_attr['groups']:
-  % for k in clock_group['clocks']:
-  logic ${k};
-  % endfor
-% endfor
-
   // Signals
   logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio2periph;
   logic [${num_mio_outputs + num_mio_inouts - 1}:0] periph2mio;
@@ -218,14 +213,6 @@ module top_${top["name"]} #(
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
 % endfor
 
-  // Clock assignments
-  // These assignments are temporary until the creation of the clock controller
-% for clock_group in clks_attr['groups']:
-  % for k,v in clock_group['clocks'].items():
-  assign ${k} = ${lib.get_clk_name(v)};
-  % endfor
-% endfor
-
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
 
@@ -250,8 +237,8 @@ module top_${top["name"]} #(
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
-    .clk_i                (clk_proc_main),
-    .rst_ni               (${top["reset_paths"]["sys"]}),
+    .clk_i                (${cpu_clk}),
+    .rst_ni               (${cpu_rst}),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -281,8 +268,8 @@ module top_${top["name"]} #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
-    .clk_i         (clk_proc_main),
-    .rst_ni        (${top["reset_paths"]["lc"]}),
+    .clk_i         (${cpu_clk}),
+    .rst_ni        (${dm_rst}),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
