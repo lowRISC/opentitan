@@ -13,6 +13,7 @@ from topgen import lib
 
 IM_TYPES = ['uni', 'req_rsp']
 IM_ACTS = ['req', 'rsp', 'rcv']
+IM_VALID_TYPEACT = {'uni': ['req', 'rcv'], 'req_rsp': ['req', 'rsp']}
 IM_CONN_TYPE = ['1-to-1', '1-to-N', 'broadcast']
 
 
@@ -338,6 +339,14 @@ def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
                                                    act=obj["act"]))
         error += 1
 
+    # Check if type and act are matched
+    if error == 0:
+        if obj["act"] not in IM_VALID_TYPEACT[obj['type']]:
+            log.error("{type} and {act} of {name} are not a valid pair."
+                      "".format(type=obj['type'],
+                                act=obj['act'],
+                                name=obj['name']))
+            error += 1
     # Check 'width' field
     width = 1
     if "width" not in obj:
