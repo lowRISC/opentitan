@@ -56,15 +56,6 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
-  ////////////////////////////////////////////////////
-  // Power up group - feedthrough
-  ////////////////////////////////////////////////////
-  ## This group is hardcoded right now because it is the only one.
-  ## In the future if there are more, feedthrough should be converted to an attribute
-
-% for k,v in ft_clks.items():
-  assign clocks_o.${k} = clk_${v}_i;
-% endfor
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -82,7 +73,7 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in srcs:
-  prim_clock_gating_sync i_${src['name']}_sync (
+  prim_clock_gating_sync i_${src['name']}_cg (
     .clk_i(clk_${src['name']}_i),
     .rst_ni(rst_${src['name']}_ni),
     .test_en_i(dft_i.test_en),
@@ -143,16 +134,27 @@ module clkmgr import clkmgr_pkg::*; (
   // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
   // if the clkmgr is always on, can use por synced directly
   // if not, then need to generate something ahead of lc/sys
+% for k in sw_clks:
+  logic ${k}_sw_en;
+% endfor
 
 % for k,v in sw_clks.items():
-  prim_clock_gating_sync i_${k}_sync (
-    .clk_i(clk_${v}_root),
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_${k}_sw_en_sync (
+    .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
+    .d(reg2hw.clk_enables.${k}_en.q),
+    .q(${k}_sw_en)
+  );
+
+  prim_clock_gating i_${k}_cg (
+    .clk_i(clk_${v}_i),
+    .en_i(${k}_sw_en & clk_${v}_en),
     .test_en_i(dft_i.test_en),
-    .async_en_i(reg2hw.clk_enables.${k}_en.q),
-    .en_o(), // should this be fedback for software?
     .clk_o(clocks_o.${k})
   );
+
 % endfor
 
   ////////////////////////////////////////////////////
@@ -176,15 +178,15 @@ module clkmgr import clkmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1)
   ) i_${k}_hint_sync (
-    .clk_i(clk_${v}_root),
+    .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
     .d(reg2hw.clk_hints.${k}_hint.q),
     .q(${k}_hint)
   );
 
-  prim_clock_gating i_${k}_sync (
-    .clk_i(clk_${v}_root),
-    .en_i(${k}_en),
+  prim_clock_gating i_${k}_cg (
+    .clk_i(clk_${v}_i),
+    .en_i(${k}_en & clk_${v}_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.${k})
   );

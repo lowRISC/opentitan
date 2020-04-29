@@ -29,6 +29,7 @@ module pwrmgr import pwrmgr_pkg::*;
 
   // clkmgr interface
   output pwr_clk_req_t pwr_clk_o,
+  input  pwr_clk_rsp_t pwr_clk_i,
 
   // otp interface
   input  pwr_otp_rsp_t pwr_otp_i,

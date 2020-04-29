@@ -21,6 +21,12 @@ num_grps = len(grps)
     "clk_${src['name']}_i",
 % endfor
   ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+% for src in srcs:
+    "rst_${src['name']}_ni"
+% endfor
+  ]
   bus_device: "tlul",
   regwidth: "32",
   param_list: [
@@ -39,6 +45,12 @@ num_grps = len(grps)
       name:    "clocks",
       act:     "req",
       package: "clkmgr_pkg",
+    },
+
+    { struct:  "pwr_clk",
+      type:    "req_rsp",
+      name:    "pwr",
+      act:     "rsp",
     },
 
     { struct:  "clk_dft",
