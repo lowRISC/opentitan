@@ -743,11 +743,13 @@
       clock_srcs:
       {
         clk_i: main
+        clk_aon_i: fixed
       }
       clock_group: secure
       reset_connections:
       {
         rst_ni: sys
+        rst_aon_ni: sys_fixed
       }
       base_addr: 0x40070000
       generated: "true"
@@ -760,9 +762,40 @@
       interrupt_list: []
       alert_list: []
       scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: lc_pinmux_strap
+          type: req_rsp
+          name: lc_pinmux_strap
+          act: rsp
+          package: pinmux_pkg
+          inst_name: pinmux
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: sleep_en
+          act: rcv
+          package: ""
+          inst_name: pinmux
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: aon_wkup_req
+          act: req
+          package: ""
+          inst_name: pinmux
+          index: -1
+        }
+      ]
       clock_connections:
       {
         clk_i: clk_main_secure
+        clk_aon_i: clk_fixed_secure
       }
     }
     {
@@ -2695,6 +2728,8 @@
       rv_timer
       hmac
     ]
+    num_wkup_detect: 8
+    wkup_cnt_width: 8
     dio:
     [
       {
@@ -2950,6 +2985,33 @@
         inst_name: flash_ctrl
         width: 1
         top_signame: flash_ctrl_flash
+        index: -1
+      }
+      {
+        struct: lc_pinmux_strap
+        type: req_rsp
+        name: lc_pinmux_strap
+        act: rsp
+        package: pinmux_pkg
+        inst_name: pinmux
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: sleep_en
+        act: rcv
+        package: ""
+        inst_name: pinmux
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: aon_wkup_req
+        act: req
+        package: ""
+        inst_name: pinmux
         index: -1
       }
       {
