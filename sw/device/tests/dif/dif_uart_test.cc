@@ -134,9 +134,9 @@ TEST_F(InitTest, ParityOdd) {
 class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_FALSE(dif_uart_init(base_addr_, &dif_uart_config_, nullptr));
-  EXPECT_FALSE(dif_uart_init(base_addr_, nullptr, &dif_uart_));
-  EXPECT_FALSE(dif_uart_init(base_addr_, nullptr, nullptr));
+  EXPECT_FALSE(dif_uart_configure(nullptr, &dif_uart_config_));
+  EXPECT_FALSE(dif_uart_configure(&dif_uart_, nullptr));
+  EXPECT_FALSE(dif_uart_configure(nullptr, nullptr));
 }
 
 TEST_F(ConfigTest, Default) {
