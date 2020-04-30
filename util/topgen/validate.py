@@ -50,9 +50,9 @@ module'],
 }
 
 top_optional = {
-    'interrupt_modules': ['l', 'list of the modules that connects to rv_plic'],
+    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'interrupt': ['lnw', 'interrupts (generated)'],
-    'alert_modules':
+    'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'alert': ['lnw', 'alerts (generated)'],
     'alert_async': ['l', 'async alerts (generated)'],
@@ -60,6 +60,8 @@ top_optional = {
     'padctrl':
     ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],
     'inter_module': ['g', 'define the signal connections between the modules'],
+    'num_cores': ['pn', "number of computing units"],
+    'datawidth': ['pn', "default data width"],
 }
 
 top_added = {}
