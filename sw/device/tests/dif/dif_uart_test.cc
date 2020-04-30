@@ -469,15 +469,15 @@ TEST_F(IrqStateClearTest, NullArgs) {
 
 TEST_F(IrqStateClearTest, Success) {
   // Clear the first IRQ state.
-  EXPECT_MASK32(UART_INTR_STATE_REG_OFFSET,
-                {{UART_INTR_STATE_TX_WATERMARK, 0x1, true}});
+  EXPECT_WRITE32(UART_INTR_STATE_REG_OFFSET,
+                 {{UART_INTR_STATE_TX_WATERMARK, 1}});
 
   EXPECT_TRUE(
       dif_uart_irq_state_clear(&dif_uart_, kDifUartInterruptTxWatermark));
 
   // Clear the last IRQ state.
-  EXPECT_MASK32(UART_INTR_STATE_REG_OFFSET,
-                {{UART_INTR_STATE_RX_PARITY_ERR, 0x1, true}});
+  EXPECT_WRITE32(UART_INTR_STATE_REG_OFFSET,
+                 {{UART_INTR_STATE_RX_PARITY_ERR, 1}});
 
   EXPECT_TRUE(
       dif_uart_irq_state_clear(&dif_uart_, kDifUartInterruptRxParityErr));
