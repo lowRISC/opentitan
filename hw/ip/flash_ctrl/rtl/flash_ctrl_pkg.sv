@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Faux Flash Controller module.
+// Flash Controller module.
 //
 
 package flash_ctrl_pkg;
@@ -10,7 +10,7 @@ package flash_ctrl_pkg;
   // parameters for flash macro properties
   localparam int NumBanks        = top_pkg::FLASH_BANKS;
   localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK;
-  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE;
+  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE;  //Number of bus words per page
   localparam int BytesPerWord    = top_pkg::FLASH_BYTES_PER_WORD;
   localparam int BankW           = $clog2(NumBanks);
   localparam int PageW           = $clog2(PagesPerBank);

@@ -21,6 +21,8 @@ filesets:
       - rtl/flash_mp.sv
       - rtl/flash_phy.sv
       - rtl/flash_phy_core.sv
+      - rtl/flash_phy_rd.sv
+      - rtl/flash_phy_rd_buffers.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
