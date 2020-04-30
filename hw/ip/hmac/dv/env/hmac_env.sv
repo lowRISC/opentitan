@@ -13,4 +13,12 @@ class hmac_env extends cip_base_env #(.CFG_T               (hmac_env_cfg),
     super.build_phase(phase);
   endfunction
 
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    dv_base_mem mem;
+    super.end_of_elaboration_phase(phase);
+    // hmac mem supports partial write, set it after ral model is locked
+    `downcast(mem, get_mem_by_addr(cfg.ral, cfg.csr_base_addr + HMAC_MSG_FIFO_BASE))
+    mem.set_mem_partial_write_support(1);
+  endfunction
+
 endclass

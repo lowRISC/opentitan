@@ -8,6 +8,9 @@ class dv_base_mem extends uvm_mem;
   // uvm_mem::m_access is local variable. Create it again in order to use "access" in current class
   local string m_access;
 
+  // if mem doesn't support partial write, doing that will result d_error = 1
+  local bit mem_partial_write_support;
+
   function new(string           name,
                longint unsigned size,
                int unsigned     n_bits,
@@ -16,6 +19,14 @@ class dv_base_mem extends uvm_mem;
     super.new(name, size, n_bits, access, has_coverage);
     m_access = access;
   endfunction : new
+
+  function void set_mem_partial_write_support(bit enable);
+    mem_partial_write_support = enable;
+  endfunction : set_mem_partial_write_support
+
+  function bit get_mem_partial_write_support();
+    return mem_partial_write_support;
+  endfunction : get_mem_partial_write_support
 
   // rewrite this function to support "WO" access type for mem
   function void configure(uvm_reg_block  parent,

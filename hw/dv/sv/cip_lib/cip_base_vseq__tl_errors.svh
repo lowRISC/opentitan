@@ -22,18 +22,16 @@
 
 virtual task tl_access_unmapped_addr();
   bit [TL_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
-  bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
-  addr_mask[1:0] = 0;
   // calculate normalized address outside the loop to improve perf
   foreach (cfg.csr_addrs[i]) normalized_csr_addrs[i] = cfg.csr_addrs[i] - cfg.csr_base_addr;
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
     bit [TL_AW-1:0] unmapped_addr;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
-        !((unmapped_addr & addr_mask) inside {normalized_csr_addrs});
-        foreach (cfg.mem_ranges[i]) {
-          !((unmapped_addr & addr_mask)
-              inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]});}
+        !((unmapped_addr & csr_addr_mask) inside {normalized_csr_addrs});
+        foreach (updated_mem_ranges[i]) {
+          !((unmapped_addr & csr_addr_mask)
+              inside {[updated_mem_ranges[i].start_addr : updated_mem_ranges[i].end_addr]});}
         )
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
@@ -42,14 +40,13 @@ virtual task tl_access_unmapped_addr();
 endtask
 
 virtual task tl_write_csr_word_unaligned_addr();
-  bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
   repeat ($urandom_range(10, 100)) begin
     `create_tl_access_error_case(
         tl_write_csr_word_unaligned_addr,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
-        foreach (local::cfg.mem_ranges[i]) {
-          !((addr & addr_mask)
-              inside {[local::cfg.mem_ranges[i].start_addr : local::cfg.mem_ranges[i].end_addr]});
+        foreach (updated_mem_ranges[i]) {
+          !((addr & csr_addr_mask)
+              inside {[updated_mem_ranges[i].start_addr : updated_mem_ranges[i].end_addr]});
         }
         addr[1:0] != 2'b00;)
   end
@@ -92,15 +89,20 @@ endtask
 
 virtual task tl_write_mem_less_than_word();
   uint mem_idx;
+  dv_base_mem mem;
   repeat ($urandom_range(10, 100)) begin
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+    // only test when mem doesn't support partial write
+    `downcast(mem, get_mem_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr))
+    if (mem.get_mem_partial_write_support()) continue;
+
     `create_tl_access_error_case(
         tl_write_mem_less_than_word,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
         addr[1:0] == 0; // word aligned
-        addr inside
-            {[local::cfg.mem_ranges[mem_idx].start_addr : local::cfg.mem_ranges[mem_idx].end_addr]};
+        (addr & csr_addr_mask) inside
+            {[updated_mem_ranges[mem_idx].start_addr : updated_mem_ranges[mem_idx].end_addr]};
         mask != '1 || size < 2;
         )
   end
@@ -111,19 +113,28 @@ virtual task tl_read_mem_err();
   repeat ($urandom_range(10, 100)) begin
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+    if (get_mem_access_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr) != "WO") continue;
     `create_tl_access_error_case(
         tl_read_mem_err,
         opcode == tlul_pkg::Get;
-        addr inside
-            {[local::cfg.mem_ranges[mem_idx].start_addr : local::cfg.mem_ranges[mem_idx].end_addr]};
+        (addr & csr_addr_mask) inside
+            {[updated_mem_ranges[mem_idx].start_addr : updated_mem_ranges[mem_idx].end_addr]};
         )
   end
 endtask
 
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
-  bit test_mem_err_byte_write = (cfg.mem_ranges.size > 0) && !cfg.en_mem_byte_write;
-  bit test_mem_err_read       = (cfg.mem_ranges.size > 0) && !cfg.en_mem_read;
+  bit has_mem = (cfg.mem_ranges.size > 0);
+
+  csr_addr_mask = (cfg.csr_addr_map_size - 1);
+  csr_addr_mask[1:0] = 0;
+  if (updated_mem_ranges.size == 0) begin
+    foreach (cfg.mem_ranges[i]) begin
+      updated_mem_ranges.push_back(addr_range_t'{cfg.mem_ranges[i].start_addr - cfg.csr_base_addr,
+                                                 cfg.mem_ranges[i].end_addr - cfg.csr_base_addr});
+    end
+  end
 
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
@@ -142,9 +153,9 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
                 1: tl_write_csr_word_unaligned_addr();
                 1: tl_write_less_than_csr_width();
                 1: tl_protocol_err();
-                // only run this task when the mem supports error response
-                test_mem_err_byte_write: tl_write_mem_less_than_word();
-                test_mem_err_read:       tl_read_mem_err();
+                // only run this task when there is an mem
+                has_mem: tl_write_mem_less_than_word();
+                has_mem: tl_read_mem_err();
               endcase
             end
           join_none
