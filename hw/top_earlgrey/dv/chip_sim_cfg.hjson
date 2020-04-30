@@ -147,6 +147,13 @@
     }
 
     {
+      name: "chip_csr_mem_rw_with_rand_reset"
+      uvm_test_seq: chip_common_vseq
+      run_opts: ["+en_scb=0", "+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000"]
+      en_run_modes: ["stub_cpu"]
+    }
+
+    {
       name: chip_tl_errors
       uvm_test_seq: chip_common_vseq
       run_opts: ["+run_tl_errors"]

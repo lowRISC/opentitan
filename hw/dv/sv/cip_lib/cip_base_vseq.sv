@@ -21,6 +21,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   bit [TL_DW-1:0]  exp_mem[int];
   int              mem_exist_addr_q[$];
 
+  // mem_ranges without base address
+  addr_range_t     updated_mem_ranges[$];
+  // mask out bits out of the csr/mem range and LSB 2 bits
+  bit [TL_AW-1:0]  csr_addr_mask;
+
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
     delay_to_reset dist {
@@ -463,7 +468,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       max_nonblocking_items = 1 << (TL_AIW + 1);
 
       foreach (cfg.mem_ranges[i]) begin
-        num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
+        if (get_mem_access_by_addr(ral, cfg.mem_ranges[i].start_addr) != "RO") begin
+          num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
+        end
       end
       num_words = num_words >> 2;
 
@@ -475,37 +482,44 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             bit [TL_DBW-1:0] mask;
             randcase
               1: begin // write
+                dv_base_mem mem;
                 int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
 
                 `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
                     addr inside {[cfg.mem_ranges[mem_idx].start_addr :
                                   cfg.mem_ranges[mem_idx].end_addr]};)
-                data = $urandom;
-                if (cfg.en_mem_byte_write) mask = get_rand_contiguous_mask();
-                else                       mask = '1;
-                tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
 
-                if (!cfg.under_reset) begin
-                  addr[1:0] = 0;
-                  exp_mem[addr] = data;
-                  mem_exist_addr_q.push_back(addr);
+                if (get_mem_access_by_addr(ral, addr) != "RO") begin
+                  `downcast(mem, get_mem_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr))
+                  if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
+                  else                                     mask = '1;
+                  data = $urandom;
+                  tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
+
+                  if (!cfg.under_reset) begin
+                    addr[1:0] = 0;
+                    exp_mem[addr] = data;
+                    mem_exist_addr_q.push_back(addr);
+                  end
                 end
               end
               // Randomly pick a previously written address for partial read.
               exp_mem.size > 0: begin // read
                 // get all the programmed addresses and randomly pick one
                 addr = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
-                mask = get_rand_contiguous_mask();
-                tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
+                if (get_mem_access_by_addr(ral, addr) != "WO") begin;
+                  mask = get_rand_contiguous_mask();
+                  tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
 
-                if (!cfg.under_reset) begin
-                  bit [TL_DW-1:0]  compare_mask;
-                  bit [TL_DW-1:0]  act_data, exp_data;
-                  // calculate compare_mask which is data width wide
-                  foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
-                  act_data = data & compare_mask;
-                  exp_data = exp_mem[addr] & compare_mask;
-                  `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+                  if (!cfg.under_reset) begin
+                    bit [TL_DW-1:0]  compare_mask;
+                    bit [TL_DW-1:0]  act_data, exp_data;
+                    // calculate compare_mask which is data width wide
+                    foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
+                    act_data = data & compare_mask;
+                    exp_data = exp_mem[addr] & compare_mask;
+                    `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+                  end
                 end
               end
             endcase

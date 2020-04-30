@@ -91,7 +91,6 @@ package csr_utils_pkg;
   function automatic void get_mem_addr_ranges(uvm_reg_block ral, ref addr_range_t mem_ranges[$]);
     uvm_mem mems[$];
     ral.get_memories(mems);
-    mems.delete();
     foreach (mems[i]) begin
       addr_range_t mem_range;
       mem_range.start_addr = mems[i].get_address();
@@ -99,6 +98,21 @@ package csr_utils_pkg;
                              mems[i].get_size() * mems[i].get_n_bytes() - 1;
       mem_ranges.push_back(mem_range);
     end
+  endfunction
+
+  // get mem object from address
+  function automatic uvm_mem get_mem_by_addr(uvm_reg_block ral, uvm_reg_addr_t addr);
+    uvm_mem mem;
+    addr[1:0] = 0;
+    mem = ral.default_map.get_mem_by_offset(addr);
+    `DV_CHECK_NE_FATAL(mem, null, $sformatf("Can't find any mem with addr 0x%0h", addr), msg_id)
+    return mem;
+  endfunction
+
+  // get mem access like RW, RO
+  function automatic string get_mem_access_by_addr(uvm_reg_block ral, uvm_reg_addr_t addr);
+    uvm_mem mem = get_mem_by_addr(ral, addr);
+    return mem.get_access();
   endfunction
 
   // This fucntion return mirrored value of reg/field of given RAL
