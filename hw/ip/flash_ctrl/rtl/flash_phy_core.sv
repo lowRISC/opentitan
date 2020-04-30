@@ -35,14 +35,22 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   import flash_ctrl_pkg::*;
   import flash_phy_pkg::*;
 
-  // The operation sent to the flash macro
-  flash_phy_op_sel_e op_sel;
+  typedef enum logic [1:0] {
+    StIdle,
+    StRead,
+    StCtrl
+  } arb_state_e;
 
-  // The flash macro is currently idle
-  logic flash_idle;
+  arb_state_e state_q, state_d;
 
   // request signals to flash macro
   logic [PhyOps-1:0] reqs;
+
+  // host select for address
+  logic host_sel;
+
+  // controller response valid
+  logic ctrl_rsp_vld;
 
   // ack to phy operations from flash macro
   logic ack;
@@ -50,43 +58,71 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   // interface with flash macro
   logic [BankAddrW-1:0] muxed_addr;
 
-  // valid request conditions
-  logic op_clr_cond;
-
-  // flash is idle when no op is selected
-  // or when the flash acks
-  assign flash_idle = (op_sel == None) | ack;
-
-  // if current operation is host, only transition to None if no more pending reqs
-  // if current operation is ctrl, transition back whenever operation done
-  assign op_clr_cond = (op_sel == Host) ? flash_idle & !host_req_i :
-                       (op_sel == Ctrl) ? flash_idle : 1'b0;
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      op_sel <= None;
-    end else if (op_clr_cond) begin
-      op_sel <= None;
-    end else if (flash_idle && host_req_i) begin
-      op_sel <= Host;
-    end else if (flash_idle && req_i) begin
-      op_sel <= Ctrl;
+      state_q <= StIdle;
+    end else begin
+      state_q <= state_d;
     end
   end
 
-  assign reqs[PhyRead]    = (req_i & rd_i) | host_req_i;
-  assign reqs[PhyProg]    = !host_req_i & req_i & prog_i;
-  assign reqs[PhyPgErase] = !host_req_i & req_i & pg_erase_i;
-  assign reqs[PhyBkErase] = !host_req_i & req_i & bk_erase_i;
-  assign muxed_addr       = host_req_i ? host_addr_i : addr_i;
+  always_comb begin
+    state_d = state_q;
 
-  // whenever there is nothing selected, host transactions are always accepted
-  // This also implies host trasnactions have the highest priority
-  assign host_req_rdy_o  = (op_sel == None) | host_req_done_o;
-  assign host_req_done_o = (op_sel == Host) & ack;
-  assign rd_done_o       = (op_sel == Ctrl) & ack & rd_i;
-  assign prog_done_o     = (op_sel == Ctrl) & ack & prog_i;
-  assign erase_done_o    = (op_sel == Ctrl) & ack & (pg_erase_i | bk_erase_i);
+    reqs = '0;
+    host_sel = 1'b0;
+    ctrl_rsp_vld = 1'b0;
+    host_req_rdy_o = 1'b0;
+    host_req_done_o = 1'b0;
+
+    unique case (state_q)
+      StIdle: begin
+        if (host_req_i) begin
+          host_req_rdy_o = 1'b1;
+          host_sel = 1'b1;
+          reqs[PhyRead] = 1'b1;
+          state_d = StRead;
+        end else if (req_i) begin
+          reqs[PhyRead] = rd_i;
+          reqs[PhyProg] = prog_i;
+          reqs[PhyPgErase] = pg_erase_i;
+          reqs[PhyBkErase] = bk_erase_i;
+          state_d = StCtrl;
+        end
+      end
+
+      StRead: begin
+        if (ack) begin
+          host_req_done_o = 1'b1;
+
+          // pending read transaction, immediately start
+          if (host_req_i) begin
+            host_req_rdy_o = 1'b1;
+            host_sel = 1'b1;
+            reqs[PhyRead] = 1'b1;
+          end else begin
+            state_d = StIdle;
+          end
+        end
+      end
+
+      StCtrl: begin
+        ctrl_rsp_vld = 1'b1;
+        if (ack) begin
+          state_d = StIdle;
+        end
+      end
+
+      // state is terminal, no flash transactions are ever accepted again
+      // until reboot
+      default:;
+    endcase // unique case (state_q)
+  end
+
+  assign muxed_addr       = host_sel ? host_addr_i : addr_i;
+  assign rd_done_o = ctrl_rsp_vld & rd_i & ack;
+  assign prog_done_o = ctrl_rsp_vld & prog_i & ack;
+  assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i) & ack;
 
   // The actual flash macro wrapper
   prim_flash #(
@@ -115,21 +151,5 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
 
   // requests to flash must always be one hot
   `ASSERT(OneHotReqs_A, $onehot0(reqs))
-
-  // if op_sel is Ctrl, it must have come from None
-  `ASSERT(CtrlPrevNone_A, $rose(op_sel == Ctrl) |-> $past(op_sel == None))
-
-  // if no operation is ongoing, a host request must always win
-  `ASSERT(HostPriority_A, (op_sel == None) && host_req_i |=> op_sel == Host)
-
-  // if a host request is done, and is immediately followed by another host request
-  // host should retain priority
-  `ASSERT(HostPriorityConseq_A, (op_sel == Host && flash_idle) && host_req_i |=> op_sel == Host)
-
-  // host request should never interrupt an ongoing controller operation
-  `ASSERT(CtrlAtomic_A, op_sel == Ctrl && !flash_idle |=> op_sel == Ctrl)
-
-  // ctrl request do not allow overlapping
-  `ASSERT(CtrlSerial_A, op_sel == Ctrl && flash_idle |=> op_sel == None)
 
 endmodule // flash_phy_core
