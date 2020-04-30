@@ -37,14 +37,14 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
-### Compile-time configurations
-[list compile time configurations, if any and what are they used for]
+<!--### Compile-time configurations
+TODO-->
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `entropy_src_env_pkg`. Some of them in use are:
+<!--TODO-->
 ```systemverilog
-[list a few parameters, types & methods; no need to mention all]
 ```
 
 ### TL_agent
@@ -65,20 +65,17 @@ All test sequences are extended from `entropy_src_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
 * entropy_src_init:     Initialize the ENTROPY_SRC module from the randomized environment variables in the config.
-* TODO, add more
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
-* TODO, add more
 
 ### Self-checking strategy
 #### Scoreboard
 The `entropy_src_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
-* TODO, maybe entropy/noise
 
 #### Assertions
 * TLUL assertions: The `tb/entropy_src_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
@@ -94,5 +91,4 @@ $ make TEST_NAME=entropy_src_sanity
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the testplan
-{{</* testplan "hw/ip/entropy_src/data/entropy_src_testplan.hjson" */>}} -->
+{{< testplan "hw/ip/entropy_src/data/entropy_src_testplan.hjson" >}}
