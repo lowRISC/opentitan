@@ -56,8 +56,10 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   task body();
-    run_esc_rsp_seq_nonblocking();
+    `DV_CHECK_RANDOMIZE_FATAL(this)
+    run_esc_rsp_seq_nonblocking(esc_int_err);
     run_alert_ping_rsp_seq_nonblocking();
+    if (verbosity != UVM_LOW) `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
@@ -80,7 +82,6 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
       wr_class_accum_threshold(accum_thresh);
 
-      if (esc_int_err) drive_esc_resp(esc_int_err);
       // drive alert
       drive_alert(alert_trigger, alert_int_err);
 
@@ -95,7 +96,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       end
 
       // read and check interrupt
-      clear_all_interrupts();
+      check_alert_interrupts();
 
       wait_alert_handshake_done();
       fork

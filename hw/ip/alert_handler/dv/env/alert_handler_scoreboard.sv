@@ -109,16 +109,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         forever begin
           alert_esc_seq_item act_item;
           esc_fifo[index].get(act_item);
-          // once esc signal is received
-          if (act_item.alert_esc_type == AlertEscSigTrans &&
-              act_item.esc_handshake_sta == EscIntFail) begin
-            `uvm_error(`gfn, "should not have int fail here")
-          end
           if (act_item.alert_esc_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscRespComplete) begin
             check_esc_signal(act_item.sig_cycle_cnt, index);
           end
-          if (act_item.alert_esc_type == AlertEscIntFail) begin
+          if (act_item.alert_esc_type == AlertEscIntFail ||
+              (act_item.alert_esc_type == AlertEscSigTrans &&
+               act_item.esc_handshake_sta == EscIntFail)) begin
             bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
           end
@@ -145,7 +142,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       alert_class = ral.loc_alert_class.get_mirrored_value();
       class_i = (alert_class >> local_alert_type * 2) & 'b11;
       loc_alert_cause_field = loc_alert_cause_fields[local_alert_type];
-      void'(loc_alert_cause_field.predict(1));
+      void'(loc_alert_cause_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
     end
 
     intr_state_field = intr_state_fields[class_i];
@@ -173,7 +170,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     if (curr_time != last_triggered_alert_per_class[class_i]) begin
       last_triggered_alert_per_class[class_i] = curr_time;
       accum_cnt += 1;
-      void'(reg_accum_cnts[class_i].predict(accum_cnt));
+      void'(reg_accum_cnts[class_i].predict(.value(accum_cnt), .kind(UVM_PREDICT_READ)));
     end
     `uvm_info(`gfn, $sformatf("alert_accum: class=%0d, alert_cnt=%0d, thresh=%0d, under_esc=%0b",
         class_i, accum_cnt, accum_thresh, under_esc_classes[class_i]), UVM_DEBUG)
@@ -184,12 +181,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void predict_esc(int class_i);
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
     under_esc_classes[class_i] = 1;
+    $display("%time, predict esc %0d, class_ctrl is %0b", $realtime, class_i, class_ctrl);
   endfunction
 
   // check if escalation signal's duration length is correct
   virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
-    if (ral.regen.get_mirrored_value()) begin
-      // if ping response enabled, will not check cycle count if esc ping is enabled
+    // if ping response enabled, will not check cycle count after the earliest expect ping esc
+    // might trigger. It is beyond this scb to check ping timer (FPV checks it).
+    if (ral.regen.get_mirrored_value() || $realtime < IGNORE_CNT_CHECK_NS) begin
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       `uvm_info(`gfn, $sformatf("esc signal_%0d triggered, cycle cnt is %0d",
@@ -374,7 +373,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               begin
                 wait(cfg.under_reset || !under_esc_classes[class_i]);
                 if (!under_esc_classes[class_i]) begin
-                  cfg.clk_rst_vif.wait_clks(2);
+                  // wait 3 clk cycle until release esc signal completed
+                  cfg.clk_rst_vif.wait_clks(3);
                 end
               end
             join_any

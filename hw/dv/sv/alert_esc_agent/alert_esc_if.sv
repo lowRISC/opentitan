@@ -147,6 +147,16 @@ interface alert_esc_if(input clk, input rst_n);
     receiver_cb.esc_rx.resp_n <= 1'b1;
   endtask
 
+  task automatic set_resp_both_high();
+    receiver_cb.esc_rx.resp_p <= 1'b1;
+    receiver_cb.esc_rx.resp_n <= 1'b1;
+  endtask
+
+  task automatic set_resp_both_low();
+    receiver_cb.esc_rx.resp_p <= 1'b0;
+    receiver_cb.esc_rx.resp_n <= 1'b0;
+  endtask
+
   function automatic bit get_esc();
     return monitor_cb.esc_tx.esc_p && !monitor_cb.esc_tx.esc_n;
   endfunction

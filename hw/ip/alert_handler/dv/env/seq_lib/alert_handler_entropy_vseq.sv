@@ -23,9 +23,13 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
     alert_en dist {'b1111 := 9, [0:'b1110] := 1};
   }
 
+  // temp constraint, should take off when support ping_int_err
+  constraint sig_int_c {
+    esc_int_err == 0;
+  }
+
   function void pre_randomize();
     this.enable_classa_only_c.constraint_mode(0);
-    this.sig_int_c.constraint_mode(0);
     // set verbosity high to avoid printing out too much information
     verbosity = UVM_HIGH;
   endfunction

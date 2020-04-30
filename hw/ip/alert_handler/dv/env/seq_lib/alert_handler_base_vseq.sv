@@ -43,7 +43,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic alert_handler features
-  // alert_class default 0 -> all alert willtrigger interrupt classA
+  // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
                                   bit [TL_DW-1:0]                     alert_class = 'h0,
@@ -86,25 +86,13 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual task drive_esc_resp(bit[alert_pkg::N_ESC_SEV-1:0] esc_int_err);
-    fork
-      begin : isolation_fork
-        foreach (esc_int_err[i]) begin
-          if (esc_int_err[i]) begin
-            automatic int index = i;
-            fork
-              begin
-                esc_receiver_esc_rsp_seq esc_seq;
-                `uvm_create_on(esc_seq, p_sequencer.esc_device_seqr_h[index]);
-                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1;)
-                `uvm_send(esc_seq)
-              end
-            join_none
-          end
-        end
-        wait fork;
-      end
-    join
+  // alert_handler scb will compare the read value with expected value
+  // Not using "clear_all_interrupts" function in cip_base_vseq because of the signal interity
+  // error: after clearing intr_state, intr_state might come back to 1 in the next cycle.
+  virtual task check_alert_interrupts();
+    bit [TL_DW-1:0] intr;
+    csr_rd(.ptr(ral.intr_state), .value(intr));
+    csr_wr(.csr(ral.intr_state), .value(intr));
   endtask
 
   virtual task clear_esc();
@@ -166,14 +154,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This sequence will automatically response to all escalation ping and esc responses
-  virtual task run_esc_rsp_seq_nonblocking();
+  virtual task run_esc_rsp_seq_nonblocking(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs = '0);
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
+          bit esc_int_err = esc_int_errs[index] ? $urandom_range(0, 1) : 0;
           esc_receiver_esc_rsp_seq esc_seq =
               esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 0;);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err;);
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
         end
       join_none

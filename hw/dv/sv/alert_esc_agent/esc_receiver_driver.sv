@@ -55,18 +55,15 @@ class esc_receiver_driver extends alert_esc_base_driver;
               $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
               req.r_esc_rsp, req.int_err), UVM_HIGH)
 
-          // toggle resp signals only when esc signals are not set
-          if (req.int_err && req.resp_int_err_type == RandResponse) begin
-            cfg.vif.wait_esc_complete();
+          if (req.int_err) begin
+            repeat ($urandom_range(10, 1000)) @(cfg.vif.receiver_cb);
             repeat (req.int_err_cyc) begin
-              if (cfg.vif.get_esc() === 1'b0) begin
-                randcase
-                  1: cfg.vif.set_resp();
-                  1: cfg.vif.reset_resp();
-                endcase
-              end else begin
-                break;
-              end
+              randcase
+                1: cfg.vif.set_resp();
+                1: cfg.vif.reset_resp();
+                1: cfg.vif.set_resp_both_high();
+                1: cfg.vif.set_resp_both_low();
+              endcase
               @(cfg.vif.receiver_cb);
             end
             if (cfg.vif.get_esc() === 1'b0) cfg.vif.reset_resp();
