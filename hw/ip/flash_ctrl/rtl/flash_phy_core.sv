@@ -53,6 +53,8 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   // valid request conditions
   logic op_clr_cond;
 
+  logic host_sel;
+
   // flash is idle when no op is selected
   // or when the flash acks
   assign flash_idle = (op_sel == None) | ack;
@@ -74,11 +76,31 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
     end
   end
 
-  assign reqs[PhyRead]    = (req_i & rd_i) | host_req_i;
-  assign reqs[PhyProg]    = !host_req_i & req_i & prog_i;
-  assign reqs[PhyPgErase] = !host_req_i & req_i & pg_erase_i;
-  assign reqs[PhyBkErase] = !host_req_i & req_i & bk_erase_i;
-  assign muxed_addr       = host_req_i ? host_addr_i : addr_i;
+  // controller read request has different timing from host_req.
+  // The code below massages the two to be the same
+  logic ctrl_rd_req;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ctrl_rd_req <= 1'b0;
+    end else if (req_i && rd_i && op_sel == Ctrl) begin
+      // drop read request once it has been accepted
+      ctrl_rd_req <= 1'b0;
+    end else if (req_i && rd_i && op_sel != Ctrl) begin
+      // raise read request
+      ctrl_rd_req <= 1'b1;
+    end
+  end
+
+  // host is selected whenever current operation is none and there is a request
+  // or if the pending operation is already host
+  assign host_sel = (op_sel == None) ? host_req_i : (op_sel == Host);
+
+  // host can only perform read transactions
+  assign reqs[PhyRead]    = host_sel | ctrl_rd_req;
+  assign reqs[PhyProg]    = !host_sel & req_i & prog_i;
+  assign reqs[PhyPgErase] = !host_sel & req_i & pg_erase_i;
+  assign reqs[PhyBkErase] = !host_sel & req_i & bk_erase_i;
+  assign muxed_addr       = host_sel ? host_addr_i : addr_i;
 
   // whenever there is nothing selected, host transactions are always accepted
   // This also implies host trasnactions have the highest priority
