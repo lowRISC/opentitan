@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:dv_lib
     files:
       - alert_esc_if.sv
+      - alert_esc_probe_if.sv
       - alert_esc_agent_pkg.sv
       - alert_esc_agent_cfg.sv: {is_include_file: true}
       - alert_esc_agent.sv: {is_include_file: true}

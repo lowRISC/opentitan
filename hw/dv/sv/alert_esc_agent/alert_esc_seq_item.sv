@@ -17,7 +17,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand bit int_err;
   rand bit timeout;
   rand alert_sig_int_err_e alert_int_err_type;
-  rand resp_sig_int_err_e  resp_int_err_type;
 
   // for monitor only
   rand alert_esc_trans_type_e alert_esc_type;
@@ -50,7 +49,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
   // TODO: temp constraint, will support soon
   constraint sig_int_err_c {
     alert_int_err_type == NoAlertBeforeAfterIntFail;
-    resp_int_err_type == RandResponse;
   }
 
   `uvm_object_utils_begin(alert_esc_seq_item)
@@ -68,7 +66,6 @@ class alert_esc_seq_item extends uvm_sequence_item;
     `uvm_field_int (int_err_cyc,       UVM_DEFAULT)
     `uvm_field_int (sig_cycle_cnt,     UVM_DEFAULT)
     `uvm_field_enum(alert_sig_int_err_e,    alert_int_err_type,  UVM_DEFAULT)
-    `uvm_field_enum(resp_sig_int_err_e,     resp_int_err_type,   UVM_DEFAULT)
     `uvm_field_enum(alert_esc_trans_type_e, alert_esc_type,      UVM_DEFAULT)
     `uvm_field_enum(alert_handshake_e,      alert_handshake_sta, UVM_DEFAULT)
     `uvm_field_enum(esc_handshake_e,        esc_handshake_sta,   UVM_DEFAULT)

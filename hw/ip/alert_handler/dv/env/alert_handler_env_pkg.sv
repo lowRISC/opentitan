@@ -27,7 +27,9 @@ package alert_handler_env_pkg;
   parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
   parameter uint MIN_CYCLE_PER_PHASE         = 2;
   parameter uint NUM_LOCAL_ALERT             = 4;
-
+  // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
+  // extra cycle to the calculated cnt, or even combine two signals into one.
+  parameter uint IGNORE_CNT_CHECK_NS         = 100_000_000;
   // types
   typedef enum {
     EscPhase0,

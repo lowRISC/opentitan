@@ -32,7 +32,9 @@ package alert_esc_agent_pkg;
     EscRespReceived,
     EscComplete,
     EscRespComplete,
-    EscIntFail
+    EscIntFail,
+    EscRespHi,
+    EscRespLo
   } esc_handshake_e;
 
   typedef enum bit [1:0] {
@@ -41,12 +43,6 @@ package alert_esc_agent_pkg;
     HasAlertAfterIntFailOnly   = 'b10,
     HasAlertBeforeAfterIntFail = 'b11
   } alert_sig_int_err_e;
-
-  typedef enum {
-    NoResponse,
-    RandResponse,
-    SigPNIntErr
-  } resp_sig_int_err_e;
 
   // macro includes
   `include "uvm_macros.svh"
