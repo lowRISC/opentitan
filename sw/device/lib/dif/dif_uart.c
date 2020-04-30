@@ -359,8 +359,8 @@ bool dif_uart_irq_state_clear(const dif_uart_t *uart,
   }
 
   // Writing to the register clears the corresponding bits.
-  mmio_region_nonatomic_set_bit32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
-                                  offset);
+  mmio_region_write_only_set_bit32(uart->base_addr, UART_INTR_STATE_REG_OFFSET,
+                                   offset);
 
   return true;
 }
