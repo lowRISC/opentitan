@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import math
 import logging as log
 
 
@@ -92,7 +91,7 @@ def no_device_in_range(xbar, name, f, t):
             x for x in xbar["nodes"]
             if x["type"] == "device" and not x["name"] == name
     ]:
-        if not "addr_range" in node:
+        if "addr_range" not in node:
             # Xbar?
             log.info("Xbar type node cannot be compared in this version.",
                      "Please use in caution")
@@ -129,7 +128,7 @@ def get_next_base_addr(addr, xbar, name):
         addrs = [a for r in device_list for a in r["addr_range"]]
     except KeyError:
         log.error("Address range is wrong.\n {}".format(
-            [x for x in device_list if not "addr_range" in x]))
+            [x for x in device_list if "addr_range" not in x]))
         raise SystemExit()
 
     sorted_list = sorted(addrs, key=lambda k: int(k["base_addr"], 0))

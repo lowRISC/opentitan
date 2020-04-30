@@ -7,12 +7,12 @@ import logging as log
 from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
+from pathlib import Path
 
-from .item import NodeType
 from .xbar import Xbar
 
 
-def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
+def generate_tb(xbar: Xbar, dv_path: Path) -> str:  # xbar: Xbar -> str
     # list all the generate files for TB
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
@@ -46,5 +46,5 @@ def generate_tb(xbar, dv_path):  #xbar: Xbar -> str
         with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
             try:
                 fout.write(tpl.render(xbar=xbar))
-            except:
+            except:  # noqa: E722 for general exception handling
                 log.error(exceptions.text_error_template().render())

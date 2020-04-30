@@ -27,7 +27,7 @@ def amend_ip(top, ip):
     """
     ip_list_in_top = [x["name"].lower() for x in top["module"]]
     ipname = ip["name"].lower()
-    if not ipname in ip_list_in_top:
+    if ipname not in ip_list_in_top:
         log.info("TOP doens't use the IP %s. Skip" % ip["name"])
         return
 
@@ -39,7 +39,7 @@ def amend_ip(top, ip):
     ip_module = top["module"][ip_idx]
 
     # Size
-    if not "size" in ip_module:
+    if "size" not in ip_module:
         ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
     elif int(ip_module["size"], 0) < ip["gensize"]:
         log.error(
@@ -251,9 +251,9 @@ def xbar_adddevice(top, xbar, device):
                             ("size_byte", "0x1000"),
                         ])],
                         "xbar": False,
-                        "pipeline" : "true",
-                        "pipeline_byp" : "true"
-                    }) # yapf: disable
+                        "pipeline": "true",
+                        "pipeline_byp": "true"
+                    })  # yapf: disable
                 else:
                     # Update if exists
                     node = nodeobj[0]
@@ -279,17 +279,18 @@ def xbar_adddevice(top, xbar, device):
     elif len(nodeobj) == 0:
         # found in module or memory but node object doesn't exist.
         xbar["nodes"].append({
-            "name" : device,
-            "type" : "device",
-            "clock" : deviceobj[0]["clock"],
-            "reset" : deviceobj[0]["reset"],
-            "inst_type" : deviceobj[0]["type"],
-            "addr_range": [OrderedDict([("base_addr", deviceobj[0]["base_addr"]),
-                            ("size_byte", deviceobj[0]["size"])])],
-            "pipeline" : "true",
-            "pipeline_byp" : "true",
-            "xbar" : True if device in xbar_list else False
-        }) # yapf: disable
+            "name": device,
+            "type": "device",
+            "clock": deviceobj[0]["clock"],
+            "reset": deviceobj[0]["reset"],
+            "inst_type": deviceobj[0]["type"],
+            "addr_range": [OrderedDict([
+                ("base_addr", deviceobj[0]["base_addr"]),
+                ("size_byte", deviceobj[0]["size"])])],
+            "pipeline": "true",
+            "pipeline_byp": "true",
+            "xbar": True if device in xbar_list else False
+        })  # yapf: disable
 
     else:
         # found and exist in the nodes too
@@ -363,14 +364,14 @@ def xbar_cross(xbar, xbars):
     addr = []
     for node in [
             x for x in xbar["nodes"]
-            if x["type"] == "device" and "xbar" in x and x["xbar"] == False
+            if x["type"] == "device" and "xbar" in x and x["xbar"] is False
     ]:
         addr.extend(node["addr_range"])
 
     # Step 2: visit xbar device ports
     xbar_nodes = [
         x for x in xbar["nodes"]
-        if x["type"] == "device" and "xbar" in x and x["xbar"] == True
+        if x["type"] == "device" and "xbar" in x and x["xbar"] is True
     ]
 
     # Now call function to get the device range
@@ -402,8 +403,8 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     for node in host_xbar["nodes"]:
         if not node["name"] in devices:
             continue
-        if "xbar" in node and node["xbar"] == True:
-            if not "addr_range" in node:
+        if "xbar" in node and node["xbar"] is True:
+            if "addr_range" not in node:
                 # Deeper dive into another crossbar
                 xbar_addr = xbar_cross_node(node["name"], host_xbar, xbars,
                                             visited)
@@ -423,7 +424,6 @@ def amend_clocks(top: OrderedDict):
     clks_attr = top['clocks']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
 
-
     # Default assignments
     for group in clks_attr['groups']:
 
@@ -432,15 +432,16 @@ def amend_clocks(top: OrderedDict):
             group['unique'] = "no"
 
         # if no hardwired clocks, define an empty set
-        group['clocks'] = OrderedDict() if 'clocks' not in group else group['clocks']
-
+        group['clocks'] = OrderedDict(
+        ) if 'clocks' not in group else group['clocks']
 
     for ep in top['module'] + top['memory'] + top['xbar']:
 
         clock_connections = OrderedDict()
 
         # if no clock group assigned, default is unique
-        ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep['clock_group']
+        ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
+            'clock_group']
         ep_grp = ep['clock_group']
 
         # end point names and clocks
@@ -464,7 +465,6 @@ def amend_clocks(top: OrderedDict):
                 # new group clock name
                 clk_name = "clk_{}_{}".format(clk, ep_grp)
 
-
             # add clock to a particular group
             clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
 
@@ -473,6 +473,7 @@ def amend_clocks(top: OrderedDict):
 
         # Add to endpoint structure
         ep['clock_connections'] = clock_connections
+
 
 def amend_resets(top):
     """Add a path variable to reset declaration
@@ -488,7 +489,8 @@ def amend_resets(top):
         if reset["type"] in ["gen"]:
             # The resets structure will be used once rstmgr is integrated
             # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
-            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(reset["name"])
+            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(
+                reset["name"])
         elif reset["type"] == "por":
             reset_paths[reset["name"]] = "rst_ni"
         else:
@@ -501,10 +503,10 @@ def amend_resets(top):
 def amend_interrupt(top):
     """Check interrupt_module if exists, or just use all modules
     """
-    if not "interrupt_module" in top:
+    if "interrupt_module" not in top:
         top["interrupt_module"] = [x["name"] for x in top["module"]]
 
-    if not "interrupt" in top or top["interrupt"] == "":
+    if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
     for m in top["interrupt_module"]:
@@ -523,10 +525,10 @@ def amend_interrupt(top):
 def amend_alert(top):
     """Check interrupt_module if exists, or just use all modules
     """
-    if not "alert_module" in top:
+    if "alert_module" not in top:
         top["alert_module"] = [x["name"] for x in top["module"]]
 
-    if not "alert" in top or top["alert"] == "":
+    if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
     for m in top["alert_module"]:
@@ -547,7 +549,7 @@ def amend_pinmux_io(top):
     """
     pinmux = top["pinmux"]
 
-    if not "dio_modules" in pinmux:
+    if "dio_modules" not in pinmux:
         pinmux['dio_modules'] = []
 
     # list out dedicated IO
@@ -559,7 +561,7 @@ def amend_pinmux_io(top):
         # Parse how many signals
         m = lib.get_module_by_name(top, mname)
 
-        if sname != None:
+        if sname is not None:
             signals = deepcopy([lib.get_signal_by_name(m, sname)])
         else:
             # Get all module signals
@@ -571,9 +573,10 @@ def amend_pinmux_io(top):
 
         # convert signal with module name
         signals = list(
-            map(partial(lib.add_module_prefix_to_signal, module=mname), signals))
+            map(partial(lib.add_module_prefix_to_signal, module=mname),
+                signals))
         # Parse how many pads are assigned
-        if not "pad" in e:
+        if "pad" not in e:
             raise SystemExit("Should catch pad field in validate.py!")
 
         # pads are the list of individual pin, each entry is 1 bit width
@@ -596,7 +599,7 @@ def amend_pinmux_io(top):
     dio_names = [p["name"] for p in pinmux["dio"]]
 
     # Multiplexer IO
-    if not "mio_modules" in pinmux:
+    if "mio_modules" not in pinmux:
         # Add all modules having available io to Multiplexer IO
         pinmux["mio_modules"] = []
 
@@ -611,11 +614,11 @@ def amend_pinmux_io(top):
     # List up the dedicated IO to exclude from inputs/outputs
 
     # Add port list to `inputs` and `outputs` fields
-    if not "inputs" in pinmux:
+    if "inputs" not in pinmux:
         pinmux["inputs"] = []
-    if not "outputs" in pinmux:
+    if "outputs" not in pinmux:
         pinmux["outputs"] = []
-    if not "inouts" in pinmux:
+    if "inouts" not in pinmux:
         pinmux["inouts"] = []
 
     for e in pinmux["mio_modules"]:
@@ -625,7 +628,7 @@ def amend_pinmux_io(top):
                 "Cannot parse signal/module in mio_modules {}".format(e))
         # Add all ports from the module to input/outputs
         m = lib.get_module_by_name(top, tokens[0])
-        if m == None:
+        if m is None:
             raise SystemExit("Module {} doesn't exist".format(tokens[0]))
 
         if len(tokens) == 1:

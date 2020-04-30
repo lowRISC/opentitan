@@ -2,14 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import copy
 import logging as log
 
-from .item import Edge, Node, NodeType
+from .item import Node, NodeType
 from .xbar import Xbar
 
 
-def elaborate(xbar):  # xbar: Xbar -> bool
+def elaborate(xbar: Xbar) -> bool:
     """elaborate reads all nodes and edges then
     construct internal FIFOs, Sockets.
     """
@@ -23,11 +22,11 @@ def elaborate(xbar):  # xbar: Xbar -> bool
         process_node(host, xbar)
         log.info("Node Processed: " + repr(xbar))
 
-    ## Pipeline
+    # Pipeline
     process_pipeline(xbar)
 
-    ## Build address map
-    ## Each socket_1n should have address map
+    # Build address map
+    # Each socket_1n should have address map
 
     return True
 
@@ -124,11 +123,11 @@ def process_pipeline(xbar):
         # If it is device, it means host and device are directly connected. Ignore now.
 
         # After process node is done, always only one downstream exists in any host node
-        if host.pipeline == True and host.pipeline_byp == True:
+        if host.pipeline is True and host.pipeline_byp is True:
             # No need to process, same as default
             continue
 
-        no_bypass = (host.pipeline == True and host.pipeline_byp == False)
+        no_bypass = (host.pipeline is True and host.pipeline_byp is False)
         dnode = host.ds[0].ds
 
         if dnode.node_type == NodeType.ASYNC_FIFO:
@@ -144,7 +143,7 @@ def process_pipeline(xbar):
 
         # keep variables separate in case we ever need to differentiate
         dnode.dpass = 0 if no_bypass else dnode.dpass
-        dnode.hdepth = 0 if host.pipeline == False else dnode.hdepth
+        dnode.hdepth = 0 if host.pipeline is False else dnode.hdepth
         dnode.ddepth = dnode.hdepth
 
     for device in xbar.devices:
@@ -156,10 +155,10 @@ def process_pipeline(xbar):
         # If Socket 1N, find position of the device and follow procedure above
         # If it is host, ignore
 
-        if device.pipeline == True and device.pipeline_byp == True:
+        if device.pipeline is True and device.pipeline_byp is True:
             continue
 
-        no_bypass = (device.pipeline == True and device.pipeline_byp == False)
+        no_bypass = (device.pipeline is True and device.pipeline_byp is False)
         unode = device.us[0].us
 
         if unode.node_type == NodeType.ASYNC_FIFO:
@@ -175,7 +174,7 @@ def process_pipeline(xbar):
 
         # keep variables separate in case we ever need to differentiate
         unode.hpass = 0 if no_bypass else unode.hpass
-        unode.ddepth = 0 if device.pipeline == False else unode.ddepth
+        unode.ddepth = 0 if device.pipeline is False else unode.ddepth
         unode.hdepth = unode.ddepth
 
     return xbar

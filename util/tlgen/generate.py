@@ -12,7 +12,7 @@ from .item import NodeType
 from .xbar import Xbar
 
 
-def generate(xbar):  #xbar: Xbar -> str
+def generate(xbar: Xbar) -> str:
     """generate uses elaborated model then creates top level Xbar module
     with prefix.
     """
@@ -21,8 +21,6 @@ def generate(xbar):  #xbar: Xbar -> str
         filename=resource_filename('tlgen', 'xbar.rtl.sv.tpl'))
     xbar_pkg_tpl = Template(
         filename=resource_filename('tlgen', 'xbar.pkg.sv.tpl'))
-    #xbar_dv_tpl = Template(
-    #    filename=resource_filename('tlgen', 'xbar.dv.sv.tpl'))
     xbar_core_tpl = Template(
         filename=resource_filename('tlgen', 'xbar.core.tpl'))
 
@@ -30,7 +28,7 @@ def generate(xbar):  #xbar: Xbar -> str
         out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
         out_core = xbar_core_tpl.render(xbar=xbar, ntype=NodeType)
-    except:
+    except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
 
     return (out_rtl, out_pkg, out_core)
