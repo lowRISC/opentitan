@@ -9,24 +9,9 @@
   entries: [
     {
       name: sanity
-      desc: '''**Goal**: Basic sanity test acessing a major datapath in ENTROPY_SRC.
-
-            **Stimulus**: Describe the stimulus procedure.
-
-            **Checks**": Describe the self-check procedure.
-            - add bullets as needed
-            - second bullet<br>
-              describe second bullet
-
-            Start a new paragraph.'''
+      desc: '''Enable entropy_src. Verify entropy, status, interrupt bits.'''
       milestone: V1
       tests: ["entropy_src_sanity"]
-    }
-    {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
-      tests: []
     }
   ]
 }

@@ -75,6 +75,7 @@ config = {
     "testplan_definitions": [
         "hw/ip/aes/data/aes_testplan.hjson",
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
+        "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
