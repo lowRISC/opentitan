@@ -7,7 +7,10 @@ software development tools for OpenTitan. Current list of tools:
 * fusesoc
 * OpenOCD
 * RISCV toolchain
+* clang-format
 * Verilator
+
+The versions of the above should match the versions installed in CI.
 
 ## Local Build Instructions
 
