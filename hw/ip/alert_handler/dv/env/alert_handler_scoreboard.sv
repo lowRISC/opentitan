@@ -224,7 +224,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       `uvm_info(`gfn, $sformatf("esc signal_%0d triggered, cycle cnt is %0d",
-                                esc_sig_i, cycle_cnt), UVM_MEDIUM)
+                                esc_sig_i, cycle_cnt), UVM_LOW)
+      if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
     end
     esc_cnter_per_signal[esc_sig_i] = 0;
     esc_sig_class[esc_sig_i] = 0;
