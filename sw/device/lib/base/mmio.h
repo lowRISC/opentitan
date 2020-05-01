@@ -194,7 +194,7 @@ inline uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
  */
 inline bool mmio_region_get_bit32(mmio_region_t base, ptrdiff_t offset,
                                   uint32_t bit_index) {
-  return (mmio_region_read32(base, offset) >> bit_index) & 0x1;
+  return bitfield_get_bit32(mmio_region_read32(base, offset), bit_index);
 }
 
 /**
@@ -306,7 +306,9 @@ inline void mmio_region_write_only_set_field32(mmio_region_t base,
 inline void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               uint32_t bit_index) {
-  mmio_region_nonatomic_clear_mask32(base, offset, 0x1, bit_index);
+  uint32_t register_value = mmio_region_read32(base, offset);
+  register_value = bitfield_clear_bit32(register_value, bit_index);
+  mmio_region_write32(base, offset, register_value);
 }
 
 /**
@@ -321,7 +323,9 @@ inline void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
 inline void mmio_region_nonatomic_set_bit32(mmio_region_t base,
                                             ptrdiff_t offset,
                                             uint32_t bit_index) {
-  mmio_region_nonatomic_set_mask32(base, offset, 0x1, bit_index);
+  uint32_t register_value = mmio_region_read32(base, offset);
+  register_value = bitfield_set_bit32(register_value, bit_index);
+  mmio_region_write32(base, offset, register_value);
 }
 
 /**
@@ -339,7 +343,9 @@ inline void mmio_region_nonatomic_set_bit32(mmio_region_t base,
 inline void mmio_region_write_only_set_bit32(mmio_region_t base,
                                              ptrdiff_t offset,
                                              uint32_t bit_index) {
-  mmio_region_write_only_set_mask32(base, offset, 0x1, bit_index);
+  uint32_t register_value = 0;
+  register_value = bitfield_set_bit32(register_value, bit_index);
+  mmio_region_write32(base, offset, register_value);
 }
 
 #ifdef __cplusplus

@@ -6,5 +6,11 @@
 
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
+extern uint32_t bitfield_get_field32(uint32_t bitfield,
+                                     bitfield_field32_t field);
 extern uint32_t bitfield_set_field32(uint32_t bitfield,
                                      bitfield_field32_t field);
+
+extern bool bitfield_get_bit32(uint32_t bitfield, uint32_t index);
+extern uint32_t bitfield_set_bit32(uint32_t bitfield, uint32_t index);
+extern uint32_t bitfield_clear_bit32(uint32_t bitfield, uint32_t index);

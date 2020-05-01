@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_BITFIELD_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_BITFIELD_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -61,6 +62,47 @@ inline uint32_t bitfield_set_field32(uint32_t bitfield,
   bitfield &= ~(field.mask << field.index);
   bitfield |= (field.value & field.mask) << field.index;
   return bitfield;
+}
+
+/**
+ * Gets whether the bit at `index` is set in `bitfield`.
+ *
+ * @param bitfield Bitfield to get the bit from.
+ * @param index The index of the bit to read, indexed from zero.
+ * @return The read bit.
+ */
+inline bool bitfield_get_bit32(uint32_t bitfield, uint32_t index) {
+  return bitfield_get_field32(bitfield, (bitfield_field32_t){
+                                            .mask = 0x1, .index = index,
+                                        }) != 0;
+}
+
+/**
+ * Sets the bit at `index` in bitfield.
+ *
+ * @param bitfield Bitfield to set the bit in.
+ * @param index The index of the bit to set, indexed from zero.
+ * @return The 32-bit resulting bitfield.
+ */
+inline uint32_t bitfield_set_bit32(uint32_t bitfield, uint32_t index) {
+  return bitfield_set_field32(bitfield,
+                              (bitfield_field32_t){
+                                  .mask = 0x1, .index = index, .value = true,
+                              });
+}
+
+/**
+ * Clears the bit at `index` in bitfield.
+ *
+ * @param bitfield Bitfield to clear the bit in.
+ * @param index The index of the bit to clear, indexed from zero.
+ * @return The 32-bit resulting bitfield.
+ */
+inline uint32_t bitfield_clear_bit32(uint32_t bitfield, uint32_t index) {
+  return bitfield_set_field32(bitfield,
+                              (bitfield_field32_t){
+                                  .mask = 0x1, .index = index, .value = false,
+                              });
 }
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_BITFIELD_H_
