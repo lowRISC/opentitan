@@ -4,6 +4,8 @@
 
 .DEFAULT_GOAL := all
 
+LOCK_SW_BUILD ?= flock --timeout 3600 ${sw_build_dir} --command
+
 all: build run
 
 ###############################
@@ -39,24 +41,27 @@ run: run_result
 pre_run:
 	@echo "[make]: pre_run"
 	mkdir -p ${run_dir}
+ifneq (${sw_name},)
+	mkdir -p ${sw_build_dir}
+endif
 
 sw_build: pre_run
 	@echo "[make]: sw_build"
 ifneq (${sw_name},)
 	# Initialize meson build system.
-	cd ${proj_root} && \
-		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh -f
+	${LOCK_SW_BUILD} "cd ${proj_root} && \
+		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
 	# Compile boot rom code and generate the image.
-	ninja -C ${sw_build_dir}/build-out \
-		sw/device/boot_rom/boot_rom_export_${sw_build_device}
+	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
+		sw/device/boot_rom/boot_rom_export_${sw_build_device}"
 	# Extract the rom logs.
 	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
 		-e "${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.elf" \
 		-f .logs.fields -r .rodata .chip_info \
 		-n "rom" -o "${run_dir}"
 	# Compile the test sw code and generate the image.
-	ninja -C ${sw_build_dir}/build-out \
-		sw/device/${sw_dir}/${sw_name}_export_${sw_build_device}
+	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
+		sw/device/${sw_dir}/${sw_name}_export_${sw_build_device}"
 	# Extract the sw logs.
 	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
 		-e "${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.elf" \
