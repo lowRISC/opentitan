@@ -19,8 +19,8 @@ module top_earlgrey #(
   input               jtag_tck_i,
   input               jtag_tms_i,
   input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
+  input               jtag_tdi_i,
+  output              jtag_tdo_o,
 
   // Multiplexed I/O
   input        [31:0] mio_in_i,
@@ -30,6 +30,13 @@ module top_earlgrey #(
   input        [13:0] dio_in_i,
   output logic [13:0] dio_out_o,
   output logic [13:0] dio_oe_o,
+
+  // pad attributes to padring
+  output logic[padctrl_reg_pkg::NMioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[padctrl_reg_pkg::NDioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+
 
   input               scanmode_i  // 1 for Scan
 );
@@ -80,6 +87,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_rv_plic_d_d2h;
   tl_h2d_t  tl_pinmux_d_h2d;
   tl_d2h_t  tl_pinmux_d_d2h;
+  tl_h2d_t  tl_padctrl_d_h2d;
+  tl_d2h_t  tl_padctrl_d_d2h;
   tl_h2d_t  tl_alert_handler_d_h2d;
   tl_d2h_t  tl_alert_handler_d_d2h;
   tl_h2d_t  tl_pwrmgr_d_h2d;
@@ -109,12 +118,12 @@ module top_earlgrey #(
   assign tl_peri_d_d2h = tl_main_h_d2h;
 
   // Signals
-  logic [31:0] mio2periph;
-  logic [31:0] periph2mio;
-  logic [31:0] periph2mio_en;
-  logic [13:0] dio2periph;
-  logic [13:0] periph2dio;
-  logic [13:0] periph2dio_en;
+  logic [31:0] mio_p2d;
+  logic [31:0] mio_d2p;
+  logic [31:0] mio_d2p_en;
+  logic [13:0] dio_p2d;
+  logic [13:0] dio_d2p;
+  logic [13:0] dio_d2p_en;
   // uart
   logic        cio_uart_rx_p2d;
   logic        cio_uart_tx_d2p;
@@ -135,6 +144,7 @@ module top_earlgrey #(
   // hmac
   // rv_plic
   // pinmux
+  // padctrl
   // alert_handler
   // pwrmgr
   // rstmgr
@@ -319,8 +329,8 @@ module top_earlgrey #(
     .tck_i            (jtag_tck_i),
     .tms_i            (jtag_tms_i),
     .trst_ni          (jtag_trst_ni),
-    .td_i             (jtag_td_i),
-    .td_o             (jtag_td_o),
+    .td_i             (jtag_tdi_i),
+    .td_o             (jtag_tdo_o),
     .tdo_oe_o         (       )
   );
 
@@ -608,17 +618,17 @@ module top_earlgrey #(
       .sleep_en_i(1'b0),
       .aon_wkup_req_o(),
 
-      .periph_to_mio_i      (periph2mio    ),
-      .periph_to_mio_oe_i   (periph2mio_en ),
-      .mio_to_periph_o      (mio2periph    ),
+      .periph_to_mio_i      (mio_d2p    ),
+      .periph_to_mio_oe_i   (mio_d2p_en ),
+      .mio_to_periph_o      (mio_p2d    ),
 
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
 
-      .periph_to_dio_i      (periph2dio    ),
-      .periph_to_dio_oe_i   (periph2dio_en ),
-      .dio_to_periph_o      (dio2periph    ),
+      .periph_to_dio_i      (dio_d2p    ),
+      .periph_to_dio_oe_i   (dio_d2p_en ),
+      .dio_to_periph_o      (dio_p2d    ),
 
       .dio_out_o,
       .dio_oe_o,
@@ -628,6 +638,17 @@ module top_earlgrey #(
       .clk_aon_i (clkmgr_clocks.clk_fixed_secure),
       .rst_ni (rstmgr_resets.rst_sys_n),
       .rst_aon_ni (rstmgr_resets.rst_sys_fixed_n)
+  );
+
+  padctrl u_padctrl (
+      .tl_i (tl_padctrl_d_h2d),
+      .tl_o (tl_padctrl_d_d2h),
+
+      .mio_attr_o,
+      .dio_attr_o,
+
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
   alert_handler u_alert_handler (
@@ -875,6 +896,8 @@ module top_earlgrey #(
     .tl_rv_plic_i       (tl_rv_plic_d_d2h),
     .tl_pinmux_o        (tl_pinmux_d_h2d),
     .tl_pinmux_i        (tl_pinmux_d_d2h),
+    .tl_padctrl_o       (tl_padctrl_d_h2d),
+    .tl_padctrl_i       (tl_padctrl_d_d2h),
     .tl_alert_handler_o (tl_alert_handler_d_h2d),
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
@@ -908,61 +931,67 @@ module top_earlgrey #(
   );
 
   // Pinmux connections
-  assign periph2mio = {
+  assign mio_d2p = {
     cio_gpio_gpio_d2p
   };
-  assign periph2mio_en = {
+  assign mio_d2p_en = {
     cio_gpio_gpio_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d
-  } = mio2periph;
+  } = mio_p2d;
 
   // Dedicated IO connections
-  // Tie off output and output enable of input-only DIOs
-  assign periph2dio = {
-    1'b0,
-    1'b0,
-    1'b0,
-    cio_spi_device_miso_d2p,
-    1'b0,
-    cio_uart_tx_d2p,
-    1'b0,
-    cio_usbdev_se0_d2p,
-    cio_usbdev_pullup_d2p,
-    cio_usbdev_tx_mode_se_d2p,
-    cio_usbdev_suspend_d2p,
-    cio_usbdev_d_d2p,
-    cio_usbdev_dp_d2p,
-    cio_usbdev_dn_d2p
+  // Input-only DIOs have no d2p signals
+  assign dio_d2p = {
+    1'b0, // DIO13: cio_spi_device_sck
+    1'b0, // DIO12: cio_spi_device_csb
+    1'b0, // DIO11: cio_spi_device_mosi
+    cio_spi_device_miso_d2p, // DIO10
+    1'b0, // DIO9: cio_uart_rx
+    cio_uart_tx_d2p, // DIO8
+    1'b0, // DIO7: cio_usbdev_sense
+    cio_usbdev_se0_d2p, // DIO6
+    cio_usbdev_pullup_d2p, // DIO5
+    cio_usbdev_tx_mode_se_d2p, // DIO4
+    cio_usbdev_suspend_d2p, // DIO3
+    cio_usbdev_d_d2p, // DIO2
+    cio_usbdev_dp_d2p, // DIO1
+    cio_usbdev_dn_d2p // DIO0
   };
 
-  assign periph2dio_en = {
-    1'b0,
-    1'b0,
-    1'b0,
-    cio_spi_device_miso_en_d2p,
-    1'b0,
-    cio_uart_tx_en_d2p,
-    1'b0,
-    cio_usbdev_se0_en_d2p,
-    cio_usbdev_pullup_en_d2p,
-    cio_usbdev_tx_mode_se_en_d2p,
-    cio_usbdev_suspend_en_d2p,
-    cio_usbdev_d_en_d2p,
-    cio_usbdev_dp_en_d2p,
-    cio_usbdev_dn_en_d2p
+  assign dio_d2p_en = {
+    1'b0, // DIO13: cio_spi_device_sck
+    1'b0, // DIO12: cio_spi_device_csb
+    1'b0, // DIO11: cio_spi_device_mosi
+    cio_spi_device_miso_en_d2p, // DIO10
+    1'b0, // DIO9: cio_uart_rx
+    cio_uart_tx_en_d2p, // DIO8
+    1'b0, // DIO7: cio_usbdev_sense
+    cio_usbdev_se0_en_d2p, // DIO6
+    cio_usbdev_pullup_en_d2p, // DIO5
+    cio_usbdev_tx_mode_se_en_d2p, // DIO4
+    cio_usbdev_suspend_en_d2p, // DIO3
+    cio_usbdev_d_en_d2p, // DIO2
+    cio_usbdev_dp_en_d2p, // DIO1
+    cio_usbdev_dn_en_d2p // DIO0
   };
 
-  // No need to connect output-only DIOs
-  assign cio_spi_device_sck_p2d    = dio2periph[13];
-  assign cio_spi_device_csb_p2d    = dio2periph[12];
-  assign cio_spi_device_mosi_p2d   = dio2periph[11];
-  assign cio_uart_rx_p2d           = dio2periph[9];
-  assign cio_usbdev_sense_p2d      = dio2periph[7];
-  assign cio_usbdev_d_p2d          = dio2periph[2];
-  assign cio_usbdev_dp_p2d         = dio2periph[1];
-  assign cio_usbdev_dn_p2d         = dio2periph[0];
+  // Output-only DIOs have no p2d signal
+  assign cio_spi_device_sck_p2d    = dio_p2d[13]; // DIO13
+  assign cio_spi_device_csb_p2d    = dio_p2d[12]; // DIO12
+  assign cio_spi_device_mosi_p2d   = dio_p2d[11]; // DIO11
+  // DIO10: cio_spi_device_miso
+  assign cio_uart_rx_p2d           = dio_p2d[9]; // DIO9
+  // DIO8: cio_uart_tx
+  assign cio_usbdev_sense_p2d      = dio_p2d[7]; // DIO7
+  // DIO6: cio_usbdev_se0
+  // DIO5: cio_usbdev_pullup
+  // DIO4: cio_usbdev_tx_mode_se
+  // DIO3: cio_usbdev_suspend
+  assign cio_usbdev_d_p2d          = dio_p2d[2]; // DIO2
+  assign cio_usbdev_dp_p2d         = dio_p2d[1]; // DIO1
+  assign cio_usbdev_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)

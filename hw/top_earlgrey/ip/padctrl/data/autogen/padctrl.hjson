@@ -2,6 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey/
+
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
 # PADCTRL register template
 #
 # Parameter (given by Python tool)
@@ -17,13 +25,13 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "4",
+      default: "14",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "16",
+      default: "32",
       local: "true"
     },
     { name: "AttrDw",
@@ -117,5 +125,4 @@
     },
   ],
 }
-
 

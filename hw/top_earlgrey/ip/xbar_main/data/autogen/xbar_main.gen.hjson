@@ -46,6 +46,7 @@
       hmac
       rv_plic
       pinmux
+      padctrl
       alert_handler
       nmi_gen
     ]
@@ -60,6 +61,7 @@
       hmac
       rv_plic
       pinmux
+      padctrl
       alert_handler
       nmi_gen
     ]
@@ -270,6 +272,23 @@
       [
         {
           base_addr: 0x40070000
+          size_byte: 0x1000
+        }
+      ]
+      pipeline_byp: "false"
+      xbar: false
+      pipeline: "true"
+    }
+    {
+      name: padctrl
+      type: device
+      clock: clk_main_i
+      reset: rst_fixed_ni
+      inst_type: padctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40160000
           size_byte: 0x1000
         }
       ]

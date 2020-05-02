@@ -159,6 +159,14 @@
 #define TOP_EARLGREY_PINMUX_BASE_ADDR 0x40070000u
 
 /**
+ * Base address for padctrl peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PADCTRL_BASE_ADDR 0x40160000u
+
+/**
  * Base address for alert_handler peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
