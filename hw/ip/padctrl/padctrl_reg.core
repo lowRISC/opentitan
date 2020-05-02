@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:padctrl_reg:0.1"
+description: "Auto-generated padctrl register sources with default parameters."
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:tlul:headers
+
+    files:
+      - rtl/padctrl_reg_pkg.sv
+      - rtl/padctrl_reg_top.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

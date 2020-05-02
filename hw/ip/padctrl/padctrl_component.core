@@ -2,18 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:padring:0.1"
-description: "Padring IP"
+name: "lowrisc:ip:padctrl_component:0.1"
+description: "Pin control component without the CSRs"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:prim:prim_pkg
     files:
-      - rtl/padctrl_reg_pkg.sv
-      - rtl/padctrl_reg_top.sv
+      - rtl/jtag_mux.sv
       - rtl/padring.sv
       - rtl/padctrl.sv
     file_type: systemVerilogSource
@@ -43,12 +41,6 @@ filesets:
       - lowrisc:lint:comportable
 
 
-parameters:
-  SYNTHESIS:
-    datatype: bool
-    paramtype: vlogdefine
-
-
 targets:
   default: &default_target
     filesets:
@@ -56,17 +48,3 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: padring
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    parameters:
-      - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
-
-
