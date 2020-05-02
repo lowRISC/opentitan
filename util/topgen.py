@@ -6,8 +6,8 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
-import sys
 import subprocess
+import sys
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
@@ -17,6 +17,7 @@ from mako import exceptions
 from mako.template import Template
 
 import tlgen
+
 from reggen import gen_dv, gen_rtl, gen_fpv, validate
 from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top, amend_clocks
 
@@ -288,15 +289,20 @@ def generate_plic(top, out_path):
             fout.write(out)
 
 
-def generate_pinmux(top, out_path):
+def generate_pinmux_and_padctrl(top, out_path):
     topname = top["name"]
     # MIO Pads
     n_mio_pads = top["pinmux"]["num_mio"]
     if n_mio_pads <= 0:
         # TODO: add support for no MIO case
-        log.error(
-            "Topgen does currently not support generation of a top " +
-            "without a pinmux.")
+        log.error("Topgen does currently not support generation of a top " +
+                  "without a pinmux.")
+        return
+
+    if "padctrl" not in top:
+        # TODO: add support for no MIO case
+        log.error("Topgen does currently not support generation of a top " +
+                  "without a padctrl instance.")
         return
 
     # Get number of wakeup detectors
@@ -307,9 +313,8 @@ def generate_pinmux(top, out_path):
 
     if num_wkup_detect <= 0:
         # TODO: add support for no wakeup counter case
-        log.error(
-            "Topgen does currently not support generation of a top " +
-            "without DIOs.")
+        log.error("Topgen does currently not support generation of a top " +
+                  "without DIOs.")
         return
 
     if "wkup_cnt_width" in top["pinmux"]:
@@ -323,19 +328,20 @@ def generate_pinmux(top, out_path):
 
     # Total inputs/outputs
     # Validation ensures that the width field is present.
-    num_mio_inputs = sum(
-        [x["width"] for x in top["pinmux"]["inputs"]])
-    num_mio_outputs = sum(
-        [x["width"] for x in top["pinmux"]["outputs"]])
-    num_mio_inouts = sum(
-        [x["width"] for x in top["pinmux"]["inouts"]])
+    num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
+    num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
+    num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
 
-    num_dio_inputs = sum(
-        [x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
-    num_dio_outputs = sum(
-        [x["width"] if x["type"] == "output" else 0 for x in top["pinmux"]["dio"]])
-    num_dio_inouts = sum(
-        [x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]])
+    num_dio_inputs = sum([
+        x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]
+    ])
+    num_dio_outputs = sum([
+        x["width"] if x["type"] == "output" else 0
+        for x in top["pinmux"]["dio"]
+    ])
+    num_dio_inouts = sum([
+        x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]
+    ])
 
     n_mio_periph_in = num_mio_inouts + num_mio_inputs
     n_mio_periph_out = num_mio_inouts + num_mio_outputs
@@ -345,9 +351,8 @@ def generate_pinmux(top, out_path):
 
     if n_dio_pads <= 0:
         # TODO: add support for no DIO case
-        log.error(
-            "Topgen does currently not support generation of a top " +
-            "without DIOs.")
+        log.error("Topgen does currently not support generation of a top " +
+                  "without DIOs.")
         return
 
     log.info("Generating pinmux with following info from hjson:")
@@ -392,17 +397,18 @@ def generate_pinmux(top, out_path):
             # as wakeup signals
             # TODO: pass in signal names such that we can introduce
             # named enums for select signals
-            out = hjson_tpl.render(n_mio_periph_in=n_mio_periph_in,
-                                   n_mio_periph_out=n_mio_periph_out,
-                                   n_mio_pads=n_mio_pads,
-                                   # each DIO has in, out and oe wires
-                                   # some of these have to be tied off in the
-                                   # top, depending on the type.
-                                   n_dio_periph_in=n_dio_pads,
-                                   n_dio_periph_out=n_dio_pads,
-                                   n_dio_pads=n_dio_pads,
-                                   n_wkup_detect=num_wkup_detect,
-                                   wkup_cnt_width=wkup_cnt_width)
+            out = hjson_tpl.render(
+                n_mio_periph_in=n_mio_periph_in,
+                n_mio_periph_out=n_mio_periph_out,
+                n_mio_pads=n_mio_pads,
+                # each DIO has in, out and oe wires
+                # some of these have to be tied off in the
+                # top, depending on the type.
+                n_dio_periph_in=n_dio_pads,
+                n_dio_periph_out=n_dio_pads,
+                n_dio_pads=n_dio_pads,
+                n_wkup_detect=num_wkup_detect,
+                wkup_cnt_width=wkup_cnt_width)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PINMUX HJSON: %s" % out)
@@ -419,6 +425,48 @@ def generate_pinmux(top, out_path):
                             object_pairs_hook=validate.checking_dict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+    # Target path
+    #   rtl: padctrl_reg_pkg.sv & padctrl_reg_top.sv
+    #   data: padctrl.hjson
+    rtl_path = out_path / 'ip/padctrl/rtl/autogen'
+    rtl_path.mkdir(parents=True, exist_ok=True)
+    data_path = out_path / 'ip/padctrl/data/autogen'
+    data_path.mkdir(parents=True, exist_ok=True)
+
+    # Template path
+    tpl_path = out_path / '../ip/padctrl/data/padctrl.hjson.tpl'
+
+    # Generate register package and RTLs
+    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
+              "-o hw/top_{topname}/\n\n".format(topname=topname))
+
+    hjson_gen_path = data_path / "padctrl.hjson"
+
+    out = StringIO()
+    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
+        hjson_tpl = Template(fin.read())
+        try:
+            out = hjson_tpl.render(n_mio_pads=n_mio_pads,
+                                   n_dio_pads=n_dio_pads,
+                                   attr_dw=8)
+        except:  # noqa: E722
+            log.error(exceptions.text_error_template().render())
+        log.info("PADCTRL HJSON: %s" % out)
+
+    if out == "":
+        log.error("Cannot generate padctrl HJSON")
+        return
+
+    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
+        fout.write(genhdr + gencmd + out)
+
+    hjson_obj = hjson.loads(out,
+                            use_decimal=True,
+                            object_pairs_hook=validate.checking_dict)
+    validate.validate(hjson_obj)
+    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
 
 def generate_clkmgr(top, cfg_path, out_path):
 
@@ -760,7 +808,7 @@ def main():
             sys.exit()
 
     # Generate Pinmux
-    generate_pinmux(completecfg, out_path)
+    generate_pinmux_and_padctrl(completecfg, out_path)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:

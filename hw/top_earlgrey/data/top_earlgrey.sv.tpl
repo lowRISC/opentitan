@@ -46,8 +46,8 @@ module top_${top["name"]} #(
   input               jtag_tck_i,
   input               jtag_tms_i,
   input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
+  input               jtag_tdi_i,
+  output              jtag_tdo_o,
 
 % if num_mio != 0:
   // Multiplexed I/O
@@ -61,6 +61,15 @@ module top_${top["name"]} #(
   output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_out_o,
   output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
 % endif
+
+% if "padctrl" in top:
+  // pad attributes to padring
+  output logic[padctrl_reg_pkg::NMioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[padctrl_reg_pkg::NDioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+% endif
+
 % if num_im != 0:
 
   // Inter-module Signal External type
@@ -134,12 +143,12 @@ module top_${top["name"]} #(
 % endfor
 
   // Signals
-  logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio2periph;
-  logic [${num_mio_outputs + num_mio_inouts - 1}:0] periph2mio;
-  logic [${num_mio_outputs + num_mio_inouts - 1}:0] periph2mio_en;
-  logic [${num_dio - 1}:0] dio2periph;
-  logic [${num_dio - 1}:0] periph2dio;
-  logic [${num_dio - 1}:0] periph2dio_en;
+  logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p_en;
+  logic [${num_dio - 1}:0] dio_p2d;
+  logic [${num_dio - 1}:0] dio_d2p;
+  logic [${num_dio - 1}:0] dio_d2p_en;
 % for m in top["module"]:
   // ${m["name"]}
   % for p_in in m["available_input_list"] + m["available_inout_list"]:
@@ -288,8 +297,8 @@ module top_${top["name"]} #(
     .tck_i            (jtag_tck_i),
     .tms_i            (jtag_tms_i),
     .trst_ni          (jtag_trst_ni),
-    .td_i             (jtag_td_i),
-    .td_o             (jtag_td_o),
+    .td_i             (jtag_tdi_i),
+    .td_o             (jtag_tdo_o),
     .tdo_oe_o         (       )
   );
 
@@ -578,21 +587,26 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
     % if m["type"] == "pinmux":
 
-      .periph_to_mio_i      (periph2mio    ),
-      .periph_to_mio_oe_i   (periph2mio_en ),
-      .mio_to_periph_o      (mio2periph    ),
+      .periph_to_mio_i      (mio_d2p    ),
+      .periph_to_mio_oe_i   (mio_d2p_en ),
+      .mio_to_periph_o      (mio_p2d    ),
 
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
 
-      .periph_to_dio_i      (periph2dio    ),
-      .periph_to_dio_oe_i   (periph2dio_en ),
-      .dio_to_periph_o      (dio2periph    ),
+      .periph_to_dio_i      (dio_d2p    ),
+      .periph_to_dio_oe_i   (dio_d2p_en ),
+      .dio_to_periph_o      (dio_p2d    ),
 
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
+    % endif
+    % if m["type"] == "padctrl":
+
+      .mio_attr_o,
+      .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
       // TODO: wire this to hardware debug circuit
@@ -661,12 +675,12 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % if "pinmux" in top:
   // Pinmux connections
   % if num_mio_outputs + num_mio_inouts != 0:
-  assign periph2mio = {
+  assign mio_d2p = {
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_d2p${"" if loop.last else ","}
     % endfor
   };
-  assign periph2mio_en = {
+  assign mio_d2p_en = {
   % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
   % endfor
@@ -677,37 +691,39 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
     cio_${sig["name"]}_p2d${"" if loop.last else ","}
     % endfor
-  } = mio2periph;
+  } = mio_p2d;
   % endif
 % endif
 
 % if num_dio != 0:
   // Dedicated IO connections
-  // Tie off output and output enable of input-only DIOs
-  assign periph2dio = {
+  // Input-only DIOs have no d2p signals
+  assign dio_d2p = {
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_d2p${"" if loop.last else ","}
+    cio_${sig["name"]}_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","}
+    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
     % endif
   % endfor
   };
 
-  assign periph2dio_en = {
+  assign dio_d2p_en = {
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
+    cio_${sig["name"]}_en_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","}
+    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
     % endif
   % endfor
   };
 
-  // No need to connect output-only DIOs
-  % for k, sig in enumerate(top["pinmux"]["dio"]):
+  // Output-only DIOs have no p2d signal
+  % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["input", "inout"]:
-  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio2periph[${num_dio - 1 - k}];
+  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${num_dio - 1 - loop.index}]; // DIO${num_dio - 1 - loop.index}
+    % else:
+  // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
     % endif
   % endfor
 % endif
