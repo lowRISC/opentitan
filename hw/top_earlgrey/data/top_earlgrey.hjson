@@ -171,6 +171,15 @@
       base_addr: "0x40070000",
       generated: "true"
     },
+    { name: "padctrl",
+      type: "padctrl",
+      clock: "main",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x40160000",
+      generated: "true"
+    },
     { name: "alert_handler",
       type: "alert_handler",
       clock_srcs: {clk_i: "main"},

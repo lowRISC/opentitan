@@ -16,7 +16,9 @@ filesets:
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
       - lowrisc:top_earlgrey:pinmux_reg
+      - lowrisc:top_earlgrey:padctrl_reg
       - lowrisc:ip:pinmux_component
+      - lowrisc:ip:padctrl_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
@@ -37,7 +39,6 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
-      - rtl/padctl.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 

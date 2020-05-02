@@ -22,35 +22,35 @@ def main():
     parser.add_argument('--n_mio_periph_in',
                         type=int,
                         help='Number of muxed peripheral inputs',
-                        default = 32)
+                        default=32)
     parser.add_argument('--n_mio_periph_out',
                         type=int,
                         help='Number of muxed peripheral outputs',
-                        default = 32)
+                        default=32)
     parser.add_argument('--n_mio_pads',
                         type=int,
                         help='Number of muxed IO pads',
-                        default = 32)
+                        default=32)
     parser.add_argument('--n_dio_periph_in',
                         type=int,
                         help='Number of dedicated peripheral inputs',
-                        default = 16)
+                        default=16)
     parser.add_argument('--n_dio_periph_out',
                         type=int,
                         help='Number of dedicated peripheral outputs',
-                        default = 16)
+                        default=16)
     parser.add_argument('--n_dio_pads',
                         type=int,
                         help='Number of dedicated IO pads',
-                        default = 16)
+                        default=16)
     parser.add_argument('--n_wkup_detect',
                         type=int,
                         help='Number of wakeup condition detectors',
-                        default = 8)
+                        default=8)
     parser.add_argument('--wkup_cnt_width',
                         type=int,
                         help='With of wakeup counters',
-                        default = 8)
+                        default=8)
 
     args = parser.parse_args()
 

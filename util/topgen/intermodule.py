@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import re
 import logging as log
-from typing import Dict, Tuple
+import re
 from collections import OrderedDict
 from enum import Enum
+from typing import Dict, Tuple
 
 from reggen.validate import check_int
 from topgen import lib
