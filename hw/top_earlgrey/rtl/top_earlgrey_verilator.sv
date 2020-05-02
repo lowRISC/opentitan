@@ -79,8 +79,8 @@ module top_earlgrey_verilator (
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),
     .jtag_trst_ni               (cio_jtag_trst_n),
-    .jtag_td_i                  (cio_jtag_tdi),
-    .jtag_td_o                  (cio_jtag_tdo),
+    .jtag_tdi_i                 (cio_jtag_tdi),
+    .jtag_tdo_o                 (cio_jtag_tdo),
 
     // Multiplexed I/O
     .mio_in_i                   (cio_gpio_p2d),
@@ -91,6 +91,10 @@ module top_earlgrey_verilator (
     .dio_in_i                   (dio_in),
     .dio_out_o                  (dio_out),
     .dio_oe_o                   (dio_oe),
+
+    // Pad attributes
+    .mio_attr_o                 ( ),
+    .dio_attr_o                 ( ),
 
     .scanmode_i                 (1'b0)
   );
