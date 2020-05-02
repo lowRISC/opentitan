@@ -56,11 +56,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/padctrl/lint/{tool}"
              },
-             {    name: padring
-                  fusesoc_core: lowrisc:ip:padring
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/padring/lint/{tool}"
-             },
              {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]

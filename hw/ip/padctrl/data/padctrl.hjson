@@ -60,6 +60,7 @@
                   swaccess: "rw",
                   hwaccess: "hrw",
                   hwext:    "true",
+                  hwqe:     "true",
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
@@ -74,7 +75,10 @@
                       '''
                       resval: 0
                     }
-                  ]
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWriteCheck"]
                 }
     },
 # muxed pads
@@ -86,6 +90,7 @@
                   swaccess: "rw",
                   hwaccess: "hrw",
                   hwext:    "true",
+                  hwqe:     "true",
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
@@ -100,8 +105,13 @@
                       '''
                       resval: 0
                     }
-                  ]
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWriteCheck"]
                 }
     },
   ],
 }
+
+
