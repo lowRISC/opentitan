@@ -402,7 +402,9 @@
         desc: '''
           Flash program fifo.
 
-          The fifo is 16 entries of 4B flash words
+          The fifo is 16 entries of 4B flash words. This FIFO can only be programmed
+          by software after a program operation has been initiated via the !!CONTROL register.
+          This ensures accidental programming of the program fifo cannot lock up the system.
           '''
       },
     },

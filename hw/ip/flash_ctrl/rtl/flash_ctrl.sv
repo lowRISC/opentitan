@@ -78,6 +78,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic prog_flash_req;
   logic prog_flash_ovfl;
   logic [AddrW-1:0] prog_flash_addr;
+  logic prog_op_valid;
 
   // Read Control Connections
   logic rd_flash_req;
@@ -114,6 +115,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Since the program and read FIFOs are never used at the same time, it should really be one
   // FIFO with muxed inputs and outputs.  This should be addressed once the flash integration
   // strategy has been identified
+
+  assign prog_op_valid = reg2hw.control.start.q & prog_op;
+
   tlul_adapter_sram #(
     .SramAw(1),         //address unused
     .SramDw(BusWidth),
@@ -142,7 +146,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .clk_i,
     .rst_ni (rst_ni),
     .clr_i  (reg2hw.control.fifo_rst.q),
-    .wvalid (prog_fifo_req & prog_fifo_wen),
+    .wvalid (prog_fifo_req & prog_fifo_wen & prog_op_valid),
     .wready (prog_fifo_wready),
     .wdata  (prog_fifo_wdata),
     .depth  (prog_fifo_depth),
@@ -160,7 +164,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rst_ni,
 
     // Software Interface
-    .op_start_i     (reg2hw.control.start.q & prog_op),
+    .op_start_i     (prog_op_valid),
     .op_num_words_i (reg2hw.control.num.q),
     .op_done_o      (ctrl_done[0]),
     .op_err_o       (ctrl_err[0]),
