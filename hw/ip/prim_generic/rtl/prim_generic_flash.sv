@@ -65,6 +65,28 @@ module prim_generic_flash #(
   logic                     hold_cmd;
   logic [AddrW-1:0]         held_addr;
 
+  // insert a fifo here to break the large fanout from inputs to memories on reads
+  logic rd_q;
+  logic [AddrW-1:0] addr_q;
+
+  prim_fifo_sync #(
+      .Width  (AddrW),
+      .Pass   (0),
+      .Depth  (2)
+  ) i_slice (
+    .clk_i,
+    .rst_ni,
+    .clr_i  (1'b0),
+    .wvalid (rd_i),
+    .wready (),
+    .wdata  (addr_i),
+    .depth  (),
+    .rvalid (rd_q),
+    .rready (hold_cmd), //whenver command is held, pop
+    .rdata  (addr_q)
+  );
+
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) st_q <= StReset;
     else st_q <= st_d;
@@ -75,7 +97,7 @@ module prim_generic_flash #(
       held_addr <= '0;
       held_wdata <= '0;
     end else if (hold_cmd) begin
-      held_addr <= addr_i;
+      held_addr <= rd_q ? addr_q : addr_i;
       held_wdata <= prog_data_i;
     end
   end
@@ -159,10 +181,10 @@ module prim_generic_flash #(
         end
       end
       StIdle: begin
-        if (rd_i) begin
+        if (rd_q) begin
           // reads begin immediately
           hold_cmd = 1'b1;
-          mem_addr = addr_i;
+          mem_addr = addr_q;
           mem_req = 1'b1;
           time_cnt_inc = 1'b1;
           st_d = StRead;
@@ -191,9 +213,9 @@ module prim_generic_flash #(
           ack_o = 1'b1; //finish up transaction
 
           // if another request already pending
-          if (rd_i) begin
+          if (rd_q) begin
             hold_cmd = 1'b1;
-            mem_addr = addr_i;
+            mem_addr = addr_q;
             mem_req = 1'b1;
             time_cnt_set1 = 1'b1;
             st_d = StRead;
