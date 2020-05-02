@@ -136,7 +136,7 @@ module tlul_adapter_sram #(
       d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
                  ? rspfifo_rdata.data : '0,
       d_user   : '0,
-      d_error  : d_error,
+      d_error  : d_valid && d_error,
 
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & maskfifo_wready
   };
@@ -214,7 +214,7 @@ module tlul_adapter_sram #(
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
   assign rspfifo_wdata  = '{
     data:  rdata_i & rmask, // make sure only requested bytes are forwarded
-    error: rerror_i[1]  // Only care for Uncorrectable error
+    error: rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
                         ? reqfifo_rready : 1'b0 ;
