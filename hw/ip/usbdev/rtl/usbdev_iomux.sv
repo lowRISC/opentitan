@@ -54,13 +54,9 @@ module usbdev_iomux
   input  logic                          usb_suspend_i
 );
 
-  logic async_pwr_sense;
-
-  logic sys_usb_sense;
-
-  logic usb_rx_d;
-  logic usb_rx_dp;
-  logic usb_rx_dn;
+  logic async_pwr_sense, sys_usb_sense;
+  logic cio_usb_dp, cio_usb_dn, cio_usb_d;
+  logic usb_rx_dp, usb_rx_dn, usb_rx_d;
 
   //////////
   // CDCs //
@@ -76,7 +72,7 @@ module usbdev_iomux
     .q      ({sys_usb_sense})
   );
 
-  assign sys_usb_sense_o                = sys_usb_sense;
+  assign sys_usb_sense_o = sys_usb_sense;
 
   // USB input pins (to usbclk)
   prim_flop_2sync #(
@@ -88,9 +84,9 @@ module usbdev_iomux
               cio_usb_dn_i,
               cio_usb_d_i,
               async_pwr_sense}),
-    .q      ({usb_rx_dp,
-              usb_rx_dn,
-              usb_rx_d,
+    .q      ({cio_usb_dp,
+              cio_usb_dn,
+              cio_usb_d,
               usb_pwr_sense_o})
   );
 
@@ -132,6 +128,14 @@ module usbdev_iomux
   ///////////////////////
   // USB input pin mux //
   ///////////////////////
+
+  // Note that while transmitting, the receive (p2d) line must be fixed.
+  // Otherwise you are trying to regenerate the bit clock from the bit
+  // clock you are regenerating, rather than just holding the phase.
+  assign usb_rx_dp = (usb_tx_oe_i) ? 1'b1 : cio_usb_dp;
+  assign usb_rx_dn = (usb_tx_oe_i) ? 1'b0 : cio_usb_dn;
+  assign usb_rx_d  = (usb_tx_oe_i) ? 1'b1 : cio_usb_d;
+
   always_comb begin : proc_mux_data_input
     usb_rx_se0_o = ~usb_rx_dp & ~usb_rx_dn;
 
