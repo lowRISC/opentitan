@@ -100,7 +100,7 @@
       ]
       // the CLK_ENABLE register cannot be written, otherwise there is the potential clocks could be
       // disabled and the system will hang
-      tags: ["excl:CsrAllTests:CsrExclWrite:CsrExclWriteCheck"]
+      tags: ["excl:CsrAllTests:CsrExclAll"]
     },
 
     { name: "CLK_HINTS",
@@ -136,7 +136,7 @@
       ]
       // the CLK_HINT register cannot be written, otherwise there is the potential clocks could be
       // disabled and the system will hang
-      tags: ["excl:CsrAllTests:CsrExclWrite:CsrExclWriteCheck"]
+      tags: ["excl:CsrAllTests:CsrExclAll"]
     },
 
     { name: "CLK_HINTS_STATUS",

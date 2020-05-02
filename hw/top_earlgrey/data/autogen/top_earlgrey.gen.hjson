@@ -811,6 +811,35 @@
       ]
     }
     {
+      name: padctrl
+      type: padctrl
+      clock: main
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40160000
+      generated: "true"
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      scan: "false"
+    }
+    {
       name: alert_handler
       type: alert_handler
       clock_srcs:
@@ -1678,6 +1707,7 @@
           hmac
           rv_plic
           pinmux
+          padctrl
           alert_handler
           nmi_gen
         ]
@@ -1692,6 +1722,7 @@
           hmac
           rv_plic
           pinmux
+          padctrl
           alert_handler
           nmi_gen
         ]
@@ -1918,6 +1949,23 @@
           [
             {
               base_addr: 0x40070000
+              size_byte: 0x1000
+            }
+          ]
+          pipeline_byp: "false"
+          xbar: false
+          pipeline: "true"
+        }
+        {
+          name: padctrl
+          type: device
+          clock: clk_main_i
+          reset: rst_fixed_ni
+          inst_type: padctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40160000
               size_byte: 0x1000
             }
           ]

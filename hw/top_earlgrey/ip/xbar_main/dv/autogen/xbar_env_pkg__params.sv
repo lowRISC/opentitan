@@ -40,6 +40,9 @@ tl_device_t xbar_devices[$] = '{
     '{"pinmux", '{
         '{32'h40070000, 32'h40070fff}
     }},
+    '{"padctrl", '{
+        '{32'h40160000, 32'h40160fff}
+    }},
     '{"alert_handler", '{
         '{32'h40130000, 32'h40130fff}
     }},
@@ -66,6 +69,7 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "pinmux",
+        "padctrl",
         "alert_handler",
         "nmi_gen"}}
     ,
@@ -79,6 +83,7 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "pinmux",
+        "padctrl",
         "alert_handler",
         "nmi_gen"}}
 };

@@ -29,5 +29,6 @@ xbar_main dut(
 `CONNECT_TL_DEVICE_IF(aes)
 `CONNECT_TL_DEVICE_IF(rv_plic)
 `CONNECT_TL_DEVICE_IF(pinmux)
+`CONNECT_TL_DEVICE_IF(padctrl)
 `CONNECT_TL_DEVICE_IF(alert_handler)
 `CONNECT_TL_DEVICE_IF(nmi_gen)
