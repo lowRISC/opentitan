@@ -44,8 +44,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[alert_pkg::NAlerts];
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[alert_pkg::N_ESC_SEV];
 
-  // local queues to hold incoming packets pending comparison
-
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -61,7 +59,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                       ral.classd_accum_cnt};
 
     foreach (alert_fifo[i]) alert_fifo[i] = new($sformatf("alert_fifo[%0d]", i), this);
-    foreach (esc_fifo[i])   esc_fifo[i]   = new($sformatf("esc_fifo[%0d]", i), this);
+    foreach (esc_fifo[i])   esc_fifo[i]   = new($sformatf("esc_fifo[%0d]"  , i), this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -177,11 +175,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     if (accum_cnt > accum_thresh && !under_esc_classes[class_i]) predict_esc(class_i);
   endfunction
 
-  // predict escalation signals by matching which phase should the esc signal will be triggered
+  // predict escalation signals by setting the corresponding under_esc_classes bit
+  // based on class_ctrl's lock bit, predict if clren register is disabled
   virtual function void predict_esc(int class_i);
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
+    uvm_reg         clren_rg;
+    clren_rg = ral.get_reg_by_name($sformatf("class%s_clren", class_name[class_i]));
+    `DV_CHECK_NE_FATAL(clren_rg, null)
+    if (class_ctrl[AlertClassCtrlLock]) void'(clren_rg.predict(0));
     under_esc_classes[class_i] = 1;
-    $display("%time, predict esc %0d, class_ctrl is %0b", $realtime, class_i, class_ctrl);
   endfunction
 
   // check if escalation signal's duration length is correct
@@ -238,10 +240,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[i]) under_intr_classes[i] = 0;
             end
           end
-          "classa_clr": clr_reset_esc_class(0);
-          "classb_clr": clr_reset_esc_class(1);
-          "classc_clr": clr_reset_esc_class(2);
-          "classd_clr": clr_reset_esc_class(3);
+          "classa_clr": if (ral.classa_clren.get_mirrored_value()) clr_reset_esc_class(0);
+          "classb_clr": if (ral.classb_clren.get_mirrored_value()) clr_reset_esc_class(1);
+          "classc_clr": if (ral.classc_clren.get_mirrored_value()) clr_reset_esc_class(2);
+          "classd_clr": if (ral.classd_clren.get_mirrored_value()) clr_reset_esc_class(3);
           default: begin
            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end
