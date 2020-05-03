@@ -9,6 +9,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   `uvm_object_new
 
   rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en;
+  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en;
   rand bit [alert_pkg::NAlerts-1:0]        alert_trigger;
   rand bit [alert_pkg::NAlerts-1:0]        alert_int_err;
   rand bit [alert_pkg::NAlerts-1:0]        alert_en;
@@ -24,7 +25,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_HANDLER_CLASSES];
   rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_HANDLER_CLASSES];
 
-  int      max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
+  int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
 
   uvm_verbosity verbosity = UVM_LOW;
 
@@ -72,8 +73,10 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                          .loc_alert_en(local_alert_en), .loc_alert_class(local_alert_class_map));
 
       // write config settings according to the constraits
-      // always set when phase_cycle for the first seq, in order to pass stress_all test
-      alert_handle_rand_wr_class_ctrl();
+      alert_handler_rand_wr_class_ctrl();
+      alert_handler_wr_clren_regs(clr_en);
+
+      // always set phase_cycle for the first iteration, in order to pass stress_all test
       if (do_wr_phases_cyc || i == 1) begin
         wr_phases_cycle(max_phase_cyc);
         max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
@@ -98,19 +101,15 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       // read and check interrupt
       check_alert_interrupts();
 
+      // wait escalation done, and random interrupt with clear_esc
       wait_alert_handshake_done();
       fork
-        begin : isolation_fork
-          fork
-            begin
-              wait_esc_handshake_done(max_wait_phases_cyc);
-            end
-            begin
-              cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc*2));
-              do_clr_esc = 1;
-            end
-          join_any
-          disable fork;
+        begin
+          wait_esc_handshake_done(max_wait_phases_cyc);
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
+          if ($urandom_range(0, 1)) clear_esc();
         end
       join
       read_alert_cause();

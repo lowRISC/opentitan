@@ -17,7 +17,7 @@
   csr_update(ral.class``i``_phase3_cyc);
 
 `define RAND_WRITE_CLASS_CTRL(i) \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == 1'b0;) \
+  `DV_CHECK_RANDOMIZE_FATAL(ral.class``i``_ctrl) \
   csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
 
 class alert_handler_base_vseq extends cip_base_vseq #(
@@ -56,12 +56,19 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.loc_alert_class), .value(loc_alert_class));
   endtask
 
-  virtual task alert_handle_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en =
-                                               $urandom());
+  virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en =
+                                                $urandom());
     if (class_en[0]) `RAND_WRITE_CLASS_CTRL(a)
     if (class_en[1]) `RAND_WRITE_CLASS_CTRL(b)
     if (class_en[2]) `RAND_WRITE_CLASS_CTRL(c)
     if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d)
+  endtask
+
+  virtual task alert_handler_wr_clren_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en);
+    csr_wr(.csr(ral.classa_clren), .value(clr_en[0]));
+    csr_wr(.csr(ral.classb_clren), .value(clr_en[1]));
+    csr_wr(.csr(ral.classc_clren), .value(clr_en[2]));
+    csr_wr(.csr(ral.classd_clren), .value(clr_en[3]));
   endtask
 
   virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
