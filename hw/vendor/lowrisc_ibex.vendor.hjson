@@ -11,10 +11,9 @@
   },
 
   exclude_from_upstream: [
-    // prim_assert is also in OpenTitan, which version fusesoc picks up isn't
-    // deterministic so two copies can be problematic
-    'shared/prim_assert.core',
-    'shared/rtl/prim_assert.sv',
+    // shared directory includes primitives also in OpenTitan, which version
+    // fusesoc picks up isn't deterministic so two copies can be problematic
+    'shared',
     // vendor/lowrisc_ip contains things from the OpenTitan repository, leaving
     // it in can cause conflicts
     'vendor/lowrisc_ip',
