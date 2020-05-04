@@ -6,6 +6,7 @@
 #![crate_name = "earlgrey"]
 #![crate_type = "rlib"]
 
+mod device_config;
 mod interrupts;
 
 pub mod chip;

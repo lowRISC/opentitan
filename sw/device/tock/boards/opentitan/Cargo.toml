@@ -17,6 +17,10 @@ lto = true
 opt-level = "z"
 debug = true
 
+[features]
+device_fpga = ["earlgrey/device_fpga"]
+device_verilator = ["earlgrey/device_verilator"]
+
 [dependencies]
 earlgrey = { path = "../../chips/earlgrey" }
 tock_deps = { path = "../../tock_deps" }

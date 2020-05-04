@@ -4,7 +4,9 @@ use kernel::common::StaticRef;
 use opentitan_common::uart::{Uart, UartRegisters};
 
 use crate::chip;
+use crate::device_config::DEVICE_CONFIG;
 
+pub static mut UART0_BAUDRATE: u32 = DEVICE_CONFIG.uart_baudrate;
 pub static mut UART0: Uart = Uart::new(UART0_BASE, chip::CHIP_FREQ);
 
 const UART0_BASE: StaticRef<UartRegisters> =

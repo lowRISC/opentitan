@@ -11,13 +11,14 @@ use kernel::debug;
 use rv32i::csr::{mcause, mie::mie, mip::mip, mtvec::mtvec, CSR};
 use rv32i::syscall::SysCall;
 
+use crate::device_config::DEVICE_CONFIG;
 use crate::gpio;
 use crate::interrupts;
 use crate::plic;
 use crate::timer;
 use crate::uart;
 
-pub const CHIP_FREQ: u32 = 50_000_000;
+pub const CHIP_FREQ: u32 = DEVICE_CONFIG.chip_freq;
 
 pub struct Earlgrey {
     userspace_kernel_boundary: SysCall,

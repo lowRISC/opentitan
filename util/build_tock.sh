@@ -24,4 +24,5 @@ cargo +"$(cat ${TOOLCHAIN_FILE})" build \
 	--target "${TARGET}" \
 	--manifest-path "${MANIFEST_PATH}" \
 	--target-dir "${TARGET_DIR}" \
+  --features="${TOCK_FEATURES}" \
 	${RELEASE_FLAG}
