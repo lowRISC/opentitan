@@ -499,6 +499,13 @@ def main():
     setup_logging(args.verbose)
     parser.set_defaults(verbose=False)
 
+    # If args.lsf_cmd is an empty string return an error message and exit from
+    # the script, as doing nothing will result in arbitrary simulation timeouts
+    # and errors later on in the run flow.
+    if args.lsf_cmd == "":
+        logging.error("The LSF command passed in is an empty string.")
+        return RET_FAIL
+
     # Create the output directory
     output_dir = ("%s/rtl_sim" % args.o)
     bin_dir = ("%s/instr_gen/asm_tests" % args.o)

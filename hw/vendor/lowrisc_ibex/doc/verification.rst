@@ -78,7 +78,7 @@ The complete test list can be found in the file `dv/uvm/core_ibex/riscv_dv_exten
 Please note that verification is still a work in progress.
 
 Getting Started
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 Prerequisites & Environment Setup
 """""""""""""""""""""""""""""""""
@@ -95,12 +95,13 @@ In order to run the co-simulation flow, you'll need:
   ``--enable-misaligned`` tells Spike to simulate a core that
   handles misaligned accesses in hardware (rather than jumping to a
   trap handler).
+  In addition, Spike does not support the `RISC-V Bit Manipulation Extension <bitmanip_>`_  (Bitmanip) by default.
+  To support this draft extension implemented in Ibex, the `riscv-bitmanip branch <Spike_>`_ of Spike needs to be used.
 
-- A working RISC-V toolchain (to compile / assemble the generated
-  programs before simulating them). Either download and build the
-  `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_ or
-  (quicker) download a `pre-built toolchain
-  <riscv-toolchain-releases_>`_.
+- A working RISC-V toolchain (to compile / assemble the generated programs before simulating them).
+  Either download a `pre-built toolchain <riscv-toolchain-releases_>`_ (quicker) or download and build the `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_.
+  For the latter, the Bitmanip patches have to be manually installed to enable support for the Bitmanip draft extension.
+  For further information, checkout the `Bitmanip Extension on GitHub <bitmanip_>`_ and `how we create the pre-built toolchains <bitmanip-patches_>`_.
 
 Once these are installed, you need to set some environment variables
 to tell the RISCV-DV code where to find them:
@@ -116,10 +117,12 @@ to tell the RISCV-DV code where to find them:
 (Obviously, you only need to set ``SPIKE_PATH`` or ``OVPSIM_PATH`` if
 you have installed the corresponding instruction set simulator)
 
-.. _Spike: https://github.com/riscv/riscv-isa-sim
+.. _Spike: https://github.com/riscv/riscv-isa-sim/tree/riscv-bitmanip
 .. _OVPsim: https://github.com/riscv/riscv-ovpsim
 .. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
 .. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
+.. _bitmanip-patches: https://github.com/lowRISC/lowrisc-toolchains#how-to-generate-the-bitmanip-patches
+.. _bitmanip: https://github.com/riscv/riscv-bitmanip
 
 End-to-end RTL/ISS co-simulation flow
 """""""""""""""""""""""""""""""""""""
@@ -257,4 +260,3 @@ The ``--skip-ral`` option is mandatory for building/simulating the Icache testbe
 have any CSRs, excluding this option will lead to build errors.
 ``--purge`` directs the tool to ``rm -rf`` the output directory before running the tool, this can be
 removed if not desired.
-

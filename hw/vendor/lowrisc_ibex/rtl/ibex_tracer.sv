@@ -441,7 +441,7 @@ module ibex_tracer (
     // fsri
     logic [5:0] shamt;
     shamt = {rvfi_insn[25:20]};
-    data_accessed = RS1 | RS3;
+    data_accessed = RS1 | RS3 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
         rvfi_rs3_addr, shamt);
   endfunction
@@ -875,7 +875,7 @@ module ibex_tracer (
         // MISC-MEM
         INSN_FENCE:      decode_fence();
         INSN_FENCEI:     decode_mnemonic("fence.i");
-        // RV32B
+        // RV32B - ZBB
         INSN_SLOI:       decode_i_shift_insn("sloi");
         INSN_SROI:       decode_i_shift_insn("sroi");
         INSN_RORI:       decode_i_shift_insn("rori");
@@ -893,13 +893,95 @@ module ibex_tracer (
         INSN_PACK:       decode_r_insn("pack");
         INSN_PACKH:      decode_r_insn("packh");
         INSN_PACKU:      decode_r_insn("packu");
-        INSN_ORCB:       decode_r_insn("orcb");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
         INSN_PCNT:       decode_r1_insn("pcnt");
-        INSN_REV:        decode_r1_insn("rev");
-        INSN_REV8:       decode_r1_insn("rev8");
-        // TERNARY BITMABIP INSTR
+        // RV32B - ZBS
+        INSN_SBCLRI:     decode_i_insn("sbclri");
+        INSN_SBSETI:     decode_i_insn("sbseti");
+        INSN_SBINVI:     decode_i_insn("sbinvi");
+        INSN_SBEXTI:     decode_i_insn("sbexti");
+        INSN_SBCLR:      decode_r_insn("sbclr");
+        INSN_SBSET:      decode_r_insn("sbset");
+        INSN_SBINV:      decode_r_insn("sbinv");
+        INSN_SBEXT:      decode_r_insn("sbext");
+        // RV32B - ZBP
+        INSN_GREV:       decode_r_insn("grev");
+        INSN_GREVI: begin
+          unique casez (rvfi_insn)
+            INSN_REV_P:  decode_r1_insn("rev.p");
+            INSN_REV2_N: decode_r1_insn("rev2.n");
+            INSN_REV_N:  decode_r1_insn("rev.n");
+            INSN_REV4_B: decode_r1_insn("rev4.b");
+            INSN_REV2_B: decode_r1_insn("rev2.b");
+            INSN_REV_B:  decode_r1_insn("rev.b");
+            INSN_REV8_H: decode_r1_insn("rev8.h");
+            INSN_REV4_H: decode_r1_insn("rev4.h");
+            INSN_REV2_H: decode_r1_insn("rev2.h");
+            INSN_REV_H:  decode_r1_insn("rev.h");
+            INSN_REV16:  decode_r1_insn("rev16");
+            INSN_REV8:   decode_r1_insn("rev8");
+            INSN_REV4:   decode_r1_insn("rev4");
+            INSN_REV2:   decode_r1_insn("rev2");
+            INSN_REV:    decode_r1_insn("rev");
+            default:     decode_i_insn("grevi");
+          endcase
+        end
+        INSN_GORC:       decode_r_insn("gorc");
+        INSN_GORCI: begin
+          unique casez (rvfi_insn)
+            INSN_ORC_P:  decode_r1_insn("orc.p");
+            INSN_ORC2_N: decode_r1_insn("orc2.n");
+            INSN_ORC_N:  decode_r1_insn("orc.n");
+            INSN_ORC4_B: decode_r1_insn("orc4.b");
+            INSN_ORC2_B: decode_r1_insn("orc2.b");
+            INSN_ORC_B:  decode_r1_insn("orc.b");
+            INSN_ORC8_H: decode_r1_insn("orc8.h");
+            INSN_ORC4_H: decode_r1_insn("orc4.h");
+            INSN_ORC2_H: decode_r1_insn("orc2.h");
+            INSN_ORC_H:  decode_r1_insn("orc.h");
+            INSN_ORC16:  decode_r1_insn("orc16");
+            INSN_ORC8:   decode_r1_insn("orc8");
+            INSN_ORC4:   decode_r1_insn("orc4");
+            INSN_ORC2:   decode_r1_insn("orc2");
+            INSN_ORC:    decode_r1_insn("orc");
+            default:     decode_i_insn("gorci");
+          endcase
+        end
+        INSN_SHFL:       decode_r_insn("shfl");
+        INSN_SHFLI: begin
+          unique casez (rvfi_insn)
+            INSN_ZIP_N:  decode_r1_insn("zip.n");
+            INSN_ZIP2_B: decode_r1_insn("zip2.b");
+            INSN_ZIP_B:  decode_r1_insn("zip.b");
+            INSN_ZIP4_H: decode_r1_insn("zip4.h");
+            INSN_ZIP2_H: decode_r1_insn("zip2.h");
+            INSN_ZIP_H:  decode_r1_insn("zip.h");
+            INSN_ZIP8:   decode_r1_insn("zip8");
+            INSN_ZIP4:   decode_r1_insn("zip4");
+            INSN_ZIP2:   decode_r1_insn("zip2");
+            INSN_ZIP:    decode_r1_insn("zip");
+            default:     decode_i_insn("shfli");
+          endcase
+        end
+        INSN_UNSHFL:       decode_r_insn("unshfl");
+        INSN_UNSHFLI: begin
+          unique casez (rvfi_insn)
+            INSN_UNZIP_N:  decode_r1_insn("unzip.n");
+            INSN_UNZIP2_B: decode_r1_insn("unzip2.b");
+            INSN_UNZIP_B:  decode_r1_insn("unzip.b");
+            INSN_UNZIP4_H: decode_r1_insn("unzip4.h");
+            INSN_UNZIP2_H: decode_r1_insn("unzip2.h");
+            INSN_UNZIP_H:  decode_r1_insn("unzip.h");
+            INSN_UNZIP8:   decode_r1_insn("unzip8");
+            INSN_UNZIP4:   decode_r1_insn("unzip4");
+            INSN_UNZIP2:   decode_r1_insn("unzip2");
+            INSN_UNZIP:    decode_r1_insn("unzip");
+            default:       decode_i_insn("unshfli");
+          endcase
+        end
+
+        // RV32B - ZBT
         INSN_CMIX:       decode_r_cmixcmov_insn("cmix");
         INSN_CMOV:       decode_r_cmixcmov_insn("cmov");
         INSN_FSR:        decode_r_funnelshift_insn("fsr");

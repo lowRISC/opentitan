@@ -10,22 +10,29 @@ class ibex_icache_core_sanity_seq extends ibex_icache_core_base_seq;
   `uvm_object_new
 
   rand int count;
-  constraint c_count { count > 0; count < 100; }
+  constraint c_count { count inside {[800:1000]}; }
 
   task body();
-    // Generate a request which is constrained to have trans_type ICacheCoreTransTypeBranch: the
-    // core must start with a branch to tell the cache where to fetch from in the first place.
-    req = ibex_icache_core_item::type_id::create("req");
-    start_item(req);
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, req.trans_type == ICacheCoreTransTypeBranch;)
-    finish_item(req);
+    // If this is set, the next request will be constrained to have trans_type
+    // ICacheCoreTransTypeBranch. It's initially 1 because the core must start with a branch to tell
+    // the cache where to fetch from in the first place.
+    bit force_branch = 1'b1;
 
-    // Generate and run count ibex_icache_item sequence items (with no other constraint) through the
-    // req port.
+    req = ibex_icache_core_req_item::type_id::create("req");
+    rsp = ibex_icache_core_rsp_item::type_id::create("rsp");
+
     repeat (count - 1) begin
       start_item(req);
-      `DV_CHECK_RANDOMIZE_FATAL(req)
+      if (force_branch) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(req, req.trans_type == ICacheCoreTransTypeBranch;)
+      end else begin
+        `DV_CHECK_RANDOMIZE_FATAL(req)
+      end
       finish_item(req);
+      get_response(rsp);
+
+      // The next transaction must start with a branch if this one ended with an error.
+      force_branch = rsp.saw_error;
     end
   endtask
 endclass

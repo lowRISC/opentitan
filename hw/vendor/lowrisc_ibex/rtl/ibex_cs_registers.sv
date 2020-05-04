@@ -860,6 +860,11 @@ module ibex_cs_registers #(
   // event selection (hardwired) & control
   always_comb begin : gen_mhpmcounter_incr
 
+    // Assign inactive counters (first to prevent latch inference)
+    for (int unsigned i=0; i<32; i++) begin : gen_mhpmcounter_incr_inactive
+      mhpmcounter_incr[i] = 1'b0;
+    end
+
     // When adding or altering performance counter meanings and default
     // mappings please update dv/verilator/pcount/cpp/ibex_pcounts.cc
     // appropriately.
@@ -878,11 +883,6 @@ module ibex_cs_registers #(
     mhpmcounter_incr[10] = instr_ret_compressed_i; // num of compressed instr
     mhpmcounter_incr[11] = mul_wait_i;             // cycles waiting for multiply
     mhpmcounter_incr[12] = div_wait_i;             // cycles waiting for divide
-
-    // inactive counters
-    for (int unsigned i=3+MHPMCounterNum; i<32; i++) begin : gen_mhpmcounter_incr_inactive
-      mhpmcounter_incr[i] = 1'b0;
-    end
   end
 
   // event selector (hardwired, 0 means no event)

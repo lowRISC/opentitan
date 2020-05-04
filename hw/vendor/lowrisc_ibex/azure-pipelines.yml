@@ -6,8 +6,7 @@
 # Documentation at https://aka.ms/yaml
 
 variables:
-  VERILATOR_VERSION: 4.028
-  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
+  VERILATOR_VERSION: 4.032
   RISCV_TOOLCHAIN_TAR_VERSION: 20200323-1
   RISCV_COMPLIANCE_GIT_VERSION: 844c6660ef3f0d9b96957991109dfd80cc4938e2
   VERIBLE_VERSION: v0.0-266-g9e55307
@@ -46,6 +45,9 @@ jobs:
   # information is not read, pip installs the latest version, which then fails
   # to run.
   - bash: |
+      curl -L https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key | sudo apt-key add -
+      sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/edatools.list"
+      sudo apt-get update
       sudo apt-get install -y \
           python3 \
           python3-pip \
@@ -61,6 +63,7 @@ jobs:
           curl \
           libelf-dev \
           clang-format \
+          verilator-$(VERILATOR_VERSION) \
         && sudo pip3 install -U setuptools pip six \
         && sudo pip3 install -U -r python-requirements.txt
     displayName: Install dependencies
@@ -74,25 +77,6 @@ jobs:
       tar -C /tools/verible -xf verible.tar.gz --strip-components=1
       echo "##vso[task.setvariable variable=PATH]/tools/verible/bin:$PATH"
     displayName: Install Verible
-
-  - bash: |
-      set -e
-      if [ ! -d $(VERILATOR_PATH) ]; then
-        echo "Building verilator (no cached build found)"
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz
-        tar -xf verilator.tgz
-        cd verilator-$(VERILATOR_VERSION)
-        ./configure --prefix=$(VERILATOR_PATH)
-        make -j$(nproc)
-        mkdir -p $VERILATOR_PATH
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-      echo "##vso[task.setvariable variable=PATH]$VERILATOR_PATH/bin:$PATH"
-    displayName: Build and install Verilator
 
   - bash: |
       export TOOLCHAIN_URL=https://github.com/lowRISC/lowrisc-toolchains/releases/download/${RISCV_TOOLCHAIN_TAR_VERSION}/lowrisc-toolchain-gcc-rv32imc-${RISCV_TOOLCHAIN_TAR_VERSION}.tar.xz

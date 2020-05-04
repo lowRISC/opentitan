@@ -55,9 +55,10 @@ typedef enum logic [5:0] {
   ALU_SLO,
   ALU_ROR,
   ALU_ROL,
-  ALU_REV,
-  ALU_REV8,
-  ALU_ORCB,
+  ALU_GREV,
+  ALU_GORC,
+  ALU_SHFL,
+  ALU_UNSHFL,
 
   // Comparisons
   ALU_LT,
@@ -93,7 +94,14 @@ typedef enum logic [5:0] {
   ALU_CMOV,
   ALU_CMIX,
   ALU_FSL,
-  ALU_FSR
+  ALU_FSR,
+
+  // Single-Bit Operations
+  // RV32B
+  ALU_SBSET,
+  ALU_SBCLR,
+  ALU_SBINV,
+  ALU_SBEXT
 } alu_op_e;
 
 typedef enum logic [1:0] {

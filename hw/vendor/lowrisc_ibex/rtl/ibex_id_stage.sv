@@ -80,7 +80,8 @@ module ibex_id_stage #(
     // MUL, DIV
     output logic                      mult_en_ex_o,
     output logic                      div_en_ex_o,
-    output logic                      multdiv_sel_ex_o,
+    output logic                      mult_sel_ex_o,
+    output logic                      div_sel_ex_o,
     output ibex_pkg::md_op_e          multdiv_operator_ex_o,
     output logic  [1:0]               multdiv_signed_mode_ex_o,
     output logic [31:0]               multdiv_operand_a_ex_o,
@@ -192,6 +193,7 @@ module ibex_id_stage #(
   logic        branch_set, branch_set_d;
   logic        branch_taken;
   logic        jump_in_dec;
+  logic        jump_set_dec;
   logic        jump_set;
 
   logic        instr_first_cycle;
@@ -246,7 +248,6 @@ module ibex_id_stage #(
   // Multiplier Control
   logic        mult_en_id, mult_en_dec; // use integer multiplier
   logic        div_en_id, div_en_dec;   // use integer division or reminder
-  logic        multdiv_sel_dec;
   logic        multdiv_en_dec;
   md_op_e      multdiv_operator;
   logic [1:0]  multdiv_signed_mode;
@@ -400,7 +401,7 @@ module ibex_id_stage #(
       .dret_insn_o                     ( dret_insn_dec        ),
       .ecall_insn_o                    ( ecall_insn_dec       ),
       .wfi_insn_o                      ( wfi_insn_dec         ),
-      .jump_set_o                      ( jump_set             ),
+      .jump_set_o                      ( jump_set_dec         ),
       .branch_taken_i                  ( branch_taken         ),
       .icache_inval_o                  ( icache_inval_o       ),
 
@@ -442,7 +443,8 @@ module ibex_id_stage #(
       // MULT & DIV
       .mult_en_o                       ( mult_en_dec          ),
       .div_en_o                        ( div_en_dec           ),
-      .multdiv_sel_o                   ( multdiv_sel_dec      ),
+      .mult_sel_o                      ( mult_sel_ex_o        ),
+      .div_sel_o                       ( div_sel_ex_o         ),
       .multdiv_operator_o              ( multdiv_operator     ),
       .multdiv_signed_mode_o           ( multdiv_signed_mode  ),
 
@@ -603,7 +605,6 @@ module ibex_id_stage #(
 
   assign mult_en_ex_o                = mult_en_id;
   assign div_en_ex_o                 = div_en_id;
-  assign multdiv_sel_ex_o            = multdiv_sel_dec;
 
   assign multdiv_operator_ex_o       = multdiv_operator;
   assign multdiv_signed_mode_ex_o    = multdiv_signed_mode;
@@ -663,6 +664,7 @@ module ibex_id_stage #(
   // could generate needless prefetch buffer flushes and instruction fetches. ID/EX is designed such
   // that this shouldn't ever happen.
   `ASSERT(NeverDoubleBranch, branch_set |=> ~branch_set)
+  `ASSERT(NeverDoubleJump, jump_set |=> ~jump_set)
 
   ///////////////
   // ID-EX FSM //
@@ -692,6 +694,7 @@ module ibex_id_stage #(
     stall_branch            = 1'b0;
     stall_alu               = 1'b0;
     branch_set_d            = 1'b0;
+    jump_set                = 1'b0;
     perf_branch_o           = 1'b0;
 
     if (instr_executing) begin
@@ -733,6 +736,7 @@ module ibex_id_stage #(
               // BTALU means jumps only need one cycle
               id_fsm_d      = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
               stall_jump    = ~BranchTargetALU;
+              jump_set      = jump_set_dec;
             end
             alu_multicycle_dec: begin
               stall_alu     = 1'b1;

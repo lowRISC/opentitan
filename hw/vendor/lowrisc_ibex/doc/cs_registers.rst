@@ -436,7 +436,7 @@ Other bit fields read as zero.
 | 12    | WARL | **ebreaku:** EBREAK in U-Mode behaves as described in Privileged |
 |       |      | Spec (0), or enters Debug Mode (1).                              |
 +-------+------+------------------------------------------------------------------+
-| 8:6   | R    | **cause:** 1 = EBREAK, 3 = halt request, 4 = step                |
+| 8:6   | R    | **cause:** 1 = EBREAK, 2 = trigger, 3 = halt request, 4 = step   |
 +-------+------+------------------------------------------------------------------+
 | 2     | RW   | **step:** When set and not in Debug Mode, execute a single       |
 |       |      | instruction and enter Debug Mode.                                |

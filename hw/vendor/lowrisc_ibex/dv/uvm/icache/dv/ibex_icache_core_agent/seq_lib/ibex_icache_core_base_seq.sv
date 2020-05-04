@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ibex_icache_core_base_seq extends dv_base_seq #(
-    .REQ         (ibex_icache_core_item),
+    .REQ         (ibex_icache_core_req_item),
+    .RSP         (ibex_icache_core_rsp_item),
     .CFG_T       (ibex_icache_core_agent_cfg),
     .SEQUENCER_T (ibex_icache_core_sequencer)
   );

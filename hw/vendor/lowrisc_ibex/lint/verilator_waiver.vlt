@@ -36,6 +36,12 @@ lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_amt_compl'[5]*"
 // cleaner to write all bits even if not all are used
 lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_result_ext'[32]*"
 
+// Signal is not used for RV32B == 0: imd_val_q_i
+//
+// No ALU multicycle instructions exist to use the intermediate value register,
+// if bitmanipulation extension is not enabled.
+lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'imd_val_q_i'"
+
 // Bits of signal are not used: fetch_addr_n[0]
 // cleaner to write all bits even if not all are used
 lint_off -rule UNUSED -file "*/rtl/ibex_if_stage.sv" -match "*'fetch_addr_n'[0]*"

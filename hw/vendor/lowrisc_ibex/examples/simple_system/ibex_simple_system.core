@@ -67,6 +67,7 @@ targets:
     parameters:
       - RV32M
       - RV32E
+      - RV32B
       - MultiplierImplementation
       - BranchTargetALU
       - WritebackStage

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ibex_icache_core_item extends uvm_sequence_item;
+class ibex_icache_core_req_item extends uvm_sequence_item;
 
   // The type of transaction
   rand ibex_icache_core_trans_type_e trans_type;
@@ -45,9 +45,9 @@ class ibex_icache_core_item extends uvm_sequence_item;
   }
 
   constraint c_invalidate_dist {
-    // Poke the cache invalidate line one time in 500. This takes ages and we don't want to
+    // Poke the cache invalidate line one time in 50. This takes ages and we don't want to
     // accidentally spend most of the test waiting for invalidation.
-    invalidate dist { 0 :/ 499, 1 :/ 1 };
+    invalidate dist { 0 :/ 49, 1 :/ 1 };
   }
 
   constraint c_num_insns_dist {
@@ -62,7 +62,7 @@ class ibex_icache_core_item extends uvm_sequence_item;
   }
 
 
-  `uvm_object_utils_begin(ibex_icache_core_item)
+  `uvm_object_utils_begin(ibex_icache_core_req_item)
     `uvm_field_enum(ibex_icache_core_trans_type_e, trans_type, UVM_DEFAULT)
     `uvm_field_int (branch_addr,   UVM_DEFAULT | UVM_HEX)
     `uvm_field_int (toggle_enable, UVM_DEFAULT)
