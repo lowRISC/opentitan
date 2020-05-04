@@ -1,0 +1,93 @@
+{
+  name: "lifecycle"
+  bus_device: "tlul"
+  bus_host: "none"
+  description: '''LifeCycle Controller
+               '''
+  inter_signal_list: [
+    { name: "pwrmgr",
+      type: "req_rsp",
+      act:  "rsp",
+      width: 1,
+      struct: "pwr_lc",
+      package: "pwrmgr_pkg"
+    }
+    { name: "otp_program",
+      type: "req_rsp",
+      act: "req",
+      width: 1,
+      struct: "lc_otp_program",
+      package: "otp_ctrl_pkg"
+    }
+    { name: "otp_data",
+      type: "uni",
+      act: "rcv",
+      width: 1,
+      struct: "otp_lc_data",
+      package: "otp_ctrl_pkg"
+    }
+    { name: "dft",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+    { name: "hw_debug",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+    { name: "nvm_debug",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+    { name: "cpu",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+    { name: "provision",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+    { name: "test",
+      type: "uni",
+      act: "req",
+      width: 1,
+      struct: "lc_tx",
+      package: "lifecycle_pkg"
+    }
+
+    // Pinmux comm (strap sampling)
+    { name: "strap_sample",
+      type: "req_rsp",
+      act: "req",
+      width: 1,
+      struct: "lc_straps",
+      package: "pinmux_pkg"
+    }
+
+    // Flash erase request
+    //{ name: "flash_erase",
+    //  type: "req_rsp",
+    //  act: "req",
+    //  width: "1",
+    //  struct: "flash_erase",
+    //  package: "flash_ctrl_pkg"
+    //}
+  ]
+  reg_width: "32"
+  registers: [
+  ]
+}
