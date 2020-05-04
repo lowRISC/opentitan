@@ -352,6 +352,7 @@ module ibex_load_store_unit
     unique case (ls_fsm_cs)
 
       IDLE: begin
+        pmp_err_d = 1'b0;
         if (lsu_req_i) begin
           data_req_o   = 1'b1;
           pmp_err_d    = data_pmp_err_i;

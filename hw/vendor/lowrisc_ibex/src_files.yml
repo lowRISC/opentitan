@@ -9,10 +9,12 @@ ibex:
     rtl/ibex_compressed_decoder.sv,
     rtl/ibex_controller.sv,
     rtl/ibex_cs_registers.sv,
+    rtl/ibex_counters.sv,
     rtl/ibex_decoder.sv,
     rtl/ibex_ex_block.sv,
     rtl/ibex_id_stage.sv,
     rtl/ibex_if_stage.sv,
+    rtl/ibex_wb_stage.sv,
     rtl/ibex_load_store_unit.sv,
     rtl/ibex_multdiv_slow.sv,
     rtl/ibex_multdiv_fast.sv,
@@ -20,6 +22,7 @@ ibex:
     rtl/ibex_fetch_fifo.sv,
     rtl/ibex_pmp.sv,
     rtl/ibex_core.sv,
+    shared/rtl/prim_assert.sv,
   ]
 ibex_vip_rtl:
   targets: [
@@ -51,6 +54,6 @@ ibex_regfile_fpga:
   incdirs: [
   ]
   files: [
-    rtl/ibex_register_file_ff.sv,
+    rtl/ibex_register_file_fpga.sv,
   ]
 

@@ -9,7 +9,7 @@
   upstream:
   {
     url: https://github.com/lowRISC/opentitan
-    rev: 0d7f7ac755d4e00811257027dd814edb2afca050
+    rev: 1d17b1225d324c81da522c69317335a83edd5ddb
     only_subdir: util/dvsim
   }
 }

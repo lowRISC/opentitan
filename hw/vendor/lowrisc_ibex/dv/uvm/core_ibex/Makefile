@@ -40,7 +40,7 @@ ISS                 := ovpsim
 # ISS runtime options
 ISS_OPTS            :=
 # ISA
-ISA                 := rv32imc
+ISA                 := rv32imcb
 # Test name (default: full regression)
 TEST                := all
 TESTLIST            := riscv_dv_extension/testlist.yaml
@@ -325,10 +325,10 @@ $(OUT)/rtl_sim/.compile.stamp: \
 	@./sim.py \
 	 --o=${OUT} \
 	 --steps=compile \
-	 --lsf_cmd="${LSF_CMD}" \
 	 ${COMMON_OPTS} \
 	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
-	 $(cov-arg) $(wave-arg) --cmp_opts="${COMPILE_OPTS}"
+	 $(cov-arg) $(wave-arg) $(lsf-arg) \
+	 --cmp_opts="${COMPILE_OPTS}"
 	$(call dump-vars,$(OUT)/rtl_sim/.compile-vars.mk,comp,$(compile-var-deps))
 	@touch $@
 
@@ -361,7 +361,6 @@ $(metadata)/rtl_sim.run.stamp: \
 	@./sim.py \
 	 --o=$(OUT-SEED) \
 	 --steps=sim \
-	 --lsf_cmd="${LSF_CMD}" \
 	 ${TEST_OPTS} \
 	 --simulator="${SIMULATOR}" --simulator_yaml=yaml/rtl_simulation.yaml \
 	 $(cov-arg) $(wave-arg) $(lsf-arg) \
@@ -389,12 +388,13 @@ post_compare: $(OUT-SEED)/regr.log
 
 ###############################################################################
 # Generate RISCV-DV functional coverage
+# TODO(udi) - add B extension
 fcov:
 	python3 ${GEN_DIR}/cov.py \
           --core ibex \
-          --dir ${OUT}/rtl_sim \
-          -o ${OUT}/fcov \
-          --isa rv32imc \
+          --dir ${OUT-SEED}/rtl_sim \
+          -o ${OUT-SEED}/fcov \
+          --isa rv32imcb \
           --custom_target riscv_dv_extension
 
 # Merge all output coverage directories into the <out>/rtl_sim directory
@@ -404,8 +404,8 @@ cov:
 		--steps=cov \
 		${TEST_OPTS} \
 		--simulator="${SIMULATOR}" \
-		--o="${OUT}" \
-		--lsf_cmd="${LSF_CMD}";
+		$(lsf-arg) \
+		--o="${OUT}"
 	@if [ -d "test.vdb" ]; then \
 		mv -f test.vdb ${OUT}/rtl_sim/; \
 	fi

@@ -15,8 +15,10 @@ module ibex_multdiv_slow
 (
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             mult_en_i,
-    input  logic             div_en_i,
+    input  logic             mult_en_i,  // dynamic enable signal, for FSM control
+    input  logic             div_en_i,   // dynamic enable signal, for FSM control
+    input  logic             mult_sel_i, // static decoder output, for data muxes
+    input  logic             div_sel_i,  // static decoder output, for data muxes
     input  ibex_pkg::md_op_e operator_i,
     input  logic  [1:0]      signed_mode_i,
     input  logic [31:0]      op_a_i,
@@ -27,6 +29,10 @@ module ibex_multdiv_slow
 
     output logic [32:0]      alu_operand_a_o,
     output logic [32:0]      alu_operand_b_o,
+
+    input  logic [33:0]      imd_val_q_i,
+    output logic [33:0]      imd_val_d_o,
+    output logic             imd_val_we_o,
 
     input  logic             multdiv_ready_id_i,
 
@@ -67,9 +73,14 @@ module ibex_multdiv_slow
    // (accum_window_q + op_a_shift_q)>>1
   assign res_adder_h       = alu_adder_ext_i[33:1];
 
+  // Use shared intermediate value register in id_stage for accum_window
+  assign imd_val_d_o    = accum_window_d;
+  assign imd_val_we_o   = ~multdiv_hold;
+  assign accum_window_q = imd_val_q_i;
+
   always_comb begin
     alu_operand_a_o   = accum_window_q;
-    multdiv_result_o  = div_en_i ? accum_window_q[31:0] : res_adder_l;
+    multdiv_result_o  = div_sel_i ? accum_window_q[31:0] : res_adder_l;
 
     unique case(operator_i)
 
@@ -147,15 +158,13 @@ module ibex_multdiv_slow
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_multdiv_state_q
     if (!rst_ni) begin
       multdiv_state_q  <= 5'h0;
-      accum_window_q   <= 33'h0;
       op_b_shift_q     <= 33'h0;
       op_a_shift_q     <= 33'h0;
       op_numerator_q   <= 32'h0;
       md_state_q       <= MD_IDLE;
     end else begin
-      if (~multdiv_hold) begin
+      if ((mult_en_i || div_en_i) && !multdiv_hold) begin
         multdiv_state_q  <= multdiv_state_d;
-        accum_window_q   <= accum_window_d;
         op_b_shift_q     <= op_b_shift_d;
         op_a_shift_q     <= op_a_shift_d;
         op_numerator_q   <= op_numerator_d;
@@ -172,7 +181,7 @@ module ibex_multdiv_slow
     op_numerator_d   = op_numerator_q;
     md_state_d       = md_state_q;
     multdiv_hold     = 1'b0;
-    if (mult_en_i || div_en_i) begin
+    if (mult_sel_i || div_sel_i) begin
       unique case(md_state_q)
         MD_IDLE: begin
           unique case(operator_i)
@@ -295,8 +304,8 @@ module ibex_multdiv_slow
         default: begin
           md_state_d = MD_IDLE;
         end
-        endcase // md_state_q
-      end
+      endcase // md_state_q
+    end // (mult_sel_i || div_sel_i)
   end
 
   assign valid_o = (md_state_q == MD_FINISH) |

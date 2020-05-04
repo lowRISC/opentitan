@@ -20,7 +20,7 @@ SEED=1
 ibex-top       := ../../../..
 scratch-root   := $(ibex-top)/build
 dvsim-py       := $(ibex-top)/vendor/lowrisc_ip/dvsim/dvsim.py
-dvsim-std-args := --skip-ral --scratch-root $(scratch-root)
+dvsim-std-args := --scratch-root $(scratch-root)
 
 waves-arg      := $(if $(filter-out 0,$(WAVES)),--waves,)
 verbosity-arg  := $(if $(VERBOSITY),--verbosity $(VERBOSITY),)

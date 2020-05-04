@@ -26,9 +26,12 @@ module core_ibex_tb_top;
   // CSR access interface
   core_ibex_csr_if csr_if(.clk(clk));
 
-  ibex_core_tracing #(.DmHaltAddr(`BOOT_ADDR + 'h0),
-                      .DmExceptionAddr(`BOOT_ADDR + 'h4),
-                      .PMPEnable(1'b1)) dut (
+  ibex_core_tracing #(
+    .DmHaltAddr(`BOOT_ADDR + 'h0),
+    .DmExceptionAddr(`BOOT_ADDR + 'h4),
+    .PMPEnable(1'b1),
+    .RV32B(1'b1)
+  ) dut (
     .clk_i(clk),
     .rst_ni(rst_n),
     .test_en_i(1'b1),

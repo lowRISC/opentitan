@@ -17,8 +17,9 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  ibex_icache_core_if core_if (.clk(clk));
-  ibex_mem_intf  ibex_mem_intf();
+
+  ibex_icache_core_if core_if (.clk(clk), .rst_n(rst_n));
+  ibex_icache_mem_if  mem_if  (.clk(clk), .rst_n(rst_n));
 
   // dut
   ibex_icache dut (
@@ -37,17 +38,24 @@ module tb;
     .err_plus2_o     (core_if.err_plus2),
     .icache_enable_i (core_if.enable),
     .icache_inval_i  (core_if.invalidate),
-    .busy_o          (core_if.busy)
+    .busy_o          (core_if.busy),
 
-    // TODO: add remaining IOs and hook them
+    // Connect icache <-> instruction bus interface
+    .instr_req_o     (mem_if.req),
+    .instr_gnt_i     (mem_if.gnt),
+    .instr_addr_o    (mem_if.addr),
+    .instr_rdata_i   (mem_if.rdata),
+    .instr_err_i     (mem_if.err),
+    .instr_pmp_err_i (mem_if.pmp_err),
+    .instr_rvalid_i  (mem_if.rvalid)
   );
 
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual ibex_icache_core_if)::set(null, "*.env.m_ibex_icache_core_agent*", "vif", core_if);
-    uvm_config_db#(virtual ibex_mem_intf)::set(null, "*.env.m_ibex_mem_intf_slave_agent*", "vif", ibex_mem_intf);
+    uvm_config_db#(virtual ibex_icache_core_if)::set(null, "*.env.core_agent*", "vif", core_if);
+    uvm_config_db#(virtual ibex_icache_mem_if)::set(null, "*.env.mem_agent*", "vif", mem_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

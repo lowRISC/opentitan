@@ -83,7 +83,7 @@ Parameters
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``PMPNumRegions``            | int (1..16) | 4          | Number implemented PMP regions (ignored if PMPEnable == 0)      |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
-| ``MHPMCounterNum``           | int (0..8)  | 0          | Number of performance monitor event counters                    |
+| ``MHPMCounterNum``           | int (0..10) | 0          | Number of performance monitor event counters                    |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``MHPMCounterWidth``         | int (64..1) | 40         | Bit width of performance monitor event counters                 |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
@@ -92,7 +92,8 @@ Parameters
 | ``RV32M``                    | bit         | 1          | M(ultiply) extension enable                                     |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``RV32B``                    | bit         | 0          | *EXPERIMENTAL* - B(itmanipulation) extension enable:            |
-|                              |             |            | Currently supported Z-extensions: Zbb (base)                    |
+|                              |             |            | Currently supported Z-extensions: Zbb (base), Zbs (single-bit)  |
+|                              |             |            | Zbp (bit permutation) and Zbt (ternary)                         |
 +------------------------------+-------------+------------+-----------------------------------------------------------------+
 | ``BranchTargetALU``          | bit         | 0          | *EXPERIMENTAL* - Enables branch target ALU removing a stall     |
 |                              |             |            | cycle from taken branches                                       |

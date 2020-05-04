@@ -587,3 +587,13 @@
     +pmp_max_offset=00021000
     +boot_mode=u
   rtl_test: core_ibex_base_test
+
+- test: riscv_bitmanip_test
+  desc: >
+    Random instruction test with supported B extension instructions
+  iterations: 10
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +enable_b_extension=1
+    +enable_bitmanip_groups=zbb,zbt,zbs,zbp
+  rtl_test: core_ibex_base_test

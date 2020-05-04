@@ -19,8 +19,10 @@ module ibex_multdiv_fast #(
   ) (
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             mult_en_i,
-    input  logic             div_en_i,
+    input  logic             mult_en_i,  // dynamic enable signal, for FSM control
+    input  logic             div_en_i,   // dynamic enable signal, for FSM control
+    input  logic             mult_sel_i, // static decoder output, for data muxes
+    input  logic             div_sel_i,  // static decoder output, for data muxes
     input  ibex_pkg::md_op_e operator_i,
     input  logic  [1:0]      signed_mode_i,
     input  logic [31:0]      op_a_i,
@@ -85,6 +87,8 @@ module ibex_multdiv_fast #(
   } md_fsm_e;
   md_fsm_e md_state_q, md_state_d;
 
+  logic unused_mult_sel_i;
+  assign unused_mult_sel_i = mult_sel_i;
 
   assign mult_en_internal = mult_en_i & ~mult_hold;
   assign div_en_internal  = div_en_i & ~div_hold;
@@ -112,11 +116,11 @@ module ibex_multdiv_fast #(
 
   assign multdiv_en = mult_en_internal | div_en_internal;
 
-  assign imd_val_d_o = div_en_i ? op_remainder_d : mac_res_d;
+  assign imd_val_d_o = div_sel_i ? op_remainder_d : mac_res_d;
   assign imd_val_we_o = multdiv_en;
 
   assign signed_mult      = (signed_mode_i != 2'b00);
-  assign multdiv_result_o = div_en_i ? imd_val_q_i[31:0] : mac_res_d[31:0];
+  assign multdiv_result_o = div_sel_i ? imd_val_q_i[31:0] : mac_res_d[31:0];
 
   // The single cycle multiplier uses three 17 bit multipliers to compute MUL instructions in a
   // single cycle and MULH instructions in two cycles.
@@ -226,7 +230,7 @@ module ibex_multdiv_fast #(
       if (!rst_ni) begin
         mult_state_q <= MULL;
       end else begin
-        if (mult_en_i) begin
+        if (mult_en_internal) begin
           mult_state_q <= mult_state_d;
         end
       end

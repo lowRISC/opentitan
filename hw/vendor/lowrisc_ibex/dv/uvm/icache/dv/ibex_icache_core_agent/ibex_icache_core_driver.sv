@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ibex_icache_core_agent_cfg);
+class ibex_icache_core_driver
+  extends dv_base_driver #(.ITEM_T     (ibex_icache_core_req_item),
+                           .RSP_ITEM_T (ibex_icache_core_rsp_item),
+                           .CFG_T      (ibex_icache_core_agent_cfg));
   `uvm_component_utils(ibex_icache_core_driver)
   `uvm_component_new
 
@@ -18,18 +21,25 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
 
   // drive trans received from sequencer
   virtual task automatic get_and_drive();
+    ibex_icache_core_rsp_item rsp;
+
     forever begin
       seq_item_port.get_next_item(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
+      rsp = ibex_icache_core_rsp_item::type_id::create("rsp");
+      rsp.set_id_info(req);
+
+      rsp.saw_error = 1'b0;
+
       case (req.trans_type)
-        ICacheCoreTransTypeBranch: drive_branch_trans(req);
-        ICacheCoreTransTypeReq:    drive_req_trans(req);
+        ICacheCoreTransTypeBranch: drive_branch_trans(rsp, req);
+        ICacheCoreTransTypeReq:    drive_req_trans(rsp, req);
         default:                   `uvm_fatal(`gfn, "Unknown transaction type")
       endcase
 
       `uvm_info(`gfn, "item sent", UVM_HIGH)
-      seq_item_port.item_done();
+      seq_item_port.item_done(rsp);
     end
   endtask
 
@@ -37,7 +47,8 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
   //
   // This concurrently asserts branch with a given address for a cycle while doing the usual
   // (enable/disable, invalidate, read instructions).
-  virtual task automatic drive_branch_trans(ibex_icache_core_item req);
+  task automatic drive_branch_trans(ibex_icache_core_rsp_item rsp,
+                                    ibex_icache_core_req_item req);
     // Make sure that req is enabled (has no effect unless this is the first transaction)
     cfg.vif.driver_cb.req <= 1'b1;
 
@@ -49,7 +60,7 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
     fork
         cfg.vif.branch_to(req.branch_addr);
         if (req.invalidate) invalidate();
-        read_insns(req.num_insns);
+        read_insns(rsp, req.num_insns);
     join
   endtask
 
@@ -57,7 +68,8 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
   //
   // This lowers req for zero or more cycles, at the same time as setting the enable pin and (maybe)
   // pulsing the invalidate line. Once that is done, it reads zero or more instructions.
-  virtual task automatic drive_req_trans(ibex_icache_core_item req);
+  task automatic drive_req_trans(ibex_icache_core_rsp_item rsp,
+                                 ibex_icache_core_req_item req);
     int unsigned req_low_cycles;
     bit          allow_no_low_cycles;
 
@@ -80,16 +92,19 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
         if (req_low_cycles > 0) lower_req(req_low_cycles);
         if (req.invalidate) invalidate();
     join
-    read_insns(req.num_insns);
+    read_insns(rsp, req.num_insns);
   endtask
 
-  // Read up to num_insns instructions from the cache, stopping early on an error
-  virtual task automatic read_insns(int num_insns);
+  // Read up to num_insns instructions from the cache, stopping early on an error. If there was an
+  // error, fill in the saw_error flag in rsp (which will be passed back to the sequence).
+  task automatic read_insns(ibex_icache_core_rsp_item rsp, int num_insns);
     for (int i = 0; i < num_insns; i++) begin
       read_insn();
       // Spot any error and exit early
-      if (cfg.vif.driver_cb.err)
+      if (cfg.vif.driver_cb.err) begin
+        rsp.saw_error = 1'b1;
         break;
+      end
     end
   endtask
 
@@ -128,7 +143,7 @@ class ibex_icache_core_driver extends dv_base_driver #(ibex_icache_core_item, ib
   virtual task automatic invalidate();
     int unsigned num_cycles;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_cycles,
-                                       num_cycles dist { 0 :/ 499, [1:20] :/ 1 };)
+                                       num_cycles dist { 1 :/ 10, [2:20] :/ 1 };)
     cfg.vif.invalidate_pulse(num_cycles);
   endtask
 

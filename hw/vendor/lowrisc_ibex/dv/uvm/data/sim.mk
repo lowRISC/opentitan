@@ -6,16 +6,6 @@
 
 all: build run
 
-########################
-## RAL target         ##
-########################
-ral:
-ifneq (${skip_ral},1)
-	mkdir -p ${gen_ral_pkg_dir} && \
-	${gen_ral_pkg_cmd} ${gen_ral_pkg_opts}
-endif
-
-
 ###############################
 ## sim build and run targets ##
 ###############################
@@ -27,7 +17,7 @@ pre_compile:
 	mkdir -p ${tool_srcs_dir}
 	cp -Ru ${tool_srcs} ${tool_srcs_dir}/.
 
-gen_sv_flist: pre_compile ral
+gen_sv_flist: pre_compile
 	@echo "[make]: gen_sv_flist"
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
 
