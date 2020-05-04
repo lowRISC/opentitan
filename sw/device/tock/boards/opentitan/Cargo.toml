@@ -21,6 +21,10 @@ lto = true
 opt-level = "z"
 debug = true
 
+[features]
+fpga_nexysvideo = ["earlgrey/fpga_nexysvideo"]
+sim_verilator = ["earlgrey/sim_verilator"]
+
 [dependencies]
 earlgrey = { path = "../../chips/earlgrey" }
 tock = { path = "../../tock" }
