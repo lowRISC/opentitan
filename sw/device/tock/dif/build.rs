@@ -14,6 +14,7 @@
 // This script finds all C header files in specified directories by combining
 // `MESON_SOURCE_ROOT` with a relative path. It then generates rust bindings
 // for the found C header files, the generated file is stored in `OUT_DIR`.
+// This script also links against the relevant libraries.
 
 extern crate bindgen;
 
@@ -22,6 +23,7 @@ use std::fs;
 use std::path::Path;
 
 static DIF_RELATIVE_PATH: &str = "sw/device/lib/dif";
+static LIBBASE_RELATIVE_PATH: &str = "sw/device/lib/base";
 
 fn main() {
     let source_root = env::var("MESON_SOURCE_ROOT").expect("no MESON_SOURCE_ROOT env variable");
@@ -31,6 +33,29 @@ fn main() {
     let out_dir = env::var("OUT_DIR").expect("no OUT_DIR env variable");
 
     generate_bindings(&source_root, &build_root, &out_dir);
+
+    // Link against specified OT DIF libraries.
+    let dif_path = Path::new(&build_root).join(DIF_RELATIVE_PATH);
+    let dif_path = dif_path
+        .to_str()
+        .expect("failed to create DIF libraries path string");
+
+    libraries_link(dif_path, &["uart_ot"]);
+
+    // Link against specified libbase libraries.
+    let libbase_path = Path::new(&build_root).join(LIBBASE_RELATIVE_PATH);
+    let libbase_path = libbase_path
+        .to_str()
+        .expect("failed to create libbase libraries path string");
+
+    libraries_link(libbase_path, &["mmio_ot"]);
+}
+
+fn libraries_link(path: &str, libs: &[&str]) {
+    for lib in libs {
+        println!("cargo:rustc-link-search={}", path);
+        println!("cargo:rustc-link-lib={}", lib);
+    }
 }
 
 fn generate_bindings(source_root: &str, build_root: &str, out_dir: &str) {
