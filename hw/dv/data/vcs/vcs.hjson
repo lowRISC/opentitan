@@ -35,7 +35,7 @@
                "-LDFLAGS \"-Wl,--no-as-needed\""]
 
   run_opts:   ["-licqueue",
-               "-ucli -do {tool_srcs_dir}/vcs_{dump}.tcl",
+               "-ucli -do {tool_srcs_dir}/vcs.tcl",
                "+ntb_random_seed={seed}",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but

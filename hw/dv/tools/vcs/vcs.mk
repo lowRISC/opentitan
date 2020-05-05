@@ -10,7 +10,7 @@
 
 SIMCC       := vcs
 SIMX        ?= ${BUILD_DIR}/simv
-SIM_SETUP   ?= ${MAKE_ROOT}/vcs/vcs_fsdb.tcl
+SIM_SETUP   ?= ${MAKE_ROOT}/vcs/vcs.tcl
 
 # set standard build options
 BUILD_OPTS  += -sverilog -full64 -licqueue -timescale=1ns/1ps -kdb

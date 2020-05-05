@@ -19,7 +19,7 @@
                "-uvmhome {UVM_HOME}",
                "-xmlibdirname {build_dir}/xcelium.d"]
 
-  run_opts:   ["-input {tool_srcs_dir}/xcelium_{dump}.tcl",
+  run_opts:   ["-input {tool_srcs_dir}/xcelium.tcl",
                "-licqueue",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",

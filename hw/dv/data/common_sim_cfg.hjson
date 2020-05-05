@@ -49,9 +49,6 @@
   // the 'overrides' directive.
   dut_instance: "{tb}.dut"
 
-  // Default waves dump settings
-  dump_file:  waves.{dump}
-
   // Top level simulation entities.
   sim_tops: ["-top {tb}"]
 
@@ -71,8 +68,9 @@
 
   // Default list of things to export to shell
   exports: [
-    DUMP_FILE: {dump_file}
-    WAVES: {waves}
+    TOOL_SRCS_DIR: {tool_srcs_dir}
+    EN_WAVES: {waves}
+    DUMP_FMT: {dump_fmt}
     DUT_TOP: {dut}
     TB_TOP: {tb}
     dut_instance: {dut_instance}
@@ -131,6 +129,11 @@
       en_sim_modes: ["cov"]
     }
   ]
+
+  // Add waves.tcl to the set of sources to be copied over to
+  // {tool_srcs_dir}. This can be sourced by the tool-specific TCL
+  // script to set up wave dumping.
+  tool_srcs:  ["{proj_root}/hw/dv/tools/waves.tcl"],
 
   // Project defaults for VCS
   vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"

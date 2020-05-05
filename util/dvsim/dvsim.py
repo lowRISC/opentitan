@@ -283,16 +283,18 @@ def main():
 
     parser.add_argument("-d",
                         "--dump",
-                        default="fsdb",
-                        metavar="fsdb|shm",
-                        help="Dump waves in fsdb or shm.")
+                        choices=["fsdb", "shm", "vpd"],
+                        help=("Format to dump waves for simulation. If Verdi "
+                              "is installed (detected by searching PATH) this "
+                              "defaults to fsdb. Otherwise, defaults to shm "
+                              "for Xcelium or vpd for VCS."))
 
     parser.add_argument("-mw",
                         "--max-waves",
                         type=int,
                         default=5,
                         metavar="N",
-                        help="""Enable dumpling of waves for at most N tests;
+                        help="""Enable dumping of waves for at most N tests;
                                 this includes tests scheduled for run AND automatic rerun"""
                         )
 

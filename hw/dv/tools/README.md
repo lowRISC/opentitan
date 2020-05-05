@@ -40,8 +40,8 @@ together. Please see following table for more details:
 Make variable | Description | Overridable (O) or Appendable (A) |
 --------------|-------------|-----------------------------------|
 DV_DIR | This is the top level DV directory for the IP containing the Test Makefile. | |
-DUT_TOP | This is the top level dut module under test. This is used in `{vcs, xcelium}_fsdb.tcl` file. | |
-TB_TOP | This is the top level tb module under test. This is used in `{vcs, xcelium}_fsdb.tcl` file. | |
+DUT_TOP | This is the top level dut module under test. | |
+TB_TOP | This is the top level tb module under test. This is used by the `<simulator>.tcl` file when dumping waves. | |
 FUSESOC_CORE | This is the testbench fusesoc .core name that contains the simulation target. This .core file is typically placed in the same directory as the test Makefile. | |
 COMPILE_KEY | Users need to define COMPILE_KEY sets for building Test Makefile, CL with a unique sets of compile time options. This is to be done in the Test Makefile in this way: <br>`ifeq ($(COMPILE_KEY),foo)`<br> &emsp;`BUILD_OPTS += +define+FOO` <br>`endif`<br> There is a 'default' compile key already added which implies no additional compile time options are required. Within each test specification, the COMPILE_KEY can be overridden to use the specific compile key. <br>`ifeq ($(TEST_NAME),foo_test)`<br> &emsp;`COMPILE_KEY = foo` <br> &emsp;`# other test opts` <br>`endif` | O (Within tests,  & command line) |
 UVM_TEST | SV UVM test class to create in the test. This is set to the 'base_test' by default and is overridden in the test specifications if needed. | O (Test Makefile) |
