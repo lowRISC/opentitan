@@ -57,65 +57,73 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   task body();
-    `DV_CHECK_RANDOMIZE_FATAL(this)
-    run_esc_rsp_seq_nonblocking(esc_int_err);
-    run_alert_ping_rsp_seq_nonblocking();
-    if (verbosity != UVM_LOW) `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
-    for (int i = 1; i <= num_trans; i++) begin
-      `DV_CHECK_RANDOMIZE_FATAL(this)
+    fork
+      begin : isolation_fork
+        `DV_CHECK_RANDOMIZE_FATAL(this)
+        run_esc_rsp_seq_nonblocking(esc_int_err);
+        run_alert_ping_rsp_seq_nonblocking();
+        `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_MEDIUM)
+        for (int i = 1; i <= num_trans; i++) begin
+          `DV_CHECK_RANDOMIZE_FATAL(this)
 
-      `uvm_info(`gfn,
-          $sformatf("starting seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
-          i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
+          `uvm_info(`gfn,
+              $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
+              i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
 
-      // write initial settings (enable and mapping csrs)
-      alert_handler_init(.intr_en(intr_en), .alert_en(alert_en), .alert_class(alert_class_map),
-                         .loc_alert_en(local_alert_en), .loc_alert_class(local_alert_class_map));
+          // write initial settings (enable and mapping csrs)
+          alert_handler_init(.intr_en(intr_en),
+                             .alert_en(alert_en),
+                             .alert_class(alert_class_map),
+                             .loc_alert_en(local_alert_en),
+                             .loc_alert_class(local_alert_class_map));
 
-      // write config settings according to the constraits
-      alert_handler_rand_wr_class_ctrl();
-      alert_handler_wr_clren_regs(clr_en);
+          // write config settings according to the constraits
+          alert_handler_rand_wr_class_ctrl();
+          alert_handler_wr_clren_regs(clr_en);
 
-      // always set phase_cycle for the first iteration, in order to pass stress_all test
-      if (do_wr_phases_cyc || i == 1) begin
-        wr_phases_cycle(max_phase_cyc);
-        max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
-                               max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
-      end
-      if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
-      wr_class_accum_threshold(accum_thresh);
+          // always set phase_cycle for the first iteration, in order to pass stress_all test
+          if (do_wr_phases_cyc || i == 1) begin
+            wr_phases_cycle(max_phase_cyc);
+            max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
+                                   max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
+          end
+          if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
+          wr_class_accum_threshold(accum_thresh);
 
-      // drive alert
-      drive_alert(alert_trigger, alert_int_err);
+          // drive alert
+          drive_alert(alert_trigger, alert_int_err);
 
-      if (do_esc_intr_timeout) begin
-        int max_intr_timeout_cyc;
-        foreach (intr_timeout_cyc[i]) begin
-          max_intr_timeout_cyc = (max_intr_timeout_cyc > intr_timeout_cyc[i]) ?
-                                  max_intr_timeout_cyc : intr_timeout_cyc[i];
-        end
-        cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
-        read_esc_status();
-      end
+          if (do_esc_intr_timeout) begin
+            int max_intr_timeout_cyc;
+            foreach (intr_timeout_cyc[i]) begin
+              max_intr_timeout_cyc = (max_intr_timeout_cyc > intr_timeout_cyc[i]) ?
+                                      max_intr_timeout_cyc : intr_timeout_cyc[i];
+            end
+            cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
+            read_esc_status();
+          end
 
-      // read and check interrupt
-      check_alert_interrupts();
+          // read and check interrupt
+          check_alert_interrupts();
 
-      // wait escalation done, and random interrupt with clear_esc
-      wait_alert_handshake_done();
-      fork
-        begin
-          wait_esc_handshake_done(max_wait_phases_cyc);
-        end
-        begin
-          cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
-          if ($urandom_range(0, 1)) clear_esc();
-        end
-      join
-      read_alert_cause();
-      read_esc_status();
-      if (do_clr_esc) clear_esc();
-    end
+          // wait escalation done, and random interrupt with clear_esc
+          wait_alert_handshake_done();
+          fork
+            begin
+              wait_esc_handshake_done(max_wait_phases_cyc);
+            end
+            begin
+              cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
+              if ($urandom_range(0, 1)) clear_esc();
+            end
+          join
+          read_alert_cause();
+          read_esc_status();
+          if (do_clr_esc) clear_esc();
+        end // end for loop
+        disable fork; // disable non-blocking seqs for stress_all tests
+      end // end fork
+    join
   endtask : body
 
 endclass : alert_handler_sanity_vseq

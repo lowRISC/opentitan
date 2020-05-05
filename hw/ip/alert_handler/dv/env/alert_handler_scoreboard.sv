@@ -179,10 +179,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // based on class_ctrl's lock bit, predict if clren register is disabled
   virtual function void predict_esc(int class_i);
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
-    uvm_reg         clren_rg;
-    clren_rg = ral.get_reg_by_name($sformatf("class%s_clren", class_name[class_i]));
-    `DV_CHECK_NE_FATAL(clren_rg, null)
-    if (class_ctrl[AlertClassCtrlLock]) void'(clren_rg.predict(0));
+    if (class_ctrl[AlertClassCtrlLock]) begin
+      uvm_reg clren_rg;
+      clren_rg = ral.get_reg_by_name($sformatf("class%s_clren", class_name[class_i]));
+      `DV_CHECK_NE_FATAL(clren_rg, null)
+      void'(clren_rg.predict(0));
+    end
     under_esc_classes[class_i] = 1;
   endfunction
 
