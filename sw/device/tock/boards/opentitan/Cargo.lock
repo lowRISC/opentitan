@@ -135,7 +135,6 @@ dependencies = [
 name = "earlgrey"
 version = "0.1.0"
 dependencies = [
- "dif",
  "opentitan_common",
  "tock",
 ]
@@ -256,6 +255,7 @@ dependencies = [
 name = "opentitan_common"
 version = "0.1.0"
 dependencies = [
+ "dif",
  "tock",
 ]
 

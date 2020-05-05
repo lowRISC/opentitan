@@ -9,4 +9,5 @@ authors = ["lowRISC contributors"]
 edition = "2018"
 
 [dependencies]
+dif = { path = "../../dif" }
 tock = { path = "../../tock" }
