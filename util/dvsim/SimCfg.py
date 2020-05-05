@@ -6,6 +6,7 @@ Class describing simulation configuration object
 """
 
 import os
+import shutil
 import subprocess
 import sys
 from collections import OrderedDict
@@ -18,6 +19,63 @@ from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from testplanner import testplan_utils
 from utils import VERBOSE, find_and_substitute_wildcards
+
+
+def pick_dump_format(fmts):
+    '''Choose a supported wave dumping format
+
+    fmts is a list of formats that the chosen tool supports. Return the first
+    that we think is possible (e.g. not fsdb if Verdi is not installed).
+
+    '''
+    assert fmts
+    fmt = fmts[0]
+    if fmt == 'fsdb' and not shutil.which('verdi'):
+        return pick_dump_format(fmts[1:])
+
+    return fmt
+
+
+def resolve_dump_format(tool, dump):
+    '''Decide on the correct dumping format
+
+    This is called after reading the config file. tool is the chosen tool,
+    which will always have been resolved by this point. waves is a boolean
+    which determines whether waves should be dumped at all (from the --waves
+    argument). dump is the dumping format chosen on the command line or None.
+
+    '''
+    assert tool is not None
+
+    SUPPORTED_DUMP_FMTS = {
+        'vcs': ['fsdb', 'vpd'],
+        'xcelium': ['fsdb', 'shm', 'vpd']
+    }
+
+    # Look up which dumping formats the tool supports
+    fmts = SUPPORTED_DUMP_FMTS.get(tool)
+
+    if dump is not None:
+        # If the user has specified their preferred dumping format, use it. As
+        # a sanity check, error out if the chosen tool doesn't support the
+        # format, but only if we know about the tool. If not, we'll just assume
+        # they know what they're doing.
+        if fmts is not None and dump not in fmts:
+            log.error('Chosen tool ({}) does not support wave '
+                      'dumping format {!r}.'
+                      .format(tool, dump))
+            sys.exit(1)
+
+        return dump
+
+    # If the user hasn't specified a dumping format, but has asked for waves,
+    # we need to decide on a format for them. If fmts is None, we don't know
+    # about this tool. Maybe it's a new simulator, in which case, default to
+    # VPD and hope for the best.
+    if not fmts:
+        return 'vpd'
+
+    return pick_dump_format(fmts)
 
 
 class SimCfg(FlowCfg):
@@ -44,7 +102,6 @@ class SimCfg(FlowCfg):
         self.reseed_ovrd = args.reseed
         self.reseed_multiplier = args.reseed_multiplier
         self.waves = args.waves
-        self.dump = args.dump
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.cov_merge_previous = args.cov_merge_previous
@@ -95,7 +152,6 @@ class SimCfg(FlowCfg):
         self.flist_gen_opts = []
         self.flist_file = ""
         self.run_cmd = ""
-        self.dump_file = ""
 
         # Generated data structures
         self.links = {}
@@ -112,6 +168,12 @@ class SimCfg(FlowCfg):
         # Parse the cfg_file file tree
         self.parse_flow_cfg(flow_cfg_file)
         self._post_parse_flow_cfg()
+
+        # Choose a dump format now. Note that this has to happen after parsing
+        # the configuration format because our choice might depend on the
+        # chosen tool.
+        self.dump_fmt = (resolve_dump_format(self.tool, args.dump)
+                         if self.waves else 'none')
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:

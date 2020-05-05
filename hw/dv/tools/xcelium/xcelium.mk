@@ -10,7 +10,7 @@
 
 SIMCC       := xrun -elaborate
 SIMX        ?= xrun
-SIM_SETUP   ?= ${MAKE_ROOT}/xcelium/xcelium_$(DUMP).tcl
+SIM_SETUP   ?= ${MAKE_ROOT}/xcelium/xcelium.tcl
 
 # max number of errors before the run is stopped
 ERROR_MAX   := 50
