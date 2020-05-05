@@ -24,7 +24,11 @@
 
 module prim_arbiter_ppc #(
   parameter int unsigned N  = 4,
-  parameter int unsigned DW = 32
+  parameter int unsigned DW = 32,
+
+  // Configurations
+  // EnDataPort: {0, 1}, if 0, input data will be ignored
+  parameter int EnDataPort = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -89,16 +93,35 @@ module prim_arbiter_ppc #(
       end
     end
 
+    if (EnDataPort == 1) begin: gen_datapath
+      always_comb begin
+        data_o = '0;
+        for (int i = 0 ; i < N ; i++) begin
+          if (winner[i]) begin
+            data_o = data_i[i];
+          end
+        end
+      end
+    end else begin
+      assign data_o = '1;
+      // TODO: waive data_i from NOT_READ error
+    end
+
     always_comb begin
-      data_o = '0;
       idx_o  = '0;
       for (int i = 0 ; i < N ; i++) begin
         if (winner[i]) begin
-          data_o = data_i[i];
           idx_o  = i;
         end
       end
     end
+
+    ////////////////
+    // assertions //
+    ////////////////
+    // grant shall be higher index than prev. unless no higher requests exist
+    `ASSERT(RoundRobin_A, valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
+        |(masked_req) |-> idx_o > $past(idx_o))
 
   end
 
