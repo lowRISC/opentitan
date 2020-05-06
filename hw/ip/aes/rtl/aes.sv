@@ -13,12 +13,12 @@ module aes #(
   input                     clk_i,
   input                     rst_ni,
 
+  // Key manager interface
+  input   keymgr_pkg::hw_key_req_t keymgr_key_i,
+
   // Entropy source interface
-  // TODO: This still needs to be connected.
-  // See https://github.com/lowRISC/opentitan/issues/1005
-  //output logic              entropy_req_o,
-  //input  logic              entropy_ack_i,
-  //input  logic [63:0]       entropy_i,
+  // TODO: CSRNG peripheral interface/RNG distribution network interface needs to be defined first,
+  // see https://github.com/lowRISC/opentitan/issues/2693.
 
   // Bus interface
   input  tlul_pkg::tl_h2d_t tl_i,
