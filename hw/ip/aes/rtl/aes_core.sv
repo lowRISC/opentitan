@@ -179,6 +179,29 @@ module aes_core #(
     end
   end
 
+  // Initial key registers (mask share)
+  // NOTE: These are not functional, we just want the gates for the bronze netlist.
+  logic [7:0]       key_init_share1_we;
+  logic [7:0][31:0] key_init_share1_d;
+  logic [7:0][31:0] key_init_share1_q;
+  assign key_init_share1_we = key_init_we;
+
+  always_comb begin : key_init_share1_mux
+    unique case (key_init_sel)
+      KEY_INIT_INPUT: key_init_share1_d = key_init;
+      KEY_INIT_CLEAR: key_init_share1_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      default:        key_init_share1_d = key_init_share1_q;
+    endcase
+  end
+
+  always_ff @(posedge clk_i) begin : key_init_share1_reg
+    for (int i=0; i<8; i++) begin
+      if (key_init_share1_we[i]) begin
+        key_init_share1_q[i] <= key_init_share1_d[i];
+      end
+    end
+  end
+
   // IV registers
   always_comb begin : iv_mux
     unique case (iv_sel)
