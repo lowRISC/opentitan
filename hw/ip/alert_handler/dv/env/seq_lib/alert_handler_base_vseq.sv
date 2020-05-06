@@ -71,6 +71,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_clren), .value(clr_en[3]));
   endtask
 
+  // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
+  // to regen register.
+  virtual task lock_config(bit do_lock_config);
+    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
+  endtask
+
   virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
                            bit[alert_pkg::NAlerts-1:0] alert_int_err);
     fork

@@ -21,6 +21,8 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
   rand bit do_esc_intr_timeout;
+  rand bit do_lock_config;
+  rand bit rand_drive_entropy;
   rand bit [TL_DW-1:0] max_phase_cyc;
   rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_HANDLER_CLASSES];
   rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_HANDLER_CLASSES];
@@ -28,6 +30,14 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
 
   uvm_verbosity verbosity = UVM_LOW;
+
+  constraint lock_bit_c {
+    do_lock_config dist {1 := 1, 0 := 9};
+  }
+
+  constraint clr_en_c {
+    clr_en dist {0 := 8, [1:'b1111] := 2};
+  }
 
   constraint enable_one_alert_c {
     $onehot(alert_en);
@@ -77,18 +87,27 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                              .loc_alert_en(local_alert_en),
                              .loc_alert_class(local_alert_class_map));
 
-          // write config settings according to the constraits
+          // write class_ctrl and clren_reg
           alert_handler_rand_wr_class_ctrl();
           alert_handler_wr_clren_regs(clr_en);
 
+          // randomly write phase cycle registers
           // always set phase_cycle for the first iteration, in order to pass stress_all test
           if (do_wr_phases_cyc || i == 1) begin
             wr_phases_cycle(max_phase_cyc);
             max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
                                    max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
           end
+
+          // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
           wr_class_accum_threshold(accum_thresh);
+
+          //drive entropy
+          cfg.entropy_vif.drive(rand_drive_entropy);
+
+          // when all configuration registers are set, write lock register
+          lock_config(do_lock_config);
 
           // drive alert
           drive_alert(alert_trigger, alert_int_err);

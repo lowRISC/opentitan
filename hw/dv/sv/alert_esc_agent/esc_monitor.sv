@@ -65,6 +65,8 @@ class esc_monitor extends alert_esc_base_monitor;
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.sig_cycle_cnt++;
+        if (cfg.vif.get_resp_p() == cfg.vif.get_resp_n()) req.esc_handshake_sta = EscIntFail;
+        else req.esc_handshake_sta = EscRespHi;
         @(cfg.vif.monitor_cb);
         if (cfg.vif.get_esc() === 1'b0) begin
           req.alert_esc_type = AlertEscPingTrans;
@@ -72,7 +74,6 @@ class esc_monitor extends alert_esc_base_monitor;
           alert_esc_port.write(req);
         end else begin
           req.alert_esc_type = AlertEscSigTrans;
-          req.esc_handshake_sta = EscRespHi;
 
           req.sig_cycle_cnt++;
           check_esc_resp(req);
@@ -143,6 +144,9 @@ class esc_monitor extends alert_esc_base_monitor;
         req.esc_handshake_sta = EscRespHi;
       end
     end
+
+    if (cfg.vif.get_resp_p() == cfg.vif.get_resp_n()) req.esc_handshake_sta = EscIntFail;
+
     if (do_wait_clk) begin
       @(cfg.vif.monitor_cb);
       if (cfg.vif.get_esc() === 1) req.sig_cycle_cnt++;
