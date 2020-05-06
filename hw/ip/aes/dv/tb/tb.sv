@@ -28,6 +28,8 @@ module tb;
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
 
+    .keymgr_key_i         ( '0        ),
+
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  )
   );

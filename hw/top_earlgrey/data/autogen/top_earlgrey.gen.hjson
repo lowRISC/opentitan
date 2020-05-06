@@ -2068,6 +2068,19 @@
       wakeup_list: []
       scan: "false"
       scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          name: keymgr_key
+          type: uni
+          act: rcv
+          package: keymgr_pkg
+          struct: hw_key_req
+          width: "1"
+          inst_name: aes
+          index: -1
+        }
+      ]
     }
     {
       name: hmac
@@ -7463,6 +7476,16 @@
         package: pinmux_pkg
         inst_name: lifecycle
         top_signame: lifecycle_strap_sample
+        index: -1
+      }
+      {
+        name: keymgr_key
+        type: uni
+        act: rcv
+        package: keymgr_pkg
+        struct: hw_key_req
+        width: "1"
+        inst_name: aes
         index: -1
       }
       {

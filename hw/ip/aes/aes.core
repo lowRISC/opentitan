@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ip:keymgr_pkg
     files:
       - rtl/aes_pkg.sv
       - rtl/aes_reg_pkg.sv

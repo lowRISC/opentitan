@@ -1101,6 +1101,9 @@ module top_earlgrey #(
   aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
+
+      // Inter-module signals
+      .keymgr_key_i(keymgr_pkg::HW_KEY_REQ_DEFAULT),
       .clk_i (clkmgr_aon_clocks.clk_main_aes),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
