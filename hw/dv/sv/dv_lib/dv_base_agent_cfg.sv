@@ -9,6 +9,9 @@ class dv_base_agent_cfg extends uvm_object;
   bit         en_cov    = 1'b1;   // enable coverage
   if_mode_e   if_mode;            // interface mode - Host or Device
 
+  // use for phase_ready_to_end to add additional delay after ok_to_end is set
+  int ok_to_end_delay_ns = 1000;
+
   `uvm_object_utils_begin(dv_base_agent_cfg)
     `uvm_field_int (is_active,          UVM_DEFAULT)
     `uvm_field_int (en_cov,             UVM_DEFAULT)

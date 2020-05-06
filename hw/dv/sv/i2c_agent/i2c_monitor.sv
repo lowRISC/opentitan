@@ -9,9 +9,6 @@ class i2c_monitor extends dv_base_monitor #(
   );
   `uvm_component_utils(i2c_monitor)
 
-  // the base class provides the following handles for use:
-  i2c_agent_cfg cfg;
-  i2c_agent_cov cov;
   // analize ports
   uvm_analysis_port #(i2c_item) i2c_analysis_port;
 
