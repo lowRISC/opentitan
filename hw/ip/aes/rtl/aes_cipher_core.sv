@@ -47,6 +47,32 @@ module aes_cipher_core #(
 
   import aes_pkg::*;
 
+  // Generate gates to represent hardening cost for the bronze netlist.
+  prim_gate_gen #(
+    .DataWidth ( 32    ),
+    .NumGates  ( 43000 )
+  ) aes_cipher_core_hardening (
+    .clk_i   ( clk_i             ),
+    .rst_ni  ( rst_ni            ),
+    .valid_i ( in_valid_i        ),
+    .data_i  ( prng_data_i[31:0] ),
+    .data_o  (                   ),
+    .valid_o (                   )
+  );
+
+  // Generate gates to represent cost of high-bandwidth, local PRNG for the bronze netlist.
+  prim_gate_gen #(
+    .DataWidth ( 32    ),
+    .NumGates  ( 30000 )
+  ) aes_cipher_core_prng (
+    .clk_i   ( clk_i             ),
+    .rst_ni  ( rst_ni            ),
+    .valid_i ( in_valid_i        ),
+    .data_i  ( prng_data_i[31:0] ),
+    .data_o  (                   ),
+    .valid_o (                   )
+  );
+
   // Signals
   logic [3:0][3:0][7:0] state_d;
   logic [3:0][3:0][7:0] state_q;
