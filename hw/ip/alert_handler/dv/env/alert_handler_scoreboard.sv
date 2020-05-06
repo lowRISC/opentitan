@@ -167,8 +167,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     realtime curr_time = $realtime();
     if (curr_time != last_triggered_alert_per_class[class_i]) begin
       last_triggered_alert_per_class[class_i] = curr_time;
-      accum_cnt += 1;
-      void'(reg_accum_cnts[class_i].predict(.value(accum_cnt), .kind(UVM_PREDICT_READ)));
+      // avoid accum_cnt saturate
+      if (accum_cnt < 'hffff) begin
+        accum_cnt += 1;
+        void'(reg_accum_cnts[class_i].predict(.value(accum_cnt), .kind(UVM_PREDICT_READ)));
+      end
     end
     `uvm_info(`gfn, $sformatf("alert_accum: class=%0d, alert_cnt=%0d, thresh=%0d, under_esc=%0b",
         class_i, accum_cnt, accum_thresh, under_esc_classes[class_i]), UVM_DEBUG)
@@ -259,11 +262,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     if (!write) begin
       // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
       if (channel == DataChannel) begin
-        if (csr.get_name() == "intr_state" && cfg.en_cov) begin
-          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-          for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
-            cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
-            cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+        if (cfg.en_cov) begin
+          if (csr.get_name() == "intr_state") begin
+            bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+            for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+              cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
+          end else begin
+            for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
+              if (csr.get_name() == $sformatf("class%s_accum_cnt", class_name[i])) begin
+                cov.accum_cnt_cg.sample(i, item.d_data);
+              end
+            end
           end
         end
         if (do_read_check) begin
