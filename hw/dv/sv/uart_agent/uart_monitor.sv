@@ -10,8 +10,6 @@ class uart_monitor extends dv_base_monitor#(
   );
   `uvm_component_utils(uart_monitor)
 
-  bit obj_raised[uart_dir_e];
-
   // Analysis port for the collected transfer.
   uvm_analysis_port #(uart_item) tx_analysis_port;
   uvm_analysis_port #(uart_item) rx_analysis_port;
@@ -45,7 +43,6 @@ class uart_monitor extends dv_base_monitor#(
       if (cfg.vif.uart_tx === 1'b0 && cfg.en_tx_monitor == 1) begin
         // 1 start + 8 data + 1 parity (if enabled) + 1 stop
         cfg.vif.uart_tx_clk_pulses = NUM_UART_XFER_BITS_WO_PARITY + cfg.en_parity;
-        process_objections(UartTx, 1);
         item = uart_item::type_id::create("item");
         // get the start bit
         @(cfg.vif.mon_tx_mp.mon_tx_cb);
@@ -83,7 +80,6 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.wait_for_tx_idle();
 
         if (cfg.en_cov) cov.uart_cg.sample(UartTx, item);
-        process_objections(UartTx, 0);
       end else begin
         @(cfg.vif.uart_tx);
       end
@@ -94,7 +90,6 @@ class uart_monitor extends dv_base_monitor#(
     uart_item item;
     forever begin
       if (cfg.vif.uart_rx === 1'b0 && cfg.en_rx_monitor == 1) begin
-        process_objections(UartRx, 1);
         item = uart_item::type_id::create("item");
         cfg.vif.uart_rx_clk_pulses = NUM_UART_XFER_BITS_WO_PARITY + cfg.en_parity;
         // get the start bit
@@ -133,7 +128,6 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.wait_for_rx_idle();
 
         if (cfg.en_cov) cov.uart_cg.sample(UartRx, item);
-        process_objections(UartRx, 0);
       end else begin
         @(cfg.vif.uart_rx);
       end
@@ -168,6 +162,14 @@ class uart_monitor extends dv_base_monitor#(
     end
   endtask
 
+  // update ok_to_end to prevent sim finish when there is any activity on the bus
+  virtual task monitor_ready_to_end();
+    forever begin
+      @(cfg.vif.uart_tx_clk_pulses or cfg.vif.uart_rx_clk_pulses);
+      ok_to_end = (cfg.vif.uart_tx_clk_pulses == 0) && (cfg.vif.uart_rx_clk_pulses == 0);
+    end
+  endtask
+
   virtual task process_reset();
     if (cfg.en_cov) begin
       cov.uart_reset_cg.sample(UartTx, cfg.vif.uart_tx_clk_pulses);
@@ -177,20 +179,7 @@ class uart_monitor extends dv_base_monitor#(
     cfg.vif.uart_tx_clk        = 1;
     cfg.vif.uart_rx_clk_pulses = 0;
     cfg.vif.uart_rx_clk        = 1;
-    process_objections(UartTx, 0);
-    process_objections(UartRx, 0);
     wait(!cfg.under_reset);
   endtask
-
-  virtual function void process_objections(uart_dir_e dir, bit raise);
-    if (raise && !obj_raised[dir]) begin
-      m_current_phase.raise_objection(this, $sformatf("%s %s objection raised", `gfn, dir.name));
-      obj_raised[dir] = 1'b1;
-    end
-    else if (!raise && obj_raised[dir]) begin
-      m_current_phase.drop_objection(this, $sformatf("%s %s objection dropped", `gfn, dir.name));
-      obj_raised[dir] = 1'b0;
-    end
-  endfunction
 
 endclass

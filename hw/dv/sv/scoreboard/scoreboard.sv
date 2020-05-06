@@ -122,7 +122,6 @@ class scoreboard#(type ITEM_T = uvm_object,
           end
           token.get();
           num_of_exp_item++;
-          handle_objection();
           token.put();
           item_queues[queue_name].add_expected_item(transformed_tr[i], ref_timer);
         end
@@ -141,26 +140,14 @@ class scoreboard#(type ITEM_T = uvm_object,
         end
         token.get();
         num_of_act_item++;
-        handle_objection();
         token.put();
         item_queues[queue_name].add_actual_item(tr_modified, ref_timer);
       end
     end
   endtask
 
-  function void handle_objection();
-    if ((num_of_act_item != num_of_exp_item) && !objection_raised) begin
-      run_phase_h.raise_objection(this, $sformatf("%s objection raised", `gfn));
-      objection_raised = 1'b1;
-    end
-    if ((num_of_act_item == num_of_exp_item) && objection_raised) begin
-      run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
-      objection_raised = 1'b0;
-    end
-  endfunction
-
-  function void report_phase(uvm_phase phase);
-    super.report_phase(phase);
+  function void check_phase(uvm_phase phase);
+    super.check_phase(phase);
     if ((num_of_act_item != num_of_exp_item) && !allow_packet_drop) begin
       `uvm_error(get_full_name(), $sformatf("Expected item cnt %0d != actual item cnt %0d",
                  num_of_exp_item, num_of_act_item))
@@ -174,6 +161,7 @@ class scoreboard#(type ITEM_T = uvm_object,
                  num_of_act_item), UVM_LOW)
     end
     foreach (item_queues[i]) item_queues[i].final_queue_size_check(i);
+    foreach (item_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(ITEM_T, item_fifos[i]);
   endfunction
 
   // Transform the original item before sending to queue
@@ -244,7 +232,6 @@ class scoreboard#(type ITEM_T = uvm_object,
     foreach (item_queues[i]) item_queues[i].reset();
     num_of_act_item = 0;
     num_of_exp_item = 0;
-    handle_objection();
   endfunction
 
 endclass
