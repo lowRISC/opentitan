@@ -159,6 +159,11 @@ interface clk_rst_if #(
     end
   endfunction
 
+  // can be used to override clk/rst pins, e.g. at the beginning of the simulation
+  task automatic drive_rst_pin(logic val = 1'b0);
+    o_rst_n = val;
+  endtask
+
   // apply reset with specified scheme
   // TODO make this enum?
   // rst_n_scheme

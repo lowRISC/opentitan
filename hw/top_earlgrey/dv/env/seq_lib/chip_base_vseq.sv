@@ -25,6 +25,13 @@ class chip_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
+    // These IOs have pad attributes that are driven from registers, and as long as
+    // the reset line of those registers is X, the registers and hence the pad outputs
+    // will also be X. This causes the JTAG reset to not properly propagate, and hence we
+    // have to assert the main reset before that (release can happen in a randomized way
+    // via the apply_reset task later on).
+    cfg.clk_rst_vif.drive_rst_pin(1'b0);
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
