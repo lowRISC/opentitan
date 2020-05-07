@@ -76,8 +76,7 @@ class OneShotCfg(FlowCfg):
         self.deploy = []
         self.cov = args.cov
         # Parse the cfg_file file tree
-        self.parse_flow_cfg(flow_cfg_file)
-        self._post_parse_flow_cfg()
+        self._parse_flow_cfg(flow_cfg_file)
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:

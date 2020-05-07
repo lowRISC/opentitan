@@ -115,19 +115,14 @@ class FlowCfg():
         for item in self.deploy:
             item.kill()
 
-    def parse_flow_cfg(self, flow_cfg_file, is_entry_point=True):
-        '''
-        Parse the flow cfg hjson file. This is a private API used within the
-        extended class' __init__ function. This parses the hjson cfg (and
-        imports / use cfgs) and builds an initial dictionary.
+    def _parse_cfg(self, path, is_entry_point):
+        '''Load an hjson config file at path and update self accordingly.
 
-        This method takes 2 args.
-        flow_cfg_file: This is the flow cfg file to be parsed.
-        is_entry_point: the cfg file that is passed on the command line is
-            the entry point cfg. If the cfg file is a part of an import_cfgs
-            or use_cfgs key, then it is not an entry point.
+        If is_entry_point is true, this is the top-level configuration file, so
+        it's possible that this is a master config.
+
         '''
-        hjson_dict = parse_hjson(flow_cfg_file)
+        hjson_dict = parse_hjson(path)
 
         # Check if this is the primary cfg, if this is the entry point cfg file
         if is_entry_point:
@@ -140,10 +135,14 @@ class FlowCfg():
         # Resolve the raw hjson dict to build this object
         self.resolve_hjson_raw(hjson_dict)
 
-    def _post_parse_flow_cfg(self):
-        '''Hook to set some defaults not found in the flow cfg hjson files.
-        This function has to be called manually after calling the parse_flow_cfg().
+    def _parse_flow_cfg(self, path):
+        '''Parse the flow's hjson configuration.
+
+        This is a private API which should be called by the __init__ method of
+        each subclass.
+
         '''
+        self._parse_cfg(path, True)
         if self.rel_path == "":
             self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
                 self.proj_root + '/', '')
@@ -250,7 +249,7 @@ class FlowCfg():
                 # Substitute wildcards in cfg_file files since we need to process
                 # them right away.
                 cfg_file = subst_wildcards(cfg_file, self.__dict__)
-                self.parse_flow_cfg(cfg_file, False)
+                self._parse_cfg(cfg_file, False)
             else:
                 log.error("Cfg file \"%s\" has already been parsed", cfg_file)
 
