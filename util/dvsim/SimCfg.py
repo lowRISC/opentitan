@@ -167,12 +167,6 @@ class SimCfg(FlowCfg):
         # Run some post init checks
         super().__post_init__()
 
-    @staticmethod
-    def create_instance(flow_cfg_file, proj_root, args):
-        '''Create a new instance of this class as with given parameters.
-        '''
-        return SimCfg(flow_cfg_file, proj_root, args)
-
     def kill(self):
         '''kill running processes and jobs gracefully
         '''
