@@ -17,7 +17,7 @@
   csr_update(ral.class``i``_phase3_cyc);
 
 `define RAND_WRITE_CLASS_CTRL(i) \
-  `DV_CHECK_RANDOMIZE_FATAL(ral.class``i``_ctrl) \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value dist {1:=2, 0:=8};) \
   csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
 
 class alert_handler_base_vseq extends cip_base_vseq #(
@@ -69,6 +69,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classb_clren), .value(clr_en[1]));
     csr_wr(.csr(ral.classc_clren), .value(clr_en[2]));
     csr_wr(.csr(ral.classd_clren), .value(clr_en[3]));
+  endtask
+
+  // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
+  // to regen register.
+  virtual task lock_config(bit do_lock_config);
+    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
   endtask
 
   virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
