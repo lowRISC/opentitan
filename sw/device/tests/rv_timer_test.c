@@ -4,23 +4,21 @@
 
 #include "sw/device/lib/rv_timer.h"
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/common.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
-#include "sw/device/lib/uart.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/testing/test_main.h"
 
 static dif_gpio_t gpio;
-static uint32_t intr_handling_success = 0;
-static const uint32_t hart = 0;
+// Flag to indicate that the interrupt was seen. Declared as volatile since it
+// is referenced in the ISR routine as well as in the main program flow.
+static volatile bool intr_handling_success;
+static const uint32_t hart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 
-int main(int argc, char **argv) {
+bool test_main(void) {
   const uint64_t cmp = 0x000000000000000F;
-
-  uart_init(kUartBaudrate);
 
   pinmux_init();
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
@@ -31,10 +29,12 @@ int main(int argc, char **argv) {
 
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
+  rv_timer_intr_enable(hart, true);
+
+  intr_handling_success = false;
   rv_timer_set_us_tick(hart);
   rv_timer_set_cmp(hart, cmp);
   rv_timer_ctrl(hart, true);
-  rv_timer_intr_enable(hart, true);
 
   dif_gpio_all_write(&gpio, 0xFF00);  // all LEDs on
 
@@ -46,13 +46,13 @@ int main(int argc, char **argv) {
 
   dif_gpio_all_write(&gpio, 0xAA00);  // Test Completed
 
-  uart_send_str("PASS!\r\n");
+  return true;
 }
 
 // Override weak default function
 void handler_irq_timer(void) {
-  uart_send_str("In Interrupt handler!\r\n");
+  LOG_INFO("In Interrupt handler!");
   rv_timer_ctrl(hart, false);
   rv_timer_clr_all_intrs();
-  intr_handling_success = 1;
+  intr_handling_success = true;
 }

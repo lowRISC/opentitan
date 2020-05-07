@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/dif/dif_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/ibex.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "sw/device/lib/testing/test_main.h"
+#include "sw/device/lib/testing/test_status.h"
 
 #define PLIC_TARGET kTopEarlgreyPlicTargetIbex0
 
@@ -24,28 +23,18 @@ static dif_plic_t plic0;
 static dif_uart_t uart0;
 
 // These flags are used in the test routine to verify that a corresponding
-// interrupt has elapsed, and has been serviced.
-static bool uart_rx_overflow_handled = false;
-static bool uart_tx_empty_handled = false;
-static bool uart_handled_more_than_once = false;
+// interrupt has elapsed, and has been serviced. These are declared as volatile
+// since they are referenced in the ISR routine as well as in the main program
+// flow.
+static volatile bool uart_rx_overflow_handled;
+static volatile bool uart_tx_empty_handled;
+static volatile bool uart_handled_more_than_once;
 
-static size_t polled_uart_sink_func(void *data, const char *buf, size_t len) {
-  for (int i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(&uart0, (uint8_t)buf[i]) != kDifUartOk) {
-      abort();
-    }
-  }
-  return len;
-}
-
-static const buffer_sink_t kPolledUartSink = {
-    .data = NULL, .sink = &polled_uart_sink_func,
-};
-
-#define LOG_FATAL_AND_ABORT(...) \
-  do {                           \
-    LOG_FATAL(__VA_ARGS__);      \
-    abort();                     \
+#define LOG_FATAL_AND_ABORT(...)        \
+  do {                                  \
+    LOG_FATAL(__VA_ARGS__);             \
+    test_status_set(kTestStatusFailed); \
+    abort();                            \
   } while (false)
 
 /**
@@ -84,7 +73,7 @@ static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
   }
 
   if (dif_uart_irq_state_clear(uart, uart_irq) != kDifUartOk) {
-    LOG_FATAL("ISR failed to clear IRQ!");
+    LOG_FATAL_AND_ABORT("ISR failed to clear IRQ!");
   }
 }
 
@@ -128,17 +117,14 @@ static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
 
   // No debug output in case of UART initialisation failure.
   if (dif_uart_init(base_addr, &config, uart) != kDifUartConfigOk) {
-    abort();
+    LOG_FATAL_AND_ABORT("UART init failed!");
   }
 }
 
-static bool plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
+static void plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
   if (!dif_plic_init(base_addr, plic)) {
-    LOG_ERROR("Init failed!");
-    return false;
+    LOG_FATAL_AND_ABORT("PLIC init failed!");
   }
-
-  return true;
 }
 
 /**
@@ -209,6 +195,11 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
 }
 
 static bool execute_test(dif_uart_t *uart) {
+  // Initialize the global variables.
+  uart_rx_overflow_handled = false;
+  uart_tx_empty_handled = false;
+  uart_handled_more_than_once = false;
+
   // Force UART RX overflow interrupt.
   if (dif_uart_irq_force(uart, kDifUartInterruptRxOverflow) != kDifUartOk) {
     LOG_ERROR("failed to force RX overflow IRQ!");
@@ -250,7 +241,7 @@ static bool execute_test(dif_uart_t *uart) {
   return true;
 }
 
-int main(int argc, char **argv) {
+bool test_main(void) {
   // Enable IRQs on Ibex
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -259,26 +250,14 @@ int main(int argc, char **argv) {
   mmio_region_t uart_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   uart_initialise(uart_base_addr, &uart0);
-  base_set_stdout(kPolledUartSink);
 
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  if (!plic_initialise(plic_base_addr, &plic0)) {
-    base_printf("FAIL!\r\n");
-    return -1;
-  }
+  plic_initialise(plic_base_addr, &plic0);
 
   if (!uart_configure_irqs(&uart0) || !plic_configure_irqs(&plic0)) {
-    base_printf("FAIL!\r\n");
-    return -1;
+    return false;
   }
 
-  if (!execute_test(&uart0)) {
-    base_printf("FAIL!\r\n");
-    return -1;
-  }
-
-  base_printf("PASS!\r\n");
-
-  return 0;
+  return (execute_test(&uart0));
 }

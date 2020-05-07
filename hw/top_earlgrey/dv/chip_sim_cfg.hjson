@@ -100,28 +100,30 @@
       uvm_test_seq: chip_sw_test_base_vseq
       sw_name: aes_test
       sw_dir: tests
-      run_opts: ["+sw_test_timeout_ns=15000000"]
     }
     {
-      name: chip_flash_test
+      name: chip_consecutive_irqs_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: flash_test
-      sw_dir: tests/flash_ctrl
-      run_opts: ["+sw_test_timeout_ns=15000000"]
+      sw_name: consecutive_irqs_test
+      sw_dir: tests
+    }
+    {
+      name: chip_flash_ctrl_test
+      uvm_test_seq: chip_sw_test_base_vseq
+      sw_name: flash_ctrl_test
+      sw_dir: tests
     }
     {
       name: chip_sha256_test
       uvm_test_seq: chip_sw_test_base_vseq
       sw_name: sha256_test
-      sw_dir: tests/hmac
-      run_opts: ["+sw_test_timeout_ns=4000000"]
+      sw_dir: tests
     }
     {
       name: chip_rv_timer_test
       uvm_test_seq: chip_sw_test_base_vseq
       sw_name: rv_timer_test
-      sw_dir: tests/rv_timer
-      run_opts: ["+sw_test_timeout_ns=40000000"]
+      sw_dir: tests
     }
     {
       name: chip_coremark

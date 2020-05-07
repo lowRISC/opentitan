@@ -2,26 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/flash_ctrl.h"
+
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/uart.h"
-
-#define CHECK(cond)                                 \
-  do {                                              \
-    if (!(cond)) {                                  \
-      uart_send_str("Assertion failed at line 0x"); \
-      uart_send_uint(__LINE__, 32);                 \
-      uart_send_str("\r\nFAIL!\r\n");               \
-      abort();                                      \
-    }                                               \
-  } while (false)
+#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/testing/test_main.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
   do {                               \
@@ -142,8 +130,7 @@ static void test_memory_protection(void) {
   }
 }
 
-int main(int argc, char **argv) {
-  uart_init(kUartBaudrate);
+bool test_main(void) {
   flash_init_block();
 
   LOG_INFO("flash test!");
@@ -157,5 +144,5 @@ int main(int argc, char **argv) {
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/false);
   flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/false);
 
-  uart_send_str("PASS!\r\n");
+  return true;
 }
