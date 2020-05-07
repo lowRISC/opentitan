@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-interface uart_if #(time UartDefaultClkPeriodNs = 104166.667ns) (
-  output logic uart_rx,
-  input uart_tx,
-  input uart_tx_en
-);
+interface uart_if #(time UartDefaultClkPeriodNs = 104166.667ns) ();
+  wire uart_tx;
+  logic uart_rx;
 
   // generate local clk
   time  uart_clk_period_ns = UartDefaultClkPeriodNs;
