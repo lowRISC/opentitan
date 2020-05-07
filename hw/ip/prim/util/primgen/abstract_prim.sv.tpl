@@ -9,9 +9,9 @@
 `endif
 
 module prim_${prim_name}
-  ${module_header_imports}
+${module_header_imports}
 #(
-  ${module_header_params}
+${module_header_params}
 ) (
   ${module_header_ports}
 );

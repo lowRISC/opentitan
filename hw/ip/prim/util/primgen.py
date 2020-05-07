@@ -273,7 +273,10 @@ def _create_instances(prim_name, techlibs, parameters):
         # to let the synthesis tool figure out the connectivity than us trying
         # to parse the port list into individual signals.
         s += "begin : gen_{techlib}\n" + _instance_sv(prim_name, techlib,
-                                                      parameters) + "end "
+                                                      parameters) + "end"
+
+        if not is_last:
+            s += " "
 
         out += s.format(prim_name=prim_name,
                         techlib=techlib,

@@ -104,7 +104,7 @@ module tlul_adapter_host #(
   assign err_o   = tl_i.d_error;
 
 `ifdef INC_ASSERT
-  localparam OutstandingReqCntW =
+  localparam int OutstandingReqCntW =
     (MAX_REQS == 2 ** $clog2(MAX_REQS)) ? $clog2(MAX_REQS) + 1 : $clog2(MAX_REQS);
 
   logic [OutstandingReqCntW-1:0] outstanding_reqs_q;
