@@ -165,8 +165,7 @@ class SimCfg(FlowCfg):
         self.cov_deploys = []
 
         # Parse the cfg_file file tree
-        self.parse_flow_cfg(flow_cfg_file)
-        self._post_parse_flow_cfg()
+        self._parse_flow_cfg(flow_cfg_file)
 
         # Choose a dump format now. Note that this has to happen after parsing
         # the configuration format because our choice might depend on the
