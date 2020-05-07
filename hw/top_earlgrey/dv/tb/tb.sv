@@ -39,6 +39,8 @@ module tb;
 
   wire usb_dp0, usb_dn0, usb_sense0, usb_pullup0;
 
+  wire uart_rx, uart_tx;
+
   bit stub_cpu;
 
   // interfaces
@@ -50,7 +52,7 @@ module tb;
   pins_if #(1) bootstrap_if(.pins(bootstrap));
   spi_if spi_if(.rst_n(rst_n));
   tl_if   cpu_d_tl_if(.clk(clk), .rst_n(rst_n));
-  uart_if uart_if();
+  uart_if uart_if(.uart_rx, .uart_tx, .uart_tx_en());
   jtag_if jtag_if();
 
   // backdoors
@@ -75,8 +77,8 @@ module tb;
     .IO_DPS7          (io_dps[7]),
 
     // UART interface
-    .IO_URX           (uart_if.uart_rx),
-    .IO_UTX           (uart_if.uart_tx),
+    .IO_URX           (uart_rx),
+    .IO_UTX           (uart_tx),
 
     // USB interface
     .IO_USB_DP0       (usb_dp0),
