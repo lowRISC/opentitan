@@ -5,10 +5,6 @@
 sw_tests = {}
 
 subdir('dif')
-subdir('flash_ctrl')
-subdir('hmac')
-subdir('rv_timer')
-subdir('consecutive_irqs')
 
 aes_test_lib = declare_dependency(
   link_with: static_library(
@@ -16,14 +12,72 @@ aes_test_lib = declare_dependency(
     sources: ['aes_test.c'],
     dependencies: [
       sw_lib_aes,
-      sw_lib_uart,
+      sw_lib_base_log,
+    ],
+  ),
+)
+
+consecutive_irqs_test_lib = declare_dependency(
+  link_with: static_library(
+    'consecutive_irqs_test_lib',
+    sources: ['consecutive_irqs_test.c'],
+    dependencies: [
+      dif_uart,
+      dif_plic,
+      sw_lib_irq,
+      sw_lib_mmio,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
+flash_ctrl_test_lib = declare_dependency(
+  link_with: static_library(
+    'flash_ctrl_test_lib',
+    sources: ['flash_ctrl_test.c'],
+    dependencies: [
       sw_lib_mem,
+      sw_lib_mmio,
+      sw_lib_flash_ctrl,
+      sw_lib_base_log,
+    ],
+  ),
+)
+
+rv_timer_test_lib = declare_dependency(
+  link_with: static_library(
+    'rv_timer_test_lib',
+    sources: ['rv_timer_test.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_pinmux,
+      sw_lib_rv_timer,
+      sw_lib_base_log,
+      sw_lib_dif_gpio,
+    ],
+  ),
+)
+
+sha256_test_lib = declare_dependency(
+  link_with: static_library(
+    'sha256_test_lib',
+    sources: ['sha256_test.c'],
+    dependencies: [
+      sw_lib_hmac,
+      sw_lib_flash_ctrl,
+      sw_lib_base_log,
     ],
   ),
 )
 
 sw_tests += {
-  'aes_test': aes_test_lib
+  'aes_test': aes_test_lib,
+  'consecutive_irqs_test': consecutive_irqs_test_lib,
+  'flash_ctrl_test': flash_ctrl_test_lib,
+  'rv_timer_test': rv_timer_test_lib,
+  'sha256_test': sha256_test_lib,
 }
 
 foreach sw_test_name, sw_test_lib : sw_tests
@@ -34,9 +88,12 @@ foreach sw_test_name, sw_test_lib : sw_tests
       name_suffix: 'elf',
       dependencies: [
         riscv_crt,
-        sw_lib_base_log,
-        sw_test_lib,
         device_lib,
+        sw_test_lib,
+        sw_lib_uart,
+        sw_lib_irq_handlers,
+        sw_lib_base_log,
+        sw_lib_base_print,
         sw_lib_testing_test_status,
       ],
     )
