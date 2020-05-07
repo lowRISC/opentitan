@@ -522,14 +522,14 @@ module hmac
 `ifndef VERILATOR
 `ifndef SYNTHESIS
   // HMAC assumes TL-UL mask is byte-aligned.
-    property wmask_bytealign_p(wmask_byte, clk, rst_n);
-      @(posedge clk) disable iff (rst_n == 0)
-        msg_fifo_req & msg_fifo_we |-> wmask_byte inside {'0, '1};
-    endproperty
+  property wmask_bytealign_p(wmask_byte, clk, rst_n);
+    @(posedge clk) disable iff (rst_n == 0)
+      msg_fifo_req & msg_fifo_we |-> wmask_byte inside {'0, '1};
+  endproperty
 
-    for (genvar i = 0 ; i < 4; i++) begin: gen_assert_wmask_bytealign
-      assert property (wmask_bytealign_p(msg_fifo_wmask[8*i+:8], clk_i, rst_ni));
-    end
+  for (genvar i = 0 ; i < 4; i++) begin: gen_assert_wmask_bytealign
+    assert property (wmask_bytealign_p(msg_fifo_wmask[8*i+:8], clk_i, rst_ni));
+  end
 
   // To pass FPV, this shouldn't add pragma translate_off even these two signals
   // are used in Assertion only
