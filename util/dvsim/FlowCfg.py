@@ -15,6 +15,9 @@ import hjson
 from Deploy import Deploy
 from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
 
+# A set of fields that can be overridden on the command line.
+_CMDLINE_FIELDS = {'tool'}
+
 
 # Interface class for extensions.
 class FlowCfg():
@@ -119,7 +122,7 @@ class FlowCfg():
         '''Load an hjson config file at path and update self accordingly.
 
         If is_entry_point is true, this is the top-level configuration file, so
-        it's possible that this is a master config.
+        it's possible that this is a primary config.
 
         '''
         hjson_dict = parse_hjson(path)
@@ -133,7 +136,7 @@ class FlowCfg():
                 self.cfgs.append(self)
 
         # Resolve the raw hjson dict to build this object
-        self.resolve_hjson_raw(hjson_dict)
+        self.resolve_hjson_raw(path, hjson_dict)
 
     def _parse_flow_cfg(self, path):
         '''Parse the flow's hjson configuration.
@@ -153,94 +156,103 @@ class FlowCfg():
         hjson_cfg_dict_keys = hjson_dict.keys()
         return ("use_cfgs" in hjson_cfg_dict_keys and type(hjson_dict["use_cfgs"]) is list)
 
-    def resolve_hjson_raw(self, hjson_dict):
-        attrs = self.__dict__.keys()
-        rm_hjson_dict_keys = []
+    def _set_attribute(self, path, key, dict_val):
+        '''Set an attribute from an hjson file
+
+        The path argument is the path for the hjson file that we're reading.
+
+        '''
+        # Is this value overridden on the command line? If so, use the override
+        # instead.
+        args_val = None
+        if key in _CMDLINE_FIELDS:
+            args_val = getattr(self.args, key, None)
+        override_msg = ''
+        if args_val is not None:
+            dict_val = args_val
+            override_msg = ' from command-line override'
+
+        self_val = getattr(self, key, None)
+        if self_val is None:
+            # A new attribute (or the old value was None, in which case it's
+            # just a placeholder and needs writing). Set it and return.
+            setattr(self, key, dict_val)
+            return
+
+        # This is already an attribute. Firstly, we need to make sure the types
+        # are compatible.
+        if type(dict_val) != type(self_val):
+            log.error("Conflicting types for key {!r} when loading {!r}. "
+                      "Cannot override value {!r} with {!r} (which is of "
+                      "type {}{})."
+                      .format(key, path, self_val, dict_val,
+                              type(dict_val).__name__, override_msg))
+            sys.exit(1)
+
+        # Looks like the types are compatible. If they are lists, concatenate
+        # them.
+        if isinstance(self_val, list):
+            setattr(self, key, self_val + dict_val)
+            return
+
+        # Otherwise, check whether this is a type we know how to deal with.
+        scalar_types = {str: [""], int: [0, -1], bool: [False]}
+
+        defaults = scalar_types.get(type(dict_val))
+        if defaults is None:
+            log.error("When loading {!r} and setting key {!r}, found a value "
+                      "of {!r}{} with unsupported type {}."
+                      .format(path, key, dict_val,
+                              override_msg, type(dict_val).__name__))
+            sys.exit(1)
+
+        # If the values are equal, there's nothing more to do
+        if self_val == dict_val:
+            return
+
+        old_is_default = self_val in defaults
+        new_is_default = dict_val in defaults
+
+        # Similarly, if new value looks like a default, ignore it (regardless
+        # of whether the current value looks like a default).
+        if new_is_default:
+            return
+
+        # If the existing value looks like a default and the new value doesn't,
+        # take the new value.
+        if old_is_default:
+            setattr(self, key, dict_val)
+            return
+
+        # Neither value looks like a default. Raise an error.
+        log.error("When loading {!r}, key {!r} is given a value of "
+                  "{!r}{}, but the key is already set to {!r}."
+                  .format(path, key, dict_val, override_msg, self_val))
+        sys.exit(1)
+
+    def resolve_hjson_raw(self, path, hjson_dict):
         import_cfgs = []
         use_cfgs = []
-        for key in hjson_dict.keys():
-            if key in attrs:
-                hjson_dict_val = hjson_dict[key]
-                self_val = getattr(self, key)
-                scalar_types = {str: [""], int: [0, -1], bool: [False]}
+        for key, dict_val in hjson_dict.items():
+            # If key is 'import_cfgs' then add to the list of cfgs to process
+            if key == 'import_cfgs':
+                import_cfgs.extend(dict_val)
+                continue
 
-                # Case 0: We don't yet have a proper value for this key (so
-                # self_val is None). Take the value in the config file.
-                if self_val is None:
-                    setattr(self, key, hjson_dict_val)
-                    rm_hjson_dict_keys.append(key)
-
-                # Case 1: key value in class and hjson_dict differ - error!
-                elif type(hjson_dict_val) != type(self_val):
-                    log.error("Conflicting key types: \"%s\" {\"%s, \"%s\"}",
-                              key,
-                              type(hjson_dict_val).__name__,
-                              type(self_val).__name__)
+            # If the key is 'use_cfgs', we're only allowed to take effect for a
+            # primary config list. If we are in a primary config list, add it.
+            if key == 'use_cfgs':
+                if not self.is_primary_cfg:
+                    log.error("Key 'use_cfgs' encountered in the non-primary "
+                              "cfg file list {!r}."
+                              .format(path))
                     sys.exit(1)
 
-                # Case 2: key value in class and hjson_dict are strs - set if
-                # not already set, else error!
-                elif type(hjson_dict_val) in scalar_types.keys():
-                    defaults = scalar_types[type(hjson_dict_val)]
-                    if self_val == hjson_dict_val:
-                        rm_hjson_dict_keys.append(key)
-                    elif self_val in defaults and hjson_dict_val not in defaults:
-                        setattr(self, key, hjson_dict_val)
-                        rm_hjson_dict_keys.append(key)
-                    elif self_val not in defaults and hjson_dict_val not in defaults:
-                        # check if key exists in command line args, use that, or
-                        # throw conflicting error
-                        # TODO, may throw the conflicting error but choose one and proceed rather
-                        # than exit
-                        override_with_args_val = False
-                        if hasattr(self.args, key):
-                            args_val = getattr(self.args, key)
-                            if type(args_val) == str and args_val != "":
-                                setattr(self, key, args_val)
-                                override_with_args_val = True
-                        if not override_with_args_val:
-                            log.error(
-                                "Conflicting values {\"%s\", \"%s\"} encountered for key \"%s\"",
-                                str(self_val), str(hjson_dict_val), key)
-                            sys.exit(1)
+                use_cfgs.extend(dict_val)
+                continue
 
-                # Case 3: key value in class and hjson_dict are lists - merge'em
-                elif type(hjson_dict_val) is list and type(self_val) is list:
-                    self_val.extend(hjson_dict_val)
-                    setattr(self, key, self_val)
-                    rm_hjson_dict_keys.append(key)
-
-                # Case 4: unknown issue
-                else:
-                    log.error(
-                        "Type of \"%s\" (%s) in %s appears to be invalid (should be %s)",
-                        key,
-                        type(hjson_dict_val).__name__, hjson_dict,
-                        type(self_val).__name__)
-                    sys.exit(1)
-
-            # If key is 'import_cfgs' then add to the list of cfgs to
-            # process
-            elif key == 'import_cfgs':
-                import_cfgs.extend(hjson_dict[key])
-                rm_hjson_dict_keys.append(key)
-
-            # If this is a primary cfg list and the key is 'use_cfgs'
-            elif self.is_primary_cfg and key == "use_cfgs":
-                use_cfgs.extend(hjson_dict[key])
-
-            # If this is a not primary cfg list and the key is 'use_cfgs'
-            elif not self.is_primary_cfg and key == "use_cfgs":
-                # Throw an error and exit
-                log.error(
-                    "Key \"use_cfgs\" encountered in a non-primary cfg file list \"%s\"",
-                    self.flow_cfg_file)
-                sys.exit(1)
-
-            else:
-                # add key-value to class
-                setattr(self, key, hjson_dict[key])
-                rm_hjson_dict_keys.append(key)
+            # Otherwise, set an attribute on self.
+            self._set_attribute(path, key, dict_val)
 
         # Parse imported cfgs
         for cfg_file in import_cfgs:
