@@ -25,16 +25,22 @@ parameters:
   # XXX: The VMEM file should be added to the sources of the Vivado project to
   # make the Vivado dependency tracking work. However this requires changes to
   # fusesoc first.
-  SRAM_INIT_FILE:
+  ROM_INIT_FILE:
     datatype: str
-    description: SRAM initialization file in vmem hex format
-    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
+    description: ROM initialization file in vmem hex format
+    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_artys7.32.vmem"
     paramtype: vlogdefine
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  # XXX: This allows us to set the define used for flash configuration
+  # Long term this replication should actually not be necessary:
+  # https://github.com/olofk/fusesoc/issues/401
+  FLASH_PAGES_PER_BANK:
+    datatype: int
+    paramtype: vlogdefine
 
 targets:
   synth:
@@ -44,8 +50,9 @@ targets:
       - files_constraints
     toplevel: top_earlgrey_artys7
     parameters:
-      - SRAM_INIT_FILE
+      - ROM_INIT_FILE
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - FLASH_PAGES_PER_BANK=8
     tools:
       vivado:
         part: "xc7s50csga324-1" # Arty S7-50

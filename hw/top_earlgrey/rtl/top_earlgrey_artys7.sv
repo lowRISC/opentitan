@@ -12,6 +12,15 @@ module top_earlgrey_artys7 (
   //input               IO_JTDI,
   //input               IO_JTRST_N,
   //output              IO_JTDO,
+   // JTAG interface
+  input               IO_DPS0, // IO_JTCK,    IO_SDCK
+  input               IO_DPS3, // IO_JTMS,    IO_SDCSB
+  input               IO_DPS1, // IO_JTDI,    IO_SDMOSI
+  input               IO_DPS4, // IO_JTRST_N,
+  input               IO_DPS5, // IO_JSRST_N,
+  output              IO_DPS2, // IO_JTDO,    IO_MISO
+  input               IO_DPS6, // JTAG=0,     SPI=1
+  input               IO_DPS7, // BOOTSTRAP=1
   // UART interface
   input               IO_URX,
   output              IO_UTX,
@@ -51,29 +60,37 @@ module top_earlgrey_artys7 (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
-  // Unlike Nexys Video there is no separate JTAG controller, tie off for now
-  logic IO_JTCK = 0;
-  logic IO_JTMS = 0;
-  logic IO_JTDI = 0;
-  logic IO_JTRST_N = IO_RST_N;
-  logic IO_JTDO;
+  // JTAG logic
+  logic cio_jtag_tck_p2d, cio_jtag_tms_p2d, cio_jtag_tdi_p2d, cio_jtag_tdo_d2p;
+  logic cio_jtag_trst_n_p2d, cio_jtag_srst_n_p2d;
+
+  // SPI logic
+  logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d, cio_spi_device_mosi_p2d,
+        cio_spi_device_miso_d2p, cio_spi_device_miso_en_d2p;
 
   // Top-level design
   top_earlgrey top_earlgrey (
     .clk_i                      (clk_sys),
+    .clk_fixed_i                (clk_sys),
     .rst_ni                     (rst_sys_n),
 
     .clk_usb_48mhz_i            (clk_48mhz),
 
-    .jtag_tck_i                 (IO_JTCK),
-    .jtag_tms_i                 (IO_JTMS),
-    .jtag_trst_ni               (IO_JTRST_N),
-    .jtag_td_i                  (IO_JTDI),
-    .jtag_td_o                  (IO_JTDO),
+    .jtag_tck_i                 (cio_jtag_tck_p2d),
+    .jtag_tms_i                 (cio_jtag_tms_p2d),
+    .jtag_trst_ni               (cio_jtag_trst_n_p2d),
+    .jtag_td_i                  (cio_jtag_tdi_p2d),
+    .jtag_td_o                  (cio_jtag_tdo_d2p),
 
     .dio_uart_rx_i              (cio_uart_rx_p2d),
     .dio_uart_tx_o              (cio_uart_tx_d2p),
     .dio_uart_tx_en_o           (cio_uart_tx_en_d2p),
+
+    .dio_spi_device_sck_i       (cio_spi_device_sck_p2d),
+    .dio_spi_device_csb_i       (cio_spi_device_csb_p2d),
+    .dio_spi_device_mosi_i      (cio_spi_device_mosi_p2d),
+    .dio_spi_device_miso_o      (cio_spi_device_miso_d2p),
+    .dio_spi_device_miso_en_o   (cio_spi_device_miso_en_d2p),
 
     .mio_in_i                   (cio_gpio_p2d),
     .mio_out_o                  (cio_gpio_d2p),
@@ -104,7 +121,7 @@ module top_earlgrey_artys7 (
   // Clock and reset
   clkgen_xil7series clkgen (
     .IO_CLK(IO_CLK),
-    .IO_RST_N(IO_RST_N),
+    .IO_RST_N(IO_RST_N & cio_jtag_srst_n_p2d),
     .clk_sys(clk_sys),
     .clk_48MHz(clk_48mhz),
     .rst_sys_n(rst_sys_n)
@@ -161,7 +178,28 @@ module top_earlgrey_artys7 (
     .IO_GP12,
     .IO_GP13,
     .IO_GP14,
-    .IO_GP15
+    .IO_GP15,
+
+    .cio_spi_device_sck_p2d,
+    .cio_spi_device_csb_p2d,
+    .cio_spi_device_mosi_p2d,
+    .cio_spi_device_miso_d2p,
+    .cio_spi_device_miso_en_d2p,
+    .cio_jtag_tck_p2d,
+    .cio_jtag_tms_p2d,
+    .cio_jtag_trst_n_p2d,
+    .cio_jtag_srst_n_p2d,
+    .cio_jtag_tdi_p2d,
+    .cio_jtag_tdo_d2p,
+    .IO_DPS0,
+    .IO_DPS1,
+    .IO_DPS2,
+    .IO_DPS3,
+    .IO_DPS4,
+    .IO_DPS5,
+    .IO_DPS6,
+    .IO_DPS7
   );
 
 endmodule
+
