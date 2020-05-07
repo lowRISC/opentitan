@@ -99,11 +99,11 @@ class FlowCfg():
                 log.error("Parse error!\n%s", self.cfgs)
                 sys.exit(1)
 
-    @staticmethod
-    def create_instance(flow_cfg_file, proj_root, args):
-        '''Create a new instance of this class as with given parameters.
+    def create_instance(self, flow_cfg_file):
+        '''Create a new instance of this class for the given config file.
+
         '''
-        return FlowCfg(flow_cfg_file, proj_root, args)
+        return type(self)(flow_cfg_file, self.proj_root, self.args)
 
     def kill(self):
         '''kill running processes and jobs gracefully
@@ -254,18 +254,14 @@ class FlowCfg():
                     cfg_file = subst_wildcards(entry,
                                                self.__dict__,
                                                ignore_error=True)
-                    self.cfgs.append(
-                        self.create_instance(cfg_file, self.proj_root,
-                                             self.args))
+                    self.cfgs.append(self.create_instance(cfg_file))
 
                 elif type(entry) is dict:
                     # Treat this as a cfg expanded in-line
                     temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
                     if not temp_cfg_file:
                         continue
-                    self.cfgs.append(
-                        self.create_instance(temp_cfg_file, self.proj_root,
-                                             self.args))
+                    self.cfgs.append(self.create_instance(temp_cfg_file))
 
                     # Delete the temp_cfg_file once the instance is created
                     try:

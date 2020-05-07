@@ -26,12 +26,6 @@ class SynCfg(OneShotCfg):
         # Set the title for synthesis results.
         self.results_title = self.name.upper() + " Synthesis Results"
 
-    @staticmethod
-    def create_instance(flow_cfg_file, proj_root, args):
-        '''Create a new instance of this class as with given parameters.
-        '''
-        return SynCfg(flow_cfg_file, proj_root, args)
-
     def gen_results_summary(self):
         '''
         Gathers the aggregated results from all sub configs
