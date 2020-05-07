@@ -10,7 +10,7 @@
 //   new input must be opposite value from stored value for
 //   #Cycles before switching to new value.
 
-module prim_filter #(parameter Cycles = 4) (
+module prim_filter #(parameter int Cycles = 4) (
   input  clk_i,
   input  rst_ni,
   input  enable_i,
