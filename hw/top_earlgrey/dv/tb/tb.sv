@@ -44,15 +44,15 @@ module tb;
   bit stub_cpu;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
   pins_if #(1) bootstrap_if(.pins(bootstrap));
-  spi_if spi_if(.rst_n(rst_n));
-  tl_if   cpu_d_tl_if(.clk(clk), .rst_n(rst_n));
-  uart_if uart_if(.uart_rx, .uart_tx, .uart_tx_en());
+  spi_if spi_if(.rst_n);
+  tl_if cpu_d_tl_if(.clk, .rst_n);
+  uart_if uart_if();
   jtag_if jtag_if();
 
   // backdoors
@@ -160,6 +160,9 @@ module tb;
   assign spi_device_csb     = spi_if.csb;
   assign spi_device_mosi_i  = spi_if.mosi;
   assign spi_if.miso        = spi_device_miso_o;
+
+  assign uart_rx = uart_if.uart_rx;
+  assign uart_if.uart_tx = uart_tx;
 
   // TODO: USB-related signals, hookup an interface.
   assign usb_rst_n  = `USBDEV_HIER.rst_usb_48mhz_ni;
