@@ -32,7 +32,7 @@ genhdr = '''// Copyright lowRISC contributors.
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 '''
 
-SRCTREE_TOP = Path(__file__).parent.parent
+SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 
 def generate_top(top, tpl_filename, **kwargs):
@@ -653,7 +653,7 @@ def main():
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
         cheader_path = render_template('top_%s.h',
                                        'sw/autogen',
-                                       c_gen_info=c_gen_info)
+                                       c_gen_info=c_gen_info).resolve()
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
