@@ -87,10 +87,10 @@ module tlul_adapter_sram #(
   logic rd_vld_error;
   logic tlul_error;     // Error from `tlul_err` module
 
-  logic a_ack, d_ack, unused_sram_ack;
+  logic a_ack, d_ack, sram_ack;
   assign a_ack    = tl_i.a_valid & tl_o.a_ready ;
   assign d_ack    = tl_o.d_valid & tl_i.d_ready ;
-  assign unused_sram_ack = req_o        & gnt_i ;
+  assign sram_ack = req_o        & gnt_i ;
 
   // Valid handling
   logic d_valid, d_error;
@@ -208,7 +208,7 @@ module tlul_adapter_sram #(
 
   // push together with ReqFIFO, pop upon returning read
   assign maskfifo_wdata = tl_i.a_mask;
-  assign maskfifo_wvalid = a_ack & (tl_i.a_opcode == Get);
+  assign maskfifo_wvalid = sram_ack & ~we_o;
   assign maskfifo_rready = rspfifo_wvalid;
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
