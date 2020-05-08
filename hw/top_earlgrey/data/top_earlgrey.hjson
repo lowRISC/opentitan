@@ -533,7 +533,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac", "kmac", "sensor_ctrl", "otp_ctrl", "otbn"]
+  alert_module: [ "aes", "hmac", "kmac", "sensor_ctrl", "otp_ctrl", "otbn"]
 
   // generated list of alerts:
   alert: [

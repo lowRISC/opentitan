@@ -110,9 +110,6 @@ The initialization vector (IV) register and the register to hold the previous in
 
 ## Hardware Interfaces
 
-In the current implementation, the AES unit has no security alerts.
-These will eventually be added in future versions.
-
 {{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
 
 

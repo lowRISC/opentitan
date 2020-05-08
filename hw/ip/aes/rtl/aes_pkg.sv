@@ -6,6 +6,9 @@
 
 package aes_pkg;
 
+parameter int NumAlerts = 1;
+parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
+
 typedef enum logic {
   AES_ENC = 1'b0,
   AES_DEC = 1'b1

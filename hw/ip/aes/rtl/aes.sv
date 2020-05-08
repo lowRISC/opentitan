@@ -22,10 +22,15 @@ module aes #(
 
   // Bus interface
   input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o
+  output tlul_pkg::tl_d2h_t tl_o,
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [aes_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   import aes_reg_pkg::*;
+  import aes_pkg::*;
 
   aes_reg2hw_t reg2hw;
   aes_hw2reg_t hw2reg;
@@ -80,8 +85,24 @@ module aes #(
     .entropy_i    ( 64'hFEDCBA9876543210 )
   );
 
+  // Generate alert senders for the bronze netlist.
+  logic [NumAlerts-1:0] alert;
+  assign alert = '0;
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i])
+    ) i_prim_alert_sender (
+      .clk_i      ( clk_i         ),
+      .rst_ni     ( rst_ni        ),
+      .alert_i    ( alert[i]      ),
+      .alert_rx_i ( alert_rx_i[i] ),
+      .alert_tx_o ( alert_tx_o[i] )
+    );
+  end
+
   // All outputs should have a known value after reset
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
 endmodule
