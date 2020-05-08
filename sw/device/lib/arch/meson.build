@@ -23,6 +23,13 @@ sw_lib_arch_fpga_nexysvideo = declare_dependency(
   ),
 )
 
+sw_lib_arch_fpga_artys7 = declare_dependency(
+  link_with: static_library(
+    'device_fpga_artys7',
+    sources: ['device_fpga_artys7.c'],
+  ),
+)
+
 # Devices that are considered "basic" or "generic", and which
 # can run general purpose programs.
 # Effectively, this is all devices that are not specialized DV
@@ -31,4 +38,5 @@ sw_lib_arch_core_devices = {
   'sim_dv': sw_lib_arch_sim_dv,
   'sim_verilator': sw_lib_arch_sim_verilator,
   'fpga_nexysvideo': sw_lib_arch_fpga_nexysvideo,
+  'fpga_artys7': sw_lib_arch_fpga_artys7
 }

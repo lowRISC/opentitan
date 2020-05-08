@@ -37,6 +37,12 @@ typedef enum device_type {
    * blessed for OpenTitan development, containing a Xilinx FPGA.
    */
   kDeviceFpgaNexysVideo,
+  /**
+   * Represents the "Arty S7" device, i.e., the small entry-level FPGA board
+   * for OpenTitan development, containing a Xilinx FPGA. Limited support.
+   */
+  kDeviceFpgaArtyS7,
+
 } device_type_t;
 
 /**
