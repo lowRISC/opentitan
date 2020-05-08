@@ -117,6 +117,8 @@
                    "-cm {cov_metrics}",
                    // Set the coverage hierarchy
                    "{vcs_cov_hier}",
+                   // Set the assert coverage hierarchy
+                   "{vcs_cov_assert_hier}",
                    // Cover all continuous assignments
                    "-cm_line contassign",
                    // Dump toggle coverage on mdas, array of structs and on ports only
