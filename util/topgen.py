@@ -492,25 +492,38 @@ def generate_clkmgr(top, cfg_path, out_path):
     # clock classification
     grps = top['clocks']['groups']
 
+    src_aon_attr = OrderedDict()
     ft_clks = OrderedDict()
     rg_clks = OrderedDict()
     sw_clks = OrderedDict()
     hint_clks = OrderedDict()
 
+    # construct a dictionary of the aon attribute for easier lookup
+    # ie, src_name_A: True, src_name_B: False
+    for src in top['clocks']['srcs']:
+        if src['aon'] == 'yes':
+            src_aon_attr[src['name']] = True
+        else:
+            src_aon_attr[src['name']] = False
+
+    rg_srcs = [src for (src, attr) in src_aon_attr.items() if not attr]
+
+    # clocks fed through clkmgr but are not disturbed in any way
+    # This maintains the clocking structure consistency
     ft_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['name'] == 'powerup'}
+                 if src_aon_attr[src]}
 
     # root-gate clocks
     rg_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['name'] != 'powerup' and grp['sw_cg'] == 'no'}
+                 if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and not src_aon_attr[src]}
 
     # direct sw control clocks
     sw_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['sw_cg'] == 'yes'}
+                 if grp['sw_cg'] == 'yes' and not src_aon_attr[src]}
 
     # sw hint clocks
     hint_clks = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['sw_cg'] == 'hint'}
+                 if grp['sw_cg'] == 'hint' and not src_aon_attr[src]}
 
 
     out = StringIO()
@@ -519,6 +532,7 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
+                                 rg_srcs=rg_srcs,
                                  ft_clks=ft_clks,
                                  rg_clks=rg_clks,
                                  sw_clks=sw_clks,

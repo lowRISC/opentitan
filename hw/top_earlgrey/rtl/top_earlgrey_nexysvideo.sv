@@ -42,9 +42,11 @@ module top_earlgrey_nexysvideo (
   inout               IO_GP15
 );
 
+
   //////////////////////
   // Padring Instance //
   //////////////////////
+
 
   logic clk, clk_usb_48mhz, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
@@ -198,8 +200,9 @@ module top_earlgrey_nexysvideo (
     // Clocks, resets
     .clk_i           ( clk           ),
     .rst_ni          ( rst_n         ),
-    .clk_fixed_i     ( clk           ),
-    .clk_usb_48mhz_i ( clk_usb_48mhz ),
+    .clk_io_i        ( clk           ),
+    .clk_aon_i       ( clk           ),
+    .clk_usb_i       ( clk_usb_48mhz ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

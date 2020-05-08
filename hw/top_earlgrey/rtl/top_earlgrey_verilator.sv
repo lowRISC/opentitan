@@ -73,8 +73,9 @@ module top_earlgrey_verilator (
   top_earlgrey top_earlgrey (
     .clk_i                      (clk_i),
     .rst_ni                     (rst_ni),
-    .clk_fixed_i                (clk_i),
-    .clk_usb_48mhz_i            (clk_i),
+    .clk_io_i                   (clk_i),
+    .clk_usb_i                  (clk_i),
+    .clk_aon_i                  (clk_i),
 
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),

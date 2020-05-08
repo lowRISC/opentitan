@@ -24,7 +24,9 @@ num_grps = len(grps)
   reset_primary: "rst_ni",
   other_reset_list: [
 % for src in srcs:
+    % if src['aon'] == 'no':
     "rst_${src['name']}_ni"
+    % endif
 % endfor
   ]
   bus_device: "tlul",

@@ -12,12 +12,18 @@ srcs = clks_attr['srcs']
 %>
 
 module clkmgr import clkmgr_pkg::*; (
-  // Primary module clocks
+  // Primary module control clocks and resets
+  // This drives the register interface
   input clk_i,
   input rst_ni,
+
+  // System clocks and resets
+  // These are the source clocks for the system
 % for src in srcs:
   input clk_${src['name']}_i,
+  % if src['aon'] == 'no':
   input rst_${src['name']}_ni,
+  % endif
 % endfor
 
   // Bus Interface
@@ -67,29 +73,29 @@ module clkmgr import clkmgr_pkg::*; (
 
   logic async_roots_en;
   logic roots_en_q2, roots_en_q1, roots_en_d;
-% for src in srcs:
-  logic clk_${src['name']}_root;
-  logic clk_${src['name']}_en;
+% for src in rg_srcs:
+  logic clk_${src}_root;
+  logic clk_${src}_en;
 % endfor
 
-% for src in srcs:
-  prim_clock_gating_sync i_${src['name']}_cg (
-    .clk_i(clk_${src['name']}_i),
-    .rst_ni(rst_${src['name']}_ni),
+% for src in rg_srcs:
+  prim_clock_gating_sync i_${src}_cg (
+    .clk_i(clk_${src}_i),
+    .rst_ni(rst_${src}_ni),
     .test_en_i(dft_i.test_en),
     .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_${src['name']}_en),
-    .clk_o(clk_${src['name']}_root)
+    .en_o(clk_${src}_en),
+    .clk_o(clk_${src}_root)
   );
 % endfor
 
   // an async OR of all the synchronized enables
   assign async_roots_en =
-% for src in srcs:
+% for src in rg_srcs:
     % if loop.last:
-    clk_${src['name']}_en;
+    clk_${src}_en;
     % else:
-    clk_${src['name']}_en |
+    clk_${src}_en |
     % endif
 % endfor
 

@@ -15,10 +15,10 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_fixed_peri_en;
+    } clk_io_peri_en;
     struct packed {
       logic        q;
-    } clk_usb_48mhz_peri_en;
+    } clk_usb_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {

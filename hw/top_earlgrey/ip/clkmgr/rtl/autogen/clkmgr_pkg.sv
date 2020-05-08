@@ -20,13 +20,13 @@ package clkmgr_pkg;
   logic clk_main_aes;
   logic clk_main_hmac;
   logic clk_main_infra;
-  logic clk_fixed_infra;
-  logic clk_fixed_secure;
+  logic clk_io_infra;
+  logic clk_io_secure;
   logic clk_main_secure;
-  logic clk_fixed_timers;
+  logic clk_io_timers;
   logic clk_proc_main;
-  logic clk_fixed_peri;
-  logic clk_usb_48mhz_peri;
+  logic clk_io_peri;
+  logic clk_usb_peri;
 
   } clkmgr_out_t;
 

@@ -36,11 +36,14 @@ module top_${top["name"]} #(
   input               clk_i,
   input               rst_ni,
 
-  // Fixed clock
-  input               clk_fixed_i,
+  // Fixed io clock
+  input               clk_io_i,
 
   // USB clock
-  input               clk_usb_48mhz_i,
+  input               clk_usb_i,
+
+  // aon clock
+  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,

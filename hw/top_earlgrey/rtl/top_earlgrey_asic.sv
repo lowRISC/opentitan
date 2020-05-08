@@ -180,11 +180,10 @@ module top_earlgrey_asic (
   //////////////////////
 
   top_earlgrey top_earlgrey (
-    // Clocks, resets
     .clk_i           ( clk           ),
     .rst_ni          ( rst_n         ),
-    .clk_fixed_i     ( clk           ),
-    .clk_usb_48mhz_i ( clk_usb_48mhz ),
+    .clk_io_i        ( clk           ),
+    .clk_usb_i       ( clk_usb_48mhz ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

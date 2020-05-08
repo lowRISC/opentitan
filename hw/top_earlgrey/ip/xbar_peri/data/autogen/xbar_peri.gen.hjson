@@ -10,17 +10,17 @@
   name: peri
   clock_srcs:
   {
-    clk_peri_i: fixed
+    clk_peri_i: io
   }
   clock_group: infra
   reset: rst_peri_ni
   reset_connections:
   {
-    rst_peri_ni: sys_fixed
+    rst_peri_ni: sys_io
   }
   clock_connections:
   {
-    clk_peri_i: clkmgr_clocks.clk_fixed_infra
+    clk_peri_i: clkmgr_clocks.clk_io_infra
   }
   connections:
   {

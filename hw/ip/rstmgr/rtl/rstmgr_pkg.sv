@@ -30,7 +30,7 @@ package rstmgr_pkg;
   typedef struct packed {
     logic rst_por_n;
     logic rst_lc_n;
-    logic rst_sys_fixed_n;
+    logic rst_sys_io_n;
     logic rst_sys_n;
     logic rst_spi_device_n;
     logic rst_usb_n;
