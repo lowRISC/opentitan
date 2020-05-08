@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/testing/test_status.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
 
 #if VALIDATION_RUN
@@ -121,4 +122,7 @@ void portable_init(core_portable *p, int *argc, char *argv[]) {
 /* Function : portable_fini
         Target specific final code
 */
-void portable_fini(core_portable *p) { p->portable_id = 0; }
+void portable_fini(core_portable *p) {
+  p->portable_id = 0;
+  test_status_set(kTestStatusPassed);
+}
