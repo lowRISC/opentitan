@@ -109,11 +109,12 @@
       run_opts: ["+sw_test_timeout_ns=40000000"]
     }
     {
-      name: coremark
+      name: chip_coremark
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: coremark
+      sw_name: coremark_top_earlgrey
       sw_dir: benchmarks/coremark
-      run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_opts: ["+en_uart_logger=1",
+                 "+sw_test_timeout_ns=20000000"]
     }
 
     // TODO: CSR suite of tests. Rather than reuse the common one, we are

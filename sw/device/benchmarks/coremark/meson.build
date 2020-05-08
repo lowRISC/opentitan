@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
-  if device_name == 'sim_verilator'
-    coremark_iterations = 1
-  else
+  if device_name == 'fpga_nexysvideo'
     coremark_iterations = 100
+  else
+    coremark_iterations = 1
   endif
 
   coremark_top_earlgrey_elf = executable(
@@ -22,6 +22,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_mem,
       riscv_crt,
       device_lib,
+      sw_lib_testing_test_status,
     ],
     # Set up coremark-specific defines.
     c_args: [
