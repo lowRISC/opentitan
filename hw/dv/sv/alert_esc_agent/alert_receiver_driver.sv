@@ -45,7 +45,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
         // TODO: add ping fail and differential signal fail scenarios
         fork
           begin : ping_timeout
-            repeat (cfg.ping_timeout_cycle) @(cfg.vif.receiver_cb);
+            repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
           end
           begin : wait_ping_handshake
             cfg.vif.wait_alert();
@@ -99,7 +99,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
         begin : isolation_fork
           fork
             begin : ack_timeout
-              repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+              repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
             end
             begin : wait_ack_handshake
               cfg.vif.wait_alert_complete();

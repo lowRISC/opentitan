@@ -83,12 +83,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           bit [TL_DW-1:0] alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
-          // once the alert is received
           alert_en = ral.alert_en.get_mirrored_value();
           if (alert_en[index]) begin
+            // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
                 act_item.alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
+            // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
               bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
               if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
@@ -106,15 +107,19 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         forever begin
           alert_esc_seq_item act_item;
           esc_fifo[index].get(act_item);
+          // escalation triggered, check signal length
           if (act_item.alert_esc_type == AlertEscSigTrans &&
               act_item.esc_handshake_sta == EscRespComplete) begin
             check_esc_signal(act_item.sig_cycle_cnt, index);
-          end
-          if (act_item.alert_esc_type == AlertEscIntFail ||
-              (act_item.alert_esc_type == AlertEscSigTrans &&
-               act_item.esc_handshake_sta == EscIntFail)) begin
+          // escalation integrity fail
+          end else if (act_item.alert_esc_type == AlertEscIntFail ||
+               (act_item.esc_handshake_sta == EscIntFail && !act_item.timeout)) begin
             bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
+          // escalation ping timeout
+          end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.timeout) begin
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+            if (loc_alert_en[LocalEscPingFail]) process_alert_sig(index, 1, LocalEscPingFail);
           end
         end
       join_none
@@ -450,11 +455,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // clear accumulative counters, and escalation counters if they are under escalation
   // interrupt timeout counters cannot be cleared by this
   function void clr_reset_esc_class(int class_i);
-    if (under_esc_classes[class_i]) intr_cnter_per_class[class_i] = 0;
-    under_esc_classes[class_i] = 0;
-    last_triggered_alert_per_class[class_i] = 0;
-    accum_cnter_per_class[class_i]          = 0;
+    if (under_esc_classes [class_i]) intr_cnter_per_class[class_i] = 0;
     if (under_intr_classes[class_i]) clr_esc_under_intr[class_i] = 1;
+    last_triggered_alert_per_class[class_i] = 0;
+    under_esc_classes[class_i]              = 0;
+    accum_cnter_per_class[class_i]          = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);

@@ -47,7 +47,7 @@ class alert_monitor extends alert_esc_base_monitor;
           begin : isolation_fork
             fork
               begin : wait_ping_timeout
-                repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                repeat (cfg.handshake_timeout_cycle) @(cfg.vif.monitor_cb);
                 req.timeout = 1'b1;
               end
               begin : wait_ping_handshake
@@ -93,7 +93,7 @@ class alert_monitor extends alert_esc_base_monitor;
           begin : isolation_fork
             fork
               begin : alert_timeout
-                repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                repeat (cfg.handshake_timeout_cycle) @(cfg.vif.monitor_cb);
                 req.timeout = 1'b1;
               end
               begin : wait_alert_handshake

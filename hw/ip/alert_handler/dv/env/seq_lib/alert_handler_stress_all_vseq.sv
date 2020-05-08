@@ -17,13 +17,17 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
                           "alert_handler_esc_intr_timeout_vseq",
                           "alert_handler_esc_alert_accum_vseq",
                           "alert_handler_sig_int_fail_vseq",
-                          "alert_handler_entropy_vseq"};
+                          "alert_handler_entropy_vseq",
+                          "alert_handler_ping_rsp_fail_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence            seq;
       alert_handler_base_vseq alert_vseq;
-      uint seq_idx = entropy_test_flag ? $urandom_range(0, seq_names.size - 2) :
+      uint seq_idx = entropy_test_flag ? $urandom_range(0, seq_names.size - 3) :
                                          $urandom_range(0, seq_names.size - 1);
-      if (seq_names[seq_idx] == "alert_handler_entropy_vseq") entropy_test_flag = 1;
+      if (seq_names[seq_idx] inside {"alert_handler_entropy_vseq",
+                                     "alert_handler_ping_rsp_fail_vseq"}) begin
+        entropy_test_flag = 1;
+      end
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(alert_vseq, seq)

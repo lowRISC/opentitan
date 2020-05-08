@@ -34,7 +34,9 @@ package alert_esc_agent_pkg;
     EscRespComplete,
     EscIntFail,
     EscRespHi,
-    EscRespLo
+    EscRespLo,
+    EscRespPing0,
+    EscRespPing1
   } esc_handshake_e;
 
   typedef enum bit [1:0] {
