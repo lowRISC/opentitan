@@ -1,7 +1,7 @@
 From 5ddb5a17cb8f61955cb6103682d6190abe61e181 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Fri, 17 Apr 2020 15:02:48 +0100
-Subject: [PATCH 4/5] Enable parallel runs
+Subject: [PATCH 4/6] Enable parallel runs
 
 ---
  Makefile                         |  5 +++++
@@ -52,5 +52,5 @@ index 6823fe2..71baa3c 100644
  A small number of tests are not run for OpenTitan riscv_compliance as they fail
  due to flaws in the compliance test suite rather than Ibex/OpenTitan itself (see
 -- 
-2.17.1
+2.26.0
 

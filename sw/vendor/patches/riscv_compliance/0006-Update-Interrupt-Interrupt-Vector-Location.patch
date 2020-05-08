@@ -1,0 +1,36 @@
+From 8f049ea5477ca22ef952ee27ad98eb270b90742d Mon Sep 17 00:00:00 2001
+From: Sam Elliott <selliott@lowrisc.org>
+Date: Fri, 8 May 2020 22:09:03 +0100
+Subject: [PATCH 6/6] Update Interrupt Interrupt Vector Location
+
+Signed-off-by: Sam Elliott <selliott@lowrisc.org>
+---
+ riscv-target/opentitan/device/rv32imc/Makefile.include | 2 +-
+ riscv-target/opentitan/device/rv32imc/run_rvc_test.S   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
+index e1be9d8..e809236 100644
+--- a/riscv-target/opentitan/device/rv32imc/Makefile.include
++++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
+@@ -67,7 +67,7 @@ COMPILE_TARGET += \
+		$(DEFINES) -T$(LDSCRIPT) $$< \
+                 $(OPENTITAN)/main.c \
+                 $(OPENTITAN)/run_rvc_test.S \
+-							  $(OT_ROOT)/sw/device/lib/irq_vectors.S \
++							  $(OT_ROOT)/sw/device/exts/common/ibex_interrupt_vectors.S \
+								$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
+                 -L$(OT_BIN)/sw/device/riscv_compliance_support \
+								-l$(COMPLIANCE_LIB) \
+diff --git a/riscv-target/opentitan/device/rv32imc/run_rvc_test.S b/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
+index aef6a23..1b1b5c7 100644
+--- a/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
++++ b/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
+@@ -82,4 +82,4 @@ mtvec_handler:
+   lw gp,   8(t0)
+
+   // jump to the handler from the OT library
+-  j _vectors_start
++  j crt_interrupt_vector
+--
+2.26.0
