@@ -126,7 +126,9 @@ module top_earlgrey_nexysvideo (
     .scanmode_i                 (1'b0) // 1 for Scan
   );
 
-  clkgen_xil7series clkgen (
+  clkgen_xil7series # (
+    .AddClkBuf(0)
+  ) clkgen (
     .IO_CLK(IO_CLK),
     .IO_RST_N(IO_RST_N & cio_jtag_srst_n_p2d),
     .clk_sys(clk_sys),
