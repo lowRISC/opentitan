@@ -187,7 +187,9 @@
   regressions: [
     {
       name: sanity
-      tests: ["chip_sanity"]
+      tests: ["chip_sanity",
+              "chip_csr_hw_reset",
+              "chip_csr_rw"]
     }
     {
       name: sw_access
