@@ -11,7 +11,7 @@
   clock_primary: "clk_i",
   other_clock_list: [
     "clk_main_i",
-    "clk_fixed_i",
+    "clk_io_i",
     "clk_usb_i"
   ],
   bus_device: "tlul",

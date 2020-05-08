@@ -9,11 +9,14 @@ module top_earlgrey #(
   input               clk_i,
   input               rst_ni,
 
-  // Fixed clock
-  input               clk_fixed_i,
+  // Fixed io clock
+  input               clk_io_i,
 
   // USB clock
-  input               clk_usb_48mhz_i,
+  input               clk_usb_i,
+
+  // aon clock
+  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
@@ -491,8 +494,8 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
-      .clk_i (clkmgr_clocks.clk_fixed_secure),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   gpio u_gpio (
@@ -509,8 +512,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
 
-      .clk_i (clkmgr_clocks.clk_fixed_peri),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   spi_device u_spi_device (
@@ -535,7 +538,7 @@ module top_earlgrey #(
       .intr_txunderflow_o (intr_spi_device_txunderflow),
       .scanmode_i   (scanmode_i),
 
-      .clk_i (clkmgr_clocks.clk_fixed_peri),
+      .clk_i (clkmgr_clocks.clk_io_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n)
   );
 
@@ -566,8 +569,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
 
-      .clk_i (clkmgr_clocks.clk_fixed_timers),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   aes u_aes (
@@ -697,8 +700,8 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
 
-      .clk_i (clk_fixed_i),
-      .clk_slow_i (clk_fixed_i),
+      .clk_i (clk_io_i),
+      .clk_slow_i (clk_io_i),
       .rst_ni (rstmgr_resets.rst_por_n),
       .rst_slow_ni (rstmgr_resets.rst_por_n)
   );
@@ -715,10 +718,10 @@ module top_earlgrey #(
       .cpu_i(rstmgr_cpu),
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
 
-      .clk_i (clk_fixed_i),
+      .clk_i (clk_io_i),
       .clk_main_i (clk_i),
-      .clk_fixed_i (clk_fixed_i),
-      .clk_usb_i (clk_usb_48mhz_i),
+      .clk_io_i (clk_io_i),
+      .clk_usb_i (clk_usb_i),
       .rst_ni (rst_ni)
   );
 
@@ -733,14 +736,15 @@ module top_earlgrey #(
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
       .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
 
-      .clk_i (clk_fixed_i),
+      .clk_i (clk_io_i),
       .clk_main_i (clk_i),
-      .clk_fixed_i (clk_fixed_i),
-      .clk_usb_48mhz_i (clk_usb_48mhz_i),
+      .clk_io_i (clk_io_i),
+      .clk_usb_i (clk_usb_i),
+      .clk_aon_i (clk_aon_i),
       .rst_ni (rstmgr_resets.rst_por_n),
       .rst_main_ni (rstmgr_resets.rst_por_n),
-      .rst_fixed_ni (rstmgr_resets.rst_por_n),
-      .rst_usb_48mhz_ni (rstmgr_resets.rst_por_n)
+      .rst_io_ni (rstmgr_resets.rst_por_n),
+      .rst_usb_ni (rstmgr_resets.rst_por_n)
   );
 
   nmi_gen u_nmi_gen (
@@ -804,9 +808,9 @@ module top_earlgrey #(
       .intr_frame_o           (intr_usbdev_frame),
       .intr_connected_o       (intr_usbdev_connected),
 
-      .clk_i (clkmgr_clocks.clk_fixed_peri),
-      .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_48mhz_peri),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n),
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n),
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
@@ -867,9 +871,9 @@ module top_earlgrey #(
   // TL-UL Crossbar
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_clocks.clk_main_infra),
-    .clk_fixed_i (clkmgr_clocks.clk_fixed_infra),
+    .clk_fixed_i (clkmgr_clocks.clk_io_infra),
     .rst_main_ni (rstmgr_resets.rst_sys_n),
-    .rst_fixed_ni (rstmgr_resets.rst_sys_fixed_n),
+    .rst_fixed_ni (rstmgr_resets.rst_sys_io_n),
     .tl_corei_i         (tl_corei_h_h2d),
     .tl_corei_o         (tl_corei_h_d2h),
     .tl_cored_i         (tl_cored_h_h2d),
@@ -906,8 +910,8 @@ module top_earlgrey #(
     .scanmode_i
   );
   xbar_peri u_xbar_peri (
-    .clk_peri_i (clkmgr_clocks.clk_fixed_infra),
-    .rst_peri_ni (rstmgr_resets.rst_sys_fixed_n),
+    .clk_peri_i (clkmgr_clocks.clk_io_infra),
+    .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
     .tl_main_i       (tl_main_h_h2d),
     .tl_main_o       (tl_main_h_d2h),
     .tl_uart_o       (tl_uart_d_h2d),

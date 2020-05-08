@@ -89,6 +89,12 @@ padctrl_optional = {
 }
 padctrl_added = {}
 
+clock_srcs_required = {
+    'name': ['s', 'name of clock group'],
+    'aon':  ['s', 'yes, no. aon attribute of a clock'],
+    'freq': ['s', 'frequency of clock in Hz'],
+}
+
 clock_groups_required = {
     'name': ['s', 'name of clock group'],
     'src': ['s', 'yes, no. This clock group is directly from source'],
@@ -202,6 +208,11 @@ def check_clock_groups(top):
 
 
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
+
+    # check clock fields are all there
+    for src in top['clocks']['srcs']:
+        check_keys(src, clock_srcs_required, {}, {}, "Clock source")
+
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']]
     clock_srcs = [clock['name'] for clock in top['clocks']['srcs']]

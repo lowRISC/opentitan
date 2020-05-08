@@ -20,15 +20,23 @@
     [
       {
         name: main
+        aon: no
         freq: "100000000"
       }
       {
-        name: fixed
+        name: io
+        aon: no
         freq: "100000000"
       }
       {
-        name: usb_48mhz
+        name: usb
+        aon: no
         freq: "48000000"
+      }
+      {
+        name: aon
+        aon: yes
+        freq: "200000"
       }
     ]
     groups:
@@ -40,9 +48,10 @@
         unique: no
         clocks:
         {
-          clk_fixed_i: fixed
+          clk_io_i: io
           clk_i: main
-          clk_usb_48mhz_i: usb_48mhz
+          clk_usb_i: usb
+          clk_aon_i: aon
         }
       }
       {
@@ -64,7 +73,7 @@
         clocks:
         {
           clk_main_infra: main
-          clk_fixed_infra: fixed
+          clk_io_infra: io
         }
       }
       {
@@ -74,7 +83,7 @@
         unique: no
         clocks:
         {
-          clk_fixed_secure: fixed
+          clk_io_secure: io
           clk_main_secure: main
         }
       }
@@ -85,8 +94,8 @@
         unique: no
         clocks:
         {
-          clk_fixed_peri: fixed
-          clk_usb_48mhz_peri: usb_48mhz
+          clk_io_peri: io
+          clk_usb_peri: usb
         }
       }
       {
@@ -96,7 +105,7 @@
         unique: no
         clocks:
         {
-          clk_fixed_timers: fixed
+          clk_io_timers: io
         }
       }
       {
@@ -121,13 +130,13 @@
       name: por
       type: gen
       root: lc
-      clk: fixed
+      clk: io
     }
     {
       name: lc
       type: gen
       root: lc
-      clk: fixed
+      clk: io
     }
     {
       name: sys
@@ -136,16 +145,16 @@
       clk: main
     }
     {
-      name: sys_fixed
+      name: sys_io
       type: gen
       root: sys
-      clk: fixed
+      clk: io
     }
     {
       name: spi_device
       type: gen
       root: sys
-      clk: fixed
+      clk: io
       sw: 1
     }
     {
@@ -164,17 +173,17 @@
       type: uart
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
       }
       reset_connections:
       {
-        rst_ni: sys_fixed
+        rst_ni: sys_io
       }
       base_addr: 0x40000000
       clock_group: secure
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_fixed_secure
+        clk_i: clkmgr_clocks.clk_io_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -303,17 +312,17 @@
       type: gpio
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
       }
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_fixed
+        rst_ni: sys_io
       }
       base_addr: 0x40010000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_fixed_peri
+        clk_i: clkmgr_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -351,7 +360,7 @@
       type: spi_device
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
       }
       clock_group: peri
       reset_connections:
@@ -361,7 +370,7 @@
       base_addr: 0x40020000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_fixed_peri
+        clk_i: clkmgr_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -591,17 +600,17 @@
       type: rv_timer
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
       }
       clock_group: timers
       reset_connections:
       {
-        rst_ni: sys_fixed
+        rst_ni: sys_io
       }
       base_addr: 0x40080000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_fixed_timers
+        clk_i: clkmgr_clocks.clk_io_timers
       }
       size: 0x1000
       bus_device: tlul
@@ -928,8 +937,8 @@
       type: pwrmgr
       clock_srcs:
       {
-        clk_i: fixed
-        clk_slow_i: fixed
+        clk_i: io
+        clk_slow_i: io
       }
       clock_group: powerup
       reset_connections:
@@ -940,8 +949,8 @@
       base_addr: 0x400A0000
       clock_connections:
       {
-        clk_i: clk_fixed_i
-        clk_slow_i: clk_fixed_i
+        clk_i: clk_io_i
+        clk_slow_i: clk_io_i
       }
       size: 0x1000
       bus_device: tlul
@@ -1053,10 +1062,10 @@
       type: rstmgr
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
         clk_main_i: main
-        clk_fixed_i: fixed
-        clk_usb_i: usb_48mhz
+        clk_io_i: io
+        clk_usb_i: usb
       }
       clock_group: powerup
       reset_connections:
@@ -1066,10 +1075,10 @@
       base_addr: 0x400B0000
       clock_connections:
       {
-        clk_i: clk_fixed_i
+        clk_i: clk_io_i
         clk_main_i: clk_i
-        clk_fixed_i: clk_fixed_i
-        clk_usb_i: clk_usb_48mhz_i
+        clk_io_i: clk_io_i
+        clk_usb_i: clk_usb_i
       }
       size: 0x1000
       bus_device: tlul
@@ -1140,27 +1149,29 @@
       type: clkmgr
       clock_srcs:
       {
-        clk_i: fixed
+        clk_i: io
         clk_main_i: main
-        clk_fixed_i: fixed
-        clk_usb_48mhz_i: usb_48mhz
+        clk_io_i: io
+        clk_usb_i: usb
+        clk_aon_i: aon
       }
       clock_group: powerup
       reset_connections:
       {
         rst_ni: por
         rst_main_ni: por
-        rst_fixed_ni: por
-        rst_usb_48mhz_ni: por
+        rst_io_ni: por
+        rst_usb_ni: por
       }
       base_addr: 0x400C0000
       generated: "true"
       clock_connections:
       {
-        clk_i: clk_fixed_i
+        clk_i: clk_io_i
         clk_main_i: clk_i
-        clk_fixed_i: clk_fixed_i
-        clk_usb_48mhz_i: clk_usb_48mhz_i
+        clk_io_i: clk_io_i
+        clk_usb_i: clk_usb_i
+        clk_aon_i: clk_aon_i
       }
       size: 0x1000
       bus_device: tlul
@@ -1297,20 +1308,20 @@
       type: usbdev
       clock_srcs:
       {
-        clk_i: fixed
-        clk_usb_48mhz_i: usb_48mhz
+        clk_i: io
+        clk_usb_48mhz_i: usb
       }
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_fixed
+        rst_ni: sys_io
         rst_usb_48mhz_ni: usb
       }
       base_addr: 0x40150000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_fixed_peri
-        clk_usb_48mhz_i: clkmgr_clocks.clk_usb_48mhz_peri
+        clk_i: clkmgr_clocks.clk_io_peri
+        clk_usb_48mhz_i: clkmgr_clocks.clk_usb_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -1672,19 +1683,19 @@
       clock_srcs:
       {
         clk_main_i: main
-        clk_fixed_i: fixed
+        clk_fixed_i: io
       }
       clock_group: infra
       reset: rst_main_ni
       reset_connections:
       {
         rst_main_ni: sys
-        rst_fixed_ni: sys_fixed
+        rst_fixed_ni: sys_io
       }
       clock_connections:
       {
         clk_main_i: clkmgr_clocks.clk_main_infra
-        clk_fixed_i: clkmgr_clocks.clk_fixed_infra
+        clk_fixed_i: clkmgr_clocks.clk_io_infra
       }
       connections:
       {
@@ -2012,17 +2023,17 @@
       name: peri
       clock_srcs:
       {
-        clk_peri_i: fixed
+        clk_peri_i: io
       }
       clock_group: infra
       reset: rst_peri_ni
       reset_connections:
       {
-        rst_peri_ni: sys_fixed
+        rst_peri_ni: sys_io
       }
       clock_connections:
       {
-        clk_peri_i: clkmgr_clocks.clk_fixed_infra
+        clk_peri_i: clkmgr_clocks.clk_io_infra
       }
       connections:
       {
@@ -3133,7 +3144,7 @@
     por: rstmgr_resets.rst_por_n
     lc: rstmgr_resets.rst_lc_n
     sys: rstmgr_resets.rst_sys_n
-    sys_fixed: rstmgr_resets.rst_sys_fixed_n
+    sys_io: rstmgr_resets.rst_sys_io_n
     spi_device: rstmgr_resets.rst_spi_device_n
     usb: rstmgr_resets.rst_usb_n
   }

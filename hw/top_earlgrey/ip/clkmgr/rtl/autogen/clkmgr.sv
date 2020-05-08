@@ -15,15 +15,20 @@
 
 
 module clkmgr import clkmgr_pkg::*; (
-  // Primary module clocks
+  // Primary module control clocks and resets
+  // This drives the register interface
   input clk_i,
   input rst_ni,
+
+  // System clocks and resets
+  // These are the source clocks for the system
   input clk_main_i,
   input rst_main_ni,
-  input clk_fixed_i,
-  input rst_fixed_ni,
-  input clk_usb_48mhz_i,
-  input rst_usb_48mhz_ni,
+  input clk_io_i,
+  input rst_io_ni,
+  input clk_usb_i,
+  input rst_usb_ni,
+  input clk_aon_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -74,10 +79,10 @@ module clkmgr import clkmgr_pkg::*; (
   logic roots_en_q2, roots_en_q1, roots_en_d;
   logic clk_main_root;
   logic clk_main_en;
-  logic clk_fixed_root;
-  logic clk_fixed_en;
-  logic clk_usb_48mhz_root;
-  logic clk_usb_48mhz_en;
+  logic clk_io_root;
+  logic clk_io_en;
+  logic clk_usb_root;
+  logic clk_usb_en;
 
   prim_clock_gating_sync i_main_cg (
     .clk_i(clk_main_i),
@@ -87,28 +92,28 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
-  prim_clock_gating_sync i_fixed_cg (
-    .clk_i(clk_fixed_i),
-    .rst_ni(rst_fixed_ni),
+  prim_clock_gating_sync i_io_cg (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
     .test_en_i(dft_i.test_en),
     .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_fixed_en),
-    .clk_o(clk_fixed_root)
+    .en_o(clk_io_en),
+    .clk_o(clk_io_root)
   );
-  prim_clock_gating_sync i_usb_48mhz_cg (
-    .clk_i(clk_usb_48mhz_i),
-    .rst_ni(rst_usb_48mhz_ni),
+  prim_clock_gating_sync i_usb_cg (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usb_ni),
     .test_en_i(dft_i.test_en),
     .async_en_i(pwr_i.ip_clk_en),
-    .en_o(clk_usb_48mhz_en),
-    .clk_o(clk_usb_48mhz_root)
+    .en_o(clk_usb_en),
+    .clk_o(clk_usb_root)
   );
 
   // an async OR of all the synchronized enables
   assign async_roots_en =
     clk_main_en |
-    clk_fixed_en |
-    clk_usb_48mhz_en;
+    clk_io_en |
+    clk_usb_en;
 
   // Sync the OR back into clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
@@ -141,10 +146,10 @@ module clkmgr import clkmgr_pkg::*; (
   // Clocks with only root gate
   ////////////////////////////////////////////////////
   assign clocks_o.clk_main_infra = clk_main_root;
-  assign clocks_o.clk_fixed_infra = clk_fixed_root;
-  assign clocks_o.clk_fixed_secure = clk_fixed_root;
+  assign clocks_o.clk_io_infra = clk_io_root;
+  assign clocks_o.clk_io_secure = clk_io_root;
   assign clocks_o.clk_main_secure = clk_main_root;
-  assign clocks_o.clk_fixed_timers = clk_fixed_root;
+  assign clocks_o.clk_io_timers = clk_io_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
   ////////////////////////////////////////////////////
@@ -154,39 +159,39 @@ module clkmgr import clkmgr_pkg::*; (
   // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
   // if the clkmgr is always on, can use por synced directly
   // if not, then need to generate something ahead of lc/sys
-  logic clk_fixed_peri_sw_en;
-  logic clk_usb_48mhz_peri_sw_en;
+  logic clk_io_peri_sw_en;
+  logic clk_usb_peri_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_fixed_peri_sw_en_sync (
-    .clk_i(clk_fixed_i),
-    .rst_ni(rst_fixed_ni),
-    .d(reg2hw.clk_enables.clk_fixed_peri_en.q),
-    .q(clk_fixed_peri_sw_en)
+  ) i_clk_io_peri_sw_en_sync (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d(reg2hw.clk_enables.clk_io_peri_en.q),
+    .q(clk_io_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_fixed_peri_cg (
-    .clk_i(clk_fixed_i),
-    .en_i(clk_fixed_peri_sw_en & clk_fixed_en),
+  prim_clock_gating i_clk_io_peri_cg (
+    .clk_i(clk_io_i),
+    .en_i(clk_io_peri_sw_en & clk_io_en),
     .test_en_i(dft_i.test_en),
-    .clk_o(clocks_o.clk_fixed_peri)
+    .clk_o(clocks_o.clk_io_peri)
   );
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_usb_48mhz_peri_sw_en_sync (
-    .clk_i(clk_usb_48mhz_i),
-    .rst_ni(rst_usb_48mhz_ni),
-    .d(reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
-    .q(clk_usb_48mhz_peri_sw_en)
+  ) i_clk_usb_peri_sw_en_sync (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .d(reg2hw.clk_enables.clk_usb_peri_en.q),
+    .q(clk_usb_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_usb_48mhz_peri_cg (
-    .clk_i(clk_usb_48mhz_i),
-    .en_i(clk_usb_48mhz_peri_sw_en & clk_usb_48mhz_en),
+  prim_clock_gating i_clk_usb_peri_cg (
+    .clk_i(clk_usb_i),
+    .en_i(clk_usb_peri_sw_en & clk_usb_en),
     .test_en_i(dft_i.test_en),
-    .clk_o(clocks_o.clk_usb_48mhz_peri)
+    .clk_o(clocks_o.clk_usb_peri)
   );
 
 

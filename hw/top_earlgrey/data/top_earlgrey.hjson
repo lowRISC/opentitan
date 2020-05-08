@@ -20,10 +20,17 @@
       ext: "",               // ext is a port of the clock name
     },
 
+    // Clock Source attributes
+    // name: Name of group.
+    // aon:  Whether the clock is free running all the time.
+    //       If it is, the clock is not hanlded by clkmgr.
+    // freq: Absolute frequency of clk in Hz
+
     srcs: [
-      { name: "main",      freq: "100000000" }
-      { name: "fixed",     freq: "100000000" }
-      { name: "usb_48mhz", freq: "48000000" }
+      { name: "main", aon: "no",  freq: "100000000" }
+      { name: "io",   aon: "no",  freq: "100000000" }
+      { name: "usb",  aon: "no",  freq: "48000000" }
+      { name: "aon",  aon: "yes", freq: "200000" }
     ],
 
     // Clock Group attributes
@@ -44,7 +51,7 @@
     // "no"   - the group is controlled as one single unit
     //
     // The powerup and proc groups are unique.
-    // The powerup group of clocks do not need through the clock
+    // The powerup group of clocks do not feed through the clock
     // controller as they manage clock controller behavior
     // The proc group is not peripheral, and direclty hardwired
 
@@ -80,11 +87,11 @@
   //
   resets: [
     { name: "rst_ni",     type: "por" }
-    { name: "por",        type: "gen",  root: "lc",  clk: "fixed" }
-    { name: "lc",         type: "gen",  root: "lc",  clk: "fixed" }
-    { name: "sys",        type: "gen",  root: "sys", clk: "main"  }
-    { name: "sys_fixed",  type: "gen",  root: "sys", clk: "fixed" }
-    { name: "spi_device", type: "gen",  root: "sys", clk: "fixed", sw: 1}
+    { name: "por",        type: "gen",  root: "lc",  clk: "io" }
+    { name: "lc",         type: "gen",  root: "lc",  clk: "io" }
+    { name: "sys",        type: "gen",  root: "sys", clk: "main"}
+    { name: "sys_io",     type: "gen",  root: "sys", clk: "io" }
+    { name: "spi_device", type: "gen",  root: "sys", clk: "io", sw: 1}
     { name: "usb",        type: "gen",  root: "sys", clk: "usb",   sw: 1}
   ]
 
@@ -102,26 +109,26 @@
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
 
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
 
       base_addr: "0x40000000",
     },
     { name: "gpio",
       type: "gpio",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x40010000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40020000",
@@ -135,9 +142,9 @@
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x40080000",
     },
     { name: "aes",
@@ -195,7 +202,7 @@
     }
     { name: "pwrmgr",
       type: "pwrmgr",
-      clock_srcs: {clk_i: "fixed", clk_slow_i: "fixed"},
+      clock_srcs: {clk_i: "io", clk_slow_i: "io"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por", rst_slow_ni: "por"},
       base_addr: "0x400A0000",
@@ -203,16 +210,16 @@
     },
     { name: "rstmgr",
       type: "rstmgr",
-      clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_i: "usb_48mhz"},
+      clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
     },
     { name: "clkmgr",
       type: "clkmgr",
-      clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_48mhz_i: "usb_48mhz"},
+      clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por", rst_main_ni: "por", rst_fixed_ni: "por", rst_usb_48mhz_ni: "por"},
+      reset_connections: {rst_ni: "por", rst_main_ni: "por", rst_io_ni: "por", rst_usb_ni: "por"},
       base_addr: "0x400C0000",
       generated: "true"
     },
@@ -227,9 +234,9 @@
     }
     { name: "usbdev",
       type: "usbdev",
-      clock_srcs: {clk_i: "fixed", clk_usb_48mhz_i: "usb_48mhz"},
+      clock_srcs: {clk_i: "io", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_fixed", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
   ]
@@ -300,16 +307,16 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock_srcs: {clk_main_i: "main", clk_fixed_i: "fixed"},
+      clock_srcs: {clk_main_i: "main", clk_fixed_i: "io"},
       clock_group: "infra",
       reset: "sys",
-      reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_fixed"}
+      reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_io"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "fixed"},
+      clock_srcs: {clk_peri_i: "io"},
       clock_group: "infra",
-      reset: "sys_fixed",
-      reset_connections: {rst_peri_ni: "sys_fixed"},
+      reset: "sys_io",
+      reset_connections: {rst_peri_ni: "sys_io"},
     }
   ],
 
