@@ -57,4 +57,9 @@ extern const uint64_t kClockFreqHz;
  */
 extern const uint64_t kUartBaudrate;
 
+/**
+ * The number of pages of the embedded flash (per bank)
+ */
+extern const uint16_t kFlashPagesPerBank;
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_

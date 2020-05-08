@@ -13,3 +13,5 @@ const device_type_t kDeviceType = kDeviceSimVerilator;
 const uint64_t kClockFreqHz = 500 * 1000;  // 500kHz
 
 const uint64_t kUartBaudrate = 9600;
+
+const uint16_t kFlashPagesPerBank = 256;

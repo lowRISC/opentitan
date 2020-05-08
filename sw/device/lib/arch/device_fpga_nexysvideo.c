@@ -13,3 +13,5 @@ const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
 const uint64_t kClockFreqHz = 50 * 1000 * 1000;  // 50MHz
 
 const uint64_t kUartBaudrate = 230400;
+
+const uint16_t kFlashPagesPerBank = 256;
