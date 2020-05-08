@@ -18,11 +18,22 @@ riscv_linker_args = [
 ]
 
 # RISC-V startup library. Every RISC-V executable should depend on this target.
+#
+# The crt defines the interrupt vector, so requires definitions for all the
+# declarations in `sw/device/lib/handler.h`.
 riscv_crt = declare_dependency(
   link_args: riscv_linker_args,
-  # This is included as a source, not as a static library, so that the .crt
-  # section is picked up correctly.
-  sources: ['flash_crt.S'],
+  # The following assembly files need to be included as a source, not a
+  # static library, so that their custom sections can be picked up when
+  # linking.
+  sources: [
+    # This contains the contents of the `.crt` section which does the initial
+    # setup before jumping to `main`.
+    'flash_crt.S',
+    # This contains the interrupt vector definition, as used by the crt to
+    # initialize mtvec.
+    'ibex_interrupt_vectors.S',
+  ],
   dependencies: [
     freestanding_headers,
     sw_lib_mem,

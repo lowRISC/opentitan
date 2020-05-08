@@ -6,11 +6,12 @@
  * Flash executable runtime initialization code.
  */
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section 
+  // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated space in ROM by the linker.
   .section .crt, "ax"
 
   .extern main
+  .extern crt_interrupt_vector
 
 /**
  * Callable entry point for flash.
@@ -33,7 +34,7 @@ _start:
   .option pop
 
   // Set up the new interrupt vector.
-  la   t0, _vectors_start
+  la   t0, crt_interrupt_vector
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
