@@ -14,7 +14,7 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
 
   // large number of num_trans to make sure covers all alerts and escalation pings
   constraint num_trans_c {
-    num_trans inside {[4000:100_000]};
+    num_trans inside {[4_000:100_000]};
   }
 
   // increase the possibility to enable more alerts, because alert_handler only sends ping on
@@ -23,7 +23,6 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
     alert_en dist {'b1111 := 9, [0:'b1110] := 1};
   }
 
-  // temp constraint, should take off when support ping_int_err
   constraint sig_int_c {
     esc_int_err == 0;
   }
@@ -33,8 +32,8 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
   }
 
   function void pre_randomize();
+    this.enable_one_alert_c.constraint_mode(0);
     this.enable_classa_only_c.constraint_mode(0);
-    // set verbosity high to avoid printing out too much information
     verbosity = UVM_HIGH;
   endfunction
 

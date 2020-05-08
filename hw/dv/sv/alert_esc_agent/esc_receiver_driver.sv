@@ -73,8 +73,12 @@ class esc_receiver_driver extends alert_esc_base_driver;
             cfg.vif.wait_esc();
             @(cfg.vif.receiver_cb);
             while (cfg.vif.get_esc() === 1'b1) toggle_resp_signal(req);
-            if (is_ping) toggle_resp_signal(req);
-            is_ping = 0;
+            if (is_ping) begin
+              int toggle_cycle = 1;
+              if (req.int_err) toggle_cycle = $urandom_range(0, cfg.ping_timeout_cycle);
+              repeat (toggle_cycle) toggle_resp_signal(req);
+              is_ping = 0;
+            end
             if (req.int_err) cfg.vif.reset_resp();
           end
           `uvm_info(`gfn,

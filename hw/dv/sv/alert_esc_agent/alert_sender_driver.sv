@@ -103,7 +103,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task reset_alert_pins(int ack_delay);
     fork
       begin : alert_timeout
-        repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+        repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
       end
       begin : wait_alert_handshake
         cfg.vif.wait_ack();

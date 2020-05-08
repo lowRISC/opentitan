@@ -188,6 +188,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
+  virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
+    csr_wr(.csr(ral.ping_timeout_cyc), .value(timeout_val));
+    foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;
+    foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].ping_timeout_cycle = timeout_val;
+  endtask
+
   // This sequence will automatically response to all escalation ping and esc responses
   virtual task run_esc_rsp_seq_nonblocking(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs = '0);
     foreach (cfg.esc_device_cfg[i]) begin

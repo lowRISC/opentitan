@@ -25,6 +25,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit do_esc_intr_timeout;
   rand bit do_lock_config;
   rand bit rand_drive_entropy;
+  rand bit [TL_DW-1:0] ping_timeout_cyc;
   rand bit [TL_DW-1:0] max_phase_cyc;
   rand bit [TL_DW-1:0] intr_timeout_cyc [NUM_ALERT_HANDLER_CLASSES];
   rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_HANDLER_CLASSES];
@@ -49,6 +50,10 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   constraint max_phase_cyc_c {
     max_phase_cyc inside {[0:1_000]};
+  }
+
+  constraint ping_timeout_cyc_c {
+    ping_timeout_cyc inside {[0:100]};
   }
 
   constraint enable_classa_only_c {
@@ -104,6 +109,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
           wr_class_accum_threshold(accum_thresh);
+          wr_ping_timeout_cycle(ping_timeout_cyc);
 
           //drive entropy
           cfg.entropy_vif.drive(rand_drive_entropy);
@@ -149,6 +155,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           read_alert_cause();
           read_esc_status();
           if (do_clr_esc) clear_esc();
+          check_alert_interrupts();
         end // end for loop
         disable fork; // disable non-blocking seqs for stress_all tests
       end // end fork
