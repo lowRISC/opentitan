@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module clkgen_xil7series (
+module clkgen_xil7series # (
+  // Add BUFG if not done by downstream logic
+  parameter bit AddClkBuf = 1
+) (
   input IO_CLK,
   input IO_RST_N,
   output clk_sys,
@@ -72,15 +75,21 @@ module clkgen_xil7series (
     .O (clk_fb_buf)
   );
 
-  BUFG clk_50_bufg (
-    .I (clk_50_unbuf),
-    .O (clk_50_buf)
-  );
+  if (AddClkBuf == 1) begin : gen_clk_bufs
+    BUFG clk_50_bufg (
+      .I (clk_50_unbuf),
+      .O (clk_50_buf)
+    );
 
-  BUFG clk_48_bufg (
-    .I (clk_48_unbuf),
-    .O (clk_48_buf)
-  );
+    BUFG clk_48_bufg (
+      .I (clk_48_unbuf),
+      .O (clk_48_buf)
+    );
+  end else begin : gen_no_clk_bufs
+    // BUFGs added by downstream modules, no need to add here
+    assign clk_50_buf = clk_50_unbuf;
+    assign clk_48_buf = clk_48_unbuf;
+  end
 
   // outputs
   // clock
