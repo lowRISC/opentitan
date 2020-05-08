@@ -7,7 +7,6 @@
   name: "aes",
   clock_primary: "clk_i",
   bus_device: "tlul",
-
   # Note: All parameters are local, they are not actually configurable.
   # Selecting values different from the default values below might cause undefined behavior.
   param_list: [
@@ -30,7 +29,6 @@
       local:   "true"
     }
   ],
-
   inter_signal_list: [
     { name:    "keymgr_key",
       type:    "uni",
@@ -48,7 +46,11 @@
       width:   "1"
     },*/
   ],
-
+  alert_list: [
+    { name: "ctrl_err",
+      desc: "This alert is triggered upon detecting an error in the Control Register",
+    }
+  ],
   regwidth: "32",
   registers: [
 ##############################################################################
