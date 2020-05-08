@@ -1,7 +1,7 @@
 From 75061e3a20f7c4e1a4768ea3f455e106efec7b19 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
-Subject: [PATCH 2/5] Add OpenTitan target
+Subject: [PATCH 2/6] Add OpenTitan target
 
 ---
  riscv-target/opentitan/README.md              | 144 ++++++++++++++++++
@@ -534,5 +534,5 @@ index 0000000..aef6a23
 +  // jump to the handler from the OT library
 +  j _vectors_start
 -- 
-2.17.1
+2.26.0
 

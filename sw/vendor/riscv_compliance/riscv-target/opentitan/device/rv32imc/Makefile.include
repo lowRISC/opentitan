@@ -67,7 +67,7 @@ COMPILE_TARGET += \
 		$(DEFINES) -T$(LDSCRIPT) $$< \
                 $(OPENTITAN)/main.c \
                 $(OPENTITAN)/run_rvc_test.S \
-							  $(OT_ROOT)/sw/device/lib/irq_vectors.S \
+							  $(OT_ROOT)/sw/device/exts/common/ibex_interrupt_vectors.S \
 								$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
                 -L$(OT_BIN)/sw/device/riscv_compliance_support \
 								-l$(COMPLIANCE_LIB) \

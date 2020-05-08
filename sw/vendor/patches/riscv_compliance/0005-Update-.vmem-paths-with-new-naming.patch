@@ -1,7 +1,7 @@
 From 00161b024ca6169e0750750da136a8c1e4b0c3a5 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Mon, 20 Apr 2020 13:41:51 +0100
-Subject: [PATCH 5/5] Update .vmem paths with new naming
+Subject: [PATCH 5/6] Update .vmem paths with new naming
 
 ---
  riscv-target/opentitan/device/rv32imc/Makefile.include | 6 +++---
@@ -29,5 +29,5 @@ index 5ba548a..e1be9d8 100644
 -        srec_cat $$(@).bin -binary -offset 0x0000 -byte-swap 4 -o $$(@).vmem -vmem
 +        srec_cat $$(@).bin -binary -offset 0x0000 -byte-swap 4 -o $$(@).32.vmem -vmem
 -- 
-2.17.1
+2.26.0
 
