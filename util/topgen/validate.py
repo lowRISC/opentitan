@@ -91,7 +91,7 @@ padctrl_added = {}
 
 clock_srcs_required = {
     'name': ['s', 'name of clock group'],
-    'aon':  ['s', 'yes, no. aon attribute of a clock'],
+    'aon': ['s', 'yes, no. aon attribute of a clock'],
     'freq': ['s', 'frequency of clock in Hz'],
 }
 
@@ -188,7 +188,7 @@ def check_clock_groups(top):
             error += 1
 
         # Check combination of src and sw are valid
-        if group['src'] =='yes' and group['sw_cg'] != 'no':
+        if group['src'] == 'yes' and group['sw_cg'] != 'no':
             log.error("Invalid combination of src and sw_cg: {} and {}".format(
                 group['src'], group['sw_cg']))
             error += 1
