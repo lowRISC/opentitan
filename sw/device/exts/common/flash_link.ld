@@ -57,13 +57,10 @@ SECTIONS {
   } > flash
 
   /**
-   * Ibex interrupt vector. See sw/device/lib/irq_vectors.S for more information.
-   *
-   * The 256-byte alignment is required by Ibex's vectoring mechanism.
+   * Ibex interrupt vectors. See 'ibex_interrupt_vectors.S' for more
+   * information.
    */
-  .vectors : ALIGN(0x100) {
-    _vectors_start = .;
-    KEEP(*(.vectors))
+  .vectors : {
     *(.vectors)
   } > flash
 

@@ -38,6 +38,7 @@ tock_local = get_option('tock_local')
 optimize_size_args = [
   '-Os', # General "Optimize for Size" Option
   '-fvisibility=hidden', # Hide symbols by default
+  '-Wa,--no-pad-sections', # Don't pad assembly sections
 ]
 
 # The following flags are applied to *all* builds, both cross builds
