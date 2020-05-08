@@ -34,6 +34,21 @@
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"]
 
+  // Override the default vcs_cov_hier flag to supply chip specific coverage hierarchies.
+  overrides: [
+    {
+      name: vcs_cov_hier
+      value: "-cm_hier {tool_srcs_dir}/chip_cover.cfg"
+    }
+  ]
+
+  // Set the vcs_cov_assert_hier to supply the chip specific assertion coverage hierarchies.
+  vcs_cov_assert_hier: "-cm_assert_hier {tool_srcs_dir}/chip_assert_cover.cfg"
+
+  // Add these to tool_srcs so that they get copied over.
+  tool_srcs: ["{proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg",
+              "{proj_root}/hw/top_earlgrey/dv/cov/chip_assert_cover.cfg"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
 
