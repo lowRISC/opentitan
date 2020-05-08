@@ -12,7 +12,8 @@
   other_clock_list: [
     "clk_main_i",
     "clk_io_i",
-    "clk_usb_i"
+    "clk_usb_i",
+    "clk_aon_i"
   ],
   bus_device: "tlul",
   regwidth: "32",

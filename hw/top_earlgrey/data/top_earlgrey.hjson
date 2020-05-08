@@ -75,24 +75,30 @@
 
   // Reset attributes
   // name: name of reset.
-  // If type is "gen", then real name is `name`_rst_n
-  // If type is "por", then real name is just `name`
   //
-  // root: The parent reset.
-  // If type is "por", there is no root, since it is the root
+  // type: the reset type [ext, top]
+  // ext: the reset is coming in from the ports, external to earlgrey
+  // top: the reset is coming from top level, the rstmgr output struct
+  //
+  // root: The parent reset
+  // If type is "ext", there is no root, since it is external
   //
   // clk:  related clock domain for synchronous release
   // If type is "por", there is not related clock, since it is
   // likely external or generated from a voltage comparator
   //
   resets: [
-    { name: "rst_ni",     type: "por" }
-    { name: "por",        type: "gen",  root: "lc",  clk: "io" }
-    { name: "lc",         type: "gen",  root: "lc",  clk: "io" }
-    { name: "sys",        type: "gen",  root: "sys", clk: "main"}
-    { name: "sys_io",     type: "gen",  root: "sys", clk: "io" }
-    { name: "spi_device", type: "gen",  root: "sys", clk: "io", sw: 1}
-    { name: "usb",        type: "gen",  root: "sys", clk: "usb",   sw: 1}
+    { name: "rst_ni",     type: "ext"                                      }
+    { name: "por_aon",    type: "top",  root: "rst_ni",  clk: "aon"        }
+    { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
+    { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
+    { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
+    { name: "lc",         type: "top",  root: "lc",      clk: "io"         }
+    { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
+    { name: "sys_io",     type: "top",  root: "sys",     clk: "io"         }
+    { name: "sys_aon",    type: "top",  root: "sys",     clk: "io"         }
+    { name: "spi_device", type: "top",  root: "sys",     clk: "io",  sw: 1 }
+    { name: "usb",        type: "top",  root: "sys",     clk: "usb", sw: 1 }
   ]
 
   // Number of cores: used in rv_plic and timer
@@ -202,15 +208,15 @@
     }
     { name: "pwrmgr",
       type: "pwrmgr",
-      clock_srcs: {clk_i: "io", clk_slow_i: "io"},
+      clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por", rst_slow_ni: "por"},
+      reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
       base_addr: "0x400A0000",
 
     },
     { name: "rstmgr",
       type: "rstmgr",
-      clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
@@ -219,7 +225,7 @@
       type: "clkmgr",
       clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por", rst_main_ni: "por", rst_io_ni: "por", rst_usb_ni: "por"},
+      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"},
       base_addr: "0x400C0000",
       generated: "true"
     },

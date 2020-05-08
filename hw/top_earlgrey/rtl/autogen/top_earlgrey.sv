@@ -701,9 +701,9 @@ module top_earlgrey #(
       .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
 
       .clk_i (clk_io_i),
-      .clk_slow_i (clk_io_i),
+      .clk_slow_i (clk_aon_i),
       .rst_ni (rstmgr_resets.rst_por_n),
-      .rst_slow_ni (rstmgr_resets.rst_por_n)
+      .rst_slow_ni (rstmgr_resets.rst_por_aon_n)
   );
 
   rstmgr u_rstmgr (
@@ -719,6 +719,7 @@ module top_earlgrey #(
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
 
       .clk_i (clk_io_i),
+      .clk_aon_i (clk_aon_i),
       .clk_main_i (clk_i),
       .clk_io_i (clk_io_i),
       .clk_usb_i (clk_usb_i),
@@ -741,10 +742,10 @@ module top_earlgrey #(
       .clk_io_i (clk_io_i),
       .clk_usb_i (clk_usb_i),
       .clk_aon_i (clk_aon_i),
-      .rst_ni (rstmgr_resets.rst_por_n),
+      .rst_ni (rstmgr_resets.rst_por_io_n),
       .rst_main_ni (rstmgr_resets.rst_por_n),
-      .rst_io_ni (rstmgr_resets.rst_por_n),
-      .rst_usb_ni (rstmgr_resets.rst_por_n)
+      .rst_io_ni (rstmgr_resets.rst_por_io_n),
+      .rst_usb_ni (rstmgr_resets.rst_por_usb_n)
   );
 
   nmi_gen u_nmi_gen (

@@ -184,6 +184,7 @@ module top_earlgrey_asic (
     .rst_ni          ( rst_n         ),
     .clk_io_i        ( clk           ),
     .clk_usb_i       ( clk_usb_48mhz ),
+    .clk_aon_i       ( clk           ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),
