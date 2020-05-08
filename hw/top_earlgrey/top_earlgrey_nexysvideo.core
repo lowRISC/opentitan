@@ -44,6 +44,12 @@ parameters:
     datatype: str
     paramtype: vlogdefine
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  # XXX: This allows us to set the define used for flash configuration
+  # Long term this replication should actually not be necessary:
+  # https://github.com/olofk/fusesoc/issues/401
+  FLASH_PAGES_PER_BANK:
+    datatype: int
+    paramtype: vlogdefine
 
 targets:
   synth:
@@ -56,6 +62,7 @@ targets:
     parameters:
       - ROM_INIT_FILE
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+      - FLASH_PAGES_PER_BANK
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video

@@ -8,10 +8,10 @@
 package flash_ctrl_pkg;
 
   // parameters for flash macro properties
-  localparam int NumBanks        = top_pkg::FLASH_BANKS;
-  localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK;
-  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE;
-  localparam int BytesPerWord    = top_pkg::FLASH_BYTES_PER_WORD;
+  localparam int NumBanks        = 2;
+  localparam int PagesPerBank    = `FLASH_PAGES_PER_BANK;
+  localparam int WordsPerPage    = 256;
+  localparam int BytesPerWord    = 4;
   localparam int BankW           = $clog2(NumBanks);
   localparam int PageW           = $clog2(PagesPerBank);
   localparam int WordW           = $clog2(WordsPerPage);

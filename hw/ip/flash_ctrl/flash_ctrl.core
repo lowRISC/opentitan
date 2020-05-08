@@ -56,6 +56,11 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+  FLASH_PAGES_PER_BANK:
+    datatype: int
+    paramtype: vlogdefine
+    description: Number of pages per embedded flash bank, set to tune the flash size.
+    default: 256
 
 
 targets:
