@@ -62,10 +62,6 @@
   build_opts: [// Use generic implementations of prim modules.
                "+define+PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric"]
 
-  // Add default run opts.
-  run_opts: [// TODO: temp fix for C based tests.
-             "+disable_assert_final_checks"]
-
   // Add build modes.
   build_modes: [
     {

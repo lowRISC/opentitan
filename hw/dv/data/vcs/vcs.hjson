@@ -33,6 +33,12 @@
   run_opts:   ["-licqueue",
                "-ucli -do {tool_srcs_dir}/vcs_{dump}.tcl",
                "+ntb_random_seed={seed}",
+               // Disable the display of the SystemVerilog assert and cover statement summary
+               // at the end of simulation. This summary is list of assertions that started but
+               // did not finish because the simulation terminated, or assertions that did not
+               // fire at all. The latter is analyzed anyway in the collected coverage. Neither
+               // of these is useful in regular simulations.
+               "-assert nopostproc",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
@@ -141,9 +147,7 @@
                    // Don't output cm.log which can be quite large
                    "-cm_log /dev/null",
                    // Provide a name to the coverage collected for this test
-                   "-cm_name {cov_db_test_dir_name}",
-                   // Don't dump all the coverage assertion attempts at the end of simulation
-                   "-assert nopostproc"]
+                   "-cm_name {cov_db_test_dir_name}"]
     }
     {
       name: vcs_xprop
