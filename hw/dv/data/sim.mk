@@ -85,6 +85,7 @@ endif
 
 endif
 
+
 simulate: sw_build
 	@echo "[make]: simulate"
 	cd ${run_dir} && ${run_cmd} ${run_opts}

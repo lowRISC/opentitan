@@ -72,7 +72,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
     // initialize the sw_image names and log file names
     foreach (sw_types[i]) begin
-      sw_images[sw_types[i]] = {sw_types[i], ".32.vmem"};
+      sw_images[sw_types[i]] = $sformatf("%0s.%0d.vmem", sw_types[i], sw_image_widths[i]);
     end
   endfunction
 
