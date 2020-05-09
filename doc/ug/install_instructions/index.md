@@ -287,6 +287,10 @@ ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idPro
 
 # Future Technology Devices International, Ltd FT232 Serial (UART) IC
 ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666"
+
+# Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
+# e.g., FT232 Breakout board from Adafruit
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666"
 ```
 
 You then need to reload the udev rules:

@@ -36,6 +36,12 @@ $ ./meson_init.sh
 $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 ```
 
+Similarly, you can build the bootrom for the Arty S7 board:
+
+```console
+$ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_artys7
+```
+
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
 
 ```console
@@ -46,15 +52,41 @@ $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 $ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
 
-The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
+Alternatively, synthesize for the Arty S7-50 board:
+
+```console
+$ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_artys7-50
+```
+
+The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` or `build/lowrisc_systems_top_earlgrey_artys7-50_0.1/synth-vivado/lowrisc_systems_top_earlgrey_artys7-50_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
-## Connecting the board
+## Connecting the board: Nexys Video
 
 * Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
 * Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
 * After connecting the UART, use `dmesg` to determine which serial port was assigned. It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
 * Ensure that you have sufficient access permissions to the device, check `ls -l /dev/ttyUSB*`. The udev rules given in the Vivado installation instructions ensure this.
+
+## Connecting the board: Arty S7
+
+First, connect a Micro USB cable to connect the PC with the Arty S7 board.
+
+Unfortunately, the Arty S7 board does not have a second on-board FTDI chip.
+Hence you need a separate FT232H board, in the following we use the [Adafruit FT232H Breakout board](https://www.adafruit.com/product/2264).
+Connect the FT232 board to PMOD A like described in the following table:
+
+|PMOD Pin|FTDI232H Pin|Function|
+|---|---|---|
+| Pin 7 | D0 | IO_JTCK|
+| Pin 8 | D1 | IO_JTDI|
+| Pin 1 | D2 |IO_JTDO|
+| Pin 10 | D3 | IO_JTMS|
+| Pin 2 | D7 | Bootstrap=1|
+| Pin 4 | D6 | JTAG=0, SPI=1|
+| Pin 3 | D5 | IO_JSRST_N|
+
+It is important that the udev rule for the devices from the installation instructions sets the right permissions.
 
 ## Flash the bitstream onto the FPGA
 
