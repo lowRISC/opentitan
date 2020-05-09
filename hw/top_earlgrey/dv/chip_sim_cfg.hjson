@@ -31,6 +31,7 @@
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
                 // Common CIP test lists
+                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"]
 
@@ -79,11 +80,17 @@
       name: stub_cpu
       run_opts: ["+stub_cpu=1"]
     }
-
     {
-      // Append stub cpu mode to mem_tests_mode
+      // Append stub cpu mode to csr_tests_mode, run with 20 reseeds.
+      name: csr_tests_mode
+      en_run_modes: ["stub_cpu"]
+      reseed: 20
+    }
+    {
+      // Append stub cpu mode to mem_tests_mode, run with 20 reseeds.
       name: mem_tests_mode
       en_run_modes: ["stub_cpu"]
+      reseed: 20
     }
   ]
 
@@ -134,54 +141,10 @@
                  "+sw_test_timeout_ns=20000000"]
     }
 
-    // TODO: CSR suite of tests. Rather than reuse the common one, we are
-    // replicating here since we dont want CSR tests added to the sanity just yet.
-    {
-      name: chip_csr_hw_reset
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+csr_hw_reset"]
-      en_run_modes: ["stub_cpu"]
-    }
-
-    {
-      name: chip_csr_rw
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+csr_rw"]
-      en_run_modes: ["stub_cpu"]
-    }
-
-    {
-      name: chip_csr_bit_bash
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+csr_bit_bash"]
-      en_run_modes: ["stub_cpu"]
-    }
-
-    {
-      name: chip_csr_aliasing
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+csr_aliasing"]
-      en_run_modes: ["stub_cpu"]
-    }
-
-    {
-      name: "chip_same_csr_outstanding"
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+run_same_csr_outstanding"]
-      en_run_modes: ["stub_cpu"]
-    }
-
-    {
-      name: "chip_csr_mem_rw_with_rand_reset"
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+en_scb=0", "+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000"]
-      en_run_modes: ["stub_cpu"]
-    }
-
+    // The test below is added in the included tl_access_tests.hjson.
+    // We just need to append the stub_cpu run mode to it.
     {
       name: chip_tl_errors
-      uvm_test_seq: chip_common_vseq
-      run_opts: ["+run_tl_errors"]
       en_run_modes: ["stub_cpu"]
     }
   ]
@@ -190,16 +153,7 @@
   regressions: [
     {
       name: sanity
-      tests: ["chip_sanity",
-              "chip_csr_hw_reset",
-              "chip_csr_rw"]
-    }
-    {
-      name: sw_access
-      tests: ["chip_csr_hw_reset",
-              "chip_csr_rw",
-              "chip_csr_bit_bash",
-              "chip_csr_aliasing"]
+      tests: ["chip_sanity"]
     }
   ]
 }
