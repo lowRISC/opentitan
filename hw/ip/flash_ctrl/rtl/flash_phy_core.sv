@@ -180,6 +180,25 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // program pipeline
   ////////////////////////
 
+  // Below code is temporary and does not account for scrambling
+  logic [DataWidth-1:0] prog_data;
+
+  if (WidthMultiple == 1) begin : gen_single_prog_data
+    assign prog_data = prog_data_i;
+  end else begin : gen_prog_data
+    logic [WidthMultiple-1:0][BusWidth-1:0] prog_data_packed;
+
+    always_comb begin
+      prog_data_packed = {DataWidth{1'b1}};
+      for (int i = 0; i < WidthMultiple; i++) begin
+        if (addr_i[0 +: WordSelW] == i) begin
+          prog_data_packed[i] = prog_data_i;
+        end
+      end
+    end
+
+    assign prog_data = prog_data_packed;
+  end
 
   ////////////////////////
   // scrambling / de-scrambling primitive
@@ -187,14 +206,15 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
 
   ////////////////////////
-  // Actual read to flash phy
+  // Actual connection to flash phy
   ////////////////////////
 
-
   // The actual flash macro wrapper
+  // The size of a page is fixed.  However, depending on the sizing of the word,
+  // the number of words within a page will change.
   prim_flash #(
     .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage),
+    .WordsPerPage(WordsPerPage / WidthMultiple),
     .DataWidth(DataWidth),
     .SkipInit(SkipInit)
   ) i_flash (
@@ -205,8 +225,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
     //.addr_i(muxed_addr[0 +: PageW + WordW]),
-    .addr_i(muxed_addr),
-    .prog_data_i(prog_data_i),
+    .addr_i(muxed_addr[BankAddrW-1:LsbAddrBit]),
+    .prog_data_i(prog_data),
     .ack_o(ack),
     .rd_data_o(flash_rdata),
     .init_busy_o // TBD this needs to be looked at later. What init do we need to do,
@@ -219,6 +239,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   // requests to flash must always be one hot
   `ASSERT(OneHotReqs_A, $onehot0(reqs))
-
+  `ASSERT_INIT(NoRemainder_A, AddrBitsRemain == 0)
+  `ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
 
 endmodule // flash_phy_core
