@@ -65,7 +65,7 @@ ifneq (${sw_test},)
 
 ifeq (${sw_test_is_prebuilt},1)
 	# Copy over the sw test image and related sources to the run_dir.
-	cp ${proj_root}/${sw_test}.32.vmem ${run_dir}/sw.32.vmem
+	cp ${proj_root}/${sw_test}.64.vmem ${run_dir}/sw.64.vmem
 	# Optionally, assume that ${sw_test}_logs.txt exists and copy over to the run_dir.
 	# Ignore copy error if it actually doesn't exist. Likewise for ${sw_test}_rodata.txt.
 	-cp ${proj_root}/${sw_test}_logs.txt ${run_dir}/sw_logs.txt
@@ -81,12 +81,12 @@ else
 		-f .logs.fields -r .rodata \
 		-n "sw" -o "${run_dir}"
 	# Copy over the sw test image to the run_dir.
-	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.32.vmem \
-		${run_dir}/sw.32.vmem
-
+	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.64.vmem \
+		${run_dir}/sw.64.vmem
 endif
 
 endif
+
 
 simulate: sw_build
 	@echo "[make]: simulate"

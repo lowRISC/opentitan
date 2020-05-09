@@ -25,7 +25,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   input [BankAddrW-1:0] addr_i,
   output logic rdy_o,
   output logic data_valid_o,
-  output logic [DataWidth-1:0] data_o,
+  output logic [BusWidth-1:0] data_o,
   output logic idle_o, // the entire read pipeline is idle
 
   // interface to actual flash primitive
@@ -109,7 +109,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // do not attempt to generate match unless the transaction is relevant
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
     assign buf_match[i] = req_i & (buf_valid[i] | buf_wip[i]) &
-                          read_buf[i].addr == addr_i;
+                          read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit];
 
     // A data hazard should never happen to a wip buffer because it implies
     // that a read is in progress, so a hazard operation cannot start.
@@ -118,8 +118,8 @@ module flash_phy_rd import flash_phy_pkg::*; (
     // If program, only if it's the same flash word.
     assign data_hazard[i] = buf_valid[i] &
                             (bk_erase_i |
-                            (prog_i & read_buf[i].addr == addr_i) |
-                            (pg_erase_i & read_buf[i].addr[WordW +: PageW] ==
+                            (prog_i & read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) |
+                            (pg_erase_i & read_buf[i].addr[FlashWordsW +: PageW] ==
                             addr_i[WordW +: PageW]));
 
   end
@@ -140,7 +140,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .alloc_i(rdy_o & alloc[i]),
       .update_i(update[i]),
       .wipe_i(data_hazard[i]),
-      .addr_i(addr_i),
+      .addr_i(addr_i[BankAddrW-1:LsbAddrBit]),
       .data_i(data_i),
       .out_o(read_buf[i])
     );
@@ -170,14 +170,19 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic rd_busy;
   logic rd_done;
   logic [NumBuf-1:0] alloc_q;
-  logic unused_word_sel; // this is temporary
 
   assign rd_done = rd_busy & ack_i;
 
   // if buffer allocated, that is the return source
   // if buffer matched, that is the return source
   assign rsp_fifo_wdata.buf_sel = |alloc ? buf_alloc : buf_match;
-  assign rsp_fifo_wdata.word_sel = 1'b1; // TODO - fix later
+
+  // If width is the same, word_sel is unused
+  if (WidthMultiple == 1) begin : gen_single_word_sel
+    assign rsp_fifo_wdata.word_sel = '0;
+  end else begin : gen_word_sel
+    assign rsp_fifo_wdata.word_sel = addr_i[0 +: LsbAddrBit];
+  end
 
   // response order FIFO
   prim_fifo_sync #(
@@ -196,8 +201,6 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .rready (data_valid_o), // pop when a match has been found
     .rdata  (rsp_fifo_rdata)
   );
-
-  assign unused_word_sel = rsp_fifo_rdata.word_sel;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -259,8 +262,22 @@ module flash_phy_rd import flash_phy_pkg::*; (
     end
   end
 
+  if (WidthMultiple == 1) begin : gen_width_one_rd
+    // When multiple is 1, just pass the read through directly
+    logic unused_word_sel;
+    assign data_o = |buf_rsp_match ? buf_rsp_data : data_i;
+    assign unused_word_sel = rsp_fifo_rdata.word_sel;
+
+  end else begin : gen_rd
+    // Re-arrange data into packed array to pick the correct one
+    logic [WidthMultiple-1:0][BusWidth-1:0] bus_words_packed;
+    assign bus_words_packed = |buf_rsp_match ? buf_rsp_data : data_i;
+    assign data_o = bus_words_packed[rsp_fifo_rdata.word_sel];
+
+  end
+
   assign data_valid_o = flash_rsp_match | |buf_rsp_match;
-  assign data_o = |buf_rsp_match ? buf_rsp_data : data_i;
+
 
   // the entire read pipeline is idle when there are no responses to return
   assign idle_o = ~rsp_fifo_vld;

@@ -17,7 +17,7 @@ package flash_ctrl_pkg;
   localparam int WordW           = $clog2(WordsPerPage);
   localparam int AddrW           = BankW + PageW + WordW; // all flash range
   localparam int BankAddrW       = PageW + WordW;         // 1 bank of flash range
-  localparam int DataWidth       = BytesPerWord * 8;
+  localparam int DataWidth       = 64;
   localparam int FlashTotalPages = NumBanks * PagesPerBank;
   localparam int AllPagesW       = BankW + PageW;
 

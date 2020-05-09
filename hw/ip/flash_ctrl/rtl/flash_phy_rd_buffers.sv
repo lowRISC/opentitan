@@ -25,7 +25,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
   input alloc_i,
   input update_i,
   input wipe_i,
-  input [BankAddrW-1:0] addr_i,
+  input [PrimFlashAddrW-1:0] addr_i,
   input [DataWidth-1:0] data_i,
   output rd_buf_t out_o
 );
