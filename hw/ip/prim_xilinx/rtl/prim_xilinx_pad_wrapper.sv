@@ -26,13 +26,15 @@ module prim_xilinx_pad_wrapper #(
   assign in_o     = inv ^ in;
 
   // virtual open drain emulation
-  logic oe, out;
+  logic oe_n, out;
   assign out      = out_i ^ inv;
-  assign oe       = oe_i & ((od & ~out) | ~od);
+  // oe_n = 0: enable driver
+  // oe_n = 1: disable driver
+  assign oe_n     = ~oe_i | (out & od);
 
   // driver
   IOBUF i_iobuf (
-    .T(oe),
+    .T(oe_n),
     .I(out),
     .O(in),
     .IO(inout_io)
