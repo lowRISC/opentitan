@@ -46,6 +46,11 @@ parameters:
     description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
 
 targets:
+  default: &default_target
+    filesets:
+      - files_rtl_nexysvideo
+    toplevel: top_earlgrey_nexysvideo
+
   synth:
     default_tool: vivado
     filesets:
@@ -59,3 +64,12 @@ targets:
     tools:
       vivado:
         part: "xc7a200tsbg484-1" # Nexys Video
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

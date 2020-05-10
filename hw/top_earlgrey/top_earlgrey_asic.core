@@ -18,3 +18,13 @@ targets:
   default: &default_target
     filesets:
       - files_rtl
+    toplevel: top_earlgrey_asic
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
