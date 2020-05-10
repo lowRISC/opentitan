@@ -18,6 +18,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [NUM_LOCAL_ALERT-1:0]           local_alert_en;
   rand bit [NUM_LOCAL_ALERT*2-1:0]         local_alert_class_map;
   rand bit [alert_pkg::N_ESC_SEV-1:0]      esc_int_err;
+  rand bit [alert_pkg::N_ESC_SEV-1:0]      esc_standalone_int_err;
 
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
@@ -29,6 +30,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [TL_DW-1:0] accum_thresh     [NUM_ALERT_HANDLER_CLASSES];
 
   int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
+  int max_intr_timeout_cyc;
 
   uvm_verbosity verbosity = UVM_LOW;
 
@@ -64,13 +66,15 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   constraint sig_int_c {
-    alert_int_err == 0;
-    esc_int_err   == 0;
+    alert_int_err          == 0;
+    esc_int_err            == 0;
+    esc_standalone_int_err == 0;
   }
 
   task body();
     fork
       begin : isolation_fork
+        bit config_locked;
         `DV_CHECK_RANDOMIZE_FATAL(this)
         run_esc_rsp_seq_nonblocking(esc_int_err);
         run_alert_ping_rsp_seq_nonblocking();
@@ -95,11 +99,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
           // randomly write phase cycle registers
           // always set phase_cycle for the first iteration, in order to pass stress_all test
-          if (do_wr_phases_cyc || i == 1) begin
-            wr_phases_cycle(max_phase_cyc);
-            max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
-                                   max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
-          end
+          if (do_wr_phases_cyc || i == 1) wr_phases_cycle(max_phase_cyc);
 
           // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
@@ -111,15 +111,23 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           // when all configuration registers are set, write lock register
           lock_config(do_lock_config);
 
+          if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
           // drive alert
           drive_alert(alert_trigger, alert_int_err);
 
-          if (do_esc_intr_timeout) begin
+          // if config is not locked, update max_intr_timeout and max_wait_phases cycles
+          if (!config_locked) begin
             int max_intr_timeout_cyc;
             foreach (intr_timeout_cyc[i]) begin
               max_intr_timeout_cyc = (max_intr_timeout_cyc > intr_timeout_cyc[i]) ?
                                       max_intr_timeout_cyc : intr_timeout_cyc[i];
             end
+            max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
+                                   max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
+            if (do_lock_config) config_locked = 1;
+          end
+
+          if (do_esc_intr_timeout) begin
             cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
             read_esc_status();
           end

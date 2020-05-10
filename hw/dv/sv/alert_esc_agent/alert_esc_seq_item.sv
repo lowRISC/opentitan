@@ -15,6 +15,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand bit r_alert_ping_send;
   rand bit r_esc_rsp;
   rand bit int_err;
+  rand bit standalone_int_err;
   rand bit timeout;
   rand alert_sig_int_err_e alert_int_err_type;
 
@@ -58,6 +59,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
     `uvm_field_int (r_alert_ping_send, UVM_DEFAULT)
     `uvm_field_int (r_esc_rsp,         UVM_DEFAULT)
     `uvm_field_int (int_err,           UVM_DEFAULT)
+    `uvm_field_int (standalone_int_err,UVM_DEFAULT)
     `uvm_field_int (timeout,           UVM_DEFAULT)
     `uvm_field_int (ping_delay,        UVM_DEFAULT)
     `uvm_field_int (ack_delay,         UVM_DEFAULT)
