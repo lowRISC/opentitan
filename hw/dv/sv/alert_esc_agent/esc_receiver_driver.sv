@@ -55,24 +55,27 @@ class esc_receiver_driver extends alert_esc_base_driver;
               $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
               req.r_esc_rsp, req.int_err), UVM_HIGH)
 
-          if (req.int_err) begin
-            repeat ($urandom_range(10, 1000)) @(cfg.vif.receiver_cb);
-            repeat (req.int_err_cyc) begin
-              randcase
-                1: cfg.vif.set_resp();
-                1: cfg.vif.reset_resp();
-                1: cfg.vif.set_resp_both_high();
-                1: cfg.vif.set_resp_both_low();
-              endcase
-              @(cfg.vif.receiver_cb);
+          if (req.standalone_int_err) begin
+            cfg.vif.wait_esc_complete();
+            if (!is_ping) begin
+              repeat (req.int_err_cyc) begin
+                if (cfg.vif.esc_tx.esc_p === 1'b0 && !is_ping) begin
+                  random_drive_resp_signal();
+                  @(cfg.vif.receiver_cb);
+                end else begin
+                  break;
+                end
+              end
+              // TODO: missed int_err case at cycle when first cycle of the esc_p set
+              if (!is_ping) cfg.vif.reset_resp();
             end
-            if (cfg.vif.get_esc() === 1'b0) cfg.vif.reset_resp();
           end else begin
             cfg.vif.wait_esc();
             @(cfg.vif.receiver_cb);
-            while (cfg.vif.get_esc() === 1'b1) toggle_resp_signal();
-            if (is_ping) toggle_resp_signal();
+            while (cfg.vif.get_esc() === 1'b1) toggle_resp_signal(req);
+            if (is_ping) toggle_resp_signal(req);
             is_ping = 0;
+            if (req.int_err) cfg.vif.reset_resp();
           end
           `uvm_info(`gfn,
               $sformatf("finished sending receiver item esc_rsp=%0b int_fail=%0b",
@@ -83,11 +86,23 @@ class esc_receiver_driver extends alert_esc_base_driver;
     end // end forever
   endtask : rsp_escalator
 
-  task toggle_resp_signal();
-    cfg.vif.set_resp();
+  task toggle_resp_signal(alert_esc_seq_item req);
+    if (req.int_err) random_drive_resp_signal();
+    else cfg.vif.set_resp();
     @(cfg.vif.receiver_cb);
-    cfg.vif.reset_resp();
+
+    if (req.int_err) random_drive_resp_signal();
+    else cfg.vif.reset_resp();
     @(cfg.vif.receiver_cb);
   endtask : toggle_resp_signal
+
+  task random_drive_resp_signal();
+    randcase
+      1: cfg.vif.set_resp();
+      1: cfg.vif.reset_resp();
+      1: cfg.vif.set_resp_both_high();
+      1: cfg.vif.set_resp_both_low();
+    endcase
+  endtask
 
 endclass : esc_receiver_driver
