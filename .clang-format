@@ -1,5 +1,29 @@
+# OpenTitan is still using clang-format 3.8, so the documentation for this
+# configuration is here:
+#   https://releases.llvm.org/3.8.1/tools/docs/ClangFormatStyleOptions.html
+
 BasedOnStyle: Google
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 DerivePointerAlignment: false
 PointerAlignment: Right
+
+# Some of our headers in the sw/ tree are auto-generated, and it is useful to
+# keep those with each other, and separate from hand-written headers.
+#
+# This is slightly more confusing as some headers are auto-generated at build
+# time (*_regs.h), and some are auto-generated and checked in to the repo
+# (hw/top_earlgrey/sw/autogen/*.h). These rules cover both occurences.
+#
+# The version of clang-format that we use does not regroup include statements,
+# but this is something we could do in future.
+IncludeCategories:
+- # Generated Register Headers: #include "*_regs.h"
+  Regex: '_regs\.h"$'
+  Priority: 2
+- # Generated System Headers: #include "hw/**/autogen/*.h"
+  Regex: 'autogen'
+  Priority: 2
+- # All Other Headers
+  Regex: '.*'
+  Priority: 1
