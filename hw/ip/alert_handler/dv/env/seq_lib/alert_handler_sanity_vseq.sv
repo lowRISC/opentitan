@@ -10,6 +10,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en;
   rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en;
+  rand bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit_en;
   rand bit [alert_pkg::NAlerts-1:0]        alert_trigger;
   rand bit [alert_pkg::NAlerts-1:0]        alert_int_err;
   rand bit [alert_pkg::NAlerts-1:0]        alert_en;
@@ -35,8 +36,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     do_lock_config dist {1 := 1, 0 := 9};
   }
 
-  constraint clr_en_c {
-    clr_en dist {0 := 8, [1:'b1111] := 2};
+  constraint clr_and_lock_en_c {
+    clr_en      dist {0 := 8, [1:'b1111] := 2};
+    lock_bit_en dist {0 := 8, [1:'b1111] := 2};
   }
 
   constraint enable_one_alert_c {
@@ -88,7 +90,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
                              .loc_alert_class(local_alert_class_map));
 
           // write class_ctrl and clren_reg
-          alert_handler_rand_wr_class_ctrl();
+          alert_handler_rand_wr_class_ctrl(lock_bit_en);
           alert_handler_wr_clren_regs(clr_en);
 
           // randomly write phase cycle registers

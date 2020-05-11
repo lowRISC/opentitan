@@ -57,6 +57,7 @@
     {
       name: alert_handler_random_classes
       uvm_test_seq: alert_handler_random_classes_vseq
+      reseed: 200
     }
 
     {

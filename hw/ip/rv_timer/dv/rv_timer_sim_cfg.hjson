@@ -47,6 +47,7 @@
     {
       name: rv_timer_sanity
       uvm_test_seq: rv_timer_sanity_vseq
+      reseed: 200
     }
 
     {
