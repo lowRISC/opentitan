@@ -16,11 +16,7 @@ GROUP(-lgcc)
  */
 __DYNAMIC = 0;
 
-MEMORY {
-  rom(rx)   : ORIGIN = 0x00008000, LENGTH = 0x4000
-  ram(w)    : ORIGIN = 0x10000000, LENGTH = 0x10000
-  flash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
-}
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /**
  * The boot address, which indicates the location of the initial interrupt
@@ -32,9 +28,9 @@ _boot_address = ORIGIN(rom);
 _test_reserved_size = 0x20;
 _heap_size = 0xe000;
 _stack_size = 0x2000 - _test_reserved_size;
-_stack_start = ORIGIN(ram) + _heap_size + _stack_size;
-_stack_end   = ORIGIN(ram) + _heap_size;
-_flash_start = ORIGIN(flash);
+_stack_start = ORIGIN(ram_main) + _heap_size + _stack_size;
+_stack_end   = ORIGIN(ram_main) + _heap_size;
+_flash_start = ORIGIN(eflash);
 
 /**
  * This symbol points at the header of the flash binary, which contains loading
@@ -105,7 +101,7 @@ SECTIONS {
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
    */
-  .data ORIGIN(ram): AT(_data_init_start) ALIGN(4) {
+  .data ORIGIN(ram_main): AT(_data_init_start) ALIGN(4) {
     _data_start = .;
     __global_pointer$ = . + 2048;
 
@@ -121,7 +117,7 @@ SECTIONS {
     *(.data)
     *(.data.*)
     _data_end = .;
-  } > ram
+  } > ram_main
 
   /**
    * Immutable chip_info data, containing build-time-recorded information.
@@ -143,7 +139,7 @@ SECTIONS {
     *(.bss.*)
     *(COMMON)
     _bss_end = .;
-  } > ram
+  } > ram_main
 
   /**
    * STAB debug table.
