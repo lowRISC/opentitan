@@ -86,12 +86,13 @@ jobs:
         fi
       fi
     # This check is not idempotent, but checks changes to a base branch.
-    # Run it only on pull requests.
+    # Run it only on pull requests. Note that the git diff filter (ACMRTUXB) omits
+    # files that are deleted in a PR, since those break the checker script below.
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
-      changed_files="$(git diff --name-only "$fork_origin")"
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
       if [[ -n "$changed_files" ]]; then
         xargs util/fix_include_guard.py --dry-run <<< "$changed_files" | tee fix-include-guard-output
         if [[ -s fix-include-guard-output ]]; then
