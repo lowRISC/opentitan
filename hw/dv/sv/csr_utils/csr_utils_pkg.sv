@@ -18,6 +18,7 @@ package csr_utils_pkg;
   string     msg_id                      = "csr_utils";
   bit        default_csr_blocking        = 1;
   bit        under_reset                 = 0;
+  int        max_outstanding_accesses    = 100;
 
   // global paramters for number of csr tests (including memory test)
   parameter uint NUM_CSR_TESTS = 4;
@@ -68,6 +69,12 @@ package csr_utils_pkg;
   function automatic void clear_outstanding_access();
     outstanding_accesses = 0;
   endfunction
+
+  // timeout may happen if we issue too many non-blocking accesses at once
+  // limit the nonblocking items to be up to max outstanding
+  task automatic wait_if_max_outstanding_accesses_reached(int max = max_outstanding_accesses);
+    wait(outstanding_accesses <= max);
+  endtask
 
   function automatic void reset_asserted();
     under_reset = 1;

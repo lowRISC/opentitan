@@ -259,6 +259,7 @@ class csr_rw_seq extends csr_base_seq;
                        .compare_vs_ral(1'b1));
         end
       end
+      wait_if_max_outstanding_accesses_reached();
     end
   endtask
 
