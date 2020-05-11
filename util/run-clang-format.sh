@@ -12,8 +12,14 @@ find sw hw \
 
 # Report on missing curly braces for loops and control statements.
 # clang-format cannot fix them for us, so this requires manual work.
+#
+# This does not cope with `do { ... } while (cond)` as used in macros (without
+# the semicolon).
+#
+# This rule does not use the `.clang-format` file so vendor must be excluded.
 braces_missing=$(
     find sw hw \
+        -not \( -path '*/vendor/*' -prune \) \
         \( -name '*.cpp' \
         -o -name '*.cc' \
         -o -name '*.c' \
