@@ -50,11 +50,11 @@ else
     ifeq ($(RISCV_TARGET),riscvOVPsim)
         JOBS ?= -j8 --max-load=4
     endif
-	  ifeq ($(RISCV_TARGET),opentitan)
-			ifeq ($(OT_TARGET),verilator)
-				JOBS ?= -j4
-			endif
-		endif
+    ifeq ($(RISCV_TARGET),opentitan)
+        ifeq ($(OT_TARGET),verilator)
+            JOBS ?= -j4
+        endif
+    endif
 endif
 
 default: $(DEFAULT_TARGET)
