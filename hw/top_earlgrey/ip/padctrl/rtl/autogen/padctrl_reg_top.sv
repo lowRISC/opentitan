@@ -130,6 +130,10 @@ module padctrl_reg_top (
   logic [7:0] dio_pads3_attr13_wd;
   logic dio_pads3_attr13_we;
   logic dio_pads3_attr13_re;
+  logic [7:0] dio_pads3_attr14_qs;
+  logic [7:0] dio_pads3_attr14_wd;
+  logic dio_pads3_attr14_we;
+  logic dio_pads3_attr14_re;
   logic [7:0] mio_pads0_attr0_qs;
   logic [7:0] mio_pads0_attr0_wd;
   logic mio_pads0_attr0_we;
@@ -521,6 +525,22 @@ module padctrl_reg_top (
     .qe     (reg2hw.dio_pads[13].qe),
     .q      (reg2hw.dio_pads[13].q ),
     .qs     (dio_pads3_attr13_qs)
+  );
+
+
+  // F[attr14]: 23:16
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_dio_pads3_attr14 (
+    .re     (dio_pads3_attr14_re),
+    // qualified with register enable
+    .we     (dio_pads3_attr14_we & regen_qs),
+    .wd     (dio_pads3_attr14_wd),
+    .d      (hw2reg.dio_pads[14].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[14].qe),
+    .q      (reg2hw.dio_pads[14].q ),
+    .qs     (dio_pads3_attr14_qs)
   );
 
 
@@ -1162,6 +1182,10 @@ module padctrl_reg_top (
   assign dio_pads3_attr13_wd = reg_wdata[15:8];
   assign dio_pads3_attr13_re = addr_hit[4] && reg_re;
 
+  assign dio_pads3_attr14_we = addr_hit[4] & reg_we & ~wr_err;
+  assign dio_pads3_attr14_wd = reg_wdata[23:16];
+  assign dio_pads3_attr14_re = addr_hit[4] && reg_re;
+
   assign mio_pads0_attr0_we = addr_hit[5] & reg_we & ~wr_err;
   assign mio_pads0_attr0_wd = reg_wdata[7:0];
   assign mio_pads0_attr0_re = addr_hit[5] && reg_re;
@@ -1322,6 +1346,7 @@ module padctrl_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[7:0] = dio_pads3_attr12_qs;
         reg_rdata_next[15:8] = dio_pads3_attr13_qs;
+        reg_rdata_next[23:16] = dio_pads3_attr14_qs;
       end
 
       addr_hit[5]: begin

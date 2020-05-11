@@ -23,7 +23,8 @@ module top_earlgrey_asic (
   inout               IO_USB_DP0,
   inout               IO_USB_DN0,
   inout               IO_USB_SENSE0,
-  inout               IO_USB_PULLUP0,
+  inout               IO_USB_DNPULLUP0,
+  inout               IO_USB_DPPULLUP0,
   // GPIO x 16 interface
   inout               IO_GP0,
   inout               IO_GP1,
@@ -66,9 +67,9 @@ module top_earlgrey_asic (
     // 2: usbdev_d
     // 3: usbdev_suspend
     // 4: usbdev_tx_mode
-    // 6: usbdev_se
-    .ConnectDioIn  ( 14'h3FA3 ),
-    .ConnectDioOut ( 14'h3FA3 )
+    // 7: usbdev_se
+    .ConnectDioIn  ( 15'h7F63 ),
+    .ConnectDioOut ( 15'h7F63 )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( IO_CLK           ),
@@ -108,7 +109,8 @@ module top_earlgrey_asic (
                              IO_UTX,
                              IO_USB_SENSE0,
                              1'bz,    // usbdev_se0
-                             IO_USB_PULLUP0,
+                             IO_USB_DPPULLUP0,
+                             IO_USB_DNPULLUP0,
                              1'bz,    // usbdev_tx_mode
                              1'bz,    // usbdev_suspend
                              1'bz,    // usbdev_d

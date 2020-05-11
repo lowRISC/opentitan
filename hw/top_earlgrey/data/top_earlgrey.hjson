@@ -367,7 +367,7 @@
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
-      { name: "usbdev", pad: ["ChC[0..7]"]},
+      { name: "usbdev", pad: ["ChC[0..8]"]},
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are

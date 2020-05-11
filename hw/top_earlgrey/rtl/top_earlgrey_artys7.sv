@@ -22,7 +22,8 @@ module top_earlgrey_artys7 (
   inout               IO_USB_DP0,
   inout               IO_USB_DN0,
   inout               IO_USB_SENSE0,
-  inout               IO_USB_PULLUP0,
+  inout               IO_USB_DNPULLUP0,
+  inout               IO_USB_DPPULLUP0,
   // GPIO x 16 interface
   inout               IO_GP0,
   inout               IO_GP1,
@@ -65,10 +66,10 @@ module top_earlgrey_artys7 (
     // 2: usbdev_d
     // 3: usbdev_suspend
     // 4: usbdev_tx_mode
-    // 6: usbdev_se
-    // 10-13: SPI / JTAG
-    .ConnectDioIn  ( 14'h03A3 ),
-    .ConnectDioOut ( 14'h03A3 )
+    // 7: usbdev_se
+    // 11-14: SPI / JTAG
+    .ConnectDioIn  ( 15'h0763 ),
+    .ConnectDioOut ( 15'h0763 )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( 1'b0 ),
@@ -101,7 +102,8 @@ module top_earlgrey_artys7 (
                              IO_UTX,
                              IO_USB_SENSE0,
                              1'bz,    // usbdev_se0
-                             IO_USB_PULLUP0,
+                             IO_USB_DPPULLUP0,
+                             IO_USB_DNPULLUP0,
                              1'bz,    // usbdev_tx_mode
                              1'bz,    // usbdev_suspend
                              1'bz,    // usbdev_d

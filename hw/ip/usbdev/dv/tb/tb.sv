@@ -63,8 +63,10 @@ module tb;
 
     .cio_se0_o            (),
     .cio_se0_en_o         (),
-    .cio_pullup_o         (),
-    .cio_pullup_en_o      (),
+    .cio_dp_pullup_o      (),
+    .cio_dp_pullup_en_o   (),
+    .cio_dn_pullup_o      (),
+    .cio_dn_pullup_en_o   (),
     .cio_tx_mode_se_o     (),
     .cio_tx_mode_se_en_o  (),
     .cio_suspend_o        (),
