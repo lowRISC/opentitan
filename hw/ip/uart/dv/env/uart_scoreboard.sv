@@ -273,7 +273,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           // recalculate watermark when RXILVL/TXILVL is updated
           predict_rx_watermark_intr();
           fork begin
-            cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
+            if (txrst_val) cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
             predict_tx_watermark_intr();
           end join_none
         end // write && channel == AddrChannel
