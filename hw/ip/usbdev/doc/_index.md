@@ -21,6 +21,7 @@ The IP block implements the following features:
 - Support for Bulk, Control, Interrupt and Isochronous endpoints and transactions
 - Streaming possible through software
 - Interrupts for packet reception and transmission
+- Flippable D+/D- pins, configurable via software, useful if it helps routing the PCB or if D+/D- are mapped to SBU1/SBU2 pins of USB-C
 
 Isochronous transfers larger than 64 bytes are currently not supported.
 This feature might be added in a later version of this IP.
@@ -111,11 +112,11 @@ The following table summarizes how the different input signals relate to the USB
 
 The USB device features the following non-data pins.
 
-|  External Pins | Internal Signals | Notes |
-|----------------|------------------|-------|
-| sense (VBUS)   | sense_i          | The sense pin indicates the presence of VBUS from the USB host. |
-| [pullup]       | pullup_o         | When the pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used. |
-| [suspend]      | suspend_o        | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
+|  External Pins | Internal Signals         | Notes |
+|----------------|--------------------------|-------|
+| sense (VBUS)   | sense_i                  | The sense pin indicates the presence of VBUS from the USB host. |
+| [pullup]       | dp_pullup_o, dn_pullup_o | When dp_pullup_o or dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in {{< regref "phy_config" >}}. Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, dp_pullup_o is used. |
+| [suspend]      | suspend_o                | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
 
 The USB host will identify itself to the device by enabling the 5V VBUS power.
 It may do a hard reset of a port by removing and reasserting VBUS (the Linux driver will do this when it finds a port in an inconsistent state or a port that generates errors during enumeration).
@@ -124,10 +125,16 @@ This pin is always an input and should be externally connected to detect the sta
 Note that this may require a resistor divider or (for USB-C where VBUS can be up to 20V) active level translation to an acceptable voltage for the input pin.
 
 A Full-Speed device identifies itself by providing a 1.5k pullup resistor (to 3.3V) on the D+ line.
-The IP block produces a signal `pullup_o` that is asserted when this resistor should be presented.
+The IP block produces a signal `dp_pullup_o` that is asserted when this resistor should be presented.
 This signal will be asserted whenever the interface is enabled.
 In an FPGA implementation, this signal can drive a 3.3V output pin that is driven high when the signal is asserted and set high impedance when the signal is deasserted, and the output pin used to drive a 1.5k resistor connected on the board to the D+ line.
 Alternatively, it can be used to enable an internal 1.5k pullup on the D+ pin.
+
+This USB device supports the flipping of D+/D-.
+If the `pinflip` bit in {{< regref "phy_config" >}} is set, the data pins are flipped internally, meaning the 1.5k pullup resistor needs to be on the external D- line.
+To control the pullup on the D- line, this USB device features `dn_pullup_o` signal.
+Of the two pullup signals `dp_pullup_o` and `dn_pullup_o`, only one can be enabled at any time.
+As this is a Full-Speed device, `dp_pullup_o`, i.e., the pullup on D+ is used by default (`pinflip` equals zero).
 
 
 ## Hardware Interfaces

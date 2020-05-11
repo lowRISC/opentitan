@@ -55,11 +55,11 @@ set_property -dict { PACKAGE_PIN H13   IOSTANDARD LVCMOS33 } [get_ports { IO_GP3
 ## PMOD Header JB
 set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP0 }]; #IO_L9P_T1_DQS_14 Sch=jb_p[1]
 set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN0 }]; #IO_L9N_T1_DQS_D13_14 Sch=jb_n[1]
-set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_PULLUP0 }]; #IO_L10P_T1_D14_14 Sch=jb_p[2]
+set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #IO_L10P_T1_D14_14 Sch=jb_p[2]
 set_property -dict { PACKAGE_PIN T18   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #IO_L10N_T1_D15_14 Sch=jb_n[2]
 #set_property -dict { PACKAGE_PIN P14   IOSTANDARD LVCMOS33 } [get_ports { jb[4] }]; #IO_L11P_T1_SRCC_14 Sch=jb_p[3]
 #set_property -dict { PACKAGE_PIN P15   IOSTANDARD LVCMOS33 } [get_ports { jb[5] }]; #IO_L11N_T1_SRCC_14 Sch=jb_n[3]
-#set_property -dict { PACKAGE_PIN N15   IOSTANDARD LVCMOS33 } [get_ports { jb[6] }]; #IO_L12P_T1_MRCC_14 Sch=jb_p[4]
+set_property -dict { PACKAGE_PIN N15   IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #IO_L12P_T1_MRCC_14 Sch=jb_p[4]
 #set_property -dict { PACKAGE_PIN P16   IOSTANDARD LVCMOS33 } [get_ports { jb[7] }]; #IO_L12N_T1_MRCC_14 Sch=jb_n[4]
 
 ## PMOD Header JC

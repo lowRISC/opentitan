@@ -34,8 +34,10 @@ module usbdev (
   input  logic       cio_sense_i,
   output logic       cio_se0_o,
   output logic       cio_se0_en_o,
-  output logic       cio_pullup_o,
-  output logic       cio_pullup_en_o,
+  output logic       cio_dp_pullup_o,
+  output logic       cio_dp_pullup_en_o,
+  output logic       cio_dn_pullup_o,
+  output logic       cio_dn_pullup_en_o,
   output logic       cio_suspend_o,
   output logic       cio_suspend_en_o,
   output logic       cio_tx_mode_se_o,
@@ -864,8 +866,9 @@ module usbdev (
     .rst_ni                 (rst_ni),
     .clk_usb_48mhz_i        (clk_usb_48mhz_i),
     .rst_usb_48mhz_ni       (rst_usb_48mhz_ni),
-    .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode),
-    .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode),
+    .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode.q),
+    .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode.q),
+    .pinflip_i              (reg2hw.phy_config.pinflip.q),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
@@ -880,7 +883,8 @@ module usbdev (
     .cio_usb_oe_o           (cio_oe),
     .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
     .cio_usb_sense_i        (cio_sense_i),
-    .cio_usb_pullup_en_o    (cio_pullup_en_o),
+    .cio_usb_dp_pullup_en_o (cio_dp_pullup_en_o),
+    .cio_usb_dn_pullup_en_o (cio_dn_pullup_en_o),
     .cio_usb_suspend_o      (cio_suspend_o),
 
     // Internal interface
@@ -909,6 +913,7 @@ module usbdev (
   assign cio_tx_mode_se_en_o = 1'b1;
 
   // Pullup
-  assign cio_pullup_o        = 1'b1;
+  assign cio_dp_pullup_o     = 1'b1;
+  assign cio_dn_pullup_o     = 1'b1;
 
 endmodule

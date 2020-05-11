@@ -7,7 +7,7 @@
 package padctrl_reg_pkg;
 
   // Param list
-  parameter int NDioPads = 14;
+  parameter int NDioPads = 15;
   parameter int NMioPads = 32;
   parameter int AttrDw = 8;
 
@@ -38,7 +38,7 @@ package padctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    padctrl_reg2hw_dio_pads_mreg_t [13:0] dio_pads; // [413:288]
+    padctrl_reg2hw_dio_pads_mreg_t [14:0] dio_pads; // [422:288]
     padctrl_reg2hw_mio_pads_mreg_t [31:0] mio_pads; // [287:0]
   } padctrl_reg2hw_t;
 
@@ -46,7 +46,7 @@ package padctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    padctrl_hw2reg_dio_pads_mreg_t [13:0] dio_pads; // [367:256]
+    padctrl_hw2reg_dio_pads_mreg_t [14:0] dio_pads; // [375:256]
     padctrl_hw2reg_mio_pads_mreg_t [31:0] mio_pads; // [255:0]
   } padctrl_hw2reg_t;
 
@@ -89,7 +89,7 @@ package padctrl_reg_pkg;
     4'b 1111, // index[ 1] PADCTRL_DIO_PADS0
     4'b 1111, // index[ 2] PADCTRL_DIO_PADS1
     4'b 1111, // index[ 3] PADCTRL_DIO_PADS2
-    4'b 0011, // index[ 4] PADCTRL_DIO_PADS3
+    4'b 0111, // index[ 4] PADCTRL_DIO_PADS3
     4'b 1111, // index[ 5] PADCTRL_MIO_PADS0
     4'b 1111, // index[ 6] PADCTRL_MIO_PADS1
     4'b 1111, // index[ 7] PADCTRL_MIO_PADS2

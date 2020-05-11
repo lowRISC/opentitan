@@ -418,6 +418,10 @@ module pinmux_reg_top (
   logic [1:0] dio_out_sleep_val_out13_wd;
   logic dio_out_sleep_val_out13_we;
   logic dio_out_sleep_val_out13_re;
+  logic [1:0] dio_out_sleep_val_out14_qs;
+  logic [1:0] dio_out_sleep_val_out14_wd;
+  logic dio_out_sleep_val_out14_we;
+  logic dio_out_sleep_val_out14_re;
   logic wkup_detector_en_en0_qs;
   logic wkup_detector_en_en0_wd;
   logic wkup_detector_en_en0_we;
@@ -3401,6 +3405,22 @@ module pinmux_reg_top (
   );
 
 
+  // F[out14]: 29:28
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_out_sleep_val_out14 (
+    .re     (dio_out_sleep_val_out14_re),
+    // qualified with register enable
+    .we     (dio_out_sleep_val_out14_we & regen_qs),
+    .wd     (dio_out_sleep_val_out14_wd),
+    .d      (hw2reg.dio_out_sleep_val[14].d),
+    .qre    (),
+    .qe     (reg2hw.dio_out_sleep_val[14].qe),
+    .q      (reg2hw.dio_out_sleep_val[14].q ),
+    .qs     (dio_out_sleep_val_out14_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg wkup_detector_en
@@ -5255,6 +5275,10 @@ module pinmux_reg_top (
   assign dio_out_sleep_val_out13_wd = reg_wdata[27:26];
   assign dio_out_sleep_val_out13_re = addr_hit[17] && reg_re;
 
+  assign dio_out_sleep_val_out14_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out14_wd = reg_wdata[29:28];
+  assign dio_out_sleep_val_out14_re = addr_hit[17] && reg_re;
+
   assign wkup_detector_en_en0_we = addr_hit[18] & reg_we & ~wr_err;
   assign wkup_detector_en_en0_wd = reg_wdata[0];
 
@@ -5598,6 +5622,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:22] = dio_out_sleep_val_out11_qs;
         reg_rdata_next[25:24] = dio_out_sleep_val_out12_qs;
         reg_rdata_next[27:26] = dio_out_sleep_val_out13_qs;
+        reg_rdata_next[29:28] = dio_out_sleep_val_out14_qs;
       end
 
       addr_hit[18]: begin

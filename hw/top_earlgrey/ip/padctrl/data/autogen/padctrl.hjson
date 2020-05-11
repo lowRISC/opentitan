@@ -25,7 +25,7 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "14",
+      default: "15",
       local: "true"
     },
     { name: "NMioPads",

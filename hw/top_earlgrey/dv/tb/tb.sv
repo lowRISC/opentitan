@@ -37,7 +37,7 @@ module tb;
   wire bootstrap;
   wire [7:0] io_dps;
 
-  wire usb_dp0, usb_dn0, usb_sense0, usb_pullup0;
+  wire usb_dp0, usb_dn0, usb_sense0, usb_dppullup0, usb_dnpullup0;
 
   wire uart_rx, uart_tx;
 
@@ -85,7 +85,8 @@ module tb;
     .IO_USB_DP0       (usb_dp0),
     .IO_USB_DN0       (usb_dn0),
     .IO_USB_SENSE0    (usb_sense0),
-    .IO_USB_PULLUP0   (usb_pullup0),
+    .IO_USB_DNPULLUP0 (usb_dppullup0),
+    .IO_USB_DPPULLUP0 (usb_dnpullup0),
 
     // GPIO x 16 interface
     .IO_GP0           (gpio_pins[0 ]),

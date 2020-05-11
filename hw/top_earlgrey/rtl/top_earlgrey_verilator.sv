@@ -20,9 +20,10 @@ module top_earlgrey_verilator (
 
   logic cio_usbdev_sense_p2d;
   logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
-  logic cio_usbdev_pullup_d2p, cio_usbdev_pullup_en_d2p;
+  logic cio_usbdev_dp_pullup_d2p, cio_usbdev_dp_pullup_en_d2p;
+  logic cio_usbdev_dn_pullup_d2p, cio_usbdev_dn_pullup_en_d2p;
   logic cio_usbdev_tx_mode_se_d2p, cio_usbdev_tx_mode_se_en_d2p;
-  logic cio_usbdev_supsend_d2p, cio_usbdev_supsend_en_d2p;
+  logic cio_usbdev_suspend_d2p, cio_usbdev_suspend_en_d2p;
   logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
@@ -30,9 +31,9 @@ module top_earlgrey_verilator (
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // TODO: instantiate padring and route these signals through that module
-  logic [13:0] dio_in;
-  logic [13:0] dio_out;
-  logic [13:0] dio_oe;
+  logic [14:0] dio_in;
+  logic [14:0] dio_out;
+  logic [14:0] dio_oe;
 
   assign dio_in = {cio_spi_device_sck_p2d,
                    cio_spi_device_csb_p2d,
@@ -41,6 +42,7 @@ module top_earlgrey_verilator (
                    cio_uart_rx_p2d,
                    1'b0,
                    cio_usbdev_sense_p2d,
+                   1'b0,
                    1'b0,
                    1'b0,
                    1'b0,
@@ -54,20 +56,22 @@ module top_earlgrey_verilator (
   assign cio_usbdev_d_d2p  = dio_out[2];
   assign cio_usbdev_suspend_d2p = dio_out[3];
   assign cio_usbdev_tx_mode_se_d2p = dio_out[4];
-  assign cio_usbdev_pullup_d2p = dio_out[5];
-  assign cio_usbdev_se0_d2p = dio_out[6];
-  assign cio_uart_tx_d2p = dio_out[8];
-  assign cio_spi_device_miso_d2p = dio_out[10];
+  assign cio_usbdev_dn_pullup_d2p = dio_out[5];
+  assign cio_usbdev_dp_pullup_d2p = dio_out[6];
+  assign cio_usbdev_se0_d2p = dio_out[7];
+  assign cio_uart_tx_d2p = dio_out[9];
+  assign cio_spi_device_miso_d2p = dio_out[11];
 
   assign cio_usbdev_dn_en_d2p = dio_oe[0];
   assign cio_usbdev_dp_en_d2p = dio_oe[1];
   assign cio_usbdev_d_en_d2p  = dio_oe[2];
   assign cio_usbdev_suspend_en_d2p = dio_oe[3];
   assign cio_usbdev_tx_mode_se_en_d2p = dio_oe[4];
-  assign cio_usbdev_pullup_en_d2p = dio_oe[5];
-  assign cio_usbdev_se0_en_d2p = dio_oe[6];
-  assign cio_uart_tx_en_d2p = dio_oe[8];
-  assign cio_spi_device_miso_en_d2p = dio_oe[10];
+  assign cio_usbdev_dn_pullup_en_d2p = dio_oe[5];
+  assign cio_usbdev_dp_pullup_en_d2p = dio_oe[6];
+  assign cio_usbdev_se0_en_d2p = dio_oe[7];
+  assign cio_uart_tx_en_d2p = dio_oe[9];
+  assign cio_spi_device_miso_en_d2p = dio_oe[11];
 
   // Top-level design
   top_earlgrey top_earlgrey (
@@ -172,8 +176,8 @@ module top_earlgrey_verilator (
     .rst_ni        (rst_ni),
     .clk_48MHz_i   (clk_i),
     .sense_p2d     (cio_usbdev_sense_p2d),
-    .pullup_d2p    (cio_usbdev_pullup_d2p),
-    .pullup_en_d2p (cio_usbdev_pullup_en_d2p),
+    .pullup_d2p    (cio_usbdev_dp_pullup_d2p),
+    .pullup_en_d2p (cio_usbdev_dp_pullup_en_d2p),
     .dp_p2d        (cio_usbdev_dp_p2d),
     .dp_d2p        (cio_usbdev_dp_d2p),
     .dp_en_d2p     (cio_usbdev_dp_en_d2p),
@@ -184,11 +188,14 @@ module top_earlgrey_verilator (
 
   // Tie off unused signals.
   logic unused_cio_usbdev_se0_d2p, unused_cio_usbdev_se0_en_d2p;
+  logic unused_cio_usbdev_dn_pullup_d2p, unused_cio_usbdev_dn_pullup_en_d2p;
   logic unused_cio_usbdev_tx_mode_se_d2p, unused_cio_usbdev_tx_mode_se_en_d2p;
-  logic unused_cio_usbdev_supsend_d2p, unused_cio_usbdev_supsend_en_d2p;
+  logic unused_cio_usbdev_suspend_d2p, unused_cio_usbdev_suspend_en_d2p;
   logic unused_cio_usbdev_d_d2p, unused_cio_usbdev_d_en_d2p;
   assign unused_cio_usbdev_se0_d2p = cio_usbdev_se0_d2p;
   assign unused_cio_usbdev_se0_en_d2p = cio_usbdev_se0_en_d2p;
+  assign unused_cio_usbdev_dn_pullup_d2p = cio_usbdev_dn_pullup_d2p;
+  assign unused_cio_usbdev_dn_pullup_en_d2p = cio_usbdev_dn_pullup_en_d2p;
   assign unused_cio_usbdev_tx_mode_se_d2p = cio_usbdev_tx_mode_se_d2p;
   assign unused_cio_usbdev_tx_mode_se_en_d2p = cio_usbdev_tx_mode_se_en_d2p;
   assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;

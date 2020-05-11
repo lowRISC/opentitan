@@ -1368,7 +1368,12 @@
           type: output
         }
         {
-          name: pullup
+          name: dp_pullup
+          width: 1
+          type: output
+        }
+        {
+          name: dn_pullup
           width: 1
           type: output
         }
@@ -2916,7 +2921,7 @@
         name: usbdev
         pad:
         [
-          ChC[0..7]
+          ChC[0..8]
         ]
       }
     ]
@@ -3039,7 +3044,7 @@
         ]
       }
       {
-        name: usbdev_pullup
+        name: usbdev_dp_pullup
         width: 1
         type: output
         module_name: usbdev
@@ -3052,7 +3057,7 @@
         ]
       }
       {
-        name: usbdev_tx_mode_se
+        name: usbdev_dn_pullup
         width: 1
         type: output
         module_name: usbdev
@@ -3065,7 +3070,7 @@
         ]
       }
       {
-        name: usbdev_suspend
+        name: usbdev_tx_mode_se
         width: 1
         type: output
         module_name: usbdev
@@ -3078,9 +3083,9 @@
         ]
       }
       {
-        name: usbdev_d
+        name: usbdev_suspend
         width: 1
-        type: inout
+        type: output
         module_name: usbdev
         pad:
         [
@@ -3091,7 +3096,7 @@
         ]
       }
       {
-        name: usbdev_dp
+        name: usbdev_d
         width: 1
         type: inout
         module_name: usbdev
@@ -3104,7 +3109,7 @@
         ]
       }
       {
-        name: usbdev_dn
+        name: usbdev_dp
         width: 1
         type: inout
         module_name: usbdev
@@ -3113,6 +3118,19 @@
           {
             name: ChC
             index: 7
+          }
+        ]
+      }
+      {
+        name: usbdev_dn
+        width: 1
+        type: inout
+        module_name: usbdev
+        pad:
+        [
+          {
+            name: ChC
+            index: 8
           }
         ]
       }

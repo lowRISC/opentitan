@@ -18,7 +18,8 @@
   ],
   available_output_list: [
     { name: "se0", desc: "USB single-ended zero link state" }
-    { name: "pullup", desc: "USB pullup control" }
+    { name: "dp_pullup", desc: "USB D+ pullup control" }
+    { name: "dn_pullup", desc: "USB D- pullup control" }
     { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
     { name: "suspend", desc: "USB link suspend state" }
   ],
@@ -517,6 +518,16 @@
           name: "override_pwr_sense_val",
           desc: '''
                 0: USB power not present, 1: present.
+                '''
+        }
+        {
+          bits: "5",
+          resval: "0",
+          name: "pinflip",
+          desc: '''
+                Flip the D+/D- pins.
+                Particularly useful if D+/D- are mapped to SBU1/SBU2 pins of USB-C.
+
                 '''
         }
       ]

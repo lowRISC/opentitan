@@ -55,12 +55,14 @@ set_input_delay ${IN_DEL} [get_ports dio_usbdev_sense_i]       -clock ${USB_CLK_
 set_input_delay ${IN_DEL} [get_ports dio_usbdev_dp_i]          -clock ${USB_CLK_PIN}
 set_input_delay ${IN_DEL} [get_ports dio_usbdev_dn_i]          -clock ${USB_CLK_PIN}
 
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_pullup_o]    -clock ${USB_CLK_PIN}
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_pullup_en_o] -clock ${USB_CLK_PIN}
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_o]        -clock ${USB_CLK_PIN}
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_en_o]     -clock ${USB_CLK_PIN}
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_o]        -clock ${USB_CLK_PIN}
-set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_en_o]     -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_pullup_o]    -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_pullup_en_o] -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_pullup_o]    -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_pullup_en_o] -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_o]           -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dp_en_o]        -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_o]           -clock ${USB_CLK_PIN}
+set_output_delay ${OUT_DEL} [get_ports dio_usbdev_dn_en_o]        -clock ${USB_CLK_PIN}
 
 #####################
 # JTAG clock        #
