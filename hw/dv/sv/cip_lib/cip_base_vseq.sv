@@ -44,6 +44,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `include "cip_base_vseq__tl_errors.svh"
 
   task pre_start();
+    csr_utils_pkg::max_outstanding_accesses = 1 << TL_AIW;
     super.pre_start();
     extract_common_csrs();
   endtask
@@ -461,11 +462,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // test partial mem read with non-blocking random read/write
   virtual task run_mem_partial_access_vseq(int num_times);
       int  num_words;
-      uint max_nonblocking_items;
-
-      // timeout may happen if we issue too many non-blocking accesses at the beginning
-      // limit the nonblocking items to be up to 2 times of max outstanding that TLUL supports
-      max_nonblocking_items = 1 << (TL_AIW + 1);
 
       foreach (cfg.mem_ranges[i]) begin
         if (get_mem_access_by_addr(ral, cfg.mem_ranges[i].start_addr) != "RO") begin
@@ -526,7 +522,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         join_none
         #0; // for outstanding_accesses to be updated
-        wait(csr_utils_pkg::outstanding_accesses <= max_nonblocking_items);
+        wait_if_max_outstanding_accesses_reached();
       end
   endtask
 
