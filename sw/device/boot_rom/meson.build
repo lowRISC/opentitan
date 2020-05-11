@@ -17,8 +17,15 @@ chip_info_h = declare_dependency(
 )
 
 # ROM linker parameters.
+#
+# See sw/device/exts/common/flash_link.ld for additional info about these
+# parameters.
 rom_linkfile = files(['rom_link.ld'])
-rom_link_args = ['-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]), '-Wl,--build-id=none']
+rom_link_args = [
+  '-Wl,-L,@0@'.format(meson.source_root()),
+  '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]),
+  '-Wl,--build-id=none',
+]
 rom_link_deps = [rom_linkfile]
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
