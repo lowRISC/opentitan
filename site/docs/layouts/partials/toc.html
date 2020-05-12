@@ -1,6 +1,8 @@
+{{ if (gt .WordCount 400) }}
 <aside class="toc">
   <header>
     <p>On this Page</p>
   </header>
   {{ .TableOfContents }}
 </aside>
+{{ end }}
