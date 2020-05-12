@@ -134,7 +134,7 @@
       sw_name: coremark_top_earlgrey
       sw_dir: benchmarks/coremark
       run_opts: ["+en_uart_logger=1",
-                 "+sw_test_timeout_ns=20000000"]
+                 "+sw_test_timeout_ns=22000000"] // 22ms
     }
 
     // The test below is added in the included tl_access_tests.hjson.
