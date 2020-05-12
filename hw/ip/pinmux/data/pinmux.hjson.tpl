@@ -161,9 +161,6 @@
                       >=2: MIO pads (i.e., add 2 to the native MIO pad index).
                       '''
                       resval: 0,
-                      // TODO: is this exclusion still required?
-                      tags: [// Random writes to this field may result in array index going OOB.
-                             "excl:CsrNonInitTests:CsrExclWriteCheck"]
                     }
                   ]
                 }
@@ -184,11 +181,11 @@
                       >=3: peripheral outputs (i.e., add 3 to the native peripheral pad index).
                       '''
                       resval: 2,
-                      // TODO: is this exclusion still required?
-                      tags: [// Random writes to this field may result in array index going OOB.
-                             "excl:CsrNonInitTests:CsrExclWriteCheck"]
                     }
                   ]
+                  // Random writes to this field may result in pad drive conflicts,
+                  // which in turn leads to propagating Xes and assertion failures.
+                  tags: ["excl:CsrNonInitTests:CsrExclWrite"]
                 }
     },
 # sleep behavior of MIO peripheral outputs
