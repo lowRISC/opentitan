@@ -124,7 +124,7 @@ class SimCfg(FlowCfg):
         # TODO: Find a way to set these in sim cfg instead
         ignored_wildcards = [
             "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
-            "cov_db_dirs", "sw_dir", "sw_name", "sw_build_device"
+            "cov_db_dirs", "sw_test", "sw_test_is_prebuilt", "sw_build_device"
         ]
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,

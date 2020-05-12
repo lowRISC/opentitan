@@ -41,37 +41,48 @@ run: run_result
 pre_run:
 	@echo "[make]: pre_run"
 	mkdir -p ${run_dir}
-ifneq (${sw_name},)
+ifneq (${sw_test},)
 	mkdir -p ${sw_build_dir}
 endif
 
 sw_build: pre_run
 	@echo "[make]: sw_build"
-ifneq (${sw_name},)
+ifneq (${sw_test},)
 	# Initialize meson build system.
 	${LOCK_SW_BUILD} "cd ${proj_root} && \
 		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
 	# Compile boot rom code and generate the image.
 	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
 		sw/device/boot_rom/boot_rom_export_${sw_build_device}"
-	# Extract the rom logs.
+	# Extract the boot rom logs.
 	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
 		-e "${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.elf" \
 		-f .logs.fields -r .rodata .chip_info \
 		-n "rom" -o "${run_dir}"
-	# Compile the test sw code and generate the image.
-	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
-		sw/device/${sw_dir}/${sw_name}_export_${sw_build_device}"
-	# Extract the sw logs.
-	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
-		-e "${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.elf" \
-		-f .logs.fields -r .rodata \
-		-n "sw" -o "${run_dir}"
-	# Copy over the images to the run_dir.
+	# Copy over the boot rom image to the run_dir.
 	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.32.vmem \
 		${run_dir}/rom.32.vmem
-	cp ${sw_build_dir}/build-out/sw/device/${sw_dir}/${sw_name}_${sw_build_device}.32.vmem \
+
+ifeq (${sw_test_is_prebuilt},)
+	# Compile the sw test code and generate the image.
+	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
+		${sw_test}_export_${sw_build_device}"
+	# Extract the sw test logs.
+	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
+		-e "${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.elf" \
+		-f .logs.fields -r .rodata \
+		-n "sw" -o "${run_dir}"
+	# Copy over the sw test image to the run_dir.
+	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.32.vmem \
 		${run_dir}/sw.32.vmem
+else
+	# Copy over the sw test image and related sources to the run_dir.
+	cp ${proj_root}/${sw_test}.32.vmem ${run_dir}/sw.32.vmem
+	# Optionally, copy ${sw_test}_logs.txt over to the run_dir if it exists.
+	-cp ${proj_root}/${sw_test}_logs.txt ${run_dir}/sw_logs.txt
+	-cp ${proj_root}/${sw_test}_rodata.txt ${run_dir}/sw_rodata.txt
+endif
+
 endif
 
 simulate: sw_build
