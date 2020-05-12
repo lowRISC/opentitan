@@ -29,6 +29,9 @@ import utils
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
 
+# The different categories that can be passed to the --list argument.
+_LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
+
 
 # Function to resolve the scratch root directory among the available options:
 # If set on the command line, then use that as a preference.
@@ -69,19 +72,45 @@ def resolve_scratch_root(arg_scratch_root):
     return (arg_scratch_root)
 
 
-# Set and return the current GitHub branch name, unless set on the command line.
-# It runs "git branch --show-current". If the command fails, it throws a warning
-# and sets the branch name to "default"
-def resolve_branch(arg_branch):
-    if arg_branch is None or arg_branch == "":
-        result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                                stdout=subprocess.PIPE)
-        arg_branch = result.stdout.decode("utf-8").strip()
-        if arg_branch == "":
-            log.warning(
-                "Failed to find current git branch. Setting it to \"default\"")
-            arg_branch = "default"
-    return (arg_branch)
+def resolve_branch(branch):
+    '''Choose a branch name for output files
+
+    If the --branch argument was passed on the command line, the branch
+    argument is the branch name to use. Otherwise it is None and we use git to
+    find the name of the current branch in the working directory.
+
+    '''
+
+    if branch is not None:
+        return branch
+
+    result = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                            stdout=subprocess.PIPE)
+    branch = result.stdout.decode("utf-8").strip()
+    if not branch:
+        log.warning("Failed to find current git branch. "
+                    "Setting it to \"default\"")
+        branch = "default"
+
+    return branch
+
+
+def make_config(args, proj_root):
+    '''A factory method for FlowCfg objects'''
+
+    # Look up the tool in a dictionary, defaulting to SimCfg.
+    #
+    # If --tool was not passed (so args.tool is None), we have to figure out
+    # the tool by reading the config file. At the moment, this forces a
+    # simulation target (TODO?)
+    factories = {
+        'ascentlint': LintCfg.LintCfg,
+        'veriblelint': LintCfg.LintCfg,
+        'dc': SynCfg.SynCfg
+    }
+
+    factory = factories.get(args.tool, SimCfg.SimCfg)
+    return factory(args.cfg, proj_root, args)
 
 
 # Get the project root directory path - this is used to construct the full paths
@@ -128,8 +157,8 @@ def main():
     parser.add_argument(
         "-l",
         "--list",
-        nargs="+",
-        default=[],
+        nargs="*",
+        choices=_LIST_CATEGORIES,
         metavar="build_modes|run_modes|tests|regressions",
         help=
         """List the available build_modes / run_modes / tests / regressions for use."""
@@ -137,14 +166,12 @@ def main():
 
     parser.add_argument("-t",
                         "--tool",
-                        default="",
                         metavar="vcs|xcelium|ascentlint|veriblelint|dc|...",
                         help="Override the tool that is set in hjson file")
 
     parser.add_argument(
-        "-select_cfgs",
+        "--select-cfgs",
         nargs="*",
-        default=[],
         metavar="cfg1, cfg2, cfg3, ...",
         help="""Specifies which cfg(s) of the master cfg shall be processed.
                 If this switch is not specified, dvsim will process all cfgs specified in
@@ -172,7 +199,6 @@ def main():
     parser.add_argument(
         "-br",
         "--branch",
-        default="",
         metavar="<branch-name>",
         help=
         """This variable is used to construct the scratch path directory name. If not
@@ -220,7 +246,6 @@ def main():
     parser.add_argument(
         "-bu",
         "--build-unique",
-        default=False,
         action='store_true',
         help=
         """By default, under the {scratch} directory, there is a {compile_set}
@@ -232,13 +257,11 @@ def main():
 
     parser.add_argument(
         "--build-only",
-        default=False,
         action='store_true',
         help="Only build the simulation executables for the givem items.")
 
     parser.add_argument(
         "--run-only",
-        default=False,
         action='store_true',
         help="Assume sim exec is available and proceed to run step")
 
@@ -255,7 +278,6 @@ def main():
     parser.add_argument(
         "--fixed-seed",
         type=int,
-        default=None,
         help=
         """Run all items with a fixed seed value. This option enforces --reseed 1."""
     )
@@ -264,7 +286,6 @@ def main():
         "-r",
         "--reseed",
         type=int,
-        default=-1,
         metavar="N",
         help="""Repeat tests with N iterations with different seeds""")
 
@@ -277,7 +298,6 @@ def main():
 
     parser.add_argument("-w",
                         "--waves",
-                        default=False,
                         action='store_true',
                         help="Enable dumping of waves")
 
@@ -300,13 +320,11 @@ def main():
 
     parser.add_argument("-c",
                         "--cov",
-                        default=False,
                         action='store_true',
                         help="turn on coverage collection")
 
     parser.add_argument(
         "--cov-merge-previous",
-        default=False,
         action='store_true',
         help="""Applicable when --cov switch is enabled. If a previous cov
                 database directory exists, this switch will cause it to be merged with
@@ -314,18 +332,17 @@ def main():
 
     parser.add_argument(
         "--cov-analyze",
-        default=False,
         action='store_true',
         help="Analyze the coverage from the last regression result.")
 
     parser.add_argument("-p",
                         "--profile",
-                        default="none",
-                        metavar="time|mem",
+                        nargs='?',
+                        const='time',
+                        choices=["time", "mem"],
                         help="Turn on simulation profiling")
 
     parser.add_argument("--xprop-off",
-                        default=False,
                         action='store_true',
                         help="Turn off Xpropagation")
 
@@ -335,7 +352,6 @@ def main():
                         help="Job prefix before deploying the tool commands.")
 
     parser.add_argument("--purge",
-                        default=False,
                         action='store_true',
                         help="Clean the scratch directory before running.")
 
@@ -350,7 +366,6 @@ def main():
 
     parser.add_argument(
         "--no-rerun",
-        default=False,
         action='store_true',
         help=
         """By default, failing tests will be automatically be rerun with waves;
@@ -359,7 +374,7 @@ def main():
     parser.add_argument("-v",
                         "--verbosity",
                         default="l",
-                        metavar="n|l|m|h|d",
+                        choices=["n", "l", "m", "h", "d"],
                         help="""Set verbosity to none/low/medium/high/debug;
                                 This will override any setting added to any of the hjson files
                                 used for config""")
@@ -367,6 +382,7 @@ def main():
     parser.add_argument(
         "--verbose",
         nargs="?",
+        choices=['default', 'debug'],
         default=None,
         const="default",
         metavar="debug",
@@ -374,28 +390,24 @@ def main():
                               volume of messages is ven higher.""")
 
     parser.add_argument("--version",
-                        default=False,
                         action='store_true',
                         help="Print version and exit")
 
     parser.add_argument(
         "-n",
         "--dry-run",
-        default=False,
         action='store_true',
         help=
         "Print dvsim tool messages only, without actually running any command")
 
     parser.add_argument(
         "--map-full-testplan",
-        default=False,
         action='store_true',
         help="Force complete testplan annotated results to be shown at the end."
     )
 
     parser.add_argument(
         "--publish",
-        default=False,
         action='store_true',
         help="Publish results to the reports.opentitan.org web server.")
 
@@ -417,7 +429,6 @@ def main():
 
     parser.add_argument(
         "--local",
-        default=False,
         action='store_true',
         help=
         """Deploy builds and runs on the local workstation instead of the compute farm.
@@ -428,6 +439,13 @@ def main():
     if args.version:
         print(version)
         sys.exit()
+
+    # We want the --list argument to default to "all categories", but allow
+    # filtering. If args.list is None, then --list wasn't supplied. If it is
+    # [], then --list was supplied with no further arguments and we want to
+    # list all categories.
+    if args.list == []:
+        args.list = _LIST_CATEGORIES
 
     # Add log level 'VERBOSE' between INFO and DEBUG
     log.addLevelName(utils.VERBOSE, 'VERBOSE')
@@ -488,19 +506,13 @@ def main():
         proj_root = get_proj_root()
 
     global cfg
-    # TODO: SimCfg item below implies DV - need to solve this once we add FPV
-    # and other ASIC flow targets.
-    if args.tool in ['ascentlint', 'veriblelint']:
-        cfg = LintCfg.LintCfg(args.cfg, proj_root, args)
-    elif args.tool == 'dc':
-        cfg = SynCfg.SynCfg(args.cfg, proj_root, args)
-    else:
-        cfg = SimCfg.SimCfg(args.cfg, proj_root, args)
+    cfg = make_config(args, proj_root)
+
     # Handle Ctrl-C exit.
     signal(SIGINT, sigint_handler)
 
     # List items available for run if --list switch is passed, and exit.
-    if args.list != []:
+    if args.list is not None:
         cfg.print_list()
         sys.exit(0)
 

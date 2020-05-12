@@ -105,7 +105,7 @@ class SimCfg(FlowCfg):
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.cov_merge_previous = args.cov_merge_previous
-        self.profile = args.profile
+        self.profile = args.profile or '(cfg uses profile without --profile)'
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
         self.verbosity = "{" + args.verbosity + "}"
@@ -122,7 +122,7 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("waves")
         if self.cov is True:
             self.en_build_modes.append("cov")
-        if self.profile != 'none':
+        if args.profile is not None:
             self.en_build_modes.append("profile")
         if self.xprop_off is not True:
             self.en_build_modes.append("xprop")
@@ -201,6 +201,15 @@ class SimCfg(FlowCfg):
         # TODO: find a better way to support select_cfgs
         if not self.is_master_cfg and (not self.select_cfgs or
                                        self.name in self.select_cfgs):
+            # If self.tool is None at this point, there was no --tool argument on
+            # the command line, and there is no default tool set in the config
+            # file. That's ok if this is a master config (where the
+            # sub-configurations can choose tools themselves), but not otherwise.
+            if self.tool is None:
+                log.error('Config file does not specify a default tool, '
+                          'and there was no --tool argument on the command line.')
+                sys.exit(1)
+
             # Print info:
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
@@ -378,7 +387,7 @@ class SimCfg(FlowCfg):
         build_list_names = []
         for test in self.run_list:
             # Override reseed if available.
-            if self.reseed_ovrd != -1:
+            if self.reseed_ovrd is not None:
                 test.reseed = self.reseed_ovrd
 
             # Apply reseed multiplier if set on the command line.

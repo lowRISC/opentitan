@@ -107,6 +107,10 @@ class Modes():
         if self_attr_val == mode_attr_val:
             return
 
+        if mode_attr_val is None:
+            # No override here
+            return
+
         default_val = None
         if type(self_attr_val) is int:
             default_val = -1
@@ -265,7 +269,7 @@ class RunModes(Modes):
         self.type = "run"
         if not hasattr(self, "mname"):
             self.mname = "mode"
-        self.reseed = -1
+        self.reseed = None
         self.run_opts = []
         self.uvm_test = ""
         self.uvm_test_seq = ""
@@ -294,7 +298,7 @@ class Tests(RunModes):
 
     # TODO: This info should be passed via hjson
     defaults = {
-        "reseed": -1,
+        "reseed": None,
         "uvm_test": "",
         "uvm_test_seq": "",
         "build_mode": "",
@@ -419,7 +423,7 @@ class Regressions(Modes):
         if not hasattr(self, "mname"):
             self.mname = "regression"
         self.tests = []
-        self.reseed = -1
+        self.reseed = None
         self.test_names = []
         self.excl_tests = []  # TODO: add support for this
         self.en_sim_modes = []
@@ -547,5 +551,5 @@ class Regressions(Modes):
             test.run_opts.extend(self.run_opts)
 
             # Override reseed if available.
-            if self.reseed != -1:
+            if self.reseed is not None:
                 test.reseed = self.reseed
