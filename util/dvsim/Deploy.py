@@ -181,6 +181,8 @@ class Deploy():
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
             f = open(self.log, "w", encoding="UTF-8")
+            f.write("[Executing]:\n{}\n\n".format(self.cmd))
+            f.flush()
             self.process = subprocess.Popen(args,
                                             bufsize=4096,
                                             universal_newlines=True,
