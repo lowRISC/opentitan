@@ -638,9 +638,9 @@ module top_earlgrey #(
       .dio_in_i,
 
       .clk_i (clkmgr_clocks.clk_main_secure),
-      .clk_aon_i (clkmgr_clocks.clk_fixed_secure),
+      .clk_aon_i (clkmgr_clocks.clk_io_secure),
       .rst_ni (rstmgr_resets.rst_sys_n),
-      .rst_aon_ni (rstmgr_resets.rst_sys_fixed_n)
+      .rst_aon_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   padctrl u_padctrl (

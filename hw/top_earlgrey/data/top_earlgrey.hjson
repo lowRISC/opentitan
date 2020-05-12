@@ -178,9 +178,9 @@
     { name: "pinmux",
       type: "pinmux",
       clock: "main",
-      clock_srcs: {clk_i: "main", clk_aon_i: "fixed"},
+      clock_srcs: {clk_i: "main", clk_aon_i: "io"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_io"},
       base_addr: "0x40070000",
       generated: "true"
     },
