@@ -29,8 +29,7 @@ module prim_ram_2p_adv #(
 
   parameter MemT = "REGISTER", // can be "REGISTER" or "SRAM"
 
-  // Do not touch
-  parameter int SramAw = $clog2(Depth)
+  localparam int SramAw = $clog2(Depth)
 ) (
   input clk_i,
   input rst_ni,
