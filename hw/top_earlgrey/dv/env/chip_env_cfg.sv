@@ -22,7 +22,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_logger_vif             sw_logger_vif[string];
   string                    sw_images[string];
   virtual sw_test_status_if sw_test_status_vif;
-  uint                      sw_test_timeout_ns = 2_000_000; // 2ms
+  uint                      sw_test_timeout_ns = 5_000_000; // 5ms
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
