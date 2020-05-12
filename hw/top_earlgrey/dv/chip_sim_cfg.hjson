@@ -95,44 +95,37 @@
     {
       name: chip_sanity
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: hello_world
-      sw_dir: examples/hello_world
+      sw_test: sw/device/examples/hello_world/hello_world
     }
     {
       name: chip_aes_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: aes_test
-      sw_dir: tests
+      sw_test: sw/device/tests/aes_test
     }
     {
       name: chip_consecutive_irqs_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: consecutive_irqs_test
-      sw_dir: tests
+      sw_test: sw/device/tests/consecutive_irqs_test
     }
     {
       name: chip_flash_ctrl_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: flash_ctrl_test
-      sw_dir: tests
+      sw_test: sw/device/tests/flash_ctrl_test
     }
     {
       name: chip_sha256_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: sha256_test
-      sw_dir: tests
+      sw_test: sw/device/tests/sha256_test
     }
     {
       name: chip_rv_timer_test
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: rv_timer_test
-      sw_dir: tests
+      sw_test: sw/device/tests/rv_timer_test
     }
     {
       name: chip_coremark
       uvm_test_seq: chip_sw_test_base_vseq
-      sw_name: coremark_top_earlgrey
-      sw_dir: benchmarks/coremark
+      sw_test: sw/device/benchmarks/coremark/coremark_top_earlgrey
       run_opts: ["+en_uart_logger=1",
                  "+sw_test_timeout_ns=20000000"]
     }
