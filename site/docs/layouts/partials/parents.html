@@ -1,0 +1,20 @@
+<div class="parents">
+ <ul>
+    {{- $currentNode := . }}
+    {{- template "parent-loop" dict "currentnode" $currentNode }}
+
+</ul>
+</div>
+
+{{- define "parent-loop" }}
+{{- $currentNode := .currentnode }}
+{{- $currentParent := $currentNode.Parent }}
+    {{- if ne .Site.Home $currentParent}}
+        <li {{ if eq $currentParent.Parent .Site.Home }} style="list-style-type:none;" {{ end }}>
+            <a href="{{ $currentParent.RelPermalink }}">{{ $currentParent.Title }}</a>
+        </li>
+        {{- $currentNode = $currentParent }}
+        {{- template "parent-loop" dict "currentnode" $currentNode }}
+    {{ end }}
+{{- end }}
+
