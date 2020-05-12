@@ -40,8 +40,9 @@ module prim_generic_pad_wrapper #(
   assign (strong0, strong1) inout_io = (oe && drv == STRONG_DRIVE) ? out : 1'bz;
   assign (pull0, pull1)     inout_io = (oe && drv == WEAK_DRIVE)   ? out : 1'bz;
   // pullup / pulldown termination
-  assign (highz0, weak1)    inout_io = pu;
-  assign (weak0, highz1)    inout_io = ~pd;
+  // default to high-Z in case both PU and PD are asserted (safety mechanism).
+  assign (highz0, weak1)    inout_io = pu & ~pd;
+  assign (weak0, highz1)    inout_io = pu | ~pd;
   // fake trireg emulation
   assign (weak0, weak1)     inout_io = (kp) ? inout_io : 1'bz;
 `endif
