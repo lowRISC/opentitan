@@ -499,7 +499,7 @@ def amend_resets(top):
             log.error("{} missing type field".format(reset["name"]))
             return
 
-        if reset["type"] in ["top"]:
+        if reset["type"] == "top":
             # The resets structure will be used once rstmgr is integrated
             # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
             reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(
