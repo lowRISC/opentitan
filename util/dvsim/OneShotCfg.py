@@ -23,6 +23,8 @@ class OneShotCfg(FlowCfg):
     def __init__(self, flow_cfg_file, proj_root, args):
         super().__init__(flow_cfg_file, proj_root, args)
 
+        assert args.tool is not None
+
         # Options set from command line
         self.tool = args.tool
         self.verbose = args.verbose

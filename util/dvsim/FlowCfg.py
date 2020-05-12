@@ -26,12 +26,9 @@ class FlowCfg():
 
     def __init__(self, flow_cfg_file, proj_root, args):
         # Options set from command line
-        self.items = []
-        self.items.extend(args.items)
-        self.list_items = []
-        self.list_items.extend(args.list)
-        self.select_cfgs = []
-        self.select_cfgs.extend(args.select_cfgs)
+        self.items = args.items
+        self.list_items = args.list
+        self.select_cfgs = args.select_cfgs
         self.flow_cfg_file = flow_cfg_file
         self.proj_root = proj_root
         self.args = args
@@ -44,8 +41,7 @@ class FlowCfg():
         self.scratch_path = ""
 
         # Imported cfg files using 'import_cfgs' keyword
-        self.imported_cfg_files = []
-        self.imported_cfg_files.append(flow_cfg_file)
+        self.imported_cfg_files = [flow_cfg_file]
 
         # Add exports using 'exports' keyword - these are exported to the child
         # process' environment.
@@ -161,8 +157,14 @@ class FlowCfg():
                 self_val = getattr(self, key)
                 scalar_types = {str: [""], int: [0, -1], bool: [False]}
 
+                # Case 0: We don't yet have a proper value for this key (so
+                # self_val is None). Take the value in the config file.
+                if self_val is None:
+                    setattr(self, key, hjson_dict_val)
+                    rm_hjson_dict_keys.append(key)
+
                 # Case 1: key value in class and hjson_dict differ - error!
-                if type(hjson_dict_val) != type(self_val):
+                elif type(hjson_dict_val) != type(self_val):
                     log.error("Conflicting key types: \"%s\" {\"%s, \"%s\"}",
                               key,
                               type(hjson_dict_val).__name__,
@@ -401,18 +403,26 @@ class FlowCfg():
         for item in self.cfgs:
             item._print_list()
 
-    # function to prune only selected cfgs to build and run
-    # it will return if the object is not a master_cfg or -select_cfgs is empty
     def prune_selected_cfgs(self):
-        if not self.is_master_cfg or not self.select_cfgs:
+        '''Prune the list of configs for a master config file'''
+
+        # This should run after self.cfgs has been set
+        assert self.cfgs
+
+        # If the user didn't pass --select-cfgs, we don't do anything.
+        if self.select_cfgs is None:
             return
-        else:
-            remove_cfgs = []
-            for item in self.cfgs:
-                if item.name not in self.select_cfgs:
-                    remove_cfgs.append(item)
-            for remove_cfg in remove_cfgs:
-                self.cfgs.remove(remove_cfg)
+
+        # If the user passed --select-cfgs, but this isn't a master config
+        # file, we should probably complain.
+        if not self.is_master_cfg:
+            log.error('The configuration file at {!r} is not a master config, '
+                      'but --select-cfgs was passed on the command line.'
+                      .format(self.flow_cfg_file))
+            sys.exit(1)
+
+        # Filter configurations
+        self.cfgs = [c for c in self.cfgs if c.name in self.select_cfgs]
 
     def _create_deploy_objects(self):
         '''Create deploy objects from items that were passed on for being run.
