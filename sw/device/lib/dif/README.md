@@ -36,6 +36,7 @@ similar style to the existing DIF libraries in this directory.
 * DIF libraries must be written in C.
 * DIF libraries can only depend on the following headers (and their associated
   libraries) from the `sw/device/lib/base` directory:
+  * `sw/device/lib/base/bitfield.h`
   * `sw/device/lib/base/mmio.h`
   * `sw/device/lib/base/memory.h`
 * DIF libraries must not depend on other DIF libraries. Exercising DIF
