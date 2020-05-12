@@ -8,7 +8,7 @@ description: "Technology-independent Read-Only Memory (ROM) implementation"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:prim:util_memload
     files:
       - rtl/prim_generic_rom.sv
