@@ -96,7 +96,7 @@ module usbdev (
   tlul_pkg::tl_h2d_t tl_sram_h2d [1];
   tlul_pkg::tl_d2h_t tl_sram_d2h [1];
 
-  // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
+  // Dual-port SRAM Interface: Refer prim_ram_2p_async_adv.sv
   logic              mem_a_req;
   logic              mem_a_write;
   logic [SramAw-1:0] mem_a_addr;
