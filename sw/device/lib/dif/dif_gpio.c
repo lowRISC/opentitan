@@ -88,7 +88,7 @@ static void gpio_masked_bit_write(const dif_gpio_t *gpio,
 dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
                                 dif_gpio_t *gpio) {
   if (config == NULL || gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   // Save internal state in the given `dif_gpio_t` instance.
@@ -96,12 +96,12 @@ dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
   // Reset the GPIO device at the given `base_addr`.
   dif_gpio_reset(gpio);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_write32(gpio->base_addr, GPIO_INTR_ENABLE_REG_OFFSET, 0);
@@ -115,201 +115,201 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio) {
   // Also clear all pending interrupts
   mmio_region_write32(gpio->base_addr, GPIO_INTR_STATE_REG_OFFSET, 0xFFFFFFFFu);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
                                     uint32_t *pin_values) {
   if (gpio == NULL || pin_values == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   *pin_values = mmio_region_read32(gpio->base_addr, GPIO_DATA_IN_REG_OFFSET);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                     bool *pin_value) {
   if (gpio == NULL || pin_value == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   *pin_value =
       mmio_region_get_bit32(gpio->base_addr, GPIO_DATA_IN_REG_OFFSET, index);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_write32(gpio->base_addr, GPIO_DIRECT_OUT_REG_OFFSET, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
                                      bool val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   gpio_masked_bit_write(gpio, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                         GPIO_MASKED_OUT_UPPER_REG_OFFSET, index, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
                                         uint32_t val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   gpio_masked_write(gpio, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                     GPIO_MASKED_OUT_UPPER_REG_OFFSET, mask, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
                                                uint32_t val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_write32(gpio->base_addr, GPIO_DIRECT_OE_REG_OFFSET, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
                                                uint32_t index, bool val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   gpio_masked_bit_write(gpio, GPIO_MASKED_OE_LOWER_REG_OFFSET,
                         GPIO_MASKED_OE_UPPER_REG_OFFSET, index, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
                                                   uint32_t mask, uint32_t val) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   gpio_masked_write(gpio, GPIO_MASKED_OE_LOWER_REG_OFFSET,
                     GPIO_MASKED_OE_UPPER_REG_OFFSET, mask, val);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio,
                                         uint32_t index) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_write32(gpio->base_addr, GPIO_INTR_TEST_REG_OFFSET,
                       index_to_mask(index));
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
                                         uint32_t *interrupt_states) {
   if (gpio == NULL || interrupt_states == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   *interrupt_states =
       mmio_region_read32(gpio->base_addr, GPIO_INTR_STATE_REG_OFFSET);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                         bool *interrupt_state) {
   if (gpio == NULL || interrupt_state == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   *interrupt_state =
       mmio_region_get_bit32(gpio->base_addr, GPIO_INTR_STATE_REG_OFFSET, index);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
                                          uint32_t index) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_write32(gpio->base_addr, GPIO_INTR_STATE_REG_OFFSET,
                       index_to_mask(index));
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
     const dif_gpio_t *gpio, uint32_t mask) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_nonatomic_set_mask32(
       gpio->base_addr, GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, mask, 0);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
     const dif_gpio_t *gpio, uint32_t mask) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_nonatomic_clear_mask32(
       gpio->base_addr, GPIO_CTRL_EN_INPUT_FILTER_REG_OFFSET, mask, 0);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
                                              uint32_t mask) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_nonatomic_set_mask32(gpio->base_addr, GPIO_INTR_ENABLE_REG_OFFSET,
                                    mask, 0);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
                                               uint32_t mask) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   mmio_region_nonatomic_clear_mask32(gpio->base_addr,
                                      GPIO_INTR_ENABLE_REG_OFFSET, mask, 0);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
                                                       uint32_t mask) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   // Disable all interrupt triggers for the given mask
@@ -322,14 +322,14 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
   mmio_region_nonatomic_clear_mask32(
       gpio->base_addr, GPIO_INTR_CTRL_EN_LVLLOW_REG_OFFSET, mask, 0);
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
 
 dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
                                                      uint32_t mask,
                                                      dif_gpio_irq_t config) {
   if (gpio == NULL) {
-    return kDifGpioResultInvalidArgument;
+    return kDifGpioBadArg;
   }
 
   // Disable all interrupt triggers for the given mask
@@ -371,8 +371,8 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
           gpio->base_addr, GPIO_INTR_CTRL_EN_LVLHIGH_REG_OFFSET, mask, 0);
       break;
     default:
-      return kDifGpioResultGeneralError;
+      return kDifGpioError;
   }
 
-  return kDifGpioResultOK;
+  return kDifGpioOk;
 }
