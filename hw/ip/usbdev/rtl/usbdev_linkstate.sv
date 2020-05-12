@@ -16,6 +16,7 @@ module usbdev_linkstate (
   output logic link_disconnect_o,  // level
   output logic link_connect_o,     // level
   output logic link_reset_o,       // level
+  output logic link_active_o,      // level
   output logic link_suspend_o,     // level
   output logic link_resume_o,      // pulse
   output logic host_lost_o,        // level
@@ -50,7 +51,6 @@ module usbdev_linkstate (
   } link_inac_state_e;
 
   link_state_e  link_state_d, link_state_q;
-  logic         link_active;
   logic         line_se0_raw, line_idle_raw;
   logic         see_se0, see_idle, see_pwr_sense;
 
@@ -75,7 +75,7 @@ module usbdev_linkstate (
   assign link_connect_o    = (link_state_q != LinkDisconnect);
   assign link_suspend_o    = (link_state_q == LinkSuspend ||
     link_state_q == LinkPoweredSuspend);
-  assign link_active       = (link_state_q == LinkActive);
+  assign link_active_o     = (link_state_q == LinkActive);
   // Link state is stable, so we can output it to the register
   assign link_state_o      =  link_state_q;
 
@@ -303,7 +303,7 @@ module usbdev_linkstate (
     if (!rst_ni) begin
       host_presence_timer <= '0;
     end else begin
-      if (sof_valid_i || !link_active || link_reset) begin
+      if (sof_valid_i || !link_active_o || link_reset) begin
         host_presence_timer <= '0;
       end else if (us_tick_i && !host_lost_o) begin
         host_presence_timer <= host_presence_timer + 1;

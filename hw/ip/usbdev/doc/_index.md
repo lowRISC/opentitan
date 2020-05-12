@@ -55,6 +55,14 @@ The interface runs at four times this frequency and must be clocked from an accu
 The USB specification for a Full-Speed device requires the average bit rate is 12 Mbps +/- 0.25%, so the clock needs to support maximum error of 2,500 ppm.
 The maximum allowable integrated jitter is +/- 1 ns over 1 to 7 bit periods.
 
+This module features the following output signals to provide a reference for synchronizing the 48 MHz clock source:
+- `usb_ref_pulse_o` indicates the reception of a start of frame (SOF) packet.
+  The host is required to send a SOF packet every 1 ms.
+- `usb_ref_val_o` serves as a valid signal for `usb_ref_pulse_o`.
+  It is set to one after the first SOF packet is received and remains high as long as `usb_ref_pulse_o` continues to behave as expected.
+  As soon as it is detected that SOF will not be received as expected (usually because the link is no longer active), `usb_ref_val_o` deasserts to zero until after the next `usb_ref_pulse_o`.
+Both these signals are synchronous to the 48 MHz clock.
+
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port
 asynchronous buffer SRAM is used for data transfers between the bus

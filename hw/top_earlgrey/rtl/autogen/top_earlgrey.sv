@@ -813,6 +813,10 @@ module top_earlgrey #(
       .intr_frame_o           (intr_usbdev_frame),
       .intr_connected_o       (intr_usbdev_connected),
 
+      // Inter-module signals
+      .usb_ref_val_o(),
+      .usb_ref_pulse_o(),
+
       .clk_i (clkmgr_clocks.clk_io_peri),
       .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
       .rst_ni (rstmgr_resets.rst_sys_io_n),

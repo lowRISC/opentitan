@@ -1603,6 +1603,29 @@
       ]
       alert_list: []
       scan: "false"
+      inter_signal_list:
+      [
+        {
+          name: usb_ref_val
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: "1"
+          inst_name: usbdev
+          index: -1
+        }
+        {
+          name: usb_ref_pulse
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: "1"
+          inst_name: usbdev
+          index: -1
+        }
+      ]
     }
   ]
   memory:
@@ -3405,6 +3428,26 @@
         act: rcv
         package: clkmgr_pkg
         inst_name: clkmgr
+        index: -1
+      }
+      {
+        name: usb_ref_val
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: "1"
+        inst_name: usbdev
+        index: -1
+      }
+      {
+        name: usb_ref_pulse
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: "1"
+        inst_name: usbdev
         index: -1
       }
       {
