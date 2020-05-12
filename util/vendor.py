@@ -232,7 +232,7 @@ def clone_git_repo(repo_url, clone_dir, rev='master'):
     subprocess.run(cmd, check=True)
 
     # Check out exactly the revision requested
-    cmd = ['git', '-C', str(clone_dir), 'reset', '--hard', rev]
+    cmd = ['git', '-C', str(clone_dir), 'checkout', '--force', rev]
     if not verbose:
         cmd += ['-q']
     subprocess.run(cmd, check=True)
