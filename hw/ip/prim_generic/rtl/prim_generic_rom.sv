@@ -7,7 +7,7 @@
 module prim_generic_rom #(
   parameter  int Width     = 32,
   parameter  int Depth     = 2048, // 8kB default
-  parameter  int Aw        = $clog2(Depth)
+  localparam int Aw        = $clog2(Depth)
 ) (
   input                        clk_i,
   input                        rst_ni,
