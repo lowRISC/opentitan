@@ -43,6 +43,10 @@ module usbdev (
   output logic       cio_tx_mode_se_o,
   output logic       cio_tx_mode_se_en_o,
 
+  // SOF reference for clock calibration
+  output logic       usb_ref_val_o,
+  output logic       usb_ref_pulse_o,
+
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
   output logic       intr_pkt_sent_o, // Packet sent
@@ -116,6 +120,7 @@ module usbdev (
   logic              usb_event_rx_bitstuff_err;
   logic              usb_event_in_err;
   logic              usb_event_frame;
+  logic              usb_link_active;
 
   logic              event_link_reset, event_link_suspend, event_link_resume;
   logic              event_host_lost, event_disconnect, event_connect;
@@ -499,6 +504,7 @@ module usbdev (
     .link_disconnect_o    (usb_event_disconnect),
     .link_connect_o       (usb_event_connect),
     .link_reset_o         (usb_event_link_reset),
+    .link_active_o        (usb_link_active),
     .link_suspend_o       (usb_event_link_suspend),
     .link_resume_o        (usb_event_link_resume),
     .host_lost_o          (usb_event_host_lost),
@@ -915,5 +921,31 @@ module usbdev (
   // Pullup
   assign cio_dp_pullup_o     = 1'b1;
   assign cio_dn_pullup_o     = 1'b1;
+
+  /////////////////////////////////////////
+  // SOF Reference for Clock Calibration //
+  /////////////////////////////////////////
+
+  logic usb_ref_val_d, usb_ref_val_q;
+
+  // Directly forward the pulse.
+  assign usb_ref_pulse_o = usb_event_frame;
+
+  // The first pulse is always ignored, but causes the valid to be asserted.
+  // The valid signal is deasserted when:
+  // - The link is no longer active.
+  // - The host is lost (no SOF for 4ms).
+  assign usb_ref_val_d = usb_ref_pulse_o                         ? 1'b1 :
+                       (!usb_link_active || usb_event_host_lost) ? 1'b0 : usb_ref_val_q;
+
+  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
+    if (!rst_usb_48mhz_ni) begin
+      usb_ref_val_q <= 1'b0;
+    end else begin
+      usb_ref_val_q <= usb_ref_val_d;
+    end
+  end
+
+  assign usb_ref_val_o = usb_ref_val_q;
 
 endmodule

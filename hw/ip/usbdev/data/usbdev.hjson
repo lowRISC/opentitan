@@ -23,6 +23,22 @@
     { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
     { name: "suspend", desc: "USB link suspend state" }
   ],
+  inter_signal_list: [
+    { name:    "usb_ref_val",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_ref_pulse",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+  ]
   param_list: [
     { name:    "NEndpoints",
       type:    "int",
