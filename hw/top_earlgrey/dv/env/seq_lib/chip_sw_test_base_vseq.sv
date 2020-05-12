@@ -33,10 +33,12 @@ class chip_sw_test_base_vseq extends chip_base_vseq;
     // initialize the sw test status
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
-    // Backdoor load memories.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
+    // Initialize the flash to all 1s.
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
+
+    // Backdoor load memories with sw images.
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
     // TODO: the location of the main execution image should be randomized for either bank in future
     cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
