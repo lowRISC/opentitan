@@ -1,4 +1,6 @@
-# Reference Manuals
+---
+title: "Reference Manuals"
+---
 
 * [Comportability Definition and Specification]({{< relref "comportability_specification" >}})
 * [Device Interface Function (DIF) Specification]({{< relref "device_interface_functions" >}})
