@@ -33,42 +33,12 @@ module prim_generic_rom #(
     end
   end
 
+  `include "prim_util_memload.sv"
+
   ////////////////
   // ASSERTIONS //
   ////////////////
 
   // Control Signals should never be X
   `ASSERT(noXOnCsI, !$isunknown(cs_i), clk_i, '0)
-
-  `ifdef VERILATOR
-    // Task for loading 'mem' with SystemVerilog system task $readmemh()
-    export "DPI-C" task simutil_verilator_memload;
-    // Function for setting a specific 32 bit element in |mem|
-    // Returns 1 (true) for success, 0 (false) for errors.
-    export "DPI-C" function simutil_verilator_set_mem;
-
-    task simutil_verilator_memload;
-      input string file;
-      $readmemh(file, mem);
-    endtask
-
-    // TODO: Allow 'val' to have other widths than 32 bit
-    function int simutil_verilator_set_mem(input int index,
-                                           input logic[31:0] val);
-      if (index >= Depth) begin
-        return 0;
-      end
-
-      mem[index] = val;
-      return 1;
-    endfunction
-  `endif
-
-  `ifdef ROM_INIT_FILE
-    localparam MEM_FILE = `PRIM_STRINGIFY(`ROM_INIT_FILE);
-    initial begin
-      $display("Initializing ROM from %s", MEM_FILE);
-      $readmemh(MEM_FILE, mem);
-    end
-  `endif
 endmodule
