@@ -211,7 +211,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
         if (reset_req_i || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
-          clr_hint_o = 1'b1;
           state_d = StDisClks;
         end
       end
@@ -227,6 +226,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
       // Low Power Path
       StFallThrough: begin
+        clr_hint_o = 1'b1;
 
         // the processor was interrupted after it asserted WFI and is executing again
         if (!low_power_entry_i) begin
@@ -279,6 +279,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       // Reset Path
       // This state is TODO, the details are still under discussion
       StNvmShutDown: begin
+        clr_hint_o = 1'b1;
         reset_ongoing_d = 1'b1;
         state_d = StResetPrep;
       end
