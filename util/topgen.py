@@ -478,12 +478,12 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # Template paths
     hjson_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.hjson.tpl'
-    rtl_tpl   = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
-    pkg_tpl   = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
+    rtl_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
+    pkg_tpl = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
 
     hjson_out = data_path / 'clkmgr.hjson'
-    rtl_out   = rtl_path / 'clkmgr.sv'
-    pkg_out   = rtl_path / 'clkmgr_pkg.sv'
+    rtl_out = rtl_path / 'clkmgr.sv'
+    pkg_out = rtl_path / 'clkmgr_pkg.sv'
 
     tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
     outputs = [hjson_out, rtl_out, pkg_out]
@@ -510,21 +510,33 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # clocks fed through clkmgr but are not disturbed in any way
     # This maintains the clocking structure consistency
-    ft_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if src_aon_attr[src]}
+    ft_clks = {
+        clk: src
+        for grp in grps for (clk, src) in grp['clocks'].items()
+        if src_aon_attr[src]
+    }
 
     # root-gate clocks
-    rg_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and not src_aon_attr[src]}
+    rg_clks = {
+        clk: src
+        for grp in grps for (clk, src) in grp['clocks'].items()
+        if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and
+        not src_aon_attr[src]
+    }
 
     # direct sw control clocks
-    sw_clks   = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['sw_cg'] == 'yes' and not src_aon_attr[src]}
+    sw_clks = {
+        clk: src
+        for grp in grps for (clk, src) in grp['clocks'].items()
+        if grp['sw_cg'] == 'yes' and not src_aon_attr[src]
+    }
 
     # sw hint clocks
-    hint_clks = {clk:src for grp in grps for (clk,src) in grp['clocks'].items()
-                 if grp['sw_cg'] == 'hint' and not src_aon_attr[src]}
-
+    hint_clks = {
+        clk: src
+        for grp in grps for (clk, src) in grp['clocks'].items()
+        if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
+    }
 
     out = StringIO()
     for idx, tpl in enumerate(tpls):
@@ -554,6 +566,7 @@ def generate_clkmgr(top, cfg_path, out_path):
                                object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
 
 def generate_top_ral(top, ip_objs, out_path):
     # construct top ral block
@@ -715,8 +728,10 @@ def main():
             raise SystemExit(sys.exc_info()[1])
 
         # Create filtered list
-        filter_list = [module['name'] for module in topcfg['module']
-                       if 'generated' in module and module['generated'] == 'true']
+        filter_list = [
+            module['name'] for module in topcfg['module']
+            if 'generated' in module and module['generated'] == 'true'
+        ]
         log.info("Filtered list is {}".format(filter_list))
 
         topname = topcfg["name"]
@@ -744,7 +759,8 @@ def main():
 
         for ip in filter_list:
             log.info("Appending {}".format(ip))
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(ip,ip)
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
             ips.append(ip_hjson)
 
         # load Hjson and pass validate from reggen
