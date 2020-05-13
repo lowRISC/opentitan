@@ -52,8 +52,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     max_phase_cyc inside {[0:1_000]};
   }
 
+  // set min to 32 cycles (default value) to avoid alert ping timeout due to random delay
   constraint ping_timeout_cyc_c {
-    ping_timeout_cyc inside {[0:100]};
+    ping_timeout_cyc inside {[32:100]};
   }
 
   constraint enable_classa_only_c {
@@ -109,7 +110,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
           wr_class_accum_threshold(accum_thresh);
-          wr_ping_timeout_cycle(ping_timeout_cyc);
+          wr_ping_timeout_cycle(ping_timeout_cyc, config_locked);
 
           //drive entropy
           cfg.entropy_vif.drive(rand_drive_entropy);
