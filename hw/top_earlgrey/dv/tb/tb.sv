@@ -107,30 +107,20 @@ module tb;
   );
 
   // connect sw_logger_if
-  parameter string SwTypes[] = '{"rom", "sw"};
-  generate
-    for (genvar i = 0; i < 2; i++) begin: sw_logger_if_i
-      bit             sw_log_valid;
-      bit [TL_AW-1:0] sw_log_addr;
+  bit             sw_log_valid;
+  bit [TL_AW-1:0] sw_log_addr;
 
-      sw_logger_if sw_logger_if (
-        .clk          (`RAM_MAIN_HIER.clk_i),
-        .rst_n        (`RAM_MAIN_HIER.rst_ni),
-        .valid        (sw_log_valid),
-        .addr_data    (`RAM_MAIN_HIER.wdata_i),
-        .sw_log_addr  (sw_log_addr)
-      );
-      // TODO: RAM only looks at addr[15:2] - need to find a better way to capture it.
-      assign sw_log_valid = !stub_cpu &&
-                            `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
-                            (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
-
-      initial begin
-        uvm_config_db#(virtual sw_logger_if)::set(
-            null, "*.env", $sformatf("sw_logger_vif[%0s]", SwTypes[i]), sw_logger_if);
-      end
-    end
-  endgenerate
+  sw_logger_if sw_logger_if (
+    .clk          (`RAM_MAIN_HIER.clk_i),
+    .rst_n        (`RAM_MAIN_HIER.rst_ni),
+    .valid        (sw_log_valid),
+    .addr_data    (`RAM_MAIN_HIER.wdata_i),
+    .sw_log_addr  (sw_log_addr)
+  );
+  assign sw_log_valid = !stub_cpu &&
+                        `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                        /* RAM only looks at the 14-bit word address 15:2 */
+                        (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
 
   // connect the sw_test_status_if
   sw_test_status_if sw_test_status_if();
@@ -203,6 +193,9 @@ module tb;
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+
+    // SW logger and test status interfaces.
+    uvm_config_db#(virtual sw_logger_if)::set(null, "*.env", "sw_logger_vif", sw_logger_if);
     uvm_config_db#(virtual sw_test_status_if)::set(
         null, "*.env", "sw_test_status_vif", sw_test_status_if);
 
