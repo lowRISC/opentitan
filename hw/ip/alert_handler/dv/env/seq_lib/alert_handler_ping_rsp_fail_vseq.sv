@@ -9,9 +9,15 @@ class alert_handler_ping_rsp_fail_vseq extends alert_handler_entropy_vseq;
 
   `uvm_object_new
 
+  // always enable clr_en to hit the case when escalation ping interrupted by real esc sig
+  constraint clr_en_c {
+    clr_en      == '1;
+    lock_bit_en == 0;
+  }
+
   constraint sig_int_c {
     esc_int_err == '1;
-    esc_standalone_int_err dist {0 := 9, [1:'b1111] := 1};
+    esc_standalone_int_err dist {0 :/ 9, [1:'b1111] :/ 1};
   }
 
 endclass : alert_handler_ping_rsp_fail_vseq
