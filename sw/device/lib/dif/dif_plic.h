@@ -10,6 +10,12 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+/** The lowest interrupt priority. */
+extern const uint32_t kDifPlicMinPriority;
+
+/** The highest interrupt priority. */
+extern const uint32_t kDifPlicMaxPriority;
+
 /**
  * PLIC interrupt source identifier.
  *

@@ -19,14 +19,8 @@ _Static_assert(RV_PLIC_PARAM_NUMSRC == 81,
 _Static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
                "PLIC instantiation parameters have changed.");
 
-// The highest interrupt priority.
-#define RV_PLIC_MAX_PRIORITY 0x3u
-
-// These defines are used to calculate the IRQ index in IP, LE, IE registers.
-// These registers are 32bit wide, and in order to accommodate all the IRQs,
-// multiple of the same type registers are defined (IE00, IE01, ...). For
-// example, IRQ ID 32 corresponds to bit 0 in registers IP1, LE1, IE01.
-#define PLIC_ID_TO_INDEX_REG_SIZE 32u
+const uint32_t kDifPlicMinPriority = 0;
+const uint32_t kDifPlicMaxPriority = 0x3u;
 
 /**
  * PLIC register info.
@@ -76,23 +70,6 @@ _Static_assert(
     "There should be an entry in plic_target_reg_offsets for every target");
 
 /**
- * Get a number of IE, IP or LE registers (IE00, IE01, ...).
- *
- * With more than 32 IRQ sources, there is a multiple of these registers to
- * accommodate all the bits (1 bit per IRQ source).
- */
-static size_t plic_num_irq_reg(void) {
-  size_t register_num = RV_PLIC_PARAM_NUMSRC / PLIC_ID_TO_INDEX_REG_SIZE;
-
-  // Determine whether there are remaining IRQ sources that have a register.
-  if ((RV_PLIC_PARAM_NUMSRC % PLIC_ID_TO_INDEX_REG_SIZE) != 0) {
-    ++register_num;
-  }
-
-  return register_num;
-}
-
-/**
  * Get an IE, IP or LE register offset (IE00, IE01, ...) from an IRQ source ID.
  *
  * With more than 32 IRQ sources, there is a multiple of these registers to
@@ -100,7 +77,7 @@ static size_t plic_num_irq_reg(void) {
  * the offset for a specific IRQ source ID (ID 32 would be IE01, ...).
  */
 static ptrdiff_t plic_offset_from_reg0(dif_plic_irq_id_t irq) {
-  uint8_t register_index = irq / PLIC_ID_TO_INDEX_REG_SIZE;
+  uint8_t register_index = irq / RV_PLIC_PARAM_REG_WIDTH;
   return register_index * sizeof(uint32_t);
 }
 
@@ -113,7 +90,7 @@ static ptrdiff_t plic_offset_from_reg0(dif_plic_irq_id_t irq) {
  * be bit 0).
  */
 static uint8_t plic_reg_bit_index_from_irq_id(dif_plic_irq_id_t irq) {
-  return irq % PLIC_ID_TO_INDEX_REG_SIZE;
+  return irq % RV_PLIC_PARAM_REG_WIDTH;
 }
 
 /**
@@ -167,18 +144,21 @@ static ptrdiff_t plic_priority_reg_offset(dif_plic_irq_id_t irq) {
  * resource has cleared/completed the CC access.
  */
 static void plic_reset(const dif_plic_t *plic) {
-  // Clear all of Interrupt Enable and Level/Edge registers.
-  for (int i = 0; i < plic_num_irq_reg(); ++i) {
+  // Clear all of the Interrupt Enable registers.
+  for (int i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
     ptrdiff_t offset = RV_PLIC_IE00_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->base_addr, offset, 0);
+  }
 
-    offset = RV_PLIC_LE0_REG_OFFSET + (i * sizeof(uint32_t));
+  // Clear all of the Level/Edge registers.
+  for (int i = 0; i < RV_PLIC_LE_MULTIREG_COUNT; ++i) {
+    ptrdiff_t offset = RV_PLIC_LE0_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
   // Clear all of the priority registers.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
-    ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (i * sizeof(uint32_t));
+    ptrdiff_t offset = plic_priority_reg_offset(i);
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
@@ -255,7 +235,7 @@ dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
                                             dif_plic_irq_id_t irq,
                                             uint32_t priority) {
   if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
-      priority > RV_PLIC_MAX_PRIORITY) {
+      priority > kDifPlicMaxPriority) {
     return kDifPlicBadArg;
   }
 
@@ -269,7 +249,7 @@ dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
                                                 dif_plic_target_t target,
                                                 uint32_t threshold) {
   if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
-      threshold > RV_PLIC_MAX_PRIORITY) {
+      threshold > kDifPlicMaxPriority) {
     return kDifPlicBadArg;
   }
 
