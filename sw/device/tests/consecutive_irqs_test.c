@@ -16,8 +16,7 @@
 
 #define PLIC_TARGET kTopEarlgreyPlicTargetIbex0
 
-#define PLIC_PRIORITY_MIN 0u
-#define PLIC_PRIORITY_MAX 3u
+#define kDifPlicMinPriority 0u
 
 static dif_plic_t plic0;
 static dif_uart_t uart0;
@@ -163,19 +162,19 @@ static bool plic_configure_irqs(dif_plic_t *plic) {
 
   // Set IRQ priorities to MAX
   if (dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
-                                PLIC_PRIORITY_MAX) != kDifPlicOk) {
+                                kDifPlicMaxPriority) != kDifPlicOk) {
     LOG_ERROR("priority set for RX overflow failed!");
     return false;
   }
 
   if (dif_plic_irq_priority_set(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
-                                PLIC_PRIORITY_MAX) != kDifPlicOk) {
+                                kDifPlicMaxPriority) != kDifPlicOk) {
     LOG_ERROR("priority set for TX empty failed!");
     return false;
   }
 
   // Set Ibex IRQ priority threshold level
-  if (dif_plic_target_threshold_set(&plic0, PLIC_TARGET, PLIC_PRIORITY_MIN) !=
+  if (dif_plic_target_threshold_set(&plic0, PLIC_TARGET, kDifPlicMinPriority) !=
       kDifPlicOk) {
     LOG_ERROR("threshold set failed!");
     return false;
