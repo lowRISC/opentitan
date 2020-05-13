@@ -23,12 +23,12 @@ class chip_sw_test_base_vseq extends chip_base_vseq;
     cfg.m_uart_agent_cfg.set_parity(1'b0, 1'b0);
     cfg.m_uart_agent_cfg.set_baud_rate(BaudRate2Mbps);
 
-    // initialize the sw msg monitor
+    // initialize the sw logger interface
     foreach (cfg.sw_types[i]) begin
-      cfg.sw_logger_vif[cfg.sw_types[i]].sw_log_addr = SW_DV_LOG_ADDR;
-      cfg.sw_logger_vif[cfg.sw_types[i]].set_sw_name(cfg.sw_types[i]);
-      cfg.sw_logger_vif[cfg.sw_types[i]].ready();
+      cfg.sw_logger_vif.set_sw_name(cfg.sw_types[i]);
     end
+    cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
+    cfg.sw_logger_vif.ready();
 
     // initialize the sw test status
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;

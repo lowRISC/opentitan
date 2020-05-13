@@ -19,7 +19,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
   // sw logger related
   string sw_types[]         = '{"rom", "sw"};
-  sw_logger_vif             sw_logger_vif[string];
+  sw_logger_vif             sw_logger_vif;
   string                    sw_images[string];
   virtual sw_test_status_if sw_test_status_vif;
   uint                      sw_test_timeout_ns = 5_000_000; // 5ms
