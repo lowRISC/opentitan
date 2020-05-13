@@ -26,6 +26,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
   input update_i,
   input wipe_i,
   input [PrimFlashAddrW-1:0] addr_i,
+  input part_i,
   input [DataWidth-1:0] data_i,
   output rd_buf_t out_o
 );
@@ -34,11 +35,13 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
     if (!rst_ni) begin
       out_o.data <= '0;
       out_o.addr <= '0;
+      out_o.part <= flash_ctrl_pkg::DataPart;
       out_o.attr <= Invalid;
     end else if (wipe_i) begin
       out_o.attr <= Invalid;
     end else if (alloc_i) begin
       out_o.addr <= addr_i;
+      out_o.part <= part_i;
       out_o.attr <= Wip;
     end else if (update_i) begin
       out_o.data <= data_i;

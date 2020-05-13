@@ -9,15 +9,16 @@ package flash_ctrl_pkg;
 
   // parameters for flash macro properties
   localparam int NumBanks        = top_pkg::FLASH_BANKS;
-  localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK;
-  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE;  //Number of bus words per page
+  localparam int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  //Info pages per bank
+  localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; //Data pages per bank
+  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; //Number of bus words per page
   localparam int BytesPerWord    = top_pkg::FLASH_BYTES_PER_WORD;
   localparam int BankW           = $clog2(NumBanks);
   localparam int PageW           = $clog2(PagesPerBank);
   localparam int WordW           = $clog2(WordsPerPage);
   localparam int AddrW           = BankW + PageW + WordW; // all flash range
   localparam int BankAddrW       = PageW + WordW;         // 1 bank of flash range
-  localparam int DataWidth       = 64;
+  localparam int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
   localparam int FlashTotalPages = NumBanks * PagesPerBank;
   localparam int AllPagesW       = BankW + PageW;
 
@@ -51,6 +52,12 @@ package flash_ctrl_pkg;
     ReadDir      = 1'b1
   } flash_flfo_dir_e;
 
+  // Flash partition type
+  typedef enum logic {
+    DataPart     = 1'b0,
+    InfoPart     = 1'b1
+  } flash_part_e;
+
   // Flash controller to memory
   typedef struct packed {
     logic                req;
@@ -58,6 +65,7 @@ package flash_ctrl_pkg;
     logic                prog;
     logic                pg_erase;
     logic                bk_erase;
+    flash_part_e         part;
     logic [AddrW-1:0]    addr;
     logic [BusWidth-1:0] prog_data;
   } flash_req_t;
@@ -69,6 +77,7 @@ package flash_ctrl_pkg;
     prog:      1'b0,
     pg_erase:  1'b0,
     bk_erase:  1'b0,
+    part:      DataPart,
     addr:      '0,
     prog_data: '0
   };
