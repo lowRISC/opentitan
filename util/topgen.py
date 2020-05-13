@@ -63,7 +63,8 @@ def generate_xbars(top, out_path):
             log.error("Elaboration failed." + repr(xbar))
 
         try:
-            out_rtl, out_pkg, out_core = tlgen.generate(xbar)
+            out_rtl, out_pkg, out_core = tlgen.generate(
+                xbar, "top_" + top["name"])
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
 

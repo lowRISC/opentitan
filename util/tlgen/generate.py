@@ -12,7 +12,7 @@ from .item import NodeType
 from .xbar import Xbar
 
 
-def generate(xbar: Xbar) -> str:
+def generate(xbar: Xbar, local_name="ip") -> str:
     """generate uses elaborated model then creates top level Xbar module
     with prefix.
     """
@@ -27,7 +27,9 @@ def generate(xbar: Xbar) -> str:
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar, ntype=NodeType)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
-        out_core = xbar_core_tpl.render(xbar=xbar, ntype=NodeType)
+        out_core = xbar_core_tpl.render(xbar=xbar,
+                                        ntype=NodeType,
+                                        local_name=local_name)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
 
