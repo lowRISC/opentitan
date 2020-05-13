@@ -9,7 +9,7 @@ description: "XBAR DV sim target"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:xbar_main
+      - lowrisc:top_earlgrey:xbar_main
       - lowrisc:dv:dv_utils
       - lowrisc:dv:xbar_tb
       - lowrisc:dv:xbar_main_bind

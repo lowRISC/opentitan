@@ -89,7 +89,7 @@ def generate_xbars(top, out_path):
             fout.write(out_core)
 
         # generate testbench for xbar
-        tlgen.generate_tb(xbar, dv_path)
+        tlgen.generate_tb(xbar, dv_path, "top_" + top["name"])
 
 
 def generate_alert_handler(top, out_path):
