@@ -18,8 +18,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   output logic host_req_rdy_o,
   output logic host_req_done_o,
   output logic [BusWidth-1:0] host_rdata_o,
-  input flash_ctrl_pkg::flash_req_t flash_ctrl_i,
-  output flash_ctrl_pkg::flash_rsp_t flash_ctrl_o
+  input flash_req_t flash_ctrl_i,
+  output flash_rsp_t flash_ctrl_o
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
@@ -130,6 +130,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_i(flash_ctrl_i.prog),
       .pg_erase_i(flash_ctrl_i.pg_erase),
       .bk_erase_i(flash_ctrl_i.bk_erase),
+      .part_i(flash_ctrl_i.part),
       .addr_i(flash_ctrl_i.addr[0 +: BankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .host_req_rdy_o(host_req_rdy[bank]),
