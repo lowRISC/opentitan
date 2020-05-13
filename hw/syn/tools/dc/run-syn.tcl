@@ -11,28 +11,48 @@
 # tool setup
 source setup.tcl
 
+# not exit remained in command line
+set RUN_INTERACTIVE $::env(INTERACTIVE)
+
 # path to directory containing the source list file
 set SV_FLIST $::env(SV_FLIST)
 set BUILD_DIR $::env(BUILD_DIR)
+
+# just compile the "core" toplevel at the moment
+# might want to switch to top_earlgrey_asic later on (with pads)
+set DUT $::env(DUT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
 set REPDIR   "${BUILD_DIR}/REPORTS"
 set DDCDIR   "${BUILD_DIR}/DDC"
+set RESULTDIR "${BUILD_DIR}/results"
 set VLOGDIR  "${BUILD_DIR}/NETLISTS"
 
-exec mkdir -p ${REPDIR} ${DDCDIR} ${VLOGDIR} ${WORKLIB}
+exec mkdir -p ${REPDIR} ${DDCDIR} ${VLOGDIR} ${WORKLIB} ${RESULTDIR}
 
 # define work lib path
 define_design_lib WORK -path $WORKLIB
 
 #######################
+## CONFIGURATIONS   ###
+#######################
+
+# Define the verification setup file for Formality
+set_svf ${RESULTDIR}/${DUT}.svf
+
+# Setup SAIF Name Mapping Database
+saif_map -start
+
+###The following variable helps verification when there are differences between DC and FM while inferring logical hierarchies
+set_app_var hdlin_enable_hier_map true
+
+
+
+#######################
 ##  DESIGN SOURCES  ###
 #######################
 
-# just compile the "core" toplevel at the moment
-# might want to switch to top_earlgrey_asic later on (with pads)
-set DUT $::env(DUT)
 
 # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
 # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
@@ -54,6 +74,8 @@ analyze -vcs "-sverilog +define+${DEFINE} -f ${SV_FLIST}" > "${REPDIR}/analyze.r
 elaborate  ${DUT} -parameters ${PARAMS}                   > "${REPDIR}/elab.rpt"
 link                                                      > "${REPDIR}/link.rpt"
 check_design                                              > "${REPDIR}/check.rpt"
+
+set_verification_top
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
@@ -96,6 +118,9 @@ compile_ultra -gate_clock -scan -no_autoungroup > "${REPDIR}/compile.rpt"
 sh echo ${NAND2_GATE_EQUIVALENT} > "${REPDIR}/gate_equiv.rpt"
 
 report_clocks                                 > "${REPDIR}/clocks.rpt"
+report_clock -groups                          > "${REPDIR}/clock.groups.rpt"
+report_path_group                             > "${REPDIR}/path_group.rpt"
+report_clock_gating -multi_stage -nosplit     > "${REPDIR}/clock_gating.rpt"
 report_timing -nosplit -slack_lesser_than 0.0 > "${REPDIR}/timing.rpt"
 report_area   -hier -nosplit                  > "${REPDIR}/area.rpt"
 report_power  -hier -nosplit                  > "${REPDIR}/power.rpt"
@@ -113,6 +138,10 @@ report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/ti
 write_file -format ddc     -hierarchy -output "${DDCDIR}/mapped.ddc"
 write_file -format verilog -hierarchy -output "${VLOGDIR}/mapped.v"
 
+# Write final SDC
+write_sdc -nosplit ${RESULTDIR}/${DUT}.final.sdc
+# If SAIF is used, write out SAIF name mapping file for PrimeTime-PX
+saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
 # ##############################
 # ##  INCREMENTAL FLATTENING  ##
 # ##############################
@@ -136,4 +165,7 @@ write_file -format verilog -hierarchy -output "${VLOGDIR}/mapped.v"
 # write_file -format ddc     -hierarchy -output "${DDCDIR}/flat.ddc"
 # write_file -format verilog -hierarchy -output "${VLOGDIR}/flat.v"
 
-exit
+if { ![info exists RUN_INTERACTIVE] } {
+    exit
+}
+
