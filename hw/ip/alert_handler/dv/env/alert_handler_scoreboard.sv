@@ -34,6 +34,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   int intr_cnter_per_class [NUM_ALERT_HANDLER_CLASSES];
   int accum_cnter_per_class[NUM_ALERT_HANDLER_CLASSES];
   int esc_cnter_per_signal [NUM_ESC_SIGNALS];
+  int esc_signal_release   [NUM_ESC_SIGNALS];
+  time last_esc_release    [NUM_ESC_SIGNALS];
   int esc_sig_class[NUM_ESC_SIGNALS]; // only one class can increment one esc signal at a time
   // For different alert classify in the same class and trigger at the same cycle, design only
   // count once. So record the alert triggered timing here
@@ -72,6 +74,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       process_esc_fifo();
       check_intr_timeout_trigger_esc();
       esc_phase_signal_cnter();
+      release_esc_signal();
     join_none
   endtask
 
@@ -343,7 +346,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                 while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
                   if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
                   @(cfg.clk_rst_vif.cb);
-                  intr_cnter_per_class[class_i] += 1;
+                  if (!under_esc_classes[class_i]) intr_cnter_per_class[class_i] += 1;
                 end
               end
               if (!under_esc_classes[class_i]) intr_cnter_per_class[class_i] = 0;
@@ -378,35 +381,39 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                     end
                   end
                   if (under_esc_classes[class_i]) begin
-                    @(cfg.clk_rst_vif.cb);
-                    intr_cnter_per_class[class_i] = 1;
+                    cfg.clk_rst_vif.wait_n_clks(1);
                     incr_esc_sig_cnt(enabled_sig_q, class_i);
-                    while (under_esc_classes[class_i] != 0 &&
+                    intr_cnter_per_class[class_i] = 1;
+                    while (under_esc_classes[class_i] &&
                            intr_cnter_per_class[class_i] < phase_thresh) begin
-                      @(cfg.clk_rst_vif.cb);
+                      cfg.clk_rst_vif.wait_n_clks(1);
                       incr_esc_sig_cnt(enabled_sig_q, class_i);
                       intr_cnter_per_class[class_i]++;
                     end
                     incr_esc_sig_cnt(enabled_sig_q, class_i);
                     foreach (enabled_sig_q[i]) begin
                       int index = enabled_sig_q[i];
-                      if (esc_sig_class[index] == (class_i + 1)) release_esc_signal(index);
+                      if (esc_sig_class[index] == (class_i + 1)) begin
+                        esc_signal_release[index] = 1;
+                      end else begin
+                        last_esc_release[index] = $realtime + cfg.clk_rst_vif.clk_period_ps / 1000;
+                      end
                     end
                   end
                 end
-                @(cfg.clk_rst_vif.cb);
+                cfg.clk_rst_vif.wait_n_clks(1);
                 intr_cnter_per_class[class_i] = 0;
-                cfg.clk_rst_vif.wait_clks(2);
               end
               begin
                 wait(cfg.under_reset || !under_esc_classes[class_i]);
                 if (!under_esc_classes[class_i]) begin
-                  // wait 3 clk cycle until release esc signal completed
-                  cfg.clk_rst_vif.wait_clks(3);
+                  // wait 2 clk cycles until esc_signal_release is set
+                  cfg.clk_rst_vif.wait_n_clks(2);
                 end
               end
             join_any
             disable fork;
+            intr_cnter_per_class[class_i] = 0;
           end // end forever
         end
       join_none
@@ -415,13 +422,23 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // release escalation signal after one clock cycle, to ensure happens at the end of the clock
   // cycle, waited 2 negedge clks here
-  virtual task release_esc_signal(int sig_i);
-    fork
-      begin
-        cfg.clk_rst_vif.wait_n_clks(2);
-        esc_sig_class[sig_i] = 0;
-      end
-    join_none
+  // One corner case when two phases end with exactly one clk cycle difference, then might miss
+  // one count - so use the recorded last_esc_release time here
+  virtual task release_esc_signal();
+    for (int i = 0; i < NUM_ESC_SIGNALS; i++) begin
+      fork
+        automatic int sig_i = i;
+        forever @ (esc_signal_release[sig_i]) begin
+          cfg.clk_rst_vif.wait_clks(2);
+          while (last_esc_release[sig_i] > $realtime) begin
+            esc_cnter_per_signal[sig_i]++;
+            cfg.clk_rst_vif.wait_clks(1);
+          end
+          esc_sig_class[sig_i] = 0;
+          esc_signal_release[sig_i] = 0;
+        end
+      join_none
+    end
   endtask
 
   // increase signal count only when current signal is not incremented by other class already
@@ -457,7 +474,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   function void clr_reset_esc_class(int class_i);
     if (under_esc_classes [class_i]) intr_cnter_per_class[class_i] = 0;
     if (under_intr_classes[class_i]) clr_esc_under_intr[class_i] = 1;
-    last_triggered_alert_per_class[class_i] = 0;
+    last_triggered_alert_per_class[class_i] = $realtime;
     under_esc_classes[class_i]              = 0;
     accum_cnter_per_class[class_i]          = 0;
   endfunction

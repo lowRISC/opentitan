@@ -58,9 +58,9 @@ class esc_monitor extends alert_esc_base_monitor;
             ping_cnter ++;
           end
           while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
-                  !cfg.vif.get_esc());
+                  !cfg.probe_vif.get_esc_en());
 
-          if (!cfg.vif.get_esc()) begin
+          if (!cfg.probe_vif.get_esc_en()) begin
             if (ping_cnter == cfg.ping_timeout_cycle &&
                 req.esc_handshake_sta != EscRespComplete) begin
               alert_esc_seq_item req_clone;
@@ -70,6 +70,9 @@ class esc_monitor extends alert_esc_base_monitor;
               @(cfg.vif.monitor_cb);
               check_esc_resp(.req(req), .is_ping(1), .do_wait_clk(0));
             end
+          end else begin
+            // wait a clk cycle to enter the esc_p/n mode
+            @(cfg.vif.monitor_cb);
           end
           under_esc_ping = 0;
         end
@@ -156,6 +159,7 @@ class esc_monitor extends alert_esc_base_monitor;
         alert_esc_port.write(req);
       end else begin
         req.esc_handshake_sta = EscRespPing1;
+        if (cfg.probe_vif.get_esc_en() && is_ping) req.esc_handshake_sta = EscRespLo;
       end
     end else if (req.esc_handshake_sta == EscRespPing1) begin
       if (cfg.vif.get_resp_p() !== 0) begin
@@ -163,6 +167,7 @@ class esc_monitor extends alert_esc_base_monitor;
         alert_esc_port.write(req);
       end else begin
         req.esc_handshake_sta = EscRespComplete;
+        if (cfg.probe_vif.get_esc_en() && is_ping) req.esc_handshake_sta = EscRespHi;
       end
     end
 
