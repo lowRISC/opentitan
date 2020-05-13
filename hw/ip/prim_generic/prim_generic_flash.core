@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:ram_1p
+      - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/prim_generic_flash.sv
     file_type: systemVerilogSource
