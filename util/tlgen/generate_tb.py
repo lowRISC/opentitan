@@ -12,7 +12,9 @@ from pathlib import Path
 from .xbar import Xbar
 
 
-def generate_tb(xbar: Xbar, dv_path: Path) -> str:  # xbar: Xbar -> str
+def generate_tb(xbar: Xbar,
+                dv_path: Path,
+                library_name: str = "ip") -> str:  # xbar: Xbar -> str
     # list all the generate files for TB
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
@@ -45,6 +47,6 @@ def generate_tb(xbar: Xbar, dv_path: Path) -> str:  # xbar: Xbar -> str
 
         with dv_filepath.open(mode='w', encoding='UTF-8') as fout:
             try:
-                fout.write(tpl.render(xbar=xbar))
+                fout.write(tpl.render(xbar=xbar, library_name=library_name))
             except:  # noqa: E722 for general exception handling
                 log.error(exceptions.text_error_template().render())
