@@ -47,7 +47,7 @@ class TestFunctionalVerilator:
 
         p_sim.terminate()
 
-    @pytest.mark.timeout(120)
+    @pytest.mark.timeout(240)
     def test_execute_binary(self, sim_top_earlgrey, uart_timeout, logfile):
         """
         Executes the binary and inspects its UART for "PASS!\r\n" or "FAIL!\r\n".
