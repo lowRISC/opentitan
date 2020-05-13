@@ -3,6 +3,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+'''A tool to copy source code from upstream into this repository.
+
+For an introduction to using this tool, see doc/ug/vendor_hw.md in this
+repository (on the internet at https://docs.opentitan.org/doc/ug/vendor_hw/).
+
+For full documentation, see doc/rm/vendor_in_tool.md (on the internet at
+https://docs.opentitan.org/doc/rm/vendor_in_tool).
+
+'''
+
 import argparse
 import fnmatch
 import logging as log
@@ -16,8 +26,6 @@ import textwrap
 from pathlib import Path
 
 import hjson
-
-DESC = """vendor, copy source code from upstream into this repository"""
 
 EXCLUDE_ALWAYS = ['.git']
 
@@ -302,7 +310,7 @@ def _cp_from_upstream(src, dest, exclude=[]):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(prog="vendor", description=DESC)
+    parser = argparse.ArgumentParser(prog="vendor", description=__doc__)
     parser.add_argument(
         '--update',
         '-U',
