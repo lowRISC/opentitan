@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module flash_mp #(
+module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   parameter int MpRegions = 8,
   parameter int NumBanks = 2,
   parameter int AllPagesW = 16,
@@ -18,12 +18,13 @@ module flash_mp #(
   input rst_ni,
 
   // configuration from sw
-  input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t [TotalRegions-1:0] region_cfgs_i,
-  input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
+  input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [TotalRegions-1:0] region_cfgs_i,
+  input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
 
   // interface signals to/from *_ctrl
   input req_i,
   input [AllPagesW-1:0] req_addr_i,
+  input req_part_i,
   input addr_ovfl_i,
   input [BankW-1:0] req_bk_i,
   input rd_i,
@@ -48,7 +49,10 @@ module flash_mp #(
   input erase_done_i
 
 );
-  import flash_ctrl_pkg::*;
+
+
+  // Address range checks
+  localparam int LastValidInfoPage = InfosPerBank - 1;
 
   // There could be multiple region matches due to region overlap
   logic [AllPagesW-1:0] region_end[TotalRegions];
@@ -73,8 +77,11 @@ module flash_mp #(
   always_comb begin
     for (int unsigned i = 0; i < TotalRegions; i++) begin: region_comps
       region_end[i] = region_cfgs_i[i].base.q + region_cfgs_i[i].size.q;
+
+      // region matches if address within range and if the partition matches
       region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
                         req_addr_i <  region_end[i] &
+                        req_part_i == region_cfgs_i[i].partition.q &
                         req_i;
 
       rd_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].rd_en.q & region_sel[i];
@@ -84,11 +91,28 @@ module flash_mp #(
   end
 
   // check for bank erase
+  // bank erase allowed for only data partition
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
-      bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q;
+      bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q &
+                       (req_part_i == DataPart);
     end
   end
+
+  logic invalid_info_access, invalid_info_erase, invalid_info_txn;
+
+  // invalid info page access
+  assign invalid_info_access = req_i &
+                               (req_part_i == InfoPart) &
+                               (rd_i | prog_i | pg_erase_i) &
+                               (req_addr_i[0 +: PageW] > LastValidInfoPage);
+
+  // invalid info page erase
+  assign invalid_info_erase  = req_i & bk_erase_i &
+                               (req_part_i == InfoPart);
+
+  assign invalid_info_txn    = invalid_info_access | invalid_info_erase;
+
 
   assign final_rd_en = rd_i & |rd_en;
   assign final_prog_en = prog_i & |prog_en;
@@ -105,8 +129,8 @@ module flash_mp #(
   logic txn_ens;
   logic no_allowed_txn;
   assign txn_ens = final_rd_en | final_prog_en | final_pg_erase_en | final_bk_erase_en;
-  // if incoming address overflowed or no transaction enbales, error back
-  assign no_allowed_txn = req_i & (addr_ovfl_i | ~txn_ens);
+  // if incoming address overflowed or is invalid or no transaction enables, error back
+  assign no_allowed_txn = req_i & (addr_ovfl_i | invalid_info_txn | ~txn_ens);
 
   // return done and error the next cycle
   always_ff @(posedge clk_i or negedge rst_ni) begin

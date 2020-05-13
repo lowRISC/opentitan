@@ -12,24 +12,25 @@
 module flash_phy_core import flash_phy_pkg::*; #(
   parameter bit SkipInit     = 1   // this is an option to reset flash to all F's at reset
 ) (
-  input                        clk_i,
-  input                        rst_ni,
-  input                        host_req_i, // host request - read only
-  input [BankAddrW-1:0]        host_addr_i,
-  input                        req_i,      // controller request
-  input                        rd_i,
-  input                        prog_i,
-  input                        pg_erase_i,
-  input                        bk_erase_i,
-  input [BankAddrW-1:0]        addr_i,
-  input [BusWidth-1:0]         prog_data_i,
-  output logic                 host_req_rdy_o,
-  output logic                 host_req_done_o,
-  output logic                 rd_done_o,
-  output logic                 prog_done_o,
-  output logic                 erase_done_o,
-  output logic [BusWidth-1:0]  rd_data_o,
-  output logic                 init_busy_o
+  input                              clk_i,
+  input                              rst_ni,
+  input                              host_req_i, // host request - read only
+  input [BankAddrW-1:0]              host_addr_i,
+  input                              req_i,      // controller request
+  input                              rd_i,
+  input                              prog_i,
+  input                              pg_erase_i,
+  input                              bk_erase_i,
+  input flash_ctrl_pkg::flash_part_e part_i,
+  input [BankAddrW-1:0]              addr_i,
+  input [BusWidth-1:0]               prog_data_i,
+  output logic                       host_req_rdy_o,
+  output logic                       host_req_done_o,
+  output logic                       rd_done_o,
+  output logic                       prog_done_o,
+  output logic                       erase_done_o,
+  output logic [BusWidth-1:0]        rd_data_o,
+  output logic                       init_busy_o
 );
 
   import flash_phy_pkg::*;
@@ -60,6 +61,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   // interface with flash macro
   logic [BankAddrW-1:0] muxed_addr;
+  flash_ctrl_pkg::flash_part_e muxed_part;
 
   // entire read stage is idle, inclusive of all stages
   logic rd_stage_idle;
@@ -148,6 +150,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   end
 
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
+  assign muxed_part = host_sel ? flash_ctrl_pkg::DataPart : part_i;
   assign rd_done_o = ctrl_rsp_vld & rd_i;
   assign prog_done_o = ctrl_rsp_vld & prog_i;
   assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i);
@@ -167,6 +170,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
     .addr_i(muxed_addr),
+    .part_i(muxed_part),
     .rdy_o(rd_stage_rdy),
     .data_valid_o(rd_stage_data_valid),
     .data_o(rd_data_o),
@@ -213,6 +217,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // The size of a page is fixed.  However, depending on the sizing of the word,
   // the number of words within a page will change.
   prim_flash #(
+    .InfosPerBank(InfosPerBank),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage / WidthMultiple),
     .DataWidth(DataWidth),
@@ -226,6 +231,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .bk_erase_i(reqs[PhyBkErase]),
     //.addr_i(muxed_addr[0 +: PageW + WordW]),
     .addr_i(muxed_addr[BankAddrW-1:LsbAddrBit]),
+    .part_i(muxed_part),
     .prog_data_i(prog_data),
     .ack_o(ack),
     .rd_data_o(flash_rdata),
