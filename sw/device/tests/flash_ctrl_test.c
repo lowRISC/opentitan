@@ -24,18 +24,39 @@
 #define CHECK_EQZ(x) CHECK((x) == 0)
 #define CHECK_NEZ(x) CHECK((x) != 0)
 
+/*
+ * Basic test of page erase / program / read functions
+ * Tests pages from both the data and info partitions
+ */
 static void test_basic_io(void) {
+  // setup default access for data partition
   flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
                               /*erase_en=*/true);
+
+  // info partition has no default access, specifically setup a region
+  mp_region_t info_region = {
+      .num = 0x0,
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .part = kInfoPartition,
+      .rd_en = true,
+      .prog_en = true,
+      .erase_en = true,
+  };
+  flash_cfg_region(&info_region);
 
   uintptr_t flash_bank_1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
   mmio_region_t flash_bank_1 = mmio_region_from_addr(flash_bank_1_addr);
 
-  // Test erasing flash; this should turn the whole bank to all ones.
-  CHECK_EQZ(flash_page_erase(flash_bank_1_addr));
+  // Test erasing flash data partition; this should turn the whole bank to all
+  // ones.
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kDataPartition));
   for (int i = 0; i < FLASH_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(~mmio_region_read32(flash_bank_1, i * sizeof(uint32_t)));
   }
+
+  // Erasing flash info partition; this should turn the whole bank to all ones.
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kInfoPartition));
 
   // Prepare an entire page of non-trivial data to program
   // into flash.
@@ -48,20 +69,34 @@ static void test_basic_io(void) {
 
   // Attempt to live-program an entire page, where the overall
   // payload is much larger than the internal flash FIFO.
-  CHECK_EQZ(flash_page_erase(flash_bank_1_addr));
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kDataPartition));
+  CHECK_EQZ(flash_write(flash_bank_1_addr, kDataPartition, input_page,
+                        FLASH_WORDS_PER_PAGE));
+  CHECK_EQZ(flash_read(flash_bank_1_addr, kDataPartition, FLASH_WORDS_PER_PAGE,
+                       output_page));
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 
-  CHECK_EQZ(flash_write(flash_bank_1_addr, input_page, FLASH_WORDS_PER_PAGE));
-  CHECK_EQZ(flash_read(flash_bank_1_addr, FLASH_WORDS_PER_PAGE, output_page));
-
+  // Similar check for info page
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kInfoPartition));
+  CHECK_EQZ(flash_write(flash_bank_1_addr, kInfoPartition, input_page,
+                        FLASH_WORDS_PER_PAGE));
+  CHECK_EQZ(flash_read(flash_bank_1_addr, kInfoPartition, FLASH_WORDS_PER_PAGE,
+                       output_page));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 
   uintptr_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;
-  CHECK_EQZ(flash_page_erase(flash_bank_0_last_page_addr));
+  mmio_region_t flash_bank_0_last_page =
+      mmio_region_from_addr(flash_bank_0_last_page_addr);
+  CHECK_EQZ(flash_page_erase(flash_bank_0_last_page_addr, kDataPartition));
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; ++i) {
+    CHECK_EQZ(
+        ~mmio_region_read32(flash_bank_0_last_page, i * sizeof(uint32_t)));
+  }
 
-  CHECK_EQZ(flash_write(flash_bank_0_last_page_addr, input_page,
+  CHECK_EQZ(flash_write(flash_bank_0_last_page_addr, kDataPartition, input_page,
                         FLASH_WORDS_PER_PAGE));
-  CHECK_EQZ(flash_read(flash_bank_0_last_page_addr, FLASH_WORDS_PER_PAGE,
-                       output_page));
+  CHECK_EQZ(flash_read(flash_bank_0_last_page_addr, kDataPartition,
+                       FLASH_WORDS_PER_PAGE, output_page));
 
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 }
@@ -75,6 +110,7 @@ static void test_memory_protection(void) {
       .num = 0x0,
       .base = FLASH_PAGES_PER_BANK,
       .size = 0x1,
+      .part = kDataPartition,
       .rd_en = true,
       .prog_en = true,
       .erase_en = true,
@@ -89,8 +125,8 @@ static void test_memory_protection(void) {
   uintptr_t bad_region_start = ok_region_end;
 
   // Erase good and bad regions.
-  CHECK_EQZ(flash_page_erase(ok_region_start));
-  CHECK_EQZ(flash_page_erase(bad_region_start));
+  CHECK_EQZ(flash_page_erase(ok_region_start, kDataPartition));
+  CHECK_EQZ(flash_page_erase(bad_region_start, kDataPartition));
 
   // Turn off flash access by default.
   flash_default_region_access(/*rd_en=*/false, /*prog_en=*/false,
@@ -108,7 +144,8 @@ static void test_memory_protection(void) {
   }
 
   // Perform a partial write.
-  CHECK_NEZ(flash_write(region_boundary_start, words, ARRAYSIZE(words)));
+  CHECK_NEZ(flash_write(region_boundary_start, kDataPartition, words,
+                        ARRAYSIZE(words)));
   // Words in the good region should still match, while words in the bad
   // region should be all-ones, since we erased
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
@@ -121,10 +158,10 @@ static void test_memory_protection(void) {
   }
 
   // Attempt to erase bad page, which should fail.
-  CHECK_NEZ(flash_page_erase(bad_region_start));
+  CHECK_NEZ(flash_page_erase(bad_region_start, kDataPartition));
 
   // Attempt to erase the good page, which should succeed.
-  CHECK_EQZ(flash_page_erase(ok_region_start));
+  CHECK_EQZ(flash_page_erase(ok_region_start, kDataPartition));
   for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
     CHECK_EQZ(~mmio_region_read32(ok_region, i * sizeof(uint32_t)));
   }

@@ -112,7 +112,7 @@ static int bootstrap_flash(void) {
           LOG_INFO("Flash erase successful");
         }
 
-        if (flash_write(frame.header.flash_offset, frame.data,
+        if (flash_write(frame.header.flash_offset, kDataPartition, frame.data,
                         SPIFLASH_FRAME_DATA_WORDS) != 0) {
           return E_BS_WRITE;
         }
