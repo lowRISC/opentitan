@@ -44,6 +44,8 @@ module top_earlgrey_asic (
   inout               IO_GP15
 );
 
+  import top_earlgrey_pkg::*;
+
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -140,9 +142,9 @@ module top_earlgrey_asic (
                           padctrl_reg_pkg::NDioPads;
 
   // This specifies the tie-off values of the muxed MIO/DIOs
-  // when the JTAG is active. SPI CSB sits on DIO 12, and is active low.
-  localparam logic [NumIOs-1:0] TieOffValues =
-      NumIOs'(1'b1 << (padctrl_reg_pkg::NMioPads + 12));
+  // when the JTAG is active. SPI CSB is active low.
+  localparam logic [NumIOs-1:0] TieOffValues =NumIOs'(1'b1 << (
+      padctrl_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
 
   // TODO: this is a temporary solution. JTAG will eventually be selected and
   // qualified inside the pinmux, based on strap and lifecycle state.
@@ -153,12 +155,16 @@ module top_earlgrey_asic (
     .TieOffValues   (                   TieOffValues ),
     .JtagEnIdx      (                             16 ), // MIO 16
     .JtagEnPolarity (                              1 ),
-    .TckIdx         ( padctrl_reg_pkg::NMioPads + 13 ), // DIO 13
-    .TmsIdx         ( padctrl_reg_pkg::NMioPads + 12 ), // DIO 12
+    .TckIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
+    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( padctrl_reg_pkg::NMioPads + 11 ), // DIO 11
-    .TdoIdx         ( padctrl_reg_pkg::NMioPads + 10 )  // DIO 10
+    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMosi ),
+    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMiso )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),
