@@ -284,7 +284,9 @@ module tlul_assert #(
     initial forever begin
       bit tlul_assert_en;
       uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_assert_en");
-      uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en);
+      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en)) begin
+        `uvm_fatal("tlul_assert", "Can't find tlul_assert_en")
+      end
       disable_sva = !tlul_assert_en;
     end
   `endif
