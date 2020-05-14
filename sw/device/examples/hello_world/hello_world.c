@@ -30,12 +30,6 @@ int main(int argc, char **argv) {
   LOG_INFO("Hello World!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
 
-  // End the test here for DV simulation, since the rest of the code is more
-  // appropriate for an FPGA demonstration.
-  if (kDeviceType == kDeviceSimDV) {
-    test_status_set(kTestStatusPassed);
-  }
-
   demo_gpio_startup(&gpio);
 
   // Now have UART <-> Buttons/LEDs demo
