@@ -18,6 +18,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -218,17 +219,19 @@ def generate_tool_versions():
             fout.write(__TOOL_REQUIREMENTS__[tool])
 
 
-def is_hugo_extended():
-    args = ["hugo", "version"]
+def hugo_match_version(hugo_bin_path, version):
+    logging.info("Hugo binary path: %s", hugo_bin_path)
+    args = [str(hugo_bin_path), "version"]
     process = subprocess.run(args,
                              universal_newlines=True,
                              stdout=subprocess.PIPE,
                              check=True,
                              cwd=str(SRCTREE_TOP))
 
+    logging.info("Checking for correct Hugo version: %s", version)
     # Hugo version string example:
     # Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z
-    return bool(re.search("v\d+\.\d+\.\d+.*/extended", process.stdout))
+    return bool(re.search("v"+version+".*/extended", process.stdout))
 
 
 def install_hugo(install_dir):
@@ -252,6 +255,13 @@ def install_hugo(install_dir):
     install_dir.mkdir(exist_ok=True, parents=True)
     hugo_bin_path = install_dir / 'hugo'
 
+    try:
+        if hugo_match_version(hugo_bin_path, HUGO_EXTENDED_VERSION):
+            return hugo_bin_path
+    except:
+        # If there is an error checking the version just continue to download
+        pass
+
     # TODO: Investigate the use of Python builtins for downloading. Extracting
     # the archive will probably will be a call to tar.
     cmd = 'curl -sL {download_url} | tar -xzO --overwrite hugo > {hugo_bin_file}'.format(
@@ -259,15 +269,15 @@ def install_hugo(install_dir):
     logging.info("Calling %s to download hugo.", cmd)
     subprocess.run(cmd, shell=True, check=True, cwd=str(SRCTREE_TOP))
     hugo_bin_path.chmod(0o755)
-    return True
+    return hugo_bin_path
 
 
-def invoke_hugo(preview):
+def invoke_hugo(preview, hugo_bin_path):
     site_docs = SRCTREE_TOP.joinpath('site', 'docs')
     config_file = str(site_docs.joinpath('config.toml'))
     layout_dir = str(site_docs.joinpath('layouts'))
     args = [
-        "hugo",
+        str(hugo_bin_path),
         "--config",
         config_file,
         "--destination",
@@ -297,6 +307,11 @@ def main():
         help="""starts a local server with live reload (updates triggered upon
              changes in the documentation files). this feature is intended
              to preview the documentation locally.""")
+    parser.add_argument(
+        '--force-global',
+        action='store_true',
+        help="""Use a global installation of Hugo. This skips the version
+            check and relies on Hugo to be available from the environment.""")
     parser.add_argument('--hugo', help="""TODO""")
 
     args = parser.parse_args()
@@ -311,20 +326,22 @@ def main():
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
 
-    try:
-        if not is_hugo_extended():
-            logging.info(
-                "Hugo extended (with SASS support) is required, but only non-extended version found. "
-                "Installing local copy and re-trying.")
-            install_hugo(hugo_localinstall_dir)
+    hugo_bin_path = "hugo"
+    if not args.force_global:
+        try:
+            hugo_bin_path = install_hugo(hugo_localinstall_dir)
+        except KeyboardInterrupt:
+            pass
 
-        invoke_hugo(args.preview)
-    except FileNotFoundError:
-        logging.info("Hugo not found. Installing local copy and re-trying.")
-        install_hugo(hugo_localinstall_dir)
-        invoke_hugo(args.preview)
+    try:
+        invoke_hugo(args.preview, hugo_bin_path)
+    except subprocess.CalledProcessError:
+        sys.exit("Error building site")
+    except PermissionError:
+        sys.exit("Error running Hugo")
     except KeyboardInterrupt:
         pass
+
 
 
 if __name__ == "__main__":
