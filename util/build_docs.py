@@ -11,12 +11,10 @@
 #       e.g. http://localhost:1313/hw/ip/uart/doc
 
 import argparse
-import io
 import logging
 import os
 import platform
 import re
-import shutil
 import subprocess
 import sys
 import textwrap
@@ -135,7 +133,7 @@ def generate_hardware_blocks():
         base_path.parent.mkdir(parents=True, exist_ok=True)
 
         regs_html = open(str(base_path.parent.joinpath(base_path.name +
-                                                   '.registers')),
+                                                       '.registers')),
                          mode='w')
         gen_html.gen_html(regs, regs_html)
         regs_html.close()
@@ -172,6 +170,7 @@ def generate_selfdocs():
             elif tool == "tlgen":
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
+
 def generate_apt_reqs():
     """Generate an apt-get command line invocation from apt-requirements.txt
 
@@ -201,6 +200,7 @@ def generate_apt_reqs():
     with open(str(apt_cmd_path), mode='w') as fout:
         fout.write(apt_cmd)
 
+
 def generate_tool_versions():
     """Generate an tool version number requirement from tool_requirements.py
 
@@ -212,11 +212,11 @@ def generate_tool_versions():
     exec(open(requirements_file).read(), globals())
 
     # And then write a version file for every tool.
-    for tool in __TOOL_REQUIREMENTS__:
+    for tool in __TOOL_REQUIREMENTS__:  # noqa: F821
         version_path = config["outdir-generated"].joinpath('version_' + tool + '.txt')
         version_path.parent.mkdir(parents=True, exist_ok=True)
         with open(str(version_path), mode='w') as fout:
-            fout.write(__TOOL_REQUIREMENTS__[tool])
+            fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
 
 
 def hugo_match_version(hugo_bin_path, version):
@@ -230,8 +230,8 @@ def hugo_match_version(hugo_bin_path, version):
 
     logging.info("Checking for correct Hugo version: %s", version)
     # Hugo version string example:
-    # Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z
-    return bool(re.search("v"+version+".*/extended", process.stdout))
+    # "Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z"  # noqa: E501
+    return bool(re.search("v" + version + ".*/extended", process.stdout))
 
 
 def install_hugo(install_dir):
@@ -249,8 +249,9 @@ def install_hugo(install_dir):
             "currently. Manually install hugo and re-run this script.")
         return False
 
-    download_url = 'https://github.com/gohugoio/hugo/releases/download/v{version}/hugo_extended_{version}_Linux-64bit.tar.gz'.format(
-        version=HUGO_EXTENDED_VERSION)
+    download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
+                    '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
+                        version=HUGO_EXTENDED_VERSION)
 
     install_dir.mkdir(exist_ok=True, parents=True)
     hugo_bin_path = install_dir / 'hugo'
@@ -258,8 +259,10 @@ def install_hugo(install_dir):
     try:
         if hugo_match_version(hugo_bin_path, HUGO_EXTENDED_VERSION):
             return hugo_bin_path
-    except:
+    except PermissionError:
         # If there is an error checking the version just continue to download
+        logging.info("Hugo version could not be verified. Continue to download.")
+    except FileNotFoundError:
         pass
 
     # TODO: Investigate the use of Python builtins for downloading. Extracting
@@ -304,8 +307,8 @@ def main():
     parser.add_argument(
         '--preview',
         action='store_true',
-        help="""starts a local server with live reload (updates triggered upon
-             changes in the documentation files). this feature is intended
+        help="""Starts a local server with live reload (updates triggered upon
+             changes in the documentation files). This feature is intended
              to preview the documentation locally.""")
     parser.add_argument(
         '--force-global',
@@ -341,7 +344,6 @@ def main():
         sys.exit("Error running Hugo")
     except KeyboardInterrupt:
         pass
-
 
 
 if __name__ == "__main__":
