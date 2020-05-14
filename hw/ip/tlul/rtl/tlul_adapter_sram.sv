@@ -75,7 +75,7 @@ module tlul_adapter_sram #(
 
   logic [top_pkg::TL_DBW-1:0] maskfifo_wdata, maskfifo_rdata;
   logic maskfifo_wvalid, maskfifo_wready;
-  logic maskfifo_rvalid, maskfifo_rready;
+  logic maskfifo_rready;
 
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
@@ -269,7 +269,7 @@ module tlul_adapter_sram #(
     .wready (maskfifo_wready),
     .wdata  (maskfifo_wdata),
     .depth  (),
-    .rvalid (maskfifo_rvalid),
+    .rvalid (),
     .rready (maskfifo_rready),
     .rdata  (maskfifo_rdata)
   );
