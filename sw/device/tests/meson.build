@@ -5,6 +5,7 @@
 sw_tests = {}
 
 subdir('dif')
+subdir('sim_dv')
 
 aes_test_lib = declare_dependency(
   link_with: static_library(
