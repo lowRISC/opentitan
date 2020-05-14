@@ -40,8 +40,8 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   constraint clr_and_lock_en_c {
-    clr_en      dist {0 := 8, [1:'b1111] := 2};
-    lock_bit_en dist {0 := 8, [1:'b1111] := 2};
+    clr_en      dist {0 :/ 6, [1:'b1111] :/ 4};
+    lock_bit_en dist {0 :/ 6, [1:'b1111] :/ 4};
   }
 
   constraint enable_one_alert_c {
@@ -109,7 +109,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
           wr_class_accum_threshold(accum_thresh);
-          wr_ping_timeout_cycle(ping_timeout_cyc);
+          wr_ping_timeout_cycle(ping_timeout_cyc, config_locked);
 
           //drive entropy
           cfg.entropy_vif.drive(rand_drive_entropy);

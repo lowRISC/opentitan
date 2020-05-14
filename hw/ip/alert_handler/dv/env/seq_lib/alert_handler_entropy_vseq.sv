@@ -20,7 +20,7 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
   // increase the possibility to enable more alerts, because alert_handler only sends ping on
   // enabled alerts
   constraint enable_one_alert_c {
-    alert_en dist {'b1111 := 9, [0:'b1110] := 1};
+    alert_en dist {'b1111 :/ 9, [0:'b1110] :/ 1};
   }
 
   constraint sig_int_c {
