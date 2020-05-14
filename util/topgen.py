@@ -868,6 +868,9 @@ def main():
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
         render_template('top_%s.sv', 'rtl/autogen')
 
+        # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
+        render_template('top_%s_pkg.sv', 'rtl/autogen')
+
         # C Header + C File + Clang-format file
         # The C file needs some information from when the header is generated,
         # so we keep this in a dictionary here.
