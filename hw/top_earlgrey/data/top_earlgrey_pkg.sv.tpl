@@ -19,9 +19,6 @@ def get_dio_pin_enum_literal(sig, start_idx):
     else:
         return camelcase("top_{}_dio_pin_{} = {}".format(
             top["name"], sig["name"], start_idx))
-
-
-jtag_spi_pin_map = {"tdo":"miso", "tdi":"mosi", "tms":"csb", "tck":"sck"}
 %>\
 package top_${top["name"]}_pkg;
 
