@@ -17,6 +17,9 @@ class chip_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
 
+  // Local queue for holding received UART TX data.
+  byte uart_tx_data_q[$];
+
   `uvm_object_new
 
   task post_start();
@@ -69,6 +72,16 @@ class chip_base_vseq extends cip_base_vseq #(
 
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
+  endtask
+
+  // Grab packets sent by the DUT over the UART TX port.
+  virtual task get_uart_tx_items();
+    uart_item item;
+    forever begin
+      p_sequencer.uart_tx_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
+      uart_tx_data_q.push_back(item.data);
+    end
   endtask
 
 endclass : chip_base_vseq

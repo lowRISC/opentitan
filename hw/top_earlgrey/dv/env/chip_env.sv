@@ -88,6 +88,9 @@ class chip_env extends cip_base_env #(
     if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
+
+    // Connect the DUT's UART TX TLM port to the sequencer.
+    m_uart_agent.monitor.tx_analysis_port.connect(virtual_sequencer.uart_tx_fifo.analysis_export);
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

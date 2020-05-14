@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_test_base_vseq extends chip_base_vseq;
-  `uvm_object_utils(chip_sw_test_base_vseq)
+class chip_sw_base_vseq extends chip_base_vseq;
+  `uvm_object_utils(chip_sw_base_vseq)
 
   bit sw_test_done;
 
@@ -88,4 +88,4 @@ class chip_sw_test_base_vseq extends chip_base_vseq;
     endcase
   endfunction
 
-endclass : chip_sw_test_base_vseq
+endclass : chip_sw_base_vseq
