@@ -1,0 +1,7 @@
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+These files are the KiCad Version 5 CAD files for the PMOD that allows
+one or two instances of the usbdev interface to be tested on boards
+like the Nexys Video that have PMOD connectors with no internal series
+resistor on the data lines.
