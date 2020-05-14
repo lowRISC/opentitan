@@ -129,6 +129,17 @@
       run_opts: ["+en_uart_logger=1",
                  "+sw_test_timeout_ns=22000000"]
     }
+    {
+      name: chip_opentitan_tock
+      uvm_test_seq: chip_sw_base_vseq
+      sw_test: sw/device/tock/prebuilt/opentitan
+      sw_test_is_prebuilt: 1
+      run_opts: ["+en_uart_logger=1",
+                 // TODO #2241: tock reads an uninitialized part of stack, which causes
+                 // assertion errors to be thrown. This is a temporary workaround.
+                 "+initialize_ram=1",
+                 "+sw_test_timeout_ns=50000000"]
+    }
 
     // The test below is added in the included tl_access_tests.hjson.
     // We just need to append the stub_cpu run mode to it.

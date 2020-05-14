@@ -18,10 +18,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
-    // Set 'default' UART baud rate of 2Mbps - this is also programmed by the C test.
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
     cfg.m_uart_agent_cfg.set_parity(1'b0, 1'b0);
-    cfg.m_uart_agent_cfg.set_baud_rate(BaudRate2Mbps);
+    cfg.m_uart_agent_cfg.set_baud_rate(cfg.uart_baud_rate);
 
     // initialize the sw logger interface
     foreach (cfg.sw_types[i]) begin
@@ -33,7 +32,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // initialize the sw test status
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
-    // Initialize the flash to all 1s.
+    // Initialize the RAM to 0s and flash to all 1s.
+    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[Ram].clear_mem();
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
