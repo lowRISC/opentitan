@@ -97,7 +97,7 @@ module tlul_adapter_host #(
     d_ready:   1'b1
   };
 
-  assign gnt_o   = tl_i.a_ready & req_i;
+  assign gnt_o   = tl_i.a_ready;
 
   assign valid_o = tl_i.d_valid;
   assign rdata_o = tl_i.d_data;
