@@ -6,7 +6,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
   // Testbench settings
   bit                 stub_cpu;
-  bit                 en_uart_logger = 1'b1;
+  bit                 en_uart_logger;
   bit                 use_gpio_for_sw_test_status;
 
   // chip top interfaces

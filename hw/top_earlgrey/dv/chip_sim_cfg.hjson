@@ -55,7 +55,7 @@
 
   // Default UVM test and seq class name.
   uvm_test: chip_base_test
-  uvm_test_seq: chip_base_vseq
+  uvm_test_seq: chip_sw_base_vseq
   sw_build_device: sim_dv
 
   // Add default build_opts.
@@ -93,42 +93,41 @@
   // List of test specifications.
   tests: [
     {
-      name: chip_sanity
-      uvm_test_seq: chip_sw_test_base_vseq
-      sw_test: sw/device/examples/hello_world/hello_world
+      name: chip_uart_tx_rx
+      uvm_test_seq: chip_sw_uart_tx_rx_vseq
+      sw_test: sw/device/tests/uart_tx_rx_test
     }
     {
       name: chip_aes_test
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/aes_test
     }
     {
       name: chip_consecutive_irqs_test
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/consecutive_irqs_test
     }
     {
       name: chip_flash_ctrl_test
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/flash_ctrl_test
-      run_opts: ["+sw_test_timeout_ns=3000000"]
     }
     {
       name: chip_sha256_test
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/sha256_test
     }
     {
       name: chip_rv_timer_test
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/rv_timer_test
     }
     {
       name: chip_coremark
-      uvm_test_seq: chip_sw_test_base_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/benchmarks/coremark/coremark_top_earlgrey
       run_opts: ["+en_uart_logger=1",
-                 "+sw_test_timeout_ns=22000000"] // 22ms
+                 "+sw_test_timeout_ns=22000000"]
     }
 
     // The test below is added in the included tl_access_tests.hjson.
@@ -143,7 +142,7 @@
   regressions: [
     {
       name: sanity
-      tests: ["chip_sanity"]
+      tests: ["chip_uart_tx_rx"]
     }
   ]
 }
