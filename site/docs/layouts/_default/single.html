@@ -3,7 +3,9 @@
   <body onload="WaveDrom.ProcessAll()">
     {{ partial "header.html" . }}
     <section class="light-bg">
-      {{ partial "parents.html" . }}
+      <div class="layout">
+        {{ partial "parents.html" . }}
+      </div>
       <div class="layout">
         <aside>
           {{ partial "menu.html" . }}
