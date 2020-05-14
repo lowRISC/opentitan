@@ -40,8 +40,8 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   }
 
   constraint clr_and_lock_en_c {
-    clr_en      dist {0 := 8, [1:'b1111] := 2};
-    lock_bit_en dist {0 := 8, [1:'b1111] := 2};
+    clr_en      dist {0 :/ 6, [1:'b1111] :/ 4};
+    lock_bit_en dist {0 :/ 6, [1:'b1111] :/ 4};
   }
 
   constraint enable_one_alert_c {

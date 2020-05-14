@@ -65,10 +65,10 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task alert_handler_wr_clren_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en);
-    csr_wr(.csr(ral.classa_clren), .value(clr_en[0]));
-    csr_wr(.csr(ral.classb_clren), .value(clr_en[1]));
-    csr_wr(.csr(ral.classc_clren), .value(clr_en[2]));
-    csr_wr(.csr(ral.classd_clren), .value(clr_en[3]));
+    if (!clr_en[0]) csr_wr(.csr(ral.classa_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[1]) csr_wr(.csr(ral.classb_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[2]) csr_wr(.csr(ral.classc_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[3]) csr_wr(.csr(ral.classd_clren), .value($urandom_range(0, 1)));
   endtask
 
   // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
