@@ -63,7 +63,15 @@ ifneq (${sw_test},)
 	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.32.vmem \
 		${run_dir}/rom.32.vmem
 
-ifeq (${sw_test_is_prebuilt},)
+ifeq (${sw_test_is_prebuilt},1)
+	# Copy over the sw test image and related sources to the run_dir.
+	cp ${proj_root}/${sw_test}.32.vmem ${run_dir}/sw.32.vmem
+	# Optionally, assume that ${sw_test}_logs.txt exists and copy over to the run_dir.
+	# Ignore copy error if it actually doesn't exist. Likewise for ${sw_test}_rodata.txt.
+	-cp ${proj_root}/${sw_test}_logs.txt ${run_dir}/sw_logs.txt
+	-cp ${proj_root}/${sw_test}_rodata.txt ${run_dir}/sw_rodata.txt
+
+else
 	# Compile the sw test code and generate the image.
 	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
 		${sw_test}_export_${sw_build_device}"
@@ -75,12 +83,7 @@ ifeq (${sw_test_is_prebuilt},)
 	# Copy over the sw test image to the run_dir.
 	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.32.vmem \
 		${run_dir}/sw.32.vmem
-else
-	# Copy over the sw test image and related sources to the run_dir.
-	cp ${proj_root}/${sw_test}.32.vmem ${run_dir}/sw.32.vmem
-	# Optionally, copy ${sw_test}_logs.txt over to the run_dir if it exists.
-	-cp ${proj_root}/${sw_test}_logs.txt ${run_dir}/sw_logs.txt
-	-cp ${proj_root}/${sw_test}_rodata.txt ${run_dir}/sw_rodata.txt
+
 endif
 
 endif

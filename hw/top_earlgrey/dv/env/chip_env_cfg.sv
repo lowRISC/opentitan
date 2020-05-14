@@ -7,7 +7,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   // Testbench settings
   bit                 stub_cpu;
   bit                 en_uart_logger;
+  int                 uart_baud_rate = uart_agent_pkg::BaudRate2Mbps;
   bit                 use_gpio_for_sw_test_status;
+  bit                 initialize_ram;
 
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
