@@ -14,6 +14,7 @@ class chip_common_vseq extends chip_base_vseq;
     super.pre_start();
     // Select SPI interface.
     cfg.jtag_spi_n_vif.drive(1'b0);
+    enable_asserts_in_hw_reset_rand_wr = 0;
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -21,6 +22,13 @@ class chip_common_vseq extends chip_base_vseq;
     // TODO rstmgr takes some time to release reset for IPs. Need to find a better way to know when
     // reset is released by rstmgr
     cfg.clk_rst_vif.wait_clks(100);
+  endtask
+
+  virtual task dut_init(string reset_kind = "HARD");
+    // make sure jtag rst triggers
+    cfg.jtag_spi_n_vif.drive(1'b1);
+    super.dut_init(reset_kind);
+    cfg.jtag_spi_n_vif.drive(1'b0);
   endtask
 
   virtual task body();
