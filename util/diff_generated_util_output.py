@@ -37,8 +37,6 @@ testlist = [
      "./docgen.py docgen/examples/uart16550.md > ", ""],
     ["regdoc.md", False,
      "./regtool.py --doc > ", ""],
-    ["wave.html", False,
-     "./wavetool.py wavegen/examples/* > ", ""],
     ["uart_rtl", True,
      "./regtool.py -r -t ", " ../hw/ip/uart/data/uart.hjson"],
     ["uart_dv", True,
