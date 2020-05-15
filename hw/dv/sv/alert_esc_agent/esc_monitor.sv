@@ -58,8 +58,7 @@ class esc_monitor extends alert_esc_base_monitor;
             ping_cnter ++;
           end
           while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
-                  !cfg.probe_vif.get_esc_en());
-
+                 !cfg.probe_vif.get_esc_en());
           if (!cfg.probe_vif.get_esc_en()) begin
             if (ping_cnter == cfg.ping_timeout_cycle &&
                 req.esc_handshake_sta != EscRespComplete) begin

@@ -90,6 +90,7 @@
     {
       name: alert_handler_stress_all
       run_opts: ["+test_timeout_ns=25_000_000_000"]
+      reseed: 100
     }
   ]
 
