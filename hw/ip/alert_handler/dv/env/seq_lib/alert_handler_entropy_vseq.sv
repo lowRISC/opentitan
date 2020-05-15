@@ -32,7 +32,6 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
   }
 
   function void pre_randomize();
-    this.enable_one_alert_c.constraint_mode(0);
     this.enable_classa_only_c.constraint_mode(0);
     verbosity = UVM_HIGH;
   endfunction

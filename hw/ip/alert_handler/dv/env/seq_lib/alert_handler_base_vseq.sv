@@ -30,6 +30,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_alert_handler_init = 1'b0;
+  bit config_locked         = 1'b0;
 
   `uvm_object_new
 
@@ -188,7 +189,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
-  virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val, bit config_locked);
+  virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
     csr_wr(.csr(ral.ping_timeout_cyc), .value(timeout_val));
     if (!config_locked) begin
       foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;
@@ -213,14 +214,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This task will response to all alert_ping
-  virtual task run_alert_ping_rsp_seq_nonblocking();
+  virtual task run_alert_ping_rsp_seq_nonblocking(bit [alert_pkg::NAlerts-1:0] alert_int_err);
     foreach (cfg.alert_host_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
+          bit alert_timeout = alert_int_err[index] ? $urandom_range(0, 1) : 0;
           alert_sender_ping_rsp_seq ping_seq =
               alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0;)
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; timeout == alert_timeout;)
           ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
         end
       join_none

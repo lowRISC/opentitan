@@ -14,6 +14,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [alert_pkg::NAlerts-1:0]        alert_trigger;
   rand bit [alert_pkg::NAlerts-1:0]        alert_int_err;
   rand bit [alert_pkg::NAlerts-1:0]        alert_en;
+  rand bit [alert_pkg::NAlerts-1:0]        alert_ping_timeout;
   rand bit [alert_pkg::NAlerts*2-1:0]      alert_class_map;
   rand bit [NUM_LOCAL_ALERT-1:0]           local_alert_en;
   rand bit [NUM_LOCAL_ALERT*2-1:0]         local_alert_class_map;
@@ -80,11 +81,10 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   task body();
     fork
       begin : isolation_fork
-        bit config_locked;
         `DV_CHECK_RANDOMIZE_FATAL(this)
         run_esc_rsp_seq_nonblocking(esc_int_err);
-        run_alert_ping_rsp_seq_nonblocking();
-        `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_MEDIUM)
+        run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
+        `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
         for (int i = 1; i <= num_trans; i++) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
 
@@ -110,7 +110,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           // randomly write interrupt timeout resigers and accumulative threshold registers
           if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
           wr_class_accum_threshold(accum_thresh);
-          wr_ping_timeout_cycle(ping_timeout_cyc, config_locked);
+          wr_ping_timeout_cycle(ping_timeout_cyc);
 
           //drive entropy
           cfg.entropy_vif.drive(rand_drive_entropy);
