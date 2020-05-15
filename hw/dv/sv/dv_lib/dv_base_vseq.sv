@@ -30,6 +30,11 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to enable post_start routines
   bit do_dut_shutdown   = 1'b1;
 
+  // various knobs to enable certain routines
+  // this knob allows user to disable assertions in csr_hw_reset before random write sequence,
+  // the assertions will turn back on after the hw reset deasserted
+  bit enable_asserts_in_hw_reset_rand_wr  = 1'b1;
+
   `uvm_object_new
 
   task pre_start();
@@ -165,14 +170,15 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       m_csr_write_seq.models.push_back(ral);
       m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.external_checker = cfg.en_scb;
+      if (!enable_asserts_in_hw_reset_rand_wr) $assertoff;
       m_csr_write_seq.start(null);
 
       // run dut_shutdown before asserting reset
       dut_shutdown();
-
       // issue reset
       void'($value$plusargs("do_reset=%0s", reset_type));
       dut_init(reset_type);
+      if (!enable_asserts_in_hw_reset_rand_wr) $asserton;
     end
 
     // create base csr seq and pass our ral
