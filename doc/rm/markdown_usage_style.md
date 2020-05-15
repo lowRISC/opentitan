@@ -78,15 +78,6 @@ The preferred format is Scalable Vector Graphics (`.svg`), alternatively Portabl
 
 Waveforms can be included by adding [wavejson](https://github.com/wavedrom/schema/blob/master/WaveJSON.md) code surrounded by `{{</* wavejson */>}}` shortcode tags.
 
-<!-- TODO: This comment isn't correct, the WaveDrom library being used hasn't been modified.
-There is a standalone tool for wavejson to svg conversion.
-Details of the tool and a full description of the wavejson syntax that is supported can be found in the [README](https://github.com/lowRISC/opentitan/tree/master/util/wavegen) for the `wavegen.py` tool.
-Note that there are several incomplete descriptions of wavejson, the syntax supported is derived primarily from the examples in the [WaveDrom Tutorial](https://observablehq.com/@drom/wavedrom).
-
-An online editor for wavejson can be found on the [WaveDrom](https://wavedrom.com/) website.
-The processor built in to `docgen` should produce the identical output, but has one extension that `cdata` may be used in place of `data` to allow labeling all bit positions not just the `2345` ones.
--->
-
 ### Text Format
 
 Where possible, please restrict Markdown text to the ASCII character set to avoid downstream tool issues.
