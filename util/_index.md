@@ -10,6 +10,7 @@ More description and information can be found within the [Reference Manual]({{< 
 
 * Docker Container [README]({{< relref "util/container/README.md" >}})
 * FPGA splice utility [README]({{< relref "util/fpga/README.md" >}})
+* `build_docs.py` documentation build tool [user guide]({{< relref "doc/ug/documentation.md" >}})
 * `reggen.py` register generator tool [README]({{< relref "util/reggen/README.md" >}})
 * `spitest.py` script for interacting with SPI device code [README]({{< relref "util/simplespi/README.md" >}})
 * `testplanner.py` utility for generating verification testplans from Hjson descriptors [README]({{< relref "util/dvsim/testplanner/README.md" >}})
