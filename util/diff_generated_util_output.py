@@ -23,43 +23,12 @@ from reggen import version
 # command is commandpre + fullpath_output + commandpost
 
 testlist = [
-    ["eguart.html", False,
-     "./docgen.py docgen/examples/uart.md > ", ""],
-    ["eguartcfg.html", False,
-     "./docgen.py docgen/examples/uartcfg.md > ", ""],
-    ["uart.html", False,
-     "./docgen.py ../hw/ip/uart/doc/uart.md > ", ""],
-    ["uart-d.html", False,
-     "./docgen.py -d docgen/examples/uart.md > ", ""],
-    ["uart16550-j.html", False,
-     "./docgen.py -j docgen/examples/uart16550.md > ", ""],
-    ["uart16550.html", False,
-     "./docgen.py docgen/examples/uart16550.md > ", ""],
     ["regdoc.md", False,
      "./regtool.py --doc > ", ""],
     ["uart_rtl", True,
      "./regtool.py -r -t ", " ../hw/ip/uart/data/uart.hjson"],
     ["uart_dv", True,
      "./regtool.py -s -t ", " ../hw/ip/uart/data/uart.hjson"],
-    # gp test multireg
-    ["gp.html", False,
-     "./docgen.py docgen/examples/gp.md > ", ""],
-    ["gp_rtl", True,
-     "./regtool.py -r -t ", " docgen/examples/gp.hjson"],
-    ["gp_dv", True,
-     "./regtool.py -s -t ", " docgen/examples/gp.hjson"],
-    # errors tests error detection
-    ["errors.html", False,
-     "./docgen.py docgen/examples/errors.md > ", ""],
-    # window tests
-    ["window.html", False,
-     "./docgen.py docgen/examples/test_win.md > ", ""],
-    # include tests
-    ["includes.html", False,
-     "./docgen.py docgen/examples/test_inc.md > ", ""],
-    # bad write enable tests
-    ["badwen.html", False,
-     "./docgen.py docgen/examples/badwen.md > ", ""],
     # generating include define headers
     ["uart.h", False,
      "./regtool.py -D ../hw/ip/uart/data/uart.hjson > ", ""],
@@ -67,7 +36,7 @@ testlist = [
      "./regtool.py -D ../hw/ip/gpio/data/gpio.hjson > ", ""],
     ["spi_device.h", False,
      "./regtool.py -D ../hw/ip/spi_device/data/spi_device.hjson > ", ""]
-] # yapf: disable
+]  # yapf: disable
 
 
 def generate_output(outdir, verbose):
