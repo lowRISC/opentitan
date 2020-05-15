@@ -8,3 +8,6 @@
 // corresponding header a link location.
 extern uint32_t bitfield_set_field32(uint32_t bitfield,
                                      bitfield_field32_t field);
+
+extern uint32_t bitfield_get_field32(uint32_t bitfield,
+                                     bitfield_field32_t field);
