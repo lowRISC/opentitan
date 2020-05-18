@@ -32,8 +32,8 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
       end
     end
 
-    alert_host_cfg = new[alert_pkg::NAlerts];
-    esc_device_cfg = new[alert_pkg::N_ESC_SEV];
+    alert_host_cfg = new[NUM_ALERTS];
+    esc_device_cfg = new[NUM_ESCS];
     foreach (alert_host_cfg[i]) begin
       alert_host_cfg[i] =
           alert_esc_agent_cfg::type_id::create($sformatf("alert_host_cfg[%0d]", i));

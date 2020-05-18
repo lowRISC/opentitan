@@ -148,11 +148,14 @@ def generate_alert_handler(top, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/alert_handler/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
+    dv_path = out_path / 'ip/alert_handler/dv'
+    dv_path.mkdir(parents=True, exist_ok=True)
 
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from alert_handler directory directly.
     tpl_path = out_path / '../ip/alert_handler/data'
     hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
+    dv_tpl_path = tpl_path / 'alert_handler_env_pkg__params.sv.tpl'
 
     # Generate Register Package and RTLs
     out = StringIO()
@@ -187,6 +190,22 @@ def generate_alert_handler(top, out_path):
                             object_pairs_hook=validate.checking_dict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+    # generate testbench for alert_handler
+    with dv_tpl_path.open(mode='r', encoding='UTF-8') as fin:
+        dv_tpl = Template(fin.read())
+        try:
+            out = dv_tpl.render(n_alerts=n_alerts, async_on=async_on)
+        except:  # noqa : E722
+            log.error(exceptions.text_error_template().render())
+        log.info("ALERT_HANDLER DV: %s" % out)
+        if out == "":
+            log.error("Cannot generate dv alert_handler parameter file")
+            return
+
+        dv_gen_path = dv_path / 'alert_handler_env_pkg__params.sv'
+        with dv_gen_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(genhdr + gencmd + out)
 
 
 def generate_plic(top, out_path):
@@ -245,7 +264,7 @@ def generate_plic(top, out_path):
         fout.write(genhdr + gencmd + out)
 
     # Generate register RTLs (currently using shell execute)
-    # TODO: More secure way to gneerate RTL
+    # TODO: More secure way to generate RTL
     hjson_obj = hjson.loads(out,
                             use_decimal=True,
                             object_pairs_hook=OrderedDict)

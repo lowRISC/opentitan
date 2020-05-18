@@ -46,7 +46,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // setup basic alert_handler features
   // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
-                                  bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
+                                  bit [NUM_ALERTS-1:0]                alert_en = '1,
                                   bit [TL_DW-1:0]                     alert_class = 'h0,
                                   bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
                                   bit [TL_DW-1:0]                     loc_alert_class = 'h0);
@@ -78,8 +78,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
   endtask
 
-  virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
-                           bit[alert_pkg::NAlerts-1:0] alert_int_err);
+  virtual task drive_alert(bit[NUM_ALERTS-1:0] alert_trigger, bit[NUM_ALERTS-1:0] alert_int_err);
     fork
       begin : isolation_fork
         foreach (alert_trigger[i]) begin
@@ -101,7 +100,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This sequence will drive standalone esc_resp_p/n without esc_p/n
-  virtual task drive_esc_rsp(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs);
+  virtual task drive_esc_rsp(bit [NUM_ESCS-1:0] esc_int_errs);
     fork
       begin : isolation_fork
         foreach (cfg.esc_device_cfg[i]) begin
@@ -204,7 +203,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This sequence will automatically response to all escalation ping and esc responses
-  virtual task run_esc_rsp_seq_nonblocking(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs = '0);
+  virtual task run_esc_rsp_seq_nonblocking(bit [NUM_ESCS-1:0] esc_int_errs = '0);
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
       fork
@@ -220,7 +219,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This task will response to all alert_ping
-  virtual task run_alert_ping_rsp_seq_nonblocking(bit [alert_pkg::NAlerts-1:0] alert_int_err);
+  virtual task run_alert_ping_rsp_seq_nonblocking(bit [NUM_ALERTS-1:0] alert_int_err);
     foreach (cfg.alert_host_cfg[i]) begin
       automatic int index = i;
       fork

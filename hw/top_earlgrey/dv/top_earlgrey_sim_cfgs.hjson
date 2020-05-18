@@ -11,8 +11,9 @@
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
 
   use_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
-             "{proj_root}/hw/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",

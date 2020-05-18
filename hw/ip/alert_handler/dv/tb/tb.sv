@@ -25,18 +25,18 @@ module tb;
   pins_if #(1) entropy_if(entropy);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  alert_esc_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
-  alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
-  alert_esc_probe_if probe_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
+  alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
+  alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
 
   // dut signals
-  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0] alert_tx;
+  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
 
-  prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
-  prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
+  prim_esc_pkg::esc_rx_t [NUM_ESCS-1:0] esc_rx;
+  prim_esc_pkg::esc_tx_t [NUM_ESCS-1:0] esc_tx;
 
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : gen_alert_if
     assign alert_tx[k].alert_p = alert_host_if[k].alert_tx.alert_p;
     assign alert_tx[k].alert_n = alert_host_if[k].alert_tx.alert_n;
     assign alert_host_if[k].alert_rx.ack_p  = alert_rx[k].ack_p;
@@ -49,7 +49,7 @@ module tb;
     end
   end
 
-  for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_if
+  for (genvar k = 0; k < NUM_ESCS; k++) begin : gen_esc_if
     assign esc_rx[k].resp_p = esc_device_if[k].esc_rx.resp_p;
     assign esc_rx[k].resp_n = esc_device_if[k].esc_rx.resp_n;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;

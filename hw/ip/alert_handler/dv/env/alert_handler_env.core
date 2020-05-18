@@ -9,7 +9,6 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip:alert_handler_component
     files:
       - alert_handler_env_pkg.sv
       - alert_handler_env_cfg.sv: {is_include_file: true}
@@ -31,16 +30,7 @@ filesets:
       - seq_lib/alert_handler_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: alert_handler
-      ip_hjson: ../../data/alert_handler.hjson
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - ral
