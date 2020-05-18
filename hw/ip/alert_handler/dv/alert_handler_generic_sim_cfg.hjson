@@ -15,13 +15,10 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:alert_handler_sim:0.1
+  fusesoc_core: lowrisc:dv:alert_handler_generic_sim:0.1
 
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/alert_handler/data/alert_handler_testplan.hjson"
-
-  // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/ip/alert_handler/data/alert_handler.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file

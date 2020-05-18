@@ -2,22 +2,27 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_handler_sim:0.1"
+name: "lowrisc:dv:alert_handler_generic_sim:0.1"
 description: "ALERT_HANDLER DV sim target"
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:alert_handler:0.1
-    files:
-      - tb/alert_handler_bind.sv
     file_type: systemVerilogSource
 
   files_dv:
     depend:
-      - lowrisc:dv:alert_handler_test
+      - lowrisc:dv:alert_handler_tb:0.1
     files:
-      - tb/tb.sv
+      - tb/alert_handler_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: alert_handler
+      ip_hjson: ../data/alert_handler.hjson
 
 targets:
   sim:
@@ -25,4 +30,6 @@ targets:
     filesets:
       - files_rtl
       - files_dv
+    generate:
+      - ral
     default_tool: vcs

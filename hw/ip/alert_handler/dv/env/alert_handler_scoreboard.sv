@@ -44,8 +44,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   string class_name[] = {"a", "b", "c", "d"};
   bit [TL_DW-1:0] intr_state_val;
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[alert_pkg::NAlerts];
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[alert_pkg::N_ESC_SEV];
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_fifo[NUM_ESCS];
 
   `uvm_component_new
 

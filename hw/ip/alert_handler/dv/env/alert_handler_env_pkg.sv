@@ -18,7 +18,12 @@ package alert_handler_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // this file could be auto-generated for top_earlgrey alert_handler
+  // the path to this file should be provided in alert_handler*_sim.core
+  `include "alert_handler_env_pkg__params.sv"
+
   // parameters
+  parameter uint NUM_ESCS                    = 4;
   parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
   parameter uint NUM_MAX_ESC_SEV             = 8;
   parameter uint NUM_ESC_SIGNALS             = 4;

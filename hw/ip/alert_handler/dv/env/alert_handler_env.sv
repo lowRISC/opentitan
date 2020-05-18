@@ -18,8 +18,8 @@ class alert_handler_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     // build alert agents
-    alert_host_agent                    = new[alert_pkg::NAlerts];
-    virtual_sequencer.alert_host_seqr_h = new[alert_pkg::NAlerts];
+    alert_host_agent                    = new[NUM_ALERTS];
+    virtual_sequencer.alert_host_seqr_h = new[NUM_ALERTS];
     foreach (alert_host_agent[i]) begin
       alert_host_agent[i] = alert_esc_agent::type_id::create(
           $sformatf("alert_host_agent[%0d]", i), this);
@@ -27,8 +27,8 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("alert_host_agent[%0d]", i), "cfg", cfg.alert_host_cfg[i]);
     end
     // build escalator agents
-    esc_device_agent                    = new[alert_pkg::N_ESC_SEV];
-    virtual_sequencer.esc_device_seqr_h = new[alert_pkg::N_ESC_SEV];
+    esc_device_agent                    = new[NUM_ESCS];
+    virtual_sequencer.esc_device_seqr_h = new[NUM_ESCS];
     foreach (esc_device_agent[i]) begin
       esc_device_agent[i] = alert_esc_agent::type_id::create(
           $sformatf("esc_device_agent[%0d]", i), this);
