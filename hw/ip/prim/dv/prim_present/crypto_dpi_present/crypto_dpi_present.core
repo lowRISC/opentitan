@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:crypto_dpi_present:0.1"
+description: "PRESENT block cipher reference implementation in C from Ruhr-University Bochum"
+filesets:
+  files_dv:
+    files:
+      - boxes.inc: {file_type: cSource, is_include_file: true}
+      - comline.inc: {file_type: cSource, is_include_file: true}
+      - verbose.inc: {file_type: cSource, is_include_file: true}
+      - present.inc: {file_type: cSource, is_include_file: true}
+      - crypto_dpi_present.c: {file_type: cSource}
+      - crypto_dpi_present_pkg.sv: {file_type: systemVerilogSource}
+    file_type: cSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

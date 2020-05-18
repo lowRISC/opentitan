@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:prim_present_sim:0.1"
+description: "PRESENT block cipher DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:crypto_dpi_present:0.1
+    files:
+      - tb/prim_present_tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    toplevel: prim_present_tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
