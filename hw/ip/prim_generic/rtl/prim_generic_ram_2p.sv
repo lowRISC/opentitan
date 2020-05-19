@@ -37,9 +37,15 @@ module prim_generic_ram_2p #(
   always @(posedge clk_a_i) begin
     if (a_req_i) begin
       if (a_write_i) begin
-        mem[a_addr_i] <= a_wdata_i;
+        for (int i=0; i < MaskWidth; i = i + 1) begin
+          if (a_wmask[i]) begin
+            mem[a_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
+              a_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
+          end
+        end
+      end else begin
+        a_rdata_o <= mem[a_addr_i];
       end
-      a_rdata_o <= mem[a_addr_i];
     end
   end
 
@@ -47,8 +53,15 @@ module prim_generic_ram_2p #(
     if (b_req_i) begin
       if (b_write_i) begin
         mem[b_addr_i] <= b_wdata_i;
+        for (int i=0; i < MaskWidth; i = i + 1) begin
+          if (b_wmask[i]) begin
+            mem[b_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
+              b_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
+          end
+        end
+      end else begin
+        b_rdata_o <= mem[b_addr_i];
       end
-      b_rdata_o <= mem[b_addr_i];
     end
   end
 
