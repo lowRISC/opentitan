@@ -9,9 +9,6 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
 
   `uvm_object_new
 
-  rand bit drive_entropy;
-  rand bit lock_regen;
-
   // large number of num_trans to make sure covers all alerts and escalation pings
   constraint num_trans_c {
     num_trans inside {[4_000:100_000]};
