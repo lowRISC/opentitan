@@ -21,6 +21,10 @@
                "+warn=noUII-L",
                // Below option required for $error/$fatal system calls
                "-assert svaext",
+               // Force unique and priority to evaluate compliance checking only on the stable
+               // and final value of the selection input at the end of a simulation timestep.
+               // See https://github.com/lowRISC/ibex/issues/845.
+               "-xlrm uniq_prior_final",
                // Force DPI-C compilation in C99 mode
                "-CFLAGS \"--std=c99\"",
                // Without this magic LDFLAGS argument below, we get compile time errors with
