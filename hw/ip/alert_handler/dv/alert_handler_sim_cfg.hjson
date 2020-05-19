@@ -83,7 +83,7 @@
 
     {
       name: alert_handler_ping_rsp_fail
-      uvm_test_seq: alert_handler_entropy_vseq
+      uvm_test_seq: alert_handler_ping_rsp_fail_vseq
       run_opts: ["+test_timeout_ns=20_000_000_000"]
     }
 
