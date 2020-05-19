@@ -78,4 +78,7 @@ module prim_generic_ram_2p #(
     end
   end
 
+  // TODO: Enable once lowRISC/ibex#844 is fixed.
+  //`include "prim_util_memload.sv"
+
 endmodule
