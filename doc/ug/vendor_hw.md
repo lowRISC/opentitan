@@ -311,7 +311,7 @@ Example:
 // section of a .vendor.hjson file
 exclude_from_upstream: [
   // exclude all *.h files in the src directory
-  "src/*.h*",
+  "src/*.h",
   // exclude the src_files.yml file
   "src_files.yml",
   // exclude some_directory and all files below it
