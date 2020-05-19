@@ -36,6 +36,11 @@ filesets:
       - lint/otp_ctrl.waiver
     file_type: waiver
 
+  files_formal:
+    files:
+      - dv/tb/otp_ctrl_bind.sv
+    file_type: systemVerilogSource
+
 parameters:
   SYNTHESIS:
     datatype: bool

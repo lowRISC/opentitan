@@ -26,6 +26,7 @@ declare -a blocks=(
   "uart"
   "hmac"
   "flash_ctrl"
+  "otp_ctrl"
   "pwrmgr"
   "usbuart"
   "usbdev"
