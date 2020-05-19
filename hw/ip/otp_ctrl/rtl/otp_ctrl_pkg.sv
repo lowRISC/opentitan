@@ -38,7 +38,7 @@ package otp_ctrl_pkg;
   // Typedefs for LC Interface //
   ///////////////////////////////
 
-  parameter int NumAlerts = 1;
+  parameter int NumAlerts = 2;
   parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b0);
 
   ///////////////////////////////
@@ -54,7 +54,7 @@ package otp_ctrl_pkg;
   } lc_value_e;
 
   // TODO: move to lc_ctrl_pkg
-  typedef enum lc_value_e [5:0] {
+  typedef enum logic [47:0] {
     //                GRP5    GRP4    GRP3    GRP2    GRP1    GRP0
     LcStateRaw     = {6{Value0}},
     LcStateTest    = {Value0, Value0, Value0, Value0, Value0, Value1},

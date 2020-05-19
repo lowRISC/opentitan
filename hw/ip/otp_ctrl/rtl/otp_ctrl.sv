@@ -214,7 +214,7 @@ module otp_ctrl
     .rst_ni,
     .data_i  ( {reg2hw.direct_access_wdata[1].q,
                 reg2hw.direct_access_wdata[0].q}    ),
-    .cmd_i   ( reg2hw.direct_access_wdata[1].q[2:0] ),
+    .cmd_i   ( otp_scrmbl_cmd_e'(reg2hw.direct_access_wdata[1].q[2:0]) ),
     .valid_i ( reg2hw.direct_access_wdata[1].qe     ),
     .ready_o (                                      ),
     .data_o  ( otp_scrambler_out                    ),
