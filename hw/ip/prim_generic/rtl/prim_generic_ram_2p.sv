@@ -60,8 +60,9 @@ module prim_generic_ram_2p #(
               a_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
           end
         end
+      end else begin
+        a_rdata_o <= mem[a_addr_i];
       end
-      a_rdata_o <= mem[a_addr_i];
     end
   end
 
@@ -74,8 +75,9 @@ module prim_generic_ram_2p #(
               b_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
           end
         end
+      end else begin
+        b_rdata_o <= mem[b_addr_i];
       end
-      b_rdata_o <= mem[b_addr_i];
     end
   end
 
