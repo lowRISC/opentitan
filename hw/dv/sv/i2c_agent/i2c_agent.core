@@ -17,12 +17,14 @@ filesets:
       - i2c_item.sv: {is_include_file: true}
       - i2c_driver.sv: {is_include_file: true}
       - i2c_device_driver.sv: {is_include_file: true}
+      - i2c_host_driver.sv: {is_include_file: true}
       - i2c_monitor.sv: {is_include_file: true}
       - i2c_sequencer.sv: {is_include_file: true}
       - i2c_agent.sv: {is_include_file: true}
       - seq_lib/i2c_seq_list.sv: {is_include_file: true}
       - seq_lib/i2c_base_seq.sv: {is_include_file: true}
       - seq_lib/i2c_device_seq.sv: {is_include_file: true}
+      - seq_lib/i2c_host_seq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

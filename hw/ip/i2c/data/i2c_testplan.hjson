@@ -19,7 +19,7 @@
             Checking:
               - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START.
               - Read and write transfer matching.'''
-      milestone: V1
+      milestone: V2
       tests: ["i2c_sanity"]
     }
     {

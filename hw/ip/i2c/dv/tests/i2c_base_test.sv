@@ -13,8 +13,7 @@ class i2c_base_test extends cip_base_test #(.ENV_T(i2c_env),
     max_quit_count  = 50;
     test_timeout_ns = 600_000_000; // 600ms
     super.build_phase(phase);
-    // configure the i2c agent to be in Device mode
-    cfg.m_i2c_agent_cfg.mode = Device;
+    cfg.m_i2c_agent_cfg.if_mode = Device;
   endfunction : build_phase
 
 endclass : i2c_base_test
