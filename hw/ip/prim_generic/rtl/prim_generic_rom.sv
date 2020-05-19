@@ -5,9 +5,11 @@
 `include "prim_assert.sv"
 
 module prim_generic_rom #(
-  parameter  int Width     = 32,
-  parameter  int Depth     = 2048, // 8kB default
-  localparam int Aw        = $clog2(Depth)
+  parameter  int Width       = 32,
+  parameter  int Depth       = 2048, // 8kB default
+  parameter      MemInitFile = "", // VMEM file to initialize the memory with
+
+  localparam int Aw          = $clog2(Depth)
 ) (
   input                        clk_i,
   input                        rst_ni,

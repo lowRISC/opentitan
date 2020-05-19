@@ -30,7 +30,8 @@ cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
 %>\
 module top_${top["name"]} #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     BootRomInitFile = ""
 ) (
   // Clock and Reset
   input               clk_i,
@@ -421,7 +422,8 @@ module top_${top["name"]} #(
   ## TODO: Replace emulated ROM to real ROM in ASIC SoC
   prim_rom #(
     .Width(${data_width}),
-    .Depth(${rom_depth})
+    .Depth(${rom_depth}),
+    .MemInitFile(BootRomInitFile)
   ) u_rom_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
