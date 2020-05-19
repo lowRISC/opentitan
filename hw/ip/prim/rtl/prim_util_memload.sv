@@ -12,7 +12,10 @@
  * - A memory array named `mem`.
  * - A parameter `Width` giving the memory width (word size) in bit.
  * - A parameter `Depth` giving the memory depth in words.
+ * - A parameter `MemInitFile` with a file path of a VMEM file to be loaded into
+*    the memory if not empty.
  */
+
 `ifdef VERILATOR
   // Task for loading 'mem' with SystemVerilog system task $readmemh()
   export "DPI-C" task simutil_verilator_memload;
@@ -50,10 +53,9 @@
   end
 `endif
 
-`ifdef SRAM_INIT_FILE
-  localparam MEM_FILE = `PRIM_STRINGIFY(`SRAM_INIT_FILE);
-  initial begin
-    $display("Initializing memory from %s", MEM_FILE);
-    $readmemh(MEM_FILE, mem);
+initial begin
+  if (MemInitFile != "") begin : gen_meminit
+      $display("Initializing memory %m from file '%s'.", MemInitFile);
+      $readmemh(MemInitFile, mem);
   end
-`endif
+end

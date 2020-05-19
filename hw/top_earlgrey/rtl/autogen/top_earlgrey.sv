@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_earlgrey #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     BootRomInitFile = ""
 ) (
   // Clock and Reset
   input               clk_i,
@@ -373,7 +374,8 @@ module top_earlgrey #(
 
   prim_rom #(
     .Width(32),
-    .Depth(4096)
+    .Depth(4096),
+    .MemInitFile(BootRomInitFile)
   ) u_rom_rom (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),

@@ -10,6 +10,8 @@ module prim_generic_ram_1p #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
+  parameter      MemInitFile     = "", // VMEM file to initialize the memory with
+
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,

@@ -7,11 +7,12 @@
 //   Implementing ECC should be done inside wrapper not this model.
 
 module prim_generic_ram_2p #(
-  parameter  int Width = 32, // bit
-  parameter  int Depth = 128,
+  parameter  int Width           = 32, // bit
+  parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
+  parameter      MemInitFile     = "", // VMEM file to initialize the memory with
 
-  localparam int Aw    = $clog2(Depth)  // derived parameter
+  localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input clk_a_i,
   input clk_b_i,

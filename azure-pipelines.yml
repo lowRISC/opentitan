@@ -269,7 +269,7 @@ jobs:
         run --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_nexysvideo \
-        --ROM_INIT_FILE="$BOOTROM_VMEM"
+        --BootRomInitFile="$BOOTROM_VMEM"
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
