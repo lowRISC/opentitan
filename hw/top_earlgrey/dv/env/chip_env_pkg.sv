@@ -16,6 +16,7 @@ package chip_env_pkg;
   import cip_base_pkg::*;
   import chip_ral_pkg::*;
   import sw_test_status_pkg::*;
+  import xbar_env_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

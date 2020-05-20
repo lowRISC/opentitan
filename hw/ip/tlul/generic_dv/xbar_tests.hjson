@@ -1,0 +1,170 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // for chip level xbar to add run options used for all tests
+  run_modes: [
+    {
+      name: xbar_mode
+    }
+  ]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: "xbar_{name}_sanity"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_sanity_vseq
+    }
+
+    {
+      name: "xbar_{name}_sanity_zero_delays"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_sanity_vseq
+      run_opts: ["+zero_delays=1"]
+    }
+
+    {
+      name: "xbar_{name}_sanity_large_delays"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_sanity_vseq
+      run_opts: ["+max_host_req_delay=1000",
+                 "+max_host_rsp_delay=1000",
+                 "+max_device_req_delay=1000",
+                 "+max_device_rsp_delay=1000"]
+    }
+
+    {
+      name: "xbar_{name}_sanity_slow_rsp"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_sanity_vseq
+      run_opts: ["+max_host_req_delay=10",
+                 "+max_host_rsp_delay=1000",
+                 "+max_device_req_delay=1000",
+                 "+max_device_rsp_delay=10"]
+    }
+
+    {
+      name: "xbar_{name}_random"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_random_vseq
+    }
+
+    {
+      name: "xbar_{name}_random_zero_delays"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_random_vseq
+      run_opts: ["+zero_delays=1"]
+    }
+
+    {
+      name: "xbar_{name}_random_large_delays"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_random_vseq
+      run_opts: ["+max_host_req_delay=1000",
+                 "+max_host_rsp_delay=1000",
+                 "+max_device_req_delay=1000",
+                 "+max_device_rsp_delay=1000"]
+    }
+
+    {
+      name: "xbar_{name}_random_slow_rsp"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_random_vseq
+      run_opts: ["+max_host_req_delay=10",
+                 "+max_host_rsp_delay=1000",
+                 "+max_device_req_delay=1000",
+                 "+max_device_rsp_delay=10"]
+    }
+
+    {
+      name: "xbar_{name}_access_same_device"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_access_same_device_vseq
+    }
+
+    {
+      name: "xbar_{name}_access_same_device_slow_rsp"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_access_same_device_vseq
+      run_opts: ["+max_host_req_delay=10",
+                 "+max_host_rsp_delay=1000",
+                 "+max_device_req_delay=1000",
+                 "+max_device_rsp_delay=10"]
+    }
+
+    {
+      name: "xbar_{name}_same_source"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_same_source_vseq
+    }
+
+    {
+      name: "xbar_{name}_error_random"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_error_test
+      uvm_test_seq: xbar_random_vseq
+    }
+
+    {
+      name: "xbar_{name}_unmapped_addr"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_unmapped_addr_vseq
+    }
+
+    {
+      name: "xbar_{name}_error_and_unmapped_addr"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_error_test
+      uvm_test_seq: xbar_unmapped_addr_vseq
+    }
+
+    {
+      name: "xbar_{name}_stress_all"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_stress_all_vseq
+    }
+
+    {
+      name: "xbar_{name}_stress_all_with_rand_reset"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_base_test
+      uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
+    }
+
+    {
+      name: "xbar_{name}_stress_all_with_error"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_error_test
+      uvm_test_seq: xbar_stress_all_vseq
+    }
+
+    {
+      name: "xbar_{name}_stress_all_with_reset_error"
+      en_run_modes: ["xbar_mode"]
+      uvm_test: xbar_error_test
+      uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["xbar_{name}_sanity"]
+    }
+  ]
+}

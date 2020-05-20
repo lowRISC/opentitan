@@ -10,6 +10,7 @@ module tb;
   import chip_env_pkg::*;
   import top_pkg::*;
   import chip_test_pkg::*;
+  import xbar_test_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -167,7 +168,8 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     usb_clk_rst_if.set_active(.drive_clk_val(1'b1), .drive_rst_n_val(1'b0));
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    // clk_rst_if will be gotten by env and env.scoreboard (for xbar)
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
 
     // IO Interfaces
@@ -217,5 +219,7 @@ module tb;
     end
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
+
+  `include "../autogen/tb__xbar_connect.sv"
 
 endmodule
