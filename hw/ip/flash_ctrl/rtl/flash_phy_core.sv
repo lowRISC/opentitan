@@ -32,8 +32,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                 init_busy_o
 );
 
-  import flash_phy_pkg::*;
-
   typedef enum logic [1:0] {
     StIdle,
     StHostRead,
