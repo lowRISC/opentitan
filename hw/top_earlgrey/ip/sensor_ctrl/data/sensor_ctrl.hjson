@@ -1,0 +1,166 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// TODO: This module is only a draft implementation that covers most of the ast_wrapper
+// functionality but is incomplete
+
+
+# SENSOR_CTRL register template
+#
+{
+  name: "SENSOR_CTRL",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+    { name:    "NumAlerts",
+      type:    "int",
+      default: "7",
+      desc:    "Number of alerts",
+      local:   "true"
+    },
+    { name:    "NumIoRails",
+      type:    "int",
+      default: "2",
+      desc:    "Number of IO rails",
+      local:   "true"
+    }
+  ],
+
+  alert_list: [
+    { name: "ast_alerts",
+      width: "7", // need to update tool to support param
+      desc: "Triggered through AST",
+    },
+  ]
+
+
+  // Define ast_wrapper struct package
+  inter_signal_list: [
+
+    // should be defined by ast wrapper later
+    { struct:  "ast_alert",
+      type:    "req_rsp",
+      name:    "ast_alert",
+      act:     "rsp",
+      package: "ast_wrapper_pkg",
+    },
+
+    // should be defined by ast wrapper later
+    { struct:  "ast_status",
+      type:    "uni",
+      name:    "ast_status",
+      act:     "rcv",
+      package: "ast_wrapper_pkg",
+    },
+  ],
+
+registers: [
+    { name: "CFG_REGWEN",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      desc: '''
+      Controls the configurability of !!ACK_MODE register.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Configuration enable.
+          ''',
+          resval: "1",
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ACK_MODE",
+        desc: "Alert acknowledge mode",
+        count: "NumAlerts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "CFG_REGWEN",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Acknowledge mode to alerts.
+                0 is immediate acknowledge, the hardware immedaitely acks an incoming alert.
+                1 is software acknowledge.  Software must program the appropriate bit in !!ALERT_STATE to acknowledge the alert.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_TRIG",
+        desc: "Alert trigger test",
+        count: "NumAlerts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Alert trigger for testing
+                0 No alerts triggered
+                1 Continuously trigger alert until disabled
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// This register triggers alerts to fire and should be a directed test
+               "excl:CsrNonInitTests:CsrExclWrite"]
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_STATE",
+        desc: '''
+          A bit is set whenever there is an incoming alert event.
+          Software reads back the alert that was set and clears the appropriate bits to acknowledge the alert.
+
+          This is only valid when !!ACK_MODE is set to software.
+        ''',
+        count: "NumAlerts",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        hwqe: "true",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "STATUS",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      desc: '''
+        Status readback for ast
+      ''',
+
+      fields: [
+        { bits: "NumIoRails-1:0",
+          name: "io_pok",
+          desc: '''
+            IO power is ready
+          ''',
+          resval: "3",
+        },
+      ]
+    },
+  ]
+}
