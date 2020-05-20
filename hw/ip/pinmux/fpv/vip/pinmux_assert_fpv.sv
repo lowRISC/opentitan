@@ -7,16 +7,16 @@
 `include "prim_assert.sv"
 
 module pinmux_assert_fpv (
-  input                                  clk_i,
-  input                                  rst_ni,
-  input tlul_pkg::tl_h2d_t               tl_i,
-  input tlul_pkg::tl_d2h_t               tl_o,
-  input [pinmux_reg_pkg::NPeriphOut-1:0] periph_to_mio_i,
-  input [pinmux_reg_pkg::NPeriphOut-1:0] periph_to_mio_oe_i,
-  input [pinmux_reg_pkg::NPeriphIn-1:0]  mio_to_periph_o,
-  input [pinmux_reg_pkg::NMioPads-1:0]   mio_out_o,
-  input [pinmux_reg_pkg::NMioPads-1:0]   mio_oe_o,
-  input [pinmux_reg_pkg::NMioPads-1:0]   mio_in_i
+  input                                     clk_i,
+  input                                     rst_ni,
+  input tlul_pkg::tl_h2d_t                  tl_i,
+  input tlul_pkg::tl_d2h_t                  tl_o,
+  input [pinmux_reg_pkg::NMioPeriphOut-1:0] periph_to_mio_i,
+  input [pinmux_reg_pkg::NMioPeriphOut-1:0] periph_to_mio_oe_i,
+  input [pinmux_reg_pkg::NMioPeriphIn-1:0]  mio_to_periph_o,
+  input [pinmux_reg_pkg::NMioPads-1:0]      mio_out_o,
+  input [pinmux_reg_pkg::NMioPads-1:0]      mio_oe_o,
+  input [pinmux_reg_pkg::NMioPads-1:0]      mio_in_i
 );
 
   ///////////////
@@ -24,10 +24,10 @@ module pinmux_assert_fpv (
   ///////////////
 
   // symbolic inputs for FPV
-  logic [$clog2(pinmux_reg_pkg::NPeriphIn)-1:0] periph_sel_i;
+  logic [$clog2(pinmux_reg_pkg::NMioPeriphIn)-1:0] periph_sel_i;
   logic [$clog2(pinmux_reg_pkg::NMioPads)-1:0]  mio_sel_i;
 
-  `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NPeriphIn)
+  `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NMioPeriphIn)
   `ASSUME(PeriphSelStable_M, ##1 $stable(periph_sel_i))
 
   pinmux_reg_pkg::pinmux_reg2hw_periph_insel_mreg_t periph_insel;
@@ -60,9 +60,9 @@ module pinmux_assert_fpv (
       mio_out_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSel2_A, mio_outsel.q == 2 |->
       mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel.q < pinmux_reg_pkg::NPeriphOut + 3 |->
+  `ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel.q < pinmux_reg_pkg::NMioPeriphOut + 3 |->
       mio_out_o[mio_sel_i] == periph_to_mio_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOOB_A, mio_outsel.q >= pinmux_reg_pkg::NPeriphOut + 3 |->
+  `ASSERT(OutSelOOB_A, mio_outsel.q >= pinmux_reg_pkg::NMioPeriphOut + 3 |->
       mio_out_o[mio_sel_i] == 0)
   `ASSERT(MioOutO_A, ##1 !$stable(mio_out_o[mio_sel_i]) |->
        !$stable(mio_outsel.q) || !$stable(periph_to_mio_i[mio_outsel.q - 3]))
@@ -73,9 +73,9 @@ module pinmux_assert_fpv (
       mio_oe_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSelOe2_A, mio_outsel.q == 2 |->
       mio_oe_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel.q < pinmux_reg_pkg::NPeriphOut + 3 |->
+  `ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel.q < pinmux_reg_pkg::NMioPeriphOut + 3 |->
       mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOeOOB_A, mio_outsel.q >= pinmux_reg_pkg::NPeriphOut + 3 |->
+  `ASSERT(OutSelOeOOB_A, mio_outsel.q >= pinmux_reg_pkg::NMioPeriphOut + 3 |->
       mio_oe_o[mio_sel_i] == 0)
   `ASSERT(MioOeO_A, ##1 !$stable(mio_oe_o[mio_sel_i]) |->
       !$stable(mio_outsel.q) || !$stable(periph_to_mio_oe_i[mio_outsel.q - 3]))
