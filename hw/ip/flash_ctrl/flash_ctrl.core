@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/flash_ctrl_reg_pkg.sv
