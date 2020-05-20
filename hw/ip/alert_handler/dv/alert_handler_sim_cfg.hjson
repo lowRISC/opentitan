@@ -57,7 +57,6 @@
     {
       name: alert_handler_random_classes
       uvm_test_seq: alert_handler_random_classes_vseq
-      reseed: 200
     }
 
     {
@@ -75,22 +74,32 @@
       uvm_test_seq: alert_handler_sig_int_fail_vseq
     }
 
+    // entropy related tests will have unexpected pings, so register value might be updated while
+    // reading, so set zero delay to avoid this case
     {
       name: alert_handler_entropy
       uvm_test_seq: alert_handler_entropy_vseq
       run_opts: ["+test_timeout_ns=20_000_000_000"]
+      run_opts: ["+zero_delays=1"]
     }
 
     {
       name: alert_handler_ping_rsp_fail
       uvm_test_seq: alert_handler_ping_rsp_fail_vseq
       run_opts: ["+test_timeout_ns=20_000_000_000"]
+      run_opts: ["+zero_delays=1"]
     }
 
     {
       name: alert_handler_stress_all
       run_opts: ["+test_timeout_ns=25_000_000_000"]
+      run_opts: ["+zero_delays=1"]
+    }
+
+    {
+      name: alert_handler_stress_all_with_rand_reset
       reseed: 100
+      run_opts: ["+zero_delays=1"]
     }
   ]
 
