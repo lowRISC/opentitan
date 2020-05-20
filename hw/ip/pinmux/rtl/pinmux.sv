@@ -228,17 +228,17 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
       .clk_aon_i,
       .rst_aon_ni,
       // config signals. these are synched to clk_aon internally
-      .wkup_en_i          ( reg2hw.wkup_detector_en[k].q     ),
-      .filter_en_i        ( reg2hw.wkup_detector[k].filter.q ),
-      .wkup_mode_i        ( reg2hw.wkup_detector[k].mode.q   ),
-      .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q ),
-      .pin_value_i        ( pin_value                        ),
+      .wkup_en_i          ( reg2hw.wkup_detector_en[k].q                ),
+      .filter_en_i        ( reg2hw.wkup_detector[k].filter.q            ),
+      .wkup_mode_i        ( wkup_mode_e'(reg2hw.wkup_detector[k].mode.q)),
+      .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q            ),
+      .pin_value_i        ( pin_value                                   ),
       // cause reg signals. these are synched from/to clk_aon internally
-      .wkup_cause_valid_i ( reg2hw.wkup_cause[k].qe          ),
-      .wkup_cause_data_i  ( reg2hw.wkup_cause[k].q           ),
-      .wkup_cause_data_o  ( hw2reg.wkup_cause[k].d           ),
+      .wkup_cause_valid_i ( reg2hw.wkup_cause[k].qe                     ),
+      .wkup_cause_data_i  ( reg2hw.wkup_cause[k].q                      ),
+      .wkup_cause_data_o  ( hw2reg.wkup_cause[k].d                      ),
       // wakeup request signals on clk_aon (level encoded)
-      .aon_wkup_req_o     ( aon_wkup_req[k]                  )
+      .aon_wkup_req_o     ( aon_wkup_req[k]                             )
     );
   end
 
