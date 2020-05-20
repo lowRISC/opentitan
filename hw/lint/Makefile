@@ -31,6 +31,7 @@ IPS ?=  ip-aes                 \
         ip-rv_dm               \
         ip-rv_plic_example     \
         ip-rv_timer            \
+        ip-sensor_ctrl         \
         ip-spi_device          \
         ip-uart                \
         ip-usbdev              \

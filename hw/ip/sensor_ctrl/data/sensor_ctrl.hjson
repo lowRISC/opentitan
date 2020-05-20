@@ -1,0 +1,202 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// TODO: This module is only a draft implementation that covers most of the ast_wrapper
+// functoinality but is incomplete
+
+
+# SENSOR_CTRL register template
+#
+{
+  name: "SENSOR_CTRL",
+  clock_primary: "clk_i",
+  // This is a temporary hack to create clocks to be fed to ast.
+  // A more permament solution needs to be found later
+  other_clock_list: [ "clk_aon_i", "clk_sys_i", "clk_usb_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_aon_ni", "rst_sys_ni", "rst_usb_ni" ]
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+    { name:    "NumAlerts",
+      type:    "int",
+      default: "7",
+      desc:    "Number of alerts",
+      local:   "true"
+    },
+    { name:    "NumIoRails",
+      type:    "int",
+      default: "2",
+      desc:    "Number of IO rails",
+      local:   "true"
+    }
+  ],
+
+  alert_list: [
+    { name: "ast_alerts",
+      width: "7", // need to update tool to support param
+      desc: "Triggered through AST",
+    },
+  ]
+
+
+  inter_signal_list: [
+    { struct:  "tl_h2d",
+      type:    "uni",
+      name:    "ast_host",
+      act:     "req",
+      package: "tlul_pkg",
+    },
+
+    { struct:  "tl_d2h",
+      type:    "uni",
+      name:    "ast_dev",
+      act:     "rcv",
+      package: "tlul_pkg",
+    },
+
+    { struct:  "ast_aux",
+      type:    "uni",
+      name:    "ast_aux",
+      act:     "req",
+      package: "sensor_ctrl_pkg",
+    },
+
+    { struct:  "ast_alert",
+      type:    "req_rsp",
+      name:    "ast_alert",
+      act:     "rsp",
+      package: "ast_wrapper_pkg",
+    },
+
+    { struct:  "ast_status",
+      type:    "uni",
+      name:    "ast_status",
+      act:     "rcv",
+      package: "ast_wrapper_pkg",
+    },
+  ],
+
+registers: [
+    { name: "CFG_REGWEN",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      desc: '''
+      Controls the configurability of !!ACK_MODE register.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Configuration enable.
+          ''',
+          resval: "1",
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ACK_MODE",
+        desc: "Alert acknowledge mode",
+        count: "NumAlerts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "CFG_REGWEN",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Acknowledge mode to alerts.
+                0 is immediate acknowledge, the hardware immedaitely acks an incoming alert.
+                1 is softawre acknowledge.  Software must program the appropriate bit in !!ALERT_STATE to acknowledge the alert.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_TRIG",
+        desc: "Alert trigger test",
+        count: "NumAlerts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Alert trigger for testing
+                0 No alerts triggered
+                1 Continuously trigger alert until disabled
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// This register triggers alerts to fire and should be a directed test
+               "excl:CsrNonInitTests:CsrExclWrite"]
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_STATE",
+        desc: '''
+          A bit is set whenever there is an incoming alert event.
+          Software reads back the alert that was set and clears the appropriate bits to acknowledge the alert.
+
+          This is only valid when !!ACK_MODE is set to software.
+        ''',
+        count: "NumAlerts",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        hwqe: "true",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "STATUS",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      desc: '''
+        Status readback for ast
+      ''',
+
+      fields: [
+        { bits: "NumIoRails-1:0",
+          name: "io_pok",
+          desc: '''
+            IO power is ready
+          ''',
+          resval: "3",
+        },
+      ]
+    },
+
+    { skipto: "0x1000" }
+    { window: {
+        name: "ast_intf",
+        items: "0x100",
+        validbits: "32",
+        byte-write: "true",
+        unusual: "false"
+        swaccess: "rw",
+        desc: '''
+          Register access into AST internal components.
+          '''
+      },
+    },
+  ]
+}
