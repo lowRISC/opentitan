@@ -26,3 +26,4 @@ xbar_peri dut(
 `CONNECT_TL_DEVICE_IF(pwrmgr, dut, clk_peri_i, rst_peri_ni)
 `CONNECT_TL_DEVICE_IF(rstmgr, dut, clk_peri_i, rst_peri_ni)
 `CONNECT_TL_DEVICE_IF(clkmgr, dut, clk_peri_i, rst_peri_ni)
+`CONNECT_TL_DEVICE_IF(sensor_ctrl, dut, clk_peri_i, rst_peri_ni)

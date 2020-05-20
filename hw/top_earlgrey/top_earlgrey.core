@@ -36,6 +36,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
+      - lowrisc:ip:sensor_ctrl
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
