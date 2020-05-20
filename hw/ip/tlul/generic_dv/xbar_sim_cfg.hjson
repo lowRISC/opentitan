@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // Name of the sim cfg - typically same as the name of the DUT.
-  name: "{dut}"
+  // Name of the sim cfg: set in the sim_cfg that imports this file
+  // name: "{dut}"
 
   // Top level testbench name (sv module).
   tb: tb
@@ -28,142 +28,12 @@
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/data/common_sim_cfg.hjson"]
+                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["-top {dut}_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
-
-  // Default UVM test and seq class name.
-  uvm_test: xbar_base_test
-  uvm_test_seq: xbar_base_vseq
-
-  // List of test specifications.
-  tests: [
-    {
-      name: "{name}_sanity"
-      uvm_test_seq: xbar_sanity_vseq
-    }
-
-    {
-      name: "{name}_sanity_zero_delays"
-      uvm_test_seq: xbar_sanity_vseq
-      run_opts: ["+zero_delays=1"]
-    }
-
-    {
-      name: "{name}_sanity_large_delays"
-      uvm_test_seq: xbar_sanity_vseq
-      run_opts: ["+max_host_req_delay=1000",
-                 "+max_host_rsp_delay=1000",
-                 "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=1000"]
-    }
-
-    {
-      name: "{name}_sanity_slow_rsp"
-      uvm_test_seq: xbar_sanity_vseq
-      run_opts: ["+max_host_req_delay=10",
-                 "+max_host_rsp_delay=1000",
-                 "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
-    }
-
-    {
-      name: "{name}_random"
-      uvm_test_seq: xbar_random_vseq
-    }
-
-    {
-      name: "{name}_random_zero_delays"
-      uvm_test_seq: xbar_random_vseq
-      run_opts: ["+zero_delays=1"]
-    }
-
-    {
-      name: "{name}_random_large_delays"
-      uvm_test_seq: xbar_random_vseq
-      run_opts: ["+max_host_req_delay=1000",
-                 "+max_host_rsp_delay=1000",
-                 "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=1000"]
-    }
-
-    {
-      name: "{name}_random_slow_rsp"
-      uvm_test_seq: xbar_random_vseq
-      run_opts: ["+max_host_req_delay=10",
-                 "+max_host_rsp_delay=1000",
-                 "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
-    }
-
-    {
-      name: "{name}_access_same_device"
-      uvm_test_seq: xbar_access_same_device_vseq
-    }
-
-    {
-      name: "{name}_access_same_device_slow_rsp"
-      uvm_test_seq: xbar_access_same_device_vseq
-      run_opts: ["+max_host_req_delay=10",
-                 "+max_host_rsp_delay=1000",
-                 "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
-    }
-
-    {
-      name: "{name}_same_source"
-      uvm_test_seq: xbar_same_source_vseq
-    }
-
-    {
-      name: "{name}_error_random"
-      uvm_test: xbar_error_test
-      uvm_test_seq: xbar_random_vseq
-    }
-
-    {
-      name: "{name}_unmapped_addr"
-      uvm_test_seq: xbar_unmapped_addr_vseq
-    }
-
-    {
-      name: "{name}_error_and_unmapped_addr"
-      uvm_test: xbar_error_test
-      uvm_test_seq: xbar_unmapped_addr_vseq
-    }
-
-    {
-      name: "{name}_stress_all"
-      uvm_test_seq: xbar_stress_all_vseq
-    }
-
-    {
-      name: "{name}_stress_all_with_rand_reset"
-      uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
-    }
-
-    {
-      name: "{name}_stress_all_with_error"
-      uvm_test: xbar_error_test
-      uvm_test_seq: xbar_stress_all_vseq
-    }
-
-    {
-      name: "{name}_stress_all_with_reset_error"
-      uvm_test: xbar_error_test
-      uvm_test_seq: xbar_stress_all_with_rand_reset_vseq
-    }
-  ]
-
-  // List of regressions.
-  regressions: [
-    {
-      name: sanity
-      tests: ["{name}_sanity"]
-    }
-  ]
 }

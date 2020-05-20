@@ -5,7 +5,8 @@
   name: "chip"
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
                      "hw/dv/tools/testplans/mem_testplan.hjson",
-                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/ip/tlul/data/tlul_testplan.hjson"]
   entries: [
     {
       name: sanity

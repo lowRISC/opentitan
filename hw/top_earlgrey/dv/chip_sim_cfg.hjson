@@ -33,7 +33,9 @@
                 // Common CIP test lists
                 "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"]
+                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
+                // xbar tests
+                "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"]
 
   // Override the default vcs_cov_hier flag to supply chip specific coverage hierarchies.
   overrides: [
@@ -87,6 +89,10 @@
       name: mem_tests_mode
       en_run_modes: ["stub_cpu"]
       reseed: 20
+    }
+    {
+      name: xbar_mode
+      run_opts: ["+xbar_mode=1"]
     }
   ]
 

@@ -17,9 +17,9 @@ from mako import exceptions
 from mako.template import Template
 
 import tlgen
-
-from reggen import gen_dv, gen_rtl, gen_fpv, validate
-from topgen import get_hjsonobj_xbars, merge_top, search_ips, validate_top, amend_clocks
+from reggen import gen_dv, gen_fpv, gen_rtl, validate
+from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
+                    validate_top)
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -906,6 +906,21 @@ def main():
                        stderr=subprocess.DEVNULL,
                        check=True,
                        cwd=str(SRCTREE_TOP))
+
+        # generate chip level xbar TB
+        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv"]
+        for fname in tb_files:
+            tpl_fname = "%s.tpl" % (fname)
+            xbar_chip_data_path = tpl_path / tpl_fname
+            template_contents = generate_top(completecfg,
+                                             str(xbar_chip_data_path))
+
+            rendered_dir = tpl_path / '../dv/autogen'
+            rendered_dir.mkdir(parents=True, exist_ok=True)
+            rendered_path = rendered_dir / fname
+
+            with rendered_path.open(mode='w', encoding='UTF-8') as fout:
+                fout.write(template_contents)
 
 
 if __name__ == "__main__":

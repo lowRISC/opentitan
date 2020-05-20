@@ -35,7 +35,7 @@ interface clk_rst_if #(
   // clk params
   bit clk_gate      = 1'b0;   // clk gate signal
   int clk_period_ps = 20_000; // 50MHz default
-  int clk_freq_mhz  = 50;     // 50MHz default
+  real clk_freq_mhz = 50;     // 50MHz default
   int duty_cycle    = 50;     // 50% default
   int max_jitter_ps = 1000;   // 1ns default
   bit recompute     = 1'b1;   // compute half periods when period/freq/duty are changed
@@ -69,7 +69,7 @@ interface clk_rst_if #(
   endtask
 
   // set the clk frequency in mhz
-  function automatic void set_freq_mhz(int freq_mhz);
+  function automatic void set_freq_mhz(real freq_mhz);
     clk_freq_mhz = freq_mhz;
     clk_period_ps = 1000_000 / clk_freq_mhz;
     recompute = 1'b1;
@@ -210,6 +210,7 @@ interface clk_rst_if #(
     // start driving clk only after the first por reset assertion
     wait_for_reset(.wait_posedge(1'b0));
     #1ps o_clk = 1'b0;
+    #($urandom_range(0, 10) * 1ps);
     forever begin
       if (recompute) begin
         clk_hi_ps = clk_period_ps * duty_cycle / 100;
