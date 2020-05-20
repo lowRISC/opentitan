@@ -24,6 +24,7 @@ IPS ?= aes           \
        rstmgr        \
        rv_plic       \
        rv_timer      \
+       sensor_ctrl   \
        spi_device    \
        trial1        \
        uart          \
