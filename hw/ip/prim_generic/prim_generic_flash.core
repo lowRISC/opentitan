@@ -7,6 +7,8 @@ name: "lowrisc:prim_generic:flash"
 description: "prim"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:ram_1p
     files:
       - rtl/prim_generic_flash.sv
     file_type: systemVerilogSource
