@@ -28,6 +28,10 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
     do_lock_config == 1;
   }
 
+  constraint esc_accum_thresh_c {
+    foreach (accum_thresh[i]) {accum_thresh[i] dist {[0:1] :/ 5, [2:10] :/ 5};}
+  }
+
   function void pre_randomize();
     this.enable_classa_only_c.constraint_mode(0);
     verbosity = UVM_HIGH;
