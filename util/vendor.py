@@ -194,7 +194,7 @@ def _export_patches(patchrepo_clone_url, target_patch_dir, upstream_rev,
                     patched_rev):
     clone_dir = Path(tempfile.mkdtemp())
     try:
-        clone_git_repo(patchrepo_clone_url, clone_dir, patched_rev)
+        clone_git_repo(patchrepo_clone_url, clone_dir, patched_rev, True)
         rev_range = 'origin/' + upstream_rev + '..' + 'origin/' + patched_rev
         cmd = ['git', 'format-patch', '-o', str(target_patch_dir), rev_range]
         if not verbose:
@@ -221,7 +221,7 @@ def apply_patch(basedir, patchfile, strip_level=1):
     subprocess.run(cmd, cwd=str(basedir), check=True)
 
 
-def clone_git_repo(repo_url, clone_dir, rev='master'):
+def clone_git_repo(repo_url, clone_dir, rev='master', branch=False):
     log.info('Cloning upstream repository %s @ %s', repo_url, rev)
 
     # Clone the whole repository
@@ -232,7 +232,11 @@ def clone_git_repo(repo_url, clone_dir, rev='master'):
     subprocess.run(cmd, check=True)
 
     # Check out exactly the revision requested
-    cmd = ['git', '-C', str(clone_dir), 'reset', '--hard', rev]
+
+    # if the rev supplied is a branch, need to construct a differet name
+    rev_name = "remotes/origin/{}".format(rev) if branch else rev
+
+    cmd = ['git', '-C', str(clone_dir), 'reset', '--hard', rev_name]
     if not verbose:
         cmd += ['-q']
     subprocess.run(cmd, check=True)
