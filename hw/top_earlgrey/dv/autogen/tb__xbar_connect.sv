@@ -32,6 +32,7 @@ tl_if usbdev_tl_if(clk_io, rst_n);
 tl_if pwrmgr_tl_if(clk_io, rst_n);
 tl_if rstmgr_tl_if(clk_io, rst_n);
 tl_if clkmgr_tl_if(clk_io, rst_n);
+tl_if sensor_ctrl_tl_if(clk_io, rst_n);
 
 initial begin
   bit xbar_mode;
@@ -81,5 +82,6 @@ initial begin
     `DRIVE_TL_DEVICE_IF(pwrmgr, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(rstmgr, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(clkmgr, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
+    `DRIVE_TL_DEVICE_IF(sensor_ctrl, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
   end
 end

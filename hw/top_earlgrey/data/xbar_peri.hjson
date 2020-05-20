@@ -59,9 +59,17 @@
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline: "false"
+    },
+    { name:      "sensor_ctrl",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline: "false"
     }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr"],
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr",
+            "sensor_ctrl"
+    ],
   },
 }

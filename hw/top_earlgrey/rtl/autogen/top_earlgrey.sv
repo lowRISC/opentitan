@@ -105,6 +105,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
   tl_d2h_t  tl_usbdev_d_d2h;
+  tl_h2d_t  tl_sensor_ctrl_d_h2d;
+  tl_d2h_t  tl_sensor_ctrl_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -170,6 +172,7 @@ module top_earlgrey #(
   logic        cio_usbdev_dp_en_d2p;
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
+  // sensor_ctrl
 
 
   logic [80:0]  intr_vector;
@@ -828,6 +831,25 @@ module top_earlgrey #(
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
+  sensor_ctrl u_sensor_ctrl (
+      .tl_i (tl_sensor_ctrl_d_h2d),
+      .tl_o (tl_sensor_ctrl_d_d2h),
+
+      // [1]: ast_alerts
+      .alert_tx_o  ( alert_tx[7:1] ),
+      .alert_rx_i  ( alert_rx[7:1] ),
+
+      // Inter-module signals
+      .ast_bus_o(),
+      .ast_bus_i(sensor_ctrl_pkg::AST_BUS_RSP_DEFAULT),
+      .ast_alert_i(sensor_ctrl_pkg::AST_ALERT_REQ_DEFAULT),
+      .ast_alert_o(),
+      .ast_status_i(sensor_ctrl_pkg::AST_STATUS_DEFAULT),
+
+      .clk_i (clkmgr_clocks.clk_io_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_pwrmgr_wakeup,
@@ -926,24 +948,26 @@ module top_earlgrey #(
   xbar_peri u_xbar_peri (
     .clk_peri_i (clkmgr_clocks.clk_io_infra),
     .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
-    .tl_main_i       (tl_main_peri_h2d),
-    .tl_main_o       (tl_main_peri_d2h),
-    .tl_uart_o       (tl_uart_d_h2d),
-    .tl_uart_i       (tl_uart_d_d2h),
-    .tl_gpio_o       (tl_gpio_d_h2d),
-    .tl_gpio_i       (tl_gpio_d_d2h),
-    .tl_spi_device_o (tl_spi_device_d_h2d),
-    .tl_spi_device_i (tl_spi_device_d_d2h),
-    .tl_rv_timer_o   (tl_rv_timer_d_h2d),
-    .tl_rv_timer_i   (tl_rv_timer_d_d2h),
-    .tl_usbdev_o     (tl_usbdev_d_h2d),
-    .tl_usbdev_i     (tl_usbdev_d_d2h),
-    .tl_pwrmgr_o     (tl_pwrmgr_d_h2d),
-    .tl_pwrmgr_i     (tl_pwrmgr_d_d2h),
-    .tl_rstmgr_o     (tl_rstmgr_d_h2d),
-    .tl_rstmgr_i     (tl_rstmgr_d_d2h),
-    .tl_clkmgr_o     (tl_clkmgr_d_h2d),
-    .tl_clkmgr_i     (tl_clkmgr_d_d2h),
+    .tl_main_i        (tl_main_peri_h2d),
+    .tl_main_o        (tl_main_peri_d2h),
+    .tl_uart_o        (tl_uart_d_h2d),
+    .tl_uart_i        (tl_uart_d_d2h),
+    .tl_gpio_o        (tl_gpio_d_h2d),
+    .tl_gpio_i        (tl_gpio_d_d2h),
+    .tl_spi_device_o  (tl_spi_device_d_h2d),
+    .tl_spi_device_i  (tl_spi_device_d_d2h),
+    .tl_rv_timer_o    (tl_rv_timer_d_h2d),
+    .tl_rv_timer_i    (tl_rv_timer_d_d2h),
+    .tl_usbdev_o      (tl_usbdev_d_h2d),
+    .tl_usbdev_i      (tl_usbdev_d_d2h),
+    .tl_pwrmgr_o      (tl_pwrmgr_d_h2d),
+    .tl_pwrmgr_i      (tl_pwrmgr_d_d2h),
+    .tl_rstmgr_o      (tl_rstmgr_d_h2d),
+    .tl_rstmgr_i      (tl_rstmgr_d_d2h),
+    .tl_clkmgr_o      (tl_clkmgr_d_h2d),
+    .tl_clkmgr_i      (tl_clkmgr_d_d2h),
+    .tl_sensor_ctrl_o (tl_sensor_ctrl_d_h2d),
+    .tl_sensor_ctrl_i (tl_sensor_ctrl_d_d2h),
 
     .scanmode_i
   );

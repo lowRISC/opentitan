@@ -1627,6 +1627,71 @@
         }
       ]
     }
+    {
+      name: sensor_ctrl
+      type: sensor_ctrl
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x40170000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_secure
+      }
+      size: 0x2000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list:
+      [
+        {
+          name: ast_alerts
+          width: 7
+          type: alert
+          async: 1
+        }
+      ]
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: ast_bus
+          type: req_rsp
+          name: ast_bus
+          act: req
+          package: sensor_ctrl_pkg
+          inst_name: sensor_ctrl
+          index: -1
+        }
+        {
+          struct: ast_alert
+          type: req_rsp
+          name: ast_alert
+          act: rsp
+          package: sensor_ctrl_pkg
+          inst_name: sensor_ctrl
+          index: -1
+        }
+        {
+          struct: ast_status
+          type: uni
+          name: ast_status
+          act: rcv
+          package: sensor_ctrl_pkg
+          inst_name: sensor_ctrl
+          index: -1
+        }
+      ]
+    }
   ]
   memory:
   [
@@ -1934,6 +1999,10 @@
               base_addr: 0x400C0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x40170000
+              size_byte: 0x2000
+            }
           ]
         }
         {
@@ -2101,6 +2170,7 @@
           pwrmgr
           rstmgr
           clkmgr
+          sensor_ctrl
         ]
       }
       nodes:
@@ -2246,6 +2316,23 @@
             {
               base_addr: 0x400C0000
               size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: sensor_ctrl
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: sensor_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40170000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -2910,6 +2997,7 @@
   alert_module:
   [
     hmac
+    sensor_ctrl
   ]
   alert:
   [
@@ -2919,6 +3007,13 @@
       type: alert
       async: 0
       module_name: hmac
+    }
+    {
+      name: sensor_ctrl_ast_alerts
+      width: 7
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
     }
   ]
   pinmux:
@@ -3448,6 +3543,33 @@
         struct: logic
         width: "1"
         inst_name: usbdev
+        index: -1
+      }
+      {
+        struct: ast_bus
+        type: req_rsp
+        name: ast_bus
+        act: req
+        package: sensor_ctrl_pkg
+        inst_name: sensor_ctrl
+        index: -1
+      }
+      {
+        struct: ast_alert
+        type: req_rsp
+        name: ast_alert
+        act: rsp
+        package: sensor_ctrl_pkg
+        inst_name: sensor_ctrl
+        index: -1
+      }
+      {
+        struct: ast_status
+        type: uni
+        name: ast_status
+        act: rcv
+        package: sensor_ctrl_pkg
+        inst_name: sensor_ctrl
         index: -1
       }
       {
