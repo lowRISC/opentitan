@@ -268,7 +268,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // disable intr_enable or clear intr_state will clear the interrupt timeout cnter
           "intr_state": begin
             foreach (under_intr_classes[i]) begin
-              if (item.a_data[i]) under_intr_classes[i] = 0;
+              if (item.a_data[i]) begin
+                under_intr_classes[i] = 0;
+                clr_esc_under_intr[i] = 0;
+              end
             end
             fork
               begin
@@ -493,10 +496,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       begin
         if (under_esc_classes [class_i]) intr_cnter_per_class[class_i] = 0;
         if (under_intr_classes[class_i]) clr_esc_under_intr[class_i] = 1;
-        under_esc_classes[class_i]              = 0;
+        under_esc_classes[class_i] = 0;
         cfg.clk_rst_vif.wait_clks(1);
         last_triggered_alert_per_class[class_i] = $realtime;
-        accum_cnter_per_class[class_i]          = 0;
+        accum_cnter_per_class[class_i] = 0;
       end
     join_none
   endtask
