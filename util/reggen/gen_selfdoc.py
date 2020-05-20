@@ -168,7 +168,8 @@ for preferred security control.  This allows all writes to proceed
 until at some point software disables future modifications by clearing
 REGWEN. An error is reported if REGWEN does not exist, contains more
 than one bit, is not `rw1c` or does not default to 1. One REGWEN can
-protect multiple registers. An example:
+protect multiple registers. The REGWEN register must precede those
+registers that refer to it in the .hjson register list. An example:
 
 ```hjson
     { name: "REGWEN",
