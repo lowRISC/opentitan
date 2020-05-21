@@ -79,21 +79,18 @@
     {
       name: alert_handler_entropy
       uvm_test_seq: alert_handler_entropy_vseq
-      run_opts: ["+test_timeout_ns=20_000_000_000"]
-      run_opts: ["+zero_delays=1"]
+      run_opts: ["+test_timeout_ns=20_000_000_000", "+zero_delays=1"]
     }
 
     {
       name: alert_handler_ping_rsp_fail
       uvm_test_seq: alert_handler_ping_rsp_fail_vseq
-      run_opts: ["+test_timeout_ns=20_000_000_000"]
-      run_opts: ["+zero_delays=1"]
+      run_opts: ["+test_timeout_ns=20_000_000_000", "+zero_delays=1"]
     }
 
     {
       name: alert_handler_stress_all
-      run_opts: ["+test_timeout_ns=25_000_000_000"]
-      run_opts: ["+zero_delays=1"]
+      run_opts: ["+test_timeout_ns=25_000_000_000", "+zero_delays=1"]
     }
 
     {
