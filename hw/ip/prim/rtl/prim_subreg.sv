@@ -27,50 +27,38 @@ module prim_subreg #(
   output logic [DW-1:0] qs
 );
 
-  logic          wr_en ;
+  logic          wr_en;
   logic [DW-1:0] wr_data;
 
-  if ((SWACCESS == "RW") || (SWACCESS == "WO")) begin : gen_w
-    assign wr_en   = we | de ;
-    assign wr_data = (we == 1'b1) ? wd : d ; // SW higher priority
-  end else if (SWACCESS == "RO") begin : gen_ro
-    // Unused we, wd
-    assign wr_en   = de ;
-    assign wr_data = d  ;
-  end else if (SWACCESS == "W1S") begin : gen_w1s
-    // If SWACCESS is W1S, then assume hw tries to clear.
-    // So, give a chance HW to clear when SW tries to set.
-    // If both try to set/clr at the same bit pos, SW wins.
-    assign wr_en   = we | de ;
-    assign wr_data = (de ? d : q) | (we ? wd : '0);
-  end else if (SWACCESS == "W1C") begin : gen_w1c
-    // If SWACCESS is W1C, then assume hw tries to set.
-    // So, give a chance HW to set when SW tries to clear.
-    // If both try to set/clr at the same bit pos, SW wins.
-    assign wr_en   = we | de ;
-    assign wr_data = (de ? d : q) & (we ? ~wd : '1);
-  end else if (SWACCESS == "W0C") begin : gen_w0c
-    assign wr_en   = we | de ;
-    assign wr_data = (de ? d : q) & (we ? wd : '1);
-  end else if (SWACCESS == "RC") begin : gen_rc
-    // This swtype is not recommended but exists for compatibility.
-    // WARN: we signal is actually read signal not write enable.
-    assign wr_en  = we | de ;
-    assign wr_data = (de ? d : q) & (we ? '0 : '1);
-  end else begin : gen_hw
-    assign wr_en   = de ;
-    assign wr_data = d  ;
+  prim_subreg_arb #(
+    .DW       ( DW       ),
+    .SWACCESS ( SWACCESS )
+  ) wr_en_data_arb (
+    .we,
+    .wd,
+    .de,
+    .d,
+    .q,
+    .wr_en,
+    .wr_data
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      qe <= 1'b0;
+    end else begin
+      qe <= we;
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) qe <= 1'b0;
-    else        qe <= we  ;
+    if (!rst_ni) begin
+      q <= RESVAL;
+    end else if (wr_en) begin
+      q <= wr_data;
+    end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)     q <= RESVAL ;
-    else if (wr_en) q <= wr_data;
-  end
   assign qs = q;
 
 endmodule

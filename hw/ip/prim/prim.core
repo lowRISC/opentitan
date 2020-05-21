@@ -42,8 +42,10 @@ filesets:
       - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
       - rtl/prim_filter_ctr.sv
+      - rtl/prim_subreg_arb.sv
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_ext.sv
+      - rtl/prim_subreg_shadow.sv
       - rtl/prim_intr_hw.sv
     file_type: systemVerilogSource
 
