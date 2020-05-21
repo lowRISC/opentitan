@@ -29,14 +29,14 @@ module prim_ram_2p_adv #(
 
   parameter MemT = "REGISTER", // can be "REGISTER" or "SRAM"
 
-  localparam int SramAw = $clog2(Depth)
+  localparam int Aw = $clog2(Depth)
 ) (
   input clk_i,
   input rst_ni,
 
   input                     a_req_i,
   input                     a_write_i,
-  input        [SramAw-1:0] a_addr_i,
+  input        [Aw-1:0]     a_addr_i,
   input        [Width-1:0]  a_wdata_i,
   output logic              a_rvalid_o,
   output logic [Width-1:0]  a_rdata_o,
@@ -44,7 +44,7 @@ module prim_ram_2p_adv #(
 
   input                     b_req_i,
   input                     b_write_i,
-  input        [SramAw-1:0] b_addr_i,
+  input        [Aw-1:0]     b_addr_i,
   input        [Width-1:0]  b_wdata_i,
   output logic              b_rvalid_o,
   output logic [Width-1:0]  b_rdata_o,
@@ -70,7 +70,7 @@ module prim_ram_2p_adv #(
 
   logic                  a_req_q,    a_req_d ;
   logic                  a_write_q,  a_write_d ;
-  logic [SramAw-1:0]     a_addr_q,   a_addr_d ;
+  logic [Aw-1:0]         a_addr_q,   a_addr_d ;
   logic [TotalWidth-1:0] a_wdata_q,  a_wdata_d ;
   logic                  a_rvalid_q, a_rvalid_d, a_rvalid_sram ;
   logic [Width-1:0]      a_rdata_q,  a_rdata_d ;
@@ -79,7 +79,7 @@ module prim_ram_2p_adv #(
 
   logic                  b_req_q,    b_req_d ;
   logic                  b_write_q,  b_write_d ;
-  logic [SramAw-1:0]     b_addr_q,   b_addr_d ;
+  logic [Aw-1:0]         b_addr_q,   b_addr_d ;
   logic [TotalWidth-1:0] b_wdata_q,  b_wdata_d ;
   logic                  b_rvalid_q, b_rvalid_d, b_rvalid_sram ;
   logic [Width-1:0]      b_rdata_q,  b_rdata_d ;
