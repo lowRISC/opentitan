@@ -20,6 +20,7 @@ module prim_ram_2p_adv #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int CfgW                 = 8, // WTC, RTC, etc
+  parameter      MemInitFile          = "", // VMEM file to initialize the memory with
 
   // Configurations
   parameter  bit EnableECC            = 0,
@@ -92,7 +93,8 @@ module prim_ram_2p_adv #(
 
       .Width           (TotalWidth),
       .Depth           (Depth),
-      .DataBitsPerMask (TotalWidth)
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
@@ -116,7 +118,8 @@ module prim_ram_2p_adv #(
     prim_ram_2p #(
       .Width           (TotalWidth),
       .Depth           (Depth),
-      .DataBitsPerMask (TotalWidth)
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
