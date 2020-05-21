@@ -20,6 +20,7 @@ module prim_ram_2p_adv #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int CfgW                 = 8, // WTC, RTC, etc
+  parameter      MemInitFile          = "", // VMEM file to initialize the memory with
 
   // Configurations
   parameter  bit EnableECC            = 0,
@@ -87,10 +88,12 @@ module prim_ram_2p_adv #(
 
   if (MemT == "REGISTER") begin : gen_regmem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth),
-      // force register implementation for all targets
-      .Impl(prim_pkg::ImplGeneric)
+      .Impl            (prim_pkg::ImplGeneric),
+
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
@@ -110,8 +113,10 @@ module prim_ram_2p_adv #(
   // end else if (TotalWidth == aa && Depth == yy) begin
   end else if (MemT == "SRAM") begin : gen_srammem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth)
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
