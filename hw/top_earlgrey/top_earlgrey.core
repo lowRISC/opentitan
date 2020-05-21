@@ -25,7 +25,7 @@ filesets:
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
       - lowrisc:ip:pwrmgr
-      - lowrisc:prim:ram_1p
+      - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:rom
       - lowrisc:ip:rstmgr
       - lowrisc:prim:flash
