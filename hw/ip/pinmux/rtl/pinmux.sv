@@ -50,9 +50,12 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // They have been placed here such that they do not generate
   // warnings in the C header generation step, since logic is not supported
   // as a data type yet.
-  localparam logic [pinmux_reg_pkg::NMioPeriphOut-1:0] MioPeriphHasSleepMode = '1;
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasSleepMode = '1;
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasWkup      = '1;
+  localparam logic [pinmux_reg_pkg::NMioPeriphOut-1:0] MioPeriphHasSleepMode
+                   = {pinmux_reg_pkg::NMioPeriphOut{1'b1}};
+  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasSleepMode
+                   = {pinmux_reg_pkg::NDioPads{1'b1}};
+  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasWkup
+                   = {pinmux_reg_pkg::NDioPads{1'b1}};
 
   //////////////////////////////////
   // Regfile Breakout and Mapping //
