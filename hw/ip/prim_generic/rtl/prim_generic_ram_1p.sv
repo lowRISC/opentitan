@@ -15,15 +15,13 @@ module prim_generic_ram_1p #(
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,
-  input  logic             rst_ni,
 
   input  logic             req_i,
   input  logic             write_i,
   input  logic [Aw-1:0]    addr_i,
   input  logic [Width-1:0] wdata_i,
   input  logic [Width-1:0] wmask_i,
-  output logic             rvalid_o,
-  output logic [Width-1:0] rdata_o
+  output logic [Width-1:0] rdata_o // Read data. Data is returned one cycle after req_i is high.
 );
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
@@ -53,14 +51,6 @@ module prim_generic_ram_1p #(
       end else begin
         rdata_o <= mem[addr_i];
       end
-    end
-  end
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      rvalid_o <= '0;
-    end else begin
-      rvalid_o <= req_i & ~write_i;
     end
   end
 
