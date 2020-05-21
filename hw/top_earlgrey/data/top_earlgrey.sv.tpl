@@ -325,6 +325,7 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
+  logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
@@ -348,14 +349,15 @@ module top_${top["name"]} #(
     .wmask_o  (${m["name"]}_wmask),
     .rdata_i  (${m["name"]}_rdata),
     .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (2'b00)
+    .rerror_i (${m["name"]}_rerror)
   );
 
   ## TODO: Instantiate ram_1p model using RAMGEN (currently not available)
-  prim_ram_1p #(
+  prim_ram_1p_adv #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
-    .DataBitsPerMask(${int(data_width/4)})
+    .DataBitsPerMask(${int(data_width/4)}),
+    .CfgW(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -369,8 +371,10 @@ module top_${top["name"]} #(
     .addr_i   (${m["name"]}_addr),
     .wdata_i  (${m["name"]}_wdata),
     .wmask_i  (${m["name"]}_wmask),
+    .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
-    .rdata_o  (${m["name"]}_rdata)
+    .rerror_o (${m["name"]}_rerror),
+    .cfg_i    ('0)
   );
   % elif m["type"] == "rom":
 <%

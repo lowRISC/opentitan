@@ -57,7 +57,7 @@ module tb;
 
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
-  bind `RAM_MAIN_HIER mem_bkdr_if ram_mem_bkdr_if();
+  bind `RAM_MAIN_HIER.u_mem mem_bkdr_if ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
 
@@ -199,7 +199,7 @@ module tb;
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Ram]", `RAM_MAIN_HIER.ram_mem_bkdr_if);
+        null, "*.env", "mem_bkdr_vifs[Ram]", `RAM_MAIN_HIER.u_mem.ram_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(

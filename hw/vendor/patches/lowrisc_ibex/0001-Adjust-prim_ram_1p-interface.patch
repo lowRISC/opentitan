@@ -1,0 +1,35 @@
+prim_ram_1p is vendored into Ibex and used there, and then Ibex is vendored 
+back into OpenTitan. So modifications to the interface produce a circular 
+dependency. To break that, fix Ibex as vendored into OT first with this patch.
+The patch can be removed once prim_ram_1p is updated in Ibex with the version
+used in OT.
+--- a/rtl/ibex_icache.sv
++++ b/rtl/ibex_icache.sv
+@@ -297,13 +297,11 @@ module ibex_icache #(
+       .Depth    (NUM_LINES)
+     ) tag_bank (
+       .clk_i    (clk_i),
+-      .rst_ni   (rst_ni),
+       .req_i    (tag_req_ic0 & tag_banks_ic0[way]),
+       .write_i  (tag_write_ic0),
+       .wmask_i  ({TAG_SIZE_ECC{1'b1}}),
+       .addr_i   (tag_index_ic0),
+       .wdata_i  (tag_wdata_ic0),
+-      .rvalid_o (),
+       .rdata_o  (tag_rdata_ic1[way])
+     );
+     // Data RAM instantiation
+@@ -312,13 +310,11 @@ module ibex_icache #(
+       .Depth    (NUM_LINES)
+     ) data_bank (
+       .clk_i    (clk_i),
+-      .rst_ni   (rst_ni),
+       .req_i    (data_req_ic0 & data_banks_ic0[way]),
+       .write_i  (data_write_ic0),
+       .wmask_i  ({LINE_SIZE_ECC{1'b1}}),
+       .addr_i   (data_index_ic0),
+       .wdata_i  (data_wdata_ic0),
+-      .rvalid_o (),
+       .rdata_o  (data_rdata_ic1[way])
+     );
+   end

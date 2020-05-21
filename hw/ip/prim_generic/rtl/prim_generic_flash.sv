@@ -274,13 +274,11 @@ module prim_generic_flash #(
     .DataBitsPerMask(DataWidth)
   ) u_mem (
     .clk_i,
-    .rst_ni,
     .req_i    (mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
     .wdata_i  (mem_wdata),
     .wmask_i  ({DataWidth{1'b1}}),
-    .rvalid_o (),
     .rdata_o  (rd_data_o)
   );
 

@@ -501,6 +501,7 @@ module top_earlgrey #(
   logic [31:0] ram_main_wmask;
   logic [31:0] ram_main_rdata;
   logic        ram_main_rvalid;
+  logic [1:0]  ram_main_rerror;
 
   tlul_adapter_sram #(
     .SramAw(14),
@@ -520,13 +521,14 @@ module top_earlgrey #(
     .wmask_o  (ram_main_wmask),
     .rdata_i  (ram_main_rdata),
     .rvalid_i (ram_main_rvalid),
-    .rerror_i (2'b00)
+    .rerror_i (ram_main_rerror)
   );
 
-  prim_ram_1p #(
+  prim_ram_1p_adv #(
     .Width(32),
     .Depth(16384),
-    .DataBitsPerMask(8)
+    .DataBitsPerMask(8),
+    .CfgW(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
@@ -536,8 +538,10 @@ module top_earlgrey #(
     .addr_i   (ram_main_addr),
     .wdata_i  (ram_main_wdata),
     .wmask_i  (ram_main_wmask),
+    .rdata_o  (ram_main_rdata),
     .rvalid_o (ram_main_rvalid),
-    .rdata_o  (ram_main_rdata)
+    .rerror_o (ram_main_rerror),
+    .cfg_i    ('0)
   );
 
   // host to flash communication
