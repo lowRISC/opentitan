@@ -42,6 +42,13 @@ module top_earlgrey #(
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
 
+  // Inter-module Signal External type
+  output sensor_ctrl_pkg::ast_bus_req_t       sensor_ctrl_ast_bus_req,
+  input  sensor_ctrl_pkg::ast_bus_rsp_t       sensor_ctrl_ast_bus_rsp,
+  input  ast_wrapper_pkg::ast_status_t       sensor_ctrl_ast_status,
+  input  ast_wrapper_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req,
+  output ast_wrapper_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp,
+
   input               scanmode_i  // 1 for Scan
 );
 
@@ -837,11 +844,11 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[7:1] ),
 
       // Inter-module signals
-      .ast_bus_o(),
-      .ast_bus_i(sensor_ctrl_pkg::AST_BUS_RSP_DEFAULT),
-      .ast_alert_i(sensor_ctrl_pkg::AST_ALERT_REQ_DEFAULT),
-      .ast_alert_o(),
-      .ast_status_i(sensor_ctrl_pkg::AST_STATUS_DEFAULT),
+      .ast_bus_o(sensor_ctrl_ast_bus_req),
+      .ast_bus_i(sensor_ctrl_ast_bus_rsp),
+      .ast_alert_i(sensor_ctrl_ast_alert_req),
+      .ast_alert_o(sensor_ctrl_ast_alert_rsp),
+      .ast_status_i(sensor_ctrl_ast_status),
 
       .clk_i (clkmgr_clocks.clk_io_secure),
       .rst_ni (rstmgr_resets.rst_sys_io_n)

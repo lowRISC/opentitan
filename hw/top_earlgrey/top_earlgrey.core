@@ -38,6 +38,7 @@ filesets:
       - lowrisc:ip:rstmgr
       - lowrisc:ip:sensor_ctrl
       - lowrisc:tlul:headers
+      - lowrisc:systems:ast_pkg
       - lowrisc:prim:all
     files:
       - rtl/autogen/top_earlgrey_pkg.sv

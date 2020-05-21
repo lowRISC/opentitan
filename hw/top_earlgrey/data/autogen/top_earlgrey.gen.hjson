@@ -1670,6 +1670,8 @@
           act: req
           package: sensor_ctrl_pkg
           inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_bus
           index: -1
         }
         {
@@ -1677,8 +1679,10 @@
           type: req_rsp
           name: ast_alert
           act: rsp
-          package: sensor_ctrl_pkg
+          package: ast_wrapper_pkg
           inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_alert
           index: -1
         }
         {
@@ -1686,8 +1690,10 @@
           type: uni
           name: ast_status
           act: rcv
-          package: sensor_ctrl_pkg
+          package: ast_wrapper_pkg
           inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_status
           index: -1
         }
       ]
@@ -1793,7 +1799,12 @@
       pwrmgr.pwr_cpu
       clkmgr.clocks
     ]
-    external: []
+    external:
+    [
+      sensor_ctrl.ast_bus
+      sensor_ctrl.ast_status
+      sensor_ctrl.ast_alert
+    ]
   }
   xbar:
   [
@@ -3552,6 +3563,8 @@
         act: req
         package: sensor_ctrl_pkg
         inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_bus
         index: -1
       }
       {
@@ -3559,8 +3572,10 @@
         type: req_rsp
         name: ast_alert
         act: rsp
-        package: sensor_ctrl_pkg
+        package: ast_wrapper_pkg
         inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_alert
         index: -1
       }
       {
@@ -3568,8 +3583,10 @@
         type: uni
         name: ast_status
         act: rcv
-        package: sensor_ctrl_pkg
+        package: ast_wrapper_pkg
         inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_status
         index: -1
       }
       {
@@ -3584,7 +3601,49 @@
         index: -1
       }
     ]
-    external: []
+    external:
+    [
+      {
+        package: sensor_ctrl_pkg
+        struct: ast_bus_req
+        signame: sensor_ctrl_ast_bus_req
+        width: 1
+        type: req_rsp
+        direction: out
+      }
+      {
+        package: sensor_ctrl_pkg
+        struct: ast_bus_rsp
+        signame: sensor_ctrl_ast_bus_rsp
+        width: 1
+        type: req_rsp
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_status
+        signame: sensor_ctrl_ast_status
+        width: 1
+        type: uni
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_alert_req
+        signame: sensor_ctrl_ast_alert_req
+        width: 1
+        type: req_rsp
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_alert_rsp
+        signame: sensor_ctrl_ast_alert_rsp
+        width: 1
+        type: req_rsp
+        direction: out
+      }
+    ]
     definitions:
     [
       {

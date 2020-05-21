@@ -184,6 +184,37 @@ module top_earlgrey_asic (
   );
 
   //////////////////////
+  // AST              //
+  //////////////////////
+  sensor_ctrl_pkg::ast_bus_req_t base_ast_bus;
+  sensor_ctrl_pkg::ast_bus_rsp_t ast_base_bus;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_alert_rsp_t base_ast_alerts;
+
+  ast_wrapper ast_wrapper (
+    .clk_ext_i(clk),
+    .por_ni(rst_n),
+    .bus_i(base_ast_bus),
+    .bus_o(ast_base_bus),
+    .pwr_i(),
+    .pwr_o(),
+    .rst_o(),
+    .clks_o(),
+    .usb_ref_pulse_i('0),
+    .usb_ref_val_i('0),
+    .intf_i(),
+    .adc_i(),
+    .adc_o(),
+    .es_i(),
+    .es_o(),
+    .alert_i(base_ast_alerts),
+    .alert_o(ast_base_alerts),
+    .status_o(ast_base_status)
+  );
+
+
+  //////////////////////
   // Top-level design //
   //////////////////////
 
@@ -214,6 +245,13 @@ module top_earlgrey_asic (
     // Pad attributes
     .mio_attr_o      ( mio_attr      ),
     .dio_attr_o      ( dio_attr      ),
+
+    // AST connections
+    .sensor_ctrl_ast_bus_req ( base_ast_bus ),
+    .sensor_ctrl_ast_bus_rsp ( ast_base_bus ),
+    .sensor_ctrl_ast_status  ( ast_base_status ),
+    .sensor_ctrl_ast_alert_req ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp ( base_ast_alerts ),
 
     // DFT signals
     .scanmode_i      ( 1'b0          )
