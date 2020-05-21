@@ -4,6 +4,7 @@
 {
   name: "lowrisc_ibex",
   target_dir: "lowrisc_ibex",
+  patch_dir: "patches/lowrisc_ibex",
 
   upstream: {
     url: "https://github.com/lowRISC/ibex.git",
