@@ -74,15 +74,17 @@ In this example this would be `lint/aes.waiver` for AscentLint and `lint/aes.vlt
 In order to manually run lint on a specific block, make sure AscentLint is properly installed and step into the `hw/lint` folder.
 The makefile in that folder contains all targets that can be manually invoked.
 For example, to run lint on AES, do:
-```
-make ip-aes_lint
+```console
+$ cd $REPO_TOP/hw/lint
+$ make ip-aes_lint
 ```
 This run will exit with PASSED status on the command line if there are no lint errors or warnings.
 Otherwise it will exit with ERROR status, in which case you can get more information by running
-```
-make clean
-make ip-aes_lint
-make report
+```console
+$ cd $REPO_TOP/hw/lint
+$ make clean
+$ make ip-aes_lint
+$ make report
 ```
 In order to build all lint targets and produce a summary report, the `make all` target can be invoked.
 For more detailed information on a particular lint run you can inspect the tool output inside the build folder that is created by FuseSoC.
@@ -91,8 +93,9 @@ Note that all AscentLint targets have a Verilator and Verible counterparts that 
 This enables designers without access to AscentLint to iterate with open-source tools before making their first Pull Request.
 
 For batch regressions we have integrated this flow into the `dvsim` tool, which can be invoked as follows from the root of the project repository:
-```
-util/dvsim.py hw/top_earlgrey/lint/ascentlint/top_earlgrey_lint_cfgs.hjson --tool "ascentlint" --purge -mp 1
+```console
+$ cd $REPO_TOP
+$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool ascentlint --purge -mp 1
 ```
 where the `top_earlgrey_lint_cfgs.hjson` file contains all the lint targets to be run in that regression (currently all available comportable IPs and the top-level are run).
 The `purge` option ensures that the scratch directory is fully erased before starting the build, and `mp 1` sets the number of parallel workers to one (should be set depending on your licensing situation).
