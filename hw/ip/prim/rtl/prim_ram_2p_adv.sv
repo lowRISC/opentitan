@@ -64,6 +64,10 @@ module prim_ram_2p_adv #(
                              (Width <= 120) ? 8 : 8 ;
   localparam int TotalWidth = Width + ParWidth;
 
+  // We will eventually use cfg_i for RTC/WTC or other memory parameters.
+  logic [CfgW-1:0] unused_cfg;
+  assign unused_cfg = cfg_i;
+
   logic                  a_req_q,    a_req_d ;
   logic                  a_write_q,  a_write_d ;
   logic [SramAw-1:0]     a_addr_q,   a_addr_d ;
