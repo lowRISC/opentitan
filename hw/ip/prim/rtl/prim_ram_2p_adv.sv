@@ -17,41 +17,40 @@
 `include "prim_assert.sv"
 
 module prim_ram_2p_adv #(
-  parameter int Depth = 512,
-  parameter int Width = 32,
-  parameter int CfgW = 8,     // WTC, RTC, etc
+  parameter  int Depth                = 512,
+  parameter  int Width                = 32,
+  parameter  int CfgW                 = 8, // WTC, RTC, etc
 
   // Configurations
-  parameter bit EnableECC            = 0,
-  parameter bit EnableParity         = 0,
-  parameter bit EnableInputPipeline  = 0,
-  parameter bit EnableOutputPipeline = 0,
+  parameter  bit EnableECC            = 0,
+  parameter  bit EnableParity         = 0,
+  parameter  bit EnableInputPipeline  = 0,
+  parameter  bit EnableOutputPipeline = 0,
 
-  parameter MemT = "REGISTER", // can be "REGISTER" or "SRAM"
+  parameter      MemT                 = "REGISTER", // can be "REGISTER" or "SRAM"
 
-  localparam int Aw = $clog2(Depth)
+  localparam int Aw                   = $clog2(Depth)
 ) (
-  input clk_i,
-  input rst_ni,
+  input                     clk_i,
+  input                     rst_ni,
 
   input                     a_req_i,
   input                     a_write_i,
   input        [Aw-1:0]     a_addr_i,
   input        [Width-1:0]  a_wdata_i,
-  output logic              a_rvalid_o,
   output logic [Width-1:0]  a_rdata_o,
-  output logic [1:0]        a_rerror_o,
+  output logic              a_rvalid_o, // read response (a_rdata_o) is valid
+  output logic [1:0]        a_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   input                     b_req_i,
   input                     b_write_i,
   input        [Aw-1:0]     b_addr_i,
   input        [Width-1:0]  b_wdata_i,
-  output logic              b_rvalid_o,
   output logic [Width-1:0]  b_rdata_o,
+  output logic              b_rvalid_o, // read response (b_rdata_o) is valid
   output logic [1:0]        b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
-  // config
-  input [CfgW-1:0] cfg_i
+  input        [CfgW-1:0]   cfg_i
 );
 
   // Calculate ECC width
