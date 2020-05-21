@@ -1,9 +1,9 @@
 package sensor_ctrl_pkg;
 
-  parameter int NumAlerts   = sensor_ctrl_reg_pkg::NumAlerts;
-  parameter int NumIoRails  = sensor_ctrl_reg_pkg::NumIoRails;
-  parameter int AstAddrBits = 12;
-  parameter int AstDataBits = 32;
+  parameter int NumAlerts   = top_pkg::NUM_AST_ALERTS;
+  parameter int NumIoRails  = top_pkg::NUM_IO_RAILS;
+  parameter int AstAddrBits = top_pkg::AST_ADDRW;
+  parameter int AstDataBits = top_pkg::AST_DATAW;
 
   typedef struct packed {
     logic req_valid;
@@ -16,6 +16,17 @@ package sensor_ctrl_pkg;
     logic rsp_valid;
     logic [AstDataBits-1:0] rdata;
   } ast_bus_rsp_t;
+
+  // these are synchronization clocks needed by AST
+  typedef struct packed {
+    logic clk_ast_main;
+    logic clk_ast_usb;
+    logic clk_ast_io;
+    logic clk_ast_muxed;
+    logic rst_ast_main_n;
+    logic rst_ast_usb_n;
+    logic rst_ast_io_n;
+  } ast_intf_t;
 
   parameter ast_bus_rsp_t AST_BUS_RSP_DEFAULT = '{
     rsp_valid: 1'b0,

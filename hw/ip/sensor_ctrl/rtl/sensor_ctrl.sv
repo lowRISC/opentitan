@@ -20,12 +20,9 @@ module sensor_ctrl import sensor_ctrl_pkg::*; (
   input ast_bus_rsp_t ast_bus_i,
 
   // Interface from AST
-  //input ast_wrapper_pkg::ast_alert_req_t ast_alert_i,
-  //output ast_wrapper_pkg::ast_alert_rsp_t ast_alert_o,
-  //These interfaces should come from ast eventually
-  input ast_alert_req_t ast_alert_i,
-  output ast_alert_rsp_t ast_alert_o,
-  input ast_status_t ast_status_i,
+  input ast_wrapper_pkg::ast_alert_req_t ast_alert_i,
+  output ast_wrapper_pkg::ast_alert_rsp_t ast_alert_o,
+  input ast_wrapper_pkg::ast_status_t ast_status_i,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -33,13 +30,11 @@ module sensor_ctrl import sensor_ctrl_pkg::*; (
 
 );
 
-  import sensor_ctrl_reg_pkg::*;
-
   ///////////////////////////
   // Register interface
   ///////////////////////////
-  sensor_ctrl_reg2hw_t reg2hw;
-  sensor_ctrl_hw2reg_t hw2reg;
+  sensor_ctrl_reg_pkg::sensor_ctrl_reg2hw_t reg2hw;
+  sensor_ctrl_reg_pkg::sensor_ctrl_hw2reg_t hw2reg;
 
   tlul_pkg::tl_h2d_t tl_ast_h2d [1];
   tlul_pkg::tl_d2h_t tl_ast_d2h [1];

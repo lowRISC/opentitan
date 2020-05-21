@@ -35,7 +35,6 @@
   ]
 
 
-  // Define ast_wrapper struct package
   inter_signal_list: [
     { struct:  "ast_bus",
       type:    "req_rsp",
@@ -49,7 +48,7 @@
       type:    "req_rsp",
       name:    "ast_alert",
       act:     "rsp",
-      package: "sensor_ctrl_pkg",
+      package: "ast_wrapper_pkg",
     },
 
     // should be defined by ast wrapper later
@@ -57,7 +56,7 @@
       type:    "uni",
       name:    "ast_status",
       act:     "rcv",
-      package: "sensor_ctrl_pkg",
+      package: "ast_wrapper_pkg",
     },
   ],
 

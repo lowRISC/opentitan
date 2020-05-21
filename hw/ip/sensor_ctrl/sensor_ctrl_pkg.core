@@ -9,7 +9,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
-      - lowrisc:ip:sensor_ctrl_reg
     files:
       - rtl/sensor_ctrl_pkg.sv
     file_type: systemVerilogSource
