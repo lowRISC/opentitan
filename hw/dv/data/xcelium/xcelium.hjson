@@ -125,5 +125,12 @@
       # -xverbose  << add to see which modules does not have xprop enabled
       build_opts: ["-xprop F"]
     }
+    {
+      // TODO: Add build and run options to enable zero delay loop detection.
+      name: xcelium_loopdetect
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
   ]
 }

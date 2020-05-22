@@ -164,5 +164,11 @@
       build_opts: ["-simprofile"]
       run_opts:   ["-simprofile {profile}"]
     }
+    {
+      name: vcs_loopdetect
+      is_sim_mode: 1
+      build_opts: ["+vcs+loopreport", "+vcs+loopdetect"]
+      run_opts:   ["+vcs+loopreport", "+vcs+loopdetect"]
+    }
   ]
 }

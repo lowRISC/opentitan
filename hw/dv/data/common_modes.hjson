@@ -27,6 +27,11 @@
       is_sim_mode: 1
       en_build_modes: ["{tool}_xprop"]
     }
+    {
+      name: loopdetect
+      is_sim_mode: 1
+      en_build_modes: ["{tool}_loopdetect"]
+    }
   ]
 
   run_modes: [

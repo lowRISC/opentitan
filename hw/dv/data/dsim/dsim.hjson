@@ -120,5 +120,12 @@
       is_sim_mode: 1
       run_opts:   ["-profile"]
     }
+    {
+      // TODO: Add build and run options to enable zero delay loop detection.
+      name: dsim_loopdetect
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
   ]
 }
