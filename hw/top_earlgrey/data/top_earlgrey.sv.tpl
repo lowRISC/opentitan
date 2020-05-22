@@ -358,7 +358,6 @@ module top_${top["name"]} #(
     .rerror_i (${m["name"]}_rerror)
   );
 
-  ## TODO: Instantiate ram_1p model using RAMGEN (currently not available)
   prim_ram_1p_adv #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
@@ -423,7 +422,6 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  ## TODO: Replace emulated ROM to real ROM in ASIC SoC
   prim_rom #(
     .Width(${data_width}),
     .Depth(${rom_depth}),
