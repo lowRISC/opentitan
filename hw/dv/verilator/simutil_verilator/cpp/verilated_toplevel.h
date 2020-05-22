@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef VERILATED_TOPLEVEL_H_
-#define VERILATED_TOPLEVEL_H_
+#ifndef OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATED_TOPLEVEL_H_
+#define OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATED_TOPLEVEL_H_
 
 #ifndef TOPLEVEL_NAME
 #error "TOPLEVEL_NAME must be set to the name of the toplevel."
@@ -152,4 +152,4 @@ class TOPLEVEL_NAME : public VERILATED_TOPLEVEL_NAME, public VerilatedToplevel {
   }
 };
 
-#endif  // VERILATED_TOPLEVEL_H_
+#endif  // OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATED_TOPLEVEL_H_
