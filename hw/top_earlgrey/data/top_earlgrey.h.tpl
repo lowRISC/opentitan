@@ -5,6 +5,11 @@
 #ifndef _TOP_${top["name"].upper()}_H_
 #define _TOP_${top["name"].upper()}_H_
 
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
@@ -168,5 +173,10 @@ typedef enum top_${top["name"]}_plic_target {
 % endfor
   kTopEarlgreyPlicTargetLast = ${enum_id - 1}, /**< \internal Final PLIC target */
 } top_${top["name"]}_plic_target_t;
+
+// Header Extern Guard
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // _TOP_${top["name"].upper()}_H_

@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 #define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
@@ -536,5 +541,10 @@ typedef enum top_earlgrey_plic_target {
   kTopEarlgreyPlicTargetIbex0 = 0, /**< Ibex Core 0 */
   kTopEarlgreyPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_earlgrey_plic_target_t;
+
+// Header Extern Guard
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
