@@ -5,11 +5,10 @@
 #include "verilator_sim_ctrl.h"
 
 #include <getopt.h>
+#include <iostream>
 #include <signal.h>
 #include <sys/stat.h>
 #include <verilated.h>
-
-#include <iostream>
 
 // This is defined by Verilator and passed through the command line
 #ifndef VM_TRACE
@@ -202,9 +201,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
 }
 
 void VerilatorSimCtrl::PrintHelp() const {
-  std::cout << "Execute a simulation model for " << GetName()
-            << "\n"
-               "\n";
+  std::cout << "Execute a simulation model for " << GetName() << "\n\n";
   if (tracing_possible_) {
     std::cout << "-t|--trace\n"
                  "  Write a trace file from the start\n\n";
