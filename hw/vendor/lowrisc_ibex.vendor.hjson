@@ -20,5 +20,9 @@
     'vendor/lowrisc_ip',
     // We shouldn't reformat upstream code
     '.clang-format',
+    // The verilator DV utility upstream moved into this repository; avoid
+    // importing it until it has been removed from Ibex.
+    'dv/verilator/memutil',
+    'dv/verilator/simutil_verilator',
   ]
 }
