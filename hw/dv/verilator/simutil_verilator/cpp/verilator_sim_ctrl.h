@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef VERILATOR_SIM_CTRL_H_
-#define VERILATOR_SIM_CTRL_H_
+#ifndef OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATOR_SIM_CTRL_H_
+#define OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATOR_SIM_CTRL_H_
 
 #include <chrono>
 #include <string>
@@ -237,4 +237,4 @@ class VerilatorSimCtrl {
   void Trace();
 };
 
-#endif  // VERILATOR_SIM_CTRL_H_
+#endif  // OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_VERILATOR_SIM_CTRL_H_

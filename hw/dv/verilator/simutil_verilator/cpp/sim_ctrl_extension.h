@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SIM_CTRL_EXTENSION_H_
-#define SIM_CTRL_EXTENSION_H_
+#ifndef OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_SIM_CTRL_EXTENSION_H_
+#define OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_SIM_CTRL_EXTENSION_H_
 
 class SimCtrlExtension {
  public:
@@ -38,4 +38,4 @@ class SimCtrlExtension {
   virtual void PostExec() {}
 };
 
-#endif  // SIM_CTRL_EXTENSION_H_
+#endif  // OPENTITAN_HW_DV_VERILATOR_SIMUTIL_VERILATOR_CPP_SIM_CTRL_EXTENSION_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef VERILATOR_MEMUTIL_H_
-#define VERILATOR_MEMUTIL_H_
+#ifndef OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
+#define OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
 
 #include "sim_ctrl_extension.h"
 
@@ -112,4 +112,4 @@ class VerilatorMemUtil : public SimCtrlExtension {
   bool WriteVmemToMem(const svScope &scope, const std::string &filepath);
 };
 
-#endif  // VERILATOR_MEMUTIL_H_
+#endif  // OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
