@@ -122,9 +122,9 @@ class tl_monitor extends dv_base_monitor#(
   // update ok_to_end to prevent sim finish when there is any pending item
   virtual task monitor_ready_to_end();
     forever begin
-      if (pending_a_req.size() == 0) ok_to_end = 1;
-      else                           ok_to_end = 0;
-      wait(pending_a_req.size());
+      ok_to_end = (pending_a_req.size() == 0);
+      if (ok_to_end) wait(pending_a_req.size() > 0);
+      else           wait(pending_a_req.size() == 0);
     end
   endtask
 
