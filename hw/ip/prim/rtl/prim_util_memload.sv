@@ -25,32 +25,25 @@
     $readmemh(file, mem);
   endtask
 
-  // Width must be a multiple of 32bit for this function to work
-  // Note that the DPI export and function definition must both be in the same generate
-  // context to get the correct name.
-  if ((Width % 32) == 0) begin : gen_set_mem
-    // Function for setting a specific element in |mem|
-    // Returns 1 (true) for success, 0 (false) for errors.
-    export "DPI-C" function simutil_verilator_set_mem;
+  // Function for setting a specific element in |mem|
+  // Returns 1 (true) for success, 0 (false) for errors.
+  export "DPI-C" function simutil_verilator_set_mem;
 
-    function int simutil_verilator_set_mem(input int index,
-                                           input bit [Width-1:0] val);
-      if (index >= Depth) begin
-        return 0;
-      end
+  function int simutil_verilator_set_mem(input int         index,
+                                         input bit [127:0] val);
 
-      mem[index] = val;
-      return 1;
-    endfunction
-  end else begin : gen_other
-    // Function doesn't work unless Width % 32 so just return 0
-    export "DPI-C" function simutil_verilator_set_mem;
-
-    function int simutil_verilator_set_mem(input int index,
-                                           input bit [Width-1:0] val);
+    // Function will only work for memories <= 128 bits
+    if (Width > 128) begin
       return 0;
-    endfunction
-  end
+    end
+
+    if (index >= Depth) begin
+      return 0;
+    end
+
+    mem[index] = val[Width-1:0];
+    return 1;
+  endfunction
 `endif
 
 initial begin
