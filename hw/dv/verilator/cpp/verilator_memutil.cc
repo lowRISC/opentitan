@@ -45,8 +45,8 @@ bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           size_t width_bit) {
   MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
 
-  assert((width_bit == 32 || width_bit == 64) &&
-         "TODO: Check if width other than 32 and 64 works as expected.");
+  assert((width_bit <= 128) &&
+         "TODO: Memory loading only supported up to 128 bits.");
 
   auto ret = mem_register_.emplace(name, mem);
   if (ret.second == false) {
@@ -397,9 +397,9 @@ bool VerilatorMemUtil::MemWrite(const MemArea &m, const std::string &filepath,
     return false;
   }
 
-  if ((m.width_bit % 32) != 0) {
+  if ((m.width_bit % 8) != 0) {
     std::cerr << "ERROR: width for: " << m.name
-              << "must be a multiple of 32 (was : " << m.width_bit << ")"
+              << "must be a multiple of 8 (was : " << m.width_bit << ")"
               << std::endl;
     return false;
   }
