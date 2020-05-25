@@ -60,7 +60,7 @@ class esc_monitor extends alert_esc_base_monitor;
           while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
                  !cfg.probe_vif.get_esc_en());
           if (!cfg.probe_vif.get_esc_en()) begin
-            if (ping_cnter == cfg.ping_timeout_cycle &&
+            if (ping_cnter >= cfg.ping_timeout_cycle &&
                 req.esc_handshake_sta != EscRespComplete) begin
               alert_esc_seq_item req_clone;
               $cast(req_clone, req.clone());
