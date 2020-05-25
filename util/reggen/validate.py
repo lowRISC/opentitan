@@ -409,7 +409,8 @@ reg_optional = {
     'tags': [
         's',
         "tags for the register, followed by the format 'tag_name:item1:item2...'"
-    ]
+    ],
+    'shadowed': ['s', "'true' if the register is shadowed"]
 }
 reg_added = {
     'genresval': ['pi', "reset value generated from resval and fields"],
@@ -948,6 +949,34 @@ def validate_reg_defaults(reg, rname):
     else:
         full_resval = None
 
+    if 'shadowed' in reg:
+        shadowed, ierr = check_bool(reg['shadowed'], rname + " shadowed")
+
+        if ierr:
+            error += 1
+            reg['shadowed'] = "false"
+        elif shadowed is True and not rname.lower().endswith('_shadowed'):
+            log.warning(
+                rname +
+                ": no \"_shadowed/_SHADOWED\" suffix for register declared as shadowed. "
+                + "Changing it to false.")
+            reg['shadowed'] = "false"
+        elif shadowed is False and rname.lower().endswith('_shadowed'):
+            log.warning(
+                rname +
+                ": shadowed must be true for registers with \"_shadowed/_SHADOWED\" suffix. "
+                + "Changing it to true.")
+            reg['shadowed'] = "true"
+    else:
+        if rname.lower().endswith('_shadowed'):
+            log.warning(
+                rname +
+                ": shadowed not provided but must be true for registers with \"_shadowed/_SHADOWED\" suffix. "
+                + "Setting it to true.")
+            reg['shadowed'] = "true"
+        else:
+            reg['shadowed'] = "false"
+
     return error, default_sw, default_hw, full_resval
 
 
@@ -1045,6 +1074,13 @@ def validate_multi(mreg, offset, addrsep, width, top):
     if ierr:
         error += 1
 
+    # Check if shadowed and determine index to keep _shadowed as suffix
+    shadowed, ierr = check_bool(mreg['shadowed'], mrname + " shadowed")
+    if ierr:
+        error += 1
+    if shadowed is True:
+        idx = mrname.lower().find('_shadowed')
+
     if error > 0:
         return (error, 0)
 
@@ -1059,7 +1095,10 @@ def validate_multi(mreg, offset, addrsep, width, top):
         closereg = False
         if bpos == 0:
             genreg = {}
-            genreg['name'] = mrname + str(rnum)
+            if shadowed is True:
+                genreg['name'] = mrname[:idx] + str(rnum) + mrname[idx:]
+            else:
+                genreg['name'] = mrname + str(rnum)
             genreg['desc'] = mreg['desc']
             genreg['hwext'] = mreg['hwext']
             genreg['hwqe'] = mreg['hwqe']
@@ -1075,6 +1114,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
                 genreg['regwen'] = mreg['regwen'] + str(rnum)
             else:
                 genreg['regwen'] = mreg['regwen']
+            genreg['shadowed'] = mreg['shadowed']
 
             resval = 0
             resmask = 0
@@ -1173,6 +1213,7 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         genreg['tags'] = ["excl:CsrNonInitTests:CsrExclWriteCheck"]
     else:
         genreg['tags'] = []
+    genreg['shadowed'] = 'false'
     bits_used = 0
     genfields = []
     cur_bit = 0
