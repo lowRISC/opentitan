@@ -148,7 +148,7 @@ def produce_shortlog(clone_dir, mapping, old_rev, new_rev):
     # these strings are paths relative to clone_dir, we can just pass them all
     # to git and let it figure out what to do.
     subdirs = (['.'] if mapping is None
-               else [src for (src, _) in mapping.items])
+               else [m.from_path for m in mapping.items])
 
     cmd = (['git', '-C', str(clone_dir), 'log',
            '--pretty=format:%s (%aN)', '--no-merges',
