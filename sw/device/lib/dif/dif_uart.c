@@ -170,7 +170,7 @@ dif_uart_config_result_t dif_uart_init(mmio_region_t base_addr,
                                        const dif_uart_config_t *config,
                                        dif_uart_t *uart) {
   if (uart == NULL || config == NULL) {
-    return kDifUartBadArg;
+    return kDifUartConfigBadArg;
   }
 
   uart->base_addr = base_addr;
@@ -181,7 +181,7 @@ dif_uart_config_result_t dif_uart_init(mmio_region_t base_addr,
 dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
                                             const dif_uart_config_t *config) {
   if ((uart == NULL) || (config == NULL)) {
-    return kDifUartBadArg;
+    return kDifUartConfigBadArg;
   }
 
   return uart_configure(uart, config);
