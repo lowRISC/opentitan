@@ -77,7 +77,7 @@
              {value: "0x1",  name: "por",              desc: "Indicates when a device has reset due to power up"},
              {value: "0x2",  name: "low_power_exit",   desc: "Indicates when a device has reset due low power exit"},
              {value: "0x4",  name: "watchdog",         desc: "Indicates when a device has reset due to watchdog"},
-             {value: "0x8",  name: "escalation",       desc: "Indicates when a device has reset due to security gescalation"},
+             {value: "0x8",  name: "escalation",       desc: "Indicates when a device has reset due to security escalation"},
              {value: "0x10", name: "Non-debug-module", desc: "Indicates when a device has reset due to non-debug-module request"},
             ]
         }
