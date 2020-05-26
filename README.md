@@ -54,6 +54,11 @@ load("@bazel_embedded//toolchains/gcc_arm_none_eabi:gcc_arm_none_toolchain.bzl",
 register_gcc_arm_none_toolchain()
 ```
 
+Add the following to your .bazelrc file
+```
+# Enable toolchain resolution with cc
+build --incompatible_enable_cc_toolchain_resolution
+```
 
 Cross Compile your target
 
