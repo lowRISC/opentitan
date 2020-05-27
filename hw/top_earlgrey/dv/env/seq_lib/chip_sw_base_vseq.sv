@@ -5,8 +5,6 @@
 class chip_sw_base_vseq extends chip_base_vseq;
   `uvm_object_utils(chip_sw_base_vseq)
 
-  bit sw_test_done;
-
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -44,19 +42,20 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
 
-  virtual task pre_start();
-    super.pre_start();
+  virtual task body();
+    // Initialize the CPU to kick off the sw test.
     cpu_init();
   endtask
 
-  virtual task body();
-    // Spawn off a thread to monitor the SW test status.
-    fork monitor_sw_test_status(); join_none
+  virtual task post_start();
+    super.post_start();
+    // Wait for sw test to finish before exiting.
+    wait_for_sw_test_done();
   endtask
 
   // Monitors the SW test status.
-  virtual task monitor_sw_test_status();
-    `uvm_info(`gfn, "Monitoring the SW test status", UVM_MEDIUM)
+  virtual task wait_for_sw_test_done();
+    `uvm_info(`gfn, "Waiting for the SW test to finish", UVM_MEDIUM)
     fork
       begin: isolation_thread
         fork
@@ -64,15 +63,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
           #(cfg.sw_test_timeout_ns * 1ns);
         join_any
         disable fork;
-        sw_test_done = 1'b1;
         log_sw_test_status();
       end: isolation_thread
     join
-  endtask
-
-  virtual task post_start();
-    // Wait for sw test to finish before exiting.
-    wait(sw_test_done);
   endtask
 
   // Print pass / fail message to the log.
