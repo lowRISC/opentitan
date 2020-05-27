@@ -24,6 +24,7 @@
          -Mdir=<out>/vcs_simv.csrc
          -o <out>/vcs_simv
          -debug_access+pp
+         -xlrm uniq_prior_final
          -lca -kdb <cmp_opts> <wave_opts> <cov_opts>"
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
@@ -78,6 +79,7 @@
     cmd:
       - "vlib <out>/work"
       - "vlog -work <out>/work
+        <cmp_opts>
         +incdir+<ALDEC_PATH>/vlib/uvm-1.2/src
         +define+UVM
         -l uvm_1_2
@@ -106,3 +108,40 @@
       qrun -simulate -snapshot design_opt <cov_opts> <sim_opts> -sv_seed <seed> -outdir <out>/qrun.out
     cov_opts: >
       -coverage -ucdb <out>/cov.ucdb
+
+
+- tool: xlm
+  compile:
+    cmd:
+      - "xrun -64bit
+              -q
+              -f ibex_dv.f
+              -sv
+              -uvm
+              -uvmhome CDNS-1.2
+              -define UVM_REGEX_NO_DPI
+              -elaborate
+              -l <out>/compile.log
+              -xmlibdirpath <out>
+              <cmp_opts>
+              <wave_opts>"
+    wave_opts: >
+      -access rwc -linedebug
+  sim:
+    cmd: >
+      xrun -64bit
+           -R
+           -xmlibdirpath <out>
+           -l <sim_dir>/sim.log
+           -svseed <seed>
+           -svrnc rand_struct
+           +UVM_TESTNAME=<rtl_test>
+           +bin=<binary>
+           +ibex_tracer_file_base=<sim_dir>/trace_core
+           -nokey
+           <sim_opts>
+           <wave_opts>
+    wave_opts: >
+      -input @"database -open <sim_dir>/waves -shm -default"
+      -input @"probe -create -all -depth all"
+      -input @"run"

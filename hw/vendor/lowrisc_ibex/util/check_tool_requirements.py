@@ -15,7 +15,7 @@ log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
 
 def get_tool_requirements_path():
-    '''Return the path to tool_requirements.py, at the top of the Ibex repo'''
+    '''Return the path to tool_requirements.py, at the top of the repo'''
     # top_src_dir is the top of the repository
     top_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
                                                 '..'))

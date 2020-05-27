@@ -119,3 +119,18 @@
       vsim -c <sim_opts> -sv_seed <seed> <cov_opts> -do <cwd>/riviera_sim.tcl
     cov_opts: >
       -acdb_file <out>/cov.acdb
+
+- tool: xlm
+  compile:
+    cmd:
+      - "xrun -64bit -access +rwc -f <cwd>/files.f
+              +incdir+<setting>
+              +incdir+<user_extension>
+              -q -sv -uvm -vlog_ext +.vh -I.
+              -uvmhome CDNS-1.2
+              -elaborate
+              -l <out>/compile.log <cmp_opts>
+              -xmlibdirpath <out>"
+  sim:
+    cmd: >
+      xrun -R -xmlibdirpath <out> <sim_opts> -svseed <seed> -svrnc rand_struct -nokey

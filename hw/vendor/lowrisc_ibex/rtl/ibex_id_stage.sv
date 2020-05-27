@@ -48,6 +48,7 @@ module ibex_id_stage #(
 
     // IF and ID stage signals
     output logic                      pc_set_o,
+    output logic                      pc_set_spec_o,
     output ibex_pkg::pc_sel_e         pc_mux_o,
     output ibex_pkg::exc_pc_sel_e     exc_pc_mux_o,
     output ibex_pkg::exc_cause_e      exc_cause_o,
@@ -148,6 +149,10 @@ module ibex_id_stage #(
     input  logic [31:0]               rf_rdata_a_i,
     output logic [4:0]                rf_raddr_b_o,
     input  logic [31:0]               rf_rdata_b_i,
+`ifdef RVFI
+    output logic                      rf_ren_a_o,
+    output logic                      rf_ren_b_o,
+`endif
 
     // Register file write (via writeback)
     output logic [4:0]                rf_waddr_id_o,
@@ -190,6 +195,7 @@ module ibex_id_stage #(
   logic        wb_exception;
 
   logic        branch_in_dec;
+  logic        branch_spec, branch_set_spec;
   logic        branch_set, branch_set_d;
   logic        branch_taken;
   logic        jump_in_dec;
@@ -226,6 +232,11 @@ module ibex_id_stage #(
   rf_wd_sel_e  rf_wdata_sel;
   logic        rf_we_dec, rf_we_raw;
   logic        rf_ren_a, rf_ren_b;
+
+`ifdef RVFI
+  assign rf_ren_a_o = rf_ren_a;
+  assign rf_ren_b_o = rf_ren_b;
+`endif
 
   logic [31:0] rf_rdata_a_fwd;
   logic [31:0] rf_rdata_b_fwd;
@@ -530,6 +541,7 @@ module ibex_id_stage #(
       // to prefetcher
       .instr_req_o                    ( instr_req_o             ),
       .pc_set_o                       ( pc_set_o                ),
+      .pc_set_spec_o                  ( pc_set_spec_o           ),
       .pc_mux_o                       ( pc_mux_o                ),
       .exc_pc_mux_o                   ( exc_pc_mux_o            ),
       .exc_cause_o                    ( exc_cause_o             ),
@@ -542,6 +554,7 @@ module ibex_id_stage #(
 
       // jump/branch control
       .branch_set_i                   ( branch_set              ),
+      .branch_set_spec_i              ( branch_set_spec         ),
       .jump_set_i                     ( jump_set                ),
 
       // interrupt signals
@@ -618,7 +631,8 @@ module ibex_id_stage #(
   if (BranchTargetALU && !DataIndTiming) begin : g_branch_set_direct
     // Branch set fed straight to controller with branch target ALU
     // (condition pass/fail used same cycle as generated instruction request)
-    assign branch_set = branch_set_d;
+    assign branch_set      = branch_set_d;
+    assign branch_set_spec = branch_spec;
   end else begin : g_branch_set_flop
     // Branch set flopped without branch target ALU, or in fixed time execution mode
     // (condition pass/fail used next cycle where branch target is calculated)
@@ -635,7 +649,9 @@ module ibex_id_stage #(
     // Branches always take two cycles in fixed time execution mode, with or without the branch
     // target ALU (to avoid a path from the branch decision into the branch target ALU operand
     // muxing).
-    assign branch_set = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    assign branch_set      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    // Use the speculative branch signal when BTALU is enabled
+    assign branch_set_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_q;
   end
 
   // Branch condition is calculated in the first cycle and flopped for use in the second cycle
@@ -694,6 +710,7 @@ module ibex_id_stage #(
     stall_branch            = 1'b0;
     stall_alu               = 1'b0;
     branch_set_d            = 1'b0;
+    branch_spec             = 1'b0;
     jump_set                = 1'b0;
     perf_branch_o           = 1'b0;
 
@@ -729,6 +746,8 @@ module ibex_id_stage #(
                                   MULTI_CYCLE : FIRST_CYCLE;
               stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
               branch_set_d  = branch_decision_i | data_ind_timing_i;
+              // Speculative branch (excludes branch_decision_i)
+              branch_spec   = 1'b1;
               perf_branch_o = 1'b1;
             end
             jump_in_dec: begin
@@ -1000,7 +1019,8 @@ module ibex_id_stage #(
   `ASSERT_KNOWN(IbexWbStateKnown, id_fsm_q)
 
   // Branch decision must be valid when jumping.
-  `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i, instr_valid_i)
+  `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i,
+      instr_valid_i && !(illegal_csr_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,

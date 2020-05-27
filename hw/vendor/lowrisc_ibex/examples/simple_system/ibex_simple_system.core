@@ -27,43 +27,71 @@ parameters:
     datatype: int
     paramtype: vlogparam
     default: 1
-    description: Enable the M ISA extension (hardware multiply/divide) [0/1]
+    description: "Enable the M ISA extension (hardware multiply/divide) [0/1]"
+
   RV32E:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enable the E ISA extension (reduced register set) [0/1]
+    description: "Enable the E ISA extension (reduced register set) [0/1]"
+
   RV32B:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enable the B ISA extension (bit manipulation EXPERIMENTAL) [0/1]
+    description: "Enable the B ISA extension (bit manipulation EXPERIMENTAL) [0/1]"
+
   SRAM_INIT_FILE:
     datatype: str
     paramtype: vlogdefine
-    description: Path to a vmem file to initialize the RAM with
+    description: "Path to a vmem file to initialize the RAM with"
+
   MultiplierImplementation:
     datatype: str
     paramtype: vlogparam
     description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
     default: "fast"
+
   BranchTargetALU:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)
+    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)"
+
   WritebackStage:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enables third pipeline stage (EXPERIMENTAL)
+    description: "Enables third pipeline stage (EXPERIMENTAL)"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
 
 targets:
-  sim:
-    default_tool: verilator
+  default: &default_target
     filesets:
       - tool_verilator ? (files_verilator_waiver)
       - files_sim_verilator
+    toplevel: ibex_simple_system
+
+  sim:
+    <<: *default_target
+    default_tool: verilator
     parameters:
       - RV32M
       - RV32E
@@ -71,11 +99,14 @@ targets:
       - MultiplierImplementation
       - BranchTargetALU
       - WritebackStage
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
       - SRAM_INIT_FILE
-    toplevel: ibex_simple_system
     tools:
       vcs:
         vcs_options:
+          - '-xlrm uniq_prior_final'
           - '-debug_access+r'
       verilator:
         mode: cc

@@ -49,6 +49,37 @@ finally:
     sys.path = _OLD_SYS_PATH
 
 
+class SeedGen:
+    '''A generator for seed values'''
+    def __init__(self, fixed_seed, start_seed):
+        self.fixed = False
+        self.start_seed = 0
+
+        if fixed_seed is not None:
+            if start_seed is not None:
+                logging.error("Cannot pass both --seed and --start_seed.")
+                sys.exit(RET_FAIL)
+
+            self.start_seed = fixed_seed
+            self.fixed = True
+            return
+
+        if start_seed is not None:
+            self.start_seed = start_seed
+            return
+
+        # Neither --seed nor --start_seed passed. Print out the seed so the
+        # user can see what's going on.
+        self.start_seed = random.getrandbits(32)
+        logging.info("Random start seed chosen: {}".format(self.start_seed))
+
+    def gen(self, iteration):
+        if iteration != 0:
+            assert not self.fixed
+
+        return self.start_seed + iteration
+
+
 def subst_opt(string, name, enable, replacement):
     '''Substitute the <name> option in string
 
@@ -276,7 +307,7 @@ def run_sim_commands(command_list, use_lsf):
         run_cmd(cmd, 300, check_return_code=True)
 
 
-def rtl_sim(sim_cmd, test_list, seed, opts,
+def rtl_sim(sim_cmd, test_list, seed_gen, opts,
             output_dir, bin_dir, lsf_cmd):
     """Run the testbench in the simulator
 
@@ -284,8 +315,9 @@ def rtl_sim(sim_cmd, test_list, seed, opts,
     still have placeholders for test-specific arguments. test_list is a list of
     test objects read from the testlist YAML file which gives the tests to run.
 
-    seed is the seed to use in the simulations (controls things like random
-    delays on the bus). opts is a string of plusargs to give to the simulator.
+    seed the seed generator to use to supply seeds for the simulations
+    (controls things like random delays on the bus). opts is a string of
+    plusargs to give to the simulator.
 
     output_dir is the output directory for simulation files (and the directory
     in which the simulator gets run). bin_dir is the directory containing
@@ -302,7 +334,6 @@ def rtl_sim(sim_cmd, test_list, seed, opts,
                              'out': output_dir,
                              'sim_opts': opts,
                              'cwd': _CORE_IBEX,
-                             'seed': str(seed)
                          })
 
     # Compute a list of pairs (cmd, dirname) where cmd is the command to run
@@ -310,7 +341,8 @@ def rtl_sim(sim_cmd, test_list, seed, opts,
     cmd_list = []
     for test in test_list:
         for i in range(test['iterations']):
-            cmd_list.append(get_test_sim_cmd(sim_cmd, test, i,
+            it_cmd = subst_vars(sim_cmd, {'seed': str(seed_gen.gen(i))})
+            cmd_list.append(get_test_sim_cmd(it_cmd, test, i,
                                              output_dir, bin_dir, lsf_cmd))
 
     run_sim_commands(cmd_list, lsf_cmd is not None)
@@ -451,6 +483,20 @@ def gen_cov(base_dir, simulator, lsf_cmd):
         sys.exit(RET_FAIL)
 
 
+def read_seed(arg):
+    '''Read an argument to the --seed command line value'''
+    try:
+        seed = int(arg)
+        if seed < 0:
+            raise ValueError('bad seed')
+        return seed
+
+    except ValueError:
+        raise argparse.ArgumentTypeError('Bad argument for --seed ({}): '
+                                         'must be a non-negative integer.'
+                                         .format(arg))
+
+
 def main():
     '''Entry point when run as a script'''
 
@@ -465,10 +511,6 @@ def main():
                                              'testlist.yaml'))
     parser.add_argument("--test", type=str, default="all",
                         help="Test name, 'all' means all tests in the list")
-    parser.add_argument("--seed", type=int,
-                        help=("Randomization seed; random if not specified"))
-    parser.add_argument("--iterations", type=int, default=0,
-                        help="Override the iteration count in the test list")
     parser.add_argument("--simulator", type=str, default="vcs",
                         help="RTL simulator to use (default: vcs)")
     parser.add_argument("--simulator_yaml",
@@ -495,9 +537,27 @@ def main():
                         help=("LSF command. Run locally if lsf "
                               "command is not specified"))
 
+    sg = (parser.
+          add_argument_group('Seeds and iterations',
+                             'If none of the arguments in this section are '
+                             'used, a random starting seed will be picked and '
+                             'passed as --start_seed. The number of '
+                             'iterations for each test will be read from the '
+                             'configuration.'))
+
+    sg.add_argument("--seed", type=read_seed, metavar='S',
+                    help=("Randomization seed for the only iteration of each "
+                          "test. Implies --iterations=1. Equivalently, pass "
+                          "--start_seed and set iterations to 1."))
+    sg.add_argument("--start_seed", type=read_seed, metavar='S',
+                    help=("Randomization seed for the first iteration of each "
+                          "test. Following iterations will use seeds S+1, "
+                          "S+2, and so on."))
+    sg.add_argument("--iterations", type=int,
+                    help="Override the iteration count in the test list")
+
     args = parser.parse_args()
     setup_logging(args.verbose)
-    parser.set_defaults(verbose=False)
 
     # If args.lsf_cmd is an empty string return an error message and exit from
     # the script, as doing nothing will result in arbitrary simulation timeouts
@@ -521,6 +581,8 @@ def main():
     compile_cmds = []
     sim_cmd = ""
     matched_list = []
+    seed_gen = None
+
     if steps['compile'] or steps['sim']:
         enables = {
             'cov_opts': args.en_cov,
@@ -530,7 +592,16 @@ def main():
                                                   args.simulator_yaml, enables)
 
     if steps['sim'] or steps['compare']:
-        process_regression_list(args.testlist, args.test, args.iterations,
+        seed_gen = SeedGen(args.seed, args.start_seed)
+        if seed_gen.fixed:
+            if not args.iterations:
+                args.iterations = 1
+            if args.iterations != 1:
+                logging.error('Cannot set multiple --iterations with a '
+                              'fixed seed.')
+                return RET_FAIL
+
+        process_regression_list(args.testlist, args.test, args.iterations or 0,
                                 matched_list, _RISCV_DV_ROOT)
         if not matched_list:
             raise RuntimeError("Cannot find %s in %s" %
@@ -542,16 +613,8 @@ def main():
 
     # Run RTL simulation
     if steps['sim']:
-        # Pick a seed: either the one we were given, or pick one at random. In
-        # the latter case, print it out so the user can see what's going on.
-        if args.seed is None or args.seed < 0:
-            seed = random.getrandbits(32)
-            logging.info("Random seed chosen: {}".format(seed))
-        else:
-            seed = args.seed
-
-        rtl_sim(sim_cmd, matched_list, seed, args.sim_opts,
-                output_dir, bin_dir, args.lsf_cmd)
+        rtl_sim(sim_cmd, matched_list, seed_gen,
+                args.sim_opts, output_dir, bin_dir, args.lsf_cmd)
 
     # Compare RTL & ISS simulation result.
     if steps['compare']:

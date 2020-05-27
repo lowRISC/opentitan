@@ -34,11 +34,9 @@ extern const std::vector<std::string> ibex_counter_names;
  * longercountername1: 43980
  * ...
  *
- * @param pcounts Array of performance counter values, must be of length
- *                ibex_pcount_num
  * @param csv Choose csv or pretty-print formatting
  * @return String of formatted performance counter values, newline at end
  */
-std::string ibex_pcount_string(uint64_t pcounts[], bool csv);
+std::string ibex_pcount_string(bool csv);
 
 #endif  // IBEX_PCOUNTS_H_

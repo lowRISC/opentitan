@@ -8,8 +8,14 @@ class ibex_icache_scoreboard
   `uvm_component_utils(ibex_icache_scoreboard)
 
   // TLM agent fifos
+  //
+  // core_fifo comes from the core monitor. mem_fifo comes from the memory monitor. seed_fifo comes
+  // from the memory driver (not monitor) and tells us about new seeds in the backing memory. These
+  // are generated in the sequence, but don't cause any change on the interface, so need reporting
+  // by the driver.
   uvm_tlm_analysis_fifo #(ibex_icache_core_bus_item) core_fifo;
   uvm_tlm_analysis_fifo #(ibex_icache_mem_bus_item)  mem_fifo;
+  uvm_tlm_analysis_fifo #(bit [31:0])                seed_fifo;
 
   localparam BusWidth = 32;
 
@@ -58,6 +64,7 @@ class ibex_icache_scoreboard
     super.build_phase(phase);
     core_fifo = new("core_fifo", this);
     mem_fifo  = new("mem_fifo",  this);
+    seed_fifo = new("seed_fifo", this);
     mem_model = new("mem_model");
   endfunction
 
@@ -66,6 +73,7 @@ class ibex_icache_scoreboard
     fork
       process_core_fifo();
       process_mem_fifo();
+      process_seed_fifo();
     join_none
   endtask
 
@@ -133,21 +141,22 @@ class ibex_icache_scoreboard
       mem_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received mem transaction:\n%0s", item.sprint()), UVM_HIGH)
 
-      case (item.trans_type)
-        ICacheMemNewSeed: begin
-          mem_seeds.push_back(item.data);
-        end
+      if (item.is_grant) begin
+        mem_trans_count += 1;
+      end else begin
+        busy_check();
+        `DV_CHECK_FATAL(mem_trans_count > 0);
+        mem_trans_count -= 1;
+      end
+    end
+  endtask
 
-        ICacheMemGrant: begin
-          mem_trans_count += 1;
-        end
-
-        ICacheMemResponse: begin
-          busy_check();
-          `DV_CHECK_FATAL(mem_trans_count > 0);
-          mem_trans_count -= 1;
-        end
-      endcase
+  task process_seed_fifo();
+    int unsigned seed;
+    forever begin
+      seed_fifo.get(seed);
+      `uvm_info(`gfn, $sformatf("received new seed: %08h", seed), UVM_HIGH)
+      mem_seeds.push_back(seed);
     end
   endtask
 

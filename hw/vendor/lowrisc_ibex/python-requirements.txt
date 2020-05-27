@@ -7,3 +7,6 @@ git+https://github.com/lowRISC/edalize.git@ot
 
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot
+
+pyyaml
+mako

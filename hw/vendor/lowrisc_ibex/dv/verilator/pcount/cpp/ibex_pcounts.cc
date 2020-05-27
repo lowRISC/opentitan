@@ -7,6 +7,12 @@
 #include <string>
 #include <vector>
 
+#include <svdpi.h>
+
+extern "C" {
+extern long long mhpmcounter_get(int index);
+}
+
 #include "ibex_pcounts.h"
 
 // see mhpmcounter_incr signals in rtl/ibex_cs_registers.sv for details
@@ -26,7 +32,7 @@ const std::vector<std::string> ibex_counter_names = {
     "Multiply Wait",
     "Divide Wait"};
 
-std::string ibex_pcount_string(uint64_t pcounts[], bool csv) {
+std::string ibex_pcount_string(bool csv) {
   char seperator = csv ? ',' : ':';
   std::string::size_type longest_name_length;
 
@@ -52,7 +58,7 @@ std::string ibex_pcount_string(uint64_t pcounts[], bool csv) {
         pcount_ss << ' ';
     }
 
-    pcount_ss << pcounts[i] << std::endl;
+    pcount_ss << mhpmcounter_get(i) << std::endl;
   }
 
   return pcount_ss.str();

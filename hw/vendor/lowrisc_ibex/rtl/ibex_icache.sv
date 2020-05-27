@@ -31,6 +31,7 @@ module ibex_icache #(
 
     // Set the cache's address counter
     input  logic                branch_i,
+    input  logic                branch_spec_i,
     input  logic [31:0]         addr_i,
 
     // IF stage interface: Pass fetched instructions to the core
@@ -84,6 +85,7 @@ module ibex_icache #(
   logic [ADDR_W-1:0]                   prefetch_addr_d, prefetch_addr_q;
   logic                                prefetch_addr_en;
   // Cache pipelipe IC0 signals
+  logic                                branch_suppress;
   logic                                lookup_throttle;
   logic                                lookup_req_ic0;
   logic [ADDR_W-1:0]                   lookup_addr_ic0;
@@ -125,7 +127,8 @@ module ibex_icache #(
   logic                                gnt_or_pmp_err, gnt_not_pmp_err;
   logic [$clog2(NUM_FB)-1:0]           fb_fill_level;
   logic                                fill_cache_new;
-  logic                                fill_new_alloc, fill_spec_done, fill_spec_hold;
+  logic                                fill_new_alloc;
+  logic                                fill_spec_req, fill_spec_done, fill_spec_hold;
   logic [NUM_FB-1:0][NUM_FB-1:0]       fill_older_d, fill_older_q;
   logic [NUM_FB-1:0]                   fill_alloc_sel, fill_alloc;
   logic [NUM_FB-1:0]                   fill_busy_d, fill_busy_q;
@@ -169,6 +172,7 @@ module ibex_icache #(
   logic [ADDR_W-1:BUS_W]               instr_addr;
   // Data output signals
   logic                                skid_complete_instr;
+  logic                                skid_ready;
   logic                                output_compressed;
   logic                                skid_valid_d, skid_valid_q, skid_en;
   logic [15:0]                         skid_data_d, skid_data_q;
@@ -223,8 +227,8 @@ module ibex_icache #(
   assign lookup_throttle  = (fb_fill_level > FB_THRESHOLD[$clog2(NUM_FB)-1:0]);
 
   assign lookup_req_ic0   = req_i & ~&fill_busy_q & (branch_i | ~lookup_throttle) & ~ecc_write_req;
-  assign lookup_addr_ic0  = branch_i ? addr_i :
-                                       prefetch_addr_q;
+  assign lookup_addr_ic0  = branch_spec_i ? addr_i :
+                                            prefetch_addr_q;
   assign lookup_index_ic0 = lookup_addr_ic0[INDEX_HI:LINE_W];
 
   // Cache write
@@ -233,11 +237,15 @@ module ibex_icache #(
   assign fill_tag_ic0   = {(~inval_prog_q & ~ecc_write_req),fill_ram_req_addr[ADDR_W-1:INDEX_HI+1]};
   assign fill_wdata_ic0 = fill_ram_req_data;
 
+  // Suppress a new lookup on a not-taken branch (as the address will be incorrect)
+  assign branch_suppress   = branch_spec_i & ~branch_i;
+
   // Arbitrated signals - lookups have highest priority
-  assign lookup_grant_ic0  = lookup_req_ic0;
-  assign fill_grant_ic0    = fill_req_ic0 & ~lookup_req_ic0 & ~inval_prog_q & ~ecc_write_req;
+  assign lookup_grant_ic0  = lookup_req_ic0 & ~branch_suppress;
+  assign fill_grant_ic0    = fill_req_ic0 & (~lookup_req_ic0 | branch_suppress) & ~inval_prog_q &
+                             ~ecc_write_req;
   // Qualified lookup grant to mask ram signals in IC1 if access was not made
-  assign lookup_actual_ic0 = lookup_grant_ic0 & icache_enable_i & ~inval_prog_q;
+  assign lookup_actual_ic0 = lookup_grant_ic0 & icache_enable_i & ~inval_prog_q & ~start_inval;
 
   // Tagram
   assign tag_req_ic0   = lookup_req_ic0 | fill_req_ic0 | inval_prog_q | ecc_write_req;
@@ -292,9 +300,10 @@ module ibex_icache #(
 
   for (genvar way = 0; way < NumWays; way++) begin : gen_rams
     // Tag RAM instantiation
-    prim_generic_ram_1p #(
-      .Width    (TAG_SIZE_ECC),
-      .Depth    (NUM_LINES)
+    prim_ram_1p #(
+      .Width           (TAG_SIZE_ECC),
+      .Depth           (NUM_LINES),
+      .DataBitsPerMask (TAG_SIZE_ECC)
     ) tag_bank (
       .clk_i    (clk_i),
       .req_i    (tag_req_ic0 & tag_banks_ic0[way]),
@@ -305,9 +314,10 @@ module ibex_icache #(
       .rdata_o  (tag_rdata_ic1[way])
     );
     // Data RAM instantiation
-    prim_generic_ram_1p #(
-      .Width    (LINE_SIZE_ECC),
-      .Depth    (NUM_LINES)
+    prim_ram_1p #(
+      .Width           (LINE_SIZE_ECC),
+      .Depth           (NUM_LINES),
+      .DataBitsPerMask (LINE_SIZE_ECC)
     ) data_bank (
       .clk_i    (clk_i),
       .req_i    (data_req_ic0 & data_banks_ic0[way]),
@@ -485,7 +495,7 @@ module ibex_icache #(
   end else begin : gen_cache_all
 
     // Cache all missing fetches
-    assign fill_cache_new = icache_enable_i & ~icache_inval_i & ~inval_prog_q;
+    assign fill_cache_new = icache_enable_i & ~start_inval & ~inval_prog_q;
   end
 
   //////////////////////////
@@ -507,8 +517,9 @@ module ibex_icache #(
   // Allocate a new buffer for every granted lookup
   assign fill_new_alloc = lookup_grant_ic0;
   // Track whether a speculative external request was made from IC0, and whether it was granted
-  assign fill_spec_done = (SpecRequest | branch_i) & ~|fill_ext_req & gnt_not_pmp_err;
-  assign fill_spec_hold = (SpecRequest | branch_i) & ~|fill_ext_req & ~gnt_or_pmp_err;
+  assign fill_spec_req  = (SpecRequest | branch_i) & ~|fill_ext_req;
+  assign fill_spec_done = fill_spec_req & gnt_not_pmp_err;
+  assign fill_spec_hold = fill_spec_req & ~gnt_or_pmp_err;
 
   for (genvar fb = 0; fb < NUM_FB; fb++) begin : gen_fbs
 
@@ -546,8 +557,10 @@ module ibex_icache #(
     // Track staleness (requests become stale when a branch intervenes)
     assign fill_stale_d[fb]    = fill_busy_q[fb] & (branch_i | fill_stale_q[fb]);
     // Track whether or not this request should allocate to the cache
+    // Any invalidation or disabling of the cache while the buffer is busy will stop allocation
     assign fill_cache_d[fb]    = (fill_alloc[fb] & fill_cache_new) |
-                                 (fill_cache_q[fb] & fill_busy_q[fb]);
+                                 (fill_cache_q[fb] & fill_busy_q[fb] &
+                                  icache_enable_i & ~icache_inval_i);
     // Record whether the request hit in the cache
     assign fill_hit_ic1[fb]    = lookup_valid_ic1 & fill_in_ic1[fb] & tag_hit_ic1;
     assign fill_hit_d[fb]      = (fill_hit_ic1[fb] & ~ecc_err_ic1) |
@@ -670,7 +683,7 @@ module ibex_icache #(
     assign fill_data_hit[fb]   = fill_busy_q[fb] & fill_hit_ic1[fb] & fill_data_sel[fb];
     // 3. Select incoming instr_rdata_i
     assign fill_data_rvd[fb]   = fill_busy_q[fb] & fill_rvd_arb[fb] & ~fill_hit_q[fb] &
-                                 ~fill_stale_q[fb] & ~fill_out_done[fb] &
+                                 ~fill_hit_ic1[fb] & ~fill_stale_q[fb] & ~fill_out_done[fb] &
     //                           The incoming data lines up with the output count
                                  (fill_rvd_beat[fb] == fill_out_cnt_q[fb]) & fill_data_sel[fb];
 
@@ -734,8 +747,11 @@ module ibex_icache #(
 
     for (genvar b = 0; b < LINE_BEATS; b++) begin : gen_data_buf
       // Error tracking (per beat)
-      //                           Either a PMP error at grant,
-      assign fill_err_d[fb][b]   = (fill_ext_arb[fb] & instr_pmp_err_i &
+      //                           Either a PMP error on a speculative request,
+      assign fill_err_d[fb][b]   = (instr_pmp_err_i & fill_alloc[fb] & fill_spec_req &
+                                    (lookup_addr_ic0[LINE_W-1:BUS_W] == b[LINE_BEATS_W-1:0])) |
+      //                           a PMP error on a fill buffer ext req
+                                   (instr_pmp_err_i & fill_ext_arb[fb] &
                                     (fill_ext_off[fb] == b[LINE_BEATS_W-1:0])) |
       //                           Or a data error with instr_rvalid_i
                                    (fill_rvd_arb[fb] & instr_err_i &
@@ -752,8 +768,10 @@ module ibex_icache #(
       end
 
       // Enable the relevant part of the data register (or all for cache hits)
+      // Ignore incoming rvalid data when we already have cache hit data
       assign fill_data_en[fb][b] = fill_hit_ic1[fb] |
-                                   (fill_rvd_arb[fb] & (fill_rvd_off[fb] == b[LINE_BEATS_W-1:0]));
+                                   (fill_rvd_arb[fb] & ~fill_hit_q[fb] &
+                                    (fill_rvd_off[fb] == b[LINE_BEATS_W-1:0]));
 
       always_ff @(posedge clk_i) begin
         if (fill_data_en[fb][b]) begin
@@ -799,7 +817,8 @@ module ibex_icache #(
     for (int i = 0; i < NUM_FB; i++) begin
       if (fill_data_reg[i]) begin
         fill_out_data |= fill_data_q[i];
-        fill_out_err  |= fill_err_q[i];
+        // Ignore any speculative errors accumulated on cache hits
+        fill_out_err  |= (fill_err_q[i] & ~{LINE_BEATS{fill_hit_q[i]}});
       end
     end
   end
@@ -852,7 +871,7 @@ module ibex_icache #(
   // Skid buffer data
   assign skid_data_d = output_data[31:16];
 
-  assign skid_en     = data_valid & ready_i;
+  assign skid_en     = data_valid & (ready_i | skid_ready);
 
   always_ff @(posedge clk_i) begin
     if (skid_en) begin
@@ -861,10 +880,14 @@ module ibex_icache #(
     end
   end
 
-  // The data in the skid buffer is a complete compressed instruction
-  assign skid_complete_instr = skid_valid_q & (skid_data_q[1:0] != 2'b11);
+  // The data in the skid buffer is ready if it's a complete compressed instruction or if there's
+  // an error (no need to wait for the second half)
+  assign skid_complete_instr = skid_valid_q & ((skid_data_q[1:0] != 2'b11) | skid_err_q);
 
-  assign output_ready = ready_i & ~skid_complete_instr;
+  // Data can be loaded into the skid buffer for an unaligned uncompressed instruction
+  assign skid_ready = output_addr_q[1] & ~skid_valid_q & (~output_compressed | output_err);
+
+  assign output_ready = (ready_i | skid_ready) & ~skid_complete_instr;
 
   assign output_compressed = (rdata_o[1:0] != 2'b11);
 
@@ -872,9 +895,12 @@ module ibex_icache #(
       // Branches invalidate the skid buffer
       branch_i      ? 1'b0 :
       // Once valid, the skid buffer stays valid until a compressed instruction realigns the stream
-      (skid_valid_q ? ~(ready_i & (skid_data_q[1:0] != 2'b11)) :
-      // The skid buffer becomes valid when a compressed instruction misaligns the stream
-                      ((output_addr_q[1] ^ output_compressed) & data_valid & ready_i));
+      (skid_valid_q ? ~(ready_i & ((skid_data_q[1:0] != 2'b11) | skid_err_q)) :
+      // The skid buffer becomes valid when:
+                        // - we branch to an unaligned uncompressed instruction
+                      (((output_addr_q[1] & (~output_compressed | output_err)) |
+                        // - a compressed instruction misaligns the stream
+                        (~output_addr_q[1] & output_compressed & ~output_err & ready_i)) & data_valid));
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -898,7 +924,7 @@ module ibex_icache #(
   assign output_addr_en = branch_i | (ready_i & valid_o);
 
   // Increment the address by two every time a compressed instruction is popped
-  assign addr_incr_two = output_compressed;
+  assign addr_incr_two = output_compressed & ~err_o;
 
   assign output_addr_d = branch_i ? addr_i[31:1] :
                                     (output_addr_q[31:1] +

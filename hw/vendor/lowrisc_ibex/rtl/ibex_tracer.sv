@@ -46,6 +46,7 @@ module ibex_tracer (
   input logic        rvfi_halt,
   input logic        rvfi_intr,
   input logic [ 1:0] rvfi_mode,
+  input logic [ 1:0] rvfi_ixl,
   input logic [ 4:0] rvfi_rs1_addr,
   input logic [ 4:0] rvfi_rs2_addr,
   input logic [ 4:0] rvfi_rs3_addr,
@@ -72,6 +73,7 @@ module ibex_tracer (
   logic        unused_rvfi_halt = rvfi_halt;
   logic        unused_rvfi_intr = rvfi_intr;
   logic [ 1:0] unused_rvfi_mode = rvfi_mode;
+  logic [ 1:0] unused_rvfi_ixl = rvfi_ixl;
 
   import ibex_tracer_pkg::*;
 
@@ -832,7 +834,16 @@ module ibex_tracer (
         INSN_SLTIU:      decode_i_insn("sltiu");
         INSN_XORI:       decode_i_insn("xori");
         INSN_ORI:        decode_i_insn("ori");
+        // Version 0.92 of the Bitmanip Extension defines the pseudo-instruction
+        // zext.b rd rs = andi rd, rs, 255.
+        // Currently instruction set simulators don't output this pseudo-instruction.
         INSN_ANDI:       decode_i_insn("andi");
+        // INSN_ANDI:begin
+          // casez (rvfi_insn)
+            // INSN_ZEXTB:  decode_r1_insn("zext.b");
+            // default:     decode_i_insn("andi");
+          // endcase
+        // end
         INSN_SLLI:       decode_i_shift_insn("slli");
         INSN_SRLI:       decode_i_shift_insn("srli");
         INSN_SRAI:       decode_i_shift_insn("srai");
@@ -890,12 +901,23 @@ module ibex_tracer (
         INSN_XNOR:       decode_r_insn("xnor");
         INSN_ORN:        decode_r_insn("orn");
         INSN_ANDN:       decode_r_insn("andn");
+        // Version 0.92 of the Bitmanip Extension defines the pseudo-instruction
+        // zext.h rd rs = pack rd, rs, zero.
+        // Currently instruction set simulators don't output this pseudo-instruction.
         INSN_PACK:       decode_r_insn("pack");
+        // INSN_PACK: begin
+          // casez (rvfi_insn)
+            // INSN_ZEXTH:  decode_r1_insn("zext.h");
+            // default:     decode_r_insn("pack");
+          // endcase
+        // end
         INSN_PACKH:      decode_r_insn("packh");
         INSN_PACKU:      decode_r_insn("packu");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
         INSN_PCNT:       decode_r1_insn("pcnt");
+        INSN_SEXTB:      decode_r1_insn("sext.b");
+        INSN_SEXTH:      decode_r1_insn("sext.h");
         // RV32B - ZBS
         INSN_SBCLRI:     decode_i_insn("sbclri");
         INSN_SBSETI:     decode_i_insn("sbseti");
@@ -905,6 +927,9 @@ module ibex_tracer (
         INSN_SBSET:      decode_r_insn("sbset");
         INSN_SBINV:      decode_r_insn("sbinv");
         INSN_SBEXT:      decode_r_insn("sbext");
+        // RV32B - ZBE
+        INSN_BDEP:       decode_r_insn("bdep");
+        INSN_BEXT:       decode_r_insn("bext");
         // RV32B - ZBP
         INSN_GREV:       decode_r_insn("grev");
         INSN_GREVI: begin
@@ -987,6 +1012,22 @@ module ibex_tracer (
         INSN_FSR:        decode_r_funnelshift_insn("fsr");
         INSN_FSL:        decode_r_funnelshift_insn("fsl");
         INSN_FSRI:       decode_i_funnelshift_insn("fsri");
+
+        // RV32B - ZBF
+        INSN_BFP:        decode_r_insn("bfp");
+
+        // RV32B - ZBC
+        INSN_CLMUL:      decode_r_insn("clmul");
+        INSN_CLMULR:     decode_r_insn("clmulr");
+        INSN_CLMULH:     decode_r_insn("clmulh");
+
+        // RV32B - ZBR
+        INSN_CRC32_B:    decode_r1_insn("crc32.b");
+        INSN_CRC32_H:    decode_r1_insn("crc32.h");
+        INSN_CRC32_W:    decode_r1_insn("crc32.w");
+        INSN_CRC32C_B:   decode_r1_insn("crc32c.b");
+        INSN_CRC32C_H:   decode_r1_insn("crc32c.h");
+        INSN_CRC32C_W:   decode_r1_insn("crc32c.w");
 
         default:         decode_mnemonic("INVALID");
       endcase

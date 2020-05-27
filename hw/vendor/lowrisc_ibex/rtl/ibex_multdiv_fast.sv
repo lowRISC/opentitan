@@ -29,7 +29,8 @@ module ibex_multdiv_fast #(
     input  logic [31:0]      op_b_i,
     input  logic [33:0]      alu_adder_ext_i,
     input  logic [31:0]      alu_adder_i,
-    input  logic             equal_to_zero,
+    input  logic             equal_to_zero_i,
+    input  logic             data_ind_timing_i,
 
     output logic [32:0]      alu_operand_a_o,
     output logic [32:0]      alu_operand_b_o,
@@ -78,6 +79,7 @@ module ibex_multdiv_fast #(
   logic        multdiv_en;
   logic        mult_hold;
   logic        div_hold;
+  logic        div_by_zero_d, div_by_zero_q;
 
   logic        mult_en_internal;
   logic        div_en_internal;
@@ -95,17 +97,19 @@ module ibex_multdiv_fast #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      div_counter_q      <= '0;
-      md_state_q         <= MD_IDLE;
-      op_denominator_q   <= '0;
-      op_numerator_q     <= '0;
-      op_quotient_q      <= '0;
+      div_counter_q    <= '0;
+      md_state_q       <= MD_IDLE;
+      op_denominator_q <= '0;
+      op_numerator_q   <= '0;
+      op_quotient_q    <= '0;
+      div_by_zero_q    <= '0;
     end else if (div_en_internal) begin
       div_counter_q    <= div_counter_d;
       op_denominator_q <= op_denominator_d;
       op_numerator_q   <= op_numerator_d;
       op_quotient_q    <= op_quotient_d;
       md_state_q       <= md_state_d;
+      div_by_zero_q    <= div_by_zero_d;
     end
   end
 
@@ -381,7 +385,7 @@ module ibex_multdiv_fast #(
 
   assign div_sign_a      = op_a_i[31] & signed_mode_i[0];
   assign div_sign_b      = op_b_i[31] & signed_mode_i[1];
-  assign div_change_sign = div_sign_a ^ div_sign_b;
+  assign div_change_sign = (div_sign_a ^ div_sign_b) & ~div_by_zero_q;
   assign rem_change_sign = div_sign_a;
 
 
@@ -396,19 +400,27 @@ module ibex_multdiv_fast #(
     alu_operand_b_o  = {~op_b_i, 1'b1};
     div_valid        = 1'b0;
     div_hold         = 1'b0;
+    div_by_zero_d    = div_by_zero_q;
 
     unique case(md_state_q)
       MD_IDLE: begin
         if (operator_i == MD_OP_DIV) begin
           // Check if the Denominator is 0
-          // quotient for division by 0
+          // quotient for division by 0 is specified to be -1
+          // Note with data-independent time option, the full divide operation will proceed as
+          // normal and will naturally return -1
           op_remainder_d = '1;
-          md_state_d     = equal_to_zero ? MD_FINISH : MD_ABS_A;
+          md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
+          // Record that this is a div by zero to stop the sign change at the end of the
+          // division (in data_ind_timing mode).
+          div_by_zero_d  = equal_to_zero_i;
         end else begin
           // Check if the Denominator is 0
-          // remainder for division by 0
+          // remainder for division by 0 is specified to be the numerator (operand a)
+          // Note with data-independent time option, the full divide operation will proceed as
+          // normal and will naturally return operand a
           op_remainder_d = {2'b0, op_a_i};
-          md_state_d     = equal_to_zero ? MD_FINISH : MD_ABS_A;
+          md_state_d     = (!data_ind_timing_i && equal_to_zero_i) ? MD_FINISH : MD_ABS_A;
         end
         // 0 - B = 0 iff B == 0
         alu_operand_a_o  = {32'h0  , 1'b1};

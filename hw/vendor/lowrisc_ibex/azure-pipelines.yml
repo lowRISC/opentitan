@@ -47,11 +47,14 @@ jobs:
   - bash: |
       curl -L https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key | sudo apt-key add -
       sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/edatools.list"
+      # Uninstall distribution-provided version to get a newer version through pip
+      sudo apt-get remove -y python3-yaml
       sudo apt-get update
       sudo apt-get install -y \
           python3 \
           python3-pip \
           python3-setuptools \
+          python3-wheel \
           srecord \
           zlib1g-dev \
           git \
@@ -154,6 +157,6 @@ jobs:
   - template : ci/ibex-rtl-ci-steps.yml
     parameters:
       ibex_configs:
-        - small-3cmult
-        - experimental-maxperf-1cmult
-        - experimental-maxperf-bm-1cmult
+        - small
+        - experimental-maxperf-pmp
+        - experimental-maxperf-pmp-bm

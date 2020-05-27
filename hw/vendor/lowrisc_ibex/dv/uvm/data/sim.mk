@@ -11,13 +11,16 @@ all: build run
 ###############################
 build: compile_result
 
-pre_compile:
-	@echo "[make]: pre_compile"
-	mkdir -p ${build_dir} && env | sort > ${build_dir}/env_vars
+prep_tool_srcs:
+	@echo "[make]: prep_tool_srcs"
 	mkdir -p ${tool_srcs_dir}
 	cp -Ru ${tool_srcs} ${tool_srcs_dir}/.
 
-gen_sv_flist: pre_compile
+pre_compile:
+	@echo "[make]: pre_compile"
+	mkdir -p ${build_dir}
+
+gen_sv_flist: pre_compile prep_tool_srcs
 	@echo "[make]: gen_sv_flist"
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
 
@@ -35,7 +38,7 @@ run: run_result
 
 pre_run:
 	@echo "[make]: pre_run"
-	mkdir -p ${run_dir} && env | sort > ${run_dir}/env_vars
+	mkdir -p ${run_dir}
 
 simulate:
 	@echo "[make]: simulate"
@@ -58,14 +61,17 @@ debug_waves:
 ############################
 # Merge coverage if there are multiple builds.
 cov_merge:
+	@echo "[make]: cov_merge"
 	${cov_merge_cmd} ${cov_merge_opts}
 
 # Open coverage tool to review and create report or exclusion file.
-cov_analyze:
+cov_analyze: prep_tool_srcs
+	@echo "[make]: cov_analyze"
 	${cov_analyze_cmd} ${cov_analyze_opts}
 
 # Generate coverage reports.
 cov_report:
+	@echo "[make]: cov_report"
 	${cov_report_cmd} ${cov_report_opts}
 
 clean:

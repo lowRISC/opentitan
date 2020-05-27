@@ -8,20 +8,20 @@
 
 class ibex_icache_mem_bus_item extends uvm_sequence_item;
 
-  // What sort of transaction is this? (new seed, grant or response)
-  ibex_icache_mem_trans_type_e trans_type;
+  // What sort of transaction is this? (grant or response)
+  bit          is_grant;
 
-  // This holds the new seed for a 'new seed' transaction, the request address for a grant
-  // transaction and the returned rdata for a response transaction.
+  // This holds the request address for a grant transaction and the returned rdata for a response
+  // transaction.
   logic [31:0] data;
 
   // Response error flag (only valid for response transactions)
   logic        err;
 
   `uvm_object_utils_begin(ibex_icache_mem_bus_item)
-    `uvm_field_enum(ibex_icache_mem_trans_type_e, trans_type, UVM_DEFAULT)
-    `uvm_field_int(data, UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int(err,  UVM_DEFAULT)
+    `uvm_field_int(is_grant, UVM_DEFAULT)
+    `uvm_field_int(data,     UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int(err,      UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

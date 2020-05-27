@@ -196,20 +196,12 @@ class riscv_vector_instr extends riscv_floating_point_instr;
     if (allowed_va_variants.size() > 0) begin
       has_va_variant = 1;
     end
-    case (format) inside
-      VA_FORMAT : begin
-        if (va_variant inside {WI, VI, VIM}) begin
-          has_imm = 1'b1;
-          has_vs1 = 1'b0;
-        end else if (va_variant inside {WX, VX, VXM}) begin
-          has_rs1 = 1'b1;
-          has_vs1 = 1'b0;
-        end else if (va_variant inside {VF, VFM}) begin
-          has_fs1 = 1'b1;
-          has_vs1 = 1'b0;
-        end
-      end
-    endcase
+    // Set the rand mode based on the superset of all VA variants
+    if (format == VA_FORMAT) begin
+      has_imm = 1'b1;
+      has_rs1 = 1'b1;
+      has_fs1 = 1'b1;
+    end
   endfunction : set_rand_mode
 
 endclass : riscv_vector_instr

@@ -1,4 +1,4 @@
-IBEX_CONFIG ?= small-3cmult
+IBEX_CONFIG ?= small
 
 FUSESOC_CONFIG_OPTS = $(shell ./util/ibex_config.py $(IBEX_CONFIG) fusesoc_opts)
 

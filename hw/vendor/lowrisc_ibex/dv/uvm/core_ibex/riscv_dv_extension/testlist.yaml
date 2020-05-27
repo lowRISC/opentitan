@@ -595,5 +595,5 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +enable_b_extension=1
-    +enable_bitmanip_groups=zbb,zbt,zbs,zbp
+    +enable_bitmanip_groups=zbb,zbt,zbs,zbp,zbf,zbe,zbc,zbr
   rtl_test: core_ibex_base_test
