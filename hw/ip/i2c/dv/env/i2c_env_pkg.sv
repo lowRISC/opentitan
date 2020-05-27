@@ -36,16 +36,24 @@ package i2c_env_pkg;
   parameter uint I2C_ADDR_MAP_SIZE = 128;
 
   // for constrains
-  parameter uint I2C_MIN_ADDR   = 0;
-  parameter uint I2C_MAX_ADDR   = 127;
-  parameter uint I2C_MIN_DATA   = 0;
-  parameter uint I2C_MAX_DATA   = 255;
-  parameter uint I2C_MIN_DLY    = 1;
-  parameter uint I2C_MAX_DLY    = 2;
-  parameter uint I2C_MIN_TIMING = 2;
-  parameter uint I2C_MAX_TIMING = 2;
-  parameter bit  I2C_FLAG_ON    = 1'b1;
-  parameter bit  I2C_FLAG_OFF   = 1'b0;
+  parameter uint I2C_MIN_TRAN    = 10;
+  parameter uint I2C_MAX_TRAN    = 200;
+  parameter uint I2C_MIN_ADDR    = 0;
+  parameter uint I2C_MAX_ADDR    = 127;
+  parameter uint I2C_MIN_DLY     = 0;
+  parameter uint I2C_MAX_DLY     = 2;
+  parameter uint I2C_MIN_DATA    = 0;
+  parameter uint I2C_MAX_DATA    = 255;
+  parameter uint I2C_MIN_TIMING  = 1;     // at least 1
+  parameter uint I2C_MAX_TIMING  = 5;
+  parameter uint I2C_TIME_RANGE  = I2C_MAX_TIMING - I2C_MIN_TIMING;
+  parameter uint I2C_TIMEOUT_ENB = 1;
+  parameter uint I2C_MIN_TIMEOUT = 1;
+  parameter uint I2C_MAX_TIMEOUT = 2;
+  parameter uint I2C_IDLE_TIME   = 1200;
+
+  // ok_to_end_delay_ns for EoT
+  parameter uint DELAY_FOR_EOT_NS = 5000;
 
   // functions
   // get the number of bytes that triggers watermark interrupt
@@ -86,3 +94,4 @@ package i2c_env_pkg;
   `include "i2c_vseq_list.sv"
 
 endpackage : i2c_env_pkg
+

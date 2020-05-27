@@ -5,11 +5,9 @@
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
-  // TODO: define covergroups
-
+  // TODO: instantiate all covergroups here
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // TODO: instantiate all covergroups here
   endfunction : new
 
 endclass

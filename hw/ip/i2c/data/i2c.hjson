@@ -14,10 +14,10 @@
   // INTERRUPT pins
   interrupt_list: [
     { name: "fmt_watermark"
-      desc: "raised when the FMT FIFO depth falls below the lowwater mark."
+      desc: "raised when the FMT FIFO depth falls below the low watermark."
     }
     { name: "rx_watermark"
-      desc: "raised if the RX FIFO is past the highwater mark."
+      desc: "raised if the RX FIFO is past the high watermark."
     }
     { name: "fmt_overflow"
       desc: "raised if the FMT FIFO has overflowed."
