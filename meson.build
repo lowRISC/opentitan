@@ -38,8 +38,16 @@ tock_local = get_option('tock_local')
 optimize_size_args = [
   '-Os', # General "Optimize for Size" Option
   '-fvisibility=hidden', # Hide symbols by default
-  '-Wa,--no-pad-sections', # Don't pad assembly sections
 ]
+
+if meson.get_compiler('c').has_argument('-Wa,--no-pad-sections')
+    # Don't pad assembly sections. This was originally added to avoid sections
+    # being padded to the alignment size. Specifically, .vectors was being
+    # padded to 256 bytes when aligning to that value, when it only needed to be
+    # 128 bytes long. Clang doesn't do this padding, so restricting this option
+    # to GCC doesn't waste space when compiling with Clang.
+    optimize_size_args += '-Wa,--no-pad-sections'
+endif
 
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
