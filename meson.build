@@ -64,22 +64,20 @@ add_project_arguments(
 
 # The following flags are applied only to cross builds
 add_project_arguments(
-  # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib', '-nostdinc',
-  '-static', # Only link static files
+  '-nostdinc', # Do not use standard system headers
   optimize_size_args,
   language: 'cpp', native: false)
 add_project_arguments(
-  # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib', '-nostdinc',
-  '-static', # Only link static files
+  '-nostdinc', # Do not use standard system headers
   optimize_size_args,
   language: 'c', native: false)
 add_project_link_arguments(
-  '-nostdlib', # Do not use standard system startup files or libraries
+  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
+  '-static', # Only link static files
   language: 'cpp', native: false)
 add_project_link_arguments(
-  '-nostdlib', # Do not use standard system startup files or libraries
+  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
+  '-static', # Only link static files
   language: 'c', native: false)
 
 # Common program references.
