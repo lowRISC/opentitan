@@ -66,7 +66,9 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B3  | ``dscratch1``      | RW     | Debug Scratch Register 1                      |
 +---------+--------------------+--------+-----------------------------------------------+
-|  0x7C0  | ``cpuctrl``        | RW     | CPU Control Register (Custom CSR)             |
+|  0x7C0  | ``cpuctrl``        | WARL   | CPU Control Register (Custom CSR)             |
++---------+--------------------+--------+-----------------------------------------------+
+|  0x7C1  | ``secureseed``     | WARL   | Security feature random seed (Custom CSR)     |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0xB00  | ``mcycle``         | RW     | Machine Cycle Counter                         |
 +---------+--------------------+--------+-----------------------------------------------+
@@ -500,6 +502,16 @@ Other bit fields read as zero.
 +-------+------+------------------------------------------------------------------+
 | Bit#  | R/W  | Description                                                      |
 +-------+------+------------------------------------------------------------------+
+| 5:3   | WARL | **dummy_instr_mask:** Mask to control frequency of dummy         |
+|       |      | instruction insertion. If the core has not been configured with  |
+|       |      | security features (SecureIbex parameter == 0), this field will   |
+|       |      | always read as zero (see :ref:`security`).                       |
++-------+------+------------------------------------------------------------------+
+| 2     | WARL | **dummy_instr_en:** Enable (1) or disable (0) dummy instruction  |
+|       |      | insertion features. If the core has not been configured with     |
+|       |      | security features (SecureIbex parameter == 0), this field will   |
+|       |      | always read as zero (see :ref:`security`).                       |
++-------+------+------------------------------------------------------------------+
 | 1     | WARL | **data_ind_timing:** Enable (1) or disable (0) data-independent  |
 |       |      | timing features. If the core has not been configured with        |
 |       |      | security features (SecureIbex parameter == 0), this field will   |
@@ -509,6 +521,20 @@ Other bit fields read as zero.
 |       |      | cache. If the instruction cache has not been configured (ICache  |
 |       |      | parameter == 0), this field will always read as zero.            |
 +-------+------+------------------------------------------------------------------+
+
+Security Feature Seed Register (secureseed)
+-------------------------------------------
+
+CSR Address: ``0x7C1``
+
+Reset Value: ``0x0000_0000``
+
+Accessible in Machine Mode only.
+
+Custom CSR to allow re-seeding of security-related pseudo-random number generators.
+A write to this register will update the seeding of pseudo-random number generators inside the design.
+This allows software to improve the randomness, and therefore security, of certain features by periodically reading from a true random number generator peripheral.
+Seed values are not actually stored in a register and so reads to this register will always return zero.
 
 Time Registers (time(h))
 ------------------------

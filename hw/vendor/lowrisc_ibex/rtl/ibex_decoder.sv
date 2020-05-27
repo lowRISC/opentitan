@@ -346,9 +346,18 @@ module ibex_decoder #(
               end
               5'b0_1100: begin
                 unique case(instr[26:20])
-                  7'b00_00000,                                     // clz
-                  7'b00_00001,                                     // ctz
-                  7'b00_00010: illegal_insn = RV32B ? 1'b0 : 1'b1; // pcnt
+                  7'b000_0000,                                     // clz
+                  7'b000_0001,                                     // ctz
+                  7'b000_0010,                                     // pcnt
+                  7'b000_0100,                                     // sext.b
+                  7'b000_0101,                                     // sext.h
+                  7'b001_0000,                                     // crc32.b
+                  7'b001_0001,                                     // crc32.h
+                  7'b001_0010,                                     // crc32.w
+                  7'b001_1000,                                     // crc32c.b
+                  7'b001_1001,                                     // crc32c.h
+                  7'b001_1010: illegal_insn = RV32B ? 1'b0 : 1'b1; // crc32c.w
+
                   default: illegal_insn = 1'b1;
                 endcase
               end
@@ -405,7 +414,7 @@ module ibex_decoder #(
             {7'b000_0000, 3'b101},
             {7'b010_0000, 3'b101}: illegal_insn = 1'b0;
 
-            // supported RV32B instructions (zbb)
+            // RV32B zbb
             {7'b010_0000, 3'b111}, // andn
             {7'b010_0000, 3'b110}, // orn
             {7'b010_0000, 3'b100}, // xnor
@@ -420,15 +429,25 @@ module ibex_decoder #(
             {7'b000_0100, 3'b100}, // pack
             {7'b010_0100, 3'b100}, // packu
             {7'b000_0100, 3'b111}, // packh
-            // RV32B instructions (zbs)
+            // RV32B zbs
             {7'b010_0100, 3'b001}, // sbclr
             {7'b001_0100, 3'b001}, // sbset
             {7'b011_0100, 3'b001}, // sbinv
             {7'b010_0100, 3'b101}, // sbext
+            // RV32B zbe
+            {7'b010_0100, 3'b110}, // bdep
+            {7'b000_0100, 3'b110}, // bext
+            // RV32B zbp
             {7'b011_0100, 3'b101}, // grev
             {7'b001_0100, 3'b101}, // gorc
             {7'b000_0100, 3'b001}, // shfl
-            {7'b000_0100, 3'b101}: illegal_insn = RV32B ? 1'b0 : 1'b1; // unshfl
+            {7'b000_0100, 3'b101}, // unshfl
+            // RV32B zbf
+            {7'b010_0100, 3'b111}, // bfp
+            // RV32B zbc
+            {7'b000_0101, 3'b001}, // clmul
+            {7'b000_0101, 3'b010}, // clmulr
+            {7'b000_0101, 3'b011}: illegal_insn = RV32B ? 1'b0 : 1'b1; // clmulh
 
             // RV32M instructions
             {7'b000_0001, 3'b000}: begin // mul
@@ -762,9 +781,35 @@ module ibex_decoder #(
                 5'b0_0001: if (instr_alu[26] == 0) alu_operator_o = ALU_SHFL;
                 5'b0_1100: begin
                   unique case (instr_alu[26:20])
-                    7'b000_0000: alu_operator_o = ALU_CLZ;  // Count Leading Zeros
-                    7'b000_0001: alu_operator_o = ALU_CTZ;  // Count Trailing Zeros
-                    7'b000_0010: alu_operator_o = ALU_PCNT; // Count Set Bits
+                    7'b000_0000: alu_operator_o = ALU_CLZ;      // clz
+                    7'b000_0001: alu_operator_o = ALU_CTZ;      // ctz
+                    7'b000_0010: alu_operator_o = ALU_PCNT;     // pcnt
+                    7'b000_0100: alu_operator_o = ALU_SEXTB;    // sext.b
+                    7'b000_0101: alu_operator_o = ALU_SEXTH;    // sext.h
+                    7'b001_0000: begin
+                      alu_operator_o = ALU_CRC32_B;  // crc32.b
+                      alu_multicycle_o = 1'b1;
+                    end
+                    7'b001_0001: begin
+                      alu_operator_o = ALU_CRC32_H;  // crc32.h
+                      alu_multicycle_o = 1'b1;
+                    end
+                    7'b001_0010: begin
+                      alu_operator_o = ALU_CRC32_W;  // crc32.w
+                      alu_multicycle_o = 1'b1;
+                    end
+                    7'b001_1000: begin
+                      alu_operator_o = ALU_CRC32C_B; // crc32c.b
+                      alu_multicycle_o = 1'b1;
+                    end
+                    7'b001_1001: begin
+                      alu_operator_o = ALU_CRC32C_H; // crc32c.h
+                      alu_multicycle_o = 1'b1;
+                    end
+                    7'b001_1010: begin
+                      alu_operator_o = ALU_CRC32C_W; // crc32c.w
+                      alu_multicycle_o = 1'b1;
+                    end
                     default: ;
                   endcase
                 end
@@ -878,44 +923,56 @@ module ibex_decoder #(
             {7'b010_0000, 3'b101}: alu_operator_o = ALU_SRA;   // Shift Right Arithmetic
 
             // RV32B ALU Operations
-            {7'b001_0000, 3'b001}: if (RV32B) alu_operator_o = ALU_SLO;   // Shift Left Ones
-            {7'b001_0000, 3'b101}: if (RV32B) alu_operator_o = ALU_SRO;   // Shift Right Ones
+            {7'b001_0000, 3'b001}: if (RV32B) alu_operator_o = ALU_SLO;   // slo
+            {7'b001_0000, 3'b101}: if (RV32B) alu_operator_o = ALU_SRO;   // sro
             {7'b011_0000, 3'b001}: begin
               if (RV32B) begin
-                alu_operator_o = ALU_ROL;   // Rotate Left
+                alu_operator_o = ALU_ROL;   // rol
                 alu_multicycle_o = 1'b1;
               end
             end
             {7'b011_0000, 3'b101}: begin
               if (RV32B) begin
-                alu_operator_o = ALU_ROR;   // Rotate Right
+                alu_operator_o = ALU_ROR;   // ror
                 alu_multicycle_o = 1'b1;
               end
             end
 
-            {7'b000_0101, 3'b100}: if (RV32B) alu_operator_o = ALU_MIN;    // Minimum
-            {7'b000_0101, 3'b101}: if (RV32B) alu_operator_o = ALU_MAX;    // Maximum
-            {7'b000_0101, 3'b110}: if (RV32B) alu_operator_o = ALU_MINU;   // Minimum Unsigned
-            {7'b000_0101, 3'b111}: if (RV32B) alu_operator_o = ALU_MAXU;   // Maximum Unsigned
+            {7'b000_0101, 3'b100}: if (RV32B) alu_operator_o = ALU_MIN;    // min
+            {7'b000_0101, 3'b101}: if (RV32B) alu_operator_o = ALU_MAX;    // max
+            {7'b000_0101, 3'b110}: if (RV32B) alu_operator_o = ALU_MINU;   // minu
+            {7'b000_0101, 3'b111}: if (RV32B) alu_operator_o = ALU_MAXU;   // maxu
 
-            {7'b000_0100, 3'b100}: if (RV32B) alu_operator_o = ALU_PACK;   // Pack Lower Halves
-            {7'b010_0100, 3'b100}: if (RV32B) alu_operator_o = ALU_PACKU;  // Pack Upper Halves
-            {7'b000_0100, 3'b111}: if (RV32B) alu_operator_o = ALU_PACKH;  // Pack LSB Bytes
+            {7'b000_0100, 3'b100}: if (RV32B) alu_operator_o = ALU_PACK;   // pack
+            {7'b010_0100, 3'b100}: if (RV32B) alu_operator_o = ALU_PACKU;  // packu
+            {7'b000_0100, 3'b111}: if (RV32B) alu_operator_o = ALU_PACKH;  // packh
 
-            {7'b010_0000, 3'b100}: if (RV32B) alu_operator_o = ALU_XNOR;   // Xnor
-            {7'b010_0000, 3'b110}: if (RV32B) alu_operator_o = ALU_ORN;    // Orn
-            {7'b010_0000, 3'b111}: if (RV32B) alu_operator_o = ALU_ANDN;   // Andn
-            {7'b011_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_GREV;   // Grev
-            {7'b001_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_GORC;   // Grev
-            {7'b000_0100, 3'b001}: if (RV32B) alu_operator_o = ALU_SHFL;   // Shfl
-            {7'b000_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_UNSHFL; // Unshfl
+            {7'b010_0000, 3'b100}: if (RV32B) alu_operator_o = ALU_XNOR;   // xnor
+            {7'b010_0000, 3'b110}: if (RV32B) alu_operator_o = ALU_ORN;    // orn
+            {7'b010_0000, 3'b111}: if (RV32B) alu_operator_o = ALU_ANDN;   // andn
 
+            // RV32B zbp
+            {7'b011_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_GREV;   // grev
+            {7'b001_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_GORC;   // grev
+            {7'b000_0100, 3'b001}: if (RV32B) alu_operator_o = ALU_SHFL;   // shfl
+            {7'b000_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_UNSHFL; // unshfl
 
-            // RV32B ALU_Operations (zbs)
+            // RV32B zbs
             {7'b010_0100, 3'b001}: if (RV32B) alu_operator_o = ALU_SBCLR;  // sbclr
             {7'b001_0100, 3'b001}: if (RV32B) alu_operator_o = ALU_SBSET;  // sbset
             {7'b011_0100, 3'b001}: if (RV32B) alu_operator_o = ALU_SBINV;  // sbinv
             {7'b010_0100, 3'b101}: if (RV32B) alu_operator_o = ALU_SBEXT;  // sbext
+
+            // RV32B zbc
+            {7'b000_0101, 3'b001}: if (RV32B) alu_operator_o = ALU_CLMUL;  // clmul
+            {7'b000_0101, 3'b010}: if (RV32B) alu_operator_o = ALU_CLMULR; // clmulr
+            {7'b000_0101, 3'b011}: if (RV32B) alu_operator_o = ALU_CLMULH; // clmulh
+
+            // RV32B zbe
+            {7'b010_0100, 3'b110}: if (RV32B) alu_operator_o = ALU_BDEP;   // bdep
+            {7'b000_0100, 3'b110}: if (RV32B) alu_operator_o = ALU_BEXT;   // bext
+            // RV32B zbf
+            {7'b010_0100, 3'b111}: if (RV32B) alu_operator_o = ALU_BFP;    // bfp
 
             // RV32M instructions, all use the same ALU operation
             {7'b000_0001, 3'b000}: begin // mul

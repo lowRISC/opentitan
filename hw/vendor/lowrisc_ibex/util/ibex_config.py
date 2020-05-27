@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import collections
+import collections.abc
 import os
 import shlex
 import sys
@@ -39,7 +39,7 @@ def _verify_config(name, config_dict):
         ConfigException: An issue was found with config_dict
     """
 
-    if not isinstance(config_dict, collections.Mapping):
+    if not isinstance(config_dict, collections.abc.Mapping):
         raise ConfigException('Config ' + name +
                               ' must have dictionary giving parameters')
 
@@ -127,19 +127,82 @@ def get_config_dicts(config_file):
     return config_yaml
 
 
-def _config_dict_to_fusesoc_opts(config_dict):
-    fusesoc_cmd = []
-    for parameter, value in config_dict.items():
-        if isinstance(value, bool):
-            # For fusesoc boolean parameter are set to true if given on the
-            # command line otherwise false, it doesn't support an explicit
-            # --param=True style
-            if value:
-                fusesoc_cmd.append(shlex.quote('--' + parameter))
-        else:
-            fusesoc_cmd.append(shlex.quote('--' + parameter + '=' + str(value)))
+class FusesocOpts:
+    def setup_args(self, arg_subparser):
+        output_argparser = arg_subparser.add_parser(
+            'fusesoc_opts', help=('Outputs options for fusesoc'))
+        output_argparser.set_defaults(output_fn=self.output)
 
-    return ' '.join(fusesoc_cmd)
+    def output(self, config_dict, args):
+        fusesoc_cmd = []
+        for parameter, value in config_dict.items():
+            if isinstance(value, bool):
+                # For fusesoc boolean parameters are set to true if given on the
+                # command line otherwise false. It doesn't support an explicit
+                # --param=True style
+                if value:
+                    fusesoc_cmd.append(shlex.quote('--' + parameter))
+            else:
+                fusesoc_cmd.append(
+                    shlex.quote('--' + parameter + '=' + str(value)))
+
+        return ' '.join(fusesoc_cmd)
+
+
+class SimOpts:
+    def __init__(self, cmd_name, description, param_set_fn, define_set_fn,
+                 hierarchy_sep):
+        self.cmd_name = cmd_name
+        self.description = description
+        self.param_set_fn = param_set_fn
+        self.define_set_fn = define_set_fn
+        self.hierarchy_sep = hierarchy_sep
+
+    def setup_args(self, arg_subparser):
+        output_argparser = arg_subparser.add_parser(
+            self.cmd_name,
+            help=('Outputs options for {0}'.format(self.description)))
+
+        output_argparser.add_argument(
+            '--ins_hier_path',
+            help=('Hierarchical path to the instance to set '
+                  'configuration parameters on'),
+            default='')
+        output_argparser.add_argument(
+            '--string_define_prefix',
+            help=('Prefix to add to defines that are used to '
+                  'pass string parameters'),
+            default='')
+        output_argparser.set_defaults(output_fn=self.output)
+
+    def output(self, config_dict, args):
+        if (args.ins_hier_path != ''):
+            ins_hier_path = args.ins_hier_path + self.hierarchy_sep
+        else:
+            ins_hier_path = ''
+
+        sim_opts = []
+
+        for parameter, value in config_dict.items():
+            if isinstance(value, str):
+                parameter_define = args.string_define_prefix + parameter
+                define_set_str = self.define_set_fn(parameter_define, value)
+
+                if define_set_str:
+                    sim_opts.append(shlex.quote(define_set_str))
+            else:
+                if isinstance(value, bool):
+                    val_str = '1' if value else '0'
+                else:
+                    val_str = str(value)
+
+                param_set_str = self.param_set_fn(ins_hier_path + parameter,
+                                                  val_str)
+
+                if param_set_str:
+                    sim_opts.append(shlex.quote(param_set_str))
+
+        return ' '.join(sim_opts)
 
 
 def get_config_file_location():
@@ -152,27 +215,44 @@ def get_config_file_location():
 
 
 def main():
-    config_outputs = {'fusesoc_opts': _config_dict_to_fusesoc_opts}
+    outputters = [
+        FusesocOpts(),
+        SimOpts('vcs_opts', 'VCS compile',
+                lambda p, v: '-pvalue+' + p + '=' + v,
+                lambda d, v: '+define+' + d + '=' + v, '.'),
+        SimOpts('riviera_sim_opts', 'Riviera simulate',
+                lambda p, v: '-g/' + p + '=' + v,
+                lambda d, v: None, '/'),
+        SimOpts('riviera_compile_opts', 'Riviera compile',
+                lambda p, v: None,
+                lambda d, v: '+define+' + d + '=' + v, '/'),
+        SimOpts('xlm_opts', 'Xcelium compile',
+                lambda p, v: '-defparam ' + p + '=' + v,
+                lambda d, v: '-define ' + d + '=' + v, '.'),
+    ]
 
     argparser = argparse.ArgumentParser(description=(
-        'Outputs Ibex configuration '
-        'parameters for a named config in a number of formats.  If not '
-        'specified on the command line the config will be read from {0}. This '
-        'default can be overridden by setting the IBEX_CONFIG_FILE environment '
-        'variable').format(get_config_file_location()))
+        'Outputs Ibex configuration parameters for a named config in a number '
+        'of formats.  If not specified on the command line the config will be '
+        'read from {0}. This default can be overridden by setting the '
+        'IBEX_CONFIG_FILE environment variable. Some output types support '
+        'arguments to see help for them pass a config_name and an output type '
+        'followed by --help').format(get_config_file_location()))
 
     argparser.add_argument('config_name',
                            help=('The name of the Ibex '
                                  'configuration to output'))
 
-    argparser.add_argument('output_type',
-                           help=('Format to output the '
-                                 'configuration parameters in'),
-                           choices=config_outputs.keys())
-
     argparser.add_argument('--config_filename',
                            help='Config file to read',
                            default=get_config_file_location())
+
+    arg_subparser = argparser.add_subparsers(
+        title='output type',
+        help='Format to output the configuration parameters in')
+
+    for outputter in outputters:
+        outputter.setup_args(arg_subparser)
 
     args = argparser.parse_args()
 
@@ -189,9 +269,9 @@ def main():
 
             sys.exit(1)
 
-        print(config_outputs[args.output_type](config_dicts[args.config_name]))
+        print(args.output_fn(config_dicts[args.config_name], args))
     except ConfigException as ce:
-        print('ERROR: failure to read configuration from',
+        print('ERROR: failure to process configuration from',
               args.config_filename,
               ce,
               file=sys.stderr)

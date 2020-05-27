@@ -66,8 +66,9 @@ Other blocks use the ALU for the following tasks:
 
 Support for the RISC-V Bitmanipulation Extension (Document Version 0.92, November 8, 2019) is enabled via the parameter ``RV32B``.
 This feature is *EXPERIMENTAL* and the details of its impact are not yet documented here.
-Currently the Zbb, Zbs, Zbp and Zbt sub-extensions are implemented.
-All instructions are carried out in a single clock cycle.
+Currently the Zbb, Zbs, Zbp, Zbe, Zbf, Zbc, Zbr and Zbt sub-extensions are implemented.
+The rotate instructions `ror` and `rol` (Zbb), ternary instructions `cmov`, `cmix`, `fsl` and `fsr` as well as cyclic redundancy checks `crc32[c]` (Zbr) are completed in 2 cycles. All remaining instructions complete in one cycle.
+
 
 .. _mult-div:
 

@@ -20,13 +20,19 @@ class ibex_icache_mem_driver
   mailbox #(ibex_icache_mem_resp_item) rdata_queue;
   mailbox #(bit [31:0])                pmp_queue;
 
+  // An analysis port that gets hooked up to the scoreboard. This isn't used to report on actual bus
+  // traffic (that's done by the monitor, as usual) but is used to report on new memory seeds, which
+  // the scoreboard needs to know about, but don't in themselves cause any bus traffic.
+  uvm_analysis_port #(bit [31:0]) analysis_port;
+
   `uvm_component_utils(ibex_icache_mem_driver)
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    rdata_queue = new("rdata_queue");
-    pmp_queue   = new("pmp_queue");
+    rdata_queue   = new("rdata_queue");
+    pmp_queue     = new("pmp_queue");
+    analysis_port = new("analysis_port", this);
   endfunction
 
   virtual task reset_signals();
@@ -73,8 +79,15 @@ class ibex_icache_mem_driver
 
       // Is this a request or a grant?
       if (!req.is_grant) begin
-        // If a request, it's ignored unless it causes a PMP error. In that case, we push the
-        // address onto pmp_queue.
+        // A request has two effects.
+        //
+        //   1. If this is a new seed then we need to tell the scoreboard about it.
+        //
+        //   2. If it causes a PMP error, we push the address onto pmp_queue (which will be handled
+        //      by drive_pmp).
+        if (req.seed != 32'd0) begin
+          analysis_port.write(req.seed);
+        end
         if (req.err) begin
           pmp_queue.put(req.address);
         end

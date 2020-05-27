@@ -83,6 +83,24 @@ parameters:
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
 
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
+
 targets:
   default:
     filesets:
@@ -108,6 +126,9 @@ targets:
       - WritebackStage
       - MultiplierImplementation
       - SecureIbex
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
     default_tool: verilator
     toplevel: ibex_core_tracing
     tools:

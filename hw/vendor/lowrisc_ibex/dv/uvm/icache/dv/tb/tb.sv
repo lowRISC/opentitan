@@ -29,6 +29,7 @@ module tb;
     // Connect icache <-> core interface
     .req_i           (core_if.req),
     .branch_i        (core_if.branch),
+    .branch_spec_i   (core_if.branch), // TODO - drive this from TB
     .addr_i          (core_if.branch_addr),
     .ready_i         (core_if.ready),
     .valid_o         (core_if.valid),

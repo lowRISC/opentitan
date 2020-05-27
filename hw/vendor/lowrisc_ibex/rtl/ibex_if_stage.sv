@@ -13,10 +13,11 @@
 `include "prim_assert.sv"
 
 module ibex_if_stage #(
-    parameter int unsigned DmHaltAddr       = 32'h1A110800,
-    parameter int unsigned DmExceptionAddr  = 32'h1A110808,
-    parameter bit          ICache           = 1'b0,
-    parameter bit          ICacheECC        = 1'b0
+    parameter int unsigned DmHaltAddr        = 32'h1A110800,
+    parameter int unsigned DmExceptionAddr   = 32'h1A110808,
+    parameter bit          DummyInstructions = 1'b0,
+    parameter bit          ICache            = 1'b0,
+    parameter bit          ICacheECC         = 1'b0
 ) (
     input  logic                   clk_i,
     input  logic                   rst_ni,
@@ -48,16 +49,22 @@ module ibex_if_stage #(
     output logic                  instr_fetch_err_plus2_o,  // bus error misaligned
     output logic                  illegal_c_insn_id_o,      // compressed decoder thinks this
                                                             // is an invalid instr
+    output logic                  dummy_instr_id_o,         // Instruction is a dummy
     output logic [31:0]           pc_if_o,
     output logic [31:0]           pc_id_o,
 
     // control signals
     input  logic                  instr_valid_clear_i,      // clear instr valid bit in IF-ID
     input  logic                  pc_set_i,                 // set the PC to a new value
+    input  logic                  pc_set_spec_i,
     input  ibex_pkg::pc_sel_e     pc_mux_i,                 // selector for PC multiplexer
     input  ibex_pkg::exc_pc_sel_e exc_pc_mux_i,             // selects ISR address
     input  ibex_pkg::exc_cause_e  exc_cause,                // selects ISR address for
                                                             // vectorized interrupt lines
+    input logic                   dummy_instr_en_i,
+    input logic [2:0]             dummy_instr_mask_i,
+    input logic                   dummy_instr_seed_en_i,
+    input logic [31:0]            dummy_instr_seed_i,
     input logic                   icache_enable_i,
     input logic                   icache_inval_i,
 
@@ -102,6 +109,14 @@ module ibex_if_stage #(
   logic              unused_irq_bit;
 
   logic              if_id_pipe_reg_we; // IF-ID pipeline reg write enable
+
+  // Dummy instruction signals
+  logic              fetch_valid_out;
+  logic              stall_dummy_instr;
+  logic [31:0]       instr_out;
+  logic              instr_is_compressed_out;
+  logic              illegal_c_instr_out;
+  logic              instr_err_out;
 
   logic        [7:0] unused_boot_addr;
   logic        [7:0] unused_csr_mtvec;
@@ -150,6 +165,7 @@ module ibex_if_stage #(
         .req_i             ( req_i                       ),
 
         .branch_i          ( branch_req                  ),
+        .branch_spec_i     ( pc_set_spec_i               ),
         .addr_i            ( {fetch_addr_n[31:1], 1'b0}  ),
 
         .ready_i           ( fetch_ready                 ),
@@ -180,6 +196,7 @@ module ibex_if_stage #(
         .req_i             ( req_i                       ),
 
         .branch_i          ( branch_req                  ),
+        .branch_spec_i     ( pc_set_spec_i               ),
         .addr_i            ( {fetch_addr_n[31:1], 1'b0}  ),
 
         .ready_i           ( fetch_ready                 ),
@@ -206,7 +223,7 @@ module ibex_if_stage #(
   end
 
   assign branch_req  = pc_set_i;
-  assign fetch_ready = id_in_ready_i;
+  assign fetch_ready = id_in_ready_i & ~stall_dummy_instr;
 
   assign pc_if_o     = fetch_addr;
   assign if_busy_o   = prefetch_busy;
@@ -218,24 +235,82 @@ module ibex_if_stage #(
   // to ease timing closure
   logic [31:0] instr_decompressed;
   logic        illegal_c_insn;
-  logic        instr_is_compressed_int;
+  logic        instr_is_compressed;
 
   ibex_compressed_decoder compressed_decoder_i (
-      .clk_i           ( clk_i                   ),
-      .rst_ni          ( rst_ni                  ),
-      .valid_i         ( fetch_valid             ),
-      .instr_i         ( fetch_rdata             ),
-      .instr_o         ( instr_decompressed      ),
-      .is_compressed_o ( instr_is_compressed_int ),
-      .illegal_instr_o ( illegal_c_insn          )
+      .clk_i           ( clk_i                    ),
+      .rst_ni          ( rst_ni                   ),
+      .valid_i         ( fetch_valid & ~fetch_err ),
+      .instr_i         ( fetch_rdata              ),
+      .instr_o         ( instr_decompressed       ),
+      .is_compressed_o ( instr_is_compressed      ),
+      .illegal_instr_o ( illegal_c_insn           )
   );
+
+  // Dummy instruction insertion
+  if (DummyInstructions) begin : gen_dummy_instr
+    logic        insert_dummy_instr;
+    logic [31:0] dummy_instr_data;
+
+    ibex_dummy_instr dummy_instr_i (
+      .clk_i                 ( clk_i                 ),
+      .rst_ni                ( rst_ni                ),
+      .dummy_instr_en_i      ( dummy_instr_en_i      ),
+      .dummy_instr_mask_i    ( dummy_instr_mask_i    ),
+      .dummy_instr_seed_en_i ( dummy_instr_seed_en_i ),
+      .dummy_instr_seed_i    ( dummy_instr_seed_i    ),
+      .fetch_valid_i         ( fetch_valid           ),
+      .id_in_ready_i         ( id_in_ready_i         ),
+      .insert_dummy_instr_o  ( insert_dummy_instr    ),
+      .dummy_instr_data_o    ( dummy_instr_data      )
+    );
+
+    // Mux between actual instructions and dummy instructions
+    assign fetch_valid_out         = insert_dummy_instr | fetch_valid;
+    assign instr_out               = insert_dummy_instr ? dummy_instr_data : instr_decompressed;
+    assign instr_is_compressed_out = insert_dummy_instr ? 1'b0 : instr_is_compressed;
+    assign illegal_c_instr_out     = insert_dummy_instr ? 1'b0 : illegal_c_insn;
+    assign instr_err_out           = insert_dummy_instr ? 1'b0 : fetch_err;
+
+    // Stall the IF stage if we insert a dummy instruction. The dummy will execute between whatever
+    // is currently in the ID stage and whatever is valid from the prefetch buffer this cycle. The
+    // PC of the dummy instruction will match whatever is next from the prefetch buffer.
+    assign stall_dummy_instr = insert_dummy_instr;
+
+    // Register the dummy instruction indication into the ID stage
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        dummy_instr_id_o <= 1'b0;
+      end else if (if_id_pipe_reg_we) begin
+        dummy_instr_id_o <= insert_dummy_instr;
+      end
+    end
+
+  end else begin : gen_no_dummy_instr
+    logic        unused_dummy_en;
+    logic [2:0]  unused_dummy_mask;
+    logic        unused_dummy_seed_en;
+    logic [31:0] unused_dummy_seed;
+
+    assign unused_dummy_en         = dummy_instr_en_i;
+    assign unused_dummy_mask       = dummy_instr_mask_i;
+    assign unused_dummy_seed_en    = dummy_instr_seed_en_i;
+    assign unused_dummy_seed       = dummy_instr_seed_i;
+    assign fetch_valid_out         = fetch_valid;
+    assign instr_out               = instr_decompressed;
+    assign instr_is_compressed_out = instr_is_compressed;
+    assign illegal_c_instr_out     = illegal_c_insn;
+    assign instr_err_out           = fetch_err;
+    assign stall_dummy_instr       = 1'b0;
+    assign dummy_instr_id_o        = 1'b0;
+  end
 
   // The ID stage becomes valid as soon as any instruction is registered in the ID stage flops.
   // Note that the current instruction is squashed by the incoming pc_set_i signal.
   // Valid is held until it is explicitly cleared (due to an instruction completing or an exception)
-  assign instr_valid_id_d = (fetch_valid & id_in_ready_i & ~pc_set_i) |
+  assign instr_valid_id_d = (fetch_valid_out & id_in_ready_i & ~pc_set_i) |
                             (instr_valid_id_q & ~instr_valid_clear_i);
-  assign instr_new_id_d   = fetch_valid & id_in_ready_i;
+  assign instr_new_id_d   = fetch_valid_out & id_in_ready_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -256,14 +331,14 @@ module ibex_if_stage #(
 
   always_ff @(posedge clk_i) begin
     if (if_id_pipe_reg_we) begin
-      instr_rdata_id_o         <= instr_decompressed;
+      instr_rdata_id_o         <= instr_out;
       // To reduce fan-out and help timing from the instr_rdata_id flops they are replicated.
-      instr_rdata_alu_id_o     <= instr_decompressed;
-      instr_fetch_err_o        <= fetch_err;
+      instr_rdata_alu_id_o     <= instr_out;
+      instr_fetch_err_o        <= instr_err_out;
       instr_fetch_err_plus2_o  <= fetch_err_plus2;
       instr_rdata_c_id_o       <= fetch_rdata[15:0];
-      instr_is_compressed_id_o <= instr_is_compressed_int;
-      illegal_c_insn_id_o      <= illegal_c_insn;
+      instr_is_compressed_id_o <= instr_is_compressed_out;
+      illegal_c_insn_id_o      <= illegal_c_instr_out;
       pc_id_o                  <= pc_if_o;
     end
   end

@@ -76,9 +76,9 @@ class ibex_icache_mem_monitor
     forever begin
       if (cfg.vif.monitor_cb.rvalid) begin
         bus_trans = ibex_icache_mem_bus_item::type_id::create("bus_trans");
-        bus_trans.trans_type = ICacheMemResponse;
-        bus_trans.data       = cfg.vif.monitor_cb.rdata;
-        bus_trans.err        = cfg.vif.monitor_cb.err;
+        bus_trans.is_grant = 1'b0;
+        bus_trans.data     = cfg.vif.monitor_cb.rdata;
+        bus_trans.err      = cfg.vif.monitor_cb.err;
         analysis_port.write(bus_trans);
       end
 
@@ -87,24 +87,12 @@ class ibex_icache_mem_monitor
   endtask
 
   // This is called immediately when an address is requested and is used to drive the PMP response.
-  // If we decide to choose a new seed with this transaction, the seed also gets passed to the
-  // scoreboard.
   function automatic void new_request(logic [31:0] addr);
-    ibex_icache_mem_bus_item bus_trans;
     ibex_icache_mem_req_item item = new("item");
 
     item.is_grant = 1'b0;
     item.address = addr;
-    `DV_CHECK_RANDOMIZE_FATAL(item)
     request_port.write(item);
-
-    if (item.seed != 0) begin
-      bus_trans = ibex_icache_mem_bus_item::type_id::create("bus_trans");
-      bus_trans.trans_type = ICacheMemNewSeed;
-      bus_trans.data       = item.seed;
-      bus_trans.err        = '0;
-      analysis_port.write(bus_trans);
-    end
   endfunction
 
   // This is called on a clock edge when an request is granted
@@ -115,13 +103,12 @@ class ibex_icache_mem_monitor
     item = ibex_icache_mem_req_item::type_id::create("item");
     item.is_grant = 1'b1;
     item.address  = addr;
-    item.seed     = '0;
     request_port.write(item);
 
     bus_trans = ibex_icache_mem_bus_item::type_id::create("bus_trans");
-    bus_trans.trans_type = ICacheMemGrant;
-    bus_trans.data       = addr;
-    bus_trans.err        = 0;
+    bus_trans.is_grant = 1'b1;
+    bus_trans.data     = addr;
+    bus_trans.err      = 0;
     analysis_port.write(bus_trans);
   endfunction
 

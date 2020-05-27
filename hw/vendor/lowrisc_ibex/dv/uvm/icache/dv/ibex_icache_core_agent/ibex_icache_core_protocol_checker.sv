@@ -46,27 +46,6 @@ interface ibex_icache_core_protocol_checker (
   `ASSERT(BranchAddrAligned, branch |-> !branch_addr[0], clk, !rst_n)
 
   // The main instruction interface
-  //
-  // This uses a form of ready/valid handshaking, with a special rule that asserting branch_i
-  // cancels a transaction (so the cache can assert valid, but de-assert it if the core asserts
-  // branch_i).
-  //
-  // Note that the lower 16 bits of rdata must be stable, but the upper bits may change if this is a
-  // compressed instruction (which is the case if the bottom 2 bits are not 2'b11): the upper bits
-  // are then ignored by the core.
-  //
-  // There's no requirement on the core to hold ready until valid.
-  `ASSERT(ValidUntilReady, valid & ~(ready | branch) |=> valid,              clk, !rst_n);
-  `ASSERT(AddrStable,      valid & ~(ready | branch) |=> $stable(addr),      clk, !rst_n);
-  `ASSERT(ErrStable,       valid & ~(ready | branch) |=> $stable(err),       clk, !rst_n);
-  `ASSERT(Err2Stable,      valid & ~(ready | branch) |=> $stable(err_plus2), clk, !rst_n);
-
-  `ASSERT(LoRDataStable,
-          valid & ~(ready | branch) |=> $stable(rdata[15:0]),
-          clk, !rst_n);
-  `ASSERT(HiRDataStable,
-          valid & ~(ready | branch) & (rdata[1:0] == 2'b11) |=> $stable(rdata[15:0]),
-          clk, !rst_n);
 
   // The core is never allowed to make a fetch from the cache when the PC is not known. To set the
   // PC, it must issue a branch. Obviously, that means the core must branch before the first fetch
@@ -88,7 +67,35 @@ interface ibex_icache_core_protocol_checker (
     end
   end
 
-  `ASSERT(NoFetchWithoutAddr, req |-> (branch | has_addr), clk, !rst_n)
+  `ASSERT(NoFetchWithoutAddr, ready |-> (branch | has_addr), clk, !rst_n)
+
+  // This uses a form of ready/valid handshaking, with two special rules.
+  //
+  //   1. Asserting branch_i cancels a transaction (so the cache can assert valid, but de-assert it
+  //      if the core asserts branch_i).
+  //
+  //   2. After signalling an error to the core (when has_addr is false), the cache can do whatever
+  //      it likes: the core may not re-assert ready until it asserts branch.
+  //
+  // Note that the lower 16 bits of rdata must be stable, but the upper bits may change if this is a
+  // compressed instruction (which is the case if the bottom 2 bits are not 2'b11): the upper bits
+  // are then ignored by the core.
+  //
+  // There's no requirement on the core to hold ready until valid.
+  logic unfinished_valid;
+  assign unfinished_valid = has_addr & valid & ~(ready | branch);
+
+  `ASSERT(ValidUntilReady, unfinished_valid |=> valid,                clk, !rst_n);
+  `ASSERT(AddrStable,      unfinished_valid |=> $stable(addr),        clk, !rst_n);
+  `ASSERT(ErrStable,       unfinished_valid |=> $stable(err),         clk, !rst_n);
+  `ASSERT(Err2Stable,      unfinished_valid |=> $stable(err_plus2),   clk, !rst_n);
+
+  `ASSERT(LoRDataStable,
+          unfinished_valid & ~err |=> $stable(rdata[15:0]),
+          clk, !rst_n);
+  `ASSERT(HiRDataStable,
+          unfinished_valid & ~err & (rdata[1:0] == 2'b11) |=> $stable(rdata[31:16]),
+          clk, !rst_n);
 
   // The err_plus2 signal means "this error was caused by the upper two bytes" and is only read when
   // both valid and err are true. It should never be set for compressed instructions (for them, the

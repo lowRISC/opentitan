@@ -11,14 +11,16 @@
  * targeting FPGA synthesis or Verilator simulation.
  */
 module ibex_register_file #(
-    parameter bit RV32E              = 0,
-    parameter int unsigned DataWidth = 32
+    parameter bit          RV32E             = 0,
+    parameter int unsigned DataWidth         = 32,
+    parameter bit          DummyInstructions = 0
 ) (
     // Clock and Reset
     input  logic                 clk_i,
     input  logic                 rst_ni,
 
     input  logic                 test_en_i,
+    input  logic                 dummy_instr_id_i,
 
     //Read port R1
     input  logic [4:0]           raddr_a_i,
@@ -60,8 +62,34 @@ module ibex_register_file #(
     end
   end
 
-  // R0 is nil
-  assign rf_reg[0] = '0;
+  // With dummy instructions enabled, R0 behaves as a real register but will always return 0 for
+  // real instructions.
+  if (DummyInstructions) begin : g_dummy_r0
+    logic        we_r0_dummy;
+    logic [31:0] rf_r0;
+
+    // Write enable for dummy R0 register (waddr_a_i will always be 0 for dummy instructions)
+    assign we_r0_dummy = we_a_i & dummy_instr_id_i;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rf_r0 <= '0;
+      end else if (we_r0_dummy) begin
+        rf_r0 <= wdata_a_i;
+      end
+    end
+
+    // Output the dummy data for dummy instructions, otherwise R0 reads as zero
+    assign rf_reg[0] = dummy_instr_id_i ? rf_r0 : '0;
+
+  end else begin : g_normal_r0
+    logic unused_dummy_instr_id;
+    assign unused_dummy_instr_id = dummy_instr_id_i;
+
+    // R0 is nil
+    assign rf_reg[0] = '0;
+  end
+
   assign rf_reg[NUM_WORDS-1:1] = rf_reg_tmp[NUM_WORDS-1:1];
 
   assign rdata_a_o = rf_reg[raddr_a_i];

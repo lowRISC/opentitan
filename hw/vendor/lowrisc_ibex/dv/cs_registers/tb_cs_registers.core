@@ -104,6 +104,7 @@ targets:
     tools:
       vcs:
         vcs_options:
+          - '-xlrm uniq_prior_final'
           - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
           - '-debug_access+all'
 

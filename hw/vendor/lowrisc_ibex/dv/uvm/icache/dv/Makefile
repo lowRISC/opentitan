@@ -6,8 +6,11 @@
 # doesn't do any dependency tracking (as you might expect in a Makefile) because
 # the dvsim infrastructure doesn't support it.
 
-# Set WAVES to 1 to get VPD/FSDB dumps
+# Set WAVES to 1 to get wave dumps
 WAVES=0
+
+# Set COVERAGE to 1 to get coverage collection
+COVERAGE=0
 
 # Set VERBOSITY to a nonempty string and it will be passed to dvsim with the
 # --verbosity parameter, overriding whatever was set in the hjson file.
@@ -23,10 +26,11 @@ dvsim-py       := $(ibex-top)/vendor/lowrisc_ip/dvsim/dvsim.py
 dvsim-std-args := --scratch-root $(scratch-root)
 
 waves-arg      := $(if $(filter-out 0,$(WAVES)),--waves,)
+coverage-arg   := $(if $(filter-out 0,$(COVERAGE)),-c,)
 verbosity-arg  := $(if $(VERBOSITY),--verbosity $(VERBOSITY),)
 seed-arg       := $(if $(SEED),--fixed-seed $(SEED),)
 
-dvsim-mk-args    := $(waves-arg) $(verbosity-arg) $(seed-arg)
+dvsim-mk-args    := $(waves-arg) $(coverage-arg) $(verbosity-arg) $(seed-arg)
 run-icache-dvsim := $(dvsim-py) ibex_icache_sim_cfg.hjson $(dvsim-std-args) $(dvsim-mk-args)
 
 .PHONY: all

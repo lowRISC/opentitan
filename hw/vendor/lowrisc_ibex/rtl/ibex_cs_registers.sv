@@ -13,16 +13,17 @@
 `include "prim_assert.sv"
 
 module ibex_cs_registers #(
-    parameter bit          DbgTriggerEn     = 0,
-    parameter bit          DataIndTiming    = 1'b0,
-    parameter bit          ICache           = 1'b0,
-    parameter int unsigned MHPMCounterNum   = 10,
-    parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit          PMPEnable        = 0,
-    parameter int unsigned PMPGranularity   = 0,
-    parameter int unsigned PMPNumRegions    = 4,
-    parameter bit          RV32E            = 0,
-    parameter bit          RV32M            = 0
+    parameter bit          DbgTriggerEn      = 0,
+    parameter bit          DataIndTiming     = 1'b0,
+    parameter bit          DummyInstructions = 1'b0,
+    parameter bit          ICache            = 1'b0,
+    parameter int unsigned MHPMCounterNum    = 10,
+    parameter int unsigned MHPMCounterWidth  = 40,
+    parameter bit          PMPEnable         = 0,
+    parameter int unsigned PMPGranularity    = 0,
+    parameter int unsigned PMPNumRegions     = 4,
+    parameter bit          RV32E             = 0,
+    parameter bit          RV32M             = 0
 ) (
     // Clock and Reset
     input  logic                 clk_i,
@@ -81,6 +82,10 @@ module ibex_cs_registers #(
 
     // CPU control bits
     output logic                 data_ind_timing_o,
+    output logic                 dummy_instr_en_o,
+    output logic [2:0]           dummy_instr_mask_o,
+    output logic                 dummy_instr_seed_en_o,
+    output logic [31:0]          dummy_instr_seed_o,
     output logic                 icache_enable_o,
 
     // Exception save/restore
@@ -112,20 +117,19 @@ module ibex_cs_registers #(
   import ibex_pkg::*;
 
   // misa
-  localparam logic [1:0] MXL = 2'd1; // M-XLEN: XLEN in M-Mode for RV32
   localparam logic [31:0] MISA_VALUE =
-      (0           <<  0)  // A - Atomic Instructions extension
-    | (1           <<  2)  // C - Compressed extension
-    | (0           <<  3)  // D - Double precision floating-point extension
-    | (32'(RV32E)  <<  4)  // E - RV32E base ISA
-    | (0           <<  5)  // F - Single precision floating-point extension
-    | (32'(!RV32E) <<  8)  // I - RV32I/64I/128I base ISA
-    | (32'(RV32M)  << 12)  // M - Integer Multiply/Divide extension
-    | (0           << 13)  // N - User level interrupts supported
-    | (0           << 18)  // S - Supervisor mode implemented
-    | (1           << 20)  // U - User mode implemented
-    | (0           << 23)  // X - Non-standard extensions present
-    | (32'(MXL)    << 30); // M-XLEN
+      (0                 <<  0)  // A - Atomic Instructions extension
+    | (1                 <<  2)  // C - Compressed extension
+    | (0                 <<  3)  // D - Double precision floating-point extension
+    | (32'(RV32E)        <<  4)  // E - RV32E base ISA
+    | (0                 <<  5)  // F - Single precision floating-point extension
+    | (32'(!RV32E)       <<  8)  // I - RV32I/64I/128I base ISA
+    | (32'(RV32M)        << 12)  // M - Integer Multiply/Divide extension
+    | (0                 << 13)  // N - User level interrupts supported
+    | (0                 << 18)  // S - Supervisor mode implemented
+    | (1                 << 20)  // U - User mode implemented
+    | (0                 << 23)  // X - Non-standard extensions present
+    | (32'(CSR_MISA_MXL) << 30); // M-XLEN
 
   typedef struct packed {
     logic      mie;
@@ -160,7 +164,9 @@ module ibex_cs_registers #(
 
   // CPU control register fields
   typedef struct packed {
-    logic [31:2] unused_ctrl;
+    logic [31:6] unused_ctrl;
+    logic [2:0]  dummy_instr_mask;
+    logic        dummy_instr_en;
     logic        data_ind_timing;
     logic        icache_enable;
   } CpuCtrl_t;
@@ -418,6 +424,11 @@ module ibex_cs_registers #(
       // Custom CSR for controlling CPU features
       CSR_CPUCTRL: begin
         csr_rdata_int = {cpuctrl_rdata};
+      end
+
+      // Custom CSR for LFSR re-seeding (cannot be read)
+      CSR_SECURESEED: begin
+        csr_rdata_int = '0;
       end
 
       default: begin
@@ -1068,6 +1079,50 @@ module ibex_cs_registers #(
 
   assign data_ind_timing_o = cpuctrl_rdata.data_ind_timing;
 
+  // Generate dummy instruction signals
+  if (DummyInstructions) begin : gen_dummy
+    logic       dummy_instr_en_d, dummy_instr_en_q;
+    logic [2:0] dummy_instr_mask_d, dummy_instr_mask_q;
+
+    assign dummy_instr_en_d   = (csr_we_int && (csr_addr == CSR_CPUCTRL)) ?
+        cpuctrl_wdata.dummy_instr_en : dummy_instr_en_q;
+
+    assign dummy_instr_mask_d = (csr_we_int && (csr_addr == CSR_CPUCTRL)) ?
+        cpuctrl_wdata.dummy_instr_mask : dummy_instr_mask_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        dummy_instr_en_q   <= 1'b0; // disabled on reset
+        dummy_instr_mask_q <= 3'b000;
+      end else begin
+        dummy_instr_en_q   <= dummy_instr_en_d;
+        dummy_instr_mask_q <= dummy_instr_mask_d;
+      end
+    end
+
+    assign cpuctrl_rdata.dummy_instr_en   = dummy_instr_en_q;
+    assign cpuctrl_rdata.dummy_instr_mask = dummy_instr_mask_q;
+    // Signal a write to the seed register
+    assign dummy_instr_seed_en_o = csr_we_int && (csr_addr == CSR_SECURESEED);
+    assign dummy_instr_seed_o    = csr_wdata_int;
+
+  end else begin : gen_no_dummy
+    // tieoff for the unused bit
+    logic       unused_dummy_en;
+    logic [2:0] unused_dummy_mask;
+    assign unused_dummy_en   = cpuctrl_wdata.dummy_instr_en;
+    assign unused_dummy_mask = cpuctrl_wdata.dummy_instr_mask;
+
+    // field will always read as zero if not configured
+    assign cpuctrl_rdata.dummy_instr_en   = 1'b0;
+    assign cpuctrl_rdata.dummy_instr_mask = 3'b000;
+    assign dummy_instr_seed_en_o          = 1'b0;
+    assign dummy_instr_seed_o             = '0;
+  end
+
+  assign dummy_instr_en_o   = cpuctrl_rdata.dummy_instr_en;
+  assign dummy_instr_mask_o = cpuctrl_rdata.dummy_instr_mask;
+
   // Generate icache enable bit
   if (ICache) begin : gen_icache_enable
     logic icache_enable_d, icache_enable_q;
@@ -1098,8 +1153,8 @@ module ibex_cs_registers #(
   assign icache_enable_o = cpuctrl_rdata.icache_enable;
 
   // tieoff for the currently unused bits of cpuctrl
-  logic [31:2] unused_cpuctrl;
-  assign unused_cpuctrl = {cpuctrl_wdata[31:2]};
+  logic [31:6] unused_cpuctrl;
+  assign unused_cpuctrl = {cpuctrl_wdata[31:6]};
 
 
   ////////////////

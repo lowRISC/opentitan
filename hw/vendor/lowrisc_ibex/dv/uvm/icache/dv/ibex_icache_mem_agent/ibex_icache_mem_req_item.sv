@@ -7,7 +7,7 @@
 //
 // When a request first comes in (via a posedge on the req line), it immediately generates a
 // req_item with is_grant = 0. This is used by the sequence to tell the driver whether to generate a
-// PMP error. A req_item with is_grant = 0 may also have a seed update.
+// PMP error.
 //
 // Assuming that the request wasn't squashed by a PMP error, it will be granted on some later clock
 // edge. At that point, another req_item is generated with is_grant = 1. This is added to a queue in
@@ -18,20 +18,9 @@ class ibex_icache_mem_req_item extends uvm_sequence_item;
   bit               is_grant;
   logic [31:0]      address;
 
-  rand bit [31:0]   seed;
-
-  // Change the memory seed roughly one time in 500 reads
-  constraint c_seed_dist {
-    seed dist {
-      32'd0            :/ 499,
-      [1:32'hffffffff] :/ 1
-    };
-  }
-
   `uvm_object_utils_begin(ibex_icache_mem_req_item)
     `uvm_field_int (is_grant, UVM_DEFAULT)
     `uvm_field_int (address,  UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int (seed,     UVM_DEFAULT | UVM_HEX)
   `uvm_object_utils_end
 
   `uvm_object_new

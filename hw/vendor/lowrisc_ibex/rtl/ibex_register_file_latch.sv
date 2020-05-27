@@ -12,14 +12,16 @@
  * register file when targeting ASIC synthesis or event-based simulators.
  */
 module ibex_register_file #(
-    parameter bit RV32E              = 0,
-    parameter int unsigned DataWidth = 32
+    parameter bit          RV32E             = 0,
+    parameter int unsigned DataWidth         = 32,
+    parameter bit          DummyInstructions = 0
 ) (
     // Clock and Reset
     input  logic                 clk_i,
     input  logic                 rst_ni,
 
     input  logic                 test_en_i,
+    input  logic                 dummy_instr_id_i,
 
     //Read port R1
     input  logic [4:0]           raddr_a_i,
@@ -87,7 +89,7 @@ module ibex_register_file #(
   // Write address decoding
   always_comb begin : wad
     for (int i = 1; i < NUM_WORDS; i++) begin : wad_word_iter
-      if (we_a_i && (waddr_a_int == i)) begin
+      if (we_a_i && (waddr_a_int == 5'(i))) begin
         waddr_onehot_a[i] = 1'b1;
       end else begin
         waddr_onehot_a[i] = 1'b0;
@@ -109,12 +111,45 @@ module ibex_register_file #(
   // Generate the sequential process for the NUM_WORDS words of the memory.
   // The process is synchronized with the clocks mem_clocks[k], k = 1, ..., NUM_WORDS-1.
   always_latch begin : latch_wdata
-    mem[0] = '0;
     for (int k = 1; k < NUM_WORDS; k++) begin : latch_wdata_word_iter
       if (mem_clocks[k]) begin
         mem[k] = wdata_a_q;
       end
     end
+  end
+
+  // With dummy instructions enabled, R0 behaves as a real register but will always return 0 for
+  // real instructions.
+  if (DummyInstructions) begin : g_dummy_r0
+    logic        we_r0_dummy;
+    logic        r0_clock;
+    logic [31:0] mem_r0;
+
+    // Write enable for dummy R0 register (waddr_a_i will always be 0 for dummy instructions)
+    assign we_r0_dummy = we_a_i & dummy_instr_id_i;
+
+    // R0 clock gate
+    prim_clock_gating cg_i (
+        .clk_i     ( clk_int     ),
+        .en_i      ( we_r0_dummy ),
+        .test_en_i ( test_en_i   ),
+        .clk_o     ( r0_clock    )
+    );
+
+    always_latch begin : latch_wdata
+      if (r0_clock) begin
+        mem_r0 = wdata_a_q;
+      end
+    end
+
+    // Output the dummy data for dummy instructions, otherwise R0 reads as zero
+    assign mem[0] = dummy_instr_id_i ? mem_r0 : '0;
+
+  end else begin : g_normal_r0
+    logic unused_dummy_instr_id;
+    assign unused_dummy_instr_id = dummy_instr_id_i;
+
+    assign mem[0] = '0;
   end
 
 `ifdef VERILATOR

@@ -63,11 +63,7 @@ module ibex_load_store_unit
     output logic         busy_o,
 
     output logic         perf_load_o,
-    output logic         perf_store_o,
-
-    // used for assertions only
-    input  logic         illegal_insn_id_i,    // illegal instruciton -> from ID/EX
-    input  logic         instr_valid_id_i      // valid instruction   -> from ID/EX
+    output logic         perf_store_o
 );
 
   logic [31:0]  data_addr;
@@ -476,7 +472,7 @@ module ibex_load_store_unit
 
   assign data_or_pmp_err    = lsu_err_q | data_err_i | pmp_err_q;
   assign lsu_resp_valid_o   = (data_rvalid_i | pmp_err_q) & (ls_fsm_cs == IDLE);
-  assign lsu_rdata_valid_o  = lsu_resp_valid_o & ~data_we_q;
+  assign lsu_rdata_valid_o  = (ls_fsm_cs == IDLE) & data_rvalid_i & ~data_or_pmp_err & ~data_we_q;
 
   // output to register file
   assign lsu_rdata_o = data_rdata_ext;
@@ -504,16 +500,9 @@ module ibex_load_store_unit
   // Assertions //
   ////////////////
 
-  logic unused_instr_valid_id;
-  logic unused_illegal_insn_id;
-
-  // Inputs only used for assertions
-  assign unused_instr_valid_id  = instr_valid_id_i;
-  assign unused_illegal_insn_id = illegal_insn_id_i;
-
   // Selectors must be known/valid.
-  `ASSERT(IbexDataTypeKnown, (instr_valid_id_i & ~illegal_insn_id_i) |-> !$isunknown(lsu_type_i))
-  `ASSERT(IbexDataOffsetKnown, (instr_valid_id_i & ~illegal_insn_id_i) |-> !$isunknown(data_offset))
+  `ASSERT(IbexDataTypeKnown, (lsu_req_i | busy_o) |-> !$isunknown(lsu_type_i))
+  `ASSERT(IbexDataOffsetKnown, (lsu_req_i | busy_o) |-> !$isunknown(data_offset))
   `ASSERT_KNOWN(IbexRDataOffsetQKnown, rdata_offset_q)
   `ASSERT_KNOWN(IbexDataTypeQKnown, data_type_q)
   `ASSERT(IbexLsuStateValid, ls_fsm_cs inside {

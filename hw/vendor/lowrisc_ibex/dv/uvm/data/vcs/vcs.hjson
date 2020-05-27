@@ -37,7 +37,7 @@
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
   // Coverage related.
-  cov_db_dir: "{build_dir}/cov.vdb"
+  cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
 
   // Individual test specific coverage data - this will be deleted if the test fails
   // so that coverage from failiing tests is not included in the final report.
@@ -74,8 +74,10 @@
                         "-group instcov_for_score",
                         "-line nocasedef",
                         "-format both",
+                        "-elfile {vcs_cov_excl_files}",
                         "-report {cov_report_dir}"]
-  cov_report_dashboard: "{cov_report_dir}/dashboard.txt"
+  cov_report_txt:       "{cov_report_dir}/dashboard.txt"
+  cov_report_page:      "cov_report/dashboard.html"
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.
@@ -133,7 +135,7 @@
       run_opts:   [// Enable the required cov metrics
                    "-cm {cov_metrics}",
                    // Same directory as build
-                   "-cm_dir {build_dir}/cov.vdb",
+                   "-cm_dir {cov_db_dir}",
                    // Don't output cm.log which can be quite large
                    "-cm_log /dev/null",
                    // Provide a name to the coverage collected for this test
