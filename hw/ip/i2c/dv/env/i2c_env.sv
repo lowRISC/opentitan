@@ -18,16 +18,16 @@ class i2c_env extends cip_base_env #(
     super.build_phase(phase);
     m_i2c_agent = i2c_agent::type_id::create("m_i2c_agent", this);
     uvm_config_db#(i2c_agent_cfg)::set(this, "m_i2c_agent*", "cfg", cfg.m_i2c_agent_cfg);
-  endfunction
+  endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_i2c_agent.monitor.analysis_port.connect(scoreboard.i2c_fifo.analysis_export);
+      m_i2c_agent.monitor.rd_item_port.connect(scoreboard.rd_item_fifo.analysis_export);
+      m_i2c_agent.monitor.wr_item_port.connect(scoreboard.wr_item_fifo.analysis_export);
     end
-    if (cfg.m_i2c_agent_cfg.is_active) begin
-      virtual_sequencer.i2c_sequencer_h = m_i2c_agent.sequencer;
-    end
+
+    virtual_sequencer.i2c_sequencer_h = m_i2c_agent.sequencer;
   endfunction
 
 endclass : i2c_env
