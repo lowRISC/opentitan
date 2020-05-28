@@ -122,6 +122,25 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check commit metadata
   - bash: |
+      # Here we look for all *.vendor.hjson files in the repo to re-vendor them.
+      # We exclude the following:
+      # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
+      # - `./sw/vendor/riscv_compliance.vendor.hjson`, because it has whitespace
+      #   issues in the repository that we cannot easily solve.
+      find . \
+        -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
+        -not \( -name 'riscv_compliance.vendor.hjson' \) \
+        -name '*.vendor.hjson' \
+        | xargs -n1 util/vendor.py --verbose \
+        && git diff --exit-code
+      if [[ $? != 0 ]]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Vendored repositories not up-to-date. Run util/vendor.py to fix."
+        exit 1
+      fi
+    condition: always()
+    displayName: Check vendored directories are up-to-date
+  - bash: |
       only_doc_changes=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
         # Conservative way of checking for documentation-only changes.
