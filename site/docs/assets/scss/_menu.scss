@@ -33,6 +33,7 @@
 
     &:hover,
     &:focus {
+      color: var(--text-second);
       text-decoration: underline;
     }
 
@@ -52,6 +53,14 @@
 
   ul.ancestor {
     display: block;
+  }
+
+  a.section {
+    text-decoration: underline dotted;
+  }
+
+  a.ancestor {
+    text-decoration: underline;
   }
 
 }
