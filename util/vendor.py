@@ -580,7 +580,7 @@ def main(argv):
 
         # Try to load lock file (which might not exist)
         try:
-            with open(lock_file_path, 'r') as lock_file:
+            with open(str(lock_file_path), 'r') as lock_file:
                 lock = LockDesc(lock_file)
         except FileNotFoundError:
             lock = None
@@ -597,7 +597,7 @@ def main(argv):
 
     if lock is None and not args.update:
         log.warning("No lock file at {}, so will update upstream repo."
-                    .format(desc.lock_file_path()))
+                    .format(str(desc.lock_file_path())))
         args.update = True
 
     # If we have a lock file and we're not in update mode, override desc's
