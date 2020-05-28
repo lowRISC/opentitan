@@ -151,6 +151,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.ctrl.enablehost.set(1'b1);
     csr_update(ral.ctrl);
 
+    // enable host
+    ral.ctrl.enablehost.set(1'b1);
+    ral.ctrl.enabletarget.set(1'b0);
+    csr_update(ral.ctrl);
+
     // diable override
     ral.ovrd.txovrden.set(1'b0);
     csr_update(ral.ovrd);
