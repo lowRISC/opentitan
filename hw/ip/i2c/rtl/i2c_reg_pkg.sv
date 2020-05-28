@@ -37,6 +37,9 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
     } sda_unstable;
+    struct packed {
+      logic        q;
+    } trans_complete;
   } i2c_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
@@ -67,6 +70,9 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
     } sda_unstable;
+    struct packed {
+      logic        q;
+    } trans_complete;
   } i2c_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
@@ -106,6 +112,10 @@ package i2c_reg_pkg;
       logic        q;
       logic        qe;
     } sda_unstable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } trans_complete;
   } i2c_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -267,6 +277,10 @@ package i2c_reg_pkg;
       logic        d;
       logic        de;
     } sda_unstable;
+    struct packed {
+      logic        d;
+      logic        de;
+    } trans_complete;
   } i2c_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -317,9 +331,9 @@ package i2c_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [270:262]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [261:253]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [252:235]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [274:265]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [264:255]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [254:235]
     i2c_reg2hw_ctrl_reg_t ctrl; // [234:234]
     i2c_reg2hw_rdata_reg_t rdata; // [233:225]
     i2c_reg2hw_fdata_reg_t fdata; // [224:206]
@@ -337,11 +351,11 @@ package i2c_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [75:67]
-    i2c_hw2reg_status_reg_t status; // [66:67]
-    i2c_hw2reg_rdata_reg_t rdata; // [66:58]
-    i2c_hw2reg_fifo_status_reg_t fifo_status; // [57:58]
-    i2c_hw2reg_val_reg_t val; // [57:58]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [77:68]
+    i2c_hw2reg_status_reg_t status; // [67:68]
+    i2c_hw2reg_rdata_reg_t rdata; // [67:59]
+    i2c_hw2reg_fifo_status_reg_t fifo_status; // [58:59]
+    i2c_hw2reg_val_reg_t val; // [58:59]
   } i2c_hw2reg_t;
 
   // Register Address
