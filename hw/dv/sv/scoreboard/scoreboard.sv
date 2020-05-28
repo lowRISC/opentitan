@@ -28,7 +28,6 @@ class scoreboard#(type ITEM_T = uvm_object,
   int unsigned                      timeout_check_cycle_interval = 100;
   bit                               enable_logging = 1'b0;
   uvm_phase                         run_phase_h;
-  bit                               objection_raised;
   semaphore                         token;
   string                            log_filename;
   int                               log_fd;
@@ -208,10 +207,6 @@ class scoreboard#(type ITEM_T = uvm_object,
             `uvm_info(get_full_name(), $sformatf(
                       "Scoreboard timeout caused by packet drop, act/exp items = %0d/%0d",
                       num_of_act_item, num_of_exp_item), UVM_LOW)
-            if (objection_raised) begin
-              run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
-              objection_raised = 1'b0;
-            end
           end
         end
       end

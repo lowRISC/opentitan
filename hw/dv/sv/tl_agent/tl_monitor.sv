@@ -45,7 +45,7 @@ class tl_monitor extends dv_base_monitor#(
     @(posedge cfg.vif.rst_n);
   endtask : wait_for_reset_done
 
-  // on reset flush pending request and drop objection
+  // on reset flush pending request
   virtual task reset_thread();
     forever begin
       @(negedge cfg.vif.rst_n);
