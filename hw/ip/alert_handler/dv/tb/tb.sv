@@ -14,6 +14,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
   wire entropy;
@@ -22,7 +23,7 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) entropy_if(entropy);
-  pins_if #(1) devmode_if();
+  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
   alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
