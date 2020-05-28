@@ -1,44 +1,40 @@
 <div class="menu">
- <ul>
-    {{- $currentNode := . }}
-    {{- range .Site.Home.Sections.ByTitle}}
-    {{- template "menu-loop" dict "sect" . "currentnode" $currentNode}}
-    {{- end}}
-</ul>
+    <ul>
+        {{- $displayedNode := . }}
+        {{- template "menu-loop" dict "currentnode" .Site.Home "displayednode" $displayedNode }}
+    </ul>
 </div>
 
 <!-- Template -->
 {{- define "menu-loop" }}
-{{- $currentNode := .currentnode }}
-{{- with .sect}}
-{{- if .IsSection }}
-    {{- $numberOfPages := (add (len .Pages) (len .Sections)) }}
-    <li>
-        <a class="{{- if .IsAncestor $currentNode}} ancestor{{end}}
-            {{- if eq .RelPermalink $currentNode.RelPermalink}} active{{end}}"
-            href="{{.RelPermalink}}">{{.Title}}</h6></a>
-      {{- if ne $numberOfPages 0 }}
-        <ul class="
-            {{- if .IsAncestor $currentNode}} ancestor{{end}}
-            {{- if ne $numberOfPages 0 }} parent{{end}}
-            ">
-          {{- .Scratch.Set "pages" .Pages }}
-          {{- if .Sections}}
-          {{- .Scratch.Set "pages" (.Pages | union .Sections) }}
-          {{- end}}
-          {{- $pages := (.Scratch.Get "pages") }}
-
-          {{- range $pages.ByTitle }}
-            {{- template "menu-loop" dict "sect" . "currentnode" $currentNode }}
-          {{- end}}
-        </ul>
-      {{- end}}
-    </li>
-{{- else}}
-    <li>
-             <a class="{{- if eq .RelPermalink $currentNode.RelPermalink}} active{{end}}" href="{{.RelPermalink}}"> {{.LinkTitle}} </a>
-    </li>
-{{- end}}
-{{- end}}
-{{- end}}
-
+    {{- $currentNode := .currentnode }}
+    {{- $displayedNode := .displayednode }}
+    {{- with .currentnode}}
+        {{- $numberOfPages := (add (len .Pages) (len .Sections)) }}
+        <li>
+            <a class="{{- if .IsAncestor $displayedNode }} ancestor{{- end }}
+                {{- if eq .RelPermalink $displayedNode.RelPermalink}} active{{- end }}
+                {{- if .IsSection}} section{{- end }}" href="{{- .RelPermalink }}">
+                {{- if .LinkTitle }}
+                    {{- .LinkTitle }}
+                {{- else }}
+                    {{- replace .File.Dir .Parent.File.Dir "" | replaceRE "/" "-" }}{{- .File.TranslationBaseName }}
+                {{- end }}
+            </a>
+            {{- if and (ne $numberOfPages 0) (or (.IsDescendant $displayedNode) (.IsAncestor $displayedNode) (.InSection $displayedNode)) }}
+                <ul class="{{- if .IsAncestor $displayedNode}} ancestor{{- end }}
+                    {{- if ne $numberOfPages 0 }} parent{{- end }}">
+                    {{- $subElements := dict }}
+                    {{- range .Site.Pages }}
+                        {{- if and (eq .Parent $currentNode) (.IsDescendant $currentNode) }}
+                            {{- $subElements = merge $subElements (dict (string .) . ) }}
+                        {{- end }}
+                    {{- end }}
+                    {{- range $subElements }}
+                        {{- template "menu-loop" dict "currentnode" . "displayednode" $displayedNode }}
+                    {{- end }}
+                </ul>
+            {{- end }}
+        </li>
+    {{- end }}
+{{- end }}
