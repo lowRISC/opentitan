@@ -296,7 +296,7 @@ class Mapping1:
         # there are none to apply. Otherwise, resolve it relative to patch_dir.
         if self.patch_dir is not None:
             patches = (patch_dir / self.patch_dir).glob('*.patch')
-            for patch in patches:
+            for patch in sorted(patches):
                 log.info("Applying patch {} at {}".format(patch, to_path))
                 Mapping1.apply_patch(to_path, patch)
 
