@@ -48,7 +48,8 @@ module i2c_fsm (
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
-  output logic event_sda_unstable_o      // SDA is not constant during SCL pulse
+  output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
+  output logic event_trans_complete_o    // Transaction is complete
 );
 
   // I2C bus clock timing variables
@@ -74,6 +75,7 @@ module i2c_fsm (
   logic [7:0]  read_byte;     // register for reads from target
   logic        read_byte_clr; // clear read_byte contents
   logic        shift_data_en; // indicates data must be shifted in from the bus
+  logic        restart;       // indicates repeated start state is entered into
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -206,6 +208,7 @@ module i2c_fsm (
     event_sda_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_stretch_timeout_o = 1'b0;
+    event_trans_complete_o = 1'b0;
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
@@ -220,6 +223,7 @@ module i2c_fsm (
         sda_temp = 1'b1;
         scl_temp = 1'b1;
         if (sda_i == 0) event_sda_interference_o = 1'b1;
+        if (restart == 1) event_trans_complete_o = 1'b1;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
@@ -381,6 +385,7 @@ module i2c_fsm (
         sda_temp = 1'b1;
         scl_temp = 1'b1;
         if (sda_i == 0) event_sda_interference_o = 1'b1;
+        event_trans_complete_o = 1'b1;
       end
       // Active: continue while keeping SCL low
       Active : begin
@@ -407,6 +412,7 @@ module i2c_fsm (
         event_sda_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_stretch_timeout_o = 1'b0;
+        event_trans_complete_o = 1'b0;
       end
     endcase
   end
@@ -422,6 +428,7 @@ module i2c_fsm (
     byte_clr = 1'b0;
     read_byte_clr = 1'b0;
     shift_data_en = 1'b0;
+    restart = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -676,6 +683,7 @@ module i2c_fsm (
           state_d = SetupStart;
           load_tcount = 1'b1;
           tcount_sel = tSetupStart;
+          restart = 1'b1;
         end else begin
           state_d = ClockLow;
           load_tcount = 1'b1;
@@ -711,6 +719,7 @@ module i2c_fsm (
         byte_clr = 1'b0;
         read_byte_clr = 1'b0;
         shift_data_en = 1'b0;
+        restart = 1'b0;
       end
     endcase
   end

@@ -40,6 +40,9 @@
     { name: "sda_unstable"
       desc: "raised if the target does not assert a constant value of SDA during transmission."
     }
+    { name: "trans_complete"
+      desc: "raised if the host terminates the transaction by issuing STOP or repeated START."
+    }
   ]
 
   // REGISTER definition
