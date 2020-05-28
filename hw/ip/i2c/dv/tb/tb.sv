@@ -25,6 +25,11 @@ module tb;
   wire intr_stretch_timeout;
   wire intr_sda_unstable;
   wire intr_trans_complete;
+  wire intr_tx_empty;
+  wire intr_tx_nonempty;
+  wire intr_tx_overflow;
+  wire intr_acq_overflow;
+  wire intr_ack_stop;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   wire cio_scl_i;
@@ -66,7 +71,12 @@ module tb;
     .intr_sda_interference_o (intr_sda_interference ),
     .intr_stretch_timeout_o  (intr_stretch_timeout  ),
     .intr_sda_unstable_o     (intr_sda_unstable     ),
-    .intr_trans_complete_o   (intr_trans_complete   )
+    .intr_trans_complete_o   (intr_trans_complete   ),
+    .intr_tx_empty_o         (intr_tx_empty         ),
+    .intr_tx_nonempty_o      (intr_tx_nonempty      ),
+    .intr_tx_overflow_o      (intr_tx_overflow      ),
+    .intr_acq_overflow_o     (intr_acq_overflow     ),
+    .intr_ack_stop_o         (intr_ack_stop         )
   );
 
   // virtual open drain
@@ -90,6 +100,11 @@ module tb;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
   assign interrupts[TransComplete]  = intr_trans_complete;
+  assign interrupts[TxEmpty]        = intr_tx_empty;
+  assign interrupts[TxNonEmpty]     = intr_tx_nonempty;
+  assign interrupts[TxOverflow]     = intr_tx_overflow;
+  assign interrupts[AcqOverflow]    = intr_acq_overflow;
+  assign interrupts[AckStop]        = intr_ack_stop;
 
   initial begin
     // drive clk and rst_n from clk_if

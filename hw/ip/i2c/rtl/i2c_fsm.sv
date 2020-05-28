@@ -14,6 +14,7 @@ module i2c_fsm (
   output       sda_o,  // serial data output to i2c bus
 
   input        host_enable_i, // enable host functionality
+  input        target_enable_i, // enable target functionality
 
   input        fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input        fmt_fifo_wvalid_i, // indicates data is being put into fmt_fifo
@@ -29,7 +30,15 @@ module i2c_fsm (
   output logic       rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
   output logic [7:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
 
+  input        tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
+  output logic tx_fifo_rready_o, // populates tx_fifo
+  input [7:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
+
+  output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
+  output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
+
   output logic       host_idle_o,      // indicates the host is idle
+  output logic       target_idle_o,    // indicates the target is idle
 
   input [15:0] thigh_i,    // high period of the SCL in clock units
   input [15:0] tlow_i,     // low period of the SCL in clock units
@@ -44,12 +53,20 @@ module i2c_fsm (
   input [30:0] stretch_timeout_i,  // max time target may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
 
+  input logic [6:0] target_address0_i,
+  input logic [6:0] target_mask0_i,
+  input logic [6:0] target_address1_i,
+  input logic [6:0] target_mask1_i,
+
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
   output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
-  output logic event_trans_complete_o    // Transaction is complete
+  output logic event_trans_complete_o,   // Transaction is complete
+  output logic event_tx_empty_o,         // tx_fifo is empty but data is needed
+  output logic event_tx_nonempty_o,      // tx_fifo is nonempty after stop
+  output logic event_ack_stop_o          // target received stop after ack
 );
 
   // I2C bus clock timing variables
@@ -79,6 +96,14 @@ module i2c_fsm (
   logic        log_start;     // indicates start is been issued
   logic        log_stop;      // indicates stop is been issued
   logic        restart;       // indicates repeated start state is entered into
+
+  // Temporary assignments
+  assign tx_fifo_rready_o = tx_fifo_rvalid_i;
+  assign acq_fifo_wdata_o = {tx_fifo_rdata_i, 1'b0, 1'b0};
+  assign target_idle_o = 1'b1;
+  assign event_tx_empty_o = 1'b0;
+  assign event_tx_nonempty_o = 1'b0;
+  assign event_ack_stop_o = 1'b0;
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -219,6 +244,7 @@ module i2c_fsm (
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
     rx_fifo_wdata_o = 8'h00;
+    acq_fifo_wvalid_o = 1'b0;
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_interference_o = 1'b0;
@@ -232,6 +258,9 @@ module i2c_fsm (
         sda_temp = 1'b1;
         scl_temp = 1'b1;
         if (sda_i == 0) event_sda_interference_o = 1'b1;
+        if (!target_address0_i && !target_mask0_i && !target_address1_i && !target_mask1_i) begin
+          acq_fifo_wvalid_o = 1'b0;
+        end
       end
       // SetupStart: SDA and SCL are released
       SetupStart : begin
@@ -423,6 +452,7 @@ module i2c_fsm (
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
         rx_fifo_wdata_o = 8'h00;
+        acq_fifo_wvalid_o = 1'b0;
         event_nak_o = 1'b0;
         event_scl_interference_o = 1'b0;
         event_sda_interference_o = 1'b0;
@@ -451,7 +481,7 @@ module i2c_fsm (
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
-        if (!host_enable_i) state_d = Idle; // Idle unless host is enabled
+        if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (!fmt_fifo_rvalid_i) state_d = Idle;
         else state_d = Active;
       end

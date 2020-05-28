@@ -30,7 +30,12 @@ package i2c_env_pkg;
     StretchTimeout = 7,
     SdaUnstable    = 8,
     TransComplete  = 9,
-    NumI2cIntr     = 10
+    TxEmpty        = 10,
+    TxNonEmpty     = 11,
+    TxOverflow     = 12,
+    AcqOverflow    = 13,
+    AckStop        = 14,
+    NumI2cIntr     = 15
   } i2c_intr_e;
 
   typedef enum int {
