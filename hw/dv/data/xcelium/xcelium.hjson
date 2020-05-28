@@ -33,6 +33,11 @@
     // Poll for an available license every 1 min.
     CDS_LIC_QUEUE_POLL_INT: 60
 
+    // X-prop related: these were suggested by Xcelium as warnings during the build time.
+    // These enable array corruption when the index is out of range or invalid.
+    VL_ENABLE_INVALID_IDX_XPROP: 1
+    VL_ENABLE_OUTOFRANGE_IDX_XPROP: 1
+
     // Export the cov_report path so that the tcl file can read these as env vars.
     cov_merge_db_dir: "{cov_merge_db_dir}"
     cov_report_dir:   "{cov_report_dir}"
@@ -122,8 +127,7 @@
     {
       name: xcelium_xprop
       is_sim_mode: 1
-      # -xverbose  << add to see which modules does not have xprop enabled
-      build_opts: ["-xprop F"]
+      build_opts: ["-xprop F -xverbose"]
     }
     {
       // TODO: Add build and run options to enable zero delay loop detection.
