@@ -263,16 +263,18 @@ class Mapping1:
         return Mapping1(from_path, to_path, patch_dir)
 
     @staticmethod
-    def make_default():
+    def make_default(have_patch_dir):
         '''Make a default mapping1, which copies everything straight through'''
-        return Mapping1(Path('.'), Path('.'), None)
+        return Mapping1(Path('.'), Path('.'),
+                        Path('.') if have_patch_dir else None)
 
     @staticmethod
     def apply_patch(basedir, patchfile):
-        cmd = ['git', 'apply', '-p1', str(patchfile)]
+        cmd = ['git', 'apply', '--directory', str(basedir), '-p1',
+               str(patchfile)]
         if verbose:
             cmd += ['--verbose']
-        subprocess.run(cmd, cwd=str(basedir), check=True)
+        subprocess.run(cmd, check=True)
 
     def import_from_upstream(self, upstream_path,
                              target_path, exclude_files, patch_dir):
@@ -424,7 +426,7 @@ class Desc:
         shutil.rmtree(str(self.target_dir), ignore_errors=True)
 
         items = (self.mapping.items if self.mapping is not None
-                 else [Mapping1.make_default()])
+                 else [Mapping1.make_default(self.patch_dir is not None)])
         for map1 in items:
             map1.import_from_upstream(upstream_path,
                                       self.target_dir,
