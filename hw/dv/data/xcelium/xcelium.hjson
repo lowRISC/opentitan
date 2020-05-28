@@ -16,7 +16,7 @@
                "-messages -errormax 50",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
-               "-uvmhome {UVM_HOME}",
+               "-uvmhome CDNS-1.2",
                "-xmlibdirname {build_dir}/xcelium.d"]
 
   run_opts:   ["-input {tool_srcs_dir}/xcelium_{dump}.tcl",
