@@ -8,7 +8,6 @@ bison
 build-essential
 clang-format
 curl
-flake8
 flex
 g++
 git
