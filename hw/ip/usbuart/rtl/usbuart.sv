@@ -55,12 +55,9 @@ module usbuart (
     .hw2reg,
 
     .devmode_i  (1'b1)
-    );
+  );
 
-  logic              usb_tx_en_o;
-  assign cio_usb_dp_en_o = usb_tx_en_o;
-  assign cio_usb_dn_en_o = usb_tx_en_o;
-  assign cio_pullup_en_o = 1;
+  assign cio_pullup_o = 1'b1;
 
   usbuart_core usbuart_core (
     .clk_i,
@@ -78,7 +75,7 @@ module usbuart (
     .cio_usb_dn_o        (cio_usb_dn_o),
     .cio_usb_dp_en_o     (cio_usb_dp_en_o),
     .cio_usb_dn_en_o     (cio_usb_dn_en_o),
-    .cio_usb_pullup_en_o (cio_pullup_o),
+    .cio_usb_pullup_en_o (cio_pullup_en_o),
 
     .intr_tx_watermark_o  (intr_tx_watermark_o ),
     .intr_rx_watermark_o  (intr_rx_watermark_o ),
@@ -88,6 +85,6 @@ module usbuart (
     .intr_rx_break_err_o  (intr_rx_break_err_o ),
     .intr_rx_timeout_o    (intr_rx_timeout_o   ),
     .intr_rx_parity_err_o (intr_rx_parity_err_o)
-    );
+  );
 
 endmodule // usbuart
