@@ -349,29 +349,37 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         automatic int class_i = i;
         begin : intr_sig_counter
           forever @(under_intr_classes[class_i] && !under_esc_classes[class_i]) begin
-            bit [TL_DW-1:0] timeout_cyc, class_ctrl;
-            // if escalation cleared but interrupt not cleared, wait one more clk cycle for the
-            // FSM to reset to Idle, then start to count
-            if (clr_esc_under_intr[class_i]) cfg.clk_rst_vif.wait_clks(1);
-            clr_esc_under_intr[class_i] = 0;
-            // wait a clk for esc signal to go high
-            cfg.clk_rst_vif.wait_clks(1);
-            class_ctrl = get_class_ctrl(class_i);
-            if (!under_esc_classes[class_i] && class_ctrl[AlertClassCtrlEn] &&
-                (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
-              intr_cnter_per_class[class_i] = 0;
-              // counter continues to increment if:
-              // interrupt is not cleared, and class is not under escalation by accum_alerts
-              timeout_cyc = get_class_timeout_cyc(class_i);
-              if (timeout_cyc > 0) begin
-                while (under_intr_classes[class_i] != 0 && !under_esc_classes[class_i]) begin
-                  if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
-                  @(cfg.clk_rst_vif.cb);
-                  if (!under_esc_classes[class_i]) intr_cnter_per_class[class_i] += 1;
+            fork
+              begin
+                bit [TL_DW-1:0] timeout_cyc, class_ctrl;
+                // if escalation cleared but interrupt not cleared, wait one more clk cycle for the
+                // FSM to reset to Idle, then start to count
+                if (clr_esc_under_intr[class_i]) cfg.clk_rst_vif.wait_clks(1);
+                clr_esc_under_intr[class_i] = 0;
+                // wait a clk for esc signal to go high
+                cfg.clk_rst_vif.wait_clks(1);
+                class_ctrl = get_class_ctrl(class_i);
+                if (class_ctrl[AlertClassCtrlEn] &&
+                    class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0) begin
+                  intr_cnter_per_class[class_i] = 0;
+                  // counter continues to increment if:
+                  // interrupt is not cleared, and class is not under escalation by accum_alerts
+                  timeout_cyc = get_class_timeout_cyc(class_i);
+                  if (timeout_cyc > 0) begin
+                    while (under_intr_classes[class_i]) begin
+                      if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
+                      @(cfg.clk_rst_vif.cb);
+                      intr_cnter_per_class[class_i] += 1;
+                    end
+                  end
+                  intr_cnter_per_class[class_i] = 0;
                 end
               end
-              if (!under_esc_classes[class_i]) intr_cnter_per_class[class_i] = 0;
-            end
+              begin
+                wait(under_esc_classes[class_i]);
+              end
+            join_any
+            disable fork;
           end // end forever
         end
       join_none
@@ -495,6 +503,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       begin
         if (under_esc_classes [class_i]) intr_cnter_per_class[class_i] = 0;
         if (under_intr_classes[class_i]) clr_esc_under_intr[class_i] = 1;
+        // for corner case where escalation triggered the same cycle as esc_clr
+        #1ns;
         under_esc_classes[class_i] = 0;
         cfg.clk_rst_vif.wait_clks(1);
         last_triggered_alert_per_class[class_i] = $realtime;
