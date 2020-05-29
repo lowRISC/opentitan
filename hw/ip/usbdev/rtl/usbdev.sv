@@ -937,16 +937,28 @@ module usbdev (
   /////////////////////////////////////////
 
   logic usb_ref_val_d, usb_ref_val_q;
+  logic usb_ref_disable;
 
-  // Directly forward the pulse.
-  assign usb_ref_pulse_o = usb_event_frame;
+  // sys clk -> USB clk
+  prim_flop_2sync #(
+    .Width      (1)
+  ) usbdev_sync_phy_config (
+    .clk_i  (clk_usb_48mhz_i),
+    .rst_ni (rst_usb_48mhz_ni),
+    .d      (reg2hw.phy_config.usb_ref_disable.q),
+    .q      (usb_ref_disable)
+  );
+
+  // Directly forward the pulse unless disabled.
+  assign usb_ref_pulse_o = usb_ref_disable ? 1'b0 : usb_event_frame;
 
   // The first pulse is always ignored, but causes the valid to be asserted.
   // The valid signal is deasserted when:
   // - The link is no longer active.
   // - The host is lost (no SOF for 4ms).
-  assign usb_ref_val_d = usb_ref_pulse_o                         ? 1'b1 :
-                       (!usb_link_active || usb_event_host_lost) ? 1'b0 : usb_ref_val_q;
+  // - The reference generation is disabled.
+  assign usb_ref_val_d = usb_ref_pulse_o                           ? 1'b1 :
+      (!usb_link_active || usb_event_host_lost || usb_ref_disable) ? 1'b0 : usb_ref_val_q;
 
   always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
     if (!rst_usb_48mhz_ni) begin

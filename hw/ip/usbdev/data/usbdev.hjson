@@ -546,6 +546,15 @@
 
                 '''
         }
+        {
+          bits: "6",
+          resval: "0",
+          name: "usb_ref_disable",
+          desc: '''
+                0: Enable reference signal generation for clock synchronization, 1: disable it by forcing the associated signals to zero.
+
+                '''
+        }
       ]
     }
 

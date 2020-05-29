@@ -643,6 +643,9 @@ module usbdev_reg_top (
   logic phy_config_pinflip_qs;
   logic phy_config_pinflip_wd;
   logic phy_config_pinflip_we;
+  logic phy_config_usb_ref_disable_qs;
+  logic phy_config_usb_ref_disable_wd;
+  logic phy_config_usb_ref_disable_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -5321,6 +5324,32 @@ module usbdev_reg_top (
   );
 
 
+  //   F[usb_ref_disable]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_config_usb_ref_disable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_config_usb_ref_disable_we),
+    .wd     (phy_config_usb_ref_disable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_config.usb_ref_disable.q ),
+
+    // to register interface (read)
+    .qs     (phy_config_usb_ref_disable_qs)
+  );
+
+
 
 
   logic [25:0] addr_hit;
@@ -5942,6 +5971,9 @@ module usbdev_reg_top (
   assign phy_config_pinflip_we = addr_hit[25] & reg_we & ~wr_err;
   assign phy_config_pinflip_wd = reg_wdata[5];
 
+  assign phy_config_usb_ref_disable_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_usb_ref_disable_wd = reg_wdata[6];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -6211,6 +6243,7 @@ module usbdev_reg_top (
         reg_rdata_next[3] = phy_config_override_pwr_sense_en_qs;
         reg_rdata_next[4] = phy_config_override_pwr_sense_val_qs;
         reg_rdata_next[5] = phy_config_pinflip_qs;
+        reg_rdata_next[6] = phy_config_usb_ref_disable_qs;
       end
 
       default: begin
