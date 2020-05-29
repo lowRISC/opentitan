@@ -715,3 +715,6 @@ if __name__ == '__main__':
                   "STDERR:\n%s\n" %
                   (" ".join(e.cmd), e.returncode, e.stdout, e.stderr))
         raise
+    except KeyboardInterrupt:
+        log.info("Aborting operation on user request.")
+        sys.exit(1)
