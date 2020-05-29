@@ -101,7 +101,7 @@ module usb_fs_nb_in_pe #(
   // endpoint data buffer
   logic       token_received, setup_token_received, in_token_received, ack_received;
   logic       more_data_to_send;
-  logic       ep_impl;
+  logic       ep_impl_d, ep_impl_q;
   logic [3:0] in_ep_current_d;
 
   // More syntax so can compare with enum
@@ -111,15 +111,13 @@ module usb_fs_nb_in_pe #(
   assign rx_pid      = usb_pid_e'(rx_pid_i);
 
   // Is the specified endpoint actually implemented?
-  assign ep_impl = {1'b0, rx_endp_i} < NumInEps;
+  assign ep_impl_d = {1'b0, rx_endp_i} < NumInEps;
 
-  // If the specified endpoint is not implemented, we don't process the token and just ignore it.
   assign token_received =
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     rx_pid_type == UsbPidTypeToken &&
-    rx_addr_i == dev_addr_i &&
-    ep_impl;
+    rx_addr_i == dev_addr_i;
 
   assign setup_token_received =
     token_received &&
@@ -134,16 +132,17 @@ module usb_fs_nb_in_pe #(
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
 
-  assign in_ep_current_d = ep_impl ? rx_endp_i : '0;
+  assign in_ep_current_d = ep_impl_d ? rx_endp_i : '0;
 
   // Make widths work - in_ep_current_d/in_ep_current_o only hold implemented endpoint IDs.
   // These signals can be used to index signals of NumInEps width.
+  // They are only valid if ep_impl_d/q are set, i.e., if the specified endpoint is implemented.
   logic [InEpW-1:0] in_ep_index;
   logic [InEpW-1:0] in_ep_index_d;
   assign in_ep_index   = in_ep_current_o[0 +: InEpW];
   assign in_ep_index_d = in_ep_current_d[0 +: InEpW];
 
-  assign more_data_to_send = in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
+  assign more_data_to_send = ep_impl_q & in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
 
   assign tx_data_avail_o = logic'(in_xfr_state == StSendData) & more_data_to_send;
 
@@ -171,7 +170,10 @@ module usb_fs_nb_in_pe #(
       StRcvdIn: begin
         tx_pkt_start_o = 1'b1; // Need to transmit NACK/STALL or DATA
 
-        if (in_ep_stall_i[in_ep_index]) begin
+        if (!ep_impl_q || in_ep_stall_i[in_ep_index]) begin
+          // We only send STALL for IN transfers if the specified EP:
+          // - is not implemented,
+          // - is not set up.
           in_xfr_state_next = StIdle;
           tx_pid_o = {UsbPidStall}; // STALL
         end else if (in_ep_iso_i[in_ep_index]) begin
@@ -191,6 +193,7 @@ module usb_fs_nb_in_pe #(
       end
 
       StSendData: begin
+        // Note an unimplemented EP will never send data, no need to check ep_impl_q here.
         // Use &in_ep_get_addr so width can vary, looking for all ones
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
@@ -261,10 +264,12 @@ module usb_fs_nb_in_pe #(
     if (!rst_ni) begin
       in_ep_newpkt_o <= 1'b0;
       in_ep_current_o <= '0;
+      ep_impl_q <= 1'b0;
     end else begin
       if (in_token_received) begin
         in_ep_current_o <= in_ep_current_d;
         in_ep_newpkt_o <= 1'b1;
+        ep_impl_q <= ep_impl_d;
       end else begin
         in_ep_newpkt_o <= 1'b0;
       end
@@ -274,9 +279,9 @@ module usb_fs_nb_in_pe #(
   always_comb begin : proc_data_toggle_d
     data_toggle_d = data_toggle_q;
 
-    if (setup_token_received) begin
+    if (setup_token_received && ep_impl_d) begin
       data_toggle_d[in_ep_index_d] = 1'b1;
-    end else if ((in_xfr_state == StWaitAck) && ack_received) begin
+    end else if ((in_xfr_state == StWaitAck) && ack_received && ep_impl_q) begin
       data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index];
     end
 
@@ -308,12 +313,5 @@ module usb_fs_nb_in_pe #(
   ////////////////
   // Assertions //
   ////////////////
-
-  // We receive a token for an endpoint that is not implemented.
-  `ASSERT(UsbInEndPImpl,
-      (rx_pkt_end_i &&
-      rx_pkt_valid_i &&
-      rx_pid_type == UsbPidTypeToken &&
-      rx_addr_i == dev_addr_i) |-> ep_impl, clk_48mhz_i)
 
 endmodule
