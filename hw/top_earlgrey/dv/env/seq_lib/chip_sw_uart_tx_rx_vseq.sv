@@ -65,6 +65,7 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     wait(uart_tx_data_q.size() == exp_uart_tx_data.size());
 
     // Check if we received the right data set over the TX port.
+    `uvm_info(`gfn, "Checking the received UART TX data for consistency.", UVM_LOW)
     foreach (uart_tx_data_q[i]) begin
       `DV_CHECK_EQ(uart_tx_data_q[i], exp_uart_tx_data[i])
     end
@@ -78,7 +79,6 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     uart_default_seq send_rx_seq;
     `uvm_create_on(send_rx_seq, p_sequencer.uart_sequencer_h);
     if (size == -1) size = uart_rx_data.size();
-    `uvm_info(`gfn, "Checking the received UART TX data for consistency.", UVM_LOW)
     for (int i = 0; i < size; i++) begin
       byte rx_data = random ? $urandom : uart_rx_data[i];
       `DV_CHECK_RANDOMIZE_WITH_FATAL(send_rx_seq, data == rx_data;)
