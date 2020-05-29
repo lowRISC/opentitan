@@ -17,12 +17,7 @@ module usbdev_iomux
   input  logic                          clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
   input  logic                          rst_usb_48mhz_ni,
 
-  // Configuration (quasi-static)
-  input  logic                          rx_differential_mode_i,
-  input  logic                          tx_differential_mode_i,
-  input  logic                          pinflip_i,
-
-  // Register interface (system clk)
+  // Register interface (system clk, quasi-static)
   input  usbdev_reg2hw_phy_config_reg_t sys_reg2hw_config_i,
   output logic                          sys_usb_sense_o,
 
@@ -59,6 +54,10 @@ module usbdev_iomux
   logic async_pwr_sense, sys_usb_sense;
   logic cio_usb_dp, cio_usb_dn, cio_usb_d;
   logic usb_rx_dp, usb_rx_dn, usb_rx_d;
+  logic pinflip;
+  logic unused_eop_single_bit;
+
+  assign unused_eop_single_bit = sys_reg2hw_config_i.eop_single_bit.q;
 
   //////////
   // CDCs //
@@ -97,9 +96,11 @@ module usbdev_iomux
   ////////////////////////
 
   // D+/D- can be swapped based on a config register.
-  assign cio_usb_d_o            = pinflip_i ? ~usb_tx_d_i     : usb_tx_d_i;
-  assign cio_usb_dp_pullup_en_o = pinflip_i ? 1'b0            : usb_pullup_en_i;
-  assign cio_usb_dn_pullup_en_o = pinflip_i ? usb_pullup_en_i : 1'b0;
+  assign pinflip = sys_reg2hw_config_i.pinflip.q;
+
+  assign cio_usb_d_o            = pinflip ? ~usb_tx_d_i     : usb_tx_d_i;
+  assign cio_usb_dp_pullup_en_o = pinflip ? 1'b0            : usb_pullup_en_i;
+  assign cio_usb_dn_pullup_en_o = pinflip ? usb_pullup_en_i : 1'b0;
 
   always_comb begin : proc_diff_se_mux_out
     // Defaults
@@ -107,7 +108,7 @@ module usbdev_iomux
     cio_usb_dp_o           = 1'b0;
 
     // The single-ended signals are only driven in single-ended mode.
-    if (tx_differential_mode_i) begin
+    if (sys_reg2hw_config_i.tx_differential_mode.q) begin
       // Differential TX mode
       cio_usb_tx_mode_se_o   = 1'b0;
 
@@ -118,8 +119,8 @@ module usbdev_iomux
         cio_usb_dp_o = 1'b0;
         cio_usb_dn_o = 1'b0;
       end else begin
-        cio_usb_dp_o = pinflip_i ? ~usb_tx_d_i :  usb_tx_d_i;
-        cio_usb_dn_o = pinflip_i ?  usb_tx_d_i : ~usb_tx_d_i;
+        cio_usb_dp_o = pinflip ? ~usb_tx_d_i :  usb_tx_d_i;
+        cio_usb_dn_o = pinflip ?  usb_tx_d_i : ~usb_tx_d_i;
       end
     end
   end
@@ -138,14 +139,14 @@ module usbdev_iomux
   // we are trying to regenerate the bit clock from the bit clock we are regenerating, rather than
   // just holding the phase.
   // D+/D- can be swapped based on a config register.
-  assign usb_rx_dp = usb_tx_oe_i ? 1'b1 : (pinflip_i ?  cio_usb_dn : cio_usb_dp);
-  assign usb_rx_dn = usb_tx_oe_i ? 1'b0 : (pinflip_i ?  cio_usb_dp : cio_usb_dn);
-  assign usb_rx_d  = usb_tx_oe_i ? 1'b1 : (pinflip_i ? ~cio_usb_d  : cio_usb_d);
+  assign usb_rx_dp = usb_tx_oe_i ? 1'b1 : (pinflip ?  cio_usb_dn : cio_usb_dp);
+  assign usb_rx_dn = usb_tx_oe_i ? 1'b0 : (pinflip ?  cio_usb_dp : cio_usb_dn);
+  assign usb_rx_d  = usb_tx_oe_i ? 1'b1 : (pinflip ? ~cio_usb_d  : cio_usb_d);
 
   always_comb begin : proc_diff_se_mux_in
     usb_rx_se0_o = ~usb_rx_dp & ~usb_rx_dn;
 
-    if (rx_differential_mode_i) begin
+    if (sys_reg2hw_config_i.rx_differential_mode.q) begin
       // Differential RX mode
       usb_rx_d_o = usb_rx_d;
 
