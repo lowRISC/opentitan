@@ -95,4 +95,3 @@ help:
 	@echo "RISCV_ISA='$(RISCV_ISA_OPT)'"
 	@echo "RISCV_TEST='I-ADD-01'"
 	@echo "make all_variant // all combinations"
-
