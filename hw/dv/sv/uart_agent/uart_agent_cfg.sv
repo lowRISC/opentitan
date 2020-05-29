@@ -17,9 +17,10 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   bit odd_parity;
 
   // Logger settings.
-  bit en_logger         = 1'b0; // enable logger on tx
-  bit use_rx_for_logger = 1'b0; // use rx instead of tx
-  string logger_msg_id  = "UART_LOGGER";
+  bit en_logger           = 1'b0; // enable logger on tx
+  bit use_rx_for_logger   = 1'b0; // use rx instead of tx
+  string logger_id        = "uart_logger";
+  bit write_logs_to_file  = 1'b1;
 
   // reset is controlled at upper seq-level as no reset pin on uart interface
   bit under_reset;
