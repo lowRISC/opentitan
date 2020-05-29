@@ -11,6 +11,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   bit                 use_gpio_for_sw_test_status;
   bit                 initialize_ram;
 
+  // Write logs from sw test to separate log file as well, in addition to the simulator log file.
+  bit                 write_sw_logs_to_file = 1'b1;
+
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;

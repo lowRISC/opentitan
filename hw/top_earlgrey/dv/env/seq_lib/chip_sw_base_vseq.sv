@@ -25,6 +25,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       cfg.sw_logger_vif.set_sw_name(cfg.sw_types[i]);
     end
     cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
+    cfg.sw_logger_vif.write_sw_logs_to_file = cfg.write_sw_logs_to_file;
     cfg.sw_logger_vif.ready();
 
     // initialize the sw test status
