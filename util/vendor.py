@@ -38,6 +38,16 @@ LOCK_FILE_HEADER = """// Copyright lowRISC contributors.
 
 """
 
+# Keys in the description (configuration) file which can be overridden through
+# the command line.
+OVERRIDABLE_DESC_KEYS = [
+    'patch_repo.url',
+    'patch_repo.rev_base',
+    'patch_repo.rev_patched',
+    'upstream.url',
+    'upstream.ref',
+]
+
 verbose = False
 
 
@@ -340,7 +350,8 @@ class LockDesc:
 
 class Desc:
     '''A class representing the configuration file'''
-    def __init__(self, handle):
+
+    def __init__(self, handle, desc_overrides):
 
         # Ensure description file matches our naming rules (otherwise we don't
         # know the name for the lockfile). This regex checks that we have the
@@ -350,6 +361,8 @@ class Desc:
 
         data = hjson.loads(handle.read(), use_decimal=True)
         where = 'at top-level'
+
+        self.apply_overrides(data, desc_overrides)
 
         path = Path(handle.name)
 
@@ -414,6 +427,22 @@ class Desc:
                 raise JsonError(path,
                                 'exclude_from_upstream has entry {}, which is not a string.'
                                 .format(efu))
+
+    def apply_overrides(self, desc_data, desc_overrides):
+        """ Apply overrides from command line to configuration file data
+
+        Updates are applied to the desc_data reference."""
+
+        for key, value in desc_overrides:
+            log.info("Overriding description key {!r} with value {!r}".format(
+                key, value))
+            ref = desc_data
+            split_keys = key.split('.')
+            for key_part in split_keys[:-1]:
+                if key_part not in ref:
+                    ref[key_part] = {}
+                ref = ref[key_part]
+            ref[split_keys[-1]] = value
 
     def lock_file_path(self):
         desc_file_stem = self.path.name.rsplit('.', 2)[0]
@@ -543,6 +572,22 @@ def git_add_commit(paths, commit_msg):
         log.warning("Unable to create commit. Are there no changes?")
 
 
+def define_arg_type(arg):
+    """Sanity-check and return a config file override argument"""
+    try:
+        (key, value) = [v.strip() for v in arg.split('=', 2)]
+    except Exception:
+        raise argparse.ArgumentTypeError(
+            'unable to parse {!r}: configuration overrides must be in the form key=value'
+            .format(arg))
+
+    if key not in OVERRIDABLE_DESC_KEYS:
+        raise argparse.ArgumentTypeError(
+            'invalid configuration override: key {!r} cannot be overwritten'
+            .format(key))
+    return (key, value)
+
+
 def main(argv):
     parser = argparse.ArgumentParser(prog="vendor", description=__doc__)
     parser.add_argument(
@@ -558,6 +603,15 @@ def main(argv):
                         '-c',
                         action='store_true',
                         help='Commit the changes')
+    parser.add_argument('--desc-override',
+                        '-D',
+                        dest="desc_overrides",
+                        action="append",
+                        type=define_arg_type,
+                        default=[],
+                        help='Override a setting in the description file. '
+                             'Format: -Dsome.key=value. '
+                             'Can be used multiple times.')
     parser.add_argument('desc_file',
                         metavar='file',
                         type=argparse.FileType('r', encoding='UTF-8'),
@@ -575,7 +629,7 @@ def main(argv):
     # Load input files (desc file; lock file) and check syntax etc.
     try:
         # Load description file
-        desc = Desc(args.desc_file)
+        desc = Desc(args.desc_file, args.desc_overrides)
         lock_file_path = desc.lock_file_path()
 
         # Try to load lock file (which might not exist)
