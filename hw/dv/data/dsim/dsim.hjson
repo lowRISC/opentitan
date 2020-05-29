@@ -16,6 +16,9 @@
                "{UVM_HOME}/src/uvm_pkg.sv",
                "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
 
+               // Add dpi/vpi include path.
+               "-c_opts -I{DSIM_HOME}/include",
+
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
                "+incdir+{build_dir}",
