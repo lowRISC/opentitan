@@ -13,7 +13,7 @@ Feedback and improvements are welcome.
 
 ## Stages of a Design
 
-The life stages of a design within the OpenTitan are described in the [Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
+The life stages of a design within the OpenTitan are described in the [Hardware Development Stages]({{< relref "doc/project/development_stages.md" >}}) document.
 This separates the life of the design into three broad stages: Specification, In Development, and Signed off.
 This document attempts to give guidance on how to get going with the first stage and have a smooth transition into the Development stage.
 They are not hard and fast rules but methods we have seen work well in the project.
@@ -76,7 +76,7 @@ This applies only for those specifications that originated on the Drive.
 
 ## Full Design
 
-As the design develops within the OpenTitan repository, it transitions into "D0", "D1", etc., [design stages]({{< relref "doc/project/hw_stages.md" >}}) and will be eventually plugged into the top level.
+As the design develops within the OpenTitan repository, it transitions into "D0", "D1", etc., [design stages]({{< relref "doc/project/development_stages.md" >}}) and will be eventually plugged into the top level.
 Following the recommended best practices for digestible pull requests suggests that continuing to stage the design from the initial skeleton into the full featured design is a good way to make steady progress without over-burdening the reviewers.
 
 ## Top Level Inclusion

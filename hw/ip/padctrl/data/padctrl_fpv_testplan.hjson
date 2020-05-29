@@ -1,0 +1,172 @@
+{
+  name: "padctrl"
+  import_testplans: ["hw/dv/tools/testplans/fpv_csr_testplan.hjson"]
+  entries: [
+    {
+      name: MioWarl_A
+      // TODO: need a better way eliminate the differentiation between imp targets
+      desc: '''In either generic or Xilinx mode, if a muxed IO's pad attribute is written to the
+            mio_pads registers via the TLUL interface, this assertion checks if the corresponding
+            mio_attr_o's reserved bits remain 0. This assertion intends to test the
+            write_any_read_legal access policy for the mio_pads registers.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: MioAttr_A
+      desc: '''In either generic or Xilinx mode, if a muxed IO's pad attribute is written to the
+            mio_pads registers via the TLUL interface, this assertion checks if the corresponding
+            mio_attr_o value is updated correctly.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: MioBackwardCheck_A
+      desc: '''If the output mio_attr_o has changed, then a valid write to the mio_pads register
+            must have taken place or the write enable signal must have risen in the previous
+            cycle.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: DioWarl_A
+      desc: '''In either generic or Xilinx mode, if a dedicated IO's pad attribute is written to
+            the dio_pads registers via the TLUL interface, this assertion checks if the
+            corresponding dio_attr_o's reserved bits remain 0. This assertion intends to test the
+            write_any_read_legal access policy for the dio_pads registers.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: DioAttr_A
+      desc: '''In either generic or Xilinx mode, if a dedicated IO's pad attribute is written to
+            the dio_pads registers via the TLUL interface, this assertion checks if the
+            corresponding dio_attr_o value is updated correctly.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: DioBackwardCheck_A
+      desc: '''If the output dio_attr_o has changed, then a valid write to the dio_pads register
+            must have taken place or the write enable signal must have risen in the previous
+            cycle.'''
+      milestone: V2
+      tests: ["padctrl_assert"]
+    }
+    {
+      name: ClkConn_A
+      desc: "This assertion checks that clk_pad_i is correctly connected to clk_o."
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: RstConn_A
+      desc: "This assertion checks that rst_pad_ni is correctly connected to rst_no."
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioIn_A
+      desc: '''This assertion checks the muxed IO output mio_in_o based on mio_pad_io and
+            mio_attr_i inversion bit.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioInBackwardCheck_A
+      desc: '''If the muxed IO output mio_in_o has changed, then mio_pad_io or mio_attr_i must be
+            changed in the same clock cycle.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioOutNormal_A
+      desc: '''If the selected muxed IO output is enabled and the corresponding attribute is not
+            open drain, then the mio_pad_io must be the (possibly inverted) muxed IO output
+            value.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioOutOd0_A
+      desc: '''If the selected muxed IO output is enabled, the open drain attribute is set, and the
+            expected mio_output value is 0, then the mio_pad_io must be 0.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioOutOd1_A
+      desc: '''If the selected muxed IO output is enabled, the open drain attribute is set, and the
+            expected mio_output value is not 0, then the mio_pad_io must be either 0, 1, x or
+            high z.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioOutBackwardCheck_A
+      desc: '''If the muxed IO output mio_pad_io has changed and mio_oe_i is enabled, then
+            mio_attr_i or mio_output_value must be changed in the same clock cycle.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: MioOe_A
+      desc: '''If the selected muxed IO output is not enabled, the mio_pad_io must be either 0, 1,
+            x or high z.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioIn_A
+      desc: '''This assertion checks the dedicated IO output dio_in_o based on dio_pad_io and
+            dio_attr_i inversion bit.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioInBackwardCheck_A
+      desc: '''If dedicated IO output dio_in_o has changed, then dio_pad_io or dio_attr_i must be
+            changed in the same clock cycle.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioOutNormal_A
+      desc: '''If the selected dedicated IO output is enabled and the corresponding attribute is
+            not open drain, then the dio_pad_io must be the (possibly inverted) dedicated IO output
+            value.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioOutOd0_A
+      desc: '''If the selected dedicated IO output is enabled, the open drain attribute is set, and
+            the expected dio_output value is 0, then the dio_pad_io must be 0.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioOutOd1_A
+      desc: '''If the selected dedicated IO output is enabled, the open drain attribute is set, and
+            the expected dio_output value is not 0, then the dio_pad_io must be either 0, 1, x or
+            high z.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioOutBackwardCheck_A
+      desc: '''If the dedicated IO output dio_pad_io has changed and dio_oe_i is enabled, then
+            dio_attr_i or dio_output_value must be changed in the same clock cycle.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+    {
+      name: DioOe_A
+      desc: '''If the selected dedicated IO output is not enabled, the dio_pad_io must be either 0,
+            1, x or high z.'''
+      milestone: V2
+      tests: ["padring_assert"]
+    }
+  ]
+}
+

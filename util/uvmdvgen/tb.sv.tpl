@@ -14,6 +14,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire devmode;
 % if is_cip:
 % if has_interrupts:
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -34,7 +35,7 @@ module tb;
   // TODO: declare alert interfaces according to the list_of_alerts
   alert_if alert_names(.clk(clk), .rst_n(rst_n))
 % endif
-  pins_if #(1) devmode_if();
+  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 % endif
 % for agent in env_agents:

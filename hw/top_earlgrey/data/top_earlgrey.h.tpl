@@ -5,6 +5,11 @@
 #ifndef _TOP_${top["name"].upper()}_H_
 #define _TOP_${top["name"].upper()}_H_
 
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
@@ -36,7 +41,7 @@
 #define PINMUX_VALUE_Z_OUT 2
 % for i, sig in enumerate(top["pinmux"]["inouts"] + top["pinmux"]["outputs"]):
   % if sig["width"] == 1:
-#define PINMUX_${sig["width"].upper()}_OUT ${offset + i}
+#define PINMUX_${sig["name"].upper()}_OUT ${offset + i}
   % else:
     % for j in range(sig["width"]):
 #define PINMUX_${sig["name"].upper()}_${j}_OUT ${offset + i + j}
@@ -47,12 +52,35 @@
 
 % for m in top["module"]:
 /**
- * Base address for ${m["name"]} peripheral in top ${top["name"]}.
+ * Peripheral base address for ${m["name"]} in top ${top["name"]}.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}u
+
+/**
+ * Peripheral size for ${m["name"]} in top ${top["name"]}.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR and
+ * `TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR + TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES`.
+ */
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}u
+
+% endfor
+
+% for m in top["memory"]:
+/**
+ * Memory base address for ${m["name"]} in top ${top["name"]}.
+ */
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}u
+
+/**
+ * Memory size for ${m["name"]} in top ${top["name"]}.
+ */
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}u
 
 % endfor
 
@@ -145,5 +173,10 @@ typedef enum top_${top["name"]}_plic_target {
 % endfor
   kTopEarlgreyPlicTargetLast = ${enum_id - 1}, /**< \internal Final PLIC target */
 } top_${top["name"]}_plic_target_t;
+
+// Header Extern Guard
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // _TOP_${top["name"].upper()}_H_

@@ -10,6 +10,11 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+// Header Extern Guard (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Represents a signal edge type.
  */
@@ -241,5 +246,9 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
 dif_spi_device_result_t dif_spi_device_send(const dif_spi_device_t *spi,
                                             const void *buf, size_t buf_len,
                                             size_t *bytes_sent);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_DEVICE_H_

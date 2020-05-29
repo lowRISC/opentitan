@@ -2,17 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import re
 import logging as log
-from typing import Dict, Tuple
+import re
 from collections import OrderedDict
 from enum import Enum
+from typing import Dict, Tuple
 
 from reggen.validate import check_int
 from topgen import lib
 
 IM_TYPES = ['uni', 'req_rsp']
 IM_ACTS = ['req', 'rsp', 'rcv']
+IM_VALID_TYPEACT = {'uni': ['req', 'rcv'], 'req_rsp': ['req', 'rsp']}
 IM_CONN_TYPE = ['1-to-1', '1-to-N', 'broadcast']
 
 
@@ -338,6 +339,14 @@ def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
                                                    act=obj["act"]))
         error += 1
 
+    # Check if type and act are matched
+    if error == 0:
+        if obj["act"] not in IM_VALID_TYPEACT[obj['type']]:
+            log.error("{type} and {act} of {name} are not a valid pair."
+                      "".format(type=obj['type'],
+                                act=obj['act'],
+                                name=obj['name']))
+            error += 1
     # Check 'width' field
     width = 1
     if "width" not in obj:
@@ -555,6 +564,8 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
         if obj["act"] == "rsp" and suffix == "req":
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
+        if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
+            return "1'b0"
         if obj["act"] == "rcv" and suffix == "":
             return "{package}::{struct}_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())

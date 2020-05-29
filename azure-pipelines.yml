@@ -6,6 +6,7 @@ variables:
   VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  # if you update this, update the definition in util/container/Dockerfile
   TOOLCHAIN_VERSION: 20191010-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
@@ -85,12 +86,13 @@ jobs:
         fi
       fi
     # This check is not idempotent, but checks changes to a base branch.
-    # Run it only on pull requests.
+    # Run it only on pull requests. Note that the git diff filter (ACMRTUXB) omits
+    # files that are deleted in a PR, since those break the checker script below.
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
-      changed_files="$(git diff --name-only "$fork_origin")"
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
       if [[ -n "$changed_files" ]]; then
         xargs util/fix_include_guard.py --dry-run <<< "$changed_files" | tee fix-include-guard-output
         if [[ -s fix-include-guard-output ]]; then
@@ -119,6 +121,25 @@ jobs:
     # Only run on pull requests to check new commits only
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check commit metadata
+  - bash: |
+      # Here we look for all *.vendor.hjson files in the repo to re-vendor them.
+      # We exclude the following:
+      # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
+      # - `./sw/vendor/riscv_compliance.vendor.hjson`, because it has whitespace
+      #   issues in the repository that we cannot easily solve.
+      find . \
+        -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
+        -not \( -name 'riscv_compliance.vendor.hjson' \) \
+        -name '*.vendor.hjson' \
+        | xargs -n1 util/vendor.py --verbose \
+        && git diff --exit-code
+      if [[ $? != 0 ]]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Vendored repositories not up-to-date. Run util/vendor.py to fix."
+        exit 1
+      fi
+    condition: always()
+    displayName: Check vendored directories are up-to-date
   - bash: |
       only_doc_changes=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
@@ -267,7 +288,7 @@ jobs:
         run --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_nexysvideo \
-        --ROM_INIT_FILE="$BOOTROM_VMEM"
+        --BootRomInitFile="$BOOTROM_VMEM"
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"

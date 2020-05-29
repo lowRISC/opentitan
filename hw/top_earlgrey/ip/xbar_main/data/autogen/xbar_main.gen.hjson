@@ -11,19 +11,19 @@
   clock_srcs:
   {
     clk_main_i: main
-    clk_fixed_i: fixed
+    clk_fixed_i: io
   }
   clock_group: infra
   reset: rst_main_ni
   reset_connections:
   {
     rst_main_ni: sys
-    rst_fixed_ni: sys_fixed
+    rst_fixed_ni: sys_io
   }
   clock_connections:
   {
-    clk_main_i: clk_main_infra
-    clk_fixed_i: clk_fixed_infra
+    clk_main_i: clkmgr_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_clocks.clk_io_infra
   }
   connections:
   {
@@ -46,6 +46,7 @@
       hmac
       rv_plic
       pinmux
+      padctrl
       alert_handler
       nmi_gen
     ]
@@ -60,6 +61,7 @@
       hmac
       rv_plic
       pinmux
+      padctrl
       alert_handler
       nmi_gen
     ]
@@ -184,7 +186,7 @@
         }
         {
           base_addr: 0x400A0000
-          size_byte: 0x20000
+          size_byte: 0x21000
         }
         {
           base_addr: 0x40150000
@@ -270,6 +272,23 @@
       [
         {
           base_addr: 0x40070000
+          size_byte: 0x1000
+        }
+      ]
+      pipeline_byp: "false"
+      xbar: false
+      pipeline: "true"
+    }
+    {
+      name: padctrl
+      type: device
+      clock: clk_main_i
+      reset: rst_fixed_ni
+      inst_type: padctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40160000
           size_byte: 0x1000
         }
       ]

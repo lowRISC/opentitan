@@ -1,0 +1,160 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// TODO: This module is only a draft implementation that covers most of the rstmgr
+// functoinality but is incomplete
+
+
+
+# CLKMGR register template
+#
+{
+  name: "CLKMGR",
+  clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_main_i",
+    "clk_fixed_i",
+    "clk_usb_48mhz_i",
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_main_ni"
+    "rst_fixed_ni"
+    "rst_usb_48mhz_ni"
+  ]
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+    { name: "NumGroups",
+      desc: "Number of clock groups",
+      type: "int",
+      default: "7",
+      local: "true"
+    },
+  ],
+
+  // Define rstmgr struct package
+  inter_signal_list: [
+    { struct:  "clkmgr_out",
+      type:    "uni",
+      name:    "clocks",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+
+    { struct:  "pwr_clk",
+      type:    "req_rsp",
+      name:    "pwr",
+      act:     "rsp",
+    },
+
+    { struct:  "clk_dft",
+      type:    "uni",
+      name:    "dft",
+      act:     "rcv",
+      package: "clkmgr_pkg", // This should be moved elsewhere later
+    },
+
+    { struct:  "clk_hint_status",
+      type:    "uni",
+      name:    "status",
+      act:     "rcv",
+      package: "clkmgr_pkg",
+    },
+  ],
+
+
+  registers: [
+    { name: "CLK_ENABLES",
+      desc: '''
+        Clock enable for software gateable clocks.
+        These clocks are direclty controlled by software.
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_FIXED_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_FIXED_PERI is disabled.
+            1 CLK_FIXED_PERI is enabled.
+          '''
+        }
+        {
+          bits: "1",
+          name: "CLK_USB_48MHZ_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_USB_48MHZ_PERI is disabled.
+            1 CLK_USB_48MHZ_PERI is enabled.
+          '''
+        }
+      ]
+    },
+
+    { name: "CLK_HINTS",
+      desc: '''
+        Clock hint for software gateable clocks.
+        These clocks are not fully controlled by software.
+
+        For disable, software only provides a hint, and hardware determines the final clock state based on the
+        hint and whether the block in question is idle.
+
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_MAIN_AES_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_AES can be disabled.
+            1 CLK_MAIN_AES is enabled.
+          '''
+        }
+        {
+          bits: "1",
+          name: "CLK_MAIN_HMAC_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_HMAC can be disabled.
+            1 CLK_MAIN_HMAC is enabled.
+          '''
+        }
+      ]
+    },
+
+    { name: "CLK_HINTS_STATUS",
+      desc: '''
+        Since the final state of !!CLK_HINTS is not always determined by software,
+        this register provides read feedback for the current clock state.
+
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        {
+          bits: "0",
+          name: "CLK_MAIN_AES_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_AES is disabled.
+            1 CLK_MAIN_AES is enabled.
+          '''
+        }
+        {
+          bits: "1",
+          name: "CLK_MAIN_HMAC_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_HMAC is disabled.
+            1 CLK_MAIN_HMAC is enabled.
+          '''
+        }
+      ]
+    },
+  ]
+}

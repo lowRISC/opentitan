@@ -56,7 +56,7 @@ void uart_send_uint(uint32_t n, int bits) {
 
 int uart_rcv_char(char *c) {
   size_t num_bytes = 0;
-  if (!dif_uart_rx_bytes_available(&uart0, &num_bytes)) {
+  if (dif_uart_rx_bytes_available(&uart0, &num_bytes) != kDifUartOk) {
     return -1;
   }
   if (num_bytes == 0) {
@@ -64,5 +64,9 @@ int uart_rcv_char(char *c) {
   }
   // The pointer cast from char* to uint8_t* is dangerous. This needs to be
   // revisited.
-  return dif_uart_bytes_receive(&uart0, 1, (uint8_t *)c, NULL) ? 0 : -1;
+  if (dif_uart_bytes_receive(&uart0, 1, (uint8_t *)c, NULL) != kDifUartOk) {
+    return -1;
+  }
+
+  return 0;
 }

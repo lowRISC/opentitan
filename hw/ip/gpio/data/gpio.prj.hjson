@@ -21,6 +21,7 @@
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
+        dif_stage:          "S0",
         notes:              "Rolled back to D2 as the register module is updated",
       }
     ]

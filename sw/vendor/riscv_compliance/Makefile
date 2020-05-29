@@ -50,11 +50,11 @@ else
     ifeq ($(RISCV_TARGET),riscvOVPsim)
         JOBS ?= -j8 --max-load=4
     endif
-	  ifeq ($(RISCV_TARGET),opentitan)
-			ifeq ($(OT_TARGET),verilator)
-				JOBS ?= -j4
-			endif
-		endif
+    ifeq ($(RISCV_TARGET),opentitan)
+        ifeq ($(OT_TARGET),verilator)
+            JOBS ?= -j4
+        endif
+    endif
 endif
 
 default: $(DEFAULT_TARGET)
@@ -95,4 +95,3 @@ help:
 	@echo "RISCV_ISA='$(RISCV_ISA_OPT)'"
 	@echo "RISCV_TEST='I-ADD-01'"
 	@echo "make all_variant // all combinations"
-

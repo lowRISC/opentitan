@@ -97,12 +97,12 @@ class csr_excl_item extends uvm_object;
   // print all exclusions for ease of debug (call this ideally after adding all exclusions)
   virtual function void print_exclusions(uvm_verbosity verbosity = UVM_HIGH);
     string test_names;
-    for (int i = 0; i < NUM_CSR_TESTS; i++) begin
+    for (int i = NUM_CSR_TESTS - 1; i >= 0; i--) begin
       csr_test_type_e csr_test = csr_test_type_e'(1 << i);
-      test_names = {test_names, csr_test.name(), " "};
+      test_names = {test_names, csr_test.name(),  (i > 0) ? " " : ""};
     end
     foreach (exclusions[item]) begin
-      `uvm_info(`gfn, $sformatf("CSR/field [%0s] excluded with %0s in csr_tests: {%s}={%0b}",
+      `uvm_info(`gfn, $sformatf("CSR/field [%0s] excluded with %0s in csr_tests: {%s} = {%0b}",
                                 item, exclusions[item].csr_excl_type.name(), test_names,
                                 exclusions[item].csr_test_type), verbosity)
     end

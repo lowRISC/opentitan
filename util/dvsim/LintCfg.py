@@ -50,12 +50,6 @@ class LintCfg(OneShotCfg):
         else:
             self.results_title = self.name.upper() + " Lint Results"
 
-    @staticmethod
-    def create_instance(flow_cfg_file, proj_root, args):
-        '''Create a new instance of this class as with given parameters.
-        '''
-        return LintCfg(flow_cfg_file, proj_root, args)
-
     def gen_results_summary(self):
         '''
         Gathers the aggregated results from all sub configs

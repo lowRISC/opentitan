@@ -87,10 +87,12 @@ module prim_ram_2p_async_adv #(
 
   if (MemT == "REGISTER") begin : gen_regmem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth),
       // force register implementation for all targets
-      .Impl(prim_pkg::ImplGeneric)
+      .Impl            (prim_pkg::ImplGeneric),
+
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth)
     ) u_mem (
       .clk_a_i    (clk_a_i),
       .clk_b_i    (clk_b_i),
@@ -99,19 +101,22 @@ module prim_ram_2p_async_adv #(
       .a_write_i  (a_write_q),
       .a_addr_i   (a_addr_q),
       .a_wdata_i  (a_wdata_q),
+      .a_wmask_i  ({TotalWidth{1'b1}}),
       .a_rdata_o  (a_rdata_sram),
 
       .b_req_i    (b_req_q),
       .b_write_i  (b_write_q),
       .b_addr_i   (b_addr_q),
       .b_wdata_i  (b_wdata_q),
+      .b_wmask_i  ({TotalWidth{1'b1}}),
       .b_rdata_o  (b_rdata_sram)
     );
   // end else if (TotalWidth == aa && Depth == yy) begin
   end else if (MemT == "SRAM") begin : gen_srammem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth)
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth)
     ) u_mem (
       .clk_a_i    (clk_a_i),
       .clk_b_i    (clk_b_i),
@@ -120,12 +125,14 @@ module prim_ram_2p_async_adv #(
       .a_write_i  (a_write_q),
       .a_addr_i   (a_addr_q),
       .a_wdata_i  (a_wdata_q),
+      .a_wmask_i  ({TotalWidth{1'b1}}),
       .a_rdata_o  (a_rdata_sram),
 
       .b_req_i    (b_req_q),
       .b_write_i  (b_write_q),
       .b_addr_i   (b_addr_q),
       .b_wdata_i  (b_wdata_q),
+      .b_wmask_i  ({TotalWidth{1'b1}}),
       .b_rdata_o  (b_rdata_sram)
     );
   end

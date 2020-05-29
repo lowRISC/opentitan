@@ -16,7 +16,6 @@ class tl_monitor extends dv_base_monitor#(
 
   tl_seq_item    pending_a_req[$];
   string         agent_name;
-  bit            objection_raised;
   uvm_phase      run_phase_h;
 
   uvm_analysis_port #(tl_seq_item) d_chan_port;
@@ -46,7 +45,7 @@ class tl_monitor extends dv_base_monitor#(
     @(posedge cfg.vif.rst_n);
   endtask : wait_for_reset_done
 
-  // on reset flush pending request and drop objection
+  // on reset flush pending request
   virtual task reset_thread();
     forever begin
       @(negedge cfg.vif.rst_n);
@@ -54,10 +53,6 @@ class tl_monitor extends dv_base_monitor#(
       if (cfg.en_cov) cov.m_pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
       @(posedge cfg.vif.rst_n);
       pending_a_req.delete();
-      if (objection_raised) begin
-        run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
-        objection_raised = 1'b0;
-      end
     end
   endtask : reset_thread
 
@@ -83,10 +78,6 @@ class tl_monitor extends dv_base_monitor#(
                                         pending_a_req.size()))
           end
           if (cfg.en_cov) cov.m_max_outstanding_cg.sample(pending_a_req.size());
-        end
-        if (!objection_raised) begin
-          run_phase_h.raise_objection(this, $sformatf("%s objection raised", `gfn));
-          objection_raised = 1'b1;
         end
       end
       @(cfg.vif.mon_cb);
@@ -116,10 +107,6 @@ class tl_monitor extends dv_base_monitor#(
                       agent_name, rsp.convert2string()), UVM_HIGH)
             d_chan_port.write(rsp);
             pending_a_req.delete(i);
-            if (pending_a_req.size() == 0) begin
-              run_phase_h.drop_objection(this, $sformatf("%s objection dropped", `gfn));
-              objection_raised = 1'b0;
-            end
             req_found = 1'b1;
             break;
           end
@@ -131,6 +118,15 @@ class tl_monitor extends dv_base_monitor#(
       end
     end
   endtask : d_channel_thread
+
+  // update ok_to_end to prevent sim finish when there is any pending item
+  virtual task monitor_ready_to_end();
+    forever begin
+      ok_to_end = (pending_a_req.size() == 0);
+      if (ok_to_end) wait(pending_a_req.size() > 0);
+      else           wait(pending_a_req.size() == 0);
+    end
+  endtask
 
   virtual function void report_phase(uvm_phase phase);
     if (pending_a_req.size() > 0) begin

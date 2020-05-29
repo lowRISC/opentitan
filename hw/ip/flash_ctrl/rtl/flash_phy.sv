@@ -122,7 +122,9 @@ module flash_phy import flash_ctrl_pkg::*; (
       .clk_i,
       .rst_ni,
       .req_i(flash_ctrl_i.req & (ctrl_bank_sel == bank)),
-      .host_req_i(host_req_i & (host_bank_sel == bank)),
+      // host request must be suppressed if response fifo cannot hold more
+      // otherwise the flash_phy_core and flash_phy will get out of sync
+      .host_req_i(host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank]),
       .host_addr_i(host_addr_i[0 +: BankAddrW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),

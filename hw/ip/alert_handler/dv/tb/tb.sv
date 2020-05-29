@@ -14,6 +14,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
   wire entropy;
@@ -21,10 +22,12 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(NUM_MAX_ESC_SEV) esc_en_if(esc_en);
   pins_if #(1) entropy_if(entropy);
-  pins_if #(1) devmode_if();
+  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
+  alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
+  alert_esc_probe_if probe_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
 
   // dut signals
   prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0] alert_rx;
@@ -33,7 +36,6 @@ module tb;
   prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0] esc_rx;
   prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0] esc_tx;
 
-  alert_esc_if alert_host_if[alert_pkg::NAlerts](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_if
     assign alert_tx[k].alert_p = alert_host_if[k].alert_tx.alert_p;
     assign alert_tx[k].alert_n = alert_host_if[k].alert_tx.alert_n;
@@ -47,15 +49,18 @@ module tb;
     end
   end
 
-  alert_esc_if esc_device_if[alert_pkg::N_ESC_SEV](.clk(clk), .rst_n(rst_n));
   for (genvar k = 0; k < alert_pkg::N_ESC_SEV; k++) begin : gen_esc_if
     assign esc_rx[k].resp_p = esc_device_if[k].esc_rx.resp_p;
     assign esc_rx[k].resp_n = esc_device_if[k].esc_rx.resp_n;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
     assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
+    // TODO: add assertions to check the probed signal
+    assign probe_if[k].esc_en = alert_handler.esc_sig_en[k];
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
                                                 "vif", esc_device_if[k]);
+      uvm_config_db#(virtual alert_esc_probe_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
+                                                "probe_vif", probe_if[k]);
     end
   end
   // main dut
@@ -81,7 +86,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(esc_en_vif)::set(null, "*.env", "esc_en_vif", esc_en_if);
     uvm_config_db#(entropy_vif)::set(null, "*.env", "entropy_vif", entropy_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);

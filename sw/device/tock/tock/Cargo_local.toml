@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "tock"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[dependencies]
+components = { path = "../tock_local/boards/components" }
+rv32i = { path = "../tock_local/arch/rv32i" }
+capsules = { path = "../tock_local/capsules" }
+kernel = { path = "../tock_local/kernel" }
+tock_rt0 = { path = "../tock_local/libraries/tock-rt0" }

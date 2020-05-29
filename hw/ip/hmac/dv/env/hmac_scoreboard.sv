@@ -34,7 +34,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit     do_cycle_accurate_check = 1'b1;
     bit     write                   = item.is_write();
     string  csr_name;
-    uvm_reg_addr_t  csr_addr         = get_normalized_addr(item.a_addr);
+    bit [TL_AW-1:0] addr_mask       = cfg.csr_addr_map_size - 1;
+    uvm_reg_addr_t  csr_addr        = get_normalized_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
@@ -42,21 +43,22 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       `DV_CHECK_NE_FATAL(csr, null)
       csr_name = csr.get_name();
     // if addr inside msg fifo, no ral model
-    end else if (!(item.a_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]})) begin
+    end else if (!((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE :
+                                                      HMAC_MSG_FIFO_LAST_ADDR]})) begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
     // if incoming access is a write to a valid csr or mem, then update right away on addr channel
     if (write && channel == AddrChannel) begin
       // push the msg into msg_fifo
-      if (item.a_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
+      if ((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
         if (!hmac_start) begin
           update_err_intr_code(SwPushMsgWhenIdle);
         end else if (!sha_en) begin
           update_err_intr_code(SwPushMsgWhenShaDisabled);
         end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
-          bit [7:0] msg[];
+          bit [7:0] msg[$];
           {<<byte{bytes}} = item.a_data;
           // do endian swap in the word according to the mask, then push to the queue of msgs
           foreach (item.a_mask[i]) begin

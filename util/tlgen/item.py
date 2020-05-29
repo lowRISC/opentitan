@@ -19,8 +19,8 @@ class Edge:
         return "U(%s) D(%s)" % (self.us.name, self.ds.name)
 
 
-#Edges = List[Edge]
-#Clocks = List[str]  # If length is more than one, should be exactly two
+# Edges = List[Edge]
+# Clocks = List[str]  # If length is more than one, should be exactly two
 
 # [UpstreamClock, DownstreamClock]
 
@@ -47,8 +47,8 @@ class Node:
     # If NodeType is Socket out from 1:N then address steering is used
     # But this value is also propagated up to a Host from multiple Devices
     # Device Node should have address_from, address_to
-    #address_from = 0  #: int
-    #address_to = 0  #: int
+    # address_from = 0  #: int
+    # address_to = 0  #: int
     addr_range = []
 
     us = []  # Edges  # Number of Ports depends on the NodeType

@@ -11,15 +11,6 @@ filesets:
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
 
-  files_verilator_waiver:
-    depend:
-      - lowrisc:ip:pinmux_component
-
-  files_ascentlint_waiver:
-    depend:
-      - lowrisc:ip:pinmux_component
-
-
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -29,8 +20,6 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: pinmux
 

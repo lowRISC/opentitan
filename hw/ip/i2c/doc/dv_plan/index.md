@@ -11,7 +11,7 @@ title: "I2C DV Plan"
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/hw_stages.md" >}})
+  * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/i2c/dv/latest/results.html)
 
 ## Design features
@@ -54,7 +54,7 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into I2C device.
 
 ### I2C agent
-[describe or provide link to I2C agent documentation]
+I2C agent is configured to work device mode and implemented as [reactive slave](https://www.verilab.com/files/mastering_reactive_slaves.pdf)
 
 ### UVM RAL Model
 The I2C RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.

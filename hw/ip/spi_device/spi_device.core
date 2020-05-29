@@ -39,6 +39,12 @@ filesets:
       - lint/spi_device.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
   files_formal:
     files:
       - dv/tb/spi_device_bind.sv
@@ -53,9 +59,10 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
-      - target_formal   ? (files_formal)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - target_formal    ? (files_formal)
       - files_rtl
     toplevel: spi_device
 

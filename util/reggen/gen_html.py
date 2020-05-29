@@ -7,7 +7,6 @@ Generate HTML documentation from validated register Hjson tree
 
 import logging as log
 import re
-import sys
 
 
 def genout(outfile, msg):
@@ -108,7 +107,8 @@ def gen_html_reg_pic(outfile, reg, width):
             gen_tbl_row(outfile, fieldmsb, hdrbits, True)
 
         namelen = len(fname)
-        if namelen == 0 or fname == ' ': fname = "&nbsp;"
+        if namelen == 0 or fname == ' ':
+            fname = "&nbsp;"
         if (namelen > bsize * fieldwidth):
             usestyle = (" style=\"font-size:" + str(
                 (bsize * 100 * fieldwidth) / namelen) + "%\"")
@@ -156,7 +156,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
 
     rname = reg['name']
     offset = reg['genoffset']
-    #in a multireg with multiple regs give anchor with base register name
+    # in a multireg with multiple regs give anchor with base register name
     if 'genbasebits' in reg and rname[-1] == '0':
         genout(outfile, "<div id=\"Reg_" + rname[:-1].lower() + "\"></div>\n")
     regwen_string = ''
@@ -169,7 +169,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         desc_expand(reg['desc'], rnames) + "</div>" + "<div>Reset default = " +
         hex(reg['genresval']) + ", mask " + hex(reg['genresmask']) +
         regwen_string + "</div></th></tr>\n")
-    if toc != None:
+    if toc is not None:
         toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
     gen_html_reg_pic(outfile, reg, width)
@@ -185,7 +185,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
     mergebase = -1
     for field in reg['fields']:
         fcount += 1
-        if not 'name' in field:
+        if 'name' not in field:
             fname = "field " + str(fcount)
         else:
             fname = field['name']
@@ -229,7 +229,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         if 'enum' in field:
             genout(outfile, "    <table>")
             for enum in field['enum']:
-                if (not 'name' in enum):
+                if 'name' not in enum:
                     ename = "enum for " + fname + " in " + rname
                 else:
                     ename = enum['name']
@@ -301,7 +301,7 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
         outfile, '<tr><td class="regde">' + desc_expand(win['desc'], rnames) +
         '</td></tr>')
     genout(outfile, "</table>\n<br><br>\n")
-    if toc != None:
+    if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
 
 

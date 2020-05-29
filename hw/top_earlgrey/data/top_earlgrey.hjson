@@ -9,18 +9,36 @@
   datawidth: "32",  # 32-bit datawidth
 
   // This is the clock data strcture of the design.
+  // The hier path refers to the clock reference path (struct / port)
+  //   - The top/ext desgination follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
 
+    hier_paths: {
+      top: "clkmgr_clocks.", // top level is a struct
+      ext: "",               // ext is a port of the clock name
+    },
+
+    // Clock Source attributes
+    // name: Name of group.
+    // aon:  Whether the clock is free running all the time.
+    //       If it is, the clock is not hanlded by clkmgr.
+    // freq: Absolute frequency of clk in Hz
+
     srcs: [
-      { name: "main",      freq: "100000000" }
-      { name: "fixed",     freq: "100000000" }
-      { name: "usb_48mhz", freq: "48000000" }
+      { name: "main", aon: "no",  freq: "100000000" }
+      { name: "io",   aon: "no",  freq: "100000000" }
+      { name: "usb",  aon: "no",  freq: "48000000" }
+      { name: "aon",  aon: "yes", freq: "200000" }
     ],
 
     // Clock Group attributes
     // name: name of group.
+    //
+    // src: The hierarchical source of the clock
+    // "ext"  - clock is supplied from a port of the top module
+    // "top"  - clock is supplied from a net inside the top module
     //
     // sw_cfg: whether software is allowed to gate the clock
     // "no"   - software is not allowed to gate clocks
@@ -33,18 +51,19 @@
     // "no"   - the group is controlled as one single unit
     //
     // The powerup and proc groups are unique.
-    // The powerup group of clocks do not need through the clock
+    // The powerup group of clocks do not feed through the clock
     // controller as they manage clock controller behavior
     // The proc group is not peripheral, and direclty hardwired
 
     groups: [
-      { name: "powerup", sw_cg: "no"                   }
-      { name: "trans",   sw_cg: "hint", unique: "yes", }
-      { name: "infra",   sw_cg: "no",                  }
-      { name: "secure",  sw_cg: "no"                   }
-      { name: "peri",    sw_cg: "yes",  unique: "no"   }
-      { name: "timers",  sw_cg: "no"                   }
+      { name: "powerup", src:"ext", sw_cg: "no"                   }
+      { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
+      { name: "infra",   src:"top", sw_cg: "no",                  }
+      { name: "secure",  src:"top", sw_cg: "no"                   }
+      { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   }
+      { name: "timers",  src:"top", sw_cg: "no"                   }
       { name: "proc",
+        src: "no"
         sw_cg: "no"
         unique: "no"
         clocks: {
@@ -56,24 +75,30 @@
 
   // Reset attributes
   // name: name of reset.
-  // If type is "gen", then real name is `name`_rst_n
-  // If type is "por", then real name is just `name`
   //
-  // root: The parent reset.
-  // If type is "por", there is no root, since it is the root
+  // type: the reset type [ext, top]
+  // ext: the reset is coming in from the ports, external to earlgrey
+  // top: the reset is coming from top level, the rstmgr output struct
+  //
+  // root: The parent reset
+  // If type is "ext", there is no root, since it is external
   //
   // clk:  related clock domain for synchronous release
   // If type is "por", there is not related clock, since it is
   // likely external or generated from a voltage comparator
   //
   resets: [
-    { name: "rst_ni",     type: "por" }
-    { name: "por",        type: "gen",  root: "lc",  clk: "fixed" }
-    { name: "lc",         type: "gen",  root: "lc",  clk: "fixed" }
-    { name: "sys",        type: "gen",  root: "sys", clk: "main"  }
-    { name: "sys_fixed",  type: "gen",  root: "sys", clk: "fixed" }
-    { name: "spi_device", type: "gen",  root: "sys", clk: "fixed", sw: 1}
-    { name: "usb",        type: "gen",  root: "sys", clk: "usb",   sw: 1}
+    { name: "rst_ni",     type: "ext"                                      }
+    { name: "por_aon",    type: "top",  root: "rst_ni",  clk: "aon"        }
+    { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
+    { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
+    { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
+    { name: "lc",         type: "top",  root: "lc",      clk: "io"         }
+    { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
+    { name: "sys_io",     type: "top",  root: "sys",     clk: "io"         }
+    { name: "sys_aon",    type: "top",  root: "sys",     clk: "io"         }
+    { name: "spi_device", type: "top",  root: "sys",     clk: "io",  sw: 1 }
+    { name: "usb",        type: "top",  root: "sys",     clk: "usb", sw: 1 }
   ]
 
   // Number of cores: used in rv_plic and timer
@@ -90,26 +115,26 @@
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
 
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
 
       base_addr: "0x40000000",
     },
     { name: "gpio",
       type: "gpio",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x40010000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40020000",
@@ -123,9 +148,9 @@
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_srcs: {clk_i: "fixed"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_fixed"},
+      reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x40080000",
     },
     { name: "aes",
@@ -153,10 +178,19 @@
     { name: "pinmux",
       type: "pinmux",
       clock: "main",
+      clock_srcs: {clk_i: "main", clk_aon_i: "io"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_io"},
+      base_addr: "0x40070000",
+      generated: "true"
+    },
+    { name: "padctrl",
+      type: "padctrl",
+      clock: "main",
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40070000",
+      base_addr: "0x40160000",
       generated: "true"
     },
     { name: "alert_handler",
@@ -174,20 +208,25 @@
     }
     { name: "pwrmgr",
       type: "pwrmgr",
-      clock: "main",
-      clock_srcs: {clk_i: "fixed", clk_slow_i: "fixed"},
+      clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por", rst_slow_ni: "por"},
+      reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
       base_addr: "0x400A0000",
-      generated: "true"
+
     },
     { name: "rstmgr",
       type: "rstmgr",
-      clock: "main",
-      clock_srcs: {clk_i: "fixed", clk_main_i: "main", clk_fixed_i: "fixed", clk_usb_i: "usb_48mhz"},
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
+    },
+    { name: "clkmgr",
+      type: "clkmgr",
+      clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
+      clock_group: "powerup",
+      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"},
+      base_addr: "0x400C0000",
       generated: "true"
     },
     // dummy module to capture the alert handler escalation signals
@@ -201,9 +240,9 @@
     }
     { name: "usbdev",
       type: "usbdev",
-      clock_srcs: {clk_i: "fixed", clk_usb_48mhz_i: "usb_48mhz"},
+      clock_srcs: {clk_i: "io", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_fixed", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
   ]
@@ -255,12 +294,13 @@
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu'],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks'],
 
     // ext is to create port in the top.
     'external': [],
@@ -273,16 +313,16 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock_srcs: {clk_main_i: "main", clk_fixed_i: "fixed"},
+      clock_srcs: {clk_main_i: "main", clk_fixed_i: "io"},
       clock_group: "infra",
       reset: "sys",
-      reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_fixed"}
+      reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_io"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "fixed"},
+      clock_srcs: {clk_peri_i: "io"},
       clock_group: "infra",
-      reset: "sys_fixed",
-      reset_connections: {rst_peri_ni: "sys_fixed"},
+      reset: "sys_io",
+      reset_connections: {rst_peri_ni: "sys_io"},
     }
   ],
 
@@ -327,7 +367,7 @@
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
-      { name: "usbdev", pad: ["ChC[0..7]"]},
+      { name: "usbdev", pad: ["ChC[0..8]"]},
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
@@ -341,6 +381,14 @@
     //  to 0, and the output/OE signals will be floating (or connected to
     //  unused signal). `rv_plic` is special module, shouldn't be defined here.
     nc_modules: ["rv_timer", "hmac"]
+
+    // Number of wakeup detectors to instantiate, and bitwidth for the wakeup
+    // counters. Note that all MIO pad inputs are connected to the wakeup detectors,
+    // and there is no way to disable this. DIO inputs on the other hand are by
+    // default not connected.
+    // TODO: need to add mechanism to mark them as wakeup pins.
+    num_wkup_detect: 8
+    wkup_cnt_width:  8
 
     // Below fields are generated.
     // inputs: [

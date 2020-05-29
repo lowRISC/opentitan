@@ -122,8 +122,9 @@
         { bits: "31:0", name: "data_out", desc: "Output Data" }
       ]
       tags: [// Updated by the HW.
+             // Updates based on writes to other regs.
              // No reset but sync clear with random data.
-             // Exclude from init and write checks.
+             // Exclude from init and write-read checks.
              "excl:CsrAllTests:CsrExclCheck"]
       }
     },
@@ -176,7 +177,9 @@
         '''
       }
     ]
-    tags: [// Updated by hw. Exclude from write-checks.
+    tags: [// Updated by the HW.
+           // Updates based on writes to this reg (reset test possible).
+           // Exclude from write-read checks.
            "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   { name: "TRIGGER",
@@ -187,6 +190,12 @@
     '''
     swaccess: "wo",
     hwaccess: "hrw",
+    # Tag info (CSR test exclusions):
+    #  Updated by the HW.
+    #  Updates based on writes to this reg.
+    #  -> Exclude all fields from write-read checks.
+    #  Upon reset, the non-zero values trigger internal operations that clear this reg to zero.
+    #  -> Exclude fields with non-zero reset value from init and write-read checks (also in reset test).
     fields: [
       { bits: "0",
         name: "START",
@@ -194,6 +203,7 @@
           Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
           This trigger is ignored if MANUAL_OPERATION=0 (see Control Register).
         '''
+        tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
       { bits: "1",
         name: "KEY_CLEAR",
@@ -202,6 +212,7 @@
           Keep current values in Initial Key, internal Full Key and Decryption Key registers (0)
           or clear those registers with pseudo-random data (1).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "2",
         name: "IV_CLEAR",
@@ -209,6 +220,7 @@
         desc:  '''
           Keep current values in IV registers (0) or clear those registers with pseudo-random data (1).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "3",
         name: "DATA_IN_CLEAR",
@@ -216,6 +228,7 @@
         desc:  '''
           Keep current values in input registers (0) or clear those registers with pseudo-random data (1).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "4",
         name: "DATA_OUT_CLEAR",
@@ -223,6 +236,7 @@
         desc:  '''
           Keep current values in output registers (0) or clear those registers with pseudo-random data (1).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "5",
         name: "PRNG_RESEED",
@@ -230,17 +244,20 @@
         desc:  '''
           Keep continuing with the current internal state of the internal pseudo-random number generator (0) or perform a reseed of the internal state from the connected entropy source (1).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
     ]
-    tags: [// Updated by the HW.
-           // Reset value cleared to zero.
-           // Exclude from init and write checks.
-           "excl:CsrAllTests:CsrExclCheck"]
   },
   { name: "STATUS",
     desc: "Status Register",
     swaccess: "ro",
     hwaccess: "hwo",
+    # Tag info (CSR test exclusions):
+    #  Updated by the HW.
+    #  Updates based on writes to other regs.
+    #  -> Exclude all fields from init and write-read checks.
+    #  Upon reset, internal operations are triggered that temporarily change the IDLE field.
+    #  -> Exclude IDLE field from init and write-read checks (also in reset test).
     fields: [
       { bits: "0",
         name: "IDLE",
@@ -248,6 +265,7 @@
         desc:  '''
           The AES unit is idle (1) or busy (0).
         '''
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "1",
         name: "STALL",
@@ -256,12 +274,14 @@
           output data that must be read by the processor before the AES unit can
           overwrite this data.
         '''
+        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "2",
         name: "OUTPUT_VALID",
         desc:  '''
           The AES unit has no valid output (0) or has valid output data (1).
         '''
+        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "3",
         name: "INPUT_READY",
@@ -271,10 +291,9 @@
           the present values in the DATA_IN registers have not yet been loaded into the
           module (0).
         '''
+        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
     ]
-    tags: [// Updated by hw. Exclude from write-checks.
-           "excl:CsrNonInitTests:CsrExclWriteCheck"]
   },
   ],
 }

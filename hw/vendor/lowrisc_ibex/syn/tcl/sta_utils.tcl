@@ -31,6 +31,13 @@ proc setup_path_groups {input_list output_list path_group_list_name} {
   lappend path_group_list "reg2reg"
 }
 
+proc setup_i2o_pathgroup {input_name output_name group_name} {
+  set output_ports [get_ports $output_name]
+  set input_ports [get_ports $input_name]
+
+  group_path -name $group_name -to $output_ports -from $input_ports
+}
+
 proc timing_report {path_group rpt_out path_count} {
   set sta_report_out_filename "${rpt_out}.rpt"
   set sta_csv_out_filename "${rpt_out}.csv.rpt"

@@ -111,8 +111,8 @@ class riscv_instr extends uvm_object;
       riscv_instr instr_inst;
       if (instr_name inside {unsupported_instr}) continue;
       instr_inst = create_instr(instr_name);
-      if (!instr_inst.is_supported(cfg)) continue;
       instr_template[instr_name] = instr_inst;
+      if (!instr_inst.is_supported(cfg)) continue;
       // C_JAL is RV32C only instruction
       if ((XLEN != 32) && (instr_name == C_JAL)) continue;
       if ((SP inside {cfg.reserved_regs}) && (instr_name inside {C_ADDI16SP})) begin
@@ -181,7 +181,8 @@ class riscv_instr extends uvm_object;
     if (!cfg.no_ebreak) begin
       basic_instr = {basic_instr, EBREAK};
       foreach (riscv_instr_pkg::supported_isa[i]) begin
-        if (RV32C inside {riscv_instr_pkg::supported_isa[i]}) begin
+        if (RV32C inside {riscv_instr_pkg::supported_isa[i]} &&
+            !cfg.disable_compressed_instr) begin
           basic_instr = {basic_instr, C_EBREAK};
           break;
         end
@@ -647,5 +648,7 @@ class riscv_instr extends uvm_object;
   virtual function void update_imm_str();
     imm_str = $sformatf("%0d", $signed(imm));
   endfunction
+
+  `include "isa/riscv_instr_cov.svh"
 
 endclass

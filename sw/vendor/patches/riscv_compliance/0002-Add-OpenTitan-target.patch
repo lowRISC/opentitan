@@ -1,18 +1,19 @@
-From 75061e3a20f7c4e1a4768ea3f455e106efec7b19 Mon Sep 17 00:00:00 2001
+From 3cafdf492bf9e29e9349ca44ae448b5d2359cd06 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
-Subject: [PATCH 2/5] Add OpenTitan target
+Subject: [PATCH 2/3] Add OpenTitan target
 
 ---
- riscv-target/opentitan/README.md              | 144 ++++++++++++++++++
+ Makefile                                      |   6 +-
+ riscv-target/opentitan/README.md              | 160 ++++++++++++++++++
  riscv-target/opentitan/compliance_io.h        |  22 +++
- riscv-target/opentitan/compliance_test.h      |  35 +++++
- .../opentitan/device/rv32imc/Makefile.include |  79 ++++++++++
+ riscv-target/opentitan/compliance_test.h      |  35 ++++
+ .../opentitan/device/rv32imc/Makefile.include |  79 +++++++++
  .../opentitan/device/rv32imc/isa.yaml         |  49 ++++++
  riscv-target/opentitan/device/rv32imc/main.c  |  39 +++++
  .../opentitan/device/rv32imc/platform.yaml    |  10 ++
- .../opentitan/device/rv32imc/run_rvc_test.S   |  85 +++++++++++
- 8 files changed, 463 insertions(+)
+ .../opentitan/device/rv32imc/run_rvc_test.S   |  85 ++++++++++
+ 9 files changed, 484 insertions(+), 1 deletion(-)
  create mode 100644 riscv-target/opentitan/README.md
  create mode 100644 riscv-target/opentitan/compliance_io.h
  create mode 100644 riscv-target/opentitan/compliance_test.h
@@ -22,12 +23,33 @@ Subject: [PATCH 2/5] Add OpenTitan target
  create mode 100644 riscv-target/opentitan/device/rv32imc/platform.yaml
  create mode 100644 riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 
+diff --git a/Makefile b/Makefile
+index 25557c1..27433ed 100644
+--- a/Makefile
++++ b/Makefile
+@@ -50,6 +50,11 @@ else
+     ifeq ($(RISCV_TARGET),riscvOVPsim)
+         JOBS ?= -j8 --max-load=4
+     endif
++    ifeq ($(RISCV_TARGET),opentitan)
++        ifeq ($(OT_TARGET),verilator)
++            JOBS ?= -j4
++        endif
++    endif
+ endif
+ 
+ default: $(DEFAULT_TARGET)
+@@ -90,4 +95,3 @@ help:
+ 	@echo "RISCV_ISA='$(RISCV_ISA_OPT)'"
+ 	@echo "RISCV_TEST='I-ADD-01'"
+ 	@echo "make all_variant // all combinations"
+-
 diff --git a/riscv-target/opentitan/README.md b/riscv-target/opentitan/README.md
 new file mode 100644
-index 0000000..6823fe2
+index 0000000..71baa3c
 --- /dev/null
 +++ b/riscv-target/opentitan/README.md
-@@ -0,0 +1,144 @@
+@@ -0,0 +1,160 @@
 +
 +# Overview
 +The RISC-V compliance test can be run on either OpenTitan FPGA or Verilator.
@@ -161,6 +183,22 @@ index 0000000..6823fe2
 +$ rm -rf ./work
 +```
 +
++## Parallel runs
++When running against the `verilator` target parallel make jobs are used (via
++passing `-j4` to make internally).  Parallel runs can be disabled by passing
++`PARALLEL=0` to the `make` command or the `-j` used can be altered with the
++`JOBS` argument.
++
++Disable parallel runs:
++```console
++$ make RISCV_ISA=rv32i PARALLEL=0
++```
++
++Use a different `-j` parameter:
++```console
++$ make RISCV_ISA=rv32i JOBS=-j8
++```
++
 +## Removed/Broken Tests
 +A small number of tests are not run for OpenTitan riscv_compliance as they fail
 +due to flaws in the compliance test suite rather than Ibex/OpenTitan itself (see
@@ -243,7 +281,7 @@ index 0000000..978d578
 +#endif
 diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
 new file mode 100644
-index 0000000..5ba548a
+index 0000000..dba8732
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
 @@ -0,0 +1,79 @@
@@ -254,8 +292,8 @@ index 0000000..5ba548a
 +OPENTITAN     = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
 +OT_SW         = $(ROOTDIR)/../../device
 +OT_ROOT       = $(OT_SW)/../../
-+OT_BIN			 ?= $(OT_ROOT)/build-bin
-+OT_BUILD			= $(OT_ROOT)/build-out
++OT_BIN       ?= $(OT_ROOT)/build-bin
++OT_BUILD      = $(OT_ROOT)/build-out
 +OT_TOOLS     ?= /tools/riscv/bin
 +OT_FPGA_UART ?=
 +OT_TARGET    ?= fpga
@@ -264,22 +302,22 @@ index 0000000..5ba548a
 +TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 +
 +ifeq ($(OT_TARGET),fpga)
-+	CARG =
-+	MAKEARG =
-+	PYTEST_OPT = --fpga_uart $(OT_FPGA_UART) --spiflash $(OT_BIN)/sw/host/spiflash/spiflash \
-+		--test_bin $(<).bin
-+	OT_SW_TARGET = fpga_nexysvideo
++    CARG =
++    MAKEARG =
++    PYTEST_OPT = --fpga_uart $(OT_FPGA_UART) --spiflash $(OT_BIN)/sw/host/spiflash/spiflash \
++        --test_bin $(<).bin
++    OT_SW_TARGET = fpga_nexysvideo
 +else
-+	CARG = -DSIMULATION=1
-+	MAKEARG = SIM=1
-+	# Verilator can be run in parallel mode so alter log output to prepend with
-+	# test name, also increase uart_timeout as with parallel runs on CI individual
-+	# test execution can take greater than 60 seconds.
-+	PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<).vmem \
-+		--rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.vmem \
-+		--log-cli-format "$(notdir $(basename $(<))): %(message)s" --log-cli-level DEBUG \
-+		--uart_timeout 240
-+	OT_SW_TARGET = sim_verilator
++    CARG = -DSIMULATION=1
++    MAKEARG = SIM=1
++    # Verilator can be run in parallel mode so alter log output to prepend with
++    # test name, also increase uart_timeout as with parallel runs on CI individual
++    # test execution can take greater than 60 seconds.
++    PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<) \
++        --rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf \
++        --log-cli-format "$(notdir $(basename $(<))): %(message)s" --log-cli-level DEBUG \
++        --uart_timeout 240
++    OT_SW_TARGET = sim_verilator
 +endif
 +
 +COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_SW_TARGET)
@@ -290,7 +328,7 @@ index 0000000..5ba548a
 +# Parse the resulting log for the output signatures
 +# Convert all signatures to lower case since the reference is in all lower case
 +RUN_TARGET=\
-+        pytest -s -v $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
++    pytest -s -v $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
 +        $(PYTEST_OPT) \
 +        --log $(<).uart.log; \
 +        grep -o 'SIG: [a-zA-Z0-9_]*' $(<).uart.log | sed 's/SIG: //' \
@@ -310,22 +348,22 @@ index 0000000..5ba548a
 +	$$(RISCV_GCC) $(1) $$(RISCV_GCC_OPTS) \
 +		-I$(ROOTDIR)/riscv-test-env/ \
 +		-I$(ROOTDIR)/riscv-test-env/p/ \
-+                -I$(OT_ROOT) \
++		-I$(OT_ROOT) \
 +		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
 +		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
-+		$(DEFINES) -T$(LDSCRIPT) $$< \
-+                $(OPENTITAN)/main.c \
-+                $(OPENTITAN)/run_rvc_test.S \
-+							  $(OT_ROOT)/sw/device/lib/irq_vectors.S \
-+								$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
-+                -L$(OT_BIN)/sw/device/riscv_compliance_support \
-+								-l$(COMPLIANCE_LIB) \
++		$(DEFINES) \
++		-L$(OT_ROOT) -T$(LDSCRIPT) $$< \
++		$(OPENTITAN)/main.c \
++		$(OPENTITAN)/run_rvc_test.S \
++		$(OT_ROOT)/sw/device/exts/common/ibex_interrupt_vectors.S \
++		$(OT_ROOT)/sw/device/exts/common/flash_crt.S \
++		-L$(OT_BIN)/sw/device/riscv_compliance_support \
++		-l$(COMPLIANCE_LIB) \
 +		-o $$(@); \
-+        $$(RISCV_OBJDUMP) -SD $$(@) > $$(@).objdump; \
-+        $$(RISCV_READELF) -a $$(@) > $$(@).readelf; \
-+        $$(RISCV_NM) $$(@) > $$(@).nm; \
-+        $$(RISCV_OBJCOPY) -O binary $$(@) $$(@).bin; \
-+        srec_cat $$(@).bin -binary -offset 0x0000 -byte-swap 4 -o $$(@).vmem -vmem
++	$$(RISCV_OBJDUMP) -SD $$(@) > $$(@).objdump; \
++	$$(RISCV_READELF) -a $$(@) > $$(@).readelf; \
++	$$(RISCV_NM) $$(@) > $$(@).nm; \
++	$$(RISCV_OBJCOPY) -O binary $$(@) $$(@).bin;
 diff --git a/riscv-target/opentitan/device/rv32imc/isa.yaml b/riscv-target/opentitan/device/rv32imc/isa.yaml
 new file mode 100644
 index 0000000..c526fec
@@ -444,7 +482,7 @@ index 0000000..7d547d9
 +  address: 0x80000080 # boot address + 0x80
 diff --git a/riscv-target/opentitan/device/rv32imc/run_rvc_test.S b/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 new file mode 100644
-index 0000000..aef6a23
+index 0000000..1b1b5c7
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 @@ -0,0 +1,85 @@
@@ -532,7 +570,7 @@ index 0000000..aef6a23
 +  lw gp,   8(t0)
 +
 +  // jump to the handler from the OT library
-+  j _vectors_start
++  j crt_interrupt_vector
 -- 
-2.17.1
+2.26.2
 

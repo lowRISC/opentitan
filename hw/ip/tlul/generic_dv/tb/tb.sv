@@ -10,6 +10,8 @@ module tb;
 
 
   wire clk, rst_n;
+  // reference clock for scb/seq and this clock isn't connected to any design clock
+  // TODO, reset is the combined all the resets. Re-visit this if partial reset is needed
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
 
   // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core

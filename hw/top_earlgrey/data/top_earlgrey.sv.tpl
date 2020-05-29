@@ -6,10 +6,14 @@
 import re
 import topgen.lib as lib
 
-num_mio_input = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"]])
-num_mio_output = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["outputs"]])
-num_mio_inout = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["inouts"]])
+num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
+num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
+num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
+num_mio = top["pinmux"]["num_mio"]
 
+num_dio_inputs = sum([x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
+num_dio_outputs = sum([x["width"] if x["type"] == "output" else 0 for x in top["pinmux"]["dio"]])
+num_dio_inouts = sum([x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]])
 num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
 
 num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
@@ -21,47 +25,55 @@ max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["in
 max_sigwidth = len("{}".format(max_sigwidth))
 
 clks_attr = top['clocks']
-
+cpu_clk = top['clocks']['hier_paths']['top'] + "clk_proc_main"
+cpu_rst = top["reset_paths"]["sys"]
+dm_rst = top["reset_paths"]["lc"]
 %>\
 module top_${top["name"]} #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     BootRomInitFile = ""
 ) (
   // Clock and Reset
   input               clk_i,
   input               rst_ni,
 
-  // Fixed clock
-  input               clk_fixed_i,
+  // Fixed io clock
+  input               clk_io_i,
 
   // USB clock
-  input               clk_usb_48mhz_i,
+  input               clk_usb_i,
+
+  // aon clock
+  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
   input               jtag_tms_i,
   input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
+  input               jtag_tdi_i,
+  output              jtag_tdo_o,
 
-% if top["pinmux"]["num_mio"] != 0:
+% if num_mio != 0:
   // Multiplexed I/O
-  input        ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_in_i,
-  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_out_o,
-  output logic ${lib.bitarray(top["pinmux"]["num_mio"], max_sigwidth)} mio_oe_o,
+  input        ${lib.bitarray(num_mio, max_sigwidth)} mio_in_i,
+  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_out_o,
+  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_oe_o,
 % endif
 % if num_dio != 0:
-
   // Dedicated I/O
-  % for sig in top["pinmux"]["dio"]:
-    % if sig["type"] in ["input", "inout"]:
-  input        ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_i,
-    % endif
-    % if sig["type"] in ["output", "inout"]:
-  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_o,
-  output logic ${lib.bitarray(sig["width"], max_sigwidth)} dio_${sig["name"]}_en_o,
-    % endif
-  % endfor
+  input        ${lib.bitarray(num_dio, max_sigwidth)} dio_in_i,
+  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_out_o,
+  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
 % endif
+
+% if "padctrl" in top:
+  // pad attributes to padring
+  output logic[padctrl_reg_pkg::NMioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[padctrl_reg_pkg::NDioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+% endif
+
 % if num_im != 0:
 
   // Inter-module Signal External type
@@ -134,17 +146,13 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
-  //clock wires declaration
-% for clock_group in clks_attr['groups']:
-  % for k in clock_group['clocks']:
-  logic ${k};
-  % endfor
-% endfor
-
   // Signals
-  logic [${num_mio_input + num_mio_inout -1}:0] m2p;
-  logic [${num_mio_output + num_mio_inout -1}:0] p2m;
-  logic [${num_mio_output + num_mio_inout -1}:0] p2m_en;
+  logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p;
+  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p_en;
+  logic [${num_dio - 1}:0] dio_p2d;
+  logic [${num_dio - 1}:0] dio_d2p;
+  logic [${num_dio - 1}:0] dio_d2p_en;
 % for m in top["module"]:
   // ${m["name"]}
   % for p_in in m["available_input_list"] + m["available_inout_list"]:
@@ -218,14 +226,6 @@ module top_${top["name"]} #(
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
 % endfor
 
-  // Clock assignments
-  // These assignments are temporary until the creation of the clock controller
-% for clock_group in clks_attr['groups']:
-  % for k,v in clock_group['clocks'].items():
-  assign ${k} = ${lib.get_clk_name(v)};
-  % endfor
-% endfor
-
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
 
@@ -234,9 +234,9 @@ module top_${top["name"]} #(
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable                (0),
-    .PMPGranularity           (0),
-    .PMPNumRegions            (4),
+    .PMPEnable                (1),
+    .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
+    .PMPNumRegions            (16),
     .MHPMCounterNum           (8),
     .MHPMCounterWidth         (40),
     .RV32E                    (0),
@@ -250,8 +250,8 @@ module top_${top["name"]} #(
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
-    .clk_i                (clk_proc_main),
-    .rst_ni               (${top["reset_paths"]["sys"]}),
+    .clk_i                (${cpu_clk}),
+    .rst_ni               (${cpu_rst}),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -281,8 +281,8 @@ module top_${top["name"]} #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
-    .clk_i         (clk_proc_main),
-    .rst_ni        (${top["reset_paths"]["lc"]}),
+    .clk_i         (${cpu_clk}),
+    .rst_ni        (${dm_rst}),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -301,8 +301,8 @@ module top_${top["name"]} #(
     .tck_i            (jtag_tck_i),
     .tms_i            (jtag_tms_i),
     .trst_ni          (jtag_trst_ni),
-    .td_i             (jtag_td_i),
-    .td_o             (jtag_td_o),
+    .td_i             (jtag_tdi_i),
+    .td_o             (jtag_tdo_o),
     .tdo_oe_o         (       )
   );
 
@@ -331,6 +331,7 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
+  logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
@@ -354,14 +355,14 @@ module top_${top["name"]} #(
     .wmask_o  (${m["name"]}_wmask),
     .rdata_i  (${m["name"]}_rdata),
     .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (2'b00)
+    .rerror_i (${m["name"]}_rerror)
   );
 
-  ## TODO: Instantiate ram_1p model using RAMGEN (currently not available)
-  prim_ram_1p #(
+  prim_ram_1p_adv #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
-    .DataBitsPerMask(${int(data_width/4)})
+    .DataBitsPerMask(${int(data_width/4)}),
+    .CfgW(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -375,8 +376,10 @@ module top_${top["name"]} #(
     .addr_i   (${m["name"]}_addr),
     .wdata_i  (${m["name"]}_wdata),
     .wmask_i  (${m["name"]}_wmask),
+    .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
-    .rdata_o  (${m["name"]}_rdata)
+    .rerror_o (${m["name"]}_rerror),
+    .cfg_i    ('0)
   );
   % elif m["type"] == "rom":
 <%
@@ -419,10 +422,10 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  ## TODO: Replace emulated ROM to real ROM in ASIC SoC
   prim_rom #(
     .Width(${data_width}),
-    .Depth(${rom_depth})
+    .Depth(${rom_depth}),
+    .MemInitFile(BootRomInitFile)
   ) u_rom_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -591,13 +594,26 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
     % if m["type"] == "pinmux":
 
-      .periph_to_mio_i      (p2m    ),
-      .periph_to_mio_oe_i   (p2m_en ),
-      .mio_to_periph_o      (m2p    ),
+      .periph_to_mio_i      (mio_d2p    ),
+      .periph_to_mio_oe_i   (mio_d2p_en ),
+      .mio_to_periph_o      (mio_p2d    ),
 
-      .mio_out_o            (mio_out_o),
-      .mio_oe_o             (mio_oe_o ),
-      .mio_in_i             (mio_in_i ),
+      .mio_out_o,
+      .mio_oe_o,
+      .mio_in_i,
+
+      .periph_to_dio_i      (dio_d2p    ),
+      .periph_to_dio_oe_i   (dio_d2p_en ),
+      .dio_to_periph_o      (dio_p2d    ),
+
+      .dio_out_o,
+      .dio_oe_o,
+      .dio_in_i,
+    % endif
+    % if m["type"] == "padctrl":
+
+      .mio_attr_o,
+      .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
       // TODO: wire this to hardware debug circuit
@@ -665,36 +681,57 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
 % if "pinmux" in top:
   // Pinmux connections
-  % if num_mio_output + num_mio_inout != 0:
-  assign p2m = {
+  % if num_mio_outputs + num_mio_inouts != 0:
+  assign mio_d2p = {
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_d2p${"" if loop.last else ","}
     % endfor
   };
-  assign p2m_en = {
+  assign mio_d2p_en = {
   % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
   % endfor
   };
   % endif
-  % if num_mio_input + num_mio_inout != 0:
+  % if num_mio_inputs + num_mio_inouts != 0:
   assign {
     % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
     cio_${sig["name"]}_p2d${"" if loop.last else ","}
     % endfor
-  } = m2p;
+  } = mio_p2d;
   % endif
 % endif
 
 % if num_dio != 0:
+  // Dedicated IO connections
+  // Input-only DIOs have no d2p signals
+  assign dio_d2p = {
   % for sig in top["pinmux"]["dio"]:
-  % if sig["type"] in ["input", "inout"]:
-  assign ${lib.ljust("cio_" + sig["name"] + "_p2d", max_diolength+9)} = dio_${sig["name"]}_i;
-  % endif
-  % if sig["type"] in ["output", "inout"]:
-  assign ${lib.ljust("dio_" + sig["name"] + "_o",   max_diolength+9)} = cio_${sig["name"]}_d2p;
-  assign ${lib.ljust("dio_" + sig["name"] + "_en_o",max_diolength+9)} = cio_${sig["name"]}_en_d2p;
-  % endif
+    % if sig["type"] in ["output", "inout"]:
+    cio_${sig["name"]}_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+    % else:
+    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+    % endif
+  % endfor
+  };
+
+  assign dio_d2p_en = {
+  % for sig in top["pinmux"]["dio"]:
+    % if sig["type"] in ["output", "inout"]:
+    cio_${sig["name"]}_en_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+    % else:
+    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+    % endif
+  % endfor
+  };
+
+  // Output-only DIOs have no p2d signal
+  % for sig in top["pinmux"]["dio"]:
+    % if sig["type"] in ["input", "inout"]:
+  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${num_dio - 1 - loop.index}]; // DIO${num_dio - 1 - loop.index}
+    % else:
+  // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+    % endif
   % endfor
 % endif
 

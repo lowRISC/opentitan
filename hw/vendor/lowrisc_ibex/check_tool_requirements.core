@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ibex:check_tool_requirements:0.1"
+name: "lowrisc:tool:check_tool_requirements:0.1"
 description: "Check tool requirements"
 
 filesets:

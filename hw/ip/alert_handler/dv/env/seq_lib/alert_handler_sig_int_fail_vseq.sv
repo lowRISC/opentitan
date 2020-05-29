@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// this sequence enable signal intergrity fail. TODO: current escalation int fail
+// this sequence enable signal intergrity fail.
 
 class alert_handler_sig_int_fail_vseq extends alert_handler_sanity_vseq;
   `uvm_object_utils(alert_handler_sig_int_fail_vseq)
@@ -10,8 +10,11 @@ class alert_handler_sig_int_fail_vseq extends alert_handler_sanity_vseq;
   `uvm_object_new
 
   constraint sig_int_c {
-    alert_int_err == '1;
-    esc_int_err == '1;
+    esc_int_err == 0;
+  }
+
+  constraint esc_accum_thresh_c {
+    foreach (accum_thresh[i]) {accum_thresh[i] dist {[0:1] :/ 5, [2:10] :/ 5};}
   }
 
   function void pre_randomize();

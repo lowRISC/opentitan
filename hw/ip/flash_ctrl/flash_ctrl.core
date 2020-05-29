@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/flash_ctrl_reg_pkg.sv
@@ -21,6 +22,8 @@ filesets:
       - rtl/flash_mp.sv
       - rtl/flash_phy.sv
       - rtl/flash_phy_core.sv
+      - rtl/flash_phy_rd.sv
+      - rtl/flash_phy_rd_buffers.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -41,6 +44,12 @@ filesets:
       - lint/flash_ctrl.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
   files_formal:
     files:
       - dv/tb/flash_ctrl_bind.sv
@@ -55,9 +64,10 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
-      - target_formal   ? (files_formal)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - target_formal    ? (files_formal)
       - files_rtl
     toplevel: flash_ctrl
 

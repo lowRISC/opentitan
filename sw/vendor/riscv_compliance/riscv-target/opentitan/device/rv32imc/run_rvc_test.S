@@ -82,4 +82,4 @@ mtvec_handler:
   lw gp,   8(t0)
 
   // jump to the handler from the OT library
-  j _vectors_start
+  j crt_interrupt_vector

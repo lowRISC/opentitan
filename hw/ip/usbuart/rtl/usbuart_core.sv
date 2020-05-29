@@ -414,6 +414,7 @@ module usbuart_core (
   usbdev_reg_pkg::usbdev_reg2hw_phy_config_reg_t     usb_phy_config;
   assign usb_phy_config.rx_differential_mode.q   = 1'b0;
   assign usb_phy_config.tx_differential_mode.q   = 1'b0;
+  assign usb_phy_config.pinflip.q                = 1'b0;
   assign usb_phy_config.eop_single_bit.q         = 1'b1;
   assign usb_phy_config.override_pwr_sense_en.q  = 1'b0;
   assign usb_phy_config.override_pwr_sense_val.q = 1'b0;
@@ -425,7 +426,7 @@ module usbuart_core (
     .rst_usb_48mhz_ni       ( rst_usb_48mhz_ni       ),
     .rx_differential_mode_i ( 1'b0                   ),
     .tx_differential_mode_i ( 1'b0                   ),
-
+    .pinflip_i              ( 1'b0                   ),
     .sys_reg2hw_config_i    (                        ),
     .sys_usb_sense_o        ( sys_usb_sense          ),
 
@@ -439,7 +440,8 @@ module usbuart_core (
     .cio_usb_oe_o           ( cio_usb_oe_o           ),
     .cio_usb_tx_mode_se_o   (                        ),
     .cio_usb_sense_i        ( cio_usb_sense_i        ),
-    .cio_usb_pullup_en_o    ( cio_usb_pullup_en_o    ),
+    .cio_usb_dp_pullup_en_o ( cio_usb_pullup_en_o    ),
+    .cio_usb_dn_pullup_en_o (                        ),
     .cio_usb_suspend_o      (                        ),
 
     .usb_rx_d_o             ( usb_rx_d               ),

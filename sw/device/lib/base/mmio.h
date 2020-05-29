@@ -5,17 +5,16 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
 
-// This file is included in C and C++, and, as such, needs to be marked as
-// extern "C" in C++ to make sure linking works out.
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/bitfield.h"
+
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 /**
  * Memory-mapped IO functions, which either map to volatile accesses, or can be

@@ -9,7 +9,7 @@
 // scramble, ECC, security and arbitration logic.
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
-module flash_phy_core import flash_ctrl_pkg::*; #(
+module flash_phy_core import flash_phy_pkg::*; #(
   parameter bit SkipInit     = 1   // this is an option to reset flash to all F's at reset
 ) (
   input                        clk_i,
@@ -32,17 +32,26 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   output logic                 init_busy_o
 );
 
-  import flash_ctrl_pkg::*;
-  import flash_phy_pkg::*;
+  typedef enum logic [1:0] {
+    StIdle,
+    StHostRead,
+    StCtrlRead,
+    StCtrl
+  } arb_state_e;
 
-  // The operation sent to the flash macro
-  flash_phy_op_sel_e op_sel;
-
-  // The flash macro is currently idle
-  logic flash_idle;
+  arb_state_e state_q, state_d;
 
   // request signals to flash macro
   logic [PhyOps-1:0] reqs;
+
+  // host select for address
+  logic host_sel;
+
+  // qualifier for host responses
+  logic host_rsp;
+
+  // controller response valid
+  logic ctrl_rsp_vld;
 
   // ack to phy operations from flash macro
   logic ack;
@@ -50,43 +59,135 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   // interface with flash macro
   logic [BankAddrW-1:0] muxed_addr;
 
-  // valid request conditions
-  logic op_clr_cond;
+  // entire read stage is idle, inclusive of all stages
+  logic rd_stage_idle;
 
-  // flash is idle when no op is selected
-  // or when the flash acks
-  assign flash_idle = (op_sel == None) | ack;
+  // the read stage is ready to accept a new transaction
+  logic rd_stage_rdy;
 
-  // if current operation is host, only transition to None if no more pending reqs
-  // if current operation is ctrl, transition back whenever operation done
-  assign op_clr_cond = (op_sel == Host) ? flash_idle & !host_req_i :
-                       (op_sel == Ctrl) ? flash_idle : 1'b0;
+  // the read stage has valid data return
+  logic rd_stage_data_valid;
+
+
+  assign host_req_done_o = host_rsp & rd_stage_data_valid;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      op_sel <= None;
-    end else if (op_clr_cond) begin
-      op_sel <= None;
-    end else if (flash_idle && host_req_i) begin
-      op_sel <= Host;
-    end else if (flash_idle && req_i) begin
-      op_sel <= Ctrl;
+      state_q <= StIdle;
+    end else begin
+      state_q <= state_d;
     end
   end
 
-  assign reqs[PhyRead]    = (req_i & rd_i) | host_req_i;
-  assign reqs[PhyProg]    = !host_req_i & req_i & prog_i;
-  assign reqs[PhyPgErase] = !host_req_i & req_i & pg_erase_i;
-  assign reqs[PhyBkErase] = !host_req_i & req_i & bk_erase_i;
-  assign muxed_addr       = host_req_i ? host_addr_i : addr_i;
+  always_comb begin
+    state_d = state_q;
 
-  // whenever there is nothing selected, host transactions are always accepted
-  // This also implies host trasnactions have the highest priority
-  assign host_req_rdy_o  = (op_sel == None) | host_req_done_o;
-  assign host_req_done_o = (op_sel == Host) & ack;
-  assign rd_done_o       = (op_sel == Ctrl) & ack & rd_i;
-  assign prog_done_o     = (op_sel == Ctrl) & ack & prog_i;
-  assign erase_done_o    = (op_sel == Ctrl) & ack & (pg_erase_i | bk_erase_i);
+    reqs = '0;
+    host_sel = 1'b0;
+    host_rsp = 1'b0;
+    ctrl_rsp_vld = 1'b0;
+    host_req_rdy_o = 1'b0;
+
+    unique case (state_q)
+      StIdle: begin
+        if (host_req_i) begin
+          reqs[PhyRead] = 1'b1;
+          host_sel = 1'b1;
+          host_req_rdy_o = rd_stage_rdy;
+          state_d = host_req_rdy_o ? StHostRead : state_q;
+        end else if (req_i && rd_i) begin
+          reqs[PhyRead] = 1'b1;
+          state_d = rd_stage_rdy ? StCtrlRead : state_q;
+        end else if (req_i) begin
+          reqs[PhyProg] = prog_i;
+          reqs[PhyPgErase] = pg_erase_i;
+          reqs[PhyBkErase] = bk_erase_i;
+          state_d = StCtrl;
+        end
+      end
+
+      // The host priority may be dangerous, as it could lock-out controller initiated
+      // operations. Need to think about whether this should be made round-robin.
+      StHostRead: begin
+        host_rsp = 1'b1;
+        if (host_req_i) begin
+          reqs[PhyRead] = 1'b1;
+          host_sel = 1'b1;
+          host_req_rdy_o = rd_stage_rdy;
+        end else if (rd_stage_idle) begin
+          // once in pipelined reads, need to wait for the entire pipeline
+          // to drain before returning to perform other operations
+          state_d = StIdle;
+        end
+      end
+
+      // Controller reads are very slow.
+      // Need to update controller end to take advantage of read pipeline.
+      // Once that is done, the two read states can merge.
+      StCtrlRead: begin
+        if (rd_stage_data_valid) begin
+          ctrl_rsp_vld = 1'b1;
+          state_d = StIdle;
+        end
+      end
+
+      // other controller operations directly interface with flash
+      StCtrl: begin
+        if (ack) begin
+          ctrl_rsp_vld = 1'b1;
+          state_d = StIdle;
+        end
+      end
+
+      // state is terminal, no flash transactions are ever accepted again
+      // until reboot
+      default:;
+    endcase // unique case (state_q)
+  end
+
+  assign muxed_addr = host_sel ? host_addr_i : addr_i;
+  assign rd_done_o = ctrl_rsp_vld & rd_i;
+  assign prog_done_o = ctrl_rsp_vld & prog_i;
+  assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i);
+
+  ////////////////////////
+  // read pipeline
+  ////////////////////////
+
+  logic flash_rd_req;
+  logic [DataWidth-1:0] flash_rdata;
+
+  flash_phy_rd i_rd (
+    .clk_i,
+    .rst_ni,
+    .req_i(reqs[PhyRead]),
+    .prog_i(reqs[PhyProg]),
+    .pg_erase_i(reqs[PhyPgErase]),
+    .bk_erase_i(reqs[PhyBkErase]),
+    .addr_i(muxed_addr),
+    .rdy_o(rd_stage_rdy),
+    .data_valid_o(rd_stage_data_valid),
+    .data_o(rd_data_o),
+    .idle_o(rd_stage_idle),
+    .req_o(flash_rd_req),
+    .ack_i(ack),
+    .data_i(flash_rdata)
+    );
+
+  ////////////////////////
+  // program pipeline
+  ////////////////////////
+
+
+  ////////////////////////
+  // scrambling / de-scrambling primitive
+  ////////////////////////
+
+
+  ////////////////////////
+  // Actual read to flash phy
+  ////////////////////////
+
 
   // The actual flash macro wrapper
   prim_flash #(
@@ -97,14 +198,15 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   ) i_flash (
     .clk_i,
     .rst_ni,
-    .rd_i(reqs[PhyRead]),
+    .rd_i(flash_rd_req),
     .prog_i(reqs[PhyProg]),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
-    .addr_i(muxed_addr[0 +: PageW + WordW]),
+    //.addr_i(muxed_addr[0 +: PageW + WordW]),
+    .addr_i(muxed_addr),
     .prog_data_i(prog_data_i),
     .ack_o(ack),
-    .rd_data_o,
+    .rd_data_o(flash_rdata),
     .init_busy_o // TBD this needs to be looked at later. What init do we need to do,
                  // and where does it make the most sense?
   );
@@ -116,20 +218,5 @@ module flash_phy_core import flash_ctrl_pkg::*; #(
   // requests to flash must always be one hot
   `ASSERT(OneHotReqs_A, $onehot0(reqs))
 
-  // if op_sel is Ctrl, it must have come from None
-  `ASSERT(CtrlPrevNone_A, $rose(op_sel == Ctrl) |-> $past(op_sel == None))
-
-  // if no operation is ongoing, a host request must always win
-  `ASSERT(HostPriority_A, (op_sel == None) && host_req_i |=> op_sel == Host)
-
-  // if a host request is done, and is immediately followed by another host request
-  // host should retain priority
-  `ASSERT(HostPriorityConseq_A, (op_sel == Host && flash_idle) && host_req_i |=> op_sel == Host)
-
-  // host request should never interrupt an ongoing controller operation
-  `ASSERT(CtrlAtomic_A, op_sel == Ctrl && !flash_idle |=> op_sel == Ctrl)
-
-  // ctrl request do not allow overlapping
-  `ASSERT(CtrlSerial_A, op_sel == Ctrl && flash_idle |=> op_sel == None)
 
 endmodule // flash_phy_core

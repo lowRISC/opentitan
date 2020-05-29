@@ -11,6 +11,7 @@ interface core_ibex_rvfi_if(input logic clk);
   logic        halt;
   logic        intr;
   logic [1:0]  mode;
+  logic [1:0]  ixl;
   logic [4:0]  rs1_addr;
   logic [4:0]  rs2_addr;
   logic [31:0] rs1_rdata;

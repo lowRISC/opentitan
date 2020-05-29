@@ -13,7 +13,9 @@ int main(int argc, char **argv) {
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  memutil.RegisterMemoryArea("ram", "TOP.ibex_riscv_compliance.u_ram");
+  memutil.RegisterMemoryArea(
+      "ram",
+      "TOP.ibex_riscv_compliance.u_ram.u_ram.gen_generic.u_impl_generic");
   simctrl.RegisterExtension(&memutil);
 
   return simctrl.Exec(argc, argv);

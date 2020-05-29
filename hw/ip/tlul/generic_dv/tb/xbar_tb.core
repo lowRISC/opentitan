@@ -8,10 +8,10 @@ description: "XBAR DV tb"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:tlul:0.1
+      - lowrisc:ip:tlul
       - lowrisc:dv:xbar_test
+      - lowrisc:dv:xbar_macros
     files:
-      - xbar_macros.svh
       - tb.sv
     file_type: systemVerilogSource
 

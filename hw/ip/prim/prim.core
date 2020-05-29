@@ -10,6 +10,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:ram_2p # for prim_ram_2p_adv
+      - lowrisc:prim:secded # for prim_ram_2p_adv
       - lowrisc:prim:assert
       - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
       - lowrisc:prim:pad_wrapper
@@ -17,6 +18,7 @@ filesets:
       - lowrisc:prim:clock_mux2
     files:
       - rtl/prim_clock_inverter.sv
+      - rtl/prim_clock_gating_sync.sv
       - rtl/prim_alert_pkg.sv
       - rtl/prim_alert_receiver.sv
       - rtl/prim_alert_sender.sv
@@ -29,6 +31,7 @@ filesets:
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
       - rtl/prim_flop_2sync.sv
+      - rtl/prim_sync_reqack.sv
       - rtl/prim_keccak.sv
       - rtl/prim_lfsr.sv
       - rtl/prim_packer.sv
@@ -42,8 +45,6 @@ filesets:
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_ext.sv
       - rtl/prim_intr_hw.sv
-      - rtl/prim_secded_39_32_enc.sv
-      - rtl/prim_secded_39_32_dec.sv
       - rtl/prim_ram_2p_adv.sv
       - rtl/prim_ram_2p_async_adv.sv
     file_type: systemVerilogSource
@@ -64,10 +65,16 @@ filesets:
       - lint/prim.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
 
 targets:
   default:
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl

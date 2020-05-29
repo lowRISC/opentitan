@@ -21,18 +21,6 @@ module tb_cs_registers #(
 
   logic                 dpi_rst_ni;
   logic                 rst_ni;
-  logic [31:0]          hart_id_i;
-
-  // Privilege mode
-  ibex_pkg::priv_lvl_e  priv_mode_id_o;
-  ibex_pkg::priv_lvl_e  priv_mode_if_o;
-  ibex_pkg::priv_lvl_e  priv_mode_lsu_o;
-  logic                 csr_mstatus_tw_o;
-
-  // mtvec
-  logic [31:0]          csr_mtvec_o;
-  logic                 csr_mtvec_init_i;
-  logic [31:0]          boot_addr_i;
 
   // Interface to registers (SRAM like)
   logic                 csr_access_i;
@@ -42,64 +30,7 @@ module tb_cs_registers #(
   logic                 csr_op_en_i;
   logic [31:0]          csr_rdata_o;
 
-  // interrupts
-  logic                 irq_software_i;
-  logic                 irq_timer_i;
-  logic                 irq_external_i;
-  logic [14:0]          irq_fast_i;
-  logic                 nmi_mode_i;             // core is handling an NMI
-  logic                 irq_pending_o;          // interupt request pending
-  ibex_pkg::irqs_t      irqs_o;
-  logic                 csr_mstatus_mie_o;
-  logic [31:0]          csr_mepc_o;
-
-    // PMP
-  ibex_pkg::pmp_cfg_t   csr_pmp_cfg_o  [PMPNumRegions];
-  logic [33:0]          csr_pmp_addr_o [PMPNumRegions];
-
-  // debug
-  logic                 debug_mode_i;
-  ibex_pkg::dbg_cause_e debug_cause_i;
-  logic                 debug_csr_save_i;
-  logic [31:0]          csr_depc_o;
-  logic                 debug_single_step_o;
-  logic                 debug_ebreakm_o;
-  logic                 debug_ebreaku_o;
-  logic                 trigger_match_o;
-
-  logic [31:0]          pc_if_i;
-  logic [31:0]          pc_id_i;
-  logic [31:0]          pc_wb_i;
-
-  logic                 data_ind_timing_o;
-  logic                 icache_enable_o;
-
-  logic                 csr_save_if_i;
-  logic                 csr_save_id_i;
-  logic                 csr_save_wb_i;
-  logic                 csr_restore_mret_i;
-  logic                 csr_restore_dret_i;
-  logic                 csr_save_cause_i;
-  ibex_pkg::exc_cause_e csr_mcause_i;
-  logic [31:0]          csr_mtval_i;
-  logic                 illegal_csr_insn_o;     // access to non-existent CSR,
-                                                // with wrong priviledge level, or
-                                                // missing write permissions
-  logic                 instr_new_id_i;         // ID stage sees a new instr
-
-  // Performance Counters
-  logic                 instr_ret_i;            // instr retired in ID/EX stage
-  logic                 instr_ret_compressed_i; // compressed instr retired
-  logic                 iside_wait_i;           // core waiting for the iside
-  logic                 pc_set_i;               // PC was set to a new value
-  logic                 jump_i;                 // jump instr seen (j, jr, jal, jalr)
-  logic                 branch_i;               // branch instr seen (bf, bnf)
-  logic                 branch_taken_i;         // branch was taken
-  logic                 mem_load_i;             // load from memory in this cycle
-  logic                 mem_store_i;            // store to memory in this cycle
-  logic                 dside_wait_i;           // core waiting for the dside
-  logic                 mul_wait_i;
-  logic                 div_wait_i;
+  logic                 illegal_csr_insn_o;
 
   //-----------------
   // Reset generation
@@ -124,6 +55,7 @@ module tb_cs_registers #(
   assign in_rst_ni = 1'b1;
 `endif
 
+  /* verilator lint_off PINMISSING */
   ibex_cs_registers #(
     .DbgTriggerEn     (DbgTriggerEn),
     .MHPMCounterNum   (MHPMCounterNum),
@@ -133,7 +65,18 @@ module tb_cs_registers #(
     .PMPNumRegions    (PMPNumRegions),
     .RV32E            (RV32E),
     .RV32M            (RV32M)
-  ) i_cs_regs (.*);
+  ) i_cs_regs (
+    .clk_i              (clk_i),
+    .rst_ni             (rst_ni),
+    .csr_access_i       (csr_access_i),
+    .csr_addr_i         (csr_addr_i),
+    .csr_wdata_i        (csr_wdata_i),
+    .csr_op_i           (csr_op_i),
+    .csr_op_en_i        (csr_op_en_i),
+    .csr_rdata_o        (csr_rdata_o),
+    .illegal_csr_insn_o (illegal_csr_insn_o)
+  );
+  /* verilator lint_on PINMISSING */
 
   // DPI calls
   bit stop_simulation;
@@ -182,7 +125,5 @@ module tb_cs_registers #(
                          csr_addr_i,
                          csr_wdata_i);
   end
-  // Note that CSR accesses only happen if instr_new_id_i is high
-  assign instr_new_id_i = csr_access_i;
 
 endmodule

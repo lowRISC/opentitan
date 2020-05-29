@@ -22,17 +22,25 @@ def genout(outfile, msg):
 
 
 STAGE_STRINGS = {
+    # Life Stages
     'L0': 'Specification',
     'L1': 'Development',
     'L2': 'Signed Off',
+    # Design Stages
     'D0': 'Initial Work',
     'D1': 'Functional',
     'D2': 'Feature Complete',
     'D3': 'Design Complete',
+    # Verification Stages
     'V0': 'Initial Work',
     'V1': 'Under Test',
     'V2': 'Testing Complete',
-    'V3': 'Verification Complete'
+    'V3': 'Verification Complete',
+    # DIF Stages (S for Software)
+    'S0': 'Initial Work',
+    'S1': 'Functional',
+    'S2': 'Complete',
+    'S3': 'Stable',
 }
 
 # TODO: This is relative to the dashboard, which is currently located at
@@ -103,10 +111,38 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
 
+# Link S stages with the checklist table.
+def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
+    if not stage or stage not in rev: return ""
 
-# Link development stages in "L# : D# : V#" format.
-# Hover text over each L, D, V indicates the stage mapping.
-# D and V stages link to actual checklist items.
+    url = ""
+    in_page_ref = ""
+    if rev[stage] not in ["S0"]:
+        # if in D0 or V0 stage, there is no in-page reference.
+        in_page_ref = "#{}".format(html.escape(rev[stage]).lower())
+
+    # If the checklist is available, the commit id is available, and it is not
+    # the latest revision, link to the committed version of the checklist.
+    # Else, if checklist is available, then link to the current version of the
+    # checklist html.
+    # Else, link to the template.
+    if 'sw_checklist' in obj and 'commit_id' in rev and not is_latest_rev:
+        url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
+            rev['commit_id'], obj['sw_checklist'], in_page_ref)
+    elif 'sw_checklist' in obj:
+        url = "{}/{}{}".format(docs_server, html.escape(obj['sw_checklist']),
+                               in_page_ref)
+    else:
+        # There is no checklist available, so point to the template.
+        url = "https://github.com/lowrisc/opentitan/tree/master/"
+        url += "doc/project/sw_checklist.md.tpl"
+
+    return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
+
+
+# Link development stages in "L# : D# : V# : S#" format.
+# Hover text over each L, D, V, S indicates the stage mapping.
+# D, V, and S stages link to actual checklist items.
 def get_development_stage(obj, rev, is_latest_rev=True):
     if "life_stage" not in rev: return "&nbsp;"
 
@@ -126,6 +162,12 @@ def get_development_stage(obj, rev, is_latest_rev=True):
     else:
         verification_stage = None
 
+    if life_stage != 'L0' and 'dif_stage' in rev:
+        dif_stage = rev['dif_stage']
+        dif_stage_mapping = convert_stage(dif_stage)
+    else:
+        dif_stage = None
+
     result = "<span title='{}'>{}</span>".format(
         html.escape(life_stage_mapping), html.escape(life_stage))
 
@@ -141,6 +183,13 @@ def get_development_stage(obj, rev, is_latest_rev=True):
             html.escape(verification_stage_mapping),
             get_linked_checklist(obj, rev, 'verification_stage',
                                  is_latest_rev))
+
+    if dif_stage:
+        result += separator
+        result += "<span title='{}'>{}</span>".format(
+            html.escape(dif_stage_mapping),
+            get_linked_sw_checklist(obj, rev, 'dif_stage',
+                                    is_latest_rev))
 
     return result
 

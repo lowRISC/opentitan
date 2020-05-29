@@ -14,10 +14,10 @@
 // required by TL-UL (every bit in mask set).
 //
 // When MAX_REQS > 1 tlul_adapter_host does not do anything to order responses from the TL-UL
-// interface which could return them out of order. It is the host's responsibility to either only have
-// outstanding requests to an address space it knows will return responses in order or to not care
-// about out of order responses (note that if read data is returned out of order there is no way to
-// determine this)
+// interface which could return them out of order. It is the host's responsibility to either only
+// have outstanding requests to an address space it knows will return responses in order or to not
+// care about out of order responses (note that if read data is returned out of order there is no
+// way to determine this).
 
 `include "prim_assert.sv"
 
@@ -97,14 +97,14 @@ module tlul_adapter_host #(
     d_ready:   1'b1
   };
 
-  assign gnt_o   = tl_i.a_ready & req_i;
+  assign gnt_o   = tl_i.a_ready;
 
   assign valid_o = tl_i.d_valid;
   assign rdata_o = tl_i.d_data;
   assign err_o   = tl_i.d_error;
 
 `ifdef INC_ASSERT
-  localparam OutstandingReqCntW =
+  localparam int OutstandingReqCntW =
     (MAX_REQS == 2 ** $clog2(MAX_REQS)) ? $clog2(MAX_REQS) + 1 : $clog2(MAX_REQS);
 
   logic [OutstandingReqCntW-1:0] outstanding_reqs_q;

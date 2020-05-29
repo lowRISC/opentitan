@@ -19,6 +19,7 @@ Ibex User Manual
    performance_counters
    exception_interrupts
    pmp
+   security
    debug
    tracer
    rvfi

@@ -140,7 +140,7 @@ Examples of useful functions in this class are:
       CsrExclWriteCheck = 3'b010, // exclude csr from write-read check
       CsrExclCheck      = 3'b011, // exclude csr from init or write-read check
       CsrExclWrite      = 3'b100, // exclude csr from write
-      CsrExclAll        = 3'b111  // exclude csr from init or write or writ-read check
+      CsrExclAll        = 3'b111  // exclude csr from init or write or write-read check
     } csr_excl_type_e;
     ```
 

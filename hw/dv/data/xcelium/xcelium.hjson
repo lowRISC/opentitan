@@ -16,7 +16,7 @@
                "-messages -errormax 50",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
-               "-uvmhome {UVM_HOME}",
+               "-uvmhome CDNS-1.2",
                "-xmlibdirname {build_dir}/xcelium.d"]
 
   run_opts:   ["-input {tool_srcs_dir}/xcelium_{dump}.tcl",
@@ -32,6 +32,11 @@
     CDS_LIC_QUEUE_POLL: 1
     // Poll for an available license every 1 min.
     CDS_LIC_QUEUE_POLL_INT: 60
+
+    // X-prop related: these were suggested by Xcelium as warnings during the build time.
+    // These enable array corruption when the index is out of range or invalid.
+    VL_ENABLE_INVALID_IDX_XPROP: 1
+    VL_ENABLE_OUTOFRANGE_IDX_XPROP: 1
 
     // Export the cov_report path so that the tcl file can read these as env vars.
     cov_merge_db_dir: "{cov_merge_db_dir}"
@@ -122,8 +127,14 @@
     {
       name: xcelium_xprop
       is_sim_mode: 1
-      # -xverbose  << add to see which modules does not have xprop enabled
-      build_opts: ["-xprop F"]
+      build_opts: ["-xprop F -xverbose"]
+    }
+    {
+      // TODO: Add build and run options to enable zero delay loop detection.
+      name: xcelium_loopdetect
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
     }
   ]
 }

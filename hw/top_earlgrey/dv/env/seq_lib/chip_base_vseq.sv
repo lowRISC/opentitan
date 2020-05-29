@@ -17,6 +17,9 @@ class chip_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
 
+  // Local queue for holding received UART TX data.
+  byte uart_tx_data_q[$];
+
   `uvm_object_new
 
   task post_start();
@@ -25,6 +28,13 @@ class chip_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
+    // These IOs have pad attributes that are driven from registers, and as long as
+    // the reset line of those registers is X, the registers and hence the pad outputs
+    // will also be X. This causes the JTAG reset to not properly propagate, and hence we
+    // have to assert the main reset before that (release can happen in a randomized way
+    // via the apply_reset task later on).
+    cfg.clk_rst_vif.drive_rst_pin(1'b0);
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
@@ -62,6 +72,16 @@ class chip_base_vseq extends cip_base_vseq #(
 
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
+  endtask
+
+  // Grab packets sent by the DUT over the UART TX port.
+  virtual task get_uart_tx_items();
+    uart_item item;
+    forever begin
+      p_sequencer.uart_tx_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
+      uart_tx_data_q.push_back(item.data);
+    end
   endtask
 
 endclass : chip_base_vseq

@@ -14,7 +14,7 @@
             {"SV_FLIST"  : "{sv_flist}"}]
 
   // Tool invocation
-  build_cmd:  "dc_shell-xg-t "
+  build_cmd:  "{job_prefix} dc_shell-xg-t "
   build_opts: ["-f run-syn.tcl"]
 
   // DC-specific results parsing script that is called after running synthesis

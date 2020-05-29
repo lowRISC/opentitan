@@ -174,13 +174,18 @@ class Deploy():
                 self.odir_limiter(odir=self.odir)
             os.system("mkdir -p " + self.odir)
             # Dump all env variables for ease of debug.
-            with open(self.odir + "/env_vars", "w") as f:
+            with open(self.odir + "/env_vars",
+                      "w",
+                      encoding="UTF-8",
+                      errors="surrogateescape") as f:
                 for var in sorted(self.exports.keys()):
                     f.write("{}={}\n".format(var, self.exports[var]))
                 f.close()
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
-            f = open(self.log, "w")
+            f = open(self.log, "w", encoding="UTF-8", errors="surrogateescape")
+            f.write("[Executing]:\n{}\n\n".format(self.cmd))
+            f.flush()
             self.process = subprocess.Popen(args,
                                             bufsize=4096,
                                             universal_newlines=True,
@@ -657,8 +662,8 @@ class RunTest(Deploy):
             "uvm_test": False,
             "uvm_test_seq": False,
             "run_opts": False,
-            "sw_dir": False,
-            "sw_name": False,
+            "sw_test": False,
+            "sw_test_is_prebuilt": False,
             "sw_build_device": False,
             "sw_build_dir": False,
             "run_dir": False,

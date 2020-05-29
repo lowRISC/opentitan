@@ -14,12 +14,13 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
+  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if();
+  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // dut

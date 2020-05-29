@@ -60,7 +60,8 @@ class alert_sender_driver extends alert_esc_base_driver;
       cfg.vif.wait_ping();
 
       // TODO: solve this: if alert and ping all this task together
-      drive_alert_pins(req);
+      if (!req.timeout) drive_alert_pins(req);
+      else repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
 
       `uvm_info(`gfn,
           $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -103,7 +104,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task reset_alert_pins(int ack_delay);
     fork
       begin : alert_timeout
-        repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+        repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
       end
       begin : wait_alert_handshake
         cfg.vif.wait_ack();

@@ -55,13 +55,13 @@ module prim_keccak #(
     '{  28,  55, 153,  21, 120},// 3
     '{  91, 276, 231, 136,  78} // 4
   };
-  for (genvar x = 0 ; x < 5 ; x++) begin : rho_x
-    for (genvar y = 0 ; y < 5 ; y++) begin : rho_y
+  for (genvar x = 0 ; x < 5 ; x++) begin : gen_rho_x
+    for (genvar y = 0 ; y < 5 ; y++) begin : gen_rho_y
       localparam int Offset = RhoOffset[x][y]%W;
       localparam int ShiftAmt = W- Offset;
-      if (Offset == 0) begin
+      if (Offset == 0) begin : gen_offset0
         assign rho_data[x][y][W-1:0] = theta_data[x][y][W-1:0];
-      end else begin
+      end else begin : gen_others
         assign rho_data[x][y][W-1:0] = {theta_data[x][y][0+:ShiftAmt],
                                         theta_data[x][y][ShiftAmt+:Offset]};
       end

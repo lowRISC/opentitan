@@ -5,15 +5,13 @@
 Generate HTML documentation from validated configuration Hjson tree
 """
 
-import sys
-
 
 def genout(outfile, msg):
     outfile.write(msg)
 
 
 def name_width(x):
-    if not 'width' in x or x['width'] == '1':
+    if 'width' not in x or x['width'] == '1':
         return x['name']
     return x['name'] + '[' + str(int(x['width'], 0) - 1) + ':0]'
 
@@ -27,7 +25,8 @@ def gen_cfg_html(cfgs, outfile):
         outfile,
         "<a href=\"https://docs.opentitan.org/doc/rm/comportability_specification\">\n"
     )
-    genout(outfile, "Comportable guideline for peripheral device functionality</a>,\n")
+    genout(outfile,
+           "Comportable guideline for peripheral device functionality</a>,\n")
     genout(outfile,
            "the module <b><code>" + cfgs['name'] + "</code></b> has \n")
     genout(outfile, "the following hardware interfaces defined.</p>\n")

@@ -1,45 +1,16 @@
-From c59d607e9c0b3d362882d7560b6e48ae9dc31740 Mon Sep 17 00:00:00 2001
+From 869ad7202f4551ae75440b8e34d8aa37f4b3f4cf Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 18:39:08 +0100
-Subject: [PATCH 3/5] Remove tests that do not pass on OpenTitan
+Subject: [PATCH 3/3] Remove tests that do not pass on OpenTitan
 
 ---
- riscv-test-suite/rv32i/Makefrag | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ riscv-test-suite/rv32i/Makefrag | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/riscv-test-suite/rv32i/Makefrag b/riscv-test-suite/rv32i/Makefrag
-index a19fff8..36b8068 100644
+index a19fff8..e27b7ac 100644
 --- a/riscv-test-suite/rv32i/Makefrag
 +++ b/riscv-test-suite/rv32i/Makefrag
-@@ -2,7 +2,7 @@
- #
- # Copyright (c) 2017, Codasip Ltd.
- # All rights reserved.
--# 
-+#
- # Redistribution and use in source and binary forms, with or without
- # modification, are permitted provided that the following conditions are met:
- #      * Redistributions of source code must retain the above copyright
-@@ -13,8 +13,8 @@
- #      * Neither the name of the Codasip Ltd. nor the
- #        names of its contributors may be used to endorse or promote products
- #        derived from this software without specific prior written permission.
--# 
--# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
-+#
-+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- # IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- # PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Codasip Ltd. BE LIABLE FOR ANY
-@@ -22,7 +22,7 @@
- # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
--# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
-+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- #
- # Description: Makefrag for RV32I compliance tests
 @@ -32,8 +32,6 @@ rv32i_sc_tests = \
      I-RF_x0-01 \
      I-RF_size-01 \
@@ -49,18 +20,18 @@ index a19fff8..36b8068 100644
      I-DELAY_SLOTS-01 \
      I-JAL-01 \
      I-JALR-01 \
-@@ -76,6 +74,11 @@ rv32i_sc_tests = \
-     I-ECALL-01 \
+@@ -77,6 +75,11 @@ rv32i_sc_tests = \
      I-EBREAK-01 \
      I-IO-01 \
-+
+ 
 +    # These tests are broken due to flaws in riscv-compliance rather than
 +    # Ibex/OpenTitan (see https://github.com/lowRISC/ibex/issues/100)
 +    #I-MISALIGN_JMP-01
 +    #I-MISALIGN_LDST-01
- 
++
  
  rv32i_tests = $(addsuffix .elf, $(rv32i_sc_tests))
+ 
 -- 
-2.17.1
+2.26.2
 

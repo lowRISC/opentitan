@@ -2,7 +2,7 @@
 title: "RV_PLIC Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{<relref "/doc/project/hw_stages.md" >}}) transitions for the [RV_PLIC peripheral](../).
+This checklist is for [Hardware Stage]({{<relref "/doc/project/development_stages.md" >}}) transitions for the [RV_PLIC peripheral](../).
 All checklist items refer to the content in the [Checklist.]({{<relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist

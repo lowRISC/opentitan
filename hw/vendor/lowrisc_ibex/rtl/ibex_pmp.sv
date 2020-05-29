@@ -72,12 +72,13 @@ module ibex_pmp #(
   for (genvar c = 0; c < PMPNumChan; c++) begin : g_access_check
     for (genvar r = 0; r < PMPNumRegions; r++) begin : g_regions
       // TOR Region high/low matching is reused for all match types
-      assign region_match_low[c][r]     = (pmp_req_addr_i[c][33:PMPGranularity+2] >=
-                                           // Comparators are sized according to granularity
-                                           (region_start_addr[r][33:PMPGranularity+2] &
-                                            region_addr_mask[r]));
-      assign region_match_high[c][r]    = (pmp_req_addr_i[c][33:PMPGranularity+2] <=
-                                           csr_pmp_addr_i[r][33:PMPGranularity+2]);
+      // Comparators are sized according to granularity
+      assign region_match_low[c][r]     = pmp_req_addr_i[c][33:PMPGranularity+2] >=
+                                          (region_start_addr[r][33:PMPGranularity+2] &
+                                           region_addr_mask[r]);
+      assign region_match_high[c][r]    = (pmp_req_addr_i[c][33:PMPGranularity+2] &
+                                           region_addr_mask[r]) <
+                                          csr_pmp_addr_i[r][33:PMPGranularity+2];
       assign region_match_both[c][r]    = region_match_low[c][r] & region_match_high[c][r] &
                                           (csr_pmp_cfg_i[r].mode != PMP_MODE_OFF);
       // Check specific required permissions

@@ -82,6 +82,11 @@ package pwrmgr_pkg;
     logic ip_clk_en;
   } pwr_clk_req_t;
 
+  // clkmgr to powrmgr
+  typedef struct packed {
+    logic roots_en;
+  } pwr_clk_rsp_t;
+
   // pwrmgr to otp
   typedef struct packed {
     logic otp_init;

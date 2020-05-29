@@ -8,7 +8,8 @@ description: "Technology-independent Read-Only Memory (ROM) implementation"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
+      - lowrisc:prim:util_memload
     files:
       - rtl/prim_generic_rom.sv
     file_type: systemVerilogSource
@@ -29,10 +30,16 @@ filesets:
       - lint/prim_generic_rom.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
 
 targets:
   default:
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl

@@ -7,6 +7,8 @@ name: "lowrisc:prim_generic:flash"
 description: "prim"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:ram_1p
     files:
       - rtl/prim_generic_flash.sv
     file_type: systemVerilogSource
@@ -27,10 +29,16 @@ filesets:
       - lint/prim_generic_flash.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
 
 targets:
   default:
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl

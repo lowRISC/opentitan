@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
+flake8
 gitpython
 hjson
+ipyxact >= 0.2.4
 isort
 livereload
 mako
@@ -14,6 +16,7 @@ mako
 # Ubuntu 16.04.
 meson >= 0.51.0, != 0.53.0, <0.54.0 # minimum matches version in meson.build
 mistletoe>=0.7.2
+premailer
 pyelftools
 pyftdi
 pygments
@@ -23,12 +26,8 @@ pyyaml
 tabulate
 yapf
 
-# Develpment version to get around YAML parser warning triggered by fusesoc
-# Upstream tracking: https://github.com/olofk/ipyxact/issues/19
-git+https://github.com/olofk/ipyxact.git@master
-
-# Development version of edalize until all our changes are upstream
-git+https://github.com/lowRISC/edalize.git@ot
+# Development version with OT-specific changes
+git+https://github.com/lowRISC/fusesoc.git@ot#egg=fusesoc >= 1.11.0
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot
+git+https://github.com/lowRISC/edalize.git@ot#egg=edalize >= 0.2.0

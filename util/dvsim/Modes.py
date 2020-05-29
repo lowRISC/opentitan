@@ -271,8 +271,8 @@ class RunModes(Modes):
         self.uvm_test_seq = ""
         self.build_mode = ""
         self.en_run_modes = []
-        self.sw_dir = ""
-        self.sw_name = ""
+        self.sw_test = ""
+        self.sw_test_is_prebuilt = ""
         self.sw_build_device = ""
 
         super().__init__(rdict)
@@ -298,8 +298,8 @@ class Tests(RunModes):
         "uvm_test": "",
         "uvm_test_seq": "",
         "build_mode": "",
-        "sw_dir": "",
-        "sw_name": "",
+        "sw_test": "",
+        "sw_test_is_prebuilt": "",
         "sw_build_device": "",
     }
 

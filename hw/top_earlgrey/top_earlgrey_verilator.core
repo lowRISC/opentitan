@@ -55,6 +55,11 @@ parameters:
     description: Replace JTAG TAP with an OpenOCD direct connection
 
 targets:
+  default: &default_target
+    filesets:
+      - files_sim_verilator
+    toplevel: top_earlgrey_verilator
+
   sim:
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
@@ -92,3 +97,12 @@ targets:
           # of the simulation model. -O2 and -O3 are pretty similar, -Os is
           # slower than -O2/-O3
           - OPT_FAST="-O2"
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -1,6 +1,9 @@
-# Reference Manuals
+---
+title: "Reference Manuals"
+---
 
 * [Comportability Definition and Specification]({{< relref "comportability_specification" >}})
+* [Device Interface Function (DIF) Specification]({{< relref "device_interface_functions" >}})
 * Tool Guides
    * [Topgen Tool]({{< relref "topgen_tool" >}}): Describes `topgen.py` and its Hjson format source. Used to generate rtl and validation files for top specific modules such as PLIC, Pinmux and crossbar.
    * [Register Tool]({{< relref "register_tool" >}}): Describes `regtool.py` and its Hjson format source. Used to generate documentation, rtl, header files and validation files for IP Registers and toplevel.

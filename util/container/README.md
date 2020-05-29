@@ -7,7 +7,10 @@ software development tools for OpenTitan. Current list of tools:
 * fusesoc
 * OpenOCD
 * RISCV toolchain
+* clang-format
 * Verilator
+
+The versions of the above should match the versions installed in CI.
 
 ## Local Build Instructions
 
@@ -32,7 +35,7 @@ $ docker run -it -v ${REPO_TOP}:/repo -w /repo opentitan --user $(id -u):$(id -g
 There is an experimental version of the container available. To download, run:
 
 ```shell
-$ time docker pull gcr.io/opentitan/hw_dev
+$ docker pull gcr.io/opentitan/hw_dev
 ```
 
 Use `gcr.io/opentitan/hw_dev` as the container name in any Docker commands.

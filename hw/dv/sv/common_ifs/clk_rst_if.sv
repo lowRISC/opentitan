@@ -35,7 +35,7 @@ interface clk_rst_if #(
   // clk params
   bit clk_gate      = 1'b0;   // clk gate signal
   int clk_period_ps = 20_000; // 50MHz default
-  int clk_freq_mhz  = 50;     // 50MHz default
+  real clk_freq_mhz = 50;     // 50MHz default
   int duty_cycle    = 50;     // 50% default
   int max_jitter_ps = 1000;   // 1ns default
   bit recompute     = 1'b1;   // compute half periods when period/freq/duty are changed
@@ -69,7 +69,7 @@ interface clk_rst_if #(
   endtask
 
   // set the clk frequency in mhz
-  function automatic void set_freq_mhz(int freq_mhz);
+  function automatic void set_freq_mhz(real freq_mhz);
     clk_freq_mhz = freq_mhz;
     clk_period_ps = 1000_000 / clk_freq_mhz;
     recompute = 1'b1;
@@ -159,6 +159,11 @@ interface clk_rst_if #(
     end
   endfunction
 
+  // can be used to override clk/rst pins, e.g. at the beginning of the simulation
+  task automatic drive_rst_pin(logic val = 1'b0);
+    o_rst_n = val;
+  endtask
+
   // apply reset with specified scheme
   // TODO make this enum?
   // rst_n_scheme
@@ -167,11 +172,13 @@ interface clk_rst_if #(
   // 2 - async assert, async dessert
   // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
-  task automatic apply_reset(int pre_reset_dly_clks  = 0,
-                             int reset_width_clks    = $urandom_range(4, 20),
-                             int post_reset_dly_clks = 0,
-                             int rst_n_scheme        = 1);
+  // TODO #2338 issue workaround - $urandom call moved from default argument value to function body 
+  task automatic apply_reset(int pre_reset_dly_clks   = 0,
+                             integer reset_width_clks = 'x,
+                             int post_reset_dly_clks  = 0,
+                             int rst_n_scheme         = 1);
     int dly_ps;
+    if ($isunknown(reset_width_clks)) reset_width_clks = $urandom_range(4, 20);
     dly_ps = $urandom_range(0, clk_period_ps);
     wait_clks(pre_reset_dly_clks);
     case (rst_n_scheme)
@@ -203,6 +210,7 @@ interface clk_rst_if #(
     // start driving clk only after the first por reset assertion
     wait_for_reset(.wait_posedge(1'b0));
     #1ps o_clk = 1'b0;
+    #($urandom_range(0, 10) * 1ps);
     forever begin
       if (recompute) begin
         clk_hi_ps = clk_period_ps * duty_cycle / 100;

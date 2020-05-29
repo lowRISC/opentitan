@@ -9,7 +9,7 @@
 ARG VERILATOR_VERSION=4.028
 
 # The RISCV toolchain version should match the release tag used in GitHub.
-ARG RISCV_TOOLCHAIN_TAR_VERSION=20190807-1
+ARG RISCV_TOOLCHAIN_TAR_VERSION=20191010-1
 
 # Build OpenOCD
 # OpenOCD is a tool to connect with the target chip over JTAG and similar
@@ -61,35 +61,21 @@ WORKDIR /tools
 COPY --from=openocd /tools/openocd openocd
 COPY --from=verilator /tools/verilator/${VERILATOR_VERSION} verilator/${VERILATOR_VERSION}
 
-# Required packages
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
-    gnupg2 \
-    libc6-i386 \
-    libelf-dev \
-    libftdi-dev \
-    libftdi1-dev \
-    libftdi1 \
-    libssl-dev \
-    libtool \
-    libusb-1.0-0-dev \
-    libxml2-dev \
-    minicom \
-    ninja-build \
-    pkgconf \
-    screen \
-    srecord \
-    zlib1g-dev
-
-# Install Python 3 and support libraries. Cleanup install in place to reduce
-# binary size.
-RUN apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-setuptools && \
-    apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+# Install (and cleanup) required packages (from apt-requirements.txt)
+# The list of extra packages is leftover from before this Dockerfile used
+# apt-requirements.txt
+COPY apt-requirements.txt /tmp/apt-requirements.txt
+RUN apt-get update && \
+    sed 's/#.*//' /tmp/apt-requirements.txt \
+        | xargs apt-get install -y && \
+    apt-get install -y \
+        gnupg2 \
+        libc6-i386 \
+        libtool \
+        minicom \
+        screen && \
+    apt-get clean ; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Copy repository into tmp directory to execute additional install steps.
 COPY python-requirements.txt /tmp/python-requirements.txt

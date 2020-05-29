@@ -16,8 +16,8 @@
   csr_update(ral.class``i``_phase2_cyc); \
   csr_update(ral.class``i``_phase3_cyc);
 
-`define RAND_WRITE_CLASS_CTRL(i) \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == 1'b0;) \
+`define RAND_WRITE_CLASS_CTRL(i, lock_bit) \
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == lock_bit;) \
   csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
 
 class alert_handler_base_vseq extends cip_base_vseq #(
@@ -30,6 +30,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_alert_handler_init = 1'b0;
+  bit config_locked         = 1'b0;
 
   `uvm_object_new
 
@@ -43,7 +44,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic alert_handler features
-  // alert_class default 0 -> all alert willtrigger interrupt classA
+  // alert_class default 0 -> all alert will trigger interrupt classA
   virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
                                   bit [alert_pkg::NAlerts-1:0]        alert_en = '1,
                                   bit [TL_DW-1:0]                     alert_class = 'h0,
@@ -56,12 +57,25 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.loc_alert_class), .value(loc_alert_class));
   endtask
 
-  virtual task alert_handle_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en =
-                                               $urandom());
-    if (class_en[0]) `RAND_WRITE_CLASS_CTRL(a)
-    if (class_en[1]) `RAND_WRITE_CLASS_CTRL(b)
-    if (class_en[2]) `RAND_WRITE_CLASS_CTRL(c)
-    if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d)
+  virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);
+    bit [NUM_ALERT_HANDLER_CLASSES-1:0] class_en = $urandom();
+    if (class_en[0]) `RAND_WRITE_CLASS_CTRL(a, lock_bit[0])
+    if (class_en[1]) `RAND_WRITE_CLASS_CTRL(b, lock_bit[1])
+    if (class_en[2]) `RAND_WRITE_CLASS_CTRL(c, lock_bit[2])
+    if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d, lock_bit[3])
+  endtask
+
+  virtual task alert_handler_wr_clren_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en);
+    if (!clr_en[0]) csr_wr(.csr(ral.classa_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[1]) csr_wr(.csr(ral.classb_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[2]) csr_wr(.csr(ral.classc_clren), .value($urandom_range(0, 1)));
+    if (!clr_en[3]) csr_wr(.csr(ral.classd_clren), .value($urandom_range(0, 1)));
+  endtask
+
+  // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
+  // to regen register.
+  virtual task lock_config(bit do_lock_config);
+    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
   endtask
 
   virtual task drive_alert(bit[alert_pkg::NAlerts-1:0] alert_trigger,
@@ -86,18 +100,19 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual task drive_esc_resp(bit[alert_pkg::N_ESC_SEV-1:0] esc_int_err);
+  // This sequence will drive standalone esc_resp_p/n without esc_p/n
+  virtual task drive_esc_rsp(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs);
     fork
       begin : isolation_fork
-        foreach (esc_int_err[i]) begin
-          if (esc_int_err[i]) begin
-            automatic int index = i;
+        foreach (cfg.esc_device_cfg[i]) begin
+          automatic int index = i;
+          if (esc_int_errs[index]) begin
             fork
               begin
-                esc_receiver_esc_rsp_seq esc_seq;
-                `uvm_create_on(esc_seq, p_sequencer.esc_device_seqr_h[index]);
-                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1;)
-                `uvm_send(esc_seq)
+                esc_receiver_esc_rsp_seq esc_seq =
+                    esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
+                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1; standalone_int_err == 1;)
+                esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
               end
             join_none
           end
@@ -105,6 +120,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
         wait fork;
       end
     join
+  endtask
+
+  // alert_handler scb will compare the read value with expected value
+  // Not using "clear_all_interrupts" function in cip_base_vseq because of the signal interity
+  // error: after clearing intr_state, intr_state might come back to 1 in the next cycle.
+  virtual task check_alert_interrupts();
+    bit [TL_DW-1:0] intr;
+    csr_rd(.ptr(ral.intr_state), .value(intr));
+    csr_wr(.csr(ral.intr_state), .value('1));
   endtask
 
   virtual task clear_esc();
@@ -165,15 +189,25 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
+  virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
+    csr_wr(.csr(ral.ping_timeout_cyc), .value(timeout_val));
+    if (!config_locked) begin
+      if (timeout_val == 0) timeout_val = 1;
+      foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;
+      foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].ping_timeout_cycle = timeout_val;
+    end
+  endtask
+
   // This sequence will automatically response to all escalation ping and esc responses
-  virtual task run_esc_rsp_seq_nonblocking();
+  virtual task run_esc_rsp_seq_nonblocking(bit [alert_pkg::N_ESC_SEV-1:0] esc_int_errs = '0);
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
+          bit esc_int_err = esc_int_errs[index] ? $urandom_range(0, 1) : 0;
           esc_receiver_esc_rsp_seq esc_seq =
               esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 0;);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;)
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
         end
       join_none
@@ -181,14 +215,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This task will response to all alert_ping
-  virtual task run_alert_ping_rsp_seq_nonblocking();
+  virtual task run_alert_ping_rsp_seq_nonblocking(bit [alert_pkg::NAlerts-1:0] alert_int_err);
     foreach (cfg.alert_host_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
+          bit alert_timeout = alert_int_err[index] ? $urandom_range(0, 1) : 0;
           alert_sender_ping_rsp_seq ping_seq =
               alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0;);
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; timeout == alert_timeout;)
           ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
         end
       join_none

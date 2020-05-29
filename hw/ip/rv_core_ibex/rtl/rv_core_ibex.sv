@@ -97,10 +97,13 @@ module rv_core_ibex #(
   logic        rvfi_halt;
   logic        rvfi_intr;
   logic [ 1:0] rvfi_mode;
+  logic [ 1:0] rvfi_ixl;
   logic [ 4:0] rvfi_rs1_addr;
   logic [ 4:0] rvfi_rs2_addr;
+  logic [ 4:0] rvfi_rs3_addr;
   logic [31:0] rvfi_rs1_rdata;
   logic [31:0] rvfi_rs2_rdata;
+  logic [31:0] rvfi_rs3_rdata;
   logic [ 4:0] rvfi_rd_addr;
   logic [31:0] rvfi_rd_wdata;
   logic [31:0] rvfi_pc_rdata;
@@ -113,78 +116,81 @@ module rv_core_ibex #(
 `endif
 
   ibex_core #(
-     .PMPEnable                ( PMPEnable                ),
-     .PMPGranularity           ( PMPGranularity           ),
-     .PMPNumRegions            ( PMPNumRegions            ),
-     .MHPMCounterNum           ( MHPMCounterNum           ),
-     .MHPMCounterWidth         ( MHPMCounterWidth         ),
-     .RV32E                    ( RV32E                    ),
-     .RV32M                    ( RV32M                    ),
-     .BranchTargetALU          ( BranchTargetALU          ),
-     .WritebackStage           ( WritebackStage           ),
-     .MultiplierImplementation ( MultiplierImplementation ),
-     .DbgTriggerEn             ( DbgTriggerEn             ),
-     .DmHaltAddr               ( DmHaltAddr               ),
-     .DmExceptionAddr          ( DmExceptionAddr          )
+    .PMPEnable                ( PMPEnable                ),
+    .PMPGranularity           ( PMPGranularity           ),
+    .PMPNumRegions            ( PMPNumRegions            ),
+    .MHPMCounterNum           ( MHPMCounterNum           ),
+    .MHPMCounterWidth         ( MHPMCounterWidth         ),
+    .RV32E                    ( RV32E                    ),
+    .RV32M                    ( RV32M                    ),
+    .BranchTargetALU          ( BranchTargetALU          ),
+    .WritebackStage           ( WritebackStage           ),
+    .MultiplierImplementation ( MultiplierImplementation ),
+    .DbgTriggerEn             ( DbgTriggerEn             ),
+    .DmHaltAddr               ( DmHaltAddr               ),
+    .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
-     .clk_i,
-     .rst_ni,
+    .clk_i,
+    .rst_ni,
 
-     .test_en_i,
+    .test_en_i,
 
-     .hart_id_i,
-     .boot_addr_i,
+    .hart_id_i,
+    .boot_addr_i,
 
-     .instr_req_o    ( instr_req    ),
-     .instr_gnt_i    ( instr_gnt    ),
-     .instr_rvalid_i ( instr_rvalid ),
-     .instr_addr_o   ( instr_addr   ),
-     .instr_rdata_i  ( instr_rdata  ),
-     .instr_err_i    ( instr_err    ),
+    .instr_req_o    ( instr_req    ),
+    .instr_gnt_i    ( instr_gnt    ),
+    .instr_rvalid_i ( instr_rvalid ),
+    .instr_addr_o   ( instr_addr   ),
+    .instr_rdata_i  ( instr_rdata  ),
+    .instr_err_i    ( instr_err    ),
 
-     .data_req_o     ( data_req     ),
-     .data_gnt_i     ( data_gnt     ),
-     .data_rvalid_i  ( data_rvalid  ),
-     .data_we_o      ( data_we      ),
-     .data_be_o      ( data_be      ),
-     .data_addr_o    ( data_addr    ),
-     .data_wdata_o   ( data_wdata   ),
-     .data_rdata_i   ( data_rdata   ),
-     .data_err_i     ( data_err     ),
+    .data_req_o     ( data_req     ),
+    .data_gnt_i     ( data_gnt     ),
+    .data_rvalid_i  ( data_rvalid  ),
+    .data_we_o      ( data_we      ),
+    .data_be_o      ( data_be      ),
+    .data_addr_o    ( data_addr    ),
+    .data_wdata_o   ( data_wdata   ),
+    .data_rdata_i   ( data_rdata   ),
+    .data_err_i     ( data_err     ),
 
-     .irq_software_i,
-     .irq_timer_i,
-     .irq_external_i,
-     .irq_fast_i,
-     .irq_nm_i,
+    .irq_software_i,
+    .irq_timer_i,
+    .irq_external_i,
+    .irq_fast_i,
+    .irq_nm_i,
 
-     .debug_req_i,
+    .debug_req_i,
 
 `ifdef RVFI
-     .rvfi_valid,
-     .rvfi_order,
-     .rvfi_insn,
-     .rvfi_trap,
-     .rvfi_halt,
-     .rvfi_intr,
-     .rvfi_mode,
-     .rvfi_rs1_addr,
-     .rvfi_rs2_addr,
-     .rvfi_rs1_rdata,
-     .rvfi_rs2_rdata,
-     .rvfi_rd_addr,
-     .rvfi_rd_wdata,
-     .rvfi_pc_rdata,
-     .rvfi_pc_wdata,
-     .rvfi_mem_addr,
-     .rvfi_mem_rmask,
-     .rvfi_mem_wmask,
-     .rvfi_mem_rdata,
-     .rvfi_mem_wdata,
+    .rvfi_valid,
+    .rvfi_order,
+    .rvfi_insn,
+    .rvfi_trap,
+    .rvfi_halt,
+    .rvfi_intr,
+    .rvfi_mode,
+    .rvfi_ixl,
+    .rvfi_rs1_addr,
+    .rvfi_rs2_addr,
+    .rvfi_rs3_addr,
+    .rvfi_rs1_rdata,
+    .rvfi_rs2_rdata,
+    .rvfi_rs3_rdata,
+    .rvfi_rd_addr,
+    .rvfi_rd_wdata,
+    .rvfi_pc_rdata,
+    .rvfi_pc_wdata,
+    .rvfi_mem_addr,
+    .rvfi_mem_rmask,
+    .rvfi_mem_wmask,
+    .rvfi_mem_rdata,
+    .rvfi_mem_wdata,
 `endif
 
-     .fetch_enable_i,
-     .core_sleep_o
+    .fetch_enable_i,
+    .core_sleep_o
   );
 
   //
@@ -276,10 +282,13 @@ module rv_core_ibex #(
     .rvfi_halt,
     .rvfi_intr,
     .rvfi_mode,
+    .rvfi_ixl,
     .rvfi_rs1_addr,
     .rvfi_rs2_addr,
+    .rvfi_rs3_addr,
     .rvfi_rs1_rdata,
     .rvfi_rs2_rdata,
+    .rvfi_rs3_rdata,
     .rvfi_rd_addr,
     .rvfi_rd_wdata,
     .rvfi_pc_rdata,

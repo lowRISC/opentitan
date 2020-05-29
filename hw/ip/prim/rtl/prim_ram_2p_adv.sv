@@ -17,42 +17,41 @@
 `include "prim_assert.sv"
 
 module prim_ram_2p_adv #(
-  parameter int Depth = 512,
-  parameter int Width = 32,
-  parameter int CfgW = 8,     // WTC, RTC, etc
+  parameter  int Depth                = 512,
+  parameter  int Width                = 32,
+  parameter  int CfgW                 = 8, // WTC, RTC, etc
+  parameter      MemInitFile          = "", // VMEM file to initialize the memory with
 
   // Configurations
-  parameter bit EnableECC            = 0,
-  parameter bit EnableParity         = 0,
-  parameter bit EnableInputPipeline  = 0,
-  parameter bit EnableOutputPipeline = 0,
+  parameter  bit EnableECC            = 0,
+  parameter  bit EnableParity         = 0,
+  parameter  bit EnableInputPipeline  = 0,
+  parameter  bit EnableOutputPipeline = 0,
 
-  parameter MemT = "REGISTER", // can be "REGISTER" or "SRAM"
+  parameter      MemT                 = "REGISTER", // can be "REGISTER" or "SRAM"
 
-  // Do not touch
-  parameter int SramAw = $clog2(Depth)
+  localparam int Aw                   = $clog2(Depth)
 ) (
-  input clk_i,
-  input rst_ni,
+  input                     clk_i,
+  input                     rst_ni,
 
   input                     a_req_i,
   input                     a_write_i,
-  input        [SramAw-1:0] a_addr_i,
+  input        [Aw-1:0]     a_addr_i,
   input        [Width-1:0]  a_wdata_i,
-  output logic              a_rvalid_o,
   output logic [Width-1:0]  a_rdata_o,
-  output logic [1:0]        a_rerror_o,
+  output logic              a_rvalid_o, // read response (a_rdata_o) is valid
+  output logic [1:0]        a_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   input                     b_req_i,
   input                     b_write_i,
-  input        [SramAw-1:0] b_addr_i,
+  input        [Aw-1:0]     b_addr_i,
   input        [Width-1:0]  b_wdata_i,
-  output logic              b_rvalid_o,
   output logic [Width-1:0]  b_rdata_o,
+  output logic              b_rvalid_o, // read response (b_rdata_o) is valid
   output logic [1:0]        b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
-  // config
-  input [CfgW-1:0] cfg_i
+  input        [CfgW-1:0]   cfg_i
 );
 
   // Calculate ECC width
@@ -65,9 +64,13 @@ module prim_ram_2p_adv #(
                              (Width <= 120) ? 8 : 8 ;
   localparam int TotalWidth = Width + ParWidth;
 
+  // We will eventually use cfg_i for RTC/WTC or other memory parameters.
+  logic [CfgW-1:0] unused_cfg;
+  assign unused_cfg = cfg_i;
+
   logic                  a_req_q,    a_req_d ;
   logic                  a_write_q,  a_write_d ;
-  logic [SramAw-1:0]     a_addr_q,   a_addr_d ;
+  logic [Aw-1:0]         a_addr_q,   a_addr_d ;
   logic [TotalWidth-1:0] a_wdata_q,  a_wdata_d ;
   logic                  a_rvalid_q, a_rvalid_d, a_rvalid_sram ;
   logic [Width-1:0]      a_rdata_q,  a_rdata_d ;
@@ -76,7 +79,7 @@ module prim_ram_2p_adv #(
 
   logic                  b_req_q,    b_req_d ;
   logic                  b_write_q,  b_write_d ;
-  logic [SramAw-1:0]     b_addr_q,   b_addr_d ;
+  logic [Aw-1:0]         b_addr_q,   b_addr_d ;
   logic [TotalWidth-1:0] b_wdata_q,  b_wdata_d ;
   logic                  b_rvalid_q, b_rvalid_d, b_rvalid_sram ;
   logic [Width-1:0]      b_rdata_q,  b_rdata_d ;
@@ -85,10 +88,13 @@ module prim_ram_2p_adv #(
 
   if (MemT == "REGISTER") begin : gen_regmem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth),
       // force register implementation for all targets
-      .Impl(prim_pkg::ImplGeneric)
+      .Impl            (prim_pkg::ImplGeneric),
+
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
@@ -97,19 +103,23 @@ module prim_ram_2p_adv #(
       .a_write_i  (a_write_q),
       .a_addr_i   (a_addr_q),
       .a_wdata_i  (a_wdata_q),
+      .a_wmask_i  ({TotalWidth{1'b1}}),
       .a_rdata_o  (a_rdata_sram),
 
       .b_req_i    (b_req_q),
       .b_write_i  (b_write_q),
       .b_addr_i   (b_addr_q),
       .b_wdata_i  (b_wdata_q),
+      .b_wmask_i  ({TotalWidth{1'b1}}),
       .b_rdata_o  (b_rdata_sram)
     );
   // end else if (TotalWidth == aa && Depth == yy) begin
   end else if (MemT == "SRAM") begin : gen_srammem
     prim_ram_2p #(
-      .Width (TotalWidth),
-      .Depth (Depth)
+      .Width           (TotalWidth),
+      .Depth           (Depth),
+      .DataBitsPerMask (TotalWidth),
+      .MemInitFile     (MemInitFile)
     ) u_mem (
       .clk_a_i    (clk_i),
       .clk_b_i    (clk_i),
@@ -118,12 +128,14 @@ module prim_ram_2p_adv #(
       .a_write_i  (a_write_q),
       .a_addr_i   (a_addr_q),
       .a_wdata_i  (a_wdata_q),
+      .a_wmask_i  ({TotalWidth{1'b1}}),
       .a_rdata_o  (a_rdata_sram),
 
       .b_req_i    (b_req_q),
       .b_write_i  (b_write_q),
       .b_addr_i   (b_addr_q),
       .b_wdata_i  (b_wdata_q),
+      .b_wmask_i  ({TotalWidth{1'b1}}),
       .b_rdata_o  (b_rdata_sram)
     );
   end

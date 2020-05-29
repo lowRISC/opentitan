@@ -20,27 +20,6 @@ class riscv_b_instr extends riscv_instr;
   rand riscv_reg_t rs3;
   bit has_rs3 = 1'b0;
 
-  constraint single_bit_shift_c {
-    if (category == SHIFT) {
-      imm inside {[0:31]};
-    }
-  }
-
-  constraint shuffle_c {
-    if (instr_name inside {SHFLI, UNSHFLI}) {
-      imm inside {[0:15]};
-    }
-  }
-
-  constraint or_combine_c {
-    if (instr_name inside {GORCI}) {
-      imm inside {[0:31]};
-    }
-    if (instr_name inside {GORCIW}) {
-      imm inside {[0:63]};
-    }
-  }
-
   `uvm_object_utils(riscv_b_instr)
 
   function new(string name = "");
@@ -51,6 +30,13 @@ class riscv_b_instr extends riscv_instr;
     super.set_rand_mode();
     has_rs3 = 1'b0;
     case (format) inside
+      R_FORMAT: begin
+        if (instr_name inside {CLZW, CTZW, PCNTW, SEXT_B, SEXT_H, CLZ, CTZ, PCNT, BMATFLIP,
+                               CRC32_B, CRC32_H, CRC32_W, CRC32C_B, CRC32C_H, CRC32C_W, CRC32_D,
+                               CRC32C_D}) begin
+          has_rs2 = 1'b0;
+        end
+      end
       R4_FORMAT: begin
         has_imm = 1'b0;
         has_rs3 = 1'b1;
@@ -75,25 +61,19 @@ class riscv_b_instr extends riscv_instr;
 
     if (format inside {I_FORMAT}) begin
       if (category inside {SHIFT, LOGICAL}) begin
-        imm_len = 7;
-
-        if (group == RV64B) begin
-          imm_len = 5;
-          if (instr_name inside {SLLIU_W}) begin
-            imm_len = 6;
-          end
-        end
-
-        if ((group == RV32B) && (imm_type == UIMM)) begin
-          imm_len = 6;
+        if (group == RV64B && !(instr_name inside {SLLIU_W})) begin
+          imm_len = $clog2(XLEN) - 1;
+        end else begin
+          imm_len = $clog2(XLEN);
         end
       end
 
-      if ((category inside {ARITHMETIC}) && (group == RV32B)) begin
-        imm_len = 5;
+      // ARITHMETIC RV32B
+      if (instr_name inside {SHFLI, UNSHFLI}) begin
+        imm_len = $clog2(XLEN) - 1;
       end
-
-      if ((category inside {ARITHMETIC}) && (group == RV64B)) begin
+      // ARITHMETIC RV64B
+      if (instr_name inside {ADDIWU}) begin
         imm_len = 12;
       end
     end
@@ -115,9 +95,7 @@ class riscv_b_instr extends riscv_instr;
       end
 
       R_FORMAT: begin  //instr rd rs1
-        if (instr_name inside {CLZW, CTZW, PCNTW, SEXT_B, SEXT_H, CLZ, CTZ, PCNT, BMATFLIP,
-                               CRC32_B, CRC32_H, CRC32_W, CRC32C_B, CRC32C_H, CRC32C_W, CRC32_D,
-                               CRC32C_D}) begin
+        if (!has_rs2) begin
           asm_str_final = $sformatf("%0s%0s, %0s", asm_str, rd.name(), rs1.name());
         end
       end
@@ -473,9 +451,9 @@ class riscv_b_instr extends riscv_instr;
   virtual function bit is_supported(riscv_instr_gen_config cfg);
     return cfg.enable_b_extension && (
            (ZBB inside {cfg.enable_bitmanip_groups} && instr_name inside {
-               CLZ, CTZ, PCNT,
+               CLZ, CTZ, CLZW, CTZW, PCNT, PCNTW,
                SLO, SLOI, SLOW, SLOIW,
-               SRO, SLOI, SROW, SLOIW,
+               SRO, SROI, SROW, SROIW,
                MIN, MINU, MAX, MAXU,
                ADDWU, ADDIWU, SUBWU,
                ADDU_W, SUBU_W,
@@ -512,7 +490,11 @@ class riscv_b_instr extends riscv_instr;
                }) ||
            (ZBT inside {cfg.enable_bitmanip_groups} && instr_name inside {
                CMOV, CMIX,
-               FSL, FSLW, FSR, FSRW, FSRI, FSRIW}));
+               FSL, FSLW, FSR, FSRW, FSRI, FSRIW}) ||
+           // TODO, spec 0.92 doesn't categorize these 2 instr, put them in ZB_TMP #572
+           (ZB_TMP inside {cfg.enable_bitmanip_groups} && instr_name inside {
+               SEXT_B, SEXT_H})
+           );
   endfunction
 
 endclass

@@ -4,6 +4,8 @@
 
 //! A simple alarm implementation to display a binary counter over GPIO.
 
+use tock::kernel;
+
 use core::cell::Cell;
 use kernel::hil::time::{Alarm, AlarmClient, Frequency};
 use kernel::debug;
@@ -60,9 +62,9 @@ impl<'a, A: Alarm<'a>> AlarmClient for CounterAlarm<'a, A> {
         for pin in self.count_pins {
             unsafe {
                 if count & 1 != 0 {
-                    kernel::hil::gpio::Pin::set(&ibex::gpio::PORT[*pin])
+                    kernel::hil::gpio::Pin::set(&earlgrey::gpio::PORT[*pin])
                 } else {
-                    kernel::hil::gpio::Pin::clear(&ibex::gpio::PORT[*pin])
+                    kernel::hil::gpio::Pin::clear(&earlgrey::gpio::PORT[*pin])
                 }
             }
             count >>= 1;

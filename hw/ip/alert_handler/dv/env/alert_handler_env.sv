@@ -36,9 +36,6 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("esc_device_agent[%0d]", i), "cfg", cfg.esc_device_cfg[i]);
     end
     // get vifs
-    if (!uvm_config_db#(esc_en_vif)::get(this, "", "esc_en_vif", cfg.esc_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get esc_en_vif from uvm_config_db")
-    end
     if (!uvm_config_db#(entropy_vif)::get(this, "", "entropy_vif", cfg.entropy_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get entropy_vif from uvm_config_db")
     end

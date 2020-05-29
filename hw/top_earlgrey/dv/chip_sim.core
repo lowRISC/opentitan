@@ -11,11 +11,16 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:ip:tlul
       - lowrisc:dv:chip_test
       - lowrisc:dv:xbar_main_bind
       - lowrisc:dv:xbar_peri_bind
+      - lowrisc:dv:xbar_test
+      - lowrisc:dv:xbar_macros
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}
+      - autogen/tb__xbar_connect.sv: {is_include_file: true}
+      - autogen/xbar_env_pkg__params.sv: {is_include_file: true}
       - tb/tb.sv
     file_type: systemVerilogSource
 

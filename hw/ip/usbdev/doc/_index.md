@@ -21,6 +21,7 @@ The IP block implements the following features:
 - Support for Bulk, Control, Interrupt and Isochronous endpoints and transactions
 - Streaming possible through software
 - Interrupts for packet reception and transmission
+- Flippable D+/D- pins, configurable via software, useful if it helps routing the PCB or if D+/D- are mapped to SBU1/SBU2 pins of USB-C
 
 Isochronous transfers larger than 64 bytes are currently not supported.
 This feature might be added in a later version of this IP.
@@ -53,6 +54,14 @@ The USB Full-Speed interface runs at a data rate of 12 MHz.
 The interface runs at four times this frequency and must be clocked from an accurate 48 MHz clock source.
 The USB specification for a Full-Speed device requires the average bit rate is 12 Mbps +/- 0.25%, so the clock needs to support maximum error of 2,500 ppm.
 The maximum allowable integrated jitter is +/- 1 ns over 1 to 7 bit periods.
+
+This module features the following output signals to provide a reference for synchronizing the 48 MHz clock source:
+- `usb_ref_pulse_o` indicates the reception of a start of frame (SOF) packet.
+  The host is required to send a SOF packet every 1 ms.
+- `usb_ref_val_o` serves as a valid signal for `usb_ref_pulse_o`.
+  It is set to one after the first SOF packet is received and remains high as long as `usb_ref_pulse_o` continues to behave as expected.
+  As soon as it is detected that SOF will not be received as expected (usually because the link is no longer active), `usb_ref_val_o` deasserts to zero until after the next `usb_ref_pulse_o`.
+Both these signals are synchronous to the 48 MHz clock.
 
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port
@@ -111,11 +120,11 @@ The following table summarizes how the different input signals relate to the USB
 
 The USB device features the following non-data pins.
 
-|  External Pins | Internal Signals | Notes |
-|----------------|------------------|-------|
-| sense (VBUS)   | sense_i          | The sense pin indicates the presence of VBUS from the USB host. |
-| [pullup]       | pullup_o         | When the pullup_o asserts a 1.5k pullup resistor should be connected to D+. This can be done inside the chip or with an external pin. A permanently connected resistor can also be used. |
-| [suspend]      | suspend_o        | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
+|  External Pins | Internal Signals         | Notes |
+|----------------|--------------------------|-------|
+| sense (VBUS)   | sense_i                  | The sense pin indicates the presence of VBUS from the USB host. |
+| [pullup]       | dp_pullup_o, dn_pullup_o | When dp_pullup_o or dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in {{< regref "phy_config" >}}. Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, dp_pullup_o is used. |
+| [suspend]      | suspend_o                | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
 
 The USB host will identify itself to the device by enabling the 5V VBUS power.
 It may do a hard reset of a port by removing and reasserting VBUS (the Linux driver will do this when it finds a port in an inconsistent state or a port that generates errors during enumeration).
@@ -124,11 +133,39 @@ This pin is always an input and should be externally connected to detect the sta
 Note that this may require a resistor divider or (for USB-C where VBUS can be up to 20V) active level translation to an acceptable voltage for the input pin.
 
 A Full-Speed device identifies itself by providing a 1.5k pullup resistor (to 3.3V) on the D+ line.
-The IP block produces a signal `pullup_o` that is asserted when this resistor should be presented.
+The IP block produces a signal `dp_pullup_o` that is asserted when this resistor should be presented.
 This signal will be asserted whenever the interface is enabled.
 In an FPGA implementation, this signal can drive a 3.3V output pin that is driven high when the signal is asserted and set high impedance when the signal is deasserted, and the output pin used to drive a 1.5k resistor connected on the board to the D+ line.
 Alternatively, it can be used to enable an internal 1.5k pullup on the D+ pin.
 
+This USB device supports the flipping of D+/D-.
+If the `pinflip` bit in {{< regref "phy_config" >}} is set, the data pins are flipped internally, meaning the 1.5k pullup resistor needs to be on the external D- line.
+To control the pullup on the D- line, this USB device features `dn_pullup_o` signal.
+Of the two pullup signals `dp_pullup_o` and `dn_pullup_o`, only one can be enabled at any time.
+As this is a Full-Speed device, `dp_pullup_o`, i.e., the pullup on D+ is used by default (`pinflip` equals zero).
+
+### FPGA Board Implementation With PMOD
+
+The interface was developed using the Digilent Nexys Video board with a PMOD card attached.
+A PMOD interface with direct connection to the SoC should be used (some PMOD interfaces include 100R series resistors which break the signal requirements for USB).
+The PMOD card includes two USB micro-B connectors and allows two USB interfaces to be used.
+The D+ and D- signals have 22R series resistors (in line with the USB spec) and there is a 1.5k pullup on D+ to the pullup enable signal.
+There is a resistive divider to set the sense pin at half of the VBUS voltage which enables detection on the FPGA without overvoltage on the pin.
+
+![PMOD Schematic](dualpmod-sch.svg)
+
+The PMOD PCB is [available from OSH Park](https://oshpark.com/shared_projects/xMKhTIHn).
+
+The PMOD design files for KiCad version 5 are in the [`usbdev/pmod`](https://github.com/lowRISC/opentitan/tree/master/hw/ip/usbdev/pmod) directory. 
+The BOM can be filled by parts from Digikey.
+
+| Item | Qty | Reference(s) | Value | LibPart | Footprint | Datasheet | Category | DK_Datasheet_Link | DK_Detail_Page | Description | Digi-Key_PN | Family | MPN | Manufacturer | Status|
+|------|-----|--------------|-------|---------|-----------|-----------|----------|-------------------|----------------|-------------|-------------|--------|-----|--------------|-------|
+| 1 | 2 | J1, J2 | 10118193-0001LF | dualpmod-rescue:10118193-0001LF-dk_USB-DVI-HDMI-Connectors | digikey-footprints:USB_Micro_B_Female_10118193-0001LF | http://www.amphenol-icc.com/media/wysiwyg/files/drawing/10118193.pdf | Connectors, Interconnects | http://www.amphenol-icc.com/media/wysiwyg/files/drawing/10118193.pdf | /product-detail/en/amphenol-icc-fci/10118193-0001LF/609-4616-1-ND/2785380 | CONN RCPT USB2.0 MICRO B SMD R/A | 609-4616-1-ND | USB, DVI, HDMI Connectors | 10118193-0001LF | Amphenol ICC (FCI) | Active|
+| 2 | 1 | J3 | 68021-412HLF | dualpmod-rescue:68021-412HLF-dk_Rectangular-Connectors-Headers-Male-Pins | digikey-footprints:PinHeader_6x2_P2.54mm_Horizontal | https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/68020.pdf | Connectors, Interconnects | https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/68020.pdf | /product-detail/en/amphenol-icc-fci/68021-412HLF/609-3355-ND/1878558 | CONN HEADER R/A 12POS 2.54MM | 609-3355-ND | Rectangular Connectors - Headers, Male Pins | 68021-412HLF | Amphenol ICC (FCI) | Active|
+| 3 | 4 | R1, R2, R7, R8 | 5k1 | Device:R_Small_US | Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder | ~ |  |  |  |  | A126379CT-ND |  |  |  | |
+| 4 | 4 | R3, R4, R5, R6 | 22R | Device:R_Small_US | Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder | ~ |  |  |  |  | A126352CT-ND |  |  |  | |
+| 5 | 2 | R9, R10 | 1k5 | Device:R_Small_US | Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder | ~ |  |  |  |  | A106057CT-ND |  |  |  | |
 
 ## Hardware Interfaces
 

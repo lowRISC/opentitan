@@ -37,13 +37,19 @@ filesets:
       - lint/aes.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
   [...]
 
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
     toplevel: aes
 
@@ -58,33 +64,38 @@ targets:
         verilator_options:
           - "-Wall"
 ```
-Note that the setup shown above also supports Verilator lint as a fall-back option that is open source.
-The same lint target is reused however for both AscentLint and Verilator (we override the tool selection when invoking FuseSoC).
+Note that the setup shown above also supports RTL style linting with the open source tool [Verible](https://github.com/google/verible/) and RTL linting with [Verilator](https://www.veripool.org/wiki/verilator) in order to complement the sign-off lint flow with AscentLint.
+In particular, Verible lint focuses on different aspects of the code, and detects style elements that are in violation with our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+
+The same lint target is reused for all three tools (we override the tool selection when invoking FuseSoC).
 Lint waivers can be added to the flow by placing them in the corresponding waiver file.
 In this example this would be `lint/aes.waiver` for AscentLint and `lint/aes.vlt` for Verilator.
 
 In order to manually run lint on a specific block, make sure AscentLint is properly installed and step into the `hw/lint` folder.
 The makefile in that folder contains all targets that can be manually invoked.
 For example, to run lint on AES, do:
-```
-make ip-aes_lint
+```console
+$ cd $REPO_TOP/hw/lint
+$ make ip-aes_lint
 ```
 This run will exit with PASSED status on the command line if there are no lint errors or warnings.
 Otherwise it will exit with ERROR status, in which case you can get more information by running
-```
-make clean
-make ip-aes_lint
-make report
+```console
+$ cd $REPO_TOP/hw/lint
+$ make clean
+$ make ip-aes_lint
+$ make report
 ```
 In order to build all lint targets and produce a summary report, the `make all` target can be invoked.
 For more detailed information on a particular lint run you can inspect the tool output inside the build folder that is created by FuseSoC.
 
-Note that all AscentLint targets have a Verilator counterpart that is suffixed with `_vlint` instead of `_lint`.
-This enables designers without access to AscentLint to iterate with an open-source tool before making their first Pull Request.
+Note that all AscentLint targets have a Verilator and Verible counterparts that are suffixed with `_vlint` and `_slint`, respectively.
+This enables designers without access to AscentLint to iterate with open-source tools before making their first Pull Request.
 
 For batch regressions we have integrated this flow into the `dvsim` tool, which can be invoked as follows from the root of the project repository:
-```
-util/dvsim.py hw/top_earlgrey/lint/ascentlint/top_earlgrey_lint_cfgs.hjson --tool "ascentlint" --purge -mp 1
+```console
+$ cd $REPO_TOP
+$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool ascentlint --purge -mp 1
 ```
 where the `top_earlgrey_lint_cfgs.hjson` file contains all the lint targets to be run in that regression (currently all available comportable IPs and the top-level are run).
 The `purge` option ensures that the scratch directory is fully erased before starting the build, and `mp 1` sets the number of parallel workers to one (should be set depending on your licensing situation).

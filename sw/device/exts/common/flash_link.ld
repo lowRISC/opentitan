@@ -16,10 +16,10 @@ GROUP(-lgcc)
  */
 __DYNAMIC = 0;
 
-MEMORY {
-  ram(w)    : ORIGIN = 0x10000000, LENGTH = 0x10000
-  flash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
-}
+/**
+ * Memory definitions are auto-generated.
+ */
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /* Reserving 32 bytes at the top of the RAM for test utils. */
 _test_reserved_size = 0x20;
@@ -29,7 +29,7 @@ _test_reserved_size = 0x20;
  * It is zeroed out so a size must be provided.
  */
 _stack_size = 0x2000 - _test_reserved_size; /* ~8kb stack */
-_stack_start = ORIGIN(ram) + LENGTH(ram) - _test_reserved_size;
+_stack_start = ORIGIN(ram_main) + LENGTH(ram_main) - _test_reserved_size;
 _stack_end = _stack_start - _stack_size;
 
 SECTIONS {
@@ -37,13 +37,13 @@ SECTIONS {
    * The flash header. This will eventually contain other stuff, like a
    * signature, but for now it's just the entry point at offset zero.
    */
-  .flash_header ORIGIN(flash): ALIGN(4) {
+  .flash_header ORIGIN(eflash) : ALIGN(4) {
     /**
      * NOTE:ld scripts do not provide a mechanism to refer to ENTRY,
      * so we just harcode the _start symbol.
      */
     LONG(_start)
-  } > flash
+  } > eflash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
@@ -54,18 +54,15 @@ SECTIONS {
   .crt : ALIGN(4) {
     KEEP(*(.crt))
     *(.crt)
-  } > flash
+  } > eflash
 
   /**
-   * Ibex interrupt vector. See sw/device/lib/irq_vectors.S for more information.
-   *
-   * The 256-byte alignment is required by Ibex's vectoring mechanism.
+   * Ibex interrupt vectors. See 'ibex_interrupt_vectors.S' for more
+   * information.
    */
-  .vectors : ALIGN(0x100) {
-    _vectors_start = .;
-    KEEP(*(.vectors))
+  .vectors : {
     *(.vectors)
-  } > flash
+  } > eflash
 
   /**
    * Standard text section, containing program code.
@@ -73,7 +70,7 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > flash
+  } > eflash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -86,7 +83,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > flash
+  } > eflash
 
   /**
    * "Intitial data" section, the initial values of the mutable data section
@@ -94,13 +91,13 @@ SECTIONS {
    */
   .idata : ALIGN(4) {
     _data_init_start = .;
-  } > flash
+  } > eflash
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
    */
-  .data ORIGIN(ram): AT(_data_init_start) ALIGN(4) {
+  .data ORIGIN(ram_main): AT(_data_init_start) ALIGN(4) {
     _data_start = .;
     __global_pointer$ = . + 2048;
 
@@ -116,7 +113,7 @@ SECTIONS {
     *(.data)
     *(.data.*)
     _data_end = .;
-  } > ram
+  } > ram_main
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -131,7 +128,7 @@ SECTIONS {
     *(.bss.*)
     *(COMMON)
     _bss_end = .;
-  } > ram
+  } > ram_main
 
   /**
    * STAB debug table.

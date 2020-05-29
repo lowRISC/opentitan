@@ -3,7 +3,17 @@
 Debug Support
 =============
 
-Ibex offers support for execution-based debug according to the RISC-V Debug Specification, version 0.13.
+Ibex offers support for execution-based debug according to the `RISC-V Debug Specification <https://riscv.org/specifications/debug-specification/>`_, version 0.13.
+
+
+.. note::
+
+   Debug support in Ibex is only one of the components needed to build a System on Chip design with run-control debug support (think "the ability to attach GDB to a core over JTAG").
+   Additionally, a Debug Module and a Debug Transport Module, compliant with the RISC-V Debug Specification, are needed.
+
+   A supported open source implementation of these building blocks can be found in the `RISC-V Debug Support for PULP Cores IP block <https://github.com/pulp-platform/riscv-dbg/>`_.
+
+   The `OpenTitan project <https://github.com/lowRISC/opentitan>`_ can serve as an example of how to integrate the two components in a toplevel design.
 
 Interface
 ---------

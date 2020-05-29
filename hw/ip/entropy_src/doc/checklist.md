@@ -2,7 +2,7 @@
 title: "ENTROPY_SRC Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/hw_stages.md" >}}) transitions for the [ENTROPY_SRC peripheral.]({{< relref "hw/ip/entropy_src/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [ENTROPY_SRC peripheral.]({{< relref "hw/ip/entropy_src/doc" >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist

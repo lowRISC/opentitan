@@ -11,13 +11,12 @@
 #       e.g. http://localhost:1313/hw/ip/uart/doc
 
 import argparse
-import io
 import logging
 import os
 import platform
 import re
-import shutil
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -56,6 +55,7 @@ config = {
         "hw/ip/hmac/data/hmac.hjson",
         "hw/ip/i2c/data/i2c.hjson",
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
+        "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         "hw/ip/padctrl/data/padctrl.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
         "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
@@ -75,9 +75,11 @@ config = {
     "testplan_definitions": [
         "hw/ip/aes/data/aes_testplan.hjson",
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
+        "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
+        "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
@@ -131,7 +133,7 @@ def generate_hardware_blocks():
         base_path.parent.mkdir(parents=True, exist_ok=True)
 
         regs_html = open(str(base_path.parent.joinpath(base_path.name +
-                                                   '.registers')),
+                                                       '.registers')),
                          mode='w')
         gen_html.gen_html(regs, regs_html)
         regs_html.close()
@@ -168,6 +170,7 @@ def generate_selfdocs():
             elif tool == "tlgen":
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
+
 def generate_apt_reqs():
     """Generate an apt-get command line invocation from apt-requirements.txt
 
@@ -197,6 +200,7 @@ def generate_apt_reqs():
     with open(str(apt_cmd_path), mode='w') as fout:
         fout.write(apt_cmd)
 
+
 def generate_tool_versions():
     """Generate an tool version number requirement from tool_requirements.py
 
@@ -208,24 +212,26 @@ def generate_tool_versions():
     exec(open(requirements_file).read(), globals())
 
     # And then write a version file for every tool.
-    for tool in __TOOL_REQUIREMENTS__:
+    for tool in __TOOL_REQUIREMENTS__:  # noqa: F821
         version_path = config["outdir-generated"].joinpath('version_' + tool + '.txt')
         version_path.parent.mkdir(parents=True, exist_ok=True)
         with open(str(version_path), mode='w') as fout:
-            fout.write(__TOOL_REQUIREMENTS__[tool])
+            fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
 
 
-def is_hugo_extended():
-    args = ["hugo", "version"]
+def hugo_match_version(hugo_bin_path, version):
+    logging.info("Hugo binary path: %s", hugo_bin_path)
+    args = [str(hugo_bin_path), "version"]
     process = subprocess.run(args,
                              universal_newlines=True,
                              stdout=subprocess.PIPE,
                              check=True,
                              cwd=str(SRCTREE_TOP))
 
+    logging.info("Checking for correct Hugo version: %s", version)
     # Hugo version string example:
-    # Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z
-    return bool(re.search("v\d+\.\d+\.\d+.*/extended", process.stdout))
+    # "Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z"  # noqa: E501
+    return bool(re.search("v" + version + ".*/extended", process.stdout))
 
 
 def install_hugo(install_dir):
@@ -243,11 +249,21 @@ def install_hugo(install_dir):
             "currently. Manually install hugo and re-run this script.")
         return False
 
-    download_url = 'https://github.com/gohugoio/hugo/releases/download/v{version}/hugo_extended_{version}_Linux-64bit.tar.gz'.format(
-        version=HUGO_EXTENDED_VERSION)
+    download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
+                    '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
+                        version=HUGO_EXTENDED_VERSION)
 
     install_dir.mkdir(exist_ok=True, parents=True)
     hugo_bin_path = install_dir / 'hugo'
+
+    try:
+        if hugo_match_version(hugo_bin_path, HUGO_EXTENDED_VERSION):
+            return hugo_bin_path
+    except PermissionError:
+        # If there is an error checking the version just continue to download
+        logging.info("Hugo version could not be verified. Continue to download.")
+    except FileNotFoundError:
+        pass
 
     # TODO: Investigate the use of Python builtins for downloading. Extracting
     # the archive will probably will be a call to tar.
@@ -256,15 +272,15 @@ def install_hugo(install_dir):
     logging.info("Calling %s to download hugo.", cmd)
     subprocess.run(cmd, shell=True, check=True, cwd=str(SRCTREE_TOP))
     hugo_bin_path.chmod(0o755)
-    return True
+    return hugo_bin_path
 
 
-def invoke_hugo(preview):
+def invoke_hugo(preview, hugo_bin_path):
     site_docs = SRCTREE_TOP.joinpath('site', 'docs')
     config_file = str(site_docs.joinpath('config.toml'))
     layout_dir = str(site_docs.joinpath('layouts'))
     args = [
-        "hugo",
+        str(hugo_bin_path),
         "--config",
         config_file,
         "--destination",
@@ -291,9 +307,14 @@ def main():
     parser.add_argument(
         '--preview',
         action='store_true',
-        help="""starts a local server with live reload (updates triggered upon
-             changes in the documentation files). this feature is intended
+        help="""Starts a local server with live reload (updates triggered upon
+             changes in the documentation files). This feature is intended
              to preview the documentation locally.""")
+    parser.add_argument(
+        '--force-global',
+        action='store_true',
+        help="""Use a global installation of Hugo. This skips the version
+            check and relies on Hugo to be available from the environment.""")
     parser.add_argument('--hugo', help="""TODO""")
 
     args = parser.parse_args()
@@ -308,18 +329,19 @@ def main():
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
 
-    try:
-        if not is_hugo_extended():
-            logging.info(
-                "Hugo extended (with SASS support) is required, but only non-extended version found. "
-                "Installing local copy and re-trying.")
-            install_hugo(hugo_localinstall_dir)
+    hugo_bin_path = "hugo"
+    if not args.force_global:
+        try:
+            hugo_bin_path = install_hugo(hugo_localinstall_dir)
+        except KeyboardInterrupt:
+            pass
 
-        invoke_hugo(args.preview)
-    except FileNotFoundError:
-        logging.info("Hugo not found. Installing local copy and re-trying.")
-        install_hugo(hugo_localinstall_dir)
-        invoke_hugo(args.preview)
+    try:
+        invoke_hugo(args.preview, hugo_bin_path)
+    except subprocess.CalledProcessError:
+        sys.exit("Error building site")
+    except PermissionError:
+        sys.exit("Error running Hugo")
     except KeyboardInterrupt:
         pass
 

@@ -85,20 +85,6 @@ def get_env_var(var, debug_cmd = None):
   return val
 
 
-def get_seed(seed):
-  """Get the seed to run the generator
-
-  Args:
-    seed : input seed
-
-  Returns:
-    seed to run instruction generator
-  """
-  if seed >= 0:
-    return seed
-  return random.getrandbits(31)
-
-
 def run_cmd(cmd, timeout_s = 999, exit_on_error = 1, check_return_code = True, debug_cmd = None):
   """Run a command and return output
 

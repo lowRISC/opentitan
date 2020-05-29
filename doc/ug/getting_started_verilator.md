@@ -71,6 +71,24 @@ Note that `screen` will only show output that has been generated after `screen` 
 
 You can exit `screen` (in the default configuration) by pressing `CTRL-a k` and confirm with `y`.
 
+If everything is working correctly you should expect to see text like
+the following from the virtual UART (replacing `/dev/pts/11` with the reported
+device):
+
+```console
+$ cat /dev/pts/11
+I00000 boot_rom.c:35] Version:    opentitan-snapshot-20191101-1-1182-g2aedf641
+Build Date: 2020-05-13, 15:04:09
+
+I00001 boot_rom.c:44] Boot ROM initialisation has completed, jump into flash!
+I00000 hello_world.c:30] Hello World!
+I00001 hello_world.c:31] Built at: May 13 2020, 15:27:31
+I00002 demos.c:17] Watch the LEDs!
+I00003 hello_world.c:44] Try out the switches on the board
+I00004 hello_world.c:45] or type anything into the console window.
+I00005 hello_world.c:46] The LEDs show the ASCII code of the last character.
+```
+
 ## Interact with GPIO
 
 The simulation includes a DPI module to map general-purpose I/O (GPIO) pins to two POSIX FIFO files: one for input, and one for output.

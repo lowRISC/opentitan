@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "otp_ctrl",
+    design_spec:        "hw/ip/otp_ctrl/doc",
+    dv_plan:            "",
+    hw_checklist:       "",
+    version:            "0.1",
+    life_stage:         "L0",
+    design_stage:       "D0",
+    verification_stage: "V0",
+    notes:              "",
+}

@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:otp_ctrl_pkg:0.1"
+description: "OTP Controller Package"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:tlul:headers
+
+    files:
+      - rtl/otp_ctrl_reg_pkg.sv
+      - rtl/otp_ctrl_pkg.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

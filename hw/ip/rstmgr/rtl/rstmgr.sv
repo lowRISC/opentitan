@@ -14,8 +14,9 @@ module rstmgr import rstmgr_pkg::*; (
   input clk_i,
   input rst_ni,
   input clk_main_i,
-  input clk_fixed_i,
+  input clk_io_i,
   input clk_usb_i,
+  input clk_aon_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -41,16 +42,43 @@ module rstmgr import rstmgr_pkg::*; (
 );
 
   // receive POR and stretch
-  // TBD
-  // The por release may eventually need to be switched to a slower RTC type clock.
-  // Unless the power manager's default state always requests for the fast clocks to be enabled
-  // by default.
-
+  // The por is at first stretched and synced on clk_aon
   rstmgr_por i_por (
-    .clk_i,
+    .clk_i(clk_aon_i),
     .rst_ni,
     .pok_i(ast_i.vcc_pok & ast_i.alw_pok),
-    .rst_no(resets_o.rst_por_n)
+    .rst_no(resets_o.rst_por_aon_n)
+  );
+
+  // POR usage for the clkmgr
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_por_sync (
+    .clk_i(clk_main_i),
+    .rst_ni(resets_o.rst_por_aon_n),
+    .d(1'b1),
+    .q(resets_o.rst_por_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_por_io_sync (
+    .clk_i(clk_io_i),
+    .rst_ni(resets_o.rst_por_aon_n),
+    .d(1'b1),
+    .q(resets_o.rst_por_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_por_usb_sync (
+    .clk_i(clk_usb_i),
+    .rst_ni(resets_o.rst_por_aon_n),
+    .d(1'b1),
+    .q(resets_o.rst_por_usb_n)
   );
 
   ////////////////////////////////////////////////////
@@ -62,7 +90,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   rstmgr_reg_top i_reg (
     .clk_i,
-    .rst_ni(resets_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_aon_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -82,7 +110,7 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue(0)
   ) i_sync (
     .clk_i,
-    .rst_ni(resets_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_aon_n),
     .d(cpu_i.ndmreset_req),
     .q(ndmreset_req_q)
   );
@@ -106,7 +134,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) i_lc_src (
     .clk_i(clk_i),
-    .rst_ni(resets_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_aon_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -117,7 +145,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) i_sys_src (
     .clk_i(clk_i),
-    .rst_ni(resets_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_aon_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -135,7 +163,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue(0)
   ) i_lc (
-    .clk_i(clk_fixed_i),
+    .clk_i(clk_io_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_o.rst_lc_n)
@@ -154,18 +182,18 @@ module rstmgr import rstmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1),
     .ResetValue(0)
-  ) i_sys_fixed (
-    .clk_i(clk_fixed_i),
+  ) i_sys_io (
+    .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(resets_o.rst_sys_fixed_n)
+    .q(resets_o.rst_sys_io_n)
   );
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue(0)
   ) i_spi_device (
-    .clk_i(clk_fixed_i),
+    .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_spi_device_n.q),
     .q(resets_o.rst_spi_device_n)
@@ -202,7 +230,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Reasons(ResetReasons)
   ) i_info (
     .clk_i,
-    .rst_ni(resets_o.rst_por_n),
+    .rst_ni(resets_o.rst_por_aon_n),
     .rst_cpu_ni(cpu_i.rst_cpu_n),
     .rst_req_i(rst_reqs),
     .wr_i(reg2hw.reset_info.qe),

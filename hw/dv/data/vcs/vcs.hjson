@@ -21,6 +21,10 @@
                "+warn=noUII-L",
                // Below option required for $error/$fatal system calls
                "-assert svaext",
+               // Force unique and priority to evaluate compliance checking only on the stable
+               // and final value of the selection input at the end of a simulation timestep.
+               // See https://github.com/lowRISC/ibex/issues/845.
+               "-xlrm uniq_prior_final",
                // Force DPI-C compilation in C99 mode
                "-CFLAGS \"--std=c99\"",
                // Without this magic LDFLAGS argument below, we get compile time errors with
@@ -33,6 +37,12 @@
   run_opts:   ["-licqueue",
                "-ucli -do {tool_srcs_dir}/vcs_{dump}.tcl",
                "+ntb_random_seed={seed}",
+               // Disable the display of the SystemVerilog assert and cover statement summary
+               // at the end of simulation. This summary is list of assertions that started but
+               // did not finish because the simulation terminated, or assertions that did not
+               // fire at all. The latter is analyzed anyway in the collected coverage. Neither
+               // of these is useful in regular simulations.
+               "-assert nopostproc",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
@@ -117,6 +127,8 @@
                    "-cm {cov_metrics}",
                    // Set the coverage hierarchy
                    "{vcs_cov_hier}",
+                   // Set the assert coverage hierarchy
+                   "{vcs_cov_assert_hier}",
                    // Cover all continuous assignments
                    "-cm_line contassign",
                    // Dump toggle coverage on mdas, array of structs and on ports only
@@ -139,9 +151,7 @@
                    // Don't output cm.log which can be quite large
                    "-cm_log /dev/null",
                    // Provide a name to the coverage collected for this test
-                   "-cm_name {cov_db_test_dir_name}",
-                   // Don't dump all the coverage assertion attempts at the end of simulation
-                   "-assert nopostproc"]
+                   "-cm_name {cov_db_test_dir_name}"]
     }
     {
       name: vcs_xprop
@@ -153,6 +163,12 @@
       is_sim_mode: 1
       build_opts: ["-simprofile"]
       run_opts:   ["-simprofile {profile}"]
+    }
+    {
+      name: vcs_loopdetect
+      is_sim_mode: 1
+      build_opts: ["+vcs+loopreport", "+vcs+loopdetect"]
+      run_opts:   ["+vcs+loopreport", "+vcs+loopdetect"]
     }
   ]
 }

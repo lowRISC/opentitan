@@ -12,7 +12,7 @@ title: "PINMUX DV Plan"
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/hw_stages" >}})
+  * [HW development stages]({{< relref "doc/project/development_stages" >}})
 * FPV dashboard (link TBD)
 
 ## Design features

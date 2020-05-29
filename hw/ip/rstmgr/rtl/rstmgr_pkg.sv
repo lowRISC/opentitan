@@ -28,9 +28,12 @@ package rstmgr_pkg;
   // resets generated and broadcast
   // This should be templatized and generated
   typedef struct packed {
+    logic rst_por_aon_n;
     logic rst_por_n;
+    logic rst_por_io_n;
+    logic rst_por_usb_n;
     logic rst_lc_n;
-    logic rst_sys_fixed_n;
+    logic rst_sys_io_n;
     logic rst_sys_n;
     logic rst_spi_device_n;
     logic rst_usb_n;

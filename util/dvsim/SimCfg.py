@@ -124,7 +124,7 @@ class SimCfg(FlowCfg):
         # TODO: Find a way to set these in sim cfg instead
         ignored_wildcards = [
             "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
-            "cov_db_dirs", "sw_dir", "sw_name", "sw_build_device"
+            "cov_db_dirs", "sw_test", "sw_test_is_prebuilt", "sw_build_device"
         ]
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
@@ -166,12 +166,6 @@ class SimCfg(FlowCfg):
     def __post_init__(self):
         # Run some post init checks
         super().__post_init__()
-
-    @staticmethod
-    def create_instance(flow_cfg_file, proj_root, args):
-        '''Create a new instance of this class as with given parameters.
-        '''
-        return SimCfg(flow_cfg_file, proj_root, args)
 
     def kill(self):
         '''kill running processes and jobs gracefully

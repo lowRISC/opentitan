@@ -106,6 +106,7 @@ This file is specified later within this document.
 | Registers    | mandatory | Each peripheral must define its collection of registers in the specified register format.  The registers are automatically generated in the form of hardware, software, and documentation collateral. Details are available in the register section. |
 | Interrupts   | optional  | Peripherals have the option of generating signals that can be used to interrupt the primary processor.  These are designated as a list of signals, and each results in a single wire or bundled output that is sent to the processor to be gathered as part of its interrupt vector input.  Details can be found in the interrupt and alert section. |
 | Alerts       | optional  | Peripherals have the option of generating signals that indicate a potential security threat. These are designated as a list of signals, and each results in a complementary signal pair that is sent to the alert handling module.  Details are found in the interrupt and alert section. |
+| Inter Signal | optional  | Peripherals have the option of struct signals that connect from/to other peripherals, which are called as Inter-Module Signals in OpenTitan. Details are found in the inter module section.
 | (more)       |           | More will come later, including special handling for testability, power management, device entropy, etc. |
 
 ![Typical Peripheral Block Diagram](comportability_diagram_peripheral.svg)
@@ -223,6 +224,15 @@ For each alert in the full system, a corresponding set of signals will be genera
 
 See the section on [Alert Handling](#alert-handling) below, which defines details on register, hardware, and software uniformity for alerts within the project.
 
+### Inter-module signal
+
+The peripherals in OpenTitan have optional signals connecting between the peripherals other than the interrupts and alerts.
+The peripheral lists its collection of inter-module signals with the `inter_signal_list` attribute in the configuration file.
+The peripheral defines the type of inter-module signals.
+The connection between the modules are defined in the top-level configuration file.
+
+See the section on [Inter Signal Handling](#inter-signal-handling) below for detailed data structure in the configuration file.
+
 ## Register Handling
 
 The definition and handling of registers is a topic all on its own, and is specified in its [own document]({{< relref "doc/rm/register_tool" >}}).
@@ -269,6 +279,22 @@ In this example, the IP name is `uart`, though the other configuration fields ar
       { name: "uart_breach", desc: "Someone has attacked the ..."}
       { name: "uart_frozen", desc: "The UART lines are frozen..." }
     ],
+    inter_signal_list: [
+      { name: "msg_fifo",
+        struct: "fifo",
+        package: "msg_fifo_pkg",
+        type: "req_rsp",
+        act: "req",
+        width: 1
+      }
+      { name: "suspend",
+        struct: "logic",
+        package: "",
+        type: "uni",
+        act: "rcv",
+        width: 1
+      }
+    ]
     regwidth: "32", // standard register width
     register: [
       // Register information...
@@ -429,3 +455,26 @@ multiple ones can be bundled depending upon the distinction required within the 
 The `prim_alert_sender` converts the event into a differentially encoded signal pair to be routed to the hardware alert handler, as dictated by the details in the
 [alert handler specification]({{< relref "/hw/ip/alert_handler/doc" >}}).
 The alert handler module is automatically generated to have enough alert ports to represent each alert declared in the different included peripheral IP configuration files.
+
+## Inter Signal Handling
+
+Inter-module signal is a term that describes bundled signals connecting instances in the top.
+A few peripherals can be stand-alone such as GPIO and UART peripherals.
+They don't need to talk with other modules other than reporting the interrupts to the main processor.
+By contrast, many peripherals and the main processing unit in OpenTitan communicate between the modules.
+For example, `flash_ctrl` sends requests to the flash macro for read/ program/ erase operations.
+
+Inter-module signal aims to handle the connection by the tool [topgen]({{<relref "/doc/rm/topgen_tool" >}})
+
+### Defining the inter-module signal
+
+The example configuaration file above specifies two cases of inter-module signals, `msg_fifo` and `suspend`.
+
+| Attribute | Mand/Opt  | Description |
+| --------- | --------- | ----------- |
+| name      | mandatory | `name` attribute specifies the port name of the inter-module signal. If the type is `req_rsp`, it indicates the peripheral has `name`_req , `name`_rsp ports (with `_i` and `_o` suffix) |
+| struct    | mandatory | The `struct` field defines the signal's data structure. The inter-module signal is generally bundled into `struct packed` type. This `struct` is used with `package` for topgen tool to define the signal. If the inter-module signal is `logic` type, `package` field can be omitted. |
+| package   | optional  |             |
+| type      | mandatory | There are two types of inter-module signal. `req_rsp` is a connection that a module sends requests and the other module returns with responses. `uni` is one-way signal, which can be used as a broadcasting signal or signals that don't need the response. |
+| act       | mandatory | `act` attribute pairs with the `type`. It specifies the input/output of the signal in the peripheral. `req_rsp` type can have `req`(requester) or `rsp`(responder) in `act` field. `uni` type can have `req` or `rcv`(receiver) in `act`. |
+| width     | optional  | If `width` is not 1 or undefined, the port is defined as a vector of struct. It, then, can be connected to multiple peripherals. Currently, `logic` doesn't support the connection to multiple modules if `width` is not 1. |

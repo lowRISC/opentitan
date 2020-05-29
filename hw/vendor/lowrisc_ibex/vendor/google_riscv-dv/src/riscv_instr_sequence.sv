@@ -252,7 +252,7 @@ class riscv_instr_sequence extends uvm_sequence;
   // Convert the instruction stream to the string format.
   // Label is attached to the instruction if available, otherwise attach proper space to make
   // the code indent consistent.
-  function void generate_instr_stream(bit no_label = 1'b0);
+  virtual function void generate_instr_stream(bit no_label = 1'b0);
     string prefix, str;
     int i;
     instr_string_list = {};

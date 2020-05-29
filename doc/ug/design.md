@@ -35,7 +35,7 @@ TODO: briefly discuss key architectural decisions, and how we came to the conclu
 Designs within the OpenTitan project come in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of a design is important to gauge the confidence in its advertised feature set.
-To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "doc/project/hw_stages.md" >}}) document.
+To that end, we've designated a spectrum of design stages in the [OpenTitan Hardware Development Stages]({{< relref "doc/project/development_stages.md" >}}) document.
 This document defines the design stages and references where one can find the current status of each of the designs in the repository.
 
 ## Documentation
@@ -69,9 +69,11 @@ Capturing fast and efficient feedback on syntactic and semantic (as well as styl
 Running lint is especially useful with SystemVerilog, a weakly-typed language, unlike more modern hardware description languages.
 Running lint is faster than running a simulation.
 
-We have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/) tool from RealIntent for this task due to its fast run-times and comprehensive set of rules that provide concise error and warning messages.
+### Sign-off Linting using AscentLint
 
-The lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+For sign-off we have standardized on the [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/) tool from RealIntent for this task due to its fast run-times and comprehensive set of rules that provide concise error and warning messages.
+
+The sign-off lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 The lint flow run scripts and waiver files are available in the GitHub repository of this project, but due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
 However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
 This enables designers that have access to this tool to run the lint flow provided locally on their premises.
@@ -85,7 +87,19 @@ Once the Pull Request has been merged, these developers can then work with the m
 
 Note that all designs with enabled AscentLint targets will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
-Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/hw_stages" >}}) document.
+Goals for linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/development_stages" >}}) document.
+
+### Style Linting using Verible
+
+In order to complement the sign-off lint flow explained above, we also leverage the Verible style linter, which captures different aspects of the code and detects style elements that are in violation with our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
+
+The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
+Hence, the recommendation for IP designers is to install the tool as described [here]({{< relref "doc/ug/install_instructions" >}}) and in the [Lint Flow README]({{< relref "hw/lint/doc/README.md" >}}), and use the flow locally to close the errors and warnings.
+
+Note, however, that we do not have a waiver strategy in place yet.
+Until that is the case, the recommendation is to use good judgment and fix all violations that can be addressed without too much effort.
+
+Similarly to the sign-off flow, all designs with enabled Verible lint targets will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
 ## Assertion Methodology
 

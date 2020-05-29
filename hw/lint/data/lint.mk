@@ -19,7 +19,7 @@ pre_compile:
 compile: pre_compile
 	@echo "[make]: compile"
 	# we check the status in the parse script below
-	-cd ${build_dir} && ${build_cmd} ${build_opts} | tee ${build_log}
+	-cd ${build_dir} && ${build_cmd} ${build_opts} 2>&1 | tee ${build_log}
 
 post_compile: compile
 	@echo "[make]: post_compile"

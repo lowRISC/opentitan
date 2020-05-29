@@ -13,10 +13,6 @@ waive -rules {ASSIGN_SIGN} -location {prim_fifo_async.sv} -msg {Signed target 'i
       -comment "Parameter PTR_WIDTH is unsigned, but integer i is signed. This is fine. Changing the integer to unsigned might \
                 cause issues with the for loop never exiting, because an unsigned integer can never become < 0."
 
-# prim_ram_2p_adv
-waive -rules {INPUT_NOT_READ} -location {prim_ram_2p_adv.sv} -msg {Input port 'cfg_i' is not read from in module} \
-      -comment "We will eventually use this input for RTC/WTC or other memory parameters."
-
 # prim_assert
 waive -rules {UNDEF_MACRO_REF} -location {prim_assert.sv} -regexp {Macro definition for 'ASSERT_RPT' includes expansion of undefined macro '__(FILE|LINE)__'} \
       -comment "This is an UVM specific macro inside our assertion shortcuts"

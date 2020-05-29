@@ -6,6 +6,11 @@
 #![no_main]
 #![feature(asm)]
 
+use tock::kernel;
+use tock::capsules;
+use tock::components;
+use tock::rv32i;
+
 use capsules::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
 use kernel::capabilities;
 use kernel::common::dynamic_deferred_call::{DynamicDeferredCall, DynamicDeferredCallClientState};
@@ -24,7 +29,7 @@ pub mod io;
 static mut PROCESSES: [Option<&'static dyn kernel::procs::ProcessType>; 4] =
     [None, None, None, None];
 
-static mut CHIP:Option<&'static ibex::chip::Ibex> = None;
+static mut CHIP:Option<&'static earlgrey::chip::Earlgrey> = None;
 
 // How should the kernel respond when a process faults.
 const FAULT_RESPONSE: kernel::procs::FaultResponse = kernel::procs::FaultResponse::Panic;
@@ -95,7 +100,7 @@ struct OpenTitan {
     console: &'static capsules::console::Console<'static>,
     alarm: &'static capsules::alarm::AlarmDriver<
         'static,
-        VirtualMuxAlarm<'static, ibex::timer::RvTimer<'static>>,
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static>>,
     >,
 }
 
@@ -121,8 +126,8 @@ impl Platform for OpenTitan {
 pub unsafe fn reset_handler() {
     // Basic setup of the platform.
     rv32i::init_memory();
-    // Ibex-specific handler
-    ibex::chip::configure_trap_handler();
+    // Earlgrey-specific handler
+    earlgrey::chip::configure_trap_handler();
 
     // initialize capabilities
     let process_mgmt_cap = create_capability!(capabilities::ProcessManagementCapability);
@@ -140,7 +145,7 @@ pub unsafe fn reset_handler() {
     );
     DynamicDeferredCall::set_global_instance(dynamic_deferred_caller);
 
-    let chip = static_init!(ibex::chip::Ibex, ibex::chip::Ibex::new());
+    let chip = static_init!(earlgrey::chip::Earlgrey, earlgrey::chip::Earlgrey::new());
     CHIP = Some(chip);
 
     // Need to enable all interrupts for Tock Kernel
@@ -153,30 +158,30 @@ pub unsafe fn reset_handler() {
 
     // Create a shared UART channel for the console and for kernel debug.
     let uart_mux = components::console::UartMuxComponent::new(
-        &ibex::uart::UART0,
-        230400,
+        &earlgrey::uart::UART0,
+        earlgrey::uart::UART0_BAUDRATE,
         dynamic_deferred_caller,
     )
     .finalize(());
 
-    let alarm = &ibex::timer::TIMER;
+    let alarm = &earlgrey::timer::TIMER;
     alarm.setup();
 
     // Create a shared virtualization mux layer on top of a single hardware
     // alarm.
     let mux_alarm = static_init!(
-        MuxAlarm<'static, ibex::timer::RvTimer>,
+        MuxAlarm<'static, earlgrey::timer::RvTimer>,
         MuxAlarm::new(alarm)
     );
-    hil::time::Alarm::set_client(&ibex::timer::TIMER, mux_alarm);
+    hil::time::Alarm::set_client(&earlgrey::timer::TIMER, mux_alarm);
 
     // Alarm
     let virtual_alarm_user = static_init!(
-        VirtualMuxAlarm<'static, ibex::timer::RvTimer>,
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>,
         VirtualMuxAlarm::new(mux_alarm)
     );
     let alarm = static_init!(
-        capsules::alarm::AlarmDriver<'static, VirtualMuxAlarm<'static, ibex::timer::RvTimer>>,
+        capsules::alarm::AlarmDriver<'static, VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>>,
         capsules::alarm::AlarmDriver::new(
             virtual_alarm_user,
             board_kernel.create_grant(&memory_allocation_cap)
@@ -190,17 +195,17 @@ pub unsafe fn reset_handler() {
     components::debug_writer::DebugWriterComponent::new(uart_mux).finalize(());
 
     let counter_demo_mux = static_init!(
-        capsules::virtual_alarm::VirtualMuxAlarm<'static, ibex::timer::RvTimer>,
+        capsules::virtual_alarm::VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>,
         capsules::virtual_alarm::VirtualMuxAlarm::new(mux_alarm)
     );
 
     let pins = &[7, 8, 9, 10, 11, 12, 13, 14];
     for pin in pins {
-        hil::gpio::Pin::make_output(&ibex::gpio::PORT[*pin]);
+        hil::gpio::Pin::make_output(&earlgrey::gpio::PORT[*pin]);
     }
 
     let counter_demo_inst = static_init!(
-        counter_demo::CounterAlarm<'static, capsules::virtual_alarm::VirtualMuxAlarm<ibex::timer::RvTimer>>,
+        counter_demo::CounterAlarm<'static, capsules::virtual_alarm::VirtualMuxAlarm<earlgrey::timer::RvTimer>>,
         counter_demo::CounterAlarm::new(counter_demo_mux, pins)
     );
     counter_demo_inst.add_splash_text(OT_SPLASH);

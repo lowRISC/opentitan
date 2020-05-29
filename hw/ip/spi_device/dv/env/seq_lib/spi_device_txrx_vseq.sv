@@ -23,6 +23,9 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand bit  en_dummy_host_xfer;
   rand bit  en_extra_dly;
 
+  // helper rand variable
+  rand bit is_same_host_device_sram_words;
+
   // semaphores to avoid updating fifo ptr when over/underflow is happening. Issue #103
   semaphore tx_ptr_sema, rx_ptr_sema;
   bit       allow_underflow_overflow;
@@ -94,7 +97,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   constraint sram_size_constraints_c {
     num_host_sram_words   inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
     num_device_sram_words inside {[25:SRAM_SIZE/SRAM_WORD_SIZE]};
-    num_host_sram_words == num_device_sram_words dist {
+    is_same_host_device_sram_words == (num_host_sram_words == num_device_sram_words);
+    is_same_host_device_sram_words dist {
       1 :/ 2,
       0 :/ 1
     };

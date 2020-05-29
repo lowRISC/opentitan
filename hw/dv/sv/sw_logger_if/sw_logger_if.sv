@@ -60,10 +60,9 @@ interface sw_logger_if #(
   bit enable = 1'b1;
 
   // types
-  // image name and log file for parsing
-  string sw_name;
-  string sw_log_file;
-  string sw_rodata_file;
+  // log & rodata database files for parsing, associated with the sw_name
+  string sw_log_db_files[string];
+  string sw_rodata_db_files[string];
 
   // typedef addr / data values
   typedef bit [DATA_WIDTH-1:0] addr_data_t;
@@ -97,14 +96,19 @@ interface sw_logger_if #(
     string          format;       // formatted string
   } sw_log_t;
 
+  // bit to enable writing the logs to a separate file (disabled by default)
+  bit write_sw_logs_to_file = 1'b0;
+  string sw_logs_output_file;
+  int sw_logs_output_fd = 0;
+
   // signal indicating all initializations are done (this is set by calling ready() function)
   bit _ready;
 
-  // hash of log with addr key
-  sw_log_t sw_logs[addr_data_t];
+  // hash of log with sw_name and addr keys
+  sw_log_t sw_logs[string][addr_data_t];
 
-  // hash of rodata with addr key
-  string sw_rodata[addr_data_t];
+  // hash of rodata with sw_name and addr keys
+  string sw_rodata[string][addr_data_t];
 
   // q of values obtained from the bus
   addr_data_t addr_data_q[$];
@@ -116,11 +120,10 @@ interface sw_logger_if #(
   // Set the sw_name, The logger assumes that there are two files placed in the rundir -
   // <sw_name>_logs.txt: contains logs split as fields of `sw_log_t`
   // <sw_name>_rodata.txt: contains constants from the read-only sections.
-  function automatic void set_sw_name(string _sw_name);
+  function automatic void set_sw_name(string sw_name);
     if (_ready) log_fatal(.log("this function cannot be called after calling ready()"));
-    sw_name = _sw_name;
-    sw_log_file = {sw_name, "_logs.txt"};
-    sw_rodata_file = {sw_name, "_rodata.txt"};
+    sw_log_db_files[sw_name] = {sw_name, "_logs.txt"};
+    sw_rodata_db_files[sw_name] = {sw_name, "_rodata.txt"};
   endfunction
 
   // signal to indicate that this monitor is good to go - all initializations are done
@@ -134,12 +137,19 @@ interface sw_logger_if #(
   initial begin
     wait(_ready);
     if (parse_sw_log_file()) begin
-      void'(parse_sw_rodata_file());
+      if (write_sw_logs_to_file) begin
+        sw_logs_output_file = $sformatf("%m.log");
+        sw_logs_output_fd = $fopen(sw_logs_output_file, "w");
+      end
       fork
         get_addr_data_from_bus();
         construct_log_and_print();
       join_none
     end
+  end
+
+  final begin
+    if (sw_logs_output_fd) $fclose(sw_logs_output_fd);
   end
 
   /******************/
@@ -148,64 +158,73 @@ interface sw_logger_if #(
   // function that parses the log data file
   // returns 1 if log data is avaiable, else false
   function automatic bit parse_sw_log_file();
-    int fd;
-    fd = $fopen(sw_log_file, "r");
-    if (!fd) return 0;
+    bit result;
 
-    while (!$feof(fd)) begin
-      string        field;
-      addr_data_t   addr;
-      sw_log_t      sw_log;
-      bit           status;
+    // Iterate over the available sw names.
+    foreach (sw_log_db_files[sw]) begin
+      int fd;
+      fd = $fopen(sw_log_db_files[sw], "r");
+      if (!fd) continue;
 
-      sw_log.name = sw_name;
-      status = get_sw_log_field(fd, "addr", field);
-      // We proceed to retrieving other fields only if we get the addr.
-      if (!status) break;
-      addr = field.atohex();
-      void'(get_sw_log_field(fd, "severity", field));
-      sw_log.severity = log_severity_e'(field.atoi());
-      void'(get_sw_log_field(fd, "file", field));
-      sw_log.file = field;
-      void'(get_sw_log_field(fd, "line", field));
-      sw_log.line = field.atoi();
-      void'(get_sw_log_field(fd, "nargs", field));
-      sw_log.nargs = field.atoi();
-      sw_log.arg = new[sw_log.nargs];
-      void'(get_sw_log_field(fd, "format", field));
-      sw_log.format = field;
-      void'(get_sw_log_field(fd, "str_arg_idx", field));
+      while (!$feof(fd)) begin
+        string        field;
+        addr_data_t   addr;
+        sw_log_t      sw_log;
+        bit           status;
 
-      begin
-        int indices[$];
-        get_str_arg_indices(field, indices);
-        foreach (indices[i]) begin
-          sw_log.str_arg[indices[i]] = "";
+        sw_log.name = sw;
+        status = get_sw_log_field(fd, "addr", field);
+        // We proceed to retrieving other fields only if we get the addr.
+        if (!status) break;
+        addr = field.atohex();
+        void'(get_sw_log_field(fd, "severity", field));
+        sw_log.severity = log_severity_e'(field.atoi());
+        void'(get_sw_log_field(fd, "file", field));
+        sw_log.file = field;
+        void'(get_sw_log_field(fd, "line", field));
+        sw_log.line = field.atoi();
+        void'(get_sw_log_field(fd, "nargs", field));
+        sw_log.nargs = field.atoi();
+        sw_log.arg = new[sw_log.nargs];
+        void'(get_sw_log_field(fd, "format", field));
+        // Replace CRs in the middle of the string with NLs.
+        sw_log.format = replace_cr_with_nl(field);
+        void'(get_sw_log_field(fd, "str_arg_idx", field));
+
+        begin
+          int indices[$];
+          get_str_arg_indices(field, indices);
+          foreach (indices[i]) begin
+            sw_log.str_arg[indices[i]] = "";
+          end
         end
-      end
 
-      if (sw_logs.exists(addr)) begin
-        log_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
-                              addr, sw_logs[addr], sw_log));
+        if (sw_logs.exists(sw) && sw_logs[sw].exists(addr)) begin
+          log_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
+                                addr, sw_logs[sw][addr], sw_log));
+        end
+        sw_logs[sw][addr] = sw_log;
       end
-      sw_logs[addr] = sw_log;
+      $fclose(fd);
+
+      if (sw_logs.exists(sw) && sw_logs[sw].size() > 0) begin
+        void'(parse_sw_rodata_file(sw));
+        result = 1'b1;
+      end
     end
-    $fclose(fd);
 
     // print parsed logs
-    foreach (sw_logs[addr]) begin
-      // Replace CRs in the middle of the string with NLs.
-      sw_logs[addr].format = replace_cr_with_nl(sw_logs[addr].format);
+    foreach (sw_logs[sw, addr]) begin
       log_info(.verbosity(LogVerbosityHigh),
-               .log($sformatf("sw_logs[%0h] = %p", addr, sw_logs[addr])));
+               .log($sformatf("sw_logs[%0s][%0h] = %p", sw, addr, sw_logs[sw][addr])));
     end
 
-    return (sw_logs.size() > 0);
+    return result;
   endfunction
 
-  function automatic bit parse_sw_rodata_file();
+  function automatic bit parse_sw_rodata_file(string sw);
     int fd;
-    fd = $fopen(sw_rodata_file, "r");
+    fd = $fopen(sw_rodata_db_files[sw], "r");
     if (!fd) return 0;
 
     while (!$feof(fd)) begin
@@ -219,23 +238,22 @@ interface sw_logger_if #(
       addr = field.atohex();
       void'(get_sw_log_field(fd, "string", field));
 
-      if (sw_rodata.exists(addr)) begin
+      if (sw_rodata.exists(sw) && sw_rodata[sw].exists(addr)) begin
         log_warning($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
-                              addr, sw_rodata[addr], field));
+                              addr, sw_rodata[sw][addr], field));
       end
-      sw_rodata[addr] = field;
+      // Replace CRs in the middle of the string with NLs.
+      sw_rodata[sw][addr] = replace_cr_with_nl(field);
     end
     $fclose(fd);
 
-    // print parsed logs
-    foreach (sw_rodata[addr]) begin
-      // Replace CRs in the middle of the string with NLs.
-      sw_rodata[addr] = replace_cr_with_nl(sw_rodata[addr]);
+    // print parsed rodata
+    foreach (sw_rodata[sw, addr]) begin
       log_info(.verbosity(LogVerbosityHigh),
-               .log($sformatf("sw_rodata[%0h] = %p", addr, sw_rodata[addr])));
+               .log($sformatf("sw_rodata[%0s][%0h] = %p", sw, addr, sw_rodata[sw][addr])));
     end
 
-    return (sw_rodata.size() > 0);
+    return (sw_rodata[sw].size() > 0);
   endfunction
 
   // Get the sw log fields by parsing line-by-line.
@@ -306,13 +324,13 @@ interface sw_logger_if #(
   endfunction
 
   // Retrieve the string at the specified addr.
-  function automatic string get_str_at_addr(addr_data_t addr);
-    if (sw_rodata.exists(addr)) return sw_rodata[addr];
+  function automatic string get_str_at_addr(string sw, addr_data_t addr);
+    if (sw_rodata[sw].exists(addr)) return sw_rodata[sw][addr];
     // The string could start midway from an existing addr entry.
-    foreach (sw_rodata[str_addr]) begin
-      addr_data_t limit = sw_rodata[str_addr].len() - 1;
+    foreach (sw_rodata[sw][str_addr]) begin
+      addr_data_t limit = sw_rodata[sw][str_addr].len() - 1;
       if (addr inside {[str_addr : str_addr + limit]}) begin
-        return sw_rodata[str_addr].substr(addr - str_addr, limit);
+        return sw_rodata[sw][str_addr].substr(addr - str_addr, limit);
       end
     end
     // If no string was found at the provided addr, then return the addr converted to string.
@@ -342,36 +360,38 @@ interface sw_logger_if #(
       addr = addr_data_q.pop_front();
 
       // lookup addr in sw_logs
-      if (sw_logs.exists(addr)) begin
-        bit rst_occurred;
-        fork
-          begin
-            fork
-              // get args
-              for (int i = 0; i < sw_logs[addr].nargs; i++) begin
-                wait(addr_data_q.size() > 0);
-                sw_logs[addr].arg[i] = addr_data_q.pop_front();
-                // Check if this is an str arg
-                if (sw_logs[addr].str_arg.exists(i)) begin
-                  // The arg[i] received is the addr in rodata where the string resides.
-                  sw_logs[addr].str_arg[i] = get_str_at_addr(sw_logs[addr].arg[i]);
-                  log_info(.verbosity(LogVerbosityDebug),
-                           .log($sformatf("String arg at addr %0h: %0s",
-                                          sw_logs[addr].arg[i],
-                                          sw_logs[addr].str_arg[i])));
+      foreach (sw_logs[sw]) begin
+        if (sw_logs[sw].exists(addr)) begin
+          bit rst_occurred;
+          fork
+            begin
+              fork
+                // get args
+                for (int i = 0; i < sw_logs[sw][addr].nargs; i++) begin
+                  wait(addr_data_q.size() > 0);
+                  sw_logs[sw][addr].arg[i] = addr_data_q.pop_front();
+                  // Check if this is an str arg
+                  if (sw_logs[sw][addr].str_arg.exists(i)) begin
+                    // The arg[i] received is the addr in rodata where the string resides.
+                    sw_logs[sw][addr].str_arg[i] = get_str_at_addr(sw, sw_logs[sw][addr].arg[i]);
+                    log_info(.verbosity(LogVerbosityDebug),
+                             .log($sformatf("String arg at addr %0h: %0s",
+                                            sw_logs[sw][addr].arg[i],
+                                            sw_logs[sw][addr].str_arg[i])));
+                  end
                 end
-              end
-              begin
-                // check if rst_n occurred - in that case discard and start over
-                wait(rst_n === 1'b0);
-                rst_occurred = 1'b1;
-              end
-            join_any
-            disable fork;
-          end
-        join
-        if (rst_occurred) continue;
-        print_sw_log(sw_logs[addr]);
+                begin
+                  // check if rst_n occurred - in that case discard and start over
+                  wait(rst_n === 1'b0);
+                  rst_occurred = 1'b1;
+                end
+              join_any
+              disable fork;
+            end
+          join
+          if (rst_occurred) continue;
+          print_sw_log(sw_logs[sw][addr]);
+        end
       end
     end
   endtask
@@ -418,7 +438,7 @@ interface sw_logger_if #(
     default: log_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs));
     endcase
     sw_log.format = log;
-    print_log(sw_log);
+    print_log(.sw_log(sw_log), .is_sw_log(1'b1));
     printed_log = log;
     ->printed_log_event;
   endfunction
@@ -428,12 +448,12 @@ interface sw_logger_if #(
                                          log_verbosity_e verbosity = LogVerbosityLow,
                                          string log);
     sw_log_t self_log;
-    self_log.name = $sformatf("sw_logger_if[%0s]", sw_name);
+    self_log.name = "sw_logger_if";
     self_log.severity = severity;
     self_log.verbosity = verbosity;
     self_log.file = "";
     self_log.format = log;
-    print_log(self_log);
+    print_log(.sw_log(self_log));
   endfunction
 
   // print an info message from this file
@@ -457,7 +477,7 @@ interface sw_logger_if #(
   endfunction
 
   // UVM-agnostic print_log api that switches between system call and UVM call
-  function automatic void print_log(sw_log_t sw_log);
+  function automatic void print_log(sw_log_t sw_log, bit is_sw_log = 1'b0);
     string log_header = sw_log.name;
     if (sw_log.file != "") begin
       log_header = {log_header, "(", sw_log.file, ":",
@@ -486,13 +506,17 @@ interface sw_logger_if #(
     end
 `else
     case (sw_log.severity)
-      LogSeverityInfo:    $info("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityWarning: $warning("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityError:   $error("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityFatal:   $fatal("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      default:            $info("%0t: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityInfo:    $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityWarning: $warning("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityError:   $error("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityFatal:   $fatal("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      default:            $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
     endcase
 `endif
+    // write sw log to file if enabled
+    if (is_sw_log && sw_logs_output_fd) begin
+      $fwrite(sw_logs_output_fd, "[%15t]: [%0s] %0s\n", $time, log_header, sw_log.format);
+    end
   endfunction
 
 endinterface

@@ -8,7 +8,7 @@ package ibex_icache_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import ibex_icache_core_agent_pkg::*;
-  import ibex_mem_intf_agent_pkg::*;
+  import ibex_icache_mem_agent_pkg::*;
   import dv_lib_pkg::*;
 
   // macro includes
@@ -18,7 +18,6 @@ package ibex_icache_env_pkg;
   // parameters
 
   // types
-  typedef dv_base_reg_block ibex_icache_reg_block;
 
   // functions
 
