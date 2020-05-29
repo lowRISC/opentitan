@@ -60,9 +60,9 @@ interface sw_logger_if #(
   bit enable = 1'b1;
 
   // types
-  // image name and log file for parsing associated with the sw_name
-  string sw_log_file[string];
-  string sw_rodata_file[string];
+  // log & rodata database files for parsing, associated with the sw_name
+  string sw_log_db_files[string];
+  string sw_rodata_db_files[string];
 
   // typedef addr / data values
   typedef bit [DATA_WIDTH-1:0] addr_data_t;
@@ -96,6 +96,11 @@ interface sw_logger_if #(
     string          format;       // formatted string
   } sw_log_t;
 
+  // bit to enable writing the logs to a separate file (disabled by default)
+  bit write_sw_logs_to_file = 1'b0;
+  string sw_logs_output_file;
+  int sw_logs_output_fd = 0;
+
   // signal indicating all initializations are done (this is set by calling ready() function)
   bit _ready;
 
@@ -117,8 +122,8 @@ interface sw_logger_if #(
   // <sw_name>_rodata.txt: contains constants from the read-only sections.
   function automatic void set_sw_name(string sw_name);
     if (_ready) log_fatal(.log("this function cannot be called after calling ready()"));
-    sw_log_file[sw_name] = {sw_name, "_logs.txt"};
-    sw_rodata_file[sw_name] = {sw_name, "_rodata.txt"};
+    sw_log_db_files[sw_name] = {sw_name, "_logs.txt"};
+    sw_rodata_db_files[sw_name] = {sw_name, "_rodata.txt"};
   endfunction
 
   // signal to indicate that this monitor is good to go - all initializations are done
@@ -132,11 +137,19 @@ interface sw_logger_if #(
   initial begin
     wait(_ready);
     if (parse_sw_log_file()) begin
+      if (write_sw_logs_to_file) begin
+        sw_logs_output_file = $sformatf("%m.log");
+        sw_logs_output_fd = $fopen(sw_logs_output_file, "w");
+      end
       fork
         get_addr_data_from_bus();
         construct_log_and_print();
       join_none
     end
+  end
+
+  final begin
+    if (sw_logs_output_fd) $fclose(sw_logs_output_fd);
   end
 
   /******************/
@@ -148,9 +161,9 @@ interface sw_logger_if #(
     bit result;
 
     // Iterate over the available sw names.
-    foreach (sw_log_file[sw]) begin
+    foreach (sw_log_db_files[sw]) begin
       int fd;
-      fd = $fopen(sw_log_file[sw], "r");
+      fd = $fopen(sw_log_db_files[sw], "r");
       if (!fd) continue;
 
       while (!$feof(fd)) begin
@@ -211,7 +224,7 @@ interface sw_logger_if #(
 
   function automatic bit parse_sw_rodata_file(string sw);
     int fd;
-    fd = $fopen(sw_rodata_file[sw], "r");
+    fd = $fopen(sw_rodata_db_files[sw], "r");
     if (!fd) return 0;
 
     while (!$feof(fd)) begin
@@ -425,7 +438,7 @@ interface sw_logger_if #(
     default: log_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs));
     endcase
     sw_log.format = log;
-    print_log(sw_log);
+    print_log(.sw_log(sw_log), .is_sw_log(1'b1));
     printed_log = log;
     ->printed_log_event;
   endfunction
@@ -440,7 +453,7 @@ interface sw_logger_if #(
     self_log.verbosity = verbosity;
     self_log.file = "";
     self_log.format = log;
-    print_log(self_log);
+    print_log(.sw_log(self_log));
   endfunction
 
   // print an info message from this file
@@ -464,7 +477,7 @@ interface sw_logger_if #(
   endfunction
 
   // UVM-agnostic print_log api that switches between system call and UVM call
-  function automatic void print_log(sw_log_t sw_log);
+  function automatic void print_log(sw_log_t sw_log, bit is_sw_log = 1'b0);
     string log_header = sw_log.name;
     if (sw_log.file != "") begin
       log_header = {log_header, "(", sw_log.file, ":",
@@ -493,13 +506,17 @@ interface sw_logger_if #(
     end
 `else
     case (sw_log.severity)
-      LogSeverityInfo:    $info("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityWarning: $warning("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityError:   $error("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityFatal:   $fatal("%0t: [%0s] %0s", $time, log_header, sw_log.format);
-      default:            $info("%0t: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityInfo:    $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityWarning: $warning("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityError:   $error("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      LogSeverityFatal:   $fatal("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
+      default:            $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
     endcase
 `endif
+    // write sw log to file if enabled
+    if (is_sw_log && sw_logs_output_fd) begin
+      $fwrite(sw_logs_output_fd, "[%15t]: [%0s] %0s\n", $time, log_header, sw_log.format);
+    end
   endfunction
 
 endinterface
