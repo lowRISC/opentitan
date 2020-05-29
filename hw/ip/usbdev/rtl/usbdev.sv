@@ -231,6 +231,7 @@ module usbdev (
   logic [NBufWidth-1:0]  usb_in_buf [NEndpoints];
   logic [SizeWidth:0]    usb_in_size [NEndpoints];
   logic [3:0]            usb_in_endpoint;
+  logic                  usb_in_endpoint_val;
   logic [NEndpoints-1:0] usb_in_rdy;
   logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
   logic                  usb_setup_received, setup_received, usb_set_sent, set_sent;
@@ -239,6 +240,7 @@ module usbdev (
   logic [NEndpoints-1:0] usb_enable_setup, usb_enable_out, usb_ep_stall;
   logic [NEndpoints-1:0] in_rdy_async;
   logic [3:0]            usb_out_endpoint;
+  logic                  usb_out_endpoint_val;
 
   // RX enables
   always_comb begin : proc_map_rxenable
@@ -335,7 +337,7 @@ module usbdev (
 
   always_comb begin
     set_sentbit = '0;
-    if (set_sent) begin
+    if (set_sent && usb_in_endpoint_val) begin
       // synchronization of set_sent ensures usb_endpoint is stable
       set_sentbit[usb_in_endpoint] = 1'b1;
     end
@@ -420,16 +422,20 @@ module usbdev (
       clear_rdybit = {NEndpoints{1'b1}};
       update_pend  = {NEndpoints{1'b1}};
     end else begin
-      // Clear pending when a SETUP is received
-      // CDC: usb_out_endpoint is synchronized implicitly by
-      // setup_received, as it is stable
-      clear_rdybit[usb_out_endpoint] = setup_received;
-      update_pend[usb_out_endpoint]  = setup_received;
+      if (usb_out_endpoint_val) begin
+        // Clear pending when a SETUP is received
+        // CDC: usb_out_endpoint is synchronized implicitly by
+        // setup_received, as it is stable
+        clear_rdybit[usb_out_endpoint] = setup_received;
+        update_pend[usb_out_endpoint]  = setup_received;
+      end
 
-      // Clear when a IN transmission was sucessful
-      // CDC: usb_in_endpoint is synchronzied implicitly by
-      // set_sent
-      clear_rdybit[usb_in_endpoint] = set_sent;
+      if (usb_in_endpoint_val) begin
+        // Clear when a IN transmission was sucessful
+        // CDC: usb_in_endpoint is synchronzied implicitly by
+        // set_sent
+        clear_rdybit[usb_in_endpoint] = set_sent;
+      end
     end
   end
 
@@ -487,6 +493,7 @@ module usbdev (
     .event_rx_full_o      (usb_event_rx_full),
     .setup_received_o     (usb_setup_received),
     .out_endpoint_o       (usb_out_endpoint),  // will be stable for several cycles
+    .out_endpoint_val_o   (usb_out_endpoint_val),
 
     // transmit side
     .in_buf_i             (usb_in_buf[usb_in_endpoint]),
@@ -495,6 +502,7 @@ module usbdev (
     .in_rdy_i             (usb_in_rdy),
     .set_sent_o           (usb_set_sent),
     .in_endpoint_o        (usb_in_endpoint),
+    .in_endpoint_val_o    (usb_in_endpoint_val),
 
     // memory
     .mem_req_o            (usb_mem_b_req),
@@ -614,7 +622,7 @@ module usbdev (
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.stall[i].d  = 1'b0;
-      if (setup_received && usb_out_endpoint == 4'(unsigned'(i))) begin
+      if (setup_received && usb_out_endpoint_val && usb_out_endpoint == 4'(unsigned'(i))) begin
         hw2reg.stall[i].de = 1'b1;
       end else begin
         hw2reg.stall[i].de = 1'b0;

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef USBDPI_H_
-#define USBDPI_H_
+#ifndef OPENTITAN_HW_DV_DPI_USBDPI_USBDPI_H_
+#define OPENTITAN_HW_DV_DPI_USBDPI_USBDPI_H_
 
 #define TOOL_VERILATOR 1
 #define TOOL_INCISIVE 0
@@ -28,6 +28,9 @@
 #define INSERT_ERR_CRC 0
 #define INSERT_ERR_PID 0
 #define INSERT_ERR_BITSTUFF 0
+
+// Index of the unimplemented endpoint to test
+#define UNIMPL_EP_ID 15
 
 #define D2P_BITS 5
 #define D2P_DP 16
@@ -127,4 +130,4 @@ void monitor_usb(void *mon, int fifo_fd, int log, int tick, int hdrive, int p2d,
 }
 #endif
 
-#endif  // USBDPI_H_
+#endif  // OPENTITAN_HW_DV_DPI_USBDPI_USBDPI_H_

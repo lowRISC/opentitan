@@ -47,7 +47,8 @@ module usbdev_usbif  #(
   output logic [RXFifoWidth - 1:0] rx_wdata_o,
   output logic                     event_rx_full_o,
   output logic                     setup_received_o,
-  output [3:0]                     out_endpoint_o,
+  output logic [3:0]               out_endpoint_o,
+  output logic                     out_endpoint_val_o,
 
   // transmit (IN) side
   input  logic [NBufWidth - 1:0]   in_buf_i,
@@ -55,7 +56,8 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    in_stall_i,
   input  logic [NEndpoints-1:0]    in_rdy_i,
   output logic                     set_sent_o,
-  output [3:0]                     in_endpoint_o,
+  output logic [3:0]               in_endpoint_o,
+  output logic                     in_endpoint_val_o,
 
   // memory interface
   output logic                     mem_req_o,
@@ -109,7 +111,9 @@ module usbdev_usbif  #(
   logic                              sof_valid;
 
   // Make sure out_endpoint_o can safely be used to index signals of NEndpoints width.
-  assign out_endpoint_o = (out_ep_current < NEndpoints) ? out_ep_current : '0;
+  assign out_endpoint_val_o = out_ep_current < NEndpoints;
+  assign out_endpoint_o     = out_endpoint_val_o ? out_ep_current : '0;
+
   assign link_reset_o   = link_reset;
   assign clr_devaddr_o  = ~enable_i | link_reset;
   assign frame_start_o  = sof_valid;
@@ -224,7 +228,8 @@ module usbdev_usbif  #(
   logic [3:0]            in_ep_current;
 
   // Make sure in_endpoint_o can safely be used to index signals of NEndpoints width.
-  assign in_endpoint_o = (in_ep_current < NEndpoints) ? in_ep_current : '0;
+  assign in_endpoint_val_o = in_ep_current < NEndpoints;
+  assign in_endpoint_o     = in_endpoint_val_o ? in_ep_current : '0;
 
   // The protocol engine will automatically generate done for a full-length packet
   // Note: this does the correct thing for sending zero length packets
@@ -360,9 +365,5 @@ module usbdev_usbif  #(
   ////////////////
   // Assertions //
   ////////////////
-
-  // Specified endpoint is not implemented.
-  `ASSERT(UsbIfOutEndPImpl, out_ep_newpkt |-> (out_endpoint_o == out_ep_current), clk_48mhz_i)
-  `ASSERT(UsbIfInEndPImpl, in_ep_newpkt |-> (in_endpoint_o == in_ep_current), clk_48mhz_i)
 
 endmodule

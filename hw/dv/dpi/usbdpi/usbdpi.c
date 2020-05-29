@@ -543,6 +543,77 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
   }
 }
 
+// Test unimplemented endpoints
+void testUnimplEp(struct usbdpi_ctx *ctx, uint8_t pid) {
+  switch (ctx->hostSt) {
+    case HS_STARTFRAME:
+      if ((pid == USB_PID_SETUP) || (pid == USB_PID_OUT)) {
+        ctx->state = ST_SYNC;
+        ctx->bytes = 14;
+        ctx->datastart = 3;
+        ctx->byte = 0;
+        ctx->bit = 1;
+        // The bytes are transmitted LSB to MSB
+        ctx->data[0] = pid;
+        ctx->data[1] =
+            ((UNIMPL_EP_ID & 0x1) << 7) | 0x2;  // endpoint ID LSB, address
+        ctx->data[2] = CRC5((UNIMPL_EP_ID << 7) | 0x2, 11) << 3 |
+                       ((UNIMPL_EP_ID >> 1) & 0x7);  // CRC, endpoint ID MSBs
+
+        ctx->data[3] = USB_PID_DATA0;
+        ctx->data[4] = 0;  // h2d, std, device
+        ctx->data[5] = 5;  // set address
+        ctx->data[6] = 2;  // device address
+        ctx->data[7] = 0;
+        // Trigger bitstuffing, technically the device
+        // behaviour is unspecified with wIndex != 0
+        ctx->data[8] = 0xFF;  // wIndex = 0xFF00
+        ctx->data[9] = 0;
+        ctx->data[10] = 0;  // wLength = 0
+        ctx->data[11] = 0;
+        add_crc16(ctx->data, ctx->datastart, 12);
+        ctx->hostSt = HS_WAITACK;
+        break;
+      } else if (pid == USB_PID_IN) {
+        ctx->state = ST_SYNC;
+        ctx->bytes = 3;
+        ctx->datastart = 0;
+        ctx->byte = 0;
+        ctx->bit = 1;
+        // The bytes are transmitted LSB to MSB
+        ctx->data[0] = pid;
+        ctx->data[1] =
+            ((UNIMPL_EP_ID & 0x1) << 7) | 0x2;  // endpoint ID LSB, address
+        ctx->data[2] = CRC5((UNIMPL_EP_ID << 7) | 0x2, 11) << 3 |
+                       ((UNIMPL_EP_ID >> 1) & 0x7);  // CRC, endpoint ID MSBs
+        // Since the endpoint is not implemented, the device will respond with a
+        // STALL packet (not DATA0/1 or NAK).
+        ctx->hostSt = HS_WAITACK;
+        break;
+      } else {
+        ctx->hostSt = HS_NEXTFRAME;
+        printf(
+            "[usbdpi] testUnimplEp supports SETUP, OUT and IN transactions "
+            "only\n");
+        break;
+      }
+    case HS_WAITACK:
+      // Note: We currently can't observe the responses sent by the device, but
+      // monitor_usb() does log all transactions from host and device and does
+      // some basic decoding.
+      // Depending on the transaction type to unimplemented endpoints, we would
+      // expect the following response:
+      // - SETUP: no response (must be ignored by the device)
+      // - OUT/IN: a STALL packet from the device
+      ctx->wait = ctx->tick_bits + 32;  // HACK
+      ctx->hostSt = HS_NEXTFRAME;
+      printf("[usbdpi] testUnimplEp done\n");
+      break;
+    default:
+      break;
+  }
+}
+
 char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   struct usbdpi_ctx *ctx = (struct usbdpi_ctx *)ctx_void;
   assert(ctx);
@@ -645,9 +716,18 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         case 18:
           testIso(ctx);
           break;
+        case 20:
+          testUnimplEp(ctx, USB_PID_SETUP);
+          break;
+        case 21:
+          testUnimplEp(ctx, USB_PID_OUT);
+          break;
+        case 22:
+          testUnimplEp(ctx, USB_PID_IN);
+          break;
         default:
           if (ctx->frame > ctx->inframe &&
-              !(ctx->frame >= 20 && ctx->frame < 30)) {
+              !(ctx->frame >= 23 && ctx->frame < 33)) {
             pollRX(ctx, (ctx->frame == 9) || (ctx->frame == 14),
                    ((ctx->frame == 16) || (ctx->frame == 9)));
           }
