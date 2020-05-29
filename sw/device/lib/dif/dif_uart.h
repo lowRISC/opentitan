@@ -10,6 +10,11 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+// Header Extern Guard (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 // The size of UART TX and RX FIFOs in bytes.
 extern const uint32_t kDifUartFifoSizeBytes;
 
@@ -338,5 +343,9 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
  */
 dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_

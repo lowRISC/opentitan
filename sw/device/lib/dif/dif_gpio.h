@@ -10,6 +10,11 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+// Header Extern Guard (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Configuration for initializing a GPIO device.
  */
@@ -342,5 +347,9 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
 dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
                                                      uint32_t mask,
                                                      dif_gpio_irq_t config);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
