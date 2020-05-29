@@ -81,7 +81,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   task body();
     fork
       begin : isolation_fork
-        `DV_CHECK_RANDOMIZE_FATAL(this)
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
         run_esc_rsp_seq_nonblocking(esc_int_err);
         run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
         `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
