@@ -170,6 +170,12 @@ module pinmux_reg_top (
   logic [5:0] periph_insel6_in31_qs;
   logic [5:0] periph_insel6_in31_wd;
   logic periph_insel6_in31_we;
+  logic [5:0] periph_insel6_in32_qs;
+  logic [5:0] periph_insel6_in32_wd;
+  logic periph_insel6_in32_we;
+  logic [5:0] periph_insel6_in33_qs;
+  logic [5:0] periph_insel6_in33_wd;
+  logic periph_insel6_in33_we;
   logic [5:0] mio_outsel0_out0_qs;
   logic [5:0] mio_outsel0_out0_wd;
   logic mio_outsel0_out0_we;
@@ -1478,6 +1484,58 @@ module pinmux_reg_top (
 
     // to register interface (read)
     .qs     (periph_insel6_in31_qs)
+  );
+
+
+  // F[in32]: 17:12
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel6_in32 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel6_in32_we & regen_qs),
+    .wd     (periph_insel6_in32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[32].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel6_in32_qs)
+  );
+
+
+  // F[in33]: 23:18
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel6_in33 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel6_in33_we & regen_qs),
+    .wd     (periph_insel6_in33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[33].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel6_in33_qs)
   );
 
 
@@ -5027,6 +5085,12 @@ module pinmux_reg_top (
   assign periph_insel6_in31_we = addr_hit[7] & reg_we & ~wr_err;
   assign periph_insel6_in31_wd = reg_wdata[11:6];
 
+  assign periph_insel6_in32_we = addr_hit[7] & reg_we & ~wr_err;
+  assign periph_insel6_in32_wd = reg_wdata[17:12];
+
+  assign periph_insel6_in33_we = addr_hit[7] & reg_we & ~wr_err;
+  assign periph_insel6_in33_wd = reg_wdata[23:18];
+
   assign mio_outsel0_out0_we = addr_hit[8] & reg_we & ~wr_err;
   assign mio_outsel0_out0_wd = reg_wdata[5:0];
 
@@ -5514,6 +5578,8 @@ module pinmux_reg_top (
       addr_hit[7]: begin
         reg_rdata_next[5:0] = periph_insel6_in30_qs;
         reg_rdata_next[11:6] = periph_insel6_in31_qs;
+        reg_rdata_next[17:12] = periph_insel6_in32_qs;
+        reg_rdata_next[23:18] = periph_insel6_in33_qs;
       end
 
       addr_hit[8]: begin

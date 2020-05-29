@@ -44,6 +44,8 @@
 #define PINMUX_GPIO_GPIO_29_IN 29
 #define PINMUX_GPIO_GPIO_30_IN 30
 #define PINMUX_GPIO_GPIO_31_IN 31
+#define PINMUX_I2C_SDA_IN 33
+#define PINMUX_I2C_SCL_IN 34
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
@@ -85,6 +87,8 @@
 #define PINMUX_GPIO_GPIO_29_OUT 32
 #define PINMUX_GPIO_GPIO_30_OUT 33
 #define PINMUX_GPIO_GPIO_31_OUT 34
+#define PINMUX_I2C_SDA_OUT 36
+#define PINMUX_I2C_SCL_OUT 37
 
 /**
  * Base address for uart peripheral in top earlgrey.
@@ -125,6 +129,14 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40080000u
+
+/**
+ * Base address for i2c peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_I2C_BASE_ADDR 0x40050000u
 
 /**
  * Base address for aes peripheral in top earlgrey.

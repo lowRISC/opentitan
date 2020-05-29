@@ -10,6 +10,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_GPIO       = 32'h 40010000;
   localparam logic [31:0] ADDR_SPACE_SPI_DEVICE = 32'h 40020000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER   = 32'h 40080000;
+  localparam logic [31:0] ADDR_SPACE_I2C        = 32'h 40050000;
   localparam logic [31:0] ADDR_SPACE_USBDEV     = 32'h 40150000;
   localparam logic [31:0] ADDR_SPACE_PWRMGR     = 32'h 400a0000;
   localparam logic [31:0] ADDR_SPACE_RSTMGR     = 32'h 400b0000;
@@ -19,23 +20,25 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_GPIO       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER   = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_I2C        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_USBDEV     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PWRMGR     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RSTMGR     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_CLKMGR     = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 8;
+  localparam int N_DEVICE = 9;
 
   typedef enum int {
     TlUart = 0,
     TlGpio = 1,
     TlSpiDevice = 2,
     TlRvTimer = 3,
-    TlUsbdev = 4,
-    TlPwrmgr = 5,
-    TlRstmgr = 6,
-    TlClkmgr = 7
+    TlI2C = 4,
+    TlUsbdev = 5,
+    TlPwrmgr = 6,
+    TlRstmgr = 7,
+    TlClkmgr = 8
   } tl_device_e;
 
   typedef enum int {

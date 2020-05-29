@@ -19,6 +19,9 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h40080000, 32'h40080fff}
     }},
+    '{"i2c", '{
+        '{32'h40050000, 32'h40050fff}
+    }},
     '{"usbdev", '{
         '{32'h40150000, 32'h40150fff}
     }},
@@ -42,5 +45,6 @@ tl_host_t xbar_hosts[$] = '{
         "usbdev",
         "pwrmgr",
         "rstmgr",
-        "clkmgr"}}
+        "clkmgr",
+        "i2c"}}
 };

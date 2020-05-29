@@ -38,6 +38,12 @@ module xbar_peri_bind;
     .h2d    (tl_rv_timer_o),
     .d2h    (tl_rv_timer_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_i2c (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_i2c_o),
+    .d2h    (tl_i2c_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),

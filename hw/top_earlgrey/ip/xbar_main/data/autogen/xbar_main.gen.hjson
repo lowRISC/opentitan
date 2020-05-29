@@ -181,6 +181,10 @@
           size_byte: 0x21000
         }
         {
+          base_addr: 0x40050000
+          size_byte: 0x1000
+        }
+        {
           base_addr: 0x40080000
           size_byte: 0x1000
         }

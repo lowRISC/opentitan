@@ -12,7 +12,7 @@
 source setup.tcl
 
 # not exit remained in command line
-set RUN_INTERACTIVE $::env(INTERACTIVE)
+#set RUN_INTERACTIVE $::env(INTERACTIVE)
 
 # path to directory containing the source list file
 set SV_FLIST $::env(SV_FLIST)
@@ -165,7 +165,7 @@ saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
 # write_file -format ddc     -hierarchy -output "${DDCDIR}/flat.ddc"
 # write_file -format verilog -hierarchy -output "${VLOGDIR}/flat.v"
 
-if { ![info exists RUN_INTERACTIVE] } {
+#if { ![info exists RUN_INTERACTIVE] } {
     exit
-}
+#}
 
