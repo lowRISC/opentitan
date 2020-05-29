@@ -9,20 +9,23 @@ filesets:
     depend:
       - lowrisc:ip:uart:0.1
       - lowrisc:top_earlgrey:alert_handler_reg
+      - lowrisc:top_earlgrey:clkmgr
       - lowrisc:ip:alert_handler_component
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
       - lowrisc:top_earlgrey:pinmux_reg
+      - lowrisc:top_earlgrey:padctrl_reg
       - lowrisc:ip:pinmux_component
+      - lowrisc:ip:padctrl_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
       - lowrisc:ip:pwrmgr
-      - lowrisc:prim:ram_1p
+      - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:rom
       - lowrisc:ip:rstmgr
       - lowrisc:prim:flash
@@ -30,13 +33,13 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
       - lowrisc:ip:usbdev
-      - lowrisc:ip:xbar_main
-      - lowrisc:ip:xbar_peri
+      - lowrisc:top_earlgrey:xbar_main
+      - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
-      - rtl/padctl.sv
+      - rtl/autogen/top_earlgrey_pkg.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 
@@ -58,6 +61,12 @@ filesets:
       - lint/top_earlgrey.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
 
 parameters:
   SYNTHESIS:
@@ -74,8 +83,9 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl_generic
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
@@ -108,4 +118,8 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
+    toplevel: top_earlgrey
+
+  formal:
+    <<: *default_target
     toplevel: top_earlgrey

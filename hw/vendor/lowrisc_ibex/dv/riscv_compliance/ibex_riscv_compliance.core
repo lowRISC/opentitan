@@ -28,32 +28,60 @@ parameters:
     datatype: int
     paramtype: vlogparam
     default: 1
-    description: Enable the M ISA extension (hardware multiply/divide)
+    description: "Enable the M ISA extension (hardware multiply/divide) [0/1]"
+
   RV32E:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enable the E ISA extension (reduced register set)
+    description: "Enable the E ISA extension (reduced register set) [0/1]"
+
   RV32B:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enable the B ISA extension (bit manipulation EXPERIMENTAL)
+    description: "Enable the B ISA extension (bit manipulation EXPERIMENTAL) [0/1]"
+
+  SRAM_INIT_FILE:
+    datatype: str
+    paramtype: vlogdefine
+    description: "Path to a vmem file to initialize the RAM with"
+
   MultiplierImplementation:
     datatype: str
     paramtype: vlogparam
     description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
     default: "fast"
+
   BranchTargetALU:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)
+    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL)"
+
   WritebackStage:
     datatype: int
     paramtype: vlogparam
     default: 0
-    description: Enables third pipeline stage (EXPERIMENTAL)
+    description: "Enables third pipeline stage (EXPERIMENTAL)"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
 
 targets:
   sim:
@@ -68,6 +96,9 @@ targets:
       - MultiplierImplementation
       - BranchTargetALU
       - WritebackStage
+      - PMPEnable
+      - PMPGranularity
+      - PMPNumRegions
     toplevel: ibex_riscv_compliance
     tools:
       verilator:

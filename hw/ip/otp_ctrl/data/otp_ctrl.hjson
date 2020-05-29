@@ -1,0 +1,475 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "otp_ctrl",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  estimated_gates: "32kGE" // Excluding OTP macro
+
+  ///////////////////////////
+  // Interrupts and Alerts //
+  ///////////////////////////
+
+  interrupt_list: [
+    { name: "otp_access_done",
+      desc: "A direct access command has completed."
+    }
+    { name: "otp_ctrl_err",
+      desc: "An error has occurred during an access. Check the ERR_CODE register to get more information."
+    }
+  ],
+
+  alert_list: [
+    // fast integrity check of buffered OTP partitions.
+    { name: "otp_reg_parity_mismatch",
+      desc: "This alert triggers if hardware detects a parity bit error in the buffered partitions.",
+    }
+    // background check digest mismatch
+    { name: "otp_reg_digest_mismatch",
+      desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
+    }
+  ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+  param_list: [
+    { name: "NumLcPartitionWords",
+      desc: "Number of 32bit words in the life cycle partition",
+      type: "int",
+      default: "4", // 4 x 32bit = 128bit
+      local: "true"
+    },
+    { name: "NumSecretPartitionWords",
+      desc: "Number of 32bit words in the secret partition",
+      type: "int",
+      default: "32", // 32 x 32bit = 1024bit
+      local: "true"
+    },
+    { name: "NumHwCfgWords",
+      desc: "Number of 32bit words in the hardware config partition",
+      type: "int",
+      default: "8", // 8 x 32bit = 256bit
+      local: "true"
+    },
+    // TODO: this will change once we add more switches to this partition.
+    { name: "NumHwCfgReservedRegs",
+      desc: "Number of unallocated 32bit OTP words in the hardware partition",
+      type: "int",
+      default: "6", // 6 x 32bit = 192bit
+      local: "true"
+    },
+    { name: "NumSwCfgPartitionWords",
+      desc: "Number of 32bit words in the software config partition",
+      type: "int",
+      default: "212", // 212 x 32bit = 256bit
+      local: "true"
+    },
+    { name: "NumSwCfgWindowWords",
+      desc: "Number of 32bit words in the software config partition window",
+      type: "int",
+      default: "256", // 212 x 32bit = 6784bit, but window is 256 large for alignment reasons
+      local: "true"
+    },
+    { name: "NumDebugWindowWords",
+      desc: "Number of 32bit words in the debug window.",
+      type: "int",
+      default: "500",
+      local: "true"
+    },
+  ]
+
+  /////////////////////////////
+  // Intermodule Connections //
+  /////////////////////////////
+  inter_signal_list: [
+    // Power manager init command
+    { struct: "pwr_otp_init"
+      type:   "req_rsp"
+      name:   "pwr_otp_init"
+      act:    "receiver"
+      package: "otp_ctrl_pkg"
+    }
+    // Status output to power manager
+    { struct: "otp_pwr_state"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "otp_pwr_state"
+      act:    "sender"
+      package: "otp_ctrl_pkg"
+    }
+    // LC transition command
+    { struct: "lc_otp_program"
+      type:   "req_rsp"
+      name:   "lc_otp_program"
+      act:    "receiver"
+      package: "otp_ctrl_pkg"
+    }
+    // Broadcast to LC
+    { struct: "otp_lc_data"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "otp_lc_data"
+      act:    "sender"
+      package: "otp_ctrl_pkg"
+    }
+    // Broadcast from LC
+    { struct: "lc_tx_t"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "lc_provision_en"
+      act:    "receiver"
+      package: "otp_ctrl_pkg" // TODO: move to LC package
+    }
+    { struct: "lc_tx_t"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "lc_test_en"
+      act:    "receiver"
+      package: "otp_ctrl_pkg" // TODO: move to LC package
+    }
+    //Broadcast to Key Manager
+    { struct: "keymgr_key"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "otp_keymgr_key"
+      act:    "sender"
+      package: "otp_ctrl_pkg" // TODO: move this to keymgr package
+    }
+    //Broadcast to Flash Controller
+    { struct: "flash_key"
+      type:   "broadcast"  // no `_req/rsp`
+      name:   "otp_flash_key"
+      act:    "sender"
+      package: "otp_ctrl_pkg"
+    }
+  ] // inter_signal_list
+
+  regwidth: "32",
+  registers: [
+
+    ////////////////////////
+    // Ctrl / Status CSRs //
+    ////////////////////////
+    { name: "STATUS",
+      desc: "OTP status register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: '''This register holds information on the OTP controller status.
+                TODO: make this an enum {INIT, READY, ERROR, LOCKED, WRITE_PENDING, READ_PENDING}
+                '''
+        }
+      ]
+    }
+    { name: "ERR_CODE",
+      desc: "OTP Ctrl Error Code",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: '''This register holds information on the error that occurred.
+                To be checked after an error interrupt occurred.
+                TODO: add reference to error type here.
+                '''
+        }
+      ]
+    }
+    { name: "DIRECT_ACCESS_CMD",
+      desc: "OTP array command for direct access.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        { bits: "0",
+          name: "read",
+          desc: "Initiates a readout sequence that reads the location specified by !!DIRECT_ACCESS_ADDRESS and !!DIRECT_ACCESS_SIZE. The command places the read data in !!DIRECT_ACCESS_RDATA."
+        }
+        { bits: "1",
+          name: "write",
+          desc: "Initiates a programming sequence that writes the !!DIRECT_ACCESS_WDATA to the location specified by !!DIRECT_ACCESS_ADDRESS and !!DIRECT_ACCESS_SIZE."
+        }
+      ]
+    }
+    { name: "DIRECT_ACCESS_ADDRESS",
+      desc: "OTP array address for direct access.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "9:0",
+          desc: '''This is the address for the OTP word to be read or written through
+          the direct access interface. Note that the address is 32bit aligned internally,
+          hence bit 1:0 are ignored.'''
+        }
+      ]
+    }
+    { name: "DIRECT_ACCESS_SIZE",
+      desc: "OTP array acces size for direct access.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0",
+          desc: '''This is the access size for for the OTP word to be read or written through
+          the direct access interface. Note that the address is always aligned to the
+          access size internally. 0 = 1 Byte, 1 = 2 Bytes, 2 = 4 Bytes, 3 = 8 Bytes.'''
+        }
+      ]
+    }
+    { multireg: { name:     "DIRECT_ACCESS_WDATA",
+                  desc:     '''Write data for direct access. Note that only 1s are effectively programmed into the array. 0s do not have any effect.
+                  ''',
+                  count:    "2", // 2 x 32bit = 64bit
+                  swaccess: "rw",
+                  hwaccess: "hro",
+                  hwqe:     "true",
+                  cname:    "WORD",
+                  fields: [
+                    { bits: "31:0"
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "DIRECT_ACCESS_RDATA",
+                  desc:     '''Read data for direct access.
+                  ''',
+                  count:    "2", // 2 x 32bit = 64bit
+                  swaccess: "ro",
+                  hwaccess: "hwo",
+                  cname:    "WORD",
+                  fields: [
+                    { bits: "31:0"
+                      desc: ""
+                    }
+                  ]
+                }
+    },
+
+    ///////////////////////
+    // Integrity Digests //
+    ///////////////////////
+    { skipto: "0x050" }
+
+    { name: "SECRET_INTEGRITY_DIGEST_CALC",
+      desc: "Compute and program digest for secret partition.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          desc: '''Writing 1 to this register computes the partition digest and burns it into OTP.
+                Note: this effectively locks write and read access to this partition after power cycling the device.
+                '''
+        }
+      ]
+    }
+
+    { name: "HW_CFG_INTEGRITY_DIGEST_CALC",
+      desc: "Compute and program digest for the hardware config partition.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          desc: '''Writing 1 to this register computes the partition digest and burns it into OTP.
+                Note that this effectively locks write access to this partition after power cycling the device.
+                '''
+        }
+      ]
+    }
+
+    { name: "SW_CFG_INTEGRITY_DIGEST_CALC",
+      desc: "Compute and program digest for the software config partition.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          desc: '''Writing 1 to this register computes the partition digest and burns it into OTP.
+                Note that effectively locks write access to this partition after power cycling the device.
+                '''
+        }
+      ]
+    }
+
+    { name: "SECRET_INTEGRITY_DIGEST",
+      desc: "Integrity digest for the secret config partition",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''The integrity digest is 0 by default. Once the partition has been locked,
+                this digest is set to a nonzero value.'''
+        }
+      ]
+    }
+    { name: "HW_CFG_INTEGRITY_DIGEST",
+      desc: "Hardware config partition integrity digest.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''The integrity digest is 0 by default. Once the partition has been locked,
+                this digest is set to a nonzero value.'''
+        }
+      ]
+    }
+    { name: "SW_CFG_INTEGRITY_DIGEST",
+      desc: "Integrity digest for the software config partition",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''The integrity digest is 0 by default. Once the partition has been locked,
+                this digest is set to a nonzero value.'''
+        }
+      ]
+    }
+
+    //////////////////////////
+    // Life Cycle Partition //
+    //////////////////////////
+    { skipto: "0x100" }
+
+    { multireg: { name:     "LC_STATE",
+                  desc:     '''Life cycle state.
+                  ''',
+                  count:    "6", // 6 x8bit = 48bit
+                  swaccess: "ro",
+                  hwaccess: "hwo",
+                  cname:    "BYTE",
+                  fields: [
+                    { bits: "7:0"
+                      desc: "TODO: explain state encoding"
+                    }
+                  ]
+                }
+    },
+    { name: "ID_STATE",
+      desc: "ID state of the device.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "7:0",
+          desc: '''The ID state is BLANK when set to 0x00, and CREATOR_PERSONALIZED if set to 0x6D.
+                Note that this affects certain secrets stored in FLASH and OTP. For instance, the
+                !!CREATOR_ROOT_KEY_SHARE0 stored in OTP is readable and writable by software if BLANK, and
+                all hardware outputs to the LC controller and the key manager will be tied to 0 in this state.
+                If ID state is CREATOR_PERSONALIZED the !!CREATOR_ROOT_KEY_SHARE0 is not accessible by software anymore,
+                and all hardware outputs to the LC controller and key manager will be driven.
+                '''
+        }
+      ]
+    }
+    // TODO: update XXX related bits
+    { name: "TEST_XXX_CNT",
+      desc: "Counters related to the test and XXX states."
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "7:0",
+          name: "TEST_STATE_CNT"
+          desc: "TODO: add description of this counter"
+        }
+        { bits: "15:8",
+          name: "TEST_UNLOCK_CNT"
+          desc: "Number of times test unlock has been attempted."
+        }
+        { bits: "23:16",
+          name: "TEST_EXIT_CNT"
+          desc: "Number of times test exit has been attempted."
+        }
+        { bits: "31:24",
+          name: "XXX_UNLOCK_CNT"
+          desc: "Number of times XXX unlock has been attempted."
+        }
+      ]
+    }
+    { name: "TRANSITION_CNT",
+      desc: "Counter for total amount of state transition attempts.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "15:0",
+          desc: '''This counter will be incremented upon each state transition attempt,
+                or when the transition command coming from the life cycle controller is invalid.
+                '''
+        }
+      ]
+    }
+
+    ///////////////////////////////
+    // Hardware Config Partition //
+    ///////////////////////////////
+    { skipto: "0x200" }
+
+    // TODO: update XXX related bits
+    { name: "HW_CFG_LOCK",
+      desc: "Hardware config lock values.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits: "2:0",
+          name: "TEST_TOKENS_LOCK",
+          desc: '''TEST token lock value. When set to nonzero, the life cycle
+                TEST_*_TOKENS are no longer accessible to software.
+                '''
+        }
+        {
+          bits: "7:3",
+          name: "XXX_TOKEN_LOCK",
+          desc: '''XXX token lock value. When set to nonzero, the life cycle
+                XXX_*_TOKENS are no longer accessible to software.
+                '''
+        }
+      ]
+    }
+    // TODO: update this field once known
+    { multireg: { name:     "HW_CFG",
+                  desc:     '''Unallocated OTP bits.
+                  ''',
+                  count:    "NumHwCfgReservedRegs", // 7 x32bit = 192bit
+                  swaccess: "ro",
+                  hwaccess: "hwo",
+                  cname:    "WORD",
+                  fields: [
+                    { bits: "31:0"
+                    }
+                  ]
+                }
+    },
+
+    ///////////////////////////////
+    // Software Config Partition //
+    ///////////////////////////////
+
+    // TODO: split SW partition into creator and owner partitions
+    { skipto: "0x300" }
+
+    { window: {
+        name: "SW_CFG"
+        items: "NumSwCfgWindowWords" // 212 x 32bit = 6784bit, but window is 256 large for alignment reasons
+        swaccess: "ro",
+        desc: '''Any read to this window directly maps to the corresponding offset in the software
+              config partition, and triggers an OTP readout of the bytes requested. Note that the transaction
+              will block until OTP readout has completed.
+              '''
+      }
+    }
+
+    //////////////////////
+    // Test Access Port //
+    //////////////////////
+    { skipto: "0x800" }
+
+    { window: {
+        name: "TEST_ACCESS"
+        items: "NumDebugWindowWords"
+        swaccess: "rw",
+        desc: '''This directly maps to the OTP macro address map. Note that this is only
+              accessible during the test life cycle state of the OpenTitan device.
+              '''
+      }
+    }
+  ],
+}

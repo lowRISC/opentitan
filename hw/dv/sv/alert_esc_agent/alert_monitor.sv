@@ -36,7 +36,7 @@ class alert_monitor extends alert_esc_base_monitor;
 
   virtual task ping_thread(uvm_phase phase);
     alert_esc_seq_item req;
-    bit                ping_p;
+    bit                ping_p, alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.get_ping_p()) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
@@ -47,20 +47,17 @@ class alert_monitor extends alert_esc_base_monitor;
           begin : isolation_fork
             fork
               begin : wait_ping_timeout
-                repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                repeat (cfg.ping_timeout_cycle - 1) @(cfg.vif.monitor_cb);
                 req.timeout = 1'b1;
               end
               begin : wait_ping_handshake
+                // in case there is an alert happened before ping
+                if (alert_p != 0) cfg.vif.wait_alert_complete();
                 cfg.vif.wait_alert();
                 req.alert_handshake_sta = AlertReceived;
                 cfg.vif.wait_ack();
                 req.alert_handshake_sta = AlertAckReceived;
-                cfg.vif.wait_alert_complete();
-                req.alert_handshake_sta = AlertComplete;
                 under_ping_rsp = 0;
-                // TODO: if now another alert triggered, will both sample the ack signal?
-                cfg.vif.wait_ack_complete();
-                req.alert_handshake_sta = AlertAckComplete;
               end
             join_any
             disable fork;
@@ -73,6 +70,7 @@ class alert_monitor extends alert_esc_base_monitor;
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.get_ping_p();
+      alert_p = cfg.vif.get_alert_p();
     end
   endtask : ping_thread
 
@@ -93,7 +91,7 @@ class alert_monitor extends alert_esc_base_monitor;
           begin : isolation_fork
             fork
               begin : alert_timeout
-                repeat (cfg.ping_timeout_cycle) @(cfg.vif.monitor_cb);
+                repeat (cfg.handshake_timeout_cycle) @(cfg.vif.monitor_cb);
                 req.timeout = 1'b1;
               end
               begin : wait_alert_handshake

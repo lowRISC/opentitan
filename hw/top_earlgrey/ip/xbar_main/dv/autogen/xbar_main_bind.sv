@@ -86,6 +86,12 @@ module xbar_main_bind;
     .h2d    (tl_pinmux_o),
     .d2h    (tl_pinmux_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_padctrl (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_fixed_ni),
+    .h2d    (tl_padctrl_o),
+    .d2h    (tl_padctrl_i)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_alert_handler (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

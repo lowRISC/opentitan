@@ -1,0 +1,27 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "flash_ctrl"
+  // TODO: remove the common testplans if not applicable
+  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: sanity
+      desc: '''
+            Basic sanity test acessing a major datapath within the flash_ctrl.
+
+            **Stimulus**:
+            - TBD
+
+            **Checks**:
+            - TBD
+            '''
+      milestone: V1
+      tests: ["flash_ctrl_sanity"]
+    }
+  ]
+}

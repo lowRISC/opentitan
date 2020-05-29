@@ -11,14 +11,6 @@ filesets:
       - lowrisc:ip:alert_handler_reg
       - lowrisc:ip:alert_handler_component
 
-  files_verilator_waiver:
-    depend:
-      - lowrisc:ip:alert_handler_component
-
-  files_ascentlint_waiver:
-    depend:
-      - lowrisc:ip:alert_handler_component
-
   files_formal:
     files:
       - dv/tb/alert_handler_bind.sv
@@ -33,9 +25,7 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
-      - target_formal   ? (files_formal)
+      - target_formal    ? (files_formal)
       - files_rtl
     toplevel: alert_handler
 

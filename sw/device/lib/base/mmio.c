@@ -25,12 +25,21 @@ extern void mmio_region_nonatomic_clear_mask32(mmio_region_t base,
 extern void mmio_region_nonatomic_set_mask32(mmio_region_t base,
                                              ptrdiff_t offset, uint32_t mask,
                                              uint32_t mask_index);
+extern void mmio_region_write_only_set_mask32(mmio_region_t base,
+                                              ptrdiff_t offset, uint32_t mask,
+                                              uint32_t mask_index);
 extern void mmio_region_nonatomic_set_field32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               bitfield_field32_t field);
+extern void mmio_region_write_only_set_field32(mmio_region_t base,
+                                               ptrdiff_t offset,
+                                               bitfield_field32_t field);
 extern void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               uint32_t bit_index);
 extern void mmio_region_nonatomic_set_bit32(mmio_region_t base,
                                             ptrdiff_t offset,
                                             uint32_t bit_index);
+extern void mmio_region_write_only_set_bit32(mmio_region_t base,
+                                             ptrdiff_t offset,
+                                             uint32_t bit_index);

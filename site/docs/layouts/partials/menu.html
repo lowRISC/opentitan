@@ -1,0 +1,44 @@
+<div class="menu">
+ <ul>
+    {{- $currentNode := . }}
+    {{- range .Site.Home.Sections.ByTitle}}
+    {{- template "menu-loop" dict "sect" . "currentnode" $currentNode}}
+    {{- end}}
+</ul>
+</div>
+
+<!-- Template -->
+{{- define "menu-loop" }}
+{{- $currentNode := .currentnode }}
+{{- with .sect}}
+{{- if .IsSection }}
+    {{- $numberOfPages := (add (len .Pages) (len .Sections)) }}
+    <li>
+        <a class="{{- if .IsAncestor $currentNode}} ancestor{{end}}
+            {{- if eq .RelPermalink $currentNode.RelPermalink}} active{{end}}"
+            href="{{.RelPermalink}}">{{.Title}}</h6></a>
+      {{- if ne $numberOfPages 0 }}
+        <ul class="
+            {{- if .IsAncestor $currentNode}} ancestor{{end}}
+            {{- if ne $numberOfPages 0 }} parent{{end}}
+            ">
+          {{- .Scratch.Set "pages" .Pages }}
+          {{- if .Sections}}
+          {{- .Scratch.Set "pages" (.Pages | union .Sections) }}
+          {{- end}}
+          {{- $pages := (.Scratch.Get "pages") }}
+
+          {{- range $pages.ByTitle }}
+            {{- template "menu-loop" dict "sect" . "currentnode" $currentNode }}
+          {{- end}}
+        </ul>
+      {{- end}}
+    </li>
+{{- else}}
+    <li>
+             <a class="{{- if eq .RelPermalink $currentNode.RelPermalink}} active{{end}}" href="{{.RelPermalink}}"> {{.LinkTitle}} </a>
+    </li>
+{{- end}}
+{{- end}}
+{{- end}}
+

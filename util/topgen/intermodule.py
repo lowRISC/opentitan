@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import re
 import logging as log
-from typing import Dict, Tuple
+import re
 from collections import OrderedDict
 from enum import Enum
+from typing import Dict, Tuple
 
 from reggen.validate import check_int
 from topgen import lib
@@ -564,6 +564,8 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
         if obj["act"] == "rsp" and suffix == "req":
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
+        if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
+            return "1'b0"
         if obj["act"] == "rcv" and suffix == "":
             return "{package}::{struct}_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())

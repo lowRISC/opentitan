@@ -35,9 +35,7 @@ class spi_monitor extends dv_base_monitor#(
 
     forever begin
       @(negedge cfg.vif.csb);
-      phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
       if (cfg.en_monitor_collect_trans) collect_curr_trans();
-      phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
     end
   endtask
 
@@ -98,6 +96,13 @@ class spi_monitor extends dv_base_monitor#(
         disable fork;
       end
     join
+  endtask
+
+  virtual task monitor_ready_to_end();
+    forever begin
+      @(cfg.vif.csb);
+      ok_to_end = !cfg.vif.csb;
+    end
   endtask
 
 endclass

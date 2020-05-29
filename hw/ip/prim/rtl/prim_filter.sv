@@ -10,7 +10,7 @@
 //   new input must be opposite value from stored value for
 //   #Cycles before switching to new value.
 
-module prim_filter #(parameter Cycles = 4) (
+module prim_filter #(parameter int Cycles = 4) (
   input  clk_i,
   input  rst_ni,
   input  enable_i,
@@ -20,6 +20,7 @@ module prim_filter #(parameter Cycles = 4) (
 
   logic [Cycles-1:0] stored_vector_q, stored_vector_d;
   logic stored_value_q, update_stored_value;
+  logic unused_stored_vector_q_msb;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -30,6 +31,7 @@ module prim_filter #(parameter Cycles = 4) (
   end
 
   assign stored_vector_d = {stored_vector_q[Cycles-2:0],filter_i};
+  assign unused_stored_vector_q_msb = stored_vector_q[Cycles-1];
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

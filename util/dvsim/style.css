@@ -25,9 +25,6 @@
 .results pre {
    overflow-x: auto;
    white-space: pre-wrap;
-   white-space: -moz-pre-wrap;
-   white-space: -pre-wrap;
-   white-space: -o-pre-wrap;
 }
 
 .results h1, .results h2, .results h3 {

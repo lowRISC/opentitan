@@ -35,7 +35,7 @@
             probably spot it happening. Note that the sanity test theoretically
             could check this, but the unconstrained branch addresses mean it's
             very unlikely to see much caching going on.'''
-      milestone: V1
+      milestone: V2
       tests: ["ibex_icache_passthru"]
     }
 
@@ -50,8 +50,8 @@
             reset has finished), start fetching and check that most results are
             cached by counting transactions on the instruction bus versus
             instructions fetched.'''
-      milestone: V1
-      tests: ["ibex_icache_caching"]
+      milestone: V2
+      tests: []
     }
 
     {
@@ -62,8 +62,8 @@
             hits. Enable the cache but increase frequency of cache invalidations
             and seed updates for the memory to try and hit any race conditions
             between the request tracking logic and the invalidation logic.'''
-      milestone: V1
-      tests: ["ibex_icache_invalidation"]
+      milestone: V2
+      tests: []
     }
 
     {
@@ -76,8 +76,8 @@
 
             Compare bus transactions and instructions fetched to make sure that
             cached instructions survive enable/disable toggles.'''
-      milestone: V1
-      tests: ["ibex_icache_disable_without_invalidation"]
+      milestone: V2
+      tests: []
     }
 
     {
@@ -94,8 +94,51 @@
             and then goes back to the start to get what it missed). This will
             spot if there are any bugs that cause it to cache bogus data just
             before the original branch target.'''
-      milestone: V1
-      tests: ["ibex_icache_backward_line"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: many_errors
+      desc: '''Return very frequent errors from the instruction memory
+
+            This will cause very frequent branching and stress-test the cache's
+            error handling. Constrain branch targets as in the caching test so
+            that we are actually caching something.'''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: ecc
+      desc: '''Insert single-bit errors into cached data
+
+            With the cache (as in the caching test), interpose a fake
+            memory for the cache RAMs, which occasionally inserts a single
+            bit error. Check that the invalid cached data is correctly
+            ignored.'''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: stress_all
+      desc: '''Run a pair of sequences back-to-back
+
+            Tests are selected from the sequences above. With 50% probability,
+            reset between the sequences.'''
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: stress_all_with_reset
+      desc: '''Run a sequence from above, resetting occasionally
+
+            Tests are selected from the sequences above. Add occasional
+            resets (in the middle of sequences)'''
+      milestone: V2
+      tests: []
     }
   ]
 }

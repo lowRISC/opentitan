@@ -37,24 +37,27 @@ module tb;
   wire bootstrap;
   wire [7:0] io_dps;
 
-  wire usb_dp0, usb_dn0, usb_sense0, usb_pullup0;
+  wire usb_dp0, usb_dn0, usb_sense0, usb_dppullup0, usb_dnpullup0;
+
+  wire uart_rx, uart_tx;
 
   bit stub_cpu;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
   pins_if #(1) bootstrap_if(.pins(bootstrap));
-  spi_if spi_if(.rst_n(rst_n));
-  tl_if   cpu_d_tl_if(.clk(clk), .rst_n(rst_n));
+  spi_if spi_if(.rst_n);
+  tl_if cpu_d_tl_if(.clk, .rst_n);
   uart_if uart_if();
   jtag_if jtag_if();
 
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
+  bind `RAM_MAIN_HIER.u_mem mem_bkdr_if ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
 
@@ -75,14 +78,15 @@ module tb;
     .IO_DPS7          (io_dps[7]),
 
     // UART interface
-    .IO_URX           (uart_if.uart_rx),
-    .IO_UTX           (uart_if.uart_tx),
+    .IO_URX           (uart_rx),
+    .IO_UTX           (uart_tx),
 
     // USB interface
     .IO_USB_DP0       (usb_dp0),
     .IO_USB_DN0       (usb_dn0),
     .IO_USB_SENSE0    (usb_sense0),
-    .IO_USB_PULLUP0   (usb_pullup0),
+    .IO_USB_DNPULLUP0 (usb_dppullup0),
+    .IO_USB_DPPULLUP0 (usb_dnpullup0),
 
     // GPIO x 16 interface
     .IO_GP0           (gpio_pins[0 ]),
@@ -104,30 +108,20 @@ module tb;
   );
 
   // connect sw_logger_if
-  parameter string SwTypes[] = '{"rom", "sw"};
-  generate
-    for (genvar i = 0; i < 2; i++) begin: sw_logger_if_i
-      bit             sw_log_valid;
-      bit [TL_AW-1:0] sw_log_addr;
+  bit             sw_log_valid;
+  bit [TL_AW-1:0] sw_log_addr;
 
-      sw_logger_if sw_logger_if (
-        .clk          (`RAM_MAIN_HIER.clk_i),
-        .rst_n        (`RAM_MAIN_HIER.rst_ni),
-        .valid        (sw_log_valid),
-        .addr_data    (`RAM_MAIN_HIER.wdata_i),
-        .sw_log_addr  (sw_log_addr)
-      );
-      // TODO: RAM only looks at addr[15:2] - need to find a better way to capture it.
-      assign sw_log_valid = !stub_cpu &&
-                            `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
-                            (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
-
-      initial begin
-        uvm_config_db#(virtual sw_logger_if)::set(
-            null, "*.env", $sformatf("sw_logger_vif[%0s]", SwTypes[i]), sw_logger_if);
-      end
-    end
-  endgenerate
+  sw_logger_if sw_logger_if (
+    .clk          (`RAM_MAIN_HIER.clk_i),
+    .rst_n        (`RAM_MAIN_HIER.rst_ni),
+    .valid        (sw_log_valid),
+    .addr_data    (`RAM_MAIN_HIER.wdata_i),
+    .sw_log_addr  (sw_log_addr)
+  );
+  assign sw_log_valid = !stub_cpu &&
+                        `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                        /* RAM only looks at the 14-bit word address 15:2 */
+                        (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
 
   // connect the sw_test_status_if
   sw_test_status_if sw_test_status_if();
@@ -158,6 +152,9 @@ module tb;
   assign spi_device_csb     = spi_if.csb;
   assign spi_device_mosi_i  = spi_if.mosi;
   assign spi_if.miso        = spi_device_miso_o;
+
+  assign uart_rx = uart_if.uart_rx;
+  assign uart_if.uart_tx = uart_tx;
 
   // TODO: USB-related signals, hookup an interface.
   assign usb_rst_n  = `USBDEV_HIER.rst_usb_48mhz_ni;
@@ -192,9 +189,14 @@ module tb;
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[Ram]", `RAM_MAIN_HIER.u_mem.ram_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+
+    // SW logger and test status interfaces.
+    uvm_config_db#(virtual sw_logger_if)::set(null, "*.env", "sw_logger_vif", sw_logger_if);
     uvm_config_db#(virtual sw_test_status_if)::set(
         null, "*.env", "sw_test_status_vif", sw_test_status_if);
 

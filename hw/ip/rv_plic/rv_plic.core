@@ -15,14 +15,6 @@ filesets:
       - rtl/rv_plic.sv
     file_type: systemVerilogSource
 
-  files_verilator_waiver:
-    depend:
-      - lowrisc:ip:rv_plic_component
-
-  files_ascentlint_waiver:
-    depend:
-      - lowrisc:ip:rv_plic_component
-
 
 parameters:
   SYNTHESIS:
@@ -33,8 +25,6 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: rv_plic
 

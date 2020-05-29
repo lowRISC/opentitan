@@ -4,26 +4,27 @@
 
 module top_earlgrey_asic (
   // Clock and Reset
-  input               IO_CLK,
-  input               IO_RST_N,
-  input               IO_CLK_USB_48MHZ,
+  inout               IO_CLK,
+  inout               IO_RST_N,
+  inout               IO_CLK_USB_48MHZ,
   // JTAG interface
-  input               IO_DPS0, // IO_JTCK,    IO_SDCK
-  input               IO_DPS3, // IO_JTMS,    IO_SDCSB
-  input               IO_DPS1, // IO_JTDI,    IO_SDMOSI
-  input               IO_DPS4, // IO_JTRST_N,
-  input               IO_DPS5, // IO_JSRST_N,
-  output              IO_DPS2, // IO_JTDO,    IO_MISO
-  input               IO_DPS6, // JTAG=0,     SPI=1
-  input               IO_DPS7, // BOOTSTRAP=1
+  inout               IO_DPS0, // IO_JTCK,    IO_SDCK
+  inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
+  inout               IO_DPS1, // IO_JTDI,    IO_SDMOSI
+  inout               IO_DPS4, // IO_JTRST_N,
+  inout               IO_DPS5, // IO_JSRST_N,
+  inout               IO_DPS2, // IO_JTDO,    IO_MISO
+  inout               IO_DPS6, // JTAG=1,     SPI=0
+  inout               IO_DPS7, // BOOTSTRAP=1
   // UART interface
-  input               IO_URX,
-  output              IO_UTX,
+  inout               IO_URX,
+  inout               IO_UTX,
   // USB interface
   inout               IO_USB_DP0,
   inout               IO_USB_DN0,
-  input               IO_USB_SENSE0,
-  output              IO_USB_PULLUP0,
+  inout               IO_USB_SENSE0,
+  inout               IO_USB_DNPULLUP0,
+  inout               IO_USB_DPPULLUP0,
   // GPIO x 16 interface
   inout               IO_GP0,
   inout               IO_GP1,
@@ -43,143 +44,179 @@ module top_earlgrey_asic (
   inout               IO_GP15
 );
 
-  logic [31:0] cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
-  logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
-  logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d, cio_spi_device_mosi_p2d,
-        cio_spi_device_miso_d2p, cio_spi_device_miso_en_d2p;
-  logic cio_jtag_tck_p2d, cio_jtag_tms_p2d, cio_jtag_tdi_p2d, cio_jtag_tdo_d2p;
-  logic cio_jtag_trst_n_p2d, cio_jtag_srst_n_p2d;
-  logic cio_usbdev_sense_p2d;
-  logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
-  logic cio_usbdev_pullup_d2p, cio_usbdev_pullup_en_d2p;
-  logic cio_usbdev_tx_mode_se_d2p, cio_usbdev_tx_mode_se_en_d2p;
-  logic cio_usbdev_supsend_d2p, cio_usbdev_supsend_en_d2p;
-  logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
-  logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
-  logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
+  import top_earlgrey_pkg::*;
 
-  // Top-level design
+  //////////////////////
+  // Padring Instance //
+  //////////////////////
+
+  logic clk, clk_usb_48mhz, rst_n;
+  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+
+  padring #(
+    // MIOs 31:20 are currently not
+    // connected to pads and hence tied off
+    .ConnectMioIn  ( 32'h000FFFFF ),
+    .ConnectMioOut ( 32'h000FFFFF ),
+    // Tied off DIOs:
+    // 2: usbdev_d
+    // 3: usbdev_suspend
+    // 4: usbdev_tx_mode
+    // 7: usbdev_se
+    .ConnectDioIn  ( 15'h7F63 ),
+    .ConnectDioOut ( 15'h7F63 )
+  ) padring (
+    // Clk / Rst
+    .clk_pad_i           ( IO_CLK           ),
+    .clk_usb_48mhz_pad_i ( IO_CLK_USB_48MHZ ),
+    .rst_pad_ni          ( IO_RST_N         ),
+    .clk_o               ( clk              ),
+    .clk_usb_48mhz_o     ( clk_usb_48mhz    ),
+    .rst_no              ( rst_n            ),
+    // MIO Pads
+    .mio_pad_io          ( { 12'bz,   // Note that 31:20 are currently not mapped
+                             IO_DPS5, // Use GPIO19 to pass JTAG_SRST
+                             IO_DPS4, // Use GPIO18 to pass JTAG_TRST
+                             IO_DPS7, // Use GPIO17 to pass rom boot_strap indication
+                             IO_DPS6, // Use GPIO16 to pass SPI/JTAG control flag
+                             IO_GP15,
+                             IO_GP14,
+                             IO_GP13,
+                             IO_GP12,
+                             IO_GP11,
+                             IO_GP10,
+                             IO_GP9,
+                             IO_GP8,
+                             IO_GP7,
+                             IO_GP6,
+                             IO_GP5,
+                             IO_GP4,
+                             IO_GP3,
+                             IO_GP2,
+                             IO_GP1,
+                             IO_GP0 } ),
+    // DIO Pads
+    .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
+                             IO_DPS3, // CSB, JTAG_TMS
+                             IO_DPS1, // MOSI, JTAG_TDI
+                             IO_DPS2, // MISO, JTAG_TDO
+                             IO_URX,
+                             IO_UTX,
+                             IO_USB_SENSE0,
+                             1'bz,    // usbdev_se0
+                             IO_USB_DPPULLUP0,
+                             IO_USB_DNPULLUP0,
+                             1'bz,    // usbdev_tx_mode
+                             1'bz,    // usbdev_suspend
+                             1'bz,    // usbdev_d
+                             IO_USB_DP0,
+                             IO_USB_DN0 } ),
+    // Muxed IOs
+    .mio_in_o            ( mio_in_padring   ),
+    .mio_out_i           ( mio_out_padring  ),
+    .mio_oe_i            ( mio_oe_padring   ),
+    // Dedicated IOs
+    .dio_in_o            ( dio_in_padring   ),
+    .dio_out_i           ( dio_out_padring  ),
+    .dio_oe_i            ( dio_oe_padring   ),
+    // Pad Attributes
+    .mio_attr_i          ( mio_attr         ),
+    .dio_attr_i          ( dio_attr         )
+  );
+
+  //////////////////////
+  // JTAG Overlay Mux //
+  //////////////////////
+
+  logic jtag_trst_n, jtag_srst_n;
+  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+
+  localparam int NumIOs = padctrl_reg_pkg::NMioPads +
+                          padctrl_reg_pkg::NDioPads;
+
+  // This specifies the tie-off values of the muxed MIO/DIOs
+  // when the JTAG is active. SPI CSB is active low.
+  localparam logic [NumIOs-1:0] TieOffValues =NumIOs'(1'b1 << (
+      padctrl_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+
+  // TODO: this is a temporary solution. JTAG will eventually be selected and
+  // qualified inside the pinmux, based on strap and lifecycle state.
+  // Parameterizeable JTAG overlay mux.
+  // Unaffected indices are just passed through.
+  jtag_mux #(
+    .NumIOs         (                   NumIOs       ),
+    .TieOffValues   (                   TieOffValues ),
+    .JtagEnIdx      (                             16 ), // MIO 16
+    .JtagEnPolarity (                              1 ),
+    .TckIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
+    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
+    .TrstIdx        (                             18 ), // MIO 18
+    .SrstIdx        (                             19 ), // MIO 19
+    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMosi ),
+    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMiso )
+  ) jtag_mux (
+    // To JTAG inside core
+    .jtag_tck_o   ( jtag_tck        ),
+    .jtag_tms_o   ( jtag_tms        ),
+    .jtag_trst_no ( jtag_trst_n     ),
+    .jtag_srst_no ( jtag_srst_n     ),
+    .jtag_tdi_o   ( jtag_tdi        ),
+    .jtag_tdo_i   ( jtag_tdo        ),
+    // To core side
+    .out_core_i   ( {dio_out_core, mio_out_core} ),
+    .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
+    .in_core_o    ( {dio_in_core,  mio_in_core}  ),
+    // To padring side
+    .out_padring_o ( {dio_out_padring, mio_out_padring} ),
+    .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
+    .in_padring_i  ( {dio_in_padring , mio_in_padring } )
+  );
+
+  //////////////////////
+  // Top-level design //
+  //////////////////////
+
   top_earlgrey top_earlgrey (
-    .clk_i                      (IO_CLK),
-    .rst_ni                     (IO_RST_N),
-    .clk_fixed_i                (IO_CLK),
-    .clk_usb_48mhz_i            (IO_CLK_USB_48MHZ),
+    .clk_i           ( clk           ),
+    .rst_ni          ( rst_n         ),
+    .clk_io_i        ( clk           ),
+    .clk_usb_i       ( clk_usb_48mhz ),
+    .clk_aon_i       ( clk           ),
 
-    .jtag_tck_i                 (cio_jtag_tck_p2d),
-    .jtag_tms_i                 (cio_jtag_tms_p2d),
-    .jtag_trst_ni               (cio_jtag_trst_n_p2d),
-    .jtag_td_i                  (cio_jtag_tdi_p2d),
-    .jtag_td_o                  (cio_jtag_tdo_d2p),
-
-    .dio_spi_device_sck_i       (cio_spi_device_sck_p2d),
-    .dio_spi_device_csb_i       (cio_spi_device_csb_p2d),
-    .dio_spi_device_mosi_i      (cio_spi_device_mosi_p2d),
-    .dio_spi_device_miso_o      (cio_spi_device_miso_d2p),
-    .dio_spi_device_miso_en_o   (cio_spi_device_miso_en_d2p),
-
-    .dio_uart_rx_i              (cio_uart_rx_p2d),
-    .dio_uart_tx_o              (cio_uart_tx_d2p),
-    .dio_uart_tx_en_o           (cio_uart_tx_en_d2p),
-
-    .dio_usbdev_sense_i         (cio_usbdev_sense_p2d),
-    .dio_usbdev_se0_o           (cio_usbdev_se0_d2p),
-    .dio_usbdev_se0_en_o        (cio_usbdev_se0_en_d2p),
-    .dio_usbdev_pullup_o        (cio_usbdev_pullup_d2p),
-    .dio_usbdev_pullup_en_o     (cio_usbdev_pullup_en_d2p),
-    .dio_usbdev_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
-    .dio_usbdev_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
-    .dio_usbdev_suspend_o       (cio_usbdev_suspend_d2p),
-    .dio_usbdev_suspend_en_o    (cio_usbdev_suspend_en_d2p),
-    .dio_usbdev_d_i             (cio_usbdev_d_p2d),
-    .dio_usbdev_d_o             (cio_usbdev_d_d2p),
-    .dio_usbdev_d_en_o          (cio_usbdev_d_en_d2p),
-    .dio_usbdev_dp_i            (cio_usbdev_dp_p2d),
-    .dio_usbdev_dp_o            (cio_usbdev_dp_d2p),
-    .dio_usbdev_dp_en_o         (cio_usbdev_dp_en_d2p),
-    .dio_usbdev_dn_i            (cio_usbdev_dn_p2d),
-    .dio_usbdev_dn_o            (cio_usbdev_dn_d2p),
-    .dio_usbdev_dn_en_o         (cio_usbdev_dn_en_d2p),
-
-    .mio_in_i                   (cio_gpio_p2d),
-    .mio_out_o                  (cio_gpio_d2p),
-    .mio_oe_o                   (cio_gpio_en_d2p),
-
-    .scanmode_i                 (1'b0)
-  );
-
-  // pad control
-  padctl padctl (
-    // UART
-    .cio_uart_rx_p2d,
-    .cio_uart_tx_d2p,
-    .cio_uart_tx_en_d2p,
-    // USB
-    .cio_usbdev_sense_p2d(cio_usbdev_sense_p2d),
-    .cio_usbdev_se0_d2p(cio_usbdev_se0_d2p),
-    .cio_usbdev_se0_en_d2p(cio_usbdev_se0_en_d2p),
-    .cio_usbdev_pullup_d2p(cio_usbdev_pullup_d2p),
-    .cio_usbdev_pullup_en_d2p(cio_usbdev_pullup_en_d2p),
-    .cio_usbdev_tx_mode_se_d2p(cio_usbdev_tx_mode_se_d2p),
-    .cio_usbdev_tx_mode_se_en_d2p(cio_usbdev_tx_mode_se_en_d2p),
-    .cio_usbdev_suspend_d2p(cio_usbdev_suspend_d2p),
-    .cio_usbdev_suspend_en_d2p(cio_usbdev_suspend_en_d2p),
-    .cio_usbdev_d_p2d(cio_usbdev_d_p2d),
-    .cio_usbdev_d_d2p(cio_usbdev_d_d2p),
-    .cio_usbdev_d_en_d2p(cio_usbdev_d_en_d2p),
-    .cio_usbdev_dp_p2d(cio_usbdev_dp_p2d),
-    .cio_usbdev_dp_d2p(cio_usbdev_dp_d2p),
-    .cio_usbdev_dp_en_d2p(cio_usbdev_dp_en_d2p),
-    .cio_usbdev_dn_p2d(cio_usbdev_dn_p2d),
-    .cio_usbdev_dn_d2p(cio_usbdev_dn_d2p),
-    .cio_usbdev_dn_en_d2p(cio_usbdev_dn_en_d2p),
-    // GPIO
-    .cio_gpio_p2d,
-    .cio_gpio_d2p,
-    .cio_gpio_en_d2p,
-    // SPI device
-    .cio_spi_device_sck_p2d,
-    .cio_spi_device_csb_p2d,
-    .cio_spi_device_mosi_p2d,
-    .cio_spi_device_miso_d2p,
-    .cio_spi_device_miso_en_d2p,
     // JTAG
-    .cio_jtag_tck_p2d,
-    .cio_jtag_tms_p2d,
-    .cio_jtag_trst_n_p2d,
-    .cio_jtag_srst_n_p2d,
-    .cio_jtag_tdi_p2d,
-    .cio_jtag_tdo_d2p,
-    // pads
-    .IO_URX,
-    .IO_UTX,
-    .IO_USB_DP0,
-    .IO_USB_DN0,
-    .IO_USB_SENSE0,
-    .IO_USB_PULLUP0,
-    .IO_GP0,
-    .IO_GP1,
-    .IO_GP2,
-    .IO_GP3,
-    .IO_GP4,
-    .IO_GP5,
-    .IO_GP6,
-    .IO_GP7,
-    .IO_GP8,
-    .IO_GP9,
-    .IO_GP10,
-    .IO_GP11,
-    .IO_GP12,
-    .IO_GP13,
-    .IO_GP14,
-    .IO_GP15,
-    .IO_DPS0,
-    .IO_DPS1,
-    .IO_DPS2,
-    .IO_DPS3,
-    .IO_DPS4,
-    .IO_DPS5,
-    .IO_DPS6,
-    .IO_DPS7
+    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tms_i      ( jtag_tms      ),
+    .jtag_trst_ni    ( jtag_trst_n   ),
+    .jtag_tdi_i      ( jtag_tdi      ),
+    .jtag_tdo_o      ( jtag_tdo      ),
+
+    // Multiplexed I/O
+    .mio_in_i        ( mio_in_core   ),
+    .mio_out_o       ( mio_out_core  ),
+    .mio_oe_o        ( mio_oe_core   ),
+
+    // Dedicated I/O
+    .dio_in_i        ( dio_in_core   ),
+    .dio_out_o       ( dio_out_core  ),
+    .dio_oe_o        ( dio_oe_core   ),
+
+    // Pad attributes
+    .mio_attr_o      ( mio_attr      ),
+    .dio_attr_o      ( dio_attr      ),
+
+    // DFT signals
+    .scanmode_i      ( 1'b0          )
   );
 
-endmodule
+endmodule : top_earlgrey_asic

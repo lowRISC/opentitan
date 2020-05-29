@@ -69,7 +69,10 @@ def _process_ibex_sim_log_fd(log_fd, csv_fd, full_trace=True):
             trace_entry.pc = m.group("pc")
             trace_entry.binary = m.group("bin")
             if full_trace:
-                trace_entry.operand = m.group("instr").split()[1]
+                # Convert the operands into ABI format for
+                # the functional coverage flow
+                operands = m.group("instr").split()[1]
+                trace_entry.operand = convert_operands_to_abi(operands)
                 process_trace(trace_entry)
 
         c = RD_RE.search(line)
@@ -101,6 +104,31 @@ def process_ibex_sim_log(ibex_log, csv, full_trace=1):
         raise RuntimeError("No instructions in logfile: %s" % ibex_log)
 
     logging.info("CSV saved to : %s" % csv)
+
+
+def convert_operands_to_abi(operand_str):
+    """Convert the operand string to use ABI register naming.
+
+    At this stage in the conversion of the Ibex log to CSV format, the operand
+    string is in this format:
+        "x6,x6,1000".
+    This function converts the register names to their ABI equivalents as shown below:
+        "t1,t1,1000".
+    This step is needed for the RISCV-DV functional coverage step, as it assumes that
+    all operand registers already follow the ABI naming scheme.
+
+    Args:
+        operand_str : A string of the operands for a given instruction
+
+    Returns:
+        A string of the operands for the instruction, with register names converted to ABI.
+    """
+    operand_list = operand_str.split(",")
+    for i in range(len(operand_list)):
+        converted_op = gpr_to_abi(operand_list[i])
+        if converted_op != "na":
+            operand_list[i] = converted_op
+    return ",".join(operand_list)
 
 
 def process_trace(trace):

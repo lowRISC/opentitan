@@ -26,6 +26,7 @@ rtl_path = '../../rtl/'
 # List all S-Box reference implementation + AES package
 impl_gold = 'aes_sbox_lut'
 file_pkg = 'aes_pkg.sv'
+file_pkg_canright = 'aes_sbox_canright_pkg'
 
 # Detect all S-Box implementations to check
 impl_list = glob.glob(rtl_path + 'aes_sbox_*.sv')
@@ -33,6 +34,8 @@ impl_list = [
     impl_dut.replace(rtl_path, '').replace('.sv', '') for impl_dut in impl_list
 ]
 impl_list.remove(impl_gold)
+impl_list.remove(file_pkg_canright)
+file_pkg_canright = file_pkg_canright + '.sv'
 
 # Create workdir
 os.makedirs('scratch', exist_ok=True)
@@ -52,15 +55,38 @@ num_impl_success = 0
 num_impl_failed = 0
 for impl_dut in impl_list:
 
+    # Prepare Verilog conversion of DUT
+    sv2v_cmd = [
+        'sv2v', rtl_path + impl_dut + '.sv', rtl_path + file_pkg,
+        rtl_path + file_pkg_canright
+    ]
+
+    # Masked implementations require a wrapper
+    if 'masked' in impl_dut:
+        file_wrap = 'aes_sbox_masked_wrapper.sv'
+
+        # Copy the wrapper
+        os.system('cp ' + file_wrap + ' scratch/' + file_wrap)
+
+        # Change module name
+        replace_module_name('scratch/' + file_wrap, 'aes_sbox_masked',
+                            impl_dut)
+
+        # Include in conversion
+        sv2v_cmd.insert(2, 'scratch/' + file_wrap)
+
     # Convert DUT to Verilog
-    sv2v_cmd = ['sv2v', rtl_path + impl_dut + '.sv', rtl_path + file_pkg]
     with open('scratch/aes_sbox_dut.v', 'w') as outfile:
         subprocess.run(sv2v_cmd, stdout=outfile)
 
     # Change module name
-    replace_module_name('scratch/aes_sbox_dut.v', impl_dut, 'aes_sbox_dut')
+    if 'masked' in impl_dut:
+        replace_module_name('scratch/aes_sbox_dut.v', impl_dut + '_wrapper',
+                            'aes_sbox_dut')
+    else:
+        replace_module_name('scratch/aes_sbox_dut.v', impl_dut, 'aes_sbox_dut')
 
-    ## Perform LEC in Yosys
+    # Perform LEC in Yosys
     yosys_cmd = ['yosys', '../aes_sbox_lec.ys']
     lec_log = 'scratch/' + impl_dut + '_lec.log'
     with open(lec_log, 'w') as outfile:

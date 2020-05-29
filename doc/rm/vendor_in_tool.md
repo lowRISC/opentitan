@@ -57,6 +57,13 @@ Optional parts can be removed if they are not used.
     rev: "pulpissimo_integration",
   },
 
+  // Optional: Pick specific files or subdirectories from upstream and
+  // specify where to put them.
+  mapping: [
+    {from: 'src', to: 'the-source'},
+    {from: 'doc', to: 'some/documentation', patch_dir: 'doc_patches'}
+  ]
+
   // Optional: Apply patches from the following directory to the upstream
   // sources
   patch_dir: "patches/pulp_riscv_dbg",
@@ -72,7 +79,7 @@ Optional parts can be removed if they are not used.
   },
 
   // Optional: Exclude files or directories from the upstream sources
-  // The standard glob wildcards (*, ?, etc.) are supported
+  // The standard glob wildcards (*, ?, etc.) are supported.
   exclude_from_upstream: [
     "src/dm_top.sv",
     "src_files.yml",
@@ -80,8 +87,18 @@ Optional parts can be removed if they are not used.
 }
 ```
 
-If only the contents of a single subdirectory (including its children) of an upstream repository are to be copied in, the optional `only_subdir` key of can be used in the `upstream` section to specify the subdirectory to be copied in.
+If only the contents of a single subdirectory (including its children) of an upstream repository are to be copied in, the optional `only_subdir` key of can be used in the `upstream` section to specify the subdirectory to be copied.
 The contents of that subdirectory will populate the `target_dir` directly (without any intervening directory levels).
+
+For a more complicated set of copying rules ("get directories `A/B` and `A/C` but not anything else in `A`"), use a `mapping` list.
+Each element of the list should be a dictionary with keys `from` and `to`.
+The value of `from` should be a path relative to the source directory (either the top of the cloned directory, or the `only_subdir` subdirectory, if set).
+The value of `to` should be a path relative to `target_dir`.
+
+If `patch_dir` is supplied, it names a directory containing patches to be applied to the vendored code.
+If there is no `mapping` list, this directory's patches are applied in lexicographical order relative to `target_dir`.
+If there is a mapping list, each element of the list may contain a `patch_dir` key.
+The value at that key is a directory, relative to the global `patch_dir` and patches in that directory are applied in lexicographical order relative to the target directory of the mapping, `to`.
 
 In the example vendor description file below, the mpsse directory is populated from the chromiumos platform2 repository, extracting just the few files in the trunks/ftdi subdirectory.
 

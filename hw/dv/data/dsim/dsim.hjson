@@ -1,0 +1,131 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_cmd:  "{job_prefix} {DSIM_HOME}/dsim"
+  run_cmd:    "{job_prefix} {DSIM_HOME}/dsim"
+
+  build_opts: [
+               "-work {build_dir}/dsim_out",
+               "-genimage image",
+               "-sv",
+               // Set parallel compilation jobs limit
+               "-j 12",
+               // UVM
+               "+incdir+{UVM_HOME}/src",
+               "{UVM_HOME}/src/uvm_pkg.sv",
+               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
+
+               "-timescale 1ns/1ps",
+               "-f {sv_flist}",
+               "+incdir+{build_dir}",
+               // Suppress following DSim errors and warnings:
+               //   EnumMustBePositive - UVM 1.2 violates this
+               "-suppress EnumMustBePositive",
+              ]
+
+  run_opts:   [
+               "-work {build_dir}/dsim_out",
+               "-image image",
+               // UVM DPI
+               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
+               "+ntb_random_seed={seed}",
+               "+UVM_TESTNAME={uvm_test}",
+               "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  // Indicate the tool specific helper sources - these are copied over to the
+  // {tool_srcs_dir} before running the simulation.
+  // TODO, there is no dsim tool file, point to vcs for now to avoid error from script
+  tool_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
+
+  // TODO: refactor coverage configuration for DSim.
+
+  // Coverage related.
+  cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
+
+  // Individual test specific coverage data - this will be deleted if the test fails
+  // so that coverage from failing tests is not included in the final report.
+  cov_db_test_dir_name: "{run_dir_name}.{seed}"
+  cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
+
+  // Merging coverage.
+  // "cov_db_dirs" is a special variable that appends all build directories in use.
+  // It is constructed by the tool itself.
+  cov_merge_dir:    "{scratch_base_path}/cov_merge"
+  cov_merge_db_dir: "{cov_merge_dir}/merged.vdb"
+  cov_merge_cmd:    "{job_prefix} urg"
+  cov_merge_opts:   [
+                    ]
+  // Generate coverage reports in text as well as html.
+  cov_report_dir:   "{scratch_base_path}/cov_report"
+  cov_report_cmd:   "{job_prefix} urg"
+  cov_report_opts:  [
+                    ]
+  cov_report_txt:   "{cov_report_dir}/dashboard.txt"
+  cov_report_page:  "cov_report/dashboard.html"
+
+  // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
+  // GUI for visual analysis.
+  cov_analyze_dir:  "{scratch_base_path}/cov_analyze"
+  cov_analyze_cmd:  "{job_prefix} verdi"
+  cov_analyze_opts: ["-cov",
+                     "-covdir {cov_merge_db_dir}",
+                     "-line nocasedef"
+                     "-elfile {vcs_cov_excl_files}"]
+
+  // Vars that need to exported to the env.
+  exports: [
+  ]
+
+  // Defaults for DSim
+  cov_metrics:          ""
+
+  // pass and fail patterns
+  build_fail_patterns: ["^Error-.*$"]
+  run_fail_patterns:   ["^Error-.*$"] // Null pointer error
+
+  // waveform
+  wave_type:           "vcd"
+  wave_file:           "dsim_wave.{wave_type}"
+  probe_file:          "dsim.probe"
+
+  build_modes: [
+    {
+      name: dsim_waves
+      is_sim_mode: 1
+      build_opts: [
+                    "+acc+b",
+                    "-waves {wave_file}",
+                    "-wave-scope-specs {probe_file}",
+                    // Dump unpacked structs and arrays.
+                    "-dump-agg"
+                    ]
+    }
+    // TODO: support coverage mode
+    {
+      name: dsim_cov
+      is_sim_mode: 1
+      build_opts: [// Enable the required cov metrics
+                   ]
+      run_opts:   [// Enable the required cov metrics
+                   ]
+    }
+    // TODO: support xprop mode
+    {
+      name: dsim_xprop
+      is_sim_mode: 1
+    }
+    {
+      name: dsim_profile
+      is_sim_mode: 1
+      run_opts:   ["-profile"]
+    }
+    {
+      // TODO: Add build and run options to enable zero delay loop detection.
+      name: dsim_loopdetect
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+  ]
+}

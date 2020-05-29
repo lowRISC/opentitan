@@ -28,7 +28,7 @@
     },
 
     { struct:  "pwr_clk",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "pwr_clk",
       act:     "req",
       package: "pwrmgr_pkg",
@@ -140,6 +140,8 @@
                 '''
             },
           ]
+          tags: [// The regwen for this reg is RO. CSR seq can't support to check this reg
+          "excl:CsrAllTests:CsrExclAll"]
         },
 
         { bits: "4",
@@ -204,8 +206,6 @@
           ]
         },
       ],
-      tags: [// The regwen for this reg is RO. CSR seq can't support to check this reg
-             "excl:CsrNonInitTests:CsrExclCheck"]
     },
 
     { name: "CFG_CDC_SYNC",

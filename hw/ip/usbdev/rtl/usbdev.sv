@@ -34,12 +34,18 @@ module usbdev (
   input  logic       cio_sense_i,
   output logic       cio_se0_o,
   output logic       cio_se0_en_o,
-  output logic       cio_pullup_o,
-  output logic       cio_pullup_en_o,
+  output logic       cio_dp_pullup_o,
+  output logic       cio_dp_pullup_en_o,
+  output logic       cio_dn_pullup_o,
+  output logic       cio_dn_pullup_en_o,
   output logic       cio_suspend_o,
   output logic       cio_suspend_en_o,
   output logic       cio_tx_mode_se_o,
   output logic       cio_tx_mode_se_en_o,
+
+  // SOF reference for clock calibration
+  output logic       usb_ref_val_o,
+  output logic       usb_ref_pulse_o,
 
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
@@ -90,7 +96,7 @@ module usbdev (
   tlul_pkg::tl_h2d_t tl_sram_h2d [1];
   tlul_pkg::tl_d2h_t tl_sram_d2h [1];
 
-  // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
+  // Dual-port SRAM Interface: Refer prim_ram_2p_async_adv.sv
   logic              mem_a_req;
   logic              mem_a_write;
   logic [SramAw-1:0] mem_a_addr;
@@ -114,6 +120,7 @@ module usbdev (
   logic              usb_event_rx_bitstuff_err;
   logic              usb_event_in_err;
   logic              usb_event_frame;
+  logic              usb_link_active;
 
   logic              event_link_reset, event_link_suspend, event_link_resume;
   logic              event_host_lost, event_disconnect, event_connect;
@@ -497,6 +504,7 @@ module usbdev (
     .link_disconnect_o    (usb_event_disconnect),
     .link_connect_o       (usb_event_connect),
     .link_reset_o         (usb_event_link_reset),
+    .link_active_o        (usb_link_active),
     .link_suspend_o       (usb_event_link_suspend),
     .link_resume_o        (usb_event_link_resume),
     .host_lost_o          (usb_event_host_lost),
@@ -864,8 +872,9 @@ module usbdev (
     .rst_ni                 (rst_ni),
     .clk_usb_48mhz_i        (clk_usb_48mhz_i),
     .rst_usb_48mhz_ni       (rst_usb_48mhz_ni),
-    .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode),
-    .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode),
+    .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode.q),
+    .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode.q),
+    .pinflip_i              (reg2hw.phy_config.pinflip.q),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
@@ -880,7 +889,8 @@ module usbdev (
     .cio_usb_oe_o           (cio_oe),
     .cio_usb_tx_mode_se_o   (cio_tx_mode_se_o),
     .cio_usb_sense_i        (cio_sense_i),
-    .cio_usb_pullup_en_o    (cio_pullup_en_o),
+    .cio_usb_dp_pullup_en_o (cio_dp_pullup_en_o),
+    .cio_usb_dn_pullup_en_o (cio_dn_pullup_en_o),
     .cio_usb_suspend_o      (cio_suspend_o),
 
     // Internal interface
@@ -909,6 +919,33 @@ module usbdev (
   assign cio_tx_mode_se_en_o = 1'b1;
 
   // Pullup
-  assign cio_pullup_o        = 1'b1;
+  assign cio_dp_pullup_o     = 1'b1;
+  assign cio_dn_pullup_o     = 1'b1;
+
+  /////////////////////////////////////////
+  // SOF Reference for Clock Calibration //
+  /////////////////////////////////////////
+
+  logic usb_ref_val_d, usb_ref_val_q;
+
+  // Directly forward the pulse.
+  assign usb_ref_pulse_o = usb_event_frame;
+
+  // The first pulse is always ignored, but causes the valid to be asserted.
+  // The valid signal is deasserted when:
+  // - The link is no longer active.
+  // - The host is lost (no SOF for 4ms).
+  assign usb_ref_val_d = usb_ref_pulse_o                         ? 1'b1 :
+                       (!usb_link_active || usb_event_host_lost) ? 1'b0 : usb_ref_val_q;
+
+  always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
+    if (!rst_usb_48mhz_ni) begin
+      usb_ref_val_q <= 1'b0;
+    end else begin
+      usb_ref_val_q <= usb_ref_val_d;
+    end
+  end
+
+  assign usb_ref_val_o = usb_ref_val_q;
 
 endmodule

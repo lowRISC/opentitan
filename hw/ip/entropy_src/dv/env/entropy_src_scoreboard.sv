@@ -33,6 +33,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
+    // TODO Turned off do_read_check for polling, add prediction
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
@@ -58,26 +59,34 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
+      "intr_state": begin
+         do_read_check = 1'b0;
+      end
+      "intr_enable": begin
+      end
+      "intr_test": begin
+      end
+      "es_regen": begin
+      end
       "es_conf": begin
-         if (write) begin
-           `uvm_info(`gfn, $sformatf("Write to ES_CONF register"), UVM_DEBUG)
-	 end
-         else begin
-           `uvm_info(`gfn, $sformatf("Read from ES_CONF register"), UVM_DEBUG)
-	 end
       end
       "es_rev": begin
-         if (!write) begin
-           `uvm_info(`gfn, $sformatf("Read from ES_REV register"), UVM_DEBUG)
-	 end
       end
-      "intr_state": begin
-         if (write) begin
-           `uvm_info(`gfn, $sformatf("Write to INTR_STATE register"), UVM_DEBUG)
-	 end
-         else begin
-           `uvm_info(`gfn, $sformatf("Read from INTR_STATE register"), UVM_DEBUG)
-	 end
+      "es_entropy": begin
+         do_read_check = 1'b0;
+      end
+      "es_ctrl": begin
+      end
+      "es_status": begin
+         do_read_check = 1'b0;
+      end
+      "es_fdepthst": begin
+      end
+      "es_thresh": begin
+      end
+      "es_rate": begin
+      end
+      "es_seed": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

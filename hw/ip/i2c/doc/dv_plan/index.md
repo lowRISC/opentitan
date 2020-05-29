@@ -54,7 +54,7 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into I2C device.
 
 ### I2C agent
-[describe or provide link to I2C agent documentation]
+I2C agent is configured to work device mode and implemented as [reactive slave](https://www.verilab.com/files/mastering_reactive_slaves.pdf)
 
 ### UVM RAL Model
 The I2C RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.

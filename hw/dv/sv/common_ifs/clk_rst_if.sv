@@ -159,6 +159,11 @@ interface clk_rst_if #(
     end
   endfunction
 
+  // can be used to override clk/rst pins, e.g. at the beginning of the simulation
+  task automatic drive_rst_pin(logic val = 1'b0);
+    o_rst_n = val;
+  endtask
+
   // apply reset with specified scheme
   // TODO make this enum?
   // rst_n_scheme
@@ -167,11 +172,13 @@ interface clk_rst_if #(
   // 2 - async assert, async dessert
   // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
-  task automatic apply_reset(int pre_reset_dly_clks  = 0,
-                             int reset_width_clks    = $urandom_range(4, 20),
-                             int post_reset_dly_clks = 0,
-                             int rst_n_scheme        = 1);
+  // TODO #2338 issue workaround - $urandom call moved from default argument value to function body 
+  task automatic apply_reset(int pre_reset_dly_clks   = 0,
+                             integer reset_width_clks = 'x,
+                             int post_reset_dly_clks  = 0,
+                             int rst_n_scheme         = 1);
     int dly_ps;
+    if ($isunknown(reset_width_clks)) reset_width_clks = $urandom_range(4, 20);
     dly_ps = $urandom_range(0, clk_period_ps);
     wait_clks(pre_reset_dly_clks);
     case (rst_n_scheme)

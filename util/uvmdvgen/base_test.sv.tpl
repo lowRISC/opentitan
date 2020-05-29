@@ -23,10 +23,9 @@ class ${name}_base_test extends dv_base_test #(
     super.build_phase(phase);
     cfg.has_ral = 1'b0;
   endfunction
-% endif
 
+% endif
   // the base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in
   // the run_phase; as such, nothing more needs to be done
 
 endclass : ${name}_base_test
-

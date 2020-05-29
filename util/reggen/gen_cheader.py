@@ -357,10 +357,26 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
         for line in src_lic.splitlines():
             genout(outfile, '// ' + line + '\n')
         genout(outfile, '\n')
+
+    # Header Include Guard
     genout(outfile, '#ifndef _' + as_define(component) + '_REG_DEFS_\n')
     genout(outfile, '#define _' + as_define(component) + '_REG_DEFS_\n\n')
+
+    # Header Extern Guard (so header can be used from C and C++)
+    genout(outfile, '#ifdef __cplusplus\n')
+    genout(outfile, 'extern "C" {\n')
+    genout(outfile, '#endif\n')
+
     genout(outfile, generated)
+
+    # Header Extern Guard
+    genout(outfile, '#ifdef __cplusplus\n')
+    genout(outfile, '}  // extern "C"\n')
+    genout(outfile, '#endif\n')
+
+    # Header Include Guard
     genout(outfile, '#endif  // _' + as_define(component) + '_REG_DEFS_\n')
+
     genout(outfile, '// End generated register defines for ' + component)
 
     return

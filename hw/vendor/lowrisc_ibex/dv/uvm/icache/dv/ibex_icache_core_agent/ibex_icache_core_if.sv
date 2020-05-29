@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface ibex_icache_core_if (input clk);
+interface ibex_icache_core_if (input clk, input rst_n);
 
   // Set when core is enabled (and might request instructions soon)
   logic         req;
@@ -63,6 +63,11 @@ interface ibex_icache_core_if (input clk);
     input  busy;
   endclocking
 
+
+  // SVA module
+  ibex_icache_core_protocol_checker checker_i (.*);
+
+
   // Drive the branch pin for a single cycle, redirecting the cache to the given instruction
   // address.
   task automatic branch_to(logic [31:0] addr);
@@ -79,7 +84,7 @@ interface ibex_icache_core_if (input clk);
   //
   // A one-cycle pulse will start an invalidation, but testing might want a longer pulse (which the
   // cache should support)
-  task automatic invalidate_pulse(int num_cycles);
+  task automatic invalidate_pulse(int unsigned num_cycles);
     driver_cb.invalidate <= 1'b1;
     wait_clks(num_cycles);
     driver_cb.invalidate <= 1'b0;

@@ -16,13 +16,14 @@ REPORT_DIR ?= reports
 
 IPS ?=  ip-aes                 \
         ip-alert_handler       \
+        ip-clkmgr              \
         ip-flash_ctrl          \
         ip-gpio                \
         ip-hmac                \
         ip-i2c                 \
+        ip-otp_ctrl            \
         ip-nmi_gen             \
         ip-padctrl             \
-        ip-padring             \
         ip-pinmux              \
         ip-pwrmgr              \
         ip-rv_core_ibex        \

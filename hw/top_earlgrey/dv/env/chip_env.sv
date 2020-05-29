@@ -51,13 +51,8 @@ class chip_env extends cip_base_env #(
     end
 
     // get the handle to the sw log monitor for available sw_types
-    foreach (cfg.sw_types[i]) begin
-      if (!uvm_config_db#(sw_logger_vif)::get(this, "",
-                                              $sformatf("sw_logger_vif[%0s]", cfg.sw_types[i]),
-                                              cfg.sw_logger_vif[cfg.sw_types[i]])) begin
-          `uvm_fatal(`gfn, $sformatf("failed to get sw_logger_vif[%0s] from uvm_config_db",
-                                     cfg.sw_types[i]))
-      end
+    if (!uvm_config_db#(sw_logger_vif)::get(this, "", "sw_logger_vif", cfg.sw_logger_vif)) begin
+      `uvm_fatal(`gfn, "failed to get sw_logger_vif from uvm_config_db")
     end
 
     if (!uvm_config_db#(virtual sw_test_status_if)::get(this, "", "sw_test_status_vif",
@@ -93,6 +88,9 @@ class chip_env extends cip_base_env #(
     if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
+
+    // Connect the DUT's UART TX TLM port to the sequencer.
+    m_uart_agent.monitor.tx_analysis_port.connect(virtual_sequencer.uart_tx_fifo.analysis_export);
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

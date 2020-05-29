@@ -9,6 +9,9 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      # TODO: Only lfsr is needed. Replace with a more specific dependency
+      # once available.
+      - lowrisc:prim:all
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_icache
     files:
@@ -28,6 +31,7 @@ filesets:
       - rtl/ibex_prefetch_buffer.sv
       - rtl/ibex_pmp.sv
       - rtl/ibex_wb_stage.sv
+      - rtl/ibex_dummy_instr.sv
       # XXX: Figure out the best way to switch these two implementations
       # dynamically on the target.
 #      - rtl/ibex_register_file_latch.sv # ASIC
@@ -46,7 +50,7 @@ filesets:
 
   files_check_tool_requirements:
     depend:
-     - lowrisc:ibex:check_tool_requirements
+     - lowrisc:tool:check_tool_requirements
 
 parameters:
   RVFI:
@@ -107,6 +111,24 @@ parameters:
     default: 0
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  PMPEnable:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable PMP"
+
+  PMPGranularity:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+
+  PMPNumRegions:
+    datatype: int
+    default: 4
+    paramtype: vlogparam
+    description: "Number of PMP regions"
 
 targets:
   default:

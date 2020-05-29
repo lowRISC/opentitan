@@ -30,6 +30,7 @@ module prim_packer #(
   localparam int Width = InW + OutW;
   localparam int PtrW = $clog2(Width+1);
   localparam int MaxW = (InW > OutW) ? InW : OutW;
+  localparam int IdxW = $clog2(InW) + ~|$clog2(InW);
 
   logic valid_next, ready_next;
   logic [MaxW-1:0]  stored_data, stored_mask;
@@ -37,7 +38,7 @@ module prim_packer #(
   logic [Width-1:0] shiftl_data, shiftl_mask;
 
   logic [PtrW-1:0]        pos, pos_next; // Current write position
-  logic [$clog2(InW)-1:0] lod_idx;       // result of Leading One Detector
+  logic [IdxW-1:0]          lod_idx;       // result of Leading One Detector
   logic [$clog2(InW+1)-1:0] inmask_ones;   // Counting Ones for mask_i
 
   logic ack_in, ack_out;

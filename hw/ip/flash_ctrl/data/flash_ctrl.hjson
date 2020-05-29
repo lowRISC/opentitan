@@ -143,6 +143,8 @@
         },
       ]
     },
+
+// TODO(#1412):
 // This multireg is temporarily removed until the nested multireg compact feature is fully implemented.
 // Until then, use only one register wen for all flash regions.
 // Another alternative solution is to move flash into topgen, this may have to be done anyways.
@@ -402,7 +404,9 @@
         desc: '''
           Flash program fifo.
 
-          The fifo is 16 entries of 4B flash words
+          The fifo is 16 entries of 4B flash words. This FIFO can only be programmed
+          by software after a program operation has been initiated via the !!CONTROL register.
+          This ensures accidental programming of the program fifo cannot lock up the system.
           '''
       },
     },

@@ -11,16 +11,15 @@
   entries: [
     {
       name: sanity
-      desc: '''**Goal**: Basic sanity test acessing a major datapath in ${name.upper()}.
+      desc: '''
+            Basic sanity test acessing a major datapath within the ${name}.
 
-            **Stimulus**: Describe the stimulus procedure.
+            **Stimulus**:
+            - TBD
 
-            **Checks**": Describe the self-check procedure.
-            - add bullets as needed
-            - second bullet<br>
-              describe second bullet
-
-            Start a new paragraph.'''
+            **Checks**:
+            - TBD
+            '''
       milestone: V1
       tests: ["${name}_sanity"]
     }

@@ -204,12 +204,9 @@ def md_results_to_html(title, css_file, md_text):
     html_text += "</html>\n"
     html_text = htmc_color_pc_cells(html_text)
     # this function converts css style to inline html style
-    # set cssutils logging to critical because `style.css` is incompatible
-    # with css level 2.1 checking. But these ERRORs do not affect the inline
-    # style coversion. TODO: fix the errors from cssutils
     html_text = transform(html_text,
                           external_styles=css_file,
-                          cssutils_logging_level=log.CRITICAL)
+                          cssutils_logging_level=log.ERROR)
     return html_text
 
 

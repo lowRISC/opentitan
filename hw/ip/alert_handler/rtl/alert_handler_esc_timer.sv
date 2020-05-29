@@ -78,12 +78,10 @@ module alert_handler_esc_timer import alert_pkg::*; (
     unique case (state_q)
       // wait for an escalation trigger or an alert trigger
       // the latter will trigger an interrupt timeout
-      // note, clr_i is intentionally not used in Idle such that any trigger
-      // will have to go through escalation, if enabled
       Idle: begin
         cnt_clr = 1'b1;
 
-        if (accum_trig_i && en_i) begin
+        if (accum_trig_i && en_i && !clr_i) begin
           state_d    = Phase0;
           cnt_en     = 1'b1;
           esc_trig_o = 1'b1;
@@ -101,7 +99,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
       // also enter escalation phase0.
       // ongoing timeouts can always be cleared.
       Timeout: begin
-        if (accum_trig_i || (cnt_ge && timeout_en_i)) begin
+        if ((accum_trig_i && en_i && !clr_i) || (cnt_ge && timeout_en_i)) begin
           state_d    = Phase0;
           cnt_en     = 1'b1;
           cnt_clr    = 1'b1;
@@ -230,9 +228,9 @@ module alert_handler_esc_timer import alert_pkg::*; (
   `ASSERT(CheckEn,  state_q == Idle && !en_i |=>
       state_q == Idle)
   // Check if accumulation trigger correctly captured
-  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == Idle && en_i |=>
+  `ASSERT(CheckAccumTrig0,  accum_trig_i && state_q == Idle && en_i && !clr_i |=>
       state_q == Phase0)
-  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i |=>
+  `ASSERT(CheckAccumTrig1,  accum_trig_i && state_q == Timeout && en_i && !clr_i |=>
       state_q == Phase0)
   // Check if timeout correctly captured
   `ASSERT(CheckTimeout0, state_q == Idle && timeout_en_i && en_i && timeout_cyc_i != 0 &&

@@ -45,6 +45,8 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
       esc_device_cfg[i].if_mode  = dv_utils_pkg::Device;
       esc_device_cfg[i].is_alert = 0;
     end
+    // only support 1 outstanding TL items in tlul_adapter
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
 endclass

@@ -2,20 +2,15 @@
 class riscv_instr_cov_test extends uvm_test;
 
   typedef uvm_enum_wrapper#(riscv_instr_name_t) instr_enum;
-  typedef uvm_enum_wrapper#(riscv_reg_t) gpr_enum;
-  typedef uvm_enum_wrapper#(riscv_fpr_t) fpr_enum;
-  typedef uvm_enum_wrapper#(privileged_reg_t) preg_enum;
 
   riscv_instr_gen_config    cfg;
   riscv_instr_cover_group   instr_cg;
-  riscv_instr_cov_item      instr;
   string                    trace_csv[$];
   string                    trace[string];
   int unsigned              entry_cnt;
   int unsigned              total_entry_cnt;
   int unsigned              skipped_cnt;
   int unsigned              unexpected_illegal_instr_cnt;
-  bit [XLEN-1:0]            gpr_state[string];
 
   `uvm_component_utils(riscv_instr_cov_test)
   `uvm_component_new
@@ -41,8 +36,6 @@ class riscv_instr_cov_test extends uvm_test;
     // disable_compressed_instr is not relevant to coverage test
     cfg.disable_compressed_instr = 0;
     riscv_instr::create_instr_list(cfg);
-    instr = riscv_instr_cov_item::type_id::create("instr");
-    instr.rand_mode(0);
     instr_cg = new(cfg);
     `uvm_info(`gfn, $sformatf("%0d CSV trace files to be processed", trace_csv.size()), UVM_LOW)
     foreach (trace_csv[i]) begin
@@ -136,9 +129,10 @@ class riscv_instr_cov_test extends uvm_test;
     end
     if (instr_enum::from_name(process_instr_name(trace["instr"]), instr_name)) begin
       if (riscv_instr::instr_template.exists(instr_name)) begin
-        instr.copy(riscv_instr::instr_template[instr_name]);
+        riscv_instr instr;
+        instr = riscv_instr::get_instr(instr_name);
         if (instr.group inside {RV32I, RV32M, RV32C, RV64I, RV64M, RV64C,
-                                RV32F}) begin
+                                RV32F, RV32B, RV64B}) begin
           assign_trace_info_to_instr(instr);
         end
         instr.pre_sample();
@@ -150,12 +144,11 @@ class riscv_instr_cov_test extends uvm_test;
                               process_instr_name(trace["instr"])), UVM_LOW)
   endfunction
 
-  virtual function void assign_trace_info_to_instr(riscv_instr_cov_item instr);
+  virtual function void assign_trace_info_to_instr(riscv_instr instr);
     riscv_reg_t gpr;
     string operands[$];
     string gpr_update[$];
     string pair[$];
-    privileged_reg_t preg;
     get_val(trace["pc"], instr.pc, .hex(1));
     get_val(trace["binary"], instr.binary, .hex(1));
     instr.trace = trace["instr_str"];
@@ -163,241 +156,19 @@ class riscv_instr_cov_test extends uvm_test;
                                  ECALL, C_NOP, MRET, SRET, URET}) begin
       return;
     end
-    split_string(trace["operand"], ",", operands);
-    case(instr.format)
-      J_FORMAT, U_FORMAT : begin
-        // instr rd,imm
-        `DV_CHECK_FATAL(operands.size() == 2)
-        get_val(operands[1], instr.imm);
-      end
-      I_FORMAT: begin
-        // TODO, support I_FORMAT floating point later
-        if (instr.group == RV32F) return;
-        `DV_CHECK_FATAL(operands.size() == 3, trace["instr_str"])
-        if(instr.category == LOAD) begin
-          // load rd, imm(rs1)
-          instr.rs1 = get_gpr(operands[2]);
-          instr.rs1_value = get_gpr_state(operands[2]);
-          get_val(operands[1], instr.imm);
-        end else if(instr.category == CSR) begin
-          // csrrwi rd, csr, imm
-          get_val(operands[2], instr.imm);
-          if (preg_enum::from_name(operands[1].toupper(), preg)) begin
-            instr.csr = preg;
-          end else begin
-            get_val(operands[1], instr.csr);
-          end
-        end else begin
-          // addi rd, rs1, imm
-          instr.rs1 = get_gpr(operands[1]);
-          instr.rs1_value = get_gpr_state(operands[1]);
-          get_val(operands[2], instr.imm);
-        end
-      end
-      S_FORMAT, B_FORMAT: begin
-        `DV_CHECK_FATAL(operands.size() == 3)
-        if(instr.category == STORE) begin
-          // sw rs2,imm(rs1)
-          update_instr_reg_by_abi_name(operands[0], // FSW rs2 is fp
-                                       instr.rs2, instr.rs2_value,
-                                       instr.fs2, instr.fs2_value);
 
-          instr.rs1 = get_gpr(operands[2]);
-          instr.rs1_value = get_gpr_state(operands[2]);
-          get_val(operands[1], instr.imm);
-        end else begin
-          // bne rs1, rs2, imm
-          instr.rs1 = get_gpr(operands[0]);
-          instr.rs1_value = get_gpr_state(operands[0]);
-          instr.rs2 = get_gpr(operands[1]);
-          instr.rs2_value = get_gpr_state(operands[1]);
-          get_val(operands[2], instr.imm);
-        end
-      end
-      R_FORMAT: begin
-        if (!instr.instr_name inside {FCLASS_S, FCLASS_D}) `DV_CHECK_FATAL(operands.size() == 3)
-        else                                               `DV_CHECK_FATAL(operands.size() == 2)
-        if(instr.category == CSR) begin
-          // csrrw rd, csr, rs1
-          if (preg_enum::from_name(operands[1].toupper(), preg)) begin
-            instr.csr = preg;
-          end else begin
-            get_val(operands[1], instr.csr);
-          end
-          instr.rs1 = get_gpr(operands[2]);
-          instr.rs1_value = get_gpr_state(operands[2]);
-        end
-        else if (instr.group inside {RV32F, RV64F, RV32D, RV64D}) begin
-          // fs1
-          instr.fs1 = get_fpr(operands[1]);
-          instr.fs1_value = get_gpr_state(operands[1]);
-          // fs2
-          if (!instr.instr_name inside {FCLASS_S, FCLASS_D}) begin
-            instr.fs2 = get_fpr(operands[2]);
-            instr.fs2_value = get_gpr_state(operands[2]);
-          end
-        end else begin
-          // add rd, rs1, rs2
-          instr.rs1 = get_gpr(operands[1]);
-          instr.rs1_value = get_gpr_state(operands[1]);
-          instr.rs2 = get_gpr(operands[2]);
-          instr.rs2_value = get_gpr_state(operands[2]);
-        end
-      end
-      R4_FORMAT: begin
-        `DV_CHECK_FATAL(operands.size() == 4)
-        instr.fs1 = get_fpr(operands[1]);
-        instr.fs1_value = get_gpr_state(operands[1]);
-        instr.fs2 = get_fpr(operands[2]);
-        instr.fs2_value = get_gpr_state(operands[2]);
-        instr.fs3 = get_fpr(operands[3]);
-        instr.fs3_value = get_gpr_state(operands[3]);
-      end
-      CI_FORMAT, CIW_FORMAT: begin
-        if (instr.instr_name == C_ADDI16SP) begin
-          get_val(operands[1], instr.imm);
-          instr.rs1 = SP;
-          instr.rs1_value = get_gpr_state("sp");
-        end else if (instr.instr_name == C_ADDI4SPN) begin
-          instr.rs1 = SP;
-          instr.rs1_value = get_gpr_state("sp");
-        end else if (instr.instr_name inside {C_LDSP, C_LWSP, C_LQSP}) begin
-          // c.ldsp rd, imm
-          get_val(operands[1], instr.imm);
-          instr.rs1 = SP;
-          instr.rs1_value = get_gpr_state("sp");
-        end else begin
-          // c.lui rd, imm
-          get_val(operands[1], instr.imm);
-        end
-      end
-      CL_FORMAT: begin
-        // c.lw rd, imm(rs1)
-        get_val(operands[1], instr.imm);
-        instr.rs1 = get_gpr(operands[2]);
-        instr.rs1_value = get_gpr_state(operands[2]);
-      end
-      CS_FORMAT: begin
-        // c.sw rs2,imm(rs1)
-        instr.rs2 = get_gpr(operands[0]);
-        instr.rs2_value = get_gpr_state(operands[0]);
-        instr.rs1 = get_gpr(operands[2]);
-        instr.rs1_value = get_gpr_state(operands[2]);
-        get_val(operands[1], instr.imm);
-      end
-      CA_FORMAT: begin
-        // c.and rd, rs2 (rs1 == rd)
-        instr.rs2 = get_gpr(operands[1]);
-        instr.rs2_value = get_gpr_state(operands[1]);
-        instr.rs1 = get_gpr(operands[0]);
-        instr.rs1_value = get_gpr_state(operands[0]);
-      end
-      CB_FORMAT: begin
-        // c.beqz rs1, imm
-        instr.rs1 = get_gpr(operands[0]);
-        instr.rs1_value = get_gpr_state(operands[0]);
-        get_val(operands[1], instr.imm);
-      end
-      CSS_FORMAT: begin
-        // c.swsp rs2, imm
-        instr.rs2 = get_gpr(operands[0]);
-        instr.rs2_value = get_gpr_state(operands[0]);
-        instr.rs1 = SP;
-        instr.rs1_value = get_gpr_state("sp");
-        get_val(operands[1], instr.imm);
-      end
-      CR_FORMAT: begin
-        if (instr.instr_name inside {C_JR, C_JALR}) begin
-          // c.jalr rs1
-          instr.rs1 = get_gpr(operands[0]);
-          instr.rs1_value = get_gpr_state(operands[0]);
-        end else begin
-          // c.add rd, rs2
-          instr.rs2 = get_gpr(operands[1]);
-          instr.rs2_value = get_gpr_state(operands[1]);
-        end
-      end
-      CJ_FORMAT: begin
-        // c.j imm
-        get_val(operands[0], instr.imm);
-      end
-    endcase
+    split_string(trace["operand"], ",", operands);
+    instr.update_src_regs(operands);
+
     split_string(trace["gpr"], ";", gpr_update);
     foreach (gpr_update[i]) begin
       split_string(gpr_update[i], ":", pair);
       if (pair.size() != 2) begin
         `uvm_fatal(`gfn, $sformatf("Illegal gpr update format: %0s", gpr_update[i]))
       end
-      get_val(pair[1], gpr_state[pair[0]], .hex(1));
-      update_instr_reg_by_abi_name(pair[0], instr.rd, instr.rd_value, instr.fd, instr.fd_value);
+      instr.update_dst_regs(pair[0], pair[1]);
     end
   endfunction : assign_trace_info_to_instr
-
-  function riscv_reg_t get_gpr(input string str);
-    str = str.toupper();
-    if (!gpr_enum::from_name(str, get_gpr)) begin
-      `uvm_fatal(`gfn, $sformatf("Cannot convert %0s to GPR", str))
-    end
-  endfunction : get_gpr
-
-  function riscv_fpr_t get_fpr(input string str);
-    str = str.toupper();
-    if (!fpr_enum::from_name(str, get_fpr)) begin
-      `uvm_fatal(`gfn, $sformatf("Cannot convert %0s to FPR", str))
-    end
-  endfunction : get_fpr
-
-  function bit [XLEN-1:0] get_gpr_state(string name);
-    if (name inside {"zero", "x0"}) begin
-      return 0;
-    end else if (gpr_state.exists(name)) begin
-      return gpr_state[name];
-    end else begin
-      `uvm_warning(`gfn, $sformatf("Cannot find GPR state: %0s", name))
-      return 0;
-    end
-  endfunction : get_gpr_state
-
-  function void get_val(input string str, output bit [XLEN-1:0] val, input hex = 0);
-    if (str.len() > 2) begin
-      if (str.substr(0, 1) == "0x") begin
-        str = str.substr(2, str.len() -1);
-        val = str.atohex();
-        return;
-      end
-    end
-    if (hex) begin
-      val = str.atohex();
-    end else begin
-      if (str.substr(0, 0) == "-") begin
-        str = str.substr(1, str.len() - 1);
-        val = -str.atoi();
-      end else begin
-        val = str.atoi();
-      end
-    end
-    `uvm_info(`gfn, $sformatf("imm:%0s -> 0x%0x/%0d", str, val, $signed(val)), UVM_FULL)
-  endfunction : get_val
-
-  function bit is_fp_reg(input string str);
-    riscv_fpr_t tmp;
-    str = str.toupper();
-    return fpr_enum::from_name(str, tmp);
-  endfunction : is_fp_reg
-
-  function void update_instr_reg_by_abi_name(string              abi_name,
-                                             ref riscv_reg_t     rs,
-                                             ref bit [XLEN-1:0]  rs_value,
-                                             ref riscv_fpr_t     fs,
-                                             ref bit [XLEN-1:0]  fs_value);
-    if (is_fp_reg(abi_name)) begin
-      fs = get_fpr(abi_name);
-      fs_value = get_gpr_state(abi_name);
-    end else begin
-      rs = get_gpr(abi_name);
-      rs_value = get_gpr_state(abi_name);
-    end
-  endfunction : update_instr_reg_by_abi_name
 
   function string process_instr_name(string instr_name);
     instr_name = instr_name.toupper();

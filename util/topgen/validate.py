@@ -50,9 +50,9 @@ module'],
 }
 
 top_optional = {
-    'interrupt_modules': ['l', 'list of the modules that connects to rv_plic'],
+    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'interrupt': ['lnw', 'interrupts (generated)'],
-    'alert_modules':
+    'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'alert': ['lnw', 'alerts (generated)'],
     'alert_async': ['l', 'async alerts (generated)'],
@@ -60,6 +60,8 @@ top_optional = {
     'padctrl':
     ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],
     'inter_module': ['g', 'define the signal connections between the modules'],
+    'num_cores': ['pn', "number of computing units"],
+    'datawidth': ['pn', "default data width"],
 }
 
 top_added = {}
@@ -87,8 +89,15 @@ padctrl_optional = {
 }
 padctrl_added = {}
 
+clock_srcs_required = {
+    'name': ['s', 'name of clock group'],
+    'aon': ['s', 'yes, no. aon attribute of a clock'],
+    'freq': ['s', 'frequency of clock in Hz'],
+}
+
 clock_groups_required = {
     'name': ['s', 'name of clock group'],
+    'src': ['s', 'yes, no. This clock group is directly from source'],
     'sw_cg': ['s', 'yes, no, hint. Software clock gate attributes'],
 }
 clock_groups_optional = {
@@ -178,6 +187,12 @@ def check_clock_groups(top):
                 group['sw_cg']))
             error += 1
 
+        # Check combination of src and sw are valid
+        if group['src'] == 'yes' and group['sw_cg'] != 'no':
+            log.error("Invalid combination of src and sw_cg: {} and {}".format(
+                group['src'], group['sw_cg']))
+            error += 1
+
         # Check combination of sw_cg and unique are valid
         unique = group['unique'] if 'unique' in group else 'no'
         if group['sw_cg'] == 'no' and unique != 'no':
@@ -193,6 +208,11 @@ def check_clock_groups(top):
 
 
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
+
+    # check clock fields are all there
+    for src in top['clocks']['srcs']:
+        check_keys(src, clock_srcs_required, {}, {}, "Clock source")
+
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']]
     clock_srcs = [clock['name'] for clock in top['clocks']['srcs']]

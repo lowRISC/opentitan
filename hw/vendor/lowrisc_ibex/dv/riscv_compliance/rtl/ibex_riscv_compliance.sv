@@ -15,6 +15,9 @@ module ibex_riscv_compliance (
   input IO_RST_N
 );
 
+  parameter bit          PMPEnable       = 1'b0;
+  parameter int unsigned PMPGranularity  = 0;
+  parameter int unsigned PMPNumRegions   = 4;
   parameter bit RV32E                    = 1'b0;
   parameter bit RV32M                    = 1'b1;
   parameter bit RV32B                    = 1'b0;
@@ -39,8 +42,10 @@ module ibex_riscv_compliance (
     TestUtilDevice
   } bus_device_e;
 
-  localparam NrDevices = 2;
-  localparam NrHosts = 3;
+  localparam int unsigned NrDevices = 2;
+  localparam int unsigned NrHosts = 3;
+  // 64 kB RAM. Must be a power of 2. Check bus configuration below when changing.
+  localparam int unsigned RamSizeWords = 64*1024/4;
 
   // host and device signals
   logic           host_req    [NrHosts];
@@ -67,7 +72,7 @@ module ibex_riscv_compliance (
   logic [31:0] cfg_device_addr_base [NrDevices];
   logic [31:0] cfg_device_addr_mask [NrDevices];
   assign cfg_device_addr_base[Ram] = 32'h0;
-  assign cfg_device_addr_mask[Ram] = ~32'hFFFF; // 64 kB
+  assign cfg_device_addr_mask[Ram] = ~32'(RamSizeWords * 4 - 1);
   assign cfg_device_addr_base[TestUtilDevice] = 32'h20000;
   assign cfg_device_addr_mask[TestUtilDevice] = ~32'h3FF; // 1 kB
 
@@ -105,91 +110,94 @@ module ibex_riscv_compliance (
   );
 
   ibex_core_tracing #(
-      .DmHaltAddr(32'h00000000),
-      .DmExceptionAddr(32'h00000000),
-      .RV32E(RV32E),
-      .RV32M(RV32M),
-      .RV32B(RV32B),
-      .MultiplierImplementation(MultiplierImplementation),
-      .BranchTargetALU(BranchTargetALU),
-      .WritebackStage(WritebackStage)
+      .PMPEnable                (PMPEnable               ),
+      .PMPGranularity           (PMPGranularity          ),
+      .PMPNumRegions            (PMPNumRegions           ),
+      .RV32E                    (RV32E                   ),
+      .RV32M                    (RV32M                   ),
+      .RV32B                    (RV32B                   ),
+      .MultiplierImplementation (MultiplierImplementation),
+      .BranchTargetALU          (BranchTargetALU         ),
+      .WritebackStage           (WritebackStage          ),
+      .DmHaltAddr               (32'h00000000            ),
+      .DmExceptionAddr          (32'h00000000            )
     ) u_core (
-      .clk_i                 (clk_sys),
-      .rst_ni                (rst_sys_n),
+      .clk_i          (clk_sys           ),
+      .rst_ni         (rst_sys_n         ),
 
-      .test_en_i             ('b0),
+      .test_en_i      ('b0               ),
 
-      .hart_id_i             (32'b0),
+      .hart_id_i      (32'b0             ),
       // First instruction executed is at 0x0 + 0x80
-      .boot_addr_i           (32'h00000000),
+      .boot_addr_i    (32'h00000000      ),
 
-      .instr_req_o           (host_req[CoreI]),
-      .instr_gnt_i           (host_gnt[CoreI]),
-      .instr_rvalid_i        (host_rvalid[CoreI]),
-      .instr_addr_o          (host_addr[CoreI]),
-      .instr_rdata_i         (host_rdata[CoreI]),
-      .instr_err_i           (host_err[CoreI]),
+      .instr_req_o    (host_req[CoreI]   ),
+      .instr_gnt_i    (host_gnt[CoreI]   ),
+      .instr_rvalid_i (host_rvalid[CoreI]),
+      .instr_addr_o   (host_addr[CoreI]  ),
+      .instr_rdata_i  (host_rdata[CoreI] ),
+      .instr_err_i    (host_err[CoreI]   ),
 
-      .data_req_o            (host_req[CoreD]),
-      .data_gnt_i            (host_gnt[CoreD]),
-      .data_rvalid_i         (host_rvalid[CoreD]),
-      .data_we_o             (host_we[CoreD]),
-      .data_be_o             (host_be[CoreD]),
-      .data_addr_o           (host_addr[CoreD]),
-      .data_wdata_o          (host_wdata[CoreD]),
-      .data_rdata_i          (host_rdata[CoreD]),
-      .data_err_i            (host_err[CoreD]),
+      .data_req_o     (host_req[CoreD]   ),
+      .data_gnt_i     (host_gnt[CoreD]   ),
+      .data_rvalid_i  (host_rvalid[CoreD]),
+      .data_we_o      (host_we[CoreD]    ),
+      .data_be_o      (host_be[CoreD]    ),
+      .data_addr_o    (host_addr[CoreD]  ),
+      .data_wdata_o   (host_wdata[CoreD] ),
+      .data_rdata_i   (host_rdata[CoreD] ),
+      .data_err_i     (host_err[CoreD]   ),
 
-      .irq_software_i        (1'b0),
-      .irq_timer_i           (1'b0),
-      .irq_external_i        (1'b0),
-      .irq_fast_i            (15'b0),
-      .irq_nm_i              (1'b0),
+      .irq_software_i (1'b0              ),
+      .irq_timer_i    (1'b0              ),
+      .irq_external_i (1'b0              ),
+      .irq_fast_i     (15'b0             ),
+      .irq_nm_i       (1'b0              ),
 
-      .debug_req_i           ('b0),
+      .debug_req_i    ('b0               ),
 
-      .fetch_enable_i        ('b1),
-      .core_sleep_o          ()
+      .fetch_enable_i ('b1               ),
+      .core_sleep_o   (                  )
     );
 
   // SRAM block for instruction and data storage
   ram_1p #(
-      .Depth(64*1024/4)
+      .Depth(RamSizeWords)
     ) u_ram (
-      .clk_i     (clk_sys),
-      .rst_ni    (rst_sys_n),
-      .req_i     (device_req[Ram]),
-      .we_i      (device_we[Ram]),
-      .be_i      (device_be[Ram]),
-      .addr_i    (device_addr[Ram]),
-      .wdata_i   (device_wdata[Ram]),
-      .rvalid_o  (device_rvalid[Ram]),
-      .rdata_o   (device_rdata[Ram])
+      .clk_i    (clk_sys           ),
+      .rst_ni   (rst_sys_n         ),
+      .req_i    (device_req[Ram]   ),
+      .we_i     (device_we[Ram]    ),
+      .be_i     (device_be[Ram]    ),
+      .addr_i   (device_addr[Ram]  ),
+      .wdata_i  (device_wdata[Ram] ),
+      .rvalid_o (device_rvalid[Ram]),
+      .rdata_o  (device_rdata[Ram] )
     );
 
   // RISC-V test utility, used by the RISC-V compliance test to interact with
   // the simulator.
   riscv_testutil
     u_riscv_testutil(
-      .clk_i     (clk_sys),
-      .rst_ni    (rst_sys_n),
+      .clk_i         (clk_sys                      ),
+      .rst_ni        (rst_sys_n                    ),
 
       // Device port
-      .dev_req_i     (device_req[TestUtilDevice]),
-      .dev_we_i      (device_we[TestUtilDevice]),
-      .dev_addr_i    (device_addr[TestUtilDevice]),
-      .dev_wdata_i   (device_wdata[TestUtilDevice]),
+      .dev_req_i     (device_req[TestUtilDevice]   ),
+      .dev_we_i      (device_we[TestUtilDevice]    ),
+      .dev_addr_i    (device_addr[TestUtilDevice]  ),
+      .dev_wdata_i   (device_wdata[TestUtilDevice] ),
       .dev_rvalid_o  (device_rvalid[TestUtilDevice]),
-      .dev_rdata_o   (device_rdata[TestUtilDevice]),
-      .dev_be_i      (device_be[TestUtilDevice]),
-      .dev_err_o     (device_err[TestUtilDevice]),
+      .dev_rdata_o   (device_rdata[TestUtilDevice] ),
+      .dev_be_i      (device_be[TestUtilDevice]    ),
+      .dev_err_o     (device_err[TestUtilDevice]   ),
 
       // Host port
-      .host_req_o    (host_req[TestUtilHost]),
-      .host_gnt_i    (host_gnt[TestUtilHost]),
-      .host_rvalid_i (host_rvalid[TestUtilHost]),
-      .host_addr_o   (host_addr[TestUtilHost]),
-      .host_rdata_i  (host_rdata[TestUtilHost])
+      .host_req_o    (host_req[TestUtilHost]       ),
+      .host_gnt_i    (host_gnt[TestUtilHost]       ),
+      .host_rvalid_i (host_rvalid[TestUtilHost]    ),
+      .host_addr_o   (host_addr[TestUtilHost]      ),
+      .host_rdata_i  (host_rdata[TestUtilHost]     )
     );
 
 endmodule

@@ -13,6 +13,7 @@ Welcome to riscv-dv's documentation!
    overview
    getting_started
    configuration
+   extension_support
    end_to_end_simulation
    generator_flow
    coverage_model

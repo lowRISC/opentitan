@@ -19,6 +19,9 @@ module ibex_simple_system (
   input IO_RST_N
 );
 
+  parameter bit          PMPEnable       = 1'b0;
+  parameter int unsigned PMPGranularity  = 0;
+  parameter int unsigned PMPNumRegions   = 4;
   parameter bit RV32E                    = 1'b0;
   parameter bit RV32M                    = 1'b1;
   parameter bit RV32B                    = 1'b0;
@@ -138,15 +141,18 @@ module ibex_simple_system (
   );
 
   ibex_core_tracing #(
+      .PMPEnable                ( PMPEnable                ),
+      .PMPGranularity           ( PMPGranularity           ),
+      .PMPNumRegions            ( PMPNumRegions            ),
       .MHPMCounterNum           ( 29                       ),
-      .DmHaltAddr               ( 32'h00100000             ),
-      .DmExceptionAddr          ( 32'h00100000             ),
       .RV32E                    ( RV32E                    ),
       .RV32M                    ( RV32M                    ),
       .RV32B                    ( RV32B                    ),
       .BranchTargetALU          ( BranchTargetALU          ),
       .WritebackStage           ( WritebackStage           ),
-      .MultiplierImplementation ( MultiplierImplementation )
+      .MultiplierImplementation ( MultiplierImplementation ),
+      .DmHaltAddr               ( 32'h00100000             ),
+      .DmExceptionAddr          ( 32'h00100000             )
     ) u_core (
       .clk_i                 (clk_sys),
       .rst_ni                (rst_sys_n),
@@ -243,12 +249,10 @@ module ibex_simple_system (
       .timer_intr_o   (timer_irq)
     );
 
-  // Expose the performance counter array so it's easy to access in
-  // a verilator siumulation
-  logic [63:0] mhpmcounter_vals [32] /*verilator public_flat*/;
+  export "DPI-C" function mhpmcounter_get;
 
-  for(genvar i = 0;i < 32; i = i + 1) begin
-      assign mhpmcounter_vals[i] = u_core.u_ibex_core.cs_registers_i.mhpmcounter[i];
-  end
+  function automatic longint mhpmcounter_get(int index);
+    return u_core.u_ibex_core.cs_registers_i.mhpmcounter[index];
+  endfunction
+
 endmodule
-

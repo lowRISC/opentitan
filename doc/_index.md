@@ -1,4 +1,6 @@
-# OpenTitan General Documentation
+---
+title: "General Documentation"
+---
 
 * [Project]({{< relref "doc/project" >}})
   * How the OpenTitan project is organized

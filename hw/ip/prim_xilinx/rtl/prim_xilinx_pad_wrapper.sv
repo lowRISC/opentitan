@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Inferrable, bidirectional IO buffer for FPGAs. Implements inversion and
+// Bidirectional IO buffer for Xilinx FPGAs. Implements inversion and
 // virtual open drain feature.
 
 
@@ -22,14 +22,22 @@ module prim_xilinx_pad_wrapper #(
   assign {od, inv} = attr_i[1:0];
 
   // input inversion
-  assign in_o     = inv ^ inout_io;
+  logic in;
+  assign in_o     = inv ^ in;
 
   // virtual open drain emulation
-  logic oe, out;
+  logic oe_n, out;
   assign out      = out_i ^ inv;
-  assign oe       = oe_i & ((od & ~out) | ~od);
+  // oe_n = 0: enable driver
+  // oe_n = 1: disable driver
+  assign oe_n     = ~oe_i | (out & od);
 
   // driver
-  assign inout_io = (oe) ? out : 1'bz;
+  IOBUF i_iobuf (
+    .T(oe_n),
+    .I(out),
+    .O(in),
+    .IO(inout_io)
+  );
 
 endmodule : prim_xilinx_pad_wrapper

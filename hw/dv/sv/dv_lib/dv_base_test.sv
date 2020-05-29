@@ -65,7 +65,6 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     phase.raise_objection(this, $sformatf("%s objection raised", `gn));
     test_seq.start(env.virtual_sequencer);
     phase.drop_objection(this, $sformatf("%s objection dropped", `gn));
-    phase.phase_done.display_objections();
     `uvm_info(`gfn, {"Finished test sequence ", test_seq_s}, UVM_MEDIUM)
   endtask
 

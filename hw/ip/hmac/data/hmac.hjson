@@ -129,6 +129,8 @@
           desc: '''If error interrupt occurs, this register has information of error cause.
                 Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
                 '''
+          tags: [// Randomly write mem will cause this reg updated by design
+                 "excl:CsrNonInitTests:CsrExclCheck"]
         }
       ]
     }

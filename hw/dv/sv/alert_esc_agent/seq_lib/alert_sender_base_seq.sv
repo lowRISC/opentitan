@@ -15,6 +15,7 @@ class alert_sender_base_seq extends dv_base_seq #(
   rand bit s_alert_send;
   rand bit s_alert_ping_rsp;
   rand bit int_err;
+  rand bit timeout;
 
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting alert sender transfer"), UVM_HIGH)
@@ -24,6 +25,7 @@ class alert_sender_base_seq extends dv_base_seq #(
         s_alert_send     == local::s_alert_send;
         s_alert_ping_rsp == local::s_alert_ping_rsp;
         int_err          == local::int_err;
+        timeout          == local::timeout;
     )
     `uvm_info(`gfn, $sformatf("seq_item: send_alert=%0b, ping_rsp=%0b, int_err=%0b",
         req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_MEDIUM)

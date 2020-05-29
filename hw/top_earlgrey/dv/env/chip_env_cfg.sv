@@ -6,8 +6,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
   // Testbench settings
   bit                 stub_cpu;
-  bit                 en_uart_logger = 1'b1;
+  bit                 en_uart_logger;
+  int                 uart_baud_rate = uart_agent_pkg::BaudRate2Mbps;
   bit                 use_gpio_for_sw_test_status;
+  bit                 initialize_ram;
 
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
@@ -19,10 +21,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
   // sw logger related
   string sw_types[]         = '{"rom", "sw"};
-  sw_logger_vif             sw_logger_vif[string];
+  sw_logger_vif             sw_logger_vif;
   string                    sw_images[string];
   virtual sw_test_status_if sw_test_status_vif;
-  uint                      sw_test_timeout_ns = 2_000_000; // 2ms
+  uint                      sw_test_timeout_ns = 5_000_000; // 5ms
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
@@ -49,7 +51,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   endfunction : initialize_csr_addr_map_size
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    chip_mem_e mems[] = {Rom, FlashBank0, FlashBank1};
+    chip_mem_e mems[] = {Rom, Ram, FlashBank0, FlashBank1};
 
     has_devmode = 0;
     // TODO: may need to add scb later

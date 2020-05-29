@@ -266,6 +266,9 @@ package usbdev_reg_pkg;
     struct packed {
       logic        q;
     } override_pwr_sense_val;
+    struct packed {
+      logic        q;
+    } pinflip;
   } usbdev_reg2hw_phy_config_reg_t;
 
 
@@ -411,19 +414,19 @@ package usbdev_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [343:328]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [327:312]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [311:280]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [279:272]
-    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [271:266]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [265:245]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [244:233]
-    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [232:221]
-    usbdev_reg2hw_stall_mreg_t [11:0] stall; // [220:209]
-    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [208:41]
-    usbdev_reg2hw_iso_mreg_t [11:0] iso; // [40:29]
-    usbdev_reg2hw_data_toggle_clear_mreg_t [11:0] data_toggle_clear; // [28:5]
-    usbdev_reg2hw_phy_config_reg_t phy_config; // [4:0]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [344:329]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [328:313]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [312:281]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [280:273]
+    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [272:267]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [266:246]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [245:234]
+    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [233:222]
+    usbdev_reg2hw_stall_mreg_t [11:0] stall; // [221:210]
+    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [209:42]
+    usbdev_reg2hw_iso_mreg_t [11:0] iso; // [41:30]
+    usbdev_reg2hw_data_toggle_clear_mreg_t [11:0] data_toggle_clear; // [29:6]
+    usbdev_reg2hw_phy_config_reg_t phy_config; // [5:0]
   } usbdev_reg2hw_t;
 
   ///////////////////////////////////////

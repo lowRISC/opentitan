@@ -9,6 +9,7 @@ read_verilog aes_sbox_ref.v aes_sbox_dut.v
 
 # Do some preprocessing
 proc
+flatten
 
 # Set up equivalence check
 equiv_make aes_sbox_ref aes_sbox_dut aes_sbox_equiv

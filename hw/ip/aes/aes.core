@@ -22,7 +22,10 @@ filesets:
       - rtl/aes_sub_bytes.sv
       - rtl/aes_sbox.sv
       - rtl/aes_sbox_lut.sv
+      - rtl/aes_sbox_canright_pkg.sv
       - rtl/aes_sbox_canright.sv
+      - rtl/aes_sbox_canright_masked_noreuse.sv
+      - rtl/aes_sbox_canright_masked.sv
       - rtl/aes_shift_rows.sv
       - rtl/aes_mix_columns.sv
       - rtl/aes_mix_single_column.sv
@@ -48,6 +51,12 @@ filesets:
       - lint/aes.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
   files_formal:
     files:
       - dv/tb/aes_bind.sv
@@ -62,9 +71,10 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
-      - target_formal   ? (files_formal)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - target_formal    ? (files_formal)
       - files_rtl
     toplevel: aes
 

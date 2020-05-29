@@ -1,0 +1,34 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:ibex_icache_mem_agent:0.1"
+description: "IBEX_ICACHE DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+    files:
+      - ibex_icache_mem_if.sv
+      - ibex_icache_mem_protocol_checker.sv
+      - ibex_icache_mem_agent_pkg.sv
+      - ibex_icache_mem_req_item.sv: {is_include_file: true}
+      - ibex_icache_mem_resp_item.sv: {is_include_file: true}
+      - ibex_icache_mem_bus_item.sv: {is_include_file: true}
+      - ibex_icache_mem_agent_cfg.sv: {is_include_file: true}
+      - ibex_icache_mem_agent_cov.sv: {is_include_file: true}
+      - ibex_icache_mem_driver.sv: {is_include_file: true}
+      - ibex_icache_mem_monitor.sv: {is_include_file: true}
+      - ibex_icache_mem_agent.sv: {is_include_file: true}
+      - ibex_icache_mem_sequencer.sv: {is_include_file: true}
+      - ibex_icache_mem_model.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_mem_base_seq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_mem_resp_seq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_mem_seq_list.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

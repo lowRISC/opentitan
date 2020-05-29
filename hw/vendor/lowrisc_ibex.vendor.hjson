@@ -4,6 +4,7 @@
 {
   name: "lowrisc_ibex",
   target_dir: "lowrisc_ibex",
+  patch_dir: "patches/lowrisc_ibex",
 
   upstream: {
     url: "https://github.com/lowRISC/ibex.git",
@@ -11,13 +12,15 @@
   },
 
   exclude_from_upstream: [
-    // prim_assert is also in OpenTitan, which version fusesoc picks up isn't
-    // deterministic so two copies can be problematic
-    'shared/prim_assert.core',
-    'shared/rtl/prim_assert.sv',
+    // shared directory includes primitives also in OpenTitan, which version
+    // fusesoc picks up isn't deterministic so two copies can be problematic
+    'shared',
     // vendor/lowrisc_ip contains things from the OpenTitan repository, leaving
-    // it in can cause conflicts
+    // it in can cause conflicts. We also remove the vendor configuration so it
+    // cannot accidentally be brought back by util/vendor.py.
     'vendor/lowrisc_ip',
+    'vendor/lowrisc_ip.vendor.hjson',
+    'vendor/lowrisc_ip.lock.hjson',
     // We shouldn't reformat upstream code
     '.clang-format',
   ]

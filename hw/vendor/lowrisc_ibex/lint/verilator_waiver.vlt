@@ -20,6 +20,7 @@ lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32B'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'BranchTargetALU'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'WritebackStage'*"
 lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'SecureIbex'*"
+lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'PMPEnable'*"
 
 // Filename 'ibex_register_file_ff' does not match MODULE name: ibex_register_file
 // ibex_register_file_ff and ibex_register_file_latch provide two
@@ -35,6 +36,12 @@ lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_amt_compl'[5]*"
 // Bits of signal are not used: shift_result_ext[32]
 // cleaner to write all bits even if not all are used
 lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'shift_result_ext'[32]*"
+
+// Signal is not used for RV32B == 0: imd_val_q_i
+//
+// No ALU multicycle instructions exist to use the intermediate value register,
+// if bitmanipulation extension is not enabled.
+lint_off -rule UNUSED -file "*/rtl/ibex_alu.sv" -match "*'imd_val_q_i'"
 
 // Bits of signal are not used: fetch_addr_n[0]
 // cleaner to write all bits even if not all are used
@@ -145,3 +152,7 @@ lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*instr_alu*"
 // ibex_core.cs_registers_i.mie_q
 // Issue lowrisc/ibex#212
 lint_off -rule UNOPTFLAT -file "*/rtl/ibex_cs_registers.sv" -match "*ibex_core.cs_registers_i.mie_q*"
+
+// Temporary waivers until OpenTitan primitives are lint-clean
+// https://github.com/lowRISC/opentitan/issues/2313
+lint_off -file "*/lowrisc_prim_*/rtl/*.sv"

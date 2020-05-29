@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
       "u_impl_generic");
   memutil.RegisterMemoryArea(
       "ram",
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main."
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main.u_mem."
       "gen_generic.u_impl_generic");
   memutil.RegisterMemoryArea(
       "flash",

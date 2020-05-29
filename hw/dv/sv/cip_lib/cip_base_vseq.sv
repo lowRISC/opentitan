@@ -21,6 +21,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   bit [TL_DW-1:0]  exp_mem[int];
   int              mem_exist_addr_q[$];
 
+  // mem_ranges without base address
+  addr_range_t     updated_mem_ranges[$];
+  // mask out bits out of the csr/mem range and LSB 2 bits
+  bit [TL_AW-1:0]  csr_addr_mask;
+
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
     delay_to_reset dist {
@@ -39,6 +44,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `include "cip_base_vseq__tl_errors.svh"
 
   task pre_start();
+    csr_utils_pkg::max_outstanding_accesses = 1 << TL_AIW;
     super.pre_start();
     extract_common_csrs();
   endtask
@@ -455,34 +461,43 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // test partial mem read with non-blocking random read/write
   virtual task run_mem_partial_access_vseq(int num_times);
-      int  num_words;
-      uint max_nonblocking_items;
+    uint num_accesses;
+    // limit to 100k accesses if mem is very big
+    uint max_accesses = 100_000;
 
-      // timeout may happen if we issue too many non-blocking accesses at the beginning
-      // limit the nonblocking items to be up to 2 times of max outstanding that TLUL supports
-      max_nonblocking_items = 1 << (TL_AIW + 1);
+    void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 
-      foreach (cfg.mem_ranges[i]) begin
-        num_words += cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr;
+    // calculate how many accesses to run based on mem size, up to 100k
+    foreach (cfg.mem_ranges[i]) begin
+      if (get_mem_access_by_addr(ral, cfg.mem_ranges[i].start_addr) != "RO") begin
+        num_accesses += (cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr) >> 2;
+        if (num_accesses >= max_accesses) begin
+          num_accesses = max_accesses;
+          break;
+        end
       end
-      num_words = num_words >> 2;
+    end
 
-      repeat (num_words * num_times * 10) begin
-        fork
-          begin
-            bit [TL_AW-1:0]  addr;
-            bit [TL_DW-1:0]  data;
-            bit [TL_DBW-1:0] mask;
-            randcase
-              1: begin // write
-                int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+    repeat (num_accesses * num_times) begin
+      fork
+        begin
+          bit [TL_AW-1:0]  addr;
+          bit [TL_DW-1:0]  data;
+          bit [TL_DBW-1:0] mask;
+          randcase
+            1: begin // write
+              dv_base_mem mem;
+              int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
 
-                `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                    addr inside {[cfg.mem_ranges[mem_idx].start_addr :
-                                  cfg.mem_ranges[mem_idx].end_addr]};)
+              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                  addr inside {[cfg.mem_ranges[mem_idx].start_addr :
+                                cfg.mem_ranges[mem_idx].end_addr]};)
+
+              if (get_mem_access_by_addr(ral, addr) != "RO") begin
+                `downcast(mem, get_mem_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr))
+                if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
+                else                                     mask = '1;
                 data = $urandom;
-                if (cfg.en_mem_byte_write) mask = get_rand_contiguous_mask();
-                else                       mask = '1;
                 tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
 
                 if (!cfg.under_reset) begin
@@ -491,10 +506,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   mem_exist_addr_q.push_back(addr);
                 end
               end
-              // Randomly pick a previously written address for partial read.
-              exp_mem.size > 0: begin // read
-                // get all the programmed addresses and randomly pick one
-                addr = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
+            end
+            // Randomly pick a previously written address for partial read.
+            exp_mem.size > 0: begin // read
+              // get all the programmed addresses and randomly pick one
+              addr = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
+              if (get_mem_access_by_addr(ral, addr) != "WO") begin;
                 mask = get_rand_contiguous_mask();
                 tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
 
@@ -508,12 +525,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
                 end
               end
-            endcase
-          end
-        join_none
-        #0; // for outstanding_accesses to be updated
-        wait(csr_utils_pkg::outstanding_accesses <= max_nonblocking_items);
-      end
+            end
+          endcase
+        end
+      join_none
+      #0; // for outstanding_accesses to be updated
+      csr_utils_pkg::wait_if_max_outstanding_accesses_reached();
+    end
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
   // This task runs random csr and mem accesses in parallel, which can be used to cross with

@@ -24,7 +24,14 @@
 
 module prim_arbiter_ppc #(
   parameter int unsigned N  = 4,
-  parameter int unsigned DW = 32
+  parameter int unsigned DW = 32,
+
+  // Configurations
+  // EnDataPort: {0, 1}, if 0, input data will be ignored
+  parameter int EnDataPort = 1,
+
+  // Derived parameters
+  localparam int unsigned IdxW = $clog2(N)
 ) (
   input clk_i,
   input rst_ni,
@@ -32,7 +39,7 @@ module prim_arbiter_ppc #(
   input        [ N-1:0]        req_i,
   input        [DW-1:0]        data_i [N],
   output logic [ N-1:0]        gnt_o,
-  output logic [$clog2(N)-1:0] idx_o,
+  output logic [IdxW-1:0]      idx_o,
 
   output logic          valid_o,
   output logic [DW-1:0] data_o,
@@ -89,16 +96,35 @@ module prim_arbiter_ppc #(
       end
     end
 
+    if (EnDataPort == 1) begin: gen_datapath
+      always_comb begin
+        data_o = '0;
+        for (int i = 0 ; i < N ; i++) begin
+          if (winner[i]) begin
+            data_o = data_i[i];
+          end
+        end
+      end
+    end else begin: gen_nodatapath
+      assign data_o = '1;
+      // TODO: waive data_i from NOT_READ error
+    end
+
     always_comb begin
-      data_o = '0;
-      idx_o  = '0;
+      idx_o = '0;
       for (int i = 0 ; i < N ; i++) begin
         if (winner[i]) begin
-          data_o = data_i[i];
-          idx_o  = i;
+          idx_o = i[IdxW-1:0];
         end
       end
     end
+
+    ////////////////
+    // assertions //
+    ////////////////
+    // grant shall be higher index than prev. unless no higher requests exist
+    `ASSERT(RoundRobin_A, valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
+        |(masked_req) |-> idx_o > $past(idx_o))
 
   end
 

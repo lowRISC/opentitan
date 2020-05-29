@@ -67,7 +67,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr) - cfg.csr_base_addr;
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
     foreach (cfg.mem_ranges[i]) begin
       if (addr inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]}) begin
         return 1;
@@ -83,7 +83,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //  - register write size is less than actual register width
   //  - TL protocol violation
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel);
-    bit is_tl_unmapped_addr, is_tl_err;
+    bit is_tl_unmapped_addr, is_tl_err, mem_access_err;
+    bit csr_aligned_err, csr_size_err, tl_item_err;
 
     if (!is_tl_access_mapped_addr(item)) begin
       is_tl_unmapped_addr = 1;
@@ -93,14 +94,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    if (!is_tl_err && (!is_tl_mem_access_allowed(item) ||
-        !is_tl_csr_write_addr_word_aligned(item)       ||
-        !is_tl_csr_write_size_gte_csr_width(item)      ||
-        item.get_exp_d_error())) begin
+    mem_access_err  = !is_tl_mem_access_allowed(item);
+    csr_aligned_err = !is_tl_csr_write_addr_word_aligned(item);
+    csr_size_err    = !is_tl_csr_write_size_gte_csr_width(item);
+    tl_item_err     = item.get_exp_d_error();
+    if (!is_tl_err && (mem_access_err || csr_aligned_err || csr_size_err || tl_item_err)) begin
       is_tl_err = 1;
     end
-    if ((is_tl_err || is_tl_unmapped_addr) && channel == DataChannel) begin
-      `DV_CHECK_EQ(item.d_error, is_tl_err)
+    if (channel == DataChannel) begin
+      `DV_CHECK_EQ(item.d_error, is_tl_err,
+          $sformatf("unmapped: %0d, mem_access_err: %0d, csr_aligned_err: %0d, csr_size_err: %0d, \
+                    item_err: %0d", is_tl_unmapped_addr, mem_access_err, csr_aligned_err,
+                    csr_size_err, tl_item_err))
     end
     return (is_tl_unmapped_addr || is_tl_err);
   endfunction
@@ -116,13 +121,21 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // check if tl mem access will trigger error or not
   virtual function bit is_tl_mem_access_allowed(tl_seq_item item);
     if (is_mem_addr(item)) begin
+      bit mem_partial_write_support;
+      dv_base_mem mem;
+      uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+      string mem_access = get_mem_access_by_addr(ral, addr);
+
+      `downcast(mem, get_mem_by_addr(ral, addr))
+      mem_partial_write_support = mem.get_mem_partial_write_support();
+
       // check if write isn't full word for mem that doesn't allow byte access
-      if (!cfg.en_mem_byte_write && (item.a_size != 2 || item.a_mask != '1) &&
+      if (!mem_partial_write_support && (item.a_size != 2 || item.a_mask != '1) &&
            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
         return 0;
       end
-      // check if mem read happens while mem doesn't allow read
-      if (!cfg.en_mem_read && (item.a_opcode == tlul_pkg::Get)) return 0;
+      // check if mem read happens while mem doesn't allow read (WO)
+      if (mem_access == "WO" && (item.a_opcode == tlul_pkg::Get)) return 0;
     end
     return 1;
   endfunction

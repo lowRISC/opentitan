@@ -48,6 +48,7 @@ module ibex_id_stage #(
 
     // IF and ID stage signals
     output logic                      pc_set_o,
+    output logic                      pc_set_spec_o,
     output ibex_pkg::pc_sel_e         pc_mux_o,
     output ibex_pkg::exc_pc_sel_e     exc_pc_mux_o,
     output ibex_pkg::exc_cause_e      exc_cause_o,
@@ -80,7 +81,8 @@ module ibex_id_stage #(
     // MUL, DIV
     output logic                      mult_en_ex_o,
     output logic                      div_en_ex_o,
-    output logic                      multdiv_sel_ex_o,
+    output logic                      mult_sel_ex_o,
+    output logic                      div_sel_ex_o,
     output ibex_pkg::md_op_e          multdiv_operator_ex_o,
     output logic  [1:0]               multdiv_signed_mode_ex_o,
     output logic [31:0]               multdiv_operand_a_ex_o,
@@ -147,6 +149,10 @@ module ibex_id_stage #(
     input  logic [31:0]               rf_rdata_a_i,
     output logic [4:0]                rf_raddr_b_o,
     input  logic [31:0]               rf_rdata_b_i,
+`ifdef RVFI
+    output logic                      rf_ren_a_o,
+    output logic                      rf_ren_b_o,
+`endif
 
     // Register file write (via writeback)
     output logic [4:0]                rf_waddr_id_o,
@@ -189,9 +195,11 @@ module ibex_id_stage #(
   logic        wb_exception;
 
   logic        branch_in_dec;
+  logic        branch_spec, branch_set_spec;
   logic        branch_set, branch_set_d;
   logic        branch_taken;
   logic        jump_in_dec;
+  logic        jump_set_dec;
   logic        jump_set;
 
   logic        instr_first_cycle;
@@ -225,6 +233,11 @@ module ibex_id_stage #(
   logic        rf_we_dec, rf_we_raw;
   logic        rf_ren_a, rf_ren_b;
 
+`ifdef RVFI
+  assign rf_ren_a_o = rf_ren_a;
+  assign rf_ren_b_o = rf_ren_b;
+`endif
+
   logic [31:0] rf_rdata_a_fwd;
   logic [31:0] rf_rdata_b_fwd;
 
@@ -246,7 +259,6 @@ module ibex_id_stage #(
   // Multiplier Control
   logic        mult_en_id, mult_en_dec; // use integer multiplier
   logic        div_en_id, div_en_dec;   // use integer division or reminder
-  logic        multdiv_sel_dec;
   logic        multdiv_en_dec;
   md_op_e      multdiv_operator;
   logic [1:0]  multdiv_signed_mode;
@@ -400,7 +412,7 @@ module ibex_id_stage #(
       .dret_insn_o                     ( dret_insn_dec        ),
       .ecall_insn_o                    ( ecall_insn_dec       ),
       .wfi_insn_o                      ( wfi_insn_dec         ),
-      .jump_set_o                      ( jump_set             ),
+      .jump_set_o                      ( jump_set_dec         ),
       .branch_taken_i                  ( branch_taken         ),
       .icache_inval_o                  ( icache_inval_o       ),
 
@@ -442,7 +454,8 @@ module ibex_id_stage #(
       // MULT & DIV
       .mult_en_o                       ( mult_en_dec          ),
       .div_en_o                        ( div_en_dec           ),
-      .multdiv_sel_o                   ( multdiv_sel_dec      ),
+      .mult_sel_o                      ( mult_sel_ex_o        ),
+      .div_sel_o                       ( div_sel_ex_o         ),
       .multdiv_operator_o              ( multdiv_operator     ),
       .multdiv_signed_mode_o           ( multdiv_signed_mode  ),
 
@@ -528,6 +541,7 @@ module ibex_id_stage #(
       // to prefetcher
       .instr_req_o                    ( instr_req_o             ),
       .pc_set_o                       ( pc_set_o                ),
+      .pc_set_spec_o                  ( pc_set_spec_o           ),
       .pc_mux_o                       ( pc_mux_o                ),
       .exc_pc_mux_o                   ( exc_pc_mux_o            ),
       .exc_cause_o                    ( exc_cause_o             ),
@@ -540,6 +554,7 @@ module ibex_id_stage #(
 
       // jump/branch control
       .branch_set_i                   ( branch_set              ),
+      .branch_set_spec_i              ( branch_set_spec         ),
       .jump_set_i                     ( jump_set                ),
 
       // interrupt signals
@@ -603,7 +618,6 @@ module ibex_id_stage #(
 
   assign mult_en_ex_o                = mult_en_id;
   assign div_en_ex_o                 = div_en_id;
-  assign multdiv_sel_ex_o            = multdiv_sel_dec;
 
   assign multdiv_operator_ex_o       = multdiv_operator;
   assign multdiv_signed_mode_ex_o    = multdiv_signed_mode;
@@ -617,7 +631,8 @@ module ibex_id_stage #(
   if (BranchTargetALU && !DataIndTiming) begin : g_branch_set_direct
     // Branch set fed straight to controller with branch target ALU
     // (condition pass/fail used same cycle as generated instruction request)
-    assign branch_set = branch_set_d;
+    assign branch_set      = branch_set_d;
+    assign branch_set_spec = branch_spec;
   end else begin : g_branch_set_flop
     // Branch set flopped without branch target ALU, or in fixed time execution mode
     // (condition pass/fail used next cycle where branch target is calculated)
@@ -634,7 +649,9 @@ module ibex_id_stage #(
     // Branches always take two cycles in fixed time execution mode, with or without the branch
     // target ALU (to avoid a path from the branch decision into the branch target ALU operand
     // muxing).
-    assign branch_set = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    assign branch_set      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    // Use the speculative branch signal when BTALU is enabled
+    assign branch_set_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_q;
   end
 
   // Branch condition is calculated in the first cycle and flopped for use in the second cycle
@@ -663,6 +680,7 @@ module ibex_id_stage #(
   // could generate needless prefetch buffer flushes and instruction fetches. ID/EX is designed such
   // that this shouldn't ever happen.
   `ASSERT(NeverDoubleBranch, branch_set |=> ~branch_set)
+  `ASSERT(NeverDoubleJump, jump_set |=> ~jump_set)
 
   ///////////////
   // ID-EX FSM //
@@ -692,6 +710,8 @@ module ibex_id_stage #(
     stall_branch            = 1'b0;
     stall_alu               = 1'b0;
     branch_set_d            = 1'b0;
+    branch_spec             = 1'b0;
+    jump_set                = 1'b0;
     perf_branch_o           = 1'b0;
 
     if (instr_executing) begin
@@ -726,6 +746,8 @@ module ibex_id_stage #(
                                   MULTI_CYCLE : FIRST_CYCLE;
               stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
               branch_set_d  = branch_decision_i | data_ind_timing_i;
+              // Speculative branch (excludes branch_decision_i)
+              branch_spec   = 1'b1;
               perf_branch_o = 1'b1;
             end
             jump_in_dec: begin
@@ -733,6 +755,7 @@ module ibex_id_stage #(
               // BTALU means jumps only need one cycle
               id_fsm_d      = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
               stall_jump    = ~BranchTargetALU;
+              jump_set      = jump_set_dec;
             end
             alu_multicycle_dec: begin
               stall_alu     = 1'b1;
@@ -996,7 +1019,8 @@ module ibex_id_stage #(
   `ASSERT_KNOWN(IbexWbStateKnown, id_fsm_q)
 
   // Branch decision must be valid when jumping.
-  `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i, instr_valid_i)
+  `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i,
+      instr_valid_i && !(illegal_csr_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,

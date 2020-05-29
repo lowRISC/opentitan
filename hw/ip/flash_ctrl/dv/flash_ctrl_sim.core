@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:flash_ctrl_sim:0.1"
+description: "FLASH_CTRL DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip:flash_ctrl:0.1
+    files:
+      - tb/flash_ctrl_wrapper.sv
+      - tb/flash_ctrl_bind.sv
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:dv:flash_ctrl_test
+    files:
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  sim:
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs

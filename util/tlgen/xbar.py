@@ -3,13 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
-from typing import List
 
-from .item import Edge, Node, NodeType
-
-#Nodes = List[Node]
-#Edges = List[Edge]
-#Clocks = List[str]
+from .item import Edge, NodeType
 
 
 class Xbar:

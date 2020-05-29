@@ -306,6 +306,7 @@ top_optional = {
     'available_output_list': ['lnw', "list of available peripheral outputs"],
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'interrupt_list': ['lnw', "list of peripheral interrupts"],
+    'inter_signal_list': ['l', "list of inter-module signals"],
     'no_auto_intr_regs': [
         's', "Set to true to suppress automatic "
         "generation of interrupt registers. "

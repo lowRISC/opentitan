@@ -3,57 +3,44 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_earlgrey #(
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter     BootRomInitFile = ""
 ) (
   // Clock and Reset
   input               clk_i,
   input               rst_ni,
 
-  // Fixed clock
-  input               clk_fixed_i,
+  // Fixed io clock
+  input               clk_io_i,
 
   // USB clock
-  input               clk_usb_48mhz_i,
+  input               clk_usb_i,
+
+  // aon clock
+  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
   input               jtag_tms_i,
   input               jtag_trst_ni,
-  input               jtag_td_i,
-  output              jtag_td_o,
+  input               jtag_tdi_i,
+  output              jtag_tdo_o,
 
   // Multiplexed I/O
   input        [31:0] mio_in_i,
   output logic [31:0] mio_out_o,
   output logic [31:0] mio_oe_o,
-
   // Dedicated I/O
-  input               dio_spi_device_sck_i,
-  input               dio_spi_device_csb_i,
-  input               dio_spi_device_mosi_i,
-  output logic        dio_spi_device_miso_o,
-  output logic        dio_spi_device_miso_en_o,
-  input               dio_uart_rx_i,
-  output logic        dio_uart_tx_o,
-  output logic        dio_uart_tx_en_o,
-  input               dio_usbdev_sense_i,
-  output logic        dio_usbdev_se0_o,
-  output logic        dio_usbdev_se0_en_o,
-  output logic        dio_usbdev_pullup_o,
-  output logic        dio_usbdev_pullup_en_o,
-  output logic        dio_usbdev_tx_mode_se_o,
-  output logic        dio_usbdev_tx_mode_se_en_o,
-  output logic        dio_usbdev_suspend_o,
-  output logic        dio_usbdev_suspend_en_o,
-  input               dio_usbdev_d_i,
-  output logic        dio_usbdev_d_o,
-  output logic        dio_usbdev_d_en_o,
-  input               dio_usbdev_dp_i,
-  output logic        dio_usbdev_dp_o,
-  output logic        dio_usbdev_dp_en_o,
-  input               dio_usbdev_dn_i,
-  output logic        dio_usbdev_dn_o,
-  output logic        dio_usbdev_dn_en_o,
+  input        [14:0] dio_in_i,
+  output logic [14:0] dio_out_o,
+  output logic [14:0] dio_oe_o,
+
+  // pad attributes to padring
+  output logic[padctrl_reg_pkg::NMioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[padctrl_reg_pkg::NDioPads-1:0]
+              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+
 
   input               scanmode_i  // 1 for Scan
 );
@@ -104,12 +91,16 @@ module top_earlgrey #(
   tl_d2h_t  tl_rv_plic_d_d2h;
   tl_h2d_t  tl_pinmux_d_h2d;
   tl_d2h_t  tl_pinmux_d_d2h;
+  tl_h2d_t  tl_padctrl_d_h2d;
+  tl_d2h_t  tl_padctrl_d_d2h;
   tl_h2d_t  tl_alert_handler_d_h2d;
   tl_d2h_t  tl_alert_handler_d_d2h;
   tl_h2d_t  tl_pwrmgr_d_h2d;
   tl_d2h_t  tl_pwrmgr_d_d2h;
   tl_h2d_t  tl_rstmgr_d_h2d;
   tl_d2h_t  tl_rstmgr_d_d2h;
+  tl_h2d_t  tl_clkmgr_d_h2d;
+  tl_d2h_t  tl_clkmgr_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
@@ -130,25 +121,13 @@ module top_earlgrey #(
   assign tl_main_h_h2d = tl_peri_d_h2d;
   assign tl_peri_d_d2h = tl_main_h_d2h;
 
-  //clock wires declaration
-  logic clk_fixed_powerup;
-  logic clk_main_powerup;
-  logic clk_usb_48mhz_powerup;
-  logic clk_main_aes;
-  logic clk_main_hmac;
-  logic clk_main_infra;
-  logic clk_fixed_infra;
-  logic clk_fixed_secure;
-  logic clk_main_secure;
-  logic clk_fixed_peri;
-  logic clk_usb_48mhz_peri;
-  logic clk_fixed_timers;
-  logic clk_proc_main;
-
   // Signals
-  logic [31:0] m2p;
-  logic [31:0] p2m;
-  logic [31:0] p2m_en;
+  logic [31:0] mio_p2d;
+  logic [31:0] mio_d2p;
+  logic [31:0] mio_d2p_en;
+  logic [14:0] dio_p2d;
+  logic [14:0] dio_d2p;
+  logic [14:0] dio_d2p_en;
   // uart
   logic        cio_uart_rx_p2d;
   logic        cio_uart_tx_d2p;
@@ -169,9 +148,11 @@ module top_earlgrey #(
   // hmac
   // rv_plic
   // pinmux
+  // padctrl
   // alert_handler
   // pwrmgr
   // rstmgr
+  // clkmgr
   // nmi_gen
   // usbdev
   logic        cio_usbdev_sense_p2d;
@@ -180,8 +161,10 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_p2d;
   logic        cio_usbdev_se0_d2p;
   logic        cio_usbdev_se0_en_d2p;
-  logic        cio_usbdev_pullup_d2p;
-  logic        cio_usbdev_pullup_en_d2p;
+  logic        cio_usbdev_dp_pullup_d2p;
+  logic        cio_usbdev_dp_pullup_en_d2p;
+  logic        cio_usbdev_dn_pullup_d2p;
+  logic        cio_usbdev_dn_pullup_en_d2p;
   logic        cio_usbdev_tx_mode_se_d2p;
   logic        cio_usbdev_tx_mode_se_en_d2p;
   logic        cio_usbdev_suspend_d2p;
@@ -270,25 +253,12 @@ module top_earlgrey #(
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
+  pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
+  pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
-
-  // Clock assignments
-  // These assignments are temporary until the creation of the clock controller
-  assign clk_fixed_powerup = clk_fixed_i;
-  assign clk_main_powerup = clk_i;
-  assign clk_usb_48mhz_powerup = clk_usb_48mhz_i;
-  assign clk_main_aes = clk_i;
-  assign clk_main_hmac = clk_i;
-  assign clk_main_infra = clk_i;
-  assign clk_fixed_infra = clk_fixed_i;
-  assign clk_fixed_secure = clk_fixed_i;
-  assign clk_main_secure = clk_i;
-  assign clk_fixed_peri = clk_fixed_i;
-  assign clk_usb_48mhz_peri = clk_usb_48mhz_i;
-  assign clk_fixed_timers = clk_fixed_i;
-  assign clk_proc_main = clk_i;
+  clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -298,9 +268,9 @@ module top_earlgrey #(
 
   // processor core
   rv_core_ibex #(
-    .PMPEnable                (0),
-    .PMPGranularity           (0),
-    .PMPNumRegions            (4),
+    .PMPEnable                (1),
+    .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
+    .PMPNumRegions            (16),
     .MHPMCounterNum           (8),
     .MHPMCounterWidth         (40),
     .RV32E                    (0),
@@ -314,7 +284,7 @@ module top_earlgrey #(
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
-    .clk_i                (clk_proc_main),
+    .clk_i                (clkmgr_clocks.clk_proc_main),
     .rst_ni               (rstmgr_resets.rst_sys_n),
     .test_en_i            (1'b0),
     // static pinning
@@ -345,7 +315,7 @@ module top_earlgrey #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
-    .clk_i         (clk_proc_main),
+    .clk_i         (clkmgr_clocks.clk_proc_main),
     .rst_ni        (rstmgr_resets.rst_lc_n),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
@@ -365,8 +335,8 @@ module top_earlgrey #(
     .tck_i            (jtag_tck_i),
     .tms_i            (jtag_tms_i),
     .trst_ni          (jtag_trst_ni),
-    .td_i             (jtag_td_i),
-    .td_o             (jtag_td_o),
+    .td_i             (jtag_tdi_i),
+    .td_o             (jtag_tdo_o),
     .tdo_oe_o         (       )
   );
 
@@ -385,7 +355,7 @@ module top_earlgrey #(
     .Outstanding(2),
     .ErrOnWrite(1)
   ) u_tl_adapter_rom (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
 
     .tl_i     (tl_rom_d_h2d),
@@ -404,9 +374,10 @@ module top_earlgrey #(
 
   prim_rom #(
     .Width(32),
-    .Depth(4096)
+    .Depth(4096),
+    .MemInitFile(BootRomInitFile)
   ) u_rom_rom (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
     .cs_i     (rom_req),
     .addr_i   (rom_addr),
@@ -422,13 +393,14 @@ module top_earlgrey #(
   logic [31:0] ram_main_wmask;
   logic [31:0] ram_main_rdata;
   logic        ram_main_rvalid;
+  logic [1:0]  ram_main_rerror;
 
   tlul_adapter_sram #(
     .SramAw(14),
     .SramDw(32),
     .Outstanding(2)
   ) u_tl_adapter_ram_main (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
     .tl_i     (tl_ram_main_d_h2d),
     .tl_o     (tl_ram_main_d_d2h),
@@ -441,15 +413,16 @@ module top_earlgrey #(
     .wmask_o  (ram_main_wmask),
     .rdata_i  (ram_main_rdata),
     .rvalid_i (ram_main_rvalid),
-    .rerror_i (2'b00)
+    .rerror_i (ram_main_rerror)
   );
 
-  prim_ram_1p #(
+  prim_ram_1p_adv #(
     .Width(32),
     .Depth(16384),
-    .DataBitsPerMask(8)
+    .DataBitsPerMask(8),
+    .CfgW(8)
   ) u_ram1p_ram_main (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
 
     .req_i    (ram_main_req),
@@ -457,8 +430,10 @@ module top_earlgrey #(
     .addr_i   (ram_main_addr),
     .wdata_i  (ram_main_wdata),
     .wmask_i  (ram_main_wmask),
+    .rdata_o  (ram_main_rdata),
     .rvalid_o (ram_main_rvalid),
-    .rdata_o  (ram_main_rdata)
+    .rerror_o (ram_main_rerror),
+    .cfg_i    ('0)
   );
 
   // host to flash communication
@@ -475,7 +450,7 @@ module top_earlgrey #(
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) u_tl_adapter_eflash (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_lc_n),
 
     .tl_i       (tl_eflash_d_h2d),
@@ -493,7 +468,7 @@ module top_earlgrey #(
   );
 
   flash_phy u_flash_eflash (
-    .clk_i   (clk_main_infra),
+    .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_lc_n),
     .host_req_i      (flash_host_req),
     .host_addr_i     (flash_host_addr),
@@ -527,8 +502,8 @@ module top_earlgrey #(
       .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
 
-      .clk_i (clk_fixed_secure),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   gpio u_gpio (
@@ -545,8 +520,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
 
-      .clk_i (clk_fixed_peri),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   spi_device u_spi_device (
@@ -571,7 +546,7 @@ module top_earlgrey #(
       .intr_txunderflow_o (intr_spi_device_txunderflow),
       .scanmode_i   (scanmode_i),
 
-      .clk_i (clk_fixed_peri),
+      .clk_i (clkmgr_clocks.clk_io_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n)
   );
 
@@ -591,7 +566,7 @@ module top_earlgrey #(
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
 
-      .clk_i (clk_main_infra),
+      .clk_i (clkmgr_clocks.clk_main_infra),
       .rst_ni (rstmgr_resets.rst_lc_n)
   );
 
@@ -602,15 +577,15 @@ module top_earlgrey #(
       // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
 
-      .clk_i (clk_fixed_timers),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n)
+      .clk_i (clkmgr_clocks.clk_io_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
   aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
 
-      .clk_i (clk_main_aes),
+      .clk_i (clkmgr_clocks.clk_main_aes),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -627,7 +602,7 @@ module top_earlgrey #(
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
 
-      .clk_i (clk_main_hmac),
+      .clk_i (clkmgr_clocks.clk_main_hmac),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -640,7 +615,7 @@ module top_earlgrey #(
       .irq_id_o   (irq_id),
       .msip_o     (msip),
 
-      .clk_i (clk_main_secure),
+      .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -648,15 +623,42 @@ module top_earlgrey #(
       .tl_i (tl_pinmux_d_h2d),
       .tl_o (tl_pinmux_d_d2h),
 
-      .periph_to_mio_i      (p2m    ),
-      .periph_to_mio_oe_i   (p2m_en ),
-      .mio_to_periph_o      (m2p    ),
+      // Inter-module signals
+      .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
+      .lc_pinmux_strap_o(),
+      .sleep_en_i(1'b0),
+      .aon_wkup_req_o(),
 
-      .mio_out_o            (mio_out_o),
-      .mio_oe_o             (mio_oe_o ),
-      .mio_in_i             (mio_in_i ),
+      .periph_to_mio_i      (mio_d2p    ),
+      .periph_to_mio_oe_i   (mio_d2p_en ),
+      .mio_to_periph_o      (mio_p2d    ),
 
-      .clk_i (clk_main_secure),
+      .mio_out_o,
+      .mio_oe_o,
+      .mio_in_i,
+
+      .periph_to_dio_i      (dio_d2p    ),
+      .periph_to_dio_oe_i   (dio_d2p_en ),
+      .dio_to_periph_o      (dio_p2d    ),
+
+      .dio_out_o,
+      .dio_oe_o,
+      .dio_in_i,
+
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .clk_aon_i (clkmgr_clocks.clk_io_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n),
+      .rst_aon_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
+  padctrl u_padctrl (
+      .tl_i (tl_padctrl_d_h2d),
+      .tl_o (tl_padctrl_d_d2h),
+
+      .mio_attr_o,
+      .dio_attr_o,
+
+      .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -680,7 +682,7 @@ module top_earlgrey #(
       .esc_rx_i    ( esc_rx   ),
       .esc_tx_o    ( esc_tx   ),
 
-      .clk_i (clk_main_secure),
+      .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -696,7 +698,8 @@ module top_earlgrey #(
       .pwr_ast_i(pwrmgr_pkg::PWR_AST_RSP_DEFAULT),
       .pwr_rst_o(pwrmgr_pwr_rst_req),
       .pwr_rst_i(pwrmgr_pwr_rst_rsp),
-      .pwr_clk_o(),
+      .pwr_clk_o(pwrmgr_pwr_clk_req),
+      .pwr_clk_i(pwrmgr_pwr_clk_rsp),
       .pwr_otp_o(),
       .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
       .pwr_lc_o(),
@@ -705,10 +708,10 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
 
-      .clk_i (clk_fixed_powerup),
-      .clk_slow_i (clk_fixed_powerup),
+      .clk_i (clk_io_i),
+      .clk_slow_i (clk_aon_i),
       .rst_ni (rstmgr_resets.rst_por_n),
-      .rst_slow_ni (rstmgr_resets.rst_por_n)
+      .rst_slow_ni (rstmgr_resets.rst_por_aon_n)
   );
 
   rstmgr u_rstmgr (
@@ -723,11 +726,34 @@ module top_earlgrey #(
       .cpu_i(rstmgr_cpu),
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
 
-      .clk_i (clk_fixed_powerup),
-      .clk_main_i (clk_main_powerup),
-      .clk_fixed_i (clk_fixed_powerup),
-      .clk_usb_i (clk_usb_48mhz_powerup),
+      .clk_i (clk_io_i),
+      .clk_aon_i (clk_aon_i),
+      .clk_main_i (clk_i),
+      .clk_io_i (clk_io_i),
+      .clk_usb_i (clk_usb_i),
       .rst_ni (rst_ni)
+  );
+
+  clkmgr u_clkmgr (
+      .tl_i (tl_clkmgr_d_h2d),
+      .tl_o (tl_clkmgr_d_d2h),
+
+      // Inter-module signals
+      .clocks_o(clkmgr_clocks),
+      .pwr_i(pwrmgr_pwr_clk_req),
+      .pwr_o(pwrmgr_pwr_clk_rsp),
+      .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
+      .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
+
+      .clk_i (clk_io_i),
+      .clk_main_i (clk_i),
+      .clk_io_i (clk_io_i),
+      .clk_usb_i (clk_usb_i),
+      .clk_aon_i (clk_aon_i),
+      .rst_ni (rstmgr_resets.rst_por_io_n),
+      .rst_main_ni (rstmgr_resets.rst_por_n),
+      .rst_io_ni (rstmgr_resets.rst_por_io_n),
+      .rst_usb_ni (rstmgr_resets.rst_por_usb_n)
   );
 
   nmi_gen u_nmi_gen (
@@ -743,7 +769,7 @@ module top_earlgrey #(
       .esc_rx_o    ( esc_rx   ),
       .esc_tx_i    ( esc_tx   ),
 
-      .clk_i (clk_main_secure),
+      .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -760,8 +786,10 @@ module top_earlgrey #(
       // Output
       .cio_se0_o           (cio_usbdev_se0_d2p),
       .cio_se0_en_o        (cio_usbdev_se0_en_d2p),
-      .cio_pullup_o        (cio_usbdev_pullup_d2p),
-      .cio_pullup_en_o     (cio_usbdev_pullup_en_d2p),
+      .cio_dp_pullup_o     (cio_usbdev_dp_pullup_d2p),
+      .cio_dp_pullup_en_o  (cio_usbdev_dp_pullup_en_d2p),
+      .cio_dn_pullup_o     (cio_usbdev_dn_pullup_d2p),
+      .cio_dn_pullup_en_o  (cio_usbdev_dn_pullup_en_d2p),
       .cio_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
       .cio_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
       .cio_suspend_o       (cio_usbdev_suspend_d2p),
@@ -791,9 +819,13 @@ module top_earlgrey #(
       .intr_frame_o           (intr_usbdev_frame),
       .intr_connected_o       (intr_usbdev_connected),
 
-      .clk_i (clk_fixed_peri),
-      .clk_usb_48mhz_i (clk_usb_48mhz_peri),
-      .rst_ni (rstmgr_resets.rst_sys_fixed_n),
+      // Inter-module signals
+      .usb_ref_val_o(),
+      .usb_ref_pulse_o(),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n),
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
@@ -853,10 +885,10 @@ module top_earlgrey #(
 
   // TL-UL Crossbar
   xbar_main u_xbar_main (
-    .clk_main_i (clk_main_infra),
-    .clk_fixed_i (clk_fixed_infra),
+    .clk_main_i (clkmgr_clocks.clk_main_infra),
+    .clk_fixed_i (clkmgr_clocks.clk_io_infra),
     .rst_main_ni (rstmgr_resets.rst_sys_n),
-    .rst_fixed_ni (rstmgr_resets.rst_sys_fixed_n),
+    .rst_fixed_ni (rstmgr_resets.rst_sys_io_n),
     .tl_corei_i         (tl_corei_h_h2d),
     .tl_corei_o         (tl_corei_h_d2h),
     .tl_cored_i         (tl_cored_h_h2d),
@@ -883,6 +915,8 @@ module top_earlgrey #(
     .tl_rv_plic_i       (tl_rv_plic_d_d2h),
     .tl_pinmux_o        (tl_pinmux_d_h2d),
     .tl_pinmux_i        (tl_pinmux_d_d2h),
+    .tl_padctrl_o       (tl_padctrl_d_h2d),
+    .tl_padctrl_i       (tl_padctrl_d_d2h),
     .tl_alert_handler_o (tl_alert_handler_d_h2d),
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
@@ -891,8 +925,8 @@ module top_earlgrey #(
     .scanmode_i
   );
   xbar_peri u_xbar_peri (
-    .clk_peri_i (clk_fixed_infra),
-    .rst_peri_ni (rstmgr_resets.rst_sys_fixed_n),
+    .clk_peri_i (clkmgr_clocks.clk_io_infra),
+    .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
     .tl_main_i       (tl_main_h_h2d),
     .tl_main_o       (tl_main_h_d2h),
     .tl_uart_o       (tl_uart_d_h2d),
@@ -909,47 +943,77 @@ module top_earlgrey #(
     .tl_pwrmgr_i     (tl_pwrmgr_d_d2h),
     .tl_rstmgr_o     (tl_rstmgr_d_h2d),
     .tl_rstmgr_i     (tl_rstmgr_d_d2h),
+    .tl_clkmgr_o     (tl_clkmgr_d_h2d),
+    .tl_clkmgr_i     (tl_clkmgr_d_d2h),
 
     .scanmode_i
   );
 
   // Pinmux connections
-  assign p2m = {
+  assign mio_d2p = {
     cio_gpio_gpio_d2p
   };
-  assign p2m_en = {
+  assign mio_d2p_en = {
     cio_gpio_gpio_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d
-  } = m2p;
+  } = mio_p2d;
 
-  assign cio_spi_device_sck_p2d     = dio_spi_device_sck_i;
-  assign cio_spi_device_csb_p2d     = dio_spi_device_csb_i;
-  assign cio_spi_device_mosi_p2d    = dio_spi_device_mosi_i;
-  assign dio_spi_device_miso_o      = cio_spi_device_miso_d2p;
-  assign dio_spi_device_miso_en_o   = cio_spi_device_miso_en_d2p;
-  assign cio_uart_rx_p2d            = dio_uart_rx_i;
-  assign dio_uart_tx_o              = cio_uart_tx_d2p;
-  assign dio_uart_tx_en_o           = cio_uart_tx_en_d2p;
-  assign cio_usbdev_sense_p2d       = dio_usbdev_sense_i;
-  assign dio_usbdev_se0_o           = cio_usbdev_se0_d2p;
-  assign dio_usbdev_se0_en_o        = cio_usbdev_se0_en_d2p;
-  assign dio_usbdev_pullup_o        = cio_usbdev_pullup_d2p;
-  assign dio_usbdev_pullup_en_o     = cio_usbdev_pullup_en_d2p;
-  assign dio_usbdev_tx_mode_se_o    = cio_usbdev_tx_mode_se_d2p;
-  assign dio_usbdev_tx_mode_se_en_o = cio_usbdev_tx_mode_se_en_d2p;
-  assign dio_usbdev_suspend_o       = cio_usbdev_suspend_d2p;
-  assign dio_usbdev_suspend_en_o    = cio_usbdev_suspend_en_d2p;
-  assign cio_usbdev_d_p2d           = dio_usbdev_d_i;
-  assign dio_usbdev_d_o             = cio_usbdev_d_d2p;
-  assign dio_usbdev_d_en_o          = cio_usbdev_d_en_d2p;
-  assign cio_usbdev_dp_p2d          = dio_usbdev_dp_i;
-  assign dio_usbdev_dp_o            = cio_usbdev_dp_d2p;
-  assign dio_usbdev_dp_en_o         = cio_usbdev_dp_en_d2p;
-  assign cio_usbdev_dn_p2d          = dio_usbdev_dn_i;
-  assign dio_usbdev_dn_o            = cio_usbdev_dn_d2p;
-  assign dio_usbdev_dn_en_o         = cio_usbdev_dn_en_d2p;
+  // Dedicated IO connections
+  // Input-only DIOs have no d2p signals
+  assign dio_d2p = {
+    1'b0, // DIO14: cio_spi_device_sck
+    1'b0, // DIO13: cio_spi_device_csb
+    1'b0, // DIO12: cio_spi_device_mosi
+    cio_spi_device_miso_d2p, // DIO11
+    1'b0, // DIO10: cio_uart_rx
+    cio_uart_tx_d2p, // DIO9
+    1'b0, // DIO8: cio_usbdev_sense
+    cio_usbdev_se0_d2p, // DIO7
+    cio_usbdev_dp_pullup_d2p, // DIO6
+    cio_usbdev_dn_pullup_d2p, // DIO5
+    cio_usbdev_tx_mode_se_d2p, // DIO4
+    cio_usbdev_suspend_d2p, // DIO3
+    cio_usbdev_d_d2p, // DIO2
+    cio_usbdev_dp_d2p, // DIO1
+    cio_usbdev_dn_d2p // DIO0
+  };
+
+  assign dio_d2p_en = {
+    1'b0, // DIO14: cio_spi_device_sck
+    1'b0, // DIO13: cio_spi_device_csb
+    1'b0, // DIO12: cio_spi_device_mosi
+    cio_spi_device_miso_en_d2p, // DIO11
+    1'b0, // DIO10: cio_uart_rx
+    cio_uart_tx_en_d2p, // DIO9
+    1'b0, // DIO8: cio_usbdev_sense
+    cio_usbdev_se0_en_d2p, // DIO7
+    cio_usbdev_dp_pullup_en_d2p, // DIO6
+    cio_usbdev_dn_pullup_en_d2p, // DIO5
+    cio_usbdev_tx_mode_se_en_d2p, // DIO4
+    cio_usbdev_suspend_en_d2p, // DIO3
+    cio_usbdev_d_en_d2p, // DIO2
+    cio_usbdev_dp_en_d2p, // DIO1
+    cio_usbdev_dn_en_d2p // DIO0
+  };
+
+  // Output-only DIOs have no p2d signal
+  assign cio_spi_device_sck_p2d    = dio_p2d[14]; // DIO14
+  assign cio_spi_device_csb_p2d    = dio_p2d[13]; // DIO13
+  assign cio_spi_device_mosi_p2d   = dio_p2d[12]; // DIO12
+  // DIO11: cio_spi_device_miso
+  assign cio_uart_rx_p2d           = dio_p2d[10]; // DIO10
+  // DIO9: cio_uart_tx
+  assign cio_usbdev_sense_p2d      = dio_p2d[8]; // DIO8
+  // DIO7: cio_usbdev_se0
+  // DIO6: cio_usbdev_dp_pullup
+  // DIO5: cio_usbdev_dn_pullup
+  // DIO4: cio_usbdev_tx_mode_se
+  // DIO3: cio_usbdev_suspend
+  assign cio_usbdev_d_p2d          = dio_p2d[2]; // DIO2
+  assign cio_usbdev_dp_p2d         = dio_p2d[1]; // DIO1
+  assign cio_usbdev_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)

@@ -3,6 +3,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+'''A tool to copy source code from upstream into this repository.
+
+For an introduction to using this tool, see doc/ug/vendor_hw.md in this
+repository (on the internet at https://docs.opentitan.org/doc/ug/vendor_hw/).
+
+For full documentation, see doc/rm/vendor_in_tool.md (on the internet at
+https://docs.opentitan.org/doc/rm/vendor_in_tool).
+
+'''
+
 import argparse
 import fnmatch
 import logging as log
@@ -16,8 +26,6 @@ import textwrap
 from pathlib import Path
 
 import hjson
-
-DESC = """vendor, copy source code from upstream into this repository"""
 
 EXCLUDE_ALWAYS = ['.git']
 
@@ -42,18 +50,6 @@ def git_is_clean_workdir(git_workdir):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE).stdout.strip()
     return not modified_files
-
-
-def path_resolve(path, base_dir=Path.cwd()):
-    """Create an absolute path. Relative paths are resolved using base_dir as base."""
-
-    if isinstance(path, str):
-        path = Path(path)
-
-    if path.is_absolute():
-        return path
-
-    return (base_dir / path).resolve()
 
 
 def github_qualify_references(log, repo_userorg, repo_name):
@@ -142,15 +138,22 @@ def github_parse_url(github_repo_url):
     return (m.group(1), m.group(2))
 
 
-def produce_shortlog(clone_dir, old_rev, new_rev):
+def produce_shortlog(clone_dir, mapping, old_rev, new_rev):
     """ Produce a list of changes between two revisions, one revision per line
 
     Merges are excluded"""
-    cmd = [
-        'git', '-C',
-        str(clone_dir), 'log', '--pretty=format:%s (%aN)', '--no-merges',
-        old_rev + '..' + new_rev, '.'
-    ]
+
+    # If mapping is None, we want to list all changes below clone_dir.
+    # Otherwise, we want to list changes in each 'source' in the mapping. Since
+    # these strings are paths relative to clone_dir, we can just pass them all
+    # to git and let it figure out what to do.
+    subdirs = (['.'] if mapping is None
+               else [m.from_path for m in mapping.items])
+
+    cmd = (['git', '-C', str(clone_dir), 'log',
+           '--pretty=format:%s (%aN)', '--no-merges',
+            old_rev + '..' + new_rev] +
+           subdirs)
     try:
         proc = subprocess.run(cmd,
                               cwd=str(clone_dir),
@@ -172,28 +175,285 @@ def format_list_to_str(list, width=70):
     return '\n'.join([wrapper.fill(s) for s in list])
 
 
+class JsonError(Exception):
+    '''An error class for when data in the source HJSON is bad'''
+    def __init__(self, path, msg):
+        self.path = path
+        self.msg = msg
+
+    def __str__(self):
+        return 'In hjson at {}, {}'.format(self.path, self.msg)
+
+
+def get_field(path, where, data, name, expected_type=dict, optional=False, constructor=None):
+    value = data.get(name)
+    if value is None:
+        if not optional:
+            raise JsonError(path, '{}, missing {!r} field.'.format(where, name))
+        return None
+
+    if not isinstance(value, expected_type):
+        raise JsonError(path,
+                        '{}, the {!r} field is {!r}, but should be of type {!r}.'
+                        .format(where, name, value, expected_type.__name__))
+
+    return value if constructor is None else constructor(value)
+
+
+class Upstream:
+    '''A class representing the 'upstream' field in a config or lock file'''
+    def __init__(self, path, data):
+        # Fields: 'url', 'rev', 'only_subdir' (optional). All should be strings.
+        where = 'in upstream dict'
+        self.url = get_field(path, where, data, 'url', str)
+        self.rev = get_field(path, where, data, 'rev', str)
+        self.only_subdir = get_field(path, where, data,
+                                     'only_subdir', str, optional=True)
+
+    def as_dict(self):
+        data = {'url': self.url, 'rev': self.rev}
+        if self.only_subdir is not None:
+            data['only_subdir'] = self.only_subdir
+        return data
+
+
+class PatchRepo:
+    '''A class representing the 'patch_repo' field in a config file'''
+    def __init__(self, path, data):
+        # Fields: 'url', 'rev_base', 'rev_patched'. All should be strings.
+        where = 'in patch_repo dict'
+        self.url = get_field(path, where, data, 'url', str)
+        self.rev_base = get_field(path, where, data, 'rev_base', str)
+        self.rev_patched = get_field(path, where, data, 'rev_patched', str)
+
+
+class Mapping1:
+    '''A class to represent a single item in the 'mapping' field in a config file'''
+    def __init__(self, from_path, to_path, patch_dir):
+        self.from_path = from_path
+        self.to_path = to_path
+        self.patch_dir = patch_dir
+
+    @staticmethod
+    def make(path, idx, data):
+        assert isinstance(data, dict)
+
+        def get_path(name, optional=False):
+            val = get_field(path, 'in mapping entry {}'.format(idx + 1),
+                            data, name, expected_type=str, optional=optional)
+            if val is None:
+                return None
+
+            # Check that the paths aren't evil ('../../../foo' or '/etc/passwd'
+            # are *not* ok!)
+            val = os.path.normpath(val)
+            if val.startswith('/') or val.startswith('..'):
+                raise JsonError(path,
+                                'Mapping entry {} has a bad path for {!r} '
+                                '(must be a relative path that doesn\'t '
+                                'escape the directory)'
+                                .format(idx + 1, name))
+
+            return Path(val)
+
+        from_path = get_path('from')
+        to_path = get_path('to')
+        patch_dir = get_path('patch_dir', optional=True)
+
+        return Mapping1(from_path, to_path, patch_dir)
+
+    @staticmethod
+    def make_default(have_patch_dir):
+        '''Make a default mapping1, which copies everything straight through'''
+        return Mapping1(Path('.'), Path('.'),
+                        Path('.') if have_patch_dir else None)
+
+    @staticmethod
+    def apply_patch(basedir, patchfile):
+        cmd = ['git', 'apply', '--directory', str(basedir), '-p1',
+               str(patchfile)]
+        if verbose:
+            cmd += ['--verbose']
+        subprocess.run(cmd, check=True)
+
+    def import_from_upstream(self, upstream_path,
+                             target_path, exclude_files, patch_dir):
+        '''Copy from the upstream checkout to target_path'''
+        from_path = upstream_path / self.from_path
+        to_path = target_path / self.to_path
+
+        # Make sure the target directory actually exists
+        to_path.parent.mkdir(exist_ok=True, parents=True)
+
+        # Copy src to dst recursively. For directories, we can use
+        # shutil.copytree. This doesn't support files, though, so we have to
+        # check for them first.
+        if from_path.is_file():
+            shutil.copy(str(from_path), str(to_path))
+        else:
+            ignore = ignore_patterns(str(upstream_path), *exclude_files)
+            shutil.copytree(str(from_path), str(to_path), ignore=ignore)
+
+        # Apply any patches to the copied files. If self.patch_dir is None,
+        # there are none to apply. Otherwise, resolve it relative to patch_dir.
+        if self.patch_dir is not None:
+            patches = (patch_dir / self.patch_dir).glob('*.patch')
+            for patch in sorted(patches):
+                log.info("Applying patch {} at {}".format(patch, to_path))
+                Mapping1.apply_patch(to_path, patch)
+
+
+class Mapping:
+    '''A class representing the 'mapping' field in a config file
+
+    This should be a list of dicts.
+    '''
+    def __init__(self, items):
+        self.items = items
+
+    @staticmethod
+    def make(path, data):
+        items = []
+        assert isinstance(data, list)
+        for idx, elt in enumerate(data):
+            if not isinstance(elt, dict):
+                raise JsonError(path, 'Mapping element {!r} is not a dict.'.format(elt))
+            items.append(Mapping1.make(path, idx, elt))
+
+        return Mapping(items)
+
+    def has_patch_dir(self):
+        '''Check whether at least one item defines a patch dir'''
+        for item in self.items:
+            if item.patch_dir is not None:
+                return True
+        return False
+
+
+class LockDesc:
+    '''A class representing the contents of a lock file'''
+    def __init__(self, handle):
+        data = hjson.loads(handle.read(), use_decimal=True)
+        self.upstream = get_field(handle.name, 'at top-level', data, 'upstream',
+                                  constructor=lambda data: Upstream(handle.name, data))
+
+
+class Desc:
+    '''A class representing the configuration file'''
+    def __init__(self, handle):
+
+        # Ensure description file matches our naming rules (otherwise we don't
+        # know the name for the lockfile). This regex checks that we have the
+        # right suffix and a nonempty name.
+        if not re.match(r'.+\.vendor\.hjson', handle.name):
+            raise ValueError("Description file names must have a .vendor.hjson suffix.")
+
+        data = hjson.loads(handle.read(), use_decimal=True)
+        where = 'at top-level'
+
+        path = Path(handle.name)
+
+        def take_path(p):
+            return path.parent / p
+
+        self.path = path
+        self.name = get_field(path, where, data, 'name', expected_type=str)
+        self.target_dir = get_field(path, where, data, 'target_dir',
+                                    expected_type=str, constructor=take_path)
+        self.upstream = get_field(path, where, data, 'upstream',
+                                  constructor=lambda data: Upstream(path, data))
+        self.patch_dir = get_field(path, where, data, 'patch_dir',
+                                   optional=True, expected_type=str, constructor=take_path)
+        self.patch_repo = get_field(path, where, data, 'patch_repo',
+                                    optional=True,
+                                    constructor=lambda data: PatchRepo(path, data))
+        self.exclude_from_upstream = (get_field(path, where, data, 'exclude_from_upstream',
+                                                optional=True, expected_type=list) or
+                                      [])
+        self.mapping = get_field(path, where, data, 'mapping', optional=True,
+                                 expected_type=list,
+                                 constructor=lambda data: Mapping.make(path, data))
+
+        # Add default exclusions
+        self.exclude_from_upstream += EXCLUDE_ALWAYS
+
+        # It doesn't make sense to define a patch_repo, but not a patch_dir
+        # (where should we put the patches that we get?)
+        if self.patch_repo is not None and self.patch_dir is None:
+            raise JsonError(path, 'Has patch_repo but not patch_dir.')
+
+        # We don't currently support a patch_repo and a mapping (just because
+        # we haven't written the code to generate the patches across subdirs
+        # yet). Tracked in issue #2317.
+        if self.patch_repo is not None and self.mapping is not None:
+            raise JsonError(path,
+                            "vendor.py doesn't currently support patch_repo "
+                            "and mapping at the same time (see issue #2317).")
+
+        # If a patch_dir is defined and there is no mapping, we will look in
+        # that directory for patches and apply them in (the only) directory
+        # that we copy stuff into.
+        #
+        # If there is a mapping check that there is a patch_dir if and only if
+        # least one mapping entry uses it.
+        if self.mapping is not None:
+            if self.patch_dir is not None:
+                if not self.mapping.has_patch_dir():
+                    raise JsonError(path, 'Has patch_dir, but no mapping item uses it.')
+            else:
+                if self.mapping.has_patch_dir():
+                    raise JsonError(path,
+                                    'Has a mapping item with a patch directory, '
+                                    'but there is no global patch_dir key.')
+
+        # Check that exclude_from_upstream really is a list of strings. Most of
+        # this type-checking is in the constructors for field types, but we
+        # don't have a "ExcludeList" class, so have to do it explicitly here.
+        for efu in self.exclude_from_upstream:
+            if not isinstance(efu, str):
+                raise JsonError(path,
+                                'exclude_from_upstream has entry {}, which is not a string.'
+                                .format(efu))
+
+    def lock_file_path(self):
+        desc_file_stem = self.path.name.rsplit('.', 2)[0]
+        return self.path.with_name(desc_file_stem + '.lock.hjson')
+
+    def import_from_upstream(self, upstream_path):
+        log.info('Copying upstream sources to {}'.format(self.target_dir))
+
+        # Remove existing directories before importing them again
+        shutil.rmtree(str(self.target_dir), ignore_errors=True)
+
+        items = (self.mapping.items if self.mapping is not None
+                 else [Mapping1.make_default(self.patch_dir is not None)])
+        for map1 in items:
+            map1.import_from_upstream(upstream_path,
+                                      self.target_dir,
+                                      self.exclude_from_upstream,
+                                      self.patch_dir)
+
+
 def refresh_patches(desc):
-    if not 'patch_repo' in desc:
+    if desc.patch_repo is None:
         log.fatal('Unable to refresh patches, patch_repo not set in config.')
         sys.exit(1)
 
-    patch_dir_abs = path_resolve(desc['patch_dir'], desc['_base_dir'])
-    log.info('Refreshing patches in %s' % (str(patch_dir_abs), ))
+    log.info('Refreshing patches in {}'.format(desc.patch_dir))
 
     # remove existing patches
-    for patch in patch_dir_abs.glob('*.patch'):
+    for patch in desc.patch_dir.glob('*.patch'):
         os.unlink(str(patch))
 
     # get current patches
-    _export_patches(desc['patch_repo']['url'], patch_dir_abs,
-                    desc['patch_repo']['rev_base'],
-                    desc['patch_repo']['rev_patched'])
+    _export_patches(desc.patch_repo.url, desc.patch_dir,
+                    desc.patch_repo.rev_base,
+                    desc.patch_repo.rev_patched)
 
 
 def _export_patches(patchrepo_clone_url, target_patch_dir, upstream_rev,
                     patched_rev):
-    clone_dir = Path(tempfile.mkdtemp())
-    try:
+    with tempfile.TemporaryDirectory() as clone_dir:
         clone_git_repo(patchrepo_clone_url, clone_dir, patched_rev)
         rev_range = 'origin/' + upstream_rev + '..' + 'origin/' + patched_rev
         cmd = ['git', 'format-patch', '-o', str(target_patch_dir), rev_range]
@@ -201,24 +461,23 @@ def _export_patches(patchrepo_clone_url, target_patch_dir, upstream_rev,
             cmd += ['-q']
         subprocess.run(cmd, cwd=str(clone_dir), check=True)
 
-    finally:
-        shutil.rmtree(str(clone_dir), ignore_errors=True)
 
+def ignore_patterns(base_dir, *patterns):
+    """Similar to shutil.ignore_patterns, but with support for directory excludes."""
+    def _rel_to_base(path, name):
+        return os.path.relpath(os.path.join(path, name), base_dir)
 
-def import_from_upstream(upstream_path, target_path, exclude_files=[]):
-    log.info('Copying upstream sources to %s', target_path)
-    # remove existing directories before importing them again
-    shutil.rmtree(str(target_path), ignore_errors=True)
+    def _ignore_patterns(path, names):
+        ignored_names = []
+        for pattern in patterns:
+            pattern_matches = [
+                n for n in names
+                if fnmatch.fnmatch(_rel_to_base(path, n), pattern)
+            ]
+            ignored_names.extend(pattern_matches)
+        return set(ignored_names)
 
-    # import new contents for rtl directory
-    _cp_from_upstream(upstream_path, target_path, exclude_files)
-
-
-def apply_patch(basedir, patchfile, strip_level=1):
-    cmd = ['git', 'apply', '-p' + str(strip_level), str(patchfile)]
-    if verbose:
-        cmd += ['--verbose']
-    subprocess.run(cmd, cwd=str(basedir), check=True)
+    return _ignore_patterns
 
 
 def clone_git_repo(repo_url, clone_dir, rev='master'):
@@ -232,7 +491,7 @@ def clone_git_repo(repo_url, clone_dir, rev='master'):
     subprocess.run(cmd, check=True)
 
     # Check out exactly the revision requested
-    cmd = ['git', '-C', str(clone_dir), 'reset', '--hard', rev]
+    cmd = ['git', '-C', str(clone_dir), 'checkout', '--force', rev]
     if not verbose:
         cmd += ['-q']
     subprocess.run(cmd, check=True)
@@ -259,50 +518,33 @@ def git_get_short_rev(clone_dir, rev):
     return short_rev
 
 
-def git_add_commit(repo_base, paths, commit_msg):
+def git_add_commit(paths, commit_msg):
     """ Stage and commit all changes in paths"""
 
-    # Stage all changes
-    for p in paths:
-        cmd_add = ['git', '-C', str(repo_base), 'add', str(p)]
-        subprocess.run(cmd_add, check=True)
+    assert paths
+    base_dir = paths[0].parent
 
-    cmd_commit = ['git', '-C', str(repo_base), 'commit', '-s', '-F', '-']
+    # Stage all changes
+    #
+    # Rather than figuring out GIT_DIR properly, we cheat and use "git -C" to
+    # pretend that we're running in base_dir. Of course, the elements of paths
+    # are relative to our actual working directory. Rather than do anything
+    # clever, we just resolve them to absolute paths as we go.
+    abs_paths = [p.resolve() for p in paths]
+    subprocess.run(['git', '-C', base_dir, 'add'] + abs_paths, check=True)
+
+    cmd_commit = ['git', '-C', base_dir, 'commit', '-s', '-F', '-']
     try:
         subprocess.run(cmd_commit,
                        check=True,
                        universal_newlines=True,
                        input=commit_msg)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         log.warning("Unable to create commit. Are there no changes?")
 
 
-def ignore_patterns(base_dir, *patterns):
-    """Similar to shutil.ignore_patterns, but with support for directory excludes."""
-    def _rel_to_base(path, name):
-        return os.path.relpath(os.path.join(path, name), base_dir)
-
-    def _ignore_patterns(path, names):
-        ignored_names = []
-        for pattern in patterns:
-            pattern_matches = [
-                n for n in names
-                if fnmatch.fnmatch(_rel_to_base(path, n), pattern)
-            ]
-            ignored_names.extend(pattern_matches)
-        return set(ignored_names)
-
-    return _ignore_patterns
-
-
-def _cp_from_upstream(src, dest, exclude=[]):
-    shutil.copytree(str(src),
-                    str(dest),
-                    ignore=ignore_patterns(str(src), *exclude))
-
-
 def main(argv):
-    parser = argparse.ArgumentParser(prog="vendor", description=DESC)
+    parser = argparse.ArgumentParser(prog="vendor", description=__doc__)
     parser.add_argument(
         '--update',
         '-U',
@@ -330,116 +572,88 @@ def main(argv):
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    desc_file_path = Path(args.desc_file.name).resolve()
-    vendor_file_base_dir = desc_file_path.parent
+    # Load input files (desc file; lock file) and check syntax etc.
+    try:
+        # Load description file
+        desc = Desc(args.desc_file)
+        lock_file_path = desc.lock_file_path()
 
-    # Precondition: Ensure description file matches our naming rules
-    if not str(desc_file_path).endswith('.vendor.hjson'):
-        log.fatal("Description file names must have a .vendor.hjson suffix.")
+        # Try to load lock file (which might not exist)
+        try:
+            with open(str(lock_file_path), 'r') as lock_file:
+                lock = LockDesc(lock_file)
+        except FileNotFoundError:
+            lock = None
+    except (JsonError, ValueError) as err:
+        log.fatal(str(err))
         raise SystemExit(1)
 
-    # Precondition: Check for a clean working directory when commit is requested
+    # Check for a clean working directory when commit is requested
     if args.commit:
-        if not git_is_clean_workdir(vendor_file_base_dir):
+        if not git_is_clean_workdir(desc.path.parent):
             log.fatal("A clean git working directory is required for "
                       "--commit/-c. git stash your changes and try again.")
             raise SystemExit(1)
 
-    # Load description file
-    try:
-        desc = hjson.loads(args.desc_file.read(), use_decimal=True)
-    except ValueError:
-        raise SystemExit(sys.exc_info()[1])
-    desc['_base_dir'] = vendor_file_base_dir
+    if lock is None and not args.update:
+        log.warning("No lock file at {}, so will update upstream repo."
+                    .format(str(desc.lock_file_path())))
+        args.update = True
 
-
-    desc_file_stem = desc_file_path.name.rsplit('.', 2)[0]
-    lock_file_path = desc_file_path.with_name(desc_file_stem + '.lock.hjson')
-
-    # Importing may use lock file upstream, information, so make a copy now
-    # which we can overwrite with the upstream information from the lock file.
-    import_desc = desc.copy()
-
-    # Load lock file contents (if possible)
-    try:
-        with open(str(lock_file_path), 'r') as f:
-            lock = hjson.loads(f.read(), use_decimal=True)
-
-        # Use lock file information for import
+    # If we have a lock file and we're not in update mode, override desc's
+    # upstream field with the one from the lock file. Keep track of whether the
+    # URL differs (in which case, we can't get a shortlog)
+    changed_url = False
+    if lock is not None:
+        changed_url = desc.upstream.url != lock.upstream.url
         if not args.update:
-            import_desc['upstream'] = lock['upstream'].copy()
-    except FileNotFoundError:
-        lock = None
-        if not args.update:
-            log.warning("Updating upstream repo as lock file %s not found.",
-                        str(lock_file_path))
-            args.update = True
+            desc.upstream = lock.upstream
 
     if args.refresh_patches:
-        refresh_patches(import_desc)
+        refresh_patches(desc)
 
-    clone_dir = Path(tempfile.mkdtemp())
-    try:
+    with tempfile.TemporaryDirectory() as clone_dir:
         # clone upstream repository
-        upstream_new_rev = clone_git_repo(import_desc['upstream']['url'],
-                                          clone_dir,
-                                          rev=import_desc['upstream']['rev'])
+        upstream_new_rev = clone_git_repo(desc.upstream.url, clone_dir, rev=desc.upstream.rev)
 
         if not args.update:
-            if upstream_new_rev != lock['upstream']['rev']:
+            if upstream_new_rev != lock.upstream.rev:
                 log.fatal(
                     "Revision mismatch. Unable to re-clone locked version of repository."
                 )
-                log.fatal("Attempted revision: %s", import_desc['upstream']['rev'])
+                log.fatal("Attempted revision: %s", desc.upstream.rev)
                 log.fatal("Re-cloned revision: %s", upstream_new_rev)
                 raise SystemExit(1)
 
-        upstream_only_subdir = ''
-        clone_subdir = clone_dir
-        if 'only_subdir' in import_desc['upstream']:
-            upstream_only_subdir = import_desc['upstream']['only_subdir']
-            clone_subdir = clone_dir / upstream_only_subdir
+        clone_subdir = Path(clone_dir)
+        if desc.upstream.only_subdir is not None:
+            clone_subdir = clone_subdir / desc.upstream.only_subdir
             if not clone_subdir.is_dir():
-                log.fatal("subdir '%s' does not exist in repo",
-                          upstream_only_subdir)
+                log.fatal("subdir '{}' does not exist in repo"
+                          .format(desc.upstream.only_subdir))
                 raise SystemExit(1)
 
-        # apply patches to upstream sources
-        if 'patch_dir' in import_desc:
-            patches = path_resolve(import_desc['patch_dir'],
-                                   vendor_file_base_dir).glob('*.patch')
-            for patch in sorted(patches):
-                log.info("Applying patch %s" % str(patch))
-                apply_patch(clone_subdir, patch)
-
-        # import selected (patched) files from upstream repo
-        exclude_files = []
-        if 'exclude_from_upstream' in import_desc:
-            exclude_files += import_desc['exclude_from_upstream']
-        exclude_files += EXCLUDE_ALWAYS
-
-        import_from_upstream(
-            clone_subdir, path_resolve(import_desc['target_dir'],
-                                       vendor_file_base_dir), exclude_files)
+        # copy selected files from upstream repo and apply patches as necessary
+        desc.import_from_upstream(clone_subdir)
 
         # get shortlog
-        get_shortlog = bool(args.update)
-        if lock is None:
-            get_shortlog = False
-            log.warning("No lock file %s: unable to summarize changes.", str(lock_file_path))
-        elif lock['upstream']['url'] != import_desc['upstream']['url']:
-            get_shortlog = False
-            log.warning(
-                "The repository URL changed since the last run. Unable to get log of changes."
-            )
+        get_shortlog = args.update
+        if args.update:
+            if lock is None:
+                get_shortlog = False
+                log.warning("No lock file %s: unable to summarize changes.", str(lock_file_path))
+            elif changed_url:
+                get_shortlog = False
+                log.warning("The repository URL changed since the last run. "
+                            "Unable to get log of changes.")
 
         shortlog = None
         if get_shortlog:
-            shortlog = produce_shortlog(clone_subdir, lock['upstream']['rev'],
-                                        upstream_new_rev)
+            shortlog = produce_shortlog(clone_subdir, desc.mapping,
+                                        lock.upstream.rev, upstream_new_rev)
 
             # Ensure fully-qualified issue/PR references for GitHub repos
-            gh_repo_info = github_parse_url(import_desc['upstream']['url'])
+            gh_repo_info = github_parse_url(desc.upstream.url)
             if gh_repo_info:
                 shortlog = github_qualify_references(shortlog, gh_repo_info[0],
                                                      gh_repo_info[1])
@@ -449,12 +663,12 @@ def main(argv):
 
         # write lock file
         if args.update:
-            lock = {}
-            lock['upstream'] = import_desc['upstream'].copy()
-            lock['upstream']['rev'] = upstream_new_rev
+            lock_data = {}
+            lock_data['upstream'] = desc.upstream.as_dict()
+            lock_data['upstream']['rev'] = upstream_new_rev
             with open(str(lock_file_path), 'w', encoding='UTF-8') as f:
                 f.write(LOCK_FILE_HEADER)
-                hjson.dump(lock, f)
+                hjson.dump(lock_data, f)
                 f.write("\n")
                 log.info("Wrote lock file %s", str(lock_file_path))
 
@@ -462,17 +676,17 @@ def main(argv):
         if args.commit:
             sha_short = git_get_short_rev(clone_subdir, upstream_new_rev)
 
-            repo_info = github_parse_url(import_desc['upstream']['url'])
+            repo_info = github_parse_url(desc.upstream.url)
             if repo_info is not None:
                 sha_short = "%s/%s@%s" % (repo_info[0], repo_info[1],
                                           sha_short)
 
-            commit_msg_subject = 'Update %s to %s' % (import_desc['name'], sha_short)
-            subdir_msg = ' '
-            if upstream_only_subdir:
-                subdir_msg = ' subdir %s in ' % upstream_only_subdir
-            intro = 'Update code from%supstream repository %s to revision %s' % (
-                subdir_msg, import_desc['upstream']['url'], upstream_new_rev)
+            commit_msg_subject = 'Update %s to %s' % (desc.name, sha_short)
+            intro = ('Update code from {}upstream repository {} to revision {}'
+                     .format(('' if desc.upstream.only_subdir is None else
+                              'subdir {} in '.format(desc.upstream.only_subdir)),
+                             desc.upstream.url,
+                             upstream_new_rev))
             commit_msg_body = textwrap.fill(intro, width=70)
 
             if shortlog:
@@ -482,17 +696,12 @@ def main(argv):
             commit_msg = commit_msg_subject + "\n\n" + commit_msg_body
 
             commit_paths = []
-            commit_paths.append(
-                path_resolve(import_desc['target_dir'], vendor_file_base_dir))
+            commit_paths.append(desc.target_dir)
             if args.refresh_patches:
-                commit_paths.append(
-                    path_resolve(import_desc['patch_dir'], vendor_file_base_dir))
+                commit_paths.append(desc.patch_dir)
             commit_paths.append(lock_file_path)
 
-            git_add_commit(vendor_file_base_dir, commit_paths, commit_msg)
-
-    finally:
-        shutil.rmtree(str(clone_dir), ignore_errors=True)
+            git_add_commit(commit_paths, commit_msg)
 
     log.info('Import finished')
 

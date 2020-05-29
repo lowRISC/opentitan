@@ -148,6 +148,34 @@ $ make install
 
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
 
+## Verible
+
+Verible is an open source  SystemVerilog style linter and formatting tool.
+The style linter is relatively mature and we use it as part of our [RTL design flow]({{< relref "doc/ug/design" >}}).
+The formatter is still under active development, and hence its usage is more experimental in OpenTitan.
+
+You can download and build Verible from scratch as explained on the [Verible GitHub page](https://github.com/google/verible/).
+But since this requires the Bazel build system the recommendation is to download and install a pre-built binary as described below.
+
+### Install Verible
+
+Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
+The example below is for Ubuntu-16.04:
+
+```console
+$ export VERIBLE_VERSION={{< tool_version "verible" >}}
+
+$ wget https://github.com/google/verible/releases/download/v${VERIBLE_VERSION}/verible-v${VERIBLE_VERSION}-Ubuntu-16.04-xenial-x86_64.tar.gz
+$ tar -xf verible-v${VERIBLE_VERSION}-Ubuntu-16.04-xenial-x86_64.tar.gz
+
+$ sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
+$ sudo mv verible-v${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
+```
+
+After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.
+
+Note that we currently use version {{< tool_version "verible" >}}, but it is expected that this version is going to be updated frequently, since the tool is under active develpment.
+
 ## Xilinx Vivado
 
 ### About Xilinx Vivado

@@ -7,6 +7,8 @@
   `define RVFI
 `endif
 
+`include "prim_assert.sv"
+
 /**
  * Top level module of the ibex RISC-V core
  */
@@ -78,6 +80,7 @@ module ibex_core #(
     output logic        rvfi_halt,
     output logic        rvfi_intr,
     output logic [ 1:0] rvfi_mode,
+    output logic [ 1:0] rvfi_ixl,
     output logic [ 4:0] rvfi_rs1_addr,
     output logic [ 4:0] rvfi_rs2_addr,
     output logic [ 4:0] rvfi_rs3_addr,
@@ -102,10 +105,12 @@ module ibex_core #(
 
   import ibex_pkg::*;
 
-  localparam int unsigned PMP_NUM_CHAN  = 2;
-  localparam bit          DataIndTiming = SecureIbex;
+  localparam int unsigned PMP_NUM_CHAN      = 2;
+  localparam bit          DataIndTiming     = SecureIbex;
+  localparam bit          DummyInstructions = SecureIbex;
 
   // IF/ID signals
+  logic        dummy_instr_id;
   logic        instr_valid_id;
   logic        instr_new_id;
   logic [31:0] instr_rdata_id;                 // Instruction sampled inside IF stage
@@ -124,12 +129,17 @@ module ibex_core #(
   logic        imd_val_we_ex;
 
   logic        data_ind_timing;
+  logic        dummy_instr_en;
+  logic [2:0]  dummy_instr_mask;
+  logic        dummy_instr_seed_en;
+  logic [31:0] dummy_instr_seed;
   logic        icache_enable;
   logic        icache_inval;
 
   logic        instr_first_cycle_id;
   logic        instr_valid_clear;
   logic        pc_set;
+  logic        pc_set_spec;
   pc_sel_e     pc_mux_id;                      // Mux selector for next PC
   exc_pc_sel_e exc_pc_mux_id;                  // Mux selector for exception PC
   exc_cause_e  exc_cause;                      // Exception cause
@@ -184,7 +194,8 @@ module ibex_core #(
   // Multiplier Control
   logic        mult_en_ex;
   logic        div_en_ex;
-  logic        multdiv_sel_ex;
+  logic        mult_sel_ex;
+  logic        div_sel_ex;
   md_op_e      multdiv_operator_ex;
   logic [1:0]  multdiv_signed_mode_ex;
   logic [31:0] multdiv_operand_a_ex;
@@ -291,22 +302,16 @@ module ibex_core #(
   logic        rvfi_set_trap_pc_d;
   logic        rvfi_set_trap_pc_q;
   logic [31:0] rvfi_insn_id;
-  logic [4:0]  rvfi_rs1_addr_id;
   logic [4:0]  rvfi_rs1_addr_d;
   logic [4:0]  rvfi_rs1_addr_q;
-  logic [4:0]  rvfi_rs2_addr_id;
   logic [4:0]  rvfi_rs2_addr_d;
   logic [4:0]  rvfi_rs2_addr_q;
-  logic [4:0]  rvfi_rs3_addr_id;
   logic [4:0]  rvfi_rs3_addr_d;
   logic [31:0] rvfi_rs1_data_d;
-  logic [31:0] rvfi_rs1_data_id;
   logic [31:0] rvfi_rs1_data_q;
   logic [31:0] rvfi_rs2_data_d;
-  logic [31:0] rvfi_rs2_data_id;
   logic [31:0] rvfi_rs2_data_q;
   logic [31:0] rvfi_rs3_data_d;
-  logic [31:0] rvfi_rs3_data_id;
   logic [4:0]  rvfi_rd_addr_wb;
   logic [4:0]  rvfi_rd_addr_q;
   logic [4:0]  rvfi_rd_addr_d;
@@ -321,6 +326,8 @@ module ibex_core #(
   logic [31:0] rvfi_mem_wdata_q;
   logic [31:0] rvfi_mem_addr_d;
   logic [31:0] rvfi_mem_addr_q;
+  logic        rf_ren_a;
+  logic        rf_ren_b;
 `endif
 
   //////////////////////
@@ -361,10 +368,11 @@ module ibex_core #(
   //////////////
 
   ibex_if_stage #(
-      .DmHaltAddr       ( DmHaltAddr       ),
-      .DmExceptionAddr  ( DmExceptionAddr  ),
-      .ICache           ( ICache           ),
-      .ICacheECC        ( ICacheECC        )
+      .DmHaltAddr        ( DmHaltAddr        ),
+      .DmExceptionAddr   ( DmExceptionAddr   ),
+      .DummyInstructions ( DummyInstructions ),
+      .ICache            ( ICache            ),
+      .ICacheECC         ( ICacheECC         )
   ) if_stage_i (
       .clk_i                    ( clk                    ),
       .rst_ni                   ( rst_ni                 ),
@@ -391,15 +399,21 @@ module ibex_core #(
       .instr_fetch_err_o        ( instr_fetch_err        ),
       .instr_fetch_err_plus2_o  ( instr_fetch_err_plus2  ),
       .illegal_c_insn_id_o      ( illegal_c_insn_id      ),
+      .dummy_instr_id_o         ( dummy_instr_id         ),
       .pc_if_o                  ( pc_if                  ),
       .pc_id_o                  ( pc_id                  ),
 
       // control signals
       .instr_valid_clear_i      ( instr_valid_clear      ),
       .pc_set_i                 ( pc_set                 ),
+      .pc_set_spec_i            ( pc_set_spec            ),
       .pc_mux_i                 ( pc_mux_id              ),
       .exc_pc_mux_i             ( exc_pc_mux_id          ),
       .exc_cause                ( exc_cause              ),
+      .dummy_instr_en_i         ( dummy_instr_en         ),
+      .dummy_instr_mask_i       ( dummy_instr_mask       ),
+      .dummy_instr_seed_en_i    ( dummy_instr_seed_en    ),
+      .dummy_instr_seed_i       ( dummy_instr_seed       ),
       .icache_enable_i          ( icache_enable          ),
       .icache_inval_i           ( icache_inval           ),
 
@@ -461,6 +475,7 @@ module ibex_core #(
       .id_in_ready_o                ( id_in_ready              ),
       .instr_req_o                  ( instr_req_int            ),
       .pc_set_o                     ( pc_set                   ),
+      .pc_set_spec_o                ( pc_set_spec              ),
       .pc_mux_o                     ( pc_mux_id                ),
       .exc_pc_mux_o                 ( exc_pc_mux_id            ),
       .exc_cause_o                  ( exc_cause                ),
@@ -491,7 +506,8 @@ module ibex_core #(
 
       .mult_en_ex_o                 ( mult_en_ex               ),
       .div_en_ex_o                  ( div_en_ex                ),
-      .multdiv_sel_ex_o             ( multdiv_sel_ex           ),
+      .mult_sel_ex_o                ( mult_sel_ex              ),
+      .div_sel_ex_o                 ( div_sel_ex               ),
       .multdiv_operator_ex_o        ( multdiv_operator_ex      ),
       .multdiv_signed_mode_ex_o     ( multdiv_signed_mode_ex   ),
       .multdiv_operand_a_ex_o       ( multdiv_operand_a_ex     ),
@@ -553,6 +569,10 @@ module ibex_core #(
       .rf_rdata_a_i                 ( rf_rdata_a               ),
       .rf_raddr_b_o                 ( rf_raddr_b               ),
       .rf_rdata_b_i                 ( rf_rdata_b               ),
+`ifdef RVFI
+      .rf_ren_a_o                   ( rf_ren_a                 ),
+      .rf_ren_b_o                   ( rf_ren_b                 ),
+`endif
       .rf_waddr_id_o                ( rf_waddr_id              ),
       .rf_wdata_id_o                ( rf_wdata_id              ),
       .rf_we_id_o                   ( rf_we_id                 ),
@@ -566,6 +586,7 @@ module ibex_core #(
       .ready_wb_i                   ( ready_wb                 ),
       .outstanding_load_wb_i        ( outstanding_load_wb      ),
       .outstanding_store_wb_i       ( outstanding_store_wb     ),
+
       // Performance Counters
       .perf_jump_o                  ( perf_jump                ),
       .perf_branch_o                ( perf_branch              ),
@@ -603,11 +624,13 @@ module ibex_core #(
       .multdiv_operator_i       ( multdiv_operator_ex      ),
       .mult_en_i                ( mult_en_ex               ),
       .div_en_i                 ( div_en_ex                ),
-      .multdiv_sel_i            ( multdiv_sel_ex           ),
+      .mult_sel_i               ( mult_sel_ex              ),
+      .div_sel_i                ( div_sel_ex               ),
       .multdiv_signed_mode_i    ( multdiv_signed_mode_ex   ),
       .multdiv_operand_a_i      ( multdiv_operand_a_ex     ),
       .multdiv_operand_b_i      ( multdiv_operand_b_ex     ),
       .multdiv_ready_id_i       ( multdiv_ready_id         ),
+      .data_ind_timing_i        ( data_ind_timing          ),
 
       // Intermediate value register
       .imd_val_we_o             ( imd_val_we_ex            ),
@@ -674,10 +697,7 @@ module ibex_core #(
       .busy_o                ( lsu_busy            ),
 
       .perf_load_o           ( perf_load           ),
-      .perf_store_o          ( perf_store          ),
-
-      .illegal_insn_id_i     ( illegal_insn_id     ),
-      .instr_valid_id_i      ( instr_valid_id      )
+      .perf_store_o          ( perf_store          )
   );
 
   ibex_wb_stage #(
@@ -714,24 +734,26 @@ module ibex_core #(
   );
 
   ibex_register_file #(
-      .RV32E(RV32E),
-      .DataWidth(32)
+      .RV32E             (RV32E),
+      .DataWidth         (32),
+      .DummyInstructions (DummyInstructions)
   ) register_file_i (
-      .clk_i        ( clk_i        ),
-      .rst_ni       ( rst_ni       ),
+      .clk_i            ( clk_i          ),
+      .rst_ni           ( rst_ni         ),
 
-      .test_en_i    ( test_en_i    ),
+      .test_en_i        ( test_en_i      ),
+      .dummy_instr_id_i ( dummy_instr_id ),
 
       // Read port a
-      .raddr_a_i    ( rf_raddr_a   ),
-      .rdata_a_o    ( rf_rdata_a   ),
+      .raddr_a_i        ( rf_raddr_a     ),
+      .rdata_a_o        ( rf_rdata_a     ),
       // Read port b
-      .raddr_b_i    ( rf_raddr_b   ),
-      .rdata_b_o    ( rf_rdata_b   ),
+      .raddr_b_i        ( rf_raddr_b     ),
+      .rdata_b_o        ( rf_rdata_b     ),
       // write port
-      .waddr_a_i    ( rf_waddr_wb  ),
-      .wdata_a_i    ( rf_wdata_wb  ),
-      .we_a_i       ( rf_we_wb     )
+      .waddr_a_i        ( rf_waddr_wb    ),
+      .wdata_a_i        ( rf_wdata_wb    ),
+      .we_a_i           ( rf_we_wb       )
   );
 
   // Explict INC_ASSERT block to avoid unused signal lint warnings were asserts are not included
@@ -775,12 +797,6 @@ module ibex_core #(
   // RF (Register File) //
   ////////////////////////
 `ifdef RVFI
-  assign rvfi_rs1_addr_id = rf_raddr_a;
-  assign rvfi_rs1_data_id = id_stage_i.rf_rdata_a_fwd;
-  assign rvfi_rs2_addr_id = rf_raddr_b;
-  assign rvfi_rs2_data_id = id_stage_i.rf_rdata_b_fwd;
-  assign rvfi_rs3_addr_id = rf_raddr_a;
-  assign rvfi_rs3_data_id = id_stage_i.rf_rdata_a_fwd;
   assign rvfi_rd_addr_wb  = rf_waddr_wb;
   assign rvfi_rd_wdata_wb = rf_we_wb ? rf_wdata_wb : rf_wdata_lsu;
   assign rvfi_rd_we_wb    = rf_we_wb | rf_we_lsu;
@@ -795,16 +811,17 @@ module ibex_core #(
   assign csr_addr   = csr_num_e'(csr_access ? alu_operand_b_ex[11:0] : 12'b0);
 
   ibex_cs_registers #(
-      .DbgTriggerEn     ( DbgTriggerEn     ),
-      .DataIndTiming    ( DataIndTiming    ),
-      .ICache           ( ICache           ),
-      .MHPMCounterNum   ( MHPMCounterNum   ),
-      .MHPMCounterWidth ( MHPMCounterWidth ),
-      .PMPEnable        ( PMPEnable        ),
-      .PMPGranularity   ( PMPGranularity   ),
-      .PMPNumRegions    ( PMPNumRegions    ),
-      .RV32E            ( RV32E            ),
-      .RV32M            ( RV32M            )
+      .DbgTriggerEn      ( DbgTriggerEn      ),
+      .DataIndTiming     ( DataIndTiming     ),
+      .DummyInstructions ( DummyInstructions ),
+      .ICache            ( ICache            ),
+      .MHPMCounterNum    ( MHPMCounterNum    ),
+      .MHPMCounterWidth  ( MHPMCounterWidth  ),
+      .PMPEnable         ( PMPEnable         ),
+      .PMPGranularity    ( PMPGranularity    ),
+      .PMPNumRegions     ( PMPNumRegions     ),
+      .RV32E             ( RV32E             ),
+      .RV32M             ( RV32M             )
   ) cs_registers_i (
       .clk_i                   ( clk                      ),
       .rst_ni                  ( rst_ni                   ),
@@ -859,6 +876,10 @@ module ibex_core #(
       .pc_wb_i                 ( pc_wb                    ),
 
       .data_ind_timing_o       ( data_ind_timing          ),
+      .dummy_instr_en_o        ( dummy_instr_en           ),
+      .dummy_instr_mask_o      ( dummy_instr_mask         ),
+      .dummy_instr_seed_en_o   ( dummy_instr_seed_en      ),
+      .dummy_instr_seed_o      ( dummy_instr_seed         ),
       .icache_enable_o         ( icache_enable            ),
 
       .csr_save_if_i           ( csr_save_if              ),
@@ -892,7 +913,7 @@ module ibex_core #(
       CSR_OP_SET,
       CSR_OP_CLEAR
       })
-  `ASSERT_KNOWN_IF(IbexCsrWdataIntKnown, cs_registers_i.csr_wdata_int, csr_access & instr_valid_id)
+  `ASSERT_KNOWN_IF(IbexCsrWdataIntKnown, cs_registers_i.csr_wdata_int, csr_op_en)
 
   if (PMPEnable) begin : g_pmp
     logic [33:0] pmp_req_addr [PMP_NUM_CHAN];
@@ -953,6 +974,7 @@ module ibex_core #(
   logic        rvfi_stage_halt      [RVFI_STAGES-1:0];
   logic        rvfi_stage_intr      [RVFI_STAGES-1:0];
   logic [ 1:0] rvfi_stage_mode      [RVFI_STAGES-1:0];
+  logic [ 1:0] rvfi_stage_ixl       [RVFI_STAGES-1:0];
   logic [ 4:0] rvfi_stage_rs1_addr  [RVFI_STAGES-1:0];
   logic [ 4:0] rvfi_stage_rs2_addr  [RVFI_STAGES-1:0];
   logic [ 4:0] rvfi_stage_rs3_addr  [RVFI_STAGES-1:0];
@@ -978,6 +1000,7 @@ module ibex_core #(
   assign rvfi_halt      = rvfi_stage_halt     [RVFI_STAGES-1];
   assign rvfi_intr      = rvfi_stage_intr     [RVFI_STAGES-1];
   assign rvfi_mode      = rvfi_stage_mode     [RVFI_STAGES-1];
+  assign rvfi_ixl       = rvfi_stage_ixl      [RVFI_STAGES-1];
   assign rvfi_rs1_addr  = rvfi_stage_rs1_addr [RVFI_STAGES-1];
   assign rvfi_rs2_addr  = rvfi_stage_rs2_addr [RVFI_STAGES-1];
   assign rvfi_rs3_addr  = rvfi_stage_rs3_addr [RVFI_STAGES-1];
@@ -1003,7 +1026,8 @@ module ibex_core #(
     // awaiting instruction retirement and RF Write data/Mem read data whilst instruction is in WB
     // So first stage becomes valid when instruction leaves ID/EX stage and remains valid until
     // instruction leaves WB
-    assign rvfi_stage_valid_d[0] = instr_id_done | (rvfi_stage_valid[0] & ~instr_done_wb);
+    assign rvfi_stage_valid_d[0] = (instr_id_done & ~dummy_instr_id) |
+                                   (rvfi_stage_valid[0] & ~instr_done_wb);
     // Second stage is output stage so simple valid cycle after instruction leaves WB (and so has
     // retired)
     assign rvfi_stage_valid_d[1] = instr_done_wb;
@@ -1023,7 +1047,7 @@ module ibex_core #(
   end else begin
     // Without writeback stage first RVFI stage is output stage so simply valid the cycle after
     // instruction leaves ID/EX (and so has retired)
-    assign rvfi_stage_valid_d[0] = instr_id_done;
+    assign rvfi_stage_valid_d[0] = instr_id_done & ~dummy_instr_id;
     // Without writeback stage signal new instr_new_wb when instruction enters ID/EX to correctly
     // setup register write signals
     assign rvfi_instr_new_wb = instr_new_id;
@@ -1038,6 +1062,7 @@ module ibex_core #(
         rvfi_stage_order[i]     <= '0;
         rvfi_stage_insn[i]      <= '0;
         rvfi_stage_mode[i]      <= {PRIV_LVL_M};
+        rvfi_stage_ixl[i]       <= CSR_MISA_MXL;
         rvfi_stage_rs1_addr[i]  <= '0;
         rvfi_stage_rs2_addr[i]  <= '0;
         rvfi_stage_rs3_addr[i]  <= '0;
@@ -1062,14 +1087,15 @@ module ibex_core #(
             rvfi_stage_halt[i]      <= '0;
             rvfi_stage_trap[i]      <= illegal_insn_id;
             rvfi_stage_intr[i]      <= rvfi_intr_d;
-            rvfi_stage_order[i]     <= rvfi_order + 64'(rvfi_valid);
+            rvfi_stage_order[i]     <= rvfi_stage_order[i] + 64'(rvfi_stage_valid_d[i]);
             rvfi_stage_insn[i]      <= rvfi_insn_id;
             rvfi_stage_mode[i]      <= {priv_mode_id};
+            rvfi_stage_ixl[i]       <= CSR_MISA_MXL;
             rvfi_stage_rs1_addr[i]  <= rvfi_rs1_addr_d;
             rvfi_stage_rs2_addr[i]  <= rvfi_rs2_addr_d;
             rvfi_stage_rs3_addr[i]  <= rvfi_rs3_addr_d;
             rvfi_stage_pc_rdata[i]  <= pc_id;
-            rvfi_stage_pc_wdata[i]  <= pc_if;
+            rvfi_stage_pc_wdata[i]  <= pc_set ? branch_target_ex : pc_if;
             rvfi_stage_mem_rmask[i] <= rvfi_mem_mask_int;
             rvfi_stage_mem_wmask[i] <= data_we_o ? rvfi_mem_mask_int : 4'b0000;
             rvfi_stage_rs1_rdata[i] <= rvfi_rs1_data_d;
@@ -1089,6 +1115,7 @@ module ibex_core #(
             rvfi_stage_order[i]     <= rvfi_stage_order[i-1];
             rvfi_stage_insn[i]      <= rvfi_stage_insn[i-1];
             rvfi_stage_mode[i]      <= rvfi_stage_mode[i-1];
+            rvfi_stage_ixl[i]       <= rvfi_stage_ixl[i-1];
             rvfi_stage_rs1_addr[i]  <= rvfi_stage_rs1_addr[i-1];
             rvfi_stage_rs2_addr[i]  <= rvfi_stage_rs2_addr[i-1];
             rvfi_stage_rs3_addr[i]  <= rvfi_stage_rs3_addr[i-1];
@@ -1099,7 +1126,6 @@ module ibex_core #(
             rvfi_stage_rs1_rdata[i] <= rvfi_stage_rs1_rdata[i-1];
             rvfi_stage_rs2_rdata[i] <= rvfi_stage_rs2_rdata[i-1];
             rvfi_stage_rs3_rdata[i] <= rvfi_stage_rs3_rdata[i-1];
-            rvfi_stage_rd_addr[i]   <= rvfi_stage_rd_addr[i-1];
             rvfi_stage_mem_wdata[i] <= rvfi_stage_mem_wdata[i-1];
             rvfi_stage_mem_addr[i]  <= rvfi_stage_mem_addr[i-1];
 
@@ -1170,10 +1196,10 @@ module ibex_core #(
   // Source register 3 is read in the second instruction cycle.
   always_comb begin
     if (instr_first_cycle_id) begin
-      rvfi_rs1_data_d = rvfi_rs1_data_id;
-      rvfi_rs1_addr_d = rvfi_rs1_addr_id;
-      rvfi_rs2_data_d = rvfi_rs2_data_id;
-      rvfi_rs2_addr_d = rvfi_rs2_addr_id;
+      rvfi_rs1_data_d = rf_ren_a ? multdiv_operand_a_ex : '0;
+      rvfi_rs1_addr_d = rf_ren_a ? rf_raddr_a : '0;
+      rvfi_rs2_data_d = rf_ren_b ? multdiv_operand_b_ex : '0;
+      rvfi_rs2_addr_d = rf_ren_b ? rf_raddr_b : '0;
       rvfi_rs3_data_d = '0;
       rvfi_rs3_addr_d = '0;
     end else begin
@@ -1181,8 +1207,8 @@ module ibex_core #(
       rvfi_rs1_addr_d = rvfi_rs1_addr_q;
       rvfi_rs2_data_d = rvfi_rs2_data_q;
       rvfi_rs2_addr_d = rvfi_rs2_addr_q;
-      rvfi_rs3_data_d = rvfi_rs3_data_id;
-      rvfi_rs3_addr_d = rvfi_rs3_addr_id;
+      rvfi_rs3_data_d = multdiv_operand_a_ex;
+      rvfi_rs3_addr_d = rf_raddr_a;
     end
   end
   always_ff @(posedge clk or negedge rst_ni) begin

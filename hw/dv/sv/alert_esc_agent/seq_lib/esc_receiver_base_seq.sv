@@ -14,14 +14,16 @@ class esc_receiver_base_seq extends dv_base_seq #(
 
   rand bit int_err;
   rand bit r_esc_rsp;
+  rand bit standalone_int_err;
 
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting escalator receiver transfer"), UVM_HIGH)
     req = alert_esc_seq_item::type_id::create("req");
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-        r_esc_rsp  == local::r_esc_rsp;
-        int_err    == local::int_err;
+        r_esc_rsp          == local::r_esc_rsp;
+        int_err            == local::int_err;
+        standalone_int_err == local::standalone_int_err;
     )
     `uvm_info(`gfn, $sformatf("seq_item: esc_rsp=%0b, int_err=%0b",
         req.r_esc_rsp, req.int_err), UVM_MEDIUM)

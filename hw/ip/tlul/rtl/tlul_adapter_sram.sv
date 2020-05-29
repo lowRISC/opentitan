@@ -53,7 +53,6 @@ module tlul_adapter_sram #(
   typedef struct packed {
     req_op_e                    op ;
     logic                       error ;
-    logic [top_pkg::TL_DW-1:0]  mask ;
     logic [top_pkg::TL_SZW-1:0] size ;
     logic [top_pkg::TL_AIW-1:0] source ;
   } req_t ;
@@ -74,6 +73,10 @@ module tlul_adapter_sram #(
   logic reqfifo_rvalid, reqfifo_rready;
   req_t reqfifo_wdata,  reqfifo_rdata;
 
+  logic [top_pkg::TL_DBW-1:0] maskfifo_wdata, maskfifo_rdata;
+  logic maskfifo_wvalid, maskfifo_wready;
+  logic maskfifo_rready;
+
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
   rsp_t rspfifo_wdata,  rspfifo_rdata;
@@ -84,10 +87,10 @@ module tlul_adapter_sram #(
   logic rd_vld_error;
   logic tlul_error;     // Error from `tlul_err` module
 
-  logic a_ack, d_ack, unused_sram_ack;
+  logic a_ack, d_ack, sram_ack;
   assign a_ack    = tl_i.a_valid & tl_o.a_ready ;
   assign d_ack    = tl_o.d_valid & tl_i.d_ready ;
-  assign unused_sram_ack = req_o        & gnt_i ;
+  assign sram_ack = req_o        & gnt_i ;
 
   // Valid handling
   logic d_valid, d_error;
@@ -133,9 +136,9 @@ module tlul_adapter_sram #(
       d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
                  ? rspfifo_rdata.data : '0,
       d_user   : '0,
-      d_error  : d_error,
+      d_error  : d_valid && d_error,
 
-      a_ready  : (gnt_i | error_internal) & reqfifo_wready
+      a_ready  : (gnt_i | error_internal) & reqfifo_wready & maskfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
@@ -159,7 +162,7 @@ module tlul_adapter_sram #(
       // only forward valid data here.
       wdata_o[8*i+:8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
       // mask for read data
-      rmask[8*i+:8] = {8{reqfifo_rdata.mask[i]}};
+      rmask[8*i+:8] = {8{maskfifo_rdata[i]}};
     end
   end
 
@@ -197,17 +200,21 @@ module tlul_adapter_sram #(
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
   assign reqfifo_wdata  = '{
     op:     (tl_i.a_opcode != Get) ? OpWrite : OpRead, // To return AccessAck for opcode error
-    mask:   tl_i.a_mask,
     error:  error_internal,
     size:   tl_i.a_size,
     source: tl_i.a_source
   }; // Store the request only. Doesn't have to store data
   assign reqfifo_rready = d_ack ;
 
+  // push together with ReqFIFO, pop upon returning read
+  assign maskfifo_wdata = tl_i.a_mask;
+  assign maskfifo_wvalid = sram_ack & ~we_o;
+  assign maskfifo_rready = rspfifo_wvalid;
+
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
   assign rspfifo_wdata  = '{
     data:  rdata_i & rmask, // make sure only requested bytes are forwarded
-    error: rerror_i[1]  // Only care for Uncorrectable error
+    error: rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
                         ? reqfifo_rready : 1'b0 ;
@@ -244,6 +251,27 @@ module tlul_adapter_sram #(
     .rvalid (reqfifo_rvalid),
     .rready (reqfifo_rready),
     .rdata  (reqfifo_rdata)
+  );
+
+  // MaskFIFO:
+  //    While the ReqFIFO holds the request until it is sent back via TL-UL, the
+  //    MaskFIFO only needs to hold the mask value until the read data returns
+  //    from memory.
+  prim_fifo_sync #(
+    .Width  ($bits(tl_i.a_mask)),
+    .Pass   (1'b0),
+    .Depth  (Outstanding)
+  ) u_maskfifo (
+    .clk_i,
+    .rst_ni,
+    .clr_i  (1'b0),
+    .wvalid (maskfifo_wvalid),
+    .wready (maskfifo_wready),
+    .wdata  (maskfifo_wdata),
+    .depth  (),
+    .rvalid (),
+    .rready (maskfifo_rready),
+    .rdata  (maskfifo_rdata)
   );
 
   // Rationale having #Outstanding depth in response FIFO.

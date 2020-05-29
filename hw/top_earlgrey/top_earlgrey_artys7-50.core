@@ -21,15 +21,15 @@ filesets:
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
-  # --SRAM_INIT_FILE=$PWD/sw/device/examples/hello_world/hello_world.vmem
+  # --BootRomInitFile=$PWD/build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem
   # XXX: The VMEM file should be added to the sources of the Vivado project to
   # make the Vivado dependency tracking work. However this requires changes to
   # fusesoc first.
-  SRAM_INIT_FILE:
+  BootRomInitFile:
     datatype: str
-    description: SRAM initialization file in vmem hex format
+    description: Boot ROM initialization file in 32 bit vmem hex format
     default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
-    paramtype: vlogdefine
+    paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
     datatype: str
@@ -44,7 +44,7 @@ targets:
       - files_constraints
     toplevel: top_earlgrey_artys7
     parameters:
-      - SRAM_INIT_FILE
+      - BootRomInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:

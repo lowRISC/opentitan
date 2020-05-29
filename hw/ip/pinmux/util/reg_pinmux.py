@@ -19,18 +19,38 @@ def main():
                         type=argparse.FileType('r'),
                         default=sys.stdin,
                         help='input template file')
-    parser.add_argument('--n_periph_in',
+    parser.add_argument('--n_mio_periph_in',
                         type=int,
-                        help='Number of peripheral inputs',
-                        default = 16)
-    parser.add_argument('--n_periph_out',
+                        help='Number of muxed peripheral inputs',
+                        default=32)
+    parser.add_argument('--n_mio_periph_out',
                         type=int,
-                        help='Number of peripheral outputs',
-                        default = 16)
+                        help='Number of muxed peripheral outputs',
+                        default=32)
     parser.add_argument('--n_mio_pads',
                         type=int,
                         help='Number of muxed IO pads',
-                        default = 8)
+                        default=32)
+    parser.add_argument('--n_dio_periph_in',
+                        type=int,
+                        help='Number of dedicated peripheral inputs',
+                        default=16)
+    parser.add_argument('--n_dio_periph_out',
+                        type=int,
+                        help='Number of dedicated peripheral outputs',
+                        default=16)
+    parser.add_argument('--n_dio_pads',
+                        type=int,
+                        help='Number of dedicated IO pads',
+                        default=16)
+    parser.add_argument('--n_wkup_detect',
+                        type=int,
+                        help='Number of wakeup condition detectors',
+                        default=8)
+    parser.add_argument('--wkup_cnt_width',
+                        type=int,
+                        help='With of wakeup counters',
+                        default=8)
 
     args = parser.parse_args()
 
@@ -39,9 +59,14 @@ def main():
 
     reg_tpl = Template(args.input.read())
     out.write(
-        reg_tpl.render(n_periph_in=args.n_periph_in,
-                       n_periph_out=args.n_periph_out,
-                       n_mio_pads=args.n_mio_pads))
+        reg_tpl.render(n_mio_periph_in=args.n_mio_periph_in,
+                       n_mio_periph_out=args.n_mio_periph_out,
+                       n_mio_pads=args.n_mio_pads,
+                       n_dio_periph_in=args.n_dio_periph_in,
+                       n_dio_periph_out=args.n_dio_periph_out,
+                       n_dio_pads=args.n_dio_pads,
+                       n_wkup_detect=args.n_wkup_detect,
+                       wkup_cnt_width=args.wkup_cnt_width))
 
     print(out.getvalue())
 

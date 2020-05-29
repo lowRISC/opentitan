@@ -125,8 +125,7 @@ Please follow the steps shown below.
   $ ./meson_init.sh
   $ ninja -C build-out sw/device/examples/hello_world/hello_world_export_fpga_nexysvideo
   $ ninja -C build-out sw/host/spiflash/spiflash_export
-  $ build-bin/sw/host/spiflash/spiflash \
-      --input build-bin/sw/device/fpga/examples/hello_world/hello_world_fpga_nexysvideo.bin
+  $ build-bin/sw/host/spiflash/spiflash --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
   ```
 
   which should report how the binary is split into frames:

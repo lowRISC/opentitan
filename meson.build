@@ -40,6 +40,15 @@ optimize_size_args = [
   '-fvisibility=hidden', # Hide symbols by default
 ]
 
+if meson.get_compiler('c').has_argument('-Wa,--no-pad-sections')
+    # Don't pad assembly sections. This was originally added to avoid sections
+    # being padded to the alignment size. Specifically, .vectors was being
+    # padded to 256 bytes when aligning to that value, when it only needed to be
+    # 128 bytes long. Clang doesn't do this padding, so restricting this option
+    # to GCC doesn't waste space when compiling with Clang.
+    optimize_size_args += '-Wa,--no-pad-sections'
+endif
+
 # The following flags are applied to *all* builds, both cross builds
 # and native builds.
 add_project_arguments(
@@ -63,22 +72,20 @@ add_project_arguments(
 
 # The following flags are applied only to cross builds
 add_project_arguments(
-  # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib', '-nostdinc',
-  '-static', # Only link static files
+  '-nostdinc', # Do not use standard system headers
   optimize_size_args,
   language: 'cpp', native: false)
 add_project_arguments(
-  # Do not use standard system startup files or libraries
-  '-nostartfiles', '-nostdlib', '-nostdinc',
-  '-static', # Only link static files
+  '-nostdinc', # Do not use standard system headers
   optimize_size_args,
   language: 'c', native: false)
 add_project_link_arguments(
-  '-nostdlib', # Do not use standard system startup files or libraries
+  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
+  '-static', # Only link static files
   language: 'cpp', native: false)
 add_project_link_arguments(
-  '-nostdlib', # Do not use standard system startup files or libraries
+  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
+  '-static', # Only link static files
   language: 'c', native: false)
 
 # Common program references.
