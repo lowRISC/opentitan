@@ -36,6 +36,12 @@
       reset:     "rst_peri_ni",
       pipeline: "false"
     },
+    { name:      "i2c",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "usbdev",
       type:      "device",
       clock:     "clk_peri_i",
@@ -62,6 +68,6 @@
     }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr"],
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr", "i2c"],
   },
 }

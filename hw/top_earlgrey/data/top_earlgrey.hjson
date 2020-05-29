@@ -153,6 +153,13 @@
       reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x40080000",
     },
+    { name: "i2c",
+      type: "i2c",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40050000"
+    },
     { name: "aes",
       type: "aes",
       clock_srcs: {clk_i: "main"},
@@ -375,7 +382,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["uart", "gpio"]
+    mio_modules: ["uart", "gpio", "i2c"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to

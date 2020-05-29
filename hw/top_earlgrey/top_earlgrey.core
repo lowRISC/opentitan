@@ -12,6 +12,7 @@ filesets:
       - lowrisc:top_earlgrey:clkmgr
       - lowrisc:ip:alert_handler_component
       - lowrisc:ip:gpio
+      - lowrisc:ip:i2c
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
