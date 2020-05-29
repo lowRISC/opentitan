@@ -233,11 +233,14 @@ def _generate_prim_pkg(gapi):
 
 
 def _instance_sv(prim_name, techlib, parameters):
-    s = "prim_{techlib}_{prim_name} #(\n"
-    s += ", ".join(".{p}({p})".format(p=p) for p in parameters)
-    s += ") u_impl_{techlib} (\n" \
-         "  .*\n" \
-         ");\n"
+    if not parameters:
+        s = "    prim_{techlib}_{prim_name} u_impl_{techlib} (\n"
+    else:
+        s = "    prim_{techlib}_{prim_name} #(\n"
+        s += ",\n".join("      .{p}({p})".format(p=p) for p in parameters)
+        s += "\n    ) u_impl_{techlib} (\n"
+    s += "      .*\n" \
+         "    );\n"
     return s.format(prim_name=prim_name, techlib=techlib)
 
 
@@ -252,9 +255,9 @@ def _create_instances(prim_name, techlibs, parameters):
         # Don't output the if/else blocks if there no alternatives exist.
         # We still want the generate block to keep hierarchical path names
         # stable, even if more than one techlib is found.
-        s = " if (1) begin : gen_generic\n"
+        s = "  if (1) begin : gen_generic\n"
         s += _instance_sv(prim_name, "generic", parameters) + "\n"
-        s += "end"
+        s += "  end"
         return s
 
     nr_techlibs = len(techlibs_generic_last)
