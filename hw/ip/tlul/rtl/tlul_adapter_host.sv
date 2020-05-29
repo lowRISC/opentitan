@@ -14,10 +14,10 @@
 // required by TL-UL (every bit in mask set).
 //
 // When MAX_REQS > 1 tlul_adapter_host does not do anything to order responses from the TL-UL
-// interface which could return them out of order. It is the host's responsibility to either only have
-// outstanding requests to an address space it knows will return responses in order or to not care
-// about out of order responses (note that if read data is returned out of order there is no way to
-// determine this)
+// interface which could return them out of order. It is the host's responsibility to either only
+// have outstanding requests to an address space it knows will return responses in order or to not
+// care about out of order responses (note that if read data is returned out of order there is no
+// way to determine this).
 
 `include "prim_assert.sv"
 
