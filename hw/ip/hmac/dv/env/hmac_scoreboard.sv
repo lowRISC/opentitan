@@ -58,7 +58,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           update_err_intr_code(SwPushMsgWhenShaDisabled);
         end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
-          bit [7:0] msg[];
+          bit [7:0] msg[$];
           {<<byte{bytes}} = item.a_data;
           // do endian swap in the word according to the mask, then push to the queue of msgs
           foreach (item.a_mask[i]) begin
