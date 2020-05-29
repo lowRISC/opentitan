@@ -61,7 +61,9 @@ This module features the following output signals to provide a reference for syn
 - `usb_ref_val_o` serves as a valid signal for `usb_ref_pulse_o`.
   It is set to one after the first SOF packet is received and remains high as long as `usb_ref_pulse_o` continues to behave as expected.
   As soon as it is detected that SOF will not be received as expected (usually because the link is no longer active), `usb_ref_val_o` deasserts to zero until after the next `usb_ref_pulse_o`.
+
 Both these signals are synchronous to the 48 MHz clock.
+They can be forced to zero by setting {{< regref "phy_config.usb_ref_disable" >}} to `1`.
 
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port

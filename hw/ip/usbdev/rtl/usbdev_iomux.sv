@@ -56,8 +56,10 @@ module usbdev_iomux
   logic usb_rx_dp, usb_rx_dn, usb_rx_d;
   logic pinflip;
   logic unused_eop_single_bit;
+  logic unused_usb_ref_disable;
 
-  assign unused_eop_single_bit = sys_reg2hw_config_i.eop_single_bit.q;
+  assign unused_eop_single_bit  = sys_reg2hw_config_i.eop_single_bit.q;
+  assign unused_usb_ref_disable = sys_reg2hw_config_i.usb_ref_disable.q;
 
   //////////
   // CDCs //
