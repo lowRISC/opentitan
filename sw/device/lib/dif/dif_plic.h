@@ -10,6 +10,11 @@
 
 #include "sw/device/lib/base/mmio.h"
 
+// Header Extern Guard (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /** The lowest interrupt priority. */
 extern const uint32_t kDifPlicMinPriority;
 
@@ -202,5 +207,9 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
                                         dif_plic_target_t target,
                                         const dif_plic_irq_id_t *complete_data);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_

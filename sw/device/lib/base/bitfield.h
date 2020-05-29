@@ -7,6 +7,11 @@
 
 #include <stdint.h>
 
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Masked field offset for 32-bit bitfields, with optional value.
  *
@@ -62,5 +67,9 @@ inline uint32_t bitfield_set_field32(uint32_t bitfield,
   bitfield |= (field.value & field.mask) << field.index;
   return bitfield;
 }
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_BITFIELD_H_

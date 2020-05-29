@@ -9,6 +9,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// Header Extern Guard  (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Load a word from memory directly, bypassing aliasing rules.
  *
@@ -132,5 +137,9 @@ void *memchr(const void *ptr, int value, size_t len);
  * @return a pointer to the found value, or NULL.
  */
 void *memrchr(const void *ptr, int value, size_t len);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
