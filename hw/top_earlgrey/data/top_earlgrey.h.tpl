@@ -36,7 +36,7 @@
 #define PINMUX_VALUE_Z_OUT 2
 % for i, sig in enumerate(top["pinmux"]["inouts"] + top["pinmux"]["outputs"]):
   % if sig["width"] == 1:
-#define PINMUX_${sig["width"].upper()}_OUT ${offset + i}
+#define PINMUX_${sig["name"].upper()}_OUT ${offset + i}
   % else:
     % for j in range(sig["width"]):
 #define PINMUX_${sig["name"].upper()}_${j}_OUT ${offset + i + j}
