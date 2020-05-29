@@ -1,7 +1,7 @@
-From e7f260fbf73b10b1990aecc7cc57a6952f730c6b Mon Sep 17 00:00:00 2001
+From 869ad7202f4551ae75440b8e34d8aa37f4b3f4cf Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 18:39:08 +0100
-Subject: [PATCH 3/7] Remove tests that do not pass on OpenTitan
+Subject: [PATCH 3/3] Remove tests that do not pass on OpenTitan
 
 ---
  riscv-test-suite/rv32i/Makefrag | 7 +++++--
@@ -33,5 +33,5 @@ index a19fff8..e27b7ac 100644
  rv32i_tests = $(addsuffix .elf, $(rv32i_sc_tests))
  
 -- 
-2.26.0
+2.26.2
 
