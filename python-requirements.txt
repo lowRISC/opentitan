@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
+flake8
 gitpython
 hjson
 ipyxact >= 0.2.4
