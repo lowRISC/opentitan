@@ -24,7 +24,7 @@ module aes_sbox #(
       .data_i,
       .data_o
     );
-  end else begin
+  end else begin : gen_sbox_masked
     // TODO: Use non-constant masks + remove corresponding comment in aes.sv.
     // See https://github.com/lowRISC/opentitan/issues/1005
     logic [7:0] in_data_m, out_data_m;
