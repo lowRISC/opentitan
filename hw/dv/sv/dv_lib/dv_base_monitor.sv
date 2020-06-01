@@ -13,6 +13,10 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   // Indicates activity on the interface, driven only within the `monitor_ready_to_end()` task.
   protected bit ok_to_end = 1;
 
+  // Used to ensure we run the watchdog exactly once at the end of the run phase. Cleared at start
+  // of run phase. Set once watchdog_ok_to_end has been started at the end of the run_phase.
+  protected bit phase_ready_to_end_invoked = 0;
+
   // Analysis port for the collected transfer.
   uvm_analysis_port #(ITEM_T) analysis_port;
 
@@ -37,6 +41,9 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   // UVM callback which is invoked during phase sequencing.
   virtual function void phase_ready_to_end(uvm_phase phase);
     if (!phase.is(uvm_run_phase::get())) return;
+    if (phase_ready_to_end_invoked) return;
+
+    phase_ready_to_end_invoked = 1;
     fork
       monitor_ready_to_end();
       watchdog_ok_to_end(phase);
