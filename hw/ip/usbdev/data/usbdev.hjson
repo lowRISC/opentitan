@@ -482,8 +482,10 @@
             bits: "0",
             name: "clear",
             desc: '''
+                  Only use for hardware debug.
+
                   Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions.
-                  The register must no be written again within 200 ns.
+                  The register must not be written again within 200 ns.
                   '''
           }
         ]
