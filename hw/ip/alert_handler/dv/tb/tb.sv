@@ -55,12 +55,12 @@ module tb;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
     assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
     // TODO: add assertions to check the probed signal
-    assign probe_if[k].esc_en = alert_handler.esc_sig_en[k];
+    assign probe_if[k].esc_en = dut.esc_sig_en[k];
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
                                                 "vif", esc_device_if[k]);
-      uvm_config_db#(virtual alert_esc_probe_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
-                                                "probe_vif", probe_if[k]);
+      uvm_config_db#(virtual alert_esc_probe_if)::set(null,
+          $sformatf("*.env.esc_device_agent[%0d]", k), "probe_vif", probe_if[k]);
     end
   end
   // main dut

@@ -140,10 +140,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     end
   endtask : process_esc_fifo
 
-  // this function process alert signal by checking if intergrity fail, then classify it to the
+  // this task process alert signal by checking if intergrity fail, then classify it to the
   // mapping classes, then check if escalation is triggered by accumulation
-  virtual function void process_alert_sig(int alert_i, bit is_int_err,
-                                          local_alert_type_e local_alert_type = LocalAlertIntFail);
+  virtual task process_alert_sig(int alert_i, bit is_int_err,
+                                 local_alert_type_e local_alert_type = LocalAlertIntFail);
     bit [TL_DW-1:0] alert_class, intr_en;
     bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
     bit [TL_DW-1:0] class_ctrl;
@@ -174,7 +174,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
       alert_accum_cal(class_i);
     end
-  endfunction
+  endtask
 
   // calculate alert accumulation count per class, if accumulation exceeds the threshold,
   // and if current class not under escalation, then predict escalation
@@ -478,16 +478,14 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
-    for (int i = 0; i < NUM_ALERT_HANDLER_CLASSES; i++) begin
-      clr_reset_esc_class(i);
-      intr_cnter_per_class[i] = 0;
-      under_intr_classes  [i] = 0;
-      clr_reset_esc_class(i);
-    end
-    esc_cnter_per_signal = '{default:0};
-    esc_sig_class        = '{default:0};
-    clr_esc_under_intr   = 0;
+    under_intr_classes    = '{default:0};
+    intr_cnter_per_class  = '{default:0};
+    under_esc_classes     = '{default:0};
+    esc_cnter_per_signal  = '{default:0};
+    esc_sig_class         = '{default:0};
+    accum_cnter_per_class = '{default:0};
+    clr_esc_under_intr    = 0;
+    last_triggered_alert_per_class = '{default:$realtime};
   endfunction
 
   // clear accumulative counters, and escalation counters if they are under escalation
