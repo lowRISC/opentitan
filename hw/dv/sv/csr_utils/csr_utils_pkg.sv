@@ -178,12 +178,13 @@ package csr_utils_pkg;
                             input  uvm_path_e   path = UVM_DEFAULT_PATH,
                             input  bit          blocking = default_csr_blocking,
                             input  uint         timeout_ns = default_timeout_ns,
-                            input  uvm_reg_map  map = null);
+                            input  uvm_reg_map  map = null,
+                            input  bit          en_shadow_wr = 1);
     if (blocking) begin
-      csr_update_sub(csr, check, path, timeout_ns, map);
+      csr_update_sub(csr, check, path, timeout_ns, map, en_shadow_wr);
     end else begin
       fork
-        csr_update_sub(csr, check, path, timeout_ns, map);
+        csr_update_sub(csr, check, path, timeout_ns, map, en_shadow_wr);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -195,7 +196,8 @@ package csr_utils_pkg;
                                 input  uvm_check_e  check = UVM_CHECK,
                                 input  uvm_path_e   path = UVM_DEFAULT_PATH,
                                 input  uint         timeout_ns = default_timeout_ns,
-                                input  uvm_reg_map  map = null);
+                                input  uvm_reg_map  map = null,
+                                input  bit          en_shadow_wr = 1);
     fork
       begin : isolation_fork
         uvm_status_e  status;
@@ -204,7 +206,9 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
+            csr_pre_write_sub(csr, en_shadow_wr);
             csr.update(.status(status), .path(path), .map(map), .prior(100));
+            csr_post_write_sub(csr, en_shadow_wr);
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
@@ -229,16 +233,17 @@ package csr_utils_pkg;
                         input bit            backdoor = 0,
                         input uint           timeout_ns = default_timeout_ns,
                         input bit            predict = 0,
-                        input uvm_reg_map    map = null);
+                        input uvm_reg_map    map = null,
+                        input bit            en_shadow_wr = 1);
     if (backdoor) begin
       csr_poke(csr, value, check, predict);
     end else if (blocking) begin
-      csr_wr_sub(csr, value, check, path, timeout_ns, map);
+      csr_wr_sub(csr, value, check, path, timeout_ns, map, en_shadow_wr);
       if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
     end else begin
       fork
         begin
-          csr_wr_sub(csr, value, check, path, timeout_ns, map);
+          csr_wr_sub(csr, value, check, path, timeout_ns, map, en_shadow_wr);
           // predict after csr_wr_sub, to ensure predict after enable register overwrite the locked
           // registers' access information
           if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
@@ -255,7 +260,8 @@ package csr_utils_pkg;
                             input uvm_check_e    check = UVM_CHECK,
                             input uvm_path_e     path = UVM_DEFAULT_PATH,
                             input uint           timeout_ns = default_timeout_ns,
-                            input uvm_reg_map    map = null);
+                            input uvm_reg_map    map = null,
+                            input bit            en_shadow_wr = 1);
     fork
       begin : isolation_fork
         uvm_status_e  status;
@@ -264,7 +270,9 @@ package csr_utils_pkg;
         fork
           begin
             increment_outstanding_access();
+            csr_pre_write_sub(csr, en_shadow_wr);
             csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
+            csr_post_write_sub(csr, en_shadow_wr);
             if (check == UVM_CHECK) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
@@ -279,6 +287,30 @@ package csr_utils_pkg;
         disable fork;
       end : isolation_fork
     join
+  endtask
+
+  task automatic csr_pre_write_sub(ref uvm_reg csr, bit en_shadow_wr);
+    dv_base_reg dv_reg;
+    `downcast(dv_reg, csr, "", fatal, msg_id)
+    if (dv_reg.get_is_shadowed()) begin
+      if (en_shadow_wr) increment_outstanding_access();
+      dv_reg.atomic_en_shadow_wr.get(1);
+      dv_reg.set_en_shadow_wr(en_shadow_wr);
+    end
+  endtask
+
+  task automatic csr_post_write_sub(ref uvm_reg csr, bit en_shadow_wr);
+    dv_base_reg dv_reg;
+    `downcast(dv_reg, csr, "", fatal, msg_id)
+    if (dv_reg.get_is_shadowed()) begin
+      // try setting en_shadow_wr back to default value 1, this function will only work if the
+      // shadow reg finished both writes
+      dv_reg.set_en_shadow_wr(1);
+      dv_reg.atomic_en_shadow_wr.put(1);
+      if (en_shadow_wr) begin
+        decrement_outstanding_access();
+      end
+    end
   endtask
 
   // backdoor write csr
