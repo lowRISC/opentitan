@@ -1,3 +1,8 @@
+// Copyright lowRISC contributors.
+// Copyright Luke Valenty (TinyFPGA project)
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
 // Converted from common/usb_serial_ctrl_ep.v
 // -- move from CDC to Google simple serial protocol
 // -- conform to lowRISC coding style
