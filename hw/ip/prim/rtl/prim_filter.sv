@@ -1,6 +1,6 @@
-// Copyright 2018 lowRISC contributors.
+// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Indentifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0
 //
 // Primitive input filter, with enable.  Configurable number of cycles.
 //

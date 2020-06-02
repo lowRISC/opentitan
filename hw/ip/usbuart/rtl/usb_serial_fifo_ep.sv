@@ -1,3 +1,8 @@
+// Copyright lowRISC contributors.
+// Copyright Luke Valenty (TinyFPGA project)
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 module usb_serial_fifo_ep  #(
   parameter int unsigned MaxPktSizeByte = 32,
 
