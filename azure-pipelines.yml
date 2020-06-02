@@ -190,7 +190,7 @@ jobs:
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
       if [[ -n "$changed_files" ]]; then
         set -o pipefail
-        xargs util/licence-checker.py --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
+        xargs util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
         if [[ $? != 0 ]]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Licence header check failed. Please check output of util/licence-checker.py on the noted failures."
