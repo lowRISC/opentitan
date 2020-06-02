@@ -1,3 +1,7 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
 # Azure Pipelines CI build configuration
 # Documentation at https://aka.ms/yaml
 
@@ -181,6 +185,20 @@ jobs:
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
     displayName: Check if the commit only contains documentation changes
     name: DetermineBuildType
+  - bash: |
+      fork_origin="$(git merge-base --fork-point origin/master)"
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
+      if [[ -n "$changed_files" ]]; then
+        set -o pipefail
+        xargs util/licence-checker.py --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
+        if [[ $? != 0 ]]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Licence header check failed. Please check output of util/licence-checker.py on the noted failures."
+          exit 1
+        fi
+      fi
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Check Licence Headers
 
 - job: sw_build
   displayName: Build Software
