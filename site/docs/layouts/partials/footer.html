@@ -36,7 +36,7 @@
     </ul>
   </nav>
 
-  <p>© 2019 <a href="https://www.lowrisc.org">lowRISC</a> contributors, <a
+  <p>© 2019 &ndash; {{ now.Format "2006" }} <a href="https://www.lowrisc.org">lowRISC</a> contributors, <a
     href="https://opentitan.org/usage-policy/">Usage Policy</a>, <a
     href="https://opentitan.org/privacy-policy/">Privacy Policy</a>.</p>
   <p>No license is granted for the OpenTitan logo or other trademarks. <a
@@ -59,8 +59,8 @@
     wrapper.setAttribute('class', 'overflow-table');
     table.parentNode.insertBefore(wrapper, table);
     wrapper.appendChild(table);
-  } 
-  
+  }
+
   // Dark and light theme
   document.documentElement.classList.remove('no-js');
   const STORAGE_KEY = 'user-color-scheme';
