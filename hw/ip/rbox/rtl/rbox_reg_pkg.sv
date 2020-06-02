@@ -846,22 +846,22 @@ package rbox_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rbox_hw2reg_intr_state_reg_t intr_state; // [408:408]
-    rbox_hw2reg_cfg_wen_ctl_reg_t cfg_wen_ctl; // [407:406]
-    rbox_hw2reg_ec_rst_ctl_reg_t ec_rst_ctl; // [405:389]
-    rbox_hw2reg_key_invert_ctl_reg_t key_invert_ctl; // [388:369]
-    rbox_hw2reg_pin_allowed_ctl_reg_t pin_allowed_ctl; // [368:345]
-    rbox_hw2reg_pin_out_ctl_reg_t pin_out_ctl; // [344:333]
-    rbox_hw2reg_pin_out_value_reg_t pin_out_value; // [332:321]
-    rbox_hw2reg_pin_in_value_reg_t pin_in_value; // [320:309]
-    rbox_hw2reg_key_intr_ctl_reg_t key_intr_ctl; // [308:285]
-    rbox_hw2reg_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [284:268]
-    rbox_hw2reg_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [267:249]
-    rbox_hw2reg_auto_block_out_ctl_reg_t auto_block_out_ctl; // [248:237]
-    rbox_hw2reg_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [236:197]
-    rbox_hw2reg_com_det_ctl_mreg_t [3:0] com_det_ctl; // [196:65]
-    rbox_hw2reg_com_out_ctl_mreg_t [3:0] com_out_ctl; // [64:33]
-    rbox_hw2reg_intr_status_reg_t intr_status; // [32:1]
+    rbox_hw2reg_intr_state_reg_t intr_state; // [408:407]
+    rbox_hw2reg_cfg_wen_ctl_reg_t cfg_wen_ctl; // [406:405]
+    rbox_hw2reg_ec_rst_ctl_reg_t ec_rst_ctl; // [404:388]
+    rbox_hw2reg_key_invert_ctl_reg_t key_invert_ctl; // [387:368]
+    rbox_hw2reg_pin_allowed_ctl_reg_t pin_allowed_ctl; // [367:344]
+    rbox_hw2reg_pin_out_ctl_reg_t pin_out_ctl; // [343:332]
+    rbox_hw2reg_pin_out_value_reg_t pin_out_value; // [331:320]
+    rbox_hw2reg_pin_in_value_reg_t pin_in_value; // [319:308]
+    rbox_hw2reg_key_intr_ctl_reg_t key_intr_ctl; // [307:284]
+    rbox_hw2reg_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [283:267]
+    rbox_hw2reg_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [266:248]
+    rbox_hw2reg_auto_block_out_ctl_reg_t auto_block_out_ctl; // [247:236]
+    rbox_hw2reg_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [235:196]
+    rbox_hw2reg_com_det_ctl_mreg_t [3:0] com_det_ctl; // [195:64]
+    rbox_hw2reg_com_out_ctl_mreg_t [3:0] com_out_ctl; // [63:32]
+    rbox_hw2reg_intr_status_reg_t intr_status; // [31:0]
   } rbox_hw2reg_t;
 
   // Register Address
@@ -879,18 +879,18 @@ package rbox_reg_pkg;
   parameter logic [6:0] RBOX_KEY_INTR_DEBOUNCE_CTL_OFFSET = 7'h 2c;
   parameter logic [6:0] RBOX_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET = 7'h 30;
   parameter logic [6:0] RBOX_AUTO_BLOCK_OUT_CTL_OFFSET = 7'h 34;
-  parameter logic [6:0] RBOX_COM_SEL_CTL0_OFFSET = 7'h 38;
-  parameter logic [6:0] RBOX_COM_SEL_CTL1_OFFSET = 7'h 3c;
-  parameter logic [6:0] RBOX_COM_SEL_CTL2_OFFSET = 7'h 40;
-  parameter logic [6:0] RBOX_COM_SEL_CTL3_OFFSET = 7'h 44;
-  parameter logic [6:0] RBOX_COM_DET_CTL0_OFFSET = 7'h 48;
-  parameter logic [6:0] RBOX_COM_DET_CTL1_OFFSET = 7'h 4c;
-  parameter logic [6:0] RBOX_COM_DET_CTL2_OFFSET = 7'h 50;
-  parameter logic [6:0] RBOX_COM_DET_CTL3_OFFSET = 7'h 54;
-  parameter logic [6:0] RBOX_COM_OUT_CTL0_OFFSET = 7'h 58;
-  parameter logic [6:0] RBOX_COM_OUT_CTL1_OFFSET = 7'h 5c;
-  parameter logic [6:0] RBOX_COM_OUT_CTL2_OFFSET = 7'h 60;
-  parameter logic [6:0] RBOX_COM_OUT_CTL3_OFFSET = 7'h 64;
+  parameter logic [6:0] RBOX_COM_SEL_CTL_0_OFFSET = 7'h 38;
+  parameter logic [6:0] RBOX_COM_SEL_CTL_1_OFFSET = 7'h 3c;
+  parameter logic [6:0] RBOX_COM_SEL_CTL_2_OFFSET = 7'h 40;
+  parameter logic [6:0] RBOX_COM_SEL_CTL_3_OFFSET = 7'h 44;
+  parameter logic [6:0] RBOX_COM_DET_CTL_0_OFFSET = 7'h 48;
+  parameter logic [6:0] RBOX_COM_DET_CTL_1_OFFSET = 7'h 4c;
+  parameter logic [6:0] RBOX_COM_DET_CTL_2_OFFSET = 7'h 50;
+  parameter logic [6:0] RBOX_COM_DET_CTL_3_OFFSET = 7'h 54;
+  parameter logic [6:0] RBOX_COM_OUT_CTL_0_OFFSET = 7'h 58;
+  parameter logic [6:0] RBOX_COM_OUT_CTL_1_OFFSET = 7'h 5c;
+  parameter logic [6:0] RBOX_COM_OUT_CTL_2_OFFSET = 7'h 60;
+  parameter logic [6:0] RBOX_COM_OUT_CTL_3_OFFSET = 7'h 64;
   parameter logic [6:0] RBOX_INTR_STATUS_OFFSET = 7'h 68;
 
 
@@ -910,18 +910,18 @@ package rbox_reg_pkg;
     RBOX_KEY_INTR_DEBOUNCE_CTL,
     RBOX_AUTO_BLOCK_DEBOUNCE_CTL,
     RBOX_AUTO_BLOCK_OUT_CTL,
-    RBOX_COM_SEL_CTL0,
-    RBOX_COM_SEL_CTL1,
-    RBOX_COM_SEL_CTL2,
-    RBOX_COM_SEL_CTL3,
-    RBOX_COM_DET_CTL0,
-    RBOX_COM_DET_CTL1,
-    RBOX_COM_DET_CTL2,
-    RBOX_COM_DET_CTL3,
-    RBOX_COM_OUT_CTL0,
-    RBOX_COM_OUT_CTL1,
-    RBOX_COM_OUT_CTL2,
-    RBOX_COM_OUT_CTL3,
+    RBOX_COM_SEL_CTL_0,
+    RBOX_COM_SEL_CTL_1,
+    RBOX_COM_SEL_CTL_2,
+    RBOX_COM_SEL_CTL_3,
+    RBOX_COM_DET_CTL_0,
+    RBOX_COM_DET_CTL_1,
+    RBOX_COM_DET_CTL_2,
+    RBOX_COM_DET_CTL_3,
+    RBOX_COM_OUT_CTL_0,
+    RBOX_COM_OUT_CTL_1,
+    RBOX_COM_OUT_CTL_2,
+    RBOX_COM_OUT_CTL_3,
     RBOX_INTR_STATUS
   } rbox_id_e;
 
@@ -941,18 +941,18 @@ package rbox_reg_pkg;
     4'b 0011, // index[11] RBOX_KEY_INTR_DEBOUNCE_CTL
     4'b 0111, // index[12] RBOX_AUTO_BLOCK_DEBOUNCE_CTL
     4'b 0001, // index[13] RBOX_AUTO_BLOCK_OUT_CTL
-    4'b 0001, // index[14] RBOX_COM_SEL_CTL0
-    4'b 0001, // index[15] RBOX_COM_SEL_CTL1
-    4'b 0001, // index[16] RBOX_COM_SEL_CTL2
-    4'b 0001, // index[17] RBOX_COM_SEL_CTL3
-    4'b 1111, // index[18] RBOX_COM_DET_CTL0
-    4'b 1111, // index[19] RBOX_COM_DET_CTL1
-    4'b 1111, // index[20] RBOX_COM_DET_CTL2
-    4'b 1111, // index[21] RBOX_COM_DET_CTL3
-    4'b 0001, // index[22] RBOX_COM_OUT_CTL0
-    4'b 0001, // index[23] RBOX_COM_OUT_CTL1
-    4'b 0001, // index[24] RBOX_COM_OUT_CTL2
-    4'b 0001, // index[25] RBOX_COM_OUT_CTL3
+    4'b 0001, // index[14] RBOX_COM_SEL_CTL_0
+    4'b 0001, // index[15] RBOX_COM_SEL_CTL_1
+    4'b 0001, // index[16] RBOX_COM_SEL_CTL_2
+    4'b 0001, // index[17] RBOX_COM_SEL_CTL_3
+    4'b 1111, // index[18] RBOX_COM_DET_CTL_0
+    4'b 1111, // index[19] RBOX_COM_DET_CTL_1
+    4'b 1111, // index[20] RBOX_COM_DET_CTL_2
+    4'b 1111, // index[21] RBOX_COM_DET_CTL_3
+    4'b 0001, // index[22] RBOX_COM_OUT_CTL_0
+    4'b 0001, // index[23] RBOX_COM_OUT_CTL_1
+    4'b 0001, // index[24] RBOX_COM_OUT_CTL_2
+    4'b 0001, // index[25] RBOX_COM_OUT_CTL_3
     4'b 0011  // index[26] RBOX_INTR_STATUS
   };
 endpackage
