@@ -14,7 +14,6 @@ class esc_monitor extends alert_esc_base_monitor;
   `uvm_component_new
 
   bit under_esc_ping;
-  bit under_reset;
 
   //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
@@ -26,20 +25,11 @@ class esc_monitor extends alert_esc_base_monitor;
     join_none
   endtask : run_phase
 
-  virtual task reset_thread();
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      under_reset = 1;
-      @(posedge cfg.vif.rst_n);
-      under_reset = 0;
-    end
-  endtask : reset_thread
-
   virtual task esc_thread(uvm_phase phase);
     alert_esc_seq_item req, req_clone;
     logic esc_p = cfg.vif.get_esc();
     forever @(cfg.vif.monitor_cb) begin
-      if (!esc_p && cfg.vif.get_esc() === 1'b1) begin
+      if (!under_reset && !esc_p && cfg.vif.get_esc() === 1'b1) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.sig_cycle_cnt++;
@@ -58,10 +48,10 @@ class esc_monitor extends alert_esc_base_monitor;
             ping_cnter ++;
           end
           while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
-                 !cfg.probe_vif.get_esc_en());
+                 !cfg.probe_vif.get_esc_en() && !under_reset);
+          if (under_reset) continue;
           if (!cfg.probe_vif.get_esc_en()) begin
-            if (ping_cnter >= cfg.ping_timeout_cycle &&
-                req.esc_handshake_sta != EscRespComplete) begin
+            if (ping_cnter >= cfg.ping_timeout_cycle) begin
               alert_esc_seq_item req_clone;
               $cast(req_clone, req.clone());
               req_clone.timeout = 1;

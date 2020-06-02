@@ -14,8 +14,12 @@ class esc_receiver_driver extends alert_esc_base_driver;
   bit is_ping;
 
   virtual task reset_signals();
-    cfg.vif.reset_resp();
-    is_ping = 0;
+    forever begin
+      @(negedge cfg.vif.rst_n);
+      cfg.vif.reset_resp();
+      is_ping = 0;
+      @(posedge cfg.vif.rst_n);
+    end
   endtask
 
   virtual task drive_req();
