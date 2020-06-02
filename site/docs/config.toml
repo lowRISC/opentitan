@@ -57,7 +57,7 @@ ignoreFiles = [
   "COMMITTERS",
 ]
 pygmentsCodeFences = true
-pygmentsStyle = "tango"
+pygmentsStyle = "colorful"
 disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
 googleAnalytics = "UA-151030466-2"
 
