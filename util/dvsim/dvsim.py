@@ -427,13 +427,6 @@ def main():
         metavar="N",
         help="""Run only upto a fixed number of builds/tests at a time.""")
 
-    parser.add_argument(
-        "--local",
-        action='store_true',
-        help=
-        """Deploy builds and runs on the local workstation instead of the compute farm.
-                Support for this has not been added yet.""")
-
     args = parser.parse_args()
 
     if args.version:
