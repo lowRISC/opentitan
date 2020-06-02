@@ -16,21 +16,23 @@ class alert_monitor extends alert_esc_base_monitor;
   `uvm_component_new
 
   //TODO: currently only support sync mode
-  //TODO: add support for signal int err and reset
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     fork
       alert_thread(phase);
       ping_thread(phase);
-      reset_thread(phase);
+      reset_thread();
       int_fail_thread(phase);
     join_none
   endtask : run_phase
 
-  // TODO: placeholder to support reset
-  virtual task reset_thread(uvm_phase phase);
+  virtual task reset_thread();
     forever begin
       @(negedge cfg.vif.rst_n);
+      under_reset = 1;
+      under_ping_rsp = 0;
       @(posedge cfg.vif.rst_n);
+      under_reset = 0;
     end
   endtask : reset_thread
 
@@ -59,13 +61,16 @@ class alert_monitor extends alert_esc_base_monitor;
                 req.alert_handshake_sta = AlertAckReceived;
                 under_ping_rsp = 0;
               end
+              begin
+                wait(under_reset);
+              end
             join_any
             disable fork;
           end : isolation_fork
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        alert_esc_port.write(req);
+        if (!under_reset) alert_esc_port.write(req);
         phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
         under_ping_rsp = 0;
       end
@@ -102,13 +107,16 @@ class alert_monitor extends alert_esc_base_monitor;
                 cfg.vif.wait_ack_complete();
                 req.alert_handshake_sta = AlertAckComplete;
               end
+              begin
+                wait(under_reset);
+              end
             join_any
             disable fork;
           end : isolation_fork
         join
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        alert_esc_port.write(req);
+        if (!under_reset) alert_esc_port.write(req);
         phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
       alert_p = cfg.vif.get_alert_p();
@@ -119,8 +127,7 @@ class alert_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     forever @(cfg.vif.monitor_cb) begin
       // find int error, at each clk cycle, int error counts for one local alert
-      if (cfg.vif.monitor_cb.rst_n &&
-          (cfg.vif.get_alert_p() === cfg.vif.get_alert_n())) begin
+      if (!under_reset && (cfg.vif.get_alert_p() === cfg.vif.get_alert_n())) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscIntFail;

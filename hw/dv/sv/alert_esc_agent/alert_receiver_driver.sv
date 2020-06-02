@@ -20,8 +20,12 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask : drive_req
 
   virtual task reset_signals();
-    cfg.vif.reset_ack();
-    cfg.vif.reset_ping();
+    forever begin
+      @(negedge cfg.vif.rst_n);
+      cfg.vif.reset_ack();
+      cfg.vif.reset_ping();
+      @(posedge cfg.vif.rst_n);
+    end
   endtask
 
   virtual task send_ping();

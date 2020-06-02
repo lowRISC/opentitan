@@ -13,7 +13,11 @@ class alert_sender_driver extends alert_esc_base_driver;
   `uvm_component_new
 
   virtual task reset_signals();
-    cfg.vif.reset_alert();
+    forever begin
+      @(negedge cfg.vif.rst_n);
+      cfg.vif.reset_alert();
+      @(posedge cfg.vif.rst_n);
+    end
   endtask
 
   // alert_sender drive responses by sending the alert_p and alert_n
@@ -95,8 +99,11 @@ class alert_sender_driver extends alert_esc_base_driver;
   // this task set alert_p=1 and alert_n=0 after certain delay
   virtual task set_alert_pins(int alert_delay);
     @(cfg.vif.sender_cb);
-    repeat (alert_delay) @(cfg.vif.sender_cb);
-    cfg.vif.set_alert();
+    repeat (alert_delay) begin
+      if (under_reset) return;
+      else @(cfg.vif.sender_cb);
+    end
+    if (!under_reset) cfg.vif.set_alert();
   endtask : set_alert_pins
 
   // this task reset alert_p=0 and alert_n=1 after certain delay when:
@@ -112,12 +119,16 @@ class alert_sender_driver extends alert_esc_base_driver;
         repeat (ack_delay) @(cfg.vif.sender_cb);
         cfg.vif.reset_alert();
       end
+      begin : reset_thread
+        wait(under_reset);
+      end
     join_any
     disable fork;
   endtask : reset_alert_pins
 
   virtual task random_drive_int_fail(int int_err_cyc);
     repeat (req.int_err_cyc) begin
+      if (under_reset) break;
       randcase
         1: cfg.vif.drive_alerts_low();
         1: cfg.vif.drive_alerts_high();
