@@ -7,6 +7,11 @@
 #include "aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// TODO:
+// 1) Refactor to use use dif_aes.
+// 2) Verify that test still works.
+// 3) Use dif_aes directly in the test (probably remove this file).
+
 #define AES0_BASE_ADDR TOP_EARLGREY_AES_BASE_ADDR
 #define AES_NUM_REGS_KEY 8
 #define AES_NUM_REGS_IV 4
