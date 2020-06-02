@@ -1,0 +1,245 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "rbox",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  available_input_list: [
+    { name: "ac_present", desc: "A/C power is present" }
+    { name: "ec_entering_rw", desc: "Embedded controller is entering the R/W mode in the boot flow" }
+    { name: "key0_in", desc: "VolUp button in tablet; column output from the EC in a laptop" }
+    { name: "key1_in", desc: "VolDown button in tablet; row input from keyboard matrix in a laptop" }
+    { name: "key2_in", desc: "TBD button in tablet; row input from keyboard matrix in a laptop" }
+    { name: "pwrb_in", desc: "Power button in both tablet and laptop" }
+  ],
+  available_output_list: [
+    { name: "bat_en", desc: "Battery is enabled" }
+    { name: "ec_in_rw", desc: "Embedded controller is in the R/W mode. It’s a flopped version of ec_entering_rw" }
+    { name: "ec_rst_l", desc: "Asserted when por_l(Power On Reset) is low. Released a short period after por_l is high" }
+    { name: "flash_wp_l", desc: "Write protection. Active low. :Asserted when por_l is low. Released by FW" }
+    { name: "key0_out", desc: "Passthrough from key0_in, can be configured to invert" }
+    { name: "key1_out", desc: "Passthrough from key1_in, can be configured to invert" }
+    { name: "key2_out", desc: "Passthrough from key2_in, can be configured to invert" }
+    { name: "pwrb_out", desc: "Passthrough from pwrb_in, can be configured to invert" }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "cfg_lock_ctl",
+      desc: "Configuration lock control register",
+      hwqe:     "true",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "lock_en",
+          desc: '''config lock enable.
+                0: not locked; 1: locked 
+                ''',
+        }
+      ]
+    }
+    { name: "ec_rst_ctl",
+      desc: "EC reset control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:  "true",
+      resval: "2564",
+      fields: [
+        { bits: "31:0",
+          name: "EC reset pulse width control",
+          desc: "Configure the pulse width of ec_rst_l. 10-200ms, each step is 3.9us(256KHz clock)",
+        }
+      ],
+    }
+    { name: "flash_wp_ctl",
+      desc: "Flash Write Protection control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "1",
+      fields: [
+        { bits: "0",
+          name: "write protection enable",
+          desc: "0: write protection is disabled; 1: write protection is enabled",
+        }
+      ]
+    }
+    { name: "key_com0_debounce_ctl",
+      desc: "Configure the key combo 0 debounce and hold time range",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "2564",
+      fields: [
+        { bits: "31:0",
+	  name: "debounce and hold time range",
+          desc: "each step is 3.9us(256KHz clock)",
+        }
+      ]
+    }
+    { name: "key_com1_debounce_ctl",
+      desc: "Configure the key combo 1 debounce and hold time range",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "2564",
+      fields: [
+        { bits: "31:0",
+	  name: "debounce and hold time range",
+          desc: "each step is 3.9us(256KHz clock)",
+        }
+      ]
+    }
+    { name: "key_com2_debounce_ctl",
+      desc: "Configure the key combo 2 debounce and hold time range",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "2564",
+      fields: [
+        { bits: "31:0",
+	  name: "debounce and hold time range",
+          desc: "each step is 3.9us(256KHz clock)",
+        }
+      ]
+    }
+    { name: "key_com3_debounce_ctl",
+      desc: "Configure the key combo 3 debounce and hold time range",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "2564",
+      fields: [
+        { bits: "31:0",
+	  name: "debounce and hold time range",
+          desc: "each step is 3.9us(256KHz clock)",
+        }
+      ]
+    }
+    { name: "key_invert_ctl",
+      desc: "configure key input output invert property",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name:"key0_in",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "1",
+	  name:"key0_out",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "2",
+	  name:"key1_in",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "3",
+	  name:"key1_out",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "4",
+	  name:"key2_in",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "5",
+	  name:"key2_out",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "6",
+	  name:"pwrb_in",
+	  desc: "0: don’t invert; 1: invert",
+	}
+        { bits: "7",
+	  name:"pwrb_out",
+	  desc: "0: don’t invert; 1: invert",
+	}
+      ]
+    }
+    { name: "pin_out_ctl",
+      desc: "confiure the pin out directly to override the function",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "bat_en",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "1",
+	  name: "ec_in_rw",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "2",
+	  name: "flash_wp_l",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "3",
+	  name: "ec_rst_l",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "4",
+	  name: "pwrb_out",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "5",
+	  name: "key0_out",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "6",
+	  name: "key1_out",
+	  desc: "0: disable override;1: enable override",
+	}
+        { bits: "7",
+	  name: "key2_out",
+	  desc: "0: disable override;1: enable override",
+	}
+      ]
+    }
+    { name: "pin_out_value",
+      desc: "confiure the pin out value directly to override the function",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "bat_en",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "1",
+	  name: "ec_in_rw",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "2",
+	  name: "flash_wp_l",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "3",
+	  name: "ec_rst_l",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "4",
+	  name: "pwrb_out",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "5",
+	  name: "key0_out",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "6",
+	  name: "key1_out",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+        { bits: "7",
+	  name: "key2_out",
+	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	}
+      ]
+    }
+  ],
+}
