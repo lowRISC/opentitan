@@ -96,7 +96,6 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
         include_paths = SYSTEM_INCLUDE_COMMAND_LINE,
     )
     embedded_features = GetEmbeddedFeatures("GCC")
-
     toolchain_config_info = cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,

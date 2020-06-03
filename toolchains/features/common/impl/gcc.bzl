@@ -38,7 +38,7 @@ def GccIncludeFeature(include_paths):
                 flag_groups = [
                     flag_group(
                         # Disable system includes, then re-enable includes using -I flag
-                        flags = ["-nostdinc"] + include_paths,
+                        flags = ["-nostdinc", "-no-canonical-prefixes", "-fno-canonical-system-headers"] + include_paths,
                     ),
                 ],
             ),
