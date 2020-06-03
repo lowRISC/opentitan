@@ -6,36 +6,39 @@
 
 package pattgen_reg_pkg;
 
+  // Param list
+  parameter int NumRegsPrediv = 2;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
     struct packed {
       logic        q;
-    } patt_done1;
+    } patt_done0;
     struct packed {
       logic        q;
-    } patt_done2;
+    } patt_done1;
   } pattgen_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } patt_done1;
+    } patt_done0;
     struct packed {
       logic        q;
-    } patt_done2;
+    } patt_done1;
   } pattgen_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } patt_done1;
+    } patt_done0;
     struct packed {
       logic        q;
       logic        qe;
-    } patt_done2;
+    } patt_done1;
   } pattgen_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -56,44 +59,39 @@ package pattgen_reg_pkg;
   typedef struct packed {
     logic [31:0] q;
     logic        qe;
-  } pattgen_reg2hw_prediv1_reg_t;
+  } pattgen_reg2hw_prediv_mreg_t;
 
   typedef struct packed {
-    logic [31:0] q;
-    logic        qe;
-  } pattgen_reg2hw_prediv2_reg_t;
-
-  typedef struct packed {
+    struct packed {
+      logic [5:0]  q;
+      logic        qe;
+    } len0;
     struct packed {
       logic [5:0]  q;
       logic        qe;
     } len1;
-    struct packed {
-      logic [5:0]  q;
-      logic        qe;
-    } len2;
   } pattgen_reg2hw_patt_len_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } loop1;
+    } loop0;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } loop2;
+    } loop1;
   } pattgen_reg2hw_patt_loop_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } mask1;
+    } mask0;
     struct packed {
       logic        q;
       logic        qe;
-    } mask2;
+    } mask1;
   } pattgen_reg2hw_intr_mask_reg_t;
 
 
@@ -101,11 +99,11 @@ package pattgen_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } patt_done1;
+    } patt_done0;
     struct packed {
       logic        d;
       logic        de;
-    } patt_done2;
+    } patt_done1;
   } pattgen_hw2reg_intr_state_reg_t;
 
 
@@ -118,8 +116,7 @@ package pattgen_reg_pkg;
     pattgen_reg2hw_intr_test_reg_t intr_test; // [114:111]
     pattgen_reg2hw_ctrl_reg_t ctrl; // [110:110]
     pattgen_reg2hw_start_reg_t start; // [109:106]
-    pattgen_reg2hw_prediv1_reg_t prediv1; // [105:73]
-    pattgen_reg2hw_prediv2_reg_t prediv2; // [72:40]
+    pattgen_reg2hw_prediv_mreg_t [1:0] prediv; // [105:40]
     pattgen_reg2hw_patt_len_reg_t patt_len; // [39:26]
     pattgen_reg2hw_patt_loop_reg_t patt_loop; // [25:4]
     pattgen_reg2hw_intr_mask_reg_t intr_mask; // [3:0]
@@ -138,8 +135,8 @@ package pattgen_reg_pkg;
   parameter logic [5:0] PATTGEN_INTR_TEST_OFFSET = 6'h 8;
   parameter logic [5:0] PATTGEN_CTRL_OFFSET = 6'h c;
   parameter logic [5:0] PATTGEN_START_OFFSET = 6'h 10;
-  parameter logic [5:0] PATTGEN_PREDIV1_OFFSET = 6'h 14;
-  parameter logic [5:0] PATTGEN_PREDIV2_OFFSET = 6'h 18;
+  parameter logic [5:0] PATTGEN_PREDIV0_OFFSET = 6'h 14;
+  parameter logic [5:0] PATTGEN_PREDIV1_OFFSET = 6'h 18;
   parameter logic [5:0] PATTGEN_PATT_LEN_OFFSET = 6'h 1c;
   parameter logic [5:0] PATTGEN_PATT_LOOP_OFFSET = 6'h 20;
   parameter logic [5:0] PATTGEN_INTR_MASK_OFFSET = 6'h 24;
@@ -152,8 +149,8 @@ package pattgen_reg_pkg;
     PATTGEN_INTR_TEST,
     PATTGEN_CTRL,
     PATTGEN_START,
+    PATTGEN_PREDIV0,
     PATTGEN_PREDIV1,
-    PATTGEN_PREDIV2,
     PATTGEN_PATT_LEN,
     PATTGEN_PATT_LOOP,
     PATTGEN_INTR_MASK
@@ -166,8 +163,8 @@ package pattgen_reg_pkg;
     4'b 0001, // index[2] PATTGEN_INTR_TEST
     4'b 0001, // index[3] PATTGEN_CTRL
     4'b 0001, // index[4] PATTGEN_START
-    4'b 1111, // index[5] PATTGEN_PREDIV1
-    4'b 1111, // index[6] PATTGEN_PREDIV2
+    4'b 1111, // index[5] PATTGEN_PREDIV0
+    4'b 1111, // index[6] PATTGEN_PREDIV1
     4'b 0011, // index[7] PATTGEN_PATT_LEN
     4'b 0111, // index[8] PATTGEN_PATT_LOOP
     4'b 0001  // index[9] PATTGEN_INTR_MASK

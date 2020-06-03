@@ -4,27 +4,27 @@
 //
 // patt core implementation
 
-module patt_core (
-  input                             clk_i,
-  input                             rst_ni,
-  input i2c_reg_pkg::i2c_reg2hw_t   reg2hw,
-  output i2c_reg_pkg::i2c_hw2reg_t  hw2reg,
+module pattgen_core (
+  input  clk_i,
+  input  rst_ni,
+  input  pattgen_reg_pkg::pattgen_reg2hw_t  reg2hw,
+  output pattgen_reg_pkg::pattgen_hw2reg_t  hw2reg,
 
-  output logic                      pda1_tx,
-  output logic                      pcl1_tx,
-  output logic                      pda2_tx,
-  output logic                      pcl2_tx,
+  output logic  pda0_tx,
+  output logic  pcl0_tx,
+  output logic  pda1_tx,
+  output logic  pcl1_tx,
 
-  output logic                      intr_patt_done1,
-  output logic                      intr_patt_done2
+  output logic  intr_patt_done0,
+  output logic  intr_patt_done1
 );
 
   // TODO
+  assign  pda0_tx = 1'b0;
+  assign  pcl0_tx = 1'b0;
   assign  pda1_tx = 1'b0;
   assign  pcl1_tx = 1'b0;
-  assign  pda2_tx = 1'b0;
-  assign  pcl2_tx = 1'b0;
+  assign  intr_patt_done0 = 1'b0;
   assign  intr_patt_done1 = 1'b0;
-  assign  intr_patt_done2 = 1'b0;
 
-endmodule
+endmodule : pattgen_core
