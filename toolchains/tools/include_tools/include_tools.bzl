@@ -1,12 +1,12 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-def ShellCommand(cc_compiler_path):
+def ShellCommand(cc_compiler_path, command_line_list = []):
     """Shell command that lists the compiler info and include directories
 
     Returns:
         string: shell command to run
     """
-    return [cc_compiler_path, "-E", "-x", "c++", "-", "-v", "/dev/null"]
+    return [cc_compiler_path, "-E", "-x", "c++"] + command_line_list + ["-", "-v", "/dev/null"]
 
 def ProccessResponse(shell_command_result):
     """ Extracts the include paths from the path response

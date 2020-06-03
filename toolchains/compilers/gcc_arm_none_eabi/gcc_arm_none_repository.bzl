@@ -31,7 +31,13 @@ def _com_gcc_arm_none_repository_impl(repository_ctx):
         sha256 = remote_toolchain_info.linux_remote_compiler.sha256,
         stripPrefix = remote_toolchain_info.linux_remote_compiler.strip_prefix,
     )
-    response = repository_ctx.execute(include_tools.ShellCommand("bin/arm-none-eabi-cpp"))
+    response = repository_ctx.execute(include_tools.ShellCommand(
+        "bin/arm-none-eabi-cpp",
+        [
+            "-specs=nano.specs",
+            "-specs=nosys.specs",
+        ],
+    ))
     include_flags = include_tools.ProccessResponse(response.stderr)
     include_bazel_template_input = include_tools.CommandLineToTemplateString(include_flags)
     repository_ctx.file(
