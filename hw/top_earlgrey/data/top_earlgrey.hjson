@@ -182,7 +182,7 @@
       base_addr: "0x40090000",
       generated: "true"         // Indicate this module is generated in the topgen
     }
-    { name: "pinmux",
+    { name: "pinmux_aon",
       type: "pinmux",
       clock: "main",
       clock_srcs: {clk_i: "main", clk_aon_i: "io"},
@@ -191,7 +191,7 @@
       base_addr: "0x40070000",
       generated: "true"
     },
-    { name: "padctrl",
+    { name: "padctrl_aon",
       type: "padctrl",
       clock: "main",
       clock_srcs: {clk_i: "main"},
@@ -213,7 +213,7 @@
         LfsrSeed:  "0x7FFFFFFF"
       }
     }
-    { name: "pwrmgr",
+    { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
@@ -221,14 +221,14 @@
       base_addr: "0x400A0000",
 
     },
-    { name: "rstmgr",
+    { name: "rstmgr_aon",
       type: "rstmgr",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
     },
-    { name: "clkmgr",
+    { name: "clkmgr_aon",
       type: "clkmgr",
       clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
@@ -245,7 +245,7 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40140000",
     }
-    { name: "usbdev",
+    { name: "usbdev_aon",
       type: "usbdev",
       clock_srcs: {clk_i: "io", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
@@ -337,6 +337,12 @@
       clock_group: "infra",
       reset: "sys_io",
       reset_connections: {rst_peri_ni: "sys_io"},
+    }
+    { name: "aon",
+      clock_srcs: {clk_aon_i: "io"},
+      clock_group: "infra",
+      reset: "sys_io",
+      reset_connections: {rst_aon_ni: "sys_io"},
     }
   ],
 

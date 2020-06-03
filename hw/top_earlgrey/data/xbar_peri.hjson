@@ -12,12 +12,36 @@
       pipeline: "false"
 
     },
+    //{ name:      "lifecycle",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
     { name:      "uart",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
-      pipeline: "false"
+      pipeline:  "false"
     },
+    //{ name:      "uart1",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "uart2",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "uart3",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
     { name:      "gpio",
       type:      "device",
       clock:     "clk_peri_i",
@@ -36,36 +60,48 @@
       reset:     "rst_peri_ni",
       pipeline: "false"
     },
+    //{ name:      "spi_host1",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
     { name:      "i2c",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "usbdev",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline: "false"
-    },
-    { name:      "pwrmgr",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline: "false"
-    },
-    { name:      "rstmgr",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline: "false"
-    },
-    { name:      "clkmgr",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline: "false"
-    }
+    //{ name:      "i2c1",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "i2c2",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "i2c3",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "i2c4",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
+    //{ name:      "i2c5",
+    //  type:      "device",
+    //  clock:     "clk_peri_i",
+    //  reset:     "rst_peri_ni",
+    //  pipeline:  "false"
+    //},
     { name:      "pattgen",
       type:      "device",
       clock:     "clk_peri_i",
@@ -74,6 +110,6 @@
     }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr", "i2c", "pattgen"],
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "i2c", "pattgen"],
   },
 }

@@ -1,0 +1,94 @@
+{ name: "aon",
+  type: "xbar",
+  clock_primary: "clk_aon_i",
+  reset_primary: "rst_peri_ni",
+
+  nodes: [
+    { name: "main",
+      type: "host",
+      clock: "clk_aon_i",
+      reset: "rst_aon_ni",
+      xbar:  "true",
+      pipeline: "false"
+    }
+
+    // devices
+    { name:     "pwrmgr_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
+    { name:     "rstmgr_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
+    { name:     "clkmgr_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
+    //{ name:     "rbox_aon"
+    //  type:     "device"
+    //  clock:    "clk_aon_i",
+    //  reset:    "rst_aon_ni",
+    //  pipeline: "false"
+    //}
+    //{ name:     "dcd_aon"
+    //  type:     "device"
+    //  clock:    "clk_aon_i",
+    //  reset:    "rst_aon_ni",
+    //  pipeline: "false"
+    //}
+    //{ name:     "pwm_aon"
+    //  type:     "device"
+    //  clock:    "clk_aon_i",
+    //  reset:    "rst_aon_ni",
+    //  pipeline: "false"
+    //}
+    { name:     "pinmux_aon"
+      type:     "device"
+      inst_type: "pinmux",
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+      addr_range: [{
+        base_addr: "0x40070000",
+        size_byte: "0x1000",
+        }],
+    }
+    { name:     "padctrl_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      inst_type: "padctrl",
+      pipeline: "false"
+      addr_range: [{
+        base_addr: "0x40160000",
+        size_byte: "0x1000",
+        }],
+    }
+    //{ name:     "aontimer_aon"
+    //  type:     "device"
+    //  clock:    "clk_aon_i",
+    //  reset:    "rst_aon_ni",
+    //  pipeline: "false"
+    //}
+    { name:     "usbdev_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
+  ]
+
+  connections: {
+    main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
+            "padctrl_aon", "usbdev_aon",
+            //"rbox_aon", "dcd_aon", "aontimer_aon"
+    ]
+  }
+}
