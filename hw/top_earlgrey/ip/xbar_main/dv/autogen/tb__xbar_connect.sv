@@ -35,3 +35,4 @@ initial force dut.rst_fixed_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(padctrl, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(alert_handler, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(nmi_gen, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(otbn, dut, clk_main_i, rst_n)

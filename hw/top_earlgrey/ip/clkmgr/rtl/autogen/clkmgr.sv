@@ -209,6 +209,8 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_main_aes_en;
   logic clk_main_hmac_hint;
   logic clk_main_hmac_en;
+  logic clk_main_otbn_hint;
+  logic clk_main_otbn_en;
 
   assign clk_main_aes_en = clk_main_aes_hint | ~status_i.idle[0];
 
@@ -246,12 +248,32 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_hmac)
   );
 
+  assign clk_main_otbn_en = clk_main_otbn_hint | ~status_i.idle[2];
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_main_otbn_hint_sync (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .d(reg2hw.clk_hints.clk_main_otbn_hint.q),
+    .q(clk_main_otbn_hint)
+  );
+
+  prim_clock_gating i_clk_main_otbn_cg (
+    .clk_i(clk_main_i),
+    .en_i(clk_main_otbn_en & clk_main_en),
+    .test_en_i(dft_i.test_en),
+    .clk_o(clocks_o.clk_main_otbn)
+  );
+
 
   // state readback
   assign hw2reg.clk_hints_status.clk_main_aes_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_aes_val.d = clk_main_aes_en;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.d = clk_main_hmac_en;
+  assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
 
 
   ////////////////////////////////////////////////////

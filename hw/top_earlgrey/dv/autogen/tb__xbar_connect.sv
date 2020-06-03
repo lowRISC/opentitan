@@ -24,6 +24,7 @@ tl_if pinmux_tl_if(clk_main, rst_n);
 tl_if padctrl_tl_if(clk_main, rst_n);
 tl_if alert_handler_tl_if(clk_main, rst_n);
 tl_if nmi_gen_tl_if(clk_main, rst_n);
+tl_if otbn_tl_if(clk_main, rst_n);
 tl_if uart_tl_if(clk_io, rst_n);
 tl_if gpio_tl_if(clk_io, rst_n);
 tl_if spi_device_tl_if(clk_io, rst_n);
@@ -73,6 +74,7 @@ initial begin
     `DRIVE_TL_DEVICE_IF(padctrl, dut.top_earlgrey, clk_main, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(alert_handler, dut.top_earlgrey, clk_main, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(nmi_gen, dut.top_earlgrey, clk_main, rst_n, d_d2h, d_h2d)
+    `DRIVE_TL_DEVICE_IF(otbn, dut.top_earlgrey, clk_main, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(uart, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(gpio, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)
     `DRIVE_TL_DEVICE_IF(spi_device, dut.top_earlgrey, clk_io, rst_n, d_d2h, d_h2d)

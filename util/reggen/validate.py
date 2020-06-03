@@ -1367,7 +1367,9 @@ def check_wen_regs(regs):
     tuple_swaccess = 2
     tuple_hwaccess = 3
 
-    reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'],
+    #    import pprint as pp
+    #pp.pprint(regs['registers'])
+    reg_list = [(reg['name'].lower(), reg['genresval'], reg.get('swaccess', ''),
                  reg['hwaccess']) for reg in regs['registers']
                 if 'name' in reg and 'genresval' in reg]
     mreg_list = [

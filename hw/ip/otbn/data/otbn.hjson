@@ -62,6 +62,14 @@
             The completion is signalled by the done interrupt.
           '''
         }
+        { bits: "1",
+          name: "dummy",
+          desc: '''
+            With only bit 0 regreg fails to output the start field into
+            the otbn_reg_pkg.sv file. Add this dummy field until this is bug
+            resolved.
+          '''
+        }
       ],
     }
     { name: "STATUS",
@@ -73,6 +81,14 @@
         { bits: "0",
           name: "busy",
           desc: "OTBN is performing an operation."
+        }
+        { bits: "1",
+          name: "dummy",
+          desc: '''
+            With only bit 0 regreg fails to output the start field into
+            the otbn_reg_pkg.sv file. Add this dummy field until this is bug
+            resolved.
+          '''
         }
       ]
     } // register : status
@@ -107,9 +123,9 @@
     } // register : start_addr
 
 
-    // Expansion space for further control/status registers, and to force
-    // alignment of IMEM.
-    { skipto: "0x1000" }
+    // Give IMEM and DMEM 1 MB address space, each, to allow for easy expansion
+    // of the actual IMEM and DMEM sizes without changing the address map.
+    { skipto: "0x100000" }
 
     { window: {
         name: "IMEM"
@@ -125,8 +141,7 @@
       }
     }
 
-    // Expansion space for a total of up to 16 kB of instruction memory (IMEM)
-    { skipto: "0x5000" }
+    { skipto: "0x200000" }
 
     { window: {
         name: "DMEM"

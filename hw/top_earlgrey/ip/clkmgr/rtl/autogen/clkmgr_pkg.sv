@@ -19,6 +19,7 @@ package clkmgr_pkg;
   typedef struct packed {
   logic clk_main_aes;
   logic clk_main_hmac;
+  logic clk_main_otbn;
   logic clk_main_infra;
   logic clk_io_infra;
   logic clk_io_secure;
@@ -31,11 +32,11 @@ package clkmgr_pkg;
   } clkmgr_out_t;
 
   typedef struct packed {
-    logic [2-1:0] idle;
+    logic [3-1:0] idle;
   } clk_hint_status_t;
 
   parameter clk_hint_status_t CLK_HINT_STATUS_DEFAULT = '{
-    idle: {2{1'b1}}
+    idle: {3{1'b1}}
   };
 
 
