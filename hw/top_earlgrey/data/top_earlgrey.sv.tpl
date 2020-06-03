@@ -244,7 +244,10 @@ module top_${top["name"]} #(
     .BranchTargetALU          (1),
     .WritebackStage           (1),
     .MultiplierImplementation ("single-cycle"),
+    .ICache                   (0),
+    .ICacheECC                (0),
     .DbgTriggerEn             (1),
+    .SecureIbex               (0),
     .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine                 (IbexPipeLine)
