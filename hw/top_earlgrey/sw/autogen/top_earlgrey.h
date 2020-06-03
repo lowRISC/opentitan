@@ -226,6 +226,14 @@
  */
 #define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40150000u
 
+/**
+ * Base address for pattgen peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PATTGEN_BASE_ADDR 0x400E0000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.

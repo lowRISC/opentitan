@@ -33,6 +33,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"clkmgr", '{
         '{32'h400c0000, 32'h400c0fff}
+    }},
+    '{"pattgen", '{
+        '{32'h400e0000, 32'h400e0fff}
 }}};
 
   // List of Xbar hosts
@@ -46,5 +49,6 @@ tl_host_t xbar_hosts[$] = '{
         "pwrmgr",
         "rstmgr",
         "clkmgr",
-        "i2c"}}
+        "i2c",
+        "pattgen"}}
 };

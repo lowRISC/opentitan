@@ -15,6 +15,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_PWRMGR     = 32'h 400a0000;
   localparam logic [31:0] ADDR_SPACE_RSTMGR     = 32'h 400b0000;
   localparam logic [31:0] ADDR_SPACE_CLKMGR     = 32'h 400c0000;
+  localparam logic [31:0] ADDR_SPACE_PATTGEN    = 32'h 400e0000;
 
   localparam logic [31:0] ADDR_MASK_UART       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_GPIO       = 32'h 00000fff;
@@ -25,9 +26,10 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_PWRMGR     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RSTMGR     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_CLKMGR     = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_PATTGEN    = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 9;
+  localparam int N_DEVICE = 10;
 
   typedef enum int {
     TlUart = 0,
@@ -38,7 +40,8 @@ package tl_peri_pkg;
     TlUsbdev = 5,
     TlPwrmgr = 6,
     TlRstmgr = 7,
-    TlClkmgr = 8
+    TlClkmgr = 8,
+    TlPattgen = 9
   } tl_device_e;
 
   typedef enum int {

@@ -35,6 +35,7 @@
       rstmgr
       clkmgr
       i2c
+      pattgen
     ]
   }
   nodes:
@@ -196,6 +197,23 @@
       [
         {
           base_addr: 0x400C0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: pattgen
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: pattgen
+      addr_range:
+      [
+        {
+          base_addr: 0x400E0000
           size_byte: 0x1000
         }
       ]

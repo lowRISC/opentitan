@@ -106,6 +106,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
   tl_d2h_t  tl_usbdev_d_d2h;
+  tl_h2d_t  tl_pattgen_d_h2d;
+  tl_d2h_t  tl_pattgen_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -183,6 +185,15 @@ module top_earlgrey #(
   logic        cio_usbdev_dp_en_d2p;
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
+  // pattgen
+  logic        cio_pattgen_pda0_tx_d2p;
+  logic        cio_pattgen_pda0_tx_en_d2p;
+  logic        cio_pattgen_pcl0_tx_d2p;
+  logic        cio_pattgen_pcl0_tx_en_d2p;
+  logic        cio_pattgen_pda1_tx_d2p;
+  logic        cio_pattgen_pda1_tx_en_d2p;
+  logic        cio_pattgen_pcl1_tx_d2p;
+  logic        cio_pattgen_pcl1_tx_en_d2p;
 
 
   logic [80:0]  intr_vector;
@@ -246,6 +257,8 @@ module top_earlgrey #(
   logic intr_usbdev_rx_bitstuff_err;
   logic intr_usbdev_frame;
   logic intr_usbdev_connected;
+  logic intr_pattgen_patt_done0;
+  logic intr_pattgen_patt_done1;
 
 
 
@@ -295,10 +308,7 @@ module top_earlgrey #(
     .BranchTargetALU          (1),
     .WritebackStage           (1),
     .MultiplierImplementation ("single-cycle"),
-    .ICache                   (1),
-    .ICacheECC                (1),
     .DbgTriggerEn             (1),
-    .SecureIbex               (1),
     .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine                 (IbexPipeLine)
@@ -873,6 +883,28 @@ module top_earlgrey #(
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
+  pattgen u_pattgen (
+      .tl_i (tl_pattgen_d_h2d),
+      .tl_o (tl_pattgen_d_d2h),
+
+      // Output
+      .cio_pda0_tx_o    (cio_pattgen_pda0_tx_d2p),
+      .cio_pda0_tx_en_o (cio_pattgen_pda0_tx_en_d2p),
+      .cio_pcl0_tx_o    (cio_pattgen_pcl0_tx_d2p),
+      .cio_pcl0_tx_en_o (cio_pattgen_pcl0_tx_en_d2p),
+      .cio_pda1_tx_o    (cio_pattgen_pda1_tx_d2p),
+      .cio_pda1_tx_en_o (cio_pattgen_pda1_tx_en_d2p),
+      .cio_pcl1_tx_o    (cio_pattgen_pcl1_tx_d2p),
+      .cio_pcl1_tx_en_o (cio_pattgen_pcl1_tx_en_d2p),
+
+      // Interrupt
+      .intr_patt_done0_o (intr_pattgen_patt_done0),
+      .intr_patt_done1_o (intr_pattgen_patt_done1),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_pwrmgr_wakeup,
@@ -991,6 +1023,8 @@ module top_earlgrey #(
     .tl_rstmgr_i     (tl_rstmgr_d_d2h),
     .tl_clkmgr_o     (tl_clkmgr_d_h2d),
     .tl_clkmgr_i     (tl_clkmgr_d_d2h),
+    .tl_pattgen_o    (tl_pattgen_d_h2d),
+    .tl_pattgen_i    (tl_pattgen_d_d2h),
 
     .scanmode_i
   );

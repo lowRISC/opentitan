@@ -24,3 +24,4 @@ xbar_peri dut(
 `CONNECT_TL_DEVICE_IF(pwrmgr)
 `CONNECT_TL_DEVICE_IF(rstmgr)
 `CONNECT_TL_DEVICE_IF(clkmgr)
+`CONNECT_TL_DEVICE_IF(pattgen)

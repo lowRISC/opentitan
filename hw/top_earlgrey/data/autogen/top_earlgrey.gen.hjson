@@ -1776,6 +1776,81 @@
         }
       ]
     }
+    {
+      name: pattgen
+      type: pattgen
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x400E0000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list:
+      [
+        {
+          name: pda0_tx
+          width: 1
+          type: output
+        }
+        {
+          name: pcl0_tx
+          width: 1
+          type: output
+        }
+        {
+          name: pda1_tx
+          width: 1
+          type: output
+        }
+        {
+          name: pcl1_tx
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: patt_done0
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: patt_done1
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
   ]
   memory:
   [
@@ -2087,6 +2162,10 @@
               base_addr: 0x400C0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x400E0000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -2255,6 +2334,7 @@
           rstmgr
           clkmgr
           i2c
+          pattgen
         ]
       }
       nodes:
@@ -2416,6 +2496,23 @@
           [
             {
               base_addr: 0x400C0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: pattgen
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: pattgen
+          addr_range:
+          [
+            {
+              base_addr: 0x400E0000
               size_byte: 0x1000
             }
           ]
