@@ -27,7 +27,7 @@ RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/rel
 
 TARGET_DIR = '/tools/riscv'
 TOOLCHAIN_VERSION = 'latest'
-TOOLCHAIN_KIND = 'gcc-only'
+TOOLCHAIN_KIND = 'combined'
 
 FILE_PATTERNS_TO_REWRITE = [
     "riscv32-unknown-elf-*.cmake",
