@@ -75,8 +75,6 @@
     border-collapse: collapse;
 
     td, th {
-      color: $medium-purple;
-      color: var(--text-second);
       vertical-align: top;
       border: 1px solid var(--text-second);
       padding: 0.5em;
@@ -84,8 +82,6 @@
 
     th {
       font-weight: bold;
-      color: $dark-purple;
-      color: var(--text-color);
     }
   }
 
@@ -98,8 +94,6 @@
   }
 
   ul, ol {
-    color: $medium-purple;
-    color: var(--text-second);
     padding-left: 1em;
 
     > li + li {
