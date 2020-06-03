@@ -101,7 +101,35 @@ $ ./util/get-toolchain.py
     $ make
     ```
 
-The `make` command installs the toolchain to `/tools/riscv`, no additional `make install` step is needed.
+    The `make` command installs the toolchain to `/tools/riscv`, no additional `make install` step is needed.
+
+3. Write a [meson toolchain configuration file](https://mesonbuild.com/Cross-compilation.html#defining-the-environment) for your toolchain.
+   It should look like the following (though your paths may be different):
+    ```ini
+    [binaries]
+    c = '/tools/riscv/bin/riscv32-unknown-elf-gcc'
+    cpp = '/tools/riscv/bin/riscv32-unknown-elf-g++'
+    ar = '/tools/riscv/bin/riscv32-unknown-elf-ar'
+    ld = '/tools/riscv/bin/riscv32-unknown-elf-ld'
+    objdump = '/tools/riscv/bin/riscv32-unknown-elf-objdump'
+    objcopy = '/tools/riscv/bin/riscv32-unknown-elf-objcopy'
+    strip = '/tools/riscv/bin/riscv32-unknown-elf-strip'
+
+    [properties]
+    needs_exe_wrapper = true
+    has_function_printf = false
+    c_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
+    cpp_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
+
+    [host_machine]
+    system = 'bare metal'
+    cpu_family = 'riscv32'
+    cpu = 'ibex'
+    endian = 'little'
+    ```
+
+    You will need to pass the path to this file to `./meson_init.sh` using the `-t FILE` option.
+
 
 ### OpenOCD
 
