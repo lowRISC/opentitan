@@ -181,6 +181,41 @@ jobs:
     parameters:
       artifact: sw_build
 
+# This is a second software build currently building with Clang, to test out the
+# compiler migration. It is a copy of `sw_build` with `continueOnError: true`
+# specified for the main tasks, and `meson_init.sh` configured with the clang
+# toolchain not the default toolchain.
+- job: sw_build_clang
+  displayName: Build Software (with Clang)
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --target-dir="$TOOLCHAIN_PATH" \
+        --release-version="$TOOLCHAIN_VERSION" \
+        --update
+    displayName: Install toolchain
+  - bash: |
+      . util/build_consts.sh
+      ./meson_init.sh -A \
+        -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-clang.txt"
+      ninja -C "$OBJ_DIR" all
+    displayName: Build embedded targets
+    continueOnError: true
+  - bash: |
+      . util/build_consts.sh
+      ninja -C "$OBJ_DIR" test
+    displayName: Run unit tests
+    continueOnError: true
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      artifact: sw_build_clang
+
 - job: top_earlgrey_verilator
   displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
