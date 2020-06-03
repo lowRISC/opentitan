@@ -56,6 +56,7 @@ config = {
         "hw/ip/hmac/data/hmac.hjson",
         "hw/ip/i2c/data/i2c.hjson",
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
+        "hw/ip/otbn/data/otbn.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         "hw/ip/padctrl/data/padctrl.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
