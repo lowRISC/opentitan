@@ -19,7 +19,10 @@ module rv_core_ibex #(
   parameter bit          BranchTargetALU          = 1,
   parameter bit          WritebackStage           = 1,
   parameter              MultiplierImplementation = "single-cycle",
+  parameter bit          ICache                   = 1'b0,
+  parameter bit          ICacheECC                = 1'b0,
   parameter bit          DbgTriggerEn             = 1'b1,
+  parameter bit          SecureIbex               = 1'b0,
   parameter int unsigned DmHaltAddr               = 32'h1A110800,
   parameter int unsigned DmExceptionAddr          = 32'h1A110808,
   parameter bit          PipeLine                 = 0
@@ -126,7 +129,10 @@ module rv_core_ibex #(
     .BranchTargetALU          ( BranchTargetALU          ),
     .WritebackStage           ( WritebackStage           ),
     .MultiplierImplementation ( MultiplierImplementation ),
+    .ICache                   ( ICache                   ),
+    .ICacheECC                ( ICacheECC                ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
+    .SecureIbex               ( SecureIbex               ),
     .DmHaltAddr               ( DmHaltAddr               ),
     .DmExceptionAddr          ( DmExceptionAddr          )
   ) u_core (
