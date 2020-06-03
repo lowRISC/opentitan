@@ -295,7 +295,10 @@ module top_earlgrey #(
     .BranchTargetALU          (1),
     .WritebackStage           (1),
     .MultiplierImplementation ("single-cycle"),
+    .ICache                   (1),
+    .ICacheECC                (1),
     .DbgTriggerEn             (1),
+    .SecureIbex               (1),
     .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
     .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
     .PipeLine                 (IbexPipeLine)
