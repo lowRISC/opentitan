@@ -49,6 +49,11 @@ class chip_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // TODO, may add some checking later
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+    return;
+  endtask
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
