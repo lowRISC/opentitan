@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "pattgen",
+    design_spec:        "hw/ip/pattgen/doc",
+    dv_plan:            "hw/ip/pattgen/doc/dv_plan",
+    version:            "0.5",
+    life_stage:         "L1",
+    design_stage:       "D0",
+    verification_stage: "V0",
+}
