@@ -164,8 +164,8 @@ jobs:
   - bash: |
       set -x
       sudo util/get-toolchain.py \
-        --target-dir="${TOOLCHAIN_PATH}" \
-        --release-version="${TOOLCHAIN_VERSION}" \
+        --target-dir="$TOOLCHAIN_PATH" \
+        --release-version="$TOOLCHAIN_VERSION" \
         --update
     displayName: Install toolchain
   - bash: |
@@ -173,12 +173,11 @@ jobs:
       ./meson_init.sh -A
       ninja -C "$OBJ_DIR" all
     displayName: Build embedded targets
-  - template: ci/upload-artifacts-template.yml
   - bash: |
       . util/build_consts.sh
       ninja -C "$OBJ_DIR" test
-    displayName: 'Run unit tests'
-  - template: 'ci/upload-artifacts-template.yml'
+    displayName: Run unit tests
+  - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: sw_build
 
