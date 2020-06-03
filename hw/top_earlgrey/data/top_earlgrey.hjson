@@ -252,6 +252,13 @@
       reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
+    { name: "pattgen",
+      type: "pattgen",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x400E0000"
+    }
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.

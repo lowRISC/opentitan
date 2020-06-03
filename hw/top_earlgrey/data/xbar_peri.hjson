@@ -66,8 +66,14 @@
       reset:     "rst_peri_ni",
       pipeline: "false"
     }
+    { name:      "pattgen",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr", "i2c"],
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr", "i2c", "pattgen"],
   },
 }

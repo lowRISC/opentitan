@@ -24,6 +24,7 @@ IPS ?=  ip-aes                 \
         ip-otp_ctrl            \
         ip-nmi_gen             \
         ip-padctrl             \
+        ip-pattgen             \
         ip-pinmux              \
         ip-pwrmgr              \
         ip-rv_core_ibex        \
