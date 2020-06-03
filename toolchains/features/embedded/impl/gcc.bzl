@@ -7,7 +7,6 @@ load(
 load("//toolchains/features/embedded:type.bzl", "all_embedded_features")
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 
-_ARM_NONE_EABI_VERSION = "9.2.1"
 _CPP_ALL_COMPILE_ACTIONS = [
     ACTION_NAMES.assemble,
     ACTION_NAMES.preprocess_assemble,
@@ -72,6 +71,19 @@ _SYS_SPEC_FEATURE = feature(
     enabled = True,
     flag_sets = [
         flag_set(
+            actions = _CPP_ALL_COMPILE_ACTIONS,
+            flag_groups = [
+                flag_group(
+                    flags = [
+                        "-mabi=aapcs",
+                        "-mthumb",
+                        "-specs=nano.specs",
+                        "-specs=nosys.specs",
+                    ],
+                ),
+            ],
+        ),
+        flag_set(
             actions = _LD_ALL_ACTIONS,
             flag_groups = [
                 flag_group(
@@ -79,7 +91,6 @@ _SYS_SPEC_FEATURE = feature(
                         # Disable Exceptions
                         "-lc",
                         "-lnosys",
-                        "-specs=nano.specs",
                     ],
                 ),
             ],

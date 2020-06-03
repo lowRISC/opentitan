@@ -52,6 +52,10 @@ load("//toolchains/compilers/gcc_arm_none_eabi:gcc_arm_none_repository.bzl", "gc
 
 gcc_arm_none_compiler()
 
+load("//toolchains/compilers/gcc_avr_none_eabi:gcc_avr_none_repository.bzl", "gcc_avr_none_compiler")
+
+gcc_avr_none_compiler()
+
 load("//platforms:execution_platforms.bzl", "register_platforms")
 
 register_platforms()
