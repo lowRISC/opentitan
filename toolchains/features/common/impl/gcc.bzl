@@ -229,6 +229,18 @@ _OPT_FEATURE = feature(
                         "-Os",
                         # Inline small functions if less instructions are likely to be executed
                         "-finline-small-functions",
+                        "-flto",
+                    ],
+                ),
+            ],
+        ),
+        flag_set(
+            actions = _LD_ALL_ACTIONS,
+            flag_groups = [
+                flag_group(
+                    flags = [
+                        # Link time optimisation
+                        "-flto",
                     ],
                 ),
             ],
