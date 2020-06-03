@@ -93,6 +93,7 @@
     {
       name: xbar_mode
       run_opts: ["+xbar_mode=1"]
+      reseed: 50
     }
   ]
 
