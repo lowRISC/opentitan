@@ -27,10 +27,7 @@ def ProccessResponse(shell_command_result):
             normalised_path = paths.normalize(line)
             path = normalised_path.rpartition("external")
             filtered_lines.append(path[1] + path[2])
-    result = []
-    for path in filtered_lines:
-        result.append("-isystem" + path)
-    return result
+    return filtered_lines
 
 def CommandLineToTemplateString(command_line):
     """ CommandLineToTemplateString converts a list of command line elements to a single string that can be passed into a bazel repository template 

@@ -26,7 +26,7 @@ load(
     "tool_path",
 )
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-load("@com_gcc_arm_none_eabi_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE")
+load("@com_gcc_arm_none_eabi_compiler//:defs.bzl", "SYSTEM_INCLUDE_COMMAND_LINE", "SYSTEM_INCLUDE_PATHS")
 load("//toolchains/features/common:defs.bzl", "GetCommonFeatures")
 load("//toolchains/features/embedded:defs.bzl", "GetEmbeddedFeatures")
 
@@ -100,6 +100,7 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
     toolchain_config_info = cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
+        cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS,
         host_system_name = "i686-unknown-linux-gnu",
         target_system_name = "arm-none-eabi",
         target_cpu = ctx.attr.architecture,
