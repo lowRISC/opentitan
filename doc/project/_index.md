@@ -22,7 +22,7 @@ As a lowRISC CIC Chartered Project, OpenTitan governance is handled via lowRISC'
 As described in full detail in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf), our governance structure consists of:
 * The Project Director, Dominic Rizzo, who is a representative of the lowRISC CIC's Board of Directors within the Steering Committee.
 * The Steering Committee, responsible for project oversight and agreeing the technical roadmap.
-* The Technical Committee, responsible for technical decision making required to implement the technical roadmap.
+* The [Technical Committee]({{< relref "technical_committee" >}}), responsible for technical decision making required to implement the technical roadmap.
 
 ## Initiating new development
 
