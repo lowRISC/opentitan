@@ -26,7 +26,7 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_vif", cfg.clk_rst_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get clk_rst_if from uvm_config_db")
     end
-    cfg.clk_rst_vif.set_freq_mhz(cfg.clk_freq_mhz);
+    cfg.clk_rst_vif.set_freq_mhz(real'(cfg.clk_freq_mhz));
 
     // create components
     if (cfg.en_cov) begin
