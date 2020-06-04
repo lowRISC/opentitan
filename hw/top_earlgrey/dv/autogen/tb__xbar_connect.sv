@@ -7,10 +7,6 @@ wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
 wire clk_io;
 clk_rst_if clk_rst_if_io(.clk(clk_io), .rst_n(rst_n));
-wire clk_usb;
-clk_rst_if clk_rst_if_usb(.clk(clk_usb), .rst_n(rst_n));
-wire clk_aon;
-clk_rst_if clk_rst_if_aon(.clk(clk_aon), .rst_n(rst_n));
 
 tl_if corei_tl_if(clk_main, rst_n);
 tl_if cored_tl_if(clk_main, rst_n);
@@ -50,21 +46,11 @@ initial begin
     clk_rst_if_main.set_freq_mhz(100000000 / 1000_000.0);
     clk_rst_if_io.set_active(.drive_rst_n_val(0));
     clk_rst_if_io.set_freq_mhz(100000000 / 1000_000.0);
-    clk_rst_if_usb.set_active(.drive_rst_n_val(0));
-    clk_rst_if_usb.set_freq_mhz(48000000 / 1000_000.0);
-    clk_rst_if_aon.set_active(.drive_rst_n_val(0));
-    clk_rst_if_aon.set_freq_mhz(200000 / 1000_000.0);
 
     // bypass clkmgr, force clocks directly
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_main_aes = clk_main;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_main_hmac = clk_main;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_main_infra = clk_main;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_io_infra = clk_io;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_io_secure = clk_io;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_main_secure = clk_main;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_io_peri = clk_io;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_usb_peri = clk_usb;
-    force tb.dut.top_earlgrey.clkmgr_clocks.clk_io_timers = clk_io;
+    force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
+    force tb.dut.top_earlgrey.u_xbar_main.clk_fixed_i = clk_io;
+    force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_earlgrey.u_xbar_main.rst_main_ni = rst_n;
