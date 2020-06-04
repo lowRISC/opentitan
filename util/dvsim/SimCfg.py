@@ -222,7 +222,7 @@ class SimCfg(FlowCfg):
 
             # Use the default build mode for tests that do not specify it
             if not hasattr(self, "build_mode"):
-                setattr(self, "build_mode", "default")
+                self.build_mode = 'default'
 
             self._process_exports()
 
@@ -283,8 +283,7 @@ class SimCfg(FlowCfg):
                 sys.exit(1)
 
         # Create tests from given list of items
-        tests = Tests.create_tests(getattr(self, "tests"), self)
-        setattr(self, "tests", tests)
+        self.tests = Tests.create_tests(self.tests, self)
 
         # Regressions
         # Parse testplan if provided.
@@ -294,9 +293,8 @@ class SimCfg(FlowCfg):
             self.regressions.extend(self.testplan.get_milestone_regressions())
 
         # Create regressions
-        regressions = Regressions.create_regressions(
-            getattr(self, "regressions"), self, tests)
-        setattr(self, "regressions", regressions)
+        self.regressions = Regressions.create_regressions(self.regressions,
+                                                          self, self.tests)
 
     def _print_list(self):
         for list_item in self.list_items:
@@ -550,8 +548,7 @@ class SimCfg(FlowCfg):
 
         # Add path to testplan.
         if hasattr(self, "testplan_doc_path"):
-            testplan = "https://" + self.doc_server + '/' + getattr(
-                self, "testplan_doc_path")
+            testplan = "https://" + self.doc_server + '/' + self.testplan_doc_path
         else:
             testplan = "https://" + self.doc_server + '/' + self.rel_path
             testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
@@ -578,8 +575,7 @@ class SimCfg(FlowCfg):
                     # Link the dashboard page using "cov_report_page" value.
                     if hasattr(self, "cov_report_page"):
                         results_str += "\n### [Coverage Dashboard]"
-                        results_str += "({})\n\n".format(
-                            getattr(self, "cov_report_page"))
+                        results_str += "({})\n\n".format(self.cov_report_page)
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
