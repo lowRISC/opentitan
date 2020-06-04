@@ -17,6 +17,10 @@
   // be exactly word wide in the interrupt vector.
   .option norvc
 
+  // Disable RISC-V linker relaxation, as it can compress instructions at
+  // link-time, which we also really don't want.
+  .option norelax
+
   // Exception handler.
   .org 0x00
   j exception_handler
