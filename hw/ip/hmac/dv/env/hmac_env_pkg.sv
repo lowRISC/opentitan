@@ -11,7 +11,7 @@ package hmac_env_pkg;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
   import cryptoc_dpi_pkg::*;
-  import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
   import test_vectors_pkg::*;
   import hmac_ral_pkg::*;

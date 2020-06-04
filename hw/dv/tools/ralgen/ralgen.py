@@ -78,7 +78,7 @@ def main():
         'filesets': {
             'files_dv': {
                 'depend': [
-                    "lowrisc:dv:dv_lib",
+                    "lowrisc:dv:dv_base_reg",
                 ],
                 'files': [
                     ral_pkg_file,

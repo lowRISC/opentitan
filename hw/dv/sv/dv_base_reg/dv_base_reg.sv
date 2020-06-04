@@ -4,15 +4,17 @@
 //
 // base register class which will be used to generate the reg
 class dv_base_reg extends uvm_reg;
+  // external reg doesn't have storage in reg module, which may connect to some combinational logic
+  // hence, backdoor write isn't available
+  local bit is_ext_reg;
+
+  local dv_base_reg locked_regs[$];
 
   function new(string       name = "",
                int unsigned n_bits,
                int          has_coverage);
     super.new(name, n_bits, has_coverage);
   endfunction : new
-
-
-  local dv_base_reg locked_regs[$];
 
   function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
     uvm_reg_field ral_fields[$];
@@ -79,5 +81,13 @@ class dv_base_reg extends uvm_reg;
       endcase
     end
   endtask
+
+  virtual function void set_is_ext_reg(bit is_ext);
+    is_ext_reg = is_ext;
+  endfunction
+
+  virtual function bit get_is_ext_reg();
+    return is_ext_reg;
+  endfunction
 
 endclass

@@ -18,7 +18,7 @@ regs_flat = block.get_regs_flat()
 package ${block.name}_ral_pkg;
   // dep packages
   import uvm_pkg::*;
-  import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
 % for b in block.blocks:
   import ${b.name}_ral_pkg::*;
 % endfor
@@ -55,7 +55,7 @@ package ${block.name}_ral_pkg;
       super.new(name, n_bits, has_coverage);
     endfunction : new
 
-    virtual function void build(csr_utils_pkg::csr_excl_item csr_excl = null);
+    virtual function void build(csr_excl_item csr_excl = null);
       // create fields
 % for f in r.fields:
 <%
@@ -83,6 +83,14 @@ package ${block.name}_ral_pkg;
         .is_rand(1),
         .individually_accessible(1));
       ${f.name}.set_original_access("${field_access}");
+  % if r.hwext:
+      set_is_ext_reg(1);
+  % endif
+  % if len(r.fields) == 1:
+      add_hdl_path_slice("u_${reg_name}.q", ${f.lsb}, ${field_size});
+  % else:
+      add_hdl_path_slice("u_${reg_name}_${f.name}.q", ${f.lsb}, ${field_size});
+  % endif
 % if field_tags:
       // create field tags
 % for field_tag in field_tags:
@@ -90,8 +98,7 @@ package ${block.name}_ral_pkg;
   tag = field_tag.split(":")
 %>\
 % if tag[0] == "excl":
-      csr_excl.add_excl(${f.name}.get_full_name(), csr_utils_pkg::${tag[2]},
-                        csr_utils_pkg::${tag[1]});
+      csr_excl.add_excl(${f.name}.get_full_name(), ${tag[2]}, ${tag[1]});
 % endif
 % endfor
 % endif
@@ -153,14 +160,14 @@ package ${block.name}_ral_pkg;
     endfunction : new
 
     virtual function void build(uvm_reg_addr_t base_addr,
-                                csr_utils_pkg::csr_excl_item csr_excl = null);
+                                csr_excl_item csr_excl = null);
       // create default map
       this.default_map = create_map(.name("default_map"),
                                     .base_addr(base_addr),
                                     .n_bytes(${block.width//8}),
                                     .endian(UVM_LITTLE_ENDIAN));
       if (csr_excl == null) begin
-        csr_excl = csr_utils_pkg::csr_excl_item::type_id::create("csr_excl");
+        csr_excl = csr_excl_item::type_id::create("csr_excl");
         this.csr_excl = csr_excl;
       end
 % if block.blocks:
@@ -171,10 +178,12 @@ package ${block.name}_ral_pkg;
       ${b.name} = ${gen_dv.bcname(b)}::type_id::create("${b.name}");
       ${b.name}.configure(.parent(this));
       ${b.name}.build(.base_addr(base_addr + ${gen_dv.sv_base_addr(b)}), .csr_excl(csr_excl));
+      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}.u_reg");
       default_map.add_submap(.child_map(${b.name}.default_map),
                              .offset(base_addr + ${gen_dv.sv_base_addr(b)}));
 % endfor
 % if regs_flat:
+      set_hdl_path_root("tb.dut.u_reg");
 
       // create registers
 % endif
@@ -203,8 +212,7 @@ package ${block.name}_ral_pkg;
   tag = reg_tag.split(":")
 %>\
 % if tag[0] == "excl":
-      csr_excl.add_excl(${reg_name}.get_full_name(), csr_utils_pkg::${tag[2]},
-                        csr_utils_pkg::${tag[1]});
+      csr_excl.add_excl(${reg_name}.get_full_name(), ${tag[2]}, ${tag[1]});
 % endif
 % endfor
 % endif
@@ -234,8 +242,7 @@ package ${block.name}_ral_pkg;
   tag = mem_tag.split(":")
 %>\
 % if tag[0] == "excl":
-      csr_excl.add_excl(${mem_name}.get_full_name(), csr_utils_pkg::${tag[2]},
-                        csr_utils_pkg::${tag[1]});
+      csr_excl.add_excl(${mem_name}.get_full_name(), ${tag[2]}, ${tag[1]});
 % endif
 % endfor
 % endif

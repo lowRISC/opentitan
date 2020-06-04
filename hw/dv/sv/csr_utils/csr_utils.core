@@ -9,9 +9,9 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_base_reg
     files:
       - csr_utils_pkg.sv
-      - csr_excl_item.sv: {is_include_file: true}
       - csr_seq_lib.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

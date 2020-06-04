@@ -10,14 +10,9 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:csr_utils
+      - lowrisc:dv:dv_base_reg
     files:
       - dv_lib_pkg.sv
-
-      - dv_base_reg_field.sv: {is_include_file: true}
-      - dv_base_reg.sv: {is_include_file: true}
-      - dv_base_mem.sv: {is_include_file: true}
-      - dv_base_reg_block.sv: {is_include_file: true}
-      - dv_base_reg_map.sv: {is_include_file: true}
 
       - dv_base_agent_cfg.sv: {is_include_file: true}
       - dv_base_agent_cov.sv: {is_include_file: true}

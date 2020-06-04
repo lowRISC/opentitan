@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dv_base_reg"
+description: "DV base reg/mem library"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+    files:
+      - dv_base_reg_pkg.sv
+      - csr_excl_item.sv: {is_include_file: true}
+      - dv_base_reg_field.sv: {is_include_file: true}
+      - dv_base_reg.sv: {is_include_file: true}
+      - dv_base_mem.sv: {is_include_file: true}
+      - dv_base_reg_block.sv: {is_include_file: true}
+      - dv_base_reg_map.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
