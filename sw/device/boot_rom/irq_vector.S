@@ -11,6 +11,7 @@
   // NOTE: The "ax" flag below is necessary to ensure that this section 
   // is allocated executable space in ROM by the linker.
   .section .vectors, "ax"
+  .option push
 
   // Disable RISC-V instruction compression: we need all instructions to 
   // be exactly word wide in the interrupt vector.
@@ -48,7 +49,10 @@
   .org 0x80
   j _reset_start
 
-  .option rvc
+  .option pop
+
+  // Put these handlers in the code section.
+  .text
 /**
  * Default exception handler; loops forever.
  */
