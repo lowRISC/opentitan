@@ -22,7 +22,7 @@ class alert_monitor extends alert_esc_base_monitor;
       alert_thread(phase);
       ping_thread(phase);
       reset_thread();
-      int_fail_thread(phase);
+      int_fail_thread();
     join_none
   endtask : run_phase
 
@@ -40,7 +40,7 @@ class alert_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     bit                ping_p, alert_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (ping_p != cfg.vif.get_ping_p()) begin
+      if (ping_p != cfg.vif.monitor_cb.alert_rx.ping_p) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         under_ping_rsp = 1;
         req = alert_esc_seq_item::type_id::create("req");
@@ -54,10 +54,10 @@ class alert_monitor extends alert_esc_base_monitor;
               end
               begin : wait_ping_handshake
                 // in case there is an alert happened before ping
-                if (alert_p != 0) cfg.vif.wait_alert_complete();
-                cfg.vif.wait_alert();
+                if (alert_p != 0) wait_alert_complete();
+                wait_alert();
                 req.alert_handshake_sta = AlertReceived;
-                cfg.vif.wait_ack();
+                wait_ack();
                 req.alert_handshake_sta = AlertAckReceived;
                 under_ping_rsp = 0;
               end
@@ -74,8 +74,8 @@ class alert_monitor extends alert_esc_base_monitor;
         phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
         under_ping_rsp = 0;
       end
-      ping_p = cfg.vif.get_ping_p();
-      alert_p = cfg.vif.get_alert_p();
+      ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
+      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
     end
   endtask : ping_thread
 
@@ -83,7 +83,7 @@ class alert_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (!alert_p && cfg.vif.get_alert() === 1'b1 && !under_ping_rsp) begin
+      if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
         phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
@@ -100,11 +100,11 @@ class alert_monitor extends alert_esc_base_monitor;
                 req.timeout = 1'b1;
               end
               begin : wait_alert_handshake
-                cfg.vif.wait_ack();
+                wait_ack();
                 req.alert_handshake_sta = AlertAckReceived;
-                cfg.vif.wait_alert_complete();
+                wait_alert_complete();
                 req.alert_handshake_sta = AlertComplete;
-                cfg.vif.wait_ack_complete();
+                wait_ack_complete();
                 req.alert_handshake_sta = AlertAckComplete;
               end
               begin
@@ -119,25 +119,42 @@ class alert_monitor extends alert_esc_base_monitor;
         if (!under_reset) alert_esc_port.write(req);
         phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
-      alert_p = cfg.vif.get_alert_p();
+      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
     end
   endtask : alert_thread
 
-  virtual task int_fail_thread(uvm_phase phase);
+  virtual task int_fail_thread();
     alert_esc_seq_item req;
     forever @(cfg.vif.monitor_cb) begin
-      // find int error, at each clk cycle, int error counts for one local alert
-      if (!under_reset && (cfg.vif.get_alert_p() === cfg.vif.get_alert_n())) begin
-        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
+      if (!under_reset && is_sig_int_err()) begin
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscIntFail;
-        while (cfg.vif.get_alert_p() === cfg.vif.get_alert_n()) begin
-          alert_esc_port.write(req);
-          @(cfg.vif.monitor_cb);
-        end
-        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
+        alert_esc_port.write(req);
       end
     end
   endtask : int_fail_thread
 
+  virtual task wait_alert();
+    while (cfg.vif.alert_tx.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+  endtask : wait_alert
+
+  virtual task wait_alert_complete();
+    while (cfg.vif.alert_tx.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
+  endtask : wait_alert_complete
+
+  virtual task wait_ack();
+    while (cfg.vif.alert_rx.ack_p !== 1'b1) @(cfg.vif.monitor_cb);
+  endtask : wait_ack
+
+  virtual task wait_ack_complete();
+    while (cfg.vif.alert_rx.ack_p !== 1'b0) @(cfg.vif.monitor_cb);
+  endtask : wait_ack_complete
+
+  virtual function bit is_sig_int_err();
+    return cfg.vif.monitor_cb.alert_tx.alert_p === cfg.vif.monitor_cb.alert_tx.alert_n;
+  endfunction : is_sig_int_err
+
+  virtual function bit is_valid_alert();
+    return cfg.vif.monitor_cb.alert_tx.alert_p && !cfg.vif.monitor_cb.alert_tx.alert_n;
+  endfunction : is_valid_alert
 endclass : alert_monitor

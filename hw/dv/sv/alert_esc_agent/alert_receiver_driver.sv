@@ -22,8 +22,8 @@ class alert_receiver_driver extends alert_esc_base_driver;
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
-      cfg.vif.reset_ack();
-      cfg.vif.reset_ping();
+      reset_ping();
+      reset_ack();
       @(posedge cfg.vif.rst_n);
     end
   endtask
@@ -45,14 +45,14 @@ class alert_receiver_driver extends alert_esc_base_driver;
       if (!req.int_err) begin
         @(cfg.vif.receiver_cb);
         repeat (ping_delay) @(cfg.vif.receiver_cb);
-        cfg.vif.set_ping();
+        set_ping();
         // TODO: add ping fail and differential signal fail scenarios
         fork
           begin : ping_timeout
             repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
           end
           begin : wait_ping_handshake
-            cfg.vif.wait_alert();
+            wait_alert();
             set_ack_pins(req);
           end
         join_any
@@ -79,7 +79,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
           $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
           req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
 
-      cfg.vif.wait_alert();
+      wait_alert();
       set_ack_pins(req);
 
       `uvm_info(`gfn,
@@ -98,7 +98,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
     if (!req.int_err) begin
       @(cfg.vif.receiver_cb);
       repeat (ack_delay) @(cfg.vif.receiver_cb);
-      cfg.vif.set_ack();
+      set_ack();
       fork
         begin : isolation_fork
           fork
@@ -106,10 +106,9 @@ class alert_receiver_driver extends alert_esc_base_driver;
               repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
             end
             begin : wait_ack_handshake
-              cfg.vif.wait_alert_complete();
-              @(cfg.vif.receiver_cb);
+              while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b0) @(cfg.vif.receiver_cb);
               repeat (ack_stable) @(cfg.vif.receiver_cb);
-              cfg.vif.reset_ack();
+              reset_ack();
             end
           join_any
           disable fork;
@@ -120,4 +119,27 @@ class alert_receiver_driver extends alert_esc_base_driver;
     end
   endtask : set_ack_pins
 
+  virtual task set_ack();
+    cfg.vif.receiver_cb.alert_rx.ack_p <= 1'b1;
+    cfg.vif.receiver_cb.alert_rx.ack_n <= 1'b0;
+  endtask
+
+  virtual task reset_ack();
+    cfg.vif.receiver_cb.alert_rx.ack_p <= 1'b0;
+    cfg.vif.receiver_cb.alert_rx.ack_n <= 1'b1;
+  endtask
+
+  virtual task set_ping();
+    cfg.vif.receiver_cb.alert_rx.ping_p <= !cfg.vif.alert_rx.ping_p;
+    cfg.vif.receiver_cb.alert_rx.ping_n <= !cfg.vif.alert_rx.ping_n;
+  endtask
+
+  virtual task wait_alert();
+    while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b1) @(cfg.vif.receiver_cb);
+  endtask : wait_alert
+
+  virtual task reset_ping();
+    cfg.vif.receiver_cb.alert_rx.ping_p <= 1'b0;
+    cfg.vif.receiver_cb.alert_rx.ping_n <= 1'b1;
+  endtask
 endclass : alert_receiver_driver
