@@ -9,6 +9,7 @@ package cip_base_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
 

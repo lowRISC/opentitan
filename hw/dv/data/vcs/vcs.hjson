@@ -32,7 +32,12 @@
                // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
                // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
                // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
-               "-LDFLAGS \"-Wl,--no-as-needed\""]
+               "-LDFLAGS \"-Wl,--no-as-needed\"",
+               // This option enables the following: (needed for uvm_hdl_*)
+               //  - Read capability on registers, variables, and nets
+               //  - Write (deposit) capability on registers and variables
+               //  - Force capability on registers, variables, and nets
+               "-debug_access+f"]
 
   run_opts:   ["-licqueue",
                "-ucli -do {tool_srcs_dir}/vcs_{dump}.tcl",

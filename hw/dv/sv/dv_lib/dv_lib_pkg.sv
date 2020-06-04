@@ -8,6 +8,7 @@ package dv_lib_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
+  import dv_base_reg_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,13 +18,6 @@ package dv_lib_pkg;
   string msg_id = "dv_lib_pkg";
 
   // package sources
-  // base ral
-  `include "dv_base_reg_field.sv"
-  `include "dv_base_reg.sv"
-  `include "dv_base_mem.sv"
-  `include "dv_base_reg_block.sv"
-  `include "dv_base_reg_map.sv"
-
   // base agent
   `include "dv_base_agent_cfg.sv"
   `include "dv_base_agent_cov.sv"
