@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} {DSIM_HOME}/dsim"
-  run_cmd:    "{job_prefix} {DSIM_HOME}/dsim"
+  build_cmd:  "{job_prefix} {DSIM_HOME}/bin/dsim"
+  run_cmd:    "{job_prefix} {DSIM_HOME}/bin/dsim"
 
   build_opts: [
                "-work {build_dir}/dsim_out",
@@ -14,8 +14,6 @@
                // UVM
                "+incdir+{UVM_HOME}/src",
                "{UVM_HOME}/src/uvm_pkg.sv",
-               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
-
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
                "+incdir+{build_dir}",
@@ -28,8 +26,9 @@
                "-work {build_dir}/dsim_out",
                "-image image",
                // UVM DPI
-               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
-               "+ntb_random_seed={seed}",
+               "-sv_lib {UVM_HOME}/src/dpi/libuvm_dpi.so",
+               "-sv_seed {seed}",
+               "-linebuf",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
@@ -78,7 +77,7 @@
   ]
 
   // Defaults for DSim
-  cov_metrics:          ""
+  cov_metrics:          "metrics.db"
 
   // pass and fail patterns
   build_fail_patterns: ["^Error-.*$"]
@@ -102,6 +101,8 @@
                     ]
     }
     // TODO: support coverage mode
+    // Note: no specific build or run options are required for dsim to produce functional
+    // coverage. The coverage database is called metrics.db
     {
       name: dsim_cov
       is_sim_mode: 1
