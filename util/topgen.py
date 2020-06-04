@@ -730,7 +730,7 @@ def main():
 
         # Create filtered list
         filter_list = [
-            module['name'] for module in topcfg['module']
+            module['type'] for module in topcfg['module']
             if 'generated' in module and module['generated'] == 'true'
         ]
         log.info("Filtered list is {}".format(filter_list))
