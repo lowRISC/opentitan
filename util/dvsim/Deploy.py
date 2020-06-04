@@ -15,6 +15,7 @@ from collections import OrderedDict
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
+from timer import Timer
 from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
 
 
@@ -24,16 +25,13 @@ class Deploy():
     """
 
     # Timer in hours, minutes and seconds.
-    hh = 0
-    mm = 0
-    ss = 0
+    timer = Timer()
 
     # Maintain a list of dispatched items.
     dispatch_counter = 0
 
     # Misc common deploy settings.
     print_legend = True
-    print_interval = 5
     max_parallel = 16
     max_odirs = 5
     # Max jobs dispatched in one go.
@@ -466,37 +464,13 @@ class Deploy():
                     log.error("%s: Failed to run bkill\n", e)
 
     @staticmethod
-    def increment_timer():
-        # sub function that increments with overflow = 60
-        def _incr_ovf_60(val):
-            if val >= 59:
-                val = 0
-                return val, True
-            else:
-                val += 1
-                return val, False
-
-        incr_hh = False
-        Deploy.ss, incr_mm = _incr_ovf_60(Deploy.ss)
-        if incr_mm:
-            Deploy.mm, incr_hh = _incr_ovf_60(Deploy.mm)
-        if incr_hh:
-            Deploy.hh += 1
-
-    @staticmethod
     def deploy(items):
         dispatched_items = []
         queued_items = []
 
         # Print timer val in hh:mm:ss.
         def get_timer_val():
-            return "%02i:%02i:%02i" % (Deploy.hh, Deploy.mm, Deploy.ss)
-
-        # Check if elapsed time has reached the next print interval.
-        def has_print_interval_reached():
-            # Deploy.print_interval is expected to be < 1 hour.
-            return (((Deploy.mm * 60 + Deploy.ss) %
-                     Deploy.print_interval) == 0)
+            return Deploy.timer.hms()
 
         def dispatch_items(items):
             item_names = OrderedDict()
@@ -627,8 +601,7 @@ class Deploy():
             # Advance time by 1s if there is more work to do.
             if not all_done:
                 time.sleep(1)
-                Deploy.increment_timer()
-                print_status_flag = has_print_interval_reached()
+                print_status_flag = Deploy.timer.check_time()
 
 
 class CompileSim(Deploy):
