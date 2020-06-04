@@ -25,7 +25,8 @@ def amend_ip(top, ip):
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
     """
-    ip_list_in_top = [x["name"].lower() for x in top["module"]]
+    ip_list_in_top = [x["type"].lower() for x in top["module"]]
+    # TODO make set
     ipname = ip["name"].lower()
     if ipname not in ip_list_in_top:
         log.info("TOP doens't use the IP %s. Skip" % ip["name"])
@@ -573,6 +574,9 @@ def amend_pinmux_io(top):
 
         # Parse how many signals
         m = lib.get_module_by_name(top, mname)
+
+        if m is None:
+            log.error("Module {} is not searchable.".format(mname))
 
         if sname is not None:
             signals = deepcopy([lib.get_signal_by_name(m, sname)])
