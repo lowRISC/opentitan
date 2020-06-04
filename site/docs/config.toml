@@ -57,8 +57,6 @@ ignoreFiles = [
   "CLA",
   "COMMITTERS",
 ]
-pygmentsCodeFences = true
-pygmentsStyle = "colorful"
 disableKinds = ["taxonomy", "taxonomyTerm", "RSS", "sitemap"]
 googleAnalytics = "UA-151030466-2"
 staticDir = [
@@ -70,6 +68,9 @@ staticDir = [
 generatedRoot = "build/docs-generated"
 
 [markup]
+  [markup.highlight]
+    guessSyntax = true
+    noClasses = false
   [markup.goldmark.renderer]
     unsafe = true
   [markup.tableOfContents]
