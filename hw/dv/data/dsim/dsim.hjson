@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} {DSIM_HOME}/dsim"
-  run_cmd:    "{job_prefix} {DSIM_HOME}/dsim"
+  build_cmd:  "{job_prefix} dsim"
+  run_cmd:    "{job_prefix} dsim"
 
   build_opts: [
                "-work {build_dir}/dsim_out",
@@ -14,25 +14,24 @@
                // UVM
                "+incdir+{UVM_HOME}/src",
                "{UVM_HOME}/src/uvm_pkg.sv",
-               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
-
                // Add dpi/vpi include path.
-               "-c_opts -I{DSIM_HOME}/include",
-
+               "-c-opts -I{DSIM_HOME}/include",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
                "+incdir+{build_dir}",
                // Suppress following DSim errors and warnings:
                //   EnumMustBePositive - UVM 1.2 violates this
-               "-suppress EnumMustBePositive",
+               "-suppress EnumMustBePositive"
               ]
 
   run_opts:   [
                "-work {build_dir}/dsim_out",
                "-image image",
                // UVM DPI
-               "+acc+rwb -sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
-               "+ntb_random_seed={seed}",
+               "-sv_lib {UVM_HOME}/src/dpi/libuvm_dpi.so",
+               "-sv_seed {seed}",
+               // tell DSim to write line-buffered std output (lines will be written in proper order)
+               "-linebuf",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
@@ -43,7 +42,7 @@
 
   // TODO: refactor coverage configuration for DSim.
 
-  // Coverage related.
+  // COVERAGE related.
   cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
 
   // Individual test specific coverage data - this will be deleted if the test fails
@@ -81,7 +80,8 @@
   ]
 
   // Defaults for DSim
-  cov_metrics:          ""
+  // TODO: there is currently no equivalent of "all" coverage metrics in DSim
+  cov_metrics:         ""
 
   // pass and fail patterns
   build_fail_patterns: ["^Error-.*$"]
@@ -97,14 +97,19 @@
       name: dsim_waves
       is_sim_mode: 1
       build_opts: [
-                    "+acc+b",
+                    "+acc+b"
+                  ]
+      run_opts:   [
                     "-waves {wave_file}",
-                    "-wave-scope-specs {probe_file}",
+                    // dsim.probe is currently undefined
+                    //"-wave-scope-specs {probe_file}",
                     // Dump unpacked structs and arrays.
                     "-dump-agg"
-                    ]
+                  ]
     }
     // TODO: support coverage mode
+    // Note: no specific build or run options are required for dsim to produce functional
+    // coverage. Code coverage support is evolving. 
     {
       name: dsim_cov
       is_sim_mode: 1
