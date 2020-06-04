@@ -31,6 +31,7 @@ import textwrap
 from signal import SIGINT, signal
 
 import Deploy
+import Timer
 import utils
 from CfgFactory import make_cfg
 
@@ -636,7 +637,7 @@ def main():
     Deploy.RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
-    Deploy.Deploy.print_interval = args.print_interval
+    Timer.Timer.print_interval = args.print_interval
     Deploy.Deploy.max_parallel = args.max_parallel
     Deploy.Deploy.max_odirs = args.max_odirs
 
