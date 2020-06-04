@@ -56,9 +56,6 @@ class Deploy():
     def __str__(self):
         return self.__self_str__()
 
-    def __repr__(self):
-        return self.__self_str__()
-
     def __init__(self, sim_cfg):
         '''Initialize common class members.'''
 
