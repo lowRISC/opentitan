@@ -23,8 +23,12 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40000000, 32'h40020fff},
         '{32'h40050000, 32'h40050fff},
         '{32'h40080000, 32'h40080fff},
-        '{32'h400a0000, 32'h400e0fff},
-        '{32'h40150000, 32'h40150fff}
+        '{32'h400e0000, 32'h400e0fff}
+    }},
+    '{"aon", '{
+        '{32'h40070000, 32'h40070fff},
+        '{32'h400a0000, 32'h400c0fff},
+        '{32'h40150000, 32'h40160fff}
     }},
     '{"flash_ctrl", '{
         '{32'h40030000, 32'h40030fff}
@@ -37,12 +41,6 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"rv_plic", '{
         '{32'h40090000, 32'h40090fff}
-    }},
-    '{"pinmux", '{
-        '{32'h40070000, 32'h40070fff}
-    }},
-    '{"padctrl", '{
-        '{32'h40160000, 32'h40160fff}
     }},
     '{"alert_handler", '{
         '{32'h40130000, 32'h40130fff}
@@ -65,12 +63,11 @@ tl_host_t xbar_hosts[$] = '{
         "ram_main",
         "eflash",
         "peri",
+        "aon",
         "flash_ctrl",
         "aes",
         "hmac",
         "rv_plic",
-        "pinmux",
-        "padctrl",
         "alert_handler",
         "nmi_gen"}}
     ,
@@ -79,12 +76,11 @@ tl_host_t xbar_hosts[$] = '{
         "ram_main",
         "eflash",
         "peri",
+        "aon",
         "flash_ctrl",
         "aes",
         "hmac",
         "rv_plic",
-        "pinmux",
-        "padctrl",
         "alert_handler",
         "nmi_gen"}}
 };

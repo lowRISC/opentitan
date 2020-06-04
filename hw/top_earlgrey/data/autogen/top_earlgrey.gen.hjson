@@ -931,7 +931,7 @@
       scan: "false"
     }
     {
-      name: pinmux
+      name: pinmux_aon
       type: pinmux
       clock: main
       clock_srcs:
@@ -969,7 +969,7 @@
           name: lc_pinmux_strap
           act: rsp
           package: pinmux_pkg
-          inst_name: pinmux
+          inst_name: pinmux_aon
           index: -1
         }
         {
@@ -978,7 +978,7 @@
           name: sleep_en
           act: rcv
           package: ""
-          inst_name: pinmux
+          inst_name: pinmux_aon
           index: -1
         }
         {
@@ -987,13 +987,13 @@
           name: aon_wkup_req
           act: req
           package: ""
-          inst_name: pinmux
+          inst_name: pinmux_aon
           index: -1
         }
       ]
     }
     {
-      name: padctrl
+      name: padctrl_aon
       type: padctrl
       clock: main
       clock_srcs:
@@ -1479,7 +1479,7 @@
       scan: "false"
     }
     {
-      name: usbdev
+      name: usbdev_aon
       type: usbdev
       clock_srcs:
       {
@@ -1761,7 +1761,7 @@
           package: ""
           struct: logic
           width: "1"
-          inst_name: usbdev
+          inst_name: usbdev_aon
           index: -1
         }
         {
@@ -1771,7 +1771,7 @@
           package: ""
           struct: logic
           width: "1"
-          inst_name: usbdev
+          inst_name: usbdev_aon
           index: -1
         }
       ]
@@ -1991,12 +1991,11 @@
           ram_main
           eflash
           peri
+          aon
           flash_ctrl
           aes
           hmac
           rv_plic
-          pinmux
-          padctrl
           alert_handler
           nmi_gen
         ]
@@ -2006,12 +2005,11 @@
           ram_main
           eflash
           peri
+          aon
           flash_ctrl
           aes
           hmac
           rv_plic
-          pinmux
-          padctrl
           alert_handler
           nmi_gen
         ]
@@ -2147,9 +2145,21 @@
               size_byte: 0x1000
             }
             {
-              base_addr: 0x40150000
+              base_addr: 0x400E0000
               size_byte: 0x1000
             }
+          ]
+        }
+        {
+          name: aon
+          type: device
+          clock: clk_fixed_i
+          reset: rst_fixed_ni
+          pipeline_byp: "false"
+          xbar: true
+          pipeline: "true"
+          addr_range:
+          [
             {
               base_addr: 0x400A0000
               size_byte: 0x1000
@@ -2163,7 +2173,15 @@
               size_byte: 0x1000
             }
             {
-              base_addr: 0x400E0000
+              base_addr: 0x40070000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40160000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40150000
               size_byte: 0x1000
             }
           ]
@@ -2237,40 +2255,6 @@
           pipeline: "true"
         }
         {
-          name: pinmux
-          type: device
-          clock: clk_main_i
-          reset: rst_fixed_ni
-          inst_type: pinmux
-          addr_range:
-          [
-            {
-              base_addr: 0x40070000
-              size_byte: 0x1000
-            }
-          ]
-          pipeline_byp: "false"
-          xbar: false
-          pipeline: "true"
-        }
-        {
-          name: padctrl
-          type: device
-          clock: clk_main_i
-          reset: rst_fixed_ni
-          inst_type: padctrl
-          addr_range:
-          [
-            {
-              base_addr: 0x40160000
-              size_byte: 0x1000
-            }
-          ]
-          pipeline_byp: "false"
-          xbar: false
-          pipeline: "true"
-        }
-        {
           name: alert_handler
           type: device
           clock: clk_main_i
@@ -2329,10 +2313,6 @@
           gpio
           spi_device
           rv_timer
-          usbdev
-          pwrmgr
-          rstmgr
-          clkmgr
           i2c
           pattgen
         ]
@@ -2435,74 +2415,6 @@
           pipeline_byp: "true"
         }
         {
-          name: usbdev
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: usbdev
-          addr_range:
-          [
-            {
-              base_addr: 0x40150000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          pipeline_byp: "true"
-        }
-        {
-          name: pwrmgr
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: pwrmgr
-          addr_range:
-          [
-            {
-              base_addr: 0x400A0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          pipeline_byp: "true"
-        }
-        {
-          name: rstmgr
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: rstmgr
-          addr_range:
-          [
-            {
-              base_addr: 0x400B0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          pipeline_byp: "true"
-        }
-        {
-          name: clkmgr
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: clkmgr
-          addr_range:
-          [
-            {
-              base_addr: 0x400C0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          pipeline_byp: "true"
-        }
-        {
           name: pattgen
           type: device
           clock: clk_peri_i
@@ -2522,6 +2434,151 @@
       ]
       clock: clk_peri_i
     }
+    {
+      name: aon
+      clock_srcs:
+      {
+        clk_aon_i: io
+      }
+      clock_group: infra
+      reset: rst_aon_ni
+      reset_connections:
+      {
+        rst_aon_ni: sys_io
+      }
+      clock_connections:
+      {
+        clk_aon_i: clkmgr_clocks.clk_io_infra
+      }
+      connections:
+      {
+        main:
+        [
+          pwrmgr
+          rstmgr
+          clkmgr
+          pinmux_aon
+          padctrl_aon
+          usbdev_aon
+        ]
+      }
+      nodes:
+      [
+        {
+          name: main
+          type: host
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          xbar: true
+          pipeline: "false"
+          inst_type: ""
+          pipeline_byp: "true"
+        }
+        {
+          name: pwrmgr
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: pwrmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400A0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: rstmgr
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: rstmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400B0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: clkmgr
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: clkmgr
+          addr_range:
+          [
+            {
+              base_addr: 0x400C0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: pinmux_aon
+          type: device
+          inst_type: pinmux
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          addr_range:
+          [
+            {
+              base_addr: 0x40070000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: padctrl_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          inst_type: padctrl
+          pipeline: "false"
+          addr_range:
+          [
+            {
+              base_addr: 0x40160000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: usbdev_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: usbdev
+          addr_range:
+          [
+            {
+              base_addr: 0x40150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+      ]
+      clock: clk_aon_i
+    }
   ]
   interrupt_module:
   [
@@ -2532,7 +2589,7 @@
     hmac
     alert_handler
     nmi_gen
-    usbdev
+    usbdev_aon
     pwrmgr
   ]
   interrupt:
@@ -2954,7 +3011,7 @@
       module_name: nmi_gen
     }
     {
-      name: usbdev_pkt_received
+      name: usbdev_aon_pkt_received
       width: 1
       bits: "0"
       bitinfo:
@@ -2964,10 +3021,10 @@
         0
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_pkt_sent
+      name: usbdev_aon_pkt_sent
       width: 1
       bits: "1"
       bitinfo:
@@ -2977,10 +3034,10 @@
         1
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_disconnected
+      name: usbdev_aon_disconnected
       width: 1
       bits: "2"
       bitinfo:
@@ -2990,10 +3047,10 @@
         2
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_host_lost
+      name: usbdev_aon_host_lost
       width: 1
       bits: "3"
       bitinfo:
@@ -3003,10 +3060,10 @@
         3
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_link_reset
+      name: usbdev_aon_link_reset
       width: 1
       bits: "4"
       bitinfo:
@@ -3016,10 +3073,10 @@
         4
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_link_suspend
+      name: usbdev_aon_link_suspend
       width: 1
       bits: "5"
       bitinfo:
@@ -3029,10 +3086,10 @@
         5
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_link_resume
+      name: usbdev_aon_link_resume
       width: 1
       bits: "6"
       bitinfo:
@@ -3042,10 +3099,10 @@
         6
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_av_empty
+      name: usbdev_aon_av_empty
       width: 1
       bits: "7"
       bitinfo:
@@ -3055,10 +3112,10 @@
         7
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_rx_full
+      name: usbdev_aon_rx_full
       width: 1
       bits: "8"
       bitinfo:
@@ -3068,10 +3125,10 @@
         8
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_av_overflow
+      name: usbdev_aon_av_overflow
       width: 1
       bits: "9"
       bitinfo:
@@ -3081,10 +3138,10 @@
         9
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_link_in_err
+      name: usbdev_aon_link_in_err
       width: 1
       bits: "10"
       bitinfo:
@@ -3094,10 +3151,10 @@
         10
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_rx_crc_err
+      name: usbdev_aon_rx_crc_err
       width: 1
       bits: "11"
       bitinfo:
@@ -3107,10 +3164,10 @@
         11
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_rx_pid_err
+      name: usbdev_aon_rx_pid_err
       width: 1
       bits: "12"
       bitinfo:
@@ -3120,10 +3177,10 @@
         12
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_rx_bitstuff_err
+      name: usbdev_aon_rx_bitstuff_err
       width: 1
       bits: "13"
       bitinfo:
@@ -3133,10 +3190,10 @@
         13
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_frame
+      name: usbdev_aon_frame
       width: 1
       bits: "14"
       bitinfo:
@@ -3146,10 +3203,10 @@
         14
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
-      name: usbdev_connected
+      name: usbdev_aon_connected
       width: 1
       bits: "15"
       bitinfo:
@@ -3159,7 +3216,7 @@
         15
       ]
       type: interrupt
-      module_name: usbdev
+      module_name: usbdev_aon
     }
     {
       name: pwrmgr_wakeup
@@ -3209,7 +3266,7 @@
         ]
       }
       {
-        name: usbdev
+        name: usbdev_aon
         pad:
         [
           ChC[0..8]
@@ -3310,10 +3367,10 @@
         ]
       }
       {
-        name: usbdev_sense
+        name: usbdev_aon_sense
         width: 1
         type: input
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3323,10 +3380,10 @@
         ]
       }
       {
-        name: usbdev_se0
+        name: usbdev_aon_se0
         width: 1
         type: output
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3336,10 +3393,10 @@
         ]
       }
       {
-        name: usbdev_dp_pullup
+        name: usbdev_aon_dp_pullup
         width: 1
         type: output
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3349,10 +3406,10 @@
         ]
       }
       {
-        name: usbdev_dn_pullup
+        name: usbdev_aon_dn_pullup
         width: 1
         type: output
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3362,10 +3419,10 @@
         ]
       }
       {
-        name: usbdev_tx_mode_se
+        name: usbdev_aon_tx_mode_se
         width: 1
         type: output
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3375,10 +3432,10 @@
         ]
       }
       {
-        name: usbdev_suspend
+        name: usbdev_aon_suspend
         width: 1
         type: output
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3388,10 +3445,10 @@
         ]
       }
       {
-        name: usbdev_d
+        name: usbdev_aon_d
         width: 1
         type: inout
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3401,10 +3458,10 @@
         ]
       }
       {
-        name: usbdev_dp
+        name: usbdev_aon_dp
         width: 1
         type: inout
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3414,10 +3471,10 @@
         ]
       }
       {
-        name: usbdev_dn
+        name: usbdev_aon_dn
         width: 1
         type: inout
-        module_name: usbdev
+        module_name: usbdev_aon
         pad:
         [
           {
@@ -3521,7 +3578,7 @@
         name: lc_pinmux_strap
         act: rsp
         package: pinmux_pkg
-        inst_name: pinmux
+        inst_name: pinmux_aon
         index: -1
       }
       {
@@ -3530,7 +3587,7 @@
         name: sleep_en
         act: rcv
         package: ""
-        inst_name: pinmux
+        inst_name: pinmux_aon
         index: -1
       }
       {
@@ -3539,7 +3596,7 @@
         name: aon_wkup_req
         act: req
         package: ""
-        inst_name: pinmux
+        inst_name: pinmux_aon
         index: -1
       }
       {
@@ -3718,7 +3775,7 @@
         package: ""
         struct: logic
         width: "1"
-        inst_name: usbdev
+        inst_name: usbdev_aon
         index: -1
       }
       {
@@ -3728,7 +3785,7 @@
         package: ""
         struct: logic
         width: "1"
-        inst_name: usbdev
+        inst_name: usbdev_aon
         index: -1
       }
       {

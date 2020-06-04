@@ -44,30 +44,6 @@ module xbar_peri_bind;
     .h2d    (tl_i2c_o),
     .d2h    (tl_i2c_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev (
-    .clk_i  (clk_peri_i),
-    .rst_ni (rst_peri_ni),
-    .h2d    (tl_usbdev_o),
-    .d2h    (tl_usbdev_i)
-  );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pwrmgr (
-    .clk_i  (clk_peri_i),
-    .rst_ni (rst_peri_ni),
-    .h2d    (tl_pwrmgr_o),
-    .d2h    (tl_pwrmgr_i)
-  );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_rstmgr (
-    .clk_i  (clk_peri_i),
-    .rst_ni (rst_peri_ni),
-    .h2d    (tl_rstmgr_o),
-    .d2h    (tl_rstmgr_i)
-  );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr (
-    .clk_i  (clk_peri_i),
-    .rst_ni (rst_peri_ni),
-    .h2d    (tl_clkmgr_o),
-    .d2h    (tl_clkmgr_i)
-  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pattgen (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),

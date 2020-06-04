@@ -41,12 +41,11 @@
       ram_main
       eflash
       peri
+      aon
       flash_ctrl
       aes
       hmac
       rv_plic
-      pinmux
-      padctrl
       alert_handler
       nmi_gen
     ]
@@ -56,12 +55,11 @@
       ram_main
       eflash
       peri
+      aon
       flash_ctrl
       aes
       hmac
       rv_plic
-      pinmux
-      padctrl
       alert_handler
       nmi_gen
     ]
@@ -189,12 +187,32 @@
           size_byte: 0x1000
         }
         {
+          base_addr: 0x400E0000
+          size_byte: 0x1000
+        }
+      ]
+    }
+    {
+      name: aon
+      type: device
+      clock: clk_fixed_i
+      reset: rst_fixed_ni
+      pipeline_byp: "false"
+      xbar: true
+      pipeline: "true"
+      addr_range:
+      [
+        {
+          base_addr: 0x40070000
+          size_byte: 0x1000
+        }
+        {
           base_addr: 0x400A0000
-          size_byte: 0x41000
+          size_byte: 0x21000
         }
         {
           base_addr: 0x40150000
-          size_byte: 0x1000
+          size_byte: 0x11000
         }
       ]
     }
@@ -259,40 +277,6 @@
       [
         {
           base_addr: 0x40090000
-          size_byte: 0x1000
-        }
-      ]
-      pipeline_byp: "false"
-      xbar: false
-      pipeline: "true"
-    }
-    {
-      name: pinmux
-      type: device
-      clock: clk_main_i
-      reset: rst_fixed_ni
-      inst_type: pinmux
-      addr_range:
-      [
-        {
-          base_addr: 0x40070000
-          size_byte: 0x1000
-        }
-      ]
-      pipeline_byp: "false"
-      xbar: false
-      pipeline: "true"
-    }
-    {
-      name: padctrl
-      type: device
-      clock: clk_main_i
-      reset: rst_fixed_ni
-      inst_type: padctrl
-      addr_range:
-      [
-        {
-          base_addr: 0x40160000
           size_byte: 0x1000
         }
       ]

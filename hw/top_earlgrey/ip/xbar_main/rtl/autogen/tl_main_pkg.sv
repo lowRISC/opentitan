@@ -10,10 +10,14 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_DEBUG_MEM     = 32'h 1a110000;
   localparam logic [31:0] ADDR_SPACE_RAM_MAIN      = 32'h 10000000;
   localparam logic [31:0] ADDR_SPACE_EFLASH        = 32'h 20000000;
-  localparam logic [4:0][31:0] ADDR_SPACE_PERI          = {
+  localparam logic [3:0][31:0] ADDR_SPACE_PERI          = {
     32'h 40000000,
     32'h 40050000,
     32'h 40080000,
+    32'h 400e0000
+  };
+  localparam logic [2:0][31:0] ADDR_SPACE_AON           = {
+    32'h 40070000,
     32'h 400a0000,
     32'h 40150000
   };
@@ -21,8 +25,6 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_HMAC          = 32'h 40120000;
   localparam logic [31:0] ADDR_SPACE_AES           = 32'h 40110000;
   localparam logic [31:0] ADDR_SPACE_RV_PLIC       = 32'h 40090000;
-  localparam logic [31:0] ADDR_SPACE_PINMUX        = 32'h 40070000;
-  localparam logic [31:0] ADDR_SPACE_PADCTRL       = 32'h 40160000;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40130000;
   localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40140000;
 
@@ -30,24 +32,26 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 0007ffff;
-  localparam logic [4:0][31:0] ADDR_MASK_PERI          = {
+  localparam logic [3:0][31:0] ADDR_MASK_PERI          = {
     32'h 00020fff,
     32'h 00000fff,
     32'h 00000fff,
-    32'h 00040fff,
     32'h 00000fff
+  };
+  localparam logic [2:0][31:0] ADDR_MASK_AON           = {
+    32'h 00000fff,
+    32'h 00020fff,
+    32'h 00010fff
   };
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL    = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_HMAC          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES           = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_PLIC       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_PINMUX        = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_PADCTRL       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_NMI_GEN       = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 13;
+  localparam int N_DEVICE = 12;
 
   typedef enum int {
     TlRom = 0,
@@ -55,14 +59,13 @@ package tl_main_pkg;
     TlRamMain = 2,
     TlEflash = 3,
     TlPeri = 4,
-    TlFlashCtrl = 5,
-    TlHmac = 6,
-    TlAes = 7,
-    TlRvPlic = 8,
-    TlPinmux = 9,
-    TlPadctrl = 10,
-    TlAlertHandler = 11,
-    TlNmiGen = 12
+    TlAon = 5,
+    TlFlashCtrl = 6,
+    TlHmac = 7,
+    TlAes = 8,
+    TlRvPlic = 9,
+    TlAlertHandler = 10,
+    TlNmiGen = 11
   } tl_device_e;
 
   typedef enum int {

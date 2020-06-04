@@ -30,10 +30,6 @@
       gpio
       spi_device
       rv_timer
-      usbdev
-      pwrmgr
-      rstmgr
-      clkmgr
       i2c
       pattgen
     ]
@@ -129,74 +125,6 @@
       [
         {
           base_addr: 0x40050000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      pipeline_byp: "true"
-    }
-    {
-      name: usbdev
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: usbdev
-      addr_range:
-      [
-        {
-          base_addr: 0x40150000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      pipeline_byp: "true"
-    }
-    {
-      name: pwrmgr
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: pwrmgr
-      addr_range:
-      [
-        {
-          base_addr: 0x400A0000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      pipeline_byp: "true"
-    }
-    {
-      name: rstmgr
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: rstmgr
-      addr_range:
-      [
-        {
-          base_addr: 0x400B0000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      pipeline_byp: "true"
-    }
-    {
-      name: clkmgr
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: clkmgr
-      addr_range:
-      [
-        {
-          base_addr: 0x400C0000
           size_byte: 0x1000
         }
       ]

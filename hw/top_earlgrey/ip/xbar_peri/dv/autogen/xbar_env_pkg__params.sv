@@ -22,18 +22,6 @@ tl_device_t xbar_devices[$] = '{
     '{"i2c", '{
         '{32'h40050000, 32'h40050fff}
     }},
-    '{"usbdev", '{
-        '{32'h40150000, 32'h40150fff}
-    }},
-    '{"pwrmgr", '{
-        '{32'h400a0000, 32'h400a0fff}
-    }},
-    '{"rstmgr", '{
-        '{32'h400b0000, 32'h400b0fff}
-    }},
-    '{"clkmgr", '{
-        '{32'h400c0000, 32'h400c0fff}
-    }},
     '{"pattgen", '{
         '{32'h400e0000, 32'h400e0fff}
 }}};
@@ -45,10 +33,6 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "usbdev",
-        "pwrmgr",
-        "rstmgr",
-        "clkmgr",
         "i2c",
         "pattgen"}}
 };

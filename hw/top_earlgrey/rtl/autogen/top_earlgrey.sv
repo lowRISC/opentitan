@@ -90,10 +90,10 @@ module top_earlgrey #(
   tl_d2h_t  tl_hmac_d_d2h;
   tl_h2d_t  tl_rv_plic_d_h2d;
   tl_d2h_t  tl_rv_plic_d_d2h;
-  tl_h2d_t  tl_pinmux_d_h2d;
-  tl_d2h_t  tl_pinmux_d_d2h;
-  tl_h2d_t  tl_padctrl_d_h2d;
-  tl_d2h_t  tl_padctrl_d_d2h;
+  tl_h2d_t  tl_pinmux_aon_d_h2d;
+  tl_d2h_t  tl_pinmux_aon_d_d2h;
+  tl_h2d_t  tl_padctrl_aon_d_h2d;
+  tl_d2h_t  tl_padctrl_aon_d_d2h;
   tl_h2d_t  tl_alert_handler_d_h2d;
   tl_d2h_t  tl_alert_handler_d_d2h;
   tl_h2d_t  tl_pwrmgr_d_h2d;
@@ -104,8 +104,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_clkmgr_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
-  tl_h2d_t  tl_usbdev_d_h2d;
-  tl_d2h_t  tl_usbdev_d_d2h;
+  tl_h2d_t  tl_usbdev_aon_d_h2d;
+  tl_d2h_t  tl_usbdev_aon_d_d2h;
   tl_h2d_t  tl_pattgen_d_h2d;
   tl_d2h_t  tl_pattgen_d_d2h;
 
@@ -123,6 +123,13 @@ module top_earlgrey #(
 
   assign tl_main_h_h2d = tl_peri_d_h2d;
   assign tl_peri_d_d2h = tl_main_h_d2h;
+  tl_h2d_t tl_main_h_h2d;
+  tl_d2h_t tl_main_h_d2h;
+  tl_h2d_t tl_aon_d_h2d;
+  tl_d2h_t tl_aon_d_d2h;
+
+  assign tl_main_h_h2d = tl_aon_d_h2d;
+  assign tl_aon_d_d2h = tl_main_h_d2h;
 
   // Signals
   logic [33:0] mio_p2d;
@@ -157,34 +164,34 @@ module top_earlgrey #(
   // aes
   // hmac
   // rv_plic
-  // pinmux
-  // padctrl
+  // pinmux_aon
+  // padctrl_aon
   // alert_handler
   // pwrmgr
   // rstmgr
   // clkmgr
   // nmi_gen
-  // usbdev
-  logic        cio_usbdev_sense_p2d;
-  logic        cio_usbdev_d_p2d;
-  logic        cio_usbdev_dp_p2d;
-  logic        cio_usbdev_dn_p2d;
-  logic        cio_usbdev_se0_d2p;
-  logic        cio_usbdev_se0_en_d2p;
-  logic        cio_usbdev_dp_pullup_d2p;
-  logic        cio_usbdev_dp_pullup_en_d2p;
-  logic        cio_usbdev_dn_pullup_d2p;
-  logic        cio_usbdev_dn_pullup_en_d2p;
-  logic        cio_usbdev_tx_mode_se_d2p;
-  logic        cio_usbdev_tx_mode_se_en_d2p;
-  logic        cio_usbdev_suspend_d2p;
-  logic        cio_usbdev_suspend_en_d2p;
-  logic        cio_usbdev_d_d2p;
-  logic        cio_usbdev_d_en_d2p;
-  logic        cio_usbdev_dp_d2p;
-  logic        cio_usbdev_dp_en_d2p;
-  logic        cio_usbdev_dn_d2p;
-  logic        cio_usbdev_dn_en_d2p;
+  // usbdev_aon
+  logic        cio_usbdev_aon_sense_p2d;
+  logic        cio_usbdev_aon_d_p2d;
+  logic        cio_usbdev_aon_dp_p2d;
+  logic        cio_usbdev_aon_dn_p2d;
+  logic        cio_usbdev_aon_se0_d2p;
+  logic        cio_usbdev_aon_se0_en_d2p;
+  logic        cio_usbdev_aon_dp_pullup_d2p;
+  logic        cio_usbdev_aon_dp_pullup_en_d2p;
+  logic        cio_usbdev_aon_dn_pullup_d2p;
+  logic        cio_usbdev_aon_dn_pullup_en_d2p;
+  logic        cio_usbdev_aon_tx_mode_se_d2p;
+  logic        cio_usbdev_aon_tx_mode_se_en_d2p;
+  logic        cio_usbdev_aon_suspend_d2p;
+  logic        cio_usbdev_aon_suspend_en_d2p;
+  logic        cio_usbdev_aon_d_d2p;
+  logic        cio_usbdev_aon_d_en_d2p;
+  logic        cio_usbdev_aon_dp_d2p;
+  logic        cio_usbdev_aon_dp_en_d2p;
+  logic        cio_usbdev_aon_dn_d2p;
+  logic        cio_usbdev_aon_dn_en_d2p;
   // pattgen
   logic        cio_pattgen_pda0_tx_d2p;
   logic        cio_pattgen_pda0_tx_en_d2p;
@@ -241,22 +248,22 @@ module top_earlgrey #(
   logic intr_nmi_gen_esc1;
   logic intr_nmi_gen_esc2;
   logic intr_nmi_gen_esc3;
-  logic intr_usbdev_pkt_received;
-  logic intr_usbdev_pkt_sent;
-  logic intr_usbdev_disconnected;
-  logic intr_usbdev_host_lost;
-  logic intr_usbdev_link_reset;
-  logic intr_usbdev_link_suspend;
-  logic intr_usbdev_link_resume;
-  logic intr_usbdev_av_empty;
-  logic intr_usbdev_rx_full;
-  logic intr_usbdev_av_overflow;
-  logic intr_usbdev_link_in_err;
-  logic intr_usbdev_rx_crc_err;
-  logic intr_usbdev_rx_pid_err;
-  logic intr_usbdev_rx_bitstuff_err;
-  logic intr_usbdev_frame;
-  logic intr_usbdev_connected;
+  logic intr_usbdev_aon_pkt_received;
+  logic intr_usbdev_aon_pkt_sent;
+  logic intr_usbdev_aon_disconnected;
+  logic intr_usbdev_aon_host_lost;
+  logic intr_usbdev_aon_link_reset;
+  logic intr_usbdev_aon_link_suspend;
+  logic intr_usbdev_aon_link_resume;
+  logic intr_usbdev_aon_av_empty;
+  logic intr_usbdev_aon_rx_full;
+  logic intr_usbdev_aon_av_overflow;
+  logic intr_usbdev_aon_link_in_err;
+  logic intr_usbdev_aon_rx_crc_err;
+  logic intr_usbdev_aon_rx_pid_err;
+  logic intr_usbdev_aon_rx_bitstuff_err;
+  logic intr_usbdev_aon_frame;
+  logic intr_usbdev_aon_connected;
   logic intr_pattgen_patt_done0;
   logic intr_pattgen_patt_done1;
 
@@ -673,9 +680,9 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
-  pinmux u_pinmux (
-      .tl_i (tl_pinmux_d_h2d),
-      .tl_o (tl_pinmux_d_d2h),
+  pinmux u_pinmux_aon (
+      .tl_i (tl_pinmux_aon_d_h2d),
+      .tl_o (tl_pinmux_aon_d_d2h),
 
       // Inter-module signals
       .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
@@ -705,9 +712,9 @@ module top_earlgrey #(
       .rst_aon_ni (rstmgr_resets.rst_sys_io_n)
   );
 
-  padctrl u_padctrl (
-      .tl_i (tl_padctrl_d_h2d),
-      .tl_o (tl_padctrl_d_d2h),
+  padctrl u_padctrl_aon (
+      .tl_i (tl_padctrl_aon_d_h2d),
+      .tl_o (tl_padctrl_aon_d_d2h),
 
       .mio_attr_o,
       .dio_attr_o,
@@ -827,51 +834,51 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
-  usbdev u_usbdev (
-      .tl_i (tl_usbdev_d_h2d),
-      .tl_o (tl_usbdev_d_d2h),
+  usbdev u_usbdev_aon (
+      .tl_i (tl_usbdev_aon_d_h2d),
+      .tl_o (tl_usbdev_aon_d_d2h),
 
       // Input
-      .cio_sense_i         (cio_usbdev_sense_p2d),
-      .cio_d_i             (cio_usbdev_d_p2d),
-      .cio_dp_i            (cio_usbdev_dp_p2d),
-      .cio_dn_i            (cio_usbdev_dn_p2d),
+      .cio_sense_i         (cio_usbdev_aon_sense_p2d),
+      .cio_d_i             (cio_usbdev_aon_d_p2d),
+      .cio_dp_i            (cio_usbdev_aon_dp_p2d),
+      .cio_dn_i            (cio_usbdev_aon_dn_p2d),
 
       // Output
-      .cio_se0_o           (cio_usbdev_se0_d2p),
-      .cio_se0_en_o        (cio_usbdev_se0_en_d2p),
-      .cio_dp_pullup_o     (cio_usbdev_dp_pullup_d2p),
-      .cio_dp_pullup_en_o  (cio_usbdev_dp_pullup_en_d2p),
-      .cio_dn_pullup_o     (cio_usbdev_dn_pullup_d2p),
-      .cio_dn_pullup_en_o  (cio_usbdev_dn_pullup_en_d2p),
-      .cio_tx_mode_se_o    (cio_usbdev_tx_mode_se_d2p),
-      .cio_tx_mode_se_en_o (cio_usbdev_tx_mode_se_en_d2p),
-      .cio_suspend_o       (cio_usbdev_suspend_d2p),
-      .cio_suspend_en_o    (cio_usbdev_suspend_en_d2p),
-      .cio_d_o             (cio_usbdev_d_d2p),
-      .cio_d_en_o          (cio_usbdev_d_en_d2p),
-      .cio_dp_o            (cio_usbdev_dp_d2p),
-      .cio_dp_en_o         (cio_usbdev_dp_en_d2p),
-      .cio_dn_o            (cio_usbdev_dn_d2p),
-      .cio_dn_en_o         (cio_usbdev_dn_en_d2p),
+      .cio_se0_o           (cio_usbdev_aon_se0_d2p),
+      .cio_se0_en_o        (cio_usbdev_aon_se0_en_d2p),
+      .cio_dp_pullup_o     (cio_usbdev_aon_dp_pullup_d2p),
+      .cio_dp_pullup_en_o  (cio_usbdev_aon_dp_pullup_en_d2p),
+      .cio_dn_pullup_o     (cio_usbdev_aon_dn_pullup_d2p),
+      .cio_dn_pullup_en_o  (cio_usbdev_aon_dn_pullup_en_d2p),
+      .cio_tx_mode_se_o    (cio_usbdev_aon_tx_mode_se_d2p),
+      .cio_tx_mode_se_en_o (cio_usbdev_aon_tx_mode_se_en_d2p),
+      .cio_suspend_o       (cio_usbdev_aon_suspend_d2p),
+      .cio_suspend_en_o    (cio_usbdev_aon_suspend_en_d2p),
+      .cio_d_o             (cio_usbdev_aon_d_d2p),
+      .cio_d_en_o          (cio_usbdev_aon_d_en_d2p),
+      .cio_dp_o            (cio_usbdev_aon_dp_d2p),
+      .cio_dp_en_o         (cio_usbdev_aon_dp_en_d2p),
+      .cio_dn_o            (cio_usbdev_aon_dn_d2p),
+      .cio_dn_en_o         (cio_usbdev_aon_dn_en_d2p),
 
       // Interrupt
-      .intr_pkt_received_o    (intr_usbdev_pkt_received),
-      .intr_pkt_sent_o        (intr_usbdev_pkt_sent),
-      .intr_disconnected_o    (intr_usbdev_disconnected),
-      .intr_host_lost_o       (intr_usbdev_host_lost),
-      .intr_link_reset_o      (intr_usbdev_link_reset),
-      .intr_link_suspend_o    (intr_usbdev_link_suspend),
-      .intr_link_resume_o     (intr_usbdev_link_resume),
-      .intr_av_empty_o        (intr_usbdev_av_empty),
-      .intr_rx_full_o         (intr_usbdev_rx_full),
-      .intr_av_overflow_o     (intr_usbdev_av_overflow),
-      .intr_link_in_err_o     (intr_usbdev_link_in_err),
-      .intr_rx_crc_err_o      (intr_usbdev_rx_crc_err),
-      .intr_rx_pid_err_o      (intr_usbdev_rx_pid_err),
-      .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
-      .intr_frame_o           (intr_usbdev_frame),
-      .intr_connected_o       (intr_usbdev_connected),
+      .intr_pkt_received_o    (intr_usbdev_aon_pkt_received),
+      .intr_pkt_sent_o        (intr_usbdev_aon_pkt_sent),
+      .intr_disconnected_o    (intr_usbdev_aon_disconnected),
+      .intr_host_lost_o       (intr_usbdev_aon_host_lost),
+      .intr_link_reset_o      (intr_usbdev_aon_link_reset),
+      .intr_link_suspend_o    (intr_usbdev_aon_link_suspend),
+      .intr_link_resume_o     (intr_usbdev_aon_link_resume),
+      .intr_av_empty_o        (intr_usbdev_aon_av_empty),
+      .intr_rx_full_o         (intr_usbdev_aon_rx_full),
+      .intr_av_overflow_o     (intr_usbdev_aon_av_overflow),
+      .intr_link_in_err_o     (intr_usbdev_aon_link_in_err),
+      .intr_rx_crc_err_o      (intr_usbdev_aon_rx_crc_err),
+      .intr_rx_pid_err_o      (intr_usbdev_aon_rx_pid_err),
+      .intr_rx_bitstuff_err_o (intr_usbdev_aon_rx_bitstuff_err),
+      .intr_frame_o           (intr_usbdev_aon_frame),
+      .intr_connected_o       (intr_usbdev_aon_connected),
 
       // Inter-module signals
       .usb_ref_val_o(),
@@ -908,22 +915,22 @@ module top_earlgrey #(
   // interrupt assignments
   assign intr_vector = {
       intr_pwrmgr_wakeup,
-      intr_usbdev_connected,
-      intr_usbdev_frame,
-      intr_usbdev_rx_bitstuff_err,
-      intr_usbdev_rx_pid_err,
-      intr_usbdev_rx_crc_err,
-      intr_usbdev_link_in_err,
-      intr_usbdev_av_overflow,
-      intr_usbdev_rx_full,
-      intr_usbdev_av_empty,
-      intr_usbdev_link_resume,
-      intr_usbdev_link_suspend,
-      intr_usbdev_link_reset,
-      intr_usbdev_host_lost,
-      intr_usbdev_disconnected,
-      intr_usbdev_pkt_sent,
-      intr_usbdev_pkt_received,
+      intr_usbdev_aon_connected,
+      intr_usbdev_aon_frame,
+      intr_usbdev_aon_rx_bitstuff_err,
+      intr_usbdev_aon_rx_pid_err,
+      intr_usbdev_aon_rx_crc_err,
+      intr_usbdev_aon_link_in_err,
+      intr_usbdev_aon_av_overflow,
+      intr_usbdev_aon_rx_full,
+      intr_usbdev_aon_av_empty,
+      intr_usbdev_aon_link_resume,
+      intr_usbdev_aon_link_suspend,
+      intr_usbdev_aon_link_reset,
+      intr_usbdev_aon_host_lost,
+      intr_usbdev_aon_disconnected,
+      intr_usbdev_aon_pkt_sent,
+      intr_usbdev_aon_pkt_received,
       intr_nmi_gen_esc3,
       intr_nmi_gen_esc2,
       intr_nmi_gen_esc1,
@@ -981,6 +988,8 @@ module top_earlgrey #(
     .tl_eflash_i        (tl_eflash_d_d2h),
     .tl_peri_o          (tl_peri_d_h2d),
     .tl_peri_i          (tl_peri_d_d2h),
+    .tl_aon_o           (tl_aon_d_h2d),
+    .tl_aon_i           (tl_aon_d_d2h),
     .tl_flash_ctrl_o    (tl_flash_ctrl_d_h2d),
     .tl_flash_ctrl_i    (tl_flash_ctrl_d_d2h),
     .tl_hmac_o          (tl_hmac_d_h2d),
@@ -989,10 +998,6 @@ module top_earlgrey #(
     .tl_aes_i           (tl_aes_d_d2h),
     .tl_rv_plic_o       (tl_rv_plic_d_h2d),
     .tl_rv_plic_i       (tl_rv_plic_d_d2h),
-    .tl_pinmux_o        (tl_pinmux_d_h2d),
-    .tl_pinmux_i        (tl_pinmux_d_d2h),
-    .tl_padctrl_o       (tl_padctrl_d_h2d),
-    .tl_padctrl_i       (tl_padctrl_d_d2h),
     .tl_alert_handler_o (tl_alert_handler_d_h2d),
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
@@ -1015,16 +1020,28 @@ module top_earlgrey #(
     .tl_rv_timer_i   (tl_rv_timer_d_d2h),
     .tl_i2c_o        (tl_i2c_d_h2d),
     .tl_i2c_i        (tl_i2c_d_d2h),
-    .tl_usbdev_o     (tl_usbdev_d_h2d),
-    .tl_usbdev_i     (tl_usbdev_d_d2h),
-    .tl_pwrmgr_o     (tl_pwrmgr_d_h2d),
-    .tl_pwrmgr_i     (tl_pwrmgr_d_d2h),
-    .tl_rstmgr_o     (tl_rstmgr_d_h2d),
-    .tl_rstmgr_i     (tl_rstmgr_d_d2h),
-    .tl_clkmgr_o     (tl_clkmgr_d_h2d),
-    .tl_clkmgr_i     (tl_clkmgr_d_d2h),
     .tl_pattgen_o    (tl_pattgen_d_h2d),
     .tl_pattgen_i    (tl_pattgen_d_d2h),
+
+    .scanmode_i
+  );
+  xbar_aon u_xbar_aon (
+    .clk_aon_i (clkmgr_clocks.clk_io_infra),
+    .rst_aon_ni (rstmgr_resets.rst_sys_io_n),
+    .tl_main_i        (tl_main_h_h2d),
+    .tl_main_o        (tl_main_h_d2h),
+    .tl_pwrmgr_o      (tl_pwrmgr_d_h2d),
+    .tl_pwrmgr_i      (tl_pwrmgr_d_d2h),
+    .tl_rstmgr_o      (tl_rstmgr_d_h2d),
+    .tl_rstmgr_i      (tl_rstmgr_d_d2h),
+    .tl_clkmgr_o      (tl_clkmgr_d_h2d),
+    .tl_clkmgr_i      (tl_clkmgr_d_d2h),
+    .tl_pinmux_aon_o  (tl_pinmux_aon_d_h2d),
+    .tl_pinmux_aon_i  (tl_pinmux_aon_d_d2h),
+    .tl_padctrl_aon_o (tl_padctrl_aon_d_h2d),
+    .tl_padctrl_aon_i (tl_padctrl_aon_d_d2h),
+    .tl_usbdev_aon_o  (tl_usbdev_aon_d_h2d),
+    .tl_usbdev_aon_i  (tl_usbdev_aon_d_d2h),
 
     .scanmode_i
   );
@@ -1055,15 +1072,15 @@ module top_earlgrey #(
     cio_spi_device_miso_d2p, // DIO11
     1'b0, // DIO10: cio_uart_rx
     cio_uart_tx_d2p, // DIO9
-    1'b0, // DIO8: cio_usbdev_sense
-    cio_usbdev_se0_d2p, // DIO7
-    cio_usbdev_dp_pullup_d2p, // DIO6
-    cio_usbdev_dn_pullup_d2p, // DIO5
-    cio_usbdev_tx_mode_se_d2p, // DIO4
-    cio_usbdev_suspend_d2p, // DIO3
-    cio_usbdev_d_d2p, // DIO2
-    cio_usbdev_dp_d2p, // DIO1
-    cio_usbdev_dn_d2p // DIO0
+    1'b0, // DIO8: cio_usbdev_aon_sense
+    cio_usbdev_aon_se0_d2p, // DIO7
+    cio_usbdev_aon_dp_pullup_d2p, // DIO6
+    cio_usbdev_aon_dn_pullup_d2p, // DIO5
+    cio_usbdev_aon_tx_mode_se_d2p, // DIO4
+    cio_usbdev_aon_suspend_d2p, // DIO3
+    cio_usbdev_aon_d_d2p, // DIO2
+    cio_usbdev_aon_dp_d2p, // DIO1
+    cio_usbdev_aon_dn_d2p // DIO0
   };
 
   assign dio_d2p_en = {
@@ -1073,33 +1090,33 @@ module top_earlgrey #(
     cio_spi_device_miso_en_d2p, // DIO11
     1'b0, // DIO10: cio_uart_rx
     cio_uart_tx_en_d2p, // DIO9
-    1'b0, // DIO8: cio_usbdev_sense
-    cio_usbdev_se0_en_d2p, // DIO7
-    cio_usbdev_dp_pullup_en_d2p, // DIO6
-    cio_usbdev_dn_pullup_en_d2p, // DIO5
-    cio_usbdev_tx_mode_se_en_d2p, // DIO4
-    cio_usbdev_suspend_en_d2p, // DIO3
-    cio_usbdev_d_en_d2p, // DIO2
-    cio_usbdev_dp_en_d2p, // DIO1
-    cio_usbdev_dn_en_d2p // DIO0
+    1'b0, // DIO8: cio_usbdev_aon_sense
+    cio_usbdev_aon_se0_en_d2p, // DIO7
+    cio_usbdev_aon_dp_pullup_en_d2p, // DIO6
+    cio_usbdev_aon_dn_pullup_en_d2p, // DIO5
+    cio_usbdev_aon_tx_mode_se_en_d2p, // DIO4
+    cio_usbdev_aon_suspend_en_d2p, // DIO3
+    cio_usbdev_aon_d_en_d2p, // DIO2
+    cio_usbdev_aon_dp_en_d2p, // DIO1
+    cio_usbdev_aon_dn_en_d2p // DIO0
   };
 
   // Output-only DIOs have no p2d signal
-  assign cio_spi_device_sck_p2d    = dio_p2d[14]; // DIO14
-  assign cio_spi_device_csb_p2d    = dio_p2d[13]; // DIO13
-  assign cio_spi_device_mosi_p2d   = dio_p2d[12]; // DIO12
+  assign cio_spi_device_sck_p2d        = dio_p2d[14]; // DIO14
+  assign cio_spi_device_csb_p2d        = dio_p2d[13]; // DIO13
+  assign cio_spi_device_mosi_p2d       = dio_p2d[12]; // DIO12
   // DIO11: cio_spi_device_miso
-  assign cio_uart_rx_p2d           = dio_p2d[10]; // DIO10
+  assign cio_uart_rx_p2d               = dio_p2d[10]; // DIO10
   // DIO9: cio_uart_tx
-  assign cio_usbdev_sense_p2d      = dio_p2d[8]; // DIO8
-  // DIO7: cio_usbdev_se0
-  // DIO6: cio_usbdev_dp_pullup
-  // DIO5: cio_usbdev_dn_pullup
-  // DIO4: cio_usbdev_tx_mode_se
-  // DIO3: cio_usbdev_suspend
-  assign cio_usbdev_d_p2d          = dio_p2d[2]; // DIO2
-  assign cio_usbdev_dp_p2d         = dio_p2d[1]; // DIO1
-  assign cio_usbdev_dn_p2d         = dio_p2d[0]; // DIO0
+  assign cio_usbdev_aon_sense_p2d      = dio_p2d[8]; // DIO8
+  // DIO7: cio_usbdev_aon_se0
+  // DIO6: cio_usbdev_aon_dp_pullup
+  // DIO5: cio_usbdev_aon_dn_pullup
+  // DIO4: cio_usbdev_aon_tx_mode_se
+  // DIO3: cio_usbdev_aon_suspend
+  assign cio_usbdev_aon_d_p2d          = dio_p2d[2]; // DIO2
+  assign cio_usbdev_aon_dp_p2d         = dio_p2d[1]; // DIO1
+  assign cio_usbdev_aon_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
