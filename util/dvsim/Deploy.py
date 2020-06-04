@@ -10,12 +10,9 @@ import re
 import shlex
 import subprocess
 import sys
-import time
-from collections import OrderedDict
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
-from timer import Timer
 from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
 
 
@@ -24,18 +21,11 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
-    # Timer in hours, minutes and seconds.
-    timer = Timer()
-
     # Maintain a list of dispatched items.
     dispatch_counter = 0
 
     # Misc common deploy settings.
-    print_legend = True
-    max_parallel = 16
     max_odirs = 5
-    # Max jobs dispatched in one go.
-    slot_limit = 20
 
     # List of variable names that are to be treated as "list of commands".
     # This tells `construct_cmd` that these vars are lists that need to
@@ -462,146 +452,6 @@ class Deploy():
                     subprocess.run(["bkill", job_id], check=True)
                 except Exception as e:
                     log.error("%s: Failed to run bkill\n", e)
-
-    @staticmethod
-    def deploy(items):
-        dispatched_items = []
-        queued_items = []
-
-        # Print timer val in hh:mm:ss.
-        def get_timer_val():
-            return Deploy.timer.hms()
-
-        def dispatch_items(items):
-            item_names = OrderedDict()
-            for item in items:
-                if item.target not in item_names.keys():
-                    item_names[item.target] = ""
-                if item.status is None:
-                    item_names[item.target] += item.identifier + ", "
-                    item.dispatch_cmd()
-
-            for target in item_names.keys():
-                if item_names[target] != "":
-                    item_names[target] = "  [" + item_names[target][:-2] + "]"
-                    log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
-                            get_timer_val(), target, item_names[target])
-
-        # Initialize status for a target, add '_stats_' for the said target
-        # and initialize counters for queued, dispatched, passed, failed,
-        # killed and total to 0. Also adds a boolean key to indicate if all
-        # items in a given target are done.
-        def init_status_target_stats(status, target):
-            status[target] = OrderedDict()
-            status[target]['_stats_'] = OrderedDict()
-            status[target]['_stats_']['Q'] = 0
-            status[target]['_stats_']['D'] = 0
-            status[target]['_stats_']['P'] = 0
-            status[target]['_stats_']['F'] = 0
-            status[target]['_stats_']['K'] = 0
-            status[target]['_stats_']['T'] = 0
-            status[target]['_done_'] = False
-
-        # Update status counter for a newly queued item.
-        def add_status_target_queued(status, item):
-            if item.target not in status.keys():
-                init_status_target_stats(status, item.target)
-            status[item.target][item] = "Q"
-            status[item.target]['_stats_']['Q'] += 1
-            status[item.target]['_stats_']['T'] += 1
-
-        # Update status counters for a target.
-        def update_status_target_stats(status, item):
-            old_status = status[item.target][item]
-            status[item.target]['_stats_'][old_status] -= 1
-            status[item.target]['_stats_'][item.status] += 1
-            status[item.target][item] = item.status
-
-        def check_if_done_and_print_status(status, print_status_flag):
-            all_done = True
-            for target in status.keys():
-                target_done_prev = status[target]['_done_']
-                target_done_curr = ((status[target]['_stats_']["Q"] == 0) and
-                                    (status[target]['_stats_']["D"] == 0))
-                status[target]['_done_'] = target_done_curr
-                all_done &= target_done_curr
-
-                # Print if flag is set and target_done is not True for two
-                # consecutive times.
-                if not (target_done_prev and
-                        target_done_curr) and print_status_flag:
-                    stats = status[target]['_stats_']
-                    width = "0{}d".format(len(str(stats["T"])))
-                    msg = "["
-                    for s in stats.keys():
-                        msg += s + ": {:{}}, ".format(stats[s], width)
-                    msg = msg[:-2] + "]"
-                    log.info("[%s]: [%s]: %s", get_timer_val(), target, msg)
-            return all_done
-
-        # Print legend once at the start of the run.
-        if Deploy.print_legend:
-            log.info("[legend]: [Q: queued, D: dispatched, "
-                     "P: passed, F: failed, K: killed, T: total]")
-            Deploy.print_legend = False
-
-        status = OrderedDict()
-        print_status_flag = True
-
-        # Queue all items
-        queued_items = items
-        for item in queued_items:
-            add_status_target_queued(status, item)
-
-        all_done = False
-        while not all_done:
-            # Get status of dispatched items.
-            for item in dispatched_items:
-                if item.status == "D":
-                    item.get_status()
-                if item.status != status[item.target][item]:
-                    print_status_flag = True
-                    if item.status != "D":
-                        if item.status != "P":
-                            # Kill its sub items if item did not pass.
-                            item.set_sub_status("K")
-                            log.error("[%s]: [%s]: [status] [%s: %s]",
-                                      get_timer_val(), item.target,
-                                      item.identifier, item.status)
-                        else:
-                            log.log(VERBOSE, "[%s]: [%s]: [status] [%s: %s]",
-                                    get_timer_val(), item.target,
-                                    item.identifier, item.status)
-                        # Queue items' sub-items if it is done.
-                        queued_items.extend(item.sub)
-                        for sub_item in item.sub:
-                            add_status_target_queued(status, sub_item)
-                    update_status_target_stats(status, item)
-
-            # Dispatch items from the queue as slots free up.
-            all_done = (len(queued_items) == 0)
-            if not all_done:
-                num_slots = Deploy.max_parallel - Deploy.dispatch_counter
-                if num_slots > Deploy.slot_limit:
-                    num_slots = Deploy.slot_limit
-                if num_slots > 0:
-                    if len(queued_items) > num_slots:
-                        dispatch_items(queued_items[0:num_slots])
-                        dispatched_items.extend(queued_items[0:num_slots])
-                        queued_items = queued_items[num_slots:]
-                    else:
-                        dispatch_items(queued_items)
-                        dispatched_items.extend(queued_items)
-                        queued_items = []
-
-            # Check if we are done and print the status periodically.
-            all_done &= check_if_done_and_print_status(status,
-                                                       print_status_flag)
-
-            # Advance time by 1s if there is more work to do.
-            if not all_done:
-                time.sleep(1)
-                print_status_flag = Deploy.timer.check_time()
 
 
 class CompileSim(Deploy):

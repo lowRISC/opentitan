@@ -12,8 +12,8 @@ import subprocess
 import sys
 from collections import OrderedDict
 
-from Deploy import (CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr,
-                    Deploy, RunTest)
+from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
+import Scheduler
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
@@ -533,7 +533,7 @@ class SimCfg(FlowCfg):
 
         # If coverage is enabled, then deploy the coverage tasks.
         if self.cov:
-            Deploy.deploy(self.cov_deploys)
+            Scheduler.run(self.cov_deploys)
 
     def _cov_analyze(self):
         '''Use the last regression coverage data to open up the GUI tool to

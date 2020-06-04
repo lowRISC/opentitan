@@ -13,7 +13,7 @@ import sys
 import hjson
 
 from CfgJson import set_target_attribute
-from Deploy import Deploy
+import Scheduler
 from utils import (VERBOSE, md_results_to_html,
                    subst_wildcards, find_and_substitute_wildcards)
 
@@ -381,7 +381,7 @@ class FlowCfg():
 
     def deploy_objects(self):
         '''Public facing API for deploying all available objects.'''
-        Deploy.deploy(self.deploy)
+        Scheduler.run(self.deploy)
 
     def _gen_results(self, fmt="md"):
         '''
