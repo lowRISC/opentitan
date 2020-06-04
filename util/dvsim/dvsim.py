@@ -31,7 +31,8 @@ import textwrap
 from signal import SIGINT, signal
 
 import Deploy
-import Timer
+from Scheduler import Scheduler
+from Timer import Timer
 import utils
 from CfgFactory import make_cfg
 
@@ -637,8 +638,8 @@ def main():
     Deploy.RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
-    Timer.Timer.print_interval = args.print_interval
-    Deploy.Deploy.max_parallel = args.max_parallel
+    Timer.print_interval = args.print_interval
+    Scheduler.max_parallel = args.max_parallel
     Deploy.Deploy.max_odirs = args.max_odirs
 
     # Build infrastructure from hjson file and create the list of items to
