@@ -1,7 +1,7 @@
 { name: "aon",
   type: "xbar",
   clock_primary: "clk_aon_i",
-  reset_primary: "rst_peri_ni",
+  reset_primary: "rst_aon_ni",
 
   nodes: [
     { name: "main",
@@ -13,19 +13,19 @@
     }
 
     // devices
-    { name:     "pwrmgr_aon"
+    { name:     "pwrmgr"
       type:     "device"
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
       pipeline: "false"
     }
-    { name:     "rstmgr_aon"
+    { name:     "rstmgr"
       type:     "device"
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
       pipeline: "false"
     }
-    { name:     "clkmgr_aon"
+    { name:     "clkmgr"
       type:     "device"
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
@@ -86,7 +86,7 @@
   ]
 
   connections: {
-    main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
+    main: [ "pwrmgr", "rstmgr", "clkmgr", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
             //"rbox_aon", "dcd_aon", "aontimer_aon"
     ]

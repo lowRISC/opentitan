@@ -213,7 +213,7 @@
         LfsrSeed:  "0x7FFFFFFF"
       }
     }
-    { name: "pwrmgr_aon",
+    { name: "pwrmgr",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
@@ -221,14 +221,14 @@
       base_addr: "0x400A0000",
 
     },
-    { name: "rstmgr_aon",
+    { name: "rstmgr",
       type: "rstmgr",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
     },
-    { name: "clkmgr_aon",
+    { name: "clkmgr",
       type: "clkmgr",
       clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
@@ -352,7 +352,7 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr" ]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -387,7 +387,7 @@
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
-      { name: "usbdev", pad: ["ChC[0..8]"]},
+      { name: "usbdev_aon", pad: ["ChC[0..8]"]},
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
