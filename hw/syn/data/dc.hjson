@@ -5,6 +5,7 @@
   // The tool sources include the technology setup file,
   // the main synthesis run script and the constraints file
   tool_srcs: ["{proj_root}/hw/foundry/syn/{tool}/setup.tcl"
+              "{proj_root}/hw/foundry/syn/{tool}/ram-macros-setup.tcl"
               "{proj_root}/hw/syn/tools/{tool}/run-syn.tcl"
               "{sdc_file}"]
 

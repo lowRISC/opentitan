@@ -9,7 +9,8 @@
 #####################
 
 # tool setup
-source setup.tcl
+set CONFIG_PATH "./"
+source ${CONFIG_PATH}/setup.tcl
 
 # not exit remained in command line
 #set RUN_INTERACTIVE $::env(INTERACTIVE)
