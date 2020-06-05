@@ -476,12 +476,12 @@ module prim_lfsr #(
         perturbed_q <= perturbed_d;
       end
     end
-`endif
 
     `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == DefaultSeed,
         clk_i, !rst_ni || perturbed_q)
     `ASSERT(MaximalLengthCheck1_A, cnt_q != 0 |-> lfsr_q != DefaultSeed,
         clk_i, !rst_ni || perturbed_q)
+`endif
   end
 
 endmodule
