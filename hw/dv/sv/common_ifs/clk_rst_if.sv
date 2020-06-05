@@ -42,6 +42,7 @@ interface clk_rst_if #(
   int clk_hi_ps;              // half period hi in ps
   int clk_lo_ps;              // half period lo in ps
   int jitter_chance_pc = 0;   // jitter chance in percentage on clock edge - disabled by default
+  bit sole_clock = 1'b0;      // if true, this is the only clock in the system
 
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
   string msg_id = {"clk_rst_if::", IfName};
@@ -129,6 +130,13 @@ interface clk_rst_if #(
     jitter_chance_pc = jitter_chance;
   endfunction
 
+  // Set whether this is the only clock in the system. If true, various bits of timing randomisation
+  // are disabled. If there's no other clock to (de)synchronise with, this should not weaken the
+  // test at all.
+  function automatic void set_sole_clock(bit is_sole = 1'b1);
+    sole_clock = is_sole;
+  endfunction
+
   // start / ungate the clk
   task automatic start_clk(bit wait_for_posedge = 1'b0);
     clk_gate = 1'b0;
@@ -207,10 +215,27 @@ interface clk_rst_if #(
 
   // clk gen
   initial begin
-    // start driving clk only after the first por reset assertion
-    wait_for_reset(.wait_posedge(1'b0));
-    #1ps o_clk = 1'b0;
-    #($urandom_range(0, 10) * 1ps);
+    // start driving clk only after the first por reset assertion. The fork/join means that we'll
+    // wait a whole number of clock periods, which means it's possible for the clock to synchronise
+    // with the "expected" timestamps.
+    bit done = 1'b0;
+    fork
+      begin
+        wait_for_reset(.wait_posedge(1'b0));
+
+        // Wait a short time after reset before starting to drive the clock.
+        #1ps;
+        o_clk = 1'b0;
+
+        done = 1'b1;
+      end
+      while (!done) #(clk_period_ps * 1ps);
+    join
+
+    // If there might be multiple clocks in the system, wait another (randomised) short time to
+    // desynchronise.
+    if (!sole_clock) #($urandom_range(0, clk_period_ps) * 1ps);
+
     forever begin
       if (recompute) begin
         clk_hi_ps = clk_period_ps * duty_cycle / 100;
