@@ -31,6 +31,12 @@ contradict with the guidelines below.
 The guidelines below apply to writing DIFs, and code should be written in a
 similar style to the existing DIF libraries in this directory.
 
+### Definitions
+
+<a name="side-effects"></a>
+**Side-effects** include (but are not limited to) writing to memory, including
+memory-mapped hardware, and modifying processor CSRs.
+
 ### DIF Library Guidance
 
 * DIF libraries must be written in C.
@@ -64,10 +70,10 @@ there are some relaxations of these rules for them described at the end.
     * `kDif<ip>Error`, with value 1, to denote a non-specific error happened
       during the call. This is for the `default:` case of enum switches (as
       noted below), and for assertion errors (usually where the function has
-      already caused side effects so `kDif<ip>BadArg` cannot be used).
+      already caused side-effects so `kDif<ip>BadArg` cannot be used).
     * `kDif<ip>BadArg`, with value 2, to denote that the caller supplied
       incorrect arguments. This value must only be returned if the function has
-      not caused any side effects.
+      not caused any side-effects.
   * DIF libraries should define specific return code enums for operations that
     fail in more specific ways. These specific return code enums can be shared
     between multiple DIFs that fail in the same way.
@@ -96,7 +102,7 @@ there are some relaxations of these rules for them described at the end.
       the hardware in an invalid, unrecoverable state.
     * If a DIF returns `kDif<ip>BadArg`, it must leave the hardware in a valid
       and recoverable state. This is in addition to the rule that this value may
-      only be returned if the function has not caused any side effects.
+      only be returned if the function has not caused any side-effects.
   * DIFs that cannot error and that do not return a value must return `void`.
 
 * DIFs must check their arguments against preconditions using "guard
@@ -109,12 +115,9 @@ there are some relaxations of these rules for them described at the end.
   * DIFs must ensure, if they only accept a subset of an enum, that the argument
     is within that subset. However, DIFs may assume, for checking preconditions,
     that any enum argument is one of the enum constants.
-  * DIFs must not have side-effects before any guard statements.
-
-    Side-effects include (but are not limited to) writing to memory, including
-    memory-mapped hardware, and modifying processor CSRs. This means returning
-    early from a guard statement must not leave the hardware in an invalid or
-    unrecoverable state.
+  * DIFs must not cause any side-effects before any guard statements. This means
+    returning early from a guard statement must not leave the hardware in an
+    invalid or unrecoverable state.
 
 * Switch statements in DIFs must always have a default case, including when
   switching on an enum value (an "enum switch").
