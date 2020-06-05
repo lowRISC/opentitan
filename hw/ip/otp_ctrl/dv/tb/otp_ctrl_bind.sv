@@ -4,7 +4,7 @@
 
 module otp_ctrl_bind;
 
-  bind otl_ctrl tlul_assert #(
+  bind otp_ctrl tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (
     .clk_i,
