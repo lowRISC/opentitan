@@ -106,8 +106,11 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
                                in_page_ref)
     else:
         # There is no checklist available, so point to the template.
+        # doc/project/hw_checklist.md.tpl is a symlink to ip_checklist.md.tpl,
+        # and github doesn't auto-render symlinks, so we have to use the url
+        # where the symlink points to.
         url = "https://github.com/lowrisc/opentitan/tree/master/"
-        url += "doc/project/ip_checklist.md.tpl"
+        url += "util/uvmdvgen/checklist.md.tpl"
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
 

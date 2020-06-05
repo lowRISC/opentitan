@@ -12,7 +12,7 @@ In order to gauge the quality of the different IP that is in our repository, we 
 The current status of different IP is reflected in the [Hardware Dashboard]({{< relref "hw" >}}).
 The final state for developed IP is *Signed Off*, indicating that design and verification is complete, and the IP should be bug free.
 To make it to that stage, a [Hardware Signoff Checklist]({{< relref "checklist.md" >}}) is used to confirm completion.
-[Here](https://github.com/lowRISC/opentitan/blob/master/doc/project/ip_checklist.md.tpl) is a template that can be used as a checklist item.
+[Here](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl) is a template that can be used as a checklist item.
 
 ## Governance
 
