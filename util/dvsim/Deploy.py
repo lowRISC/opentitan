@@ -257,8 +257,9 @@ class Deploy():
     def set_status(self):
         self.status = 'P'
         if self.dry_run is False:
+            seen_fail_pattern = False
             for fail_pattern in self.fail_patterns:
-                # Return error messege with the following 4 lines.
+                # Return error message with the following 4 lines.
                 grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
                 (status, rslt) = subprocess.getstatusoutput(grep_cmd)
                 if rslt:
@@ -266,12 +267,13 @@ class Deploy():
                     self.fail_msg += msg
                     log.log(VERBOSE, msg)
                     self.status = 'F'
+                    seen_fail_pattern = True
                     break
 
             # If fail patterns were not encountered, but the job returned with non-zero exit code
             # for whatever reason, then show the last 10 lines of the log as the failure message,
             # which might help with the debug.
-            if self.process.returncode != 0 and not self.fail_msg:
+            if self.process.returncode != 0 and not seen_fail_pattern:
                 msg = "Last 10 lines of the log:<br>\n"
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
