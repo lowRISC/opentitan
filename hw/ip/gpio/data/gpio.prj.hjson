@@ -7,6 +7,7 @@
     design_spec:        "hw/ip/gpio/doc",
     dv_plan:            "hw/ip/gpio/doc/dv_plan",
     hw_checklist:       "hw/ip/gpio/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_gpio",
     revisions: [
       {
         version:            "1.0",
