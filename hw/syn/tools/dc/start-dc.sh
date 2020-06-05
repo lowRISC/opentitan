@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 # this is needed for the terminal to respond correctly within DC
 TERM="dtterm" dc_shell-xg-t $@
