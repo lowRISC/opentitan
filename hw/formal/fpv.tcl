@@ -73,6 +73,17 @@ if {$env(FPV_TOP) == "alert_handler"} {
   abstract -counter -env i_ping_timer.cnt_q
 } elseif {$env(FPV_TOP) == "hmac"} {
   abstract -counter -env u_sha2.round
+  # disable these assertions because they are unreachable when the fifo is WO
+  assert -disable {*hmac.u_tlul_adapter.u_*fifo.*.depthShallNotExceedParamDepth}
+  assert -disable {*hmac.u_tlul_adapter.u_*fifo.DataKnown_A}
+  assert -disable {*hmac.u_tlul_adapter.rvalidHighReqFifoEmpty}
+  assert -disable {*hmac.u_tlul_adapter.rvalidHighWhenRspFifoFull}
+} elseif {$env(FPV_TOP) == "flash_ctrl"} {
+  # disable these assertions because they are unreachable when the fifo is WO
+  assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.depthShallNotExceedParamDepth}
+  assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.DataKnown_A}
+  assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighReqFifoEmpty}
+  assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighWhenRspFifoFull}
 }
 #-------------------------------------------------------------------------
 # assume properties for inputs
