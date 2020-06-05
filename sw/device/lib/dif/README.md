@@ -42,6 +42,7 @@ similar style to the existing DIF libraries in this directory.
 * DIF libraries must not depend on other DIF libraries. Exercising DIF
   functionality may require an environment set up using another DIF library, but
   DIFs must not call DIFs in other DIF libraries.
+* DIF library headers must be polyglot headers for C and C++.
 
 ### DIF Guidance
 
