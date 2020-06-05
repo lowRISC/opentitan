@@ -235,6 +235,9 @@ module i2c_reg_top (
   logic timeout_ctrl_en_qs;
   logic timeout_ctrl_en_wd;
   logic timeout_ctrl_en_we;
+  logic [31:0] dummy_qs;
+  logic [31:0] dummy_wd;
+  logic dummy_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1705,9 +1708,36 @@ module i2c_reg_top (
   );
 
 
+  // R[dummy]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dummy (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_we),
+    .wd     (dummy_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dummy.de),
+    .d      (hw2reg.dummy.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.dummy.qe),
+    .q      (reg2hw.dummy.q ),
+
+    // to register interface (read)
+    .qs     (dummy_qs)
+  );
 
 
-  logic [16:0] addr_hit;
+
+
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
@@ -1727,6 +1757,7 @@ module i2c_reg_top (
     addr_hit[14] = (reg_addr == I2C_TIMING3_OFFSET);
     addr_hit[15] = (reg_addr == I2C_TIMING4_OFFSET);
     addr_hit[16] = (reg_addr == I2C_TIMEOUT_CTRL_OFFSET);
+    addr_hit[17] = (reg_addr == I2C_DUMMY_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1751,6 +1782,7 @@ module i2c_reg_top (
     if (addr_hit[14] && reg_we && (I2C_PERMIT[14] != (I2C_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[15] && reg_we && (I2C_PERMIT[15] != (I2C_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[16] && reg_we && (I2C_PERMIT[16] != (I2C_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (I2C_PERMIT[17] != (I2C_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_fmt_watermark_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1934,6 +1966,9 @@ module i2c_reg_top (
   assign timeout_ctrl_en_we = addr_hit[16] & reg_we & ~wr_err;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
+  assign dummy_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dummy_wd = reg_wdata[31:0];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -2051,6 +2086,10 @@ module i2c_reg_top (
       addr_hit[16]: begin
         reg_rdata_next[30:0] = timeout_ctrl_val_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = dummy_qs;
       end
 
       default: begin

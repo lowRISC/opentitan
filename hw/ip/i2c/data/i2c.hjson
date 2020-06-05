@@ -380,5 +380,17 @@
         }
       ]
     }
+    { name: "DUMMY"
+      desc: "Dummy interface"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "val"
+          desc: "value to be written and read"
+        }
+      ]
+    }
   ]
 }

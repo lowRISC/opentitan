@@ -100,4 +100,15 @@ module i2c (
   `ASSERT_KNOWN(IntrStretchTimeoutKnownO_A, intr_stretch_timeout_o)
   `ASSERT_KNOWN(IntrSdaUnstableKnownO_A, intr_sda_unstable_o)
 
+  // Dummy gates
+  prim_gate_gen #(
+    .NumGates(8000)
+  ) u_random_gate (
+    .clk_i,
+    .rst_ni,
+    .valid_i (reg2hw.dummy.qe),
+    .data_i  (reg2hw.dummy.q),
+    .valid_o (hw2reg.dummy.de),
+    .data_o  (hw2reg.dummy.d)
+  );
 endmodule
