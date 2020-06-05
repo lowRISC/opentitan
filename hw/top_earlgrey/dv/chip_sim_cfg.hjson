@@ -156,10 +156,11 @@
   ]
 
   // List of regressions.
-  regressions: [
-    {
-      name: sanity
-      tests: ["chip_uart_tx_rx"]
-    }
-  ]
+  // TODO #2405: Waiting for bug fixes in Ibex.
+  // regressions: [
+  //   {
+  //     name: sanity
+  //     tests: ["chip_uart_tx_rx"]
+  //   }
+  // ]
 }
