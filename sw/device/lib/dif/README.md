@@ -107,8 +107,8 @@ there are some relaxations of these rules for them described at the end.
     is for an optional out-parameter. Arguments typed `mmio_region_t` are not
     pointers, and cannot meaningfully be checked for non-nullness.
   * DIFs must ensure, if they only accept a subset of an enum, that the argument
-    is within that subset. However, DIFs should assume, for checking
-    preconditions, that any enum argument is one of the enum constants.
+    is within that subset. However, DIFs may assume, for checking preconditions,
+    that any enum argument is one of the enum constants.
   * DIFs must not have side-effects before any guard statements.
 
     Side-effects include (but are not limited to) writing to memory, including
