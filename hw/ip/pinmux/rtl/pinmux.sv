@@ -211,12 +211,16 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   assign mio_data_mux = AlignedMuxSize'({mio_in_i, 1'b0, 1'b0});
 
   // Only connect DIOs that are not excempt
-  for (genvar k = 0; k < AlignedMuxSize; k++) begin : gen_dio_wkup
-    if (k < NDioPads && DioPeriphHasWkup[k]) begin : gen_dio_wkup_connect
+  for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_wkup
+    if (DioPeriphHasWkup[k]) begin : gen_dio_wkup_connect
       assign dio_data_mux[k] = dio_in_i[k];
-    end else begin : gen_dio_tie_off
+    end else begin : gen_dio_wkup_tie_off
       assign dio_data_mux[k] = 1'b0;
     end
+  end
+
+  for (genvar k = NDioPads; k < AlignedMuxSize; k++) begin : gen_dio_data_mux_tie_off
+      assign dio_data_mux[k] = 1'b0;
   end
 
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
