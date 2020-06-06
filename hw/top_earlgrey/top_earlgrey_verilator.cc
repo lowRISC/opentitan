@@ -17,8 +17,8 @@ int main(int argc, char **argv) {
 
   memutil.RegisterMemoryArea(
       "rom",
-      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom.gen_generic."
-      "u_impl_generic");
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_rom_rom.u_prim_rom."
+      "gen_generic.u_impl_generic");
   memutil.RegisterMemoryArea(
       "ram",
       "TOP.top_earlgrey_verilator.top_earlgrey.u_ram1p_ram_main.u_mem."

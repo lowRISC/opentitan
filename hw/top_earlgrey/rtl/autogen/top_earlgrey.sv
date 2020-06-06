@@ -481,16 +481,17 @@ module top_earlgrey #(
     .rerror_i (2'b00)
   );
 
-  prim_rom #(
+  prim_rom_adv #(
     .Width(32),
     .Depth(4096)
   ) u_rom_rom (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
-    .cs_i     (rom_req),
+    .req_i    (rom_req),
     .addr_i   (rom_addr),
-    .dout_o   (rom_rdata),
-    .dvalid_o (rom_rvalid)
+    .rdata_o  (rom_rdata),
+    .rvalid_o (rom_rvalid),
+    .cfg_i    ('0) // tied off for now
   );
 
   // sram device

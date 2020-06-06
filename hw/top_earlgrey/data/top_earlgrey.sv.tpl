@@ -417,8 +417,7 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  ## TODO: Replace emulated ROM to real ROM in ASIC SoC
-  prim_rom #(
+  prim_rom_adv #(
     .Width(${data_width}),
     .Depth(${rom_depth})
   ) u_rom_${m["name"]} (
@@ -428,10 +427,11 @@ module top_${top["name"]} #(
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
-    .cs_i     (${m["name"]}_req),
+    .req_i    (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
-    .dout_o   (${m["name"]}_rdata),
-    .dvalid_o (${m["name"]}_rvalid)
+    .rdata_o  (${m["name"]}_rdata),
+    .rvalid_o (${m["name"]}_rvalid),
+    .cfg_i    ('0) // tied off for now
   );
 
   % elif m["type"] == "eflash":
