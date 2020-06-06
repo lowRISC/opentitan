@@ -11,27 +11,17 @@ module prim_generic_rom #(
 
   localparam int Aw          = $clog2(Depth)
 ) (
-  input                        clk_i,
-  input                        rst_ni,
-  input        [Aw-1:0]        addr_i,
-  input                        cs_i,
-  output logic [Width-1:0]     dout_o,
-  output logic                 dvalid_o
+  input  logic             clk_i,
+  input  logic             req_i,
+  input  logic [Aw-1:0]    addr_i,
+  output logic [Width-1:0] rdata_o
 );
 
   logic [Width-1:0] mem [Depth];
 
   always_ff @(posedge clk_i) begin
-    if (cs_i) begin
-      dout_o <= mem[addr_i];
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      dvalid_o <= 1'b0;
-    end else begin
-      dvalid_o <= cs_i;
+    if (req_i) begin
+      rdata_o <= mem[addr_i];
     end
   end
 
@@ -42,5 +32,5 @@ module prim_generic_rom #(
   ////////////////
 
   // Control Signals should never be X
-  `ASSERT(noXOnCsI, !$isunknown(cs_i), clk_i, '0)
+  `ASSERT(noXOnCsI, !$isunknown(req_i), clk_i, '0)
 endmodule
