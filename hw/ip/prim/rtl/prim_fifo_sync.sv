@@ -10,6 +10,7 @@ module prim_fifo_sync #(
   parameter int unsigned Width       = 16,
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
+  parameter bit OutputZeroIfEmpty    = 1'b1, // if == 1 always output 0 when FIFO is empty
   // derived parameter
   localparam int unsigned DepthWNorm = $clog2(Depth+1),
   localparam int unsigned DepthW     = (DepthWNorm == 0) ? 1 : DepthWNorm
@@ -131,12 +132,19 @@ module prim_fifo_sync #(
         end
     end
 
+    logic [Width-1:0] rdata_int;
     if (Pass == 1'b1) begin : gen_pass
-      assign rdata = (fifo_empty && wvalid) ? wdata : storage_rdata;
+      assign rdata_int = (fifo_empty && wvalid) ? wdata : storage_rdata;
       assign empty = fifo_empty & ~wvalid;
     end else begin : gen_nopass
-      assign rdata = storage_rdata;
+      assign rdata_int = storage_rdata;
       assign empty = fifo_empty;
+    end
+
+    if (OutputZeroIfEmpty == 1'b1) begin : gen_output_zero
+      assign rdata = empty ? 'b0 : rdata_int;
+    end else begin : gen_no_output_zero
+      assign rdata = rdata_int;
     end
 
     `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth <= DepthW'(Depth))
