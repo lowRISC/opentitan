@@ -14,7 +14,7 @@
 `include "prim_assert.sv"
 
 module usb_fs_nb_out_pe #(
-  parameter logic [4:0] NumOutEps = 1,
+  parameter logic [4:0] NumOutEps = 2,
   parameter int unsigned MaxOutPktSizeByte = 32,
   localparam int unsigned OutEpW = $clog2(NumOutEps), // derived parameter
   localparam int unsigned PktW = $clog2(MaxOutPktSizeByte) // derived parameter
