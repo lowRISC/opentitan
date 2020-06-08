@@ -5,15 +5,15 @@
 #include <limits>
 
 extern "C" {
-#include "spi_device_regs.h"  // Generated.
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "spi_device_regs.h"  // Generated.
 }  // extern "C"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
 
-namespace dif_spi_device_test {
+namespace dif_spi_device_unittest {
 namespace {
 using ::mock_mmio::LeInt;
 using ::mock_mmio::MmioTest;
@@ -832,4 +832,4 @@ TEST_F(SendTest, NullArgs) {
             kDifSpiDeviceResultOk);
 }
 }  // namespace
-}  // namespace dif_spi_device_test
+}  // namespace dif_spi_device_unittest
