@@ -34,12 +34,12 @@ test('dif_uart_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
-test('dif_plic_test', executable(
-  'dif_plic_test',
+test('dif_plic_unittest', executable(
+  'dif_plic_unittest',
   sources: [
     hw_top_earlgrey_rv_plic_reg_h,
     meson.source_root() / 'sw/device/lib/dif/dif_plic.c',
-    'dif_plic_test.cc',
+    'dif_plic_unittest.cc',
   ],
   dependencies: [
     sw_vendor_gtest,
