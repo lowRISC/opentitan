@@ -18,10 +18,10 @@ test('dif_spi_device_test', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
-test('dif_uart_test', executable(
-  'dif_uart_test',
+test('dif_uart_unittest', executable(
+  'dif_uart_unittest',
   sources: [
-    'dif_uart_test.cc',
+    'dif_uart_unittest.cc',
     meson.source_root() / 'sw/device/lib/dif/dif_uart.c',
     hw_ip_uart_reg_h,
   ],
