@@ -2,12 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-test('dif_spi_device_test', executable(
-  'dif_spi_device_test',
+test('dif_spi_device_unittest', executable(
+  'dif_spi_device_unittest',
   sources: [
     hw_ip_spi_device_reg_h,
     meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
-    'dif_spi_device_test.cc',
+    'dif_spi_device_unittest.cc',
   ],
   dependencies: [
     sw_vendor_gtest,
