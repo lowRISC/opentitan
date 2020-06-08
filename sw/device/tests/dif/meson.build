@@ -49,3 +49,21 @@ test('dif_plic_unittest', executable(
   c_args: ['-DMOCK_MMIO'], 
   cpp_args: ['-DMOCK_MMIO'],
 ))
+
+dif_plic_sanitytest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_plic_sanitytest_lib',
+    sources: ['dif_plic_sanitytest.c'],
+    dependencies: [
+      dif_uart,
+      dif_plic,
+      sw_lib_irq,
+      sw_lib_mmio,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
+sw_tests += { 'dif_plic_sanitytest': dif_plic_sanitytest_lib }
