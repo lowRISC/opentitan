@@ -42,6 +42,7 @@ declare -a blocks=(
   "prim_esc_rxtx_fpv"
   "prim_lfsr_fpv"
   "prim_fifo_sync_fpv"
+  "prim_packer_fpv"
   "pinmux_fpv"
   "padctrl_fpv"
   "rv_plic_fpv"

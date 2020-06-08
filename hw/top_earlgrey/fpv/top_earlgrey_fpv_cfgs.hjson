@@ -50,6 +50,11 @@
                import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
              }
              {
+               name: prim_packer_fpv
+               fusesoc_core: lowrisc:fpv:prim_packer_fpv
+               import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
+             }
+             {
                name: padctrl_fpv
                fusesoc_core: lowrisc:fpv:padctrl_fpv
                import_cfgs: ["{proj_root}/hw/formal/data/common_fpv_cfg.hjson"]
