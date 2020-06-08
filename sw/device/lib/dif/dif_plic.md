@@ -9,12 +9,12 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Not Started |
-Implementation | [DIF_USED_IN_TREE][] | Not Started |
-Tests          | [DIF_TEST_UNIT][]    | Not Started |
-Tests          | [DIF_TEST_SANITY][]  | Not Started |
-Review         | Reviewer(s)          | Not Started |
-Review         | Signoff date         | Not Started |
+Implementation | [DIF_EXISTS][]       | Done        |
+Implementation | [DIF_USED_IN_TREE][] | Done        |
+Tests          | [DIF_TEST_UNIT][]    | Done        |
+Tests          | [DIF_TEST_SANITY][]  | Done        |
+Review         | Reviewer(s)          | Done        | @gkelly, @lenary, @silvestrst
+Review         | Signoff date         | Done        | 2020-06-08
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif-exists" >}}
 [DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif-used-in-tree" >}}
