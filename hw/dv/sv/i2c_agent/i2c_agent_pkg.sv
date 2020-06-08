@@ -34,7 +34,7 @@ package i2c_agent_pkg;
     bit [31:0]  tSetupStop;
     bit [31:0]  tHoldStop;
     bit         enbTimeOut;
-    bit         tTimeOut;
+    bit [30:0]  tTimeOut;
   } timing_cfg_t;
 
   // forward declare classes to allow typedefs below
