@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:prim:ram_2p_async_adv
       - lowrisc:ip:usb_fs_nb_pe
     files:
       - rtl/usbdev_reg_pkg.sv
