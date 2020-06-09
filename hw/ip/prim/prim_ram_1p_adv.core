@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:util
       - lowrisc:prim:secded
       - lowrisc:prim:ram_1p
     files:
