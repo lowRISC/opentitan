@@ -24,24 +24,24 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    //{ name:      "uart1",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "uart2",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "uart3",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
+    { name:      "uart1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "uart2",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "uart3",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "gpio",
       type:      "device",
       clock:     "clk_peri_i",
@@ -66,42 +66,24 @@
     //  reset:     "rst_peri_ni",
     //  pipeline:  "false"
     //},
-    { name:      "i2c",
+    { name:      "i2c0",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    //{ name:      "i2c1",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "i2c2",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "i2c3",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "i2c4",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
-    //{ name:      "i2c5",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
+    { name:      "i2c1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "i2c2",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "pattgen",
       type:      "device",
       clock:     "clk_peri_i",
@@ -110,6 +92,8 @@
     }
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "i2c", "pattgen"],
+    main:  ["uart", "uart1", "uart2", "uart3",
+            "gpio", "spi_device", "rv_timer",
+            "i2c0", "i2c1", "i2c2", "pattgen"],
   },
 }

@@ -124,12 +124,33 @@
 
       base_addr: "0x40000000",
     },
+    { name: "uart1",
+      type: "uart",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40010000"
+    }
+    { name: "uart2",
+      type: "uart",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40020000"
+    }
+    { name: "uart3",
+      type: "uart",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40030000"
+    }
     { name: "gpio",
       type: "gpio",
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io"},
-      base_addr: "0x40010000",
+      base_addr: "0x40040000",
     }
 
     { name: "spi_device",
@@ -137,49 +158,63 @@
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
-      base_addr: "0x40020000",
+      base_addr: "0x40050000",
     },
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
-      base_addr: "0x40030000",
+      base_addr: "0x41000000",
     },
     { name: "rv_timer",
       type: "rv_timer",
       clock_srcs: {clk_i: "io"},
       clock_group: "timers",
       reset_connections: {rst_ni: "sys_io"},
-      base_addr: "0x40080000",
+      base_addr: "0x40100000",
     },
-    { name: "i2c",
+    { name: "i2c0",
       type: "i2c",
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io"},
-      base_addr: "0x40050000"
+      base_addr: "0x40080000"
+    },
+    { name: "i2c1",
+      type: "i2c",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40090000"
+    },
+    { name: "i2c2",
+      type: "i2c",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x400A0000"
     },
     { name: "aes",
       type: "aes",
       clock_srcs: {clk_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40110000",
+      base_addr: "0x41100000",
     },
     { name: "hmac",
       type: "hmac",
       clock_srcs: {clk_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40120000",
+      base_addr: "0x41110000",
     },
     { name: "rv_plic",
       type: "rv_plic",
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40090000",
+      base_addr: "0x41010000",
       generated: "true"         // Indicate this module is generated in the topgen
     }
     { name: "pinmux_aon",
@@ -188,7 +223,7 @@
       clock_srcs: {clk_i: "main", clk_aon_i: "io"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_io"},
-      base_addr: "0x40070000",
+      base_addr: "0x40460000",
       generated: "true"
     },
     { name: "padctrl_aon",
@@ -197,7 +232,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40160000",
+      base_addr: "0x40470000",
       generated: "true"
     },
     { name: "alert_handler",
@@ -205,7 +240,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40130000",
+      base_addr: "0x41170000",
       generated: "true"         // Indicate this module is generated in the topgen
       localparam: {
         EscCntDw:  32,
@@ -218,7 +253,7 @@
       clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
-      base_addr: "0x400A0000",
+      base_addr: "0x40400000",
 
     },
     { name: "rstmgr",
@@ -226,14 +261,14 @@
       clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
-      base_addr: "0x400B0000",
+      base_addr: "0x40410000",
     },
     { name: "clkmgr",
       type: "clkmgr",
       clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"},
-      base_addr: "0x400C0000",
+      base_addr: "0x40420000",
       generated: "true"
     },
     // dummy module to capture the alert handler escalation signals
@@ -243,14 +278,14 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40140000",
+      base_addr: "0x41180000",
     }
     { name: "usbdev_aon",
       type: "usbdev",
       clock_srcs: {clk_i: "io", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
-      base_addr: "0x40150000",
+      base_addr: "0x40500000",
     },
     { name: "pattgen",
       type: "pattgen",
@@ -264,7 +299,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x40170000",
+      base_addr: "0x41130000",
     },
   ]
 
@@ -359,7 +394,9 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr" ]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr",
+                     "uart1", "uart2", "uart3",
+                     "i2c0", "i2c1", "i2c2"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -402,7 +439,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["uart", "gpio", "i2c"]
+    mio_modules: ["uart", "uart1", "uart2", "uart3", "gpio", "i2c0", "i2c1", "i2c2"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
