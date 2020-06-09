@@ -41,7 +41,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     StIdle   = 0,
     StTx     = 1,
     StTxLast = 2,
-    StWait   = 3,
+    StOpWait = 3,
     StClean  = 4
   } data_state_e;
 
@@ -188,10 +188,10 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
         // transaction accetped
         cnt_clr = kmac_data_i.ready;
-        state_d = kmac_data_i.ready ? StWait : StTxLast;
+        state_d = kmac_data_i.ready ? StOpWait : StTxLast;
       end
 
-      StWait: begin
+      StOpWait: begin
         if (kmac_data_i.done) begin
           done_o = 1'b1;
           state_d = StClean;
