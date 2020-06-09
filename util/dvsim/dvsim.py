@@ -356,7 +356,6 @@ def parse_args():
 
     seedg.add_argument("--reseed", "-r",
                        type=int,
-                       default=-1,
                        metavar="N",
                        help=('Override any reseed value in the test '
                              'configuration and run each test N times, with '
