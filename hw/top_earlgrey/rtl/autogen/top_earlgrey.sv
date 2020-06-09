@@ -108,6 +108,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_usbdev_aon_d_d2h;
   tl_h2d_t  tl_pattgen_d_h2d;
   tl_d2h_t  tl_pattgen_d_d2h;
+  tl_h2d_t  tl_keymgr_d_h2d;
+  tl_d2h_t  tl_keymgr_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -191,9 +193,10 @@ module top_earlgrey #(
   logic        cio_pattgen_pda1_tx_en_d2p;
   logic        cio_pattgen_pcl1_tx_d2p;
   logic        cio_pattgen_pcl1_tx_en_d2p;
+  // keymgr
 
 
-  logic [80:0]  intr_vector;
+  logic [81:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -256,6 +259,7 @@ module top_earlgrey #(
   logic intr_usbdev_aon_connected;
   logic intr_pattgen_patt_done0;
   logic intr_pattgen_patt_done1;
+  logic intr_keymgr_op_done;
 
 
 
@@ -902,6 +906,27 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
+  keymgr u_keymgr (
+      .tl_i (tl_keymgr_d_h2d),
+      .tl_o (tl_keymgr_d_d2h),
+
+      // Interrupt
+      .intr_op_done_o (intr_keymgr_op_done),
+
+      // Inter-module signals
+      .aes_key_o(),
+      .hmac_key_o(),
+      .kmac_key_o(),
+      .kmac_data_o(),
+      .kmac_data_i(keymgr_pkg::KMAC_DATA_RSP_DEFAULT),
+      .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
+      .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
+      .flash_i(keymgr_pkg::FLASH_KEY_DEFAULT),
+
+      .clk_i (clkmgr_clocks.clk_main_keymgr),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_pwrmgr_wakeup,
@@ -932,6 +957,7 @@ module top_earlgrey #(
       intr_hmac_hmac_err,
       intr_hmac_fifo_empty,
       intr_hmac_hmac_done,
+      intr_keymgr_op_done,
       intr_flash_ctrl_op_error,
       intr_flash_ctrl_op_done,
       intr_flash_ctrl_rd_lvl,
@@ -986,6 +1012,8 @@ module top_earlgrey #(
     .tl_hmac_i          (tl_hmac_d_d2h),
     .tl_aes_o           (tl_aes_d_h2d),
     .tl_aes_i           (tl_aes_d_d2h),
+    .tl_keymgr_o        (tl_keymgr_d_h2d),
+    .tl_keymgr_i        (tl_keymgr_d_d2h),
     .tl_rv_plic_o       (tl_rv_plic_d_h2d),
     .tl_rv_plic_i       (tl_rv_plic_d_d2h),
     .tl_alert_handler_o (tl_alert_handler_d_h2d),

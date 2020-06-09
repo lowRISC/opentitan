@@ -25,6 +25,7 @@ filesets:
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
+      - lowrisc:ip:keymgr
       - lowrisc:ip:pwrmgr
       - lowrisc:prim:ram_1p
       - lowrisc:prim:rom

@@ -63,6 +63,7 @@
         {
           clk_main_aes: main
           clk_main_hmac: main
+          clk_main_keymgr: main
         }
       }
       {
@@ -1851,6 +1852,113 @@
       alert_list: []
       scan: "false"
     }
+    {
+      name: keymgr
+      type: keymgr
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40170000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_keymgr
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: op_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: hw_key
+          type: uni
+          name: aes_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: hw_key
+          type: uni
+          name: hmac_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: hw_key
+          type: uni
+          name: kmac_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: kmac_data
+          type: req_rsp
+          name: kmac_data
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: lc_data
+          type: uni
+          name: lc
+          act: rcv
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: otp_data
+          type: uni
+          name: otp
+          act: rcv
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: flash_key
+          type: uni
+          name: flash
+          act: rcv
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+      ]
+    }
   ]
   memory:
   [
@@ -1998,6 +2106,7 @@
           rv_plic
           alert_handler
           nmi_gen
+          keymgr
         ]
         dm_sba:
         [
@@ -2231,6 +2340,23 @@
           [
             {
               base_addr: 0x40110000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline: "true"
+        }
+        {
+          name: keymgr
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: keymgr
+          addr_range:
+          [
+            {
+              base_addr: 0x40170000
               size_byte: 0x1000
             }
           ]
@@ -2586,6 +2712,7 @@
     uart
     spi_device
     flash_ctrl
+    keymgr
     hmac
     alert_handler
     nmi_gen
@@ -2866,6 +2993,19 @@
       ]
       type: interrupt
       module_name: flash_ctrl
+    }
+    {
+      name: keymgr_op_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: keymgr
     }
     {
       name: hmac_hmac_done
@@ -3786,6 +3926,69 @@
         struct: logic
         width: "1"
         inst_name: usbdev_aon
+        index: -1
+      }
+      {
+        struct: hw_key
+        type: uni
+        name: aes_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: hw_key
+        type: uni
+        name: hmac_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: hw_key
+        type: uni
+        name: kmac_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: kmac_data
+        type: req_rsp
+        name: kmac_data
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: lc_data
+        type: uni
+        name: lc
+        act: rcv
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: otp_data
+        type: uni
+        name: otp
+        act: rcv
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: flash_key
+        type: uni
+        name: flash
+        act: rcv
+        package: keymgr_pkg
+        inst_name: keymgr
         index: -1
       }
       {
