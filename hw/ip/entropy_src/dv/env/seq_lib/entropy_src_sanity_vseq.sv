@@ -9,31 +9,32 @@ class entropy_src_sanity_vseq extends entropy_src_base_vseq;
   `uvm_object_new
 
   task body();
-    bit [TL_DW-1:0] es_seed, rd_data;
+    // Ensure es_entropy is 0 before enabling
+    csr_rd_check(.ptr(ral.es_entropy), .compare_value(1'b0));
 
-    // Get es_seed
-    csr_rd(.ptr(ral.es_seed), .value(es_seed));
+    // Set FIFO Threshold
+    csr_wr(.csr(ral.es_thresh), .value(1'b1));
 
     // Enable entropy_src
     csr_wr(.csr(ral.es_conf), .value(1'b1));
 
-    // Wait for entropy_rdy
-    //mwb: removed for now: csr_spinwait(.ptr(ral.es_status.entropy_rdy), .exp_data(1));
-
     // Wait for entropy_valid interrupt
-    csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1));
+    csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
 
-    // Expect 1st entropy to be es_seed
-    csr_rd_check(.ptr(ral.es_entropy), .compare_value(es_seed));
+    // Expect POR_ENTROPY with POR_SEED
+    csr_rd_check(.ptr(ral.es_entropy), .compare_value(POR_ENTROPY));
 
     // Disable entropy_src
     csr_wr(.csr(ral.es_conf), .value(1'b0));
 
-    // Clear/Validate entropy_valid interrupt bit
+    // Ensure entropy_valid interrupt bit set
+    csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b1));
+
+    // Clear entropy_valid interrupt bit
     csr_wr(.csr(ral.intr_state), .value(1'b1));
 
     // Ensure entropy_valid interrupt bit cleared
-    csr_rd_check(.ptr(ral.intr_state), .compare_value(0));
+    csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b0));
     
   endtask : body
 

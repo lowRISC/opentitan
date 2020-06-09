@@ -16,6 +16,10 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire intr_entropy_valid;
+  wire intr_rct_failed;
+  wire intr_apt_failed;
+  wire intr_fifo_err;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -29,9 +33,26 @@ module tb;
     .rst_ni               (rst_n      ),
 
     .tl_i                 (tl_if.h2d  ),
-    .tl_o                 (tl_if.d2h  )
-    // TODO: add remaining IOs and hook them
+    .tl_o                 (tl_if.d2h  ),
+
+    .efuse_es_sw_reg_en_i (1'b1),
+  
+    .entropy_src_hw_if_o  (),
+    .entropy_src_hw_if_i  (),
+
+    .entropy_src_rng_o    (),
+    .entropy_src_rng_i    (),
+
+    .es_entropy_valid_o   (intr_entropy_valid),
+    .es_rct_failed_o      (intr_rct_failed),
+    .es_apt_failed_o      (intr_apt_failed),
+    .es_fifo_err_o        (intr_fifo_err)
   );
+
+  assign interrupts[EntropyValid] = intr_entropy_valid;
+  assign interrupts[RctFailed]    = intr_rct_failed;
+  assign interrupts[AptFailed]    = intr_apt_failed;
+  assign interrupts[FifoErr]      = intr_fifo_err;
 
   initial begin
     // drive clk and rst_n from clk_if
