@@ -34,7 +34,7 @@ package keymgr_pkg;
   localparam int AdvDataWidth = RomExtDescWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
   localparam int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant
-  localparam int GenDataWidth = 32 + 128 + 128 + KeyWidth;
+  localparam int GenDataWidth = 32 + 128 + KeyWidth;
   localparam int StageWidth = $clog2(KeyMgrStages);
 
   // Max Payload Width to derivation function

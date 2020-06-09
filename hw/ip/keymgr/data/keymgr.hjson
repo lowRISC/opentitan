@@ -293,28 +293,6 @@
 
     { multireg: {
         cname: "KEYMGR",
-        name: "KEY_ID",
-        regwen: "CFGEN",
-        desc: '''
-          Key ID value used as part of output generation
-        ''',
-        count: "NumInReg",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Key ID value
-              ''',
-              resval: "0"
-            },
-        ],
-      },
-    },
-
-    { multireg: {
-        cname: "KEYMGR",
         name: "Salt",
         regwen: "CFGEN",
         desc: '''
