@@ -47,3 +47,7 @@ Finally, we provide the same set of information for all available [top level des
   * [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/results.html)
   * [DV Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/latest/results.html)
   * [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html)
+
+## Hardware documentation overview
+
+{{% sectionContent %}}
