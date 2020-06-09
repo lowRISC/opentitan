@@ -9,10 +9,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:util
       - lowrisc:prim:secded
       - lowrisc:prim:ram_2p
     files:
-      - rtl/prim_ram_2p_adv.sv
+      - rtl/prim_ram_2p_async_adv.sv
     file_type: systemVerilogSource
 
 targets:
