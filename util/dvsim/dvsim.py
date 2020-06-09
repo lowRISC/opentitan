@@ -80,6 +80,39 @@ def resolve_scratch_root(arg_scratch_root):
     return (arg_scratch_root)
 
 
+def read_max_parallel(arg):
+    '''Take value for --max-parallel as an integer'''
+    try:
+        int_val = int(arg)
+        if int_val <= 0:
+            raise ValueError('bad value')
+        return int_val
+
+    except ValueError:
+        raise argparse.ArgumentTypeError('Bad argument for --max-parallel '
+                                         '({!r}): must be a positive integer.'
+                                         .format(arg))
+
+
+def resolve_max_parallel(arg):
+    '''Pick a value of max_parallel, defaulting to 16 or $DVSIM_MAX_PARALLEL'''
+    if arg is not None:
+        assert arg > 0
+        return arg
+
+    from_env = os.environ.get('DVSIM_MAX_PARALLEL')
+    if from_env is not None:
+        try:
+            return read_max_parallel(from_env)
+        except argparse.ArgumentTypeError:
+            log.warning('DVSIM_MAX_PARALLEL environment variable has value '
+                        '{!r}, which is not a positive integer. Using default '
+                        'value (16).'
+                        .format(from_env))
+
+    return 16
+
+
 def resolve_branch(branch):
     '''Choose a branch name for output files
 
@@ -223,11 +256,12 @@ def parse_args():
                             'command.'))
 
     disg.add_argument("--max-parallel", "-mp",
-                      type=int,
-                      default=16,
+                      type=read_max_parallel,
                       metavar="N",
                       help=('Run only up to N builds/tests at a time. '
-                            'Default value 16.'))
+                            'Default value 16, unless the DVSIM_MAX_PARALLEL '
+                            'environment variable is set, in which case that '
+                            'is used.'))
 
     pathg = parser.add_argument_group('File management')
 
@@ -444,18 +478,7 @@ def parse_args():
                      help=("Print dvsim tool messages but don't actually "
                            "run any command"))
 
-    return parser.parse_args()
-
-
-def main():
-    args = parse_args()
-
-    # We want the --list argument to default to "all categories", but allow
-    # filtering. If args.list is None, then --list wasn't supplied. If it is
-    # [], then --list was supplied with no further arguments and we want to
-    # list all categories.
-    if args.list == []:
-        args.list = _LIST_CATEGORIES
+    args = parser.parse_args()
 
     if args.version:
         print(version)
@@ -467,6 +490,17 @@ def main():
     # list all categories.
     if args.list == []:
         args.list = _LIST_CATEGORIES
+
+    # Get max_parallel from environment if it wasn't specified on the command
+    # line.
+    args.max_parallel = resolve_max_parallel(args.max_parallel)
+    assert args.max_parallel > 0
+
+    return args
+
+
+def main():
+    args = parse_args()
 
     # Add log level 'VERBOSE' between INFO and DEBUG
     log.addLevelName(utils.VERBOSE, 'VERBOSE')
