@@ -39,6 +39,9 @@ tl_device_t xbar_devices[$] = '{
     '{"aes", '{
         '{32'h40110000, 32'h40110fff}
     }},
+    '{"keymgr", '{
+        '{32'h40170000, 32'h40170fff}
+    }},
     '{"rv_plic", '{
         '{32'h40090000, 32'h40090fff}
     }},
@@ -69,7 +72,8 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "alert_handler",
-        "nmi_gen"}}
+        "nmi_gen",
+        "keymgr"}}
     ,
     '{"dm_sba", 2, '{
         "rom",

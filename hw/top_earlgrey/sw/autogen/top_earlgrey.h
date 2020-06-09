@@ -234,6 +234,14 @@
  */
 #define TOP_EARLGREY_PATTGEN_BASE_ADDR 0x400E0000u
 
+/**
+ * Base address for keymgr peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x40170000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.
@@ -247,12 +255,13 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUart = 2, /**< uart */
   kTopEarlgreyPlicPeripheralSpiDevice = 3, /**< spi_device */
   kTopEarlgreyPlicPeripheralFlashCtrl = 4, /**< flash_ctrl */
-  kTopEarlgreyPlicPeripheralHmac = 5, /**< hmac */
-  kTopEarlgreyPlicPeripheralAlertHandler = 6, /**< alert_handler */
-  kTopEarlgreyPlicPeripheralNmiGen = 7, /**< nmi_gen */
-  kTopEarlgreyPlicPeripheralUsbdevAon = 8, /**< usbdev_aon */
-  kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
-  kTopEarlgreyPlicPeripheralLast = 9, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralKeymgr = 5, /**< keymgr */
+  kTopEarlgreyPlicPeripheralHmac = 6, /**< hmac */
+  kTopEarlgreyPlicPeripheralAlertHandler = 7, /**< alert_handler */
+  kTopEarlgreyPlicPeripheralNmiGen = 8, /**< nmi_gen */
+  kTopEarlgreyPlicPeripheralUsbdevAon = 9, /**< usbdev_aon */
+  kTopEarlgreyPlicPeripheralPwrmgr = 10, /**< pwrmgr */
+  kTopEarlgreyPlicPeripheralLast = 10, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -315,35 +324,36 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 50, /**< flash_ctrl_rd_lvl */
   kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 51, /**< flash_ctrl_op_done */
   kTopEarlgreyPlicIrqIdFlashCtrlOpError = 52, /**< flash_ctrl_op_error */
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 53, /**< hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 54, /**< hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 55, /**< hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 56, /**< alert_handler_classa */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 57, /**< alert_handler_classb */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 58, /**< alert_handler_classc */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 59, /**< alert_handler_classd */
-  kTopEarlgreyPlicIrqIdNmiGenEsc0 = 60, /**< nmi_gen_esc0 */
-  kTopEarlgreyPlicIrqIdNmiGenEsc1 = 61, /**< nmi_gen_esc1 */
-  kTopEarlgreyPlicIrqIdNmiGenEsc2 = 62, /**< nmi_gen_esc2 */
-  kTopEarlgreyPlicIrqIdNmiGenEsc3 = 63, /**< nmi_gen_esc3 */
-  kTopEarlgreyPlicIrqIdUsbdevAonPktReceived = 64, /**< usbdev_aon_pkt_received */
-  kTopEarlgreyPlicIrqIdUsbdevAonPktSent = 65, /**< usbdev_aon_pkt_sent */
-  kTopEarlgreyPlicIrqIdUsbdevAonDisconnected = 66, /**< usbdev_aon_disconnected */
-  kTopEarlgreyPlicIrqIdUsbdevAonHostLost = 67, /**< usbdev_aon_host_lost */
-  kTopEarlgreyPlicIrqIdUsbdevAonLinkReset = 68, /**< usbdev_aon_link_reset */
-  kTopEarlgreyPlicIrqIdUsbdevAonLinkSuspend = 69, /**< usbdev_aon_link_suspend */
-  kTopEarlgreyPlicIrqIdUsbdevAonLinkResume = 70, /**< usbdev_aon_link_resume */
-  kTopEarlgreyPlicIrqIdUsbdevAonAvEmpty = 71, /**< usbdev_aon_av_empty */
-  kTopEarlgreyPlicIrqIdUsbdevAonRxFull = 72, /**< usbdev_aon_rx_full */
-  kTopEarlgreyPlicIrqIdUsbdevAonAvOverflow = 73, /**< usbdev_aon_av_overflow */
-  kTopEarlgreyPlicIrqIdUsbdevAonLinkInErr = 74, /**< usbdev_aon_link_in_err */
-  kTopEarlgreyPlicIrqIdUsbdevAonRxCrcErr = 75, /**< usbdev_aon_rx_crc_err */
-  kTopEarlgreyPlicIrqIdUsbdevAonRxPidErr = 76, /**< usbdev_aon_rx_pid_err */
-  kTopEarlgreyPlicIrqIdUsbdevAonRxBitstuffErr = 77, /**< usbdev_aon_rx_bitstuff_err */
-  kTopEarlgreyPlicIrqIdUsbdevAonFrame = 78, /**< usbdev_aon_frame */
-  kTopEarlgreyPlicIrqIdUsbdevAonConnected = 79, /**< usbdev_aon_connected */
-  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 80, /**< pwrmgr_wakeup */
-  kTopEarlgreyPlicIrqIdLast = 80, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 53, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 54, /**< hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 55, /**< hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 56, /**< hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 57, /**< alert_handler_classa */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 58, /**< alert_handler_classb */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 59, /**< alert_handler_classc */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 60, /**< alert_handler_classd */
+  kTopEarlgreyPlicIrqIdNmiGenEsc0 = 61, /**< nmi_gen_esc0 */
+  kTopEarlgreyPlicIrqIdNmiGenEsc1 = 62, /**< nmi_gen_esc1 */
+  kTopEarlgreyPlicIrqIdNmiGenEsc2 = 63, /**< nmi_gen_esc2 */
+  kTopEarlgreyPlicIrqIdNmiGenEsc3 = 64, /**< nmi_gen_esc3 */
+  kTopEarlgreyPlicIrqIdUsbdevAonPktReceived = 65, /**< usbdev_aon_pkt_received */
+  kTopEarlgreyPlicIrqIdUsbdevAonPktSent = 66, /**< usbdev_aon_pkt_sent */
+  kTopEarlgreyPlicIrqIdUsbdevAonDisconnected = 67, /**< usbdev_aon_disconnected */
+  kTopEarlgreyPlicIrqIdUsbdevAonHostLost = 68, /**< usbdev_aon_host_lost */
+  kTopEarlgreyPlicIrqIdUsbdevAonLinkReset = 69, /**< usbdev_aon_link_reset */
+  kTopEarlgreyPlicIrqIdUsbdevAonLinkSuspend = 70, /**< usbdev_aon_link_suspend */
+  kTopEarlgreyPlicIrqIdUsbdevAonLinkResume = 71, /**< usbdev_aon_link_resume */
+  kTopEarlgreyPlicIrqIdUsbdevAonAvEmpty = 72, /**< usbdev_aon_av_empty */
+  kTopEarlgreyPlicIrqIdUsbdevAonRxFull = 73, /**< usbdev_aon_rx_full */
+  kTopEarlgreyPlicIrqIdUsbdevAonAvOverflow = 74, /**< usbdev_aon_av_overflow */
+  kTopEarlgreyPlicIrqIdUsbdevAonLinkInErr = 75, /**< usbdev_aon_link_in_err */
+  kTopEarlgreyPlicIrqIdUsbdevAonRxCrcErr = 76, /**< usbdev_aon_rx_crc_err */
+  kTopEarlgreyPlicIrqIdUsbdevAonRxPidErr = 77, /**< usbdev_aon_rx_pid_err */
+  kTopEarlgreyPlicIrqIdUsbdevAonRxBitstuffErr = 78, /**< usbdev_aon_rx_bitstuff_err */
+  kTopEarlgreyPlicIrqIdUsbdevAonFrame = 79, /**< usbdev_aon_frame */
+  kTopEarlgreyPlicIrqIdUsbdevAonConnected = 80, /**< usbdev_aon_connected */
+  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 81, /**< pwrmgr_wakeup */
+  kTopEarlgreyPlicIrqIdLast = 81, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -353,7 +363,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[81];
+    top_earlgrey_plic_interrupt_for_peripheral[82];
 
 /**
  * PLIC external interrupt target.

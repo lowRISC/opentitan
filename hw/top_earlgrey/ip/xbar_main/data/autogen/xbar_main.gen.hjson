@@ -48,6 +48,7 @@
       rv_plic
       alert_handler
       nmi_gen
+      keymgr
     ]
     dm_sba:
     [
@@ -261,6 +262,23 @@
       [
         {
           base_addr: 0x40110000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline: "true"
+    }
+    {
+      name: keymgr
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: keymgr
+      addr_range:
+      [
+        {
+          base_addr: 0x40170000
           size_byte: 0x1000
         }
       ]

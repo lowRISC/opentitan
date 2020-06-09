@@ -108,8 +108,8 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
 // for all the regsters, declare assertion
 
   // define local fpv variable for the multi_reg
-  logic [80:0] ip_d_fpv;
-  for (genvar s = 0; s <= 80; s++) begin : gen_ip_d
+  logic [81:0] ip_d_fpv;
+  for (genvar s = 0; s <= 81; s++) begin : gen_ip_d
     assign ip_d_fpv[s] = i_rv_plic.hw2reg.ip[s].d;
   end
 
@@ -117,11 +117,11 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
 
   `ASSERT(ip1_rd_A, rd_P(10'h4, ip_d_fpv[63:32]))
 
-  `ASSERT(ip2_rd_A, rd_P(10'h8, ip_d_fpv[80:64]))
+  `ASSERT(ip2_rd_A, rd_P(10'h8, ip_d_fpv[81:64]))
 
   // define local fpv variable for the multi_reg
-  logic [80:0] le_q_fpv;
-  for (genvar s = 0; s <= 80; s++) begin : gen_le_q
+  logic [81:0] le_q_fpv;
+  for (genvar s = 0; s <= 81; s++) begin : gen_le_q
     assign le_q_fpv[s] = 1 ?
         i_rv_plic.reg2hw.le[s].q : le_q_fpv[s];
   end
@@ -132,8 +132,8 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   `ASSERT(le1_wr_A, wr_P(10'h10, le_q_fpv[63:32], 1, 'hffffffff))
   `ASSERT(le1_rd_A, rd_P(10'h10, le_q_fpv[63:32]))
 
-  `ASSERT(le2_wr_A, wr_P(10'h14, le_q_fpv[80:64], 1, 'h1ffff))
-  `ASSERT(le2_rd_A, rd_P(10'h14, le_q_fpv[80:64]))
+  `ASSERT(le2_wr_A, wr_P(10'h14, le_q_fpv[81:64], 1, 'h3ffff))
+  `ASSERT(le2_rd_A, rd_P(10'h14, le_q_fpv[81:64]))
 
   `ASSERT(prio0_wr_A, wr_P(10'h18, i_rv_plic.reg2hw.prio0.q, 1, 'h3))
   `ASSERT(prio0_rd_A, rd_P(10'h18, i_rv_plic.reg2hw.prio0.q))
@@ -378,9 +378,12 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   `ASSERT(prio80_wr_A, wr_P(10'h158, i_rv_plic.reg2hw.prio80.q, 1, 'h3))
   `ASSERT(prio80_rd_A, rd_P(10'h158, i_rv_plic.reg2hw.prio80.q))
 
+  `ASSERT(prio81_wr_A, wr_P(10'h15c, i_rv_plic.reg2hw.prio81.q, 1, 'h3))
+  `ASSERT(prio81_rd_A, rd_P(10'h15c, i_rv_plic.reg2hw.prio81.q))
+
   // define local fpv variable for the multi_reg
-  logic [80:0] ie0_q_fpv;
-  for (genvar s = 0; s <= 80; s++) begin : gen_ie0_q
+  logic [81:0] ie0_q_fpv;
+  for (genvar s = 0; s <= 81; s++) begin : gen_ie0_q
     assign ie0_q_fpv[s] = 1 ?
         i_rv_plic.reg2hw.ie0[s].q : ie0_q_fpv[s];
   end
@@ -391,8 +394,8 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
   `ASSERT(ie01_wr_A, wr_P(10'h204, ie0_q_fpv[63:32], 1, 'hffffffff))
   `ASSERT(ie01_rd_A, rd_P(10'h204, ie0_q_fpv[63:32]))
 
-  `ASSERT(ie02_wr_A, wr_P(10'h208, ie0_q_fpv[80:64], 1, 'h1ffff))
-  `ASSERT(ie02_rd_A, rd_P(10'h208, ie0_q_fpv[80:64]))
+  `ASSERT(ie02_wr_A, wr_P(10'h208, ie0_q_fpv[81:64], 1, 'h3ffff))
+  `ASSERT(ie02_rd_A, rd_P(10'h208, ie0_q_fpv[81:64]))
 
   `ASSERT(threshold0_wr_A, wr_P(10'h20c, i_rv_plic.reg2hw.threshold0.q, 1, 'h3))
   `ASSERT(threshold0_rd_A, rd_P(10'h20c, i_rv_plic.reg2hw.threshold0.q))
