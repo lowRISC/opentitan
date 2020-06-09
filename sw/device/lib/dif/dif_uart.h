@@ -60,13 +60,30 @@ typedef enum dif_uart_watermark {
 } dif_uart_watermark_t;
 
 /**
+ * UART TX/RX FIFO reset enumeration.
+ */
+typedef enum dif_uart_fifo_reset {
+  kDifUartFifoResetRx = 0, /**< Reset RX FIFO. */
+  kDifUartFifoResetTx,     /**< Reset TX FIFO. */
+  kDifUartFifoResetAll,    /**< All above. */
+} dif_uart_fifo_reset_t;
+
+/**
+ * UART System/Line loopback enumeration.
+ */
+typedef enum dif_uart_loopback {
+  kDifUartLoopbackSystem = 0, /**< Outgoing TX bits received through RX. */
+  kDifUartLoopbackLine,       /**< Incoming RX bits are forwarded to TX. */
+} dif_uart_loopback_t;
+
+/**
  * Generic enable/disable enumeration.
  *
  * Enumeration used to enable/disable bits, flags, ...
  */
 typedef enum dif_uart_enable {
-  kDifUartEnable = 0, /**< enable. */
-  kDifUartDisable,    /**< disable. */
+  kDifUartDisable = 0, /**< disable. */
+  kDifUartEnable,      /**< enable. */
 } dif_uart_enable_t;
 
 /**
@@ -365,6 +382,41 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
 DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
+/**
+ * UART TX reset RX/TX FIFO.
+ *
+ * Reset both FIFOs, or the requested one.
+ *
+ * @param uart UART state data.
+ * @param reset FIFO to reset (RX or TX).
+ * @return `dif_uart_result_t`.
+ */
+dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
+                                      dif_uart_fifo_reset_t reset);
+
+/**
+ * UART enable/disable transmit/receive loopback.
+ *
+ * This API can be used for testing purpose. For example, to validate transmit
+ * and receive routines.
+ *
+ * Loopback should only be enabled when device is in the IDLE state to prevent
+ * data loss/coruption. Behaviour depends on the `loopback` parameter:
+ *    - `kDifUartLoopbackSystem`:
+ *      Receives the data that is being transmitted. No external data can be
+ *      received (from the RX line). When enabled the TX line goes high.
+ *    - `kDifUartLoopbackLine`:
+ *      Transmits the data that is being received. No internal data can be
+ *      sent out (from the TX FIFO). When enabled the RX line goes high.
+ *
+ * @param uart UART state data.
+ * @param loopback Loopback type (transmit/receive).
+ * @param enable Enable/disable control flag.
+ * @return `dif_uart_result_t`.
+ */
+dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
+                                        dif_uart_loopback_t loopback,
+                                        dif_uart_enable_t enable);
 
 #ifdef __cplusplus
 }  // extern "C"
