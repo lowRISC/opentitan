@@ -203,7 +203,6 @@ module keymgr import keymgr_pkg::*;(
 
   assign output_key = (key_sel == HwKey) ? HardOutputKey : SoftOutputKey;
   assign gen_in = (stage_sel == Disable) ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
-                                                                          reg2hw.key_id,
                                                                           reg2hw.salt,
                                                                           output_key};
 
