@@ -333,6 +333,423 @@
       scan: "false"
     }
     {
+      name: uart1
+      type: uart
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x40010000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list:
+      [
+        {
+          name: rx
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: tx
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: tx_watermark
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_watermark
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: tx_empty
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_overflow
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_frame_err
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_break_err
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_timeout
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_parity_err
+          width: 1
+          bits: "7"
+          bitinfo:
+          [
+            128
+            1
+            7
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: uart2
+      type: uart
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x40020000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list:
+      [
+        {
+          name: rx
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: tx
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: tx_watermark
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_watermark
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: tx_empty
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_overflow
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_frame_err
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_break_err
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_timeout
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_parity_err
+          width: 1
+          bits: "7"
+          bitinfo:
+          [
+            128
+            1
+            7
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: uart3
+      type: uart
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x40030000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list:
+      [
+        {
+          name: rx
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: tx
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: tx_watermark
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_watermark
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: tx_empty
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_overflow
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_frame_err
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_break_err
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_timeout
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_parity_err
+          width: 1
+          bits: "7"
+          bitinfo:
+          [
+            128
+            1
+            7
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
       name: gpio
       type: gpio
       clock_srcs:
@@ -344,7 +761,7 @@
       {
         rst_ni: sys_io
       }
-      base_addr: 0x40010000
+      base_addr: 0x40040000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -392,7 +809,7 @@
       {
         rst_ni: spi_device
       }
-      base_addr: 0x40020000
+      base_addr: 0x40050000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -517,7 +934,7 @@
       {
         rst_ni: lc
       }
-      base_addr: 0x40030000
+      base_addr: 0x41000000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -632,7 +1049,7 @@
       {
         rst_ni: sys_io
       }
-      base_addr: 0x40080000
+      base_addr: 0x40100000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_timers
@@ -655,7 +1072,7 @@
       scan: "false"
     }
     {
-      name: i2c
+      name: i2c0
       type: i2c
       clock_srcs:
       {
@@ -666,7 +1083,305 @@
       {
         rst_ni: sys_io
       }
-      base_addr: 0x40050000
+      base_addr: 0x40080000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list:
+      [
+        {
+          name: sda
+          width: 1
+          type: inout
+        }
+        {
+          name: scl
+          width: 1
+          type: inout
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: fmt_watermark
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_watermark
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: fmt_overflow
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_overflow
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: nak
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: scl_interference
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+        {
+          name: sda_interference
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
+          ]
+          type: interrupt
+        }
+        {
+          name: stretch_timeout
+          width: 1
+          bits: "7"
+          bitinfo:
+          [
+            128
+            1
+            7
+          ]
+          type: interrupt
+        }
+        {
+          name: sda_unstable
+          width: 1
+          bits: "8"
+          bitinfo:
+          [
+            256
+            1
+            8
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: i2c1
+      type: i2c
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x40090000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list:
+      [
+        {
+          name: sda
+          width: 1
+          type: inout
+        }
+        {
+          name: scl
+          width: 1
+          type: inout
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: fmt_watermark
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_watermark
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: fmt_overflow
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rx_overflow
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: nak
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: scl_interference
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+        {
+          name: sda_interference
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
+          ]
+          type: interrupt
+        }
+        {
+          name: stretch_timeout
+          width: 1
+          bits: "7"
+          bitinfo:
+          [
+            128
+            1
+            7
+          ]
+          type: interrupt
+        }
+        {
+          name: sda_unstable
+          width: 1
+          bits: "8"
+          bitinfo:
+          [
+            256
+            1
+            8
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+    }
+    {
+      name: i2c2
+      type: i2c
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      base_addr: 0x400A0000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -815,7 +1530,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40110000
+      base_addr: 0x41100000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_aes
@@ -842,7 +1557,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40120000
+      base_addr: 0x41110000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_hmac
@@ -915,7 +1630,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40090000
+      base_addr: 0x41010000
       generated: "true"
       clock_connections:
       {
@@ -946,7 +1661,7 @@
         rst_ni: sys
         rst_aon_ni: sys_io
       }
-      base_addr: 0x40070000
+      base_addr: 0x40460000
       generated: "true"
       clock_connections:
       {
@@ -1006,7 +1721,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40160000
+      base_addr: 0x40470000
       generated: "true"
       clock_connections:
       {
@@ -1034,7 +1749,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40130000
+      base_addr: 0x41170000
       generated: "true"
       localparam:
       {
@@ -1120,7 +1835,7 @@
         rst_ni: por
         rst_slow_ni: por_aon
       }
-      base_addr: 0x400A0000
+      base_addr: 0x40400000
       clock_connections:
       {
         clk_i: clk_io_i
@@ -1247,7 +1962,7 @@
       {
         rst_ni: rst_ni
       }
-      base_addr: 0x400B0000
+      base_addr: 0x40410000
       clock_connections:
       {
         clk_i: clk_io_i
@@ -1339,7 +2054,7 @@
         rst_io_ni: por_io
         rst_usb_ni: por_usb
       }
-      base_addr: 0x400C0000
+      base_addr: 0x40420000
       generated: "true"
       clock_connections:
       {
@@ -1414,7 +2129,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40140000
+      base_addr: 0x41180000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1493,7 +2208,7 @@
         rst_ni: sys_io
         rst_usb_48mhz_ni: usb
       }
-      base_addr: 0x40150000
+      base_addr: 0x40500000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -1864,7 +2579,7 @@
       {
         rst_ni: sys
       }
-      base_addr: 0x40170000
+      base_addr: 0x41130000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_keymgr
@@ -2246,11 +2961,31 @@
               size_byte: 0x1000
             }
             {
-              base_addr: 0x40080000
+              base_addr: 0x40030000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40040000
               size_byte: 0x1000
             }
             {
               base_addr: 0x40050000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40100000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40080000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40090000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x400A0000
               size_byte: 0x1000
             }
             {
@@ -2270,27 +3005,27 @@
           addr_range:
           [
             {
-              base_addr: 0x400A0000
+              base_addr: 0x40400000
               size_byte: 0x1000
             }
             {
-              base_addr: 0x400B0000
+              base_addr: 0x40410000
               size_byte: 0x1000
             }
             {
-              base_addr: 0x400C0000
+              base_addr: 0x40420000
               size_byte: 0x1000
             }
             {
-              base_addr: 0x40070000
+              base_addr: 0x40460000
               size_byte: 0x1000
             }
             {
-              base_addr: 0x40160000
+              base_addr: 0x40470000
               size_byte: 0x1000
             }
             {
-              base_addr: 0x40150000
+              base_addr: 0x40500000
               size_byte: 0x1000
             }
           ]
@@ -2305,7 +3040,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40030000
+              base_addr: 0x41000000
               size_byte: 0x1000
             }
           ]
@@ -2322,7 +3057,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40120000
+              base_addr: 0x41110000
               size_byte: 0x1000
             }
           ]
@@ -2339,7 +3074,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40110000
+              base_addr: 0x41100000
               size_byte: 0x1000
             }
           ]
@@ -2356,7 +3091,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40170000
+              base_addr: 0x41130000
               size_byte: 0x1000
             }
           ]
@@ -2372,7 +3107,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40090000
+              base_addr: 0x41010000
               size_byte: 0x1000
             }
           ]
@@ -2389,7 +3124,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40130000
+              base_addr: 0x41170000
               size_byte: 0x1000
             }
           ]
@@ -2405,7 +3140,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40140000
+              base_addr: 0x41180000
               size_byte: 0x1000
             }
           ]
@@ -2436,10 +3171,15 @@
         main:
         [
           uart
+          uart1
+          uart2
+          uart3
           gpio
           spi_device
           rv_timer
-          i2c
+          i2c0
+          i2c1
+          i2c2
           pattgen
         ]
       }
@@ -2473,6 +3213,57 @@
           pipeline_byp: "true"
         }
         {
+          name: uart1
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: uart
+          addr_range:
+          [
+            {
+              base_addr: 0x40010000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: uart2
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: uart
+          addr_range:
+          [
+            {
+              base_addr: 0x40020000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: uart3
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: uart
+          addr_range:
+          [
+            {
+              base_addr: 0x40030000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
           name: gpio
           type: device
           clock: clk_peri_i
@@ -2482,7 +3273,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40010000
+              base_addr: 0x40040000
               size_byte: 0x1000
             }
           ]
@@ -2499,7 +3290,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40020000
+              base_addr: 0x40050000
               size_byte: 0x1000
             }
           ]
@@ -2516,7 +3307,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40080000
+              base_addr: 0x40100000
               size_byte: 0x1000
             }
           ]
@@ -2524,7 +3315,7 @@
           pipeline_byp: "true"
         }
         {
-          name: i2c
+          name: i2c0
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -2533,7 +3324,41 @@
           addr_range:
           [
             {
-              base_addr: 0x40050000
+              base_addr: 0x40080000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: i2c1
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: i2c
+          addr_range:
+          [
+            {
+              base_addr: 0x40090000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: i2c2
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: i2c
+          addr_range:
+          [
+            {
+              base_addr: 0x400A0000
               size_byte: 0x1000
             }
           ]
@@ -2610,7 +3435,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400A0000
+              base_addr: 0x40400000
               size_byte: 0x1000
             }
           ]
@@ -2627,7 +3452,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400B0000
+              base_addr: 0x40410000
               size_byte: 0x1000
             }
           ]
@@ -2644,7 +3469,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400C0000
+              base_addr: 0x40420000
               size_byte: 0x1000
             }
           ]
@@ -2661,7 +3486,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40070000
+              base_addr: 0x40460000
               size_byte: 0x1000
             }
           ]
@@ -2678,7 +3503,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40160000
+              base_addr: 0x40470000
               size_byte: 0x1000
             }
           ]
@@ -2695,7 +3520,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40150000
+              base_addr: 0x40500000
               size_byte: 0x1000
             }
           ]
@@ -2718,6 +3543,12 @@
     nmi_gen
     usbdev_aon
     pwrmgr
+    uart1
+    uart2
+    uart3
+    i2c0
+    i2c1
+    i2c2
   ]
   interrupt:
   [
@@ -3371,6 +4202,669 @@
       type: interrupt
       module_name: pwrmgr
     }
+    {
+      name: uart1_tx_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_tx_empty
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_frame_err
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_break_err
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_timeout
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_parity_err
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart2_tx_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_tx_empty
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_frame_err
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_break_err
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_timeout
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_parity_err
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart3_tx_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_tx_empty
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_frame_err
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_break_err
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_timeout
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_parity_err
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: i2c0_fmt_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_fmt_overflow
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_nak
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_scl_interference
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_sda_interference
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_stretch_timeout
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_sda_unstable
+      width: 1
+      bits: "8"
+      bitinfo:
+      [
+        256
+        1
+        8
+      ]
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c1_fmt_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_fmt_overflow
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_nak
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_scl_interference
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_sda_interference
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_stretch_timeout
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_sda_unstable
+      width: 1
+      bits: "8"
+      bitinfo:
+      [
+        256
+        1
+        8
+      ]
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c2_fmt_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_fmt_overflow
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_nak
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_scl_interference
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_sda_interference
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_stretch_timeout
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_sda_unstable
+      width: 1
+      bits: "8"
+      bitinfo:
+      [
+        256
+        1
+        8
+      ]
+      type: interrupt
+      module_name: i2c2
+    }
   ]
   alert_module:
   [
@@ -3416,8 +4910,13 @@
     mio_modules:
     [
       uart
+      uart1
+      uart2
+      uart3
       gpio
-      i2c
+      i2c0
+      i2c1
+      i2c2
     ]
     nc_modules:
     [
@@ -3624,8 +5123,48 @@
         ]
       }
     ]
-    inputs: []
-    outputs: []
+    inputs:
+    [
+      {
+        name: uart1_rx
+        width: 1
+        type: input
+        module_name: uart1
+      }
+      {
+        name: uart2_rx
+        width: 1
+        type: input
+        module_name: uart2
+      }
+      {
+        name: uart3_rx
+        width: 1
+        type: input
+        module_name: uart3
+      }
+    ]
+    outputs:
+    [
+      {
+        name: uart1_tx
+        width: 1
+        type: output
+        module_name: uart1
+      }
+      {
+        name: uart2_tx
+        width: 1
+        type: output
+        module_name: uart2
+      }
+      {
+        name: uart3_tx
+        width: 1
+        type: output
+        module_name: uart3
+      }
+    ]
     inouts:
     [
       {
@@ -3635,16 +5174,40 @@
         module_name: gpio
       }
       {
-        name: i2c_sda
+        name: i2c0_sda
         width: 1
         type: inout
-        module_name: i2c
+        module_name: i2c0
       }
       {
-        name: i2c_scl
+        name: i2c0_scl
         width: 1
         type: inout
-        module_name: i2c
+        module_name: i2c0
+      }
+      {
+        name: i2c1_sda
+        width: 1
+        type: inout
+        module_name: i2c1
+      }
+      {
+        name: i2c1_scl
+        width: 1
+        type: inout
+        module_name: i2c1
+      }
+      {
+        name: i2c2_sda
+        width: 1
+        type: inout
+        module_name: i2c2
+      }
+      {
+        name: i2c2_scl
+        width: 1
+        type: inout
+        module_name: i2c2
       }
     ]
   }

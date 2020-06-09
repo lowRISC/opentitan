@@ -10,39 +10,29 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_DEBUG_MEM     = 32'h 1a110000;
   localparam logic [31:0] ADDR_SPACE_RAM_MAIN      = 32'h 10000000;
   localparam logic [31:0] ADDR_SPACE_EFLASH        = 32'h 20000000;
-  localparam logic [3:0][31:0] ADDR_SPACE_PERI          = {
-    32'h 40000000,
-    32'h 40050000,
-    32'h 40080000,
-    32'h 400e0000
+  localparam logic [0:0][31:0] ADDR_SPACE_PERI          = {
+    32'h 40000000
   };
-  localparam logic [2:0][31:0] ADDR_SPACE_AON           = {
-    32'h 40070000,
-    32'h 400a0000,
-    32'h 40150000
+  localparam logic [0:0][31:0] ADDR_SPACE_AON           = {
+    32'h 40400000
   };
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL    = 32'h 40030000;
-  localparam logic [31:0] ADDR_SPACE_HMAC          = 32'h 40120000;
-  localparam logic [31:0] ADDR_SPACE_AES           = 32'h 40110000;
-  localparam logic [31:0] ADDR_SPACE_KEYMGR        = 32'h 40170000;
-  localparam logic [31:0] ADDR_SPACE_RV_PLIC       = 32'h 40090000;
-  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40130000;
-  localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40140000;
+  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL    = 32'h 41000000;
+  localparam logic [31:0] ADDR_SPACE_HMAC          = 32'h 41110000;
+  localparam logic [31:0] ADDR_SPACE_AES           = 32'h 41100000;
+  localparam logic [31:0] ADDR_SPACE_KEYMGR        = 32'h 41130000;
+  localparam logic [31:0] ADDR_SPACE_RV_PLIC       = 32'h 41010000;
+  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 41170000;
+  localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 41180000;
 
   localparam logic [31:0] ADDR_MASK_ROM           = 32'h 00003fff;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 0007ffff;
-  localparam logic [3:0][31:0] ADDR_MASK_PERI          = {
-    32'h 00020fff,
-    32'h 00000fff,
-    32'h 00000fff,
-    32'h 00000fff
+  localparam logic [0:0][31:0] ADDR_MASK_PERI          = {
+    32'h 00100fff
   };
-  localparam logic [2:0][31:0] ADDR_MASK_AON           = {
-    32'h 00000fff,
-    32'h 00020fff,
-    32'h 00010fff
+  localparam logic [0:0][31:0] ADDR_MASK_AON           = {
+    32'h 001fffff
   };
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL    = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_HMAC          = 32'h 00000fff;

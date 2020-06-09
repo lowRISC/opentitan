@@ -108,8 +108,8 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
 // for all the regsters, declare assertion
 
   // define local fpv variable for the multi_reg
-  logic [81:0] ip_d_fpv;
-  for (genvar s = 0; s <= 81; s++) begin : gen_ip_d
+  logic [132:0] ip_d_fpv;
+  for (genvar s = 0; s <= 132; s++) begin : gen_ip_d
     assign ip_d_fpv[s] = i_rv_plic.hw2reg.ip[s].d;
   end
 
@@ -117,293 +117,462 @@ module rv_plic_csr_assert_fpv import tlul_pkg::*; (
 
   `ASSERT(ip1_rd_A, rd_P(10'h4, ip_d_fpv[63:32]))
 
-  `ASSERT(ip2_rd_A, rd_P(10'h8, ip_d_fpv[81:64]))
+  `ASSERT(ip2_rd_A, rd_P(10'h8, ip_d_fpv[95:64]))
+
+  `ASSERT(ip3_rd_A, rd_P(10'hc, ip_d_fpv[127:96]))
+
+  `ASSERT(ip4_rd_A, rd_P(10'h10, ip_d_fpv[132:128]))
 
   // define local fpv variable for the multi_reg
-  logic [81:0] le_q_fpv;
-  for (genvar s = 0; s <= 81; s++) begin : gen_le_q
+  logic [132:0] le_q_fpv;
+  for (genvar s = 0; s <= 132; s++) begin : gen_le_q
     assign le_q_fpv[s] = 1 ?
         i_rv_plic.reg2hw.le[s].q : le_q_fpv[s];
   end
 
-  `ASSERT(le0_wr_A, wr_P(10'hc, le_q_fpv[31:0], 1, 'hffffffff))
-  `ASSERT(le0_rd_A, rd_P(10'hc, le_q_fpv[31:0]))
+  `ASSERT(le0_wr_A, wr_P(10'h14, le_q_fpv[31:0], 1, 'hffffffff))
+  `ASSERT(le0_rd_A, rd_P(10'h14, le_q_fpv[31:0]))
 
-  `ASSERT(le1_wr_A, wr_P(10'h10, le_q_fpv[63:32], 1, 'hffffffff))
-  `ASSERT(le1_rd_A, rd_P(10'h10, le_q_fpv[63:32]))
+  `ASSERT(le1_wr_A, wr_P(10'h18, le_q_fpv[63:32], 1, 'hffffffff))
+  `ASSERT(le1_rd_A, rd_P(10'h18, le_q_fpv[63:32]))
 
-  `ASSERT(le2_wr_A, wr_P(10'h14, le_q_fpv[81:64], 1, 'h3ffff))
-  `ASSERT(le2_rd_A, rd_P(10'h14, le_q_fpv[81:64]))
+  `ASSERT(le2_wr_A, wr_P(10'h1c, le_q_fpv[95:64], 1, 'hffffffff))
+  `ASSERT(le2_rd_A, rd_P(10'h1c, le_q_fpv[95:64]))
 
-  `ASSERT(prio0_wr_A, wr_P(10'h18, i_rv_plic.reg2hw.prio0.q, 1, 'h3))
-  `ASSERT(prio0_rd_A, rd_P(10'h18, i_rv_plic.reg2hw.prio0.q))
+  `ASSERT(le3_wr_A, wr_P(10'h20, le_q_fpv[127:96], 1, 'hffffffff))
+  `ASSERT(le3_rd_A, rd_P(10'h20, le_q_fpv[127:96]))
 
-  `ASSERT(prio1_wr_A, wr_P(10'h1c, i_rv_plic.reg2hw.prio1.q, 1, 'h3))
-  `ASSERT(prio1_rd_A, rd_P(10'h1c, i_rv_plic.reg2hw.prio1.q))
+  `ASSERT(le4_wr_A, wr_P(10'h24, le_q_fpv[132:128], 1, 'h1f))
+  `ASSERT(le4_rd_A, rd_P(10'h24, le_q_fpv[132:128]))
 
-  `ASSERT(prio2_wr_A, wr_P(10'h20, i_rv_plic.reg2hw.prio2.q, 1, 'h3))
-  `ASSERT(prio2_rd_A, rd_P(10'h20, i_rv_plic.reg2hw.prio2.q))
+  `ASSERT(prio0_wr_A, wr_P(10'h28, i_rv_plic.reg2hw.prio0.q, 1, 'h3))
+  `ASSERT(prio0_rd_A, rd_P(10'h28, i_rv_plic.reg2hw.prio0.q))
 
-  `ASSERT(prio3_wr_A, wr_P(10'h24, i_rv_plic.reg2hw.prio3.q, 1, 'h3))
-  `ASSERT(prio3_rd_A, rd_P(10'h24, i_rv_plic.reg2hw.prio3.q))
+  `ASSERT(prio1_wr_A, wr_P(10'h2c, i_rv_plic.reg2hw.prio1.q, 1, 'h3))
+  `ASSERT(prio1_rd_A, rd_P(10'h2c, i_rv_plic.reg2hw.prio1.q))
 
-  `ASSERT(prio4_wr_A, wr_P(10'h28, i_rv_plic.reg2hw.prio4.q, 1, 'h3))
-  `ASSERT(prio4_rd_A, rd_P(10'h28, i_rv_plic.reg2hw.prio4.q))
+  `ASSERT(prio2_wr_A, wr_P(10'h30, i_rv_plic.reg2hw.prio2.q, 1, 'h3))
+  `ASSERT(prio2_rd_A, rd_P(10'h30, i_rv_plic.reg2hw.prio2.q))
 
-  `ASSERT(prio5_wr_A, wr_P(10'h2c, i_rv_plic.reg2hw.prio5.q, 1, 'h3))
-  `ASSERT(prio5_rd_A, rd_P(10'h2c, i_rv_plic.reg2hw.prio5.q))
+  `ASSERT(prio3_wr_A, wr_P(10'h34, i_rv_plic.reg2hw.prio3.q, 1, 'h3))
+  `ASSERT(prio3_rd_A, rd_P(10'h34, i_rv_plic.reg2hw.prio3.q))
 
-  `ASSERT(prio6_wr_A, wr_P(10'h30, i_rv_plic.reg2hw.prio6.q, 1, 'h3))
-  `ASSERT(prio6_rd_A, rd_P(10'h30, i_rv_plic.reg2hw.prio6.q))
+  `ASSERT(prio4_wr_A, wr_P(10'h38, i_rv_plic.reg2hw.prio4.q, 1, 'h3))
+  `ASSERT(prio4_rd_A, rd_P(10'h38, i_rv_plic.reg2hw.prio4.q))
 
-  `ASSERT(prio7_wr_A, wr_P(10'h34, i_rv_plic.reg2hw.prio7.q, 1, 'h3))
-  `ASSERT(prio7_rd_A, rd_P(10'h34, i_rv_plic.reg2hw.prio7.q))
+  `ASSERT(prio5_wr_A, wr_P(10'h3c, i_rv_plic.reg2hw.prio5.q, 1, 'h3))
+  `ASSERT(prio5_rd_A, rd_P(10'h3c, i_rv_plic.reg2hw.prio5.q))
 
-  `ASSERT(prio8_wr_A, wr_P(10'h38, i_rv_plic.reg2hw.prio8.q, 1, 'h3))
-  `ASSERT(prio8_rd_A, rd_P(10'h38, i_rv_plic.reg2hw.prio8.q))
+  `ASSERT(prio6_wr_A, wr_P(10'h40, i_rv_plic.reg2hw.prio6.q, 1, 'h3))
+  `ASSERT(prio6_rd_A, rd_P(10'h40, i_rv_plic.reg2hw.prio6.q))
 
-  `ASSERT(prio9_wr_A, wr_P(10'h3c, i_rv_plic.reg2hw.prio9.q, 1, 'h3))
-  `ASSERT(prio9_rd_A, rd_P(10'h3c, i_rv_plic.reg2hw.prio9.q))
+  `ASSERT(prio7_wr_A, wr_P(10'h44, i_rv_plic.reg2hw.prio7.q, 1, 'h3))
+  `ASSERT(prio7_rd_A, rd_P(10'h44, i_rv_plic.reg2hw.prio7.q))
 
-  `ASSERT(prio10_wr_A, wr_P(10'h40, i_rv_plic.reg2hw.prio10.q, 1, 'h3))
-  `ASSERT(prio10_rd_A, rd_P(10'h40, i_rv_plic.reg2hw.prio10.q))
+  `ASSERT(prio8_wr_A, wr_P(10'h48, i_rv_plic.reg2hw.prio8.q, 1, 'h3))
+  `ASSERT(prio8_rd_A, rd_P(10'h48, i_rv_plic.reg2hw.prio8.q))
 
-  `ASSERT(prio11_wr_A, wr_P(10'h44, i_rv_plic.reg2hw.prio11.q, 1, 'h3))
-  `ASSERT(prio11_rd_A, rd_P(10'h44, i_rv_plic.reg2hw.prio11.q))
+  `ASSERT(prio9_wr_A, wr_P(10'h4c, i_rv_plic.reg2hw.prio9.q, 1, 'h3))
+  `ASSERT(prio9_rd_A, rd_P(10'h4c, i_rv_plic.reg2hw.prio9.q))
 
-  `ASSERT(prio12_wr_A, wr_P(10'h48, i_rv_plic.reg2hw.prio12.q, 1, 'h3))
-  `ASSERT(prio12_rd_A, rd_P(10'h48, i_rv_plic.reg2hw.prio12.q))
+  `ASSERT(prio10_wr_A, wr_P(10'h50, i_rv_plic.reg2hw.prio10.q, 1, 'h3))
+  `ASSERT(prio10_rd_A, rd_P(10'h50, i_rv_plic.reg2hw.prio10.q))
 
-  `ASSERT(prio13_wr_A, wr_P(10'h4c, i_rv_plic.reg2hw.prio13.q, 1, 'h3))
-  `ASSERT(prio13_rd_A, rd_P(10'h4c, i_rv_plic.reg2hw.prio13.q))
+  `ASSERT(prio11_wr_A, wr_P(10'h54, i_rv_plic.reg2hw.prio11.q, 1, 'h3))
+  `ASSERT(prio11_rd_A, rd_P(10'h54, i_rv_plic.reg2hw.prio11.q))
 
-  `ASSERT(prio14_wr_A, wr_P(10'h50, i_rv_plic.reg2hw.prio14.q, 1, 'h3))
-  `ASSERT(prio14_rd_A, rd_P(10'h50, i_rv_plic.reg2hw.prio14.q))
+  `ASSERT(prio12_wr_A, wr_P(10'h58, i_rv_plic.reg2hw.prio12.q, 1, 'h3))
+  `ASSERT(prio12_rd_A, rd_P(10'h58, i_rv_plic.reg2hw.prio12.q))
 
-  `ASSERT(prio15_wr_A, wr_P(10'h54, i_rv_plic.reg2hw.prio15.q, 1, 'h3))
-  `ASSERT(prio15_rd_A, rd_P(10'h54, i_rv_plic.reg2hw.prio15.q))
+  `ASSERT(prio13_wr_A, wr_P(10'h5c, i_rv_plic.reg2hw.prio13.q, 1, 'h3))
+  `ASSERT(prio13_rd_A, rd_P(10'h5c, i_rv_plic.reg2hw.prio13.q))
 
-  `ASSERT(prio16_wr_A, wr_P(10'h58, i_rv_plic.reg2hw.prio16.q, 1, 'h3))
-  `ASSERT(prio16_rd_A, rd_P(10'h58, i_rv_plic.reg2hw.prio16.q))
+  `ASSERT(prio14_wr_A, wr_P(10'h60, i_rv_plic.reg2hw.prio14.q, 1, 'h3))
+  `ASSERT(prio14_rd_A, rd_P(10'h60, i_rv_plic.reg2hw.prio14.q))
 
-  `ASSERT(prio17_wr_A, wr_P(10'h5c, i_rv_plic.reg2hw.prio17.q, 1, 'h3))
-  `ASSERT(prio17_rd_A, rd_P(10'h5c, i_rv_plic.reg2hw.prio17.q))
+  `ASSERT(prio15_wr_A, wr_P(10'h64, i_rv_plic.reg2hw.prio15.q, 1, 'h3))
+  `ASSERT(prio15_rd_A, rd_P(10'h64, i_rv_plic.reg2hw.prio15.q))
 
-  `ASSERT(prio18_wr_A, wr_P(10'h60, i_rv_plic.reg2hw.prio18.q, 1, 'h3))
-  `ASSERT(prio18_rd_A, rd_P(10'h60, i_rv_plic.reg2hw.prio18.q))
+  `ASSERT(prio16_wr_A, wr_P(10'h68, i_rv_plic.reg2hw.prio16.q, 1, 'h3))
+  `ASSERT(prio16_rd_A, rd_P(10'h68, i_rv_plic.reg2hw.prio16.q))
 
-  `ASSERT(prio19_wr_A, wr_P(10'h64, i_rv_plic.reg2hw.prio19.q, 1, 'h3))
-  `ASSERT(prio19_rd_A, rd_P(10'h64, i_rv_plic.reg2hw.prio19.q))
+  `ASSERT(prio17_wr_A, wr_P(10'h6c, i_rv_plic.reg2hw.prio17.q, 1, 'h3))
+  `ASSERT(prio17_rd_A, rd_P(10'h6c, i_rv_plic.reg2hw.prio17.q))
 
-  `ASSERT(prio20_wr_A, wr_P(10'h68, i_rv_plic.reg2hw.prio20.q, 1, 'h3))
-  `ASSERT(prio20_rd_A, rd_P(10'h68, i_rv_plic.reg2hw.prio20.q))
+  `ASSERT(prio18_wr_A, wr_P(10'h70, i_rv_plic.reg2hw.prio18.q, 1, 'h3))
+  `ASSERT(prio18_rd_A, rd_P(10'h70, i_rv_plic.reg2hw.prio18.q))
 
-  `ASSERT(prio21_wr_A, wr_P(10'h6c, i_rv_plic.reg2hw.prio21.q, 1, 'h3))
-  `ASSERT(prio21_rd_A, rd_P(10'h6c, i_rv_plic.reg2hw.prio21.q))
+  `ASSERT(prio19_wr_A, wr_P(10'h74, i_rv_plic.reg2hw.prio19.q, 1, 'h3))
+  `ASSERT(prio19_rd_A, rd_P(10'h74, i_rv_plic.reg2hw.prio19.q))
 
-  `ASSERT(prio22_wr_A, wr_P(10'h70, i_rv_plic.reg2hw.prio22.q, 1, 'h3))
-  `ASSERT(prio22_rd_A, rd_P(10'h70, i_rv_plic.reg2hw.prio22.q))
+  `ASSERT(prio20_wr_A, wr_P(10'h78, i_rv_plic.reg2hw.prio20.q, 1, 'h3))
+  `ASSERT(prio20_rd_A, rd_P(10'h78, i_rv_plic.reg2hw.prio20.q))
 
-  `ASSERT(prio23_wr_A, wr_P(10'h74, i_rv_plic.reg2hw.prio23.q, 1, 'h3))
-  `ASSERT(prio23_rd_A, rd_P(10'h74, i_rv_plic.reg2hw.prio23.q))
+  `ASSERT(prio21_wr_A, wr_P(10'h7c, i_rv_plic.reg2hw.prio21.q, 1, 'h3))
+  `ASSERT(prio21_rd_A, rd_P(10'h7c, i_rv_plic.reg2hw.prio21.q))
 
-  `ASSERT(prio24_wr_A, wr_P(10'h78, i_rv_plic.reg2hw.prio24.q, 1, 'h3))
-  `ASSERT(prio24_rd_A, rd_P(10'h78, i_rv_plic.reg2hw.prio24.q))
+  `ASSERT(prio22_wr_A, wr_P(10'h80, i_rv_plic.reg2hw.prio22.q, 1, 'h3))
+  `ASSERT(prio22_rd_A, rd_P(10'h80, i_rv_plic.reg2hw.prio22.q))
 
-  `ASSERT(prio25_wr_A, wr_P(10'h7c, i_rv_plic.reg2hw.prio25.q, 1, 'h3))
-  `ASSERT(prio25_rd_A, rd_P(10'h7c, i_rv_plic.reg2hw.prio25.q))
+  `ASSERT(prio23_wr_A, wr_P(10'h84, i_rv_plic.reg2hw.prio23.q, 1, 'h3))
+  `ASSERT(prio23_rd_A, rd_P(10'h84, i_rv_plic.reg2hw.prio23.q))
 
-  `ASSERT(prio26_wr_A, wr_P(10'h80, i_rv_plic.reg2hw.prio26.q, 1, 'h3))
-  `ASSERT(prio26_rd_A, rd_P(10'h80, i_rv_plic.reg2hw.prio26.q))
+  `ASSERT(prio24_wr_A, wr_P(10'h88, i_rv_plic.reg2hw.prio24.q, 1, 'h3))
+  `ASSERT(prio24_rd_A, rd_P(10'h88, i_rv_plic.reg2hw.prio24.q))
 
-  `ASSERT(prio27_wr_A, wr_P(10'h84, i_rv_plic.reg2hw.prio27.q, 1, 'h3))
-  `ASSERT(prio27_rd_A, rd_P(10'h84, i_rv_plic.reg2hw.prio27.q))
+  `ASSERT(prio25_wr_A, wr_P(10'h8c, i_rv_plic.reg2hw.prio25.q, 1, 'h3))
+  `ASSERT(prio25_rd_A, rd_P(10'h8c, i_rv_plic.reg2hw.prio25.q))
 
-  `ASSERT(prio28_wr_A, wr_P(10'h88, i_rv_plic.reg2hw.prio28.q, 1, 'h3))
-  `ASSERT(prio28_rd_A, rd_P(10'h88, i_rv_plic.reg2hw.prio28.q))
+  `ASSERT(prio26_wr_A, wr_P(10'h90, i_rv_plic.reg2hw.prio26.q, 1, 'h3))
+  `ASSERT(prio26_rd_A, rd_P(10'h90, i_rv_plic.reg2hw.prio26.q))
 
-  `ASSERT(prio29_wr_A, wr_P(10'h8c, i_rv_plic.reg2hw.prio29.q, 1, 'h3))
-  `ASSERT(prio29_rd_A, rd_P(10'h8c, i_rv_plic.reg2hw.prio29.q))
+  `ASSERT(prio27_wr_A, wr_P(10'h94, i_rv_plic.reg2hw.prio27.q, 1, 'h3))
+  `ASSERT(prio27_rd_A, rd_P(10'h94, i_rv_plic.reg2hw.prio27.q))
 
-  `ASSERT(prio30_wr_A, wr_P(10'h90, i_rv_plic.reg2hw.prio30.q, 1, 'h3))
-  `ASSERT(prio30_rd_A, rd_P(10'h90, i_rv_plic.reg2hw.prio30.q))
+  `ASSERT(prio28_wr_A, wr_P(10'h98, i_rv_plic.reg2hw.prio28.q, 1, 'h3))
+  `ASSERT(prio28_rd_A, rd_P(10'h98, i_rv_plic.reg2hw.prio28.q))
 
-  `ASSERT(prio31_wr_A, wr_P(10'h94, i_rv_plic.reg2hw.prio31.q, 1, 'h3))
-  `ASSERT(prio31_rd_A, rd_P(10'h94, i_rv_plic.reg2hw.prio31.q))
+  `ASSERT(prio29_wr_A, wr_P(10'h9c, i_rv_plic.reg2hw.prio29.q, 1, 'h3))
+  `ASSERT(prio29_rd_A, rd_P(10'h9c, i_rv_plic.reg2hw.prio29.q))
 
-  `ASSERT(prio32_wr_A, wr_P(10'h98, i_rv_plic.reg2hw.prio32.q, 1, 'h3))
-  `ASSERT(prio32_rd_A, rd_P(10'h98, i_rv_plic.reg2hw.prio32.q))
+  `ASSERT(prio30_wr_A, wr_P(10'ha0, i_rv_plic.reg2hw.prio30.q, 1, 'h3))
+  `ASSERT(prio30_rd_A, rd_P(10'ha0, i_rv_plic.reg2hw.prio30.q))
 
-  `ASSERT(prio33_wr_A, wr_P(10'h9c, i_rv_plic.reg2hw.prio33.q, 1, 'h3))
-  `ASSERT(prio33_rd_A, rd_P(10'h9c, i_rv_plic.reg2hw.prio33.q))
+  `ASSERT(prio31_wr_A, wr_P(10'ha4, i_rv_plic.reg2hw.prio31.q, 1, 'h3))
+  `ASSERT(prio31_rd_A, rd_P(10'ha4, i_rv_plic.reg2hw.prio31.q))
 
-  `ASSERT(prio34_wr_A, wr_P(10'ha0, i_rv_plic.reg2hw.prio34.q, 1, 'h3))
-  `ASSERT(prio34_rd_A, rd_P(10'ha0, i_rv_plic.reg2hw.prio34.q))
+  `ASSERT(prio32_wr_A, wr_P(10'ha8, i_rv_plic.reg2hw.prio32.q, 1, 'h3))
+  `ASSERT(prio32_rd_A, rd_P(10'ha8, i_rv_plic.reg2hw.prio32.q))
 
-  `ASSERT(prio35_wr_A, wr_P(10'ha4, i_rv_plic.reg2hw.prio35.q, 1, 'h3))
-  `ASSERT(prio35_rd_A, rd_P(10'ha4, i_rv_plic.reg2hw.prio35.q))
+  `ASSERT(prio33_wr_A, wr_P(10'hac, i_rv_plic.reg2hw.prio33.q, 1, 'h3))
+  `ASSERT(prio33_rd_A, rd_P(10'hac, i_rv_plic.reg2hw.prio33.q))
 
-  `ASSERT(prio36_wr_A, wr_P(10'ha8, i_rv_plic.reg2hw.prio36.q, 1, 'h3))
-  `ASSERT(prio36_rd_A, rd_P(10'ha8, i_rv_plic.reg2hw.prio36.q))
+  `ASSERT(prio34_wr_A, wr_P(10'hb0, i_rv_plic.reg2hw.prio34.q, 1, 'h3))
+  `ASSERT(prio34_rd_A, rd_P(10'hb0, i_rv_plic.reg2hw.prio34.q))
 
-  `ASSERT(prio37_wr_A, wr_P(10'hac, i_rv_plic.reg2hw.prio37.q, 1, 'h3))
-  `ASSERT(prio37_rd_A, rd_P(10'hac, i_rv_plic.reg2hw.prio37.q))
+  `ASSERT(prio35_wr_A, wr_P(10'hb4, i_rv_plic.reg2hw.prio35.q, 1, 'h3))
+  `ASSERT(prio35_rd_A, rd_P(10'hb4, i_rv_plic.reg2hw.prio35.q))
 
-  `ASSERT(prio38_wr_A, wr_P(10'hb0, i_rv_plic.reg2hw.prio38.q, 1, 'h3))
-  `ASSERT(prio38_rd_A, rd_P(10'hb0, i_rv_plic.reg2hw.prio38.q))
+  `ASSERT(prio36_wr_A, wr_P(10'hb8, i_rv_plic.reg2hw.prio36.q, 1, 'h3))
+  `ASSERT(prio36_rd_A, rd_P(10'hb8, i_rv_plic.reg2hw.prio36.q))
 
-  `ASSERT(prio39_wr_A, wr_P(10'hb4, i_rv_plic.reg2hw.prio39.q, 1, 'h3))
-  `ASSERT(prio39_rd_A, rd_P(10'hb4, i_rv_plic.reg2hw.prio39.q))
+  `ASSERT(prio37_wr_A, wr_P(10'hbc, i_rv_plic.reg2hw.prio37.q, 1, 'h3))
+  `ASSERT(prio37_rd_A, rd_P(10'hbc, i_rv_plic.reg2hw.prio37.q))
 
-  `ASSERT(prio40_wr_A, wr_P(10'hb8, i_rv_plic.reg2hw.prio40.q, 1, 'h3))
-  `ASSERT(prio40_rd_A, rd_P(10'hb8, i_rv_plic.reg2hw.prio40.q))
+  `ASSERT(prio38_wr_A, wr_P(10'hc0, i_rv_plic.reg2hw.prio38.q, 1, 'h3))
+  `ASSERT(prio38_rd_A, rd_P(10'hc0, i_rv_plic.reg2hw.prio38.q))
 
-  `ASSERT(prio41_wr_A, wr_P(10'hbc, i_rv_plic.reg2hw.prio41.q, 1, 'h3))
-  `ASSERT(prio41_rd_A, rd_P(10'hbc, i_rv_plic.reg2hw.prio41.q))
+  `ASSERT(prio39_wr_A, wr_P(10'hc4, i_rv_plic.reg2hw.prio39.q, 1, 'h3))
+  `ASSERT(prio39_rd_A, rd_P(10'hc4, i_rv_plic.reg2hw.prio39.q))
 
-  `ASSERT(prio42_wr_A, wr_P(10'hc0, i_rv_plic.reg2hw.prio42.q, 1, 'h3))
-  `ASSERT(prio42_rd_A, rd_P(10'hc0, i_rv_plic.reg2hw.prio42.q))
+  `ASSERT(prio40_wr_A, wr_P(10'hc8, i_rv_plic.reg2hw.prio40.q, 1, 'h3))
+  `ASSERT(prio40_rd_A, rd_P(10'hc8, i_rv_plic.reg2hw.prio40.q))
 
-  `ASSERT(prio43_wr_A, wr_P(10'hc4, i_rv_plic.reg2hw.prio43.q, 1, 'h3))
-  `ASSERT(prio43_rd_A, rd_P(10'hc4, i_rv_plic.reg2hw.prio43.q))
+  `ASSERT(prio41_wr_A, wr_P(10'hcc, i_rv_plic.reg2hw.prio41.q, 1, 'h3))
+  `ASSERT(prio41_rd_A, rd_P(10'hcc, i_rv_plic.reg2hw.prio41.q))
 
-  `ASSERT(prio44_wr_A, wr_P(10'hc8, i_rv_plic.reg2hw.prio44.q, 1, 'h3))
-  `ASSERT(prio44_rd_A, rd_P(10'hc8, i_rv_plic.reg2hw.prio44.q))
+  `ASSERT(prio42_wr_A, wr_P(10'hd0, i_rv_plic.reg2hw.prio42.q, 1, 'h3))
+  `ASSERT(prio42_rd_A, rd_P(10'hd0, i_rv_plic.reg2hw.prio42.q))
 
-  `ASSERT(prio45_wr_A, wr_P(10'hcc, i_rv_plic.reg2hw.prio45.q, 1, 'h3))
-  `ASSERT(prio45_rd_A, rd_P(10'hcc, i_rv_plic.reg2hw.prio45.q))
+  `ASSERT(prio43_wr_A, wr_P(10'hd4, i_rv_plic.reg2hw.prio43.q, 1, 'h3))
+  `ASSERT(prio43_rd_A, rd_P(10'hd4, i_rv_plic.reg2hw.prio43.q))
 
-  `ASSERT(prio46_wr_A, wr_P(10'hd0, i_rv_plic.reg2hw.prio46.q, 1, 'h3))
-  `ASSERT(prio46_rd_A, rd_P(10'hd0, i_rv_plic.reg2hw.prio46.q))
+  `ASSERT(prio44_wr_A, wr_P(10'hd8, i_rv_plic.reg2hw.prio44.q, 1, 'h3))
+  `ASSERT(prio44_rd_A, rd_P(10'hd8, i_rv_plic.reg2hw.prio44.q))
 
-  `ASSERT(prio47_wr_A, wr_P(10'hd4, i_rv_plic.reg2hw.prio47.q, 1, 'h3))
-  `ASSERT(prio47_rd_A, rd_P(10'hd4, i_rv_plic.reg2hw.prio47.q))
+  `ASSERT(prio45_wr_A, wr_P(10'hdc, i_rv_plic.reg2hw.prio45.q, 1, 'h3))
+  `ASSERT(prio45_rd_A, rd_P(10'hdc, i_rv_plic.reg2hw.prio45.q))
 
-  `ASSERT(prio48_wr_A, wr_P(10'hd8, i_rv_plic.reg2hw.prio48.q, 1, 'h3))
-  `ASSERT(prio48_rd_A, rd_P(10'hd8, i_rv_plic.reg2hw.prio48.q))
+  `ASSERT(prio46_wr_A, wr_P(10'he0, i_rv_plic.reg2hw.prio46.q, 1, 'h3))
+  `ASSERT(prio46_rd_A, rd_P(10'he0, i_rv_plic.reg2hw.prio46.q))
 
-  `ASSERT(prio49_wr_A, wr_P(10'hdc, i_rv_plic.reg2hw.prio49.q, 1, 'h3))
-  `ASSERT(prio49_rd_A, rd_P(10'hdc, i_rv_plic.reg2hw.prio49.q))
+  `ASSERT(prio47_wr_A, wr_P(10'he4, i_rv_plic.reg2hw.prio47.q, 1, 'h3))
+  `ASSERT(prio47_rd_A, rd_P(10'he4, i_rv_plic.reg2hw.prio47.q))
 
-  `ASSERT(prio50_wr_A, wr_P(10'he0, i_rv_plic.reg2hw.prio50.q, 1, 'h3))
-  `ASSERT(prio50_rd_A, rd_P(10'he0, i_rv_plic.reg2hw.prio50.q))
+  `ASSERT(prio48_wr_A, wr_P(10'he8, i_rv_plic.reg2hw.prio48.q, 1, 'h3))
+  `ASSERT(prio48_rd_A, rd_P(10'he8, i_rv_plic.reg2hw.prio48.q))
 
-  `ASSERT(prio51_wr_A, wr_P(10'he4, i_rv_plic.reg2hw.prio51.q, 1, 'h3))
-  `ASSERT(prio51_rd_A, rd_P(10'he4, i_rv_plic.reg2hw.prio51.q))
+  `ASSERT(prio49_wr_A, wr_P(10'hec, i_rv_plic.reg2hw.prio49.q, 1, 'h3))
+  `ASSERT(prio49_rd_A, rd_P(10'hec, i_rv_plic.reg2hw.prio49.q))
 
-  `ASSERT(prio52_wr_A, wr_P(10'he8, i_rv_plic.reg2hw.prio52.q, 1, 'h3))
-  `ASSERT(prio52_rd_A, rd_P(10'he8, i_rv_plic.reg2hw.prio52.q))
+  `ASSERT(prio50_wr_A, wr_P(10'hf0, i_rv_plic.reg2hw.prio50.q, 1, 'h3))
+  `ASSERT(prio50_rd_A, rd_P(10'hf0, i_rv_plic.reg2hw.prio50.q))
 
-  `ASSERT(prio53_wr_A, wr_P(10'hec, i_rv_plic.reg2hw.prio53.q, 1, 'h3))
-  `ASSERT(prio53_rd_A, rd_P(10'hec, i_rv_plic.reg2hw.prio53.q))
+  `ASSERT(prio51_wr_A, wr_P(10'hf4, i_rv_plic.reg2hw.prio51.q, 1, 'h3))
+  `ASSERT(prio51_rd_A, rd_P(10'hf4, i_rv_plic.reg2hw.prio51.q))
 
-  `ASSERT(prio54_wr_A, wr_P(10'hf0, i_rv_plic.reg2hw.prio54.q, 1, 'h3))
-  `ASSERT(prio54_rd_A, rd_P(10'hf0, i_rv_plic.reg2hw.prio54.q))
+  `ASSERT(prio52_wr_A, wr_P(10'hf8, i_rv_plic.reg2hw.prio52.q, 1, 'h3))
+  `ASSERT(prio52_rd_A, rd_P(10'hf8, i_rv_plic.reg2hw.prio52.q))
 
-  `ASSERT(prio55_wr_A, wr_P(10'hf4, i_rv_plic.reg2hw.prio55.q, 1, 'h3))
-  `ASSERT(prio55_rd_A, rd_P(10'hf4, i_rv_plic.reg2hw.prio55.q))
+  `ASSERT(prio53_wr_A, wr_P(10'hfc, i_rv_plic.reg2hw.prio53.q, 1, 'h3))
+  `ASSERT(prio53_rd_A, rd_P(10'hfc, i_rv_plic.reg2hw.prio53.q))
 
-  `ASSERT(prio56_wr_A, wr_P(10'hf8, i_rv_plic.reg2hw.prio56.q, 1, 'h3))
-  `ASSERT(prio56_rd_A, rd_P(10'hf8, i_rv_plic.reg2hw.prio56.q))
+  `ASSERT(prio54_wr_A, wr_P(10'h100, i_rv_plic.reg2hw.prio54.q, 1, 'h3))
+  `ASSERT(prio54_rd_A, rd_P(10'h100, i_rv_plic.reg2hw.prio54.q))
 
-  `ASSERT(prio57_wr_A, wr_P(10'hfc, i_rv_plic.reg2hw.prio57.q, 1, 'h3))
-  `ASSERT(prio57_rd_A, rd_P(10'hfc, i_rv_plic.reg2hw.prio57.q))
+  `ASSERT(prio55_wr_A, wr_P(10'h104, i_rv_plic.reg2hw.prio55.q, 1, 'h3))
+  `ASSERT(prio55_rd_A, rd_P(10'h104, i_rv_plic.reg2hw.prio55.q))
 
-  `ASSERT(prio58_wr_A, wr_P(10'h100, i_rv_plic.reg2hw.prio58.q, 1, 'h3))
-  `ASSERT(prio58_rd_A, rd_P(10'h100, i_rv_plic.reg2hw.prio58.q))
+  `ASSERT(prio56_wr_A, wr_P(10'h108, i_rv_plic.reg2hw.prio56.q, 1, 'h3))
+  `ASSERT(prio56_rd_A, rd_P(10'h108, i_rv_plic.reg2hw.prio56.q))
 
-  `ASSERT(prio59_wr_A, wr_P(10'h104, i_rv_plic.reg2hw.prio59.q, 1, 'h3))
-  `ASSERT(prio59_rd_A, rd_P(10'h104, i_rv_plic.reg2hw.prio59.q))
+  `ASSERT(prio57_wr_A, wr_P(10'h10c, i_rv_plic.reg2hw.prio57.q, 1, 'h3))
+  `ASSERT(prio57_rd_A, rd_P(10'h10c, i_rv_plic.reg2hw.prio57.q))
 
-  `ASSERT(prio60_wr_A, wr_P(10'h108, i_rv_plic.reg2hw.prio60.q, 1, 'h3))
-  `ASSERT(prio60_rd_A, rd_P(10'h108, i_rv_plic.reg2hw.prio60.q))
+  `ASSERT(prio58_wr_A, wr_P(10'h110, i_rv_plic.reg2hw.prio58.q, 1, 'h3))
+  `ASSERT(prio58_rd_A, rd_P(10'h110, i_rv_plic.reg2hw.prio58.q))
 
-  `ASSERT(prio61_wr_A, wr_P(10'h10c, i_rv_plic.reg2hw.prio61.q, 1, 'h3))
-  `ASSERT(prio61_rd_A, rd_P(10'h10c, i_rv_plic.reg2hw.prio61.q))
+  `ASSERT(prio59_wr_A, wr_P(10'h114, i_rv_plic.reg2hw.prio59.q, 1, 'h3))
+  `ASSERT(prio59_rd_A, rd_P(10'h114, i_rv_plic.reg2hw.prio59.q))
 
-  `ASSERT(prio62_wr_A, wr_P(10'h110, i_rv_plic.reg2hw.prio62.q, 1, 'h3))
-  `ASSERT(prio62_rd_A, rd_P(10'h110, i_rv_plic.reg2hw.prio62.q))
+  `ASSERT(prio60_wr_A, wr_P(10'h118, i_rv_plic.reg2hw.prio60.q, 1, 'h3))
+  `ASSERT(prio60_rd_A, rd_P(10'h118, i_rv_plic.reg2hw.prio60.q))
 
-  `ASSERT(prio63_wr_A, wr_P(10'h114, i_rv_plic.reg2hw.prio63.q, 1, 'h3))
-  `ASSERT(prio63_rd_A, rd_P(10'h114, i_rv_plic.reg2hw.prio63.q))
+  `ASSERT(prio61_wr_A, wr_P(10'h11c, i_rv_plic.reg2hw.prio61.q, 1, 'h3))
+  `ASSERT(prio61_rd_A, rd_P(10'h11c, i_rv_plic.reg2hw.prio61.q))
 
-  `ASSERT(prio64_wr_A, wr_P(10'h118, i_rv_plic.reg2hw.prio64.q, 1, 'h3))
-  `ASSERT(prio64_rd_A, rd_P(10'h118, i_rv_plic.reg2hw.prio64.q))
+  `ASSERT(prio62_wr_A, wr_P(10'h120, i_rv_plic.reg2hw.prio62.q, 1, 'h3))
+  `ASSERT(prio62_rd_A, rd_P(10'h120, i_rv_plic.reg2hw.prio62.q))
 
-  `ASSERT(prio65_wr_A, wr_P(10'h11c, i_rv_plic.reg2hw.prio65.q, 1, 'h3))
-  `ASSERT(prio65_rd_A, rd_P(10'h11c, i_rv_plic.reg2hw.prio65.q))
+  `ASSERT(prio63_wr_A, wr_P(10'h124, i_rv_plic.reg2hw.prio63.q, 1, 'h3))
+  `ASSERT(prio63_rd_A, rd_P(10'h124, i_rv_plic.reg2hw.prio63.q))
 
-  `ASSERT(prio66_wr_A, wr_P(10'h120, i_rv_plic.reg2hw.prio66.q, 1, 'h3))
-  `ASSERT(prio66_rd_A, rd_P(10'h120, i_rv_plic.reg2hw.prio66.q))
+  `ASSERT(prio64_wr_A, wr_P(10'h128, i_rv_plic.reg2hw.prio64.q, 1, 'h3))
+  `ASSERT(prio64_rd_A, rd_P(10'h128, i_rv_plic.reg2hw.prio64.q))
 
-  `ASSERT(prio67_wr_A, wr_P(10'h124, i_rv_plic.reg2hw.prio67.q, 1, 'h3))
-  `ASSERT(prio67_rd_A, rd_P(10'h124, i_rv_plic.reg2hw.prio67.q))
+  `ASSERT(prio65_wr_A, wr_P(10'h12c, i_rv_plic.reg2hw.prio65.q, 1, 'h3))
+  `ASSERT(prio65_rd_A, rd_P(10'h12c, i_rv_plic.reg2hw.prio65.q))
 
-  `ASSERT(prio68_wr_A, wr_P(10'h128, i_rv_plic.reg2hw.prio68.q, 1, 'h3))
-  `ASSERT(prio68_rd_A, rd_P(10'h128, i_rv_plic.reg2hw.prio68.q))
+  `ASSERT(prio66_wr_A, wr_P(10'h130, i_rv_plic.reg2hw.prio66.q, 1, 'h3))
+  `ASSERT(prio66_rd_A, rd_P(10'h130, i_rv_plic.reg2hw.prio66.q))
 
-  `ASSERT(prio69_wr_A, wr_P(10'h12c, i_rv_plic.reg2hw.prio69.q, 1, 'h3))
-  `ASSERT(prio69_rd_A, rd_P(10'h12c, i_rv_plic.reg2hw.prio69.q))
+  `ASSERT(prio67_wr_A, wr_P(10'h134, i_rv_plic.reg2hw.prio67.q, 1, 'h3))
+  `ASSERT(prio67_rd_A, rd_P(10'h134, i_rv_plic.reg2hw.prio67.q))
 
-  `ASSERT(prio70_wr_A, wr_P(10'h130, i_rv_plic.reg2hw.prio70.q, 1, 'h3))
-  `ASSERT(prio70_rd_A, rd_P(10'h130, i_rv_plic.reg2hw.prio70.q))
+  `ASSERT(prio68_wr_A, wr_P(10'h138, i_rv_plic.reg2hw.prio68.q, 1, 'h3))
+  `ASSERT(prio68_rd_A, rd_P(10'h138, i_rv_plic.reg2hw.prio68.q))
 
-  `ASSERT(prio71_wr_A, wr_P(10'h134, i_rv_plic.reg2hw.prio71.q, 1, 'h3))
-  `ASSERT(prio71_rd_A, rd_P(10'h134, i_rv_plic.reg2hw.prio71.q))
+  `ASSERT(prio69_wr_A, wr_P(10'h13c, i_rv_plic.reg2hw.prio69.q, 1, 'h3))
+  `ASSERT(prio69_rd_A, rd_P(10'h13c, i_rv_plic.reg2hw.prio69.q))
 
-  `ASSERT(prio72_wr_A, wr_P(10'h138, i_rv_plic.reg2hw.prio72.q, 1, 'h3))
-  `ASSERT(prio72_rd_A, rd_P(10'h138, i_rv_plic.reg2hw.prio72.q))
+  `ASSERT(prio70_wr_A, wr_P(10'h140, i_rv_plic.reg2hw.prio70.q, 1, 'h3))
+  `ASSERT(prio70_rd_A, rd_P(10'h140, i_rv_plic.reg2hw.prio70.q))
 
-  `ASSERT(prio73_wr_A, wr_P(10'h13c, i_rv_plic.reg2hw.prio73.q, 1, 'h3))
-  `ASSERT(prio73_rd_A, rd_P(10'h13c, i_rv_plic.reg2hw.prio73.q))
+  `ASSERT(prio71_wr_A, wr_P(10'h144, i_rv_plic.reg2hw.prio71.q, 1, 'h3))
+  `ASSERT(prio71_rd_A, rd_P(10'h144, i_rv_plic.reg2hw.prio71.q))
 
-  `ASSERT(prio74_wr_A, wr_P(10'h140, i_rv_plic.reg2hw.prio74.q, 1, 'h3))
-  `ASSERT(prio74_rd_A, rd_P(10'h140, i_rv_plic.reg2hw.prio74.q))
+  `ASSERT(prio72_wr_A, wr_P(10'h148, i_rv_plic.reg2hw.prio72.q, 1, 'h3))
+  `ASSERT(prio72_rd_A, rd_P(10'h148, i_rv_plic.reg2hw.prio72.q))
 
-  `ASSERT(prio75_wr_A, wr_P(10'h144, i_rv_plic.reg2hw.prio75.q, 1, 'h3))
-  `ASSERT(prio75_rd_A, rd_P(10'h144, i_rv_plic.reg2hw.prio75.q))
+  `ASSERT(prio73_wr_A, wr_P(10'h14c, i_rv_plic.reg2hw.prio73.q, 1, 'h3))
+  `ASSERT(prio73_rd_A, rd_P(10'h14c, i_rv_plic.reg2hw.prio73.q))
 
-  `ASSERT(prio76_wr_A, wr_P(10'h148, i_rv_plic.reg2hw.prio76.q, 1, 'h3))
-  `ASSERT(prio76_rd_A, rd_P(10'h148, i_rv_plic.reg2hw.prio76.q))
+  `ASSERT(prio74_wr_A, wr_P(10'h150, i_rv_plic.reg2hw.prio74.q, 1, 'h3))
+  `ASSERT(prio74_rd_A, rd_P(10'h150, i_rv_plic.reg2hw.prio74.q))
 
-  `ASSERT(prio77_wr_A, wr_P(10'h14c, i_rv_plic.reg2hw.prio77.q, 1, 'h3))
-  `ASSERT(prio77_rd_A, rd_P(10'h14c, i_rv_plic.reg2hw.prio77.q))
+  `ASSERT(prio75_wr_A, wr_P(10'h154, i_rv_plic.reg2hw.prio75.q, 1, 'h3))
+  `ASSERT(prio75_rd_A, rd_P(10'h154, i_rv_plic.reg2hw.prio75.q))
 
-  `ASSERT(prio78_wr_A, wr_P(10'h150, i_rv_plic.reg2hw.prio78.q, 1, 'h3))
-  `ASSERT(prio78_rd_A, rd_P(10'h150, i_rv_plic.reg2hw.prio78.q))
+  `ASSERT(prio76_wr_A, wr_P(10'h158, i_rv_plic.reg2hw.prio76.q, 1, 'h3))
+  `ASSERT(prio76_rd_A, rd_P(10'h158, i_rv_plic.reg2hw.prio76.q))
 
-  `ASSERT(prio79_wr_A, wr_P(10'h154, i_rv_plic.reg2hw.prio79.q, 1, 'h3))
-  `ASSERT(prio79_rd_A, rd_P(10'h154, i_rv_plic.reg2hw.prio79.q))
+  `ASSERT(prio77_wr_A, wr_P(10'h15c, i_rv_plic.reg2hw.prio77.q, 1, 'h3))
+  `ASSERT(prio77_rd_A, rd_P(10'h15c, i_rv_plic.reg2hw.prio77.q))
 
-  `ASSERT(prio80_wr_A, wr_P(10'h158, i_rv_plic.reg2hw.prio80.q, 1, 'h3))
-  `ASSERT(prio80_rd_A, rd_P(10'h158, i_rv_plic.reg2hw.prio80.q))
+  `ASSERT(prio78_wr_A, wr_P(10'h160, i_rv_plic.reg2hw.prio78.q, 1, 'h3))
+  `ASSERT(prio78_rd_A, rd_P(10'h160, i_rv_plic.reg2hw.prio78.q))
 
-  `ASSERT(prio81_wr_A, wr_P(10'h15c, i_rv_plic.reg2hw.prio81.q, 1, 'h3))
-  `ASSERT(prio81_rd_A, rd_P(10'h15c, i_rv_plic.reg2hw.prio81.q))
+  `ASSERT(prio79_wr_A, wr_P(10'h164, i_rv_plic.reg2hw.prio79.q, 1, 'h3))
+  `ASSERT(prio79_rd_A, rd_P(10'h164, i_rv_plic.reg2hw.prio79.q))
+
+  `ASSERT(prio80_wr_A, wr_P(10'h168, i_rv_plic.reg2hw.prio80.q, 1, 'h3))
+  `ASSERT(prio80_rd_A, rd_P(10'h168, i_rv_plic.reg2hw.prio80.q))
+
+  `ASSERT(prio81_wr_A, wr_P(10'h16c, i_rv_plic.reg2hw.prio81.q, 1, 'h3))
+  `ASSERT(prio81_rd_A, rd_P(10'h16c, i_rv_plic.reg2hw.prio81.q))
+
+  `ASSERT(prio82_wr_A, wr_P(10'h170, i_rv_plic.reg2hw.prio82.q, 1, 'h3))
+  `ASSERT(prio82_rd_A, rd_P(10'h170, i_rv_plic.reg2hw.prio82.q))
+
+  `ASSERT(prio83_wr_A, wr_P(10'h174, i_rv_plic.reg2hw.prio83.q, 1, 'h3))
+  `ASSERT(prio83_rd_A, rd_P(10'h174, i_rv_plic.reg2hw.prio83.q))
+
+  `ASSERT(prio84_wr_A, wr_P(10'h178, i_rv_plic.reg2hw.prio84.q, 1, 'h3))
+  `ASSERT(prio84_rd_A, rd_P(10'h178, i_rv_plic.reg2hw.prio84.q))
+
+  `ASSERT(prio85_wr_A, wr_P(10'h17c, i_rv_plic.reg2hw.prio85.q, 1, 'h3))
+  `ASSERT(prio85_rd_A, rd_P(10'h17c, i_rv_plic.reg2hw.prio85.q))
+
+  `ASSERT(prio86_wr_A, wr_P(10'h180, i_rv_plic.reg2hw.prio86.q, 1, 'h3))
+  `ASSERT(prio86_rd_A, rd_P(10'h180, i_rv_plic.reg2hw.prio86.q))
+
+  `ASSERT(prio87_wr_A, wr_P(10'h184, i_rv_plic.reg2hw.prio87.q, 1, 'h3))
+  `ASSERT(prio87_rd_A, rd_P(10'h184, i_rv_plic.reg2hw.prio87.q))
+
+  `ASSERT(prio88_wr_A, wr_P(10'h188, i_rv_plic.reg2hw.prio88.q, 1, 'h3))
+  `ASSERT(prio88_rd_A, rd_P(10'h188, i_rv_plic.reg2hw.prio88.q))
+
+  `ASSERT(prio89_wr_A, wr_P(10'h18c, i_rv_plic.reg2hw.prio89.q, 1, 'h3))
+  `ASSERT(prio89_rd_A, rd_P(10'h18c, i_rv_plic.reg2hw.prio89.q))
+
+  `ASSERT(prio90_wr_A, wr_P(10'h190, i_rv_plic.reg2hw.prio90.q, 1, 'h3))
+  `ASSERT(prio90_rd_A, rd_P(10'h190, i_rv_plic.reg2hw.prio90.q))
+
+  `ASSERT(prio91_wr_A, wr_P(10'h194, i_rv_plic.reg2hw.prio91.q, 1, 'h3))
+  `ASSERT(prio91_rd_A, rd_P(10'h194, i_rv_plic.reg2hw.prio91.q))
+
+  `ASSERT(prio92_wr_A, wr_P(10'h198, i_rv_plic.reg2hw.prio92.q, 1, 'h3))
+  `ASSERT(prio92_rd_A, rd_P(10'h198, i_rv_plic.reg2hw.prio92.q))
+
+  `ASSERT(prio93_wr_A, wr_P(10'h19c, i_rv_plic.reg2hw.prio93.q, 1, 'h3))
+  `ASSERT(prio93_rd_A, rd_P(10'h19c, i_rv_plic.reg2hw.prio93.q))
+
+  `ASSERT(prio94_wr_A, wr_P(10'h1a0, i_rv_plic.reg2hw.prio94.q, 1, 'h3))
+  `ASSERT(prio94_rd_A, rd_P(10'h1a0, i_rv_plic.reg2hw.prio94.q))
+
+  `ASSERT(prio95_wr_A, wr_P(10'h1a4, i_rv_plic.reg2hw.prio95.q, 1, 'h3))
+  `ASSERT(prio95_rd_A, rd_P(10'h1a4, i_rv_plic.reg2hw.prio95.q))
+
+  `ASSERT(prio96_wr_A, wr_P(10'h1a8, i_rv_plic.reg2hw.prio96.q, 1, 'h3))
+  `ASSERT(prio96_rd_A, rd_P(10'h1a8, i_rv_plic.reg2hw.prio96.q))
+
+  `ASSERT(prio97_wr_A, wr_P(10'h1ac, i_rv_plic.reg2hw.prio97.q, 1, 'h3))
+  `ASSERT(prio97_rd_A, rd_P(10'h1ac, i_rv_plic.reg2hw.prio97.q))
+
+  `ASSERT(prio98_wr_A, wr_P(10'h1b0, i_rv_plic.reg2hw.prio98.q, 1, 'h3))
+  `ASSERT(prio98_rd_A, rd_P(10'h1b0, i_rv_plic.reg2hw.prio98.q))
+
+  `ASSERT(prio99_wr_A, wr_P(10'h1b4, i_rv_plic.reg2hw.prio99.q, 1, 'h3))
+  `ASSERT(prio99_rd_A, rd_P(10'h1b4, i_rv_plic.reg2hw.prio99.q))
+
+  `ASSERT(prio100_wr_A, wr_P(10'h1b8, i_rv_plic.reg2hw.prio100.q, 1, 'h3))
+  `ASSERT(prio100_rd_A, rd_P(10'h1b8, i_rv_plic.reg2hw.prio100.q))
+
+  `ASSERT(prio101_wr_A, wr_P(10'h1bc, i_rv_plic.reg2hw.prio101.q, 1, 'h3))
+  `ASSERT(prio101_rd_A, rd_P(10'h1bc, i_rv_plic.reg2hw.prio101.q))
+
+  `ASSERT(prio102_wr_A, wr_P(10'h1c0, i_rv_plic.reg2hw.prio102.q, 1, 'h3))
+  `ASSERT(prio102_rd_A, rd_P(10'h1c0, i_rv_plic.reg2hw.prio102.q))
+
+  `ASSERT(prio103_wr_A, wr_P(10'h1c4, i_rv_plic.reg2hw.prio103.q, 1, 'h3))
+  `ASSERT(prio103_rd_A, rd_P(10'h1c4, i_rv_plic.reg2hw.prio103.q))
+
+  `ASSERT(prio104_wr_A, wr_P(10'h1c8, i_rv_plic.reg2hw.prio104.q, 1, 'h3))
+  `ASSERT(prio104_rd_A, rd_P(10'h1c8, i_rv_plic.reg2hw.prio104.q))
+
+  `ASSERT(prio105_wr_A, wr_P(10'h1cc, i_rv_plic.reg2hw.prio105.q, 1, 'h3))
+  `ASSERT(prio105_rd_A, rd_P(10'h1cc, i_rv_plic.reg2hw.prio105.q))
+
+  `ASSERT(prio106_wr_A, wr_P(10'h1d0, i_rv_plic.reg2hw.prio106.q, 1, 'h3))
+  `ASSERT(prio106_rd_A, rd_P(10'h1d0, i_rv_plic.reg2hw.prio106.q))
+
+  `ASSERT(prio107_wr_A, wr_P(10'h1d4, i_rv_plic.reg2hw.prio107.q, 1, 'h3))
+  `ASSERT(prio107_rd_A, rd_P(10'h1d4, i_rv_plic.reg2hw.prio107.q))
+
+  `ASSERT(prio108_wr_A, wr_P(10'h1d8, i_rv_plic.reg2hw.prio108.q, 1, 'h3))
+  `ASSERT(prio108_rd_A, rd_P(10'h1d8, i_rv_plic.reg2hw.prio108.q))
+
+  `ASSERT(prio109_wr_A, wr_P(10'h1dc, i_rv_plic.reg2hw.prio109.q, 1, 'h3))
+  `ASSERT(prio109_rd_A, rd_P(10'h1dc, i_rv_plic.reg2hw.prio109.q))
+
+  `ASSERT(prio110_wr_A, wr_P(10'h1e0, i_rv_plic.reg2hw.prio110.q, 1, 'h3))
+  `ASSERT(prio110_rd_A, rd_P(10'h1e0, i_rv_plic.reg2hw.prio110.q))
+
+  `ASSERT(prio111_wr_A, wr_P(10'h1e4, i_rv_plic.reg2hw.prio111.q, 1, 'h3))
+  `ASSERT(prio111_rd_A, rd_P(10'h1e4, i_rv_plic.reg2hw.prio111.q))
+
+  `ASSERT(prio112_wr_A, wr_P(10'h1e8, i_rv_plic.reg2hw.prio112.q, 1, 'h3))
+  `ASSERT(prio112_rd_A, rd_P(10'h1e8, i_rv_plic.reg2hw.prio112.q))
+
+  `ASSERT(prio113_wr_A, wr_P(10'h1ec, i_rv_plic.reg2hw.prio113.q, 1, 'h3))
+  `ASSERT(prio113_rd_A, rd_P(10'h1ec, i_rv_plic.reg2hw.prio113.q))
+
+  `ASSERT(prio114_wr_A, wr_P(10'h1f0, i_rv_plic.reg2hw.prio114.q, 1, 'h3))
+  `ASSERT(prio114_rd_A, rd_P(10'h1f0, i_rv_plic.reg2hw.prio114.q))
+
+  `ASSERT(prio115_wr_A, wr_P(10'h1f4, i_rv_plic.reg2hw.prio115.q, 1, 'h3))
+  `ASSERT(prio115_rd_A, rd_P(10'h1f4, i_rv_plic.reg2hw.prio115.q))
+
+  `ASSERT(prio116_wr_A, wr_P(10'h1f8, i_rv_plic.reg2hw.prio116.q, 1, 'h3))
+  `ASSERT(prio116_rd_A, rd_P(10'h1f8, i_rv_plic.reg2hw.prio116.q))
+
+  `ASSERT(prio117_wr_A, wr_P(10'h1fc, i_rv_plic.reg2hw.prio117.q, 1, 'h3))
+  `ASSERT(prio117_rd_A, rd_P(10'h1fc, i_rv_plic.reg2hw.prio117.q))
+
+  `ASSERT(prio118_wr_A, wr_P(10'h200, i_rv_plic.reg2hw.prio118.q, 1, 'h3))
+  `ASSERT(prio118_rd_A, rd_P(10'h200, i_rv_plic.reg2hw.prio118.q))
+
+  `ASSERT(prio119_wr_A, wr_P(10'h204, i_rv_plic.reg2hw.prio119.q, 1, 'h3))
+  `ASSERT(prio119_rd_A, rd_P(10'h204, i_rv_plic.reg2hw.prio119.q))
+
+  `ASSERT(prio120_wr_A, wr_P(10'h208, i_rv_plic.reg2hw.prio120.q, 1, 'h3))
+  `ASSERT(prio120_rd_A, rd_P(10'h208, i_rv_plic.reg2hw.prio120.q))
+
+  `ASSERT(prio121_wr_A, wr_P(10'h20c, i_rv_plic.reg2hw.prio121.q, 1, 'h3))
+  `ASSERT(prio121_rd_A, rd_P(10'h20c, i_rv_plic.reg2hw.prio121.q))
+
+  `ASSERT(prio122_wr_A, wr_P(10'h210, i_rv_plic.reg2hw.prio122.q, 1, 'h3))
+  `ASSERT(prio122_rd_A, rd_P(10'h210, i_rv_plic.reg2hw.prio122.q))
+
+  `ASSERT(prio123_wr_A, wr_P(10'h214, i_rv_plic.reg2hw.prio123.q, 1, 'h3))
+  `ASSERT(prio123_rd_A, rd_P(10'h214, i_rv_plic.reg2hw.prio123.q))
+
+  `ASSERT(prio124_wr_A, wr_P(10'h218, i_rv_plic.reg2hw.prio124.q, 1, 'h3))
+  `ASSERT(prio124_rd_A, rd_P(10'h218, i_rv_plic.reg2hw.prio124.q))
+
+  `ASSERT(prio125_wr_A, wr_P(10'h21c, i_rv_plic.reg2hw.prio125.q, 1, 'h3))
+  `ASSERT(prio125_rd_A, rd_P(10'h21c, i_rv_plic.reg2hw.prio125.q))
+
+  `ASSERT(prio126_wr_A, wr_P(10'h220, i_rv_plic.reg2hw.prio126.q, 1, 'h3))
+  `ASSERT(prio126_rd_A, rd_P(10'h220, i_rv_plic.reg2hw.prio126.q))
+
+  `ASSERT(prio127_wr_A, wr_P(10'h224, i_rv_plic.reg2hw.prio127.q, 1, 'h3))
+  `ASSERT(prio127_rd_A, rd_P(10'h224, i_rv_plic.reg2hw.prio127.q))
+
+  `ASSERT(prio128_wr_A, wr_P(10'h228, i_rv_plic.reg2hw.prio128.q, 1, 'h3))
+  `ASSERT(prio128_rd_A, rd_P(10'h228, i_rv_plic.reg2hw.prio128.q))
+
+  `ASSERT(prio129_wr_A, wr_P(10'h22c, i_rv_plic.reg2hw.prio129.q, 1, 'h3))
+  `ASSERT(prio129_rd_A, rd_P(10'h22c, i_rv_plic.reg2hw.prio129.q))
+
+  `ASSERT(prio130_wr_A, wr_P(10'h230, i_rv_plic.reg2hw.prio130.q, 1, 'h3))
+  `ASSERT(prio130_rd_A, rd_P(10'h230, i_rv_plic.reg2hw.prio130.q))
+
+  `ASSERT(prio131_wr_A, wr_P(10'h234, i_rv_plic.reg2hw.prio131.q, 1, 'h3))
+  `ASSERT(prio131_rd_A, rd_P(10'h234, i_rv_plic.reg2hw.prio131.q))
+
+  `ASSERT(prio132_wr_A, wr_P(10'h238, i_rv_plic.reg2hw.prio132.q, 1, 'h3))
+  `ASSERT(prio132_rd_A, rd_P(10'h238, i_rv_plic.reg2hw.prio132.q))
 
   // define local fpv variable for the multi_reg
-  logic [81:0] ie0_q_fpv;
-  for (genvar s = 0; s <= 81; s++) begin : gen_ie0_q
+  logic [132:0] ie0_q_fpv;
+  for (genvar s = 0; s <= 132; s++) begin : gen_ie0_q
     assign ie0_q_fpv[s] = 1 ?
         i_rv_plic.reg2hw.ie0[s].q : ie0_q_fpv[s];
   end
 
-  `ASSERT(ie00_wr_A, wr_P(10'h200, ie0_q_fpv[31:0], 1, 'hffffffff))
-  `ASSERT(ie00_rd_A, rd_P(10'h200, ie0_q_fpv[31:0]))
+  `ASSERT(ie00_wr_A, wr_P(10'h300, ie0_q_fpv[31:0], 1, 'hffffffff))
+  `ASSERT(ie00_rd_A, rd_P(10'h300, ie0_q_fpv[31:0]))
 
-  `ASSERT(ie01_wr_A, wr_P(10'h204, ie0_q_fpv[63:32], 1, 'hffffffff))
-  `ASSERT(ie01_rd_A, rd_P(10'h204, ie0_q_fpv[63:32]))
+  `ASSERT(ie01_wr_A, wr_P(10'h304, ie0_q_fpv[63:32], 1, 'hffffffff))
+  `ASSERT(ie01_rd_A, rd_P(10'h304, ie0_q_fpv[63:32]))
 
-  `ASSERT(ie02_wr_A, wr_P(10'h208, ie0_q_fpv[81:64], 1, 'h3ffff))
-  `ASSERT(ie02_rd_A, rd_P(10'h208, ie0_q_fpv[81:64]))
+  `ASSERT(ie02_wr_A, wr_P(10'h308, ie0_q_fpv[95:64], 1, 'hffffffff))
+  `ASSERT(ie02_rd_A, rd_P(10'h308, ie0_q_fpv[95:64]))
 
-  `ASSERT(threshold0_wr_A, wr_P(10'h20c, i_rv_plic.reg2hw.threshold0.q, 1, 'h3))
-  `ASSERT(threshold0_rd_A, rd_P(10'h20c, i_rv_plic.reg2hw.threshold0.q))
+  `ASSERT(ie03_wr_A, wr_P(10'h30c, ie0_q_fpv[127:96], 1, 'hffffffff))
+  `ASSERT(ie03_rd_A, rd_P(10'h30c, ie0_q_fpv[127:96]))
 
-  `ASSERT(cc0_wr_A, wr_ext_P(10'h210, i_rv_plic.reg2hw.cc0.q, 1, 'h7f))
-  `ASSERT(cc0_rd_A, rd_ext_P(10'h210, i_rv_plic.hw2reg.cc0.d))
+  `ASSERT(ie04_wr_A, wr_P(10'h310, ie0_q_fpv[132:128], 1, 'h1f))
+  `ASSERT(ie04_rd_A, rd_P(10'h310, ie0_q_fpv[132:128]))
 
-  `ASSERT(msip0_wr_A, wr_P(10'h214, i_rv_plic.reg2hw.msip0.q, 1, 'h1))
-  `ASSERT(msip0_rd_A, rd_P(10'h214, i_rv_plic.reg2hw.msip0.q))
+  `ASSERT(threshold0_wr_A, wr_P(10'h314, i_rv_plic.reg2hw.threshold0.q, 1, 'h3))
+  `ASSERT(threshold0_rd_A, rd_P(10'h314, i_rv_plic.reg2hw.threshold0.q))
+
+  `ASSERT(cc0_wr_A, wr_ext_P(10'h318, i_rv_plic.reg2hw.cc0.q, 1, 'hff))
+  `ASSERT(cc0_rd_A, rd_ext_P(10'h318, i_rv_plic.hw2reg.cc0.d))
+
+  `ASSERT(msip0_wr_A, wr_P(10'h31c, i_rv_plic.reg2hw.msip0.q, 1, 'h1))
+  `ASSERT(msip0_rd_A, rd_P(10'h31c, i_rv_plic.reg2hw.msip0.q))
 
 endmodule

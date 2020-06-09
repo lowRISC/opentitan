@@ -74,6 +74,12 @@ module top_earlgrey #(
 
   tl_h2d_t  tl_uart_d_h2d;
   tl_d2h_t  tl_uart_d_d2h;
+  tl_h2d_t  tl_uart1_d_h2d;
+  tl_d2h_t  tl_uart1_d_d2h;
+  tl_h2d_t  tl_uart2_d_h2d;
+  tl_d2h_t  tl_uart2_d_d2h;
+  tl_h2d_t  tl_uart3_d_h2d;
+  tl_d2h_t  tl_uart3_d_d2h;
   tl_h2d_t  tl_gpio_d_h2d;
   tl_d2h_t  tl_gpio_d_d2h;
   tl_h2d_t  tl_spi_device_d_h2d;
@@ -82,8 +88,12 @@ module top_earlgrey #(
   tl_d2h_t  tl_flash_ctrl_d_d2h;
   tl_h2d_t  tl_rv_timer_d_h2d;
   tl_d2h_t  tl_rv_timer_d_d2h;
-  tl_h2d_t  tl_i2c_d_h2d;
-  tl_d2h_t  tl_i2c_d_d2h;
+  tl_h2d_t  tl_i2c0_d_h2d;
+  tl_d2h_t  tl_i2c0_d_d2h;
+  tl_h2d_t  tl_i2c1_d_h2d;
+  tl_d2h_t  tl_i2c1_d_d2h;
+  tl_h2d_t  tl_i2c2_d_h2d;
+  tl_d2h_t  tl_i2c2_d_d2h;
   tl_h2d_t  tl_aes_d_h2d;
   tl_d2h_t  tl_aes_d_d2h;
   tl_h2d_t  tl_hmac_d_h2d;
@@ -124,9 +134,9 @@ module top_earlgrey #(
   tl_d2h_t tl_main_aon_d2h;
 
   // Signals
-  logic [33:0] mio_p2d;
-  logic [33:0] mio_d2p;
-  logic [33:0] mio_d2p_en;
+  logic [40:0] mio_p2d;
+  logic [40:0] mio_d2p;
+  logic [40:0] mio_d2p_en;
   logic [14:0] dio_p2d;
   logic [14:0] dio_d2p;
   logic [14:0] dio_d2p_en;
@@ -134,6 +144,18 @@ module top_earlgrey #(
   logic        cio_uart_rx_p2d;
   logic        cio_uart_tx_d2p;
   logic        cio_uart_tx_en_d2p;
+  // uart1
+  logic        cio_uart1_rx_p2d;
+  logic        cio_uart1_tx_d2p;
+  logic        cio_uart1_tx_en_d2p;
+  // uart2
+  logic        cio_uart2_rx_p2d;
+  logic        cio_uart2_tx_d2p;
+  logic        cio_uart2_tx_en_d2p;
+  // uart3
+  logic        cio_uart3_rx_p2d;
+  logic        cio_uart3_tx_d2p;
+  logic        cio_uart3_tx_en_d2p;
   // gpio
   logic [31:0] cio_gpio_gpio_p2d;
   logic [31:0] cio_gpio_gpio_d2p;
@@ -146,13 +168,27 @@ module top_earlgrey #(
   logic        cio_spi_device_miso_en_d2p;
   // flash_ctrl
   // rv_timer
-  // i2c
-  logic        cio_i2c_sda_p2d;
-  logic        cio_i2c_scl_p2d;
-  logic        cio_i2c_sda_d2p;
-  logic        cio_i2c_sda_en_d2p;
-  logic        cio_i2c_scl_d2p;
-  logic        cio_i2c_scl_en_d2p;
+  // i2c0
+  logic        cio_i2c0_sda_p2d;
+  logic        cio_i2c0_scl_p2d;
+  logic        cio_i2c0_sda_d2p;
+  logic        cio_i2c0_sda_en_d2p;
+  logic        cio_i2c0_scl_d2p;
+  logic        cio_i2c0_scl_en_d2p;
+  // i2c1
+  logic        cio_i2c1_sda_p2d;
+  logic        cio_i2c1_scl_p2d;
+  logic        cio_i2c1_sda_d2p;
+  logic        cio_i2c1_sda_en_d2p;
+  logic        cio_i2c1_scl_d2p;
+  logic        cio_i2c1_scl_en_d2p;
+  // i2c2
+  logic        cio_i2c2_sda_p2d;
+  logic        cio_i2c2_scl_p2d;
+  logic        cio_i2c2_sda_d2p;
+  logic        cio_i2c2_sda_en_d2p;
+  logic        cio_i2c2_scl_d2p;
+  logic        cio_i2c2_scl_en_d2p;
   // aes
   // hmac
   // rv_plic
@@ -196,7 +232,7 @@ module top_earlgrey #(
   // keymgr
 
 
-  logic [81:0]  intr_vector;
+  logic [132:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -206,6 +242,30 @@ module top_earlgrey #(
   logic intr_uart_rx_break_err;
   logic intr_uart_rx_timeout;
   logic intr_uart_rx_parity_err;
+  logic intr_uart1_tx_watermark;
+  logic intr_uart1_rx_watermark;
+  logic intr_uart1_tx_empty;
+  logic intr_uart1_rx_overflow;
+  logic intr_uart1_rx_frame_err;
+  logic intr_uart1_rx_break_err;
+  logic intr_uart1_rx_timeout;
+  logic intr_uart1_rx_parity_err;
+  logic intr_uart2_tx_watermark;
+  logic intr_uart2_rx_watermark;
+  logic intr_uart2_tx_empty;
+  logic intr_uart2_rx_overflow;
+  logic intr_uart2_rx_frame_err;
+  logic intr_uart2_rx_break_err;
+  logic intr_uart2_rx_timeout;
+  logic intr_uart2_rx_parity_err;
+  logic intr_uart3_tx_watermark;
+  logic intr_uart3_rx_watermark;
+  logic intr_uart3_tx_empty;
+  logic intr_uart3_rx_overflow;
+  logic intr_uart3_rx_frame_err;
+  logic intr_uart3_rx_break_err;
+  logic intr_uart3_rx_timeout;
+  logic intr_uart3_rx_parity_err;
   logic [31:0] intr_gpio_gpio;
   logic intr_spi_device_rxf;
   logic intr_spi_device_rxlvl;
@@ -220,15 +280,33 @@ module top_earlgrey #(
   logic intr_flash_ctrl_op_done;
   logic intr_flash_ctrl_op_error;
   logic intr_rv_timer_timer_expired_0_0;
-  logic intr_i2c_fmt_watermark;
-  logic intr_i2c_rx_watermark;
-  logic intr_i2c_fmt_overflow;
-  logic intr_i2c_rx_overflow;
-  logic intr_i2c_nak;
-  logic intr_i2c_scl_interference;
-  logic intr_i2c_sda_interference;
-  logic intr_i2c_stretch_timeout;
-  logic intr_i2c_sda_unstable;
+  logic intr_i2c0_fmt_watermark;
+  logic intr_i2c0_rx_watermark;
+  logic intr_i2c0_fmt_overflow;
+  logic intr_i2c0_rx_overflow;
+  logic intr_i2c0_nak;
+  logic intr_i2c0_scl_interference;
+  logic intr_i2c0_sda_interference;
+  logic intr_i2c0_stretch_timeout;
+  logic intr_i2c0_sda_unstable;
+  logic intr_i2c1_fmt_watermark;
+  logic intr_i2c1_rx_watermark;
+  logic intr_i2c1_fmt_overflow;
+  logic intr_i2c1_rx_overflow;
+  logic intr_i2c1_nak;
+  logic intr_i2c1_scl_interference;
+  logic intr_i2c1_sda_interference;
+  logic intr_i2c1_stretch_timeout;
+  logic intr_i2c1_sda_unstable;
+  logic intr_i2c2_fmt_watermark;
+  logic intr_i2c2_rx_watermark;
+  logic intr_i2c2_fmt_overflow;
+  logic intr_i2c2_rx_overflow;
+  logic intr_i2c2_nak;
+  logic intr_i2c2_scl_interference;
+  logic intr_i2c2_sda_interference;
+  logic intr_i2c2_stretch_timeout;
+  logic intr_i2c2_sda_unstable;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -265,8 +343,8 @@ module top_earlgrey #(
 
   logic [0:0] irq_plic;
   logic [0:0] msip;
-  logic [6:0] irq_id[1];
-  logic [6:0] unused_irq_id[1];
+  logic [7:0] irq_id[1];
+  logic [7:0] unused_irq_id[1];
 
   // this avoids lint errors
   assign unused_irq_id = irq_id;
@@ -532,6 +610,81 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
+  uart u_uart1 (
+      .tl_i (tl_uart1_d_h2d),
+      .tl_o (tl_uart1_d_d2h),
+
+      // Input
+      .cio_rx_i    (cio_uart1_rx_p2d),
+
+      // Output
+      .cio_tx_o    (cio_uart1_tx_d2p),
+      .cio_tx_en_o (cio_uart1_tx_en_d2p),
+
+      // Interrupt
+      .intr_tx_watermark_o  (intr_uart1_tx_watermark),
+      .intr_rx_watermark_o  (intr_uart1_rx_watermark),
+      .intr_tx_empty_o      (intr_uart1_tx_empty),
+      .intr_rx_overflow_o   (intr_uart1_rx_overflow),
+      .intr_rx_frame_err_o  (intr_uart1_rx_frame_err),
+      .intr_rx_break_err_o  (intr_uart1_rx_break_err),
+      .intr_rx_timeout_o    (intr_uart1_rx_timeout),
+      .intr_rx_parity_err_o (intr_uart1_rx_parity_err),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
+  uart u_uart2 (
+      .tl_i (tl_uart2_d_h2d),
+      .tl_o (tl_uart2_d_d2h),
+
+      // Input
+      .cio_rx_i    (cio_uart2_rx_p2d),
+
+      // Output
+      .cio_tx_o    (cio_uart2_tx_d2p),
+      .cio_tx_en_o (cio_uart2_tx_en_d2p),
+
+      // Interrupt
+      .intr_tx_watermark_o  (intr_uart2_tx_watermark),
+      .intr_rx_watermark_o  (intr_uart2_rx_watermark),
+      .intr_tx_empty_o      (intr_uart2_tx_empty),
+      .intr_rx_overflow_o   (intr_uart2_rx_overflow),
+      .intr_rx_frame_err_o  (intr_uart2_rx_frame_err),
+      .intr_rx_break_err_o  (intr_uart2_rx_break_err),
+      .intr_rx_timeout_o    (intr_uart2_rx_timeout),
+      .intr_rx_parity_err_o (intr_uart2_rx_parity_err),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
+  uart u_uart3 (
+      .tl_i (tl_uart3_d_h2d),
+      .tl_o (tl_uart3_d_d2h),
+
+      // Input
+      .cio_rx_i    (cio_uart3_rx_p2d),
+
+      // Output
+      .cio_tx_o    (cio_uart3_tx_d2p),
+      .cio_tx_en_o (cio_uart3_tx_en_d2p),
+
+      // Interrupt
+      .intr_tx_watermark_o  (intr_uart3_tx_watermark),
+      .intr_rx_watermark_o  (intr_uart3_rx_watermark),
+      .intr_tx_empty_o      (intr_uart3_tx_empty),
+      .intr_rx_overflow_o   (intr_uart3_rx_overflow),
+      .intr_rx_frame_err_o  (intr_uart3_rx_frame_err),
+      .intr_rx_break_err_o  (intr_uart3_rx_break_err),
+      .intr_rx_timeout_o    (intr_uart3_rx_timeout),
+      .intr_rx_parity_err_o (intr_uart3_rx_parity_err),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
   gpio u_gpio (
       .tl_i (tl_gpio_d_h2d),
       .tl_o (tl_gpio_d_d2h),
@@ -607,30 +760,88 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
 
-  i2c u_i2c (
-      .tl_i (tl_i2c_d_h2d),
-      .tl_o (tl_i2c_d_d2h),
+  i2c u_i2c0 (
+      .tl_i (tl_i2c0_d_h2d),
+      .tl_o (tl_i2c0_d_d2h),
 
       // Input
-      .cio_sda_i    (cio_i2c_sda_p2d),
-      .cio_scl_i    (cio_i2c_scl_p2d),
+      .cio_sda_i    (cio_i2c0_sda_p2d),
+      .cio_scl_i    (cio_i2c0_scl_p2d),
 
       // Output
-      .cio_sda_o    (cio_i2c_sda_d2p),
-      .cio_sda_en_o (cio_i2c_sda_en_d2p),
-      .cio_scl_o    (cio_i2c_scl_d2p),
-      .cio_scl_en_o (cio_i2c_scl_en_d2p),
+      .cio_sda_o    (cio_i2c0_sda_d2p),
+      .cio_sda_en_o (cio_i2c0_sda_en_d2p),
+      .cio_scl_o    (cio_i2c0_scl_d2p),
+      .cio_scl_en_o (cio_i2c0_scl_en_d2p),
 
       // Interrupt
-      .intr_fmt_watermark_o    (intr_i2c_fmt_watermark),
-      .intr_rx_watermark_o     (intr_i2c_rx_watermark),
-      .intr_fmt_overflow_o     (intr_i2c_fmt_overflow),
-      .intr_rx_overflow_o      (intr_i2c_rx_overflow),
-      .intr_nak_o              (intr_i2c_nak),
-      .intr_scl_interference_o (intr_i2c_scl_interference),
-      .intr_sda_interference_o (intr_i2c_sda_interference),
-      .intr_stretch_timeout_o  (intr_i2c_stretch_timeout),
-      .intr_sda_unstable_o     (intr_i2c_sda_unstable),
+      .intr_fmt_watermark_o    (intr_i2c0_fmt_watermark),
+      .intr_rx_watermark_o     (intr_i2c0_rx_watermark),
+      .intr_fmt_overflow_o     (intr_i2c0_fmt_overflow),
+      .intr_rx_overflow_o      (intr_i2c0_rx_overflow),
+      .intr_nak_o              (intr_i2c0_nak),
+      .intr_scl_interference_o (intr_i2c0_scl_interference),
+      .intr_sda_interference_o (intr_i2c0_sda_interference),
+      .intr_stretch_timeout_o  (intr_i2c0_stretch_timeout),
+      .intr_sda_unstable_o     (intr_i2c0_sda_unstable),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
+  i2c u_i2c1 (
+      .tl_i (tl_i2c1_d_h2d),
+      .tl_o (tl_i2c1_d_d2h),
+
+      // Input
+      .cio_sda_i    (cio_i2c1_sda_p2d),
+      .cio_scl_i    (cio_i2c1_scl_p2d),
+
+      // Output
+      .cio_sda_o    (cio_i2c1_sda_d2p),
+      .cio_sda_en_o (cio_i2c1_sda_en_d2p),
+      .cio_scl_o    (cio_i2c1_scl_d2p),
+      .cio_scl_en_o (cio_i2c1_scl_en_d2p),
+
+      // Interrupt
+      .intr_fmt_watermark_o    (intr_i2c1_fmt_watermark),
+      .intr_rx_watermark_o     (intr_i2c1_rx_watermark),
+      .intr_fmt_overflow_o     (intr_i2c1_fmt_overflow),
+      .intr_rx_overflow_o      (intr_i2c1_rx_overflow),
+      .intr_nak_o              (intr_i2c1_nak),
+      .intr_scl_interference_o (intr_i2c1_scl_interference),
+      .intr_sda_interference_o (intr_i2c1_sda_interference),
+      .intr_stretch_timeout_o  (intr_i2c1_stretch_timeout),
+      .intr_sda_unstable_o     (intr_i2c1_sda_unstable),
+
+      .clk_i (clkmgr_clocks.clk_io_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_n)
+  );
+
+  i2c u_i2c2 (
+      .tl_i (tl_i2c2_d_h2d),
+      .tl_o (tl_i2c2_d_d2h),
+
+      // Input
+      .cio_sda_i    (cio_i2c2_sda_p2d),
+      .cio_scl_i    (cio_i2c2_scl_p2d),
+
+      // Output
+      .cio_sda_o    (cio_i2c2_sda_d2p),
+      .cio_sda_en_o (cio_i2c2_sda_en_d2p),
+      .cio_scl_o    (cio_i2c2_scl_d2p),
+      .cio_scl_en_o (cio_i2c2_scl_en_d2p),
+
+      // Interrupt
+      .intr_fmt_watermark_o    (intr_i2c2_fmt_watermark),
+      .intr_rx_watermark_o     (intr_i2c2_rx_watermark),
+      .intr_fmt_overflow_o     (intr_i2c2_fmt_overflow),
+      .intr_rx_overflow_o      (intr_i2c2_rx_overflow),
+      .intr_nak_o              (intr_i2c2_nak),
+      .intr_scl_interference_o (intr_i2c2_scl_interference),
+      .intr_sda_interference_o (intr_i2c2_sda_interference),
+      .intr_stretch_timeout_o  (intr_i2c2_stretch_timeout),
+      .intr_sda_unstable_o     (intr_i2c2_sda_unstable),
 
       .clk_i (clkmgr_clocks.clk_io_peri),
       .rst_ni (rstmgr_resets.rst_sys_io_n)
@@ -929,6 +1140,57 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_i2c2_sda_unstable,
+      intr_i2c2_stretch_timeout,
+      intr_i2c2_sda_interference,
+      intr_i2c2_scl_interference,
+      intr_i2c2_nak,
+      intr_i2c2_rx_overflow,
+      intr_i2c2_fmt_overflow,
+      intr_i2c2_rx_watermark,
+      intr_i2c2_fmt_watermark,
+      intr_i2c1_sda_unstable,
+      intr_i2c1_stretch_timeout,
+      intr_i2c1_sda_interference,
+      intr_i2c1_scl_interference,
+      intr_i2c1_nak,
+      intr_i2c1_rx_overflow,
+      intr_i2c1_fmt_overflow,
+      intr_i2c1_rx_watermark,
+      intr_i2c1_fmt_watermark,
+      intr_i2c0_sda_unstable,
+      intr_i2c0_stretch_timeout,
+      intr_i2c0_sda_interference,
+      intr_i2c0_scl_interference,
+      intr_i2c0_nak,
+      intr_i2c0_rx_overflow,
+      intr_i2c0_fmt_overflow,
+      intr_i2c0_rx_watermark,
+      intr_i2c0_fmt_watermark,
+      intr_uart3_rx_parity_err,
+      intr_uart3_rx_timeout,
+      intr_uart3_rx_break_err,
+      intr_uart3_rx_frame_err,
+      intr_uart3_rx_overflow,
+      intr_uart3_tx_empty,
+      intr_uart3_rx_watermark,
+      intr_uart3_tx_watermark,
+      intr_uart2_rx_parity_err,
+      intr_uart2_rx_timeout,
+      intr_uart2_rx_break_err,
+      intr_uart2_rx_frame_err,
+      intr_uart2_rx_overflow,
+      intr_uart2_tx_empty,
+      intr_uart2_rx_watermark,
+      intr_uart2_tx_watermark,
+      intr_uart1_rx_parity_err,
+      intr_uart1_rx_timeout,
+      intr_uart1_rx_break_err,
+      intr_uart1_rx_frame_err,
+      intr_uart1_rx_overflow,
+      intr_uart1_tx_empty,
+      intr_uart1_rx_watermark,
+      intr_uart1_tx_watermark,
       intr_pwrmgr_wakeup,
       intr_usbdev_aon_connected,
       intr_usbdev_aon_frame,
@@ -1030,14 +1292,24 @@ module top_earlgrey #(
     .tl_main_o       (tl_main_peri_d2h),
     .tl_uart_o       (tl_uart_d_h2d),
     .tl_uart_i       (tl_uart_d_d2h),
+    .tl_uart1_o      (tl_uart1_d_h2d),
+    .tl_uart1_i      (tl_uart1_d_d2h),
+    .tl_uart2_o      (tl_uart2_d_h2d),
+    .tl_uart2_i      (tl_uart2_d_d2h),
+    .tl_uart3_o      (tl_uart3_d_h2d),
+    .tl_uart3_i      (tl_uart3_d_d2h),
     .tl_gpio_o       (tl_gpio_d_h2d),
     .tl_gpio_i       (tl_gpio_d_d2h),
     .tl_spi_device_o (tl_spi_device_d_h2d),
     .tl_spi_device_i (tl_spi_device_d_d2h),
     .tl_rv_timer_o   (tl_rv_timer_d_h2d),
     .tl_rv_timer_i   (tl_rv_timer_d_d2h),
-    .tl_i2c_o        (tl_i2c_d_h2d),
-    .tl_i2c_i        (tl_i2c_d_d2h),
+    .tl_i2c0_o       (tl_i2c0_d_h2d),
+    .tl_i2c0_i       (tl_i2c0_d_d2h),
+    .tl_i2c1_o       (tl_i2c1_d_h2d),
+    .tl_i2c1_i       (tl_i2c1_d_d2h),
+    .tl_i2c2_o       (tl_i2c2_d_h2d),
+    .tl_i2c2_i       (tl_i2c2_d_d2h),
     .tl_pattgen_o    (tl_pattgen_d_h2d),
     .tl_pattgen_i    (tl_pattgen_d_d2h),
 
@@ -1067,18 +1339,39 @@ module top_earlgrey #(
   // Pinmux connections
   assign mio_d2p = {
     cio_gpio_gpio_d2p,
-    cio_i2c_sda_d2p,
-    cio_i2c_scl_d2p
+    cio_i2c0_sda_d2p,
+    cio_i2c0_scl_d2p,
+    cio_i2c1_sda_d2p,
+    cio_i2c1_scl_d2p,
+    cio_i2c2_sda_d2p,
+    cio_i2c2_scl_d2p,
+    cio_uart1_tx_d2p,
+    cio_uart2_tx_d2p,
+    cio_uart3_tx_d2p
   };
   assign mio_d2p_en = {
     cio_gpio_gpio_en_d2p,
-    cio_i2c_sda_en_d2p,
-    cio_i2c_scl_en_d2p
+    cio_i2c0_sda_en_d2p,
+    cio_i2c0_scl_en_d2p,
+    cio_i2c1_sda_en_d2p,
+    cio_i2c1_scl_en_d2p,
+    cio_i2c2_sda_en_d2p,
+    cio_i2c2_scl_en_d2p,
+    cio_uart1_tx_en_d2p,
+    cio_uart2_tx_en_d2p,
+    cio_uart3_tx_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d,
-    cio_i2c_sda_p2d,
-    cio_i2c_scl_p2d
+    cio_i2c0_sda_p2d,
+    cio_i2c0_scl_p2d,
+    cio_i2c1_sda_p2d,
+    cio_i2c1_scl_p2d,
+    cio_i2c2_sda_p2d,
+    cio_i2c2_scl_p2d,
+    cio_uart1_rx_p2d,
+    cio_uart2_rx_p2d,
+    cio_uart3_rx_p2d
   } = mio_p2d;
 
   // Dedicated IO connections

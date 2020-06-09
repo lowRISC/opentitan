@@ -44,8 +44,15 @@
 #define PINMUX_GPIO_GPIO_29_IN 29
 #define PINMUX_GPIO_GPIO_30_IN 30
 #define PINMUX_GPIO_GPIO_31_IN 31
-#define PINMUX_I2C_SDA_IN 33
-#define PINMUX_I2C_SCL_IN 34
+#define PINMUX_I2C0_SDA_IN 33
+#define PINMUX_I2C0_SCL_IN 34
+#define PINMUX_I2C1_SDA_IN 35
+#define PINMUX_I2C1_SCL_IN 36
+#define PINMUX_I2C2_SDA_IN 37
+#define PINMUX_I2C2_SCL_IN 38
+#define PINMUX_UART1_RX_IN 39
+#define PINMUX_UART2_RX_IN 40
+#define PINMUX_UART3_RX_IN 41
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
@@ -87,8 +94,15 @@
 #define PINMUX_GPIO_GPIO_29_OUT 32
 #define PINMUX_GPIO_GPIO_30_OUT 33
 #define PINMUX_GPIO_GPIO_31_OUT 34
-#define PINMUX_I2C_SDA_OUT 36
-#define PINMUX_I2C_SCL_OUT 37
+#define PINMUX_I2C0_SDA_OUT 36
+#define PINMUX_I2C0_SCL_OUT 37
+#define PINMUX_I2C1_SDA_OUT 38
+#define PINMUX_I2C1_SCL_OUT 39
+#define PINMUX_I2C2_SDA_OUT 40
+#define PINMUX_I2C2_SCL_OUT 41
+#define PINMUX_UART1_TX_OUT 42
+#define PINMUX_UART2_TX_OUT 43
+#define PINMUX_UART3_TX_OUT 44
 
 /**
  * Base address for uart peripheral in top earlgrey.
@@ -99,12 +113,36 @@
 #define TOP_EARLGREY_UART_BASE_ADDR 0x40000000u
 
 /**
+ * Base address for uart1 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_UART1_BASE_ADDR 0x40010000u
+
+/**
+ * Base address for uart2 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_UART2_BASE_ADDR 0x40020000u
+
+/**
+ * Base address for uart3 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_UART3_BASE_ADDR 0x40030000u
+
+/**
  * Base address for gpio peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40010000u
+#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40040000u
 
 /**
  * Base address for spi_device peripheral in top earlgrey.
@@ -112,7 +150,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40020000u
+#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40050000u
 
 /**
  * Base address for flash_ctrl peripheral in top earlgrey.
@@ -120,7 +158,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x40030000u
+#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x41000000u
 
 /**
  * Base address for rv_timer peripheral in top earlgrey.
@@ -128,15 +166,31 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40080000u
+#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40100000u
 
 /**
- * Base address for i2c peripheral in top earlgrey.
+ * Base address for i2c0 peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_I2C_BASE_ADDR 0x40050000u
+#define TOP_EARLGREY_I2C0_BASE_ADDR 0x40080000u
+
+/**
+ * Base address for i2c1 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_I2C1_BASE_ADDR 0x40090000u
+
+/**
+ * Base address for i2c2 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_I2C2_BASE_ADDR 0x400A0000u
 
 /**
  * Base address for aes peripheral in top earlgrey.
@@ -144,7 +198,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_AES_BASE_ADDR 0x40110000u
+#define TOP_EARLGREY_AES_BASE_ADDR 0x41100000u
 
 /**
  * Base address for hmac peripheral in top earlgrey.
@@ -152,7 +206,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_HMAC_BASE_ADDR 0x40120000u
+#define TOP_EARLGREY_HMAC_BASE_ADDR 0x41110000u
 
 /**
  * Base address for rv_plic peripheral in top earlgrey.
@@ -160,7 +214,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x40090000u
+#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x41010000u
 
 /**
  * Base address for pinmux_aon peripheral in top earlgrey.
@@ -168,7 +222,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PINMUX_AON_BASE_ADDR 0x40070000u
+#define TOP_EARLGREY_PINMUX_AON_BASE_ADDR 0x40460000u
 
 /**
  * Base address for padctrl_aon peripheral in top earlgrey.
@@ -176,7 +230,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PADCTRL_AON_BASE_ADDR 0x40160000u
+#define TOP_EARLGREY_PADCTRL_AON_BASE_ADDR 0x40470000u
 
 /**
  * Base address for alert_handler peripheral in top earlgrey.
@@ -184,7 +238,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40130000u
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x41170000u
 
 /**
  * Base address for pwrmgr peripheral in top earlgrey.
@@ -192,7 +246,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x400A0000u
+#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x40400000u
 
 /**
  * Base address for rstmgr peripheral in top earlgrey.
@@ -200,7 +254,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x400B0000u
+#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x40410000u
 
 /**
  * Base address for clkmgr peripheral in top earlgrey.
@@ -208,7 +262,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x400C0000u
+#define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x40420000u
 
 /**
  * Base address for nmi_gen peripheral in top earlgrey.
@@ -216,7 +270,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x40140000u
+#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x41180000u
 
 /**
  * Base address for usbdev_aon peripheral in top earlgrey.
@@ -224,7 +278,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_USBDEV_AON_BASE_ADDR 0x40150000u
+#define TOP_EARLGREY_USBDEV_AON_BASE_ADDR 0x40500000u
 
 /**
  * Base address for pattgen peripheral in top earlgrey.
@@ -240,7 +294,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x40170000u
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x41130000u
 
 
 /**
@@ -261,7 +315,13 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralNmiGen = 8, /**< nmi_gen */
   kTopEarlgreyPlicPeripheralUsbdevAon = 9, /**< usbdev_aon */
   kTopEarlgreyPlicPeripheralPwrmgr = 10, /**< pwrmgr */
-  kTopEarlgreyPlicPeripheralLast = 10, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralUart1 = 11, /**< uart1 */
+  kTopEarlgreyPlicPeripheralUart2 = 12, /**< uart2 */
+  kTopEarlgreyPlicPeripheralUart3 = 13, /**< uart3 */
+  kTopEarlgreyPlicPeripheralI2c0 = 14, /**< i2c0 */
+  kTopEarlgreyPlicPeripheralI2c1 = 15, /**< i2c1 */
+  kTopEarlgreyPlicPeripheralI2c2 = 16, /**< i2c2 */
+  kTopEarlgreyPlicPeripheralLast = 16, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -353,7 +413,58 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevAonFrame = 79, /**< usbdev_aon_frame */
   kTopEarlgreyPlicIrqIdUsbdevAonConnected = 80, /**< usbdev_aon_connected */
   kTopEarlgreyPlicIrqIdPwrmgrWakeup = 81, /**< pwrmgr_wakeup */
-  kTopEarlgreyPlicIrqIdLast = 81, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdUart1TxWatermark = 82, /**< uart1_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart1RxWatermark = 83, /**< uart1_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart1TxEmpty = 84, /**< uart1_tx_empty */
+  kTopEarlgreyPlicIrqIdUart1RxOverflow = 85, /**< uart1_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart1RxFrameErr = 86, /**< uart1_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart1RxBreakErr = 87, /**< uart1_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart1RxTimeout = 88, /**< uart1_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart1RxParityErr = 89, /**< uart1_rx_parity_err */
+  kTopEarlgreyPlicIrqIdUart2TxWatermark = 90, /**< uart2_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart2RxWatermark = 91, /**< uart2_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart2TxEmpty = 92, /**< uart2_tx_empty */
+  kTopEarlgreyPlicIrqIdUart2RxOverflow = 93, /**< uart2_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart2RxFrameErr = 94, /**< uart2_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart2RxBreakErr = 95, /**< uart2_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart2RxTimeout = 96, /**< uart2_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart2RxParityErr = 97, /**< uart2_rx_parity_err */
+  kTopEarlgreyPlicIrqIdUart3TxWatermark = 98, /**< uart3_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart3RxWatermark = 99, /**< uart3_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart3TxEmpty = 100, /**< uart3_tx_empty */
+  kTopEarlgreyPlicIrqIdUart3RxOverflow = 101, /**< uart3_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart3RxFrameErr = 102, /**< uart3_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart3RxBreakErr = 103, /**< uart3_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart3RxTimeout = 104, /**< uart3_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart3RxParityErr = 105, /**< uart3_rx_parity_err */
+  kTopEarlgreyPlicIrqIdI2c0FmtWatermark = 106, /**< i2c0_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c0RxWatermark = 107, /**< i2c0_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c0FmtOverflow = 108, /**< i2c0_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c0RxOverflow = 109, /**< i2c0_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c0Nak = 110, /**< i2c0_nak */
+  kTopEarlgreyPlicIrqIdI2c0SclInterference = 111, /**< i2c0_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c0SdaInterference = 112, /**< i2c0_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c0StretchTimeout = 113, /**< i2c0_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c0SdaUnstable = 114, /**< i2c0_sda_unstable */
+  kTopEarlgreyPlicIrqIdI2c1FmtWatermark = 115, /**< i2c1_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c1RxWatermark = 116, /**< i2c1_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c1FmtOverflow = 117, /**< i2c1_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c1RxOverflow = 118, /**< i2c1_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c1Nak = 119, /**< i2c1_nak */
+  kTopEarlgreyPlicIrqIdI2c1SclInterference = 120, /**< i2c1_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c1SdaInterference = 121, /**< i2c1_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c1StretchTimeout = 122, /**< i2c1_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c1SdaUnstable = 123, /**< i2c1_sda_unstable */
+  kTopEarlgreyPlicIrqIdI2c2FmtWatermark = 124, /**< i2c2_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c2RxWatermark = 125, /**< i2c2_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c2FmtOverflow = 126, /**< i2c2_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c2RxOverflow = 127, /**< i2c2_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c2Nak = 128, /**< i2c2_nak */
+  kTopEarlgreyPlicIrqIdI2c2SclInterference = 129, /**< i2c2_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c2SdaInterference = 130, /**< i2c2_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 131, /**< i2c2_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 132, /**< i2c2_sda_unstable */
+  kTopEarlgreyPlicIrqIdLast = 132, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -363,7 +474,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[82];
+    top_earlgrey_plic_interrupt_for_peripheral[133];
 
 /**
  * PLIC external interrupt target.

@@ -177,19 +177,7 @@
       [
         {
           base_addr: 0x40000000
-          size_byte: 0x21000
-        }
-        {
-          base_addr: 0x40050000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x40080000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x400E0000
-          size_byte: 0x1000
+          size_byte: 0x101000
         }
       ]
     }
@@ -204,16 +192,8 @@
       addr_range:
       [
         {
-          base_addr: 0x40070000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x400A0000
-          size_byte: 0x21000
-        }
-        {
-          base_addr: 0x40150000
-          size_byte: 0x11000
+          base_addr: 0x40400000
+          size_byte: 0x200000
         }
       ]
     }
@@ -227,7 +207,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40030000
+          base_addr: 0x41000000
           size_byte: 0x1000
         }
       ]
@@ -244,7 +224,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40120000
+          base_addr: 0x41110000
           size_byte: 0x1000
         }
       ]
@@ -261,7 +241,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40110000
+          base_addr: 0x41100000
           size_byte: 0x1000
         }
       ]
@@ -278,7 +258,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40170000
+          base_addr: 0x41130000
           size_byte: 0x1000
         }
       ]
@@ -294,7 +274,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40090000
+          base_addr: 0x41010000
           size_byte: 0x1000
         }
       ]
@@ -311,7 +291,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40130000
+          base_addr: 0x41170000
           size_byte: 0x1000
         }
       ]
@@ -327,7 +307,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40140000
+          base_addr: 0x41180000
           size_byte: 0x1000
         }
       ]

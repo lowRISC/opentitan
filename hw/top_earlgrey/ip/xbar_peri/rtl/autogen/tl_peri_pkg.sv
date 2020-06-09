@@ -7,29 +7,44 @@
 package tl_peri_pkg;
 
   localparam logic [31:0] ADDR_SPACE_UART       = 32'h 40000000;
-  localparam logic [31:0] ADDR_SPACE_GPIO       = 32'h 40010000;
-  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE = 32'h 40020000;
-  localparam logic [31:0] ADDR_SPACE_RV_TIMER   = 32'h 40080000;
-  localparam logic [31:0] ADDR_SPACE_I2C        = 32'h 40050000;
+  localparam logic [31:0] ADDR_SPACE_UART1      = 32'h 40010000;
+  localparam logic [31:0] ADDR_SPACE_UART2      = 32'h 40020000;
+  localparam logic [31:0] ADDR_SPACE_UART3      = 32'h 40030000;
+  localparam logic [31:0] ADDR_SPACE_GPIO       = 32'h 40040000;
+  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE = 32'h 40050000;
+  localparam logic [31:0] ADDR_SPACE_RV_TIMER   = 32'h 40100000;
+  localparam logic [31:0] ADDR_SPACE_I2C0       = 32'h 40080000;
+  localparam logic [31:0] ADDR_SPACE_I2C1       = 32'h 40090000;
+  localparam logic [31:0] ADDR_SPACE_I2C2       = 32'h 400a0000;
   localparam logic [31:0] ADDR_SPACE_PATTGEN    = 32'h 400e0000;
 
   localparam logic [31:0] ADDR_MASK_UART       = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_UART1      = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_UART2      = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_UART3      = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_GPIO       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER   = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_I2C        = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_I2C0       = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_I2C1       = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_I2C2       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PATTGEN    = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 6;
+  localparam int N_DEVICE = 11;
 
   typedef enum int {
     TlUart = 0,
-    TlGpio = 1,
-    TlSpiDevice = 2,
-    TlRvTimer = 3,
-    TlI2C = 4,
-    TlPattgen = 5
+    TlUart1 = 1,
+    TlUart2 = 2,
+    TlUart3 = 3,
+    TlGpio = 4,
+    TlSpiDevice = 5,
+    TlRvTimer = 6,
+    TlI2C0 = 7,
+    TlI2C1 = 8,
+    TlI2C2 = 9,
+    TlPattgen = 10
   } tl_device_e;
 
   typedef enum int {
