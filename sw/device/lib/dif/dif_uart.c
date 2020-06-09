@@ -472,3 +472,50 @@ dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
 
   return kDifUartOk;
 }
+
+dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
+                                      dif_uart_fifo_reset_t reset) {
+  if (uart == NULL) {
+    return kDifUartBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET);
+
+  if (reset == kDifUartFifoResetRx || reset == kDifUartFifoResetAll) {
+    reg = bitfield_set_field32(
+        reg, (bitfield_field32_t){
+                 .mask = 0x1, .value = 1, .index = UART_FIFO_CTRL_RXRST,
+             });
+  }
+
+  if (reset == kDifUartFifoResetTx || reset == kDifUartFifoResetAll) {
+    reg = bitfield_set_field32(
+        reg, (bitfield_field32_t){
+                 .mask = 0x1, .value = 1, .index = UART_FIFO_CTRL_TXRST,
+             });
+  }
+
+  mmio_region_write32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET, reg);
+
+  return kDifUartOk;
+}
+
+dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
+                                        dif_uart_loopback_t loopback,
+                                        dif_uart_enable_t enable) {
+  if (uart == NULL) {
+    return kDifUartBadArg;
+  }
+
+  bitfield_field32_t field = {
+      .mask = 0x1,
+      .index = loopback ? UART_CTRL_LLPBK : UART_CTRL_SLPBK,
+      .value = enable ? 1 : 0,
+  };
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_CTRL_REG_OFFSET);
+  reg = bitfield_set_field32(reg, field);
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
+
+  return kDifUartOk;
+}

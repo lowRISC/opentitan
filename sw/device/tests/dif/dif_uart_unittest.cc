@@ -736,5 +736,62 @@ TEST_F(TxBytesAvailableTest, FifoEmpty) {
   EXPECT_EQ(num_bytes, kDifUartFifoSizeBytes);
 }
 
+class FifoResetTest : public UartTest {};
+
+TEST_F(FifoResetTest, NullArgs) {
+  dif_uart_result_t result = dif_uart_fifo_reset(nullptr, kDifUartFifoResetRx);
+  EXPECT_EQ(result, kDifUartBadArg);
+}
+
+TEST_F(FifoResetTest, Success) {
+  EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_RXRST, 0x1, true}});
+  dif_uart_result_t result =
+      dif_uart_fifo_reset(&dif_uart_, kDifUartFifoResetRx);
+  EXPECT_EQ(result, kDifUartOk);
+
+  EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_TXRST, 0x1, true}});
+  result = dif_uart_fifo_reset(&dif_uart_, kDifUartFifoResetTx);
+  EXPECT_EQ(result, kDifUartOk);
+
+  EXPECT_MASK32(
+      UART_FIFO_CTRL_REG_OFFSET,
+      {
+          {UART_FIFO_CTRL_RXRST, 0x1, true}, {UART_FIFO_CTRL_TXRST, 0x1, true},
+      });
+
+  result = dif_uart_fifo_reset(&dif_uart_, kDifUartFifoResetAll);
+  EXPECT_EQ(result, kDifUartOk);
+}
+
+class LoopbackSetTest : public UartTest {};
+
+TEST_F(LoopbackSetTest, NullArgs) {
+  dif_uart_result_t result =
+      dif_uart_loopback_set(nullptr, kDifUartLoopbackSystem, kDifUartEnable);
+  EXPECT_EQ(result, kDifUartBadArg);
+}
+
+TEST_F(LoopbackSetTest, Success) {
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET, {{UART_CTRL_SLPBK, 0x1, true}});
+  dif_uart_result_t result =
+      dif_uart_loopback_set(&dif_uart_, kDifUartLoopbackSystem, kDifUartEnable);
+  EXPECT_EQ(result, kDifUartOk);
+
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET, {{UART_CTRL_SLPBK, 0x1, false}});
+  result = dif_uart_loopback_set(&dif_uart_, kDifUartLoopbackSystem,
+                                 kDifUartDisable);
+  EXPECT_EQ(result, kDifUartOk);
+
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET, {{UART_CTRL_LLPBK, 0x1, true}});
+  result =
+      dif_uart_loopback_set(&dif_uart_, kDifUartLoopbackLine, kDifUartEnable);
+  EXPECT_EQ(result, kDifUartOk);
+
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET, {{UART_CTRL_LLPBK, 0x1, false}});
+  result =
+      dif_uart_loopback_set(&dif_uart_, kDifUartLoopbackLine, kDifUartDisable);
+  EXPECT_EQ(result, kDifUartOk);
+}
+
 }  // namespace
 }  // namespace dif_uart_unittest
