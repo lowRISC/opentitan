@@ -653,10 +653,7 @@ module usbdev (
     .EnableECC           (0), // No Protection
     .EnableParity        (0),
     .EnableInputPipeline (0),
-    .EnableOutputPipeline(0),
-
-    // large memory, implement with SRAMs
-    .MemT ("SRAM")
+    .EnableOutputPipeline(0)
   ) u_memory_2p (
     .clk_a_i    (clk_i),
     .clk_b_i    (clk_usb_48mhz_i),
@@ -666,6 +663,7 @@ module usbdev (
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),
     .a_wdata_i  (mem_a_wdata),
+    .a_wmask_i  ({SramDw{1'b1}}),
     .a_rvalid_o (mem_a_rvalid),
     .a_rdata_o  (mem_a_rdata),
     .a_rerror_o (mem_a_rerror),
@@ -674,6 +672,7 @@ module usbdev (
     .b_write_i  (usb_mem_b_write),
     .b_addr_i   (usb_mem_b_addr),
     .b_wdata_i  (usb_mem_b_wdata),
+    .b_wmask_i  ({SramDw{1'b1}}),
     .b_rvalid_o (),
     .b_rdata_o  (usb_mem_b_rdata),
     .b_rerror_o (),
