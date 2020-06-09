@@ -52,7 +52,7 @@ module padctrl import padctrl_reg_pkg::*; #(
   padctrl_reg2hw_t reg2hw;
   padctrl_hw2reg_t hw2reg;
 
-  padctrl_reg_top i_reg_top (
+  padctrl_reg_top u_reg (
     .clk_i  ,
     .rst_ni ,
     .tl_i   ,

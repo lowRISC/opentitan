@@ -35,7 +35,7 @@ module nmi_gen
   nmi_gen_reg_pkg::nmi_gen_reg2hw_t reg2hw;
   nmi_gen_reg_pkg::nmi_gen_hw2reg_t hw2reg;
 
-  nmi_gen_reg_top i_reg (
+  nmi_gen_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,

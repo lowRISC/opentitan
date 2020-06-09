@@ -104,7 +104,7 @@ module pwrmgr import pwrmgr_pkg::*;
   logic wkup;
   logic clr_cfg_lock;
 
-  pwrmgr_reg_top i_reg (
+  pwrmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,

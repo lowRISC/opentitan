@@ -88,7 +88,7 @@ module rstmgr import rstmgr_pkg::*; (
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
-  rstmgr_reg_top i_reg (
+  rstmgr_reg_top u_reg (
     .clk_i,
     .rst_ni(resets_o.rst_por_aon_n),
     .tl_i,
