@@ -64,7 +64,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   pinmux_reg2hw_t reg2hw;
   pinmux_hw2reg_t hw2reg;
 
-  pinmux_reg_top i_reg_top (
+  pinmux_reg_top u_reg (
     .clk_i  ,
     .rst_ni ,
     .tl_i   ,

@@ -29,7 +29,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw;
   alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg;
 
-  alert_handler_reg_top i_reg (
+  alert_handler_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,

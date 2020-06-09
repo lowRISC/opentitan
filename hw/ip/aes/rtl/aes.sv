@@ -39,7 +39,7 @@ module aes #(
   logic        prng_reseed_req;
   logic        prng_reseed_ack;
 
-  aes_reg_top aes_reg_top (
+  aes_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
