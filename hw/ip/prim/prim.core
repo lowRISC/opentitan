@@ -43,8 +43,6 @@ filesets:
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_ext.sv
       - rtl/prim_intr_hw.sv
-      - rtl/prim_ram_2p_adv.sv
-      - rtl/prim_ram_2p_async_adv.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
