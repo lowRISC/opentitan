@@ -105,6 +105,8 @@
                 0b10: RNG mode enabled
                 0b11: Reserved
                 '''
+          tags: [// Exclude from writes to these bits to avoid Xs from entropy FIFO.
+                 "excl:CsrAllTests:CsrExclWrite"]
         }
         { bits: "4",
           name: "RNG_SRC_EN",
@@ -134,8 +136,6 @@
                 '''
         }
       ]
-      tags: [// Updated by hw. Exclude from write-checks.
-             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name: "ES_RCT_HEALTH",
       desc: "ENTROPY_SRC RCT health test register",
