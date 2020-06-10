@@ -282,6 +282,4 @@ module prim_generic_flash #(
     .rdata_o  (rd_data_o)
   );
 
-
-
 endmodule // prim_generic_flash
