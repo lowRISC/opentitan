@@ -86,84 +86,203 @@ def parse_hjson(hjson_file):
     return hjson_cfg_dict
 
 
+def _stringify_wildcard_value(value):
+    '''Make sense of a wildcard value as a string (see subst_wildcards)
+
+    Strings are passed through unchanged. Integer or boolean values are printed
+    as numerical strings. Lists or other sequences have their items printed
+    separated by spaces.
+
+    '''
+    if type(value) is str:
+        return value
+
+    if type(value) in [bool, int]:
+        return str(int(value))
+
+    try:
+        return ' '.join(_stringify_wildcard_value(x) for x in value)
+    except TypeError:
+        raise ValueError('Wildcard had value {!r} which is not of a supported type.')
+
+
+def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
+    '''Worker function for subst_wildcards
+
+    seen is a list of wildcards that have been expanded on the way to this call
+    (used for spotting circular recursion).
+
+    Returns (expanded, seen_err) where expanded is the new value of the string
+    and seen_err is true if we stopped early because of an ignored error.
+
+    '''
+    wildcard_re = re.compile(r"{([A-Za-z0-9\_]+)}")
+
+    # Work from left to right, expanding each wildcard we find. idx is where we
+    # should start searching (so that we don't keep finding a wildcard that
+    # we've decided to ignore).
+    idx = 0
+
+    any_err = False
+
+    while True:
+        right_str = var[idx:]
+        match = wildcard_re.search(right_str)
+
+        # If no match, we're done.
+        if match is None:
+            return (var, any_err)
+
+        name = match.group(1)
+
+        # If the name should be ignored, skip over it.
+        if name in ignored:
+            idx += match.end()
+            continue
+
+        # If the name has been seen already, we've spotted circular recursion.
+        # That's not allowed!
+        if name in seen:
+            raise ValueError('String contains circular expansion of '
+                             'wildcard {!r}.'
+                             .format(match.group(0)))
+
+        # Treat eval_cmd specially
+        if name == 'eval_cmd':
+            cmd = _subst_wildcards(right_str[match.end():],
+                                   mdict, ignored, ignore_error, seen)[0]
+
+            # Are there any wildcards left in cmd? If not, we can run the
+            # command and we're done.
+            cmd_matches = list(wildcard_re.finditer(cmd))
+            if not cmd_matches:
+                var = var[:idx] + run_cmd(cmd)
+                continue
+
+            # Otherwise, check that each of them is ignored, or that
+            # ignore_error is True.
+            bad_names = False
+            if not ignore_error:
+                for cmd_match in cmd_matches:
+                    if cmd_match.group(1) not in ignored:
+                        bad_names = True
+
+            if bad_names:
+                raise ValueError('Cannot run eval_cmd because the command '
+                                 'expands to {!r}, which still contains a '
+                                 'wildcard.'
+                                 .format(cmd))
+
+            # We can't run the command (because it still has wildcards), but we
+            # don't want to report an error either because ignore_error is true
+            # or because each wildcard that's left is ignored. Return the
+            # partially evaluated version.
+            return (var[:idx] + right_str[:match.end()] + cmd, True)
+
+        # Otherwise, look up name in mdict.
+        value = mdict.get(name)
+
+        # If the value isn't set, check the environment
+        if value is None:
+            value = os.environ.get(name)
+
+        if value is None:
+            # Ignore missing values if ignore_error is True.
+            if ignore_error:
+                idx += match.end()
+                continue
+
+            raise ValueError('String to be expanded contains '
+                             'unknown wildcard, {!r}.'
+                             .format(match.group(0)))
+
+        value = _stringify_wildcard_value(value)
+
+        # Do any recursive expansion of value, adding name to seen (to avoid
+        # circular recursion).
+        value, saw_err = _subst_wildcards(value, mdict,
+                                          ignored, ignore_error, seen + [name])
+
+        # Replace the original match with the result and go around again. If
+        # saw_err, increment idx past what we just inserted.
+        var = (var[:idx] +
+               right_str[:match.start()] + value + right_str[match.end():])
+        if saw_err:
+            any_err = True
+            idx += match.start() + len(value)
+
+
 def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
+    '''Substitute any "wildcard" variables in the string var.
+
+    var is the string to be substituted. mdict is a dictionary mapping
+    variables to strings. ignored_wildcards is a list of wildcards that
+    shouldn't be substituted. ignore_error means to partially evaluate rather
+    than exit on an error.
+
+    A wildcard is written as a name (alphanumeric, allowing backslash and
+    underscores) surrounded by braces. For example,
+
+      subst_wildcards('foo {x} baz', {'x': 'bar'})
+
+    returns "foo bar baz". Dictionary values can be strings, booleans, integers
+    or lists. For example:
+
+      subst_wildcards('{a}, {b}, {c}, {d}',
+                      {'a': 'a', 'b': True, 'c': 42, 'd': ['a', 10]})
+
+    returns 'a, 1, 42, a 10'.
+
+    If a wildcard is in ignored_wildcards, it is ignored. For example,
+
+      subst_wildcards('{a} {b}', {'b': 'bee'}, ignored_wildcards=['a'])
+
+    returns "{a} bee".
+
+    If a wildcard appears in var but is not in mdict, the environment is
+    checked for the variable. If the name still isn't found, the default
+    behaviour is to log an error and exit. If ignore_error is True, the
+    wildcard is ignored (as if it appeared in ignore_wildcards).
+
+    If {eval_cmd} appears in the string and 'eval_cmd' is not in
+    ignored_wildcards then the following text is recursively expanded. The
+    result of this expansion is treated as a command to run and the text is
+    replaced by the output of the command.
+
+    If a wildcard has been ignored (either because of ignored_wildcards or
+    ignore_error), the command to run in eval_cmd might contain a match for
+    wildcard_re. If ignore_error is True, the command is not run. So
+
+       subst_wildcards('{eval_cmd}{foo}', {}, ignore_error=True)
+
+    will return '{eval_cmd}{foo}' unchanged. If ignore_error is False, the
+    function logs an error and exits.
+
+    Recursion is possible in subst_wildcards. For example,
+
+      subst_wildcards('{a}', {'a': '{b}', 'b': 'c'})
+
+    returns 'c'. Circular recursion is detected, however. So
+
+      subst_wildcards('{a}', {'a': '{b}', 'b': '{a}'})
+
+    will log an error and exit. This error is raised whether or not
+    ignore_error is set.
+
+    Since subst_wildcards works from left to right, it's possible to compute
+    wildcard names with code like this:
+
+      subst_wildcards('{a}b}', {'a': 'a {', 'b': 'bee'})
+
+    which returns 'a bee'. This is pretty hard to read though, so is probably
+    not a good idea to use.
+
     '''
-    If var has wildcards specified within {..}, find and substitute them.
-    '''
-    def subst(wildcard, mdict):
-        if wildcard in mdict.keys():
-            return mdict[wildcard]
-        else:
-            return None
-
-    if "{eval_cmd}" in var:
-        idx = var.find("{eval_cmd}") + 11
-        subst_var = subst_wildcards(var[idx:], mdict, ignored_wildcards,
-                                    ignore_error)
-        # If var has wildcards that were ignored, then skip running the command
-        # for now, assume that it will be handled later.
-        match = re.findall(r"{([A-Za-z0-9\_]+)}", subst_var)
-        if len(match) == 0:
-            var = run_cmd(subst_var)
-    else:
-        match = re.findall(r"{([A-Za-z0-9\_]+)}", var)
-        if len(match) > 0:
-            ignored_wildcards_found = False
-            no_substitutions_found = True
-            for item in match:
-                if item in ignored_wildcards:
-                    ignored_wildcards_found = True
-                else:
-                    log.debug("Found wildcard \"%s\" in \"%s\"", item, var)
-                    found = subst(item, mdict)
-                    if found is not None:
-                        if type(found) is list:
-                            subst_found = []
-                            for element in found:
-                                element = subst_wildcards(
-                                    element, mdict, ignored_wildcards,
-                                    ignore_error)
-                                subst_found.append(element)
-                            # Expand list into a str since list within list is
-                            # not supported.
-                            found = " ".join(subst_found)
-
-                        elif type(found) is str:
-                            found = subst_wildcards(found, mdict,
-                                                    ignored_wildcards,
-                                                    ignore_error)
-
-                        elif type(found) is bool:
-                            found = int(found)
-                        var = var.replace("{" + item + "}", str(found))
-                        no_substitutions_found = False
-                    else:
-                        # Check if the wildcard exists as an environment variable
-                        env_var = os.environ.get(item)
-                        if env_var is not None:
-                            var = var.replace("{" + item + "}", str(env_var))
-                            no_substitutions_found = False
-                        elif not ignore_error:
-                            log.error(
-                                "Substitution for the wildcard \"%s\" not found",
-                                item)
-                            sys.exit(1)
-
-            # If items were found for substitution, but if they were a part
-            # of ignored_wildcards list or if substitutions for them were not
-            # found, then, we return. If all substitutions were made, then check
-            # for second level of indirection:
-            #
-            # For example: lets say we supply the dict:
-            # {var: '{{foo}_xyz{bar}}', foo: p, bar: q, p_xyz_q: baz}
-            #
-            # Then after the substitutions above: {var: '{p_xyz_q}', ...}
-            # We need to now substitute {p_xyz_q}, so that the final value of
-            # var is 'baz'.
-            if not (ignored_wildcards_found or no_substitutions_found):
-                var = subst_wildcards(var, mdict, ignored_wildcards,
-                                      ignore_error)
-    return var
+    try:
+        return _subst_wildcards(var, mdict, ignored_wildcards, ignore_error, [])[0]
+    except ValueError as err:
+        log.error(str(err))
+        sys.exit(1)
 
 
 def find_and_substitute_wildcards(sub_dict,
