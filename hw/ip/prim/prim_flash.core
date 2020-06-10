@@ -10,6 +10,9 @@ filesets:
     depend:
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:primgen
+      # TODO olofk/fusesoc#404: The below dependency is already added to prim_generic_flash.core.
+      # However, the generator for the prim:ram1p does not kick in, causing compile errors.
+      - lowrisc:prim:ram_1p
 
 generate:
   impl:
