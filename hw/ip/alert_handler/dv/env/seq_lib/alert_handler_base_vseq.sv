@@ -138,24 +138,29 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.classd_clr), .value(1));
   endtask
 
+  // checking for csr_rd is done in scb
   virtual task read_alert_cause();
     bit [TL_DW-1:0] alert_cause;
-    // checking for this CSR is done in scb
     csr_rd(.ptr(ral.alert_cause), .value(alert_cause));
     csr_rd(.ptr(ral.loc_alert_cause), .value(alert_cause));
   endtask
 
   virtual task read_esc_status();
-    bit [TL_DW-1:0] accum_cnt;
-    csr_rd(.ptr(ral.classa_accum_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classb_accum_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classc_accum_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classd_accum_cnt), .value(accum_cnt));
+    bit [TL_DW-1:0] csr_val;
+    csr_rd(.ptr(ral.classa_accum_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classb_accum_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classc_accum_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classd_accum_cnt), .value(csr_val));
 
-    csr_rd(.ptr(ral.classa_esc_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classb_esc_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classc_esc_cnt), .value(accum_cnt));
-    csr_rd(.ptr(ral.classd_esc_cnt), .value(accum_cnt));
+    csr_rd(.ptr(ral.classa_esc_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classb_esc_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classc_esc_cnt), .value(csr_val));
+    csr_rd(.ptr(ral.classd_esc_cnt), .value(csr_val));
+
+    csr_rd(.ptr(ral.classa_state), .value(csr_val));
+    csr_rd(.ptr(ral.classb_state), .value(csr_val));
+    csr_rd(.ptr(ral.classc_state), .value(csr_val));
+    csr_rd(.ptr(ral.classd_state), .value(csr_val));
   endtask
 
   virtual task wait_alert_handshake_done();
