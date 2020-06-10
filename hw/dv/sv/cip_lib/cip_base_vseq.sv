@@ -78,14 +78,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit [TL_DW-1:0]  exp_data = 0,
                          input bit              check_exp_data = 1'b0,
                          input bit [TL_DW-1:0]  compare_mask = '1,
-                         input bit              blocking = csr_utils_pkg::default_csr_blocking);
+                         input bit              blocking = csr_utils_pkg::default_csr_blocking,
+                         tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h);
     if (blocking) begin
       tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
-                    compare_mask, check_exp_data);
+                    compare_mask, check_exp_data, tl_sequencer_h);
     end else begin
       fork
         tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data);
+                      compare_mask, check_exp_data, tl_sequencer_h);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -100,11 +101,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit              exp_err_rsp = 1'b0,
                              input bit [TL_DW-1:0]  exp_data = 0,
                              input bit [TL_DW-1:0]  compare_mask = '1,
-                             input bit              check_exp_data = 1'b0);
+                             input bit              check_exp_data = 1'b0,
+                             tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h);
     `DV_SPINWAIT(
         // thread to read/write tlul
         tl_host_single_seq  tl_seq;
-        `uvm_create_on(tl_seq, p_sequencer.tl_sequencer_h)
+        `uvm_create_on(tl_seq, tl_sequencer_h)
         if (cfg.zero_delays) begin
           tl_seq.min_req_delay = 0;
           tl_seq.max_req_delay = 0;
@@ -423,8 +425,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task run_same_csr_outstanding_vseq(int num_times);
     csr_excl_item csr_excl = add_and_return_csr_excl("csr_excl");
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
-    uvm_reg     test_csrs[$];
-    ral.get_registers(test_csrs);
+    uvm_reg test_csrs[$];
+
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_registers(test_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",

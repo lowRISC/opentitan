@@ -15,6 +15,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   // reg model & q of valid csr addresses
   RAL_T                 ral;
+  dv_base_reg_block     ral_models[$];
   bit [TL_AW-1:0]       csr_addrs[$];
   addr_range_t          mem_ranges[$];
 
@@ -64,6 +65,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       ral = RAL_T::type_id::create("ral");
       ral.build(this.csr_base_addr, null);
       apply_ral_fixes();
+      ral_models.push_back(ral);
     end
   endfunction
 
