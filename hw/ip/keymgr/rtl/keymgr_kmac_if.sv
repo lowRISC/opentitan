@@ -68,15 +68,14 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   // calculated parameters for number of roudns and interface width
   localparam int CntWidth = $clog2(MaxRounds);
-  localparam int IfWidth = $clog2(KmacDataIfWidth);
   localparam int IfBytes = KmacDataIfWidth / 8;
   localparam int DecoyCopies = KmacDataIfWidth / 32;
   localparam int DecoyOutputCopies = (KeyWidth / 32) * Shares;
 
   // byte mask for the last transfer
-  localparam [IfBytes-1:0] AdvLastByteMask = (AdvRem > 0) ? byte_mask(AdvRem) : {IfBytes{1'b1}};
-  localparam [IfBytes-1:0] IdLastByteMask  = (IdRem > 0)  ? byte_mask(IdRem)  : {IfBytes{1'b1}};
-  localparam [IfBytes-1:0] GenLastByteMask = (GenRem > 0) ? byte_mask(GenRem) : {IfBytes{1'b1}};
+  localparam [IfBytes-1:0] AdvLastByteMask = (AdvRem > 0) ? (2**(AdvRem/8)-1) : {IfBytes{1'b1}};
+  localparam [IfBytes-1:0] IdLastByteMask  = (IdRem > 0)  ? (2**(IdRem/8)-1)  : {IfBytes{1'b1}};
+  localparam [IfBytes-1:0] GenLastByteMask = (GenRem > 0) ? (2**(GenRem/8)-1) : {IfBytes{1'b1}};
 
   logic [AdvRounds-1:0][KmacDataIfWidth-1:0] adv_data;
   logic [IdRounds-1:0 ][KmacDataIfWidth-1:0] id_data;
@@ -261,28 +260,5 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign enables = {adv_en_i, id_en_i, gen_en_i};
   assign enables_sub = enables - 1'b1;
   assign cmd_error_o = |(enables & enables_sub);
-
-  ///////////////////////////////
-  // Functions
-  ///////////////////////////////
-
-  function automatic logic [IfBytes-1:0] byte_mask (logic [IfWidth-1:0] value);
-
-    logic [IfBytes-1:0] mask;
-    logic [IfWidth-1:0] cur_value;
-    cur_value = value;
-
-    for (int i = 0; i < IfBytes; i++) begin
-      if (cur_value > 0) begin
-        mask[i] = 1'b1;
-        cur_value = cur_value - 8;
-      end else begin
-        mask[i] = 1'b0;
-      end
-    end
-
-    return mask;
-
-  endfunction // mask
 
 endmodule // keymgr_kmac_if
