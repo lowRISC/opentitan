@@ -31,12 +31,13 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_esc_classes;
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] under_intr_classes;
   bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_esc_under_intr;
-  int intr_cnter_per_class [NUM_ALERT_HANDLER_CLASSES];
-  int accum_cnter_per_class[NUM_ALERT_HANDLER_CLASSES];
-  int esc_cnter_per_signal [NUM_ESC_SIGNALS];
-  int esc_signal_release   [NUM_ESC_SIGNALS];
+  int intr_cnter_per_class    [NUM_ALERT_HANDLER_CLASSES];
+  int accum_cnter_per_class   [NUM_ALERT_HANDLER_CLASSES];
+  esc_state_e state_per_class [NUM_ALERT_HANDLER_CLASSES];
+  int  esc_cnter_per_signal[NUM_ESC_SIGNALS];
+  int  esc_signal_release  [NUM_ESC_SIGNALS];
   time last_esc_release    [NUM_ESC_SIGNALS];
-  int esc_sig_class[NUM_ESC_SIGNALS]; // only one class can increment one esc signal at a time
+  int  esc_sig_class       [NUM_ESC_SIGNALS]; // one class can increment one esc signal at a time
   // For different alert classify in the same class and trigger at the same cycle, design only
   // count once. So record the alert triggered timing here
   realtime last_triggered_alert_per_class[NUM_ALERT_HANDLER_CLASSES];
@@ -272,6 +273,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[i]) begin
                 under_intr_classes[i] = 0;
                 clr_esc_under_intr[i] = 0;
+                if (!under_esc_classes[i]) state_per_class[i] = EscStateIdle;
               end
             end
             fork
@@ -334,6 +336,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             void'(csr.predict(.value(intr_cnter_per_class[i]), .kind(UVM_PREDICT_READ)));
           end else if (csr.get_name() == $sformatf("class%s_accum_cnt", class_name[i])) begin
             void'(csr.predict(.value(accum_cnter_per_class[i]), .kind(UVM_PREDICT_READ)));
+          end else if (csr.get_name() == $sformatf("class%s_state", class_name[i])) begin
+            void'(csr.predict(.value(state_per_class[i]), .kind(UVM_PREDICT_READ)));
           end
         end
         if (csr.get_name() == "intr_state") intr_state_val = csr.get_mirrored_value();
@@ -366,6 +370,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                   // interrupt is not cleared, and class is not under escalation by accum_alerts
                   timeout_cyc = get_class_timeout_cyc(class_i);
                   if (timeout_cyc > 0) begin
+                    state_per_class[class_i] = EscStateTimeout;
                     while (under_intr_classes[class_i]) begin
                       if (intr_cnter_per_class[class_i] >= timeout_cyc) predict_esc(class_i);
                       @(cfg.clk_rst_vif.cb);
@@ -413,6 +418,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                     cfg.clk_rst_vif.wait_n_clks(1);
                     incr_esc_sig_cnt(enabled_sig_q, class_i);
                     intr_cnter_per_class[class_i] = 1;
+                    state_per_class[class_i] = esc_state_e'(phase_i + int'(EscStatePhase0));
                     while (under_esc_classes[class_i] &&
                            intr_cnter_per_class[class_i] < phase_thresh) begin
                       cfg.clk_rst_vif.wait_n_clks(1);
@@ -429,9 +435,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                       end
                     end
                   end
-                end
+                end  // end four phases
                 cfg.clk_rst_vif.wait_n_clks(1);
                 intr_cnter_per_class[class_i] = 0;
+                if (under_esc_classes[class_i]) state_per_class[class_i] = EscStateTerminal;
               end
               begin
                 wait(cfg.under_reset || !under_esc_classes[class_i]);
@@ -492,6 +499,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     esc_cnter_per_signal  = '{default:0};
     esc_sig_class         = '{default:0};
     accum_cnter_per_class = '{default:0};
+    state_per_class       = '{default:EscStateIdle};
     clr_esc_under_intr    = 0;
     last_triggered_alert_per_class = '{default:$realtime};
   endfunction
@@ -509,6 +517,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         cfg.clk_rst_vif.wait_clks(1);
         last_triggered_alert_per_class[class_i] = $realtime;
         accum_cnter_per_class[class_i] = 0;
+        state_per_class[class_i] = EscStateIdle;
       end
     join_none
   endtask
