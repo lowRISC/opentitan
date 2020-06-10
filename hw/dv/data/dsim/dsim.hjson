@@ -95,9 +95,12 @@
       name: dsim_waves
       is_sim_mode: 1
       build_opts: [
-                    "+acc+b",
+                    "+acc+b"
+		   ]
+      run_opts:   [
                     "-waves {wave_file}",
-                    "-wave-scope-specs {probe_file}",
+		    // dsim.probe is currently undefined
+                    //"-wave-scope-specs {probe_file}",
                     // Dump unpacked structs and arrays.
                     "-dump-agg"
                     ]
