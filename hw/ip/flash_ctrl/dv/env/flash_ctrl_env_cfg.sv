@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_wrapper_reg_block));
+class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block));
 
   // vifs
   mem_bkdr_vif      mem_bkdr_vifs[NUM_FLASH_BANKS];
+
+  // additional RAL
+  rand flash_ctrl_eflash_reg_block eflash_ral;
 
   // ext component cfgs
   rand tl_agent_cfg m_eflash_tl_agent_cfg;
@@ -38,6 +41,12 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_wrapper_re
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+
+    // Create the eflash RAL model.
+    eflash_ral = flash_ctrl_eflash_reg_block::type_id::create("eflash_ral");
+    // TODO: randomize upper bits of the memory
+    eflash_ral.build(0, null);
+    ral_models.push_back(eflash_ral);
   endfunction
 
 endclass

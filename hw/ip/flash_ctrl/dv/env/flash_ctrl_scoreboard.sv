@@ -4,7 +4,7 @@
 
 class flash_ctrl_scoreboard extends cip_base_scoreboard #(
     .CFG_T(flash_ctrl_env_cfg),
-    .RAL_T(flash_ctrl_wrapper_reg_block),
+    .RAL_T(flash_ctrl_reg_block),
     .COV_T(flash_ctrl_env_cov)
   );
   `uvm_component_utils(flash_ctrl_scoreboard)
