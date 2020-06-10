@@ -7,6 +7,7 @@ package flash_ctrl_env_pkg;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
+  import dv_base_reg_pkg::*;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
@@ -39,7 +40,7 @@ package flash_ctrl_env_pkg;
   // functions
 
   // package sources
-  `include "flash_ctrl_wrapper_reg_block.sv"
+  `include "flash_ctrl_eflash_reg_block.sv"
   `include "flash_ctrl_env_cfg.sv"
   `include "flash_ctrl_env_cov.sv"
   `include "flash_ctrl_virtual_sequencer.sv"
