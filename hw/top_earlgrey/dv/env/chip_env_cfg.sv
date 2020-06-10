@@ -58,8 +58,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     chip_mem_e mems[] = {Rom, Ram, FlashBank0, FlashBank1};
 
     has_devmode = 0;
-    // TODO: may need to add scb later
-    en_scb = 0;
 
     super.initialize(csr_base_addr);
     // create uart agent config obj
@@ -87,6 +85,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   protected virtual function void apply_ral_fixes();
     // Out of reset, the link is in disconnected state.
     ral.usbdev.intr_state.disconnected.set_reset(1'b1);
+
+    // ram_main mem and hmac mem support partial write
+    ral.ram_main.set_mem_partial_write_support(1);
+    ral.hmac.msg_fifo.set_mem_partial_write_support(1);
   endfunction
 
 endclass

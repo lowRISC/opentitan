@@ -7,15 +7,22 @@
  * This file contains Ibex-specific interrupt vectors.
  */
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section
-  // is allocated space in ROM by the linker.
-  .section .vectors, "ax"
-
   // These functions are declared in `sw/device/lib/handler.h`.
   .extern handler_exception
   .extern handler_irq_software
   .extern handler_irq_timer
   .extern handler_irq_external
+
+  // NOTE: The "ax" flag below is necessary to ensure that this section
+  // is allocated space in ROM by the linker.
+  .section .vectors, "ax"
+  .option push
+  // Switch off compressed instructions so we know each instruction below is
+  // exactly 4 bytes (one entry).
+  .option norvc
+  // Switch off linker relaxation so that the linker does not reduce the size of
+  // any entries.
+  .option norelax
 
 /**
  * `crt_interrupt_vector` is the CRT-loaded interrupt vector for Ibex.
@@ -37,11 +44,6 @@
   .balign 256
 crt_interrupt_vector:
   .global crt_interrupt_vector
-
-  // Switch off compressed instructions so we know each instruction below is
-  // exactly 4 bytes (one entry).
-  .option push
-  .option norvc
 
   // exception Handler and user software interrupt
   j handler_exception
@@ -84,8 +86,7 @@ crt_interrupt_vector:
   // vendor interrupts: on Ibex interrupt id 31 is for non-maskable interrupts
   unimp
 
-  // Re-enable compressed instructions
-  .option pop
-
   // Set size so vector can be disassembled
   .size crt_interrupt_vector, .-crt_interrupt_vector
+
+  .option pop

@@ -10,20 +10,42 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   `uvm_object_new
 
   // Knobs //
-  int          data_len_min    = 128;
-  int          data_len_max    = 128;
-  bit          use_key_mask    = 0;
-  bit          use_c_model_pct = 0;
+  int          num_messages_min   = 1;
+  int          num_messages_max   = 1;
+  int          message_len_min    = 128;
+  int          message_len_max    = 128;
+  bit          use_key_mask       = 0;
+  bit          use_c_model_pct    = 0;
+  bit          errors_en          = 0;
+  // Mode distribution //
+  // chance of selection ecb_mode
+  // ecb_mode /(ecb_mode + cbc_mode + ctr_mode)
+  // with the defaults 10/30 = 1/3 (33%)
+  int          ecb_weight         = 10;
+  int          cbc_weight         = 10;
+  int          ctr_weight         = 10;
+  // KEYLEN weights
+  // change of selecting 128b key
+  //  128b/(128+192+256) = 10/30 = (33%)
+  int          key_128b_weight    = 10;
+  int          key_192b_weight    = 10;
+  int          key_256b_weight    = 10;
 
+  bit  [2:0]   error_types        = 3'b111;      //   001: configuration errors
+                                                 //   010: malicous injection
+                                                 //   100: random resets
 
+  int          config_error_pct;                 // percentage of configuration errors
   // rand variables
   rand bit     ref_model;                        // 0: C model 1: OPEN_SSL/BORING_SSL
   rand bit     key_mask;                         // randomly select if we force unused key bits to 0
+  rand int     num_messages;                     // number of messages to encrypt/decrypt
 
-  // constraints
-  constraint c_ref_model { ref_model dist { 0 :/ use_c_model_pct,
-                                            1 :/ (100-use_c_model_pct) }; }
 
+   // constraints
+  constraint c_num_messages { num_messages inside {[num_messages_min : num_messages_max] };}
+  constraint c_ref_model    { ref_model    dist   { 0 :/ use_c_model_pct,
+                                                    1 :/ (100-use_c_model_pct) }; }
 
   function void post_randomize();
     if(use_key_mask) key_mask = 1;
@@ -33,11 +55,17 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   virtual function string convert2string();
     string str = "";
     str = super.convert2string();
-    str = {str,  $psprintf("\n\t ----| AES ENVIRONMENT CONFIG \t ") };
-    str = {str,  $psprintf("\n\t ----| Max data len %d bits \t ", data_len_max) };
-    str = {str,  $psprintf("\n\t ----| Min data len %d bits \t ", data_len_min) };
-    str = {str,  $psprintf("\n\t ----| Reference model:\t    %s              \t ",
-          (ref_model==0) ? "C-MODEL" : "OPEN_SSL" ) };
+    str = {str,  $sformatf("\n\t ----| AES ENVIRONMENT CONFIG \t ") };
+    str = {str,  $sformatf("\n\t ----| Max Number of message %d \t ", num_messages_max) };
+    str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min) };
+    str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max) };
+    str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min) };
+    str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
+         (ref_model==0) ? "C-MODEL" : "OPEN_SSL" ) };
+    str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages) };
+    str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight) };
+    str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight) };   
+    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) }; 
     str = {str, "\n"};
     return str;
   endfunction

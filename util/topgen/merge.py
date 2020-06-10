@@ -25,99 +25,102 @@ def amend_ip(top, ip):
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
     """
-    ip_list_in_top = [x["name"].lower() for x in top["module"]]
+    ip_list_in_top = [x["type"].lower() for x in top["module"]]
+    # TODO make set
     ipname = ip["name"].lower()
     if ipname not in ip_list_in_top:
         log.info("TOP doens't use the IP %s. Skip" % ip["name"])
         return
 
-    # Find index of the IP
-    ip_idx = ip_list_in_top.index(ipname)
     # Needed to detect async alert transitions below
     ah_idx = ip_list_in_top.index("alert_handler")
 
-    ip_module = top["module"][ip_idx]
+    # Find multiple IPs
+    # Find index of the IP
+    ip_modules = list(
+        filter(lambda module: module["type"] == ipname, top["module"]))
 
-    # Size
-    if "size" not in ip_module:
-        ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
-    elif int(ip_module["size"], 0) < ip["gensize"]:
-        log.error(
-            "given 'size' field in IP %s is smaller than the required space" %
-            ip_module["name"])
+    for ip_module in ip_modules:
+        # Size
+        if "size" not in ip_module:
+            ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
+        elif int(ip_module["size"], 0) < ip["gensize"]:
+            log.error(
+                "given 'size' field in IP %s is smaller than the required space"
+                % ip_module["name"])
 
-    # bus_device
-    ip_module["bus_device"] = ip["bus_device"]
+        # bus_device
+        ip_module["bus_device"] = ip["bus_device"]
 
-    # bus_host
-    if "bus_host" in ip and ip["bus_host"] != "":
-        ip_module["bus_host"] = ip["bus_host"]
-    else:
-        ip_module["bus_host"] = "none"
+        # bus_host
+        if "bus_host" in ip and ip["bus_host"] != "":
+            ip_module["bus_host"] = ip["bus_host"]
+        else:
+            ip_module["bus_host"] = "none"
 
-    # available_input_list , available_output_list, available_inout_list
-    if "available_input_list" in ip:
-        ip_module["available_input_list"] = ip["available_input_list"]
-        for i in ip_module["available_input_list"]:
-            i.pop('desc', None)
-            i["type"] = "input"
-            i["width"] = int(i["width"])
-    else:
-        ip_module["available_input_list"] = []
-    if "available_output_list" in ip:
-        ip_module["available_output_list"] = ip["available_output_list"]
-        for i in ip_module["available_output_list"]:
-            i.pop('desc', None)
-            i["type"] = "output"
-            i["width"] = int(i["width"])
-    else:
-        ip_module["available_output_list"] = []
-    if "available_inout_list" in ip:
-        ip_module["available_inout_list"] = ip["available_inout_list"]
-        for i in ip_module["available_inout_list"]:
-            i.pop('desc', None)
-            i["type"] = "inout"
-            i["width"] = int(i["width"])
-    else:
-        ip_module["available_inout_list"] = []
+        # available_input_list , available_output_list, available_inout_list
+        if "available_input_list" in ip:
+            ip_module["available_input_list"] = ip["available_input_list"]
+            for i in ip_module["available_input_list"]:
+                i.pop('desc', None)
+                i["type"] = "input"
+                i["width"] = int(i["width"])
+        else:
+            ip_module["available_input_list"] = []
+        if "available_output_list" in ip:
+            ip_module["available_output_list"] = ip["available_output_list"]
+            for i in ip_module["available_output_list"]:
+                i.pop('desc', None)
+                i["type"] = "output"
+                i["width"] = int(i["width"])
+        else:
+            ip_module["available_output_list"] = []
+        if "available_inout_list" in ip:
+            ip_module["available_inout_list"] = ip["available_inout_list"]
+            for i in ip_module["available_inout_list"]:
+                i.pop('desc', None)
+                i["type"] = "inout"
+                i["width"] = int(i["width"])
+        else:
+            ip_module["available_inout_list"] = []
 
-    # interrupt_list
-    if "interrupt_list" in ip:
-        ip_module["interrupt_list"] = ip["interrupt_list"]
-        for i in ip_module["interrupt_list"]:
-            i.pop('desc', None)
-            i["type"] = "interrupt"
-            i["width"] = int(i["width"])
-    else:
-        ip_module["interrupt_list"] = []
+        # interrupt_list
+        if "interrupt_list" in ip:
+            ip_module["interrupt_list"] = ip["interrupt_list"]
+            for i in ip_module["interrupt_list"]:
+                i.pop('desc', None)
+                i["type"] = "interrupt"
+                i["width"] = int(i["width"])
+        else:
+            ip_module["interrupt_list"] = []
 
-    # alert_list
-    if "alert_list" in ip:
-        ip_module["alert_list"] = ip["alert_list"]
-        for i in ip_module["alert_list"]:
-            i.pop('desc', None)
-            i["type"] = "alert"
-            i["width"] = int(i["width"])
-            # automatically insert asynchronous transition if necessary
-            if ip_module["clock_srcs"]["clk_i"] == \
-               top["module"][ah_idx]["clock_srcs"]["clk_i"]:
-                i["async"] = 0
-            else:
-                i["async"] = 1
-    else:
-        ip_module["alert_list"] = []
+        # alert_list
+        if "alert_list" in ip:
+            ip_module["alert_list"] = ip["alert_list"]
+            for i in ip_module["alert_list"]:
+                i.pop('desc', None)
+                i["type"] = "alert"
+                i["width"] = int(i["width"])
+                # automatically insert asynchronous transition if necessary
+                if ip_module["clock_srcs"]["clk_i"] == \
+                   top["module"][ah_idx]["clock_srcs"]["clk_i"]:
+                    i["async"] = 0
+                else:
+                    i["async"] = 1
+        else:
+            ip_module["alert_list"] = []
 
-    # scan
-    if "scan" in ip:
-        ip_module["scan"] = ip["scan"]
-    else:
-        ip_module["scan"] = "false"
+        # scan
+        if "scan" in ip:
+            ip_module["scan"] = ip["scan"]
+        else:
+            ip_module["scan"] = "false"
 
-    # inter-module
-    if "inter_signal_list" in ip:
-        ip_module["inter_signal_list"] = ip["inter_signal_list"]
+        # inter-module
+        if "inter_signal_list" in ip:
+            ip_module["inter_signal_list"] = ip["inter_signal_list"]
 
-        # TODO: validate
+            # TODO: validate
 
 
 # TODO: Replace this part to be configurable from Hjson or template
@@ -573,6 +576,10 @@ def amend_pinmux_io(top):
 
         # Parse how many signals
         m = lib.get_module_by_name(top, mname)
+
+        if m is None:
+            raise SystemExit("Module {} in `dio_modules`"
+                             " is not searchable.".format(mname))
 
         if sname is not None:
             signals = deepcopy([lib.get_signal_by_name(m, sname)])

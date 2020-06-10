@@ -341,6 +341,36 @@ inline void mmio_region_write_only_set_bit32(mmio_region_t base,
   mmio_region_write_only_set_mask32(base, offset, 0x1, bit_index);
 }
 
+/**
+ * Copies a block of memory from MMIO to main memory while ensuring that MMIO
+ * accesses are both word-sized and word-aligned.
+ *
+ * This function may perform up to `len/4 + 2` volatile reads to handle
+ * unaligned accesses.
+ *
+ * @param base the MMIO region to read from.
+ * @param offset the offset to start reading from, in bytes.
+ * @param dest the main memory location to start writing to.
+ * @param len number of bytes to copy.
+ */
+void mmio_region_memcpy_from_mmio32(mmio_region_t base, uint32_t offset,
+                                    void *dest, size_t len);
+
+/**
+ * Copies a block of memory from main memory to MMIO while ensuring that MMIO
+ * accesses are both word-sized and word-aligned.
+ *
+ * Unaligned MMIO blocks are handled by performing a read-modify-write for the
+ * boundary words.
+ *
+ * @param base the MMIO region to write to.
+ * @param offset the offset to start writing to, in bytes.
+ * @param src the main memory location to start reading from.
+ * @param len number of bytes to copy.
+ */
+void mmio_region_memcpy_to_mmio32(mmio_region_t base, uint32_t offset,
+                                  const void *src, size_t len);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

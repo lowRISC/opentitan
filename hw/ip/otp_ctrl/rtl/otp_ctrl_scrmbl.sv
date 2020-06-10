@@ -24,6 +24,8 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   logic [PresentKeySize-1:0]    key_state_d, key_state_q;
   logic [PresentBlockSize-1:0]  data_state_d, data_state_low_q, data_state_high_q;
   logic [PresentBlockSize-1:0]  digest_state_d, digest_state_q;
+  logic [PresentBlockSize-1:0]  enc_data_out, dec_data_out;
+  logic [PresentKeySize-1:0]    dec_key_out, enc_key_out;
 
   typedef enum logic [2:0] {SelEncDataOut,
                             SelDecDataOut,

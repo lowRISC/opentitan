@@ -15,7 +15,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
-      cfg.vif.reset_alert();
+      reset_alert();
       @(posedge cfg.vif.rst_n);
     end
   endtask
@@ -61,7 +61,7 @@ class alert_sender_driver extends alert_esc_base_driver;
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
 
-      cfg.vif.wait_ping();
+      wait_ping();
 
       // TODO: solve this: if alert and ping all this task together
       if (!req.timeout) drive_alert_pins(req);
@@ -91,7 +91,7 @@ class alert_sender_driver extends alert_esc_base_driver;
       if (req.alert_int_err_type & HasAlertAfterIntFailOnly) begin
         set_alert_pins(alert_delay);
       end else begin
-        cfg.vif.reset_alert();
+        reset_alert();
       end
     end
   endtask : drive_alert_pins
@@ -103,7 +103,7 @@ class alert_sender_driver extends alert_esc_base_driver;
       if (under_reset) return;
       else @(cfg.vif.sender_cb);
     end
-    if (!under_reset) cfg.vif.set_alert();
+    if (!under_reset) set_alert();
   endtask : set_alert_pins
 
   // this task reset alert_p=0 and alert_n=1 after certain delay when:
@@ -114,10 +114,10 @@ class alert_sender_driver extends alert_esc_base_driver;
         repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
       end
       begin : wait_alert_handshake
-        cfg.vif.wait_ack();
+        wait_ack();
         @(cfg.vif.sender_cb);
         repeat (ack_delay) @(cfg.vif.sender_cb);
-        cfg.vif.reset_alert();
+        reset_alert();
       end
       begin : reset_thread
         wait(under_reset);
@@ -130,11 +130,43 @@ class alert_sender_driver extends alert_esc_base_driver;
     repeat (req.int_err_cyc) begin
       if (under_reset) break;
       randcase
-        1: cfg.vif.drive_alerts_low();
-        1: cfg.vif.drive_alerts_high();
+        1: drive_alerts_low();
+        1: drive_alerts_high();
       endcase
         @(cfg.vif.sender_cb);
     end
   endtask : random_drive_int_fail
+
+  virtual task set_alert();
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+  endtask
+
+  virtual task reset_alert();
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+  endtask
+
+  virtual task drive_alerts_high();
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+  endtask
+
+  virtual task drive_alerts_low();
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+  endtask
+
+  virtual task wait_ack();
+    while (cfg.vif.alert_rx.ack_p !== 1'b1) @(cfg.vif.sender_cb);
+  endtask : wait_ack
+
+  virtual task wait_ping();
+    logic ping_p_value = cfg.vif.alert_rx.ping_p;
+    while (cfg.vif.alert_rx.ping_p === ping_p_value) begin
+      ping_p_value = cfg.vif.alert_rx.ping_p;
+      @(cfg.vif.sender_cb);
+    end
+  endtask : wait_ping
 
 endclass : alert_sender_driver

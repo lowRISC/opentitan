@@ -17,6 +17,7 @@ filesets:
     files:
       - aes_env_pkg.sv
       - aes_seq_item.sv: {is_include_file: true}
+      - aes_message_item.sv: {is_include_file: true}
       - aes_env_cfg.sv: {is_include_file: true}
       - aes_env_cov.sv: {is_include_file: true}
       - aes_virtual_sequencer.sv: {is_include_file: true}
@@ -26,7 +27,7 @@ filesets:
       - seq_lib/aes_base_vseq.sv: {is_include_file: true}
       - seq_lib/aes_common_vseq.sv: {is_include_file: true}
       - seq_lib/aes_wake_up_vseq.sv: {is_include_file: true}
-      - seq_lib/aes_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/aes_stress_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

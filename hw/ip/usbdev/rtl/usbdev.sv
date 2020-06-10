@@ -135,6 +135,7 @@ module usbdev (
   logic              usb_enable;
   logic [6:0]        usb_device_addr;
 
+  logic                  data_toggle_clear_qe;
   logic                  usb_data_toggle_clear_en;
   logic [NEndpoints-1:0] usb_data_toggle_clear;
 
@@ -159,6 +160,7 @@ module usbdev (
   logic              usb_av_rvalid, usb_av_rready;
   logic              usb_rx_wvalid, usb_rx_wready;
   logic              rx_fifo_rvalid;
+  logic              rx_fifo_re;
 
   logic [AVFifoWidth - 1:0] usb_av_rdata;
   logic [RXFifoWidth - 1:0] usb_rx_wdata, rx_rdata_raw, rx_rdata;
@@ -187,6 +189,9 @@ module usbdev (
     .rdepth    () // only using empty
   );
 
+  assign rx_fifo_re = reg2hw.rxfifo.ep.re | reg2hw.rxfifo.setup.re |
+                      reg2hw.rxfifo.size.re | reg2hw.rxfifo.buffer.re;
+
   prim_fifo_async #(
     .Width(RXFifoWidth),
     .Depth(RXFifoDepth)
@@ -202,7 +207,7 @@ module usbdev (
     .clk_rd_i  (clk_i),
     .rst_rd_ni (rst_ni),
     .rvalid    (rx_fifo_rvalid),
-    .rready    (reg2hw.rxfifo.buffer.re),
+    .rready    (rx_fifo_re),
     .rdata     (rx_rdata_raw),
     .rdepth    (hw2reg.usbstat.rx_depth.d)
   );
@@ -214,8 +219,11 @@ module usbdev (
   assign hw2reg.rxfifo.size.d = rx_rdata[11:5];
   assign hw2reg.rxfifo.buffer.d = rx_rdata[4:0];
   assign event_pkt_received = rx_fifo_rvalid;
-  logic [2:0]               unused_re;
-  assign unused_re = {reg2hw.rxfifo.ep.re, reg2hw.rxfifo.setup.re, reg2hw.rxfifo.size.re};
+
+  // The rxfifo register is hrw, but we just need the read enables.
+  logic [3:0] unused_rxfifo_q;
+  assign unused_rxfifo_q = {reg2hw.rxfifo.ep.q, reg2hw.rxfifo.setup.q,
+                            reg2hw.rxfifo.size.q, reg2hw.rxfifo.buffer.q};
 
   ////////////////////////////////////
   // IN (Transmit) interface config //
@@ -288,12 +296,19 @@ module usbdev (
 
   // CDC: We synchronize the qe (write pulse) and assume that the
   // rest of the register remains stable
+  always_comb begin : proc_data_toggle_clear_qe
+    data_toggle_clear_qe = 1'b0;
+    for (int i = 0; i < NEndpoints; i++) begin
+      data_toggle_clear_qe |= reg2hw.data_toggle_clear[i].qe;
+    end
+  end
+
   prim_pulse_sync usbdev_data_toggle_clear (
     .clk_src_i   (clk_i),
     .clk_dst_i   (clk_usb_48mhz_i),
     .rst_src_ni  (rst_ni),
     .rst_dst_ni  (rst_usb_48mhz_ni),
-    .src_pulse_i (reg2hw.data_toggle_clear[0].qe),
+    .src_pulse_i (data_toggle_clear_qe),
     .dst_pulse_o (usb_data_toggle_clear_en)
   );
 
@@ -599,15 +614,13 @@ module usbdev (
   always_comb begin : proc_stall_tieoff
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.stall[i].d  = 1'b0;
-      if (setup_received && usb_out_endpoint == 4'(i)) begin
+      if (setup_received && usb_out_endpoint == 4'(unsigned'(i))) begin
         hw2reg.stall[i].de = 1'b1;
       end else begin
         hw2reg.stall[i].de = 1'b0;
       end
     end
   end
-
-  logic        unused_mem_a_rerror_d;
 
   // TL-UL to SRAM adapter
   tlul_adapter_sram #(
@@ -630,8 +643,6 @@ module usbdev (
     .rvalid_i (mem_a_rvalid),
     .rerror_i (mem_a_rerror)
   );
-
-  assign unused_mem_a_rerror_d = mem_a_rerror[1] ; // Only uncorrectable error
 
   // SRAM Wrapper
   prim_ram_2p_async_adv #(
@@ -872,9 +883,8 @@ module usbdev (
     .rst_ni                 (rst_ni),
     .clk_usb_48mhz_i        (clk_usb_48mhz_i),
     .rst_usb_48mhz_ni       (rst_usb_48mhz_ni),
-    .rx_differential_mode_i (reg2hw.phy_config.rx_differential_mode.q),
-    .tx_differential_mode_i (reg2hw.phy_config.tx_differential_mode.q),
-    .pinflip_i              (reg2hw.phy_config.pinflip.q),
+
+    // Register interface
     .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
@@ -927,16 +937,28 @@ module usbdev (
   /////////////////////////////////////////
 
   logic usb_ref_val_d, usb_ref_val_q;
+  logic usb_ref_disable;
 
-  // Directly forward the pulse.
-  assign usb_ref_pulse_o = usb_event_frame;
+  // sys clk -> USB clk
+  prim_flop_2sync #(
+    .Width      (1)
+  ) usbdev_sync_phy_config (
+    .clk_i  (clk_usb_48mhz_i),
+    .rst_ni (rst_usb_48mhz_ni),
+    .d      (reg2hw.phy_config.usb_ref_disable.q),
+    .q      (usb_ref_disable)
+  );
+
+  // Directly forward the pulse unless disabled.
+  assign usb_ref_pulse_o = usb_ref_disable ? 1'b0 : usb_event_frame;
 
   // The first pulse is always ignored, but causes the valid to be asserted.
   // The valid signal is deasserted when:
   // - The link is no longer active.
   // - The host is lost (no SOF for 4ms).
-  assign usb_ref_val_d = usb_ref_pulse_o                         ? 1'b1 :
-                       (!usb_link_active || usb_event_host_lost) ? 1'b0 : usb_ref_val_q;
+  // - The reference generation is disabled.
+  assign usb_ref_val_d = usb_ref_pulse_o                           ? 1'b1 :
+      (!usb_link_active || usb_event_host_lost || usb_ref_disable) ? 1'b0 : usb_ref_val_q;
 
   always_ff @(posedge clk_usb_48mhz_i or negedge rst_usb_48mhz_ni) begin
     if (!rst_usb_48mhz_ni) begin

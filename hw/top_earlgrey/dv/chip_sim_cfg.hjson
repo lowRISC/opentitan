@@ -93,6 +93,7 @@
     {
       name: xbar_mode
       run_opts: ["+xbar_mode=1"]
+      reseed: 50
     }
   ]
 
@@ -109,9 +110,9 @@
       sw_test: sw/device/tests/aes_test
     }
     {
-      name: chip_consecutive_irqs_test
+      name: chip_dif_plic_sanitytest
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/consecutive_irqs_test
+      sw_test: sw/device/tests/dif/dif_plic_sanitytest
     }
     {
       name: chip_flash_ctrl_test
@@ -156,10 +157,11 @@
   ]
 
   // List of regressions.
-  regressions: [
-    {
-      name: sanity
-      tests: ["chip_uart_tx_rx"]
-    }
-  ]
+  // TODO #2405: Waiting for bug fixes in Ibex.
+  // regressions: [
+  //   {
+  //     name: sanity
+  //     tests: ["chip_uart_tx_rx"]
+  //   }
+  // ]
 }

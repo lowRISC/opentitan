@@ -90,8 +90,7 @@ class SimCfg(FlowCfg):
         self.tool = args.tool
         self.build_opts = []
         self.build_opts.extend(args.build_opts)
-        self.en_build_modes = []
-        self.en_build_modes.extend(args.build_modes)
+        self.en_build_modes = args.build_modes.copy()
         self.run_opts = []
         self.run_opts.extend(args.run_opts)
         self.en_run_modes = []
@@ -257,16 +256,12 @@ class SimCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        build_modes = Modes.create_modes(BuildModes,
-                                         getattr(self, "build_modes"))
-        setattr(self, "build_modes", build_modes)
-
-        run_modes = Modes.create_modes(RunModes, getattr(self, "run_modes"))
-        setattr(self, "run_modes", run_modes)
+        self.build_modes = Modes.create_modes(BuildModes, self.build_modes)
+        self.run_modes = Modes.create_modes(RunModes, self.run_modes)
 
         # Walk through build modes enabled on the CLI and append the opts
         for en_build_mode in self.en_build_modes:
-            build_mode_obj = Modes.find_mode(en_build_mode, build_modes)
+            build_mode_obj = Modes.find_mode(en_build_mode, self.build_modes)
             if build_mode_obj is not None:
                 self.build_opts.extend(build_mode_obj.build_opts)
                 self.run_opts.extend(build_mode_obj.run_opts)
@@ -278,7 +273,7 @@ class SimCfg(FlowCfg):
 
         # Walk through run modes enabled on the CLI and append the opts
         for en_run_mode in self.en_run_modes:
-            run_mode_obj = Modes.find_mode(en_run_mode, run_modes)
+            run_mode_obj = Modes.find_mode(en_run_mode, self.run_modes)
             if run_mode_obj is not None:
                 self.run_opts.extend(run_mode_obj.run_opts)
             else:

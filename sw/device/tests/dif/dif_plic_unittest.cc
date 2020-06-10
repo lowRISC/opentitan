@@ -12,7 +12,7 @@ extern "C" {
 #include "rv_plic_regs.h"  // Generated.
 }  // extern "C"
 
-namespace dif_plic_test_mocked {
+namespace dif_plic_unittest {
 namespace {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
@@ -376,4 +376,4 @@ TEST_F(IrqCompleteTest, Target0Success) {
 }
 
 }  // namespace
-}  // namespace dif_plic_test_mocked
+}  // namespace dif_plic_unittest

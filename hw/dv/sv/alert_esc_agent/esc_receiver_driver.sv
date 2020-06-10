@@ -16,7 +16,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
-      cfg.vif.reset_resp();
+      reset_resp();
       is_ping = 0;
       @(posedge cfg.vif.rst_n);
     end
@@ -33,9 +33,9 @@ class esc_receiver_driver extends alert_esc_base_driver;
     forever begin
       int cnt ;
       wait(under_reset == 0);
-      cfg.vif.wait_esc();
+      wait_esc();
       @(cfg.vif.receiver_cb);
-      while (cfg.vif.get_esc() == 1) begin
+      while (get_esc() == 1) begin
         cnt++;
         @(cfg.vif.receiver_cb);
       end
@@ -60,7 +60,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
               req.r_esc_rsp, req.int_err), UVM_HIGH)
 
           if (req.standalone_int_err) begin
-            cfg.vif.wait_esc_complete();
+            wait_esc_complete();
             if (!is_ping) begin
               repeat (req.int_err_cyc) begin
                 if (cfg.vif.esc_tx.esc_p === 1'b0 && !is_ping) begin
@@ -71,19 +71,19 @@ class esc_receiver_driver extends alert_esc_base_driver;
                 end
               end
               // TODO: missed int_err case at cycle when first cycle of the esc_p set
-              if (!is_ping) cfg.vif.reset_resp();
+              if (!is_ping) reset_resp();
             end
           end else begin
-            cfg.vif.wait_esc();
+            wait_esc();
             @(cfg.vif.receiver_cb);
-            while (cfg.vif.get_esc() === 1'b1) toggle_resp_signal(req);
+            while (get_esc() === 1'b1) toggle_resp_signal(req);
             if (is_ping) begin
               int toggle_cycle = 1;
               if (req.int_err) toggle_cycle = $urandom_range(0, cfg.ping_timeout_cycle);
               repeat (toggle_cycle) toggle_resp_signal(req);
               is_ping = 0;
             end
-            if (req.int_err) cfg.vif.reset_resp();
+            if (req.int_err) reset_resp();
           end
           `uvm_info(`gfn,
               $sformatf("finished sending receiver item esc_rsp=%0b int_fail=%0b",
@@ -96,21 +96,53 @@ class esc_receiver_driver extends alert_esc_base_driver;
 
   task toggle_resp_signal(alert_esc_seq_item req);
     if (req.int_err) random_drive_resp_signal();
-    else cfg.vif.set_resp();
+    else set_resp();
     @(cfg.vif.receiver_cb);
 
     if (req.int_err) random_drive_resp_signal();
-    else cfg.vif.reset_resp();
+    else reset_resp();
     @(cfg.vif.receiver_cb);
   endtask : toggle_resp_signal
 
   task random_drive_resp_signal();
     randcase
-      1: cfg.vif.set_resp();
-      1: cfg.vif.reset_resp();
-      1: cfg.vif.set_resp_both_high();
-      1: cfg.vif.set_resp_both_low();
+      1: set_resp();
+      1: reset_resp();
+      1: set_resp_both_high();
+      1: set_resp_both_low();
     endcase
   endtask
+
+  virtual task set_resp();
+    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b0;
+  endtask
+
+  virtual task reset_resp();
+    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b1;
+  endtask
+
+  virtual task set_resp_both_high();
+    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b1;
+  endtask
+
+  virtual task set_resp_both_low();
+    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b0;
+  endtask
+
+  virtual function bit get_esc();
+    return cfg.vif.receiver_cb.esc_tx.esc_p && !cfg.vif.receiver_cb.esc_tx.esc_n;
+  endfunction
+
+  virtual task wait_esc_complete();
+    while (cfg.vif.esc_tx.esc_p === 1'b1 && cfg.vif.esc_tx.esc_n === 1'b0) @(cfg.vif.receiver_cb);
+  endtask
+
+  virtual task wait_esc();
+    while (cfg.vif.esc_tx.esc_p === 1'b0 && cfg.vif.esc_tx.esc_n === 1'b1) @(cfg.vif.receiver_cb);
+  endtask : wait_esc
 
 endclass : esc_receiver_driver

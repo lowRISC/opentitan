@@ -30,7 +30,6 @@
                 "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"]
                 // TODO: enable stress tests later.
                 // "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
@@ -57,13 +56,20 @@
   tests: [
     {
       name: aes_wake_up
+      uvm_test: aes_wake_up_test
       uvm_test_seq: aes_wake_up_vseq
       reseed: 1
     }
 
     {
       name: aes_sanity
-      uvm_test_seq: aes_sanity_vseq
+      uvm_test: aes_sanity_test
+      uvm_test_seq: aes_stress_vseq
+    }
+    {
+      name: aes_stress
+      uvm_test: aes_stress_test
+      uvm_test_seq: aes_stress_vseq
     }
   ]
 
@@ -72,6 +78,10 @@
     {
       name: sanity
       tests: ["aes_sanity"]
+    }
+     {
+      name: stress
+      tests: ["aes_stress"]
     }
   ]
 }

@@ -11,7 +11,7 @@ extern "C" {
 #include "uart_regs.h"  // Generated.
 }  // extern "C"
 
-namespace dif_uart_test {
+namespace dif_uart_unittest {
 namespace {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
@@ -738,4 +738,4 @@ TEST_F(TxBytesAvailableTest, FifoEmpty) {
 }
 
 }  // namespace
-}  // namespace dif_uart_test
+}  // namespace dif_uart_unittest

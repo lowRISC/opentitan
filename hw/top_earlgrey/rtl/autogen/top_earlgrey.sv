@@ -113,13 +113,8 @@ module top_earlgrey #(
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
 
-  tl_h2d_t tl_main_h_h2d;
-  tl_d2h_t tl_main_h_d2h;
-  tl_h2d_t tl_peri_d_h2d;
-  tl_d2h_t tl_peri_d_d2h;
-
-  assign tl_main_h_h2d = tl_peri_d_h2d;
-  assign tl_peri_d_d2h = tl_main_h_d2h;
+  tl_h2d_t tl_main_peri_h2d;
+  tl_d2h_t tl_main_peri_d2h;
 
   // Signals
   logic [31:0] mio_p2d;
@@ -375,17 +370,18 @@ module top_earlgrey #(
     .rerror_i (2'b00)
   );
 
-  prim_rom #(
+  prim_rom_adv #(
     .Width(32),
     .Depth(4096),
     .MemInitFile(BootRomInitFile)
   ) u_rom_rom (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
-    .cs_i     (rom_req),
+    .req_i    (rom_req),
     .addr_i   (rom_addr),
-    .dout_o   (rom_rdata),
-    .dvalid_o (rom_rvalid)
+    .rdata_o  (rom_rdata),
+    .rvalid_o (rom_rvalid),
+    .cfg_i    ('0) // tied off for now
   );
 
   // sram device
@@ -906,8 +902,8 @@ module top_earlgrey #(
     .tl_ram_main_i      (tl_ram_main_d_d2h),
     .tl_eflash_o        (tl_eflash_d_h2d),
     .tl_eflash_i        (tl_eflash_d_d2h),
-    .tl_peri_o          (tl_peri_d_h2d),
-    .tl_peri_i          (tl_peri_d_d2h),
+    .tl_peri_o          (tl_main_peri_h2d),
+    .tl_peri_i          (tl_main_peri_d2h),
     .tl_flash_ctrl_o    (tl_flash_ctrl_d_h2d),
     .tl_flash_ctrl_i    (tl_flash_ctrl_d_d2h),
     .tl_hmac_o          (tl_hmac_d_h2d),
@@ -930,8 +926,8 @@ module top_earlgrey #(
   xbar_peri u_xbar_peri (
     .clk_peri_i (clkmgr_clocks.clk_io_infra),
     .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
-    .tl_main_i       (tl_main_h_h2d),
-    .tl_main_o       (tl_main_h_d2h),
+    .tl_main_i       (tl_main_peri_h2d),
+    .tl_main_o       (tl_main_peri_d2h),
     .tl_uart_o       (tl_uart_d_h2d),
     .tl_uart_i       (tl_uart_d_d2h),
     .tl_gpio_o       (tl_gpio_d_h2d),

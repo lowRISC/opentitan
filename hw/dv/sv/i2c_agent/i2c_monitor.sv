@@ -174,8 +174,7 @@ class i2c_monitor extends dv_base_monitor #(
   virtual task monitor_ready_to_end();
     forever begin
       @(cfg.vif.scl_i or cfg.vif.sda_i or cfg.vif.scl_o or cfg.vif.sda_o);
-      ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1) &&
-                  (cfg.vif.scl_o == 1'b1) && (cfg.vif.sda_o == 1'b1);
+      ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1);
     end
   endtask : monitor_ready_to_end
 

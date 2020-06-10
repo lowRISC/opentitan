@@ -1,0 +1,48 @@
+<div class="sectioncontent">
+    {{- $contentType := "all"}}
+    {{- if eq (.Get "type") "section" }}
+        {{- $contentType = "section" }}
+    {{- end}}
+    {{- $depthLimit := 2 }}
+    {{- with .Get "depth" }}
+        {{- $depthLimit = . }}
+    {{- end }}
+
+    {{- $startSection := .Page.Page }}
+    <ul>
+    {{- range .Page.Pages }}
+        {{- template "subsection-loop" dict "startSection" $startSection "currentSection" . "contentType" $contentType "depthLimit" $depthLimit "depthCnt" 0 }}
+    {{- end }}
+    </ul>
+</div>
+
+{{- define "subsection-loop" }}
+    {{- $startSection := .startSection }}
+    {{- $currentSection := .currentSection }}
+    {{- $contentType := .contentType }}
+    {{- $depthLimit := .depthLimit }}
+    {{- $depthCnt := add .depthCnt 1 }}
+
+    {{- with .startSection }}
+        <li>
+            {{- with $currentSection }}
+                {{- if (or (not (eq $contentType "section")) .IsSection) }}
+                    {{- if .LinkTitle }}
+                        <a href="{{.RelPermalink}}">{{- .LinkTitle }}</a>
+                    {{- else }}
+                        {{- replace .File.Dir .Parent.File.Dir "" | replaceRE "/" "-" | replaceRE "-$" ":" }}
+                        <a href="{{.RelPermalink}}">{{- .File.TranslationBaseName }}</a>
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+            {{- if lt $depthCnt $depthLimit }}
+                <ul>
+                    {{- $subsc := newScratch }}
+                    {{- range $currentSection.Pages }}
+                        {{- template "subsection-loop" dict "startSection" $startSection "currentSection" . "contentType" $contentType "depthLimit" $depthLimit "depthCnt" $depthCnt}}
+                    {{- end }}
+                </ul>
+            {{- end }}
+        </li>
+    {{- end }}
+{{- end }}

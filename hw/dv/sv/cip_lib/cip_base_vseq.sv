@@ -18,8 +18,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
 
+  // address mask struct
+  typedef struct packed {
+    bit [TL_AW-1:0]  addr;
+    bit [TL_DBW-1:0] mask;
+  } addr_mask_t;
+
   bit [TL_DW-1:0]  exp_mem[int];
-  int              mem_exist_addr_q[$];
+  addr_mask_t      mem_exist_addr_q[$];
 
   // mem_ranges without base address
   addr_range_t     updated_mem_ranges[$];
@@ -501,18 +507,21 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
 
                 if (!cfg.under_reset) begin
+                  bit [TL_DW-1:0]  data_mask;
                   addr[1:0] = 0;
-                  exp_mem[addr] = data;
-                  mem_exist_addr_q.push_back(addr);
+                  foreach (mask[i]) data_mask[i*8+:8] = {8{mask[i]}};
+                  exp_mem[addr] = (exp_mem[addr] & ~data_mask) | (data & data_mask);
+                  mem_exist_addr_q.push_back(addr_mask_t'{addr, mask});
                 end
               end
             end
             // Randomly pick a previously written address for partial read.
             exp_mem.size > 0: begin // read
               // get all the programmed addresses and randomly pick one
-              addr = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
-              if (get_mem_access_by_addr(ral, addr) != "WO") begin;
-                mask = get_rand_contiguous_mask();
+              addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
+              addr = addr_mask.addr;
+              if (get_mem_access_by_addr(ral, addr) != "WO") begin
+                mask = get_rand_contiguous_mask(addr_mask.mask);
                 tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
 
                 if (!cfg.under_reset) begin
@@ -572,10 +581,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // TLUL mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
-  virtual function bit[TL_DBW-1:0] get_rand_contiguous_mask();
+  virtual function bit[TL_DBW-1:0] get_rand_contiguous_mask(bit [TL_DBW-1:0] valid_mask = '1);
     bit [TL_DBW-1:0] mask;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
-                                       $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;)
+                                       $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;
+                                       // for data bits aren't valid (unknown), mask bit should be 0
+                                       foreach (valid_mask[i]) {
+                                         !valid_mask[i] -> !mask[i];
+                                       })
     return mask;
   endfunction
 

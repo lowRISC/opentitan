@@ -9,7 +9,8 @@
 #####################
 
 # tool setup
-source ../../../foundry/syn/dc/setup.tcl
+set CONFIG_PATH "../../../foundry/syn/dc/"
+source ${CONFIG_PATH}/setup.tcl
 
 # paths
 set WORKLIB  "WORK"

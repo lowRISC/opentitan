@@ -18,22 +18,6 @@ aes_test_lib = declare_dependency(
   ),
 )
 
-consecutive_irqs_test_lib = declare_dependency(
-  link_with: static_library(
-    'consecutive_irqs_test_lib',
-    sources: ['consecutive_irqs_test.c'],
-    dependencies: [
-      dif_uart,
-      dif_plic,
-      sw_lib_irq,
-      sw_lib_mmio,
-      sw_lib_base_log,
-      sw_lib_runtime_hart,
-      sw_lib_testing_test_status,
-    ],
-  ),
-)
-
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
     'flash_ctrl_test_lib',
@@ -75,7 +59,6 @@ sha256_test_lib = declare_dependency(
 
 sw_tests += {
   'aes_test': aes_test_lib,
-  'consecutive_irqs_test': consecutive_irqs_test_lib,
   'flash_ctrl_test': flash_ctrl_test_lib,
   'rv_timer_test': rv_timer_test_lib,
   'sha256_test': sha256_test_lib,

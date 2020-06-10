@@ -136,13 +136,8 @@ module top_${top["name"]} #(
   xbar_devices = [x for x in xbar["nodes"] if x["type"] == "device" and x["xbar"]]
 %>\
   % for node in xbar_devices:
-  tl_h2d_t tl_${xbar["name"]}_h_h2d;
-  tl_d2h_t tl_${xbar["name"]}_h_d2h;
-  tl_h2d_t tl_${node["name"]}_d_h2d;
-  tl_d2h_t tl_${node["name"]}_d_d2h;
-
-  assign tl_${xbar["name"]}_h_h2d = tl_${node["name"]}_d_h2d;
-  assign tl_${node["name"]}_d_d2h = tl_${xbar["name"]}_h_d2h;
+  tl_h2d_t tl_${xbar["name"]}_${node["name"]}_h2d;
+  tl_d2h_t tl_${xbar["name"]}_${node["name"]}_d2h;
   % endfor
 % endfor
 
@@ -425,7 +420,7 @@ module top_${top["name"]} #(
     .rerror_i (2'b00)
   );
 
-  prim_rom #(
+  prim_rom_adv #(
     .Width(${data_width}),
     .Depth(${rom_depth}),
     .MemInitFile(BootRomInitFile)
@@ -436,10 +431,11 @@ module top_${top["name"]} #(
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
-    .cs_i     (${m["name"]}_req),
+    .req_i    (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
-    .dout_o   (${m["name"]}_rdata),
-    .dvalid_o (${m["name"]}_rvalid)
+    .rdata_o  (${m["name"]}_rdata),
+    .rvalid_o (${m["name"]}_rvalid),
+    .cfg_i    ('0) // tied off for now
   );
 
   % elif m["type"] == "eflash":
@@ -669,12 +665,22 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${top["reset_paths"][v]}),
   % endfor
   % for node in xbar["nodes"]:
-    % if node["type"] == "device":
+    % if node["xbar"]:
+      % if node["type"] == "device":
+    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${xbar["name"]}_${node["name"]}_h2d),
+    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${xbar["name"]}_${node["name"]}_d2h),
+      % elif node["type"] == "host":
+    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_${xbar["name"]}_h2d),
+    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_${xbar["name"]}_d2h),
+      % endif
+    % else:
+      % if node["type"] == "device":
     .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_d_h2d),
     .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_d_d2h),
-    % elif node["type"] == "host":
+      % elif node["type"] == "host":
     .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_h_h2d),
     .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_h_d2h),
+      % endif
     % endif
   % endfor
 

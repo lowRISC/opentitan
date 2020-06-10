@@ -78,7 +78,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 {hmac_process, hmac_start} = item.a_data[1:0];
                 // check if msg all streamed in, could happen during wr msg or trigger process
                 predict_digest(msg_q);
-                msg_q.delete();
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
                 msg_q.delete(); // make sure did not include previous msg
@@ -244,6 +243,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
   // or when hash_process is triggered, and there are some remaining bytes
+  // this task will also clear the msg_q queue once hmac_process is set
   virtual task hmac_process_fifo_wr();
     fork
       begin : insolation_fork_process_fifo_wr
@@ -251,9 +251,13 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           wait(!cfg.under_reset);
           fork
             begin : increase_wr_cnt
-              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 ||
-                  (hmac_process && msg_q.size() % 4 != 0));
-              if (sha_en) begin
+              bit has_unprocessed_msg = 1;
+              wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() > 0));
+              if (hmac_process) begin
+                has_unprocessed_msg = msg_q.size() % 4 != 0;
+                msg_q.delete();
+              end
+              if (sha_en && has_unprocessed_msg) begin
                 // if fifo full, tlul will not write next data until fifo has space again
                 if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
                   wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH);

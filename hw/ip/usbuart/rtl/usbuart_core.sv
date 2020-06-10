@@ -63,11 +63,12 @@ module usbuart_core (
   logic          event_tx_watermark, event_rx_watermark, event_tx_overflow, event_rx_overflow;
   logic          event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
   logic          host_lost, host_timeout;
+  logic          unused_usb_pullup;
 
   assign tx_enable        = reg2hw.ctrl.tx.q;
   assign rx_enable        = reg2hw.ctrl.rx.q;
   assign sys_loopback     = reg2hw.ctrl.slpbk.q;
-  assign usb_pullup_o     = tx_enable | rx_enable;
+  assign unused_usb_pullup = tx_enable | rx_enable;
 
 // assign line_loopback    = reg2hw.ctrl.llpbk.q;
 
@@ -222,7 +223,8 @@ module usbuart_core (
 
   usbuart_usbif usbuart_usbif (
     .clk_48mhz_i (clk_usb_48mhz_i),
-    .rst_ni      (rst_usb_48mhz_ni & cio_usb_sense_i), // TODO: This is not a safe way to create a reset signal
+    .rst_ni      (rst_usb_48mhz_ni & cio_usb_sense_i), // TODO: This is not a safe way to create a
+                                                       // reset signal
 
     .usb_d_i                (usb_rx_d),
     .usb_se0_i              (usb_rx_se0),
@@ -409,9 +411,10 @@ module usbuart_core (
   /////////////////////////////////
   // USB IO Muxing               //
   /////////////////////////////////
+  logic cio_oe;
 
   // Static configuration
-  usbdev_reg_pkg::usbdev_reg2hw_phy_config_reg_t     usb_phy_config;
+  usbdev_reg_pkg::usbdev_reg2hw_phy_config_reg_t usb_phy_config;
   assign usb_phy_config.rx_differential_mode.q   = 1'b0;
   assign usb_phy_config.tx_differential_mode.q   = 1'b0;
   assign usb_phy_config.pinflip.q                = 1'b0;
@@ -424,12 +427,12 @@ module usbuart_core (
     .rst_ni                 ( rst_ni                 ),
     .clk_usb_48mhz_i        ( clk_usb_48mhz_i        ),
     .rst_usb_48mhz_ni       ( rst_usb_48mhz_ni       ),
-    .rx_differential_mode_i ( 1'b0                   ),
-    .tx_differential_mode_i ( 1'b0                   ),
-    .pinflip_i              ( 1'b0                   ),
-    .sys_reg2hw_config_i    (                        ),
+
+    // Register interface
+    .sys_reg2hw_config_i    ( usb_phy_config         ),
     .sys_usb_sense_o        ( sys_usb_sense          ),
 
+    // Chip IO
     .cio_usb_d_i            ( 1'b0                   ),
     .cio_usb_dp_i           ( cio_usb_dp_i           ),
     .cio_usb_dn_i           ( cio_usb_dn_i           ),
@@ -437,13 +440,14 @@ module usbuart_core (
     .cio_usb_se0_o          (                        ),
     .cio_usb_dp_o           ( cio_usb_dp_o           ),
     .cio_usb_dn_o           ( cio_usb_dn_o           ),
-    .cio_usb_oe_o           ( cio_usb_oe_o           ),
+    .cio_usb_oe_o           ( cio_oe                 ),
     .cio_usb_tx_mode_se_o   (                        ),
     .cio_usb_sense_i        ( cio_usb_sense_i        ),
     .cio_usb_dp_pullup_en_o ( cio_usb_pullup_en_o    ),
     .cio_usb_dn_pullup_en_o (                        ),
     .cio_usb_suspend_o      (                        ),
 
+    // Internal interface
     .usb_rx_d_o             ( usb_rx_d               ),
     .usb_rx_se0_o           ( usb_rx_se0             ),
     .usb_tx_d_i             ( usb_tx_d               ),
@@ -453,5 +457,8 @@ module usbuart_core (
     .usb_pullup_en_i        (                        ),
     .usb_suspend_i          (                        )
   );
+
+  assign cio_usb_dp_o = cio_oe;
+  assign cio_usb_dn_o = cio_oe;
 
 endmodule

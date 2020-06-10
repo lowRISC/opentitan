@@ -517,14 +517,6 @@ dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
 }
 
 /**
- * Computes how many bytes `addr` is ahead of the previous 32-bit word alignment
- * boundary.
- */
-static ptrdiff_t misalignment32_of(uintptr_t addr) {
-  return (addr & (alignof(uint32_t) - 1));
-}
-
-/**
  * Performs a "memcpy" of sorts between a main memory buffer and SPI SRAM,
  * which does not support non-word I/O.
  *
@@ -555,6 +547,7 @@ static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
   if (bytes_left == 0) {
     return 0;
   }
+  const uint16_t total_bytes = bytes_left;
 
   // For receipt, we advance the read pointer, which indicates how far ahead
   // we've read so far. For sending, we advance the write pointer, which
@@ -566,87 +559,32 @@ static size_t spi_memcpy(const dif_spi_device_t *spi, fifo_ptrs_t *fifo,
     ptr = &fifo->write_ptr;
   }
 
-  uint16_t total_bytes_available = bytes_left;
-
-  // First, bring the fifo write pointer into word alignment, so we can do
-  // simple full-word I/O rather than partial word I/O; note that the FIFO
-  // SRAM is not guaranteed to support subword writes.
-  ptrdiff_t misalignment = misalignment32_of(ptr->offset);
-  if (misalignment != 0) {
-    // The number of bytes missing to bring `ptr->offset` back into alignment.
-    // For exmaple, 0x3 has misalignment of 3 and realignment of 1.
-    ptrdiff_t realignment = sizeof(uint32_t) - misalignment;
-    // Note that we might be doing less I/O than the misalignment requires; we
-    // might be off by a single byte, but not have the full three bytes for full
-    // realignment.
-    if (realignment > bytes_left) {
-      realignment = bytes_left;
-    }
-
-    // Converts `offset`, which points to a subword boundary, to point to the
-    // start of the current word it points into.
-    ptrdiff_t current_word_offset = ptr->offset - misalignment;
-    uint32_t current_word =
-        mmio_region_read32(spi->base_addr, SPI_DEVICE_BUFFER_REG_OFFSET +
-                                               fifo_base + current_word_offset);
-
-    // Act on only to a suffix of `current_word`, corresponding to the necessary
-    // realignment.
-    uint8_t *current_byte = ((uint8_t *)&current_word) + misalignment;
-    if (is_recv) {
-      memcpy(byte_buf, current_byte, realignment);
-    } else {
-      // When sending, we need to commit the staged write.
-      memcpy(current_byte, byte_buf, realignment);
-      mmio_region_write32(spi->base_addr, SPI_DEVICE_BUFFER_REG_OFFSET +
-                                              fifo_base + current_word_offset,
-                          current_word);
-    }
-
-    fifo_ptr_increment(ptr, realignment, fifo_len);
-    byte_buf += realignment;
-    bytes_left -= realignment;
-  }
-
-  // Now, we just do full word I/O until we run out of stuff to act on.
+  // `mmio_region_memcpy_*_mmio32` functions assume sequential memory access
+  // while the SPI device uses a circular buffer. Therefore, we split the copy
+  // operation into chunks that access the device buffer sequentially.
   while (bytes_left > 0) {
-    // At the end, we may not have a full word to copy, but it's otherwise
-    // the same case as a full word, since we're already word aligned (if
-    // this would be a subword read, it would end the loop anyway).
+    const uint32_t mmio_offset =
+        SPI_DEVICE_BUFFER_REG_OFFSET + fifo_base + ptr->offset;
+    const uint32_t bytes_until_wrap = fifo_len - ptr->offset;
     uint16_t bytes_to_copy = bytes_left;
-    if (bytes_to_copy > sizeof(uint32_t)) {
-      bytes_to_copy = sizeof(uint32_t);
+    if (bytes_to_copy > bytes_until_wrap) {
+      bytes_to_copy = bytes_until_wrap;
     }
-
-    uint32_t current_word = 0;
-    if (is_recv || bytes_to_copy != sizeof(uint32_t)) {
-      // If recieving, we need to read this word always.
-      //
-      // If sending, we only need to write a prefix when writing a subword.
-      // In that case, we need to avoid clobbering the current contents of the
-      // FIFO.
-      current_word =
-          mmio_region_read32(spi->base_addr, SPI_DEVICE_BUFFER_REG_OFFSET +
-                                                 fifo_base + ptr->offset);
-    }
-
-    // Copy a prefix; most of the time, this will be the whole word.
     if (is_recv) {
-      memcpy(byte_buf, &current_word, bytes_to_copy);
+      // SPI device buffer -> `byte_buf`
+      mmio_region_memcpy_from_mmio32(spi->base_addr, mmio_offset, byte_buf,
+                                     bytes_to_copy);
     } else {
-      // When sending, we need to commit the staged write.
-      memcpy(&current_word, byte_buf, bytes_to_copy);
-      mmio_region_write32(
-          spi->base_addr,
-          SPI_DEVICE_BUFFER_REG_OFFSET + fifo_base + ptr->offset, current_word);
+      // `byte_buf` -> SPI device buffer
+      mmio_region_memcpy_to_mmio32(spi->base_addr, mmio_offset, byte_buf,
+                                   bytes_to_copy);
     }
-
     fifo_ptr_increment(ptr, bytes_to_copy, fifo_len);
     byte_buf += bytes_to_copy;
     bytes_left -= bytes_to_copy;
   }
 
-  return total_bytes_available - bytes_left;
+  return total_bytes;
 }
 
 dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,

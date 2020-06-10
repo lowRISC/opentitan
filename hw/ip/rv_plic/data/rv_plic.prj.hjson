@@ -7,14 +7,15 @@
     design_spec:        "hw/ip/rv_plic/doc",
     dv_plan:            "hw/ip/rv_plic/doc/dv_plan",
     hw_checklist:       "hw/ip/rv_plic/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_plic",
     revisions: [
       {
         version:            "0.5",
         life_stage:         "L1",
         design_stage:       "D2",
         verification_stage: "V2",
-        dif_stage:          "S0",
-        commit_id:          "d4d5d2f3bb87af5ca2f2787af5bc19bee04ffc6a",
+        dif_stage:          "S1",
+        commit_id:          "d1f3da165b6c43b20c38f9d3dabdfad8bc6e01a8",
         notes:              "based on FPV at block level",
       }
     ],

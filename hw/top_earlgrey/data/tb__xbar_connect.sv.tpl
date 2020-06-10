@@ -9,23 +9,24 @@ from collections import OrderedDict
 top_hier = 'tb.dut.top_' + top["name"] + '.'
 clk_hier = top_hier + top["clocks"]["hier_paths"]["top"]
 
-clk_freq = {}
-for clock in top["clocks"]["srcs"]:
-  clk_freq[clock["name"]] = clock["freq"]
-
 clk_src = {}
 for xbar in top["xbar"]:
   for clk, src in xbar["clock_srcs"].items():
-    clk_src[clk] = "clk_" + src
+    clk_src[clk] = src
+
+clk_freq = {}
+for clock in top["clocks"]["srcs"]:
+  if clock["name"] in clk_src.values():
+    clk_freq[clock["name"]] = clock["freq"]
 
 hosts = {}
 devices = {}
 for xbar in top["xbar"]:
   for node in xbar["nodes"]:
     if node["type"] == "host" and not node["xbar"]:
-      hosts[node["name"]] = clk_src[node["clock"]]
+      hosts[node["name"]] = "clk_" + clk_src[node["clock"]]
     elif node["type"] == "device" and not node["xbar"]:
-      devices[node["name"]] = clk_src[node["clock"]]
+      devices[node["name"]] = "clk_" + clk_src[node["clock"]]
 %>\
 % for c in clk_freq.keys():
 wire clk_${c};
@@ -56,11 +57,9 @@ initial begin
 % endfor
 
     // bypass clkmgr, force clocks directly
-% for grp in top["clocks"]["groups"]:
-  % for name, src in grp["clocks"].items():
-    % if grp["src"] == "top":
-    force ${clk_hier}${name} = clk_${src};
-    % endif
+% for xbar in top["xbar"]:
+  % for clk, src in xbar["clock_srcs"].items():
+    force ${top_hier}u_xbar_${xbar["name"]}.${clk} = clk_${src};
   % endfor
 % endfor
 

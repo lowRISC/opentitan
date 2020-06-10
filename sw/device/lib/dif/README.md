@@ -13,6 +13,12 @@ There is one DIF library per hardware IP, and each one contains the DIFs
 required to actuate all of the specification-required functionality of the
 hardware they are written for.
 
+## Checklists
+
+This directory also contains checklists for each DIF, in markdown format. They
+are linked to from the [Hardware Dashboard]({{< relref "hw" >}}), in the
+Development Stage column.
+
 ## DIF Style Guide
 
 DIFs are very low-level software, so they have a more rigorous coding style than

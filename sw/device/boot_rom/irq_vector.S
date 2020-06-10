@@ -11,10 +11,15 @@
   // NOTE: The "ax" flag below is necessary to ensure that this section 
   // is allocated executable space in ROM by the linker.
   .section .vectors, "ax"
+  .option push
 
   // Disable RISC-V instruction compression: we need all instructions to 
   // be exactly word wide in the interrupt vector.
   .option norvc
+
+  // Disable RISC-V linker relaxation, as it can compress instructions at
+  // link-time, which we also really don't want.
+  .option norelax
 
   // Exception handler.
   .org 0x00
@@ -48,7 +53,10 @@
   .org 0x80
   j _reset_start
 
-  .option rvc
+  .option pop
+
+  // Put these handlers in the code section.
+  .text
 /**
  * Default exception handler; loops forever.
  */
