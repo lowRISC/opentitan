@@ -1,0 +1,395 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "dcd",
+  clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_aon_i",
+  ],
+  reset_primary: "rst_ni",
+  bus_device: "tlul",
+  bus_host: "none",
+  inter_signal_list: [
+    { struct: "adc",
+      type: "req_rsp",
+      act: "req",
+      name: "adc",
+      package: "dcd_pkg",
+    }
+  ],
+  interrupt_list: [
+    { name: "debug_cable_update",
+      desc: "USB-C debug cable is attached or disconnected",
+    }
+  ],
+  param_list: [
+    { name:    "NumAdcFilter",
+      type:    "int",
+      default: "8",
+      desc:    "Number for ADC filters",
+      local:   "true",
+    }
+    { name:    "NumAdcChannel",
+      type:    "int",
+      default: "2",
+      desc:    "Number for ADC channels",
+      local:   "true",
+    }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "adc_en_ctl",
+      desc: "ADC enable control register",
+      hwqe:     "true",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "ADC enable",
+          desc: "1’b0: to power down ADC and DCD FSM will enter the reset state; 1’b1: to power up ADC and DCD FSM will start",
+        }
+      ]
+    }
+    { name: "adc_pd_ctl",
+      desc: "ADC PowerDown(PD) control register",
+      hwqe:     "true",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "ADC low-power mode",
+          desc: "1’b0: adc_pd is disabled, use adc_sample_ctl. 1'b1: adc_pd is enabled, use both adc_lp_sample_ctl & adc_sample_ctl",
+          resval: "0",
+        }
+        { bits: "7:4",
+          name: "ADC power up time",
+          desc: "Configure ADC power up time in cycles, 200KHz(5us)",
+          resval: "6",
+        }
+        { bits: "31:8",
+          name: "ADC deep-sleep wakeup timer",
+          desc: "Configure the timer in cycles, 200KHz(5us) to wake up ADC in low-power mode",
+          resval: "1600",
+        }
+      ]
+    }
+    { name: "adc_lp_sample_ctl",
+      desc: "ADC Low-Power(LP) sample control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe:  "true",
+      fields: [
+        { bits: "7:0",
+          name: "LP sample count",
+          desc: "The number of samples in low-power mode when adc_pd_ctl is enabled. After the programmed number is met, ADC won’t be powered down any more.",
+          resval: "4",
+        }
+        { bits: "15:8",
+          name: "ADC latency",
+          desc: "The number of cycles(200KHz; 5us) ADC takes to output the value",
+          resval: "44",
+        }
+      ],
+    }
+    { name: "adc_sample_ctl",
+      desc: "ADC sample control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "155",
+      fields: [
+        { bits: "15:0",
+          name: "ADC regular sample count",
+          desc: "The number of samples to meet the debounce spec. used after the low-power mode condition is met or in the regular power mode",
+        }
+      ]
+    }
+    { name: "adc_fsm_rst",
+      desc: "ADC FSM reset control",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "rst_en",
+          desc: "1’b0: Normal functional mode. 1’b1: SW to reset all the FSMs and timers",
+        }
+      ]
+    }
+    { multireg: {
+        name: "adc_chn0_filter_ctl",
+        desc: '''ADC channel0 filter range
+
+	      There are 8 filters to define the potential range(min, max)
+              [11:0]: min value [1:0] RO 0
+              [12]: condition(in the box or out of the box)
+	      [27:16]: max value [17:16] RO 0
+	      each step is 2.148mV
+	      ''',
+        count: "NumAdcFilter",
+        cname: "DCD",
+        hwqe : "true",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        resval: "0",
+        fields: [
+          { bits: "1:0",
+	    name: "min_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "11:2",
+	    name: "min",
+	    desc: "10-bit for chn0 filter min value ",
+	  }
+          { bits: "12",
+	    name: "cond",
+	    desc: "1-bit for the condition; 1'b0 means min<ADC<max, 1'b1 means ADC>=max or ADC=<min ",
+	  }
+          { bits: "17:16",
+	    name: "max_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "27:18",
+	    name: "max",
+	    desc: "10-bit for chn0 filter max value ",
+	  }
+        ],
+      }
+    }
+    { multireg: {
+        name: "adc_chn1_filter_ctl",
+        desc: '''ADC channel1 filter range
+
+	      There are 8 filters to define the potential range(min, max)
+              [11:0]: min value [1:0] RO 0
+              [12]: condition(in the box or out of the box)
+	      [27:16]: max value [17:16] RO 0
+	      each step is 2.148mV
+	      ''',
+        count: "NumAdcFilter",
+        cname: "DCD",
+        hwqe : "true",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        resval: "0",
+        fields: [
+          { bits: "1:0",
+	    name: "min_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "11:2",
+	    name: "min",
+	    desc: "10-bit for chn0 filter min value ",
+	  }
+          { bits: "12",
+	    name: "cond",
+	    desc: "1-bit for the condition; 1'b0 means min<ADC<max, 1'b1 means ADC>=max or ADC=<min ",
+	  }
+          { bits: "17:16",
+	    name: "max_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "27:18",
+	    name: "max",
+	    desc: "10-bit for chn0 filter max value ",
+	  }
+        ],
+      }
+    }
+    { multireg: {
+        name: "adc_chn_val",
+        desc: "ADC value sampled on channel",
+        count: "NumAdcChannel",
+        cname: "DCD",
+        hwqe : "true",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        resval: "0",
+        fields: [
+          { bits: "1:0",
+	    name: "adc_chn_value_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "11:2",
+	    name: "adc_chn_value",
+	    desc: "Latest ADC value sampled on channel. each step is 2.148mV",
+	  }
+          { bits: "17:16",
+	    name: "adc_chn_value_int_ext",
+	    desc: "2-bit extension; RO 0",
+	  }
+          { bits: "27:18",
+	    name: "adc_chn_value_int",
+	    desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected)each step is 2.148mV",
+	  }
+        ],
+      }
+    }
+    { name: "adc_wakeup_ctl",
+      desc: "wakeup control",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "chn0_1_filter0_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "1",
+	  name: "chn0_1_filter1_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "2",
+	  name: "chn0_1_filter2_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "3",
+	  name: "chn0_1_filter3_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "4",
+	  name: "chn0_1_filter4_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "5",
+	  name: "chn0_1_filter5_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "6",
+	  name: "chn0_1_filter6_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "7",
+	  name: "chn0_1_filter7_en",
+          desc: "0: disable; 1: enable",
+        }
+      ]
+    }
+    { name: "adc_wakeup_status",
+      desc: "Wakeup internal status", 
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "cc_sink_det",
+          desc: "0: filter0 condition is not met; 1: filter0 condition is met",
+        }
+	{ bits: "1",
+          name: "cc_1A5_sink_det",
+          desc: "0: filter1 condition is not met; 1: filter1 condition is met",
+        }
+	{ bits: "2",
+          name: "cc_3A0_sink_det",
+          desc: "0: filter2 condition is not met; 1: filter2 condition is met",
+        }
+	{ bits: "3",
+          name: "cc_src_det",
+          desc: "0: filter3 condition is not met; 1: filter3 condition is met",
+        }
+	{ bits: "4",
+          name: "cc_1A5_src_det",
+          desc: "0: filter4 condition is not met; 1: filter4 condition is met",
+        }
+	{ bits: "5",
+          name: "cc_src_det_flip",
+          desc: "0: filter5 condition is not met; 1: filter5 condition is met",
+        }
+	{ bits: "6",
+          name: "cc_1A5_src_det_flip",
+          desc: "0: filter6 condition is not met; 1: filter6 condition is met",
+        }
+	{ bits: "7",
+          name: "cc_discon",
+          desc: "0: filter7 condition is not met; 1: filter7 condition is met",
+        }
+      ]
+    }
+    { name: "adc_filter_ctl",
+      desc: "Debug cable internal control", 
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "chn0_1_filter0_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "1",
+	  name: "chn0_1_filter1_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "2",
+	  name: "chn0_1_filter2_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "3",
+	  name: "chn0_1_filter3_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "4",
+	  name: "chn0_1_filter4_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "5",
+	  name: "chn0_1_filter5_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "6",
+	  name: "chn0_1_filter6_en",
+          desc: "0: disable; 1: enable",
+        }
+        { bits: "7",
+	  name: "chn0_1_filter7_en",
+          desc: "0: disable; 1: enable",
+        }
+      ]
+    }
+    { name: "adc_filter_status",
+      desc: "Debug cable internal status", 
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      hwqe: "true",
+      resval: "0",
+      fields: [
+        { bits: "0",
+	  name: "cc_sink_det",
+          desc: "0: filter0 condition is not met; 1: filter0 condition is met",
+        }
+	{ bits: "1",
+          name: "cc_1A5_sink_det",
+          desc: "0: filter1 condition is not met; 1: filter1 condition is met",
+        }
+	{ bits: "2",
+          name: "cc_3A0_sink_det",
+          desc: "0: filter2 condition is not met; 1: filter2 condition is met",
+        }
+	{ bits: "3",
+          name: "cc_src_det",
+          desc: "0: filter3 condition is not met; 1: filter3 condition is met",
+        }
+	{ bits: "4",
+          name: "cc_1A5_src_det",
+          desc: "0: filter4 condition is not met; 1: filter4 condition is met",
+        }
+	{ bits: "5",
+          name: "cc_src_det_flip",
+          desc: "0: filter5 condition is not met; 1: filter5 condition is met",
+        }
+	{ bits: "6",
+          name: "cc_1A5_src_det_flip",
+          desc: "0: filter6 condition is not met; 1: filter6 condition is met",
+        }
+	{ bits: "7",
+          name: "cc_discon",
+          desc: "0: filter7 condition is not met; 1: filter7 condition is met",
+        }
+      ]
+    }
+  ],
+}
