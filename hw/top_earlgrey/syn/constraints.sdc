@@ -180,7 +180,7 @@ set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK] \
 
 # UART loopback path can be considered to be a false path
 set_false_path -from dio_in_i[$PORT_UART_RX] -to dio_out_o[$PORT_UART_TX]
-set_false_path -from [get_ports u_uart*/cio_rx_i] -to [get_ports u_uart*/cio_tx_o]
+set_false_path -through [get_ports u_uart*/cio_rx_i] -through [get_ports u_uart*/cio_tx_o]
 
 #####################
 # I/O drive/load    #
