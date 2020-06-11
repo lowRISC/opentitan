@@ -2,7 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-sw_tests = {}
+# All tests added to this dictionary will result in build targets that have
+# names starting `sw/device/tests/<test_name>`. They will not contain the
+# subdirectory name, because the build targets are really declared at the bottom
+# of this file, rather than in the subdirectories.
+sw_tests = {
+  # 'test_name': test_lib,
+}
 
 subdir('dif')
 subdir('sim_dv')
