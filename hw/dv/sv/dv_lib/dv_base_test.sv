@@ -32,6 +32,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     // knob to en/dis scb (enabled by default)
     void'($value$plusargs("en_scb=%0b", cfg.en_scb));
+    void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
+    void'($value$plusargs("en_scb_mem_chk=%0b", cfg.en_scb_mem_chk));
     // knob to cfg all agents with zero delays
     void'($value$plusargs("zero_delays=%0b", cfg.zero_delays));
   endfunction : build_phase
