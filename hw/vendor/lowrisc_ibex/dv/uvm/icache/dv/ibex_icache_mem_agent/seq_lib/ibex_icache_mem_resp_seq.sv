@@ -7,9 +7,6 @@
 class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
 
   // Knobs
-  //
-  // gap_between_seeds is the expected number of memory fetches between each seed update.
-  int unsigned gap_between_seeds = 499;
 
   protected ibex_icache_mem_model #(.BusWidth (32)) mem_model;
 
@@ -35,15 +32,12 @@ class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
 
   task pre_start();
     super.pre_start();
-    mem_model = new("mem_model", cfg.disable_pmp_errs, cfg.disable_mem_errs);
+    mem_model = new("mem_model", cfg.disable_pmp_errs, cfg.disable_mem_errs, cfg.mem_err_shift);
   endtask
 
   task body();
     ibex_icache_mem_req_item  req_item  = new("req_item");
     ibex_icache_mem_resp_item resp_item = new("resp_item");
-
-    // Set knob to control randomization
-    resp_item.gap_between_seeds = gap_between_seeds;
 
     forever begin
       // Wait for a transaction request.
@@ -65,27 +59,26 @@ class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
   //
   task automatic take_req(ibex_icache_mem_resp_item resp_item,
                           ibex_icache_mem_req_item  req_item);
+    bit [31:0] tmp_seed;
 
-    resp_item.is_grant = 1'b0;
-    resp_item.address  = req_item.address;
-    resp_item.rdata    = 'X;
-
-    start_item(resp_item);
-    `DV_CHECK_RANDOMIZE_FATAL(resp_item)
-
-    // Take any new seed (so it will apply to this request and all future requests)
-    if (resp_item.seed != 32'd0) begin
-      `uvm_info(`gfn, $sformatf("New memory seed: 0x%08h", resp_item.seed), UVM_HIGH)
-      cur_seed = resp_item.seed;
+    // Consume any new seeds. These will have been pushed into the sequencer's seed_fifo by the core
+    // agent. Any new seed will apply to this request and all future requests (we need tmp_seed here
+    // because otherwise the first failed call to try_get will trash the value we got).
+    while(p_sequencer.seed_fifo.try_get(tmp_seed)) begin
+      cur_seed = tmp_seed;
+      `uvm_info(`gfn, $sformatf("New memory seed: 0x%08h", cur_seed), UVM_HIGH)
     end
-
-    // Finally, fill in the err signal
-    resp_item.err = mem_model.is_pmp_error(cur_seed, req_item.address);
 
     // Warn the "grant side" to expect this fetch
     pending_grants.push_back({req_item.address, cur_seed});
 
-    // And finish the item
+    resp_item.is_grant = 1'b0;
+    resp_item.address  = req_item.address;
+    resp_item.rdata    = 'X;
+    resp_item.err = mem_model.is_pmp_error(cur_seed, req_item.address);
+
+    start_item(resp_item);
+    `DV_CHECK_RANDOMIZE_FATAL(resp_item)
     finish_item(resp_item);
 
   endtask : take_req

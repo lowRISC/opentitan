@@ -15,30 +15,28 @@
 module ibex_fetch_fifo #(
   parameter int unsigned NUM_REQS = 2
 ) (
-    input  logic        clk_i,
-    input  logic        rst_ni,
+    input  logic                clk_i,
+    input  logic                rst_ni,
 
     // control signals
-    input  logic        clear_i,          // clears the contents of the FIFO
+    input  logic                clear_i,   // clears the contents of the FIFO
+    output logic [NUM_REQS-1:0] busy_o,
 
     // input port
-    input  logic        in_valid_i,
-    output logic        in_ready_o,
-    input  logic [31:0] in_addr_i,
-    input  logic [31:0] in_rdata_i,
-    input  logic        in_err_i,
+    input  logic                in_valid_i,
+    input  logic [31:0]         in_addr_i,
+    input  logic [31:0]         in_rdata_i,
+    input  logic                in_err_i,
 
     // output port
-    output logic        out_valid_o,
-    input  logic        out_ready_i,
-    output logic [31:0] out_addr_o,
-    output logic [31:0] out_rdata_o,
-    output logic        out_err_o,
-    output logic        out_err_plus2_o
+    output logic                out_valid_o,
+    input  logic                out_ready_i,
+    output logic [31:0]         out_addr_o,
+    output logic [31:0]         out_rdata_o,
+    output logic                out_err_o,
+    output logic                out_err_plus2_o
 );
 
-  // To gain extra performance DEPTH should be increased, this is due to some inefficiencies in the
-  // way the fetch fifo operates see issue #574 for more details
   localparam int unsigned DEPTH = NUM_REQS+1;
 
   // index 0 is used for output
@@ -159,14 +157,14 @@ module ibex_fetch_fifo #(
   // The LSB of the address is unused, since all addresses are halfword aligned
   assign unused_addr_in = in_addr_i[0];
 
-  ////////////////
-  // input port //
-  ////////////////
+  /////////////////
+  // FIFO status //
+  /////////////////
 
-  // Accept data as long as our FIFO has space to accept the maximum number of outstanding
-  // requests. Note that the prefetch buffer does not count how many requests are actually
-  // outstanding, so space must be reserved for the maximum number.
-  assign in_ready_o = ~valid_q[DEPTH-NUM_REQS];
+  // Indicate the fill level of fifo-entries. This is used to determine when a new request can be
+  // made on the bus. The prefetch buffer only needs to know about the upper entries which overlap
+  // with NUM_REQS.
+  assign busy_o = valid_q[DEPTH-1:DEPTH-NUM_REQS];
 
   /////////////////////
   // FIFO management //

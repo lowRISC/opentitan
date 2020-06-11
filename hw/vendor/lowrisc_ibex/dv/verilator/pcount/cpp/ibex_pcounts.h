@@ -20,7 +20,7 @@ extern const std::vector<std::string> ibex_counter_names;
  * can be passed in directly to this function.
  *
  * There are two options for string formatting, csv or pretty-print. Both
- * produce one counter name and value per line. csv just seperates them with a
+ * produce one counter name and value per line. csv just separates them with a
  * comma and no further formatting. pretty-print uses a colon and aligns the
  * values.
  *

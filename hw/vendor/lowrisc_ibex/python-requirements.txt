@@ -10,3 +10,9 @@ git+https://github.com/lowRISC/fusesoc.git@ot
 
 pyyaml
 mako
+
+# Needed by dvsim.py (not actually used in Ibex)
+premailer
+
+# Recurse to get any requirements from riscv-dv
+-r vendor/google_riscv-dv/requirements.txt

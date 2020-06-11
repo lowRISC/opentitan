@@ -10,11 +10,15 @@ class ibex_icache_mem_agent_cov
   // the base class provides the following handles for use:
   // ibex_icache_mem_agent_cfg: cfg
 
-  // covergroups
+  // Spot the gnt and pmp_err signal being high at the same time (the error should take precedence).
+  // This is sampled when gnt is high and tracks whether pmp_err is high too.
+  covergroup gnt_err_cg with function sample(bit pmp_err);
+    coverpoint pmp_err;
+  endgroup : gnt_err_cg
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // instantiate all covergroups here
+    gnt_err_cg = new();
   endfunction : new
 
 endclass

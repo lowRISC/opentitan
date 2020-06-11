@@ -51,6 +51,7 @@ module ibex_prefetch_buffer (
   logic [NUM_REQS-1:0] rdata_outstanding_n, rdata_outstanding_s, rdata_outstanding_q;
   logic [NUM_REQS-1:0] branch_discard_n, branch_discard_s, branch_discard_q;
   logic [NUM_REQS-1:0] rdata_pmp_err_n, rdata_pmp_err_s, rdata_pmp_err_q;
+  logic [NUM_REQS-1:0] rdata_outstanding_rev;
 
   logic [31:0]         stored_addr_d, stored_addr_q;
   logic                stored_addr_en;
@@ -62,6 +63,7 @@ module ibex_prefetch_buffer (
   logic                fifo_valid;
   logic                fifo_ready;
   logic                fifo_clear;
+  logic [NUM_REQS-1:0] fifo_busy;
 
   ////////////////////////////
   // Prefetch buffer status //
@@ -82,6 +84,16 @@ module ibex_prefetch_buffer (
   // altered the FENCE.I implementation may require changes.
   assign fifo_clear = branch_i;
 
+  // Reversed version of rdata_outstanding_q which can be overlaid with fifo fill state
+  for (genvar i = 0; i < NUM_REQS; i++) begin : gen_rd_rev
+    assign rdata_outstanding_rev[i] = rdata_outstanding_q[NUM_REQS-1-i];
+  end
+
+  // The fifo is ready to accept a new request if it is not full - including space reserved for
+  // requests already outstanding.
+  // Overlay the fifo fill state with the outstanding requests to see if there is space.
+  assign fifo_ready = ~&(fifo_busy | rdata_outstanding_rev);
+
   ibex_fetch_fifo #(
     .NUM_REQS (NUM_REQS)
   ) fifo_i (
@@ -89,13 +101,12 @@ module ibex_prefetch_buffer (
       .rst_ni                ( rst_ni            ),
 
       .clear_i               ( fifo_clear        ),
+      .busy_o                ( fifo_busy         ),
 
       .in_valid_i            ( fifo_valid        ),
       .in_addr_i             ( addr_i            ),
       .in_rdata_i            ( instr_rdata_i     ),
       .in_err_i              ( instr_or_pmp_err  ),
-      .in_ready_o            ( fifo_ready        ),
-
 
       .out_valid_o           ( valid_o           ),
       .out_ready_i           ( ready_i           ),

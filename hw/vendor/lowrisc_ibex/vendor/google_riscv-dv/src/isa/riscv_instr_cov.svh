@@ -62,8 +62,7 @@
   logical_similarity_e  logical_similarity;
   string                trace;
 
-  // TODO, remove it?
-  //`VECTOR_INCLUDE("riscv_instr_cov_item_inc_declares.sv")
+  `VECTOR_INCLUDE("riscv_instr_cov_item_inc_declares.sv")
 
   virtual function void pre_sample();
     unaligned_pc = (pc[1:0] != 2'b00);
@@ -274,13 +273,7 @@
         get_val(operands[1], imm);
       end
       I_FORMAT: begin
-        // TODO, support I_FORMAT floating point later
-        // if (group == RV32F) return;
-        if (instr_name inside {FSRI, FSRIW}) begin
-          `DV_CHECK_FATAL(operands.size() == 4, instr_name)
-        end else begin
-          `DV_CHECK_FATAL(operands.size() == 3, instr_name)
-        end
+        `DV_CHECK_FATAL(operands.size() == 3, instr_name)
         if(category == LOAD) begin
           // load rd, imm(rs1)
           rs1 = get_gpr(operands[2]);
@@ -294,13 +287,6 @@
           end else begin
             get_val(operands[1], csr);
           end
-        //end else if (instr_name inside {FSRI, FSRIW}) begin
-        //  // fsri rd, rs1, rs3, imm
-        //  rs1 = get_gpr(operands[1]);
-        //  rs1_value = get_gpr_state(operands[1]);
-        //  rs3 = get_gpr(operands[2]);
-        //  rs3_value = get_gpr_state(operands[2]);
-        //  get_val(operands[3], imm);
         end else begin
           // addi rd, rs1, imm
           rs1 = get_gpr(operands[1]);
@@ -311,11 +297,6 @@
       S_FORMAT, B_FORMAT: begin
         `DV_CHECK_FATAL(operands.size() == 3)
         if(category == STORE) begin
-          // sw rs2,imm(rs1)
-          //update_instr_reg_by_abi_name(operands[0], // FSW rs2 is fp, TODO
-          //                             rs2, rs2_value,
-          //                             fs2, fs2_value);
-
           rs2 = get_gpr(operands[0]);
           rs2_value = get_gpr_state(operands[0]);
           rs1 = get_gpr(operands[2]);
@@ -331,8 +312,7 @@
         end
       end
       R_FORMAT: begin
-        if ((has_rs2 || category == CSR) &&
-            !(instr_name inside {FCLASS_S, FCLASS_D})) begin
+        if (has_rs2 || category == CSR) begin
           `DV_CHECK_FATAL(operands.size() == 3)
         end else begin
           `DV_CHECK_FATAL(operands.size() == 2)
@@ -347,16 +327,6 @@
           rs1 = get_gpr(operands[2]);
           rs1_value = get_gpr_state(operands[2]);
         end
-        //else if (group inside {RV32F, RV64F, RV32D, RV64D}) begin // TODO
-        //  // fs1
-        //  fs1 = get_fpr(operands[1]);
-        //  fs1_value = get_gpr_state(operands[1]);
-        //  // fs2
-        //  if (!instr_name inside {FCLASS_S, FCLASS_D}) begin
-        //    fs2 = get_fpr(operands[2]);
-        //    fs2_value = get_gpr_state(operands[2]);
-        //  end
-        //end
         else begin
           // add rd, rs1, rs2
           rs1 = get_gpr(operands[1]);
@@ -369,15 +339,6 @@
       end
       R4_FORMAT: begin
         `DV_CHECK_FATAL(operands.size() == 4)
-        //update_instr_reg_by_abi_name(operands[1], // TODO
-        //                             rs1, rs1_value,
-        //                             fs1, fs1_value);
-        //update_instr_reg_by_abi_name(operands[2],
-        //                             rs2, rs2_value,
-        //                             fs2, fs2_value);
-        //update_instr_reg_by_abi_name(operands[3],
-        //                             rs3, rs3_value,
-        //                             fs3, fs3_value);
         rs1 = get_gpr(operands[1]);
         rs1_value = get_gpr_state(operands[1]);
         rs2 = get_gpr(operands[2]);
@@ -453,11 +414,11 @@
         // c.j imm
         get_val(operands[0], imm);
       end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported format %0s", format))
     endcase
   endfunction : update_src_regs
 
   virtual function void update_dst_regs(string reg_name, string val_str);
-    // update_instr_reg_by_abi_name(pair[0], instr.rd, instr.rd_value, instr.fd, instr.fd_value);
     get_val(val_str, gpr_state[reg_name], .hex(1));
     rd = get_gpr(reg_name);
     rd_value = get_gpr_state(reg_name);
@@ -480,31 +441,3 @@
       return 0;
     end
   endfunction : get_gpr_state
-
-  // TODO
-//  virtual function riscv_fpr_t get_fpr(input string str);
-//    str = str.toupper();
-//    if (!fpr_enum::from_name(str, get_fpr)) begin
-//      `uvm_fatal(`gfn, $sformatf("Cannot convert %0s to FPR", str))
-//    end
-//  endfunction : get_fpr
-//
-//  function bit is_fp_reg(input string str);
-//    riscv_fpr_t tmp;
-//    str = str.toupper();
-//    return fpr_enum::from_name(str, tmp);
-//  endfunction : is_fp_reg
-//
-//  virtual function void update_instr_reg_by_abi_name(string              abi_name,
-//                                             ref riscv_reg_t     rs,
-//                                             ref bit [XLEN-1:0]  rs_value,
-//                                             ref riscv_fpr_t     fs,
-//                                             ref bit [XLEN-1:0]  fs_value);
-//    if (is_fp_reg(abi_name)) begin
-//      fs = get_fpr(abi_name);
-//      fs_value = get_gpr_state(abi_name);
-//    end else begin
-//      rs = get_gpr(abi_name);
-//      rs_value = get_gpr_state(abi_name);
-//    end
-//  endfunction : update_instr_reg_by_abi_name

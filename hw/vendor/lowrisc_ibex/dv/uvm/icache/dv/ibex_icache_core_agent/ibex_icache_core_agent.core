@@ -23,6 +23,7 @@ filesets:
       - ibex_icache_core_monitor.sv: {is_include_file: true}
       - ibex_icache_core_agent.sv: {is_include_file: true}
       - seq_lib/ibex_icache_core_base_seq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_core_back_line_seq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_core_seq_list.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

@@ -39,8 +39,12 @@ class ibex_icache_env extends dv_base_env #(
     if (cfg.en_scb) begin
       core_agent.monitor.analysis_port.connect(scoreboard.core_fifo.analysis_export);
       mem_agent.monitor.analysis_port.connect(scoreboard.mem_fifo.analysis_export);
-      mem_agent.driver.analysis_port.connect(scoreboard.seed_fifo.analysis_export);
+      core_agent.driver.analysis_port.connect(scoreboard.seed_fifo.analysis_export);
     end
+    if (cfg.is_active && cfg.mem_agent_cfg.is_active && cfg.core_agent_cfg.is_active) begin
+      core_agent.driver.analysis_port.connect(mem_agent.sequencer.seed_fifo.analysis_export);
+    end
+
     if (cfg.is_active && cfg.core_agent_cfg.is_active) begin
       virtual_sequencer.core_sequencer_h = core_agent.sequencer;
     end

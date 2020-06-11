@@ -9,6 +9,7 @@ interface ibex_icache_core_if (input clk, input rst_n);
 
   // Branch request
   logic         branch;
+  logic         branch_spec;
   logic [31:0]  branch_addr;
 
   // Passing instructions back to the core
@@ -37,6 +38,7 @@ interface ibex_icache_core_if (input clk, input rst_n);
     output req;
 
     output branch;
+    output branch_spec;
     output branch_addr;
 
     output ready;
@@ -51,6 +53,7 @@ interface ibex_icache_core_if (input clk, input rst_n);
   clocking monitor_cb @(posedge clk);
     input  req;
     input  branch;
+    input  branch_spec;
     input  branch_addr;
     input  ready;
     input  valid;
@@ -72,11 +75,13 @@ interface ibex_icache_core_if (input clk, input rst_n);
   // address.
   task automatic branch_to(logic [31:0] addr);
     driver_cb.branch      <= 1'b1;
+    driver_cb.branch_spec <= 1'b1;
     driver_cb.branch_addr <= addr;
 
     @(driver_cb);
 
     driver_cb.branch      <= 1'b0;
+    driver_cb.branch_spec <= 1'b0;
     driver_cb.branch_addr <= 'X;
   endtask
 
@@ -98,11 +103,36 @@ interface ibex_icache_core_if (input clk, input rst_n);
   // Reset all the signals from the core to the cache (the other direction is controlled by the
   // DUT)
   task automatic reset();
-    driver_cb.req        <= 1'b0;
-    driver_cb.branch     <= 1'b0;
-    driver_cb.ready      <= 1'b0;
-    driver_cb.enable     <= 1'b0;
-    driver_cb.invalidate <= 1'b0;
+    driver_cb.req         <= 1'b0;
+    driver_cb.branch      <= 1'b0;
+    driver_cb.branch_spec <= 1'b0;
+    driver_cb.ready       <= 1'b0;
+    driver_cb.enable      <= 1'b0;
+    driver_cb.invalidate  <= 1'b0;
   endtask
+
+
+  // Coverage properties
+
+  // Spot a valid signal being cancelled. This happens when valid was high and the core hasn't taken
+  // the corresponding data, but we assert the branch line and the cache doesn't yet have the data
+  // at the requested address.
+  //
+  // We also track whether rdy was high on the cycle where the branch got cancelled, and pass it
+  // back to a covergroup.
+  sequence cancelled_valid;
+    @(posedge clk)
+      $rose(valid)
+      ##1
+      (valid & ~ready) [*0:$]
+      ##1
+      (branch, cover_cancelled_valid());
+  endsequence : cancelled_valid
+  cover property (cancelled_valid);
+
+  bit cancelled_valid_trig = 0;
+  function void cover_cancelled_valid();
+    cancelled_valid_trig = ~cancelled_valid_trig;
+  endfunction
 
 endinterface

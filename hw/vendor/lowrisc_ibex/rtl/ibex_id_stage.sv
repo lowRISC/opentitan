@@ -22,6 +22,7 @@ module ibex_id_stage #(
     parameter bit RV32B           = 0,
     parameter bit DataIndTiming   = 1'b0,
     parameter bit BranchTargetALU = 0,
+    parameter bit SpecBranch      = 0,
     parameter bit WritebackStage  = 0
 ) (
     input  logic                      clk_i,
@@ -60,10 +61,8 @@ module ibex_id_stage #(
     input  logic [31:0]               pc_id_i,
 
     // Stalls
-    input  logic                      ex_valid_i,     // EX stage has valid output
-    input  logic                      lsu_valid_i,    // LSU has valid output, or is done
-    input  logic                      lsu_load_i,     // LSU is performing a load
-    input  logic                      lsu_busy_i,     // LSU is busy
+    input  logic                      ex_valid_i,       // EX stage has valid output
+    input  logic                      lsu_resp_valid_i, // LSU has valid output, or is done
     // ALU
     output ibex_pkg::alu_op_e         alu_operator_ex_o,
     output logic [31:0]               alu_operand_a_ex_o,
@@ -208,6 +207,7 @@ module ibex_id_stage #(
   logic        controller_run;
   logic        stall_ld_hz;
   logic        stall_mem;
+  logic        lsu_req_in_id;
   logic        stall_multdiv;
   logic        stall_branch;
   logic        stall_jump;
@@ -335,6 +335,12 @@ module ibex_id_stage #(
         default:         imm_b = 32'h4;
       endcase
     end
+    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
+        IMM_B_I,
+        IMM_B_S,
+        IMM_B_U,
+        IMM_B_INCR_PC,
+        IMM_B_INCR_ADDR})
   end else begin : g_nobtalu
     op_a_sel_e  unused_a_mux_sel;
     imm_b_sel_e unused_b_mux_sel;
@@ -357,6 +363,14 @@ module ibex_id_stage #(
         default:         imm_b = 32'h4;
       endcase
     end
+    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
+        IMM_B_I,
+        IMM_B_S,
+        IMM_B_B,
+        IMM_B_U,
+        IMM_B_J,
+        IMM_B_INCR_PC,
+        IMM_B_INCR_ADDR})
   end
 
   // ALU MUX for Operand B
@@ -586,9 +600,11 @@ module ibex_id_stage #(
       .trigger_match_i                ( trigger_match_i         ),
 
       // stall signals
+      .lsu_req_in_id_i                ( lsu_req_in_id           ),
       .stall_id_i                     ( stall_id                ),
       .stall_wb_i                     ( stall_wb                ),
       .flush_id_o                     ( flush_id                ),
+      .ready_wb_i                     ( ready_wb_i              ),
 
       // Performance Counters
       .perf_jump_o                    ( perf_jump_o             ),
@@ -747,7 +763,7 @@ module ibex_id_stage #(
               stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
               branch_set_d  = branch_decision_i | data_ind_timing_i;
               // Speculative branch (excludes branch_decision_i)
-              branch_spec   = 1'b1;
+              branch_spec   = SpecBranch ? 1'b1 : branch_decision_i;
               perf_branch_o = 1'b1;
             end
             jump_in_dec: begin
@@ -803,7 +819,7 @@ module ibex_id_stage #(
   if (WritebackStage) begin
     assign multicycle_done = lsu_req_dec ? ~stall_mem : ex_valid_i;
   end else begin
-    assign multicycle_done = lsu_req_dec ? lsu_valid_i : ex_valid_i;
+    assign multicycle_done = lsu_req_dec ? lsu_resp_valid_i : ex_valid_i;
   end
 
   // Signal instruction in ID is in it's first cycle. It can remain in its
@@ -814,8 +830,6 @@ module ibex_id_stage #(
   assign instr_first_cycle_id_o = instr_first_cycle;
 
   if (WritebackStage) begin : gen_stall_mem
-    logic unused_lsu_busy;
-
     // Register read address matches write address in WB
     logic rf_rd_a_wb_match;
     logic rf_rd_b_wb_match;
@@ -823,33 +837,16 @@ module ibex_id_stage #(
     logic rf_rd_a_hz;
     logic rf_rd_b_hz;
 
-    logic data_req_complete_d;
-    logic data_req_complete_q;
-
     logic outstanding_memory_access;
 
     logic instr_kill;
 
-    assign unused_lsu_busy = lsu_busy_i;
-
-    assign data_req_complete_d =
-      (data_req_complete_q | (lsu_req & lsu_req_done_i)) & ~instr_id_done_o;
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-        data_req_complete_q   <= 1'b0;
-      end else begin
-        data_req_complete_q   <= data_req_complete_d;
-      end
-    end
-
     // Is a memory access ongoing that isn't finishing this cycle
     assign outstanding_memory_access = (outstanding_load_wb_i | outstanding_store_wb_i) &
-                                       ~lsu_valid_i;
+                                       ~lsu_resp_valid_i;
 
     // Can start a new memory access if any previous one has finished or is finishing
-    // Don't start a new memory access if this instruction has already done it's request
-    assign data_req_allowed = ~outstanding_memory_access & ~data_req_complete_q;
+    assign data_req_allowed = ~outstanding_memory_access;
 
     // Instruction won't execute because:
     // - There is a pending exception in writeback
@@ -880,12 +877,20 @@ module ibex_id_stage #(
       instr_valid_i & ~instr_kill & ~instr_executing |-> stall_id)
 
     // Stall for reasons related to memory:
-    // * Requested by LSU (load/store in ID/EX needs to be held in ID/EX whilst a data request or
-    //   granted or the second half of a misaligned access is sent out)
-    // * LSU access required but data requests aren't currently allowed
     // * There is an outstanding memory access that won't resolve this cycle (need to wait to allow
     //   precise exceptions)
-    assign stall_mem = instr_valid_i & ((lsu_req_dec & (~data_req_allowed | (~data_req_complete_q & ~lsu_req_done_i))) | outstanding_memory_access);
+    // * There is a load/store request not being granted or which is unaligned and waiting to issue
+    //   a second request (needs to stay in ID for the address calculation)
+    assign stall_mem = instr_valid_i & (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
+
+    // If we stall a load in ID for any reason, it must not make an LSU request
+    // (otherwide we might issue two requests for the same instruction)
+    `ASSERT(IbexStallMemNoRequest,
+      instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
+
+    // Indicate to the controller that an lsu req is in ID stage - we cannot handle interrupts or
+    // debug requests until the load/store completes
+    assign lsu_req_in_id = instr_valid_i & lsu_req_dec;
 
     assign rf_rd_a_wb_match = (rf_waddr_wb_i == rf_raddr_a_o) & |rf_raddr_a_o;
     assign rf_rd_b_wb_match = (rf_waddr_wb_i == rf_raddr_b_o) & |rf_raddr_b_o;
@@ -901,7 +906,7 @@ module ibex_id_stage #(
     assign rf_rdata_a_fwd = rf_rd_a_wb_match & rf_write_wb_i ? rf_wdata_fwd_wb_i : rf_rdata_a_i;
     assign rf_rdata_b_fwd = rf_rd_b_wb_match & rf_write_wb_i ? rf_wdata_fwd_wb_i : rf_rdata_b_i;
 
-    assign stall_ld_hz = outstanding_load_wb_i & lsu_load_i & (rf_rd_a_hz | rf_rd_b_hz) & rf_write_wb_i;
+    assign stall_ld_hz = outstanding_load_wb_i & (rf_rd_a_hz | rf_rd_b_hz);
 
     assign instr_type_wb_o = ~lsu_req_dec ? WB_INSTR_OTHER :
                               lsu_we      ? WB_INSTR_STORE :
@@ -921,10 +926,11 @@ module ibex_id_stage #(
 
     // Without Writeback Stage always stall the first cycle of a load/store.
     // Then stall until it is complete
-    assign stall_mem = instr_valid_i & (lsu_busy_i | (lsu_req_dec & (~lsu_valid_i | instr_first_cycle)));
+    assign stall_mem = instr_valid_i & (lsu_req_dec & (~lsu_resp_valid_i | instr_first_cycle));
 
     // No load hazards without Writeback Stage
-    assign stall_ld_hz = 1'b0;
+    assign stall_ld_hz   = 1'b0;
+    assign lsu_req_in_id = 1'b0;
 
     // Without writeback stage any valid instruction that hasn't seen an error will execute
     assign instr_executing = instr_valid_i & ~instr_fetch_err_i & controller_run;
@@ -951,7 +957,6 @@ module ibex_id_stage #(
     logic [31:0] unused_rf_wdata_fwd_wb;
 
     assign unused_data_req_done_ex     = lsu_req_done_i;
-    assign unused_lsu_load             = lsu_load_i;
     assign unused_rf_waddr_wb          = rf_waddr_wb_i;
     assign unused_rf_write_wb          = rf_write_wb_i;
     assign unused_outstanding_load_wb  = outstanding_load_wb_i;
@@ -964,7 +969,7 @@ module ibex_id_stage #(
     assign instr_type_wb_o = WB_INSTR_OTHER;
     assign stall_wb        = 1'b0;
 
-    assign perf_dside_wait_o = instr_executing & lsu_req_dec & ~lsu_valid_i;
+    assign perf_dside_wait_o = instr_executing & lsu_req_dec & ~lsu_resp_valid_i;
 
     assign en_wb_o         = 1'b0;
     assign instr_id_done_o = instr_done;
@@ -986,23 +991,6 @@ module ibex_id_stage #(
       OP_A_FWD,
       OP_A_CURRPC,
       OP_A_IMM})
-  if (BranchTargetALU) begin : g_btalu_assertions
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
-        IMM_B_I,
-        IMM_B_S,
-        IMM_B_U,
-        IMM_B_INCR_PC,
-        IMM_B_INCR_ADDR})
-  end else begin : g_nobtalu_assertions
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
-        IMM_B_I,
-        IMM_B_S,
-        IMM_B_B,
-        IMM_B_U,
-        IMM_B_J,
-        IMM_B_INCR_PC,
-        IMM_B_INCR_ADDR})
-  end
   `ASSERT_KNOWN_IF(IbexBTAluAOpMuxSelKnown, bt_a_mux_sel, instr_valid_i)
   `ASSERT(IbexBTAluAOpMuxSelValid, instr_valid_i |-> bt_a_mux_sel inside {
       OP_A_REG_A,

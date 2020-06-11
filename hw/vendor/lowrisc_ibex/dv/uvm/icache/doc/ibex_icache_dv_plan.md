@@ -57,6 +57,11 @@ These transactions are:
 
 The monitor for the core agent reports cache invalidations, when the cache is enabled/disabled, branches and instruction reads (including errors).
 
+As well as restrictions on how the core can communicate, the cache also assumes that the core will never modify memory and then perform a cached fetch from that memory without an invalidation.
+This means that the cache doesn't need to avoid multi-way hits with inconsistent data.
+In order that the testbench can guarantee this doesn't happen, the core agent must be in charge of deciding when to update the contents of memory with a new seed (see the Memory Agent, below).
+A new seed is picked on every invalidation (since this gives the maximum test sensitivity) and is picked occasionally when the cache is fetching when disabled.
+
 #### Memory Agent
 
 The memory agent emulates the instruction bus, supplying data to the cache.
@@ -67,9 +72,6 @@ The architectural state of the instruction bus and memory (contents at each addr
 The precise functions can be found in [`dv/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_model.sv`](https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_model.sv).
 
 The memory agent is an active slave, responding to instruction fetches from the cache with either a PMP error (on the same cycle as the request) or instruction data (with an in-order request pipeline).
-As well as the instruction fetch requests, its sequence contains occasional transactions that change the underlying seed.
-These transactions are reported to the scoreboard (so it can know the set of possible seeds for any given fetch).
-To avoid too many valid seeds in the scoreboard, this should happen at a similar rate to cache invalidations in the core agent.
 
 ### Top level testbench
 
