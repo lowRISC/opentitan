@@ -158,6 +158,8 @@ endclass
 // checks. It is run as the first step of the CSR HW reset test.
 //--------------------------------------------------------------------------------------------------
 class csr_write_seq extends csr_base_seq;
+  static bit test_backdoor_path_done; // only run once
+  bit en_rand_backdoor_write;
   `uvm_object_utils(csr_write_seq)
 
   `uvm_object_new
@@ -165,7 +167,20 @@ class csr_write_seq extends csr_base_seq;
   virtual task body();
     uvm_reg_data_t wdata;
 
+    // check all hdl paths are valid
+    if (!test_backdoor_path_done) begin
+      uvm_reg_mem_hdl_paths_seq hdl_check_seq;
+      hdl_check_seq = uvm_reg_mem_hdl_paths_seq::type_id::create("hdl_check_seq");
+      foreach (models[i]) begin
+        hdl_check_seq.model = models[i];
+        hdl_check_seq.start(null);
+      end
+      test_backdoor_path_done = 1;
+    end
+
     foreach (test_csrs[i]) begin
+      dv_base_reg dv_csr;
+      bit         backdoor;
       // check if parent block or register is excluded from write
       if (m_csr_excl_item.is_excl(test_csrs[i], CsrExclWrite, CsrHwResetTest)) begin
         `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclWrite exclusion",
@@ -178,7 +193,14 @@ class csr_write_seq extends csr_base_seq;
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrHwResetTest, m_csr_excl_item);
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
+
+      `downcast(dv_csr, test_csrs[i])
+      if (en_rand_backdoor_write && !dv_csr.get_is_ext_reg()) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(backdoor,
+                                           backdoor dist {0 :/ 7, 1 :/ 3};)
+      end
+
+      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .backdoor(backdoor));
     end
   endtask
 

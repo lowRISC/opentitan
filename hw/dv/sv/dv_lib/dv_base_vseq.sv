@@ -172,6 +172,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       m_csr_write_seq.models = cfg.ral_models;
       m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.external_checker = cfg.en_scb;
+      m_csr_write_seq.en_rand_backdoor_write = 1;
       if (!enable_asserts_in_hw_reset_rand_wr) $assertoff;
       m_csr_write_seq.start(null);
 

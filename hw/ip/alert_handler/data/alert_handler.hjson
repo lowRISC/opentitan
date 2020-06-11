@@ -17,6 +17,7 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
+  hier_path: "i_reg_wrap"
   param_list: [
     { name: "NAlerts",
       desc: "Number of peripheral inputs",

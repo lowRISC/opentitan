@@ -12,6 +12,9 @@ ${construct_classes(b)}
 % endfor
 <%
 regs_flat = block.get_regs_flat()
+hier_path = ""
+if (block.hier_path):
+  hier_path = block.hier_path + "."
 %>\
 
 // Block: ${block.name}
@@ -38,7 +41,8 @@ package ${block.name}_ral_pkg;
 % for r in regs_flat:
 <%
   reg_width = block.width
-  reg_name= r.name
+  reg_name = r.name
+  is_ext = 0
 %>\
   // Class: ${gen_dv.rcname(block, r)}
   class ${gen_dv.rcname(block, r)} extends dv_base_reg;
@@ -70,6 +74,15 @@ package ${block.name}_ral_pkg;
   else:
     field_volatile = 1
   field_tags = f.tags
+
+  if r.hwext or (f.hwaccess == HwAccess.NONE and f.swrdaccess == SwRdAccess.RD and
+                 f.swwraccess == SwWrAccess.NONE):
+    is_ext = 1
+
+  if len(r.fields) == 1:
+    reg_field_name = reg_name
+  else:
+    reg_field_name = reg_name + "_" + f.name
 %>\
       ${f.name} = dv_base_reg_field::type_id::create("${f.name}");
       ${f.name}.configure(
@@ -83,26 +96,28 @@ package ${block.name}_ral_pkg;
         .is_rand(1),
         .individually_accessible(1));
       ${f.name}.set_original_access("${field_access}");
-  % if r.hwext:
-      set_is_ext_reg(1);
-  % endif
-  % if len(r.fields) == 1:
-      add_hdl_path_slice("u_${reg_name}.q", ${f.lsb}, ${field_size});
+  % if f.hwaccess == HwAccess.NONE and f.swrdaccess == SwRdAccess.RD and f.swwraccess == SwWrAccess.NONE:
+      // constant reg
+      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${f.lsb}, ${field_size});
   % else:
-      add_hdl_path_slice("u_${reg_name}_${f.name}.q", ${f.lsb}, ${field_size});
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if r.hwext else ""}", ${f.lsb}, ${field_size});
   % endif
-% if field_tags:
+  % if field_tags:
       // create field tags
-% for field_tag in field_tags:
+    % for field_tag in field_tags:
 <%
   tag = field_tag.split(":")
 %>\
-% if tag[0] == "excl":
+    % if tag[0] == "excl":
       csr_excl.add_excl(${f.name}.get_full_name(), ${tag[2]}, ${tag[1]});
-% endif
+      % endif
+    % endfor
+  % endif
 % endfor
+
+% if is_ext:
+      set_is_ext_reg(1);
 % endif
-% endfor
     endfunction : build
 
   endclass : ${gen_dv.rcname(block, r)}
@@ -178,12 +193,12 @@ package ${block.name}_ral_pkg;
       ${b.name} = ${gen_dv.bcname(b)}::type_id::create("${b.name}");
       ${b.name}.configure(.parent(this));
       ${b.name}.build(.base_addr(base_addr + ${gen_dv.sv_base_addr(b)}), .csr_excl(csr_excl));
-      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}.u_reg");
+      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}");
       default_map.add_submap(.child_map(${b.name}.default_map),
                              .offset(base_addr + ${gen_dv.sv_base_addr(b)}));
 % endfor
 % if regs_flat:
-      set_hdl_path_root("tb.dut.u_reg");
+      set_hdl_path_root("tb.dut");
 
       // create registers
 % endif

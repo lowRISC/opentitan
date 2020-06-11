@@ -20,6 +20,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
+  hier_path: "i_reg_wrap"
 ##############################################################################
   param_list: [
     { name: "NAlerts",
