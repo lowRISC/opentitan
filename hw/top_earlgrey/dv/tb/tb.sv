@@ -57,8 +57,8 @@ module tb;
   jtag_if jtag_if();
 
   // backdoors
-  bind `ROM_HIER.u_prim_rom mem_bkdr_if rom_mem_bkdr_if();
-  bind `RAM_MAIN_HIER.u_mem mem_bkdr_if ram_mem_bkdr_if();
+  bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
+  bind `RAM_MAIN_SUB_HIER mem_bkdr_if ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
 
@@ -113,24 +113,26 @@ module tb;
   bit [TL_AW-1:0] sw_log_addr;
 
   sw_logger_if sw_logger_if (
-    .clk          (`RAM_MAIN_HIER.clk_i),
+    .clk          (`RAM_MAIN_SUB_HIER.clk_i),
     .rst_n        (`RAM_MAIN_HIER.rst_ni),
     .valid        (sw_log_valid),
-    .addr_data    (`RAM_MAIN_HIER.wdata_i),
+    .addr_data    (`RAM_MAIN_SUB_HIER.wdata_i),
     .sw_log_addr  (sw_log_addr)
   );
   assign sw_log_valid = !stub_cpu &&
-                        `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
+                        `RAM_MAIN_SUB_HIER.req_i &&
+                        `RAM_MAIN_SUB_HIER.write_i &&
                         /* RAM only looks at the 14-bit word address 15:2 */
-                        (`RAM_MAIN_HIER.addr_i == sw_log_addr[15:2]);
+                        (`RAM_MAIN_SUB_HIER.addr_i == sw_log_addr[15:2]);
 
   // connect the sw_test_status_if
   sw_test_status_if sw_test_status_if();
   assign sw_test_status_if.valid =  !stub_cpu &&
-                                    `RAM_MAIN_HIER.req_i && `RAM_MAIN_HIER.write_i &&
-                                    (`RAM_MAIN_HIER.addr_i ==
+                                    `RAM_MAIN_SUB_HIER.req_i &&
+                                    `RAM_MAIN_SUB_HIER.write_i &&
+                                    (`RAM_MAIN_SUB_HIER.addr_i ==
                                      sw_test_status_if.sw_test_status_addr[15:2]);
-  assign sw_test_status_if.sw_test_status_val = `RAM_MAIN_HIER.wdata_i;
+  assign sw_test_status_if.sw_test_status_val = `RAM_MAIN_SUB_HIER.wdata_i;
 
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
@@ -189,9 +191,10 @@ module tb;
 
     // Backdoors
     uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.u_prim_rom.rom_mem_bkdr_if);
+        null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Ram]", `RAM_MAIN_HIER.u_mem.ram_mem_bkdr_if);
+        null, "*.env", "mem_bkdr_vifs[Ram]",
+        `RAM_MAIN_SUB_HIER.ram_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
