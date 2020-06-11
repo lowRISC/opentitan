@@ -19,7 +19,7 @@
                "+incdir+{build_dir}",
                // Suppress following DSim errors and warnings:
                //   EnumMustBePositive - UVM 1.2 violates this
-               "-suppress EnumMustBePositive",
+               "-suppress EnumMustBePositive -warn NeedExplicitStatic",
               ]
 
   run_opts:   [
