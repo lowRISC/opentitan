@@ -47,7 +47,7 @@ package i2c_env_pkg;
   parameter uint I2C_MIN_TIMING  = 1;     // at least 1
   parameter uint I2C_MAX_TIMING  = 5;
   parameter uint I2C_TIME_RANGE  = I2C_MAX_TIMING - I2C_MIN_TIMING;
-  parameter uint I2C_TIMEOUT_ENB = 1;
+  parameter uint I2C_TIMEOUT_ENB = 0;  // TODO: temporaly disable
   parameter uint I2C_MIN_TIMEOUT = 1;
   parameter uint I2C_MAX_TIMEOUT = 2;
   parameter uint I2C_IDLE_TIME   = 1200;

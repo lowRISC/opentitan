@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// I2C specification: https://www.nxp.com/docs/en/user-guide/UM10204.pdf
+
 package i2c_agent_pkg;
   // dep packages
   import uvm_pkg::*;
@@ -11,10 +13,6 @@ package i2c_agent_pkg;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
-
-  // local macros
-  parameter uint I2C_ADDR_WIDTH = 7;
-  parameter uint I2C_DATA_WIDTH = 8;
 
   typedef enum logic [3:0] {
     None, DevAck, RdData
@@ -36,6 +34,11 @@ package i2c_agent_pkg;
     bit         enbTimeOut;
     bit [30:0]  tTimeOut;
   } timing_cfg_t;
+
+  typedef enum int {
+    Addr7BitMode  = 7,
+    Addr10BitMode = 10
+  } i2c_target_addr_mode_e;
 
   // forward declare classes to allow typedefs below
   typedef class i2c_item;

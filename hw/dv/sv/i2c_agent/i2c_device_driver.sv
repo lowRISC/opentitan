@@ -6,11 +6,9 @@ class i2c_device_driver extends i2c_driver;
   `uvm_component_utils(i2c_device_driver)
   `uvm_component_new
 
-  bit [I2C_DATA_WIDTH-1:0] data;
+  rand bit [7:0] rd_data;
 
-  rand bit [I2C_DATA_WIDTH-1:0] rd_data;
-
-  constraint rd_data_c { rd_data inside {[0 : ((1 << I2C_DATA_WIDTH) - 1)]}; }
+  constraint rd_data_c { rd_data inside {[0 : 127]}; }
 
   virtual task get_and_drive();
     i2c_item rsp_item;
@@ -26,7 +24,7 @@ class i2c_device_driver extends i2c_driver;
         end
         RdData: begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
-          for (int i = I2C_DATA_WIDTH-1; i >= 0; i--) begin
+          for (int i = 7; i >= 0; i--) begin
             cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[i]);
           end
           `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0b",
