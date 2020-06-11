@@ -410,6 +410,43 @@ class SimCfg(FlowCfg):
                       create_link_dirs_cmd)
             sys.exit(1)
 
+    def _expand_run_list(self, build_map):
+        '''Generate a list of tests to be run
+
+        For each test in tests, we add it test.reseed times. The ordering is
+        interleaved so that we run through all of the tests as soon as
+        possible. If there are multiple tests and they have different reseed
+        values, they are "fully interleaved" at the start (so if there are
+        tests A, B with reseed values of 5 and 2, respectively, then the list
+        will be ABABAAA).
+
+        build_map is a dictionary from build name to a CompileSim object. Each
+        test is added to the CompileSim item that it depends on (signifying
+        that the test should be built once the build on which it depends is
+        done).
+
+        cfg is a SimCfg object, passed to the RunTest constructor.
+
+        '''
+        tagged = []
+        for test in self.run_list:
+            for idx in range(test.reseed):
+                tagged.append((idx,
+                               test,
+                               RunTest(idx, test, self)))
+
+        # Stably sort the tagged list by the 1st coordinate
+        tagged.sort(key=lambda x: x[0])
+
+        # Now iterate over it again, adding tests to build_map (in the
+        # interleaved order) and collecting up the RunTest objects.
+        runs = []
+        for _, test, run in tagged:
+            build_map[test.build_mode].sub.append(run)
+            runs.append(run)
+
+        return runs
+
     def _create_deploy_objects(self):
         '''Create deploy objects from the build and run lists.
         '''
@@ -424,18 +461,12 @@ class SimCfg(FlowCfg):
             builds.append(item)
             build_map[build] = item
 
-        runs = []
-        for test in self.run_list:
-            for num in range(test.reseed):
-                item = RunTest(num, test, self)
-                if self.build_only is False:
-                    build_map[test.build_mode].sub.append(item)
-                runs.append(item)
-
         self.builds = builds
-        self.runs = runs
+        self.runs = ([]
+                     if self.build_only
+                     else self._expand_run_list(build_map))
         if self.run_only is True:
-            self.deploy = runs
+            self.deploy = self.runs
         else:
             self.deploy = builds
 
