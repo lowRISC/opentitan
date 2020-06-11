@@ -529,7 +529,9 @@ module top_earlgrey #(
     .Width(32),
     .Depth(16384),
     .DataBitsPerMask(8),
-    .CfgW(8)
+    .CfgW(8),
+    // TODO: enable parity once supported by the simulation infrastructure
+    .EnableParity(0)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n),
