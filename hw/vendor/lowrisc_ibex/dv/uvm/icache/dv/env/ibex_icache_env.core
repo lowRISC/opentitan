@@ -21,6 +21,11 @@ filesets:
       - seq_lib/ibex_icache_base_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_sanity_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_passthru_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_caching_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_invalidation_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_oldval_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_back_line_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_many_errors_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

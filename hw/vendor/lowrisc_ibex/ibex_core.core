@@ -19,7 +19,7 @@ filesets:
       - rtl/ibex_compressed_decoder.sv
       - rtl/ibex_controller.sv
       - rtl/ibex_cs_registers.sv
-      - rtl/ibex_counters.sv
+      - rtl/ibex_counter.sv
       - rtl/ibex_decoder.sv
       - rtl/ibex_ex_block.sv
       - rtl/ibex_fetch_fifo.sv
@@ -98,7 +98,7 @@ parameters:
     datatype: int
     default: 0
     paramtype: vlogparam
-    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
+    description: "Enables separate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
 
   WritebackStage:
     datatype: int

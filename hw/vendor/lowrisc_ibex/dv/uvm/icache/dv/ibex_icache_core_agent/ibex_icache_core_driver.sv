@@ -9,14 +9,18 @@ class ibex_icache_core_driver
   `uvm_component_utils(ibex_icache_core_driver)
   `uvm_component_new
 
-  // The current state of the enable pin: this is toggled by sequence items, but the current state
-  // is stored on the driver.
-  bit enable;
+  // An analysis port that gets hooked up to the scoreboard and the memory agent. This isn't used to
+  // report on actual bus traffic (that's done by the monitor, as usual) but is used to report on
+  // new memory seeds, which don't in themselves cause any bus traffic.
+  uvm_analysis_port #(bit [31:0]) analysis_port;
 
-  // reset signals
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    analysis_port = new("analysis_port", this);
+  endfunction
+
   virtual task automatic reset_signals();
     cfg.vif.reset();
-    enable = 1'b0;
   endtask
 
   // drive trans received from sequencer
@@ -52,14 +56,13 @@ class ibex_icache_core_driver
     // Make sure that req is enabled (has no effect unless this is the first transaction)
     cfg.vif.driver_cb.req <= 1'b1;
 
-    // Toggle the enable state if necessary and drive its pin
-    if (req.toggle_enable)
-      enable = ~enable;
-    cfg.vif.driver_cb.enable <= enable;
+    // Drive the enable state
+    cfg.vif.driver_cb.enable <= req.enable;
 
     fork
         cfg.vif.branch_to(req.branch_addr);
         if (req.invalidate) invalidate();
+        if (req.new_seed != 0) drive_new_seed(req.new_seed);
         read_insns(rsp, req.num_insns);
     join
   endtask
@@ -83,14 +86,13 @@ class ibex_icache_core_driver
                                            [100:200]   :/ 2,
                                            [1000:1200] :/ 1 };)
 
-    // Toggle the enable state if necessary and drive its pin
-    if (req.toggle_enable)
-      enable = ~enable;
-    cfg.vif.driver_cb.enable <= enable;
+    // Drive the enable state
+    cfg.vif.driver_cb.enable <= req.enable;
 
     fork
         if (req_low_cycles > 0) lower_req(req_low_cycles);
         if (req.invalidate) invalidate();
+        if (req.new_seed != 0) drive_new_seed(req.new_seed);
     join
     read_insns(rsp, req.num_insns);
   endtask
@@ -145,6 +147,12 @@ class ibex_icache_core_driver
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_cycles,
                                        num_cycles dist { 1 :/ 10, [2:20] :/ 1 };)
     cfg.vif.invalidate_pulse(num_cycles);
+  endtask
+
+  // If this item specifies a new seed, tell the memory agent and the scoreboard.
+  task automatic drive_new_seed(bit [31:0] new_seed);
+    `DV_CHECK_FATAL(new_seed != 0);
+    analysis_port.write(new_seed);
   endtask
 
 endclass

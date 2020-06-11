@@ -131,9 +131,12 @@ unsigned int get_mtval() {
 void simple_exc_handler(void) {
   puts("EXCEPTION!!!\n");
   puts("============\n");
-  puts("MEPC:   0x%0X");puthex(get_mepc());
-  puts("\nMCAUSE: 0x%0X");puthex(get_mcause());
-  puts("\nMTVAL:  0x%0X");puthex(get_mtval());
+  puts("MEPC:   0x");
+  puthex(get_mepc());
+  puts("\nMCAUSE: 0x");
+  puthex(get_mcause());
+  puts("\nMTVAL:  0x");
+  puthex(get_mtval());
   putchar('\n');
   sim_halt();
 

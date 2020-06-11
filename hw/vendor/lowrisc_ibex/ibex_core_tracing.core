@@ -69,7 +69,7 @@ parameters:
     datatype: int
     default: 0
     paramtype: vlogparam
-    description: "Enables seperate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
+    description: "Enables separate branch target ALU (increasing branch performance EXPERIMENTAL) [0/1]"
 
   WritebackStage:
     datatype: int

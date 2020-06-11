@@ -12,10 +12,9 @@ class ibex_icache_passthru_vseq extends ibex_icache_base_vseq;
 
     // Constrain branch targets and leave the cache disabled.
     core_seq.constrain_branches = 1'b1;
-    core_seq.force_disable      = 1'b1;
-
-    // Increase the frequency of seed updates
-    mem_seq.gap_between_seeds = 49;
+    core_seq.initial_enable     = 1'b0;
+    core_seq.const_enable       = 1'b1;
+    core_seq.gap_between_seeds  = 1;
 
   endtask : pre_start
 

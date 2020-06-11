@@ -83,7 +83,7 @@ Read the description for more information.
 |                       |                                      | interface the same cycle it is calculated).  The longer the |
 |                       |                                      | instruction-side memory interface takes to receive data the |
 |                       |                                      | longer the branch will stall. With the parameter            |
-|                       |                                      | ``BranchTargetALU`` set to ``1`` a seperate ALU calculates  |
+|                       |                                      | ``BranchTargetALU`` set to ``1`` a separate ALU calculates  |
 |                       |                                      | the branch target simultaneously to calculating the branch  |
 |                       |                                      | condition with the main ALU so 1 less stall cycle is        |
 |                       |                                      | required.                                                   |

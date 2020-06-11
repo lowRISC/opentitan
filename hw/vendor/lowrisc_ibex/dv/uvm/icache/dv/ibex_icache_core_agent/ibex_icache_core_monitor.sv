@@ -22,6 +22,12 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+
+    if (cfg.en_cov) begin
+      fork
+        process_cancelled_valid();
+      join_none
+    end
   endtask
 
   // collect transactions forever - already forked in dv_base_moditor::run_phase
@@ -30,6 +36,7 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
     logic                     last_inval = 0;
     logic                     last_enable = 0;
     logic                     last_busy = 0;
+    logic [31:0]              last_addr = 'x;
 
     forever begin
       // Collect events on positive clock edges. We collect "outputs" from the cache first, and then
@@ -57,6 +64,12 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
         trans.enable     = 0;
         trans.busy       = 0;
         analysis_port.write(trans);
+
+        if (cfg.en_cov) begin
+          if (!$isunknown(last_addr)) cov.on_inc_fetches(last_addr, cfg.vif.addr);
+          cov.fetch_cg.sample(cfg.vif.err, cfg.vif.err_plus2, cfg.vif.enable);
+        end
+        last_addr = cfg.vif.addr;
       end
 
       // Spot edges on the enable pin
@@ -101,6 +114,14 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
         trans.enable     = 0;
         trans.busy       = 0;
         analysis_port.write(trans);
+
+        last_addr = 'x;
+        if (cfg.en_cov) cov.branch_dest_cg.sample(cfg.vif.branch_addr);
+      end
+
+      // If coverage is enabled, spot when the branch spec line is high
+      if (cfg.en_cov && cfg.vif.branch_spec) begin
+        cov.branch_spec_cg.sample(cfg.vif.branch);
       end
 
       // Spot invalidate signals. These can last for several cycles, but we only care about the
@@ -117,6 +138,13 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
         analysis_port.write(trans);
       end
       last_inval = cfg.vif.invalidate;
+    end
+  endtask
+
+  protected task process_cancelled_valid();
+    forever begin
+      @(cfg.vif.cancelled_valid);
+      cov.cancelled_valid_cg.sample(cfg.vif.ready);
     end
   endtask
 

@@ -20,10 +20,13 @@ VERBOSITY=
 # random seeds. By default, we make runs reproducible, so force the seed.
 SEED=1
 
+#SIMULATOR
+SIMULATOR=vcs
+
 ibex-top       := ../../../..
 scratch-root   := $(ibex-top)/build
 dvsim-py       := $(ibex-top)/vendor/lowrisc_ip/dvsim/dvsim.py
-dvsim-std-args := --scratch-root $(scratch-root)
+dvsim-std-args := --scratch-root $(scratch-root) --tool $(SIMULATOR)
 
 waves-arg      := $(if $(filter-out 0,$(WAVES)),--waves,)
 coverage-arg   := $(if $(filter-out 0,$(COVERAGE)),-c,)
@@ -32,6 +35,7 @@ seed-arg       := $(if $(SEED),--fixed-seed $(SEED),)
 
 dvsim-mk-args    := $(waves-arg) $(coverage-arg) $(verbosity-arg) $(seed-arg)
 run-icache-dvsim := $(dvsim-py) ibex_icache_sim_cfg.hjson $(dvsim-std-args) $(dvsim-mk-args)
+
 
 .PHONY: all
 all: run

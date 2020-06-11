@@ -150,4 +150,77 @@ class riscv_floating_point_instr extends riscv_instr;
     fd.rand_mode(has_fd);
   endfunction
 
+  // coverage related functons
+  virtual function void update_src_regs(string operands[$]);
+    if(category inside {LOAD, CSR}) begin
+      super.update_src_regs(operands);
+      return;
+    end
+    case(format)
+      I_FORMAT: begin
+        `DV_CHECK_FATAL(operands.size() == 2)
+        if (has_fs1) begin
+          fs1 = get_fpr(operands[1]);
+          fs1_value = get_gpr_state(operands[1]);
+        end else if (has_rs1) begin
+          rs1 = get_gpr(operands[1]);
+          rs1_value = get_gpr_state(operands[1]);
+        end
+      end
+      S_FORMAT: begin
+        `DV_CHECK_FATAL(operands.size() == 3)
+        // FSW rs2 is fp
+        fs2 = get_fpr(operands[0]);
+        fs2_value = get_gpr_state(operands[0]);
+        rs1 = get_gpr(operands[2]);
+        rs1_value = get_gpr_state(operands[2]);
+        get_val(operands[1], imm);
+      end
+      R_FORMAT: begin
+        if (has_fs2 || category == CSR) begin
+          `DV_CHECK_FATAL(operands.size() == 3)
+        end else begin
+          `DV_CHECK_FATAL(operands.size() == 2)
+        end
+        if(category != CSR) begin
+          fs1 = get_fpr(operands[1]);
+          fs1_value = get_gpr_state(operands[1]);
+          if (has_fs2) begin
+            fs2 = get_fpr(operands[2]);
+            fs2_value = get_gpr_state(operands[2]);
+          end
+        end
+      end
+      R4_FORMAT: begin
+        `DV_CHECK_FATAL(operands.size() == 4)
+        fs1 = get_fpr(operands[1]);
+        fs1_value = get_gpr_state(operands[1]);
+        fs2 = get_fpr(operands[2]);
+        fs2_value = get_gpr_state(operands[2]);
+        fs3 = get_fpr(operands[3]);
+        fs3_value = get_gpr_state(operands[3]);
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Unsupported format %0s", format))
+    endcase
+  endfunction : update_src_regs
+
+  virtual function void update_dst_regs(string reg_name, string val_str);
+    $display("update_dst_regs %0s", reg_name);
+    get_val(val_str, gpr_state[reg_name], .hex(1));
+    if (has_fd) begin
+      fd = get_fpr(reg_name);
+      fd_value = get_gpr_state(reg_name);
+    end else if (has_rd) begin
+      rd = get_gpr(reg_name);
+      rd_value = get_gpr_state(reg_name);
+    end
+  endfunction : update_dst_regs
+
+  virtual function riscv_fpr_t get_fpr(input string str);
+    str = str.toupper();
+    if (!fpr_enum::from_name(str, get_fpr)) begin
+      `uvm_fatal(`gfn, $sformatf("Cannot convert %0s to FPR", str))
+    end
+  endfunction : get_fpr
+
 endclass

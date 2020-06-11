@@ -108,6 +108,11 @@ module ibex_core #(
   localparam int unsigned PMP_NUM_CHAN      = 2;
   localparam bit          DataIndTiming     = SecureIbex;
   localparam bit          DummyInstructions = SecureIbex;
+  // Speculative branch option, trades-off performance against timing.
+  // Setting this to 1 eases branch target critical paths significantly but reduces performance
+  // by ~3% (based on Coremark/MHz score).
+  // Set by default in the max PMP config which has the tightest budget for branch target timing.
+  localparam bit          SpecBranch        = PMPEnable & (PMPNumRegions == 16);
 
   // IF/ID signals
   logic        dummy_instr_id;
@@ -158,7 +163,6 @@ module ibex_core #(
   // Core busy signals
   logic        ctrl_busy;
   logic        if_busy;
-  logic        lsu_load;
   logic        lsu_busy;
   logic        core_busy_d, core_busy_q;
 
@@ -225,7 +229,7 @@ module ibex_core #(
   logic        id_in_ready;
   logic        ex_valid;
 
-  logic        lsu_data_valid;
+  logic        lsu_resp_valid;
 
   // Signals between instruction core interface and pipe (if and id stages)
   logic        instr_req_int;          // Id stage asserts a req to instruction core interface
@@ -449,6 +453,7 @@ module ibex_core #(
       .RV32B           ( RV32B           ),
       .BranchTargetALU ( BranchTargetALU ),
       .DataIndTiming   ( DataIndTiming   ),
+      .SpecBranch      ( SpecBranch      ),
       .WritebackStage  ( WritebackStage  )
   ) id_stage_i (
       .clk_i                        ( clk                      ),
@@ -489,9 +494,7 @@ module ibex_core #(
 
       // Stalls
       .ex_valid_i                   ( ex_valid                 ),
-      .lsu_valid_i                  ( lsu_data_valid           ),
-      .lsu_load_i                   ( lsu_load                 ),
-      .lsu_busy_i                   ( lsu_busy                 ),
+      .lsu_resp_valid_i             ( lsu_resp_valid           ),
 
       .alu_operator_ex_o            ( alu_operator_ex          ),
       .alu_operand_a_ex_o           ( alu_operand_a_ex         ),
@@ -687,13 +690,12 @@ module ibex_core #(
       .addr_last_o           ( lsu_addr_last       ),
 
 
-      .lsu_resp_valid_o      ( lsu_data_valid      ),
+      .lsu_resp_valid_o      ( lsu_resp_valid      ),
 
       // exception signals
       .load_err_o            ( lsu_load_err        ),
       .store_err_o           ( lsu_store_err       ),
 
-      .load_o                ( lsu_load            ),
       .busy_o                ( lsu_busy            ),
 
       .perf_load_o           ( perf_load           ),
@@ -728,7 +730,7 @@ module ibex_core #(
     .rf_wdata_wb_o              ( rf_wdata_wb              ),
     .rf_we_wb_o                 ( rf_we_wb                 ),
 
-    .lsu_data_valid_i           ( lsu_data_valid           ),
+    .lsu_resp_valid_i           ( lsu_resp_valid           ),
 
     .instr_done_wb_o            ( instr_done_wb            )
   );
@@ -1156,7 +1158,7 @@ module ibex_core #(
 
   // Capture read data from LSU when it becomes valid
   always_comb begin
-    if (lsu_data_valid) begin
+    if (lsu_resp_valid) begin
       rvfi_mem_rdata_d = rf_wdata_lsu;
     end else begin
       rvfi_mem_rdata_d = rvfi_mem_rdata_q;

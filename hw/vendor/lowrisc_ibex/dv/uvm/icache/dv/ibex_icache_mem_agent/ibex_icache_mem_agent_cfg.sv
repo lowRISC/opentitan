@@ -5,8 +5,9 @@
 class ibex_icache_mem_agent_cfg extends dv_base_agent_cfg;
 
   // Knobs
-  bit disable_pmp_errs = 0;
-  bit disable_mem_errs = 0;
+  bit          disable_pmp_errs = 0;
+  bit          disable_mem_errs = 0;
+  int unsigned mem_err_shift = 3;
 
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual ibex_icache_mem_if vif;

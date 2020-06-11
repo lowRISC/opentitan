@@ -59,7 +59,6 @@ module ibex_load_store_unit
     output logic         load_err_o,
     output logic         store_err_o,
 
-    output logic         load_o,
     output logic         busy_o,
 
     output logic         perf_load_o,
@@ -494,7 +493,6 @@ module ibex_load_store_unit
   assign store_err_o   = data_or_pmp_err &  data_we_q & lsu_resp_valid_o;
 
   assign busy_o = (ls_fsm_cs != IDLE);
-  assign load_o = ~data_we_q;
 
   ////////////////
   // Assertions //
@@ -508,9 +506,6 @@ module ibex_load_store_unit
   `ASSERT(IbexLsuStateValid, ls_fsm_cs inside {
       IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
       WAIT_RVALID_MIS_GNTS_DONE})
-
-  // Errors must only be sent together with rvalid.
-  `ASSERT(IbexDataErrWithoutRvalid, data_err_i |-> data_rvalid_i)
 
   // Address must not contain X when request is sent.
   `ASSERT(IbexDataAddrUnknown, data_req_o |-> !$isunknown(data_addr_o))

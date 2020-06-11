@@ -51,7 +51,7 @@
             cached by counting transactions on the instruction bus versus
             instructions fetched.'''
       milestone: V2
-      tests: []
+      tests: ["ibex_icache_caching"]
     }
 
     {
@@ -63,11 +63,11 @@
             and seed updates for the memory to try and hit any race conditions
             between the request tracking logic and the invalidation logic.'''
       milestone: V2
-      tests: []
+      tests: ["ibex_icache_invalidation"]
     }
 
     {
-      name: disable_without_invalidation
+      name: oldval
       desc: '''Check the cache can be enabled and disabled without invalidation
 
             Set up requests as in the passthru test to ensure lots of cache
@@ -77,11 +77,11 @@
             Compare bus transactions and instructions fetched to make sure that
             cached instructions survive enable/disable toggles.'''
       milestone: V2
-      tests: []
+      tests: ["ibex_icache_oldval"]
     }
 
     {
-      name: backward_line
+      name: back_line
       desc: '''Check the cache fills correctly from the middle of a line
 
             With the cache enabled, branch to an arbitrary address, read a few
@@ -95,7 +95,7 @@
             spot if there are any bugs that cause it to cache bogus data just
             before the original branch target.'''
       milestone: V2
-      tests: []
+      tests: ["ibex_icache_back_line"]
     }
 
     {
@@ -106,7 +106,7 @@
             error handling. Constrain branch targets as in the caching test so
             that we are actually caching something.'''
       milestone: V2
-      tests: []
+      tests: ["ibex_icache_many_errors"]
     }
 
     {

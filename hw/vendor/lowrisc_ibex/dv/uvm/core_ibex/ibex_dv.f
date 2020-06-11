@@ -35,7 +35,7 @@ ${PRJ_DIR}/ibex/rtl/ibex_alu.sv
 ${PRJ_DIR}/ibex/rtl/ibex_compressed_decoder.sv
 ${PRJ_DIR}/ibex/rtl/ibex_controller.sv
 ${PRJ_DIR}/ibex/rtl/ibex_cs_registers.sv
-${PRJ_DIR}/ibex/rtl/ibex_counters.sv
+${PRJ_DIR}/ibex/rtl/ibex_counter.sv
 ${PRJ_DIR}/ibex/rtl/ibex_decoder.sv
 ${PRJ_DIR}/ibex/rtl/ibex_dummy_instr.sv
 ${PRJ_DIR}/ibex/rtl/ibex_ex_block.sv
