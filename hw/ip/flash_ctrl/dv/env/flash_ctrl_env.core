@@ -8,11 +8,13 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
+      - lowrisc:dv:dv_base_reg
+      - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_if
     files:
       - flash_ctrl_env_pkg.sv
-      - flash_ctrl_wrapper_reg_block.sv: {is_include_file: true}
+      - flash_ctrl_eflash_reg_block.sv: {is_include_file: true}
       - flash_ctrl_env_cfg.sv: {is_include_file: true}
       - flash_ctrl_env_cov.sv: {is_include_file: true}
       - flash_ctrl_virtual_sequencer.sv: {is_include_file: true}

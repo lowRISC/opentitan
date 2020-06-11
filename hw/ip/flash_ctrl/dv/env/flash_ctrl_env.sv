@@ -58,10 +58,15 @@ class flash_ctrl_env extends cip_base_env #(
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
+    cfg.eflash_ral.lock_model();
+    get_csr_addrs(cfg.eflash_ral, cfg.csr_addrs);
+    get_mem_addr_ranges(cfg.eflash_ral, cfg.mem_ranges);
+
     // Set the TL adapter / sequencer to the eflash_map.
-    // if (cfg.m_eflash_tl_agent_cfg.is_active) begin
-    //   cfg.ral.eflash_map.set_sequencer(m_eflash_tl_agent.sequencer, m_eflash_tl_reg_adapter);
-    // end
+    if (cfg.m_eflash_tl_agent_cfg.is_active) begin
+      cfg.eflash_ral.default_map.set_sequencer(m_eflash_tl_agent.sequencer,
+                                               m_eflash_tl_reg_adapter);
+    end
   endfunction : end_of_elaboration_phase
 
 endclass

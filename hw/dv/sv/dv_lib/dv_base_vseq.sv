@@ -71,7 +71,9 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       cfg.clk_rst_vif.apply_reset();
       csr_utils_pkg::reset_deasserted();
     end
-    if (cfg.has_ral) ral.reset(kind);
+    if (cfg.has_ral) begin
+      foreach (cfg.ral_models[i]) cfg.ral_models[i].reset(kind);
+    end
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",
@@ -167,7 +169,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
       // run write-only sequence to randomize the csr values
       m_csr_write_seq = csr_write_seq::type_id::create("m_csr_write_seq");
-      m_csr_write_seq.models.push_back(ral);
+      m_csr_write_seq.models = cfg.ral_models;
       m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.external_checker = cfg.en_scb;
       if (!enable_asserts_in_hw_reset_rand_wr) $assertoff;
@@ -184,7 +186,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     // create base csr seq and pass our ral
     m_csr_seq = csr_base_seq::type_id::create("m_csr_seq");
     m_csr_seq.num_test_csrs = num_test_csrs;
-    m_csr_seq.models.push_back(ral);
+    m_csr_seq.models = cfg.ral_models;
     m_csr_seq.set_csr_excl_item(csr_excl);
     m_csr_seq.external_checker = cfg.en_scb;
     m_csr_seq.start(null);

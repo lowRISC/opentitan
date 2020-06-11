@@ -159,36 +159,36 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   // task to read all the rx bytes
   virtual task read_all_rx_bytes();
-    bit [TL_DW-1:0] rdata;
+    bit [TL_DW-1:0] rdata, fifo_status;
 
-    csr_rd(.ptr(ral.fifo_status), .value(rdata));
-    repeat (get_field_val(ral.fifo_status.rxlvl, rdata))  begin
-      csr_rd(.ptr(ral.rdata), .value(rdata));
+    csr_rd(.ptr(ral.fifo_status), .value(fifo_status));
+    repeat (get_field_val(ral.fifo_status.rxlvl, fifo_status))  begin
+      wait_ignored_period_and_read_rdata(rdata);
     end
 
-    csr_rd(.ptr(ral.fifo_status), .value(rdata));
+    csr_rd(.ptr(ral.fifo_status), .value(fifo_status));
 
     `uvm_info(`gfn, "read_all_rx_bytes is done", UVM_HIGH)
   endtask : read_all_rx_bytes
 
   // override this function to control RX fifo level
   virtual task rand_read_rx_byte(uint weight_to_skip);
-    bit [TL_DW-1:0] rdata;
+    bit [TL_DW-1:0] rdata, fifo_status;
     int             rxlvl;
 
     randcase
       1: begin // read & check one byte
-        csr_rd(.ptr(ral.fifo_status), .value(rdata));
-        rxlvl = get_field_val(ral.fifo_status.rxlvl, rdata);
+        csr_rd(.ptr(ral.fifo_status), .value(fifo_status));
+        rxlvl = get_field_val(ral.fifo_status.rxlvl, fifo_status);
         if(rxlvl > 0) begin
-          csr_rd(.ptr(ral.rdata), .value(rdata));
+          wait_ignored_period_and_read_rdata(rdata);
         end
       end
       1: begin // read & check some bytes
-        csr_rd(.ptr(ral.fifo_status), .value(rdata));
-        rxlvl = get_field_val(ral.fifo_status.rxlvl, rdata);
+        csr_rd(.ptr(ral.fifo_status), .value(fifo_status));
+        rxlvl = get_field_val(ral.fifo_status.rxlvl, fifo_status);
         if(rxlvl > 0) begin
-          repeat ($urandom_range(1, rxlvl)) csr_rd(.ptr(ral.rdata), .value(rdata));
+          repeat ($urandom_range(1, rxlvl)) wait_ignored_period_and_read_rdata(rdata);
         end
       end
       1: begin // read & check all rx bytes
@@ -198,6 +198,12 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
       end
     endcase
   endtask : rand_read_rx_byte
+
+  // read rx data from CSR rdata, but wait until it's not in igored period
+  virtual task wait_ignored_period_and_read_rdata(ref bit [TL_DW-1:0] rdata);
+    wait_when_in_ignored_period(.rx(1));
+    csr_rd(.ptr(ral.rdata), .value(rdata));
+  endtask
 
   // task to wait for all rx bytes to be sent
   virtual task wait_for_all_tx_bytes();
