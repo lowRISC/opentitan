@@ -232,8 +232,7 @@ package csr_utils_pkg;
                         input bit            predict = 0,
                         input uvm_reg_map    map = null);
     if (backdoor) begin
-        csr_poke(csr, value, check);
-        if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_DIRECT)));
+      csr_poke(csr, value, check, predict);
     end else if (blocking) begin
       csr_wr_sub(csr, value, check, path, timeout_ns, map);
       if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
@@ -286,13 +285,24 @@ package csr_utils_pkg;
   // backdoor write csr
   task automatic csr_poke(input uvm_reg        csr,
                           input uvm_reg_data_t value,
-                          input uvm_check_e    check = UVM_CHECK);
+                          input uvm_check_e    check = UVM_CHECK,
+                          input bit            predict = 0);
     uvm_status_e  status;
     string        msg_id = {csr_utils_pkg::msg_id, "::csr_poke"};
+    uvm_reg_data_t old_mirrored_val = csr.get_mirrored_value();
 
     csr.poke(.status(status), .value(value));
-    if (check == UVM_CHECK) begin
-      `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+    if (check == UVM_CHECK && status != UVM_IS_OK) begin
+      string str;
+      uvm_hdl_path_concat paths[$];
+      csr.get_full_hdl_path(paths);
+      foreach (paths[0].slices[i]) str = $sformatf("%0s\n%0s", str, paths[0].slices[i].path);
+      `uvm_fatal(msg_id, $sformatf("poke failed for %0s, check below paths %0s",
+                                   csr.get_full_name(), str))
+    end
+    // poke always updates predict value, if predict == 0, revert back to old mirrored value
+    if (!predict) begin
+      void'(csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT)));
     end
   endtask
 

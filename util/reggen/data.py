@@ -211,6 +211,7 @@ class Block():
     addr_width = 12
     base_addr = 0
     name = ""
+    hier_path = ""
     regs = []
     wins = []
     blocks = []
@@ -222,6 +223,7 @@ class Block():
         self.addr_width = 12
         self.base_addr = 0
         self.name = ""
+        self.hier_path = ""
         self.regs = []
         self.wins = []
         self.blocks = []

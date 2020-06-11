@@ -145,6 +145,8 @@ def json_to_reg(obj):
 
     block.params = obj["param_list"] if "param_list" in obj else []
 
+    block.hier_path = obj["hier_path"] if "hier_path" in obj else ""
+
     for r in obj["registers"]:
         # Check if any exception condition hit
         if 'reserved' in r:
