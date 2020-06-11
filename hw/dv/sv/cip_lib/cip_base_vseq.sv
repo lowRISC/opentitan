@@ -24,8 +24,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     bit [TL_DBW-1:0] mask;
   } addr_mask_t;
 
-  bit [TL_DW-1:0]  exp_mem[int];
-  addr_mask_t      mem_exist_addr_q[$];
+  addr_mask_t mem_exist_addr_q[$];
 
   // mem_ranges without base address
   addr_range_t     updated_mem_ranges[$];
@@ -43,7 +42,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   }
   `uvm_object_param_utils_begin(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
     `uvm_field_string(common_seq_type, UVM_DEFAULT)
-    `uvm_field_aa_int_int(exp_mem, UVM_DEFAULT)
     `uvm_field_queue_int(mem_exist_addr_q, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -507,32 +505,19 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
 
                 if (!cfg.under_reset) begin
-                  bit [TL_DW-1:0]  data_mask;
                   addr[1:0] = 0;
-                  foreach (mask[i]) data_mask[i*8+:8] = {8{mask[i]}};
-                  exp_mem[addr] = (exp_mem[addr] & ~data_mask) | (data & data_mask);
                   mem_exist_addr_q.push_back(addr_mask_t'{addr, mask});
                 end
               end
             end
             // Randomly pick a previously written address for partial read.
-            exp_mem.size > 0: begin // read
+            mem_exist_addr_q.size() > 0: begin // read
               // get all the programmed addresses and randomly pick one
               addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
               addr = addr_mask.addr;
               if (get_mem_access_by_addr(ral, addr) != "WO") begin
                 mask = get_rand_contiguous_mask(addr_mask.mask);
                 tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
-
-                if (!cfg.under_reset) begin
-                  bit [TL_DW-1:0]  compare_mask;
-                  bit [TL_DW-1:0]  act_data, exp_data;
-                  // calculate compare_mask which is data width wide
-                  foreach (mask[i]) compare_mask[i*8+:8] = {8{mask[i]}};
-                  act_data = data & compare_mask;
-                  exp_data = exp_mem[addr] & compare_mask;
-                  `DV_CHECK_EQ(act_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
-                end
               end
             end
           endcase

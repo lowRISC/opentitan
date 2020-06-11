@@ -6,6 +6,8 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   bit                   is_active    = 1;
   bit                   en_scb       = 1; // can be changed at run-time
+  bit                   en_scb_tl_err_chk = 1;
+  bit                   en_scb_mem_chk    = 1;
   bit                   en_cov       = 1;
   bit                   has_ral      = 1;
   bit                   under_reset  = 0;

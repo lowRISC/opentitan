@@ -57,10 +57,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    if (cfg.en_scb) begin
-      m_tl_agent.monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
-      m_tl_agent.monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
-    end
+    m_tl_agent.monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
+    m_tl_agent.monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
     if (cfg.is_active) begin
       virtual_sequencer.tl_sequencer_h = m_tl_agent.sequencer;
     end

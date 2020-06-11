@@ -12,19 +12,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifo;
 
+  mem_model exp_mem;
+
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     tl_a_chan_fifo = new("tl_a_chan_fifo", this);
     tl_d_chan_fifo = new("tl_d_chan_fifo", this);
+    exp_mem = mem_model::type_id::create("exp_mem", this);
   endfunction
 
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    // if en_scb is off at the beginning, below processes aren't enabled
-    // but monitor_reset in super.run_phase is always running
-    wait(cfg.en_scb);
     fork
       process_tl_a_chan_fifo();
       process_tl_d_chan_fifo();
@@ -35,8 +35,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_seq_item item;
     forever begin
       tl_a_chan_fifo.get(item);
+
+      if (cfg.en_scb_tl_err_chk) begin
+        if (predict_tl_err(item, AddrChannel)) continue;
+      end
+      if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item)) process_mem_write(item);
+
       if (!cfg.en_scb) continue;
-      if (predict_tl_err(item, AddrChannel)) continue;
       process_tl_access(item, AddrChannel);
     end
   endtask
@@ -45,11 +50,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     tl_seq_item item;
     forever begin
       tl_d_chan_fifo.get(item);
-      if (!cfg.en_scb) continue;
       `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
-      // check tl packet integrity
-      void'(item.is_ok());
-      if (predict_tl_err(item, DataChannel)) continue;
+
+      if (cfg.en_scb_tl_err_chk) begin
+        // check tl packet integrity
+        void'(item.is_ok());
+        if (predict_tl_err(item, DataChannel)) continue;
+      end
+      if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item)) process_mem_read(item);
+
+      if (!cfg.en_scb) continue;
       process_tl_access(item, DataChannel);
     end
   endtask
@@ -57,6 +67,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // task to process tl access
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+  endtask
+
+  virtual task process_mem_write(tl_seq_item item);
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    if (!cfg.under_reset)  exp_mem.write(addr, item.a_data, item.a_mask);
+  endtask
+
+  virtual task process_mem_read(tl_seq_item item);
+    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    if (!cfg.under_reset && get_mem_access_by_addr(ral, addr) == "RW") begin
+      exp_mem.compare(addr, item.d_data, item.a_mask);
+    end
   endtask
 
   // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
@@ -73,6 +95,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         return 1;
       end
     end
+    return 0;
   endfunction
 
   // check if there is any tl error, return 1 in case of error or if it is an unmapped addr
