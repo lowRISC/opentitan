@@ -98,6 +98,14 @@
   ]
 
   // List of test specifications.
+  //
+  // If you are adding a test that has been generated from the `sw_tests`
+  // dictionary declared in `sw/device/tests/meson.build`, the `sw_test` key
+  // below should contain `sw/device/tests/<sw_test_name>` (without any more
+  // subdirectories) because that is where the meson target is created. For
+  // example `dif_plic_sanitytest` is added to `sw_tests` in
+  // `sw/device/tests/dif/meson.build`, but the final meson targets all start
+  // `sw/device/tests/dif_plic_sanitytest_`.
   tests: [
     {
       name: chip_uart_tx_rx
@@ -112,7 +120,7 @@
     {
       name: chip_dif_plic_sanitytest
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/dif/dif_plic_sanitytest
+      sw_test: sw/device/tests/dif_plic_sanitytest
     }
     {
       name: chip_flash_ctrl_test

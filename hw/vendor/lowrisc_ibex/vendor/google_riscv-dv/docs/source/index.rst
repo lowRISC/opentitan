@@ -20,6 +20,7 @@ Welcome to riscv-dv's documentation!
    customize_extend_generator
    class_reference
    cmd_line_reference
+   handshake
    appendix
 
 

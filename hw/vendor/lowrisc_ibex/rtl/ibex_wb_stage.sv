@@ -42,7 +42,7 @@ module ibex_wb_stage #(
   output logic [31:0]              rf_wdata_wb_o,
   output logic                     rf_we_wb_o,
 
-  input logic                      lsu_data_valid_i,
+  input logic                      lsu_resp_valid_i,
 
   output logic                     instr_done_wb_o
 );
@@ -51,7 +51,7 @@ module ibex_wb_stage #(
 
   // 0 == RF write from ID
   // 1 == RF write from LSU
-  logic [31:0] rf_wdata_wb_mux    [1:0];
+  logic [31:0] rf_wdata_wb_mux    [2];
   logic [1:0]  rf_wdata_wb_mux_we;
 
   if(WritebackStage) begin : g_writeback_stage
@@ -74,7 +74,7 @@ module ibex_wb_stage #(
     // Writeback for non load/store instructions always completes in a cycle (so instantly done)
     // Writeback for load/store must wait for response to be received by the LSU
     // Signal only relevant if wb_valid_q set
-    assign wb_done = (wb_instr_type_q == WB_INSTR_OTHER) | lsu_data_valid_i;
+    assign wb_done = (wb_instr_type_q == WB_INSTR_OTHER) | lsu_resp_valid_i;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if(~rst_ni) begin
@@ -115,7 +115,7 @@ module ibex_wb_stage #(
     // rf_wdata_wb_q is used rather than rf_wdata_wb_o as the latter includes read data from memory
     // that returns too late to be used on the forwarding path.
     assign rf_wdata_fwd_wb_o = rf_wdata_wb_q;
-  end else begin
+  end else begin : g_bypass_wb
     // without writeback stage just pass through register write signals
     assign rf_waddr_wb_o         = rf_waddr_id_i;
     assign rf_wdata_wb_mux[0]    = rf_wdata_id_i;
@@ -132,14 +132,14 @@ module ibex_wb_stage #(
     logic           unused_en_wb;
     wb_instr_type_e unused_instr_type_wb;
     logic [31:0]    unused_pc_id;
-    logic           unused_lsu_data_valid;
+    logic           unused_lsu_resp_valid;
 
     assign unused_clk            = clk_i;
     assign unused_rst            = rst_ni;
     assign unused_en_wb          = en_wb_i;
     assign unused_instr_type_wb  = instr_type_wb_i;
     assign unused_pc_id          = pc_id_i;
-    assign unused_lsu_data_valid = lsu_data_valid_i;
+    assign unused_lsu_resp_valid = lsu_resp_valid_i;
 
     assign outstanding_load_wb_o  = 1'b0;
     assign outstanding_store_wb_o = 1'b0;

@@ -11,14 +11,18 @@ class ibex_icache_core_req_item extends uvm_sequence_item;
   // ICacheCoreTransTypeBranch)
   rand bit [31:0]                    branch_addr;
 
-  // Whether the cache enable/disable should be toggled
-  rand bit                           toggle_enable;
+  // Whether the cache should be enabled
+  rand bit                           enable;
 
   // Whether to invalidate the cache
   rand bit                           invalidate;
 
   // The number of instructions to read (always non-negative, but may be zero)
   rand int                           num_insns;
+
+  // A possible new memory seed. This has no effect when zero. When nonzero, the driver will pass
+  // the seed through a "backdoor" to the memory agent.
+  rand bit [31:0]                    new_seed;
 
   constraint c_non_branch_trans_addr {
     // If the transaction type is ICacheCoreTransTypeBranch then branch_addr can be anything. To
@@ -38,18 +42,6 @@ class ibex_icache_core_req_item extends uvm_sequence_item;
     !branch_addr[0];
   }
 
-  constraint c_toggle_enable_dist {
-    // Toggle the cache enable line one time in 50. This should allow us a reasonable amount of time
-    // in each mode (note that each transaction here results in multiple instruction fetches)
-    toggle_enable dist { 0 :/ 49, 1 :/ 1 };
-  }
-
-  constraint c_invalidate_dist {
-    // Poke the cache invalidate line one time in 50. This takes ages and we don't want to
-    // accidentally spend most of the test waiting for invalidation.
-    invalidate dist { 0 :/ 49, 1 :/ 1 };
-  }
-
   constraint c_num_insns_dist {
     // For branch transactions, we want to read zero instructions reasonably frequently. For req
     // transactions, much less so. Also, we don't bother with long sequences for req transactions:
@@ -61,13 +53,21 @@ class ibex_icache_core_req_item extends uvm_sequence_item;
       num_insns dist { 0 :/ 1, [1:20] :/ 20 };
   }
 
+  constraint c_new_seed_dist {
+    // We always want to pick a new seed when we start an invalidation (for maximum test
+    // sensitivity). If we aren't starting an invalidation, we mustn't pick a new seed if the cache
+    // is enabled (because that could cause multi-way hits). If the cache isn't enabled, pick a new
+    // seed sometimes.
+    new_seed dist { 0 :/ 1, [1:32'hffffffff] :/ (invalidate ? 1000 : enable ? 0 : 1) };
+  }
 
   `uvm_object_utils_begin(ibex_icache_core_req_item)
     `uvm_field_enum(ibex_icache_core_trans_type_e, trans_type, UVM_DEFAULT)
-    `uvm_field_int (branch_addr,   UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int (toggle_enable, UVM_DEFAULT)
-    `uvm_field_int (invalidate,    UVM_DEFAULT)
-    `uvm_field_int (num_insns,     UVM_DEFAULT)
+    `uvm_field_int (branch_addr, UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int (enable,      UVM_DEFAULT)
+    `uvm_field_int (invalidate,  UVM_DEFAULT)
+    `uvm_field_int (num_insns,   UVM_DEFAULT)
+    `uvm_field_int (new_seed,    UVM_DEFAULT | UVM_HEX)
   `uvm_object_utils_end
 
   `uvm_object_new

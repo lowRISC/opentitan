@@ -269,3 +269,9 @@ While doing this, the cache behaves as if ``icache_enable_i`` is false and will 
 
 The ``busy_o`` signal is guaranteed to be high while the cache is invalidating its internal memories or whenever it has a pending fetch on the instruction bus.
 When the ``busy_o`` signal is low, it is safe to clock gate the cache.
+
+The cache doesn't have circuitry to avoid inconsistent multi-way hits.
+As such, the core must never fetch from an address with the cache enabled after modifying the data at that address, without first starting a cache invalidation.
+
+.. note::
+   This is a constraint on *software*, not just on the core.

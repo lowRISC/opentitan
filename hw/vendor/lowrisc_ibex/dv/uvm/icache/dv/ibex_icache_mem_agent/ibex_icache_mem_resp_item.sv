@@ -9,7 +9,6 @@ class ibex_icache_mem_resp_item extends uvm_sequence_item;
   int unsigned min_response_delay = 0;
   int unsigned mid_response_delay = 5;
   int unsigned max_response_delay = 50;
-  int unsigned gap_between_seeds = 499;
 
   // True if this is a granted request. Otherwise, this is the first time we've seen an address (and
   // we might need to drive the PMP line).
@@ -28,21 +27,11 @@ class ibex_icache_mem_resp_item extends uvm_sequence_item;
   // Only has an effect if is_grant. The memory data to reply with (will be 'X if err is set)
   logic [31:0]      rdata;
 
-  // A new memory seed if non-zero. Only has an effect if !is_grant.
-  rand bit [31:0]   seed;
-
   constraint c_delay_dist {
     delay dist {
       min_response_delay                        :/ 5,
       [min_response_delay+1:mid_response_delay] :/ 5,
       [mid_response_delay+1:max_response_delay] :/ 1
-    };
-  }
-
-  constraint c_seed_dist {
-    seed dist {
-      32'd0            :/ gap_between_seeds,
-      [1:32'hffffffff] :/ 1
     };
   }
 
@@ -52,18 +41,12 @@ class ibex_icache_mem_resp_item extends uvm_sequence_item;
     (!is_grant) -> delay == 0;
   }
 
-  // Similarly, the seed should only be nonzero if is_grant is false.
-  constraint c_no_new_seed_for_gnt {
-    is_grant -> seed == 0;
-  }
-
   `uvm_object_utils_begin(ibex_icache_mem_resp_item)
     `uvm_field_int (is_grant, UVM_DEFAULT)
     `uvm_field_int (err,      UVM_DEFAULT)
     `uvm_field_int (address,  UVM_DEFAULT | UVM_HEX)
     `uvm_field_int (delay,    UVM_DEFAULT)
     `uvm_field_int (rdata,    UVM_DEFAULT | UVM_HEX)
-    `uvm_field_int (seed,     UVM_DEFAULT | UVM_HEX)
   `uvm_object_utils_end
 
   `uvm_object_new

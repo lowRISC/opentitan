@@ -31,15 +31,9 @@ for file in ../rtl/*.sv; do
   sv2v \
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
-    -I../shared/rtl \
+    -I../vendor/lowrisc_ip/prim/rtl \
     $file \
     > $LR_SYNTH_OUT_DIR/generated/${module}.v
-
-  # TODO: eventually remove below hack. It removes "unsigned" from params
-  # because Yosys doesn't support unsigned parameters
-  sed -i 's/parameter unsigned/parameter/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
-  sed -i 's/localparam unsigned/localparam/g' $LR_SYNTH_OUT_DIR/generated/${module}.v
-  sed -i 's/reg unsigned/reg/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 # remove generated *pkg.v files (they are empty files and not needed)

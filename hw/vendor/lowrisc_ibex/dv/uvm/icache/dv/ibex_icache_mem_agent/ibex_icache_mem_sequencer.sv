@@ -12,13 +12,15 @@ class ibex_icache_mem_sequencer
   `uvm_component_new
 
   uvm_tlm_analysis_fifo #(ibex_icache_mem_req_item) request_fifo;
+  uvm_tlm_analysis_fifo #(bit [31:0])               seed_fifo;
 
   // An objection used for heartbeat tracking. Set with register_hb.
   uvm_callbacks_objection hb_objection;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    request_fifo   = new("request_fifo", this);
+    request_fifo = new("request_fifo", this);
+    seed_fifo    = new("seed_fifo", this);
   endfunction
 
   function void register_hb (uvm_callbacks_objection obj);

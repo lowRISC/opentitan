@@ -18,12 +18,7 @@ class ibex_icache_mem_driver
   int unsigned max_grant_delay = 10;
 
   mailbox #(ibex_icache_mem_resp_item) rdata_queue;
-  mailbox #(bit [31:0])                pmp_queue;
-
-  // An analysis port that gets hooked up to the scoreboard. This isn't used to report on actual bus
-  // traffic (that's done by the monitor, as usual) but is used to report on new memory seeds, which
-  // the scoreboard needs to know about, but don't in themselves cause any bus traffic.
-  uvm_analysis_port #(bit [31:0]) analysis_port;
+  mailbox #(bit [32:0])                req_queue;
 
   `uvm_component_utils(ibex_icache_mem_driver)
   `uvm_component_new
@@ -31,8 +26,7 @@ class ibex_icache_mem_driver
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     rdata_queue   = new("rdata_queue");
-    pmp_queue     = new("pmp_queue");
-    analysis_port = new("analysis_port", this);
+    req_queue     = new("req_queue");
   endfunction
 
   virtual task reset_signals();
@@ -79,18 +73,8 @@ class ibex_icache_mem_driver
 
       // Is this a request or a grant?
       if (!req.is_grant) begin
-        // A request has two effects.
-        //
-        //   1. If this is a new seed then we need to tell the scoreboard about it.
-        //
-        //   2. If it causes a PMP error, we push the address onto pmp_queue (which will be handled
-        //      by drive_pmp).
-        if (req.seed != 32'd0) begin
-          analysis_port.write(req.seed);
-        end
-        if (req.err) begin
-          pmp_queue.put(req.address);
-        end
+        // Push the address onto req_queue (which will be handled by drive_pmp).
+        req_queue.put({req.err, req.address});
       end else begin
         // If a grant, we take a copy and add it to the response queue (handled by drive_responses)
         $cast(rsp, req.clone());
@@ -125,22 +109,33 @@ class ibex_icache_mem_driver
   // driver clears the address and exits. The idea is that if stuff gets out of sync for a delta
   // cycle or two, drive_pmp can discard items to catch up.
   task automatic drive_pmp();
+    bit        err;
     bit [31:0] address;
+    bit [32:0] data;
 
     forever begin
-      pmp_queue.get(address);
+      req_queue.get(data);
+      {err, address} = data;
 
-      // The address we just got means "The req line should be high and the address should be this
-      // one. Squash the request with a PMP error".
-      //
+      // If err is false, this is a request which shouldn't trigger a PMP error.
+      if (!err) continue;
+
+      // Otherwise, the address is the address that we expect to see on the interface.
       // If the req line is low, or the address doesn't match, skip this item.
       if ((!cfg.vif.req) || (cfg.vif.addr != address)) continue;
 
-      cfg.vif.pmp_err <= 1'b1;
-
-      // Wait for an address change or req to de-assert
-      @(negedge cfg.vif.req or cfg.vif.addr);
-
+      // Fork into two processes. The first waits for something else to appear in the queue. The
+      // second drives the line until it thinks the request is finished. The driver is stopped if we
+      // see a new request come in.
+      fork
+        req_queue.peek(data);
+        begin
+          cfg.vif.pmp_err <= 1'b1;
+          // Wait for an address change or req to de-assert
+          @(negedge cfg.vif.req or cfg.vif.addr);
+        end
+      join_any
+      disable fork;
       cfg.vif.pmp_err <= 1'b0;
     end
   endtask

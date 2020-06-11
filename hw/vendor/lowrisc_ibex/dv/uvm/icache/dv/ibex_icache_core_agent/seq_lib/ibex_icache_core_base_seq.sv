@@ -16,8 +16,29 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
   // instructions should have a maximum length of 100.
   bit constrain_branches = 1'b0;
 
-  // If this bit is set, we will never enable the cache
-  bit force_disable = 1'b0;
+  // Should the cache be enabled for the first fetch? Probably only interesting if you also set
+  // const_enable.
+  bit initial_enable = 1'b0;
+
+  // If this bit is set, we will never change whether the cache is enabled from the initial_enable
+  // setting.
+  bit const_enable = 1'b0;
+
+  // If this bit is set, we will never invalidate the cache (useful for hit ratio tracking)
+  bit no_invalidate = 1'b0;
+
+  // The expected number of items between each new memory seed when the cache is disabled. A new
+  // memory seed when the cache is disabled implies that the next time the cache is enabled, we must
+  // start an invalidation. As such, this shouldn't normally be set too low.
+  int unsigned gap_between_seeds = 49;
+
+  // The expected number of items between each invalidation. This shouldn't be too small because an
+  // invalidation takes ages and we don't want to accidentally spend most of the test waiting for
+  // invalidation.
+  int unsigned gap_between_invalidations = 49;
+
+  // The expected number of items between enable/disable toggles.
+  int unsigned gap_between_toggle_enable = 49;
 
 
   // Number of test items (note that a single test item may contain many instruction fetches)
@@ -37,12 +58,23 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
   // in a straight line between branches.
   protected int unsigned insns_since_branch = 0;
 
+  // Whether the cache is enabled at the moment
+  protected bit cache_enabled;
+
+  // Whether the cache must be invalidated next time it is enabled (because we changed the seed
+  // under its feet while it was disabled)
+  protected bit stale_seed = 0;
+
   virtual task body();
+    // Set cache_enabled from initial_enable here (rather than at the declaration). This way, a user
+    // can set initial_enable after constructing the sequence, but before running it.
+    cache_enabled = initial_enable;
+
     run_reqs();
   endtask
 
   // Generate and run a single item using class parameters
-  protected task run_req(ibex_icache_core_req_item req, ibex_icache_core_rsp_item rsp);
+  protected virtual task run_req(ibex_icache_core_req_item req, ibex_icache_core_rsp_item rsp);
     start_item(req);
 
     if (constrain_branches && insns_since_branch >= 100)
@@ -68,11 +100,34 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
        (constrain_branches && (req.trans_type != ICacheCoreTransTypeBranch)) ->
          num_insns <= 100 - insns_since_branch;
 
-       force_disable -> !toggle_enable;
+       const_enable -> enable == cache_enabled;
+
+       // Toggle the cache enable line one time in 50. This should allow us a reasonable amount of
+       // time in each mode (note that each transaction here results in multiple instruction
+       // fetches)
+       enable dist { cache_enabled :/ gap_between_toggle_enable, ~cache_enabled :/ 1 };
+
+       // If no_invalidate is set, we shouldn't ever touch the invalidate line.
+       no_invalidate -> invalidate == 1'b0;
+
+       // Start an invalidation every 1+gap_between_invalidations items.
+       invalidate dist { 1'b0 :/ gap_between_invalidations, 1'b1 :/ 1 };
+
+       // If we have seen a new seed since the last invalidation (which must have happened while the
+       // cache was disabled) and this item is enabled, force the cache to invalidate.
+       stale_seed && enable -> invalidate == 1'b1;
     )
 
     finish_item(req);
     get_response(rsp);
+
+    // Update whether we think the cache is enabled
+    cache_enabled = req.enable;
+
+    // Update the stale_seed flag. It is cleared if we just invalidated and should be set if we
+    // didn't invalidate and picked a new seed.
+    if (req.invalidate) stale_seed = 0;
+    else if (req.new_seed != 0) stale_seed = 1;
 
     // The next transaction must start with a branch if this one ended with an error
     force_branch = rsp.saw_error;
