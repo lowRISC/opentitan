@@ -27,8 +27,7 @@ int main(int argc, char **argv) {
       "flash",
       "TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash."
       "gen_flash_banks[0].i_core.i_flash.gen_generic.u_impl_generic.u_mem.gen_"
-      "generic."
-      "u_impl_generic",
+      "generic.u_impl_generic",
       64);
   simctrl.RegisterExtension(&memutil);
   simctrl.SetInitialResetDelay(100);
