@@ -24,7 +24,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
   rand bit   [7:0]            wr_data;
-  rand bit   [6:0]            addr;
+  rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit                    rw_bit;
   i2c_item                    fmt_item;
 
@@ -128,6 +128,16 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask : host_init
 
+  virtual task check_host_idle();
+    bit fmtempty, hostidle;
+    bit [TL_DW-1:0] reg_val;
+    do begin
+      csr_rd(.ptr(ral.status), .value(reg_val));
+      fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
+      hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
+    end while (!fmtempty || !hostidle);
+  endtask : check_host_idle
+
   function automatic void get_timing_values();
     // derived timing parameters
     timing_cfg.enbTimeOut  = e_timeout;
@@ -161,14 +171,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     // set time to stop test
     cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = DELAY_FOR_EOT_NS;
+    // config target address mode of agent to the same
+    cfg.m_i2c_agent_cfg.target_addr_mode = cfg.target_addr_mode;
   endtask : program_timing_regs
 
   virtual task program_format_flag(i2c_item item, string msg="");
-    bit [TL_DW-1:0] reg_val;
-
     csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
-    reg_val = {19'd0, item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte};
-    csr_wr(.csr(ral.fdata), .value(reg_val));
+    ral.fdata.nakok.set(item.nakok);
+    ral.fdata.rcont.set(item.rcont);
+    ral.fdata.read.set(item.read);
+    ral.fdata.stop.set(item.stop);
+    ral.fdata.start.set(item.start);
+    ral.fdata.fbyte.set(item.fbyte);
+    csr_update(.csr(ral.fdata));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.m_i2c_agent_cfg.vif.wait_for_dly(fmt_fifo_access_dly);
     print_format_flag(item, msg);

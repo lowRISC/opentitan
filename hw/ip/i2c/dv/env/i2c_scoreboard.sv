@@ -250,7 +250,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     if (cfg.en_scb) begin
       str = {$sformatf("\n\n*** SCOREBOARD CHECK\n")};
       str = {str, $sformatf("    - Total checked trans   %0d\n", num_exp_tran)};
-      `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
     end
   endfunction : report_phase
 
