@@ -521,11 +521,11 @@ module spi_device #(
   prim_ram_2p_adv #(
     .Depth (512),
     .Width (SramDw),    // 32 x 512 --> 2kB
-    .DataBitsPerMask (1),
+    .DataBitsPerMask (8),
     .CfgW  (8),
 
-    .EnableECC           (1),
-    .EnableParity        (0),
+    .EnableECC           (0),
+    .EnableParity        (1),
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0)
   ) u_memory_2p (
