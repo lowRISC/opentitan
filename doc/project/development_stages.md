@@ -42,7 +42,7 @@ See the section on signoff for details.
 
 The final life stage is **Signed Off**.
 At this point, a design is frozen and not expected to be updated.
-There are exceptions if post-signoff bugs are found, in which case the stage returns to Active and the version number is not updated.
+There are exceptions if post-signoff bugs are found, in which case the stage returns to Development and the version number is not updated.
 Feature requests towards a signed-off design requires review and approval by the Technical Committee.
 Once accepted, it results in creating a new version and return a design to the appropriate life stage, based upon the size of the change.
 See the _Versioning_ section of the document for more discussion.
