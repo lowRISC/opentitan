@@ -31,10 +31,13 @@ module prim_generic_ram_1p #(
   logic [Width-1:0]     mem [Depth];
   logic [MaskWidth-1:0] wmask;
 
-  always_comb begin
-    for (int i=0; i < MaskWidth; i = i + 1) begin : create_wmask
-      wmask[i] = &wmask_i[i*DataBitsPerMask +: DataBitsPerMask];
-    end
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
+    assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
+
+    // Ensure that all mask bits within a group have the same value
+    `ASSERT(MaskCheck_A, req_i |->
+        wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
+        clk_i, '0)
   end
 
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error

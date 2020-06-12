@@ -40,13 +40,18 @@ module prim_generic_ram_2p #(
   logic [MaskWidth-1:0] a_wmask;
   logic [MaskWidth-1:0] b_wmask;
 
-  always_comb begin
-    for (int i=0; i < MaskWidth; i = i + 1) begin : create_wmask
-      a_wmask[i] = &a_wmask_i[i*DataBitsPerMask +: DataBitsPerMask];
-      b_wmask[i] = &b_wmask_i[i*DataBitsPerMask +: DataBitsPerMask];
-    end
-  end
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
+    assign a_wmask[k] = &a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
+    assign b_wmask[k] = &b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
+    // Ensure that all mask bits within a group have the same value
+    `ASSERT(MaskCheckPortA_A, a_req_i |->
+        a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
+        clk_a_i, '0)
+    `ASSERT(MaskCheckPortB_A, b_req_i |->
+        b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
+        clk_b_i, '0)
+  end
 
   // Xilinx FPGA specific Dual-port RAM coding style
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
