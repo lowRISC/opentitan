@@ -78,6 +78,11 @@ check_design                                              > "${REPDIR}/check.rpt
 
 set_verification_top
 
+
+change_names -rules verilog -hierarchy
+define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
+change_names -rule fixbackslashes -h
+
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
 
@@ -104,9 +109,19 @@ source constraints.sdc
 ##    MAP DESIGN    ##
 ######################
 
-# TODO: we may have to disable a couple of optimizations in order
-# to prevent the tool from optimizing away dummy logic or logic from blocks
-# that are only half-finished
+# disable constant propagation
+set_app_var case_analysis_propagate_through_icg FALSE
+set_app_var compile_enable_constant_propagation_with_no_boundary_opt FALSE
+
+# disable constant register removal
+set_app_var compile_seqmap_propagate_constants FALSE
+
+# disable deleting unloaded gates and flops
+set_compile_directives [get_designs] -delete_unloaded_gate FALSE
+set_app_var compile_delete_unloaded_sequential_cells FALSE
+
+# disable register merging
+set_register_merging [all_designs] FALSE
 
 # preserve hierarchy for reports
 compile_ultra -gate_clock -scan -no_autoungroup > "${REPDIR}/compile.rpt"
