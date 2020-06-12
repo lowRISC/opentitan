@@ -524,8 +524,8 @@ module spi_device #(
     .DataBitsPerMask (1),
     .CfgW  (8),
 
-    .EnableECC           (1),
-    .EnableParity        (0),
+    .EnableECC           (0),
+    .EnableParity        (1),
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0)
   ) u_memory_2p (
