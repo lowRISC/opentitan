@@ -358,8 +358,7 @@ module top_${top["name"]} #(
     .Depth(${sram_depth}),
     .DataBitsPerMask(8),
     .CfgW(8),
-    // TODO: enable parity once supported by the simulation infrastructure
-    .EnableParity(0)
+    .EnableParity(1)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
