@@ -4909,7 +4909,6 @@
     ]
     mio_modules:
     [
-      uart
       uart1
       uart2
       uart3
