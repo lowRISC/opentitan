@@ -38,7 +38,7 @@
       desc: '''
         Initial Key Registers.
         Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
-        All key registers must be written at least once when the key is changed, regardless of key length (write 0 for unusued bits).
+        All key registers must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
         The order in which the registers are updated does not matter.
         Can only be updated when the AES unit is idle.
         If the AES unit is non-idle, writes to these registers are ignored.
@@ -65,6 +65,7 @@
         Each register has to be written at least once.
         The order in which the registers are written does not matter.
         If the AES unit is non-idle, writes to these registers are ignored.
+        Whenever starting a new message, the corresponding IV value must be provided by the processor.
         Once started, the AES unit automatically updates the contents of these registers.
         In ECB mode, the IV registers are not used and do not need to be configured.
       '''
@@ -264,6 +265,8 @@
         resval: "1",
         desc:  '''
           The AES unit is idle (1) or busy (0).
+          This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.
+          This flag is also `0` if an encryption/decryption is running but the AES unit is stalled.
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
@@ -273,6 +276,7 @@
           The AES unit is not stalled (0) or stalled (1) because there is previous
           output data that must be read by the processor before the AES unit can
           overwrite this data.
+          This flag not meaningful if MANUAL_OPERATION=1 (see Control Register).
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
