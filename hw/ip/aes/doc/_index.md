@@ -105,6 +105,8 @@ Consequently, the blocks shown in the diagram always implement the forward and b
 For example, SubBytes implements both SubBytes and InvSubBytes.
 
 Besides the actual AES cipher core, the AES unit features a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface, and a counter module (used in CTR mode only).
+This counter module implements the Standard Incrementing Function according to [Recommendation for Block Cipher Modes of Operation (Appendix B.1)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf) with a fixed parameter m = 128.
+Note that for AES, parameter b = 128 and the counter increment is big-endian.
 The initialization vector (IV) register and the register to hold the previous input data are used in CBC and CTR modes only.
 
 
@@ -144,6 +146,7 @@ The AES unit operates as follows (phrases in italics apply to peculiarities of d
    Each IV register must be written at least once.
    The order in which the registers are written does not matter.
    Note that while operating, the AES unit automatically updates the IV registers after having consumed the current IV value.
+   Whenever a new message is started, the processor must provide the corresponding IV value via TL-UL bus interface.
    In ECB mode, no IV needs to be provided.
    The content of the IV registers is ignored in ECB mode._
 1. The input data is provided to the AES unit via four CSRs.
@@ -210,7 +213,8 @@ For a description of the various sub modules, see the following sections.
 
 The SubBytes operation is a non-linear byte substitution that operates independently on each byte of the state using a substitution table (S-Box).
 It is both used for the cipher data path and the key expand data path.
-In total, 20 S-Boxes are used (16 for SubBytes, 4 for KeyExpand), each having 8-bit input and output.
+In total, the AES unit instantiates 20 S-Boxes in parallel (16 for SubBytes, 4 for KeyExpand), each having 8-bit input and output.
+In combination with the 128-bit wide data path, this allows to perform one AES round per iteration.
 
 The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and is itself its own research topic.
 
@@ -315,7 +319,7 @@ The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers.
 Each register must be written at least once.
 The order in which these registers are written does not matter.
-Anything can be written to the unused key registers.
+Anything can be written to the unused key registers, however, random data is preferred.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
 
 If running in CBC or CTR mode, software must also write the initialization vector (IV) registers {{< regref "IV0" >}} - {{< regref "IV3" >}}.
@@ -344,7 +348,7 @@ Then for every Data Block `I=0,..,N-3`, software must:
    Each register must be read at least once.
    The order in which these registers are read does not matter.
 3. Write Input Data Block `I+2` into the Input Data register.
-   There is no need to check INPUT_READY as the cycle following OUTPUT_VALID being set the current input is loaded in.
+   There is no need to explicitly check INPUT_READY as in the same cycle OUTPUT_VALID becomes `1`, the current input is loaded in (meaning INPUT_READY becomes `1` one cycle later).
 
 Once all blocks have been input the final data blocks `I=N-2,N-1` must be read out
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
