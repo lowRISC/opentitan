@@ -182,9 +182,8 @@ jobs:
       artifact: sw_build
 
 # This is a second software build currently building with Clang, to test out the
-# compiler migration. It is a copy of `sw_build` with `continueOnError: true`
-# specified for the main tasks, and `meson_init.sh` configured with the clang
-# toolchain not the default toolchain.
+# compiler migration. It is a copy of `sw_build` with `meson_init.sh` configured
+# with the clang toolchain not the default toolchain.
 - job: sw_build_clang
   displayName: Build Software (with Clang)
   dependsOn: lint
@@ -206,12 +205,10 @@ jobs:
         -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-clang.txt"
       ninja -C "$OBJ_DIR" all
     displayName: Build embedded targets
-    continueOnError: true
   - bash: |
       . util/build_consts.sh
       ninja -C "$OBJ_DIR" test
     displayName: Run unit tests
-    continueOnError: true
   - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: sw_build_clang
