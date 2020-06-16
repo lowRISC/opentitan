@@ -23,5 +23,8 @@
     'vendor/lowrisc_ip.lock.hjson',
     // We shouldn't reformat upstream code
     '.clang-format',
+    // top_pkg uses a global identifier any may appear only once in the tree.
+    'dv/uvm/icache/dv/top_pkg.sv',
+    'dv/uvm/icache/dv/top_pkg.core',
   ]
 }
