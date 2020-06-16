@@ -72,17 +72,17 @@
       type: host
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline: "false"
+      pipeline_byp: "false"
       xbar: false
       inst_type: rv_core_ibex
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: cored
       type: host
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline: "false"
+      pipeline: "true"
       xbar: false
       inst_type: rv_core_ibex
       pipeline_byp: "true"
@@ -92,10 +92,10 @@
       type: host
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline_byp: "false"
+      pipeline: "false"
       xbar: false
       inst_type: rv_dm
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: rom
@@ -219,7 +219,7 @@
       type: device
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline_byp: "false"
+      pipeline: "false"
       inst_type: hmac
       addr_range:
       [
@@ -229,14 +229,14 @@
         }
       ]
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: aes
       type: device
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline_byp: "false"
+      pipeline: "false"
       inst_type: aes
       addr_range:
       [
@@ -246,14 +246,14 @@
         }
       ]
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: keymgr
       type: device
       clock: clk_main_i
       reset: rst_main_ni
-      pipeline_byp: "false"
+      pipeline: "false"
       inst_type: keymgr
       addr_range:
       [
@@ -263,7 +263,7 @@
         }
       ]
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: rv_plic
@@ -278,16 +278,16 @@
           size_byte: 0x1000
         }
       ]
-      pipeline_byp: "false"
+      pipeline: "false"
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: alert_handler
       type: device
       clock: clk_main_i
       inst_type: alert_handler
-      pipeline_byp: "false"
+      pipeline: "false"
       addr_range:
       [
         {
@@ -296,14 +296,14 @@
         }
       ]
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
     {
       name: nmi_gen
       type: device
       clock: clk_main_i
       inst_type: nmi_gen
-      pipeline_byp: "false"
+      pipeline: "false"
       addr_range:
       [
         {
@@ -312,7 +312,7 @@
         }
       ]
       xbar: false
-      pipeline: "true"
+      pipeline_byp: "true"
     }
   ]
   clock: clk_main_i
