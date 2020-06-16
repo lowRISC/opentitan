@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Top level dut name (sv module).
-  name: aes
+  name: rv_core_ibex
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip:aes:0.6
+  fusesoc_core: lowrisc:ip:rv_core_ibex:0.1
 
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/data/common_syn_cfg.hjson"]
 
   // Timing constraints for this module
-  sdc_file: "{proj_root}/hw/ip/aes/syn/constraints.sdc"
+  sdc_file: "{proj_root}/hw/ip/rv_core_ibex/syn/constraints.sdc"
 
  }
