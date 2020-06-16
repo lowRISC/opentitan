@@ -10,7 +10,7 @@
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
-      //pipeline: "false"
+      pipeline:  "true",
       pipeline_byp: "false"
 
     },
@@ -18,7 +18,8 @@
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
-      pipeline: "true"
+      pipeline:  "true",
+      pipeline_byp: "false"
 
     },
     { name:  "dm_sba", // DM

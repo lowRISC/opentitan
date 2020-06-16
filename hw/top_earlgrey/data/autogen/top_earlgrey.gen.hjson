@@ -2845,10 +2845,10 @@
           type: host
           clock: clk_main_i
           reset: rst_main_ni
+          pipeline: "true"
           pipeline_byp: "false"
           xbar: false
           inst_type: rv_core_ibex
-          pipeline: "true"
         }
         {
           name: cored
@@ -2856,9 +2856,9 @@
           clock: clk_main_i
           reset: rst_main_ni
           pipeline: "true"
+          pipeline_byp: "false"
           xbar: false
           inst_type: rv_core_ibex
-          pipeline_byp: "true"
         }
         {
           name: dm_sba
