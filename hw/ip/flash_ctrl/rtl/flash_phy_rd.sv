@@ -86,11 +86,10 @@ module flash_phy_rd import flash_phy_pkg::*; (
     assign dummy_data[i] = '0;
   end
 
-  // using prim arbiter tree since it supports per cycle arbitration instead of
-  // winner lock
   prim_arbiter_tree #(
     .N(NumBuf),
-    .Lock(0),
+    // disable request stability assertion
+    .EnReqStabA(0),
     .DW(2)
   ) i_valid_random (
     .clk_i,

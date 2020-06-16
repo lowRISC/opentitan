@@ -76,7 +76,7 @@ module prim_sram_arbiter #(
       .ready_i ( 1'b1        )
     );
   end else if (ArbiterImpl == "BINTREE") begin : gen_tree_arb
-    prim_arbiter_arb #(
+    prim_arbiter_tree #(
       .N (N),
       .DW(ARB_DW)
     ) u_reqarb (
