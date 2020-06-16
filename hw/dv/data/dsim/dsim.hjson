@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} {DSIM_HOME}/bin/dsim"
-  run_cmd:    "{job_prefix} {DSIM_HOME}/bin/dsim"
+  build_cmd:  "{job_prefix} dsim"
+  run_cmd:    "{job_prefix} dsim"
 
   build_opts: [
                "-work {build_dir}/dsim_out",
@@ -21,7 +21,7 @@
                "+incdir+{build_dir}",
                // Suppress following DSim errors and warnings:
                //   EnumMustBePositive - UVM 1.2 violates this
-               "-suppress EnumMustBePositive -warn NeedExplicitStatic",
+               "-suppress EnumMustBePositive"
               ]
 
   run_opts:   [
@@ -41,7 +41,7 @@
 
   // TODO: refactor coverage configuration for DSim.
 
-  // Coverage related.
+  // COVERAGE related.
   cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
 
   // Individual test specific coverage data - this will be deleted if the test fails
@@ -96,14 +96,14 @@
       is_sim_mode: 1
       build_opts: [
                     "+acc+b"
-		   ]
+                  ]
       run_opts:   [
                     "-waves {wave_file}",
-		    // dsim.probe is currently undefined
+                    // dsim.probe is currently undefined
                     //"-wave-scope-specs {probe_file}",
                     // Dump unpacked structs and arrays.
                     "-dump-agg"
-                    ]
+                  ]
     }
     // TODO: support coverage mode
     // Note: no specific build or run options are required for dsim to produce functional
