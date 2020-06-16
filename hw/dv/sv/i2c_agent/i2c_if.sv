@@ -138,7 +138,6 @@ interface i2c_if;
   endtask: wait_for_device_ack
 
   task automatic device_send_ack(ref timing_cfg_t tc);
-    device_stretch_clk(tc);
     sda_o = 1'b1;
     wait_for_dly(tc.tClockLow);
     sda_o = 1'b0;
@@ -150,7 +149,6 @@ interface i2c_if;
 
   task automatic device_send_bit(ref timing_cfg_t tc,
                                  input bit bit_i);
-    device_stretch_clk(tc);
     sda_o = 1'b1;
     wait_for_dly(tc.tClockLow);
     sda_o = bit_i;
@@ -160,13 +158,13 @@ interface i2c_if;
     sda_o = 1'b1;
   endtask: device_send_bit
 
-  task automatic device_stretch_clk(ref timing_cfg_t tc);
-    if (tc.enbTimeOut) begin
-      scl_o = 1'b0;
-      wait_for_dly(tc.tTimeOut);
-      scl_o = 1'b1;
-    end
-  endtask : device_stretch_clk
+  task automatic device_stretch_host_clk(ref timing_cfg_t tc,
+                                         input int num_stretch_host_clks);
+    wait_for_dly(tc.tClockLow + tc.tSetupBit);
+    scl_o = 1'b0;
+    wait_for_dly(num_stretch_host_clks);
+    scl_o = 1'b1;
+  endtask : device_stretch_host_clk
 
   task automatic get_bit_data(string src = "host",
                               ref timing_cfg_t tc,
