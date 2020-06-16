@@ -49,16 +49,19 @@ class esc_monitor extends alert_esc_base_monitor;
           while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
                  !cfg.probe_vif.get_esc_en() && !under_reset);
           if (under_reset) continue;
-          if (!cfg.probe_vif.get_esc_en()) begin
-            if (ping_cnter >= cfg.ping_timeout_cycle) begin
-              alert_esc_seq_item req_clone;
-              $cast(req_clone, req.clone());
-              req_clone.timeout = 1;
-              alert_esc_port.write(req_clone);
+          if (ping_cnter >= cfg.ping_timeout_cycle) begin
+            alert_esc_seq_item req_clone;
+            $cast(req_clone, req.clone());
+            req_clone.timeout = 1;
+            alert_esc_port.write(req_clone);
+            if (!cfg.probe_vif.get_esc_en()) begin
               @(cfg.vif.monitor_cb);
               check_esc_resp(.req(req), .is_ping(1), .do_wait_clk(0));
             end
-          end else begin
+          end
+          // TODO: one corner case still confirming with design: when sig_int_err with esc_en,
+          // which one has priority?
+          if (cfg.probe_vif.get_esc_en()) begin
             // wait a clk cycle to enter the esc_p/n mode
             @(cfg.vif.monitor_cb);
           end
