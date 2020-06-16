@@ -10,21 +10,22 @@
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
-      pipeline: "false"
+      //pipeline: "false"
+      pipeline_byp: "false"
 
     },
     { name:  "cored",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
-      pipeline: "false"
+      pipeline: "true"
 
     },
     { name:  "dm_sba", // DM
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
-      pipeline_byp: "false"
+      pipeline:  "false",
 
     },
     { name:      "rom",
@@ -73,19 +74,19 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline_byp: "false"
+      pipeline:  "false"
     },
     { name:      "aes",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
-      pipeline_byp: "false"
+      pipeline:  "false"
     },
     { name:      "keymgr",
       type:      "device",
       clock:     "clk_main_i"
       reset:     "rst_main_ni"
-      pipeline_byp: "false"
+      pipeline:  "false"
     },
     { name:      "rv_plic",
       type:      "device",
@@ -96,13 +97,13 @@
         base_addr: "0x40090000",
         size_byte: "0x1000",
         }],
-      pipeline_byp: "false"
+      pipeline:  "false"
     },
     { name:      "alert_handler",
       type:      "device",
       clock:     "clk_main_i",
       inst_type: "alert_handler",
-      pipeline_byp: "false"
+      pipeline:  "false"
     },
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
@@ -110,7 +111,7 @@
       type:      "device",
       clock:     "clk_main_i",
       inst_type: "nmi_gen",
-      pipeline_byp: "false"
+      pipeline:  "false"
     }
   ],
   connections: {
