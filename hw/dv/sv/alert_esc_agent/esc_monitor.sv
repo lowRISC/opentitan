@@ -18,19 +18,18 @@ class esc_monitor extends alert_esc_base_monitor;
   //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
     fork
-      esc_thread(phase);
+      esc_thread();
       reset_thread();
       unexpected_resp_thread();
       sig_int_fail_thread();
     join_none
   endtask : run_phase
 
-  virtual task esc_thread(uvm_phase phase);
+  virtual task esc_thread();
     alert_esc_seq_item req, req_clone;
     logic esc_p = get_esc();
     forever @(cfg.vif.monitor_cb) begin
       if (!under_reset && !esc_p && get_esc() === 1'b1) begin
-        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.sig_cycle_cnt++;
         if (is_sig_int_err()) req.esc_handshake_sta = EscIntFail;
@@ -78,7 +77,6 @@ class esc_monitor extends alert_esc_base_monitor;
         end
         `uvm_info("esc_monitor", $sformatf("[%s]: handshake status is %s, timeout=%0b",
             req.alert_esc_type.name(), req.esc_handshake_sta.name(), req.timeout), UVM_HIGH)
-        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
       esc_p = get_esc();
     end
@@ -176,5 +174,13 @@ class esc_monitor extends alert_esc_base_monitor;
   virtual function bit is_sig_int_err();
     return cfg.vif.monitor_cb.esc_rx.resp_p === cfg.vif.monitor_cb.esc_rx.resp_n;
   endfunction : is_sig_int_err
+
+  // end phase when no escalation signal is triggered
+  virtual task monitor_ready_to_end();
+    forever @(cfg.vif.monitor_cb.esc_rx.resp_p || cfg.vif.monitor_cb.esc_tx.esc_p) begin
+      ok_to_end = !cfg.vif.monitor_cb.esc_rx.resp_p && cfg.vif.monitor_cb.esc_rx.resp_p &&
+                  !get_esc();
+    end
+  endtask
 
 endclass : esc_monitor

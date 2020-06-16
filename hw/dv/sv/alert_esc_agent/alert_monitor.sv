@@ -19,8 +19,8 @@ class alert_monitor extends alert_esc_base_monitor;
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      alert_thread(phase);
-      ping_thread(phase);
+      alert_thread();
+      ping_thread();
       reset_thread();
       int_fail_thread();
     join_none
@@ -36,12 +36,11 @@ class alert_monitor extends alert_esc_base_monitor;
     end
   endtask : reset_thread
 
-  virtual task ping_thread(uvm_phase phase);
+  virtual task ping_thread();
     alert_esc_seq_item req;
     bit                ping_p, alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.monitor_cb.alert_rx.ping_p) begin
-        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         under_ping_rsp = 1;
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscPingTrans;
@@ -71,7 +70,6 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
-        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
@@ -79,12 +77,11 @@ class alert_monitor extends alert_esc_base_monitor;
     end
   endtask : ping_thread
 
-  virtual task alert_thread(uvm_phase phase);
+  virtual task alert_thread();
     alert_esc_seq_item req;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
-        phase.raise_objection(this, $sformatf("%s objection raised", `gfn));
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
@@ -117,7 +114,6 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
-        phase.drop_objection(this, $sformatf("%s objection dropped", `gfn));
       end
       alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
     end
@@ -157,4 +153,12 @@ class alert_monitor extends alert_esc_base_monitor;
   virtual function bit is_valid_alert();
     return cfg.vif.monitor_cb.alert_tx.alert_p && !cfg.vif.monitor_cb.alert_tx.alert_n;
   endfunction : is_valid_alert
+
+  // end phase when no alert is triggered
+  virtual task monitor_ready_to_end();
+    forever begin
+      @(cfg.vif.monitor_cb.alert_tx.alert_p);
+      ok_to_end = !cfg.vif.monitor_cb.alert_tx.alert_p && cfg.vif.monitor_cb.alert_tx.alert_n;
+    end
+  endtask
 endclass : alert_monitor
