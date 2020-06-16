@@ -218,7 +218,7 @@ interface clk_rst_if #(
     // start driving clk only after the first por reset assertion. The fork/join means that we'll
     // wait a whole number of clock periods, which means it's possible for the clock to synchronise
     // with the "expected" timestamps.
-    bit done = 1'b0;
+    bit done;
     fork
       begin
         wait_for_reset(.wait_posedge(1'b0));
