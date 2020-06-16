@@ -135,7 +135,9 @@ Future versions of the AES unit might offer compile-time parameters to selective
 All submodules in the data path are purely combinational.
 The only sequential logic in the cipher and round key generation are the State, Full Key and Decryption Key registers.
 
-The AES unit operates as follows (phrases in italics apply to peculiarities of different block cipher modes):
+The following description explains how the AES unit operates, i.e., how the operation of the AES cipher is mapped to the datapath architecture of the AES unit.
+Phrases in italics apply to peculiarities of different block cipher modes.
+For a general introduction into these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
 1. The initial key and configuration is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
    Each key register must be written at least once.
