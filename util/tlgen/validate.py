@@ -286,16 +286,12 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
 
         if node.node_type in [NodeType.DEVICE, NodeType.HOST
                               ] and "pipeline" in nodeobj:
-            node.pipeline = True if nodeobj["pipeline"].lower() in [
-                "true", "1"
-            ] else False
+            node.pipeline, err = check_bool(nodeobj["pipeline"], "")
         else:
             node.pipeline = False
         if node.node_type in [NodeType.DEVICE, NodeType.HOST
                               ] and "pipeline_byp" in nodeobj:
-            node.pipeline_byp = True if nodeobj["pipeline_byp"].lower() in [
-                "true", "1"
-            ] else False
+            node.pipeline_byp, err = check_bool(nodeobj["pipeline_byp"], "")
         else:
             node.pipeline_byp = True
         xbar.nodes.append(node)

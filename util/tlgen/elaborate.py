@@ -142,10 +142,14 @@ def process_pipeline(xbar):
                 1 << idx) if no_bypass else dnode.hpass
 
         # keep variables separate in case we ever need to differentiate
-        dnode.dpass = 0 if no_bypass else dnode.dpass
         dnode.hdepth = 0 if host.pipeline is False else dnode.hdepth
-        dnode.ddepth = dnode.hdepth
 
+        log.info("{name}: {hpass}/ {hdepth} : {dpass} / {ddepth}".format(
+            name=host.name,
+            hpass=dnode.hpass,
+            hdepth=dnode.hdepth,
+            dpass=dnode.dpass,
+            ddepth=dnode.ddepth))
     for device in xbar.devices:
         # go upstream and set DReq/RspPass at the first instance.
         # If it is async, skip
@@ -173,8 +177,12 @@ def process_pipeline(xbar):
             unode.dpass = 0 if no_bypass else unode.dpass
 
         # keep variables separate in case we ever need to differentiate
-        unode.hpass = 0 if no_bypass else unode.hpass
         unode.ddepth = 0 if device.pipeline is False else unode.ddepth
-        unode.hdepth = unode.ddepth
 
+        log.info("{name}: {hpass} / {hdepth} : {dpass} / {ddepth}".format(
+            name=device.name,
+            hpass=unode.hpass,
+            hdepth=unode.hdepth,
+            dpass=unode.dpass,
+            ddepth=unode.ddepth))
     return xbar
