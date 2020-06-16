@@ -24,5 +24,8 @@
     // importing it until it has been removed from Ibex.
     'dv/verilator/memutil',
     'dv/verilator/simutil_verilator',
+    // top_pkg uses a global identifier any may appear only once in the tree.
+    'dv/uvm/icache/dv/top_pkg.sv',
+    'dv/uvm/icache/dv/top_pkg.core',
   ]
 }
