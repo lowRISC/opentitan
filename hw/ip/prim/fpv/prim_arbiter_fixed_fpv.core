@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:prim_arbiter_fixed_fpv:0.1"
+description: "prim_arbiter_fixed FPV target"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - tb/prim_arbiter_fixed_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_formal
+    toplevel: prim_arbiter_fixed_fpv
+
+  formal:
+    <<: *default_target
