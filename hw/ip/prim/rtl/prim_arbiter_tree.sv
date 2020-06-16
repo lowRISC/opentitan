@@ -11,13 +11,13 @@
 //   EnReqStabA:  Checks whether requests remain asserted until granted
 //
 // This is a tree implementation of a round robin arbiter. It has the same behavior as the PPC
-// implementation in prim_arbiter_ppc, and also uses a masking approach with an upper and lower
-// mask to determine the next request to be granted. The main difference with respect to the PPC
-// arbiter is that the leading 1 detection is performed with a binary tree, and (if the data port
-// is enabled), the data is muxed based on the local arbiter decisions within the arbiter tree as
-// well. This means that the data can propagate at the same time as the requests make their way
-// through the tree, instead of having to wait for the arbitration to determine the winner index
-// first. As a result, this design has a shorter critical path than other implementations,
+// implementation in prim_arbiter_ppc, and also uses a prefix summing approach to determine the next
+// request to be granted. The main difference with respect to the PPC arbiter is that the leading 1
+// detection and the prefix summation are performed with a binary tree instead of a sequential loop.
+// Also, if the data port is enabled, the data is muxed based on the local arbitration decisions  at
+// each node of the arbiter tree. This means that the data can propagate through the tree
+// simultaneously with the requests, instead of waiting for the arbitration to determine the winner
+// index first. As a result, this design has a shorter critical path than other implementations,
 // leading to better ovberall timing.
 //
 // Note that the currently winning request is held if the data sink is not ready. This behavior is
@@ -148,10 +148,12 @@ module prim_arbiter_tree #(
             // data and index muxes
             idx_tree[Pa]  = (sel) ? idx_tree[C1]  : idx_tree[C0];
             data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
+
             // backward path (grants and prefix sum)
             // this propagates the selction index back and computes a hot one mask
             sel_tree[C0] = sel_tree[Pa] & ~sel;
             sel_tree[C1] = sel_tree[Pa] &  sel;
+            // this performs a prefix sum for masking the input requests in the next cycle
             mask_tree[C0] = mask_tree[Pa];
             mask_tree[C1] = mask_tree[Pa] | sel_tree[C0];
           end
@@ -171,11 +173,9 @@ module prim_arbiter_tree #(
     assign idx_o       = idx_tree[0];
     assign valid_o     = req_tree[0];
 
-    // the select tree computes a hot one signal that
-    // indicates which request is currently selected
+    // the select tree computes a hot one signal that indicates which request is currently selected
     assign sel_tree[0] = 1'b1;
-    // the mask tree is basically a prefix sum of the hot one
-    // select signal computed above
+    // the mask tree is basically a prefix sum of the hot one select signal computed above
     assign mask_tree[0] = 1'b0;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_mask_reg
