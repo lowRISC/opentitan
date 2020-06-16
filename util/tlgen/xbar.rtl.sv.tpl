@@ -224,7 +224,7 @@ ${"end" if loop.last else ""}
     .DReqPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     .DRspPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     % endif
-    % if block.hdepth != 2:
+    % if block.ddepth != 2:
     .DReqDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
     .DRspDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
     % endif
