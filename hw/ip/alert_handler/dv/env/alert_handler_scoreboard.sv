@@ -505,7 +505,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
         cfg.clk_rst_vif.wait_n_clks(1);
         last_triggered_alert_per_class[class_i] = $realtime;
         accum_cnter_per_class[class_i] = 0;
-        state_per_class[class_i] = EscStateIdle;
+        if (state_per_class[class_i] != EscStateTimeout) state_per_class[class_i] = EscStateIdle;
       end
     join_none
   endtask
