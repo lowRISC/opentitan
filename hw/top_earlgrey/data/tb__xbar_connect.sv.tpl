@@ -53,7 +53,7 @@ initial begin
 
 % for c in clk_freq.keys():
     clk_rst_if_${c}.set_active(.drive_rst_n_val(0));
-    clk_rst_if_${c}.set_freq_mhz(${clk_freq[c]} / 1000_000.0);
+    clk_rst_if_${c}.set_freq_khz(${clk_freq[c]} / 1000);
 % endfor
 
     // bypass clkmgr, force clocks directly

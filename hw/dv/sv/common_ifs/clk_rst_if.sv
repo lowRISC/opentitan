@@ -69,11 +69,16 @@ interface clk_rst_if #(
     if (wait_posedge && (rst_n === 1'b0)) @(posedge rst_n);
   endtask
 
-  // set the clk frequency in mhz
-  function automatic void set_freq_mhz(real freq_mhz);
-    clk_freq_mhz = freq_mhz;
+  // set the clk frequency in khz
+  function automatic void set_freq_khz(int freq_khz);
+    clk_freq_mhz = $itor(freq_khz) / 1000;
     clk_period_ps = 1000_000 / clk_freq_mhz;
     recompute = 1'b1;
+  endfunction
+
+  // set the clk frequency in mhz
+  function automatic void set_freq_mhz(int freq_mhz);
+    set_freq_khz(freq_mhz * 1000);
   endfunction
 
   // call this function at t=0 (from tb top) to enable clk and rst_n to be driven
