@@ -1,0 +1,50 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_earlgrey_cw305:0.1"
+description: "Earl Grey toplevel for the ChipWhisperer CW305 board"
+filesets:
+  files_rtl_cw305:
+    depend:
+      - lowrisc:systems:top_earlgrey:0.1
+    files:
+      - rtl/clkgen_xil7series.sv
+      - rtl/top_earlgrey_cw305.sv
+    file_type: systemVerilogSource
+
+  files_constraints:
+    files:
+      - data/pins_cw305.xdc
+    file_type: xdc
+
+parameters:
+  BootRomInitFile:
+    datatype: str
+    description: Boot ROM initialization file in 32 bit vmem hex format
+    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
+    paramtype: vlogparam
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: str
+    paramtype: vlogdefine
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl_cw305
+    toplevel: top_earlgrey_cw305
+
+  synth:
+    default_tool: vivado
+    filesets:
+      - files_rtl_cw305
+      - files_constraints
+    toplevel: top_earlgrey_cw305
+    parameters:
+      - BootRomInitFile
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+    tools:
+      vivado:
+        part: "xc7a100tftg256-2" # CW305 Board
