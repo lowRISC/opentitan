@@ -62,16 +62,31 @@
       package: "pwrmgr_pkg",
     },
 
-    { struct:  "pwr_peri",
+    { struct:  "logic",
+      width:   3,
       type:    "uni",
-      name:    "pwr_peri",
+      name:    "wakeups",
       act:     "rcv",
-      package: "pwrmgr_pkg",
+      package: "",
+    },
+
+    { struct:  "logic",
+      width:   2,
+      type:    "uni",
+      name:    "rstreqs",
+      act:     "rcv",
+      package: "",
     },
 
   ],
 
   param_list: [
+    { name: "NumWkups",
+      desc: "Number of wakeups",
+      type: "int",
+      default: "16",
+      local: "true"
+    },
   ],
 
   regwidth: "32",
@@ -254,36 +269,44 @@
       ]
     },
 
-    { name: "WAKEUP_EN",
-      desc: "Bit mask for enabled wakeups",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "WAKEUP_EN_REGWEN",
-      resval: "0"
-      fields: [
-        { bits: "15:0",
-          name: "EN",
-          desc: '''
-            Whenever a particular bit is set to 1, that wakeup is also enabled.
-            Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power.
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "WAKEUP_EN",
+        desc: "Bit mask for enabled wakeups",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "WAKEUP_EN_REGWEN",
+        resval: "0"
+        cname: "wakeup_en",
+        count: "NumWkups"
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+              Whenever a particular bit is set to 1, that wakeup is also enabled.
+              Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power.
+            ''',
+          },
+        ]
+      },
     },
 
-    { name: "WAKE_STATUS",
-      desc: "A read only register of all current wake requests post enable mask",
-      swaccess: "ro",
-      hwaccess: "none",
-      resval: "0"
-      fields: [
-        { bits: "15:0",
-          name: "VAL",
-          desc: '''
-            Current value of wake requests
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "WAKE_STATUS",
+        desc: "A read only register of all current wake requests post enable mask",
+        swaccess: "ro",
+        hwaccess: "none",
+        resval: "0"
+        cname: "wake_status",
+        count: "NumWkups",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+              Current value of wake requests
+            ''',
+          },
+        ]
+      },
     },
 
     { name: "RESET_EN_REGWEN",
@@ -394,3 +417,4 @@
     },
   ]
 }
+

@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/rstmgr_pkg.sv
     file_type: systemVerilogSource
