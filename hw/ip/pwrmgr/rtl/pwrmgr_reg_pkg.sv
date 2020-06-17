@@ -6,6 +6,9 @@
 
 package pwrmgr_reg_pkg;
 
+  // Param list
+  parameter int NumWkups = 16;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -43,8 +46,8 @@ package pwrmgr_reg_pkg;
   } pwrmgr_reg2hw_cfg_cdc_sync_reg_t;
 
   typedef struct packed {
-    logic [15:0] q;
-  } pwrmgr_reg2hw_wakeup_en_reg_t;
+    logic        q;
+  } pwrmgr_reg2hw_wakeup_en_mreg_t;
 
   typedef struct packed {
     logic [1:0]  q;
@@ -113,7 +116,7 @@ package pwrmgr_reg_pkg;
     pwrmgr_reg2hw_intr_test_reg_t intr_test; // [47:46]
     pwrmgr_reg2hw_control_reg_t control; // [45:42]
     pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [41:40]
-    pwrmgr_reg2hw_wakeup_en_reg_t wakeup_en; // [39:24]
+    pwrmgr_reg2hw_wakeup_en_mreg_t [15:0] wakeup_en; // [39:24]
     pwrmgr_reg2hw_reset_en_reg_t reset_en; // [23:22]
     pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [21:21]
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [20:0]

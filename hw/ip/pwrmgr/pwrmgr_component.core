@@ -2,17 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr_pkg:0.1"
-description: "Power manager package"
+name: "lowrisc:ip:pwrmgr_component:0.1"
+description: "Power manager comopnents"
 
-# pwrmgr pkg does not actually depend on ip:tlul
-# but it's used as "serialization" point for the ip/top level split
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:ip:pwrmgr_pkg
     files:
-      - rtl/pwrmgr_pkg.sv
+      - rtl/pwrmgr.sv
+      - rtl/pwrmgr_cdc.sv
+      - rtl/pwrmgr_slow_fsm.sv
+      - rtl/pwrmgr_fsm.sv
+      - rtl/pwrmgr_wake_info.sv
     file_type: systemVerilogSource
 
 targets:
