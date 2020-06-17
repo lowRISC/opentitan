@@ -46,7 +46,6 @@ targets:
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=aes_sbox_tb -g -O0"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
-          - "-Wno-PINCONNECTEMPTY"
           # XXX: Cleanup all warnings and remove this option
           # (or make it more fine-grained at least)
           - "-Wno-fatal"
