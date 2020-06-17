@@ -24,6 +24,7 @@ def amend_ip(top, ip):
         - available_inout_list: empty list if doesn't exist
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
+        - wakeup_list: empty list if doesn't exist
     """
     ip_list_in_top = [x["type"].lower() for x in top["module"]]
     # TODO make set
@@ -109,6 +110,14 @@ def amend_ip(top, ip):
                     i["async"] = 1
         else:
             ip_module["alert_list"] = []
+
+        # wkup_list
+        if "wakeup_list" in ip:
+            ip_module["wakeup_list"] = ip["wakeup_list"]
+            for i in ip_module["wakeup_list"]:
+                i.pop('desc', None)
+        else:
+            ip_module["wakeup_list"] = []
 
         # scan
         if "scan" in ip:
@@ -560,6 +569,25 @@ def amend_alert(top):
                 ip[0]["alert_list"]))
 
 
+def amend_wkup(topcfg: OrderedDict):
+
+    if "wakeups" not in topcfg or topcfg["wakeups"] == "":
+        topcfg["wakeups"] = []
+
+    # create list of wakeup signals
+    for m in topcfg["module"]:
+        log.info("Adding wakeup from module %s" % m["name"])
+        for entry in m["wakeup_list"]:
+            log.info("Adding singal %s" % entry["name"])
+            topcfg["wakeups"].append("{module}.{signal}".format(module=m["name"].lower(),
+                                                                signal=entry["name"]))
+
+    # add wakeup signals to pwrmgr connections
+    # TBD: What's the best way to not hardcode this signal below?
+    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
+    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = topcfg["wakeups"]
+
+
 def amend_pinmux_io(top):
     """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
     """
@@ -698,6 +726,9 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
 
     # Add path names to declared resets
     amend_resets(gencfg)
+
+    # Combine the wakeups
+    amend_wkup(gencfg)
 
     # Inter-module signals
     elab_intermodule(gencfg)

@@ -212,6 +212,7 @@
       clock_group: "powerup",
       reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
       base_addr: "0x400A0000",
+      generated: "true"         // Indicate this module is generated in the topgen
 
     },
     { name: "rstmgr",

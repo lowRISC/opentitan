@@ -329,6 +329,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -377,6 +378,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -502,6 +504,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "true"
     }
     {
@@ -603,6 +606,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
       inter_signal_list:
       [
@@ -651,6 +655,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -678,6 +683,7 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -751,6 +757,7 @@
           async: 0
         }
       ]
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -779,6 +786,7 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -811,6 +819,12 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list:
+      [
+        {
+          name: aon_wkup_req
+        }
+      ]
       scan: "false"
       inter_signal_list:
       [
@@ -839,6 +853,8 @@
           act: req
           package: ""
           inst_name: pinmux
+          width: 1
+          top_signame: pwrmgr_wakeups
           index: -1
         }
       ]
@@ -870,6 +886,7 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -954,6 +971,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -971,6 +989,7 @@
         rst_slow_ni: por_aon
       }
       base_addr: 0x400A0000
+      generated: "true"
       clock_connections:
       {
         clk_i: clk_io_i
@@ -998,6 +1017,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
       inter_signal_list:
       [
@@ -1071,11 +1091,24 @@
           index: -1
         }
         {
-          struct: pwr_peri
+          struct: logic
+          width: 1
           type: uni
-          name: pwr_peri
+          name: wakeups
           act: rcv
-          package: pwrmgr_pkg
+          package: ""
+          inst_name: pwrmgr
+          top_type: broadcast
+          top_signame: pwrmgr_wakeups
+          index: -1
+        }
+        {
+          struct: logic
+          width: 2
+          type: uni
+          name: rstreqs
+          act: rcv
+          package: ""
           inst_name: pwrmgr
           index: -1
         }
@@ -1114,6 +1147,7 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list: []
       scan: "false"
       inter_signal_list:
       [
@@ -1207,6 +1241,7 @@
       available_inout_list: []
       interrupt_list: []
       alert_list: []
+      wakeup_list: []
       scan: "false"
       inter_signal_list:
       [
@@ -1327,6 +1362,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
     }
     {
@@ -1602,6 +1638,7 @@
         }
       ]
       alert_list: []
+      wakeup_list: []
       scan: "false"
       inter_signal_list:
       [
@@ -1719,6 +1756,10 @@
       pwrmgr.pwr_clk:
       [
         clkmgr.pwr
+      ]
+      pwrmgr.wakeups:
+      [
+        pinmux.aon_wkup_req
       ]
     }
     top:
@@ -3219,6 +3260,10 @@
     spi_device: rstmgr_resets.rst_spi_device_n
     usb: rstmgr_resets.rst_usb_n
   }
+  wakeups:
+  [
+    pinmux.aon_wkup_req
+  ]
   inter_signal:
   {
     signals:
@@ -3259,6 +3304,8 @@
         act: req
         package: ""
         inst_name: pinmux
+        width: 1
+        top_signame: pwrmgr_wakeups
         index: -1
       }
       {
@@ -3331,11 +3378,24 @@
         index: -1
       }
       {
-        struct: pwr_peri
+        struct: logic
+        width: 1
         type: uni
-        name: pwr_peri
+        name: wakeups
         act: rcv
-        package: pwrmgr_pkg
+        package: ""
+        inst_name: pwrmgr
+        top_type: broadcast
+        top_signame: pwrmgr_wakeups
+        index: -1
+      }
+      {
+        struct: logic
+        width: 2
+        type: uni
+        name: rstreqs
+        act: rcv
+        package: ""
         inst_name: pwrmgr
         index: -1
       }
@@ -3506,6 +3566,13 @@
         signame: pwrmgr_pwr_clk_rsp
         width: 1
         type: req_rsp
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_wakeups
+        width: 1
+        type: uni
       }
       {
         package: rstmgr_pkg
