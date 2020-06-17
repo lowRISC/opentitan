@@ -1,4 +1,9 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
+
+`verilator_config
+
+// TLUL Error
+// All error checkings are comb logic and only portion of signals are used
+lint_off -rule UNUSED -file "*/rtl/tlul_err.sv"

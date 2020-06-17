@@ -1,4 +1,11 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
+
+`verilator_config
+
+// a_ready not needed, goes into FIFO
+lint_off -rule UNUSED -file "*/rtl/tlul_socket_1n.sv" -match "Bits of signal are not used: 'tl_t_p'[0]"
+
+// error response does not require command/address information
+lint_off -rule UNUSED -file "*/rtl/tlul_err_resp.sv" -match "Bits of signal are not used: 'tl_h_i'[97:95,84:1]"
