@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr import pwrmgr_pkg::*;
+module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 (
   // Clocks and resets
   input clk_slow_i,
@@ -45,14 +45,21 @@ module pwrmgr import pwrmgr_pkg::*;
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
 
-  // peripherals interface, includes pinmux
-  input  pwr_peri_t pwr_peri_i,
+  // peripherals wakeup and reset requests
+  input  [NumWkups-1:0] wakeups_i,
+  input  [HwRstReqs-1:0] rstreqs_i,
 
   output intr_wakeup_o
 
 );
 
-  import pwrmgr_reg_pkg::*;
+  ////////////////////////////
+  ///  async declarations
+  ////////////////////////////
+  pwr_peri_t peri_reqs_raw;
+
+  assign peri_reqs_raw.wakeups = wakeups_i;
+  assign peri_reqs_raw.rstreqs = rstreqs_i;
 
   ////////////////////////////
   ///  clk_i domain declarations
@@ -78,7 +85,7 @@ module pwrmgr import pwrmgr_pkg::*;
 
   // Captured signals
   // These signals, though on clk_i domain, are safe for clk_slow_i to use
-  pwrmgr_reg2hw_wakeup_en_reg_t slow_wakeup_en;
+  logic [NumWkups-1:0] slow_wakeup_en;
   pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
 
   pwr_ast_rsp_t slow_ast;
@@ -161,7 +168,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .ack_pwrup_i(ack_pwrup),
     .cfg_cdc_sync_i(reg2hw.cfg_cdc_sync.qe & reg2hw.cfg_cdc_sync.q),
     .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
-    .wakeup_en_i(reg2hw.wakeup_en.q),
+    .wakeup_en_i(reg2hw.wakeup_en),
     .reset_en_i(reg2hw.reset_en.q),
     .main_pd_ni(reg2hw.control.main_pd_n.q),
     .io_clk_en_i(reg2hw.control.io_clk_en.q),
@@ -175,7 +182,7 @@ module pwrmgr import pwrmgr_pkg::*;
     .ast_i(pwr_ast_i),
 
     // peripheral signals
-    .peri_i(pwr_peri_i)
+    .peri_i(peri_reqs_raw)
   );
 
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
