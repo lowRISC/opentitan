@@ -57,7 +57,5 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Conne
 
 # primitivies: prim_ram_2p_wrapper
 #
-#waive -rules INPUT_NOT_READ -location {prim_ram_*_wrapper*} -regexp {cfg_i} \
-#      -comment "Register model doesn't need config port"
 #waive -rules NOT_READ -location {prim_ram_*_wrapper*} -regexp {(a|b)_rdata_(q|d)\[38} \
 #      -comment "Syndrome is not going out to the interface"
