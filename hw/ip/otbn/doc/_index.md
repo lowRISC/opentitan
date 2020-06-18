@@ -264,7 +264,6 @@ In addition to the Wide Data Registers, BN instructions can also access WLEN-siz
         <strong>MOD</strong>
         Modulus.
         To be used in the BN.ADDM and BN.SUBM instructions.
-
         This WSR is mapped to the MOD0 to MOD7 CSRs.
       </td>
     </tr>
