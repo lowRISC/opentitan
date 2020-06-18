@@ -224,9 +224,9 @@ ${"end" if loop.last else ""}
     .DReqPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     .DRspPass  (${len(block.ds)}'h${"%x" % block.dpass}),
     % endif
-    % if block.hdepth != 2:
-    .DReqDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
-    .DRspDepth ({${len(block.ds)}{4'h${block.ddepth}}}),
+    % if block.ddepth != 2:
+    .DReqDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
+    .DRspDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
     % endif
     .N         (${len(block.ds)})
   ) u_${block.name} (
@@ -245,16 +245,16 @@ ${"end" if loop.last else ""}
     .HRspPass  (${len(block.us)}'h${"%x" % block.hpass}),
     % endif
     % if block.hdepth != 2:
-    .HReqDepth ({${len(block.us)}{4'h${block.hdepth}}}),
-    .HRspDepth ({${len(block.us)}{4'h${block.hdepth}}}),
-    % endif
-    % if block.ddepth != 2:
-    .DReqDepth (4'h${block.ddepth}),
-    .DRspDepth (4'h${block.ddepth}),
+    .HReqDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
+    .HRspDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
     % endif
     % if block.dpass != 1:
     .DReqPass  (1'b${block.dpass}),
     .DRspPass  (1'b${block.dpass}),
+    % endif
+    % if block.ddepth != 2:
+    .DReqDepth (4'h${block.ddepth}),
+    .DRspDepth (4'h${block.ddepth}),
     % endif
     .M         (${len(block.us)})
   ) u_${block.name} (
