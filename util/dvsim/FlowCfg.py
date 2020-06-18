@@ -86,6 +86,7 @@ class FlowCfg():
         # Full and summary results in md text.
         self.results_md = ""
         self.results_summary_md = ""
+        self.email_summary_md = ""  # if user wanted to customize email content
 
     def __post_init__(self):
         # Run some post init checks
@@ -116,7 +117,7 @@ class FlowCfg():
         This method takes 2 args.
         flow_cfg_file: This is the flow cfg file to be parsed.
         is_entry_point: the cfg file that is passed on the command line is
-            the entry point cfg. If the cfg file is a part of an inport_cfgs
+            the entry point cfg. If the cfg file is a part of an import_cfgs
             or use_cfgs key, then it is not an entry point.
         '''
         hjson_dict = parse_hjson(flow_cfg_file)
@@ -485,7 +486,9 @@ class FlowCfg():
 
     def gen_email_html_summary(self):
         if self.is_master_cfg:
-            gen_results = self.results_summary_md
+            # user can customize email content by using email_summary_md,
+            # otherwise default to send out results_summary_md
+            gen_results = self.email_summary_md or self.results_summary_md
         else:
             gen_results = self.results_md
         results_html = md_results_to_html(self.results_title, self.css_file, gen_results)

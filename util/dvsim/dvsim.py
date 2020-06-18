@@ -29,6 +29,7 @@ import textwrap
 from signal import SIGINT, signal
 
 import Deploy
+import FpvCfg
 import LintCfg
 import SimCfg
 import SynCfg
@@ -147,7 +148,8 @@ def make_config(args, proj_root):
     factories = {
         'ascentlint': LintCfg.LintCfg,
         'veriblelint': LintCfg.LintCfg,
-        'dc': SynCfg.SynCfg
+        'dc': SynCfg.SynCfg,
+        'jaspergold': FpvCfg.FpvCfg
     }
 
     factory = factories.get(args.tool, SimCfg.SimCfg)
