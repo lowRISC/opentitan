@@ -31,6 +31,7 @@
                // UVM DPI
                "-sv_lib {UVM_HOME}/src/dpi/libuvm_dpi.so",
                "-sv_seed {seed}",
+	       // tell DSim to write line-buffered std output (lines will be written in proper order)
                "-linebuf",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
