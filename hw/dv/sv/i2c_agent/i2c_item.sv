@@ -15,15 +15,25 @@ class i2c_item extends uvm_sequence_item;
   bit                      nack;
   bit                      ack;
   bit                      rstart;
-  bit [7:0]                fbyte;
+
   // random flags
+  rand bit [7:0]           fbyte;
   rand bit                 nakok, rcont, read, stop, start;
 
+  constraint fbyte_c     { fbyte      inside {[0 : 127]}; }
   constraint start_c     { start      inside {0, 1}; }
   constraint stop_c      { stop       inside {0, 1}; }
   constraint read_c      { read       inside {0, 1}; }
-  constraint rcont_c     { rcont      inside {0, 1}; }
   constraint nakok_c     { nakok      inside {0, 1}; }
+  constraint rcont_c     {
+     solve read, stop before rcont;
+     if (read) {
+       // rcont must be unset when both read and stop are set
+       rcont  == ~stop;
+     } else {
+       rcont  inside {0, 1};
+     }
+  }
 
   `uvm_object_utils_begin(i2c_item)
     `uvm_field_int(tran_id,                 UVM_DEFAULT)
@@ -35,6 +45,7 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(stop,                    UVM_DEFAULT)
     //------
     `uvm_field_int(rstart,                  UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(fbyte,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(ack,                     UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(nack,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(read,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)

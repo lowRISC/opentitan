@@ -90,12 +90,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             rcont = bit'(get_field_val(ral.fdata.rcont, item.a_data));
             nakok = bit'(get_field_val(ral.fdata.nakok, item.a_data));
 
-            // transaction is being started/rstarted, target address is programmed
+            // target address is begin programmed to begin a transaction
             if (start) begin
               tran_id++;
               if (exp_wr_item.start && !sb_exp_wr_item.stop &&
                   exp_wr_item.bus_op == BusOpWrite) begin
-                // this is a write end with rstart, write to sb_wr_fifo
+                // write transaction ends with rstart
                 exp_wr_item.rstart = 1'b1;
                 `downcast(sb_exp_wr_item, exp_wr_item.clone());
                 sb_exp_wr_item.stop = 1'b1;
@@ -118,37 +118,45 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                 exp_wr_item.start   = start;
                 exp_wr_item.stop    = stop;
               end
-            end else begin // transaction has been started/rstarted
+            end else begin // transaction begins with started/rstarted
               // write transaction
               if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
                 exp_wr_item.data_q.push_back(fbyte);
                 exp_wr_item.num_data++;
                 exp_wr_item.stop = stop;
                 if (exp_wr_item.stop) begin
-                  // this is a write end with stop, write to the sb_wr_fifo
+                  // get a complete write
                   `downcast(sb_exp_wr_item, exp_wr_item.clone());
                   exp_wr_item.clear_all();
                 end
               end
               // read transaction
               if (exp_rd_item.start && exp_rd_item.bus_op == BusOpRead) begin
-                if (read) begin  // read flag
+                if (read) begin
                   i2c_item tmp_rd_item;
+                  uint num_rd_bytes = (fbyte == 8'd0) ? 256 : fbyte;
 
-                  // get the number of byte to read, fmt_read flag is set
-                  exp_rd_item.num_data = (fbyte == 8'd0) ? 256 : fbyte;
-                  exp_rd_item.stop  = stop;
-                  `DV_CHECK_EQ(read, 1'b1)
-                  exp_rd_item.read   = read;
+                  // get the number of byte to read
+                  if (exp_rd_item.rcont && (rcont || stop)) begin
+                    exp_rd_item.num_data += num_rd_bytes; // accumulate for chained reads
+                  end else begin
+                    exp_rd_item.num_data  = num_rd_bytes;
+                  end
+                  exp_rd_item.stop   = stop;
                   exp_rd_item.rcont  = rcont;
+                  exp_rd_item.read   = read;
                   exp_rd_item.nakok  = nakok;
                   exp_rd_item.nack   = ~exp_rd_item.rcont;
                   exp_rd_item.rstart = (exp_rd_item.stop) ? 1'b0 : 1'b1;
-                  //push into temporal rd_pending_q (data still empty)
-                  `downcast(tmp_rd_item, exp_rd_item.clone());
-                  rd_pending_q.push_back(tmp_rd_item);
-                  exp_rd_item.start = 0;
-                  exp_rd_item.clear_data();
+                  // if not a chained read (stop is issued)
+                  if (exp_rd_item.stop) begin
+                    `uvm_info(`gfn, $sformatf("\n\nscoreboard, exp_rd_item\n\%s",
+                        exp_rd_item.sprint()), UVM_DEBUG)
+                    `downcast(tmp_rd_item, exp_rd_item.clone());
+                    rd_pending_q.push_back(tmp_rd_item);
+                    exp_rd_item.start = 0;
+                    exp_rd_item.clear_data();
+                  end
                 end
               end
             end
@@ -156,9 +164,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         end
       endcase
 
-      // push sb_exp_wr_item into exp_fifo
+      // get full write transaction
       if (host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
-        //exp_wr_port.write(sb_exp_wr_item);
         exp_wr_q.push_back(sb_exp_wr_item);
         num_exp_tran++;
         `uvm_info(`gfn, $sformatf("\n\nscoreboard, exp_wr_item\n\%s",
@@ -184,24 +191,21 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             // collect read data byte
             rd_pending_item.data_q.push_back(ral.rdata.get_mirrored_value());
             rdata_cnt++;
-            // get all read data bytes
+            `uvm_info(`gfn, $sformatf("\n\nscoreboard, rd_pending_item\n\%s",
+                rd_pending_item.sprint()), UVM_DEBUG)
+            // get a complete read
             if (rdata_cnt == rd_pending_item.num_data) begin
               rd_pending_item.stop = 1'b1;
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
+              exp_rd_q.push_back(sb_exp_rd_item);
+              num_exp_tran++;
+              `uvm_info(`gfn, $sformatf("\n\nscoreboard exp_rd_item\n\%s",
+                  sb_exp_rd_item.sprint()), UVM_DEBUG)
               rdata_cnt = 0;
             end
           end
         end
       endcase
-
-      // push sb_exp_rd_item into exp_fifo
-      if (host_init && sb_exp_rd_item.start && sb_exp_rd_item.stop) begin
-        //exp_rd_port.write(sb_exp_rd_item);
-        exp_rd_q.push_back(sb_exp_rd_item);
-        num_exp_tran++;
-        `uvm_info(`gfn, $sformatf("\n\nscoreboard exp_rd_item\n\%s",
-            sb_exp_rd_item.sprint()), UVM_DEBUG)
-      end
     end
   endtask : process_tl_access
 
