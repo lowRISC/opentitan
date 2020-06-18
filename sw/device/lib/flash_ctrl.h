@@ -22,6 +22,14 @@
 typedef enum bank_index { FLASH_BANK_0 = 0, FLASH_BANK_1 = 1 } bank_index_t;
 
 /**
+ * Flash partitions
+ */
+typedef enum partition_type {
+  kDataPartition = 0,
+  kInfoPartition = 1
+} part_type_t;
+
+/**
  * Memory protection configuration options.
  */
 typedef struct mp_region {
@@ -31,6 +39,8 @@ typedef struct mp_region {
   uint32_t base;
   /** Region config size. */
   uint32_t size;
+  /** Region partition size. */
+  part_type_t part;
   /** Read enable flag. */
   uint32_t rd_en;
   /** Program enable flag. */
@@ -56,27 +66,30 @@ int flash_check_empty(void);
  * @return Non zero on failure.
  */
 int flash_bank_erase(bank_index_t idx);
-int flash_page_erase(uint32_t addr);
+int flash_page_erase(uint32_t addr, part_type_t part);
 
 /**
  * Write `data` at `addr` offset with `size` in 4B words
  *
  * @param addr Flash address 32bit aligned.
+ * @param part Flash parittion to access.
  * @param data Data to write.
  * @param size Number of 4B words to write from `data` buffer.
  * @return Non zero on failure.
  */
-int flash_write(uint32_t addr, const uint32_t *data, uint32_t size);
+int flash_write(uint32_t addr, part_type_t part, const uint32_t *data,
+                uint32_t size);
 
 /**
  * Read `size` 4B words and write result to `data`.
  *
  * @param addr Read start address.
+ * @param part Flash parittion to access.
  * @param size Number of 4B words to read.
  * @param data Output buffer.
  * @return Non zero on failure.
  */
-int flash_read(uint32_t addr, uint32_t size, uint32_t *data);
+int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data);
 
 /**
  * Configure bank erase enable

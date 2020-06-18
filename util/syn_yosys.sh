@@ -18,31 +18,47 @@
 # use fusesoc to generate files and file list
 #-------------------------------------------------------------------------
 \rm -Rf build
-fusesoc --cores-root .. run --target=sim --setup --build formal > /dev/null 2>&1
+fusesoc --cores-root .. run --target=syn --setup lowrisc:systems:top_earlgrey
 
 # copy all files into directory "syn_out"
 \rm -Rf syn_out
 mkdir syn_out
-cp build/formal_0/src/*/*/*.sv build/formal_0/src/*/*/*/*.sv syn_out
+cp \
+  build/lowrisc_systems_top_earlgrey_0.1/src/*/*.sv \
+  build/lowrisc_systems_top_earlgrey_0.1/src/*/*/*.sv \
+  build/lowrisc_systems_top_earlgrey_0.1/src/*/*/*/*.sv \
+  syn_out
+cd syn_out
+
+# not synthesizable
+\rm prim_pad_wrapper.sv
+\rm prim_generic_pad_wrapper.sv
+
+# not used for synthesis
+\rm pins_if.sv
+\rm tlul_assert.sv
+\rm tlul_assert_multiple.sv
+
+# match filename to module name
+mv ibex_register_file{_ff,}.sv
+
+# prim_util_memload.sv is only meant to be included within a module
+mv prim_util_memload.sv{,h}
+sed -i.delete.bak -e "s/prim_util_memload\.sv/prim_util_memload.svh/" *.sv
+rm *.delete.bak  # some sed implementations require backup extensions
 
 #-------------------------------------------------------------------------
 # convert all RTL files to Verilog
 #-------------------------------------------------------------------------
-cd syn_out
-
-for file in *.sv; do
-  module=`basename -s .sv $file`
-  echo $file
-  sv2v --define=VERILATOR --define=SYNTHESIS *_pkg.sv prim_assert.sv $file > ${module}.v
-
-  # TODO: eventually remove below hack. It removes "unsigned" from params
-  # because Yosys doesn't support unsigned parameters
-  sed -i 's/parameter unsigned/parameter/g' ${module}.v
-  sed -i 's/localparam unsigned/localparam/g' ${module}.v
+printf "\n\nsv2v:\n"
+sv2v -DSYNTHESIS *.sv > combined.v
+# split files up
+modules=`cat combined.v | grep "^module" | sed -e "s/^module //" | sed -e "s/ (//"`
+echo "$modules" > modules.txt  # for debugging
+for module in $modules; do
+  sed -n "/^module $module /,/^endmodule/p" < combined.v > $module.v
 done
-
-# remove *pkg.v files (they are empty files and not needed)
-\rm -Rf *_pkg.v
+rm combined.v
 
 #-------------------------------------------------------------------------
 # run LEC (generarted Verilog vs. original SystemVerilog)
@@ -51,16 +67,16 @@ printf "\n\nLEC RESULTS:\n"
 cd ../../hw/formal
 for file in ../../util/syn_out/*.v; do
   module=`basename -s .v $file`
-  lec_sv2v ../../util/syn_out $module > /dev/null 2>&1
+  ./lec_sv2v ../../util/syn_out $module > /dev/null 2>&1
 
   # summarize results
-  result=`grep "Compare Results" lec_${module}.log`
+  result=`grep "Compare Results" lec_${module}.log 2>&1`
   if [ $? -ne 0 ]; then
     result="CRASH"
   else
     result=`echo $result | awk '{ print $4 }'`
   fi
-  printf "%-25s %s\n" $module $result
+  printf "%-35s %s\n" $module $result
 done
 cd -
 
@@ -68,12 +84,14 @@ cd -
 # run yosys
 #-------------------------------------------------------------------------
 printf "\n\nYosys:\n"
-
-# for now, read in each Verilog file into Yosys and only output errors
-# and warnings
-for file in *.v; do
-  yosys -QTqp "read_verilog ${file}"
-done
+yosys -QTqp "
+read_verilog *.v;
+hierarchy -check -top top_earlgrey;
+synth_xilinx;
+write_blif out.blif;
+write_edif out.edif;
+write_json out.json;
+"
 
 # TODOs:
 #  - add full yosys synthesis for all modules

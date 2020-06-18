@@ -38,7 +38,7 @@ module entropy_src import entropy_src_pkg::*; #(
   entropy_src_reg2hw_t reg2hw;
   entropy_src_hw2reg_t hw2reg;
 
-  entropy_src_reg_top u_entropy_src_reg_top (
+  entropy_src_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,

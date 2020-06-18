@@ -25,6 +25,7 @@ DIFs **must** only depend on:
 
 *   the [freestanding C library headers]({{< relref "sw/device/lib/base/freestanding/README.md" >}}),
 *   compiler runtime libraries (e.g. libgcc and compiler-rt),
+*   the bitfield library for manipulating bits in binary values (`sw/device/lib/base/bitfield.h`),
 *   the mmio library for interacting with memory-mapped registers (`sw/device/lib/base/mmio.h`),
 *   the memory library for interacting with non-volatile memory (`sw/device/lib/base/memory.h`), and
 *   any IP-specific register definition files.

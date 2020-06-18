@@ -163,7 +163,13 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
         wait fork;
       end: isolation_fork
     join
-    if (do_wait_clk) cfg.clk_rst_vif.wait_clks($urandom_range(500, 10_000));
+    // when reset occurs, end this seq ASAP to avoid killing seq while sending trans
+    if (do_wait_clk) begin
+      repeat($urandom_range(500, 10_000)) begin
+        if (cfg.under_reset) return;
+        cfg.clk_rst_vif.wait_clks(1);
+      end
+    end
   end // for
   set_tl_assert_en(.enable(1));
 endtask : run_tl_errors_vseq

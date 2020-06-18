@@ -7,6 +7,7 @@
 
 package flash_phy_pkg;
   parameter int NumBanks     = flash_ctrl_pkg::NumBanks;
+  parameter int InfosPerBank = flash_ctrl_pkg::InfosPerBank;
   parameter int PagesPerBank = flash_ctrl_pkg::PagesPerBank;
   parameter int WordsPerPage = flash_ctrl_pkg::WordsPerPage;
   parameter int BytesPerWord = flash_ctrl_pkg::BytesPerWord;
@@ -56,6 +57,7 @@ package flash_phy_pkg;
   typedef struct packed {
     logic [DataWidth-1:0] data;
     logic [PrimFlashAddrW-1:0] addr; // all address bits preserved to pick return portion
+    logic part;
     rd_buf_attr_e attr;
   } rd_buf_t;
 

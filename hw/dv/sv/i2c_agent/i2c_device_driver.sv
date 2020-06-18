@@ -6,14 +6,14 @@ class i2c_device_driver extends i2c_driver;
   `uvm_component_utils(i2c_device_driver)
   `uvm_component_new
 
-  bit [I2C_DATA_WIDTH-1:0] data;
+  rand bit [7:0] rd_data;
 
-  rand bit [I2C_DATA_WIDTH-1:0] rd_data;
-
-  constraint rd_data_c { rd_data inside {[0 : ((1 << I2C_DATA_WIDTH) - 1)]}; }
+  constraint rd_data_c { rd_data inside {[0 : 127]}; }
 
   virtual task get_and_drive();
+    int num_stretch_host_clks;
     i2c_item rsp_item;
+
     @(posedge cfg.vif.rst_ni);
     forever begin
       cfg.vif.scl_o = 1'b1;
@@ -22,11 +22,27 @@ class i2c_device_driver extends i2c_driver;
       seq_item_port.get_next_item(rsp_item);
       unique case (rsp_item.drv_type)
         DevAck: begin
-          cfg.vif.device_send_ack(cfg.timing_cfg);
+          fork
+            begin
+              // host clock stretching allows a high-speed host to communicate
+              // with a low-speed device by setting TIMEOUT_CTRL.EN bit
+              // the device ask host clock stretching its clock scl_i by pulling down scl_o
+              // the host clock pulse is extended until device scl_o is pulled up
+              // once scl_o is pulled down longer than TIMEOUT_CTRL.VAL field,
+              // intr_stretch_timeout_o is asserted (ref. https://www.i2c-bus.org/clock-stretching)
+              if (cfg.timing_cfg.enbTimeOut) begin
+                num_stretch_host_clks = gen_num_stretch_host_clks(cfg.timing_cfg);
+                cfg.vif.device_stretch_host_clk(cfg.timing_cfg, num_stretch_host_clks);
+              end
+            end
+            begin
+              cfg.vif.device_send_ack(cfg.timing_cfg);
+            end
+          join
         end
         RdData: begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
-          for (int i = I2C_DATA_WIDTH-1; i >= 0; i--) begin
+          for (int i = 7; i >= 0; i--) begin
             cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[i]);
           end
           `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0b",
@@ -39,6 +55,14 @@ class i2c_device_driver extends i2c_driver;
       seq_item_port.item_done();
     end
   endtask : get_and_drive
+
+  function int gen_num_stretch_host_clks(ref timing_cfg_t tc);
+    // By randomly pulling down scl_o "offset" within [0:2*tc.tTimeOut],
+    // intr_stretch_timeout_o interrupt would be generated uniformly
+    // To test this feature more regressive, there might need a dedicated vseq (V2)
+    // in which TIMEOUT_CTRL.EN is always set.
+    return $urandom_range(tc.tClockPulse, tc.tClockPulse + 2*tc.tTimeOut);
+  endfunction : gen_num_stretch_host_clks
 
 endclass : i2c_device_driver
 

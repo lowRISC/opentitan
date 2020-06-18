@@ -45,8 +45,8 @@ bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           size_t width_bit) {
   MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
 
-  assert((width_bit <= 128) &&
-         "TODO: Memory loading only supported up to 128 bits.");
+  assert((width_bit <= 256) &&
+         "TODO: Memory loading only supported up to 256 bits.");
 
   auto ret = mem_register_.emplace(name, mem);
   if (ret.second == false) {

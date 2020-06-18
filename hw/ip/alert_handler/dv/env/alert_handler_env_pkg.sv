@@ -52,13 +52,13 @@ package alert_handler_env_pkg;
   } alert_class_ctrl_e;
 
   typedef enum {
-    EscStateIdle,
-    EscStateTimeout,
-    EscStateTerminal,
-    EscStatePhase0,
-    EscStatePhase1,
-    EscStatePhase2,
-    EscStatePhase3
+    EscStateIdle     = 'b000,
+    EscStateTimeout  = 'b001,
+    EscStateTerminal = 'b011,
+    EscStatePhase0   = 'b100,
+    EscStatePhase1   = 'b101,
+    EscStatePhase2   = 'b110,
+    EscStatePhase3   = 'b111
   } esc_state_e;
 
   typedef enum {

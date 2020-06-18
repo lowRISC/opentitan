@@ -4,6 +4,8 @@
 
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
+  i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
+
   // TODO: various knobs to enable certain routines
   bit do_rd_overflow  = 1'b0;
   bit do_wr_overflow  = 1'b0;

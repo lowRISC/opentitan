@@ -136,6 +136,8 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
           if (do_esc_intr_timeout) begin
             cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
+            // this task checks three sets of registers related to alert/esc status:
+            // alert_accum_cnt, esc_cnt, class_state
             read_esc_status();
           end
 

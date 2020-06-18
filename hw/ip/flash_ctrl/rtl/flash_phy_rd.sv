@@ -23,6 +23,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   input pg_erase_i,
   input bk_erase_i,
   input [BankAddrW-1:0] addr_i,
+  input flash_ctrl_pkg::flash_part_e part_i,
   output logic rdy_o,
   output logic data_valid_o,
   output logic [BusWidth-1:0] data_o,
@@ -85,11 +86,10 @@ module flash_phy_rd import flash_phy_pkg::*; (
     assign dummy_data[i] = '0;
   end
 
-  // using prim arbiter tree since it supports per cycle arbitration instead of
-  // winner lock
   prim_arbiter_tree #(
     .N(NumBuf),
-    .Lock(0),
+    // disable request stability assertion
+    .EnReqStabA(0),
     .DW(2)
   ) i_valid_random (
     .clk_i,
@@ -108,19 +108,32 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // do not attempt to generate match unless the transaction is relevant
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
-    assign buf_match[i] = req_i & (buf_valid[i] | buf_wip[i]) &
-                          read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit];
+    assign buf_match[i] = req_i &
+                          (buf_valid[i] | buf_wip[i]) &
+                          (read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) &
+                          (read_buf[i].part == part_i);
 
     // A data hazard should never happen to a wip buffer because it implies
     // that a read is in progress, so a hazard operation cannot start.
     // If bank erase, all buffers must be flushed.
     // If page erase, only if the buffer lands in the same page.
     // If program, only if it's the same flash word.
+
+    logic part_match;
+    logic word_addr_match;
+    logic page_addr_match;
+
+    assign part_match      = read_buf[i].part == part_i;
+    assign word_addr_match = (read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) &
+                             part_match;
+
+    assign page_addr_match = (read_buf[i].addr[FlashWordsW +: PageW] == addr_i[WordW +: PageW]) &
+                             part_match;
+
     assign data_hazard[i] = buf_valid[i] &
                             (bk_erase_i |
-                            (prog_i & read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) |
-                            (pg_erase_i & read_buf[i].addr[FlashWordsW +: PageW] ==
-                            addr_i[WordW +: PageW]));
+                            (prog_i & word_addr_match) |
+                            (pg_erase_i & page_addr_match));
 
   end
 
@@ -141,6 +154,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .update_i(update[i]),
       .wipe_i(data_hazard[i]),
       .addr_i(addr_i[BankAddrW-1:LsbAddrBit]),
+      .part_i(part_i),
       .data_i(data_i),
       .out_o(read_buf[i])
     );
@@ -247,7 +261,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // match in flash response when allocated buffer is the same as top of response fifo
   assign flash_rsp_match = rsp_fifo_vld & rd_done & (rsp_fifo_rdata.buf_sel == alloc_q);
 
-  // match in buf response when there is a valie buffer that is the same as top of response fifo
+  // match in buf response when there is a valid buffer that is the same as top of response fifo
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_rsp_match
     assign buf_rsp_match[i] = rsp_fifo_vld & (rsp_fifo_rdata.buf_sel[i] & buf_valid[i]);
   end

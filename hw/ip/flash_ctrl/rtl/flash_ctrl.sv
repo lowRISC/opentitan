@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Faux Flash Controller Module
+// Flash Controller Module
 //
 //
 
@@ -145,7 +145,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   ) u_prog_fifo (
     .clk_i,
     .rst_ni (rst_ni),
-    .clr_i  (reg2hw.control.fifo_rst.q),
+    .clr_i  (reg2hw.fifo_rst.q),
     .wvalid (prog_fifo_req & prog_fifo_wen & prog_op_valid),
     .wready (prog_fifo_wready),
     .wdata  (prog_fifo_wdata),
@@ -221,7 +221,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   ) u_rd_fifo (
     .clk_i,
     .rst_ni (rst_ni),
-    .clr_i  (reg2hw.control.fifo_rst.q),
+    .clr_i  (reg2hw.fifo_rst.q),
     .wvalid (rd_fifo_wen),
     .wready (rd_fifo_wready),
     .wdata  (rd_fifo_wdata),
@@ -311,13 +311,19 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
 
-  //last region
+  //default region
   assign region_cfgs[MpRegions].base.q = '0;
   assign region_cfgs[MpRegions].size.q = {AllPagesW{1'b1}};
   assign region_cfgs[MpRegions].en.q = 1'b1;
   assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
   assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
+  // we are allowed to set default accessibility of data partitions
+  // however info partitions default to inaccessible
+  assign region_cfgs[MpRegions].partition.q = DataPart;
+
+  flash_part_e flash_part_sel;
+  assign flash_part_sel = flash_part_e'(reg2hw.control.partition_sel.q);
 
   // Flash memory protection
   flash_mp #(
@@ -335,6 +341,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     // read / prog / erase controls
     .req_i(flash_req),
     .req_addr_i(flash_addr[WordW +: AllPagesW]),
+    .req_part_i(flash_part_sel),
     .addr_ovfl_i(rd_flash_ovfl | prog_flash_ovfl),
     .req_bk_i(flash_addr[BankAddrW +: BankW]),
     .rd_i(rd_op),
@@ -373,9 +380,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign hw2reg.status.error_bank.d = err_bank;
   assign hw2reg.control.start.d = 1'b0;
   assign hw2reg.control.start.de = |ctrl_done;
+  assign hw2reg.ctrl_regwen.d = !reg2hw.control.start.q;
 
   // Flash Interface
   assign flash_o.addr = flash_addr;
+  assign flash_o.part = flash_part_sel;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_rd_data = flash_i.rd_data;
   assign init_busy = flash_i.init_busy;

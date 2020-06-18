@@ -30,10 +30,10 @@
   export "DPI-C" function simutil_verilator_set_mem;
 
   function int simutil_verilator_set_mem(input int         index,
-                                         input bit [127:0] val);
+                                         input bit [255:0] val);
 
-    // Function will only work for memories <= 128 bits
-    if (Width > 128) begin
+    // Function will only work for memories <= 256 bits
+    if (Width > 256) begin
       return 0;
     end
 

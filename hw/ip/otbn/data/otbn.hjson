@@ -1,0 +1,145 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "otbn"
+  clock_primary: "clk_i"
+  bus_device: "tlul"
+  bus_host: "none"
+  interrupt_list: [
+    { name: "done"
+      desc: "OTBN has completed the operation"
+    }
+    { name: "err"
+      desc: "An error occurred. Read the ERR_CODE register for error details."
+    }
+  ]
+  alert_list: [
+    { name: "imem_uncorrectable"
+      desc: "Uncorrectable error in the instruction memory detected."
+    }
+    { name: "dmem_uncorrectable"
+      desc: "Uncorrectable error in the data memory detected."
+    }
+    { name: "reg_uncorrectable"
+      desc: "Uncorrectable error in one of the register files detected."
+    }
+  ]
+
+  inter_signal_list: [
+    // TODO: CSRNG isn't committed yet, depends on assumed interface done for
+    // AES in https://github.com/lowRISC/opentitan/pull/2140.
+    /*{ name:    "entropy",
+      type:    "req_rsp",
+      act:     "req",
+      package: "csrng_pkg",
+      struct:  "csrng_entropy",
+      width:   "1"
+    },*/
+
+    // OTBN is not performing any operation and can be clock/power-gated.
+    { name:    "idle",
+      type:    "uni",
+      struct:  "logic",
+      width:   "1",
+      act:     "req",
+    },
+  ],
+
+  regwidth: "32"
+  registers: [
+    { name: "CMD"
+      desc: "command register",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe:  "true",
+      fields: [
+        { bits: "0"
+          name: "start"
+          desc: '''
+            Start the operation
+
+            The completion is signalled by the done interrupt.
+          '''
+        }
+      ],
+    }
+    { name: "STATUS",
+      desc: "Status",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "busy",
+          desc: "OTBN is performing an operation."
+        }
+      ]
+    } // register : status
+    { name: "ERR_CODE",
+      desc: "Error Code",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: '''
+            The error cause if an error occurred.
+
+            TODO: Define error codes.
+          '''
+        }
+      ]
+    } // register : err_code
+    { name: "START_ADDR",
+      desc: "Start byte address in the instruction memory",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0",
+          name: "start_addr",
+          desc: '''
+            Byte address in the instruction memory OTBN starts to execute from
+            when instructed to do so with the !!CMD.start .
+          '''
+        }
+      ]
+    } // register : start_addr
+
+
+    // Expansion space for further control/status registers, and to force
+    // alignment of IMEM.
+    { skipto: "0x1000" }
+
+    { window: {
+        name: "IMEM"
+        items: "1024" // 4 kB
+        swaccess: "rw",
+        byte-write: "false",
+        desc: '''
+          Instruction Memory.
+
+          Not accessible during the operation of the engine.
+          TODO: Discuss and document behavior in that case. Alert? Ignore?
+        '''
+      }
+    }
+
+    // Expansion space for a total of up to 16 kB of instruction memory (IMEM)
+    { skipto: "0x5000" }
+
+    { window: {
+        name: "DMEM"
+        items: "1024" // 4 kB
+        swaccess: "rw",
+        byte-write: "false",
+        desc: '''
+          Data Memory.
+
+          Not accessible during the operation of the engine.
+          TODO: Discuss and document behavior in that case. Alert? Ignore?
+        '''
+      }
+    }
+  ]
+}

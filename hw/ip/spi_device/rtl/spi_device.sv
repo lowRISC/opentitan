@@ -521,14 +521,13 @@ module spi_device #(
   prim_ram_2p_adv #(
     .Depth (512),
     .Width (SramDw),    // 32 x 512 --> 2kB
+    .DataBitsPerMask (1),
     .CfgW  (8),
 
-    .EnableECC           (1), // No Protection
+    .EnableECC           (1),
     .EnableParity        (0),
     .EnableInputPipeline (0),
-    .EnableOutputPipeline(0),
-    // this is a large memory, implement with SRAM
-    .MemT ("SRAM")
+    .EnableOutputPipeline(0)
   ) u_memory_2p (
     .clk_i,
     .rst_ni,
@@ -536,6 +535,7 @@ module spi_device #(
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),
     .a_wdata_i  (mem_a_wdata),
+    .a_wmask_i  ({SramDw{1'b1}}),
     .a_rvalid_o (mem_a_rvalid),
     .a_rdata_o  (mem_a_rdata),
     .a_rerror_o (mem_a_rerror),
@@ -544,6 +544,7 @@ module spi_device #(
     .b_write_i  (mem_b_write),
     .b_addr_i   (mem_b_addr),
     .b_wdata_i  (mem_b_wdata),
+    .b_wmask_i  ({SramDw{1'b1}}),
     .b_rvalid_o (mem_b_rvalid),
     .b_rdata_o  (mem_b_rdata),
     .b_rerror_o (mem_b_rerror),

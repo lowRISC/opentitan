@@ -40,8 +40,42 @@
 
   regwidth: "32",
   registers: [
+
+    { name: "CTRL_REGWEN",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      desc: '''
+      Controls the configurability of the !!CONTROL register.
+
+      This register ensures the contents of !!CONTROL cannot be changed by software once a flash
+      operation has begun.
+
+      It unlocks whenever the existing flash operation completes, regardless of success or error.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Configuration enable.
+
+            This bit defaults to 1 and is set to 0 by hardware when flash operation is initiated.
+            When the controller completes the flash operation, this bit is set
+            back to 1 to allow software configuration of !!CONTROL
+          ''',
+          resval: "1",
+        },
+      ]
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
+    },
+
+
     { name: "CONTROL",
       desc: "Control register",
+      regwen: "CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -107,8 +141,17 @@
           ]
         },
         { bits: "7",
-          name: "FIFO_RST",
-          desc: "RST FIFOs",
+          name: "PARTITION_SEL",
+          desc: '''
+            Selects either info or data partition for operation.
+
+            When 0, select data partition - this is the portion of flash that is accessible both
+            by the host and by the controller.
+
+            When 1, select info partition - this is the portion of flash that is only accessible
+            by the controller.
+
+          '''
           resval: "0"
         },
         { bits: "27:16",
@@ -257,6 +300,16 @@
               ''',
               resval: "0"
             },
+            { bits: "25",
+              name: "PARTITION",
+              desc: '''
+                Region partition select
+
+                0 selects data partition
+                1 selects info partition
+              ''',
+              resval: "0"
+            },
         ],
       },
     },
@@ -355,10 +408,10 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "0",    name: "rd_full",    desc: "Flash read fifo full, software must consume data"},
-        { bits: "1",    name: "rd_empty",   desc: "Flash read fifo empty", resval: "1"},
-        { bits: "2",    name: "prog_full",  desc: "Flash program fifo full"},
-        { bits: "3",    name: "prog_empty", desc: "Flash program fifo empty, software must provide data", resval: "1"},
+        { bits: "0",    name: "rd_full",    desc: "Flash read FIFO full, software must consume data"},
+        { bits: "1",    name: "rd_empty",   desc: "Flash read FIFO empty", resval: "1"},
+        { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
+        { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
         { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init"},
         { bits: "16:8", name: "error_page", desc: "Flash controller error page."},
         { bits: "17",   name: "error_bank", desc: "Flash controller error bank."},
@@ -372,14 +425,14 @@
       ]
     },
     { name: "FIFO_LVL",
-      desc: "Programmable depth where fifos should generate interrupts",
+      desc: "Programmable depth where FIFOs should generate interrupts",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         { bits: "4:0",
           name: "PROG",
           desc: '''
-            When the program fifo drains to this level, trigger an interrupt.
+            When the program FIFO drains to this level, trigger an interrupt.
             Default value is set such that interrupt does not trigger at reset.
             '''
           resval: "0xF"
@@ -387,13 +440,33 @@
         { bits: "12:8",
           name: "RD",
           desc: '''
-            When the read fifo fills to this level, trigger an interrupt.
+            When the read FIFO fills to this level, trigger an interrupt.
             Default value is set such that interrupt does not trigger at reset.
             '''
           resval: "0xF"
         },
       ]
     }
+
+    { name: "FIFO_RST",
+      desc: "Reset for flash controller FIFOs",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Active high resets for both program and read FIFOs.  This is especially useful after the controller
+            encounters an error of some kind.
+
+            This bit will hold the FIFO in reset as long as it is set.
+            '''
+          resval: "0"
+        },
+      ]
+    },
+
     { window: {
         name: "prog_fifo",
         items: "1",
@@ -402,11 +475,11 @@
         unusual: "false"
         swaccess: "wo",
         desc: '''
-          Flash program fifo.
+          Flash program FIFO.
 
-          The fifo is 16 entries of 4B flash words. This FIFO can only be programmed
+          The FIFO is 16 entries of 4B flash words. This FIFO can only be programmed
           by software after a program operation has been initiated via the !!CONTROL register.
-          This ensures accidental programming of the program fifo cannot lock up the system.
+          This ensures accidental programming of the program FIFO cannot lock up the system.
           '''
       },
     },
@@ -418,9 +491,9 @@
         unusual: "false"
         swaccess: "ro",
         desc: '''
-          Flash read fifo.
+          Flash read FIFO.
 
-          The fifo is 16 entries of 4B flash words
+          The FIFO is 16 entries of 4B flash words
           '''
       },
     },

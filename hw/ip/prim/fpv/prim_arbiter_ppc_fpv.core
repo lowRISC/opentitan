@@ -8,10 +8,7 @@ filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
-      # TODO: add more dependencies here if needed
     files:
-      - vip/prim_arbiter_ppc_assert_fpv.sv
-      - tb/prim_arbiter_ppc_bind_fpv.sv
       - tb/prim_arbiter_ppc_fpv.sv
     file_type: systemVerilogSource
 

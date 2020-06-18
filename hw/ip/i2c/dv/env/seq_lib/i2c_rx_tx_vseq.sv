@@ -26,16 +26,20 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   endtask : host_init
 
   virtual task host_send_trans(int num_trans);
-    bit   last_tran;
+    bit last_tran;
 
     // setup config
     force_use_incorrect_config = 1'b0;
     fmt_item = new("fmt_item");
-    `DV_CHECK_RANDOMIZE_FATAL(this)
-    get_timing_values();
-    program_timing_regs();
-
     for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
+      // re-programming timing registers for the first transaction
+      // or when the previous transaction is completed
+      if (fmt_item.stop || cur_tran == 1) begin
+        `DV_CHECK_RANDOMIZE_FATAL(this)
+        get_timing_values();
+        program_timing_regs();
+      end
+
       last_tran = (cur_tran == num_trans) ? 1'b1 : 1'b0;
       // not program address for chained reads
       host_program_target_address();
@@ -46,18 +50,25 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       `uvm_info(`gfn, $sformatf("finish sending %s transaction, %0s at the end,  %0d/%0d, ",
           (rw_bit) ? "read" : "write",
           (fmt_item.stop) ? "stop" : "rstart", cur_tran, num_trans), UVM_DEBUG)
+
+      // check a completed transaction is programmed to the host/dut (stop bit must be issued)
+      // and check if the host/dut is in idle before allow re-programming the timing registers
+      if (fmt_item.stop) begin
+        check_host_idle();
+      end
     end
   endtask : host_send_trans
 
   virtual task host_program_target_address();
-    // programm fmt flags for address
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_item)
     fmt_item.start = 1'b1;
     fmt_item.stop  = 1'b0;
     fmt_item.read  = 1'b0;
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(addr)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
-    fmt_item.fbyte = (rw_bit) ? {addr, BusOpRead} : {addr, BusOpWrite};
+    if (cfg.target_addr_mode == Addr7BitMode) begin
+      fmt_item.fbyte = (rw_bit) ? {addr[6:0], BusOpRead} : {addr[6:0], BusOpWrite};
+    end else begin // Addr10BitMode
+      fmt_item.fbyte = (rw_bit) ? {addr[9:0], BusOpRead} : {addr[9:0], BusOpWrite};
+    end
     program_format_flag(fmt_item, "host_program_target_address");
   endtask : host_program_target_address
 
@@ -104,7 +115,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       fmt_item.fbyte = wr_data;
       // last write byte of last  tran., stop flag must be set to issue stop bit
       // last write byte of other tran., stop is randomly set/unset to issue stop/rstart bit
-      fmt_item.stop  = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
+      fmt_item.stop = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
       program_format_flag(fmt_item, "host_write_trans");
     end
   endtask : host_write_trans

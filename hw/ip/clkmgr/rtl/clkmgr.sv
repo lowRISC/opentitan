@@ -45,7 +45,7 @@ module clkmgr import clkmgr_pkg::*; (
   clkmgr_reg_pkg::clkmgr_reg2hw_t reg2hw;
   clkmgr_reg_pkg::clkmgr_hw2reg_t hw2reg;
 
-  clkmgr_reg_top i_reg (
+  clkmgr_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
