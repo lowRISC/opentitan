@@ -6,7 +6,7 @@
 
 module prim_flop_2sync #(
   parameter int Width      = 16,
-  parameter bit ResetValue = 0
+  parameter logic [Width-1:0] ResetValue = '0
 ) (
   input                    clk_i,    // receive clock
   input                    rst_ni,
@@ -18,8 +18,8 @@ module prim_flop_2sync #(
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      intq <= {Width{ResetValue}};
-      q    <= {Width{ResetValue}};
+      intq <= ResetValue;
+      q    <= ResetValue;
     end else begin
       intq <= d;
       q    <= intq;

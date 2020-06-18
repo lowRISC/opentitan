@@ -53,7 +53,7 @@ module prim_diff_decode #(
 
     prim_flop_2sync #(
       .Width(1),
-      .ResetValue(0)
+      .ResetValue('0)
     ) i_sync_p (
       .clk_i,
       .rst_ni,
@@ -63,7 +63,7 @@ module prim_diff_decode #(
 
     prim_flop_2sync #(
       .Width(1),
-      .ResetValue(1)
+      .ResetValue(1'b1)
     ) i_sync_n (
       .clk_i,
       .rst_ni,
