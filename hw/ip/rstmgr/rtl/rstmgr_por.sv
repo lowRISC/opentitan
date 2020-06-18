@@ -29,7 +29,7 @@ module rstmgr_por #(
   // sync the POR
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) rst_sync (
     .clk_i(clk_i),
     .rst_ni(rst_ni),

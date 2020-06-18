@@ -26,7 +26,7 @@ module rstmgr_info #(
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) u_cpu_reset_synced (
     .clk_i(clk_i),
     .rst_ni(rst_ni),

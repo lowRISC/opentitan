@@ -35,7 +35,7 @@ module rstmgr_ctrl import rstmgr_pkg::*; #(
   logic [PowerDomains-1:0] rst_parent_synced;
   prim_flop_2sync #(
     .Width(PowerDomains),
-    .ResetValue(0)
+    .ResetValue('0)
   ) u_lc (
     .clk_i(clk_i),
     .rst_ni(rst_ni),

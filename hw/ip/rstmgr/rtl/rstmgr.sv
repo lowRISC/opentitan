@@ -53,7 +53,7 @@ module rstmgr import rstmgr_pkg::*; (
   // POR usage for the clkmgr
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_por_sync (
     .clk_i(clk_main_i),
     .rst_ni(resets_o.rst_por_aon_n),
@@ -63,7 +63,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_por_io_sync (
     .clk_i(clk_io_i),
     .rst_ni(resets_o.rst_por_aon_n),
@@ -73,7 +73,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_por_usb_sync (
     .clk_i(clk_usb_i),
     .rst_ni(resets_o.rst_por_aon_n),
@@ -107,7 +107,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_sync (
     .clk_i,
     .rst_ni(resets_o.rst_por_aon_n),
@@ -161,7 +161,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_lc (
     .clk_i(clk_io_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
@@ -171,7 +171,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_sys (
     .clk_i(clk_main_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
@@ -181,7 +181,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_sys_io (
     .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
@@ -191,7 +191,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_spi_device (
     .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
@@ -201,7 +201,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(0)
+    .ResetValue('0)
   ) i_usb (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
