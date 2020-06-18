@@ -58,6 +58,8 @@ module prim_ram_2p_async_adv #(
   input [CfgW-1:0] cfg_i
 );
 
+  logic [CfgW-1:0] unused_cfg = cfg_i;
+
   `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
   // While we require DataBitsPerMask to be per Byte (8) at the interface in case Byte parity is
