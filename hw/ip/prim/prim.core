@@ -10,6 +10,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:util
       - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
       - lowrisc:prim:pad_wrapper
       - lowrisc:prim:prim_pkg
