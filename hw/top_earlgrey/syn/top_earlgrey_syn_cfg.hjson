@@ -13,6 +13,4 @@
 
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/top_earlgrey/syn/constraints.sdc"
-
-  // TODO: add support for loading the constraints here
- }
+}
