@@ -1,6 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 { name: "PWRMGR",
   clock_primary: "clk_i",
   other_clock_list: [ "clk_slow_i" ]
@@ -63,7 +69,7 @@
     },
 
     { struct:  "logic",
-      width:   3,
+      width:   1,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -84,7 +90,7 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "16",
+      default: "1",
       local: "true"
     },
   ],
@@ -387,11 +393,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "15:0",
+        { bits: "0:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "16",
+        { bits: "1",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -400,7 +406,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "17",
+        { bits: "2",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power
@@ -417,4 +423,3 @@
     },
   ]
 }
-

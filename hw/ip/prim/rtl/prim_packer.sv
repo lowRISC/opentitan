@@ -200,8 +200,10 @@ module prim_packer #(
   // Assumption: mask_i should be contiguous ones
   // e.g: 0011100 --> OK
   //      0100011 --> Not OK
-  `ASSUME(ContiguousOnesMask_M,
-          valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
+  if (InW > 1) begin
+    `ASSUME(ContiguousOnesMask_M,
+            valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
+  end
 
   // Assume data pattern to reduce FPV test time
   //`ASSUME_FPV(FpvDataWithin_M,

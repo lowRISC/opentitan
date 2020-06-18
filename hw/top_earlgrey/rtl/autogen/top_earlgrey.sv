@@ -250,6 +250,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  logic       pwrmgr_wakeups;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
@@ -627,8 +628,8 @@ module top_earlgrey #(
       // Inter-module signals
       .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
       .lc_pinmux_strap_o(),
-      .sleep_en_i(1'b0),
-      .aon_wkup_req_o(),
+      .sleep_en_i('0),
+      .aon_wkup_req_o(pwrmgr_wakeups),
 
       .periph_to_mio_i      (mio_d2p    ),
       .periph_to_mio_oe_i   (mio_d2p_en ),
@@ -707,7 +708,8 @@ module top_earlgrey #(
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
       .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
       .pwr_cpu_i(pwrmgr_pwr_cpu),
-      .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
+      .wakeups_i(pwrmgr_wakeups),
+      .rstreqs_i('0),
 
       .clk_i (clk_io_i),
       .clk_slow_i (clk_aon_i),

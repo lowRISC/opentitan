@@ -36,6 +36,12 @@
   bus_device: "tlul",
   regwidth: "32",
 
+  wakeup_list: [
+    { name: "aon_wkup_req",
+      desc: "pin wake request"
+    }
+  ],
+
   inter_signal_list: [
     // Define lc <-> pinmux signal for strap sampling
     { struct:  "lc_pinmux_strap",

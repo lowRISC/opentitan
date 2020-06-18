@@ -15,9 +15,8 @@ package pwrmgr_pkg;
   parameter PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
 
   // variables referenced only by pwrmgr
-  localparam WakeUpPeris = 16; // this needs to be a topgen populated number, or from topcfg?
-  localparam TotalWakeWidth = WakeUpPeris + 2; // Abort and fall through are added
-
+  // pwrmgr_reg_pkg::NumWkups; // should this be coming from top_pkg instead?
+  localparam TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
   // pwrmgr to ast
   typedef struct packed {
@@ -141,21 +140,18 @@ package pwrmgr_pkg;
     core_sleeping: 1'b0
   };
 
-  // peripherals to pwrmgr
-  // TODO, switch this to two logic arrays once the option to support
-  // logic during intermodule.py is in.
-  // Structs are used for now since these happen to support dangling port
-  // defaults.
-  typedef struct packed {
-    logic [WakeUpPeris-1:0] wakeups;
-    logic [HwRstReqs-1:0] rstreqs;
-  } pwr_peri_t;
+  logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
+  logic [HwRstReqs-1:0] rstreqs;
 
   // default value (for dangling ports)
-  parameter pwr_peri_t PWR_PERI_DEFAULT = '{
-    wakeups: WakeUpPeris'(1'b1),
-    rstreqs: '0
-  };
+  parameter WAKEUPS_DEFAULT = '0;
+  parameter RSTREQS_DEFAULT = '0;
+
+  // peripherals to pwrmgr
+  typedef struct packed {
+    logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
+    logic [HwRstReqs-1:0] rstreqs;
+  } pwr_peri_t;
 
   // power-up causes
   typedef enum logic [1:0] {
