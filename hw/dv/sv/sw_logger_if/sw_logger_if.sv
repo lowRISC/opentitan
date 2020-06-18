@@ -3,42 +3,40 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // shortcuts for use in switching # of args to insert in formatted string
-`define _USE_STR_ARG(a, n)          (a.str_arg.exists(``n``) ? a.str_arg[``n``] : a.arg[``n``])
-`define _0_ARGS(a)
-`define _1_ARGS(a)                  , `_USE_STR_ARG(a, 0)
-`define _2_ARGS(a)                  `_1_ARGS(a), `_USE_STR_ARG(a, 1)
-`define _3_ARGS(a)                  `_2_ARGS(a), `_USE_STR_ARG(a, 2)
-`define _4_ARGS(a)                  `_3_ARGS(a), `_USE_STR_ARG(a, 3)
-`define _5_ARGS(a)                  `_4_ARGS(a), `_USE_STR_ARG(a, 4)
-`define _6_ARGS(a)                  `_5_ARGS(a), `_USE_STR_ARG(a, 5)
-`define _7_ARGS(a)                  `_6_ARGS(a), `_USE_STR_ARG(a, 6)
-`define _8_ARGS(a)                  `_7_ARGS(a), `_USE_STR_ARG(a, 7)
-`define _9_ARGS(a)                  `_8_ARGS(a), `_USE_STR_ARG(a, 8)
-`define _10_ARGS(a)                 `_9_ARGS(a), `_USE_STR_ARG(a, 9)
-`define _11_ARGS(a)                 `_10_ARGS(a), `_USE_STR_ARG(a, 10)
-`define _12_ARGS(a)                 `_11_ARGS(a), `_USE_STR_ARG(a, 11)
-`define _13_ARGS(a)                 `_12_ARGS(a), `_USE_STR_ARG(a, 12)
-`define _14_ARGS(a)                 `_13_ARGS(a), `_USE_STR_ARG(a, 13)
-`define _15_ARGS(a)                 `_14_ARGS(a), `_USE_STR_ARG(a, 14)
-`define _16_ARGS(a)                 `_15_ARGS(a), `_USE_STR_ARG(a, 15)
-`define _17_ARGS(a)                 `_16_ARGS(a), `_USE_STR_ARG(a, 16)
-`define _18_ARGS(a)                 `_17_ARGS(a), `_USE_STR_ARG(a, 17)
-`define _19_ARGS(a)                 `_18_ARGS(a), `_USE_STR_ARG(a, 18)
-`define _20_ARGS(a)                 `_19_ARGS(a), `_USE_STR_ARG(a, 19)
-`define _21_ARGS(a)                 `_20_ARGS(a), `_USE_STR_ARG(a, 20)
-`define _22_ARGS(a)                 `_21_ARGS(a), `_USE_STR_ARG(a, 21)
-`define _23_ARGS(a)                 `_22_ARGS(a), `_USE_STR_ARG(a, 22)
-`define _24_ARGS(a)                 `_23_ARGS(a), `_USE_STR_ARG(a, 23)
-`define _25_ARGS(a)                 `_24_ARGS(a), `_USE_STR_ARG(a, 24)
-`define _26_ARGS(a)                 `_25_ARGS(a), `_USE_STR_ARG(a, 25)
-`define _27_ARGS(a)                 `_26_ARGS(a), `_USE_STR_ARG(a, 26)
-`define _28_ARGS(a)                 `_27_ARGS(a), `_USE_STR_ARG(a, 27)
-`define _29_ARGS(a)                 `_28_ARGS(a), `_USE_STR_ARG(a, 28)
-`define _30_ARGS(a)                 `_29_ARGS(a), `_USE_STR_ARG(a, 29)
-`define _31_ARGS(a)                 `_30_ARGS(a), `_USE_STR_ARG(a, 30)
-`define _32_ARGS(a)                 `_31_ARGS(a), `_USE_STR_ARG(a, 31)
-`define _ADD_ARGS(a, n)             `_``n``_ARGS(a)
-`define FORMATTED_LOG_WITH_NARGS(n) $sformatf(log `_ADD_ARGS(sw_log, n))
+`define _USE_STR_ARG(n) (sw_log.str_arg.exists(``n``) ? sw_log.str_arg[``n``] : sw_log.arg[``n``])
+`define _1_ARGS         `_USE_STR_ARG(0)
+`define _2_ARGS         `_1_ARGS, `_USE_STR_ARG(1)
+`define _3_ARGS         `_2_ARGS, `_USE_STR_ARG(2)
+`define _4_ARGS         `_3_ARGS, `_USE_STR_ARG(3)
+`define _5_ARGS         `_4_ARGS, `_USE_STR_ARG(4)
+`define _6_ARGS         `_5_ARGS, `_USE_STR_ARG(5)
+`define _7_ARGS         `_6_ARGS, `_USE_STR_ARG(6)
+`define _8_ARGS         `_7_ARGS, `_USE_STR_ARG(7)
+`define _9_ARGS         `_8_ARGS, `_USE_STR_ARG(8)
+`define _10_ARGS        `_9_ARGS, `_USE_STR_ARG(9)
+`define _11_ARGS        `_10_ARGS, `_USE_STR_ARG(10)
+`define _12_ARGS        `_11_ARGS, `_USE_STR_ARG(11)
+`define _13_ARGS        `_12_ARGS, `_USE_STR_ARG(12)
+`define _14_ARGS        `_13_ARGS, `_USE_STR_ARG(13)
+`define _15_ARGS        `_14_ARGS, `_USE_STR_ARG(14)
+`define _16_ARGS        `_15_ARGS, `_USE_STR_ARG(15)
+`define _17_ARGS        `_16_ARGS, `_USE_STR_ARG(16)
+`define _18_ARGS        `_17_ARGS, `_USE_STR_ARG(17)
+`define _19_ARGS        `_18_ARGS, `_USE_STR_ARG(18)
+`define _20_ARGS        `_19_ARGS, `_USE_STR_ARG(19)
+`define _21_ARGS        `_20_ARGS, `_USE_STR_ARG(20)
+`define _22_ARGS        `_21_ARGS, `_USE_STR_ARG(21)
+`define _23_ARGS        `_22_ARGS, `_USE_STR_ARG(22)
+`define _24_ARGS        `_23_ARGS, `_USE_STR_ARG(23)
+`define _25_ARGS        `_24_ARGS, `_USE_STR_ARG(24)
+`define _26_ARGS        `_25_ARGS, `_USE_STR_ARG(25)
+`define _27_ARGS        `_26_ARGS, `_USE_STR_ARG(26)
+`define _28_ARGS        `_27_ARGS, `_USE_STR_ARG(27)
+`define _29_ARGS        `_28_ARGS, `_USE_STR_ARG(28)
+`define _30_ARGS        `_29_ARGS, `_USE_STR_ARG(29)
+`define _31_ARGS        `_30_ARGS, `_USE_STR_ARG(30)
+`define _32_ARGS        `_31_ARGS, `_USE_STR_ARG(31)
+`define _ADD_ARGS(n)    `_``n``_ARGS
 
 interface sw_logger_if #(
   // width of the data bus
@@ -398,48 +396,45 @@ interface sw_logger_if #(
 
   // print the log captured from the SW.
   function automatic void print_sw_log(sw_log_t sw_log);
-    string log = sw_log.format;
-
     // construct formatted string based on args
     case (sw_log.nargs)
-       0: log = `FORMATTED_LOG_WITH_NARGS(0);
-       1: log = `FORMATTED_LOG_WITH_NARGS(1);
-       2: log = `FORMATTED_LOG_WITH_NARGS(2);
-       3: log = `FORMATTED_LOG_WITH_NARGS(3);
-       4: log = `FORMATTED_LOG_WITH_NARGS(4);
-       5: log = `FORMATTED_LOG_WITH_NARGS(5);
-       6: log = `FORMATTED_LOG_WITH_NARGS(6);
-       7: log = `FORMATTED_LOG_WITH_NARGS(7);
-       8: log = `FORMATTED_LOG_WITH_NARGS(8);
-       9: log = `FORMATTED_LOG_WITH_NARGS(9);
-      10: log = `FORMATTED_LOG_WITH_NARGS(10);
-      11: log = `FORMATTED_LOG_WITH_NARGS(11);
-      12: log = `FORMATTED_LOG_WITH_NARGS(12);
-      13: log = `FORMATTED_LOG_WITH_NARGS(13);
-      14: log = `FORMATTED_LOG_WITH_NARGS(14);
-      15: log = `FORMATTED_LOG_WITH_NARGS(15);
-      16: log = `FORMATTED_LOG_WITH_NARGS(16);
-      17: log = `FORMATTED_LOG_WITH_NARGS(17);
-      18: log = `FORMATTED_LOG_WITH_NARGS(18);
-      19: log = `FORMATTED_LOG_WITH_NARGS(19);
-      20: log = `FORMATTED_LOG_WITH_NARGS(20);
-      21: log = `FORMATTED_LOG_WITH_NARGS(21);
-      22: log = `FORMATTED_LOG_WITH_NARGS(22);
-      23: log = `FORMATTED_LOG_WITH_NARGS(23);
-      24: log = `FORMATTED_LOG_WITH_NARGS(24);
-      25: log = `FORMATTED_LOG_WITH_NARGS(25);
-      26: log = `FORMATTED_LOG_WITH_NARGS(26);
-      27: log = `FORMATTED_LOG_WITH_NARGS(27);
-      28: log = `FORMATTED_LOG_WITH_NARGS(28);
-      29: log = `FORMATTED_LOG_WITH_NARGS(29);
-      30: log = `FORMATTED_LOG_WITH_NARGS(30);
-      31: log = `FORMATTED_LOG_WITH_NARGS(31);
-      32: log = `FORMATTED_LOG_WITH_NARGS(32);
+       0: ;
+       1: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(1));
+       2: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(2));
+       3: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(3));
+       4: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(4));
+       5: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(5));
+       6: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(6));
+       7: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(7));
+       8: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(8));
+       9: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(9));
+      10: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(10));
+      11: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(11));
+      12: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(12));
+      13: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(13));
+      14: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(14));
+      15: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(15));
+      16: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(16));
+      17: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(17));
+      18: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(18));
+      19: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(19));
+      20: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(20));
+      21: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(21));
+      22: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(22));
+      23: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(23));
+      24: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(24));
+      25: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(25));
+      26: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(26));
+      27: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(27));
+      28: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(28));
+      29: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(29));
+      30: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(30));
+      31: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(31));
+      32: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(32));
     default: log_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs));
     endcase
-    sw_log.format = log;
     print_log(.sw_log(sw_log), .is_sw_log(1'b1));
-    printed_log = log;
+    printed_log = sw_log.format;
     ->printed_log_event;
   endfunction
 
@@ -523,7 +518,6 @@ endinterface
 
 // undefine previously defined macros
 `undef _USE_STR_ARG
-`undef _0_ARGS
 `undef _1_ARGS
 `undef _2_ARGS
 `undef _3_ARGS
@@ -557,4 +551,3 @@ endinterface
 `undef _31_ARGS
 `undef _32_ARGS
 `undef _ADD_ARGS
-`undef FORMATTED_LOG_WITH_NARGS
