@@ -277,10 +277,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                 if (!under_esc_classes[i]) state_per_class[i] = EscStateIdle;
               end
             end
-            // TODO: tries to avoid this by constrain sequence
             fork
               begin
-                cfg.clk_rst_vif.wait_clks(1);
+                // TODO: tries to avoid this by constrain sequence
+                // wait two clks: 1. for the register to set
+                // 2. corner case intr was triggered right when intr_state is set, wait one more clk to override it
+                cfg.clk_rst_vif.wait_clks(2);
                 void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
               end
             join_none
