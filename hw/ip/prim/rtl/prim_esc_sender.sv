@@ -26,8 +26,7 @@ module prim_esc_sender
 (
   input           clk_i,
   input           rst_ni,
-  // this triggers a ping test. keep asserted
-  // until either ping_ok_o or ping_fail_o is asserted.
+  // this triggers a ping test. keep asserted until ping_ok_o is pulsed high.
   input           ping_en_i,
   output logic    ping_ok_o,
   // asserted if signal integrity issue detected
@@ -174,18 +173,18 @@ module prim_esc_sender
       default : state_d = Idle;
     endcase
 
-    // escalation takes precedence,
-    // immediately return ok in that case
-    if ((esc_en_i || esc_en_q || esc_en_q1) && ping_en_i) begin
-      ping_ok_o = 1'b1;
-    end
-
     // a sigint error will reset the state machine
     // and have it pause for two cycles to let the
     // receiver recover
     if (sigint_detected) begin
       ping_ok_o = 1'b0;
       state_d = Idle;
+    end
+
+    // escalation takes precedence,
+    // immediately return ok in that case
+    if ((esc_en_i || esc_en_q || esc_en_q1) && ping_en_i) begin
+      ping_ok_o = 1'b1;
     end
   end
 
@@ -245,7 +244,7 @@ module prim_esc_sender
   // check that escalation signal is at least 2 cycles high
   `ASSERT(EscCheck_A, esc_en_i |-> esc_tx_o.esc_p [*2] )
   // escalation / ping collision
-  `ASSERT(EscPingCheck_A, esc_en_i && ping_en_i |-> ping_ok_o, clk_i, !rst_ni || integ_fail_o)
+  `ASSERT(EscPingCheck_A, esc_en_i && ping_en_i |-> ping_ok_o)
   // check that ping request results in only a single cycle pulse
   `ASSERT(PingCheck_A, ##1 $rose(ping_en_i) |-> esc_tx_o.esc_p ##1 !esc_tx_o.esc_p , clk_i,
       !rst_ni || esc_en_i || integ_fail_o)
