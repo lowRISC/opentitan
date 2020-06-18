@@ -422,7 +422,7 @@ module aes_control (
   // Detect new key, new IV, new input, output read.
   // Edge detectors are cleared by the FSM.
   assign key_init_new_d = (dec_key_gen || key_init_clear) ? '0 : (key_init_new_q | key_init_we_o);
-  assign key_init_new   = &key_init_new_d;
+  assign key_init_new   = &key_init_new_q;
 
   // The IV regs can be updated by both software or the counter.
   assign iv_new_d = (iv_load || iv_clear) ? '0 : (iv_new_q | iv_we_o);
