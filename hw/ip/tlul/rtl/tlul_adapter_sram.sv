@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 /**
  * Tile-Link UL adapter for SRAM-like devices
  *
@@ -9,12 +11,9 @@
  *   it means that aliasing can happen if target slave size in TL-UL crossbar is bigger
  *   than SRAM size
  */
-
-`include "prim_assert.sv"
-
 module tlul_adapter_sram #(
   parameter int SramAw      = 12,
-  parameter int SramDw      = 32, // Current version supports TL-UL width only
+  parameter int SramDw      = 32, // Must be multiple of the TL width
   parameter int Outstanding = 1,  // Only one request is accepted
   parameter bit ByteAccess  = 1,  // 1: true, 0: false
   parameter bit ErrOnWrite  = 0,  // 1: Writes not allowed, automatically error
@@ -41,8 +40,15 @@ module tlul_adapter_sram #(
 
   import tlul_pkg::*;
 
-  localparam int SramByte = SramDw/8; // TODO: Fatal if SramDw isn't multiple of 8
-  localparam int DataBitWidth = $clog2(SramByte);
+  localparam int SramByte = SramDw/8;
+  localparam int DataBitWidth = prim_util_pkg::vbits(SramByte);
+
+  localparam int WoffsetWidth = DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
+
+  typedef struct packed {
+    logic [top_pkg::TL_DBW-1:0] mask ; // Byte mask within the TL-UL word
+    logic [WoffsetWidth-1:0]    woffset ; // Offset of the TL-UL word within the SRAM word
+  } sram_req_t ;
 
   typedef enum logic [1:0] {
     OpWrite,
@@ -62,6 +68,7 @@ module tlul_adapter_sram #(
     logic              error ;
   } rsp_t ;
 
+  localparam int SramReqFifoWidth = $bits(sram_req_t) ;
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
 
@@ -73,9 +80,9 @@ module tlul_adapter_sram #(
   logic reqfifo_rvalid, reqfifo_rready;
   req_t reqfifo_wdata,  reqfifo_rdata;
 
-  logic [top_pkg::TL_DBW-1:0] maskfifo_wdata, maskfifo_rdata;
-  logic maskfifo_wvalid, maskfifo_wready;
-  logic maskfifo_rready;
+  logic sramreqfifo_wvalid, sramreqfifo_wready;
+  logic sramreqfifo_rready;
+  sram_req_t sramreqfifo_wdata, sramreqfifo_rdata;
 
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
@@ -138,7 +145,7 @@ module tlul_adapter_sram #(
       d_user   : '0,
       d_error  : d_valid && d_error,
 
-      a_ready  : (gnt_i | error_internal) & reqfifo_wready & maskfifo_wready
+      a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
@@ -152,17 +159,23 @@ module tlul_adapter_sram #(
   assign we_o     = tl_i.a_valid & logic'(tl_i.a_opcode inside {PutFullData, PutPartialData});
   assign addr_o   = (tl_i.a_valid) ? tl_i.a_address[DataBitWidth+:SramAw] : '0;
 
-  `ASSERT_INIT(TlUlEqualsToSramDw, top_pkg::TL_DW == SramDw)
+  // Support SRAMs wider than the TL-UL word width by mapping the parts of the
+  // TL-UL address which are more fine-granular than the SRAM width to the
+  // SRAM write mask.
+  logic [WoffsetWidth-1:0] woffset;
+  if (top_pkg::TL_DW != SramDw) begin : gen_wordwidthadapt
+    assign woffset = tl_i.a_address[DataBitWidth-1:prim_util_pkg::vbits(top_pkg::TL_DBW)];
+  end else begin : gen_no_wordwidthadapt
+    assign woffset = '0;
+  end
 
-  // Convert byte mask to SRAM bit mask.
-  logic [top_pkg::TL_DW-1:0] rmask;
+  // Convert byte mask to SRAM bit mask for writes, and only forward valid data
   always_comb begin
+    wmask_o = '0;
+    wdata_o = '0;
     for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-      wmask_o[8*i+:8] = (tl_i.a_valid) ? {8{tl_i.a_mask[i]}} : '0;
-      // only forward valid data here.
-      wdata_o[8*i+:8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
-      // mask for read data
-      rmask[8*i+:8] = {8{maskfifo_rdata[i]}};
+      wmask_o[woffset * top_pkg::TL_DW + 8*i +: 8] = (tl_i.a_valid) ? {8{tl_i.a_mask[i]}} : '0;
+      wdata_o[woffset * top_pkg::TL_DW +8*i +: 8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
     end
   end
 
@@ -207,13 +220,30 @@ module tlul_adapter_sram #(
   assign reqfifo_rready = d_ack ;
 
   // push together with ReqFIFO, pop upon returning read
-  assign maskfifo_wdata = tl_i.a_mask;
-  assign maskfifo_wvalid = sram_ack & ~we_o;
-  assign maskfifo_rready = rspfifo_wvalid;
+  assign sramreqfifo_wdata = '{
+    mask    : tl_i.a_mask,
+    woffset : woffset
+  };
+  assign sramreqfifo_wvalid = sram_ack & ~we_o;
+  assign sramreqfifo_rready = rspfifo_wvalid;
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
+
+  // Make sure only requested bytes are forwarded
+  logic [SramDw-1:0] rdata;
+  logic [SramDw-1:0] rmask;
+  logic [top_pkg::TL_DW-1:0] rdata_tlword;
+  always_comb begin
+    rmask = '0;
+    for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
+      rmask[sramreqfifo_rdata.woffset * top_pkg::TL_DW + 8*i+:8] = {8{sramreqfifo_rdata.mask[i]}};
+    end
+  end
+  assign rdata = rdata_i & rmask;
+  assign rdata_tlword = rdata[sramreqfifo_rdata.woffset * top_pkg::TL_DW +: top_pkg::TL_DW];
+
   assign rspfifo_wdata  = '{
-    data:  rdata_i & rmask, // make sure only requested bytes are forwarded
+    data : rdata_tlword,
     error: rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
@@ -253,25 +283,25 @@ module tlul_adapter_sram #(
     .rdata  (reqfifo_rdata)
   );
 
-  // MaskFIFO:
+  // sramreqfifo:
   //    While the ReqFIFO holds the request until it is sent back via TL-UL, the
-  //    MaskFIFO only needs to hold the mask value until the read data returns
-  //    from memory.
+  //    sramreqfifo only needs to hold the mask and word offset until the read
+  //    data returns from memory.
   prim_fifo_sync #(
-    .Width  ($bits(tl_i.a_mask)),
+    .Width  (SramReqFifoWidth),
     .Pass   (1'b0),
     .Depth  (Outstanding)
-  ) u_maskfifo (
+  ) u_sramreqfifo (
     .clk_i,
     .rst_ni,
     .clr_i  (1'b0),
-    .wvalid (maskfifo_wvalid),
-    .wready (maskfifo_wready),
-    .wdata  (maskfifo_wdata),
+    .wvalid (sramreqfifo_wvalid),
+    .wready (sramreqfifo_wready),
+    .wdata  (sramreqfifo_wdata),
     .depth  (),
     .rvalid (),
-    .rready (maskfifo_rready),
-    .rdata  (maskfifo_rdata)
+    .rready (sramreqfifo_rready),
+    .rdata  (sramreqfifo_rdata)
   );
 
   // Rationale having #Outstanding depth in response FIFO.
@@ -306,6 +336,9 @@ module tlul_adapter_sram #(
 
   // If both ErrOnWrite and ErrOnRead are set, this block is useless
   `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
+
+  `ASSERT_INIT(SramDwHasByteGranularity_A, SramDw % 8 == 0)
+  `ASSERT_INIT(SramDwIsMultipleOfTlUlWidth_A, SramDw % top_pkg::TL_DW == 0)
 
   // make sure outputs are defined
   `ASSERT_KNOWN(TlOutKnown_A,    tl_o   )
