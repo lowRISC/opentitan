@@ -31,12 +31,12 @@
       reset:    "rst_aon_ni",
       pipeline: "false"
     }
-    //{ name:     "rbox_aon"
-    //  type:     "device"
-    //  clock:    "clk_aon_i",
-    //  reset:    "rst_aon_ni",
-    //  pipeline: "false"
-    //}
+    { name:     "rbox_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
     //{ name:     "dcd_aon"
     //  type:     "device"
     //  clock:    "clk_aon_i",
@@ -88,7 +88,8 @@
   connections: {
     main: [ "pwrmgr", "rstmgr", "clkmgr", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
-            //"rbox_aon", "dcd_aon", "aontimer_aon"
+            "rbox_aon",
+            // "dcd_aon", "aontimer_aon"
     ]
   }
 }

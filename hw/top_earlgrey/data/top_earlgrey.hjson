@@ -92,6 +92,7 @@
     { name: "por_aon",    type: "top",  root: "rst_ni",  clk: "aon"        }
     { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
     { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
+    //{ name: "por_rbox",   type: "top",  root: "por_aon", clk: "io",  sw:1  }
     { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
     { name: "lc",         type: "top",  root: "lc",      clk: "io"         }
     { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
@@ -271,6 +272,17 @@
       base_addr: "0x40420000",
       generated: "true"
     },
+    { name: "rbox_aon",
+      type: "rbox",
+      clock_srcs: {
+        clk_i: "io"
+        // clk_aon_i: "aon"
+      }
+      clock_group: "powerup",
+      // TODO make sw_rst_ni to be software controlled reset or revise rbox
+      reset_connections: { rst_ni: "por_io", sw_rst_ni: "por_io"}
+      base_addr: "0x40430000"
+    }
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
     { name: "nmi_gen",
@@ -432,6 +444,7 @@
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
       { name: "usbdev_aon", pad: ["ChC[0..8]"]},
+      { name: "rbox_aon", pad: ["ChD[0..13]"]}
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
@@ -476,6 +489,7 @@
       { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
       { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
       { name: "ChC" type: "IO_33V", count: 4, attr: ["KEEP", "STRONG"]},
+      { name: "ChD" type: "IO_33V", count: 14, attr: ["KEEP", "WEAK"]},
     ]
   }
 
