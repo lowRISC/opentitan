@@ -25,7 +25,7 @@ module usbuart_usbif (
   output              rx_err, // Also becomes bit 8 to the fifo
   output [7:0]        rx_fifo_wdata,
   input [7:0]         tx_fifo_rdata,
-  input [5:0]         rx_fifo_wdepth,
+
   // Status
   output logic [10:0] status_frame_o,
   output logic        status_host_lost_o,
@@ -33,7 +33,8 @@ module usbuart_usbif (
   output logic [6:0]  status_device_address_o,
   output logic [1:0]  parity_o,
   output logic [15:0] baud_o
-  );
+);
+
   localparam int unsigned MaxPktSizeByte = 32;
   localparam int unsigned PktW = $clog2(MaxPktSizeByte);
   localparam int unsigned CtrlEp = 0;

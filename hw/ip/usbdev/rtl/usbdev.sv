@@ -221,7 +221,7 @@ module usbdev (
   assign event_pkt_received = rx_fifo_rvalid;
 
   // The rxfifo register is hrw, but we just need the read enables.
-  logic [3:0] unused_rxfifo_q;
+  logic [16:0] unused_rxfifo_q;
   assign unused_rxfifo_q = {reg2hw.rxfifo.ep.q, reg2hw.rxfifo.setup.q,
                             reg2hw.rxfifo.size.q, reg2hw.rxfifo.buffer.q};
 
