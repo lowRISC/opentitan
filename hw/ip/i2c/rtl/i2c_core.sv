@@ -160,7 +160,7 @@ module  i2c_core (
       rx_watermark_q  <= rx_watermark_d;
     end
   end
- 
+
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
       2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 6'd1);
