@@ -7,7 +7,7 @@ variables:
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   # if you update this, update the definition in util/container/Dockerfile
-  TOOLCHAIN_VERSION: 20200602-4
+  TOOLCHAIN_VERSION: 20200618-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
 

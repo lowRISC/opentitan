@@ -9,7 +9,7 @@
 ARG VERILATOR_VERSION=4.028
 
 # The RISCV toolchain version should match the release tag used in GitHub.
-ARG RISCV_TOOLCHAIN_TAR_VERSION=20200602-4
+ARG RISCV_TOOLCHAIN_TAR_VERSION=20200618-1
 
 # Build OpenOCD
 # OpenOCD is a tool to connect with the target chip over JTAG and similar
