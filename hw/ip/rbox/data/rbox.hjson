@@ -5,6 +5,10 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "none",
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "sw_rst_ni"
+  ]
   available_input_list: [
     { name: "ac_present", desc: "A/C power is present" }
     { name: "ec_entering_rw", desc: "Embedded controller is entering the R/W mode in the boot flow" }

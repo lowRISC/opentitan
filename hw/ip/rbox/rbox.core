@@ -13,7 +13,6 @@ filesets:
     files:
       - rtl/rbox_reg_pkg.sv
       - rtl/rbox_reg_top.sv
-      - rtl/rbox_core.sv
       - rtl/rbox.sv
     file_type: systemVerilogSource
 
