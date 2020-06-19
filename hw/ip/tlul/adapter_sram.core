@@ -8,7 +8,8 @@ description: "TL-UL to SRAM adapter (device)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:util
+      - lowrisc:prim:assert
       - lowrisc:tlul:common
     files:
       - rtl/tlul_adapter_sram.sv
