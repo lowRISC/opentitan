@@ -458,7 +458,7 @@ module usbuart_core (
     .usb_suspend_i          (                        )
   );
 
-  assign cio_usb_dp_o = cio_oe;
-  assign cio_usb_dn_o = cio_oe;
+  assign cio_usb_dp_en_o = cio_oe;
+  assign cio_usb_dn_en_o = cio_oe;
 
 endmodule
