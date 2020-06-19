@@ -97,8 +97,8 @@ module i2c_fsm (
         tClockStop  : tcount_d = t_f_i + tlow_i - thd_dat_i;
         tSetupStop  : tcount_d = t_r_i + tsu_sto_i;
         tHoldStop   : tcount_d = t_r_i + t_buf_i - tsu_sta_i;
-        tNoDelay    : tcount_d = 20'b1;
-        default     : tcount_d = 20'b1;
+        tNoDelay    : tcount_d = 20'h00001;
+        default     : tcount_d = 20'h00001;
       endcase
     end else if (stretch == 0) begin
       tcount_d = tcount_q - 1'b1;
