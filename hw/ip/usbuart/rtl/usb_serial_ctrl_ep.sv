@@ -82,7 +82,7 @@ module usb_serial_ctrl_ep  #(
   logic [7:0] bmRequestType, raw_setup_data [8];
   // Alias for the setup bytes using names from USB spec
   usb_setup_request_e bRequest;
-  logic [15:0] wValue, wLength; //wIndex
+  logic [15:0] wValue, wLength, wIndex;
 
   logic setup_pkt_start, has_data_stage, out_data_stage, in_data_stage;
   assign setup_pkt_start = pkt_start && out_ep_setup_i;
@@ -209,13 +209,15 @@ module usb_serial_ctrl_ep  #(
   assign bmRequestType = raw_setup_data[0];
   assign bRequest = usb_setup_request_e'(raw_setup_data[1]);
   assign wValue = {raw_setup_data[3][7:0], raw_setup_data[2][7:0]};
-//assign wIndex = {raw_setup_data[5][7:0], raw_setup_data[4][7:0]};
+  assign wIndex = {raw_setup_data[5][7:0], raw_setup_data[4][7:0]};
   assign wLength = {raw_setup_data[7][7:0], raw_setup_data[6][7:0]};
   // suppress warning
   logic [6:0]  unused_bmR;
   logic        unused_wValue;
+  logic [15:0] unused_wIndex;
   assign unused_bmR = bmRequestType[6:0];
   assign unused_wValue = wValue[7];
+  assign unused_wIndex = wIndex;
 
   // Check of upper put_addr bits needed because CRC will be sent (10 bytes total)
   always_ff @(posedge clk_i) begin
@@ -227,7 +229,7 @@ module usb_serial_ctrl_ep  #(
   // Send setup data (which will be empty in case of a SET operation and
   // come from the ROM in the case of a GET)
   usb_dscr_type_e dscr_type;
-  assign dcsr_type = usb_dscr_type_e'(wValue[15:8]);
+  assign dscr_type = usb_dscr_type_e'(wValue[15:8]);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dev_addr_int <= '0;
@@ -239,7 +241,7 @@ module usb_serial_ctrl_ep  #(
         // Command (bRequest) and sub-command (wValue) come from USB spec
         unique case (bRequest)
           SetupGetDescriptor: begin
-            unique case (dcsr_type)
+            unique case (dscr_type)
               DscrTypeDevice: begin
                 in_ep_stall_o <= 1'b0;
                 rom_addr      <= 7'h00;
