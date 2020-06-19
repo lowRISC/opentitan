@@ -1,3 +1,6 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 {
   name: "i2c"
   import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
@@ -6,34 +9,35 @@
   entries: [
     {
       name: sanity
-      desc: '''Basic I2C sanity test with few bytes transmitted and received asynchronously
-            and in parallel with scoreboard checks (support options for ro, wo, or rw)
+      desc: '''
+            Basic I2C sanity test in which random (rd/wr) transactions are sent to the DUT 
+            and received asynchronously with scoreboard checks.
 
             Stimulus:
-              - Enable I2C host.
-              - Clear/Enable interrupt (if needed).
-              - Program OVRD, FDATA register.
+              - Enable I2C host
+              - Clear/Enable interrupt (if needed)
+              - Program OVRD, FDATA register
               - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent delays
-              - Randomize address and data for write and read transfers sent to the device.
+              - Randomize address and data for read/write transactions sent to the device
 
             Checking:
-              - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START.
-              - Read and write transfer matching.'''
+              - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START
+              - Read and write transfer matching
+            '''
       milestone: V1
       tests: ["i2c_sanity"]
     }
     {
       name: error
       desc: '''
-            Program incorrect configuration into DUT register.
+            Test if the host receives interference and unstable scl and sda.
 
             Stimulus:
-              - Program negative value into timing registers.
-              - Program incorrect format flags into fdata register.
+              - Within the clock pulse of the host scl, the device randomly asserts/deasserts its scl and sda
 
             Checking:
-              - Check involved interrupts/alerts.
-              - Got timeout in test (scoreboard might not get any transaction for DUT).
+              - Ensure all intr_scl_interference, intr_sda_interference, and intr_sda_unstable interrupts are asserted
+              - Ensure all intr_scl_interference, intr_sda_interference, and intr_sda_unstable interrupts stay asserted until cleared
             '''
       milestone: V2
       tests: ["i2c_error"]
@@ -41,15 +45,15 @@
     {
       name: stress_all_with_reset
       desc: '''
-            Pull reset at random times, make sure DUT recover/resets correctly and
+            Pull reset at random times, ensure DUT are reset and recovered/ correctly and
             there is no residual data left in the registers.
 
             Stimulus:
-              - Randomly reset DUT.
-              - Restart send/receive transaction.
+              - Randomly reset DUT
+              - Restart send/receive transaction
 
             Checking:
-              - Check if registers are properly reset.
+              - Ensure registers are properly reset
             '''
       milestone: V2
       tests: ["i2c_stress_all_with_rand_reset"]
@@ -57,158 +61,199 @@
     {
       name: perf
       desc: '''
-            Send/receive transactions at max bandwidth
+            Send/receive transactions at max bandwidth.
 
             Stimulus:
-              - Reduce access latency for fmt_fifo and rx_fifo.
-              - Issue long read/write transaction (and read rx_fifo as soon as read data valid).
+              - Reduce access latency for fmt_fifo and rx_fifo
+              - Issue long read/write back-to-back transactions 
+              - Read rx_fifo as soon as read data valid
 
             Checking:
-              - Check if transaction are transceivered correctly 
+              - Ensure transactions are transceivered correctly
             '''
       milestone: V2
       tests: ["i2c_perf"]
     }
     {
       name: stress
-      desc: '''Test multiple interrupts asserted.
+      desc: '''
+            Test multiple interrupts asserted.
 
             Stimulus:
-              - Do combinations of multiple of above scenarios to get multiple interrupts
-                asserted at the same time. Scoreboard should be robust enough to deal with all
-                scenarios.
+              - Do combinations of multiple of above scenarios to get multiple interrupts asserted at the same time
+              - Scoreboard should be robust enough to deal with all scenarios
 
             Checking:
-              - Ensure all interrupt asserted.'''
+              - Ensure multiple interrupts are asserted
+            '''
       milestone: V2
       tests: ["i2c_stress"]
     }
     {
       name: override
-      desc: '''Test SCL/SDA override
+      desc: '''
+            Test SCL/SDA override.
 
             Stimulus:
-              - Program OVRD register.
+              - Program OVRD register
 
             Checking:
-              - Check scl_o, sda_o override by programmed values in the OVRD register.'''
+              - Ensure scl_o, sda_o are overriddend
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: fmt_watermark
-      desc: '''Test fmt_watermark interrupt.
+      desc: '''
+            Test fmt_watermark interrupt.
 
             Stimulus:
-              - Program random fmt (format) fifo watermark level and keep pushing data out by writing to
-            wdata.
+              - Program random fmt watermark level
+              - Program large enough values into timing registers
+              - Write data quickly to fmt_fifo
 
             Checking:
-              - As the number of pending data entries in the fmt fifo reaches the programmed
-                watermark level, ensure that the fmt watermark interrupt is asserted.
-              - Read the fifo status to cross-check, ensure interrupt stays asserted until cleared.'''
+              - Ensure the intr_fmt watermark interrupt is asserted
+              - Ensure the intr_fmt watermark interrupt stays asserted until cleared
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: rx_watermark
-      desc: '''Test rx_watermark interrupt.
+      desc: '''
+            Test rx_watermark interrupt.
 
             Stimulus:
-              - Program random rx watermark level. Keep sending data over rx and read rdata
-                register in parallel with randomized delays large enough to reach a point where
-                the number of pending data items in rx fifo reaches the watermark level.
+              - Program random rx watermark level
+              - Keep sending data over rx
+              - Read data in rx_fifo slowly
 
             Checking:
-              - When that happens, check that the interrupt is asserted.'''
+              - Ensure the intr_rx watermark interrupt is asserted
+              - Ensure the intr_rx watermark interrupt stays asserted until cleared
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: fmt_reset
-      desc: '''Test fmt_fifo reset.
+      desc: '''
+            Test fmt_fifo reset.
 
             Stimulus:
-              - Fill up the fmt fifo with data to be sent out. After a random number (less than
-                filled fifo size) of bytes shows up on fmt, reset the fifo.
+              - Fill up the fmt fifo with data to be sent out
+              - Reset the fmt_fifo randomly after a number of bytes shows up on fmt_fifo 
 
             Checking:
-              - Ensure that the remaining data bytes do not show up after fmt_fifo is reset.'''
+              - Ensure the remaining entries are not show up after fmt_fifo is reset
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: rx_reset
-      desc: '''Test rx_reset reset.
+      desc: '''
+            Test rx_reset reset.
 
             Stimulus:
-              - Fill up the rx fifo by sending data bytes in over rx. After a random number
-                (less than filled fifo size) of bytes sent over rx, reset the fifo.
+              - Fill up the rx fifo by sending data bytes over rx
+              - Reset the rx_fifo randomly after a random number of bytes shows up on rx_fifo, 
 
             Checking:
-              - Ensure that reads to rdata register yield 0s after rx_fifo is reset.'''
+              - Ensure that reads to rdata register yield 0s after rx_fifo is reset
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: fmt_overflow
-      desc: '''Test fmt_overflow interrupt.
+      desc: '''
+            Test fmt_overflow interrupt.
 
             Stimulus:
-              - Keep writing over 32 bytes of data into wdata register.
+              - Keep sending a number of format byte higher than fmt_fifo depth, delay the target response
 
             Checking:
-              - Ensure excess data bytes are dropped and overflow interrupt is asserted.'''
+              - Ensure excess format bytes are dropped
+              - Ensure intr_fmt_overflow interrupt is asserted
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: rx_overflow
-      desc: '''Test rx_overflow interrupt.
+      desc: '''
+            Test rx_overflow interrupt.
 
             Stimulus:
-              - Keep sending over 32 bytes of data over rx.
+              - Request a number of bytes higher than rx_fifo depth, delay rx_fifo reading
 
             Checking:
-              - Ensure excess data bytes are dropped.'''
+              - Ensure excess data bytes are dropped
+              - Ensure intr_rx_overflow interrupt is asserted
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: fmt_rx_fifo_full
-      desc: '''Test fmt_fifo and rx_fifo in full states.
+      desc: '''
+            Test fmt_fifo and rx_fifo in full states.
 
             Stimulus:
-              - Send over 32 bytes of data but stop when fmt/rx fifo is full.
+              - Send enough read requests, not read data out,
+                then stop until both fmt and rx fifo is full
 
             Checking:
-              - Check full states by reading fifo status register.'''
+              - Check fifo full states by reading status register
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: rx_timeout
-      desc: '''Test rx_timeout state.
+      desc: '''
+            Test rx_timeout state.
 
             Stimulus:
-              - Program timeout_ctrl register to randomize the timeout. Send random number of
-                data over rx and read fewer data than sent and let the DUT sit idle or the
-                programmed timeout duration.
+              - Program timeout enable bit into timeout_ctrl register
+              - Program timeout values (higher than host scl clock pulse) into timeout_ctrl register
+              - Configure agent to pull down target(device) scl after the bit 9 (acknowledge bit) is transmitted
 
             Checking:
-              - Ensure timeout interrupt fires.'''
+              - Ensure intr_stretch_timeout interrupt is asserted
+            '''
+      milestone: V2
+      tests: [""]
+    }
+    {
+      name: rx_oversample
+      desc: '''
+            Test rc oversampling.
+
+            Stimulus:
+              - Use input clock to sample the target sda (sample with baud rate equal to 1)
+              - Drive scl_rx using input clock
+
+            Checking:
+              - Read rx data oversampled value and ensure it is same as driven value
+            '''
       milestone: V2
       tests: [""]
     }
     {
       name: rw_loopback
-      desc: '''Test write data, read loopback, then compare.
+      desc: '''
+            Test write data, read loopback, then compare.
 
             Stimulus:
-              - Drive i2c host to write data to the device then read loopback.
+              - Drive i2c host to write data to the device then read loopback
 
             Checking:
-              - After loopback is done, read data should be match with write data.'''
+              - Ensure read data is matched with write data
+            '''
       milestone: V2
       tests: [""]
     }
