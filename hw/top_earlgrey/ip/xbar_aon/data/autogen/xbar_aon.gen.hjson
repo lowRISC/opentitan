@@ -32,6 +32,7 @@
       pinmux_aon
       padctrl_aon
       usbdev_aon
+      rbox_aon
     ]
   }
   nodes:
@@ -91,6 +92,23 @@
       [
         {
           base_addr: 0x40420000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: rbox_aon
+      type: device
+      clock: clk_aon_i
+      reset: rst_aon_ni
+      pipeline: "false"
+      inst_type: rbox
+      addr_range:
+      [
+        {
+          base_addr: 0x40430000
           size_byte: 0x1000
         }
       ]

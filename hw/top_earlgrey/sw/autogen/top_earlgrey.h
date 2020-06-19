@@ -10,7 +10,7 @@
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO 32
-#define NUM_DIO 15
+#define NUM_DIO 29
 
 #define PINMUX_GPIO_GPIO_0_IN 0
 #define PINMUX_GPIO_GPIO_1_IN 1
@@ -263,6 +263,14 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x40420000u
+
+/**
+ * Base address for rbox_aon peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RBOX_AON_BASE_ADDR 0x40430000u
 
 /**
  * Base address for nmi_gen peripheral in top earlgrey.

@@ -16,6 +16,9 @@ tl_device_t xbar_devices[$] = '{
     '{"clkmgr", '{
         '{32'h40420000, 32'h40420fff}
     }},
+    '{"rbox_aon", '{
+        '{32'h40430000, 32'h40430fff}
+    }},
     '{"pinmux_aon", '{
         '{32'h40460000, 32'h40460fff}
     }},
@@ -34,5 +37,6 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr",
         "pinmux_aon",
         "padctrl_aon",
-        "usbdev_aon"}}
+        "usbdev_aon",
+        "rbox_aon"}}
 };

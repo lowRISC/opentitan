@@ -7,13 +7,14 @@
 //
 // Interconnect
 // main
-//   -> s1n_7
+//   -> s1n_8
 //     -> pwrmgr
 //     -> rstmgr
 //     -> clkmgr
 //     -> pinmux_aon
 //     -> padctrl_aon
 //     -> usbdev_aon
+//     -> rbox_aon
 
 module xbar_aon (
   input clk_aon_i,
@@ -30,6 +31,8 @@ module xbar_aon (
   input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
   output tlul_pkg::tl_h2d_t tl_clkmgr_o,
   input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
+  output tlul_pkg::tl_h2d_t tl_rbox_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_rbox_aon_i,
   output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
   input  tlul_pkg::tl_d2h_t tl_pinmux_aon_i,
   output tlul_pkg::tl_h2d_t tl_padctrl_aon_o,
@@ -48,59 +51,65 @@ module xbar_aon (
   logic unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
-  tl_h2d_t tl_s1n_7_us_h2d ;
-  tl_d2h_t tl_s1n_7_us_d2h ;
+  tl_h2d_t tl_s1n_8_us_h2d ;
+  tl_d2h_t tl_s1n_8_us_d2h ;
 
 
-  tl_h2d_t tl_s1n_7_ds_h2d [6];
-  tl_d2h_t tl_s1n_7_ds_d2h [6];
+  tl_h2d_t tl_s1n_8_ds_h2d [7];
+  tl_d2h_t tl_s1n_8_ds_d2h [7];
 
   // Create steering signal
-  logic [2:0] dev_sel_s1n_7;
+  logic [2:0] dev_sel_s1n_8;
 
 
 
-  assign tl_pwrmgr_o = tl_s1n_7_ds_h2d[0];
-  assign tl_s1n_7_ds_d2h[0] = tl_pwrmgr_i;
+  assign tl_pwrmgr_o = tl_s1n_8_ds_h2d[0];
+  assign tl_s1n_8_ds_d2h[0] = tl_pwrmgr_i;
 
-  assign tl_rstmgr_o = tl_s1n_7_ds_h2d[1];
-  assign tl_s1n_7_ds_d2h[1] = tl_rstmgr_i;
+  assign tl_rstmgr_o = tl_s1n_8_ds_h2d[1];
+  assign tl_s1n_8_ds_d2h[1] = tl_rstmgr_i;
 
-  assign tl_clkmgr_o = tl_s1n_7_ds_h2d[2];
-  assign tl_s1n_7_ds_d2h[2] = tl_clkmgr_i;
+  assign tl_clkmgr_o = tl_s1n_8_ds_h2d[2];
+  assign tl_s1n_8_ds_d2h[2] = tl_clkmgr_i;
 
-  assign tl_pinmux_aon_o = tl_s1n_7_ds_h2d[3];
-  assign tl_s1n_7_ds_d2h[3] = tl_pinmux_aon_i;
+  assign tl_pinmux_aon_o = tl_s1n_8_ds_h2d[3];
+  assign tl_s1n_8_ds_d2h[3] = tl_pinmux_aon_i;
 
-  assign tl_padctrl_aon_o = tl_s1n_7_ds_h2d[4];
-  assign tl_s1n_7_ds_d2h[4] = tl_padctrl_aon_i;
+  assign tl_padctrl_aon_o = tl_s1n_8_ds_h2d[4];
+  assign tl_s1n_8_ds_d2h[4] = tl_padctrl_aon_i;
 
-  assign tl_usbdev_aon_o = tl_s1n_7_ds_h2d[5];
-  assign tl_s1n_7_ds_d2h[5] = tl_usbdev_aon_i;
+  assign tl_usbdev_aon_o = tl_s1n_8_ds_h2d[5];
+  assign tl_s1n_8_ds_d2h[5] = tl_usbdev_aon_i;
 
-  assign tl_s1n_7_us_h2d = tl_main_i;
-  assign tl_main_o = tl_s1n_7_us_d2h;
+  assign tl_rbox_aon_o = tl_s1n_8_ds_h2d[6];
+  assign tl_s1n_8_ds_d2h[6] = tl_rbox_aon_i;
+
+  assign tl_s1n_8_us_h2d = tl_main_i;
+  assign tl_main_o = tl_s1n_8_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
-    dev_sel_s1n_7 = 3'd6;
-    if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
-      dev_sel_s1n_7 = 3'd0;
+    dev_sel_s1n_8 = 3'd7;
+    if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
+      dev_sel_s1n_8 = 3'd0;
 
-    end else if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
-      dev_sel_s1n_7 = 3'd1;
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
+      dev_sel_s1n_8 = 3'd1;
 
-    end else if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
-      dev_sel_s1n_7 = 3'd2;
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
+      dev_sel_s1n_8 = 3'd2;
 
-    end else if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
-      dev_sel_s1n_7 = 3'd3;
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
+      dev_sel_s1n_8 = 3'd3;
 
-    end else if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_PADCTRL_AON)) == ADDR_SPACE_PADCTRL_AON) begin
-      dev_sel_s1n_7 = 3'd4;
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PADCTRL_AON)) == ADDR_SPACE_PADCTRL_AON) begin
+      dev_sel_s1n_8 = 3'd4;
 
-    end else if ((tl_s1n_7_us_h2d.a_address & ~(ADDR_MASK_USBDEV_AON)) == ADDR_SPACE_USBDEV_AON) begin
-      dev_sel_s1n_7 = 3'd5;
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_USBDEV_AON)) == ADDR_SPACE_USBDEV_AON) begin
+      dev_sel_s1n_8 = 3'd5;
+
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_RBOX_AON)) == ADDR_SPACE_RBOX_AON) begin
+      dev_sel_s1n_8 = 3'd6;
 end
   end
 
@@ -109,17 +118,17 @@ end
   tlul_socket_1n #(
     .HReqDepth (4'h0),
     .HRspDepth (4'h0),
-    .DReqDepth (24'h0),
-    .DRspDepth (24'h0),
-    .N         (6)
-  ) u_s1n_7 (
+    .DReqDepth (28'h0),
+    .DRspDepth (28'h0),
+    .N         (7)
+  ) u_s1n_8 (
     .clk_i        (clk_aon_i),
     .rst_ni       (rst_aon_ni),
-    .tl_h_i       (tl_s1n_7_us_h2d),
-    .tl_h_o       (tl_s1n_7_us_d2h),
-    .tl_d_o       (tl_s1n_7_ds_h2d),
-    .tl_d_i       (tl_s1n_7_ds_d2h),
-    .dev_select   (dev_sel_s1n_7)
+    .tl_h_i       (tl_s1n_8_us_h2d),
+    .tl_h_o       (tl_s1n_8_us_d2h),
+    .tl_d_o       (tl_s1n_8_ds_h2d),
+    .tl_d_i       (tl_s1n_8_ds_d2h),
+    .dev_select   (dev_sel_s1n_8)
   );
 
 endmodule

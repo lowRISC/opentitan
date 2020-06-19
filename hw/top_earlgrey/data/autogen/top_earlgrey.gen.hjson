@@ -2118,6 +2118,108 @@
       ]
     }
     {
+      name: rbox_aon
+      type: rbox
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por_io
+        sw_rst_ni: por_io
+      }
+      base_addr: 0x40430000
+      clock_connections:
+      {
+        clk_i: clk_io_i
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list:
+      [
+        {
+          name: ac_present
+          width: 1
+          type: input
+        }
+        {
+          name: ec_entering_rw
+          width: 1
+          type: input
+        }
+        {
+          name: key0_in
+          width: 1
+          type: input
+        }
+        {
+          name: key1_in
+          width: 1
+          type: input
+        }
+        {
+          name: key2_in
+          width: 1
+          type: input
+        }
+        {
+          name: pwrb_in
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: bat_en
+          width: 1
+          type: output
+        }
+        {
+          name: ec_in_rw
+          width: 1
+          type: output
+        }
+        {
+          name: ec_rst_l
+          width: 1
+          type: output
+        }
+        {
+          name: flash_wp_l
+          width: 1
+          type: output
+        }
+        {
+          name: key0_out
+          width: 1
+          type: output
+        }
+        {
+          name: key1_out
+          width: 1
+          type: output
+        }
+        {
+          name: key2_out
+          width: 1
+          type: output
+        }
+        {
+          name: pwrb_out
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      scan: "false"
+    }
+    {
       name: nmi_gen
       type: nmi_gen
       clock_srcs:
@@ -3017,6 +3119,10 @@
               size_byte: 0x1000
             }
             {
+              base_addr: 0x40430000
+              size_byte: 0x1000
+            }
+            {
               base_addr: 0x40460000
               size_byte: 0x1000
             }
@@ -3411,6 +3517,7 @@
           pinmux_aon
           padctrl_aon
           usbdev_aon
+          rbox_aon
         ]
       }
       nodes:
@@ -3470,6 +3577,23 @@
           [
             {
               base_addr: 0x40420000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: rbox_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: rbox
+          addr_range:
+          [
+            {
+              base_addr: 0x40430000
               size_byte: 0x1000
             }
           ]
@@ -4906,6 +5030,13 @@
           ChC[0..8]
         ]
       }
+      {
+        name: rbox_aon
+        pad:
+        [
+          ChD[0..13]
+        ]
+      }
     ]
     mio_modules:
     [
@@ -5121,6 +5252,188 @@
           }
         ]
       }
+      {
+        name: rbox_aon_ac_present
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 0
+          }
+        ]
+      }
+      {
+        name: rbox_aon_ec_entering_rw
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 1
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key0_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 2
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key1_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 3
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key2_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 4
+          }
+        ]
+      }
+      {
+        name: rbox_aon_pwrb_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 5
+          }
+        ]
+      }
+      {
+        name: rbox_aon_bat_en
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 6
+          }
+        ]
+      }
+      {
+        name: rbox_aon_ec_in_rw
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 7
+          }
+        ]
+      }
+      {
+        name: rbox_aon_ec_rst_l
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 8
+          }
+        ]
+      }
+      {
+        name: rbox_aon_flash_wp_l
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 9
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key0_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 10
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key1_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 11
+          }
+        ]
+      }
+      {
+        name: rbox_aon_key2_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 12
+          }
+        ]
+      }
+      {
+        name: rbox_aon_pwrb_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+        pad:
+        [
+          {
+            name: ChD
+            index: 13
+          }
+        ]
+      }
     ]
     inputs:
     [
@@ -5241,6 +5554,16 @@
         [
           KEEP
           STRONG
+        ]
+      }
+      {
+        name: ChD
+        type: IO_33V
+        count: 14
+        attr:
+        [
+          KEEP
+          WEAK
         ]
       }
     ]

@@ -32,6 +32,12 @@ module xbar_aon_bind;
     .h2d    (tl_clkmgr_o),
     .d2h    (tl_clkmgr_i)
   );
+  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_rbox_aon (
+    .clk_i  (clk_aon_i),
+    .rst_ni (rst_aon_ni),
+    .h2d    (tl_rbox_aon_o),
+    .d2h    (tl_rbox_aon_i)
+  );
   bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_pinmux_aon (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),

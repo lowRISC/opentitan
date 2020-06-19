@@ -25,6 +25,7 @@ package top_earlgrey_pkg;
   parameter TOP_EARLGREY_PWRMGR_BASE_ADDR = 32'h40400000;
   parameter TOP_EARLGREY_RSTMGR_BASE_ADDR = 32'h40410000;
   parameter TOP_EARLGREY_CLKMGR_BASE_ADDR = 32'h40420000;
+  parameter TOP_EARLGREY_RBOX_AON_BASE_ADDR = 32'h40430000;
   parameter TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h41180000;
   parameter TOP_EARLGREY_USBDEV_AON_BASE_ADDR = 32'h40500000;
   parameter TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400E0000;
@@ -32,22 +33,36 @@ package top_earlgrey_pkg;
 
   // Enumeration for DIO pins.
   typedef enum {
-    TopEarlgreyDioPinUsbdevAonDn = 0,
-    TopEarlgreyDioPinUsbdevAonDp = 1,
-    TopEarlgreyDioPinUsbdevAonD = 2,
-    TopEarlgreyDioPinUsbdevAonSuspend = 3,
-    TopEarlgreyDioPinUsbdevAonTxModeSe = 4,
-    TopEarlgreyDioPinUsbdevAonDnPullup = 5,
-    TopEarlgreyDioPinUsbdevAonDpPullup = 6,
-    TopEarlgreyDioPinUsbdevAonSe0 = 7,
-    TopEarlgreyDioPinUsbdevAonSense = 8,
-    TopEarlgreyDioPinUartTx = 9,
-    TopEarlgreyDioPinUartRx = 10,
-    TopEarlgreyDioPinSpiDeviceMiso = 11,
-    TopEarlgreyDioPinSpiDeviceMosi = 12,
-    TopEarlgreyDioPinSpiDeviceCsb = 13,
-    TopEarlgreyDioPinSpiDeviceSck = 14,
-    TopEarlgreyDioPinCount = 15
+    TopEarlgreyDioPinRboxAonPwrbOut = 0,
+    TopEarlgreyDioPinRboxAonKey2Out = 1,
+    TopEarlgreyDioPinRboxAonKey1Out = 2,
+    TopEarlgreyDioPinRboxAonKey0Out = 3,
+    TopEarlgreyDioPinRboxAonFlashWpL = 4,
+    TopEarlgreyDioPinRboxAonEcRstL = 5,
+    TopEarlgreyDioPinRboxAonEcInRw = 6,
+    TopEarlgreyDioPinRboxAonBatEn = 7,
+    TopEarlgreyDioPinRboxAonPwrbIn = 8,
+    TopEarlgreyDioPinRboxAonKey2In = 9,
+    TopEarlgreyDioPinRboxAonKey1In = 10,
+    TopEarlgreyDioPinRboxAonKey0In = 11,
+    TopEarlgreyDioPinRboxAonEcEnteringRw = 12,
+    TopEarlgreyDioPinRboxAonAcPresent = 13,
+    TopEarlgreyDioPinUsbdevAonDn = 14,
+    TopEarlgreyDioPinUsbdevAonDp = 15,
+    TopEarlgreyDioPinUsbdevAonD = 16,
+    TopEarlgreyDioPinUsbdevAonSuspend = 17,
+    TopEarlgreyDioPinUsbdevAonTxModeSe = 18,
+    TopEarlgreyDioPinUsbdevAonDnPullup = 19,
+    TopEarlgreyDioPinUsbdevAonDpPullup = 20,
+    TopEarlgreyDioPinUsbdevAonSe0 = 21,
+    TopEarlgreyDioPinUsbdevAonSense = 22,
+    TopEarlgreyDioPinUartTx = 23,
+    TopEarlgreyDioPinUartRx = 24,
+    TopEarlgreyDioPinSpiDeviceMiso = 25,
+    TopEarlgreyDioPinSpiDeviceMosi = 26,
+    TopEarlgreyDioPinSpiDeviceCsb = 27,
+    TopEarlgreyDioPinSpiDeviceSck = 28,
+    TopEarlgreyDioPinCount = 29
   } top_earlgrey_dio_pin_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.
