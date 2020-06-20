@@ -76,6 +76,7 @@ package flash_ctrl_pkg;
     flash_part_e          part;
     logic [BusAddrW-1:0]  addr;
     logic [BusWidth-1:0]  prog_data;
+    logic                 prog_last;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -87,7 +88,8 @@ package flash_ctrl_pkg;
     bk_erase:  1'b0,
     part:      DataPart,
     addr:      '0,
-    prog_data: '0
+    prog_data: '0,
+    prog_last: '0
   };
 
   // memory to flash controller

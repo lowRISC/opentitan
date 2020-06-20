@@ -96,6 +96,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic flash_rd_done, flash_prog_done, flash_erase_done;
   logic flash_error;
   logic [BusWidth-1:0] flash_prog_data;
+  logic flash_prog_last;
   logic [BusWidth-1:0] flash_rd_data;
   logic init_busy;
   logic rd_op;
@@ -177,6 +178,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_addr_o   (prog_flash_addr),
     .flash_ovfl_o   (prog_flash_ovfl),
     .flash_data_o   (flash_prog_data),
+    .flash_last_o   (flash_prog_last),
     .flash_done_i   (flash_prog_done),
     .flash_error_i  (flash_error)
   );
@@ -385,6 +387,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.addr = flash_addr;
   assign flash_o.part = flash_part_sel;
   assign flash_o.prog_data = flash_prog_data;
+  assign flash_o.prog_last = flash_prog_last;
   assign flash_rd_data = flash_i.rd_data;
   assign init_busy = flash_i.init_busy;
 

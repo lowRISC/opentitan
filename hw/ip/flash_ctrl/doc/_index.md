@@ -14,7 +14,7 @@ A breakdown of the 3 can be seen below
 ![Flash High Level Boundaries](flash_boundaries.svg)
 
 
-This open source flash controller is further divided into two partitions.
+This open source flash controller is divided into two partitions.
 
 * Flash protocol controller
 * Flash physical controller
@@ -27,66 +27,55 @@ See that document for integration overview within the broader top level system.
 ## Features
 
 ### Flash Protocol Controller Features
+The flash protocol controller interfaces with software and other hardware components in the system (such as life cycle and key manager).
+Regardless of the flash size underneath, the flash controller maintains the same data resolution as the bus and processor (default 4B).
+The flash physical controller (see section below) is then responsible for bridging that gap.
 
-*  Support controller initiated read, program and erase of flash.
+The protocol controller currently supports the following features:
+
+*  Controller initiated read, program and erase of flash.
    *  Erase can be either of a page, or an entire bank.
-*  Parameterized support for number of flash banks (default to 2)
-*  For each flash bank, parameterized support for number of flash pages (default to 256)
-*  For each flash page, parameterized support for number of words and word size (default to 256 words of 4-bytes each)
-*  Parameterized support for burst writes, up to 64B
-   *  Controller currently does not support page boundary checks; it is thus legal for software to burst write across a page boundary
+*  Support for differentiation between informational and data flash partitions.
+*  Parameterized support for burst program, up to 64B
+   *  Longer programs are supported, however the protocol controller will directly back-pressure the bus.
+*  Flash memory protection at page boundaries
 *  Features to be added if required
-   *  Parameterizable data width
    *  Program verification
-      *  may not be required if flash physical controller supports alternative mechanisms of verification.
+      *  may not be required if flash memory supports alternative mechanisms of verification.
    *  Erase verification
-      *  may not be required if flash physical controller supports alternative mechanisms of verification.
-   *  Parity / ECC support on a per flash page granularity
-      *  may not be required depending on flash reliability or overall system security strategy.
+      *  may not be required if flash memory supports alternative mechanisms of verification.
    *  Flash redundant pages
       *  Flash may contain additional pages used to remap broken pages for yield recovery.
-      *  The storage, loading and security of redundant pages may also be implemented in the physical controller.
-   *  Flash information pages
-      *  Flash may contain additional pages outside of the data banks to hold manufacturing information (such as wafer location).
-      *  Extra logic may not be required if flash information pages is treated as just a separate address.
+      *  The storage, loading and security of redundant pages may also be implemented in the physical controller or flash memory.
+
+Features to be implemented
+
+*  Enhanced memory protection
+*  Life cycle feature support
+*  Key manager feature support
 
 ### Flash Physical Controller Features
 
-As the flash physical controller is highly dependent on flash memory selected, the default flash physical controller simply emulates real flash behavior with on-chip memories.
-The goal of the emulated flash is to provide software developers with a reasonable representation of a well-behaving flash operating under nominal conditions.
+The flash physical controller wraps the actual flash memory and translates both host and controller initiated requests into low level flash transactions.
 
-Below are the emulated properties
-*  Flash reset to all 1's
-*  Writing of a word will take 50 (parameterizable) clock cycles
-*  Erasing of a page will take 200 (parameterizable) clock cycles
-*  Erasing of a bank will take 2000 (parameterizable) clock cycles
-*  A bit, once written to 0, cannot be written back to 1 until an erase operation has been performed
-*  Support for simultaneous controller (read / program / erase) and host (read) operations.
-   *  Host operations are always prioritized unless controller operation is already ongoing.
-*  The arbitration resolution is done at the bank level
-   *  If a bank is busy with an operation, a new operation can be issued to a different bank in parallel.
-   *  If a bank is busy with an operation, a new operation issued to the same bank will block until the operation completes.
+The physical controller supports the following features
+*  Multiple banks of flash memory
+*  For each flash bank, parameterized support for number of flash pages (default to 256)
+*  For each flash page, parameterized support for number of words and word size (default to 128 words of 8-bytes each)
+*  Data and informational paritions within each bank of flash memory
+*  Arbitration between host requests and controller requests at the bank level
+   *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration
+   *  Since banks are arbitrated independently, where transactions may take different amounts of times to complete, the physical controller is also responsible for ensuring in-order response to both the controller and host.
+*  Flash read stage
+   *  Each bank maintains a parameterizable number of read buffers in front of the flash memory
+   *  The read buffers behave as miniature read-only-caches to store flash data when flash words are greater than bus words.
+*  Flash program stage
+   *  Flash data work packing when flash word size is an integer multiple of bus word size.
 
+Features to be implemented
 
-The flash physical controller does NOT emulate the following properties
-
-*  Flash lifetime
-   *  Typically flash memory has an upward limit of 100K+ program / erase cycles.
-*  Flash line program disturb
-   *  Typically flash memory has limits on the number of program accesses to a single memory line (2 ~ 16) before erase is required,
-*  Flash power loss corruption
-   *  Typically flash memory has strict requirements how power loss should be handled to prevent flash failure.
-*  Dedicated flash power supplies
-
-Depending on need, it may be necessary to add controller logic to perform the following functions
-*  Flash BIST
-   * Technology dependent mechanism to perform flash self test during manufacuring.
-*  Flash custom controls
-   * There may be additional tuning controls for a specific flash technology.
-*  Power loss handling
-   * Specific power loss handling if power is lost during an erase or program operation.
-*  Additional security lockdown
-   * As the physical controller represents the final connecting logic to the actual flash memory, additional security considerations may be required to ensure backdoor access paths do not exist.
+*  Flash scrambling
+*  Flash ECC
 
 
 # Theory of Operation

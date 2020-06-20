@@ -22,6 +22,7 @@ filesets:
       - rtl/flash_phy.sv
       - rtl/flash_phy_core.sv
       - rtl/flash_phy_rd.sv
+      - rtl/flash_phy_prog.sv
       - rtl/flash_phy_rd_buffers.sv
     file_type: systemVerilogSource
 
