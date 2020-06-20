@@ -102,7 +102,7 @@ module prim_generic_flash #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       held_addr <= '0;
-      held_part <= '0;
+      held_part <= flash_ctrl_pkg::DataPart;
       held_wdata <= '0;
     end else if (hold_cmd) begin
       held_addr <= rd_q ? addr_q : addr_i;
