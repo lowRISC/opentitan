@@ -115,14 +115,14 @@ Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | waived      | Revisit later. Tool setup in progress.
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
 Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
-Tests         | [SIM_SANITY_TEST_PASSING][]           | Not Started |
+Tests         | [SIM_SANITY_TEST_PASSING][]           | Done        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Done        |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        | Xcelium (signoff), VCS (alt)
-Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Done        | Exception (implemented in local)
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        | Exception (implemented in local)
+Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Done        | 
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        | 
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Except for IP module
