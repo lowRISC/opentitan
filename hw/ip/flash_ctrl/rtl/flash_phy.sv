@@ -133,6 +133,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .part_i(flash_ctrl_i.part),
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
+      .prog_last_i(flash_ctrl_i.prog_last),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
       .rd_done_o(rd_done[bank]),

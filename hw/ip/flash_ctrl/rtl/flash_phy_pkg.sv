@@ -73,7 +73,4 @@ package flash_phy_pkg;
     Ctrl         = 2'h2
   } flash_phy_op_sel_e;
 
-
-
-
 endpackage // flash_phy_pkg
