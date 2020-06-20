@@ -29,6 +29,7 @@ module flash_prog_ctrl #(
   output logic [AddrW-1:0] flash_addr_o,
   output logic             flash_ovfl_o,
   output logic [DataW-1:0] flash_data_o,
+  output logic             flash_last_o, // last beat of prog data
   input                    flash_done_i,
   input                    flash_error_i
 );
@@ -104,5 +105,6 @@ module flash_prog_ctrl #(
   assign int_addr = op_addr_i + AddrW'(cnt);
   assign flash_addr_o = int_addr[0 +: AddrW];
   assign flash_ovfl_o = int_addr[AddrW];
+  assign flash_last_o = flash_req_o & cnt_hit;
 
 endmodule // flash_prog_ctrl
