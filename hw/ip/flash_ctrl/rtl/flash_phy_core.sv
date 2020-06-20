@@ -25,6 +25,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input flash_ctrl_pkg::flash_part_e part_i,
   input [BusBankAddrW-1:0]           addr_i,
   input [BusWidth-1:0]               prog_data_i,
+  input                              prog_last_i,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
   output logic                       rd_done_o,
@@ -34,12 +35,14 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       init_busy_o
 );
 
+
   localparam int CntWidth = $clog2(ArbCnt + 1);
 
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     StIdle,
     StHostRead,
     StCtrlRead,
+    StCtrlProg,
     StCtrl
   } arb_state_e;
 
@@ -59,6 +62,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   // ack to phy operations from flash macro
   logic ack;
+
+  // ack from flash_phy_prog to controller
+  logic prog_ack;
 
   // interface with flash macro
   logic [BusBankAddrW-1:0] muxed_addr;
@@ -124,9 +130,17 @@ module flash_phy_core import flash_phy_pkg::*; #(
           clr_arb_cnt = 1'b1;
           reqs[PhyRead] = 1'b1;
           state_d = rd_stage_rdy ? StCtrlRead : state_q;
+        end else if (req_i && prog_i) begin
+          clr_arb_cnt = 1'b1;
+          reqs[PhyProg] = 1'b1;
+
+          // it is possible for a program to immediate complete when the
+          // program packing is not at the end of the flash word
+          state_d = prog_ack ? StIdle : StCtrlProg;
+          ctrl_rsp_vld = prog_ack;
+
         end else if (req_i) begin
           clr_arb_cnt = 1'b1;
-          reqs[PhyProg] = prog_i;
           reqs[PhyPgErase] = pg_erase_i;
           reqs[PhyBkErase] = bk_erase_i;
           state_d = StCtrl;
@@ -159,8 +173,20 @@ module flash_phy_core import flash_phy_pkg::*; #(
         end
       end
 
+      // Controller program data may be packed based on
+      // address alignment
+      StCtrlProg: begin
+        reqs[PhyProg] = 1'b1;
+        if (prog_ack) begin
+          ctrl_rsp_vld = 1'b1;
+          state_d = StIdle;
+        end
+      end
+
       // other controller operations directly interface with flash
       StCtrl: begin
+        reqs[PhyPgErase] = pg_erase_i;
+        reqs[PhyBkErase] = bk_erase_i;
         if (ack) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
@@ -171,7 +197,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       // until reboot
       default:;
     endcase // unique case (state_q)
-  end
+  end // always_comb
 
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_pkg::DataPart : part_i;
@@ -186,7 +212,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic flash_rd_req;
   logic [DataWidth-1:0] flash_rdata;
 
-  flash_phy_rd i_rd (
+  flash_phy_rd u_rd (
     .clk_i,
     .rst_ni,
     .req_i(reqs[PhyRead]),
@@ -210,22 +236,26 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   // Below code is temporary and does not account for scrambling
   logic [DataWidth-1:0] prog_data;
+  logic flash_prog_req;
 
   if (WidthMultiple == 1) begin : gen_single_prog_data
+    assign flash_prog_req = reqs[PhyProg];
     assign prog_data = prog_data_i;
   end else begin : gen_prog_data
-    logic [WidthMultiple-1:0][BusWidth-1:0] prog_data_packed;
 
-    always_comb begin
-      prog_data_packed = {DataWidth{1'b1}};
-      for (int i = 0; i < WidthMultiple; i++) begin
-        if (addr_i[0 +: WordSelW] == i) begin
-          prog_data_packed[i] = prog_data_i;
-        end
-      end
-    end
+    flash_phy_prog u_prog (
+      .clk_i,
+      .rst_ni,
+      .req_i(reqs[PhyProg]),
+      .sel_i(addr_i[0 +: WordSelW]),
+      .data_i(prog_data_i),
+      .last_i(prog_last_i),
+      .ack_i(ack),
+      .req_o(flash_prog_req),
+      .ack_o(prog_ack),
+      .data_o(prog_data)
+    );
 
-    assign prog_data = prog_data_packed;
   end
 
   ////////////////////////
@@ -250,7 +280,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .clk_i,
     .rst_ni,
     .rd_i(flash_rd_req),
-    .prog_i(reqs[PhyProg]),
+    .prog_i(flash_prog_req),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
     .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
@@ -270,5 +300,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
   `ASSERT(OneHotReqs_A, $onehot0(reqs))
   `ASSERT_INIT(NoRemainder_A, AddrBitsRemain == 0)
   `ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
+
+  `ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
+  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> strong(##[0:20] clr_arb_cnt))
 
 endmodule // flash_phy_core

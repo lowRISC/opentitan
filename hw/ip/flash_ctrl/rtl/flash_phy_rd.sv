@@ -12,6 +12,19 @@
 // back pressuring at the response stage.  It is thus assumed it will tell the
 // upstream to stop issuing instructions, however once issued, the upstream will
 // always accept the response.
+//
+// TBD: Add support for descramble stage
+// The allocate and descramble indication received at read stage must be saved.
+// When the read completes, depending on the 'descramble' indication saved, the
+// data is either stored into FIFO (reg + skid) between read and descramble stage,
+// or forwarded directly to the buffers (no de-scramble)
+//
+// If the storage element between read and de-scramble stages are completely fully
+// for some reason, then the read stage cannot start
+//
+// When the read stage begins, the galois multiply portion of the de-scramble should
+// also be kicked off. When the galois multiply stage AND read stage completes, the
+// de-scramble is also kicked off (which is really what the de-scramble stage is doing).
 
 module flash_phy_rd import flash_phy_pkg::*; (
   input clk_i,
