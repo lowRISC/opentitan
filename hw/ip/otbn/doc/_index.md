@@ -1793,6 +1793,7 @@ WDR[d] = wrs1 if flag_is_set else wrs2
 
 **Compare.**
 Subtracts the second WDR value from the first one and updates flags.
+The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
 This instruction is identical to BN.SUB, except that no result register is written.
 
 ```
@@ -1814,6 +1815,25 @@ BN.CMP <wrs1>, <wrs2>, [FG<flag_group>]
       <td>Name of the second source WDR, encoded in the "wrs2" field.</td>
     </tr>
     <tr>
+      <td><code>&lt;shift_type&gt;</code></td>
+      <td>
+        Optional shift type applied to the second source WDR, defaulting to <code>&lt;&lt;</code>, encoded in the <code>shift_type</code> field.
+        It can have the following values:
+        <ul>
+          <li><code>&lt;&lt;</code> if <code>shift_type == 1</code> (logical shift left)</li>
+          <li><code>&gt;&gt;</code> if <code>shift_type == 0</code> (logical shift right)</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><code>&lt;shift_bytes&gt;</code></td>
+      <td>
+        Number of bytes to shift the second source WDR by.
+        Optional, defaulting to 0.
+        Valid values: 0..31
+      </td>
+    </tr>
+    <tr>
       <td><code>&lt;flag_group&gt;</code></td>
       <td>
         Flag group to use.
@@ -1829,13 +1849,17 @@ BN.CMP <wrs1>, <wrs2>, [FG<flag_group>]
 ```python3
 a = UInt(wrs1)
 b = UInt(wrs2)
+
 fg = DecodeFlagGroup(flag_group)
+sb = UInt(shift_bytes)
+st = DecodeShiftType(shift_type)
 ```
 
 #### Operation
 
 ```
-(, flags_out) = AddWithCarry(a, -b, "0")
+b_shifted = ShiftReg(b, st, sb)
+(, flags_out) = AddWithCarry(a, -b_shifted, "0")
 
 FLAGS[flag_group] = flags_out
 ```
@@ -1844,6 +1868,7 @@ FLAGS[flag_group] = flags_out
 
 **Compare with Borrow.**
 Subtracts the second WDR value and the Carry from the first one, and updates the flags.
+The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
 This instruction is identical to BN.SUBB, except that no result register is written.
 
 ```
@@ -1864,6 +1889,25 @@ BN.CMPB <wrs1>, <wrs2>, [FG<flag_group>]
       <td>Name of the second source WDR, encoded in the "wrs2" field.</td>
     </tr>
     <tr>
+      <td><code>&lt;shift_type&gt;</code></td>
+      <td>
+        Optional shift type applied to the second source WDR, defaulting to <code>&lt;&lt;</code>, encoded in the <code>shift_type</code> field.
+        It can have the following values:
+        <ul>
+          <li><code>&lt;&lt;</code> if <code>shift_type == 1</code> (logical shift left)</li>
+          <li><code>&gt;&gt;</code> if <code>shift_type == 0</code> (logical shift right)</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td><code>&lt;shift_bytes&gt;</code></td>
+      <td>
+        Number of bytes to shift the second source WDR by.
+        Optional, defaulting to 0.
+        Valid values: 0..31
+      </td>
+    </tr>
+    <tr>
       <td><code>&lt;flag_group&gt;</code></td>
       <td>
         Flag group to use.
@@ -1879,13 +1923,17 @@ BN.CMPB <wrs1>, <wrs2>, [FG<flag_group>]
 ```python3
 a = UInt(wrs1)
 b = UInt(wrs2)
+
 fg = DecodeFlagGroup(flag_group)
+sb = UInt(shift_bytes)
+st = DecodeShiftType(shift_type)
 ```
 
 #### Operation
 
 ```python3
-(, flags_out) = AddWithCarry(a, -b, ~FLAGS[flag_group].C)
+b_shifted = ShiftReg(b, st, sb)
+(, flags_out) = AddWithCarry(a, -b_shifted, ~FLAGS[flag_group].C)
 
 FLAGS[flag_group] = flags_out
 ```
