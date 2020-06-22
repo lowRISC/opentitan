@@ -105,6 +105,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
   tl_d2h_t  tl_usbdev_d_d2h;
+  tl_h2d_t  tl_otbn_d_h2d;
+  tl_d2h_t  tl_otbn_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -170,9 +172,10 @@ module top_earlgrey #(
   logic        cio_usbdev_dp_en_d2p;
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
+  // otbn
 
 
-  logic [80:0]  intr_vector;
+  logic [82:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -224,6 +227,8 @@ module top_earlgrey #(
   logic intr_usbdev_rx_bitstuff_err;
   logic intr_usbdev_frame;
   logic intr_usbdev_connected;
+  logic intr_otbn_done;
+  logic intr_otbn_err;
 
 
 
@@ -832,8 +837,31 @@ module top_earlgrey #(
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
+  otbn u_otbn (
+      .tl_i (tl_otbn_d_h2d),
+      .tl_o (tl_otbn_d_d2h),
+
+      // Interrupt
+      .intr_done_o (intr_otbn_done),
+      .intr_err_o  (intr_otbn_err),
+
+      // [1]: imem_uncorrectable
+      // [2]: dmem_uncorrectable
+      // [3]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[3:1] ),
+      .alert_rx_i  ( alert_rx[3:1] ),
+
+      // Inter-module signals
+      .idle_o(),
+
+      .clk_i (clkmgr_clocks.clk_main_otbn),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
+      intr_otbn_err,
+      intr_otbn_done,
       intr_pwrmgr_wakeup,
       intr_usbdev_connected,
       intr_usbdev_frame,
@@ -924,6 +952,8 @@ module top_earlgrey #(
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
     .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
+    .tl_otbn_o          (tl_otbn_d_h2d),
+    .tl_otbn_i          (tl_otbn_d_d2h),
 
     .scanmode_i
   );

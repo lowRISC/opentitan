@@ -116,7 +116,7 @@ class IrqEnableSetTest : public IrqTests {
           RV_PLIC_IE01_REG_OFFSET, RV_PLIC_IE01_E63,
       },
       {
-          RV_PLIC_IE02_REG_OFFSET, RV_PLIC_IE02_E80,
+          RV_PLIC_IE02_REG_OFFSET, RV_PLIC_IE02_E82,
       },
   };
 };
@@ -164,7 +164,7 @@ class IrqTriggerTypeSetTest : public IrqTests {
           RV_PLIC_LE1_REG_OFFSET, RV_PLIC_LE1_LE63,
       },
       {
-          RV_PLIC_LE2_REG_OFFSET, RV_PLIC_LE2_LE80,
+          RV_PLIC_LE2_REG_OFFSET, RV_PLIC_LE2_LE82,
       },
   };
 };
@@ -265,7 +265,7 @@ class IrqPendingStatusGetTest : public IrqTests {
           RV_PLIC_IP1_REG_OFFSET, RV_PLIC_IP1_P63,
       },
       {
-          RV_PLIC_IP2_REG_OFFSET, RV_PLIC_IP2_P80,
+          RV_PLIC_IP2_REG_OFFSET, RV_PLIC_IP2_P82,
       },
   };
 };

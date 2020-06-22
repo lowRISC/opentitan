@@ -49,6 +49,7 @@
       padctrl
       alert_handler
       nmi_gen
+      otbn
     ]
     dm_sba:
     [
@@ -64,6 +65,7 @@
       padctrl
       alert_handler
       nmi_gen
+      otbn
     ]
   }
   nodes:
@@ -323,6 +325,23 @@
         {
           base_addr: 0x40140000
           size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline: "true"
+    }
+    {
+      name: otbn
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: otbn
+      addr_range:
+      [
+        {
+          base_addr: 0x50000000
+          size_byte: 0x400000
         }
       ]
       xbar: false
