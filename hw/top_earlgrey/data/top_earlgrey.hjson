@@ -313,6 +313,13 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41130000",
     },
+    { name: "csrng",
+      type: "csrng",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x41150000"
+    }
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -368,7 +375,7 @@
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks'],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks', 'csrng.csrng_cmd'],
 
     // ext is to create port in the top.
     'external': [],

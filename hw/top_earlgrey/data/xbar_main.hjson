@@ -106,6 +106,12 @@
       inst_type: "alert_handler",
       pipeline:  "false"
     },
+    { name:      "csrng",
+      type:      "device",
+      clock:     "clk_main_i",
+      inst_type: "csrng",
+      pipeline:  "false"
+    }
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
     { name:      "nmi_gen",
@@ -118,8 +124,8 @@
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr"],
+    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr", "csrng"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen"],
+    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen", "csrng"],
   },
 }

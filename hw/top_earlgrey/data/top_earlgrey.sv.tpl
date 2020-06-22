@@ -220,6 +220,9 @@ module top_${top["name"]} #(
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
 % endfor
 
+## TODO: Inter-module signal Temporary connection
+  assign csrng_csrng_cmd_req = '0;
+
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
 

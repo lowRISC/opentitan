@@ -31,6 +31,7 @@ filesets:
       - lowrisc:prim:rom_adv
       - lowrisc:ip:rstmgr
       - lowrisc:ip:rbox
+      - lowrisc:ip:csrng
       - lowrisc:prim:flash
       - lowrisc:ip:flash_ctrl:0.1
       - lowrisc:constants:top_pkg
