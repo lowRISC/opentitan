@@ -95,12 +95,16 @@ module clkmgr_reg_top (
   logic clk_hints_clk_main_entropy_src_hint_qs;
   logic clk_hints_clk_main_entropy_src_hint_wd;
   logic clk_hints_clk_main_entropy_src_hint_we;
+  logic clk_hints_clk_main_otbn_hint_qs;
+  logic clk_hints_clk_main_otbn_hint_wd;
+  logic clk_hints_clk_main_otbn_hint_we;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
   logic clk_hints_status_clk_main_kmac_val_qs;
   logic clk_hints_status_clk_main_keymgr_val_qs;
   logic clk_hints_status_clk_main_csrng_val_qs;
   logic clk_hints_status_clk_main_entropy_src_val_qs;
+  logic clk_hints_status_clk_main_otbn_val_qs;
 
   // Register instances
   // R[clk_enables]: V(False)
@@ -315,6 +319,32 @@ module clkmgr_reg_top (
   );
 
 
+  //   F[clk_main_otbn_hint]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_clk_hints_clk_main_otbn_hint (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_hints_clk_main_otbn_hint_we),
+    .wd     (clk_hints_clk_main_otbn_hint_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_hints.clk_main_otbn_hint.q ),
+
+    // to register interface (read)
+    .qs     (clk_hints_clk_main_otbn_hint_qs)
+  );
+
+
   // R[clk_hints_status]: V(False)
 
   //   F[clk_main_aes_val]: 0:0
@@ -467,6 +497,31 @@ module clkmgr_reg_top (
   );
 
 
+  //   F[clk_main_otbn_val]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_clk_hints_status_clk_main_otbn_val (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.clk_hints_status.clk_main_otbn_val.de),
+    .d      (hw2reg.clk_hints_status.clk_main_otbn_val.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (clk_hints_status_clk_main_otbn_val_qs)
+  );
+
+
 
 
   logic [2:0] addr_hit;
@@ -511,6 +566,10 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_entropy_src_hint_we = addr_hit[1] & reg_we & ~wr_err;
   assign clk_hints_clk_main_entropy_src_hint_wd = reg_wdata[5];
 
+  assign clk_hints_clk_main_otbn_hint_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[6];
+
+
 
 
 
@@ -533,6 +592,7 @@ module clkmgr_reg_top (
         reg_rdata_next[3] = clk_hints_clk_main_keymgr_hint_qs;
         reg_rdata_next[4] = clk_hints_clk_main_csrng_hint_qs;
         reg_rdata_next[5] = clk_hints_clk_main_entropy_src_hint_qs;
+        reg_rdata_next[6] = clk_hints_clk_main_otbn_hint_qs;
       end
 
       addr_hit[2]: begin
@@ -542,6 +602,7 @@ module clkmgr_reg_top (
         reg_rdata_next[3] = clk_hints_status_clk_main_keymgr_val_qs;
         reg_rdata_next[4] = clk_hints_status_clk_main_csrng_val_qs;
         reg_rdata_next[5] = clk_hints_status_clk_main_entropy_src_val_qs;
+        reg_rdata_next[6] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
       default: begin

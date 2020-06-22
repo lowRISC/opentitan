@@ -132,12 +132,18 @@
       inst_type: "nmi_gen",
       pipeline:  "false"
     }
+    { name:      "otbn",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
   ],
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr", "csrng", "entropy_src"],
+    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr", "csrng", "entropy_src", "otbn"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "csrng", "entropy_src"],
+    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "csrng", "entropy_src", "otbn"],
   },
 }

@@ -27,6 +27,7 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
+      - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:rom_adv
       - lowrisc:ip:rstmgr

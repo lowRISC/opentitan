@@ -35,6 +35,7 @@ package top_earlgrey_pkg;
   parameter TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41130000;
   parameter TOP_EARLGREY_CSRNG_BASE_ADDR = 32'h41150000;
   parameter TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR = 32'h41160000;
+  parameter TOP_EARLGREY_OTBN_BASE_ADDR = 32'h50000000;
 
   // Enumeration for DIO pins.
   typedef enum {

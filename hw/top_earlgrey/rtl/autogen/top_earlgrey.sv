@@ -147,6 +147,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_csrng_d_d2h;
   tl_h2d_t  tl_entropy_src_d_h2d;
   tl_d2h_t  tl_entropy_src_d_d2h;
+  tl_h2d_t  tl_otbn_d_h2d;
+  tl_d2h_t  tl_otbn_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -287,9 +289,10 @@ module top_earlgrey #(
   // keymgr
   // csrng
   // entropy_src
+  // otbn
 
 
-  logic [137:0]  intr_vector;
+  logic [139:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -406,6 +409,8 @@ module top_earlgrey #(
   logic intr_entropy_src_es_rct_failed;
   logic intr_entropy_src_es_apt_failed;
   logic intr_entropy_src_es_fifo_err;
+  logic intr_otbn_done;
+  logic intr_otbn_err;
 
 
 
@@ -1426,8 +1431,31 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
 
+  otbn u_otbn (
+      .tl_i (tl_otbn_d_h2d),
+      .tl_o (tl_otbn_d_d2h),
+
+      // Interrupt
+      .intr_done_o (intr_otbn_done),
+      .intr_err_o  (intr_otbn_err),
+
+      // [6]: imem_uncorrectable
+      // [7]: dmem_uncorrectable
+      // [8]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[8:6] ),
+      .alert_rx_i  ( alert_rx[8:6] ),
+
+      // Inter-module signals
+      .idle_o(),
+
+      .clk_i (clkmgr_aon_clocks.clk_main_otbn),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
+      intr_otbn_err,
+      intr_otbn_done,
       intr_i2c2_sda_unstable,
       intr_i2c2_stretch_timeout,
       intr_i2c2_sda_interference,
@@ -1581,6 +1609,8 @@ module top_earlgrey #(
     .tl_entropy_src_i   (tl_entropy_src_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
     .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
+    .tl_otbn_o          (tl_otbn_d_h2d),
+    .tl_otbn_i          (tl_otbn_d_d2h),
 
     .scanmode_i
   );

@@ -35,3 +35,4 @@ xbar_main dut(
 `CONNECT_TL_DEVICE_IF(csrng)
 `CONNECT_TL_DEVICE_IF(entropy_src)
 `CONNECT_TL_DEVICE_IF(nmi_gen)
+`CONNECT_TL_DEVICE_IF(otbn)

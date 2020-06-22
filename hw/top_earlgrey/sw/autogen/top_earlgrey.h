@@ -344,6 +344,14 @@
  */
 #define TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR 0x41160000u
 
+/**
+ * Base address for otbn peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTBN_BASE_ADDR 0x50000000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.
@@ -371,7 +379,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralI2c0 = 16, /**< i2c0 */
   kTopEarlgreyPlicPeripheralI2c1 = 17, /**< i2c1 */
   kTopEarlgreyPlicPeripheralI2c2 = 18, /**< i2c2 */
-  kTopEarlgreyPlicPeripheralLast = 18, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralOtbn = 19, /**< otbn */
+  kTopEarlgreyPlicPeripheralLast = 19, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -519,7 +528,9 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2SdaInterference = 135, /**< i2c2_sda_interference */
   kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 136, /**< i2c2_stretch_timeout */
   kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 137, /**< i2c2_sda_unstable */
-  kTopEarlgreyPlicIrqIdLast = 137, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdOtbnDone = 138, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdOtbnErr = 139, /**< otbn_err */
+  kTopEarlgreyPlicIrqIdLast = 139, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -529,7 +540,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[138];
+    top_earlgrey_plic_interrupt_for_peripheral[140];
 
 /**
  * PLIC external interrupt target.

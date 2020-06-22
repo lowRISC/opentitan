@@ -26,6 +26,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_CSRNG         = 32'h 41150000;
   localparam logic [31:0] ADDR_SPACE_ENTROPY_SRC   = 32'h 41160000;
   localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 41180000;
+  localparam logic [31:0] ADDR_SPACE_OTBN          = 32'h 50000000;
 
   localparam logic [31:0] ADDR_MASK_ROM           = 32'h 00003fff;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
@@ -47,9 +48,10 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_CSRNG         = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ENTROPY_SRC   = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_NMI_GEN       = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_OTBN          = 32'h 003fffff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 16;
+  localparam int N_DEVICE = 17;
 
   typedef enum int {
     TlRom = 0,
@@ -67,7 +69,8 @@ package tl_main_pkg;
     TlAlertHandler = 12,
     TlCsrng = 13,
     TlEntropySrc = 14,
-    TlNmiGen = 15
+    TlNmiGen = 15,
+    TlOtbn = 16
   } tl_device_e;
 
   typedef enum int {

@@ -348,6 +348,13 @@
       reset_connections: {rst_ni: "sys"}
       base_addr: "0x41160000"
     }
+    { name: "otbn",
+      type: "otbn",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x50000000"
+    }
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -460,7 +467,8 @@
                      "hmac", "kmac", "alert_handler", "nmi_gen", "usbdev_aon",
                      "pwrmgr_aon", "otp_ctrl",
                      "uart1", "uart2", "uart3",
-                     "i2c0", "i2c1", "i2c2"]
+                     "i2c0", "i2c1", "i2c2",
+                     "otbn",]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -473,7 +481,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac", "kmac", "sensor_ctrl", "otp_ctrl"]
+  alert_module: [ "hmac", "kmac", "sensor_ctrl", "otp_ctrl", "otbn"]
 
   // generated list of alerts:
   alert: [

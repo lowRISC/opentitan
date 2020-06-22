@@ -52,6 +52,7 @@
       keymgr
       csrng
       entropy_src
+      otbn
     ]
     dm_sba:
     [
@@ -69,6 +70,7 @@
       nmi_gen
       csrng
       entropy_src
+      otbn
     ]
   }
   nodes:
@@ -368,6 +370,23 @@
       ]
       xbar: false
       pipeline_byp: "true"
+    }
+    {
+      name: otbn
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: otbn
+      addr_range:
+      [
+        {
+          base_addr: 0x50000000
+          size_byte: 0x400000
+        }
+      ]
+      xbar: false
+      pipeline: "true"
     }
   ]
   clock: clk_main_i
