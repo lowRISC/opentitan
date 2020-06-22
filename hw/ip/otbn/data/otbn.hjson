@@ -107,9 +107,9 @@
     } // register : start_addr
 
 
-    // Expansion space for further control/status registers, and to force
-    // alignment of IMEM.
-    { skipto: "0x1000" }
+    // Give IMEM and DMEM 1 MB address space, each, to allow for easy expansion
+    // of the actual IMEM and DMEM sizes without changing the address map.
+    { skipto: "0x100000" }
 
     { window: {
         name: "IMEM"
@@ -125,8 +125,7 @@
       }
     }
 
-    // Expansion space for a total of up to 16 kB of instruction memory (IMEM)
-    { skipto: "0x5000" }
+    { skipto: "0x200000" }
 
     { window: {
         name: "DMEM"
