@@ -350,3 +350,30 @@ def htmc_color_pc_cells(text):
         for item in subst_list:
             text = text.replace(item, subst_list[item])
     return text
+
+
+def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
+    '''This function prints a list of messages to Markdown.
+
+    The argument msg_list_title contains a string for the list title, whereas
+    the msg_list argument contains the actual list of message strings.
+    max_msg_count limits the number of messages to be printed (set to negative
+    number to print all messages).
+
+    Example:
+
+    print_msg_list("### Tool Warnings", ["Message A", "Message B"], 10)
+    '''
+    md_results = ""
+    if msg_list:
+        md_results += msg_list_title
+        md_results += "```\n"
+        for k, msg in enumerate(msg_list):
+            if k <= max_msg_count or max_msg_count < 0:
+                md_results += msg + "\n\n"
+            else:
+                md_results += "Note: %d more messages have been suppressed (max_msg_count = %d) \n\n" % (
+                    len(msg_list) - max_msg_count, max_msg_count)
+                break
+        md_results += "```\n"
+    return md_results

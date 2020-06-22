@@ -13,7 +13,7 @@ import sys
 import hjson
 
 from Deploy import Deploy
-from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
+from utils import VERBOSE, md_results_to_html, parse_hjson, print_msg_list, subst_wildcards
 
 
 # Interface class for extensions.

@@ -12,20 +12,7 @@ from pathlib import Path
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import subst_wildcards
-
-
-# helper function for printing messages
-def _print_msg_list(msg_list_name, msg_list):
-    md_results = ""
-    if msg_list:
-        md_results += "### %s\n" % msg_list_name
-        md_results += "```\n"
-        for msg in msg_list:
-            md_results += msg + "\n\n"
-        md_results += "```\n"
-    return md_results
-
+from utils import print_msg_list, subst_wildcards
 
 class LintCfg(OneShotCfg):
     """Derivative class for linting purposes.
@@ -185,22 +172,22 @@ class LintCfg(OneShotCfg):
             self.result_summary["lint_errors"] += self.result["lint_errors"]
 
             # Append detailed messages if they exist
-            if sum([
-                    len(self.result["warnings"]),
-                    len(self.result["errors"]),
-                    len(self.result["lint_warnings"]),
-                    len(self.result["lint_errors"])
-            ]):
-                fail_msgs += "\n## Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
-                fail_msgs += _print_msg_list("Tool Errors",
-                                             self.result["errors"])
-                fail_msgs += _print_msg_list("Tool Warnings",
-                                             self.result["warnings"])
-                fail_msgs += _print_msg_list("Lint Errors",
-                                             self.result["lint_errors"])
-                fail_msgs += _print_msg_list("Lint Warnings",
-                                             self.result["lint_warnings"])
-                # fail_msgs += _print_msg_list("Lint Infos", results["lint_infos"])
+            hdr_key_pairs = [("Tool Warnings", "warnings"),
+                             ("Tool Errors", "errors"),
+                             ("Lint Warnings", "lint_warnings"),
+                             ("Lint Errors", "lint_errors")]
+
+            has_msg = False
+            for _, key in hdr_key_pairs:
+                if key in self.result:
+                    has_msg = True
+                    break
+
+            if has_msg:
+                results_str += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
+                for hdr, key in hdr_key_pairs:
+                    msgs = self.result.get(key)
+                    results_str += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
         if len(table) > 1:
             self.results_md = results_str + tabulate(
