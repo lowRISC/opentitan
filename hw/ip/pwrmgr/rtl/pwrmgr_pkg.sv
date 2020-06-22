@@ -8,15 +8,15 @@
 package pwrmgr_pkg;
 
   // global constant
-  parameter ALWAYS_ON_DOMAIN = 0;
+  parameter int ALWAYS_ON_DOMAIN = 0;
 
   // variables referenced by other modules / packages
-  parameter HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
-  parameter PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
+  parameter int HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
+  parameter int PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
 
   // variables referenced only by pwrmgr
   // pwrmgr_reg_pkg::NumWkups; // should this be coming from top_pkg instead?
-  localparam TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
+  localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
   // pwrmgr to ast
   typedef struct packed {
@@ -140,12 +140,9 @@ package pwrmgr_pkg;
     core_sleeping: 1'b0
   };
 
-  logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
-  logic [HwRstReqs-1:0] rstreqs;
-
   // default value (for dangling ports)
-  parameter WAKEUPS_DEFAULT = '0;
-  parameter RSTREQS_DEFAULT = '0;
+  parameter int WAKEUPS_DEFAULT = '0;
+  parameter int RSTREQS_DEFAULT = '0;
 
   // peripherals to pwrmgr
   typedef struct packed {
