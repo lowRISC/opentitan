@@ -22,8 +22,8 @@ RTL           | [MEM_INSTANCED_80][]  | N/A         |
 RTL           | [FUNC_IMPLEMENTED][]  | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
 Code Quality  | [LINT_SETUP][]        | Done        |
-Review        | Reviewer(s)           | Not Started | 
-Review        | Signoff date          | Not Started | 
+Review        | Reviewer(s)           | Done        | Review done for I2C host functionality; @msfschaffner, @weicaiyang, @tunghoang290780, @igk8
+Review        | Signoff date          | Done        | 2020-06-18
 
 
 [SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec-complete" >}}
@@ -45,8 +45,8 @@ Documentation | [BLOCK_DIAGRAM][]       | Not Started |
 Documentation | [DOC_INTERFACE][]       | Not Started |
 Documentation | [MISSING_FUNC][]        | Not Started |
 Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_SANITY_CHECK][]   | Not Started | 
+RTL           | [FEATURE_COMPLETE][]    | Not Started | Consider to add loopback test
+RTL           | [AREA_SANITY_CHECK][]   | Not Started | Think about FIFO size, there will be multiple I2C in top_earlgrey
 RTL           | [PORT_FROZEN][]         | Not Started |
 RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
 RTL           | [REVIEW_TODO][]         | Not Started |
@@ -130,8 +130,8 @@ Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
-Review        | Reviewer(s)                           | Not Started | 
-Review        | Signoff date                          | Not Started | 
+Review        | Reviewer(s)                           | Done        | Review done for I2C host functionality; @msfschaffner, @weicaiyang, @tunghoang290780, @igk8
+Review        | Signoff date                          | Done        | 2020-06-18
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan-completed" >}}
