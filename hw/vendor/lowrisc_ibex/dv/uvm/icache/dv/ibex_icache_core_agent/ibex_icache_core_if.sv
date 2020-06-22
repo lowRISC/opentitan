@@ -95,9 +95,28 @@ interface ibex_icache_core_if (input clk, input rst_n);
     driver_cb.invalidate <= 1'b0;
   endtask
 
-  // A task that waits for num_clks posedges on the clk signal
-  task automatic wait_clks(int num_clks);
-    repeat (num_clks) @(driver_cb);
+  // A task that waits for num_clks posedges on the clk signal. Returns early on reset if
+  // stop_on_reset is true.
+  task automatic wait_clks(int num_clks, bit stop_on_reset = 1'b1);
+    if (stop_on_reset && !rst_n) return;
+    if (stop_on_reset) begin
+      fork
+        repeat (num_clks) @(driver_cb);
+        @(negedge rst_n);
+      join_any
+      disable fork;
+    end else begin
+      repeat (num_clks) @(driver_cb);
+    end
+  endtask
+
+  // Wait until the valid signal goes high. Returns early on reset
+  task automatic wait_valid();
+    fork
+      @(negedge rst_n);
+      wait (driver_cb.valid);
+    join_any
+    disable fork;
   endtask
 
   // Reset all the signals from the core to the cache (the other direction is controlled by the
@@ -122,11 +141,9 @@ interface ibex_icache_core_if (input clk, input rst_n);
   // back to a covergroup.
   sequence cancelled_valid;
     @(posedge clk)
-      $rose(valid)
+      (valid & ~ready)
       ##1
-      (valid & ~ready) [*0:$]
-      ##1
-      (branch, cover_cancelled_valid());
+      (~valid, cover_cancelled_valid());
   endsequence : cancelled_valid
   cover property (cancelled_valid);
 

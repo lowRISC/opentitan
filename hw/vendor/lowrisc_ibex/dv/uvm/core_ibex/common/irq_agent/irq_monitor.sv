@@ -23,10 +23,10 @@ class irq_monitor extends uvm_monitor;
 
   virtual task run_phase(uvm_phase phase);
     forever begin
-      wait(vif.reset === 1'b0);
+      wait (vif.monitor_cb.reset === 1'b0);
       fork : monitor_irq
         collect_irq();
-        wait(vif.reset === 1'b1);
+        wait (vif.monitor_cb.reset === 1'b1);
       join_any
       // Will only reach here on mid-test reset
       disable monitor_irq;
@@ -46,19 +46,26 @@ class irq_monitor extends uvm_monitor;
     bit[DATA_WIDTH-1:0] stored_irq_val = '0;
     bit[DATA_WIDTH-1:0] current_irq = '0;
     forever begin
-      current_irq = {vif.irq_nm, vif.irq_fast, 4'b0, vif.irq_external, 3'b0,
-                     vif.irq_timer, 3'b0, vif.irq_software, 3'b0};
+      current_irq = {vif.monitor_cb.irq_nm,
+                     vif.monitor_cb.irq_fast,
+                     4'b0,
+                     vif.monitor_cb.irq_external,
+                     3'b0,
+                     vif.monitor_cb.irq_timer,
+                     3'b0,
+                     vif.monitor_cb.irq_software,
+                     3'b0};
       if (current_irq !== stored_irq_val) begin
         stored_irq_val = current_irq;
         irq = irq_seq_item::type_id::create("irq");
-        irq.irq_software = vif.irq_software;
-        irq.irq_timer = vif.irq_timer;
-        irq.irq_external = vif.irq_external;
-        irq.irq_fast = vif.irq_fast;
-        irq.irq_nm = vif.irq_nm;
+        irq.irq_software = vif.monitor_cb.irq_software;
+        irq.irq_timer = vif.monitor_cb.irq_timer;
+        irq.irq_external = vif.monitor_cb.irq_external;
+        irq.irq_fast = vif.monitor_cb.irq_fast;
+        irq.irq_nm = vif.monitor_cb.irq_nm;
         irq_port.write(irq);
       end
-      @(posedge vif.clock);
+      vif.wait_clks(1);
     end
   endtask : collect_irq
 

@@ -3,11 +3,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Source/Destination register instruction index
-`define REG_S1 19:15
-`define REG_S2 24:20
-`define REG_S3 31:27
-`define REG_D  11:07
 
 /**
  * Instruction decoder
@@ -111,6 +106,11 @@ module ibex_decoder #(
 
   logic [31:0] instr;
   logic [31:0] instr_alu;
+  // Source/Destination register instruction index
+  logic [4:0] instr_rs1;
+  logic [4:0] instr_rs2;
+  logic [4:0] instr_rs3;
+  logic [4:0] instr_rd;
 
   logic        use_rs3;
 
@@ -137,14 +137,18 @@ module ibex_decoder #(
   assign imm_j_type_o = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
 
   // immediate for CSR manipulation (zero extended)
-  assign zimm_rs1_type_o = { 27'b0, instr[`REG_S1] }; // rs1
+  assign zimm_rs1_type_o = { 27'b0, instr_rs1 }; // rs1
 
   // source registers
-  assign rf_raddr_a_o = use_rs3 ? instr[`REG_S3] : instr[`REG_S1]; // rs3 / rs1
-  assign rf_raddr_b_o = instr[`REG_S2]; // rs2
+  assign instr_rs1 = instr[19:15];
+  assign instr_rs2 = instr[24:20];
+  assign instr_rs3 = instr[31:27];
+  assign rf_raddr_a_o = use_rs3 ? instr_rs3 : instr_rs1; // rs3 / rs1
+  assign rf_raddr_b_o = instr_rs2; // rs2
 
   // destination register
-  assign rf_waddr_o   = instr[`REG_D]; // rd
+  assign instr_rd = instr[11:7];
+  assign rf_waddr_o   = instr_rd; // rd
 
   ////////////////////
   // Register check //
@@ -166,7 +170,7 @@ module ibex_decoder #(
     // CSRRSI/CSRRCI must not write 0 to CSRs (uimm[4:0]=='0)
     // CSRRS/CSRRC must not write from x0 to CSRs (rs1=='0)
     if ((csr_op == CSR_OP_SET || csr_op == CSR_OP_CLEAR) &&
-        instr[`REG_S1] == '0) begin
+        instr_rs1 == '0) begin
       csr_op_o = CSR_OP_READ;
     end
   end
@@ -555,7 +559,7 @@ module ibex_decoder #(
           endcase
 
           // rs1 and rd must be 0
-          if (instr[`REG_S1] != 5'b0 || instr[`REG_D] != 5'b0) begin
+          if (instr_rs1 != 5'b0 || instr_rd != 5'b0) begin
             illegal_insn = 1'b1;
           end
         end else begin

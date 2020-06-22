@@ -52,6 +52,25 @@
     wave_opts: >
       -ucli -do <cwd>/vcs.tcl
 
+- tool: questa
+  compile:
+    cmd:
+      - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
+      - "vlog -64
+              -access=rwc
+              -f ibex_dv.f
+              -sv
+              -mfcu -cuname design_cuname
+              +define+UVM_REGEX_NO_DPI
+              +define+UVM
+              -writetoplevels <out>/top.list
+              -l <out>/compile.log <cmp_opts>"
+  sim:
+    cmd: >
+      vsim -64 -c <cov_opts> -do "run -a; quit -f" +designfile -f <out>/top.list <sim_opts>  -sv_seed <seed> +access +r+w +UVM_TESTNAME=<rtl_test> +bin=<binary> +ibex_tracer_file_base="<sim_dir>/trace_core" -l <sim_dir>/sim.log
+    cov_opts: >
+      -do "coverage save -onexit <out>/cov.ucdb;"
+
 - tool: dsim
   env_var: DSIM,DSIM_LIB_PATH
   compile:

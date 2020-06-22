@@ -44,8 +44,8 @@ module ibex_counter #(
 
 `ifdef FPGA_XILINX
   // Set DSP pragma for supported xilinx FPGAs
-  localparam dsp_pragma = CounterWidth < 49  ? "yes" : "no";
-  (* use_dsp = dsp_pragma *) logic [CounterWidth-1:0] counter_q;
+  localparam int DspPragma = CounterWidth < 49  ? "yes" : "no";
+  (* use_dsp = DspPragma *) logic [CounterWidth-1:0] counter_q;
 
   // DSP output register requires synchronous reset.
   `define COUNTER_FLOP_RST posedge clk_i

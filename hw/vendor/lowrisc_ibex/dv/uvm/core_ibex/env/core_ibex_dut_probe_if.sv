@@ -16,6 +16,20 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                 debug_req;
   ibex_pkg::priv_lvl_e  priv_mode;
 
+  clocking dut_cb @(posedge clk);
+    output fetch_enable;
+    output debug_req;
+    input reset;
+    input illegal_instr;
+    input ecall;
+    input wfi;
+    input ebreak;
+    input dret;
+    input mret;
+    input core_sleep;
+    input priv_mode;
+  endclocking
+
   initial begin
     debug_req = 1'b0;
   end

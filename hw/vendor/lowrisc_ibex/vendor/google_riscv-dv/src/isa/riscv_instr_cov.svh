@@ -260,10 +260,6 @@
                               gpr_hazard.name(), lsu_hazard.name()), UVM_FULL)
   endfunction
 
-  virtual function void sample_cov();
-    pre_sample();
-  endfunction
-
   virtual function void update_src_regs(string operands[$]);
     privileged_reg_t preg;
     case(format)

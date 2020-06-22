@@ -65,6 +65,21 @@ def gen_riviera_makefrag():
             'SIM_OPTS += {1}').format(riviera_compile_opts, riviera_sim_opts)
 
 
+def gen_questa_makefrag():
+    questa_compile_opts = run_ibex_config('questa_compile_opts', [
+        '--ins_hier_path', 'core_ibex_tb_top',
+        '--string_define_prefix', 'IBEX_CFG_'
+    ])
+
+    questa_sim_opts = run_ibex_config('questa_sim_opts', [
+        '--ins_hier_path', 'core_ibex_tb_top',
+        '--string_define_prefix', 'IBEX_CFG_'
+    ])
+
+    return ('COMPILE_OPTS += {0}'
+            'SIM_OPTS += {1}').format(questa_compile_opts, questa_sim_opts)
+
+
 def gen_xlm_makefrag():
     xlm_compile_opts = run_ibex_config('xlm_opts', [
         '--ins_hier_path', 'core_ibex_tb_top',
@@ -79,7 +94,12 @@ def main():
         'Generates a makefile fragment for use with the Ibex DV makefile that '
         'sets up sim specific variables'))
 
-    sim_fns = {'vcs': gen_vcs_makefrag, 'riviera': gen_riviera_makefrag, 'xlm': gen_xlm_makefrag}
+    sim_fns = {
+        'vcs': gen_vcs_makefrag,
+        'riviera': gen_riviera_makefrag,
+        'xlm': gen_xlm_makefrag,
+        'questa': gen_questa_makefrag
+        }
 
     argparser.add_argument('sim',
                            help='Name of the simulator',

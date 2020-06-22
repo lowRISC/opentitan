@@ -30,7 +30,15 @@ class ibex_icache_mem_driver
   endfunction
 
   virtual task reset_signals();
+    ibex_icache_mem_resp_item resp;
+    bit [32:0]                req;
+
     cfg.vif.reset();
+
+    // Flush mailboxes of pending requests and responses
+    while (req_queue.try_get(req)) ;
+    while (rdata_queue.try_get(resp)) ;
+
   endtask
 
   virtual task get_and_drive();
@@ -40,6 +48,7 @@ class ibex_icache_mem_driver
       take_requests();
       drive_pmp();
       drive_responses();
+      drive_resets();
     join
   endtask
 
@@ -93,7 +102,11 @@ class ibex_icache_mem_driver
 
     forever begin
       rdata_queue.get(item);
+      if (!cfg.vif.rst_n) continue;
+
       cfg.vif.wait_clks(item.delay);
+      if (!cfg.vif.rst_n) continue;
+
       cfg.vif.send_response(item.err, item.rdata);
     end
   endtask
@@ -117,6 +130,8 @@ class ibex_icache_mem_driver
       req_queue.get(data);
       {err, address} = data;
 
+      if (!cfg.vif.rst_n) continue;
+
       // If err is false, this is a request which shouldn't trigger a PMP error.
       if (!err) continue;
 
@@ -131,13 +146,18 @@ class ibex_icache_mem_driver
         req_queue.peek(data);
         begin
           cfg.vif.pmp_err <= 1'b1;
-          // Wait for an address change or req to de-assert
-          @(negedge cfg.vif.req or cfg.vif.addr);
+          // Wait for a reset, an address change or req to de-assert
+          @(negedge cfg.vif.rst_n or negedge cfg.vif.req or cfg.vif.addr);
         end
       join_any
       disable fork;
       cfg.vif.pmp_err <= 1'b0;
     end
+  endtask
+
+  // Watch for resets and call reset_signals as needed
+  task automatic drive_resets();
+    forever @(negedge cfg.vif.rst_n) reset_signals();
   endtask
 
 endclass

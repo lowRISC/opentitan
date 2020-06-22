@@ -1,5 +1,6 @@
 /*
  * Copyright 2018 Google LLC
+ * Copyright 2020 Andes Technology Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,9 +90,8 @@ package riscv_instr_pkg;
     RV64C,
     RV128I,
     RV128C,
-    RV32V,
+    RVV,
     RV32B,
-    RV64V,
     RV64B,
     RV32X,
     RV64X
@@ -474,12 +474,10 @@ package riscv_instr_pkg;
     VWMACC,
     VWMACCSU,
     VWMACCUS,
-    /*
-    VQMACCU,
-    VQMACC,
-    VQMACCSU,
-    VQMACCUS,
-    */
+    //VQMACCU,
+    //VQMACC,
+    //VQMACCSU,
+    //VQMACCUS,
     VMERGE,
     VMV,
     VSADDU,
@@ -494,6 +492,7 @@ package riscv_instr_pkg;
     VSSRA,
     VNCLIPU,
     VNCLIP,
+    // 14. Vector Floating-Point Instructions
     VFADD,
     VFSUB,
     VFRSUB,
@@ -543,7 +542,7 @@ package riscv_instr_pkg;
     VFNCVT_F_X_W,
     VFNCVT_F_F_W,
     VFNCVT_ROD_F_F_W,
-    // Vector reduction instruction
+    // 15. Vector reduction instruction
     VREDSUM_VS,
     VREDMAXU_VS,
     VREDMAX_VS,
@@ -590,6 +589,51 @@ package riscv_instr_pkg;
     VMV2R_V,
     VMV4R_V,
     VMV8R_V,
+    // Vector load/store instruction
+    VLE_V,
+    VSE_V,
+    VLB_V,
+    VSB_V,
+    VLH_V,
+    VSH_V,
+    VLW_V,
+    VSW_V,
+    VLBU_V,
+    VLHU_V,
+    VLWU_V,
+    VLSB_V,
+    VLSH_V,
+    VLSW_V,
+    VLSBU_V,
+    VLSHU_V,
+    VLSWU_V,
+    VLSE_V,
+    VSSB_V,
+    VSSH_V,
+    VSSW_V,
+    VSSE_V,
+    VLXB_V,
+    VLXH_V,
+    VLXW_V,
+    VLXBU_V,
+    VLXHU_V,
+    VLXWU_V,
+    VLXE_V,
+    VSXB_V,
+    VSXH_V,
+    VSXW_V,
+    VSXE_V,
+    VSUXB_V,
+    VSUXH_V,
+    VSUXW_V,
+    VSUXE_V,
+    VLBFF_V,
+    VLHFF_V,
+    VLWFF_V,
+    VLBUFF_V,
+    VLHUFF_V,
+    VLWUFF_V,
+    VLEFF_V,
     // Supervisor instruction
     DRET,
     MRET,
@@ -605,6 +649,9 @@ package riscv_instr_pkg;
 
   // Maximum virtual address bits used by the program
   parameter int MAX_USED_VADDR_BITS = 30;
+
+  parameter int SINGLE_PRECISION_FRACTION_BITS = 23;
+  parameter int DOUBLE_PRECISION_FRACTION_BITS = 52;
 
   typedef enum bit [4:0] {
     ZERO = 5'b00000,
@@ -645,7 +692,11 @@ package riscv_instr_pkg;
     VA_FORMAT,
     VS2_FORMAT, // op vd,vs2
     VL_FORMAT,
-    VS_FORMAT
+    VS_FORMAT,
+    VLV_FORMAT,
+    VSV_FORMAT,
+    VLS_FORMAT,
+    VSS_FORMAT
   } riscv_instr_format_t;
 
 
@@ -1090,9 +1141,9 @@ package riscv_instr_pkg;
   typedef struct packed {
     bit ill;
     bit [XLEN-2:7] reserved;
-    bit [1:0] vediv;
-    bit [2:0] vsew;
-    bit [1:0] vlmul;
+    int vediv;
+    int vsew;
+    int vlmul;
   } vtype_t;
 
   typedef enum bit [1:0] {

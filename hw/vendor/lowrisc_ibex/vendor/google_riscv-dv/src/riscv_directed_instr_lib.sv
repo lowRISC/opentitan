@@ -192,9 +192,9 @@ class riscv_jump_instr extends riscv_directed_instr_stream;
       instr_list[i].atomic = 1'b1;
     end
     jump.has_label = 1'b1;
-    jump.label = "1";
+    jump.label = $sformatf("%0s_j%0d", label, idx);
     jump.comment = $sformatf("jump %0s -> %0s", label, target_program_label);
-    branch.imm_str = "1f";
+    branch.imm_str = jump.label;
     branch.comment = "branch to jump instr";
     branch.branch_assigned = 1'b1;
   endfunction

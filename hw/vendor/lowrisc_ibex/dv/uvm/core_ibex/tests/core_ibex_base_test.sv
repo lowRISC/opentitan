@@ -68,10 +68,10 @@ class core_ibex_base_test extends uvm_test;
     enable_irq_seq = cfg.enable_irq_single_seq || cfg.enable_irq_multiple_seq;
     phase.raise_objection(this);
     run = phase;
-    dut_vif.fetch_enable = 1'b0;
+    dut_vif.dut_cb.fetch_enable <= 1'b0;
     clk_vif.wait_clks(100);
     load_binary_to_mem();
-    dut_vif.fetch_enable = 1'b1;
+    dut_vif.dut_cb.fetch_enable <= 1'b1;
     send_stimulus();
     wait_for_test_done();
     phase.drop_objection(this);
@@ -116,11 +116,11 @@ class core_ibex_base_test extends uvm_test;
   virtual task wait_for_test_done();
     fork
       begin
-        wait (dut_vif.ecall === 1'b1);
+        wait (dut_vif.dut_cb.ecall === 1'b1);
         vseq.stop();
         `uvm_info(`gfn, "ECALL instruction is detected, test done", UVM_LOW)
         // De-assert fetch enable to finish the test
-        dut_vif.fetch_enable = 1'b0;
+        dut_vif.dut_cb.fetch_enable <= 1'b0;
         fork
           check_perf_stats();
           // Wait some time for the remaining instruction to finish

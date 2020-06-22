@@ -21,17 +21,17 @@
 parameter int XLEN = 64;
 
 // Parameter for SATP mode, set to BARE if address translation is not supported
-parameter satp_mode_t SATP_MODE = SV39;
+parameter satp_mode_t SATP_MODE = BARE;
 
 // Supported Privileged mode
-privileged_mode_t supported_privileged_mode[] = {USER_MODE, SUPERVISOR_MODE, MACHINE_MODE};
+privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
 
 // Unsupported instructions
-riscv_instr_name_t unsupported_instr[] = {VWMACCSU};
+riscv_instr_name_t unsupported_instr[] = {};
 
 // ISA supported by the processor
 riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV64I, RV64M, RV32C, RV64C, RV32A, RV64A,
-                                        RV32F, RV64F, RV32D, RV64D, RV32V, RV64V};
+                                        RV32F, RV64F, RV32D, RV64D, RVV};
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
 
@@ -54,14 +54,38 @@ bit support_sfence = 1;
 // Support unaligned load/store
 bit support_unaligned_load_store = 1'b1;
 
+// GPR setting
+parameter int NUM_FLOAT_GPR = 32;
+parameter int NUM_GPR = 32;
+parameter int NUM_VEC_GPR = 32;
+// ----------------------------------------------------------------------------
+// Vector extension configuration
+// ----------------------------------------------------------------------------
+
 // Parameter for vector extension
 parameter int VECTOR_EXTENSION_ENABLE = 1;
+
 parameter int VLEN = 512;
-parameter int ELEN = 64;
-parameter int SLEN = 64;
+
+// Maximum size of a single vector element
+parameter int ELEN = 32;
+
+// Minimum size of a sub-element, which must be at most 8-bits.
+parameter int SELEN = 8;
+
+// Maximum size of a single vector element (encoded in vsew format)
+parameter int VELEN = int'($ln(ELEN)/$ln(2)) - 3;
+
+// Maxium LMUL supported by the core
+parameter int MAX_LMUL = 8;
+
+// ----------------------------------------------------------------------------
+// Multi-harts configuration
+// ----------------------------------------------------------------------------
 
 // Number of harts
 parameter int NUM_HARTS = 1;
+
 // ----------------------------------------------------------------------------
 // Previleged CSR implementation
 // ----------------------------------------------------------------------------

@@ -26,11 +26,14 @@ The trace output is in tab-separated columns.
 3. **PC**: The program counter
 4. **Instr**: The executed instruction (base 16).
    32 bit wide instructions (8 hex digits) are uncompressed instructions, 16 bit wide instructions (4 hex digits) are compressed instructions.
-5. **Decoded instruction**: The decoded (disassembled) instruction in a format equal to what objdump produces when calling it like ``objdump -Mnumeric -Mno-aliases -D``.
+5. **Decoded instruction**:
+   The decoded (disassembled) instruction in a format equal to what objdump produces when calling it like ``objdump -Mnumeric -Mno-aliases -D``.
+
    - Unsigned numbers are given in hex (prefixed with ``0x``), signed numbers are given as decimal numbers.
    - Numeric register names are used (e.g. ``x1``).
    - Symbolic CSR names are used.
    - Jump/branch targets are given as absolute address if possible (PC + immediate).
+
 6. **Register and memory contents**: For all accessed registers, the value before and after the instruction execution is given. Writes to registers are indicated as ``registername=value``, reads as ``registername:value``. For memory accesses, the address and the loaded and stored data are given.
 
 .. code-block:: text

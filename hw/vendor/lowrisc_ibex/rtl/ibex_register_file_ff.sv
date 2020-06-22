@@ -42,7 +42,7 @@ module ibex_register_file #(
   localparam int unsigned NUM_WORDS  = 2**ADDR_WIDTH;
 
   logic [NUM_WORDS-1:0][DataWidth-1:0] rf_reg;
-  logic [NUM_WORDS-1:1][DataWidth-1:0] rf_reg_tmp;
+  logic [NUM_WORDS-1:1][DataWidth-1:0] rf_reg_q;
   logic [NUM_WORDS-1:1]                we_a_dec;
 
   always_comb begin : we_a_decoder
@@ -51,13 +51,13 @@ module ibex_register_file #(
     end
   end
 
-  // loop from 1 to NUM_WORDS-1 as R0 is nil
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rf_reg_tmp <= '{default:'0};
-    end else begin
-      for (int r = 1; r < NUM_WORDS; r++) begin
-        if (we_a_dec[r]) rf_reg_tmp[r] <= wdata_a_i;
+  // No flops for R0 as it's hard-wired to 0
+  for (genvar i = 1; i < NUM_WORDS; i++) begin : g_rf_flops
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rf_reg_q[i] <= '0;
+      end else if(we_a_dec[i]) begin
+        rf_reg_q[i] <= wdata_a_i;
       end
     end
   end
@@ -66,21 +66,21 @@ module ibex_register_file #(
   // real instructions.
   if (DummyInstructions) begin : g_dummy_r0
     logic        we_r0_dummy;
-    logic [31:0] rf_r0;
+    logic [31:0] rf_r0_q;
 
     // Write enable for dummy R0 register (waddr_a_i will always be 0 for dummy instructions)
     assign we_r0_dummy = we_a_i & dummy_instr_id_i;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rf_r0 <= '0;
+        rf_r0_q <= '0;
       end else if (we_r0_dummy) begin
-        rf_r0 <= wdata_a_i;
+        rf_r0_q <= wdata_a_i;
       end
     end
 
     // Output the dummy data for dummy instructions, otherwise R0 reads as zero
-    assign rf_reg[0] = dummy_instr_id_i ? rf_r0 : '0;
+    assign rf_reg[0] = dummy_instr_id_i ? rf_r0_q : '0;
 
   end else begin : g_normal_r0
     logic unused_dummy_instr_id;
@@ -90,7 +90,7 @@ module ibex_register_file #(
     assign rf_reg[0] = '0;
   end
 
-  assign rf_reg[NUM_WORDS-1:1] = rf_reg_tmp[NUM_WORDS-1:1];
+  assign rf_reg[NUM_WORDS-1:1] = rf_reg_q[NUM_WORDS-1:1];
 
   assign rdata_a_o = rf_reg[raddr_a_i];
   assign rdata_b_o = rf_reg[raddr_b_i];

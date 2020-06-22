@@ -132,11 +132,12 @@ class riscv_instr_cov_test extends uvm_test;
         riscv_instr instr;
         instr = riscv_instr::get_instr(instr_name);
         if (instr.group inside {RV32I, RV32M, RV32C, RV64I, RV64M, RV64C,
-                                RV32F, RV32B, RV64B}) begin
+                                RV32F, RV64F, RV32D, RV64D,
+                                RV32B, RV64B}) begin
           assign_trace_info_to_instr(instr);
+          instr.pre_sample();
+          instr_cg.sample(instr);
         end
-        instr.pre_sample();
-        instr_cg.sample(instr);
         return 1'b1;
       end
     end
@@ -177,6 +178,27 @@ class riscv_instr_cov_test extends uvm_test;
         instr_name[i] = "_";
       end
     end
+
+    case (instr_name)
+      // rename to new name as ovpsim still uses old name
+     "FMV_S_X": instr_name = "FMV_W_X";
+     "FMV_X_S": instr_name = "FMV_X_W";
+      // convert Pseudoinstructions
+      // fmv.s rd, rs fsgnj.s rd, rs, rs Copy single-precision register
+      // fabs.s rd, rs fsgnjx.s rd, rs, rs Single-precision absolute value
+      // fneg.s rd, rs fsgnjn.s rd, rs, rs Single-precision negate
+      // fmv.d rd, rs fsgnj.d rd, rs, rs Copy double-precision register
+      // fabs.d rd, rs fsgnjx.d rd, rs, rs Double-precision absolute value
+      // fneg.d rd, rs fsgnjn.d rd, rs, rs Double-precision negate
+      "FMV_S":  instr_name = "FSGNJ_S";
+      "FABS_S": instr_name = "FSGNJX_S";
+      "FNEG_S": instr_name = "FSGNJN_S";
+      "FMV_D":  instr_name = "FSGNJ_D";
+      "FABS_D": instr_name = "FSGNJX_D";
+      "FNEG_D": instr_name = "FSGNJN_D";
+      default: ;
+    endcase
+
     return instr_name;
   endfunction : process_instr_name
 

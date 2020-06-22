@@ -22,7 +22,7 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
     forever begin
       fork : drive_irq
         get_and_drive();
-        wait(vif.reset === 1'b1);
+        wait (vif.driver_cb.reset === 1'b1);
       join_any
       // Will only reach here on mid-test reset
       disable drive_irq;
@@ -43,7 +43,7 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
   endtask
 
   virtual protected task get_and_drive();
-    wait(vif.reset === 1'b0);
+    wait (vif.driver_cb.reset === 1'b0);
     forever begin
       seq_item_port.try_next_item(req);
       if (req != null) begin
@@ -52,30 +52,30 @@ class irq_master_driver extends uvm_driver #(irq_seq_item);
         drive_seq_item(rsp);
         seq_item_port.item_done(rsp);
       end else begin
-        @(posedge vif.clock);
+        vif.wait_clks(1);
       end
     end
   endtask : get_and_drive
 
   virtual protected task reset_signals();
-    @(negedge vif.reset);
+    @(negedge vif.driver_cb.reset);
     drive_reset_value();
   endtask : reset_signals
 
   virtual protected task drive_seq_item (irq_seq_item trans);
-    vif.irq_software <= trans.irq_software;
-    vif.irq_timer    <= trans.irq_timer;
-    vif.irq_external <= trans.irq_external;
-    vif.irq_fast     <= trans.irq_fast;
-    vif.irq_nm       <= trans.irq_nm;
+    vif.driver_cb.irq_software <= trans.irq_software;
+    vif.driver_cb.irq_timer    <= trans.irq_timer;
+    vif.driver_cb.irq_external <= trans.irq_external;
+    vif.driver_cb.irq_fast     <= trans.irq_fast;
+    vif.driver_cb.irq_nm       <= trans.irq_nm;
   endtask : drive_seq_item
 
   task drive_reset_value();
-    vif.irq_software <= '0;
-    vif.irq_timer    <= '0;
-    vif.irq_external <= '0;
-    vif.irq_fast     <= '0;
-    vif.irq_nm       <= '0;
+    vif.driver_cb.irq_software <= '0;
+    vif.driver_cb.irq_timer    <= '0;
+    vif.driver_cb.irq_external <= '0;
+    vif.driver_cb.irq_fast     <= '0;
+    vif.driver_cb.irq_nm       <= '0;
   endtask : drive_reset_value
 
 endclass : irq_master_driver

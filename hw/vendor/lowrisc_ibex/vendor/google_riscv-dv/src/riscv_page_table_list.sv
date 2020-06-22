@@ -495,7 +495,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                // Unset U bit
                $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
                // Save PTE back to memory
-               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+               $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Move to the next PTE
                $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
                // If not the end of the kernel space, process the next PTE
@@ -513,14 +513,14 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
                $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
                // Assume 20 PTEs for kernel data pages
-               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], 20 * XLEN/8),
+               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], 20 * XLEN/8),
                "2:",
                // Load the PTE from the memory
                $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Unset U bit
                $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
                // Save PTE back to memory
-               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+               $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
                // Move to the next PTE
                $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
                // If not the end of the kernel space, process the next PTE

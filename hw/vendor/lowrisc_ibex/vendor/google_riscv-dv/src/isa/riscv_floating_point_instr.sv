@@ -37,7 +37,7 @@ class riscv_floating_point_instr extends riscv_instr;
         if (category == LOAD) begin
           asm_str = $sformatf("%0s%0s, %0s(%0s)", asm_str, fd.name(), get_imm(), rs1.name());
         end else if (instr_name inside {FMV_X_W, FMV_X_D, FCVT_W_S, FCVT_WU_S,
-                                        FCVT_L_S, FCVT_LU_S, FCVT_L_D, FCVT_LU_D, FCVT_LU_S,
+                                        FCVT_L_S, FCVT_LU_S, FCVT_L_D, FCVT_LU_D,
                                         FCVT_W_D, FCVT_WU_D}) begin
           asm_str = $sformatf("%0s%0s, %0s", asm_str, rd.name(), fs1.name());
         end else if (instr_name inside {FMV_W_X, FMV_D_X, FCVT_S_W, FCVT_S_WU,
@@ -158,7 +158,9 @@ class riscv_floating_point_instr extends riscv_instr;
     end
     case(format)
       I_FORMAT: begin
-        `DV_CHECK_FATAL(operands.size() == 2)
+        // TODO ovpsim has an extra operand rte as below
+        // fcvt.d.s fs1,fs4,rte
+        //`DV_CHECK_FATAL(operands.size() == 2)
         if (has_fs1) begin
           fs1 = get_fpr(operands[1]);
           fs1_value = get_gpr_state(operands[1]);
@@ -177,6 +179,13 @@ class riscv_floating_point_instr extends riscv_instr;
         get_val(operands[1], imm);
       end
       R_FORMAT: begin
+        // convert Pseudoinstructions for ovpsim
+        // fmv.s rd, rs -> fsgnj.s rd, rs, rs
+        if (operands.size() == 2 && instr_name inside {FSGNJ_S, FSGNJX_S, FSGNJN_S, FSGNJ_D,
+                                                       FSGNJX_D, FSGNJN_D}) begin
+          operands.push_back(operands[$]);
+        end
+
         if (has_fs2 || category == CSR) begin
           `DV_CHECK_FATAL(operands.size() == 3)
         end else begin
@@ -205,7 +214,6 @@ class riscv_floating_point_instr extends riscv_instr;
   endfunction : update_src_regs
 
   virtual function void update_dst_regs(string reg_name, string val_str);
-    $display("update_dst_regs %0s", reg_name);
     get_val(val_str, gpr_state[reg_name], .hex(1));
     if (has_fd) begin
       fd = get_fpr(reg_name);
@@ -218,9 +226,59 @@ class riscv_floating_point_instr extends riscv_instr;
 
   virtual function riscv_fpr_t get_fpr(input string str);
     str = str.toupper();
-    if (!fpr_enum::from_name(str, get_fpr)) begin
+    if (!uvm_enum_wrapper#(riscv_fpr_t)::from_name(str, get_fpr)) begin
       `uvm_fatal(`gfn, $sformatf("Cannot convert %0s to FPR", str))
     end
   endfunction : get_fpr
 
+  virtual function void pre_sample();
+    super.pre_sample();
+
+    // for single precision sign bit is bit 31, upper 32 bits are all 1s
+    // for double precision, it's 63
+    if (group inside {RV32F, RV64F}) begin
+      fs1_sign = get_fp_operand_sign(fs1_value, 31);
+      fs2_sign = get_fp_operand_sign(fs2_value, 31);
+      fs3_sign = get_fp_operand_sign(fs2_value, 31);
+      fd_sign = get_fp_operand_sign(fd_value, 31);
+    end else if (instr_name == FCVT_S_D) begin
+      fs1_sign = get_fp_operand_sign(fs1_value, 63);
+      fd_sign = get_fp_operand_sign(fd_value, 31);
+    end else if (instr_name == FCVT_D_S) begin
+      fs1_sign = get_fp_operand_sign(fs1_value, 31);
+      fd_sign = get_fp_operand_sign(fd_value, 63);
+    end else begin
+      fs1_sign = get_fp_operand_sign(fs1_value, 63);
+      fs2_sign = get_fp_operand_sign(fs2_value, 63);
+      fs3_sign = get_fp_operand_sign(fs2_value, 63);
+      fd_sign = get_fp_operand_sign(fd_value, 63);
+    end
+  endfunction : pre_sample
+
+  virtual function operand_sign_e get_fp_operand_sign(bit [XLEN-1:0] value, int idx);
+    if (value[idx]) begin
+      return NEGATIVE;
+    end else begin
+      return POSITIVE;
+    end
+  endfunction
+
+  virtual function void check_hazard_condition(riscv_instr pre_instr);
+    riscv_floating_point_instr pre_fp_instr;
+    super.check_hazard_condition(pre_instr);
+    if ($cast(pre_fp_instr, pre_instr) && pre_fp_instr.has_fd) begin
+      if ((has_fs1 && (fs1 == pre_fp_instr.fd)) || (has_fs2 && (fs2 == pre_fp_instr.fd))
+          || (has_fs3 && (fs3 == pre_fp_instr.fd))) begin
+        gpr_hazard = RAW_HAZARD;
+      end else if (has_fd && (fd == pre_fp_instr.fd)) begin
+        gpr_hazard = WAW_HAZARD;
+      end else if (has_fd && ((pre_fp_instr.has_fs1 && (pre_fp_instr.fs1 == fd)) ||
+                              (pre_fp_instr.has_fs2 && (pre_fp_instr.fs2 == fd)) ||
+                              (pre_fp_instr.has_fs3 && (pre_fp_instr.fs3 == fd)))) begin
+        gpr_hazard = WAR_HAZARD;
+      end else begin
+        gpr_hazard = NO_HAZARD;
+      end
+    end
+  endfunction
 endclass

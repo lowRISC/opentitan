@@ -7,16 +7,38 @@ the RV32IMC instruction set architecture.
 
 <p align="center"><img src="doc/images/blockdiagram.svg" width="650"></p>
 
-Ibex offers several configuration parameters to meet the needs of various application scenarios.
-The options include two different choices for the architecture of the multiplier and divider unit,
-as well as the possibility to drop the support for the "M" extension completely. In addition, the
-"E" extension can be enabled when opting for a minimum-area configuration.
-
 This core was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
 under the name "Zero-riscy" \[[1](https://doi.org/10.1109/PATMOS.2017.8106976)\], and has been
 contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further. It is
 under active development, with further code cleanups, feature additions, and test and verification
 planned for the future.
+
+## Configuration
+
+Ibex offers several configuration parameters to meet the needs of various application scenarios.
+The options include different choices for the architecture of the multiplier unit, as well as a range of performance and security features.
+The table below indicates performance, area and verification status for a few selected configurations.
+These are configurations on which lowRISC is focusing for performance evaluation and design verification (see [supported configs](ibex_configs.yaml)).
+
+| Config | "small" | "maxperf" | "maxperf-pmp-bm" |
+| ------ | ------- | --------- | ---------------- |
+| Features | RV32IMC, 3 cycle mult | RV32IMC, 1 cycle mult, Branch target ALU, Writeback stage | RV32IMCB, 1 cycle mult, Branch target ALU, Writeback stage, 16 PMP regions |
+| Performance (Coremark/MHz) | 2.44 | 3.09 | 3.09 |
+| Area - Yosys (kGE) | 33.15 | 39.03 | 63.32 |
+| Area - Commercial (estimated kGE) | ~27 | ~31 | ~50 |
+| Verification status | Green | Amber | Amber |
+
+Notes:
+
+* Performance numbers are based on Cormark running on the Ibex Simple System [platform](examples/simple_system/README.md).
+  Note that Coremark was compiled without support for the B extension.
+* Yosys synthesis area numbers are based on the Ibex basic synthesis [flow](syn/README.md).
+* Commercial synthesis area numbers are a rough estimate of what might be achievable with a commercial synthesis flow and technology library.
+* Verification status is a rough guide to the overall maturity of a particular configuration.
+  Green indicates that verification is close to complete.
+  Amber indicates that some verification has been performed, but the configuration is still experimental.
+  Red indicates a new configuration with minimal/no verification.
+  Users must make their own assessment of verification readiness for any tapeout.
 
 ## Documentation
 

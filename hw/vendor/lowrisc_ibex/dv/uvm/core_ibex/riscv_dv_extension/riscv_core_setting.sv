@@ -20,11 +20,19 @@
 // XLEN
 parameter int XLEN = 32;
 
+// GPR setting
+parameter int NUM_FLOAT_GPR = 0;
+parameter int NUM_GPR = 32;
+parameter int NUM_VEC_GPR = 0;
+
 // Vector extension parameters - not used in Ibex
 parameter int VECTOR_EXTENSION_ENABLE = 0;
 parameter int VLEN = 512;
 parameter int ELEN = 64;
 parameter int SLEN = 64;
+parameter int VELEN = 4;
+parameter int SELEN = 8;
+parameter int MAX_LMUL = 8;
 
 // Number of harts
 parameter int NUM_HARTS = 1;

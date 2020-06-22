@@ -6,3 +6,4 @@ sphinxcontrib-log-cabinet
 sphinx-issues
 sphinx_rtd_theme
 rst2pdf
+flake8
