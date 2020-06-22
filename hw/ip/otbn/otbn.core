@@ -1,0 +1,44 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:otbn:0.1"
+description: "OpenTitan Big Number Accelerator (OTBN)"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:assert
+      - lowrisc:prim:util
+      - lowrisc:prim:ram_1p_adv
+    files:
+      - rtl/otbn_pkg.sv
+      - rtl/otbn_reg_pkg.sv
+      - rtl/otbn_reg_top.sv
+      - rtl/otbn_core.sv
+      - rtl/otbn.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: otbn
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
