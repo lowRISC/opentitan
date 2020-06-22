@@ -54,6 +54,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"nmi_gen", '{
         '{32'h41180000, 32'h41180fff}
+    }},
+    '{"otbn", '{
+        '{32'h50000000, 32'h503fffff}
 }}};
 
   // List of Xbar hosts
@@ -80,7 +83,8 @@ tl_host_t xbar_hosts[$] = '{
         "nmi_gen",
         "keymgr",
         "csrng",
-        "entropy_src"}}
+        "entropy_src",
+        "otbn"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -96,5 +100,6 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "nmi_gen",
         "csrng",
-        "entropy_src"}}
+        "entropy_src",
+        "otbn"}}
 };

@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[138] = {
+    top_earlgrey_plic_interrupt_for_peripheral[140] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -150,4 +150,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdI2c2SdaInterference] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2StretchTimeout] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2SdaUnstable] = kTopEarlgreyPlicPeripheralI2c2,
+  [kTopEarlgreyPlicIrqIdOtbnDone] = kTopEarlgreyPlicPeripheralOtbn,
+  [kTopEarlgreyPlicIrqIdOtbnErr] = kTopEarlgreyPlicPeripheralOtbn,
 };
