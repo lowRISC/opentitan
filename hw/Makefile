@@ -27,6 +27,7 @@ IPS ?= aes           \
        sensor_ctrl   \
        spi_device    \
        trial1        \
+       otbn          \
        uart          \
        usbdev        \
        usbuart
