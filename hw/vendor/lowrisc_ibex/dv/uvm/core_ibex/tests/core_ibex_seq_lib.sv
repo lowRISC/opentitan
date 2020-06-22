@@ -131,15 +131,15 @@ class debug_seq extends core_base_seq#(irq_seq_item);
     if (!uvm_config_db#(virtual core_ibex_dut_probe_if)::get(null, "", "dut_if", dut_vif)) begin
       `uvm_fatal(get_full_name(), "Cannot get dut_if")
     end
-    dut_vif.debug_req <= 1'b0;
+    dut_vif.dut_cb.debug_req <= 1'b0;
     super.body();
   endtask
 
   virtual task send_req();
     `uvm_info(get_full_name(), "Sending debug request", UVM_HIGH)
-    dut_vif.debug_req <= 1'b1;
+    dut_vif.dut_cb.debug_req <= 1'b1;
     clk_vif.wait_clks(50);
-    dut_vif.debug_req <= 1'b0;
+    dut_vif.dut_cb.debug_req <= 1'b0;
   endtask
 
 endclass

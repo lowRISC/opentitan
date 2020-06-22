@@ -28,12 +28,12 @@ class ibex_mem_intf_monitor extends uvm_monitor;
   endfunction: build_phase
 
   virtual task run_phase(uvm_phase phase);
-    wait(vif.reset === 1'b0);
+    wait (vif.monitor_cb.reset === 1'b0);
     forever begin
       fork : check_mem_intf
         collect_address_phase();
         collect_data_phase();
-        wait(vif.reset === 1'b1);
+        wait (vif.monitor_cb.reset === 1'b1);
       join_any
       // Will only reach this point when mid-test reset is asserted
       disable check_mem_intf;
@@ -45,21 +45,21 @@ class ibex_mem_intf_monitor extends uvm_monitor;
     ibex_mem_intf_seq_item mailbox_result;
     // Clear the mailbox of any content
     while (collect_data_queue.try_get(mailbox_result));
-    wait(vif.reset === 1'b0);
+    wait (vif.monitor_cb.reset === 1'b0);
   endtask
 
   virtual protected task collect_address_phase();
     ibex_mem_intf_seq_item trans_collected;
     forever begin
       trans_collected = ibex_mem_intf_seq_item::type_id::create("trans_collected");
-      while(!(vif.request && vif.grant)) @(posedge vif.clock);
-      trans_collected.addr = vif.addr;
-      trans_collected.be   = vif.be;
+      while(!(vif.monitor_cb.request && vif.monitor_cb.grant)) vif.wait_clks(1);
+      trans_collected.addr = vif.monitor_cb.addr;
+      trans_collected.be   = vif.monitor_cb.be;
       `uvm_info(get_full_name(), $sformatf("Detect request with address: %0x",
                 trans_collected.addr), UVM_HIGH)
-      if(vif.we) begin
+      if(vif.monitor_cb.we) begin
         trans_collected.read_write = WRITE;
-        trans_collected.data = vif.wdata;
+        trans_collected.data = vif.monitor_cb.wdata;
       end else begin
         trans_collected.read_write = READ;
       end
@@ -69,7 +69,7 @@ class ibex_mem_intf_monitor extends uvm_monitor;
         item_collected_port.write(trans_collected);
       else
         collect_data_queue.put(trans_collected);
-      @(posedge vif.clock);
+      vif.wait_clks(1);
     end
   endtask : collect_address_phase
 
@@ -78,9 +78,9 @@ class ibex_mem_intf_monitor extends uvm_monitor;
     forever begin
       collect_data_queue.get(trans_collected);
       do
-        @(posedge vif.clock);
-      while(vif.rvalid === 0);
-      trans_collected.data = vif.rdata;
+        vif.wait_clks(1);
+      while(vif.monitor_cb.rvalid === 0);
+      trans_collected.data = vif.monitor_cb.rdata;
       item_collected_port.write(trans_collected);
     end
   endtask : collect_data_phase

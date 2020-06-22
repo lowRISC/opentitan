@@ -54,11 +54,35 @@ bit support_sfence = 1;
 // Support unaligned load/store
 bit support_unaligned_load_store = 1'b1;
 
+// GPR setting
+parameter int NUM_FLOAT_GPR = 32;
+parameter int NUM_GPR = 32;
+parameter int NUM_VEC_GPR = 32;
+
+// ----------------------------------------------------------------------------
+// Vector extension configuration
+// ----------------------------------------------------------------------------
+
 // Parameter for vector extension
 parameter int VECTOR_EXTENSION_ENABLE = 0;
+
 parameter int VLEN = 512;
-parameter int ELEN = 64;
-parameter int SLEN = 64;
+
+// Maximum size of a single vector element
+parameter int ELEN = 32;
+
+// Minimum size of a sub-element, which must be at most 8-bits.
+parameter int SELEN = 8;
+
+// Maximum size of a single vector element (encoded in vsew format)
+parameter int VELEN = int'($ln(ELEN)/$ln(2)) - 3;
+
+// Maxium LMUL supported by the core
+parameter int MAX_LMUL = 8;
+
+// ----------------------------------------------------------------------------
+// Multi-harts configuration
+// ----------------------------------------------------------------------------
 
 // Number of harts
 parameter int NUM_HARTS = 1;

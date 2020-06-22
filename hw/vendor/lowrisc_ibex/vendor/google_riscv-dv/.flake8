@@ -1,0 +1,10 @@
+[flake8]
+
+# Maximum line length
+max-line-length = 100
+
+ignore =
+  # Ignore unexpected spaces around keyword / parameter equals
+  E251,
+  # Do not complain about line breaks after operators
+  W504

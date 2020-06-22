@@ -186,6 +186,18 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     setup_instruction_dist(no_branch, no_load_store);
   endfunction
 
+  virtual function void randomize_avail_regs();
+    if(avail_regs.size() > 0) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(avail_regs,
+                                         unique{avail_regs};
+                                         avail_regs[0] inside {[S0 : A5]};
+                                         foreach(avail_regs[i]) {
+                                           !(avail_regs[i] inside {cfg.reserved_regs, reserved_rd});
+                                         },
+                                         "Cannot randomize avail_regs")
+    end
+  endfunction
+
   function void setup_instruction_dist(bit no_branch = 1'b0, bit no_load_store = 1'b1);
     if (cfg.dist_control_mode) begin
       category_dist = cfg.category_dist;
@@ -227,6 +239,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     end
     instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr),
                                         .exclude_instr(exclude_instr));
+    instr.m_cfg = cfg;
     randomize_gpr(instr);
   endfunction
 

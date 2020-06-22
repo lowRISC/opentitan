@@ -109,11 +109,11 @@ module ibex_register_file #(
 
   // Actual write operation:
   // Generate the sequential process for the NUM_WORDS words of the memory.
-  // The process is synchronized with the clocks mem_clocks[k], k = 1, ..., NUM_WORDS-1.
-  always_latch begin : latch_wdata
-    for (int k = 1; k < NUM_WORDS; k++) begin : latch_wdata_word_iter
-      if (mem_clocks[k]) begin
-        mem[k] = wdata_a_q;
+  // The process is synchronized with the clocks mem_clocks[i], i = 1, ..., NUM_WORDS-1.
+  for (genvar i = 1; i < NUM_WORDS; i++) begin : g_rf_latches
+    always_latch begin
+      if (mem_clocks[i]) begin
+        mem[i] = wdata_a_q;
       end
     end
   end

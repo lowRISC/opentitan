@@ -228,17 +228,62 @@
   `INSTR_CG_BEGIN(INSTR_NAME) \
     cp_imm_sign : coverpoint instr.imm_sign;
 
-// TODO, will handle special value later
-// single-precision floating point special values coverpoint
-`define FP_SPECIAL_VALUES_CP(VAR, NAME) \
-    cp_fp_special_values_on_``NAME`` : coverpoint VAR { \
+// single/double precision floating point special values coverpoint
+`define FP_SPECIAL_VALUES_CP(VAR, NAME, PRECISION = S) \
+    cp_sfp_special_values_on_``NAME`` : coverpoint VAR[31:0] { \
+      option.weight = (`"PRECISION`" == "S"); \
+      type_option.weight = (`"PRECISION`" == "S"); \
       bins infinity[] = {32'h7f80_0000, 32'hff80_0000}; \
       bins largest[]  = {32'h7f7f_ffff, 32'hff7f_ffff}; \
-      bins zeros[]    = {32'h0000_0000, 32'h1000_0000}; \
-      bins NaN[]      = {32'h7fc0_0000, 32'h7f80_0000}; \
+      bins zeros[]    = {32'h0000_0000, 32'h8000_0000}; \
+      bins NaN[]      = {32'h7f80_0001, 32'h7fc0_0000}; \
+    } \
+    cp_sfp_subnormal_on_``NAME`` : coverpoint VAR[30:SINGLE_PRECISION_FRACTION_BITS] == 0 { \
+      option.weight = (`"PRECISION`" == "S"); \
+      type_option.weight = (`"PRECISION`" == "S"); \
+    } \
+    cp_dfp_special_values_on_``NAME`` : coverpoint VAR { \
+      option.weight = (`"PRECISION`" == "D"); \
+      type_option.weight = (`"PRECISION`" == "D"); \
+      bins infinity[] = {64'h7ff0_0000_0000_0000, 64'hfff0_0000_0000_0000}; \
+      bins largest[]  = {64'h7fef_ffff_ffff_ffff, 64'hffef_ffff_ffff_ffff}; \
+      bins zeros[]    = {64'h0000_0000_0000_0000, 64'h8000_0000_0000_0000}; \
+      bins NaN[]      = {64'h7ff0_0000_0000_0001, 64'h7ff8_0000_0000_0000}; \
+    } \
+    cp_dfp_subnormal_on_``NAME`` : coverpoint VAR[62:DOUBLE_PRECISION_FRACTION_BITS-1] == 0 { \
+      option.weight = (`"PRECISION`" == "D"); \
+      type_option.weight = (`"PRECISION`" == "D"); \
     }
 
-`define FP_R_INSTR_CG_BEGIN(INSTR_NAME) \
+`define FP_LOAD_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_rs1         : coverpoint instr.rs1 { \
+      `DV(ignore_bins zero = {ZERO};) \
+    } \
+    cp_fd          : coverpoint instr.fd; \
+    cp_imm_sign    : coverpoint instr.imm_sign; \
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, PRECISION) \
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard;) \
+    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
+      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
+    })
+
+`define FP_STORE_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_rs1         : coverpoint instr.rs1 { \
+        `DV(ignore_bins zero = {ZERO};) \
+    } \
+    cp_fs2         : coverpoint instr.fs2; \
+    cp_imm_sign    : coverpoint instr.imm_sign; \
+    `FP_SPECIAL_VALUES_CP(instr.fs2_value, fs2_value, PRECISION) \
+    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard { \
+      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD}; \
+    }) \
+    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard { \
+      bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD}; \
+    })
+
+`define FP_R_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
   `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
     cp_fs1         : coverpoint instr.fs1; \
     cp_fs2         : coverpoint instr.fs2; \
@@ -246,9 +291,12 @@
     cp_fs1_sign    : coverpoint instr.fs1_sign; \
     cp_fs2_sign    : coverpoint instr.fs2_sign; \
     cp_fd_sign     : coverpoint instr.fd_sign; \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fs2_value, fs2_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, PRECISION) \
     `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
 
-`define FP_R4_INSTR_CG_BEGIN(INSTR_NAME) \
+`define FP_R4_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
   `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
     cp_fs1         : coverpoint instr.fs1; \
     cp_fs2         : coverpoint instr.fs2; \
@@ -259,14 +307,74 @@
     cp_fs3_sign    : coverpoint instr.fs3_sign; \
     cp_fd_sign     : coverpoint instr.fd_sign; \
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fs3_sign, cp_fd_sign; \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fs2_value, fs2_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fs3_value, fs3_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, PRECISION) \
     `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
 
-`define FSQRT_INSTR_CG_BEGIN(INSTR_NAME) \
+`define FSQRT_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
   `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
     cp_fs1         : coverpoint instr.fs1; \
     cp_fd          : coverpoint instr.fd;  \
     cp_fs1_sign    : coverpoint instr.fs1_sign; \
     cp_fd_sign     : coverpoint instr.fd_sign; \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, PRECISION) \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+// FCVT integer to floating
+`define FP_I2F_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S, SIGN_TYP = SIGN) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_rs1         : coverpoint instr.rs1; \
+    cp_fd          : coverpoint instr.fd; \
+    cp_rs1_sign    : coverpoint instr.rs1_sign { \
+      option.weight = (`"SIGN_TYP`" == "SIGN"); \
+      type_option.weight = (`"SIGN_TYP`" == "SIGN"); \
+    } \
+    cp_fd_sign     : coverpoint instr.fd_sign { \
+      option.weight = (`"SIGN_TYP`" == "SIGN"); \
+      type_option.weight = (`"SIGN_TYP`" == "SIGN"); \
+    } \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+// FCVT floating to integer
+`define FP_F2I_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S, SIGN_TYP = SIGN) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_rd          : coverpoint instr.rd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_rd_sign     : coverpoint instr.rd_sign { \
+      option.weight = (`"SIGN_TYP`" == "SIGN"); \
+      type_option.weight = (`"SIGN_TYP`" == "SIGN"); \
+    } \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+// floating compare instructions
+`define FP_CMP_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_fs2         : coverpoint instr.fs2; \
+    cp_rd          : coverpoint instr.rd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_fs2_sign    : coverpoint instr.fs2_sign; \
+    `CP_VALUE_RANGE(compare_result, instr.rd_value, 0, 1) \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
+    `FP_SPECIAL_VALUES_CP(instr.fs2_value, fs2_value, PRECISION) \
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
+
+`define FCLASS_INSTR_CG_BEGIN(INSTR_NAME, PRECISION = S) \
+  `INSTR_CG_BEGIN(INSTR_NAME, riscv_floating_point_instr) \
+    cp_fs1         : coverpoint instr.fs1; \
+    cp_rd          : coverpoint instr.rd;  \
+    cp_fs1_sign    : coverpoint instr.fs1_sign; \
+    cp_rd_value    : coverpoint instr.rd_value { \
+      bins values[] = {0, 'b1, 'b10, 'b100, 'b1000, 'b1_0000, 'b10_0000, \
+                       'b100_0000, 'b1000_0000, 'b1_0000_0000, 'b10_0000_0000}; \
+      illegal_bins others = default; \
+    } \
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, PRECISION) \
     `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;) \
 
 `define B_I_INSTR_CG_BEGIN(INSTR_NAME) \
@@ -317,7 +425,6 @@
 class riscv_instr_cover_group;
 
   riscv_instr_gen_config  cfg;
-  riscv_instr             cur_instr;
   riscv_instr             pre_instr;
   riscv_instr_name_t      instr_list[$];
   int unsigned            instr_cnt;
@@ -537,33 +644,23 @@ class riscv_instr_cover_group;
   `CG_END
 
   // floating instructions
-  `INSTR_CG_BEGIN(flw, riscv_floating_point_instr)
-    cp_rs1         : coverpoint instr.rs1 {
-      `DV(ignore_bins zero = {ZERO};)
-    }
-    cp_fd          : coverpoint instr.fd;
-    cp_imm_sign    : coverpoint instr.imm_sign;
-    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard;)
-    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard {
-      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
-    })
+  `FP_LOAD_INSTR_CG_BEGIN(flw)
   `CG_END
 
-  `INSTR_CG_BEGIN(fsw, riscv_floating_point_instr)
-    cp_rs1         : coverpoint instr.rs1 {
-        `DV(ignore_bins zero = {ZERO};)
-    }
-    cp_fs2         : coverpoint instr.fs2;
-    cp_imm_sign    : coverpoint instr.imm_sign;
-    `DV(cp_gpr_hazard  : coverpoint instr.gpr_hazard {
-      bins valid_hazard[] = {NO_HAZARD, RAW_HAZARD};
-    })
-    `DV(cp_lsu_hazard  : coverpoint instr.lsu_hazard {
-      bins valid_hazard[] = {NO_HAZARD, WAR_HAZARD, WAW_HAZARD};
-    })
+  `FP_LOAD_INSTR_CG_BEGIN(fld, D)
+  `CG_END
+
+  `FP_STORE_INSTR_CG_BEGIN(fsw)
+  `CG_END
+
+  `FP_STORE_INSTR_CG_BEGIN(fsd, D)
   `CG_END
 
   `FP_R_INSTR_CG_BEGIN(fadd_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fadd_d, D)
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
   `CG_END
 
@@ -571,19 +668,37 @@ class riscv_instr_cover_group;
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
   `CG_END
 
+  `FP_R_INSTR_CG_BEGIN(fsub_d, D)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign, cp_fd_sign;
+  `CG_END
+
   `FP_R_INSTR_CG_BEGIN(fmul_s)
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
   `CG_END
 
+  `FP_R_INSTR_CG_BEGIN(fmul_d, D)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
   `FP_R_INSTR_CG_BEGIN(fdiv_s)
-    cp_div_result: coverpoint instr.div_result;
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fdiv_d, D)
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
   `CG_END
 
   `FSQRT_INSTR_CG_BEGIN(fsqrt_s)
   `CG_END
 
+  `FSQRT_INSTR_CG_BEGIN(fsqrt_d, D)
+  `CG_END
+
   `FP_R_INSTR_CG_BEGIN(fmin_s)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fmin_d, D)
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
   `CG_END
 
@@ -591,16 +706,155 @@ class riscv_instr_cover_group;
     cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
   `CG_END
 
+  `FP_R_INSTR_CG_BEGIN(fmax_d, D)
+    cp_sign_cross: cross cp_fs1_sign, cp_fs2_sign;
+  `CG_END
+
   `FP_R4_INSTR_CG_BEGIN(fmadd_s)
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fmadd_d, D)
   `CG_END
 
   `FP_R4_INSTR_CG_BEGIN(fnmadd_s)
   `CG_END
 
+  `FP_R4_INSTR_CG_BEGIN(fnmadd_d, D)
+  `CG_END
+
   `FP_R4_INSTR_CG_BEGIN(fmsub_s)
   `CG_END
 
+  `FP_R4_INSTR_CG_BEGIN(fmsub_d, D)
+  `CG_END
+
   `FP_R4_INSTR_CG_BEGIN(fnmsub_s)
+  `CG_END
+
+  `FP_R4_INSTR_CG_BEGIN(fnmsub_d, D)
+  `CG_END
+
+  // FCVT floating to floating
+  `INSTR_CG_BEGIN(fcvt_s_d, riscv_floating_point_instr)
+    cp_fs1         : coverpoint instr.fs1;
+    cp_fd          : coverpoint instr.fd;
+    cp_fs1_sign    : coverpoint instr.fs1_sign;
+    cp_fd_sign     : coverpoint instr.fd_sign;
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, D)
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, S)
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;)
+  `CG_END
+
+  `INSTR_CG_BEGIN(fcvt_d_s, riscv_floating_point_instr)
+    cp_fs1         : coverpoint instr.fs1;
+    cp_fd          : coverpoint instr.fd;
+    cp_fs1_sign    : coverpoint instr.fs1_sign;
+    cp_fd_sign     : coverpoint instr.fd_sign;
+    `FP_SPECIAL_VALUES_CP(instr.fs1_value, fs1_value, S)
+    `FP_SPECIAL_VALUES_CP(instr.fd_value, fd_value, D)
+    `DV(cp_gpr_hazard : coverpoint instr.gpr_hazard;)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_w_s)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_wu_s, , UNSIGN)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_l_s)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_lu_s, UNSIGN)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_l_d, D)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_lu_d, D, UNSIGN)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_w_d, D)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fcvt_wu_d, D, UNSIGN)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_s_w)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_s_wu, , UNSIGN)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_s_l)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_d_l, D)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_s_lu, , UNSIGN)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_d_w, D)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_d_lu, D, UNSIGN)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fcvt_d_wu, D, UNSIGN)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnj_s)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnj_d, D)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnjn_s)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnjn_d, D)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnjx_s)
+  `CG_END
+
+  `FP_R_INSTR_CG_BEGIN(fsgnjx_d, D)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fmv_x_w)
+  `CG_END
+
+  `FP_F2I_INSTR_CG_BEGIN(fmv_x_d, D)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fmv_w_x)
+  `CG_END
+
+  `FP_I2F_INSTR_CG_BEGIN(fmv_d_x, D)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(feq_s)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(feq_d, D)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(flt_s)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(flt_d, D)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(fle_s)
+  `CG_END
+
+  `FP_CMP_INSTR_CG_BEGIN(fle_d, D)
+  `CG_END
+
+  `FCLASS_INSTR_CG_BEGIN(fclass_s)
+  `CG_END
+
+  `FCLASS_INSTR_CG_BEGIN(fclass_d, D)
   `CG_END
 
   // B extension
@@ -1462,8 +1716,6 @@ class riscv_instr_cover_group;
   function new(riscv_instr_gen_config cfg);
     string opts;
     this.cfg = cfg;
-    cur_instr = riscv_instr::type_id::create("cur_instr");
-    pre_instr = riscv_instr::type_id::create("pre_instr");
     build_instr_list();
     `ifdef COMPLIANCE_MODE
       compliance_mode = 1;
@@ -1659,6 +1911,64 @@ class riscv_instr_cover_group;
       fnmadd_s_cg = new();
       fmsub_s_cg  = new();
       fnmsub_s_cg = new();
+      fcvt_w_s_cg  = new();
+      fcvt_wu_s_cg = new();
+      fcvt_s_w_cg  = new();
+      fcvt_s_wu_cg = new();
+      fsgnj_s_cg   = new();
+      fsgnjn_s_cg  = new();
+      fsgnjx_s_cg  = new();
+      fmv_x_w_cg   = new();
+      fmv_w_x_cg   = new();
+      feq_s_cg     = new();
+      flt_s_cg     = new();
+      fle_s_cg     = new();
+      fclass_s_cg  = new();
+    `CG_SELECTOR_END
+
+    `CG_SELECTOR_BEGIN(RV32D)
+      fld_cg      = new();
+      fsd_cg      = new();
+      fadd_d_cg   = new();
+      fsub_d_cg   = new();
+      fdiv_d_cg   = new();
+      fmul_d_cg   = new();
+      fmadd_d_cg  = new();
+      fnmadd_d_cg = new();
+      fmsub_d_cg  = new();
+      fnmsub_d_cg = new();
+      fsqrt_d_cg  = new();
+      fmin_d_cg   = new();
+      fmax_d_cg   = new();
+      fsgnj_d_cg   = new();
+      fsgnjn_d_cg  = new();
+      fsgnjx_d_cg  = new();
+      feq_d_cg     = new();
+      flt_d_cg     = new();
+      fle_d_cg     = new();
+      fcvt_w_d_cg  = new();
+      fcvt_wu_d_cg = new();
+      fcvt_d_w_cg  = new();
+      fcvt_d_wu_cg = new();
+      fclass_d_cg  = new();
+    `CG_SELECTOR_END
+
+    `CG_SELECTOR_BEGIN(RV64F)
+      fcvt_l_s_cg  = new();
+      fcvt_lu_s_cg = new();
+      fcvt_s_l_cg  = new();
+      fcvt_s_lu_cg = new();
+    `CG_SELECTOR_END
+
+    `CG_SELECTOR_BEGIN(RV64D)
+      fmv_x_d_cg   = new();
+      fmv_d_x_cg   = new();
+      fcvt_d_s_cg  = new();
+      fcvt_s_d_cg  = new();
+      fcvt_l_d_cg  = new();
+      fcvt_lu_d_cg = new();
+      fcvt_d_l_cg  = new();
+      fcvt_d_lu_cg = new();
     `CG_SELECTOR_END
 
     `CG_SELECTOR_BEGIN(RV32B)
@@ -1913,18 +2223,67 @@ class riscv_instr_cover_group;
       C_ADDW     : `SAMPLE(c_addw_cg, instr)
       C_ADDIW    : `SAMPLE(c_addiw_cg, instr)
       FLW        : `SAMPLE_F(flw_cg, instr)
+      FLD        : `SAMPLE_F(fld_cg, instr)
       FSW        : `SAMPLE_F(fsw_cg, instr)
+      FSD        : `SAMPLE_F(fsd_cg, instr)
       FADD_S     : `SAMPLE_F(fadd_s_cg, instr)
+      FADD_D     : `SAMPLE_F(fadd_d_cg, instr)
       FSUB_S     : `SAMPLE_F(fsub_s_cg, instr)
+      FSUB_D     : `SAMPLE_F(fsub_d_cg, instr)
       FMUL_S     : `SAMPLE_F(fmul_s_cg, instr)
+      FMUL_D     : `SAMPLE_F(fmul_d_cg, instr)
       FDIV_S     : `SAMPLE_F(fdiv_s_cg, instr)
+      FDIV_D     : `SAMPLE_F(fdiv_d_cg, instr)
       FSQRT_S    : `SAMPLE_F(fsqrt_s_cg, instr)
+      FSQRT_D    : `SAMPLE_F(fsqrt_d_cg, instr)
       FMIN_S     : `SAMPLE_F(fmin_s_cg, instr)
+      FMIN_D     : `SAMPLE_F(fmin_d_cg, instr)
       FMAX_S     : `SAMPLE_F(fmax_s_cg, instr)
+      FMAX_D     : `SAMPLE_F(fmax_d_cg, instr)
       FMADD_S    : `SAMPLE_F(fmadd_s_cg, instr)
+      FMADD_D    : `SAMPLE_F(fmadd_d_cg, instr)
       FNMADD_S   : `SAMPLE_F(fnmadd_s_cg, instr)
+      FNMADD_D   : `SAMPLE_F(fnmadd_d_cg, instr)
       FMSUB_S    : `SAMPLE_F(fmsub_s_cg, instr)
+      FMSUB_D    : `SAMPLE_F(fmsub_d_cg, instr)
       FNMSUB_S   : `SAMPLE_F(fnmsub_s_cg, instr)
+      FNMSUB_D   : `SAMPLE_F(fnmsub_d_cg, instr)
+      FCVT_W_S   : `SAMPLE_F(fcvt_w_s_cg, instr)
+      FCVT_WU_S  : `SAMPLE_F(fcvt_wu_s_cg, instr)
+      FCVT_L_S   : `SAMPLE_F(fcvt_l_s_cg, instr)
+      FCVT_LU_S  : `SAMPLE_F(fcvt_lu_s_cg, instr)
+      FCVT_L_D   : `SAMPLE_F(fcvt_l_d_cg, instr)
+      FCVT_LU_D  : `SAMPLE_F(fcvt_lu_d_cg, instr)
+      FCVT_S_D   : `SAMPLE_F(fcvt_s_d_cg, instr)
+      FCVT_D_S   : `SAMPLE_F(fcvt_d_s_cg, instr)
+      FCVT_W_D   : `SAMPLE_F(fcvt_w_d_cg, instr)
+      FCVT_WU_D  : `SAMPLE_F(fcvt_wu_d_cg, instr)
+      FCVT_S_W   : `SAMPLE_F(fcvt_s_w_cg, instr)
+      FCVT_S_WU  : `SAMPLE_F(fcvt_s_wu_cg, instr)
+      FCVT_S_L   : `SAMPLE_F(fcvt_s_l_cg, instr)
+      FCVT_D_L   : `SAMPLE_F(fcvt_d_l_cg, instr)
+      FCVT_S_LU  : `SAMPLE_F(fcvt_s_lu_cg, instr)
+      FCVT_D_W   : `SAMPLE_F(fcvt_d_w_cg, instr)
+      FCVT_D_LU  : `SAMPLE_F(fcvt_d_lu_cg, instr)
+      FCVT_D_WU  : `SAMPLE_F(fcvt_d_wu_cg, instr)
+      FSGNJ_S    : `SAMPLE_F(fsgnj_s_cg, instr)
+      FSGNJ_D    : `SAMPLE_F(fsgnj_d_cg, instr)
+      FSGNJN_S   : `SAMPLE_F(fsgnjn_s_cg, instr)
+      FSGNJN_D   : `SAMPLE_F(fsgnjn_d_cg, instr)
+      FSGNJX_S   : `SAMPLE_F(fsgnjx_s_cg, instr)
+      FSGNJX_D   : `SAMPLE_F(fsgnjx_d_cg, instr)
+      FMV_X_W    : `SAMPLE_F(fmv_x_w_cg, instr)
+      FMV_X_D    : `SAMPLE_F(fmv_x_d_cg, instr)
+      FMV_W_X    : `SAMPLE_F(fmv_w_x_cg, instr)
+      FMV_D_X    : `SAMPLE_F(fmv_d_x_cg, instr)
+      FEQ_S      : `SAMPLE_F(feq_s_cg, instr)
+      FEQ_D      : `SAMPLE_F(feq_d_cg, instr)
+      FLT_S      : `SAMPLE_F(flt_s_cg, instr)
+      FLT_D      : `SAMPLE_F(flt_d_cg, instr)
+      FLE_S      : `SAMPLE_F(fle_s_cg, instr)
+      FLE_D      : `SAMPLE_F(fle_d_cg, instr)
+      FCLASS_S   : `SAMPLE_F(fclass_s_cg, instr)
+      FCLASS_D   : `SAMPLE_F(fclass_d_cg, instr)
       // RV32B
       CLZ        : `SAMPLE_B(clz_cg, instr)
       CTZ        : `SAMPLE_B(ctz_cg, instr)
@@ -2068,8 +2427,7 @@ class riscv_instr_cover_group;
       end
     end
    `VECTOR_INCLUDE("riscv_instr_cover_group_inc_sample.sv")
-    pre_instr.copy(instr);
-    pre_instr.mem_addr = instr.mem_addr;
+    pre_instr = instr;
   endfunction
 
   // Check if the instruction is supported
@@ -2096,11 +2454,12 @@ class riscv_instr_cover_group;
     instr_name = instr_name.first;
     do begin
       riscv_instr instr;
-      if (!(instr_name inside {unsupported_instr}) && (instr_name != INVALID_INSTR)) begin
+      if (!(instr_name inside {unsupported_instr}) && (instr_name != INVALID_INSTR) &&
+          riscv_instr::instr_registry.exists(instr_name)) begin
         instr = riscv_instr::create_instr(instr_name);
         if ((instr.group inside {supported_isa}) &&
             (instr.group inside {RV32I, RV32M, RV64M, RV64I, RV32C, RV64C,
-                                 RV32V, RV64V, RV64B, RV32B})) begin
+                                 RVV, RV64B, RV32B})) begin
           if (((instr_name inside {URET}) && !support_umode_trap) ||
               ((instr_name inside {SRET, SFENCE_VMA}) &&
               !(SUPERVISOR_MODE inside {supported_privileged_mode})) ||

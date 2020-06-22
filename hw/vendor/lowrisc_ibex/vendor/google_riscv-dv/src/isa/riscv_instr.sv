@@ -32,6 +32,8 @@ class riscv_instr extends uvm_object;
   static privileged_reg_t    exclude_reg[];
   static privileged_reg_t    include_reg[];
 
+  riscv_instr_gen_config     m_cfg;
+
   // Instruction attributes
   riscv_instr_group_t        group;
   riscv_instr_format_t       format;
@@ -124,7 +126,9 @@ class riscv_instr extends uvm_object;
           !(cfg.disable_compressed_instr &&
             (instr_inst.group inside {RV32C, RV64C, RV32DC, RV32FC, RV128C})) &&
           !(!cfg.enable_floating_point &&
-            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D}))
+            (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D})) &&
+          !(!cfg.enable_vector_extension &&
+            (instr_inst.group inside {RVV}))
           ) begin
         instr_category[instr_inst.category].push_back(instr_name);
         instr_group[instr_inst.group].push_back(instr_name);

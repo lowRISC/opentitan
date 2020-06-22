@@ -562,9 +562,8 @@ module ibex_icache #(
                                  (fill_cache_q[fb] & fill_busy_q[fb] &
                                   icache_enable_i & ~icache_inval_i);
     // Record whether the request hit in the cache
-    assign fill_hit_ic1[fb]    = lookup_valid_ic1 & fill_in_ic1[fb] & tag_hit_ic1;
-    assign fill_hit_d[fb]      = (fill_hit_ic1[fb] & ~ecc_err_ic1) |
-                                 (fill_hit_q[fb] & fill_busy_q[fb]);
+    assign fill_hit_ic1[fb]    = lookup_valid_ic1 & fill_in_ic1[fb] & tag_hit_ic1 & ~ecc_err_ic1;
+    assign fill_hit_d[fb]      = fill_hit_ic1[fb] | (fill_hit_q[fb] & fill_busy_q[fb]);
 
     ///////////////////////////////////////////
     // Fill buffer external request tracking //
@@ -585,7 +584,7 @@ module ibex_icache #(
     // External requests are completed when the counter is filled or when the request is cancelled
     assign fill_ext_done[fb]   = (fill_ext_cnt_q[fb][LINE_BEATS_W] |
                                   // external requests are considered complete if the request hit
-                                  (fill_hit_ic1[fb] & ~ecc_err_ic1) | fill_hit_q[fb] |
+                                  fill_hit_ic1[fb] | fill_hit_q[fb] |
                                   // external requests will stop once any PMP error is received
                                   fill_err_q[fb][fill_ext_off[fb]] |
                                   // cancel if the line is stale and won't be cached
@@ -618,7 +617,7 @@ module ibex_icache #(
                                   (fill_rvd_beat[fb] > fill_out_cnt_q[fb]) | fill_rvd_arb[fb]);
 
     // Calculate when a beat of data is output. Any ECC error squashes the output that cycle.
-    assign fill_out_grant[fb]  = fill_out_arb[fb] & output_ready & ~ecc_err_ic1;
+    assign fill_out_grant[fb]  = fill_out_arb[fb] & output_ready;
 
     // Count the beats of data output to the IF stage
     assign fill_out_cnt_d[fb]  = fill_alloc[fb] ? {1'b0,lookup_addr_ic0[LINE_W-1:BUS_W]} :
@@ -742,8 +741,8 @@ module ibex_icache #(
 
     // Data either comes from the cache or the bus. If there was an ECC error, we must take
     // the incoming bus data since the cache hit data is corrupted.
-    assign fill_data_d[fb] = (fill_hit_ic1[fb] & ~ecc_err_ic1) ? hit_data_ic1[LineSize-1:0] :
-                                                                 {LINE_BEATS{instr_rdata_i}};
+    assign fill_data_d[fb] = fill_hit_ic1[fb] ? hit_data_ic1[LineSize-1:0] :
+                                                {LINE_BEATS{instr_rdata_i}};
 
     for (genvar b = 0; b < LINE_BEATS; b++) begin : gen_data_buf
       // Error tracking (per beat)
@@ -865,8 +864,7 @@ module ibex_icache #(
   // Output data is valid (from any of the three possible sources). Note that fill_out_arb
   // must be used here rather than fill_out_req because data can become valid out of order
   // (e.g. cache hit data can become available ahead of an older outstanding miss).
-  // Any ECC error suppresses the output that cycle.
-  assign data_valid = |fill_out_arb & ~ecc_err_ic1;
+  assign data_valid = |fill_out_arb;
 
   // Skid buffer data
   assign skid_data_d = output_data[31:16];
@@ -1016,5 +1014,9 @@ module ibex_icache #(
   // ECC primitives will need to be changed for different sizes
   `ASSERT_INIT(ecc_tag_param_legal, (TAG_SIZE <= 27))
   `ASSERT_INIT(ecc_data_param_legal, (LineSize <= 121))
+
+  // Lookups in the tag ram should always give a known result
+  `ASSERT_KNOWN(TagHitKnown,     lookup_valid_ic1 & tag_hit_ic1)
+  `ASSERT_KNOWN(TagInvalidKnown, lookup_valid_ic1 & tag_invalid_ic1)
 
 endmodule

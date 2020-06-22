@@ -55,9 +55,14 @@ interface ibex_icache_mem_if (input clk,
     driver_cb.gnt     <= 1'b0;
   endtask
 
-  // Wait for num_clks posedges on the clk signal
+  // Wait for num_clks posedges on the clk signal. Returns early on a reset.
   task automatic wait_clks(int num_clks);
-    repeat (num_clks) @(driver_cb);
+    if (!rst_n) return;
+    fork
+      repeat (num_clks) @(driver_cb);
+      @(negedge rst_n);
+    join_any
+    disable fork;
   endtask
 
   // Drive a response with the given rdata and possible error signals for a single cycle

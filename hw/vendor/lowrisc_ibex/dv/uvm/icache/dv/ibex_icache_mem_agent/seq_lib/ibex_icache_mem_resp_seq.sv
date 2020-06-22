@@ -6,7 +6,9 @@
 
 class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
 
-  // Knobs
+  // Non-null if this is an item after the first in a "combo" run, which runs several of these
+  // sequences back-to-back. Must be set before pre_start to have any effect.
+  ibex_icache_mem_resp_seq prev_sequence = null;
 
   protected ibex_icache_mem_model #(.BusWidth (32)) mem_model;
 
@@ -24,30 +26,44 @@ class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
   // To avoid this problem, we keep a queue of pending addresses along with their corresponding
   // seeds. When a grant message comes in, we know that we can look up the correct seed there,
   // discarding results until we find it.
-  protected bit [63:0] pending_grants[$];
-  protected bit [31:0] cur_seed = 0;
+  bit [63:0] pending_grants[$];
+  bit [31:0] cur_seed = 0;
 
   `uvm_object_utils(ibex_icache_mem_resp_seq)
   `uvm_object_new
 
   task pre_start();
     super.pre_start();
-    mem_model = new("mem_model", cfg.disable_pmp_errs, cfg.disable_mem_errs, cfg.mem_err_shift);
+    mem_model = new("mem_model", cfg.disable_pmp_errs, cfg.disable_mem_errs);
+
+    // Take any pending grants and seed from a previous sequence
+    if (prev_sequence) begin
+      pending_grants = prev_sequence.pending_grants;
+      cur_seed = prev_sequence.cur_seed;
+    end
   endtask
 
   task body();
     ibex_icache_mem_req_item  req_item  = new("req_item");
+    ibex_icache_mem_req_item  req_item2 = new("req_item2");
     ibex_icache_mem_resp_item resp_item = new("resp_item");
 
     forever begin
-      // Wait for a transaction request.
-      p_sequencer.request_fifo.get(req_item);
+      // Wait for a transaction request. We use peek, handle the request, and then get (and drop)
+      // the item. This means that if our sequence is killed in the middle of handling it, the item
+      // will still be passed from the monitor to any later sequence.
+      p_sequencer.request_fifo.get_peek_export.peek(req_item);
 
       if (!req_item.is_grant) begin
         take_req(resp_item, req_item);
       end else begin
         take_gnt(resp_item, req_item);
       end
+
+      // Get and drop the request item now that we've dealt with it. As a sanity check, make sure
+      // that the two items match.
+      p_sequencer.request_fifo.get_peek_export.get(req_item2);
+      `DV_CHECK_EQ_FATAL(req_item, req_item2)
     end
   endtask
 
@@ -75,7 +91,7 @@ class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
     resp_item.is_grant = 1'b0;
     resp_item.address  = req_item.address;
     resp_item.rdata    = 'X;
-    resp_item.err = mem_model.is_pmp_error(cur_seed, req_item.address);
+    resp_item.err = mem_model.is_pmp_error(cur_seed, req_item.address, cfg.mem_err_shift);
 
     start_item(resp_item);
     `DV_CHECK_RANDOMIZE_FATAL(resp_item)
@@ -116,7 +132,7 @@ class ibex_icache_mem_resp_seq extends ibex_icache_mem_base_seq;
     // Using the seed that we saw for the request, check the memory model for a (non-PMP) error
     // at this address. On success, look up the memory data too.
     resp_item.is_grant = 1'b1;
-    resp_item.err      = mem_model.is_mem_error(gnt_seed, req_item.address);
+    resp_item.err      = mem_model.is_mem_error(gnt_seed, req_item.address, cfg.mem_err_shift);
     resp_item.address  = req_item.address;
     resp_item.rdata    = resp_item.err ? 'X : mem_model.read_data(gnt_seed, req_item.address);
 

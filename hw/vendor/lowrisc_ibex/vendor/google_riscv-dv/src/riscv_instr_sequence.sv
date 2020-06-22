@@ -275,6 +275,12 @@ class riscv_instr_sequence extends uvm_sequence;
       str = {prefix, instr_stream.instr_list[i].convert2asm()};
       instr_string_list.push_back(str);
     end
+    // If PMP is supported, need to align <main> to a 4-byte boundary.
+    // TODO(udi) - this might interfere with multi-hart programs,
+    //             may need to specifically match hart0.
+    if (riscv_instr_pkg::support_pmp && !uvm_re_match("*main*", label_name)) begin
+      instr_string_list.push_front(".align 2");
+    end
     insert_illegal_hint_instr();
     prefix = format_string($sformatf("%0d:", i), LABEL_STR_LEN);
     if(!is_main_program) begin

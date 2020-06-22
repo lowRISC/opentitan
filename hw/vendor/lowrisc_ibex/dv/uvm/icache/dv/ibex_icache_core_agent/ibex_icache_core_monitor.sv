@@ -21,13 +21,15 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-
     if (cfg.en_cov) begin
       fork
         process_cancelled_valid();
       join_none
     end
+
+    super.run_phase(phase);
+
+    disable fork;
   endtask
 
   // collect transactions forever - already forked in dv_base_moditor::run_phase

@@ -9,6 +9,7 @@ package ibex_icache_env_pkg;
   import dv_utils_pkg::*;
   import ibex_icache_core_agent_pkg::*;
   import ibex_icache_mem_agent_pkg::*;
+  import ibex_icache_ecc_agent_pkg::*;
   import dv_lib_pkg::*;
 
   // macro includes

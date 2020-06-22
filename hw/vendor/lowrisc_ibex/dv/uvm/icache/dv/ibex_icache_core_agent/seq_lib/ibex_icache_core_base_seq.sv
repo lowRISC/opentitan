@@ -12,6 +12,10 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
 
   `uvm_object_new
 
+  // Non-null if this is an item after the first in a "combo" run, which runs several of these
+  // sequences back-to-back. Must be set before pre_start to have any effect.
+  ibex_icache_core_base_seq prev_sequence = null;
+
   // If this is set, any branch target address should be within 64 bytes of base_addr and runs of
   // instructions should have a maximum length of 100.
   bit constrain_branches = 1'b0;
@@ -24,7 +28,11 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
   // setting.
   bit const_enable = 1'b0;
 
-  // If this bit is set, we will never invalidate the cache (useful for hit ratio tracking)
+  // If this bit is set, the next request will invalidate the cache.
+  bit must_invalidate = 1'b0;
+
+  // If this bit is set, we will never invalidate the cache (useful for hit ratio tracking), except
+  // if must_invalidate is set.
   bit no_invalidate = 1'b0;
 
   // The expected number of items between each new memory seed when the cache is disabled. A new
@@ -40,13 +48,33 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
   // The expected number of items between enable/disable toggles.
   int unsigned gap_between_toggle_enable = 49;
 
-
   // Number of test items (note that a single test item may contain many instruction fetches)
-  protected rand int count;
-  constraint c_count { count inside {[800:1000]}; }
+  //
+  // The default value is for convenience. This should be constrained by whatever virtual sequence
+  // is using the core sequence.
+  int unsigned num_trans = 1000;
 
   // The base address used when constrain_branches is true.
   protected rand bit[31:0] base_addr;
+
+  // The top of the possible range of addresses used when constrain_branches is true. Set at the
+  // start of body().
+  protected bit [31:0] top_restricted_addr;
+
+  // Distribution for base_addr which adds extra weight to each end of the address space
+  constraint c_base_addr { base_addr dist { [0:15]                      :/ 1,
+                                            [16:32'hfffffff0]           :/ 2,
+                                            [32'hfffffff0:32'hffffffff] :/ 1 }; }
+
+  // Make sure that base_addr is even (otherwise you can fail to generate items if you pick a base
+  // addr of 32'hffffffff with constrained addresses enabled: the only address large enough is
+  // 32'hffffffff, but it doesn't have a zero bottom bit).
+  constraint c_base_addr_alignment {
+    // The branch address is always required to be half-word aligned. We don't bother conditioning
+    // this on the type of transaction because branch_addr is forced to be zero in anything but a
+    // branch transaction.
+    !base_addr[0];
+  }
 
   // If this is set, the next request should be constrained to have trans_type
   // ICacheCoreTransTypeBranch. It's initially 1 because the core must start with a branch to tell
@@ -70,6 +98,10 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
     // can set initial_enable after constructing the sequence, but before running it.
     cache_enabled = initial_enable;
 
+    // If constrain_branches is true, any branch must land in [base_addr:(base_addr + 64)]. We need
+    // to make sure that this doesn't wrap, though.
+    top_restricted_addr = (base_addr <= (32'hffffffff - 64)) ? base_addr + 64 : 32'hffffffff;
+
     run_reqs();
   endtask
 
@@ -88,7 +120,15 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
 
        // If this is a branch and constrain_branches is true then constrain any branch target.
        (constrain_branches && (req.trans_type == ICacheCoreTransTypeBranch)) ->
-         req.branch_addr inside {[base_addr:(base_addr + 64)]};
+         req.branch_addr inside {[base_addr:top_restricted_addr]};
+
+       // If this is a branch and constrain_branches is false, we don't constrain the branch target,
+       // but we do weight the bottom and top of the address space a bit higher. This is a weaker
+       // version of the weighting that we place on base_addr.
+       (!constrain_branches && (req.trans_type == ICacheCoreTransTypeBranch)) ->
+         req.branch_addr dist { [0:63]                      :/ 1,
+                                [64:32'hffffffbf]           :/ 20,
+                                [32'hffffffc0:32'hffffffff] :/ 1 };
 
        // If this is a branch and constrain_branches is true, we can ask for up to 100 instructions
        // (independent of insns_since_branch)
@@ -107,8 +147,12 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
        // fetches)
        enable dist { cache_enabled :/ gap_between_toggle_enable, ~cache_enabled :/ 1 };
 
-       // If no_invalidate is set, we shouldn't ever touch the invalidate line.
-       no_invalidate -> invalidate == 1'b0;
+       // If must_invalidate is set, we have to invalidate with this item.
+       must_invalidate -> invalidate == 1'b1;
+
+       // If no_invalidate is set, we shouldn't ever touch the invalidate line, unless
+       // must_invalidate is set (which will only apply once).
+       (no_invalidate && !must_invalidate) -> invalidate == 1'b0;
 
        // Start an invalidation every 1+gap_between_invalidations items.
        invalidate dist { 1'b0 :/ gap_between_invalidations, 1'b1 :/ 1 };
@@ -138,14 +182,17 @@ class ibex_icache_core_base_seq extends dv_base_seq #(
                           req.num_insns);
   endtask
 
-  // Generate and run count items. Subclasses probably want to configure the parameters above before
+  // Generate and run num_trans items. Subclasses probably want to configure the parameters above before
   // running this.
   protected task run_reqs();
     req = ibex_icache_core_req_item::type_id::create("req");
     rsp = ibex_icache_core_rsp_item::type_id::create("rsp");
 
-    repeat (count - 1) begin
+    repeat (num_trans - 1) begin
       run_req(req, rsp);
+
+      // Always clear the must_invalidate flag after an item (it's a 1-shot thing)
+      must_invalidate = 1'b0;
     end
   endtask
 

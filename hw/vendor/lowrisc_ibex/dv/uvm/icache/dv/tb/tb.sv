@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-module tb;
+module tb #(parameter bit ICacheECC = 1'b0);
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
@@ -22,7 +22,9 @@ module tb;
   ibex_icache_mem_if  mem_if  (.clk(clk), .rst_n(rst_n));
 
   // dut
-  ibex_icache dut (
+  ibex_icache #(
+    .ICacheECC (ICacheECC)
+  ) dut (
     .clk_i           (clk),
     .rst_ni          (rst_n),
 
@@ -51,12 +53,45 @@ module tb;
     .instr_rvalid_i  (mem_if.rvalid)
   );
 
+  // If the ICacheECC parameter is set in the DUT, generate another interface for each tag ram and
+  // each data ram, binding them into the RAMs themselves. ECC tests can use these to insert errors
+  // into memory lookups.
+  generate if (dut.ICacheECC) begin : gen_ecc
+    for (genvar w = 0; w < dut.NumWays; w++) begin : gen_ecc_ifs
+      bind dut.gen_rams[w].tag_bank.gen_badbit.u_impl_badbit  ibex_icache_ecc_if tag_bank_if (.*);
+      bind dut.gen_rams[w].data_bank.gen_badbit.u_impl_badbit ibex_icache_ecc_if data_bank_if (.*);
+
+      initial begin
+        uvm_config_db#(virtual ibex_icache_ecc_if)::
+          set(null,
+              $sformatf("*.env.ecc_tag_agents[%0d]*", w),
+              "vif",
+              dut.gen_rams[w].tag_bank.gen_badbit.u_impl_badbit.tag_bank_if);
+
+        uvm_config_db#(virtual ibex_icache_ecc_if)::
+          set(null,
+              $sformatf("*.env.ecc_data_agents[%0d]*", w),
+              "vif",
+              dut.gen_rams[w].data_bank.gen_badbit.u_impl_badbit.data_bank_if);
+      end
+    end
+  end
+  endgenerate
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+
+    // Store virtual interfaces into the UVM config database. ECC interfaces are done separately
+    // above because otherwise you have to repeat the (verbose) generate loop.
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual ibex_icache_core_if)::set(null, "*.env.core_agent*", "vif", core_if);
     uvm_config_db#(virtual ibex_icache_mem_if)::set(null, "*.env.mem_agent*", "vif", mem_if);
+
+    // Record the number of (ECC) ways in the config database. The top-level environment's config
+    // will use this to decide how many agents to create.
+    uvm_config_db#(int unsigned)::set(null, "*", "num_ecc_ways", dut.ICacheECC ? dut.NumWays : 0);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

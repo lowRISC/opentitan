@@ -47,7 +47,7 @@ class core_ibex_reset_test extends core_ibex_base_test;
       clk_vif.wait_clks($urandom_range(0, 50000));
       fork
         begin
-          dut_vif.fetch_enable = 1'b0;
+          dut_vif.dut_cb.fetch_enable <= 1'b0;
           clk_vif.reset();
         end
         begin
@@ -61,7 +61,7 @@ class core_ibex_reset_test extends core_ibex_base_test;
         end
       join
       // Assert fetch_enable to have the core start executing from boot address
-      dut_vif.fetch_enable = 1'b1;
+      dut_vif.dut_cb.fetch_enable <= 1'b1;
     end
   endtask
 
@@ -223,7 +223,7 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
     end
     check_next_core_status(HANDLING_IRQ, "Core did not jump to vectored interrupt handler", 750);
     check_priv_mode(PRIV_LVL_M);
-    operating_mode = dut_vif.priv_mode;
+    operating_mode = dut_vif.dut_cb.priv_mode;
     // check mstatus
     wait_for_csr_write(CSR_MSTATUS, 500);
     mstatus = signature_data;
@@ -329,16 +329,16 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
       begin
         case (ret)
           "dret": begin
-            wait (dut_vif.dret === 1'b1);
+            wait (dut_vif.dut_cb.dret === 1'b1);
           end
           "mret": begin
-            wait (dut_vif.mret === 1'b1);
+            wait (dut_vif.dut_cb.mret === 1'b1);
           end
           default: begin
             `uvm_fatal(`gfn, $sformatf("Invalid xRET instruction %0s", ret))
           end
         endcase
-        wait (dut_vif.priv_mode === select_mode());
+        wait (dut_vif.dut_cb.priv_mode === select_mode());
       end
       begin : ret_timeout
         clk_vif.wait_clks(timeout);
@@ -352,7 +352,7 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
   endtask
 
   virtual function void check_priv_mode(priv_lvl_e mode);
-    `DV_CHECK_EQ_FATAL(dut_vif.priv_mode, mode,
+    `DV_CHECK_EQ_FATAL(dut_vif.dut_cb.priv_mode, mode,
                        "Incorrect privilege mode")
   endfunction
 
@@ -397,7 +397,7 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
               check_stimulus();
             end : stimulus
             begin
-              wait(dut_vif.ecall === 1'b1);
+              wait (dut_vif.dut_cb.ecall === 1'b1);
               disable stimulus;
               if (run.get_objection_count(this) > 1) begin
                 run.drop_objection(this);
@@ -475,8 +475,8 @@ class core_ibex_irq_wfi_test extends core_ibex_directed_test;
 
   virtual task check_stimulus();
     forever begin
-      wait (dut_vif.wfi === 1'b1);
-      wait(dut_vif.core_sleep === 1'b1);
+      wait (dut_vif.dut_cb.wfi === 1'b1);
+      wait (dut_vif.dut_cb.core_sleep === 1'b1);
       send_irq_stimulus();
     end
   endtask
@@ -492,13 +492,15 @@ class core_ibex_irq_csr_test extends core_ibex_directed_test;
   virtual task check_stimulus();
     vseq.irq_raise_single_seq_h.max_delay = 0;
     // wait for a write to mstatus - should be in init code
-    wait(csr_vif.csr_access === 1'b1 && csr_vif.csr_addr === CSR_MSTATUS &&
-         csr_vif.csr_op != CSR_OP_READ);
+    wait (csr_vif.csr_cb.csr_access === 1'b1 &&
+          csr_vif.csr_cb.csr_addr === CSR_MSTATUS &&
+          csr_vif.csr_cb.csr_op != CSR_OP_READ);
     // send interrupt immediately after detection
     send_irq_stimulus();
     // wait for a write to mie - should be in init code
-    wait(csr_vif.csr_access === 1'b1 && csr_vif.csr_addr === CSR_MIE &&
-         csr_vif.csr_op != CSR_OP_READ);
+    wait (csr_vif.csr_cb.csr_access === 1'b1 &&
+          csr_vif.csr_cb.csr_addr === CSR_MIE &&
+          csr_vif.csr_cb.csr_op != CSR_OP_READ);
     // send interrupt immediately after detection
     send_irq_stimulus();
   endtask
@@ -562,7 +564,7 @@ class core_ibex_debug_in_irq_test extends core_ibex_directed_test;
             send_debug_stimulus(operating_mode, "Core did not enter debug mode from interrupt handler");
           end
           begin
-            wait(dut_vif.dret == 1'b1);
+            wait (dut_vif.dut_cb.dret == 1'b1);
             send_irq_stimulus_end();
           end
         join
@@ -591,8 +593,9 @@ class core_ibex_nested_irq_test extends core_ibex_directed_test;
         // Send nested interrupt after the checks of the first interrupt have finished
         in_nested_trap = 1'b1;
         // wait until we are setting mstatus.mie to 1'b1 to send the next set of interrupts
-        wait(csr_vif.csr_access === 1'b1 && csr_vif.csr_addr === CSR_MSTATUS &&
-             csr_vif.csr_op != CSR_OP_READ);
+        wait (csr_vif.csr_cb.csr_access === 1'b1 &&
+             csr_vif.csr_cb.csr_addr === CSR_MSTATUS &&
+             csr_vif.csr_cb.csr_op != CSR_OP_READ);
         send_irq_stimulus(1'b0);
         vseq.irq_raise_seq_h.max_delay = initial_irq_delay;
         in_nested_trap = 1'b0;
@@ -611,8 +614,8 @@ class core_ibex_debug_wfi_test extends core_ibex_directed_test;
 
   virtual task check_stimulus();
     forever begin
-      wait (dut_vif.wfi === 1'b1);
-      wait (dut_vif.core_sleep === 1'b1);
+      wait (dut_vif.dut_cb.wfi === 1'b1);
+      wait (dut_vif.dut_cb.core_sleep === 1'b1);
       clk_vif.wait_clks($urandom_range(100));
       send_debug_stimulus(init_operating_mode, "Core did not jump into debug mode from WFI state");
     end
@@ -629,12 +632,14 @@ class core_ibex_debug_csr_test extends core_ibex_directed_test;
   virtual task check_stimulus();
     vseq.debug_seq_single_h.max_delay = 0;
     // wait for a dummy write to mstatus in init code
-    wait(csr_vif.csr_access === 1'b1 && csr_vif.csr_addr === CSR_MSTATUS &&
-         csr_vif.csr_op != CSR_OP_READ);
+    wait (csr_vif.csr_cb.csr_access === 1'b1 &&
+          csr_vif.csr_cb.csr_addr === CSR_MSTATUS &&
+          csr_vif.csr_cb.csr_op != CSR_OP_READ);
     send_debug_stimulus(init_operating_mode, "Core did not trap to debug mode upon debug stimulus");
     // wait for a dummy write to mie in the init code
-    wait(csr_vif.csr_access === 1'b1 && csr_vif.csr_addr === CSR_MIE &&
-         csr_vif.csr_op != CSR_OP_READ);
+    wait (csr_vif.csr_cb.csr_access === 1'b1 &&
+          csr_vif.csr_cb.csr_addr === CSR_MIE &&
+          csr_vif.csr_cb.csr_op != CSR_OP_READ);
     send_debug_stimulus(init_operating_mode, "Core did not trap to debug mode upon debug stimulus");
   endtask
 
@@ -648,7 +653,7 @@ class core_ibex_dret_test extends core_ibex_directed_test;
 
   virtual task check_stimulus();
     forever begin
-      wait (dut_vif.dret === 1'b1);
+      wait (dut_vif.dut_cb.dret === 1'b1);
       check_illegal_insn("Core did not treat dret like illegal instruction");
     end
   endtask
@@ -678,7 +683,7 @@ class core_ibex_debug_ebreak_test extends core_ibex_directed_test;
       // capture the first write of dpc
       wait_for_csr_write(CSR_DPC, 500);
       dpc = signature_data;
-      wait (dut_vif.ebreak === 1'b1);
+      wait (dut_vif.dut_cb.ebreak === 1'b1);
       // compare the second writes of dcsr and dpc against the captured values
       wait_for_csr_write(CSR_DCSR, 1000);
       `DV_CHECK_EQ_FATAL(dcsr, signature_data,
@@ -713,7 +718,7 @@ class core_ibex_debug_ebreakmu_test extends core_ibex_directed_test;
     check_dcsr_cause(DBG_CAUSE_HALTREQ);
     wait_ret("dret", 5000);
     forever begin
-      wait (dut_vif.ebreak === 1'b1);
+      wait (dut_vif.dut_cb.ebreak === 1'b1);
       check_next_core_status(IN_DEBUG_MODE,
                              "Core did not enter debug mode after execution of ebreak", 2000);
       check_priv_mode(PRIV_LVL_M);
@@ -840,7 +845,7 @@ class core_ibex_mem_error_test extends core_ibex_directed_test;
       exc_type = EXC_CAUSE_STORE_ACCESS_FAULT;
     end
     check_mcause(1'b0, exc_type);
-    wait (dut_vif.mret === 1'b1);
+    wait (dut_vif.dut_cb.mret === 1'b1);
     `uvm_info(`gfn, "exiting mem fault checker", UVM_LOW)
   endtask
 
@@ -876,7 +881,7 @@ class core_ibex_mem_error_test extends core_ibex_directed_test;
                            "Core did not register correct memory fault type", 500);
     exc_type = EXC_CAUSE_INSTR_ACCESS_FAULT;
     check_mcause(1'b0, exc_type);
-    wait (dut_vif.mret === 1'b1);
+    wait (dut_vif.dut_cb.mret === 1'b1);
     `uvm_info(`gfn, "exiting mem fault checker", UVM_LOW)
   endtask
 
@@ -891,7 +896,7 @@ class core_ibex_umode_tw_test extends core_ibex_directed_test;
   virtual task check_stimulus();
     bit [ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
     forever begin
-      wait (dut_vif.wfi === 1'b1);
+      wait (dut_vif.dut_cb.wfi === 1'b1);
       check_illegal_insn("Core did not treat U-mode WFI as illegal");
     end
   endtask
@@ -907,9 +912,9 @@ class core_ibex_invalid_csr_test extends core_ibex_directed_test;
   virtual task check_stimulus();
     forever begin
       // Wait for a CSR access
-      wait (csr_vif.csr_access == 1'b1);
+      wait (csr_vif.csr_cb.csr_access == 1'b1);
       check_illegal_insn($sformatf("Core did not treat access to CSR 0x%0x from %0s as illegal",
-                                   csr_vif.csr_addr, init_operating_mode));
+                                   csr_vif.csr_cb.csr_addr, init_operating_mode));
     end
   endtask
 

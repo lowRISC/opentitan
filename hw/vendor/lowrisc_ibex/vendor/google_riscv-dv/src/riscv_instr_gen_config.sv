@@ -328,6 +328,8 @@ class riscv_instr_gen_config extends uvm_object;
   constraint mstatus_c {
     if (set_mstatus_mprv) {
       mstatus_mprv == 1'b1;
+    } else {
+      mstatus_mprv == 1'b0;
     }
     if (SATP_MODE == BARE) {
       mstatus_mxr == 0;
@@ -591,7 +593,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_invalid_priv_lvl_csr();
   endfunction
 
-  function void setup_instr_distribution();
+  virtual function void setup_instr_distribution();
     string opts;
     int val;
     get_int_arg_value("+dist_control_mode=", dist_control_mode);
@@ -643,7 +645,7 @@ class riscv_instr_gen_config extends uvm_object;
     end
   endfunction
 
-  function void get_non_reserved_gpr();
+  virtual function void get_non_reserved_gpr();
   endfunction
 
   function void post_randomize();
@@ -659,7 +661,7 @@ class riscv_instr_gen_config extends uvm_object;
     end
   endfunction
 
-  function void check_setting();
+  virtual function void check_setting();
     bit support_64b;
     bit support_128b;
     foreach (riscv_instr_pkg::supported_isa[i]) begin

@@ -15,7 +15,6 @@ module ibex_controller #(
     input  logic                  clk_i,
     input  logic                  rst_ni,
 
-    input  logic                  fetch_enable_i,        // start decoding
     output logic                  ctrl_busy_o,           // core is busy processing instrs
 
     // decoder related signals
@@ -396,14 +395,11 @@ module ibex_controller #(
 
     unique case (ctrl_fsm_cs)
       RESET: begin
-        // just wait for fetch_enable
         instr_req_o   = 1'b0;
         pc_mux_o      = PC_BOOT;
         pc_set_o      = 1'b1;
         pc_set_spec_o = 1'b1;
-        if (fetch_enable_i) begin
-          ctrl_fsm_ns = BOOT_SET;
-        end
+        ctrl_fsm_ns   = BOOT_SET;
       end
 
       BOOT_SET: begin
@@ -719,6 +715,7 @@ module ibex_controller #(
               exc_cause_o = EXC_CAUSE_LOAD_ACCESS_FAULT;
               csr_mtval_o = lsu_addr_last_i;
             end
+            default: ;
           endcase
         end else begin
           // special instructions and pipeline flushes

@@ -26,7 +26,7 @@ class ibex_icache_scoreboard
   ibex_icache_mem_model #(BusWidth) mem_model;
 
   // A queue of memory seeds.
-  bit [31:0]   mem_seeds[$];
+  bit [31:0]   mem_seeds[$] = {32'd0};
 
   // Tracks the next address we expect to see on a fetch. This gets reset to 'X, then is set to an
   // address after each branch transaction.
@@ -119,17 +119,17 @@ class ibex_icache_scoreboard
     seed_fifo = new("seed_fifo", this);
     mem_model = new("mem_model",
                     cfg.mem_agent_cfg.disable_pmp_errs,
-                    cfg.mem_agent_cfg.disable_mem_errs,
-                    cfg.mem_agent_cfg.mem_err_shift);
+                    cfg.mem_agent_cfg.disable_mem_errs);
   endfunction
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    window_reset();
+    tracking_reset();
     fork
       process_core_fifo();
       process_mem_fifo();
       process_seed_fifo();
+      monitor_negedge_reset();
     join_none
   endtask
 
@@ -205,6 +205,9 @@ class ibex_icache_scoreboard
       mem_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received mem transaction:\n%0s", item.sprint()), UVM_HIGH)
 
+      // Looks like we are in reset. Discard the item.
+      if (!cfg.clk_rst_vif.rst_n) continue;
+
       if (item.is_grant) begin
         mem_trans_count += 1;
         window_take_mem_read();
@@ -225,10 +228,31 @@ class ibex_icache_scoreboard
     end
   endtask
 
-  virtual function void reset(string kind = "HARD");
-    super.reset(kind);
+  // Trigger start_reset on every negedge of the reset line. Never returns.
+  task monitor_negedge_reset();
+    forever begin
+      @(negedge cfg.clk_rst_vif.rst_n) start_reset();
+    end
+  endtask
+
+  // A function called on negedge of rst_n
+  function void start_reset();
     next_addr = 'X;
-    mem_seeds = {32'd0};
+
+    // Throw away any old seeds
+    invalidate_seed = mem_seeds.size - 1;
+    mem_seeds = mem_seeds[invalidate_seed:$];
+    invalidate_seed = 0;
+    last_branch_seed = 0;
+
+    // Forget about any pending bus transactions (they've been thrown away anyway)
+    mem_trans_count = 0;
+  endfunction
+
+  // Called on the posedge of rst_n which ends the reset period.
+  function void reset(string kind = "HARD");
+    super.reset(kind);
+    tracking_reset();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -260,7 +284,7 @@ class ibex_icache_scoreboard
         if (chatty) begin
           `uvm_info(`gfn,
                     $sformatf("Not seed 0x%08h: expected seen_err but saw 0.", seed),
-                    UVM_MEDIUM)
+                    UVM_LOW)
         end
         return 0;
       end
@@ -276,7 +300,7 @@ class ibex_icache_scoreboard
       if (chatty) begin
         `uvm_info(`gfn,
                   $sformatf("Not seed 0x%08h: got unexpected error flag.", seed),
-                  UVM_MEDIUM)
+                  UVM_LOW)
       end
       return 0;
     end
@@ -289,7 +313,7 @@ class ibex_icache_scoreboard
                     $sformatf("Not seed 0x%08h (expected cmp 0x(%04h)%04h; saw 0x(%04h)%04h).",
                               seed, exp_insn_data[31:16], exp_insn_data[15:0],
                               seen_insn_data[31:16], seen_insn_data[15:0]),
-                    UVM_MEDIUM)
+                    UVM_LOW)
         end
         return 0;
       end
@@ -299,7 +323,7 @@ class ibex_icache_scoreboard
           `uvm_info(`gfn,
                     $sformatf("Not seed 0x%08h (expected uncomp 0x%08h; saw 0x%08h).",
                               seed, exp_insn_data, seen_insn_data),
-                    UVM_MEDIUM)
+                    UVM_LOW)
         end
         return 0;
       end
@@ -334,7 +358,7 @@ class ibex_icache_scoreboard
         `uvm_info(`gfn,
                   $sformatf("Not seeds 0x%08h/0x%08h (expected error in low word).",
                             seed_lo, seed_hi),
-                  UVM_MEDIUM)
+                  UVM_LOW)
       end
       return 0;
     end
@@ -344,7 +368,7 @@ class ibex_icache_scoreboard
         `uvm_info(`gfn,
                   $sformatf("Not seeds 0x%08h/0x%08h (exp/seen top errors %0d/%0d).",
                             seed_lo, seed_hi, exp_err_hi, seen_err_plus2),
-                  UVM_MEDIUM)
+                  UVM_LOW)
       end
       return 0;
     end
@@ -354,7 +378,7 @@ class ibex_icache_scoreboard
         `uvm_info(`gfn,
                   $sformatf("Match for seeds 0x%08h/0x%08h (seen upper error).",
                             seed_lo, seed_hi),
-                  UVM_MEDIUM)
+                  UVM_LOW)
       end
       return 1'b1;
     end
@@ -365,7 +389,7 @@ class ibex_icache_scoreboard
         `uvm_info(`gfn,
                   $sformatf("Not seeds 0x%08h/0x%08h (exp/seen data 0x%08h/0x%08h).",
                             seed_lo, seed_hi, exp_insn_data, seen_insn_data),
-                  UVM_MEDIUM)
+                  UVM_LOW)
       end
       return 0;
     end
@@ -406,7 +430,8 @@ class ibex_icache_scoreboard
 
     return is_fetch_compatible_1(seen_insn_data,
                                  seen_err,
-                                 mem_model.is_either_error(seed, addr_lo),
+                                 mem_model.is_either_error(seed, addr_lo,
+                                                           cfg.mem_agent_cfg.mem_err_shift),
                                  rdata[31:0],
                                  seed,
                                  chatty);
@@ -445,13 +470,13 @@ class ibex_icache_scoreboard
     lo_bits_to_drop = BusWidth - lo_bits_to_take;
 
     // Do the first read (from the low address) and shift right to drop the bits that we don't need.
-    exp_err_lo = mem_model.is_either_error(seed_lo, addr_lo);
+    exp_err_lo = mem_model.is_either_error(seed_lo, addr_lo, cfg.mem_agent_cfg.mem_err_shift);
     rdata      = mem_model.read_data(seed_lo, addr_lo) >> lo_bits_to_drop;
     exp_data   = rdata[31:0];
 
     // Now do the second read (from the upper address). Shift the result up by lo_bits_to_take,
     // which will discard some top bits. Then extract 32 bits and OR with what we have so far.
-    exp_err_hi = mem_model.is_either_error(seed_hi, addr_hi);
+    exp_err_hi = mem_model.is_either_error(seed_hi, addr_hi, cfg.mem_agent_cfg.mem_err_shift);
     rdata      = mem_model.read_data(seed_hi, addr_hi) << lo_bits_to_take;
     exp_data   = exp_data | rdata[31:0];
 
@@ -587,11 +612,17 @@ class ibex_icache_scoreboard
     end
   endtask
 
+  // Completely reset cache tracking, waiting for busy to drop to be certain that invalidation is
+  // done
+  function automatic void tracking_reset();
+    not_invalidating = 1'b0;
+    window_reset();
+  endfunction
+
   // Reset the caching tracking window
   function automatic void window_reset();
     insns_in_window = 0;
     reads_in_window = 0;
-    not_invalidating = 1'b0;
     window_range_lo = ~(31'b0);
     window_range_hi = 0;
   endfunction
@@ -604,10 +635,16 @@ class ibex_icache_scoreboard
 
   // Register an instruction fetch with the caching tracking window
   function automatic void window_take_insn(bit [31:0] addr, bit err);
-    bit [31:0]   window_width;
+    bit [32:0]   window_width;
     int unsigned fetch_ratio_pc;
 
-    if (err) begin
+    // Ignore instructions and reset the window if this check is disabled in the configuration.
+    // Resetting the window each time avoids cases where we run an ECC sequence for a while (where
+    // the check should be disabled), then switch to a normal sequence (where the check should be
+    // enabled) just before the window finishes.
+    //
+    // Similarly, bail on an error since that would significantly lower the cache hit ratio.
+    if (err || cfg.disable_caching_ratio_test) begin
       window_reset();
       return;
     end
@@ -625,14 +662,14 @@ class ibex_icache_scoreboard
     // We have a full window. Has the address range been sufficiently small? The fatal check is for
     // the scoreboard logic: this should hold true as soon as we've seen an instruction.
     `DV_CHECK_LE_FATAL(window_range_lo, window_range_hi);
-    window_width = (window_range_hi - window_range_lo + 3) / 4;
+    window_width = ({1'b0, window_range_hi} - {1'b0, window_range_lo} + 33'd3) / 4;
 
     `uvm_info(`gfn,
               $sformatf("Completed window with %0d insns and %0d reads, range [0x%08h, 0x%08h].",
                         insns_in_window, reads_in_window, window_range_lo, window_range_hi),
               UVM_HIGH)
 
-    if (window_width <= max_window_width) begin
+    if (window_width[31:0] <= max_window_width) begin
       // The range has been small enough, so we can actually check whether the caching is working.
       // Calculate the R we've seen (as a percentage).
       fetch_ratio_pc = (reads_in_window * 100 * 7 / 4) / insns_in_window;
@@ -643,7 +680,7 @@ class ibex_icache_scoreboard
                            "%0d instructions and address range [0x%08h, 0x%08h] ",
                            "(window width %0d)"},
                           fetch_ratio_pc, insns_in_window,
-                          window_range_lo, window_range_hi, window_width))
+                          window_range_lo, window_range_hi, window_width[31:0]))
     end
 
     // Start the next window

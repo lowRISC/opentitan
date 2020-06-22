@@ -26,18 +26,22 @@ The testbench intentionally avoids knowing detailed information about the cache'
 This means that the testbench cannot compare the DUT with a reference model, nor can it model the exact requests that the DUT will make of instruction memory: the whole point of a cache is that it might avoid an instruction fetch.
 
 The cache has two main interfaces, which face the core and instruction bus respectively.
-We model this with two agents: the *core agent* and the *memory agent*.
+We model this with two main agents: the *core agent* and the *memory agent*.
 The core agent will emulate a core making instruction fetch requests from the cache and the memory agent will emulate the instruction bus.
 
-In fact, there's one more logical interface: the `busy_o` signal from the cache.
+In fact, there's one more logical interface at the top-level: the `busy_o` signal from the cache.
 This signal is passed up to top-level in the design and warns the chip not to clock-gate or reset the core (because there are bus transactions in flight, or a memory invalidation in progress).
 Rather than have an extra agent just for this single-bit passive signal, we pass the signal to the monitor in the core agent, which reports changes to the scoreboard.
 
+Finally, we bind an interface in for each RAM in the cache.
+These interfaces are controlled by instances of the *ECC agent*, which is in charge of injecting occasional one- and two-bit errors which should be spotted by the cache's ECC checks.
+
 ![Testbench block diagram](tb.svg)
 
-Both agents report events to the scoreboard.
+Both main agents report events to the scoreboard.
 The core agent reports whether the cache is busy, every branch sent to the cache, invalidation requests, enabling/disabling the cache and every instruction fetched (address and contents).
 The memory agent reports every change of seed (see the [Memory Agent](#memory-agent) section below).
+The ECC agents don't currently report to the scoreboard, since they aren't supposed to have any architectural effect.
 
 ### Agents
 
@@ -73,6 +77,11 @@ The precise functions can be found in [`dv/uvm/icache/dv/ibex_icache_mem_agent/i
 
 The memory agent is an active slave, responding to instruction fetches from the cache with either a PMP error (on the same cycle as the request) or instruction data (with an in-order request pipeline).
 
+#### ECC Agent
+
+Each ECC agent emulates possible data corruption in the cache's underlying memories.
+The sole sequence causes occasional 1- or 2-bit errors, injected by XORing valid data from the underlying memory with a mask.
+
 ### Top level testbench
 
 The top level testbench is located at [`dv/uvm/icache/dv/tb/tb.sv`](https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/tb/tb.sv). It instantiates the `ibex_icache` DUT module whose source is at [`rtl/ibex_icache.sv`](https://github.com/lowRISC/ibex/blob/master/rtl/ibex_icache.sv).
@@ -80,6 +89,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * Clock and reset interface ([`vendor/lowrisc_ip/common_ifs`](https://github.com/lowRISC/ibex/tree/master/vendor/lowrisc_ip/common_ifs))
 * Core interface ([`dv/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_if.sv`](https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_if.sv))
 * Memory interface ([`dv/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_if.sv`](https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_if.sv))
+* ECC interfaces ([`dv/uvm/icache/dv/ibex_icache_ecc_agent/ibex_icache_ecc_if.sv`](https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/ibex_icache_ecc_agent/ibex_icache_ecc_if.sv))
 
 ### Common DV utility components
 

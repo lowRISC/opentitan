@@ -24,7 +24,19 @@ small:
 
 # Three-stage pipeline with additional branch traget ALU and 1 cycle multiplier
 # (2 cycles for mulh) so mul does not stall (mulh stall 1 cycles). This is the
-# maximum performance configuration. PMP is enabled with 16 regions.
+# maximum performance configuration.
+experimental-maxperf:
+  RV32E                    : 0
+  RV32M                    : 1
+  RV32B                    : 0
+  BranchTargetALU          : 1
+  WritebackStage           : 1
+  MultiplierImplementation : "single-cycle"
+  PMPEnable                : 0
+  PMPGranularity           : 0
+  PMPNumRegions            : 4
+
+# experimental-maxperf config above plus PMP enabled with 16 regions.
 experimental-maxperf-pmp:
   RV32E                    : 0
   RV32M                    : 1

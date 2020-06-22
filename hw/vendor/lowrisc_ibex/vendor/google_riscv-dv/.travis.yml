@@ -2,8 +2,6 @@ language: python
 dist: xenial
 matrix:
     include:
-        - python: 3.5
-          env: TOX_ENV=py35
         - python: 3.6
           env: TOX_ENV=py36
         - python: 3.7
@@ -15,3 +13,4 @@ install:
 script:
     - sphinx-build -E -W -b linkcheck docs/source build
     - pip uninstall -y riscv-dv
+    - flake8 --show-source pygen/pygen_src/ --config=.flake8
