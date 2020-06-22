@@ -23,6 +23,7 @@ IPS ?= aes           \
        rv_timer      \
        spi_device    \
        trial1        \
+       otbn          \
        uart          \
        usbdev        \
        usbuart
