@@ -49,6 +49,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"nmi_gen", '{
         '{32'h40140000, 32'h40140fff}
+    }},
+    '{"otbn", '{
+        '{32'h50000000, 32'h503fffff}
 }}};
 
   // List of Xbar hosts
@@ -72,7 +75,8 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux",
         "padctrl",
         "alert_handler",
-        "nmi_gen"}}
+        "nmi_gen",
+        "otbn"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -86,5 +90,6 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux",
         "padctrl",
         "alert_handler",
-        "nmi_gen"}}
+        "nmi_gen",
+        "otbn"}}
 };
