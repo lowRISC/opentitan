@@ -4,7 +4,7 @@
 //
 // Description: csrng top level wrapper file
 
-module csrng import csrng_pkg::*; import entropy_src_pkg::*; #(
+module csrng import csrng_pkg::*; #(
   parameter int unsigned NHwApps = 3
 ) (
   input logic         clk_i,
@@ -18,16 +18,16 @@ module csrng import csrng_pkg::*; import entropy_src_pkg::*; #(
   input efuse_sw_app_enable_i,
 
   // Entropy Interface
-  output entropy_src_hw_if_req_t entropy_src_hw_if_o,
-  input  entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
+  output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
+  input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
   // Application Interfaces
-  input  csrng_req_t  [NHwApps:1] csrng_cmd_i,
-  output csrng_rsp_t  [NHwApps:1] csrng_cmd_o,
+  input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
+  output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
 
   // Interrupts
-  output logic    cs_cmd_req_done_o,
-  output logic    cs_fifo_err_o
+  output logic    intr_cs_cmd_req_done_o,
+  output logic    intr_cs_fifo_err_o
 );
 
 
@@ -65,8 +65,8 @@ module csrng import csrng_pkg::*; import entropy_src_pkg::*; #(
          .csrng_cmd_i,
          .csrng_cmd_o,
 
-         .cs_cmd_req_done_o,
-         .cs_fifo_err_o
+         .intr_cs_cmd_req_done_o,
+         .intr_cs_fifo_err_o
          );
 
 endmodule

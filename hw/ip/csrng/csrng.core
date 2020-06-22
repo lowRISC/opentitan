@@ -10,7 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip:entropy_src:entropy_src_pkg
+      - lowrisc:ip:entropy_src_pkg
     files:
       - rtl/csrng_pkg.sv
       - rtl/csrng_reg_pkg.sv

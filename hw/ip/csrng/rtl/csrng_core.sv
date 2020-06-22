@@ -5,7 +5,7 @@
 // Description: csrng core module
 //
 
-module csrng_core import csrng_pkg::*; import entropy_src_pkg::*; #(
+module csrng_core import csrng_pkg::*; #(
   parameter int unsigned NHwApps = 3
 ) (
   input logic        clk_i,
@@ -18,16 +18,16 @@ module csrng_core import csrng_pkg::*; import entropy_src_pkg::*; #(
   input efuse_sw_app_enable_i,
 
   // Entropy Interface
-  output entropy_src_hw_if_req_t entropy_src_hw_if_o,
-  input  entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
+  output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
+  input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
   // Application Interfaces
   // instantiation interface
-  input  csrng_req_t  [NHwApps:1] csrng_cmd_i,
-  output csrng_rsp_t  [NHwApps:1] csrng_cmd_o,
+  input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
+  output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
 
-  output logic           cs_cmd_req_done_o,
-  output logic           cs_fifo_err_o
+  output logic           intr_cs_cmd_req_done_o,
+  output logic           intr_cs_fifo_err_o
 );
 
   import csrng_reg_pkg::*;
@@ -104,7 +104,7 @@ module csrng_core import csrng_pkg::*; import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_cmd_req_done.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_cmd_req_done.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_cmd_req_done.d),
-    .intr_o                 (cs_cmd_req_done_o)
+    .intr_o                 (intr_cs_cmd_req_done_o)
   );
 
 
@@ -116,7 +116,7 @@ module csrng_core import csrng_pkg::*; import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.cs_fifo_err.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.cs_fifo_err.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.cs_fifo_err.d),
-    .intr_o                 (cs_fifo_err_o)
+    .intr_o                 (intr_cs_fifo_err_o)
   );
 
   // set the interrupt sources
@@ -191,16 +191,16 @@ module csrng_core import csrng_pkg::*; import entropy_src_pkg::*; #(
   generate
     for (hai = 1; hai < NApps; hai = hai+1) begin : gen_app_if
       // cmd req
-      assign cmd_stage_vld[hai] = csrng_cmd_i[hai].csrng_req_vld;
-      assign cmd_stage_bus[hai] = csrng_cmd_i[hai].csrng_req_bus;
-      assign csrng_cmd_o[hai].csrng_req_rdy = cmd_stage_rdy[hai];
+      assign cmd_stage_vld[hai] = csrng_cmd_i[hai-1].csrng_req_vld;
+      assign cmd_stage_bus[hai] = csrng_cmd_i[hai-1].csrng_req_bus;
+      assign csrng_cmd_o[hai-1].csrng_req_rdy = cmd_stage_rdy[hai];
       // cmd ack
-      assign csrng_cmd_o[hai].csrng_rsp_ack = cmd_stage_ack[hai];
-      assign csrng_cmd_o[hai].csrng_rsp_sts = cmd_stage_ack_sts[hai];
+      assign csrng_cmd_o[hai-1].csrng_rsp_ack = cmd_stage_ack[hai];
+      assign csrng_cmd_o[hai-1].csrng_rsp_sts = cmd_stage_ack_sts[hai];
       // genbits
-      assign csrng_cmd_o[hai].genbits_vld = genbits_stage_vld[hai];
-      assign csrng_cmd_o[hai].genbits_bus = genbits_stage_bus[hai];
-      assign genbits_stage_rdy[hai] = csrng_cmd_i[hai].genbits_rdy;
+      assign csrng_cmd_o[hai-1].genbits_vld = genbits_stage_vld[hai];
+      assign csrng_cmd_o[hai-1].genbits_bus = genbits_stage_bus[hai];
+      assign genbits_stage_rdy[hai] = csrng_cmd_i[hai-1].genbits_rdy;
     end
   endgenerate
 

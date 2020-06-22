@@ -22,7 +22,7 @@
   inter_signal_list: [
     { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
       type:    "req_rsp",
-      name:    "csrng",
+      name:    "csrng_cmd",
       act:     "req",
       width:   "3",
       package: "csrng_pkg",

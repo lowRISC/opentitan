@@ -10,8 +10,8 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ip:entropy_src_pkg
     files:
-      - rtl/entropy_src_pkg.sv
       - rtl/entropy_src_reg_pkg.sv
       - rtl/entropy_src_reg_top.sv
       - rtl/entropy_src_shtests.sv
