@@ -379,6 +379,24 @@ extern "C" {
  */
 #define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
 
+/**
+ * Peripheral base address for otbn in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTBN_BASE_ADDR 0x50000000u
+
+/**
+ * Peripheral size for otbn in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_OTBN_BASE_ADDR and
+ * `TOP_EARLGREY_OTBN_BASE_ADDR + TOP_EARLGREY_OTBN_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_OTBN_SIZE_BYTES 0x400000u
+
 
 /**
  * Memory base address for rom in top earlgrey.
@@ -438,7 +456,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralNmiGen = 7, /**< nmi_gen */
   kTopEarlgreyPlicPeripheralUsbdev = 8, /**< usbdev */
   kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
-  kTopEarlgreyPlicPeripheralLast = 9, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
+  kTopEarlgreyPlicPeripheralLast = 10, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -529,7 +548,9 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevFrame = 78, /**< usbdev_frame */
   kTopEarlgreyPlicIrqIdUsbdevConnected = 79, /**< usbdev_connected */
   kTopEarlgreyPlicIrqIdPwrmgrWakeup = 80, /**< pwrmgr_wakeup */
-  kTopEarlgreyPlicIrqIdLast = 80, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdOtbnDone = 81, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdOtbnErr = 82, /**< otbn_err */
+  kTopEarlgreyPlicIrqIdLast = 82, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -539,7 +560,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[81];
+    top_earlgrey_plic_interrupt_for_peripheral[83];
 
 /**
  * PLIC external interrupt target.

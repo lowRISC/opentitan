@@ -6,5 +6,5 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --alert-handler-only -o hw/top_earlgrey/
 
-parameter uint NUM_ALERTS = 1;
-parameter bit [NUM_ALERTS-1:0] ASYNC_ON = 1'b0;
+parameter uint NUM_ALERTS = 4;
+parameter bit [NUM_ALERTS-1:0] ASYNC_ON = 4'b0000;

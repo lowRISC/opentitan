@@ -246,6 +246,13 @@
       reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
+    { name: "otbn",
+      type: "otbn",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x50000000",
+    },
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -341,7 +348,8 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr" ]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
+                     "otbn" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -353,8 +361,8 @@
 
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
-  // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac" ]
+  // first item goes to LSB of the alert source
+  alert_module: [ "hmac", "otbn" ]
 
   // generated list of alerts:
   alert: [

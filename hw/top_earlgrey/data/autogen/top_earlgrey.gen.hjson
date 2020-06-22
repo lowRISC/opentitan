@@ -63,6 +63,7 @@
         {
           clk_main_aes: main
           clk_main_hmac: main
+          clk_main_otbn: main
         }
       }
       {
@@ -1664,6 +1665,92 @@
         }
       ]
     }
+    {
+      name: otbn
+      type: otbn
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x50000000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_otbn
+      }
+      size: 0x400000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: imem_uncorrectable
+          width: 1
+          type: alert
+          async: 0
+        }
+        {
+          name: dmem_uncorrectable
+          width: 1
+          type: alert
+          async: 0
+        }
+        {
+          name: reg_uncorrectable
+          width: 1
+          type: alert
+          async: 0
+        }
+      ]
+      wakeup_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          name: idle
+          type: uni
+          struct: logic
+          width: "1"
+          act: req
+          inst_name: otbn
+          index: -1
+        }
+      ]
+    }
   ]
   memory:
   [
@@ -1835,6 +1922,7 @@
           padctrl
           alert_handler
           nmi_gen
+          otbn
         ]
         dm_sba:
         [
@@ -1850,6 +1938,7 @@
           padctrl
           alert_handler
           nmi_gen
+          otbn
         ]
       }
       nodes:
@@ -2134,6 +2223,23 @@
           xbar: false
           pipeline: "true"
         }
+        {
+          name: otbn
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: otbn
+          addr_range:
+          [
+            {
+              base_addr: 0x50000000
+              size_byte: 0x400000
+            }
+          ]
+          xbar: false
+          pipeline: "true"
+        }
       ]
       clock: clk_main_i
     }
@@ -2348,6 +2454,7 @@
     nmi_gen
     usbdev
     pwrmgr
+    otbn
   ]
   interrupt:
   [
@@ -2988,10 +3095,37 @@
       type: interrupt
       module_name: pwrmgr
     }
+    {
+      name: otbn_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: otbn
+    }
+    {
+      name: otbn_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: otbn
+    }
   ]
   alert_module:
   [
     hmac
+    otbn
   ]
   alert:
   [
@@ -3001,6 +3135,27 @@
       type: alert
       async: 0
       module_name: hmac
+    }
+    {
+      name: otbn_imem_uncorrectable
+      width: 1
+      type: alert
+      async: 0
+      module_name: otbn
+    }
+    {
+      name: otbn_dmem_uncorrectable
+      width: 1
+      type: alert
+      async: 0
+      module_name: otbn
+    }
+    {
+      name: otbn_reg_uncorrectable
+      width: 1
+      type: alert
+      async: 0
+      module_name: otbn
     }
   ]
   pinmux:
@@ -3549,6 +3704,15 @@
         struct: logic
         width: "1"
         inst_name: usbdev
+        index: -1
+      }
+      {
+        name: idle
+        type: uni
+        struct: logic
+        width: "1"
+        act: req
+        inst_name: otbn
         index: -1
       }
       {
