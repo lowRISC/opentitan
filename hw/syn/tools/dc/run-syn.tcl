@@ -12,8 +12,12 @@
 set CONFIG_PATH "./"
 source ${CONFIG_PATH}/setup.tcl
 
-# not exit remained in command line
-set RUN_INTERACTIVE $::env(INTERACTIVE)
+# if in interactive mode, do not exit at the end of the script
+if { [info exists ::env(INTERACTIVE)] } {
+    set RUN_INTERACTIVE 1
+} else {
+	set RUN_INTERACTIVE 0
+}
 
 # path to directory containing the source list file
 set SV_FLIST $::env(SV_FLIST)
@@ -166,7 +170,6 @@ saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
 # write_file -format ddc     -hierarchy -output "${DDCDIR}/flat.ddc"
 # write_file -format verilog -hierarchy -output "${VLOGDIR}/flat.v"
 
-if { ![info exists RUN_INTERACTIVE] } {
+if { $RUN_INTERACTIVE == 0 } {
     exit
 }
-
