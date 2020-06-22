@@ -58,6 +58,7 @@ class OneShotCfg(FlowCfg):
         self.build_modes = []
         self.run_modes = []
         self.regressions = []
+        self.max_msg_count = -1
 
         # Flow results
         self.result = OrderedDict()

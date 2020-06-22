@@ -64,7 +64,10 @@ def _extract_messages(full_file, results, key):
     This extracts error and warning messages from the sting buffer full_file.
     """
     err_warn_patterns = [("%s_errors" % key, r"^Error: .*"),
-                         ("%s_warnings" % key, r"^Warning: .*")]
+                         ("%s_errors" % key, r"^ERROR: .*"),
+                         ("%s_errors" % key, r"^.*command not found.*"),
+                         ("%s_warnings" % key, r"^Warning: .*"),
+                         ("%s_warnings" % key, r"^WARNING: .*")]
     _match_strings(full_file, "messages", err_warn_patterns, results)
 
     return results
