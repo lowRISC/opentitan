@@ -184,4 +184,3 @@ saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
 #if { ![info exists RUN_INTERACTIVE] } {
     exit
 #}
-

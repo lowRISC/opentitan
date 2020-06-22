@@ -24,4 +24,7 @@
                 "--logpath {build_dir} ",
                 "--reppath {build_dir}/REPORTS/ ",
                 "--outdir {build_dir}"]
+
+  // Restrict the maximum message count to 10 in each category
+  max_msg_count: 10
 }

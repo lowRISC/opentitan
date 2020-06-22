@@ -12,7 +12,7 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import subst_wildcards
+from utils import print_msg_list, subst_wildcards
 
 
 class SynCfg(OneShotCfg):
@@ -342,6 +342,29 @@ class SynCfg(OneShotCfg):
                                             colalign=colalign) + "\n\n"
             else:
                 results_str += "No power report found\n\n"
+
+            # Append detailed messages if they exist
+            # Note that these messages are omitted in publication mode
+            hdr_key_pairs = [("Flow Warnings", "flow_warnings"),
+                             ("Flow Errors", "flow_errors"),
+                             ("Analyze Warnings", "analyze_warnings"),
+                             ("Analyze Errors", "analyze_errors"),
+                             ("Elab Warnings", "elab_warnings"),
+                             ("Elab Errors", "elab_errors"),
+                             ("Compile Warnings", "compile_warnings"),
+                             ("Compile Errors", "compile_errors")]
+
+            has_msg = False
+            for _, key in hdr_key_pairs:
+                if key in self.result['messages']:
+                    has_msg = True
+                    break
+
+            if has_msg and not self.args.publish:
+                results_str += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
+                for hdr, key in hdr_key_pairs:
+                    msgs = self.result['messages'].get(key)
+                    results_str += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
             # TODO: add support for pie / bar charts for area splits and
             # QoR history
