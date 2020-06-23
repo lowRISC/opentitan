@@ -320,6 +320,13 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41150000"
     }
+    { name: "entropy_src"
+      type: "entropy_src"
+      clock_srcs: {clk_i: "main"}
+      clock_group: "trans"
+      reset_connections: {rst_ni: "sys"}
+      base_addr: "0x41160000"
+    }
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -370,6 +377,7 @@
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
+      'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
     }
 
     // top is to connect to top net/struct.
