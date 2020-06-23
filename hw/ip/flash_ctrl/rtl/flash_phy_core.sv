@@ -10,19 +10,20 @@
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
 module flash_phy_core import flash_phy_pkg::*; #(
-  parameter bit SkipInit     = 1   // this is an option to reset flash to all F's at reset
+  parameter bit SkipInit     = 1,  // this is an option to reset flash to all F's at reset
+  parameter int ArbCnt       = 4   // this is an option to reset flash to all F's at reset
 ) (
   input                              clk_i,
   input                              rst_ni,
   input                              host_req_i, // host request - read only
-  input [BankAddrW-1:0]              host_addr_i,
+  input [BusBankAddrW-1:0]           host_addr_i,
   input                              req_i,      // controller request
   input                              rd_i,
   input                              prog_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
   input flash_ctrl_pkg::flash_part_e part_i,
-  input [BankAddrW-1:0]              addr_i,
+  input [BusBankAddrW-1:0]           addr_i,
   input [BusWidth-1:0]               prog_data_i,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
@@ -33,7 +34,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       init_busy_o
 );
 
-  import flash_phy_pkg::*;
+  localparam int CntWidth = $clog2(ArbCnt + 1);
 
   typedef enum logic [1:0] {
     StIdle,
@@ -60,7 +61,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic ack;
 
   // interface with flash macro
-  logic [BankAddrW-1:0] muxed_addr;
+  logic [BusBankAddrW-1:0] muxed_addr;
   flash_ctrl_pkg::flash_part_e muxed_part;
 
   // entire read stage is idle, inclusive of all stages
@@ -72,6 +73,23 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // the read stage has valid data return
   logic rd_stage_data_valid;
 
+  // arbitration counter
+  // If controller side has lost arbitration ArbCnt times, favor it once
+  logic [CntWidth-1:0] arb_cnt;
+  logic inc_arb_cnt, clr_arb_cnt;
+  logic host_req_masked;
+
+  assign host_req_masked = host_req_i & (arb_cnt < ArbCnt);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      arb_cnt <= '0;
+    end else if (clr_arb_cnt) begin
+      arb_cnt <= '0;
+    end else if (inc_arb_cnt) begin
+      arb_cnt <= arb_cnt + 1'b1;
+    end
+  end
 
   assign host_req_done_o = host_rsp & rd_stage_data_valid;
 
@@ -91,18 +109,23 @@ module flash_phy_core import flash_phy_pkg::*; #(
     host_rsp = 1'b0;
     ctrl_rsp_vld = 1'b0;
     host_req_rdy_o = 1'b0;
+    inc_arb_cnt = 1'b0;
+    clr_arb_cnt = 1'b0;
 
     unique case (state_q)
       StIdle: begin
-        if (host_req_i) begin
+        if (host_req_masked) begin
           reqs[PhyRead] = 1'b1;
           host_sel = 1'b1;
           host_req_rdy_o = rd_stage_rdy;
+          inc_arb_cnt = req_i & host_req_rdy_o;
           state_d = host_req_rdy_o ? StHostRead : state_q;
         end else if (req_i && rd_i) begin
+          clr_arb_cnt = 1'b1;
           reqs[PhyRead] = 1'b1;
           state_d = rd_stage_rdy ? StCtrlRead : state_q;
         end else if (req_i) begin
+          clr_arb_cnt = 1'b1;
           reqs[PhyProg] = prog_i;
           reqs[PhyPgErase] = pg_erase_i;
           reqs[PhyBkErase] = bk_erase_i;
@@ -110,14 +133,15 @@ module flash_phy_core import flash_phy_pkg::*; #(
         end
       end
 
-      // The host priority may be dangerous, as it could lock-out controller initiated
-      // operations. Need to think about whether this should be made round-robin.
+      // The host has priority up to ArbCnt times when going head to head
+      // with controller
       StHostRead: begin
         host_rsp = 1'b1;
-        if (host_req_i) begin
+        if (host_req_masked) begin
           reqs[PhyRead] = 1'b1;
           host_sel = 1'b1;
           host_req_rdy_o = rd_stage_rdy;
+          inc_arb_cnt = req_i & host_req_rdy_o;
         end else if (rd_stage_idle) begin
           // once in pipelined reads, need to wait for the entire pipeline
           // to drain before returning to perform other operations
@@ -219,7 +243,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   prim_flash #(
     .InfosPerBank(InfosPerBank),
     .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage / WidthMultiple),
+    .WordsPerPage(WordsPerPage),
     .DataWidth(DataWidth),
     .SkipInit(SkipInit)
   ) i_flash (
@@ -229,8 +253,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .prog_i(reqs[PhyProg]),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
-    //.addr_i(muxed_addr[0 +: PageW + WordW]),
-    .addr_i(muxed_addr[BankAddrW-1:LsbAddrBit]),
+    .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
     .part_i(muxed_part),
     .prog_data_i(prog_data),
     .ack_o(ack),
