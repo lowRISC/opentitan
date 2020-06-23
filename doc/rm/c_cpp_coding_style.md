@@ -329,6 +329,7 @@ The following nonstandard attributes may be used:
 *   `weak` to make a symbol definition have weak linkage.
 *   `interrupt` to ensure a function has the right prolog and epilog for interrupts (this involves saving and restoring more registers than normal).
 *   `packed` to ensure a struct contains no padding.
+*   `warn_unused_result`, to mark functions that return error values that should be checked.
 
 It is recommended that other nonstandard attributes are not used, especially where C11 provides a standard means to accomplish the same thing.
 
