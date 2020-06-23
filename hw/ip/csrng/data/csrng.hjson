@@ -8,7 +8,7 @@
   param_list: [
     { name: "NHwApps",
       type: "int",
-      default: "4",
+      default: "3",
       desc: "Number of CSRNG hardware applications",
       local: "true"
     } 
