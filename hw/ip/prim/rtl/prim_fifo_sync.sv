@@ -5,7 +5,6 @@
 // Generic synchronous fifo for use in a variety of devices.
 
 `include "prim_assert.sv"
-`include "prim_util.svh"
 
 module prim_fifo_sync #(
   parameter int unsigned Width       = 16,
@@ -13,7 +12,7 @@ module prim_fifo_sync #(
   parameter int unsigned Depth       = 4,
   parameter bit OutputZeroIfEmpty    = 1'b1, // if == 1 always output 0 when FIFO is empty
   // derived parameter
-  localparam int          DepthW     = vbits(Depth+1)
+  localparam int          DepthW     = prim_util_pkg::vbits(Depth+1)
 ) (
   input                   clk_i,
   input                   rst_ni,
@@ -51,7 +50,7 @@ module prim_fifo_sync #(
   // Normal FIFO construction
   end else begin : gen_normal_fifo
 
-    localparam int unsigned PTRV_W    = vbits(Depth);
+    localparam int unsigned PTRV_W    = prim_util_pkg::vbits(Depth);
     localparam int unsigned PTR_WIDTH = PTRV_W+1;
 
     logic [PTR_WIDTH-1:0] fifo_wptr, fifo_rptr;
