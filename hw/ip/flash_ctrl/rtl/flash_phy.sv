@@ -14,7 +14,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
   input host_req_i,
-  input [AddrW-1:0] host_addr_i,
+  input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
   output logic host_req_done_o,
   output logic [BusWidth-1:0] host_rdata_o,
@@ -62,8 +62,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [BusWidth-1:0] rd_data [NumBanks];
 
   // select which bank each is operating on
-  assign host_bank_sel = host_req_i ? host_addr_i[BankAddrW +: BankW] : '0;
-  assign ctrl_bank_sel = flash_ctrl_i.addr[BankAddrW +: BankW];
+  assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
+  assign ctrl_bank_sel = flash_ctrl_i.addr[BusAddrW-1 -: BankW];
 
   // accept transaction if bank is ready and previous response NOT pending
   assign host_req_rdy_o = host_req_rdy[host_bank_sel] & host_rsp_avail[host_bank_sel] &
@@ -125,13 +125,13 @@ module flash_phy import flash_ctrl_pkg::*; (
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank]),
-      .host_addr_i(host_addr_i[0 +: BankAddrW]),
+      .host_addr_i(host_addr_i[0 +: BusBankAddrW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),
       .pg_erase_i(flash_ctrl_i.pg_erase),
       .bk_erase_i(flash_ctrl_i.bk_erase),
       .part_i(flash_ctrl_i.part),
-      .addr_i(flash_ctrl_i.addr[0 +: BankAddrW]),
+      .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),

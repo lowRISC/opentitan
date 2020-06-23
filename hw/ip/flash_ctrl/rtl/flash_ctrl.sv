@@ -31,9 +31,6 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   import flash_ctrl_reg_pkg::*;
 
-  localparam int DataBitWidth = $clog2(BytesPerWord);
-  localparam int EraseBitWidth = $bits(flash_erase_op_e);
-
   flash_ctrl_reg2hw_t reg2hw;
   flash_ctrl_hw2reg_t hw2reg;
 
@@ -77,27 +74,27 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Program Control Connections
   logic prog_flash_req;
   logic prog_flash_ovfl;
-  logic [AddrW-1:0] prog_flash_addr;
+  logic [BusAddrW-1:0] prog_flash_addr;
   logic prog_op_valid;
 
   // Read Control Connections
   logic rd_flash_req;
   logic rd_flash_ovfl;
-  logic [AddrW-1:0] rd_flash_addr;
+  logic [BusAddrW-1:0] rd_flash_addr;
 
   // Erase Control Connections
   logic erase_flash_req;
-  logic [AddrW-1:0] erase_flash_addr;
+  logic [BusAddrW-1:0] erase_flash_addr;
   logic [EraseBitWidth-1:0] erase_flash_type;
 
   // Done / Error signaling from ctrl modules
   logic [2:0] ctrl_done, ctrl_err;
 
   // Flash Memory Protection Connections
+  logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
   logic flash_error;
-  logic [AddrW-1:0] flash_addr;
   logic [BusWidth-1:0] flash_prog_data;
   logic [BusWidth-1:0] flash_rd_data;
   logic init_busy;
@@ -158,7 +155,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Program handler is consumer of prog_fifo
   flash_prog_ctrl #(
     .DataW(BusWidth),
-    .AddrW(AddrW)
+    .AddrW(BusAddrW)
   ) u_flash_prog_ctrl (
     .clk_i,
     .rst_ni,
@@ -168,7 +165,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .op_num_words_i (reg2hw.control.num.q),
     .op_done_o      (ctrl_done[0]),
     .op_err_o       (ctrl_err[0]),
-    .op_addr_i      (reg2hw.addr.q[DataBitWidth +: AddrW]),
+    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -236,7 +233,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Read handler is consumer of rd_fifo
   flash_rd_ctrl #(
     .DataW(BusWidth),
-    .AddrW(AddrW)
+    .AddrW(BusAddrW)
   ) u_flash_rd_ctrl (
     .clk_i,
     .rst_ni,
@@ -246,7 +243,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .op_num_words_i (reg2hw.control.num.q),
     .op_done_o      (ctrl_done[1]),
     .op_err_o       (ctrl_err[1]),
-    .op_addr_i      (reg2hw.addr.q[DataBitWidth +: AddrW]),
+    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
 
     // FIFO Interface
     .data_rdy_i     (rd_fifo_wready),
@@ -264,7 +261,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   // Erase handler does not consume fifo
   flash_erase_ctrl #(
-    .AddrW(AddrW),
+    .AddrW(BusAddrW),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
     .EraseBitWidth(EraseBitWidth)
@@ -274,7 +271,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .op_type_i      (reg2hw.control.erase_sel.q),
     .op_done_o      (ctrl_done[2]),
     .op_err_o       (ctrl_err[2]),
-    .op_addr_i      (reg2hw.addr.q[DataBitWidth +: AddrW]),
+    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
 
     // Flash Macro Interface
     .flash_req_o    (erase_flash_req),
@@ -326,6 +323,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_part_sel = flash_part_e'(reg2hw.control.partition_sel.q);
 
   // Flash memory protection
+  // Memory protection is page based and thus should use phy addressing
+  // This should move to flash_phy long term
   flash_mp #(
     .MpRegions(MpRegions),
     .NumBanks(NumBanks),
@@ -340,10 +339,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // read / prog / erase controls
     .req_i(flash_req),
-    .req_addr_i(flash_addr[WordW +: AllPagesW]),
+    .req_addr_i(flash_addr[BusAddrW-1 -: AllPagesW]),
     .req_part_i(flash_part_sel),
     .addr_ovfl_i(rd_flash_ovfl | prog_flash_ovfl),
-    .req_bk_i(flash_addr[BankAddrW +: BankW]),
+    .req_bk_i(flash_addr[BusAddrW-1 -: BankW]),
     .rd_i(rd_op),
     .prog_i(prog_op),
     .pg_erase_i(erase_op & (erase_flash_type == PageErase)),
@@ -453,14 +452,14 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
 
   // Unused bits
-  logic [DataBitWidth-1:0] unused_byte_sel;
-  logic [31-AddrW:0] unused_higher_addr_bits;
+  logic [BusByteWidth-1:0] unused_byte_sel;
+  logic [31-BusAddrW:0] unused_higher_addr_bits;
   logic [31:0] unused_scratch;
 
 
   // Unused signals
-  assign unused_byte_sel = reg2hw.addr.q[DataBitWidth-1:0];
-  assign unused_higher_addr_bits = reg2hw.addr.q[31:AddrW];
+  assign unused_byte_sel = reg2hw.addr.q[BusByteWidth-1:0];
+  assign unused_higher_addr_bits = reg2hw.addr.q[31:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
 

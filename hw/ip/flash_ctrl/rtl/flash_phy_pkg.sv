@@ -6,45 +6,34 @@
 //
 
 package flash_phy_pkg;
-  parameter int NumBanks     = flash_ctrl_pkg::NumBanks;
-  parameter int InfosPerBank = flash_ctrl_pkg::InfosPerBank;
-  parameter int PagesPerBank = flash_ctrl_pkg::PagesPerBank;
-  parameter int WordsPerPage = flash_ctrl_pkg::WordsPerPage;
-  parameter int BytesPerWord = flash_ctrl_pkg::BytesPerWord;
-  parameter int BankW        = flash_ctrl_pkg::BankW;
-  parameter int PageW        = flash_ctrl_pkg::PageW;
-  parameter int WordW        = flash_ctrl_pkg::WordW;
-  parameter int BusWidth     = flash_ctrl_pkg::BusWidth;
-  parameter int DataWidth    = flash_ctrl_pkg::DataWidth;
-  parameter int NumBuf       = 4; // number of flash read buffers
+
+  // flash phy parameters
+  parameter int NumBanks      = flash_ctrl_pkg::NumBanks;
+  parameter int InfosPerBank  = flash_ctrl_pkg::InfosPerBank;
+  parameter int PagesPerBank  = flash_ctrl_pkg::PagesPerBank;
+  parameter int WordsPerPage  = flash_ctrl_pkg::WordsPerPage;
+  parameter int BankW         = flash_ctrl_pkg::BankW;
+  parameter int PageW         = flash_ctrl_pkg::PageW;
+  parameter int WordW         = flash_ctrl_pkg::WordW;
+  parameter int BankAddrW     = flash_ctrl_pkg::BankAddrW;
+  parameter int DataWidth     = flash_ctrl_pkg::DataWidth;
+  parameter int WidthMultiple = flash_ctrl_pkg::WidthMultiple;
+  parameter int NumBuf        = 4; // number of flash read buffers
   parameter int RspOrderDepth = 2; // this should be DataWidth / BusWidth
                                    // will switch to this after bus widening
 
-  // This address width is from the perspective of the sw / flash controller
-  // which may assume a different width relative to the flash primitive
-  parameter int BankAddrW = flash_ctrl_pkg::BankAddrW;
-
-  // This address width is from the perspective of the flash primitive,
-  // which is an integer multiple of the bus width.  As a result, the number
-  // of relevant address bits changes.
+  // flash ctrl / bus parameters
+  parameter int BusWidth      = flash_ctrl_pkg::BusWidth;
+  parameter int BusBankAddrW  = flash_ctrl_pkg::BusBankAddrW;
+  parameter int BusWordW      = flash_ctrl_pkg::BusWordW;
 
   // address bits remain must be 0
   parameter int AddrBitsRemain = DataWidth % BusWidth;
 
-  // must be powers of 2 multiple
-  parameter int WidthMultiple = DataWidth / BusWidth;
-
-  // number of flash words per page vs bus words per page
-  parameter int FlashWordsPerPage = WordsPerPage / WidthMultiple;
-  parameter int FlashWordsW = $clog2(FlashWordsPerPage);
-
   // base index
   // This is the lsb position of the prim flash address when looking at the bus address
-  parameter int LsbAddrBit = $clog2(WidthMultiple);
-  parameter int WordSelW = WidthMultiple == 1 ? 1 : LsbAddrBit;
-
-  // prim flash addr width
-  parameter int PrimFlashAddrW = BankAddrW - LsbAddrBit;
+  parameter int LsbAddrBit    = $clog2(WidthMultiple);
+  parameter int WordSelW      = WidthMultiple == 1 ? 1 : LsbAddrBit;
 
   // Read buffer metadata
   typedef enum logic [1:0] {
@@ -56,7 +45,7 @@ package flash_phy_pkg;
 
   typedef struct packed {
     logic [DataWidth-1:0] data;
-    logic [PrimFlashAddrW-1:0] addr; // all address bits preserved to pick return portion
+    logic [BankAddrW-1:0] addr; // all address bits preserved to pick return portion
     logic part;
     rd_buf_attr_e attr;
   } rd_buf_t;
