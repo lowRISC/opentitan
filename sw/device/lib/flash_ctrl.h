@@ -10,8 +10,8 @@
 
 // Flash memory base defines, _SZ are presented in bytes
 #define FLASH_MEM_BASE_ADDR 0x20000000
-#define FLASH_WORDS_PER_PAGE 256
-#define FLASH_WORD_SZ 4
+#define FLASH_WORDS_PER_PAGE 128
+#define FLASH_WORD_SZ 8
 #define FLASH_PAGE_SZ (FLASH_WORDS_PER_PAGE * FLASH_WORD_SZ)
 #define FLASH_PAGES_PER_BANK 256
 #define FLASH_BANK_SZ (FLASH_PAGES_PER_BANK * FLASH_PAGE_SZ)

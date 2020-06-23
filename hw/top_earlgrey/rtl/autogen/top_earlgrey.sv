@@ -598,10 +598,10 @@ module top_earlgrey #(
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
-  logic [flash_ctrl_pkg::AddrW-1:0] flash_host_addr;
+  logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
   tlul_adapter_sram #(
-    .SramAw(flash_ctrl_pkg::AddrW),
+    .SramAw(flash_ctrl_pkg::BusAddrW),
     .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
