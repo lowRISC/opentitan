@@ -21,3 +21,9 @@ option(
   type: 'boolean',
   value: false,
 )
+
+option(
+  'keep_includes',
+  type: 'boolean',
+  value: true,
+)

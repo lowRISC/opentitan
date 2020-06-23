@@ -12,11 +12,8 @@ project(
     'cpp_std=c++14',
     'build.cpp_std=c++14',
     'warning_level=1',
-    'build.warning_level=1',
     'werror=true',
-    'build.werror=true',
     'debug=true',
-    'build.debug=true',
     'b_staticpic=false', # Disable PIC for device static libraries
     'b_pie=false',       # Disable PIE for device executables
   ],
@@ -34,13 +31,19 @@ if dev_bin_dir == 'undef' or host_bin_dir == 'undef'
 endif
 tock_local = get_option('tock_local')
 
-# C Arguments to optimize for size
+# See the comment in `./util/meson-purge-includes.sh` for why this is necessary.
+if not get_option('keep_includes')
+  meson.add_postconf_script(meson.source_root() + '/util/meson-purge-includes.sh')
+endif
+
+
+# C Arguments to optimize for size, used on cross builds only.
 optimize_size_args = [
   '-Os', # General "Optimize for Size" Option
   '-fvisibility=hidden', # Hide symbols by default
 ]
 
-if meson.get_compiler('c').has_argument('-Wa,--no-pad-sections')
+if meson.get_compiler('c', native: false).has_argument('-Wa,--no-pad-sections')
     # Don't pad assembly sections. This was originally added to avoid sections
     # being padded to the alignment size. Specifically, .vectors was being
     # padded to 256 bytes when aligning to that value, when it only needed to be
@@ -49,48 +52,42 @@ if meson.get_compiler('c').has_argument('-Wa,--no-pad-sections')
     optimize_size_args += '-Wa,--no-pad-sections'
 endif
 
-# The following flags are applied to *all* builds, both cross builds
-# and native builds.
-add_project_arguments(
+# The following flags are applied to *all* builds, both cross builds and native
+# builds.
+c_cpp_args = [
+  # We use absolute include paths as much as possible.
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
-  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
-  language: 'cpp', native: false)
-add_project_arguments(
-  '-I' + meson.source_root(),
-  '-I' + meson.build_root(),
-  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
-  language: 'cpp', native: true)
-
-add_project_arguments(
-  '-I' + meson.source_root(),
-  '-I' + meson.build_root(),
-  '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
-  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
-  language: 'c', native: false)
-add_project_arguments(
-  '-I' + meson.source_root(),
-  '-I' + meson.build_root(),
-  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
-  language: 'c', native: true)
+  # Remove once we've fully adopted warn_unused_result.
+  '-Wno-error=unused-result',
+]
+add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: false)
+add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: true)
 
 # The following flags are applied only to cross builds
+c_cpp_cross_args = [
+  # Do not use standard system headers
+  '-nostdinc',
+  # Use OpenTitan's freestanding headers instead
+  '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
+]
 add_project_arguments(
-  '-nostdinc', # Do not use standard system headers
+  c_cpp_cross_args,
   optimize_size_args,
-  language: 'cpp', native: false)
-add_project_arguments(
-  '-nostdinc', # Do not use standard system headers
-  optimize_size_args,
-  language: 'c', native: false)
+  language: ['c', 'cpp'], native: false)
+
+# The following flags are applied only to cross builds
+c_cpp_cross_link_args = [
+  # Do not use standard system startup files or libraries
+  '-nostartfiles',
+  '-nostdlib',
+   # Only link static files
+  '-static',
+]
 add_project_link_arguments(
-  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
-  '-static', # Only link static files
-  language: 'cpp', native: false)
-add_project_link_arguments(
-  '-nostartfiles', '-nostdlib', # Do not use standard system startup files or libraries
-  '-static', # Only link static files
-  language: 'c', native: false)
+  c_cpp_cross_link_args,
+  language: ['c', 'cpp'], native: false)
+
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
