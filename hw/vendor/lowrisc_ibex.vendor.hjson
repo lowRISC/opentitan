@@ -23,8 +23,8 @@
     'vendor/lowrisc_ip.lock.hjson',
     // We shouldn't reformat upstream code
     '.clang-format',
-    // top_pkg uses a global identifier any may appear only once in the tree.
-    'dv/uvm/icache/dv/top_pkg.sv',
-    'dv/uvm/icache/dv/top_pkg.core',
+    // Do not include any DV code, which has a high chance of shadowing DV code in
+    // OT. See https://github.com/lowRISC/opentitan/issues/2513.
+    'dv',
   ]
 }
