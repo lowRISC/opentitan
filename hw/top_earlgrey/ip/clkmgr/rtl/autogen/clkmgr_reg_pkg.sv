@@ -34,6 +34,9 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        q;
     } clk_main_csrng_hint;
+    struct packed {
+      logic        q;
+    } clk_main_entropy_src_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
 
@@ -54,6 +57,10 @@ package clkmgr_reg_pkg;
       logic        d;
       logic        de;
     } clk_main_csrng_val;
+    struct packed {
+      logic        d;
+      logic        de;
+    } clk_main_entropy_src_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
 
@@ -61,15 +68,15 @@ package clkmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [5:4]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [3:0]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [6:5]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [4:0]
   } clkmgr_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [7:8]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [9:10]
   } clkmgr_hw2reg_t;
 
   // Register Address

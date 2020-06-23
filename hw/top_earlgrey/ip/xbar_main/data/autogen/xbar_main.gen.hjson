@@ -50,6 +50,7 @@
       nmi_gen
       keymgr
       csrng
+      entropy_src
     ]
     dm_sba:
     [
@@ -65,6 +66,7 @@
       alert_handler
       nmi_gen
       csrng
+      entropy_src
     ]
   }
   nodes:
@@ -310,6 +312,22 @@
       [
         {
           base_addr: 0x41150000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: entropy_src
+      type: device
+      clock: clk_main_i
+      inst_type: entropy_src
+      pipeline: "false"
+      addr_range:
+      [
+        {
+          base_addr: 0x41160000
           size_byte: 0x1000
         }
       ]

@@ -312,6 +312,14 @@
  */
 #define TOP_EARLGREY_CSRNG_BASE_ADDR 0x41150000u
 
+/**
+ * Base address for entropy_src peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR 0x41160000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.

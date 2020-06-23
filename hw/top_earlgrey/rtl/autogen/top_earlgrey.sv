@@ -124,6 +124,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_keymgr_d_d2h;
   tl_h2d_t  tl_csrng_d_h2d;
   tl_d2h_t  tl_csrng_d_d2h;
+  tl_h2d_t  tl_entropy_src_d_h2d;
+  tl_d2h_t  tl_entropy_src_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -258,6 +260,7 @@ module top_earlgrey #(
   logic        cio_pattgen_pcl1_tx_en_d2p;
   // keymgr
   // csrng
+  // entropy_src
 
 
   logic [132:0]  intr_vector;
@@ -368,6 +371,10 @@ module top_earlgrey #(
   logic intr_keymgr_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_fifo_err;
+  logic intr_entropy_src_es_entropy_valid;
+  logic intr_entropy_src_es_rct_failed;
+  logic intr_entropy_src_es_apt_failed;
+  logic intr_entropy_src_es_fifo_err;
 
 
 
@@ -394,6 +401,8 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
+  entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
@@ -1224,11 +1233,32 @@ module top_earlgrey #(
       // Inter-module signals
       .csrng_cmd_i(csrng_csrng_cmd_req),
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
-      .entropy_src_hw_if_o(),
-      .entropy_src_hw_if_i(entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT),
+      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
+      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
       .efuse_sw_app_enable_i(1'b0),
 
       .clk_i (clkmgr_clocks.clk_main_csrng),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
+  entropy_src u_entropy_src (
+      .tl_i (tl_entropy_src_d_h2d),
+      .tl_o (tl_entropy_src_d_d2h),
+
+      // Interrupt
+      .intr_es_entropy_valid_o (intr_entropy_src_es_entropy_valid),
+      .intr_es_rct_failed_o    (intr_entropy_src_es_rct_failed),
+      .intr_es_apt_failed_o    (intr_entropy_src_es_apt_failed),
+      .intr_es_fifo_err_o      (intr_entropy_src_es_fifo_err),
+
+      // Inter-module signals
+      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
+      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
+      .entropy_src_rng_o(),
+      .entropy_src_rng_i(entropy_src_pkg::ENTROPY_SRC_RNG_RSP_DEFAULT),
+      .efuse_es_sw_reg_en_i(1'b0),
+
+      .clk_i (clkmgr_clocks.clk_main_entropy_src),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
@@ -1376,6 +1406,8 @@ module top_earlgrey #(
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
     .tl_csrng_o         (tl_csrng_d_h2d),
     .tl_csrng_i         (tl_csrng_d_d2h),
+    .tl_entropy_src_o   (tl_entropy_src_d_h2d),
+    .tl_entropy_src_i   (tl_entropy_src_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
     .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
 

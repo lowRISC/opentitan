@@ -65,6 +65,7 @@
           clk_main_hmac: main
           clk_main_keymgr: main
           clk_main_csrng: main
+          clk_main_entropy_src: main
         }
       }
       {
@@ -2850,6 +2851,7 @@
           width: 1
           package: entropy_src_pkg
           inst_name: csrng
+          top_signame: csrng_entropy_src_hw_if
           index: -1
         }
         {
@@ -2860,6 +2862,116 @@
           width: 1
           package: ""
           inst_name: csrng
+          index: -1
+        }
+      ]
+    }
+    {
+      name: entropy_src
+      type: entropy_src
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x41160000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_entropy_src
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: es_entropy_valid
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: es_rct_failed
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: es_apt_failed
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: es_fifo_err
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: entropy_src_hw_if
+          type: req_rsp
+          name: entropy_src_hw_if
+          act: rsp
+          package: entropy_src_pkg
+          inst_name: entropy_src
+          width: 1
+          top_signame: csrng_entropy_src_hw_if
+          index: -1
+        }
+        {
+          struct: entropy_src_rng
+          type: req_rsp
+          name: entropy_src_rng
+          act: req
+          package: entropy_src_pkg
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: efuse_es_sw_reg_en
+          width: 1
+          act: rcv
+          package: ""
+          inst_name: entropy_src
           index: -1
         }
       ]
@@ -2957,6 +3069,10 @@
       [
         clkmgr.pwr
       ]
+      csrng.entropy_src_hw_if:
+      [
+        entropy_src.entropy_src_hw_if
+      ]
     }
     top:
     [
@@ -3014,6 +3130,7 @@
           nmi_gen
           keymgr
           csrng
+          entropy_src
         ]
         dm_sba:
         [
@@ -3029,6 +3146,7 @@
           alert_handler
           nmi_gen
           csrng
+          entropy_src
         ]
       }
       nodes:
@@ -3338,6 +3456,22 @@
           [
             {
               base_addr: 0x41150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: entropy_src
+          type: device
+          clock: clk_main_i
+          inst_type: entropy_src
+          pipeline: "false"
+          addr_range:
+          [
+            {
+              base_addr: 0x41160000
               size_byte: 0x1000
             }
           ]
@@ -6002,6 +6136,7 @@
         width: 1
         package: entropy_src_pkg
         inst_name: csrng
+        top_signame: csrng_entropy_src_hw_if
         index: -1
       }
       {
@@ -6012,6 +6147,36 @@
         width: 1
         package: ""
         inst_name: csrng
+        index: -1
+      }
+      {
+        struct: entropy_src_hw_if
+        type: req_rsp
+        name: entropy_src_hw_if
+        act: rsp
+        package: entropy_src_pkg
+        inst_name: entropy_src
+        width: 1
+        top_signame: csrng_entropy_src_hw_if
+        index: -1
+      }
+      {
+        struct: entropy_src_rng
+        type: req_rsp
+        name: entropy_src_rng
+        act: req
+        package: entropy_src_pkg
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: efuse_es_sw_reg_en
+        width: 1
+        act: rcv
+        package: ""
+        inst_name: entropy_src
         index: -1
       }
       {
@@ -6068,6 +6233,20 @@
         package: pwrmgr_pkg
         struct: pwr_clk_rsp
         signame: pwrmgr_pwr_clk_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_req
+        signame: csrng_entropy_src_hw_if_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_rsp
+        signame: csrng_entropy_src_hw_if_rsp
         width: 1
         type: req_rsp
       }

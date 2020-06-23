@@ -46,6 +46,9 @@ tl_device_t xbar_devices[$] = '{
     '{"csrng", '{
         '{32'h41150000, 32'h41150fff}
     }},
+    '{"entropy_src", '{
+        '{32'h41160000, 32'h41160fff}
+    }},
     '{"nmi_gen", '{
         '{32'h41180000, 32'h41180fff}
 }}};
@@ -72,7 +75,8 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "nmi_gen",
         "keymgr",
-        "csrng"}}
+        "csrng",
+        "entropy_src"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -86,5 +90,6 @@ tl_host_t xbar_hosts[$] = '{
         "rv_plic",
         "alert_handler",
         "nmi_gen",
-        "csrng"}}
+        "csrng",
+        "entropy_src"}}
 };
