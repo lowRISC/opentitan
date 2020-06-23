@@ -7,31 +7,37 @@
 
 package flash_ctrl_pkg;
 
-  // parameters for flash macro properties
-  localparam int NumBanks        = top_pkg::FLASH_BANKS;
-  localparam int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  //Info pages per bank
-  localparam int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; //Data pages per bank
-  localparam int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; //Number of bus words per page
-  localparam int BytesPerWord    = top_pkg::FLASH_BYTES_PER_WORD;
-  localparam int BankW           = $clog2(NumBanks);
-  localparam int PageW           = $clog2(PagesPerBank);
-  localparam int WordW           = $clog2(WordsPerPage);
-  localparam int AddrW           = BankW + PageW + WordW; // all flash range
-  localparam int BankAddrW       = PageW + WordW;         // 1 bank of flash range
-  localparam int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
-  localparam int FlashTotalPages = NumBanks * PagesPerBank;
-  localparam int AllPagesW       = BankW + PageW;
+  // flash phy parameters
+  parameter int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
+  parameter int DataByteWidth   = $clog2(DataWidth / 8);
+  parameter int NumBanks        = top_pkg::FLASH_BANKS;
+  parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  //Info pages per bank
+  parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; //Data pages per bank
+  parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; //Number of bus words per page
+  parameter int BankW           = $clog2(NumBanks);
+  parameter int PageW           = $clog2(PagesPerBank);
+  parameter int WordW           = $clog2(WordsPerPage);
+  parameter int AddrW           = BankW + PageW + WordW; // all flash range
+  parameter int BankAddrW       = PageW + WordW;         // 1 bank of flash range
+  parameter int AllPagesW       = BankW + PageW;
 
-  // bus interface
-  localparam int BusWidth        = top_pkg::TL_DW;
+  // flash ctrl / bus parameters
+  // flash / bus width may be different from actual flash word width
+  parameter int BusWidth        = top_pkg::TL_DW;
+  parameter int BusByteWidth    = $clog2(BusWidth / 8);
+  parameter int WidthMultiple   = DataWidth / BusWidth;
+  parameter int BusWordsPerPage = WordsPerPage * WidthMultiple;
+  parameter int BusWordW        = $clog2(BusWordsPerPage);
+  parameter int BusAddrW        = BankW + PageW + BusWordW;
+  parameter int BusBankAddrW    = PageW + BusWordW;
+  parameter int PhyAddrStart    = BusWordW - WordW;
 
   // flash controller protection regions
-  localparam int MpRegions       = 8;
+  parameter int MpRegions       = 8;
 
   // fifo parameters
-  localparam int FifoDepth       = 16;
-  localparam int FifoDepthW      = $clog2(FifoDepth+1);
-
+  parameter int FifoDepth       = 16;
+  parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
@@ -45,6 +51,8 @@ package flash_ctrl_pkg;
     PageErase     = 0,
     BankErase     = 1
   } flash_erase_op_e;
+
+  parameter int EraseBitWidth = $bits(flash_erase_op_e);
 
   // Flash tlul to fifo direction
   typedef enum logic  {
@@ -60,14 +68,14 @@ package flash_ctrl_pkg;
 
   // Flash controller to memory
   typedef struct packed {
-    logic                req;
-    logic                rd;
-    logic                prog;
-    logic                pg_erase;
-    logic                bk_erase;
-    flash_part_e         part;
-    logic [AddrW-1:0]    addr;
-    logic [BusWidth-1:0] prog_data;
+    logic                 req;
+    logic                 rd;
+    logic                 prog;
+    logic                 pg_erase;
+    logic                 bk_erase;
+    flash_part_e          part;
+    logic [BusAddrW-1:0]  addr;
+    logic [BusWidth-1:0]  prog_data;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)

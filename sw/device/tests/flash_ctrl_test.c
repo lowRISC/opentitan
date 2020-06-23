@@ -134,10 +134,11 @@ static void test_memory_protection(void) {
   flash_cfg_region(&protection_region);
 
   // Attempt to perform a write.
-  uintptr_t region_boundary_start = bad_region_start - (FLASH_WORD_SZ * 3);
+  uintptr_t region_boundary_start = bad_region_start - (FLASH_WORD_SZ * 2);
   mmio_region_t region_boundary = mmio_region_from_addr(region_boundary_start);
 
-  uint32_t words[6];
+  // Place half the words in the good region and half in the bad
+  uint32_t words[(FLASH_WORD_SZ * 2 * 2) / sizeof(uint32_t)];
   memset(words, 0xa5, ARRAYSIZE(words) * sizeof(uint32_t));
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
     words[i] += i;

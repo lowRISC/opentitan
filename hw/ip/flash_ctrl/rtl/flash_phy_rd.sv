@@ -22,7 +22,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   input prog_i,
   input pg_erase_i,
   input bk_erase_i,
-  input [BankAddrW-1:0] addr_i,
+  input [BusBankAddrW-1:0] addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
   output logic rdy_o,
   output logic data_valid_o,
@@ -69,6 +69,10 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic [NumBuf-1:0] buf_valid_alloc;
   logic [NumBuf-1:0] buf_alloc;
 
+  // flash word address
+  logic [BankAddrW-1:0] flash_word_addr;
+  assign flash_word_addr = addr_i[BusBankAddrW-1:LsbAddrBit];
+
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_states
     assign buf_valid[i]   = read_buf[i].attr == Valid;
     assign buf_wip[i]     = read_buf[i].attr == Wip;
@@ -100,7 +104,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .idx_o(),
     .valid_o(),
     .data_o(),
-    .ready_i(req_i & rdy_o)
+    .ready_i(req_o)
   );
 
   // which buffer to allocate upon a new transaction
@@ -110,7 +114,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
     assign buf_match[i] = req_i &
                           (buf_valid[i] | buf_wip[i]) &
-                          (read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) &
+                          (read_buf[i].addr == flash_word_addr) &
                           (read_buf[i].part == part_i);
 
     // A data hazard should never happen to a wip buffer because it implies
@@ -124,10 +128,12 @@ module flash_phy_rd import flash_phy_pkg::*; (
     logic page_addr_match;
 
     assign part_match      = read_buf[i].part == part_i;
-    assign word_addr_match = (read_buf[i].addr == addr_i[BankAddrW-1:LsbAddrBit]) &
+    assign word_addr_match = (read_buf[i].addr == flash_word_addr) &
                              part_match;
 
-    assign page_addr_match = (read_buf[i].addr[FlashWordsW +: PageW] == addr_i[WordW +: PageW]) &
+    // the read buffer address in on flash word boundary
+    // while the incoming address in on the bus word boundary
+    assign page_addr_match = (read_buf[i].addr[WordW +: PageW] == addr_i[BusWordW +: PageW]) &
                              part_match;
 
     assign data_hazard[i] = buf_valid[i] &
@@ -153,7 +159,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .alloc_i(rdy_o & alloc[i]),
       .update_i(update[i]),
       .wipe_i(data_hazard[i]),
-      .addr_i(addr_i[BankAddrW-1:LsbAddrBit]),
+      .addr_i(flash_word_addr),
       .part_i(part_i),
       .data_i(data_i),
       .out_o(read_buf[i])
