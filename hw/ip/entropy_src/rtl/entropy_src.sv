@@ -5,9 +5,7 @@
 // Description: entropy_src top level wrapper file
 
 
-module entropy_src import entropy_src_pkg::*; #(
-  parameter int unsigned EsFifoDepth = 16
-) (
+module entropy_src import entropy_src_pkg::*; (
   input  clk_i,
   input  rst_ni,
 
@@ -27,10 +25,10 @@ module entropy_src import entropy_src_pkg::*; #(
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
   // Interrupts
-  output logic    es_entropy_valid_o,
-  output logic    es_rct_failed_o,
-  output logic    es_apt_failed_o,
-  output logic    es_fifo_err_o
+  output logic    intr_es_entropy_valid_o,
+  output logic    intr_es_rct_failed_o,
+  output logic    intr_es_apt_failed_o,
+  output logic    intr_es_fifo_err_o
 );
 
   import entropy_src_reg_pkg::*;
@@ -65,10 +63,10 @@ module entropy_src import entropy_src_pkg::*; #(
     .entropy_src_rng_o,
     .entropy_src_rng_i,
 
-    .es_entropy_valid_o,
-    .es_rct_failed_o,
-    .es_apt_failed_o,
-    .es_fifo_err_o
+    .intr_es_entropy_valid_o,
+    .intr_es_rct_failed_o,
+    .intr_es_apt_failed_o,
+    .intr_es_fifo_err_o
   );
 
 endmodule

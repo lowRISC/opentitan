@@ -26,10 +26,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output entropy_src_rng_req_t entropy_src_rng_o,
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
-  output logic           es_entropy_valid_o,
-  output logic           es_rct_failed_o,
-  output logic           es_apt_failed_o,
-  output logic           es_fifo_err_o
+  output logic           intr_es_entropy_valid_o,
+  output logic           intr_es_rct_failed_o,
+  output logic           intr_es_apt_failed_o,
+  output logic           intr_es_fifo_err_o
 );
 
   import entropy_src_reg_pkg::*;
@@ -158,7 +158,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_entropy_valid.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.es_entropy_valid.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_entropy_valid.d),
-    .intr_o                 (es_entropy_valid_o)
+    .intr_o                 (intr_es_entropy_valid_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_es_rct_failed (
@@ -169,7 +169,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_rct_failed.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.es_rct_failed.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_rct_failed.d),
-    .intr_o                 (es_rct_failed_o)
+    .intr_o                 (intr_es_rct_failed_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_es_apt_failed (
@@ -180,7 +180,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_apt_failed.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.es_apt_failed.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_apt_failed.d),
-    .intr_o                 (es_apt_failed_o)
+    .intr_o                 (intr_es_apt_failed_o)
   );
 
 
@@ -192,7 +192,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_fifo_err.q),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.es_fifo_err.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_fifo_err.d),
-    .intr_o                 (es_fifo_err_o)
+    .intr_o                 (intr_es_fifo_err_o)
   );
 
   //--------------------------------------------

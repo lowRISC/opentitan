@@ -24,29 +24,24 @@
       desc: "Asserted when a FIFO error occurs."}
   ],
   inter_signal_list: [
-    { struct:  "entropy_src_hw_if_req",
+    { struct:  "entropy_src_hw_if",
       type:    "req_rsp",
-      name:    "entropy_src_hw_if_req",
-      act:     "requester",
+      name:    "entropy_src_hw_if",
+      act:     "rsp",
       package: "entropy_src_pkg",
     }
-    { struct:  "entropy_src_hw_if_rsp",
+    { struct:  "entropy_src_rng",
       type:    "req_rsp",
-      name:    "entropy_src_hw_if_rsp",
-      act:     "responder",
+      name:    "entropy_src_rng",
+      act:     "req",
       package: "entropy_src_pkg",
     }
-    { struct:  "entropy_src_rng_req",
-      type:    "req_rsp",
-      name:    "entropy_src_rng_req",
-      act:     "requester",
-      package: "entropy_src_pkg",
-    }
-    { struct:  "entropy_src_rng_rsp",
-      type:    "req_rsp",
-      name:    "entropy_src_rng_rsp",
-      act:     "responder",
-      package: "entropy_src_pkg",
+    { struct:  "logic"
+      type:    "uni"
+      name:    "efuse_es_sw_reg_en"
+      width:   1
+      act:     "rcv"
+      package: ""
     }
   ],
 
