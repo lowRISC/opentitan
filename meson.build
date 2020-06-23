@@ -54,20 +54,24 @@ endif
 add_project_arguments(
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
+  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
   language: 'cpp', native: false)
 add_project_arguments(
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
+  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
   language: 'cpp', native: true)
 
 add_project_arguments(
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
   '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
+  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
   language: 'c', native: false)
 add_project_arguments(
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
+  '-Wno-error=unused-result',  # Remove once we've fully adopted warn_unused_result.
   language: 'c', native: true)
 
 # The following flags are applied only to cross builds
