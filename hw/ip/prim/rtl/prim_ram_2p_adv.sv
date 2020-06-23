@@ -14,7 +14,6 @@
 // mask cannot be used and has to be tied to {Width{1'b1}}.
 
 `include "prim_assert.sv"
-`include "prim_util.svh"
 
 module prim_ram_2p_adv #(
   parameter  int Depth                = 512,
@@ -29,7 +28,7 @@ module prim_ram_2p_adv #(
   parameter  bit EnableInputPipeline  = 0, // Adds an input register (read latency +1)
   parameter  bit EnableOutputPipeline = 0, // Adds an output register (read latency +1)
 
-  localparam int Aw                   = vbits(Depth)
+  localparam int Aw                   = prim_util_pkg::vbits(Depth)
 ) (
   input                    clk_i,
   input                    rst_ni,

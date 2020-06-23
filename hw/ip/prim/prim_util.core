@@ -8,7 +8,7 @@ description: "Utilities"
 filesets:
   files_rtl:
     files:
-      - rtl/prim_util.svh : {is_include_file : true}
+      - rtl/prim_util_pkg.sv
     file_type: systemVerilogSource
 
 targets:
