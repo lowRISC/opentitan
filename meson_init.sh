@@ -143,25 +143,6 @@ else
   fi
 fi
 
-# purge_includes $build_dir deletes any -I command line arguments that are not
-# - Absolute paths.
-# - Ephemeral build directories.
-#
-# This function is necessary because Meson does not give adequate
-# control over what directories are passed in as -I search directories
-# to the C compiler. While Meson does provide |implicit_include_directories|,
-# support for this option is poor: empirically, Meson ignores this option for
-# some targerts. Doing it as a post-processing step ensures that Meson does
-# not allow improper #includes to compile successfully.
-function purge_includes() {
-  if [[ "${FLAGS_keep_includes}" == "true" ]]; then
-    return
-  fi
-  echo "Purging superfluous -I arguments from $1."
-  local ninja_file="$1/build.ninja"
-  perl -pi -e 's#-I[^/][^@ ]+ # #g' -- "$ninja_file"
-}
-
 reconf="${FLAGS_reconfigure}"
 
 if [[ ! -d "$OBJ_DIR" ]]; then
@@ -170,7 +151,6 @@ if [[ ! -d "$OBJ_DIR" ]]; then
   reconf=""
 elif [[ -z "$reconf" ]]; then
   echo "Output directory already exists at $OBJ_DIR; skipping." >&2
-  continue
 fi
 
 mkdir -p "$DEV_BIN_DIR"
@@ -180,7 +160,6 @@ meson $reconf \
   -Ddev_bin_dir="$DEV_BIN_DIR" \
   -Dhost_bin_dir="$HOST_BIN_DIR" \
   -Dtock_local="$TOCK_LOCAL" \
+  -Dkeep_includes="$FLAGS_keep_includes" \
   --cross-file="$ARG_toolchain_file" \
   "$OBJ_DIR"
-{ set +x; } 2>/dev/null
-purge_includes "$OBJ_DIR"
