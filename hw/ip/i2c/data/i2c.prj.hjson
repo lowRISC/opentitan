@@ -6,8 +6,16 @@
     name:               "i2c",
     design_spec:        "hw/ip/i2c/doc",
     dv_plan:            "hw/ip/i2c/doc/dv_plan",
-    version:            "0.5",
-    life_stage:         "L1",
-    design_stage:       "D0",
-    verification_stage: "V0",
+    hw_checklist:       "hw/ip/i2c/doc/checklist",
+    revisions: [
+      {
+        version:            "0.5",
+        life_stage:         "L1",
+        design_stage:       "D1",
+        verification_stage: "V1",
+        dif_stage:          "S0",
+        commit_id:          "ff9c06167bc34d921974839017dec54f0fb8347a",
+        notes:              ""
+      }
+    ]
 }
