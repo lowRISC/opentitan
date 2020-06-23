@@ -10,6 +10,7 @@ module prim_fifo_sync #(
   parameter int unsigned Width       = 16,
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
+  // derived parameter
   localparam int          DepthW     = prim_util_pkg::vbits(Depth+1)
 ) (
   input                   clk_i,
