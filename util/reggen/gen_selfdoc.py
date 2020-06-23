@@ -244,8 +244,9 @@ def document(outfile):
         doc_tbl_line(outfile, x, 'a', validate.top_added[x])
     genout(outfile, top_example)
 
-    genout(outfile,
-           "\n\nThe list of registers includes register definition groups:\n")
+    genout(
+        outfile, "\n\nThe list of registers includes register definition "
+        "groups containing the following keys:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.reg_required:
         doc_tbl_line(outfile, x, 'r', validate.reg_required[x])
@@ -257,7 +258,7 @@ def document(outfile):
 
     genout(
         outfile, "\n\nIn the fields list each field definition is a group "
-        "containing:\n")
+        "itself containing the following keys:\n")
     doc_tbl_head(outfile, 1)
     for x in validate.field_required:
         doc_tbl_line(outfile, x, 'r', validate.field_required[x])

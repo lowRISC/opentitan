@@ -64,7 +64,7 @@ For example to place ITCR at offset 0x100:
 ```
 
 Historically, peripherals have put multiple registers at the same offset either different based on read or write, or with some other bit controlling the overlay.
-This is not permitted for Coportable peripherals but may be required for compatibility.
+This is not permitted for Comportable peripherals but may be required for compatibility.
 These registers are grouped in a list.
 For example to have REGA and REGB (and more) at the same offest:
 
@@ -135,10 +135,10 @@ Putting these together an unaligned 60 byte window (15 32-bit words) could follo
 
 ```
 
-Sometimes the window may need to map a structure that is not a full word wide (for example providing debug access to a the memory in a 12-bit wide fifo).
+Sometimes the window may need to map a structure that is not a full word wide (for example providing debug access to a the memory in a 12-bit wide FIFO).
 In this case it may be convenient to have only the low bits of each word valid and use the word address directly as an index (rather than presenting a "packed" structure with the sub-word items packed into as few words as possible).
 The window declaration can be annotated to document this.
-For example debug access to a 64 entry 12-bit wide fifo could use a window:
+For example debug access to a 64 entry 12-bit wide FIFO could use a window:
 
 ```hjson
     {window: {
@@ -147,7 +147,7 @@ For example debug access to a 64 entry 12-bit wide fifo could use a window:
          validbits: "12"
          swaccess: "ro"
          desc: '''
-               The 64 entry fifo is mapped into the low 12-bits
+               The 64 entry FIFO is mapped into the low 12-bits
                of each regwidth bit wide word.
            '''
       }
@@ -158,7 +158,7 @@ For example debug access to a 64 entry 12-bit wide fifo could use a window:
 The tool can generate registers that follow a base pattern, for example when there are configuration fields for multiple instances.
 The base pattern defines the bits (which need not be contiguous) used for the first instance and the tool uses this to pack the required number of instances into one or more registers.
 
-For example a fancy gpio interrupt configiration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determing the interrupt severity.
+For example a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determing the interrupt severity.
 In this case the multireg can be used to build the multiple registers needed.
 The description below shows the fields given for GPIO0 and requests generation of 32 instances.
 If the registers are 32 bits wide then the tool will pack the four bit instances into four registers `INT_CTRL0`, `INT_CTRL1`, `INT_CTRL2` and `INT_CTRL3`.
