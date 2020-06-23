@@ -143,6 +143,15 @@
             1 CLK_MAIN_KEYMGR is enabled.
           '''
         }
+        {
+          bits: "3",
+          name: "CLK_MAIN_CSRNG_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_CSRNG can be disabled.
+            1 CLK_MAIN_CSRNG is enabled.
+          '''
+        }
       ]
       // the CLK_HINT register cannot be written, otherwise there is the potential clocks could be
       // disabled and the system will hang
@@ -183,6 +192,15 @@
           desc: '''
             0 CLK_MAIN_KEYMGR is disabled.
             1 CLK_MAIN_KEYMGR is enabled.
+          '''
+        }
+        {
+          bits: "3",
+          name: "CLK_MAIN_CSRNG_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_CSRNG is disabled.
+            1 CLK_MAIN_CSRNG is enabled.
           '''
         }
       ]

@@ -30,6 +30,7 @@ package top_earlgrey_pkg;
   parameter TOP_EARLGREY_USBDEV_AON_BASE_ADDR = 32'h40500000;
   parameter TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400E0000;
   parameter TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41130000;
+  parameter TOP_EARLGREY_CSRNG_BASE_ADDR = 32'h41150000;
 
   // Enumeration for DIO pins.
   typedef enum {

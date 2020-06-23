@@ -64,6 +64,7 @@
           clk_main_aes: main
           clk_main_hmac: main
           clk_main_keymgr: main
+          clk_main_csrng: main
         }
       }
       {
@@ -2776,6 +2777,93 @@
         }
       ]
     }
+    {
+      name: csrng
+      type: csrng
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x41150000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_csrng
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: cs_cmd_req_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: cs_fifo_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: csrng
+          type: req_rsp
+          name: csrng_cmd
+          act: rsp
+          width: 3
+          package: csrng_pkg
+          inst_name: csrng
+          top_signame: csrng_csrng_cmd
+          index: -1
+        }
+        {
+          struct: entropy_src_hw_if
+          type: req_rsp
+          name: entropy_src_hw_if
+          act: req
+          width: 1
+          package: entropy_src_pkg
+          inst_name: csrng
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: efuse_sw_app_enable
+          act: rcv
+          width: 1
+          package: ""
+          inst_name: csrng
+          index: -1
+        }
+      ]
+    }
   ]
   memory:
   [
@@ -2876,6 +2964,7 @@
       rstmgr.cpu
       pwrmgr.pwr_cpu
       clkmgr.clocks
+      csrng.csrng_cmd
     ]
     external: []
   }
@@ -2924,6 +3013,7 @@
           alert_handler
           nmi_gen
           keymgr
+          csrng
         ]
         dm_sba:
         [
@@ -2938,6 +3028,7 @@
           rv_plic
           alert_handler
           nmi_gen
+          csrng
         ]
       }
       nodes:
@@ -3231,6 +3322,22 @@
           [
             {
               base_addr: 0x41170000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: csrng
+          type: device
+          clock: clk_main_i
+          inst_type: csrng
+          pipeline: "false"
+          addr_range:
+          [
+            {
+              base_addr: 0x41150000
               size_byte: 0x1000
             }
           ]
@@ -5877,6 +5984,37 @@
         index: -1
       }
       {
+        struct: csrng
+        type: req_rsp
+        name: csrng_cmd
+        act: rsp
+        width: 3
+        package: csrng_pkg
+        inst_name: csrng
+        top_signame: csrng_csrng_cmd
+        index: -1
+      }
+      {
+        struct: entropy_src_hw_if
+        type: req_rsp
+        name: entropy_src_hw_if
+        act: req
+        width: 1
+        package: entropy_src_pkg
+        inst_name: csrng
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: efuse_sw_app_enable
+        act: rcv
+        width: 1
+        package: ""
+        inst_name: csrng
+        index: -1
+      }
+      {
         struct: flash
         type: req_rsp
         name: flash_ctrl
@@ -5960,6 +6098,20 @@
         signame: clkmgr_clocks
         width: 1
         type: uni
+      }
+      {
+        package: csrng_pkg
+        struct: csrng_req
+        signame: csrng_csrng_cmd_req
+        width: 3
+        type: req_rsp
+      }
+      {
+        package: csrng_pkg
+        struct: csrng_rsp
+        signame: csrng_csrng_cmd_rsp
+        width: 3
+        type: req_rsp
       }
     ]
   }

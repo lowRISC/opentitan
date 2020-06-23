@@ -304,6 +304,14 @@
  */
 #define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x41130000u
 
+/**
+ * Base address for csrng peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_CSRNG_BASE_ADDR 0x41150000u
+
 
 /**
  * PLIC Interrupt source peripheral enumeration.

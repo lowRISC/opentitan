@@ -43,6 +43,9 @@ tl_device_t xbar_devices[$] = '{
     '{"alert_handler", '{
         '{32'h41170000, 32'h41170fff}
     }},
+    '{"csrng", '{
+        '{32'h41150000, 32'h41150fff}
+    }},
     '{"nmi_gen", '{
         '{32'h41180000, 32'h41180fff}
 }}};
@@ -68,7 +71,8 @@ tl_host_t xbar_hosts[$] = '{
         "rv_plic",
         "alert_handler",
         "nmi_gen",
-        "keymgr"}}
+        "keymgr",
+        "csrng"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -81,5 +85,6 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "alert_handler",
-        "nmi_gen"}}
+        "nmi_gen",
+        "csrng"}}
 };

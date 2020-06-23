@@ -49,6 +49,7 @@
       alert_handler
       nmi_gen
       keymgr
+      csrng
     ]
     dm_sba:
     [
@@ -63,6 +64,7 @@
       rv_plic
       alert_handler
       nmi_gen
+      csrng
     ]
   }
   nodes:
@@ -292,6 +294,22 @@
       [
         {
           base_addr: 0x41170000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: csrng
+      type: device
+      clock: clk_main_i
+      inst_type: csrng
+      pipeline: "false"
+      addr_range:
+      [
+        {
+          base_addr: 0x41150000
           size_byte: 0x1000
         }
       ]

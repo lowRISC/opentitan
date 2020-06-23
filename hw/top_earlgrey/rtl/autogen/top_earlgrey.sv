@@ -122,6 +122,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_pattgen_d_d2h;
   tl_h2d_t  tl_keymgr_d_h2d;
   tl_d2h_t  tl_keymgr_d_d2h;
+  tl_h2d_t  tl_csrng_d_h2d;
+  tl_d2h_t  tl_csrng_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -255,6 +257,7 @@ module top_earlgrey #(
   logic        cio_pattgen_pcl1_tx_d2p;
   logic        cio_pattgen_pcl1_tx_en_d2p;
   // keymgr
+  // csrng
 
 
   logic [132:0]  intr_vector;
@@ -363,6 +366,8 @@ module top_earlgrey #(
   logic intr_pattgen_patt_done0;
   logic intr_pattgen_patt_done1;
   logic intr_keymgr_op_done;
+  logic intr_csrng_cs_cmd_req_done;
+  logic intr_csrng_cs_fifo_err;
 
 
 
@@ -393,6 +398,10 @@ module top_earlgrey #(
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
   clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
+  csrng_pkg::csrng_req_t [2:0] csrng_csrng_cmd_req;
+  csrng_pkg::csrng_rsp_t [2:0] csrng_csrng_cmd_rsp;
+
+  assign csrng_csrng_cmd_req = '0;
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -1204,6 +1213,25 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
+  csrng u_csrng (
+      .tl_i (tl_csrng_d_h2d),
+      .tl_o (tl_csrng_d_d2h),
+
+      // Interrupt
+      .intr_cs_cmd_req_done_o (intr_csrng_cs_cmd_req_done),
+      .intr_cs_fifo_err_o     (intr_csrng_cs_fifo_err),
+
+      // Inter-module signals
+      .csrng_cmd_i(csrng_csrng_cmd_req),
+      .csrng_cmd_o(csrng_csrng_cmd_rsp),
+      .entropy_src_hw_if_o(),
+      .entropy_src_hw_if_i(entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT),
+      .efuse_sw_app_enable_i(1'b0),
+
+      .clk_i (clkmgr_clocks.clk_main_csrng),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_i2c2_sda_unstable,
@@ -1346,6 +1374,8 @@ module top_earlgrey #(
     .tl_rv_plic_i       (tl_rv_plic_d_d2h),
     .tl_alert_handler_o (tl_alert_handler_d_h2d),
     .tl_alert_handler_i (tl_alert_handler_d_d2h),
+    .tl_csrng_o         (tl_csrng_d_h2d),
+    .tl_csrng_i         (tl_csrng_d_d2h),
     .tl_nmi_gen_o       (tl_nmi_gen_d_h2d),
     .tl_nmi_gen_i       (tl_nmi_gen_d_d2h),
 

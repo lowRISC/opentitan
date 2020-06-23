@@ -31,4 +31,5 @@ xbar_main dut(
 `CONNECT_TL_DEVICE_IF(keymgr)
 `CONNECT_TL_DEVICE_IF(rv_plic)
 `CONNECT_TL_DEVICE_IF(alert_handler)
+`CONNECT_TL_DEVICE_IF(csrng)
 `CONNECT_TL_DEVICE_IF(nmi_gen)
