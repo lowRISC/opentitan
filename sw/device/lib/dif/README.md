@@ -103,6 +103,10 @@ there are some relaxations of these rules for them described at the end.
     * If a DIF returns `kDif<ip>BadArg`, it must leave the hardware in a valid
       and recoverable state. This is in addition to the rule that this value may
       only be returned if the function has not caused any side-effects.
+  * DIFs that return an enum return code must be annotated with
+    `__attribute__((warn_unused_result))`, to help minimize mistakes from
+    failing to check a result. This guidance applies to `static` helper
+    functions that return an error of some kind as well.
   * DIFs that cannot error and that do not return a value must return `void`.
 
 * DIFs must check their arguments against preconditions using "guard
