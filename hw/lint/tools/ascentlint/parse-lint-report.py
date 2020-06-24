@@ -111,7 +111,7 @@ def main():
     # lint infos do not count as failures
     nr_errors = len(results["errors"]) + len(results["lint_errors"])
     nr_warnings = len(results["warnings"]) + len(results["lint_warnings"])
-    if nr_errors > 0 and nr_warnings > 0:
+    if nr_errors > 0 or nr_warnings > 0:
         print("Lint not successful, got %d warnings and %d errors." %
               (nr_warnings, nr_errors))
         sys.exit(1)

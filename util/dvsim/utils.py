@@ -366,7 +366,7 @@ def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
     '''
     md_results = ""
     if msg_list:
-        md_results += msg_list_title
+        md_results += msg_list_title + "\n"
         md_results += "```\n"
         for k, msg in enumerate(msg_list):
             if k <= max_msg_count or max_msg_count < 0:
