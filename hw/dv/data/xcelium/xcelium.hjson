@@ -19,7 +19,9 @@
                "-uvmhome CDNS-1.2",
                "-xmlibdirname {build_dir}/xcelium.d",
                // for uvm_hdl_* used by csr backdoor
-               "-access +rw"]
+               "-access +rw",
+               "+define+XCELIUM",
+               ]
 
   run_opts:   ["-input {tool_srcs_dir}/xcelium.tcl",
                "-licqueue",
