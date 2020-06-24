@@ -391,7 +391,9 @@ module otbn
   // OTBN Core =================================================================
   otbn_core #(
     .DmemSizeByte(DmemSizeByte),
-    .ImemSizeByte(ImemSizeByte)
+    .DmemSizeWords (DmemSizeWords),
+    .ImemSizeByte(ImemSizeByte),
+    .ImemSizeWords (ImemSizeWords)
   ) u_otbn_core (
     .clk_i,
     .rst_ni,

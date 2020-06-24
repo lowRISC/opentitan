@@ -14,8 +14,10 @@ module otbn_core
 #(
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
+  parameter int ImemSizeWords = ImemSizeByte/4,
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
+  parameter int DmemSizeWords = 4096/32,
 
   localparam int ImemAddrWidth = vbits(ImemSizeByte),
   localparam int DmemAddrWidth = vbits(DmemSizeByte)
