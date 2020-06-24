@@ -386,7 +386,7 @@
     'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks', 'csrng.csrng_cmd'],
 
     // ext is to create port in the top.
-    'external': [],
+    'external': ['entropy_src.entropy_src_rng'],
   },
 
   debug_mem_base_addr: "0x1A110000",
