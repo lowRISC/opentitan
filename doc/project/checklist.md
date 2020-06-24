@@ -111,6 +111,19 @@ FPGA synthesis timing meet (Fmax-10%) target or better
 CDC Sync flops use behavioral synchronization macros(`prim_flop_2sync`) not
 2flops.
 
+### SEC_CM_IMPLEMENTED
+
+Any appropriate security counter-measures documented and implemented.
+
+### SEC_NON_RESET_FLOPS
+
+A review of sensitive security-critical storage flops was completed.
+Where appropriate, non-reset flops are used to store secure material.
+
+### SEC_SHADOW_REGS
+
+Shadow registers are implemented for all appropriate storage of critical control functions.
+
 ## D3
 
 ### NEW_FEATURES_D3

@@ -50,13 +50,16 @@ RTL           | [AREA_SANITY_CHECK][]   | Not Started | Think about FIFO size, t
 RTL           | [PORT_FROZEN][]         | Not Started |
 RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
 RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started | 
-Code Quality  | [LINT_PASS][]           | Not Started | 
-Code Quality  | [CDC_SETUP][]           | Not Started | 
-Code Quality  | [FPGA_TIMING][]         | Not Started | 
+RTL           | [STYLE_X][]             | Not Started |
+Code Quality  | [LINT_PASS][]           | Not Started |
+Code Quality  | [CDC_SETUP][]           | Not Started |
+Code Quality  | [FPGA_TIMING][]         | Not Started |
 Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Review        | Reviewer(s)             | Not Started | 
-Review        | Signoff date            | Not Started | 
+Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
+Security      | [SEC_SHADOW_REGS][]     | Not Started |
+Review        | Reviewer(s)             | Not Started |
+Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new-features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block-diagram" >}}
@@ -73,6 +76,9 @@ Review        | Signoff date            | Not Started |
 [CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
+[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
+[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec-non-reset-flops" >}}
+[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec-shadow-regs" >}}
 
 ### D3
 
@@ -121,8 +127,8 @@ Tests         | [SIM_SANITY_TEST_PASSING][]           | Done        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Done        |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        | Xcelium (signoff), VCS (alt)
-Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Done        | 
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        | 
+Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Except for IP module
