@@ -49,34 +49,60 @@ module otbn_core
 );
   import otbn_pkg::*;
 
+  localparam OTBN_MODEL = 1; // TODO: Instead use package?
+
   // TODO: This is probably not the final OTBN implementation.
 
-  assign imem_req_o = 1'b0;
-
-  assign dmem_write_o = 1'b1;
-  assign dmem_addr_o = '0;
-  assign dmem_wdata_o = 256'h0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF;
-  assign dmem_wmask_o = {WLEN{1'b1}};
-
-  logic [15:0] cnt;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      busy_o <= 1'b0;
-      cnt <= 'b0;
-      dmem_req_o <= 1'b0;
-    end else begin
-      if (start_i) begin
-        busy_o <= 1'b1;
-        cnt <= 'b0;
-        dmem_req_o <= 1'b1;
-      end else begin
-        if (cnt == 16'hFFFF) begin
+  generate
+    if (OTBN_MODEL) begin
+      import "DPI-C" context function int run_model(string imem_scope,
+                                             int    imem_size,
+                                             string dmem_scope,
+                                             int    dmem_size);
+      always @(posedge clk_i) begin : model_run
+        if (!rst_ni) begin
           busy_o <= 1'b0;
+        end else begin
+          if (start_i) begin
+            run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
+                      ImemSizeWords,
+                      "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
+                      DmemSizeWords);
+            busy_o <= 1'b1;
+          end else begin
+            busy_o <= 1'b0;
+          end
         end
+      end
+    end else begin
+      assign imem_req_o = 1'b0;
 
-        cnt <= cnt + 16'b1;
-        dmem_req_o <= 1'b0;
+      assign dmem_write_o = 1'b1;
+      assign dmem_addr_o = '0;
+      assign dmem_wdata_o = 256'h0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF;
+      assign dmem_wmask_o = {WLEN{1'b1}};
+
+      logic [15:0] cnt;
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          busy_o <= 1'b0;
+          cnt <= 'b0;
+          dmem_req_o <= 1'b0;
+        end else begin
+          if (start_i) begin
+            busy_o <= 1'b1;
+            cnt <= 'b0;
+            dmem_req_o <= 1'b1;
+          end else begin
+            if (cnt == 16'hFFFF) begin
+              busy_o <= 1'b0;
+            end
+
+            cnt <= cnt + 16'b1;
+            dmem_req_o <= 1'b0;
+          end
+        end
       end
     end
-  end
+  endgenerate
 endmodule

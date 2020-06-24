@@ -19,6 +19,7 @@ filesets:
       - rtl/otbn_reg_top.sv
       - rtl/otbn_core.sv
       - rtl/otbn.sv
+      - rtl/otbn_model.cc: { file_type: cppSource }
     file_type: systemVerilogSource
 
 parameters:
