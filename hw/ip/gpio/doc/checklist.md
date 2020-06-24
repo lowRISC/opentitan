@@ -56,6 +56,9 @@ RTL           | [STYLE_X][]             | N/A         | No assignment of X
 Code Quality  | [LINT_PASS][]           | Done        | Lint waivers reviewed
 Code Quality  | [CDC_SETUP][]           | N/A         | No CDC path
 Code Quality  | [FPGA_TIMING][]         | Done        | Fmax 50MHz on NexysVideo
+Security      | [SEC_CM_IMPLEMENTED][]  | N/A         |
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
 Review        | Reviewer(s)             | Done        | @sjgitty @gaurangchitroda @aytong
 Review        | Signoff date            | Done        | 2019-10-30
@@ -76,6 +79,9 @@ Review        | Signoff date            | Done        | 2019-10-30
 [CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
 [FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
 [D2_REVIEWED]:         {{<relref "/doc/project/checklist.md#d2-reviewed" >}}
+[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
+[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec-non-reset-flops" >}}
+[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec-shadow-regs" >}}
 
 ### D3
 
