@@ -51,8 +51,9 @@ class i2c_monitor extends dv_base_monitor #(
         end
         num_dut_tran++;
         mon_dut_item.start = 1'b1;
-        // issue address then rd/wr data
+        // monitor address for non-chained reads
         address_thread(mon_dut_item, num_dut_tran);
+        // monitor read/write data
         if (mon_dut_item.bus_op == BusOpRead) read_thread(mon_dut_item);
         else                                  write_thread(mon_dut_item);
         // send rsp_item to scoreboard
