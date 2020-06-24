@@ -49,6 +49,11 @@
       name: i2c_sanity
       uvm_test_seq: i2c_sanity_vseq
     }
+
+    {
+      name: i2c_override
+      uvm_test_seq: i2c_override_vseq
+    }
   ]
 
   // List of regressions.

@@ -98,10 +98,10 @@
               - Program OVRD register
 
             Checking:
-              - Ensure scl_o, sda_o are overriddend
+              - Ensure scl_o, sda_o are overridden
             '''
       milestone: V2
-      tests: [""]
+      tests: ["i2c_override"]
     }
     {
       name: fmt_watermark

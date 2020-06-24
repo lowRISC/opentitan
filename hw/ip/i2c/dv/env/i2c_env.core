@@ -23,6 +23,7 @@ filesets:
       - seq_lib/i2c_common_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_rx_tx_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_override_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
