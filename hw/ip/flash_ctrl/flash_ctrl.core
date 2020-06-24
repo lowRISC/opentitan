@@ -3,13 +3,15 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:flash_ctrl:0.1"
-description: "Faux Flash Controller"
+description: "Flash Controller"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:flash
+      - lowrisc:prim:gf_mult
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/flash_ctrl_reg_pkg.sv
@@ -24,6 +26,7 @@ filesets:
       - rtl/flash_phy_rd.sv
       - rtl/flash_phy_prog.sv
       - rtl/flash_phy_rd_buffers.sv
+      - rtl/flash_phy_scramble.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -53,6 +53,18 @@ static void test_basic_io(void) {
   CHECK_EQZ(flash_write(flash_bank_1_addr, input_page, FLASH_WORDS_PER_PAGE));
   CHECK_EQZ(flash_read(flash_bank_1_addr, FLASH_WORDS_PER_PAGE, output_page));
 
+  // Check from host side also
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+    output_page[i] = mmio_region_read32(flash_bank_1, i * sizeof(uint32_t));
+  }
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+
+  // Similar check for info page
+  CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kInfoPartition));
+  CHECK_EQZ(flash_write(flash_bank_1_addr, kInfoPartition, input_page,
+                        FLASH_WORDS_PER_PAGE));
+  CHECK_EQZ(flash_read(flash_bank_1_addr, kInfoPartition, FLASH_WORDS_PER_PAGE,
+                       output_page));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 
   uintptr_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;

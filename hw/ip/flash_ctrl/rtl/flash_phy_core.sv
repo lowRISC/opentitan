@@ -15,9 +15,10 @@ module flash_phy_core import flash_phy_pkg::*; #(
 ) (
   input                              clk_i,
   input                              rst_ni,
-  input                              host_req_i, // host request - read only
+  input                              scramble_en_i,// temporary signal
+  input                              host_req_i,   // host request - read only
   input [BusBankAddrW-1:0]           host_addr_i,
-  input                              req_i,      // controller request
+  input                              req_i,        // controller request
   input                              rd_i,
   input                              prog_i,
   input                              pg_erase_i,
@@ -26,6 +27,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input [BusBankAddrW-1:0]           addr_i,
   input [BusWidth-1:0]               prog_data_i,
   input                              prog_last_i,
+  input [KeySize-1:0]                addr_key_i,
+  input [KeySize-1:0]                data_key_i,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
   output logic                       rd_done_o,
@@ -84,6 +87,11 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic [CntWidth-1:0] arb_cnt;
   logic inc_arb_cnt, clr_arb_cnt;
   logic host_req_masked;
+
+  // scramble / de-scramble connections
+  logic calc_ack;
+  logic op_ack;
+  logic [DataWidth-1:0] scramble_mask;
 
   assign host_req_masked = host_req_i & (arb_cnt < ArbCnt);
 
@@ -211,11 +219,17 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   logic flash_rd_req;
   logic [DataWidth-1:0] flash_rdata;
+  logic rd_calc_req;
+  logic [BankAddrW-1:0] rd_calc_addr;
+  logic rd_op_req;
+  logic [DataWidth-1:0] rd_scrambled_data;
+  logic [DataWidth-1:0] rd_descrambled_data;
 
   flash_phy_rd u_rd (
     .clk_i,
     .rst_ni,
     .req_i(reqs[PhyRead]),
+    .descramble_i(scramble_en_i),
     .prog_i(reqs[PhyProg]),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
@@ -227,16 +241,26 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
     .ack_i(ack),
-    .data_i(flash_rdata)
+    .data_i(flash_rdata),
+    //scramble unit interface
+    .calc_req_o(rd_calc_req),
+    .calc_addr_o(rd_calc_addr),
+    .descramble_req_o(rd_op_req),
+    .scrambled_data_o(rd_scrambled_data),
+    .calc_ack_i(calc_ack),
+    .descramble_ack_i(op_ack),
+    .mask_i(scramble_mask),
+    .descrambled_data_i(rd_descrambled_data)
     );
 
   ////////////////////////
   // program pipeline
   ////////////////////////
 
-  // Below code is temporary and does not account for scrambling
-  logic [DataWidth-1:0] prog_data;
+  logic [DataWidth-1:0] prog_data, prog_scrambled_data;
   logic flash_prog_req;
+  logic prog_calc_req;
+  logic prog_op_req;
 
   if (WidthMultiple == 1) begin : gen_single_prog_data
     assign flash_prog_req = reqs[PhyProg];
@@ -247,10 +271,17 @@ module flash_phy_core import flash_phy_pkg::*; #(
       .clk_i,
       .rst_ni,
       .req_i(reqs[PhyProg]),
+      .scramble_i(scramble_en_i),
       .sel_i(addr_i[0 +: WordSelW]),
       .data_i(prog_data_i),
       .last_i(prog_last_i),
       .ack_i(ack),
+      .calc_ack_i(calc_ack),
+      .scramble_ack_i(op_ack),
+      .mask_i(scramble_mask),
+      .scrambled_data_i(prog_scrambled_data),
+      .calc_req_o(prog_calc_req),
+      .scramble_req_o(prog_op_req),
       .req_o(flash_prog_req),
       .ack_o(prog_ack),
       .data_o(prog_data)
@@ -261,6 +292,28 @@ module flash_phy_core import flash_phy_pkg::*; #(
   ////////////////////////
   // scrambling / de-scrambling primitive
   ////////////////////////
+
+  logic [BankAddrW-1:0] scramble_muxed_addr;
+  assign scramble_muxed_addr = prog_calc_req ? muxed_addr[BusBankAddrW-1:LsbAddrBit] :
+                                               rd_calc_addr;
+
+  flash_phy_scramble u_scramble (
+    .clk_i,
+    .rst_ni,
+    .calc_req_i(prog_calc_req | rd_calc_req),
+    .op_req_i(prog_op_req | rd_op_req),
+    .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),
+    .addr_i(scramble_muxed_addr),
+    .plain_data_i(prog_data),
+    .scrambled_data_i(rd_scrambled_data),
+    .addr_key_i(addr_key_i),
+    .data_key_i(data_key_i),
+    .calc_ack_o(calc_ack),
+    .op_ack_o(op_ack),
+    .mask_o(scramble_mask),
+    .plain_data_o(rd_descrambled_data),
+    .scrambled_data_o(prog_scrambled_data)
+  );
 
 
   ////////////////////////
