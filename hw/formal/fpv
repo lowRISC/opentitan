@@ -89,13 +89,13 @@ cd build/*${FPV_TOP}*/formal-icarus
 
 if [ "${tool}" == "jg" ]; then
   if [ "${gui}" == "1" ]; then
-    jg ../../../fpv.tcl \
+    jg ../../../tools/jaspergold/fpv.tcl \
        -proj ../../../jgproject \
        -allow_unsupported_OS \
        | tee ../../../fpv.log
   else
     jg -batch \
-      ../../../fpv.tcl \
+      ../../../tools/jaspergold/fpv.tcl \
       -proj ../../../jgproject \
       -allow_unsupported_OS \
       -command exit \
