@@ -20,7 +20,15 @@
       name:    "flash",          // flash_o (req), flash_i (rsp)
       act:     "req",
       package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
+    },
+
+    { struct: "otp_flash",
+      type: "uni",
+      name: "otp",
+      act:  "rcv",
+      package: "flash_ctrl_pkg"
     }
+
   ],
 
   param_list: [
@@ -181,6 +189,23 @@
             For page erases, the controller will truncate to the closest lower page aligned
             address.  Similarly for bank erases, the controller will truncate to the closest
             lower bank aligned address.
+            '''
+          resval: "0"
+        },
+      ]
+    },
+
+    { name: "SCRAMBLE_EN",
+      desc: "Scramble enable for flash",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0",
+          name: "VAL",
+          desc: '''
+            Temporary enable bit for flash scramble.
+            See #2630.
             '''
           resval: "0"
         },

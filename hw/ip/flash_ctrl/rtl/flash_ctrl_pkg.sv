@@ -77,6 +77,9 @@ package flash_ctrl_pkg;
     logic [BusAddrW-1:0]  addr;
     logic [BusWidth-1:0]  prog_data;
     logic                 prog_last;
+    logic                 scramble_en;
+    logic [127:0]         addr_key;
+    logic [127:0]         data_key;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -89,7 +92,10 @@ package flash_ctrl_pkg;
     part:      DataPart,
     addr:      '0,
     prog_data: '0,
-    prog_last: '0
+    prog_last: '0,
+    scramble_en: '0,
+    addr_key:  128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
+    data_key:  128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
   };
 
   // memory to flash controller
@@ -109,5 +115,23 @@ package flash_ctrl_pkg;
     rd_data:    '0,
     init_busy:  1'b0
   };
+
+  ////////////////////////////
+  // The following inter-module should be moved to OTP
+  ////////////////////////////
+
+  // otp to flash_phy
+  typedef struct packed {
+    logic [127:0] addr_key;
+    logic [127:0] data_key;
+  } otp_flash_t;
+
+  // default value of otp_flash_t
+  parameter otp_flash_t OTP_FLASH_DEFAULT = '{
+    addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
+    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+  };
+
+
 
 endpackage : flash_ctrl_pkg

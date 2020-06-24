@@ -26,10 +26,17 @@ module flash_phy_prog import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,
   input req_i,
+  input scramble_i,
   input [WordSelW-1:0] sel_i,
   input [BusWidth-1:0] data_i,
   input last_i,
   input ack_i,
+  input calc_ack_i,
+  input scramble_ack_i,
+  input [DataWidth-1:0] mask_i,
+  input [DataWidth-1:0] scrambled_data_i,
+  output logic calc_req_o,
+  output logic scramble_req_o,
   output logic req_o,
   output logic ack_o,
   output logic [DataWidth-1:0] data_o
@@ -40,7 +47,9 @@ module flash_phy_prog import flash_phy_pkg::*; (
     StPrePack,
     StPackData,
     StPostPack,
-    StWaitFlash
+    StWaitFlash,
+    StCalcMask,
+    StScrambleData
   } prog_state_e;
 
   typedef enum logic [1:0] {
@@ -99,6 +108,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
     data_sel = Filler;
     req_o = 1'b0;
     ack_o = 1'b0;
+    calc_req_o = 1'b0;
+    scramble_req_o = 1'b0;
 
     unique case (state_q)
       StIdle: begin
@@ -124,7 +135,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         if (req_i && idx == (WidthMultiple-1)) begin
           // last beat of a flash word
-          state_d = StWaitFlash;
+          state_d = scramble_i ? StCalcMask : StWaitFlash;
         end else if (req_i && last_i) begin
           // last beat is not aligned with the last entry of flash word
           state_d = StPostPack;
@@ -140,6 +151,22 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         // finish packing remaining entries
         if (idx == (WidthMultiple-1)) begin
+          state_d = scramble_i ? StCalcMask : StWaitFlash;
+        end
+      end
+
+      StCalcMask: begin
+        calc_req_o = 1'b1;
+
+        if (calc_ack_i) begin
+          state_d = StScrambleData;
+        end
+      end
+
+      StScrambleData: begin
+        scramble_req_o = 1'b1;
+
+        if (scramble_ack_i) begin
           state_d = StWaitFlash;
         end
       end
@@ -157,15 +184,26 @@ module flash_phy_prog import flash_phy_pkg::*; (
     endcase // unique case (state_q)
   end
 
+  logic [DataWidth-1:0] mask_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       packed_data <= '0;
+      mask_q <= '0;
     end else if (req_o && ack_i) begin
       packed_data <= '0;
+    end else if (calc_req_o && calc_ack_i) begin
+      packed_data <= packed_data ^ mask_i;
+      mask_q <= mask_i;
+    end else if (scramble_req_o && scramble_ack_i) begin
+      packed_data <= scrambled_data_i ^ mask_q;
     end else if (pack_valid) begin
       packed_data[idx] <= pack_data;
     end
   end
+
+
+
 
   assign data_o = packed_data;
 
