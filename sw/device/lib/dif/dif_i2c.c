@@ -325,6 +325,7 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
   return kDifI2cOk;
 }
 
+DIF_WARN_UNUSED_RESULT
 static dif_i2c_result_t irq_bit_for_type(dif_i2c_irq_type_t type,
                                          uint32_t *bit_index) {
   switch (type) {

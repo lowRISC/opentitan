@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
@@ -109,6 +110,7 @@ typedef struct dif_spi_device {
  * @param spi Out param for the initialized device.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_init(
     mmio_region_t base_addr, const dif_spi_device_config_t *config,
     dif_spi_device_t *spi);
@@ -120,6 +122,7 @@ dif_spi_device_result_t dif_spi_device_init(
  * @param spi A SPI device.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
 
 /**
@@ -129,6 +132,7 @@ dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
  * @param spi A SPI device.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_reset(const dif_spi_device_t *spi);
 
 /**
@@ -139,6 +143,7 @@ dif_spi_device_result_t dif_spi_device_irq_reset(const dif_spi_device_t *spi);
  * @param flag Out param for whether the IRQ is active..
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
                                                dif_spi_device_irq_type_t type,
                                                bool *flag_out);
@@ -149,6 +154,7 @@ dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
  * @param spi A SPI device.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_clear_all(
     const dif_spi_device_t *spi);
 
@@ -160,6 +166,7 @@ dif_spi_device_result_t dif_spi_device_irq_clear_all(
  * @param state The state to update the bit to.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_enable(
     const dif_spi_device_t *spi, dif_spi_device_irq_type_t type,
     dif_spi_device_irq_state_t state);
@@ -171,6 +178,7 @@ dif_spi_device_result_t dif_spi_device_irq_enable(
  * @param type Which IRQ type to fire.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_irq_force(
     const dif_spi_device_t *spi, dif_spi_device_irq_type_t type);
 
@@ -193,6 +201,7 @@ dif_spi_device_result_t dif_spi_device_irq_force(
  * @param tx_level The new TX level, as described above.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_set_irq_levels(
     const dif_spi_device_t *spi, uint16_t rx_level, uint16_t tx_level);
 
@@ -203,6 +212,7 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
  * @param bytes_pending Out param for the number of bytes pending
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
                                                   size_t *bytes_pending);
 
@@ -214,6 +224,7 @@ dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
  * @param bytes_pending Out param for the number of bytes pending
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
                                                   size_t *bytes_pending);
 
@@ -228,6 +239,7 @@ dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
  * may be null.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
                                             void *buf, size_t buf_len,
                                             size_t *bytes_received);
@@ -243,6 +255,7 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
  * may be null.
  * @return The result of the operation.
  */
+DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_send(const dif_spi_device_t *spi,
                                             const void *buf, size_t buf_len,
                                             size_t *bytes_sent);

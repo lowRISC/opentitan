@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
@@ -130,6 +131,7 @@ typedef enum dif_uart_config_result {
  * @param uart UART state data.
  * @return `dif_uart_config_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_config_result_t dif_uart_init(mmio_region_t base_addr,
                                        const dif_uart_config_t *config,
                                        dif_uart_t *uart);
@@ -144,6 +146,7 @@ dif_uart_config_result_t dif_uart_init(mmio_region_t base_addr,
  * @param config UART configuration data.
  * @return `dif_uart_config_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
                                             const dif_uart_config_t *config);
 
@@ -158,6 +161,7 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
  * @param watermark RX FIFO watermark.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
                                             dif_uart_watermark_t watermark);
 
@@ -172,6 +176,7 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
  * @param watermark TX FIFO watermark.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
                                             dif_uart_watermark_t watermark);
 
@@ -190,6 +195,7 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
  * @param bytes_written Number of bytes written (optional).
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
                                       const uint8_t *data,
                                       size_t bytes_requested,
@@ -210,6 +216,7 @@ dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
  * @param bytes_read Number of bytes read (optional).
  * @return `dif_uart_result_t`
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
                                          size_t bytes_requested, uint8_t *data,
                                          size_t *bytes_read);
@@ -224,6 +231,7 @@ dif_uart_result_t dif_uart_bytes_receive(const dif_uart_t *uart,
  * @param byte Byte to be transmitted.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
                                             uint8_t byte);
 
@@ -238,6 +246,7 @@ dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
  * @param byte Received byte.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
                                                uint8_t *byte);
 
@@ -251,6 +260,7 @@ dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
  * @param state IRQ state passed back to the caller.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_state_get(const dif_uart_t *uart,
                                          dif_uart_interrupt_t irq_type,
                                          dif_uart_enable_t *state);
@@ -264,6 +274,7 @@ dif_uart_result_t dif_uart_irq_state_get(const dif_uart_t *uart,
  * @param irq_type IRQ to be de-asserted.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_state_clear(const dif_uart_t *uart,
                                            dif_uart_interrupt_t irq_type);
 
@@ -277,6 +288,7 @@ dif_uart_result_t dif_uart_irq_state_clear(const dif_uart_t *uart,
  * @param state IRQ state passed back to the caller.
  * @return 'dif_uart_result_t'.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irqs_disable(const dif_uart_t *uart,
                                         uint32_t *state);
 
@@ -290,6 +302,7 @@ dif_uart_result_t dif_uart_irqs_disable(const dif_uart_t *uart,
  * @param state IRQ state to restore.
  * @return 'dif_uart_result_t'.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irqs_restore(const dif_uart_t *uart, uint32_t state);
 
 /**
@@ -302,6 +315,7 @@ dif_uart_result_t dif_uart_irqs_restore(const dif_uart_t *uart, uint32_t state);
  * @param enable enable or disable the interrupt.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_enable(const dif_uart_t *uart,
                                       dif_uart_interrupt_t irq_type,
                                       dif_uart_enable_t enable);
@@ -315,6 +329,7 @@ dif_uart_result_t dif_uart_irq_enable(const dif_uart_t *uart,
  * @param irq_type UART interrupt type to be forced.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
                                      dif_uart_interrupt_t irq_type);
 
@@ -328,6 +343,7 @@ dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
  * @param num_bytes Number of bytes available to be read.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
 
@@ -341,6 +357,7 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
  * @param num_bytes Number of bytes available to be written.
  * @return `dif_uart_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
                                               size_t *num_bytes);
 
