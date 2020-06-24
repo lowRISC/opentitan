@@ -11,9 +11,7 @@
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
 
   use_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
-             "{proj_root}/hw/top_earlgrey/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
-             "{proj_root}/hw/top_earlgrey/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
@@ -21,6 +19,7 @@
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
