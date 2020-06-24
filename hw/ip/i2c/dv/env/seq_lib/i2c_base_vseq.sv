@@ -15,6 +15,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   bit [7:0]                   rd_data;
   bit                         do_interrupt = 1'b1;
   bit                         force_use_incorrect_config = 1'b0;
+  i2c_item                    fmt_item;
+
   // random property
   rand uint                   fmt_fifo_access_dly;
   rand uint                   rx_fifo_access_dly;
@@ -26,7 +28,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit   [7:0]            wr_data;
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit                    rw_bit;
-  i2c_item                    fmt_item;
+  rand bit   [2:0]            rxilvl;
+  rand bit   [1:0]            fmtilvl;
 
   // timing property
   rand bit [15:0]             thigh;      // high period of the SCL in clock units
@@ -47,6 +50,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   constraint addr_c      { addr       inside {[I2C_MIN_ADDR : I2C_MAX_ADDR]}; }
   constraint wr_data_c   { wr_data    inside {[I2C_MIN_DATA : I2C_MAX_DATA]}; }
   constraint num_trans_c { num_trans  inside {[I2C_MIN_TRAN : I2C_MAX_TRAN]}; }
+  constraint rxilvl_c    { rxilvl     inside {[0 : I2C_MAX_RXILVL]}; }
+  constraint fmtilvl_c   { fmtilvl    inside {[0 : I2C_MAX_FMTILVL]}; }
 
   constraint timing_val_c {
     thigh     inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
@@ -161,12 +166,30 @@ class i2c_base_vseq extends cip_base_vseq #(
   endfunction : get_timing_values
 
   virtual task program_timing_regs();
-    csr_wr(.csr(ral.timing0), .value({tlow, thigh}));
-    csr_wr(.csr(ral.timing1), .value({t_f, t_r}));
-    csr_wr(.csr(ral.timing2), .value({thd_sta, tsu_sta}));
-    csr_wr(.csr(ral.timing3), .value({thd_dat, tsu_dat}));
-    csr_wr(.csr(ral.timing4), .value({t_buf,   tsu_sto}));
-    csr_wr(.csr(ral.timeout_ctrl), .value({e_timeout, t_timeout}));
+    ral.timing0.tlow.set(tlow);
+    ral.timing0.thigh.set(thigh);
+    csr_update(.csr(ral.timing0));
+
+    ral.timing1.t_f.set(t_f);
+    ral.timing1.t_r.set(t_r);
+    csr_update(.csr(ral.timing1));
+
+    ral.timing2.thd_sta.set(thd_sta);
+    ral.timing2.tsu_sta.set(tsu_sta);
+    csr_update(.csr(ral.timing2));
+
+    ral.timing3.thd_dat.set(thd_dat);
+    ral.timing3.tsu_dat.set(tsu_dat);
+    csr_update(.csr(ral.timing3));
+
+    ral.timing4.tsu_sto.set(tsu_sto);
+    ral.timing4.t_buf.set(t_buf);
+    csr_update(.csr(ral.timing4));
+
+    ral.timeout_ctrl.en.set(e_timeout);
+    ral.timeout_ctrl.val.set(t_timeout);
+    csr_update(.csr(ral.timeout_ctrl));
+
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     // set time to stop test

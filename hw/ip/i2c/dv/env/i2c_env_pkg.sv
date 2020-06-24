@@ -51,6 +51,8 @@ package i2c_env_pkg;
   parameter uint I2C_MIN_TIMEOUT = 1;
   parameter uint I2C_MAX_TIMEOUT = 4;
   parameter uint I2C_IDLE_TIME   = 1200;
+  parameter uint I2C_MAX_RXILVL  = 4;
+  parameter uint I2C_MAX_FMTILVL = 3;
 
   // ok_to_end_delay_ns for EoT
   parameter uint DELAY_FOR_EOT_NS = 5000;
