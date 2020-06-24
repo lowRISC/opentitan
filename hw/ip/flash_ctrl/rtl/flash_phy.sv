@@ -118,13 +118,27 @@ module flash_phy import flash_ctrl_pkg::*; (
       .rdata  (host_rsp_data[bank])
     );
 
+    logic host_req;
+    logic ctrl_req;
+    logic host_scramble_en;
+    logic ctrl_scramble_en;
+
+    assign host_req = host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank];
+    assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
+
+    // #2630: Temporary scramble enable logic on one of the banks until register configuration
+    // is setup.
+    assign host_scramble_en = host_req & host_addr_i[BusAddrW-1 -: BankW] == 1;
+    assign ctrl_scramble_en = ctrl_req & flash_ctrl_i.addr[BusAddrW-1 -: BankW] == 1;
+
     flash_phy_core i_core (
       .clk_i,
       .rst_ni,
-      .req_i(flash_ctrl_i.req & (ctrl_bank_sel == bank)),
+      .scramble_en_i(flash_ctrl_i.scramble_en & (host_scramble_en | ctrl_scramble_en)),
+      .req_i(ctrl_req),
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
-      .host_req_i(host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank]),
+      .host_req_i(host_req),
       .host_addr_i(host_addr_i[0 +: BusBankAddrW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),
@@ -134,6 +148,8 @@ module flash_phy import flash_ctrl_pkg::*; (
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .prog_last_i(flash_ctrl_i.prog_last),
+      .addr_key_i(flash_ctrl_i.addr_key),
+      .data_key_i(flash_ctrl_i.data_key),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
       .rd_done_o(rd_done[bank]),

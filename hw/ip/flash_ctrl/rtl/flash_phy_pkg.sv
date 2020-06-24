@@ -35,6 +35,13 @@ package flash_phy_pkg;
   parameter int LsbAddrBit    = $clog2(WidthMultiple);
   parameter int WordSelW      = WidthMultiple == 1 ? 1 : LsbAddrBit;
 
+  // scramble / de-scramble parameters
+  // Number of cycles the gf_mult is given to complete
+  parameter int KeySize       = 128;
+  parameter int GfMultCycles  = 2;
+  // If this value is greater than 1, constraints must be updated for multicycle paths
+  parameter int CipherCycles  = 2;
+
   // Read buffer metadata
   typedef enum logic [1:0] {
     Invalid     = 2'h0,
@@ -57,6 +64,11 @@ package flash_phy_pkg;
 
   parameter int RspOrderFifoWidth = $bits(rsp_fifo_entry_t);
 
+  typedef struct packed {
+    logic [BankAddrW-1:0] addr;
+    logic descramble;
+  } rd_attr_t;
+
   // Flash Operations Supported
   typedef enum logic [2:0] {
     PhyRead      = 3'h0,
@@ -72,5 +84,10 @@ package flash_phy_pkg;
     Host         = 2'h1,
     Ctrl         = 2'h2
   } flash_phy_op_sel_e;
+
+  typedef enum logic {
+    ScrambleOp   = 1'b0,
+    DeScrambleOp = 1'b1
+  } cipher_ops_e;
 
 endpackage // flash_phy_pkg
