@@ -14,7 +14,7 @@ analyze -format sverilog      \
         +define+INC_ASSERT  \
         -f [glob *.scr]"
 
-elaborate -sva $env(FPV_TOP) 
+elaborate -sva $env(FPV_TOP)
 
 #-------------------------------------------------------------------------
 # Specify clock(s) and reset(s)
@@ -26,7 +26,7 @@ elaborate -sva $env(FPV_TOP)
 # note: the TL-UL protocol checker tlul_assert.sv operates on the negedge clock
 
 if {$env(FPV_TOP) == "rv_dm"} {
-  create_clock clk_i -period 100 
+  create_clock clk_i -period 100
   create_clock tck_i -period 100
   create_reset rst_ni -sense low
   create_reset trst_ni -sense low
@@ -34,13 +34,13 @@ if {$env(FPV_TOP) == "rv_dm"} {
   create_clock clk_i -period 100
   create_clock cio_sck_i -period 100
   create_reset rst_ni -sense low
-  create_reset cio_csb_i -sense high 
+  create_reset cio_csb_i -sense high
 } elseif {$env(FPV_TOP) == "usb_fs_nb_pe"} {
   create_clock clk_48mhz_i -period 100
-  create_reset rst_ni -sense low 
+  create_reset rst_ni -sense low
 } elseif {$env(FPV_TOP) == "usbuart"} {
   create_clock clk_i -period 100
-  create_clock clk_48mhz_i -period 100 
+  create_clock clk_48mhz_i -period 100
   create_reset rst_ni -sense low
 } elseif {$env(FPV_TOP) == "usbdev"} {
   create_clock clk_i -period 100
@@ -129,19 +129,19 @@ fvdisable {top_earlgrey.u_dm_top.*tlul_assert_*DataKnown*}
 #-------------------------------------------------------------------------
 # Configure grid usage
 #-------------------------------------------------------------------------
-# Use "set_grid_usage" option to launch the run on the grid. 
+# Use "set_grid_usage" option to launch the run on the grid.
 # Use option "-type <LSF|RTDA|SGE>=<# of workers>" to specify the type of grid and the numbers of workers
-# "-control {<submission commands>} is used to specify the exact qsub/bsub string to use for accessing the grid resources 
-# Ex: set_grid_usage -type sge=12 -control { qsub -P <machine name> } 
+# "-control {<submission commands>} is used to specify the exact qsub/bsub string to use for accessing the grid resources
+# Ex: set_grid_usage -type sge=12 -control { qsub -P <machine name> }
 set_grid_usage -type RSH=12
 
 #-------------------------------------------------------------------------
-# Run all the assertion and cover properties 
+# Run all the assertion and cover properties
 #-------------------------------------------------------------------------
 # time limit set to 2 hours
 set_fml_var fml_max_time 2H
 
-# initialize the design 
+# initialize the design
 sim_run -stable
 sim_save_reset
 
@@ -157,8 +157,7 @@ report_fv > ../../../$env(FPV_TOP).result
 #-------------------------------------------------------------------------
 # Generate Formal Coverage
 #-------------------------------------------------------------------------
-# VC Formal also provides formal coverage metrics as part of formal signoff flow. 
+# VC Formal also provides formal coverage metrics as part of formal signoff flow.
 # If you would like to generate formal coverage or need any other help, please send email to vcf_support@synopsys.com
 
 quit
-
