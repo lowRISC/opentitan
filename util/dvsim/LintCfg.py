@@ -184,10 +184,10 @@ class LintCfg(OneShotCfg):
                     break
 
             if has_msg:
-                results_str += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
+                fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
                 for hdr, key in hdr_key_pairs:
                     msgs = self.result.get(key)
-                    results_str += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
+                    fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
         if len(table) > 1:
             self.results_md = results_str + tabulate(

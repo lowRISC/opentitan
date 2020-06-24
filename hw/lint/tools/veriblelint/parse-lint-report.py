@@ -118,7 +118,7 @@ def main():
     nr_warnings = len(results["warnings"]) + len(results["lint_warnings"])
     print("Lint not successful, got %d warnings and %d errors." %
           (nr_warnings, nr_errors))
-    if nr_errors > 0 and nr_warnings > 0:
+    if nr_errors > 0 or nr_warnings > 0:
         sys.exit(1)
     sys.exit(0)
 
