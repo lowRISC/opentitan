@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
@@ -79,6 +80,7 @@ typedef enum dif_gpio_irq {
  * @return `kDifGpioBadArg` if `config` or `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
                                 dif_gpio_t *gpio);
 
@@ -92,6 +94,7 @@ dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
 
 /**
@@ -106,6 +109,7 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
  * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
                                     uint32_t *pin_values);
 
@@ -122,6 +126,7 @@ dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                     bool *pin_value);
 
@@ -135,6 +140,7 @@ dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val);
 
 /**
@@ -148,6 +154,7 @@ dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val);
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
                                      bool val);
 
@@ -162,6 +169,7 @@ dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
                                         uint32_t val);
 
@@ -175,6 +183,7 @@ dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
                                                uint32_t val);
 
@@ -189,6 +198,7 @@ dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
                                                uint32_t index, bool val);
 
@@ -203,6 +213,7 @@ dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
                                                   uint32_t mask, uint32_t val);
 
@@ -218,6 +229,7 @@ dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
 
 /**
@@ -228,6 +240,7 @@ dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
  * @return `kDifGpioBadArg` if `gpio` or `interrupt_states` is
  * `NULL`, `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
                                         uint32_t *interrupt_states);
 
@@ -241,6 +254,7 @@ dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` or `interrupt_state` is
  * `NULL`, `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
                                         bool *interrupt_state);
 
@@ -252,6 +266,7 @@ dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
                                          uint32_t index);
 
@@ -267,6 +282,7 @@ dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
     const dif_gpio_t *gpio, uint32_t mask);
 
@@ -281,6 +297,7 @@ dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
     const dif_gpio_t *gpio, uint32_t mask);
 
@@ -298,6 +315,7 @@ dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
                                              uint32_t mask);
 
@@ -312,6 +330,7 @@ dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
                                               uint32_t mask);
 
@@ -327,6 +346,7 @@ dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
  * @return `kDifGpioBadArg` if `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
                                                       uint32_t mask);
 
@@ -344,6 +364,7 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
  * @return `kDifGpioOk` if the function is successful,
  * `kDifGpioBadArg` otherwise.
  */
+DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
                                                      uint32_t mask,
                                                      dif_gpio_irq_t config);

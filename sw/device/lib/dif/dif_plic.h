@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
@@ -98,6 +99,7 @@ typedef enum dif_plic_result {
  * @param plic PLIC state data.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
 
 /**
@@ -111,6 +113,7 @@ dif_plic_result_t dif_plic_init(mmio_region_t base_addr, dif_plic_t *plic);
  * @param enable Enable/disable the IRQ handling.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
                                           dif_plic_irq_id_t irq,
                                           dif_plic_target_t target,
@@ -127,6 +130,7 @@ dif_plic_result_t dif_plic_irq_enable_set(const dif_plic_t *plic,
  * IRQs.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
                                                 dif_plic_irq_id_t irq,
                                                 dif_plic_enable_t enable);
@@ -142,6 +146,7 @@ dif_plic_result_t dif_plic_irq_trigger_type_set(const dif_plic_t *plic,
  * @param priority Priority to be set.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
                                             dif_plic_irq_id_t irq,
                                             uint32_t priority);
@@ -157,6 +162,7 @@ dif_plic_result_t dif_plic_irq_priority_set(const dif_plic_t *plic,
  * @param threshold IRQ priority threshold to be set.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
                                                 dif_plic_target_t target,
                                                 uint32_t threshold);
@@ -171,6 +177,7 @@ dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
  * @param status Flag indicating whether the IRQ pending bit is set in PLIC.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
                                                   dif_plic_irq_id_t irq,
                                                   dif_plic_flag_t *status);
@@ -187,6 +194,7 @@ dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
  * @param claim_data Data that describes the origin of the IRQ.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
                                      dif_plic_target_t target,
                                      dif_plic_irq_id_t *claim_data);
@@ -204,6 +212,7 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
  *                      of the IRQ servicing completion.
  * @return `dif_plic_result_t`.
  */
+DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
                                         dif_plic_target_t target,
                                         const dif_plic_irq_id_t *complete_data);
