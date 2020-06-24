@@ -1,0 +1,253 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "pwm",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  regwidth: "32",
+  registers: [
+    { name: "CFG",
+      desc: "Configuration register",
+      swaccess: "rw",
+      fields: [
+        { bits: "31",
+          name: "CNTR_EN",
+          desc: '''Write 1 enables the PWM counter
+                   Writing 0 disables the PWM counter, also resets the counter
+                '''   
+          resval: "0x0"             
+        }
+        { bits: "8:0",
+          name: "PWM_EN",
+          desc: '''Individual PWM output enable signals
+                   Write 1 enables output.
+                   Write 0 disable the output.
+                '''
+          resval: "0x000"
+        }
+      ]
+    },
+    { name: "PERIOD",
+      desc: "Sets PWM period, enable counter",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "PERIOD",
+          desc: "Sets the period"
+          resval: "0x00000090"
+        }
+      ]
+    },
+    { name: "POSEDGE_VAL_0",
+      desc: "PWM counter value that causes positive edge for PWM signal 0. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000000"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_0",
+      desc: "PWM counter value that causes negative edge for PWM signal 0. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000010"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_1",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000010"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_1",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000020"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_2",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000020"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_2",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000030"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_3",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000030"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_3",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000040"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_4",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000040"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_4",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000050"
+       }
+      ]
+    }
+    { name: "POSEDGE_VAL_5",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000050"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_5",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000060"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_6",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000060"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_6",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000070"
+       }
+      ]
+    },
+    { name: "POSEDGE_VAL_7",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000070"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_7",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000080"
+       }
+      ]
+    }
+    { name: "POSEDGE_VAL_8",
+      desc: "PWM counter value that causes positive edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "POSEDGE_VAL",
+          desc: "Clock cycle of rising edge",
+          resval: "0x00000080"
+       }
+      ]
+    },
+    { name: "NEGEDGE_VAL_8",
+      desc: "PWM counter value that causes negative edge for PWM signal 1. To disable a PWM channel, set posedge == negedge.",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "NEGEDGE_VAL",
+          desc: "Clock cycle of falling edge",
+          resval: "0x00000090"
+       }
+      ]
+    },
+    { name: "INCR",
+      desc: "Sets the counter increment value, which controls how frequently the counter rolls over",
+      swaccess: "rw",
+      fields: [
+        { bits: "31:0",
+          name: "INCR",
+          desc: "How fast PWM counts up affects how fast it rolls over, affects the PWM period. Setting to 0x0 DISABLES the period counter",
+          resval: "0x00000001"
+       }
+      ]
+    }
+  ]
+}
+
