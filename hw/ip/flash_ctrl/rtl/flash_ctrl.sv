@@ -20,6 +20,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        flash_rsp_t flash_i,
   output       flash_req_t flash_o,
 
+  // OTP Interface
+  input        otp_flash_t otp_i,
+
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
   output logic intr_prog_lvl_o,   // Program fifo is empty
@@ -388,6 +391,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.part = flash_part_sel;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;
+  assign flash_o.scramble_en = reg2hw.scramble_en.q;
+  assign flash_o.addr_key = otp_i.addr_key;
+  assign flash_o.data_key = otp_i.data_key;
   assign flash_rd_data = flash_i.rd_data;
   assign init_busy = flash_i.init_busy;
 

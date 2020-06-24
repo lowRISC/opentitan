@@ -76,6 +76,12 @@ static void test_basic_io(void) {
                        output_page));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
 
+  // Check from host side also
+  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+    output_page[i] = mmio_region_read32(flash_bank_1, i * sizeof(uint32_t));
+  }
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+
   // Similar check for info page
   CHECK_EQZ(flash_page_erase(flash_bank_1_addr, kInfoPartition));
   CHECK_EQZ(flash_write(flash_bank_1_addr, kInfoPartition, input_page,
