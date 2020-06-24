@@ -41,6 +41,10 @@ module top_earlgrey #(
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
 
+  // Inter-module Signal External type
+  output entropy_src_pkg::entropy_src_rng_req_t       entropy_src_entropy_src_rng_req,
+  input  entropy_src_pkg::entropy_src_rng_rsp_t       entropy_src_entropy_src_rng_rsp,
+
   input               scanmode_i  // 1 for Scan
 );
 
@@ -1254,8 +1258,8 @@ module top_earlgrey #(
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
-      .entropy_src_rng_o(),
-      .entropy_src_rng_i(entropy_src_pkg::ENTROPY_SRC_RNG_RSP_DEFAULT),
+      .entropy_src_rng_o(entropy_src_entropy_src_rng_req),
+      .entropy_src_rng_i(entropy_src_entropy_src_rng_rsp),
       .efuse_es_sw_reg_en_i(1'b0),
 
       .clk_i (clkmgr_clocks.clk_main_entropy_src),

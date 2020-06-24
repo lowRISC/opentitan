@@ -46,6 +46,16 @@ module top_earlgrey_asic (
 
   import top_earlgrey_pkg::*;
 
+  ////////////////////////
+  // Signal definitions //
+  ////////////////////////
+
+  entropy_src_pkg::entropy_src_rng_req_t entropy_src_rng_req;
+  entropy_src_pkg::entropy_src_rng_rsp_t entropy_src_rng_rsp;
+
+  // TODO: Connect to AST Wrapper
+  assign entropy_src_rng_rsp = '0;
+
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -215,6 +225,9 @@ module top_earlgrey_asic (
     .mio_attr_o      ( mio_attr      ),
     .dio_attr_o      ( dio_attr      ),
 
+    // entropy_src -> AST
+    .entropy_src_entropy_src_rng_req (entropy_src_rng_req),
+    .entropy_src_entropy_src_rng_rsp (entropy_src_rng_rsp),
     // DFT signals
     .scanmode_i      ( 1'b0          )
   );

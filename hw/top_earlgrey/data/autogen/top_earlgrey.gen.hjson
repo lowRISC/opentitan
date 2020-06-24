@@ -2962,6 +2962,8 @@
           act: req
           package: entropy_src_pkg
           inst_name: entropy_src
+          width: 1
+          top_signame: entropy_src_entropy_src_rng
           index: -1
         }
         {
@@ -3082,7 +3084,10 @@
       clkmgr.clocks
       csrng.csrng_cmd
     ]
-    external: []
+    external:
+    [
+      entropy_src.entropy_src_rng
+    ]
   }
   xbar:
   [
@@ -6167,6 +6172,8 @@
         act: req
         package: entropy_src_pkg
         inst_name: entropy_src
+        width: 1
+        top_signame: entropy_src_entropy_src_rng
         index: -1
       }
       {
@@ -6191,7 +6198,25 @@
         index: -1
       }
     ]
-    external: []
+    external:
+    [
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_req
+        signame: entropy_src_entropy_src_rng_req
+        width: 1
+        type: req_rsp
+        direction: out
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_rsp
+        signame: entropy_src_entropy_src_rng_rsp
+        width: 1
+        type: req_rsp
+        direction: in
+      }
+    ]
     definitions:
     [
       {
