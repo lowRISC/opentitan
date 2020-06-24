@@ -34,6 +34,7 @@ elaborate -top $env(FPV_TOP)
 # select primary clock and reset condition (use ! for active-low reset)
 # note: -both_edges is needed below because the TL-UL protocol checker
 # tlul_assert.sv operates on the negedge clock
+# TODO: create each FPV_TOP's individual config file
 
 if {$env(FPV_TOP) == "rv_dm"} {
   clock clk_i -both_edges
@@ -85,6 +86,7 @@ if {$env(FPV_TOP) == "alert_handler"} {
   assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighReqFifoEmpty}
   assert -disable {*flash_ctrl.u_to_prog_fifo.rvalidHighWhenRspFifoFull}
 }
+
 #-------------------------------------------------------------------------
 # assume properties for inputs
 #-------------------------------------------------------------------------
@@ -118,6 +120,7 @@ if {$env(CHECK) == 1} {
 #-------------------------------------------------------------------------
 # configure proofgrid
 #-------------------------------------------------------------------------
+
 set_proofgrid_per_engine_max_local_jobs 2
 
 # Uncomment below 2 lines when using LSF:
@@ -127,15 +130,19 @@ set_proofgrid_per_engine_max_local_jobs 2
 #-------------------------------------------------------------------------
 # prove all assertions & report
 #-------------------------------------------------------------------------
+
 # time limit set to 2 hours
 get_reset_info -x_value -with_reset_pin
-prove -all -time_limit 4h
+prove -all -time_limit 2h
 report
+
 #-------------------------------------------------------------------------
 # check coverage and report
 #-------------------------------------------------------------------------
+
 if {$env(COV) == 1} {
   check_cov -measure
+  check_cov -report -force -exclude { reset waived }
   check_cov -report -type all -no_return -report_file cover.html \
       -html -force -exclude { reset waived }
 }
