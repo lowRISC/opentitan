@@ -6,17 +6,29 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
   `uvm_object_utils(rv_timer_sanity_vseq)
   `uvm_object_new
 
+  // According to the IEEE SystemVerilog LRM section 18.5.10,
+  // only integral values can be used in solve...before constraint
+  // blocks.
+  //
+  // These arrays were originally defined as unpacked arrays, which in
+  // SystemVerilog are not considered to be integral values - but packed arrays are.
+  //
+  // In addition, the DSim simulator throws compile-time errors if these arrays
+  // are not defined as packed.
+  //
+  // Thus, we now declare these arrays as packed arrays; this simply makes
+  // their declaration LRM-compliant and does not affect simulations.
   rand bit [NUM_TIMERS-1:0] en_timers;
   rand bit [NUM_HARTS-1:0]  en_harts;
 
-  rand uint64 timer_val[NUM_HARTS];
-  rand uint64 compare_val[NUM_HARTS][NUM_TIMERS];
-  rand bit    en_interrupt[NUM_HARTS][NUM_TIMERS];
+  rand uint64 [NUM_HARTS]             timer_val;
+  rand uint64 [NUM_HARTS][NUM_TIMERS] compare_val;
+  rand bit [NUM_HARTS][NUM_TIMERS]    en_interrupt;
 
-  rand uint prescale[NUM_HARTS];
-  rand uint step[NUM_HARTS];
-  rand uint ticks[NUM_HARTS];
-  rand bit  assert_reset;
+  rand uint [NUM_HARTS] prescale;
+  rand uint [NUM_HARTS] step;
+  rand uint [NUM_HARTS] ticks;
+  rand bit              assert_reset;
 
   uint64 max_clks_until_expiry = 5_000_000;
 
