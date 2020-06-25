@@ -505,7 +505,7 @@ def amend_resets(top):
         if reset["type"] == "top":
             # The resets structure will be used once rstmgr is integrated
             # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
-            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(
+            reset_paths[reset["name"]] = "rstmgr_aon_resets.rst_{}_n".format(
                 reset["name"])
         elif reset["type"] == "ext":
             reset_paths[reset["name"]] = "rst_ni"
