@@ -249,7 +249,7 @@
         LfsrSeed:  "0x7FFFFFFF"
       }
     }
-    { name: "pwrmgr",
+    { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io", clk_slow_i: "aon"},
       clock_group: "powerup",
@@ -257,7 +257,7 @@
       base_addr: "0x40400000",
 
     },
-    { name: "rstmgr",
+    { name: "rstmgr_aon",
       type: "rstmgr",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
       clock_group: "powerup",
@@ -375,15 +375,15 @@
   inter_module: {
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
-      'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'  : ['clkmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_rst'  : ['rstmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_clk'  : ['clkmgr_aon.pwr'],
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr_aon.clocks', 'csrng.csrng_cmd'],
+    'top': ['rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks', 'csrng.csrng_cmd'],
 
     // ext is to create port in the top.
     'external': ['entropy_src.entropy_src_rng'],
@@ -421,7 +421,7 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr",
+                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr_aon",
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2"]
 

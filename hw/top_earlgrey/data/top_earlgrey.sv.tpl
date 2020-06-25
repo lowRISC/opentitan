@@ -268,7 +268,7 @@ module top_${top["name"]} #(
     .debug_req_i          (debug_req),
     // CPU control signals
     .fetch_enable_i       (1'b1),
-    .core_sleep_o         (pwrmgr_pwr_cpu.core_sleeping)
+    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)
@@ -303,8 +303,8 @@ module top_${top["name"]} #(
     .tdo_oe_o         (       )
   );
 
-  assign rstmgr_cpu.ndmreset_req = ndmreset_req;
-  assign rstmgr_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]};
+  assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
+  assign rstmgr_aon_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]};
 
 ## Memory Instantiation
 % for m in top["memory"]:

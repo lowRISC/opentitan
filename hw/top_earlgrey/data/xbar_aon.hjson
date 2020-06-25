@@ -13,13 +13,13 @@
     }
 
     // devices
-    { name:     "pwrmgr"
+    { name:     "pwrmgr_aon"
       type:     "device"
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
       pipeline: "false"
     }
-    { name:     "rstmgr"
+    { name:     "rstmgr_aon"
       type:     "device"
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
@@ -86,7 +86,7 @@
   ]
 
   connections: {
-    main: [ "pwrmgr", "rstmgr", "clkmgr_aon", "pinmux_aon",
+    main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
             "rbox_aon",
             // "dcd_aon", "aontimer_aon"
