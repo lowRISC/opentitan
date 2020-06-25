@@ -48,7 +48,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
   // this defines a random permutation
-  localparam int unsigned perm [32] = '{
+  localparam int unsigned Perm [32] = '{
     4, 11, 25,  3,   //
     15, 16,  1, 10,  //
     2, 22,  7,  0,   //
@@ -86,7 +86,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   );
 
   for (genvar k = 0; k < 32; k++) begin : gen_perm
-    assign perm_state[k] = lfsr_state[perm[k]];
+    assign perm_state[k] = lfsr_state[Perm[k]];
   end
 
   logic [IdDw-1:0] id_to_ping;
