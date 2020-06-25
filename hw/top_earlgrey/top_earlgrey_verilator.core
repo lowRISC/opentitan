@@ -53,6 +53,10 @@ parameters:
     paramtype: vlogdefine
     default: true
     description: Replace JTAG TAP with an OpenOCD direct connection
+  OTBN_MODEL:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Use the OTBN model instead of the RTL implementation (development only)
 
 targets:
   default: &default_target
@@ -69,6 +73,7 @@ targets:
       - flashinit
       - rominit
       - DMIDirectTAP
+      - OTBN_MODEL
     default_tool: verilator
     filesets:
       - files_sim_verilator
