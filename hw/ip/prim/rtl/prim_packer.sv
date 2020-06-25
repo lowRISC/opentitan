@@ -200,7 +200,7 @@ module prim_packer #(
   // Assumption: mask_i should be contiguous ones
   // e.g: 0011100 --> OK
   //      0100011 --> Not OK
-  if (InW > 1) begin
+  if (InW > 1) begin : gen_mask_assert
     `ASSUME(ContiguousOnesMask_M,
             valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
   end

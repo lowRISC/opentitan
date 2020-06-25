@@ -17,7 +17,7 @@ package pinmux_pkg;
   // Interface with LC controller
   parameter int NStraps  = 2;
   // Strap sampling is only supported on MIOs at the moment
-  parameter int MioStrapPos [0:NStraps-1] = '{1, 0};
+  parameter int MioStrapPos [NStraps] = '{1, 0};
 
   typedef struct packed {
     logic sample_pulse;

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
-  parameter Cycles = 4
+  parameter int Cycles = 4
 ) (
   input                    clk_i,
   input                    rst_ni,
