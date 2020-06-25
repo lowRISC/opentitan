@@ -651,6 +651,15 @@
           top_signame: flash_ctrl_flash
           index: -1
         }
+        {
+          struct: otp_flash
+          type: uni
+          name: otp
+          act: rcv
+          package: flash_ctrl_pkg
+          inst_name: flash_ctrl
+          index: -1
+        }
       ]
     }
     {
@@ -3561,6 +3570,15 @@
         inst_name: flash_ctrl
         width: 1
         top_signame: flash_ctrl_flash
+        index: -1
+      }
+      {
+        struct: otp_flash
+        type: uni
+        name: otp
+        act: rcv
+        package: flash_ctrl_pkg
+        inst_name: flash_ctrl
         index: -1
       }
       {

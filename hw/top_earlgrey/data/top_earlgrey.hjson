@@ -310,7 +310,7 @@
           type: "req_rsp",
           name: "flash_ctrl", // flash_ctrl_i (req), flash_ctrl_o (rsp)
           act:  "rsp",
-        }
+        },
       ],
     },
   ],

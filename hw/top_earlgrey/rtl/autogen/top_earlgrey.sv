@@ -619,6 +619,7 @@ module top_earlgrey #(
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
+      .otp_i(flash_ctrl_pkg::OTP_FLASH_DEFAULT),
       .clk_i (clkmgr_clocks.clk_main_infra),
       .rst_ni (rstmgr_resets.rst_lc_n)
   );
