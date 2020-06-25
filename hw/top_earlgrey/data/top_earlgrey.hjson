@@ -16,7 +16,7 @@
   clocks: {
 
     hier_paths: {
-      top: "clkmgr_clocks.", // top level is a struct
+      top: "clkmgr_aon_clocks.", // top level is a struct
       ext: "",               // ext is a port of the clock name
     },
 
@@ -264,7 +264,7 @@
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x40410000",
     },
-    { name: "clkmgr",
+    { name: "clkmgr_aon",
       type: "clkmgr",
       clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
       clock_group: "powerup",
@@ -376,14 +376,14 @@
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
+      'pwrmgr.pwr_clk'  : ['clkmgr_aon.pwr'],
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
     }
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks', 'csrng.csrng_cmd'],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr_aon.clocks', 'csrng.csrng_cmd'],
 
     // ext is to create port in the top.
     'external': ['entropy_src.entropy_src_rng'],
