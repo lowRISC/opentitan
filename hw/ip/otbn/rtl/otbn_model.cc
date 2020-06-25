@@ -52,23 +52,14 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
   memcpy(ifname, dir, strlen(dir));
   memcpy(dfname, dir, strlen(dir));
 
-  if(mkfifo(ifname, S_IWUSR | S_IRUSR) != 0) {
-    std::cerr << "Cannot create the pipe " << ifname << std::endl;
-    return -1;
-  }
-  if(mkfifo(dfname, S_IWUSR | S_IRUSR) != 0) {
-    std::cerr << "Cannot create the pipe " << dfname << std::endl;
-    return -1;
-  }
-
   ifp = fopen(ifname, "w+");
   if (!ifp) {
-    std::cerr << "Cannot open the pipe " << ifname << std::endl;
+    std::cerr << "Cannot open the file " << ifname << std::endl;
     return -1;
   }
   dfp = fopen(dfname, "w+");
   if (!dfp) {
-    std::cerr << "Cannot open the pipe " << dfname << std::endl;
+    std::cerr << "Cannot open the file " << dfname << std::endl;
     return -1;
   }
 
@@ -95,12 +86,23 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     }
   }
 
+  fclose(ifp);
+  fclose(dfp);
+
   std::stringstream strstr;
   strstr << "otbn-python-model ";
   strstr << imem_words << " " << ifname << " ";
   strstr << dmem_words << " " << dfname;
 
+  std::cout << strstr.str() << std::endl;
+
   system(strstr.str().c_str());
+
+  dfp = fopen(dfname, "r");
+  if (!dfp) {
+    std::cerr << "Cannot open the file " << dfname << std::endl;
+    return -1;
+  }
 
   {
     SVScoped scoped(dmem_scope);
@@ -114,7 +116,6 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     }
   }
 
-  fclose(ifp);
   fclose(dfp);
 
   return 0;
