@@ -68,13 +68,20 @@ module otbn_core
           done_o <= 1'b0;
         end else begin
           if (start_i) begin
-            run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
-                      ImemSizeWords,
-                      "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
-                      DmemSizeWords);
-            done_o <= 1'b1;
-          end else begin
+            count <= run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
+                               ImemSizeWords,
+                               "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
+                               DmemSizeWords);
+            $display("%t start", $time);
             done_o <= 1'b0;
+          end else begin
+            if (count == 0) begin
+              done_o <= 1'b1;
+              $display("%t done", $time);
+            end else begin
+              done_o <= 1'b0;
+              count <= count - 1;
+            end
           end
         end
       end

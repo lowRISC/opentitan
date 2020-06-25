@@ -1,9 +1,9 @@
 from riscvmodel.sim import Simulator
 from riscvmodel.model import Model
 from riscvmodel.variant import RV32I
-from riscvmodel.code import read_from_binary, MachineDecodeError
+from riscvmodel.code import read_from_binary
 
-import argparse
+import argparse, struct
 
 def main():
   parser = argparse.ArgumentParser()
@@ -11,6 +11,8 @@ def main():
   parser.add_argument("imem_file")
   parser.add_argument("dmem_words", type=int)
   parser.add_argument("dmem_file")
+  parser.add_argument("cycles_file")
+
   args = parser.parse_args()
   sim = Simulator(Model(RV32I))
 
@@ -18,7 +20,10 @@ def main():
   with open(args.dmem_file, "rb") as f:
     sim.load_data(f.read())
 
-  sim.run()
+  cycles = sim.run()
 
   with open(args.dmem_file, "wb") as f:
     f.write(sim.dump_data())
+
+  with open(args.cycles_file, "wb") as f:
+    f.write(struct.pack("<L", cycles))
