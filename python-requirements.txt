@@ -26,6 +26,9 @@ pyyaml
 tabulate
 yapf
 
+# Used by OTBN simulator
+riscv-model >= 0.4.1
+
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/fusesoc.git@ot#egg=fusesoc >= 1.11.0
 

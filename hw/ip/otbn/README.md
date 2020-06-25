@@ -36,6 +36,20 @@ Will assemble and link `prog.S` and produce various outputs using
 `prog_bin/prog` as a prefix for all output filenames. Run
 `./hw/ip/otbn/util/build.sh` without arguments for more information.
 
+### Work with the ISA
+
+The instruction set is described in machine readable form in
+`data/insns.yml`. This is parsed by Python code in
+`util/insn_yaml.py`, which runs various sanity checks on the data. The
+binutils-based toolchain described above uses this information. Other
+users include:
+
+  - `util/yaml_to_doc.py`: Generates a Markdown snippet which is included in
+    the OTBN specification.
+
+  - `util/otbn-rig`: A random instruction generator for OTBN. See
+    util/rig/README.md for further information.
+
 ### Run the standalone simulation
 *Note that OTBN is still in the early development stages so this simulation does
 not support the full ISA*
@@ -83,21 +97,29 @@ hw/ip/otbn/dv/smoke/run_smoke.sh
 This will build the standalone simulation, build the smoke test binary, run it
 and check the results are as expected.
 
-### Build the RTL implementation in OT earlgrey simulation
+### Run OT earlgrey simulation with the OTBN model, rather than the RTL design
 
-To build the RTL implementation of OTBN in an earlgrey simulation, run `fusesoc`
-without passing the `OTBN_MODEL` flag. For example, the Verilator simulation can
-be compiled as follows.
+The default behaviour is that the OTBN block contains the RTL design.
+If you wish to run system-level testing against the Python-based
+simulator instead of the RTL, you need to pass the `OTBN_MODEL` flag.
+For example, to compile the Verilator simulation, use:
 
 ```sh
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
+fusesoc --cores-root=. run \
+  --flag=fileset_top --target=sim --setup --build \
+  lowrisc:systems:top_earlgrey_verilator --OTBN_MODEL
 ```
 
-### Work with the ISA
+### Update the OTBN model (the instruction-set simulator, ISS)
 
-The instruction set is described in machine readable form in `data/insns.yml`.
-This is parsed by Python code in `util/insn_yaml.py`, which runs various sanity
-checks on the data. Current tooling that uses this information:
+The OTBN model is an instruction set simulator written in Python. It lives
+in the `opentitan` repository in the `util/otbnsim` directory, but builds on top
+of the `riscv-model` Python package. The code for this package can be found at
+https://github.com/wallento/riscv-python-model.
 
-  - `util/yaml_to_doc.py`: Generates a Markdown snippet which is included in
-    the OTBN specification.
+To update the model to the latest recommended version run `pip`.
+
+```sh
+# Ensure you have the latest Python dependencies installed
+pip3 install --user -U python-requirements.txt
+```
