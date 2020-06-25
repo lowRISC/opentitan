@@ -94,7 +94,10 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
 
   std::cout << strstr.str() << std::endl;
 
-  system(strstr.str().c_str());
+  if (system(strstr.str().c_str()) != 0) {
+    std::cerr << "Cannot execute model" << std::endl;
+    return -1;
+  }
 
   fp = fopen(dfname, "r");
   if (!fp) {
