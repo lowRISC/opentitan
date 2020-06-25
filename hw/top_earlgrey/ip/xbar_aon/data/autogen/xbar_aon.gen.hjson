@@ -20,7 +20,7 @@
   }
   clock_connections:
   {
-    clk_aon_i: clkmgr_clocks.clk_io_infra
+    clk_aon_i: clkmgr_aon_clocks.clk_io_infra
   }
   connections:
   {
@@ -28,7 +28,7 @@
     [
       pwrmgr
       rstmgr
-      clkmgr
+      clkmgr_aon
       pinmux_aon
       padctrl_aon
       usbdev_aon
@@ -82,7 +82,7 @@
       pipeline_byp: "true"
     }
     {
-      name: clkmgr
+      name: clkmgr_aon
       type: device
       clock: clk_aon_i
       reset: rst_aon_ni

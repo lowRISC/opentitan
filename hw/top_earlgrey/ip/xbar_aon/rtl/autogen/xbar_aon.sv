@@ -10,7 +10,7 @@
 //   -> s1n_8
 //     -> pwrmgr
 //     -> rstmgr
-//     -> clkmgr
+//     -> clkmgr_aon
 //     -> pinmux_aon
 //     -> padctrl_aon
 //     -> usbdev_aon
@@ -29,8 +29,8 @@ module xbar_aon (
   input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
   output tlul_pkg::tl_h2d_t tl_rstmgr_o,
   input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
-  output tlul_pkg::tl_h2d_t tl_clkmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
+  output tlul_pkg::tl_h2d_t tl_clkmgr_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
   output tlul_pkg::tl_h2d_t tl_rbox_aon_o,
   input  tlul_pkg::tl_d2h_t tl_rbox_aon_i,
   output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
@@ -69,8 +69,8 @@ module xbar_aon (
   assign tl_rstmgr_o = tl_s1n_8_ds_h2d[1];
   assign tl_s1n_8_ds_d2h[1] = tl_rstmgr_i;
 
-  assign tl_clkmgr_o = tl_s1n_8_ds_h2d[2];
-  assign tl_s1n_8_ds_d2h[2] = tl_clkmgr_i;
+  assign tl_clkmgr_aon_o = tl_s1n_8_ds_h2d[2];
+  assign tl_s1n_8_ds_d2h[2] = tl_clkmgr_aon_i;
 
   assign tl_pinmux_aon_o = tl_s1n_8_ds_h2d[3];
   assign tl_s1n_8_ds_d2h[3] = tl_pinmux_aon_i;
@@ -96,7 +96,7 @@ module xbar_aon (
     end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
       dev_sel_s1n_8 = 3'd1;
 
-    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
       dev_sel_s1n_8 = 3'd2;
 
     end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin

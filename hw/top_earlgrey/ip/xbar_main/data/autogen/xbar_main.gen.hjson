@@ -22,8 +22,8 @@
   }
   clock_connections:
   {
-    clk_main_i: clkmgr_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_clocks.clk_io_infra
+    clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks.clk_io_infra
   }
   connections:
   {

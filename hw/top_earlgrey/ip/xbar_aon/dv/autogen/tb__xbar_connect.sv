@@ -17,7 +17,7 @@ xbar_aon dut(
 // Device TileLink interface connections
 `CONNECT_TL_DEVICE_IF(pwrmgr)
 `CONNECT_TL_DEVICE_IF(rstmgr)
-`CONNECT_TL_DEVICE_IF(clkmgr)
+`CONNECT_TL_DEVICE_IF(clkmgr_aon)
 `CONNECT_TL_DEVICE_IF(rbox_aon)
 `CONNECT_TL_DEVICE_IF(pinmux_aon)
 `CONNECT_TL_DEVICE_IF(padctrl_aon)

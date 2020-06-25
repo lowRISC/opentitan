@@ -26,11 +26,11 @@ module xbar_aon_bind;
     .h2d    (tl_rstmgr_o),
     .d2h    (tl_rstmgr_i)
   );
-  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr (
+  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr_aon (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),
-    .h2d    (tl_clkmgr_o),
-    .d2h    (tl_clkmgr_i)
+    .h2d    (tl_clkmgr_aon_o),
+    .d2h    (tl_clkmgr_aon_i)
   );
   bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_rbox_aon (
     .clk_i  (clk_aon_i),

@@ -13,7 +13,7 @@
   {
     hier_paths:
     {
-      top: clkmgr_clocks.
+      top: clkmgr_aon_clocks.
       ext: ""
     }
     srcs:
@@ -210,7 +210,7 @@
       clock_group: secure
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_secure
+        clk_i: clkmgr_aon_clocks.clk_io_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -349,7 +349,7 @@
       base_addr: 0x40010000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -488,7 +488,7 @@
       base_addr: 0x40020000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -627,7 +627,7 @@
       base_addr: 0x40030000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -766,7 +766,7 @@
       base_addr: 0x40040000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -814,7 +814,7 @@
       base_addr: 0x40050000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -939,7 +939,7 @@
       base_addr: 0x41000000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_infra
+        clk_i: clkmgr_aon_clocks.clk_main_infra
       }
       size: 0x1000
       bus_device: tlul
@@ -1054,7 +1054,7 @@
       base_addr: 0x40100000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_timers
+        clk_i: clkmgr_aon_clocks.clk_io_timers
       }
       size: 0x1000
       bus_device: tlul
@@ -1088,7 +1088,7 @@
       base_addr: 0x40080000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -1237,7 +1237,7 @@
       base_addr: 0x40090000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -1386,7 +1386,7 @@
       base_addr: 0x400A0000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -1535,7 +1535,7 @@
       base_addr: 0x41100000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_aes
+        clk_i: clkmgr_aon_clocks.clk_main_aes
       }
       size: 0x1000
       bus_device: tlul
@@ -1562,7 +1562,7 @@
       base_addr: 0x41110000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_hmac
+        clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
       size: 0x1000
       bus_device: tlul
@@ -1636,7 +1636,7 @@
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_secure
+        clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -1667,8 +1667,8 @@
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_secure
-        clk_aon_i: clkmgr_clocks.clk_io_secure
+        clk_i: clkmgr_aon_clocks.clk_main_secure
+        clk_aon_i: clkmgr_aon_clocks.clk_io_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -1727,7 +1727,7 @@
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_secure
+        clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -1761,7 +1761,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_secure
+        clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -2038,7 +2038,7 @@
       ]
     }
     {
-      name: clkmgr
+      name: clkmgr_aon
       type: clkmgr
       clock_srcs:
       {
@@ -2083,9 +2083,9 @@
           name: clocks
           act: req
           package: clkmgr_pkg
-          inst_name: clkmgr
+          inst_name: clkmgr_aon
           width: 1
-          top_signame: clkmgr_clocks
+          top_signame: clkmgr_aon_clocks
           index: -1
         }
         {
@@ -2093,7 +2093,7 @@
           type: req_rsp
           name: pwr
           act: rsp
-          inst_name: clkmgr
+          inst_name: clkmgr_aon
           width: 1
           package: pwrmgr_pkg
           top_signame: pwrmgr_pwr_clk
@@ -2105,7 +2105,7 @@
           name: dft
           act: rcv
           package: clkmgr_pkg
-          inst_name: clkmgr
+          inst_name: clkmgr_aon
           index: -1
         }
         {
@@ -2114,7 +2114,7 @@
           name: status
           act: rcv
           package: clkmgr_pkg
-          inst_name: clkmgr
+          inst_name: clkmgr_aon
           index: -1
         }
       ]
@@ -2236,7 +2236,7 @@
       base_addr: 0x41180000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_secure
+        clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -2315,8 +2315,8 @@
       base_addr: 0x40500000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
-        clk_usb_48mhz_i: clkmgr_clocks.clk_usb_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
+        clk_usb_48mhz_i: clkmgr_aon_clocks.clk_usb_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -2611,7 +2611,7 @@
       base_addr: 0x400E0000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_peri
       }
       size: 0x1000
       bus_device: tlul
@@ -2686,7 +2686,7 @@
       base_addr: 0x41130000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_keymgr
+        clk_i: clkmgr_aon_clocks.clk_main_keymgr
       }
       size: 0x1000
       bus_device: tlul
@@ -2793,7 +2793,7 @@
       base_addr: 0x41150000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_csrng
+        clk_i: clkmgr_aon_clocks.clk_main_csrng
       }
       size: 0x1000
       bus_device: tlul
@@ -2881,7 +2881,7 @@
       base_addr: 0x41160000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_entropy_src
+        clk_i: clkmgr_aon_clocks.clk_main_entropy_src
       }
       size: 0x1000
       bus_device: tlul
@@ -2998,7 +2998,7 @@
       size: 0x4000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_infra
+        clk_i: clkmgr_aon_clocks.clk_main_infra
       }
     }
     {
@@ -3017,7 +3017,7 @@
       size: 0x10000
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_infra
+        clk_i: clkmgr_aon_clocks.clk_main_infra
       }
     }
     {
@@ -3051,7 +3051,7 @@
       ]
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_main_infra
+        clk_i: clkmgr_aon_clocks.clk_main_infra
       }
     }
   ]
@@ -3069,7 +3069,7 @@
       ]
       pwrmgr.pwr_clk:
       [
-        clkmgr.pwr
+        clkmgr_aon.pwr
       ]
       csrng.entropy_src_hw_if:
       [
@@ -3081,7 +3081,7 @@
       rstmgr.resets
       rstmgr.cpu
       pwrmgr.pwr_cpu
-      clkmgr.clocks
+      clkmgr_aon.clocks
       csrng.csrng_cmd
     ]
     external:
@@ -3107,8 +3107,8 @@
       }
       clock_connections:
       {
-        clk_main_i: clkmgr_clocks.clk_main_infra
-        clk_fixed_i: clkmgr_clocks.clk_io_infra
+        clk_main_i: clkmgr_aon_clocks.clk_main_infra
+        clk_fixed_i: clkmgr_aon_clocks.clk_io_infra
       }
       connections:
       {
@@ -3516,7 +3516,7 @@
       }
       clock_connections:
       {
-        clk_peri_i: clkmgr_clocks.clk_io_infra
+        clk_peri_i: clkmgr_aon_clocks.clk_io_infra
       }
       connections:
       {
@@ -3751,7 +3751,7 @@
       }
       clock_connections:
       {
-        clk_aon_i: clkmgr_clocks.clk_io_infra
+        clk_aon_i: clkmgr_aon_clocks.clk_io_infra
       }
       connections:
       {
@@ -3759,7 +3759,7 @@
         [
           pwrmgr
           rstmgr
-          clkmgr
+          clkmgr_aon
           pinmux_aon
           padctrl_aon
           usbdev_aon
@@ -3813,7 +3813,7 @@
           pipeline_byp: "true"
         }
         {
-          name: clkmgr
+          name: clkmgr_aon
           type: device
           clock: clk_aon_i
           reset: rst_aon_ni
@@ -6005,9 +6005,9 @@
         name: clocks
         act: req
         package: clkmgr_pkg
-        inst_name: clkmgr
+        inst_name: clkmgr_aon
         width: 1
-        top_signame: clkmgr_clocks
+        top_signame: clkmgr_aon_clocks
         index: -1
       }
       {
@@ -6015,7 +6015,7 @@
         type: req_rsp
         name: pwr
         act: rsp
-        inst_name: clkmgr
+        inst_name: clkmgr_aon
         width: 1
         package: pwrmgr_pkg
         top_signame: pwrmgr_pwr_clk
@@ -6027,7 +6027,7 @@
         name: dft
         act: rcv
         package: clkmgr_pkg
-        inst_name: clkmgr
+        inst_name: clkmgr_aon
         index: -1
       }
       {
@@ -6036,7 +6036,7 @@
         name: status
         act: rcv
         package: clkmgr_pkg
-        inst_name: clkmgr
+        inst_name: clkmgr_aon
         index: -1
       }
       {
@@ -6299,7 +6299,7 @@
       {
         package: clkmgr_pkg
         struct: clkmgr_out
-        signame: clkmgr_clocks
+        signame: clkmgr_aon_clocks
         width: 1
         type: uni
       }
