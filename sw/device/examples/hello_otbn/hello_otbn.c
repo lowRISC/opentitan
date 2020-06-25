@@ -14,10 +14,26 @@
 
 static dif_otbn_t otbn;
 
-static const uint32_t otbn_imem[] = {
-    0xDEADBEEF,
-    0xABCD0123,
-    0x42424242,
+static const uint32_t otbn_imem [] = {
+  0x00000293, // li	t0,0
+  0x10000313, // li	t1,256
+  0x0002a503, // loop: lw	a0,0(t0)
+  0x00851793, // slli	a5,a0,0x8
+  0x00ff06b7, // lui	a3,0xff0
+  0x00d7f7b3, // and	a5,a5,a3
+  0x000106b7, // lui	a3,0x10
+  0x40855713, // srai	a4,a0,0x8
+  0xf0068693, // addi	a3,a3,-256
+  0x00d77733, // and	a4,a4,a3
+  0x00e7e7b3, // or	a5,a5,a4
+  0x01855713, // srli	a4,a0,0x18
+  0x00e7e7b3, // or	a5,a5,a4
+  0x01851513, // slli	a0,a0,0x18
+  0x00a7e533, // or	a0,a5,a0
+  0x00a2a023, // sw	a0,0(t0)
+  0x00428293, // addi	t0,t0,4
+  0xfc6292e3, // bne	t0,t1,8
+  0x00000073, // ecall
 };
 
 static uint32_t otbn_imem_readback[sizeof(otbn_imem) / sizeof(uint32_t)];
