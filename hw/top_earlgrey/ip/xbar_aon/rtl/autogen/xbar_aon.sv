@@ -8,8 +8,8 @@
 // Interconnect
 // main
 //   -> s1n_8
-//     -> pwrmgr
-//     -> rstmgr
+//     -> pwrmgr_aon
+//     -> rstmgr_aon
 //     -> clkmgr_aon
 //     -> pinmux_aon
 //     -> padctrl_aon
@@ -25,10 +25,10 @@ module xbar_aon (
   output tlul_pkg::tl_d2h_t tl_main_o,
 
   // Device interfaces
-  output tlul_pkg::tl_h2d_t tl_pwrmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
-  output tlul_pkg::tl_h2d_t tl_rstmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
+  output tlul_pkg::tl_h2d_t tl_pwrmgr_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_pwrmgr_aon_i,
+  output tlul_pkg::tl_h2d_t tl_rstmgr_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_rstmgr_aon_i,
   output tlul_pkg::tl_h2d_t tl_clkmgr_aon_o,
   input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
   output tlul_pkg::tl_h2d_t tl_rbox_aon_o,
@@ -63,11 +63,11 @@ module xbar_aon (
 
 
 
-  assign tl_pwrmgr_o = tl_s1n_8_ds_h2d[0];
-  assign tl_s1n_8_ds_d2h[0] = tl_pwrmgr_i;
+  assign tl_pwrmgr_aon_o = tl_s1n_8_ds_h2d[0];
+  assign tl_s1n_8_ds_d2h[0] = tl_pwrmgr_aon_i;
 
-  assign tl_rstmgr_o = tl_s1n_8_ds_h2d[1];
-  assign tl_s1n_8_ds_d2h[1] = tl_rstmgr_i;
+  assign tl_rstmgr_aon_o = tl_s1n_8_ds_h2d[1];
+  assign tl_s1n_8_ds_d2h[1] = tl_rstmgr_aon_i;
 
   assign tl_clkmgr_aon_o = tl_s1n_8_ds_h2d[2];
   assign tl_s1n_8_ds_d2h[2] = tl_clkmgr_aon_i;
@@ -90,10 +90,10 @@ module xbar_aon (
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_8 = 3'd7;
-    if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
+    if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
       dev_sel_s1n_8 = 3'd0;
 
-    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
+    end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
       dev_sel_s1n_8 = 3'd1;
 
     end else if ((tl_s1n_8_us_h2d.a_address & ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin

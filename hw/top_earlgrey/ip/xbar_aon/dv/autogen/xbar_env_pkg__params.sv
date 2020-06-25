@@ -7,10 +7,10 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
-    '{"pwrmgr", '{
+    '{"pwrmgr_aon", '{
         '{32'h40400000, 32'h40400fff}
     }},
-    '{"rstmgr", '{
+    '{"rstmgr_aon", '{
         '{32'h40410000, 32'h40410fff}
     }},
     '{"clkmgr_aon", '{
@@ -32,8 +32,8 @@ tl_device_t xbar_devices[$] = '{
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"main", 0, '{
-        "pwrmgr",
-        "rstmgr",
+        "pwrmgr_aon",
+        "rstmgr_aon",
         "clkmgr_aon",
         "pinmux_aon",
         "padctrl_aon",

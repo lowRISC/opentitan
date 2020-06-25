@@ -6,16 +6,16 @@
 
 package tl_aon_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_PWRMGR      = 32'h 40400000;
-  localparam logic [31:0] ADDR_SPACE_RSTMGR      = 32'h 40410000;
+  localparam logic [31:0] ADDR_SPACE_PWRMGR_AON  = 32'h 40400000;
+  localparam logic [31:0] ADDR_SPACE_RSTMGR_AON  = 32'h 40410000;
   localparam logic [31:0] ADDR_SPACE_CLKMGR_AON  = 32'h 40420000;
   localparam logic [31:0] ADDR_SPACE_RBOX_AON    = 32'h 40430000;
   localparam logic [31:0] ADDR_SPACE_PINMUX_AON  = 32'h 40460000;
   localparam logic [31:0] ADDR_SPACE_PADCTRL_AON = 32'h 40470000;
   localparam logic [31:0] ADDR_SPACE_USBDEV_AON  = 32'h 40500000;
 
-  localparam logic [31:0] ADDR_MASK_PWRMGR      = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RSTMGR      = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_PWRMGR_AON  = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_RSTMGR_AON  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_CLKMGR_AON  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RBOX_AON    = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PINMUX_AON  = 32'h 00000fff;
@@ -26,8 +26,8 @@ package tl_aon_pkg;
   localparam int N_DEVICE = 7;
 
   typedef enum int {
-    TlPwrmgr = 0,
-    TlRstmgr = 1,
+    TlPwrmgrAon = 0,
+    TlRstmgrAon = 1,
     TlClkmgrAon = 2,
     TlRboxAon = 3,
     TlPinmuxAon = 4,

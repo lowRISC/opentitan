@@ -26,8 +26,8 @@
   {
     main:
     [
-      pwrmgr
-      rstmgr
+      pwrmgr_aon
+      rstmgr_aon
       clkmgr_aon
       pinmux_aon
       padctrl_aon
@@ -48,7 +48,7 @@
       pipeline_byp: "true"
     }
     {
-      name: pwrmgr
+      name: pwrmgr_aon
       type: device
       clock: clk_aon_i
       reset: rst_aon_ni
@@ -65,7 +65,7 @@
       pipeline_byp: "true"
     }
     {
-      name: rstmgr
+      name: rstmgr_aon
       type: device
       clock: clk_aon_i
       reset: rst_aon_ni

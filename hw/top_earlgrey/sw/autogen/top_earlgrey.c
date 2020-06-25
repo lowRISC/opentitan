@@ -93,7 +93,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdUsbdevAonRxBitstuffErr] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdUsbdevAonFrame] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdUsbdevAonConnected] = kTopEarlgreyPlicPeripheralUsbdevAon,
-  [kTopEarlgreyPlicIrqIdPwrmgrWakeup] = kTopEarlgreyPlicPeripheralPwrmgr,
+  [kTopEarlgreyPlicIrqIdPwrmgrAonWakeup] = kTopEarlgreyPlicPeripheralPwrmgrAon,
   [kTopEarlgreyPlicIrqIdUart1TxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1RxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1TxEmpty] = kTopEarlgreyPlicPeripheralUart1,

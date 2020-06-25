@@ -14,17 +14,17 @@ module xbar_aon_bind;
   );
 
   // Device interfaces
-  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_pwrmgr (
+  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_pwrmgr_aon (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),
-    .h2d    (tl_pwrmgr_o),
-    .d2h    (tl_pwrmgr_i)
+    .h2d    (tl_pwrmgr_aon_o),
+    .d2h    (tl_pwrmgr_aon_i)
   );
-  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_rstmgr (
+  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_rstmgr_aon (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),
-    .h2d    (tl_rstmgr_o),
-    .d2h    (tl_rstmgr_i)
+    .h2d    (tl_rstmgr_aon_o),
+    .d2h    (tl_rstmgr_aon_i)
   );
   bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr_aon (
     .clk_i  (clk_aon_i),

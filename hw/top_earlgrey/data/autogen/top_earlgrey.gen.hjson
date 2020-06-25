@@ -1824,7 +1824,7 @@
       scan: "false"
     }
     {
-      name: pwrmgr
+      name: pwrmgr_aon
       type: pwrmgr
       clock_srcs:
       {
@@ -1874,7 +1874,7 @@
           name: pwr_ast
           act: req
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           index: -1
         }
         {
@@ -1883,9 +1883,9 @@
           name: pwr_rst
           act: req
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           width: 1
-          top_signame: pwrmgr_pwr_rst
+          top_signame: pwrmgr_aon_pwr_rst
           index: -1
         }
         {
@@ -1894,9 +1894,9 @@
           name: pwr_clk
           act: req
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           width: 1
-          top_signame: pwrmgr_pwr_clk
+          top_signame: pwrmgr_aon_pwr_clk
           index: -1
         }
         {
@@ -1905,7 +1905,7 @@
           name: pwr_otp
           act: req
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           index: -1
         }
         {
@@ -1914,7 +1914,7 @@
           name: pwr_lc
           act: req
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           index: -1
         }
         {
@@ -1923,7 +1923,7 @@
           name: pwr_flash
           act: rcv
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           index: -1
         }
         {
@@ -1932,9 +1932,9 @@
           name: pwr_cpu
           act: rcv
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           width: 1
-          top_signame: pwrmgr_pwr_cpu
+          top_signame: pwrmgr_aon_pwr_cpu
           index: -1
         }
         {
@@ -1943,13 +1943,13 @@
           name: pwr_peri
           act: rcv
           package: pwrmgr_pkg
-          inst_name: pwrmgr
+          inst_name: pwrmgr_aon
           index: -1
         }
       ]
     }
     {
-      name: rstmgr
+      name: rstmgr_aon
       type: rstmgr
       clock_srcs:
       {
@@ -1989,10 +1989,10 @@
           type: req_rsp
           name: pwr
           act: rsp
-          inst_name: rstmgr
+          inst_name: rstmgr_aon
           width: 1
           package: pwrmgr_pkg
-          top_signame: pwrmgr_pwr_rst
+          top_signame: pwrmgr_aon_pwr_rst
           index: -1
         }
         {
@@ -2001,9 +2001,9 @@
           name: resets
           act: req
           package: rstmgr_pkg
-          inst_name: rstmgr
+          inst_name: rstmgr_aon
           width: 1
-          top_signame: rstmgr_resets
+          top_signame: rstmgr_aon_resets
           index: -1
         }
         {
@@ -2012,7 +2012,7 @@
           name: ast
           act: rcv
           package: rstmgr_pkg
-          inst_name: rstmgr
+          inst_name: rstmgr_aon
           index: -1
         }
         {
@@ -2021,9 +2021,9 @@
           name: cpu
           act: rcv
           package: rstmgr_pkg
-          inst_name: rstmgr
+          inst_name: rstmgr_aon
           width: 1
-          top_signame: rstmgr_cpu
+          top_signame: rstmgr_aon_cpu
           index: -1
         }
         {
@@ -2032,7 +2032,7 @@
           name: peri
           act: rcv
           package: rstmgr_pkg
-          inst_name: rstmgr
+          inst_name: rstmgr_aon
           index: -1
         }
       ]
@@ -2096,7 +2096,7 @@
           inst_name: clkmgr_aon
           width: 1
           package: pwrmgr_pkg
-          top_signame: pwrmgr_pwr_clk
+          top_signame: pwrmgr_aon_pwr_clk
           index: -1
         }
         {
@@ -3063,11 +3063,11 @@
       [
         eflash.flash_ctrl
       ]
-      pwrmgr.pwr_rst:
+      pwrmgr_aon.pwr_rst:
       [
-        rstmgr.pwr
+        rstmgr_aon.pwr
       ]
-      pwrmgr.pwr_clk:
+      pwrmgr_aon.pwr_clk:
       [
         clkmgr_aon.pwr
       ]
@@ -3078,9 +3078,9 @@
     }
     top:
     [
-      rstmgr.resets
-      rstmgr.cpu
-      pwrmgr.pwr_cpu
+      rstmgr_aon.resets
+      rstmgr_aon.cpu
+      pwrmgr_aon.pwr_cpu
       clkmgr_aon.clocks
       csrng.csrng_cmd
     ]
@@ -3757,8 +3757,8 @@
       {
         main:
         [
-          pwrmgr
-          rstmgr
+          pwrmgr_aon
+          rstmgr_aon
           clkmgr_aon
           pinmux_aon
           padctrl_aon
@@ -3779,7 +3779,7 @@
           pipeline_byp: "true"
         }
         {
-          name: pwrmgr
+          name: pwrmgr_aon
           type: device
           clock: clk_aon_i
           reset: rst_aon_ni
@@ -3796,7 +3796,7 @@
           pipeline_byp: "true"
         }
         {
-          name: rstmgr
+          name: rstmgr_aon
           type: device
           clock: clk_aon_i
           reset: rst_aon_ni
@@ -3912,7 +3912,7 @@
     alert_handler
     nmi_gen
     usbdev_aon
-    pwrmgr
+    pwrmgr_aon
     uart1
     uart2
     uart3
@@ -4560,7 +4560,7 @@
       module_name: usbdev_aon
     }
     {
-      name: pwrmgr_wakeup
+      name: pwrmgr_aon_wakeup
       width: 1
       bits: "0"
       bitinfo:
@@ -4570,7 +4570,7 @@
         0
       ]
       type: interrupt
-      module_name: pwrmgr
+      module_name: pwrmgr_aon
     }
     {
       name: uart1_tx_watermark
@@ -5817,16 +5817,16 @@
   reset_paths:
   {
     rst_ni: rst_ni
-    por_aon: rstmgr_resets.rst_por_aon_n
-    por: rstmgr_resets.rst_por_n
-    por_io: rstmgr_resets.rst_por_io_n
-    por_usb: rstmgr_resets.rst_por_usb_n
-    lc: rstmgr_resets.rst_lc_n
-    sys: rstmgr_resets.rst_sys_n
-    sys_io: rstmgr_resets.rst_sys_io_n
-    sys_aon: rstmgr_resets.rst_sys_aon_n
-    spi_device: rstmgr_resets.rst_spi_device_n
-    usb: rstmgr_resets.rst_usb_n
+    por_aon: rstmgr_aon_resets.rst_por_aon_n
+    por: rstmgr_aon_resets.rst_por_n
+    por_io: rstmgr_aon_resets.rst_por_io_n
+    por_usb: rstmgr_aon_resets.rst_por_usb_n
+    lc: rstmgr_aon_resets.rst_lc_n
+    sys: rstmgr_aon_resets.rst_sys_n
+    sys_io: rstmgr_aon_resets.rst_sys_io_n
+    sys_aon: rstmgr_aon_resets.rst_sys_aon_n
+    spi_device: rstmgr_aon_resets.rst_spi_device_n
+    usb: rstmgr_aon_resets.rst_usb_n
   }
   inter_signal:
   {
@@ -5876,7 +5876,7 @@
         name: pwr_ast
         act: req
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         index: -1
       }
       {
@@ -5885,9 +5885,9 @@
         name: pwr_rst
         act: req
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         width: 1
-        top_signame: pwrmgr_pwr_rst
+        top_signame: pwrmgr_aon_pwr_rst
         index: -1
       }
       {
@@ -5896,9 +5896,9 @@
         name: pwr_clk
         act: req
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         width: 1
-        top_signame: pwrmgr_pwr_clk
+        top_signame: pwrmgr_aon_pwr_clk
         index: -1
       }
       {
@@ -5907,7 +5907,7 @@
         name: pwr_otp
         act: req
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         index: -1
       }
       {
@@ -5916,7 +5916,7 @@
         name: pwr_lc
         act: req
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         index: -1
       }
       {
@@ -5925,7 +5925,7 @@
         name: pwr_flash
         act: rcv
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         index: -1
       }
       {
@@ -5934,9 +5934,9 @@
         name: pwr_cpu
         act: rcv
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         width: 1
-        top_signame: pwrmgr_pwr_cpu
+        top_signame: pwrmgr_aon_pwr_cpu
         index: -1
       }
       {
@@ -5945,7 +5945,7 @@
         name: pwr_peri
         act: rcv
         package: pwrmgr_pkg
-        inst_name: pwrmgr
+        inst_name: pwrmgr_aon
         index: -1
       }
       {
@@ -5953,10 +5953,10 @@
         type: req_rsp
         name: pwr
         act: rsp
-        inst_name: rstmgr
+        inst_name: rstmgr_aon
         width: 1
         package: pwrmgr_pkg
-        top_signame: pwrmgr_pwr_rst
+        top_signame: pwrmgr_aon_pwr_rst
         index: -1
       }
       {
@@ -5965,9 +5965,9 @@
         name: resets
         act: req
         package: rstmgr_pkg
-        inst_name: rstmgr
+        inst_name: rstmgr_aon
         width: 1
-        top_signame: rstmgr_resets
+        top_signame: rstmgr_aon_resets
         index: -1
       }
       {
@@ -5976,7 +5976,7 @@
         name: ast
         act: rcv
         package: rstmgr_pkg
-        inst_name: rstmgr
+        inst_name: rstmgr_aon
         index: -1
       }
       {
@@ -5985,9 +5985,9 @@
         name: cpu
         act: rcv
         package: rstmgr_pkg
-        inst_name: rstmgr
+        inst_name: rstmgr_aon
         width: 1
-        top_signame: rstmgr_cpu
+        top_signame: rstmgr_aon_cpu
         index: -1
       }
       {
@@ -5996,7 +5996,7 @@
         name: peri
         act: rcv
         package: rstmgr_pkg
-        inst_name: rstmgr
+        inst_name: rstmgr_aon
         index: -1
       }
       {
@@ -6018,7 +6018,7 @@
         inst_name: clkmgr_aon
         width: 1
         package: pwrmgr_pkg
-        top_signame: pwrmgr_pwr_clk
+        top_signame: pwrmgr_aon_pwr_clk
         index: -1
       }
       {
@@ -6236,28 +6236,28 @@
       {
         package: pwrmgr_pkg
         struct: pwr_rst_req
-        signame: pwrmgr_pwr_rst_req
+        signame: pwrmgr_aon_pwr_rst_req
         width: 1
         type: req_rsp
       }
       {
         package: pwrmgr_pkg
         struct: pwr_rst_rsp
-        signame: pwrmgr_pwr_rst_rsp
+        signame: pwrmgr_aon_pwr_rst_rsp
         width: 1
         type: req_rsp
       }
       {
         package: pwrmgr_pkg
         struct: pwr_clk_req
-        signame: pwrmgr_pwr_clk_req
+        signame: pwrmgr_aon_pwr_clk_req
         width: 1
         type: req_rsp
       }
       {
         package: pwrmgr_pkg
         struct: pwr_clk_rsp
-        signame: pwrmgr_pwr_clk_rsp
+        signame: pwrmgr_aon_pwr_clk_rsp
         width: 1
         type: req_rsp
       }
@@ -6278,21 +6278,21 @@
       {
         package: rstmgr_pkg
         struct: rstmgr_out
-        signame: rstmgr_resets
+        signame: rstmgr_aon_resets
         width: 1
         type: uni
       }
       {
         package: rstmgr_pkg
         struct: rstmgr_cpu
-        signame: rstmgr_cpu
+        signame: rstmgr_aon_cpu
         width: 1
         type: uni
       }
       {
         package: pwrmgr_pkg
         struct: pwr_cpu
-        signame: pwrmgr_pwr_cpu
+        signame: pwrmgr_aon_pwr_cpu
         width: 1
         type: uni
       }

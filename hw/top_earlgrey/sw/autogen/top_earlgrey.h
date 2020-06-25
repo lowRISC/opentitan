@@ -241,20 +241,20 @@
 #define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x41170000u
 
 /**
- * Base address for pwrmgr peripheral in top earlgrey.
+ * Base address for pwrmgr_aon peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x40400000u
+#define TOP_EARLGREY_PWRMGR_AON_BASE_ADDR 0x40400000u
 
 /**
- * Base address for rstmgr peripheral in top earlgrey.
+ * Base address for rstmgr_aon peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x40410000u
+#define TOP_EARLGREY_RSTMGR_AON_BASE_ADDR 0x40410000u
 
 /**
  * Base address for clkmgr_aon peripheral in top earlgrey.
@@ -338,7 +338,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralAlertHandler = 7, /**< alert_handler */
   kTopEarlgreyPlicPeripheralNmiGen = 8, /**< nmi_gen */
   kTopEarlgreyPlicPeripheralUsbdevAon = 9, /**< usbdev_aon */
-  kTopEarlgreyPlicPeripheralPwrmgr = 10, /**< pwrmgr */
+  kTopEarlgreyPlicPeripheralPwrmgrAon = 10, /**< pwrmgr_aon */
   kTopEarlgreyPlicPeripheralUart1 = 11, /**< uart1 */
   kTopEarlgreyPlicPeripheralUart2 = 12, /**< uart2 */
   kTopEarlgreyPlicPeripheralUart3 = 13, /**< uart3 */
@@ -436,7 +436,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevAonRxBitstuffErr = 78, /**< usbdev_aon_rx_bitstuff_err */
   kTopEarlgreyPlicIrqIdUsbdevAonFrame = 79, /**< usbdev_aon_frame */
   kTopEarlgreyPlicIrqIdUsbdevAonConnected = 80, /**< usbdev_aon_connected */
-  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 81, /**< pwrmgr_wakeup */
+  kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 81, /**< pwrmgr_aon_wakeup */
   kTopEarlgreyPlicIrqIdUart1TxWatermark = 82, /**< uart1_tx_watermark */
   kTopEarlgreyPlicIrqIdUart1RxWatermark = 83, /**< uart1_rx_watermark */
   kTopEarlgreyPlicIrqIdUart1TxEmpty = 84, /**< uart1_tx_empty */
