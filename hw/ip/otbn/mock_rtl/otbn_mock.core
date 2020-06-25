@@ -1,0 +1,46 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:otbn_mock:0.1"
+description: "Mock RTL for OTBN implementation trials"
+
+filesets:
+  files_rtl:
+    files:
+      - otbn_alu.sv
+      - otbn_mac.sv
+      - otbn_mock.sv
+      - otbn_shift.sv
+      - otbn_wide_regfile.sv
+    file_type: systemVerilogSource
+  files_tb:
+    files:
+      - otbn_mock_tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+  lint:
+    filesets:
+      - files_rtl
+    default_tool: verilator
+    toplevel: otbn_mock
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  sim:
+    filesets:
+      - files_rtl
+      - files_tb
+    toplevel: otbn_mock_tb
+    tools:
+      vcs:
+        vcs_options:
+          - '-debug_access+all'
+
