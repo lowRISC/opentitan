@@ -179,6 +179,7 @@ bool test_main(void) {
 
   LOG_INFO("flash test!");
 
+  flash_cfg_scramble_enable(true);
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/true);
   flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/true);
 
