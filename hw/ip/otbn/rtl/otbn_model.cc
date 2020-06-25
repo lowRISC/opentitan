@@ -38,8 +38,7 @@ extern int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 
 int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
               int dmem_words) {
-  FILE *ifp = 0;
-  FILE *dfp = 0;
+  FILE *fp = 0;
 
   char dir[] = "/tmp/otbn_XXXXXX";
   char ifname[] = "/tmp/otbn_XXXXXX/imem";
@@ -52,17 +51,11 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
   memcpy(ifname, dir, strlen(dir));
   memcpy(dfname, dir, strlen(dir));
 
-  ifp = fopen(ifname, "w+");
-  if (!ifp) {
+  fp = fopen(dfname, "w+");
+  if (!fp) {
     std::cerr << "Cannot open the file " << ifname << std::endl;
     return -1;
   }
-  dfp = fopen(dfname, "w+");
-  if (!dfp) {
-    std::cerr << "Cannot open the file " << dfname << std::endl;
-    return -1;
-  }
-
   {
     SVScoped scoped(dmem_scope);
     uint8_t buf[32];
@@ -71,8 +64,15 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
         std::cerr << "Cannot get dmem @ word " << w << std::endl;
         return -1;
       }
-      fwrite(buf, 1, 32, dfp);
+      fwrite(buf, 1, 32, fp);
     }
+  }
+  fclose(fp);
+
+  fp = fopen(ifname, "w+");
+  if (!fp) {
+    std::cerr << "Cannot open the file " << dfname << std::endl;
+    return 0;
   }
   {
     SVScoped scoped(imem_scope);
@@ -82,12 +82,10 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
         std::cerr << "Cannot get imem @ word " << w << std::endl;
         return -1;
       }
-      fwrite(buf, 1, 4, ifp);
+      fwrite(buf, 1, 4, fp);
     }
   }
-
-  fclose(ifp);
-  fclose(dfp);
+  fclose(fp);
 
   std::stringstream strstr;
   strstr << "otbn-python-model ";
@@ -98,8 +96,8 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
 
   system(strstr.str().c_str());
 
-  dfp = fopen(dfname, "r");
-  if (!dfp) {
+  fp = fopen(dfname, "r");
+  if (!fp) {
     std::cerr << "Cannot open the file " << dfname << std::endl;
     return -1;
   }
@@ -108,7 +106,7 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     SVScoped scoped(dmem_scope);
     uint8_t buf[32];
     for (size_t w = 0; w < dmem_words; w++) {
-      fread(buf, 1, 32, dfp);
+      fread(buf, 1, 32, fp);
       if (!simutil_verilator_set_mem(w, (svBitVecVal *)buf)) {
         std::cerr << "Cannot set dmem @ word " << w << std::endl;
         return -1;
@@ -116,7 +114,7 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     }
   }
 
-  fclose(dfp);
+  fclose(fp);
 
   return 0;
 }
