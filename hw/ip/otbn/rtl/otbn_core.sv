@@ -59,18 +59,26 @@ module otbn_core
                                              int    imem_size,
                                              string dmem_scope,
                                              int    dmem_size);
+
+      int count;
+
       always @(posedge clk_i) begin : model_run
         if (!rst_ni) begin
           busy_o <= 1'b0;
         end else begin
           if (start_i) begin
-            run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
-                      ImemSizeWords,
-                      "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
-                      DmemSizeWords);
+            count <= run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
+                               ImemSizeWords,
+                               "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
+                               DmemSizeWords);
+            $display("%t start", $time);
             busy_o <= 1'b1;
           end else begin
-            busy_o <= 1'b0;
+            if (count == 0) begin
+              busy_o <= 1'b0;
+              $display("%t done", $time);
+            end
+            count <= count - 1;
           end
         end
       end
