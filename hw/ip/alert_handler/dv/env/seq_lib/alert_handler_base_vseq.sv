@@ -167,9 +167,56 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].vif.wait_ack_complete();
   endtask
 
-  virtual task wait_esc_handshake_done(int wait_clk_cycs_esc);
-    cfg.clk_rst_vif.wait_clks(wait_clk_cycs_esc);
+  virtual function bit check_esc_done(bit[TL_DW-1:0] vals[$]);
+    foreach (vals[i]) begin
+      esc_state_e val = esc_state_e'(vals[i]);
+      if (val inside {EscStatePhase0, EscStatePhase1, EscStatePhase2, EscStatePhase3}) return 0;
+    end
+    return 1;
+  endfunction
+
+  virtual task wait_esc_handshake_done();
+    bit [TL_DW-1:0] csr_vals[4];
+    do begin
+      csr_rd(.ptr(ral.classa_state), .value(csr_vals[0]));
+      csr_rd(.ptr(ral.classb_state), .value(csr_vals[1]));
+      csr_rd(.ptr(ral.classc_state), .value(csr_vals[2]));
+      csr_rd(.ptr(ral.classd_state), .value(csr_vals[3]));
+    end while (!check_esc_done(csr_vals));
+    // check if there is any esc ping
     foreach (cfg.esc_device_cfg[i]) cfg.esc_device_cfg[i].vif.wait_esc_complete();
+  endtask
+
+  // This task wait until any alert or esc protocol received a ping from LFSR.
+  // This task will also return the protocol index:
+  // alert index starts from 1; esc index stats from NUM_ALERTS
+  virtual task wait_alert_esc_ping(ref int ping_index);
+    int ping_i;
+    fork
+      begin : isolation_fork
+        foreach (cfg.alert_host_cfg[i]) begin
+          automatic int index = i;
+          fork
+            begin
+              cfg.alert_host_cfg[index].vif.wait_alert_ping();
+              ping_i = index + 1;
+            end
+          join_none
+        end
+        foreach (cfg.esc_device_cfg[i]) begin
+          automatic int index = i;
+          fork
+            begin
+              cfg.esc_device_cfg[index].vif.wait_esc_ping();
+              ping_i = index + NUM_ALERTS + 1;
+            end
+          join_none
+        end
+        wait (ping_i > 0);
+        disable fork;
+        ping_index = ping_i;
+      end
+    join
   endtask
 
   virtual task wr_phases_cycle(int max_phase_cyc);

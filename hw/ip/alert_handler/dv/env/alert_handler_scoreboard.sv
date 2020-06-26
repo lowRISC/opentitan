@@ -167,9 +167,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           intr_state_field = intr_state_fields[class_i];
           void'(intr_state_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
           intr_en = ral.intr_enable.get_mirrored_value();
-          // TODO: need to clean up sequence to enable this
-          //`DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
-          //                  $sformatf("Interrupt class_%s", class_name[class_i]));
+          `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
+                            $sformatf("Interrupt class_%s, is_local_err %0b, local_alert_type %s",
+                            class_name[class_i],is_int_err, local_alert_type));
+
           if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
           // calculate escalation
           class_ctrl = get_class_ctrl(class_i);
@@ -224,7 +225,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
     // if ping response enabled, will not check cycle count after the earliest expect ping esc
     // might trigger. It is beyond this scb to check ping timer (FPV checks it).
-    if (ral.regen.get_mirrored_value() || $realtime < IGNORE_CNT_CHECK_NS) begin
+    bit reduce_ping_timer_wait_cycles = 0;
+    void'($value$plusargs("reduce_ping_timer_wait_cycles=%0b", reduce_ping_timer_wait_cycles));
+    if (ral.regen.get_mirrored_value() ||
+        ($realtime < IGNORE_CNT_CHECK_NS && !reduce_ping_timer_wait_cycles)) begin
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
@@ -277,13 +281,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                 if (!under_esc_classes[i]) state_per_class[i] = EscStateIdle;
               end
             end
-            // TODO: tries to avoid this by constrain sequence
-            fork
-              begin
-                cfg.clk_rst_vif.wait_clks(1);
-                void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-              end
-            join_none
+            void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           end
           "intr_enable": begin
             foreach (under_intr_classes[i]) begin

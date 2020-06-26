@@ -82,6 +82,9 @@ module tb;
   );
 
   initial begin
+    bit reduce_ping_timer_wait_cycles = 0;
+    void'($value$plusargs("reduce_ping_timer_wait_cycles=%0b", reduce_ping_timer_wait_cycles));
+    if (reduce_ping_timer_wait_cycles) force dut.i_ping_timer.wait_cyc_mask_i = 24'h3FFFF;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);

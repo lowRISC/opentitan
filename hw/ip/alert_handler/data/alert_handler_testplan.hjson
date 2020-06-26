@@ -53,13 +53,26 @@
       tests: ["alert_handler_sig_int_fail"]
     }
     {
-      name: ping_rsp_fail
+      name: ping_corner_cases
       desc: '''
-            This test will randomly inject ping response failures on alert tx/rx pairs and the
-            escalator tx/rx pairs. Then check if ping response failure alert is triggered and
-            escalated'''
+            Based on the entropy test, this test will randomly inject ping timeout errors and ping
+            signal integrity errors on alert tx/rx or escalator tx/rx pairs.
+            Once a ping request is detected, the sequence will randomly execute one of the three
+            tasks:
+            - Interrupt the ping by a reset
+            - Inject alerts without any delay. This task attempts to hit the corner case where
+              esc ping is interrupted by real esc signal
+            - Let the ping response finish without any interruption. This taks attempts to hit the
+              ping timeout and ping signal integrity fail corner case
+            Then the sequence will read and check all the alert and esc status registers. Then
+            clear the interrupts.
+            Because alert_handler module's ping interval default value is relative long for
+            simulation, this test shortens this interval in order to hit all the corner cases in
+            a reasonable amount of run time. This test also disables ping related functional
+            coverage to ensure the original LFSR design is able to reach all the alerts and
+            escalators'''
       milestone: V2
-      tests: ["alert_handler_ping_rsp_fail"]
+      tests: ["alert_handler_ping_corner_cases"]
     }
     {
       name: clk_skew
@@ -83,7 +96,10 @@
     }
     {
       name: stress_all
-      desc: "Combine above sequences in one test to run sequentially, except csr sequence"
+      desc: '''
+            Combine above sequences in one test to run sequentially with the following exclusions:
+            - CSR sequences: scoreboard disabled
+            - Ping_corner_cases sequence: included reset in the sequence'''
       milestone: V2
       tests: ["alert_handler_stress_all"]
     }
