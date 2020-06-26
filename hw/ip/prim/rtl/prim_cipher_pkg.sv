@@ -250,7 +250,7 @@ package prim_cipher_pkg;
                                                            logic [4:0]  round_cnt);
     logic [63:0] key_out = key_in;
     // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= 6'(round_cnt) + 1 - round_idx;
+    key_out[19:15] ^= round_cnt + 1 - round_idx;
     // sbox on uppermost 4 bits
     key_out[63 -: 4] = PRESENT_SBOX4_INV[key_out[63 -: 4]];
     // rotate by 61 to the right
@@ -264,7 +264,7 @@ package prim_cipher_pkg;
                                                            logic [4:0]  round_cnt);
     logic [79:0] key_out = key_in;
     // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= 6'(round_cnt) + 1 - round_idx;
+    key_out[19:15] ^= round_cnt + 1 - round_idx;
     // sbox on uppermost 4 bits
     key_out[79 -: 4] = PRESENT_SBOX4_INV[key_out[79 -: 4]];
     // rotate by 61 to the right
@@ -278,7 +278,7 @@ package prim_cipher_pkg;
                                                              logic [4:0]   round_cnt);
     logic [127:0] key_out = key_in;
     // xor in round counter on bits 66 to 62
-    key_out[66:62] ^= 6'(round_cnt) + 1 - round_idx;
+    key_out[66:62] ^= round_cnt + 1 - round_idx;
     // sbox on second highest nibble
     key_out[123 -: 4] = PRESENT_SBOX4_INV[key_out[123 -: 4]];
     // sbox on uppermost 4 bits
@@ -328,6 +328,24 @@ package prim_cipher_pkg;
   // Common Subfunctions //
   /////////////////////////
 
+  function automatic logic [7:0] sbox4_8bit(logic [7:0] state_in, logic [15:0][3:0] sbox4);
+    logic [7:0] state_out;
+    // note that if simulation performance becomes an issue, this loop can be unrolled
+    for (int k = 0; k < 8/4; k++) begin
+      state_out[k*4  +: 4] = sbox4[state_in[k*4  +: 4]];
+    end
+    return state_out;
+  endfunction : sbox4_8bit
+
+  function automatic logic [15:0] sbox4_16bit(logic [15:0] state_in, logic [15:0][3:0] sbox4);
+    logic [15:0] state_out;
+    // note that if simulation performance becomes an issue, this loop can be unrolled
+    for (int k = 0; k < 16/4; k++) begin
+      state_out[k*4  +: 4] = sbox4[state_in[k*4  +: 4]];
+    end
+    return state_out;
+  endfunction : sbox4_16bit
+
   function automatic logic [31:0] sbox4_32bit(logic [31:0] state_in, logic [15:0][3:0] sbox4);
     logic [31:0] state_out;
     // note that if simulation performance becomes an issue, this loop can be unrolled
@@ -346,11 +364,29 @@ package prim_cipher_pkg;
     return state_out;
   endfunction : sbox4_64bit
 
+  function automatic logic [7:0] perm_8bit(logic [7:0] state_in, logic [7:0][2:0] perm);
+    logic [7:0] state_out;
+    // note that if simulation performance becomes an issue, this loop can be unrolled
+    for (int k = 0; k < 8; k++) begin
+      state_out[perm[k]] = state_in[k];
+    end
+    return state_out;
+  endfunction : perm_8bit
+
+    function automatic logic [15:0] perm_16bit(logic [15:0] state_in, logic [15:0][3:0] perm);
+    logic [15:0] state_out;
+    // note that if simulation performance becomes an issue, this loop can be unrolled
+    for (int k = 0; k < 16; k++) begin
+      state_out[perm[k]] = state_in[k];
+    end
+    return state_out;
+  endfunction : perm_16bit
+
   function automatic logic [31:0] perm_32bit(logic [31:0] state_in, logic [31:0][4:0] perm);
     logic [31:0] state_out;
     // note that if simulation performance becomes an issue, this loop can be unrolled
     for (int k = 0; k < 32; k++) begin
-      state_out[k] = state_in[perm[k]];
+      state_out[perm[k]] = state_in[k];
     end
     return state_out;
   endfunction : perm_32bit
