@@ -27,7 +27,7 @@ module rstmgr import rstmgr_pkg::*; (
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
 
   // ast interface
-  input rstmgr_ast_t ast_i,
+  input ast_wrapper_pkg::ast_rst_t ast_i,
 
   // cpu related inputs
   input rstmgr_cpu_t cpu_i,
@@ -46,7 +46,7 @@ module rstmgr import rstmgr_pkg::*; (
   rstmgr_por i_por (
     .clk_i(clk_aon_i),
     .rst_ni,
-    .pok_i(ast_i.vcc_pok & ast_i.alw_pok),
+    .pok_i(ast_i.vcc_pok & ast_i.aon_pok),
     .rst_no(resets_o.rst_por_aon_n)
   );
 

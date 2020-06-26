@@ -13,18 +13,6 @@ package rstmgr_pkg;
   // low power exit + external reasons + ndm_reset_req
   localparam int ResetReasons = 1 + ExtResetReasons + 1;
 
-  // ast interface
-  typedef struct packed {
-    logic vcc_pok;
-    logic alw_pok;
-  } rstmgr_ast_t;
-
-  // default value for rstmgr_ast_rsp_t (for dangling ports)
-  parameter rstmgr_ast_t RSTMGR_AST_DEFAULT = '{
-    vcc_pok: 1'b1,
-    alw_pok: 1'b1
-  };
-
   // resets generated and broadcast
   // This should be templatized and generated
   typedef struct packed {
