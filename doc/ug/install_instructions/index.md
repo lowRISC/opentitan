@@ -74,20 +74,24 @@ If the `fusesoc` binary is not found, add `~/.local/bin` to your `PATH`, e.g. by
 ### Device compiler toolchain (RV32IMC)
 
 To build device software you need a baremetal RV32IMC compiler toolchain.
-You can either build your own or use a prebuilt one.
-We recommend installing the toolchain to `/tools/riscv`.
+We recommend using a prebuilt toolchain provided by lowRISC.
+Alternatively, you can build your own.
+Whichever option you choose, we recommend installing the toolchain to `/tools/riscv`.
 
-#### Option 1 (recommended): Use the lowRISC-provided prebuilt GCC toolchain
+#### Option 1 (recommended): Use the lowRISC-provided prebuilt toolchain
 
-lowRISC provides a prebuilt GCC toolchain for the OpenTitan project.
-Download the file starting with `lowrisc-toolchain-gcc-rv32imc-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to `/tools/riscv`.
-
-Or alternatively, use a in-tree helper script.
+lowRISC provides a prebuilt toolchain for the OpenTitan project.
+This toolchain contains both GCC and Clang, targeting RISC-V.
+By default the device software is built with Clang.
+We recommend using the `util/get-toolchain.py` tool to download and install the latest version of this toolchain.
 
 ```cmd
 $ cd $REPO_TOP
 $ ./util/get-toolchain.py
 ```
+
+This tool will automatically adjust the toolchain configuration if you override the installation directory (by using the `--target-dir` option).
+Alternatively, manually download the file starting with `lowrisc-toolchain-rv32imc-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to `/tools/riscv`.
 
 #### Option 2: Compile your own GCC toolchain
 
@@ -119,7 +123,9 @@ $ ./util/get-toolchain.py
     needs_exe_wrapper = true
     has_function_printf = false
     c_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
+    c_link_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
     cpp_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
+    cpp_link_args = ['-march=rv32imc', '-mabi=ilp32', '-mcmodel=medany']
 
     [host_machine]
     system = 'bare metal'
