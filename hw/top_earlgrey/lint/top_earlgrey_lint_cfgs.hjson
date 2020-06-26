@@ -26,6 +26,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/alert_handler/lint/{tool}"
              },
+             {    name: entropy_src
+                  fusesoc_core: lowrisc:ip:entropy_src
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/entropy_src/lint/{tool}"
+             },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
