@@ -5,6 +5,7 @@
 .DEFAULT_GOAL := all
 
 LOCK_SW_BUILD ?= flock --timeout 3600 ${sw_build_dir} --command
+TOOLCHAIN_PATH ?= /tools/riscv
 
 all: build run
 
@@ -50,7 +51,8 @@ sw_build: pre_run
 ifneq (${sw_test},)
 	# Initialize meson build system.
 	${LOCK_SW_BUILD} "cd ${proj_root} && \
-		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
+		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh \
+		-t ${TOOLCHAIN_PATH}/meson-riscv32-unknown-elf-clang.txt"
 	# Compile boot rom code and generate the image.
 	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
 		sw/device/boot_rom/boot_rom_export_${sw_build_device}"

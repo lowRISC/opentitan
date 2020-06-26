@@ -166,10 +166,10 @@
 
   // List of regressions.
   // TODO #2405: Waiting for bug fixes in Ibex.
-  // regressions: [
-  //   {
-  //     name: sanity
-  //     tests: ["chip_uart_tx_rx"]
-  //   }
-  // ]
+  regressions: [
+    {
+      name: sanity
+      tests: ["chip_dif_plic_sanitytest"]
+    }
+  ]
 }
