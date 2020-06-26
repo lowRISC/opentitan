@@ -17,6 +17,7 @@ filesets:
       - rtl/aes_prng.sv
       - rtl/aes_ctr.sv
       - rtl/aes_control.sv
+      - rtl/aes_reg_status.sv
       - rtl/aes_cipher_core.sv
       - rtl/aes_cipher_control.sv
       - rtl/aes_sub_bytes.sv
