@@ -32,7 +32,7 @@ See that document for integration overview within the broader top level system.
 - Byte-formatted register interface with two separate queues, one for holding read data, the other for holding bytes to be transmitted (addresses or write data) 
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux.
-- Interrupts for FIFO overflow, target NACK, SCL/SDA signal interference, timeout, and unstable SDA signal levels.
+- Interrupts for FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete.
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
 
@@ -248,6 +248,10 @@ This interrupt is suppressed, however, if {{< regref TIMEOUT_CTRL.EN >}} is deas
 
 Except for START and STOP symbols, the I2C specification requires that the SDA signal remains constant whenever SCL is high.
 The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse.
+
+Transactions are terminated by a STOP signal.
+The host may send a repeated START signal instead of a STOP, which also terminates the preceeding transaction.
+In both cases, the `trans_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
 
 ### Implementation Details: Format Flag Parsing
 
