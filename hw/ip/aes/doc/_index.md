@@ -315,6 +315,9 @@ This section discusses how software can interface with the AES unit.
 
 ## Initialization
 
+Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
+If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}} and initialization vector (IV) registers {{< regref "IV0" >}} - {{< regref "IV3" >}} are ignored.
+
 To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
@@ -324,7 +327,7 @@ The order in which these registers are written does not matter.
 Anything can be written to the unused key registers, however, random data is preferred.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
 
-If running in CBC or CTR mode, software must also write the initialization vector (IV) registers {{< regref "IV0" >}} - {{< regref "IV3" >}}.
+If running in CBC or CTR mode, software must also write the IV registers {{< regref "IV0" >}} - {{< regref "IV3" >}}.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 Each IV register must be written at least once.
 The order in which these registers are written does not matter.
