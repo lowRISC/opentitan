@@ -235,8 +235,10 @@ package prim_cipher_pkg;
     key_out = 128'(key_in << 61) | 128'(key_in >> (128-61));
     // sbox on uppermost 4 bits
     key_out[127 -: 4] = PRESENT_SBOX4[key_out[127 -: 4]];
-    // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= round_idx;
+    // sbox on second nibble from top
+    key_out[123 -: 4] = PRESENT_SBOX4[key_out[123 -: 4]];
+    // xor in round counter on bits 66 to 62
+    key_out[66:62] ^= round_idx;
     return key_out;
   endfunction : present_update_key128
 
@@ -355,7 +357,7 @@ package prim_cipher_pkg;
     logic [63:0] state_out;
     // note that if simulation performance becomes an issue, this loop can be unrolled
     for (int k = 0; k < 64; k++) begin
-      state_out[k] = state_in[perm[k]];
+      state_out[perm[k]] = state_in[k];
     end
     return state_out;
   endfunction : perm_64bit
