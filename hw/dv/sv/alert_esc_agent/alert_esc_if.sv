@@ -61,4 +61,31 @@ interface alert_esc_if(input clk, input rst_n);
   assign esc_tx   = (if_mode == dv_utils_pkg::Host && !is_alert)   ? esc_tx_int   : 'z;
   assign esc_rx   = (if_mode == dv_utils_pkg::Device && !is_alert) ? esc_rx_int   : 'z;
 
+  // this task wait for alert_ping request.
+  // alert_ping request is detected by level triggered "alert_rx.ping_p/n" signals pairs
+  // and no sig_int_err
+  task automatic wait_alert_ping();
+    logic ping_p = alert_rx.ping_p;
+    wait(alert_rx.ping_p !== ping_p && alert_rx.ping_p === !alert_rx.ping_n);
+  endtask : wait_alert_ping
+
+  // this task wait for esc_ping request.
+  // esc_ping request is detected by toggling "esc_p/n" for one cycle:
+  // one clock cycle set (esc_p = 1, esc_n = 0) and one clock cycle reset (esc_p = 0, esc_n = 1)
+  task automatic wait_esc_ping();
+    int cycle_cnt;
+    do begin
+      cycle_cnt = 0;
+      // wait for esc_p and no sig_int_err
+      while (esc_tx.esc_p === 1'b0 || esc_tx.esc_p === esc_tx.esc_n) @(monitor_cb);
+      // count how many cycles the esc_p/n has lasted
+      while (esc_tx.esc_p === 1'b1 && esc_tx.esc_n === 1'b0) begin
+        @(monitor_cb);
+        cycle_cnt++;
+      end
+    // if cycle is larger than one, then it is a real esc signal instead of ping request
+    // so keep blocking until found the ping request
+    end while (cycle_cnt > 1);
+  endtask : wait_esc_ping
+
 endinterface: alert_esc_if

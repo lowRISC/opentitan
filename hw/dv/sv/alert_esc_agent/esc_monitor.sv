@@ -44,13 +44,14 @@ class esc_monitor extends alert_esc_base_monitor;
           under_esc_ping = 1;
           req.alert_esc_type = AlertEscPingTrans;
           check_esc_resp(.req(req), .is_ping(1));
-          do begin
+          while (req.esc_handshake_sta != EscRespComplete &&
+                 ping_cnter < cfg.ping_timeout_cycle &&
+                 !cfg.probe_vif.get_esc_en() &&
+                 !under_reset) begin
             @(cfg.vif.monitor_cb);
             check_esc_resp(.req(req), .is_ping(1));
             ping_cnter ++;
           end
-          while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
-                 !cfg.probe_vif.get_esc_en() && !under_reset);
           if (under_reset) continue;
           if (ping_cnter >= cfg.ping_timeout_cycle) begin
             alert_esc_seq_item req_clone;

@@ -55,7 +55,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   // set min to 32 cycles (default value) to avoid alert ping timeout due to random delay
   constraint ping_timeout_cyc_c {
-    ping_timeout_cyc inside {[32:100]};
+    ping_timeout_cyc inside {[32:MAX_PING_TIMEOUT_CYCLE]};
   }
 
   constraint enable_classa_only_c {
@@ -81,88 +81,93 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   task body();
     fork
       begin : isolation_fork
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
-        run_esc_rsp_seq_nonblocking(esc_int_err);
-        run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
-        `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
-        for (int i = 1; i <= num_trans; i++) begin
-          `DV_CHECK_RANDOMIZE_FATAL(this)
-
-          `uvm_info(`gfn,
-              $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
-              i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
-
-          // write initial settings (enable and mapping csrs)
-          alert_handler_init(.intr_en(intr_en),
-                             .alert_en(alert_en),
-                             .alert_class(alert_class_map),
-                             .loc_alert_en(local_alert_en),
-                             .loc_alert_class(local_alert_class_map));
-
-          // write class_ctrl and clren_reg
-          alert_handler_rand_wr_class_ctrl(lock_bit_en);
-          alert_handler_wr_clren_regs(clr_en);
-
-          // randomly write phase cycle registers
-          // always set phase_cycle for the first iteration, in order to pass stress_all test
-          if (do_wr_phases_cyc || i == 1) wr_phases_cycle(max_phase_cyc);
-
-          // randomly write interrupt timeout resigers and accumulative threshold registers
-          if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
-          wr_class_accum_threshold(accum_thresh);
-          wr_ping_timeout_cycle(ping_timeout_cyc);
-
-          //drive entropy
-          cfg.entropy_vif.drive(rand_drive_entropy);
-
-          // when all configuration registers are set, write lock register
-          lock_config(do_lock_config);
-
-          if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
-          // drive alert
-          drive_alert(alert_trigger, alert_int_err);
-
-          // if config is not locked, update max_intr_timeout and max_wait_phases cycles
-          if (!config_locked) begin
-            int max_intr_timeout_cyc;
-            foreach (intr_timeout_cyc[i]) begin
-              max_intr_timeout_cyc = (max_intr_timeout_cyc > intr_timeout_cyc[i]) ?
-                                      max_intr_timeout_cyc : intr_timeout_cyc[i];
-            end
-            max_wait_phases_cyc = (max_wait_phases_cyc > (max_phase_cyc * NUM_ESC_PHASES)) ?
-                                   max_wait_phases_cyc : (max_phase_cyc * NUM_ESC_PHASES);
-            if (do_lock_config) config_locked = 1;
-          end
-
-          if (do_esc_intr_timeout) begin
-            cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
-            // this task checks three sets of registers related to alert/esc status:
-            // alert_accum_cnt, esc_cnt, class_state
-            read_esc_status();
-          end
-
-          // read and check interrupt
-          check_alert_interrupts();
-
-          // wait escalation done, and random interrupt with clear_esc
-          wait_alert_handshake_done();
-          fork
-            begin
-              wait_esc_handshake_done(max_wait_phases_cyc);
-            end
-            begin
-              cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
-              if ($urandom_range(0, 1)) clear_esc();
-            end
-          join
-          read_alert_cause();
-          read_esc_status();
-          if (do_clr_esc) clear_esc();
-          check_alert_interrupts();
-        end // end for loop
+        trigger_non_blocking_seqs();
+        run_sanity_seq();
         disable fork; // disable non-blocking seqs for stress_all tests
       end // end fork
     join
   endtask : body
+
+  virtual task trigger_non_blocking_seqs();
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
+    run_esc_rsp_seq_nonblocking(esc_int_err);
+    run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
+  endtask
+
+  virtual task run_sanity_seq();
+    `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
+    for (int i = 1; i <= num_trans; i++) begin
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      `uvm_info(`gfn,
+          $sformatf("start seq %0d/%0d: intr_en=%0b, alert=%0b, alert_en=%0b, alert_class=%0b",
+          i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
+
+      // write initial settings (enable and mapping csrs)
+      alert_handler_init(.intr_en(intr_en),
+                         .alert_en(alert_en),
+                         .alert_class(alert_class_map),
+                         .loc_alert_en(local_alert_en),
+                         .loc_alert_class(local_alert_class_map));
+
+      // write class_ctrl and clren_reg
+      alert_handler_rand_wr_class_ctrl(lock_bit_en);
+      alert_handler_wr_clren_regs(clr_en);
+
+      // randomly write phase cycle registers
+      // always set phase_cycle for the first iteration, in order to pass stress_all test
+      if (do_wr_phases_cyc || i == 1) wr_phases_cycle(max_phase_cyc);
+
+      // randomly write interrupt timeout resigers and accumulative threshold registers
+      if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
+      wr_class_accum_threshold(accum_thresh);
+      wr_ping_timeout_cycle(ping_timeout_cyc);
+
+      //drive entropy
+      cfg.entropy_vif.drive(rand_drive_entropy);
+
+      // when all configuration registers are set, write lock register
+      lock_config(do_lock_config);
+
+      if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
+      // drive alert
+      drive_alert(alert_trigger, alert_int_err);
+
+      // if config is not locked, update max_intr_timeout and max_wait_phases cycles
+      if (!config_locked) begin
+        bit [TL_DW-1:0] max_intr_timeout_cyc;
+        bit [TL_DW-1:0] max_q[$] = intr_timeout_cyc.max();
+        max_intr_timeout_cyc = max_q[0];
+        max_wait_phases_cyc = max2(max_wait_phases_cyc, max_phase_cyc * NUM_ESC_PHASES);
+        if (do_lock_config) config_locked = 1;
+      end
+
+      if (do_esc_intr_timeout) begin
+        cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
+        // this task checks three sets of registers related to alert/esc status:
+        // alert_accum_cnt, esc_cnt, class_state
+        read_esc_status();
+      end
+      // only check interrupt when no esc_int_err, otherwise clear interrupt might happen the
+      // same cycle as interrupt triggered by esc_int_err
+      if (esc_int_err == 0) check_alert_interrupts();
+
+      // wait escalation done, and random interrupt with clear_esc
+      wait_alert_handshake_done();
+      fork
+        begin
+          wait_esc_handshake_done();
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks($urandom_range(0, max_wait_phases_cyc));
+          if ($urandom_range(0, 1) && (esc_int_err == 0)) clear_esc();
+        end
+      join
+      read_alert_cause();
+      read_esc_status();
+      if (do_clr_esc) clear_esc();
+      check_alert_interrupts();
+    end
+  endtask
 
 endclass : alert_handler_sanity_vseq
