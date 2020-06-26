@@ -7,7 +7,7 @@ variables:
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   # if you update this, update the definition in util/container/Dockerfile
-  TOOLCHAIN_VERSION: 20200618-1
+  TOOLCHAIN_VERSION: 20200626-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
 
@@ -181,11 +181,11 @@ jobs:
     parameters:
       artifact: sw_build
 
-# This is a second software build currently building with Clang, to test out the
-# compiler migration. It is a copy of `sw_build` with `meson_init.sh` configured
-# with the clang toolchain not the default toolchain.
-- job: sw_build_clang
-  displayName: Build Software (with Clang)
+# We continue building with GCC, despite defaulting to Clang. This is a copy of
+# `sw_build` with `meson_init.sh` configured with the GCC toolchain, instead of
+# the default toolchain.
+- job: sw_build_gcc
+  displayName: Build Software (with GCC)
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
@@ -202,7 +202,7 @@ jobs:
   - bash: |
       . util/build_consts.sh
       ./meson_init.sh -A \
-        -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-clang.txt"
+        -t "$TOOLCHAIN_PATH/meson-riscv32-unknown-elf-gcc.txt"
       ninja -C "$OBJ_DIR" all
     displayName: Build embedded targets
   - bash: |
@@ -211,7 +211,7 @@ jobs:
     displayName: Run unit tests
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: sw_build_clang
+      artifact: sw_build_gcc
 
 - job: top_earlgrey_verilator
   displayName: Build Verilator simulation of the Earl Grey toplevel design
