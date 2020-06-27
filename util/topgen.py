@@ -530,10 +530,11 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # clocks fed through clkmgr but are not disturbed in any way
     # This maintains the clocking structure consistency
+    # excludes clocks that are direclty fed from top level ports
     ft_clks = {
         clk: src
         for grp in grps for (clk, src) in grp['clocks'].items()
-        if src_aon_attr[src]
+        if src_aon_attr[src] and grp['src'] == 'top'
     }
 
     # root-gate clocks
