@@ -15,7 +15,7 @@ package clkmgr_pkg;
   };
 
   typedef struct packed {
-% for clk in {**hint_clks, **rg_clks, **sw_clks}:
+% for clk in {**ft_clks, **hint_clks, **rg_clks, **sw_clks}:
   logic ${clk};
 % endfor
 
