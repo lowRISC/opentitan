@@ -20,6 +20,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // random property
   rand uint                   fmt_fifo_access_dly;
   rand uint                   rx_fifo_access_dly;
+  rand uint                   access_intr_dly;
 
   rand bit   [NumI2cIntr-1:0] en_intr;
   rand uint                   num_trans;
@@ -79,6 +80,15 @@ class i2c_base_vseq extends cip_base_vseq #(
       t_buf    inside { [(tsu_sta - t_r + 1) :
                          (tsu_sta - t_r + 1) + I2C_TIME_RANGE] };
     }
+  }
+
+  constraint access_intr_dly_c {
+    access_intr_dly dist {
+      0                   :/ 1,
+      [1      :100]       :/ 5,
+      [101    :10_000]    :/ 3,
+      [10_001 :1_000_000] :/ 1
+    };
   }
 
   constraint num_wr_bytes_c {
@@ -232,23 +242,4 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
   endtask : print_format_flag
 
-  //*******************************************
-  // TODO: below functions/tasks
-  //*******************************************
-  virtual task clear_all_interrupts();
-    bit [TL_DW-1:0] data;
-
-    foreach (intr_state_csrs[i]) begin
-      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-      `uvm_info(`gfn, $sformatf("%s 0x%08h", intr_state_csrs[i].get_name(), data), UVM_DEBUG)
-      if (data != 0) begin
-        csr_wr(.csr(intr_state_csrs[i]), .value(data));
-        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-        // TODO: check the initial value fmt_watermark interrupt in/out of reset
-        //`DV_CHECK_EQ(data, 0)
-      end
-    end
-    // TODO:
-    //`DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
-  endtask : clear_all_interrupts
 endclass : i2c_base_vseq
