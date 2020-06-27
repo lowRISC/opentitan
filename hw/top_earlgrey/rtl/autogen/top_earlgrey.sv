@@ -42,6 +42,19 @@ module top_earlgrey #(
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
 
+  // Inter-module Signal External type
+  output tlul_pkg::tl_h2d_t       sensor_ctrl_ast_host,
+  input  tlul_pkg::tl_d2h_t       sensor_ctrl_ast_dev,
+  input  ast_wrapper_pkg::ast_status_t       sensor_ctrl_ast_status,
+  input  ast_wrapper_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req,
+  output ast_wrapper_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp,
+  output sensor_ctrl_pkg::ast_aux_t       sensor_ctrl_ast_aux,
+  output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_pwr_ast_req,
+  input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_pwr_ast_rsp,
+  input  ast_wrapper_pkg::ast_rst_t       rstmgr_ast,
+  output logic       usbdev_usb_ref_pulse,
+  output logic       usbdev_usb_ref_val,
+
   input               scanmode_i  // 1 for Scan
 );
 
@@ -105,6 +118,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_d_h2d;
   tl_d2h_t  tl_usbdev_d_d2h;
+  tl_h2d_t  tl_sensor_ctrl_d_h2d;
+  tl_d2h_t  tl_sensor_ctrl_d_d2h;
 
   tl_h2d_t tl_rom_d_h2d;
   tl_d2h_t tl_rom_d_d2h;
@@ -170,6 +185,7 @@ module top_earlgrey #(
   logic        cio_usbdev_dp_en_d2p;
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
+  // sensor_ctrl
 
 
   logic [80:0]  intr_vector;
@@ -696,8 +712,8 @@ module top_earlgrey #(
       .intr_wakeup_o (intr_pwrmgr_wakeup),
 
       // Inter-module signals
-      .pwr_ast_o(),
-      .pwr_ast_i(pwrmgr_pkg::PWR_AST_RSP_DEFAULT),
+      .pwr_ast_o(pwrmgr_pwr_ast_req),
+      .pwr_ast_i(pwrmgr_pwr_ast_rsp),
       .pwr_rst_o(pwrmgr_pwr_rst_req),
       .pwr_rst_i(pwrmgr_pwr_rst_rsp),
       .pwr_clk_o(pwrmgr_pwr_clk_req),
@@ -725,7 +741,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_pwr_rst_req),
       .pwr_o(pwrmgr_pwr_rst_rsp),
       .resets_o(rstmgr_resets),
-      .ast_i(rstmgr_pkg::RSTMGR_AST_DEFAULT),
+      .ast_i(rstmgr_ast),
       .cpu_i(rstmgr_cpu),
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
 
@@ -823,13 +839,39 @@ module top_earlgrey #(
       .intr_connected_o       (intr_usbdev_connected),
 
       // Inter-module signals
-      .usb_ref_val_o(),
-      .usb_ref_pulse_o(),
+      .usb_ref_val_o(usbdev_usb_ref_val),
+      .usb_ref_pulse_o(usbdev_usb_ref_pulse),
 
       .clk_i (clkmgr_clocks.clk_io_peri),
       .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
       .rst_ni (rstmgr_resets.rst_sys_io_n),
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
+  );
+
+  sensor_ctrl u_sensor_ctrl (
+      .tl_i (tl_sensor_ctrl_d_h2d),
+      .tl_o (tl_sensor_ctrl_d_d2h),
+
+      // [1]: ast_alerts
+      .alert_tx_o  ( alert_tx[7:1] ),
+      .alert_rx_i  ( alert_rx[7:1] ),
+
+      // Inter-module signals
+      .ast_host_o(sensor_ctrl_ast_host),
+      .ast_dev_i(sensor_ctrl_ast_dev),
+      .ast_aux_o(sensor_ctrl_ast_aux),
+      .ast_alert_i(sensor_ctrl_ast_alert_req),
+      .ast_alert_o(sensor_ctrl_ast_alert_rsp),
+      .ast_status_i(sensor_ctrl_ast_status),
+
+      .clk_i (clkmgr_clocks.clk_io_secure),
+      .clk_aon_i (clkmgr_clocks.clk_aon_secure),
+      .clk_sys_i (clkmgr_clocks.clk_main_secure),
+      .clk_usb_i (clkmgr_clocks.clk_usb_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_n),
+      .rst_aon_ni (rstmgr_resets.rst_por_aon_n),
+      .rst_sys_ni (rstmgr_resets.rst_sys_n),
+      .rst_usb_ni (rstmgr_resets.rst_usb_n)
   );
 
   // interrupt assignments
@@ -930,24 +972,26 @@ module top_earlgrey #(
   xbar_peri u_xbar_peri (
     .clk_peri_i (clkmgr_clocks.clk_io_infra),
     .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
-    .tl_main_i       (tl_main_peri_h2d),
-    .tl_main_o       (tl_main_peri_d2h),
-    .tl_uart_o       (tl_uart_d_h2d),
-    .tl_uart_i       (tl_uart_d_d2h),
-    .tl_gpio_o       (tl_gpio_d_h2d),
-    .tl_gpio_i       (tl_gpio_d_d2h),
-    .tl_spi_device_o (tl_spi_device_d_h2d),
-    .tl_spi_device_i (tl_spi_device_d_d2h),
-    .tl_rv_timer_o   (tl_rv_timer_d_h2d),
-    .tl_rv_timer_i   (tl_rv_timer_d_d2h),
-    .tl_usbdev_o     (tl_usbdev_d_h2d),
-    .tl_usbdev_i     (tl_usbdev_d_d2h),
-    .tl_pwrmgr_o     (tl_pwrmgr_d_h2d),
-    .tl_pwrmgr_i     (tl_pwrmgr_d_d2h),
-    .tl_rstmgr_o     (tl_rstmgr_d_h2d),
-    .tl_rstmgr_i     (tl_rstmgr_d_d2h),
-    .tl_clkmgr_o     (tl_clkmgr_d_h2d),
-    .tl_clkmgr_i     (tl_clkmgr_d_d2h),
+    .tl_main_i        (tl_main_peri_h2d),
+    .tl_main_o        (tl_main_peri_d2h),
+    .tl_uart_o        (tl_uart_d_h2d),
+    .tl_uart_i        (tl_uart_d_d2h),
+    .tl_gpio_o        (tl_gpio_d_h2d),
+    .tl_gpio_i        (tl_gpio_d_d2h),
+    .tl_spi_device_o  (tl_spi_device_d_h2d),
+    .tl_spi_device_i  (tl_spi_device_d_d2h),
+    .tl_rv_timer_o    (tl_rv_timer_d_h2d),
+    .tl_rv_timer_i    (tl_rv_timer_d_d2h),
+    .tl_usbdev_o      (tl_usbdev_d_h2d),
+    .tl_usbdev_i      (tl_usbdev_d_d2h),
+    .tl_pwrmgr_o      (tl_pwrmgr_d_h2d),
+    .tl_pwrmgr_i      (tl_pwrmgr_d_d2h),
+    .tl_rstmgr_o      (tl_rstmgr_d_h2d),
+    .tl_rstmgr_i      (tl_rstmgr_d_d2h),
+    .tl_clkmgr_o      (tl_clkmgr_d_h2d),
+    .tl_clkmgr_i      (tl_clkmgr_d_d2h),
+    .tl_sensor_ctrl_o (tl_sensor_ctrl_d_h2d),
+    .tl_sensor_ctrl_i (tl_sensor_ctrl_d_d2h),
 
     .scanmode_i
   );

@@ -379,6 +379,24 @@ extern "C" {
  */
 #define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
 
+/**
+ * Peripheral base address for sensor_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40170000u
+
+/**
+ * Peripheral size for sensor_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x2000u
+
 
 /**
  * Memory base address for rom in top earlgrey.

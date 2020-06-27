@@ -66,6 +66,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"clkmgr", '{
         '{32'h400c0000, 32'h400c0fff}
+    }},
+    '{"sensor_ctrl", '{
+        '{32'h40170000, 32'h40171fff}
     }}};
 
   // List of Xbar hosts
@@ -89,6 +92,7 @@ tl_host_t xbar_hosts[$] = '{
         "pwrmgr",
         "rstmgr",
         "clkmgr",
+        "sensor_ctrl",
         "flash_ctrl",
         "aes",
         "hmac",
@@ -110,6 +114,7 @@ tl_host_t xbar_hosts[$] = '{
         "pwrmgr",
         "rstmgr",
         "clkmgr",
+        "sensor_ctrl",
         "flash_ctrl",
         "aes",
         "hmac",

@@ -85,6 +85,8 @@
         {
           clk_io_secure: io
           clk_main_secure: main
+          clk_aon_secure: aon
+          clk_usb_secure: usb
         }
       }
       {
@@ -110,7 +112,7 @@
       }
       {
         name: proc
-        src: no
+        src: top
         sw_cg: no
         unique: no
         clocks:
@@ -1028,6 +1030,8 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          top_signame: pwrmgr_pwr_ast
           index: -1
         }
         {
@@ -1174,12 +1178,14 @@
           index: -1
         }
         {
-          struct: rstmgr_ast
+          struct: ast_rst
           type: uni
           name: ast
           act: rcv
-          package: rstmgr_pkg
+          package: ast_wrapper_pkg
           inst_name: rstmgr
+          width: 1
+          top_signame: rstmgr_ast
           index: -1
         }
         {
@@ -1648,8 +1654,9 @@
           act: req
           package: ""
           struct: logic
-          width: "1"
+          width: 1
           inst_name: usbdev
+          top_signame: usbdev_usb_ref_val
           index: -1
         }
         {
@@ -1658,8 +1665,112 @@
           act: req
           package: ""
           struct: logic
-          width: "1"
+          width: 1
           inst_name: usbdev
+          top_signame: usbdev_usb_ref_pulse
+          index: -1
+        }
+      ]
+    }
+    {
+      name: sensor_ctrl
+      type: sensor_ctrl
+      clock_srcs:
+      {
+        clk_i: io
+        clk_aon_i: aon
+        clk_sys_i: main
+        clk_usb_i: usb
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys_io
+        rst_aon_ni: por_aon
+        rst_sys_ni: sys
+        rst_usb_ni: usb
+      }
+      base_addr: 0x40170000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_secure
+        clk_aon_i: clkmgr_clocks.clk_aon_secure
+        clk_sys_i: clkmgr_clocks.clk_main_secure
+        clk_usb_i: clkmgr_clocks.clk_usb_secure
+      }
+      size: 0x2000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list:
+      [
+        {
+          name: ast_alerts
+          width: 7
+          type: alert
+          async: 1
+        }
+      ]
+      wakeup_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: tl_h2d
+          type: uni
+          name: ast_host
+          act: req
+          package: tlul_pkg
+          inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_host
+          index: -1
+        }
+        {
+          struct: tl_d2h
+          type: uni
+          name: ast_dev
+          act: rcv
+          package: tlul_pkg
+          inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_dev
+          index: -1
+        }
+        {
+          struct: ast_aux
+          type: uni
+          name: ast_aux
+          act: req
+          package: sensor_ctrl_pkg
+          inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_aux
+          index: -1
+        }
+        {
+          struct: ast_alert
+          type: req_rsp
+          name: ast_alert
+          act: rsp
+          package: ast_wrapper_pkg
+          inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_alert
+          index: -1
+        }
+        {
+          struct: ast_status
+          type: uni
+          name: ast_status
+          act: rcv
+          package: ast_wrapper_pkg
+          inst_name: sensor_ctrl
+          width: 1
+          top_signame: sensor_ctrl_ast_status
           index: -1
         }
       ]
@@ -1769,7 +1880,18 @@
       pwrmgr.pwr_cpu
       clkmgr.clocks
     ]
-    external: []
+    external:
+    [
+      sensor_ctrl.ast_host
+      sensor_ctrl.ast_dev
+      sensor_ctrl.ast_status
+      sensor_ctrl.ast_alert
+      sensor_ctrl.ast_aux
+      pwrmgr.pwr_ast
+      rstmgr.ast
+      usbdev.usb_ref_pulse
+      usbdev.usb_ref_val
+    ]
   }
   xbar:
   [
@@ -1975,6 +2097,10 @@
               base_addr: 0x400C0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x40170000
+              size_byte: 0x2000
+            }
           ]
         }
         {
@@ -2142,6 +2268,7 @@
           pwrmgr
           rstmgr
           clkmgr
+          sensor_ctrl
         ]
       }
       nodes:
@@ -2287,6 +2414,23 @@
             {
               base_addr: 0x400C0000
               size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: sensor_ctrl
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: sensor_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40170000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -2951,6 +3095,7 @@
   alert_module:
   [
     hmac
+    sensor_ctrl
   ]
   alert:
   [
@@ -2960,6 +3105,13 @@
       type: alert
       async: 0
       module_name: hmac
+    }
+    {
+      name: sensor_ctrl_ast_alerts
+      width: 7
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
     }
   ]
   pinmux:
@@ -3315,6 +3467,8 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        top_signame: pwrmgr_pwr_ast
         index: -1
       }
       {
@@ -3422,12 +3576,14 @@
         index: -1
       }
       {
-        struct: rstmgr_ast
+        struct: ast_rst
         type: uni
         name: ast
         act: rcv
-        package: rstmgr_pkg
+        package: ast_wrapper_pkg
         inst_name: rstmgr
+        width: 1
+        top_signame: rstmgr_ast
         index: -1
       }
       {
@@ -3496,8 +3652,9 @@
         act: req
         package: ""
         struct: logic
-        width: "1"
+        width: 1
         inst_name: usbdev
+        top_signame: usbdev_usb_ref_val
         index: -1
       }
       {
@@ -3506,8 +3663,64 @@
         act: req
         package: ""
         struct: logic
-        width: "1"
+        width: 1
         inst_name: usbdev
+        top_signame: usbdev_usb_ref_pulse
+        index: -1
+      }
+      {
+        struct: tl_h2d
+        type: uni
+        name: ast_host
+        act: req
+        package: tlul_pkg
+        inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_host
+        index: -1
+      }
+      {
+        struct: tl_d2h
+        type: uni
+        name: ast_dev
+        act: rcv
+        package: tlul_pkg
+        inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_dev
+        index: -1
+      }
+      {
+        struct: ast_aux
+        type: uni
+        name: ast_aux
+        act: req
+        package: sensor_ctrl_pkg
+        inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_aux
+        index: -1
+      }
+      {
+        struct: ast_alert
+        type: req_rsp
+        name: ast_alert
+        act: rsp
+        package: ast_wrapper_pkg
+        inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_alert
+        index: -1
+      }
+      {
+        struct: ast_status
+        type: uni
+        name: ast_status
+        act: rcv
+        package: ast_wrapper_pkg
+        inst_name: sensor_ctrl
+        width: 1
+        top_signame: sensor_ctrl_ast_status
         index: -1
       }
       {
@@ -3522,7 +3735,97 @@
         index: -1
       }
     ]
-    external: []
+    external:
+    [
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sensor_ctrl_ast_host
+        width: 1
+        type: uni
+        direction: out
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sensor_ctrl_ast_dev
+        width: 1
+        type: uni
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_status
+        signame: sensor_ctrl_ast_status
+        width: 1
+        type: uni
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_alert_req
+        signame: sensor_ctrl_ast_alert_req
+        width: 1
+        type: req_rsp
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_alert_rsp
+        signame: sensor_ctrl_ast_alert_rsp
+        width: 1
+        type: req_rsp
+        direction: out
+      }
+      {
+        package: sensor_ctrl_pkg
+        struct: ast_aux
+        signame: sensor_ctrl_ast_aux
+        width: 1
+        type: uni
+        direction: out
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_ast_req
+        signame: pwrmgr_pwr_ast_req
+        width: 1
+        type: req_rsp
+        direction: out
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_ast_rsp
+        signame: pwrmgr_pwr_ast_rsp
+        width: 1
+        type: req_rsp
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_rst
+        signame: rstmgr_ast
+        width: 1
+        type: uni
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_ref_pulse
+        width: 1
+        type: uni
+        direction: out
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_ref_val
+        width: 1
+        type: uni
+        direction: out
+      }
+    ]
     definitions:
     [
       {
