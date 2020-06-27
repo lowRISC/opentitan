@@ -4,64 +4,41 @@
 
 // dofile for LEC script lec_sv2v
 
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
 // read in golden (SystemVerilog) and revised (Verilog)
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
+set parallel option -threads 8
 
-// black box all instantiated modules (so only top-module is used)
-set undefined cell black_box
-
-// flatten module ports for comparison
+// map all multi-dimensional ports (including structs) onto 1-dim. ports
 set naming rule -mdportflatten
 
-// Some of the prim_generic_ modules are instantiated using SystemVerilog
-// wildcard port bindings. These wildcard bindings are elaborated during
-// conversion. For the comparison to work, we need to read the signature of
-// these modules, but we still want to treat them as black boxes.
-add notranslate filepathnames $LEC_DIR/prim_*.*
+read design -golden -sv12 -f flist_gold -rootonly -root $LEC_TOP
+read design -revised -ve  -f flist_rev  -rootonly -root $LEC_TOP
 
-// ensure the module under test is not blackboxed
-add notranslate filepathnames $LEC_DIR/$LEC_TOP.*
-del notranslate filepathnames $LEC_DIR/$LEC_TOP.*
-
-// read golden design
-read design -golden -sv12 \
-  $LEC_DIR/top_pkg.sv \
-  $LEC_DIR/tlul_pkg.sv \
-  $LEC_DIR/*_pkg.sv \
-  $LEC_DIR/prim_*.sv \
-  $LEC_DIR/$LEC_TOP.sv
-
-// read revised design
-read design -revised -verilog \
-  $LEC_DIR/prim_*.v \
-  $LEC_DIR/$LEC_TOP.v
-
-// force comparison of the desired module
-set root module $LEC_TOP -both
-
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
 // pre-LEC reports
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
+report rule check -verbose
 report design data
 report black box
 report module
 
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
 // compare
-//-----------------------------------------------------------------
-set mapping method -noname
+//-------------------------------------------------------------------------
 set system mode lec
-set parallel option -threads 4
-analyze datapath -merge -verbose -effort ultra
+
+set mapping method -nets -mem -unreach -noname
+map key points
+report unmapped points
+
 add compare point -all
-set compare effort ultra
-compare -threads 4
+compare -threads 8 -noneq_stop 1
 analyze abort -compare
 
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
 // reports
-//-----------------------------------------------------------------
+//-------------------------------------------------------------------------
 report compare data -class nonequivalent -class abort -class notcompared
 report verification -verbose
 report statistics
