@@ -65,7 +65,7 @@ module prim_subst_perm #(
         for (int k = 0; k < DataWidth; k++) begin
           data_state_flipped[DataWidth - 1 - k] = data_state_sbox[k];
         end
-        // Regroup bits such that all even indices are stacked up first,  followed by all odd
+        // Regroup bits such that all even indices are stacked up first, followed by all odd
         // indices, and then flip the vector. Note that if the Width is odd, this is still ok, since
         // the uppermost bit just stays in place in that case.
         for (int k = 0; k < DataWidth/2; k++) begin

@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:ram_1p_scr:0.1"
+description: "Single-port RAM primitive with data and address scrambling"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:util
+      - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:all
+    files:
+      - rtl/prim_ram_1p_scr.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
