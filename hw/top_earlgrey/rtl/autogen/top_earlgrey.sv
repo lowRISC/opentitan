@@ -407,6 +407,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_aon_pwr_clk_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
+  logic       pwrmgr_aon_wakeups;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_aon_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_aon_pwr_cpu;
@@ -945,8 +946,8 @@ module top_earlgrey #(
       // Inter-module signals
       .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
       .lc_pinmux_strap_o(),
-      .sleep_en_i(1'b0),
-      .aon_wkup_req_o(),
+      .sleep_en_i('0),
+      .aon_wkup_req_o(pwrmgr_aon_wakeups),
 
       .periph_to_mio_i      (mio_d2p    ),
       .periph_to_mio_oe_i   (mio_d2p_en ),
@@ -1025,7 +1026,8 @@ module top_earlgrey #(
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
       .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
       .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
-      .pwr_peri_i(pwrmgr_pkg::PWR_PERI_DEFAULT),
+      .wakeups_i(pwrmgr_aon_wakeups),
+      .rstreqs_i('0),
 
       .clk_i (clk_io_i),
       .clk_slow_i (clk_aon_i),
@@ -1239,7 +1241,7 @@ module top_earlgrey #(
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
-      .efuse_sw_app_enable_i(1'b0),
+      .efuse_sw_app_enable_i('0),
 
       .clk_i (clkmgr_aon_clocks.clk_main_csrng),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
@@ -1260,7 +1262,7 @@ module top_earlgrey #(
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
       .entropy_src_rng_o(entropy_src_entropy_src_rng_req),
       .entropy_src_rng_i(entropy_src_entropy_src_rng_rsp),
-      .efuse_es_sw_reg_en_i(1'b0),
+      .efuse_es_sw_reg_en_i('0),
 
       .clk_i (clkmgr_aon_clocks.clk_main_entropy_src),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)

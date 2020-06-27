@@ -26,7 +26,6 @@ filesets:
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
       - lowrisc:ip:keymgr
-      - lowrisc:ip:pwrmgr
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:rom_adv
       - lowrisc:ip:rstmgr
@@ -43,6 +42,9 @@ filesets:
       - lowrisc:top_earlgrey:xbar_aon
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pattgen
+      - lowrisc:top_earlgrey:pwrmgr_only_reg
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:pwrmgr_component
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
