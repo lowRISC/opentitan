@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
-      - lowrisc:ip:pwrmgr
+      - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/autogen/clkmgr_pkg.sv
       - rtl/autogen/clkmgr_reg_pkg.sv
