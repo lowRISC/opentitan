@@ -63,7 +63,7 @@
       { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   }
       { name: "timers",  src:"top", sw_cg: "no"                   }
       { name: "proc",
-        src: "no"
+        src: "top"
         sw_cg: "no"
         unique: "no"
         clocks: {
@@ -248,9 +248,9 @@
     },
     { name: "sensor_ctrl",
       type: "sensor_ctrl",
-      clock_srcs: {clk_i: "io", },
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_sys_i: "main", clk_usb_i: "usb"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io", rst_aon_ni: "por_aon", rst_sys_ni: "sys", rst_usb_ni: "usb"},
       base_addr: "0x40170000",
     },
   ]
@@ -311,7 +311,9 @@
     'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks'],
 
     // ext is to create port in the top.
-    'external': [],
+    'external': ['sensor_ctrl.ast_host', 'sensor_ctrl.ast_dev', 'sensor_ctrl.ast_status',
+                 'sensor_ctrl.ast_alert', 'sensor_ctrl.ast_aux', 'pwrmgr.pwr_ast',
+                 'rstmgr.ast', 'usbdev.usb_ref_pulse', 'usbdev.usb_ref_val'],
   },
 
   debug_mem_base_addr: "0x1A110000",
