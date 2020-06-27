@@ -246,6 +246,13 @@
       reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
+    { name: "sensor_ctrl",
+      type: "sensor_ctrl",
+      clock_srcs: {clk_i: "io", },
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40170000",
+    },
   ]
 
   // Memories (ROM, RAM, eFlash) are defined at the top.
@@ -346,7 +353,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac" ]
+  alert_module: [ "hmac", "sensor_ctrl" ]
 
   // generated list of alerts:
   alert: [
