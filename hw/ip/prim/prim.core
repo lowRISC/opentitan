@@ -37,6 +37,7 @@ filesets:
       - rtl/prim_cipher_pkg.sv
       - rtl/prim_present.sv
       - rtl/prim_prince.sv
+      - rtl/prim_subst_perm.sv
       - rtl/prim_gate_gen.sv
       - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
