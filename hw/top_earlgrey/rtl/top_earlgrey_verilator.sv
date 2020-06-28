@@ -101,6 +101,19 @@ module top_earlgrey_verilator (
     .mio_attr_o                 ( ),
     .dio_attr_o                 ( ),
 
+    // AST connections
+    .sensor_ctrl_ast_host       (     ),
+    .sensor_ctrl_ast_dev        ( '0  ),
+    .sensor_ctrl_ast_status     ( '0  ),
+    .sensor_ctrl_ast_alert_req  (     ),
+    .sensor_ctrl_ast_alert_rsp  ( ast_wrapper_pkg::AST_ALERT_REQ_DEFAULT ),
+    .pwrmgr_pwr_ast_req         (     ),
+    .pwrmgr_pwr_ast_rsp         ( pwrmgr_pkg::PWR_AST_RSP_DEFAULT        ),
+    .rstmgr_ast                 ( ast_wrapper_pkg::AST_RST_DEFAULT       ),
+    .usbdev_usb_ref_pulse       (     ),
+    .usbdev_usb_ref_val         (     ),
+    .sensor_ctrl_ast_aux        (     ),
+
     .scanmode_i                 (1'b0)
   );
 
