@@ -5,15 +5,14 @@
 #include "sw/host/spiflash/ftdi_spi_interface.h"
 
 #include <assert.h>
-#include <fcntl.h>
-#include <openssl/sha.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include <chrono>
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
+#include <openssl/sha.h>
 #include <string>
+#include <termios.h>
+#include <unistd.h>
 #include <vector>
 
 // Include MPSSE SPI library
@@ -24,16 +23,6 @@ extern "C" {
 namespace opentitan {
 namespace spiflash {
 namespace {
-
-// Time to wait between attempts to check the hash in nanoseconds.
-// TODO: If transmission is not successful, adapt this by an argument.
-constexpr int kHashReadDelayNs = 10000;
-
-// Time before giving up on looking for the correct hash.
-constexpr int kHashReadTimeoutNs = 1000000;
-
-// FTDI Configuration. This can be made configurable later on if needed.
-constexpr int kFrequency = 1000000;  // 1MHz
 
 enum FtdiGpioMapping {
   // SRST_N reset.
@@ -78,7 +67,8 @@ struct MpsseHandle {
   }
 };
 
-FtdiSpiInterface::FtdiSpiInterface() : spi_(nullptr) {}
+FtdiSpiInterface::FtdiSpiInterface(Options options)
+    : options_(options), spi_(nullptr) {}
 
 FtdiSpiInterface::~FtdiSpiInterface() {
   if (spi_ != nullptr) {
@@ -88,7 +78,25 @@ FtdiSpiInterface::~FtdiSpiInterface() {
 }
 
 bool FtdiSpiInterface::Init() {
-  struct mpsse_context *ctx = MPSSE(SPI0, kFrequency, MSB);
+  if (!options_.device_serial_number.empty() &&
+      (options_.device_vendor_id == 0 || options_.device_product_id == 0)) {
+    std::cerr << "FTDI device serial number requires the vendor_id and product "
+                 "id to be set."
+              << std::endl;
+    return false;
+  }
+
+  struct mpsse_context *ctx = nullptr;
+  if (options_.device_vendor_id == 0 || options_.device_product_id == 0) {
+    ctx = MPSSE(/*mode=*/SPI0, options_.spi_frequency, /*endianess=*/MSB);
+  } else {
+    const char *serial_number = options_.device_serial_number.empty()
+                                    ? nullptr
+                                    : options_.device_serial_number.c_str();
+    ctx = Open(options_.device_vendor_id, options_.device_product_id,
+               /*mode=*/SPI0, options_.spi_frequency, /*endianess=*/MSB,
+               /*interface=*/IFACE_A, /*description=*/nullptr, serial_number);
+  }
   if (ctx == nullptr) {
     std::cerr << "Unable to open FTDI SPI interface." << std::endl;
     return false;
@@ -144,8 +152,8 @@ bool FtdiSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
   auto now = begin;
   while (!hash_correct &&
          std::chrono::duration_cast<std::chrono::microseconds>(now - begin)
-                 .count() < kHashReadTimeoutNs) {
-    usleep(kHashReadDelayNs);
+                 .count() < options_.hash_read_timeout_ns) {
+    usleep(options_.hash_read_delay_ns);
     rx = nullptr;
     rx = ::Read(spi_->ctx, size);
     if (!rx) {

@@ -23,7 +23,29 @@ struct MpsseHandle;
 // This class is not thread safe.
 class FtdiSpiInterface : public SpiInterface {
  public:
-  FtdiSpiInterface();
+  // FTDI SPI configuration options.
+  struct Options {
+    // USB device vendor ID.
+    int32_t device_vendor_id;
+
+    // USB device product ID.
+    int32_t device_product_id;
+
+    // USB device serial number.
+    std::string device_serial_number;
+
+    // Time to wait between attempts to check the hash in nanoseconds.
+    int32_t hash_read_delay_ns = 10000;
+
+    // Time before giving up on looking for the correct hash.
+    int32_t hash_read_timeout_ns = 1000000;
+
+    // FTDI Configuration. This can be made configurable later on if needed.
+    // Default value is 1MHz.
+    int32_t spi_frequency = 1000000;
+  };
+
+  explicit FtdiSpiInterface(Options options);
   ~FtdiSpiInterface() override;
 
   // Initialize interface.
@@ -35,6 +57,7 @@ class FtdiSpiInterface : public SpiInterface {
   bool CheckHash(const uint8_t *tx, size_t size) final;
 
  private:
+  Options options_;
   std::unique_ptr<MpsseHandle> spi_;
 };
 
