@@ -176,7 +176,7 @@
       base_addr: "0x40100000",
     },
     { name: "i2c0",
-      type: "i2c",
+     type: "i2c",
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io"},
@@ -195,6 +195,13 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io"},
       base_addr: "0x400A0000"
+    },
+    { name: "sensor_ctrl",
+      type: "sensor_ctrl",
+      clock_srcs: {clk_i: "io", },
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40110000",
     },
     { name: "aes",
       type: "aes",
@@ -446,7 +453,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac", "kmac" ]
+  alert_module: [ "hmac", "kmac", "sensor_ctrl" ]
 
   // generated list of alerts:
   alert: [

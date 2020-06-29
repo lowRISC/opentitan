@@ -46,6 +46,7 @@ filesets:
       - lowrisc:top_earlgrey:pwrmgr_only_reg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:pwrmgr_component
+      - lowrisc:ip:sensor_ctrl
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
