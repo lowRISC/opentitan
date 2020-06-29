@@ -373,6 +373,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
     total_error = 0
 
     for req, rsps in topcfg["inter_module"]["connect"].items():
+        log.info("Checking {}, {}".format(req, rsps))
         error = 0
         # checking the key, value are in correct format
         # Allowed format
@@ -522,12 +523,16 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
     for item in topcfg["inter_module"]["top"] + topcfg["inter_module"][
             "external"]:
         sig_m, sig_s, sig_i = filter_index(item)
+        log.info("look up {} {} {}".format(sig_m, sig_s, sig_i))
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))
             total_error += 1
         sig_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
                                              sig_m, sig_s)
+
+        log.info("Checking sig struct {}".format(sig_struct))
         total_error += check_intermodule_field(sig_struct)
+        log.info("Finished checking sig struct")
 
     return total_error
 
