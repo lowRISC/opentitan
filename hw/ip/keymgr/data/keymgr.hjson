@@ -10,19 +10,19 @@
 
   // Define keymgr <-> kmac / aes / hmac struct packages
   inter_signal_list: [
-    { struct:  "hw_key",      // aes_key_req_t
+    { struct:  "hw_key_req",      // aes_key_req_t
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "hw_key",      // hmac_key_req_t
+    { struct:  "hw_key_req",      // hmac_key_req_t
       type:    "uni",
       name:    "hmac_key",    // hmac_key_o (req)
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "hw_key",      // kmac_key_req_t
+    { struct:  "hw_key_req",      // kmac_key_req_t
       type:    "uni",
       name:    "kmac_key",    // kmac_key_o (req)
       act:     "req",
