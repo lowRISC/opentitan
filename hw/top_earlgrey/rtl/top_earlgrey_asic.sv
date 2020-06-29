@@ -50,12 +50,6 @@ module top_earlgrey_asic (
   // Signal definitions //
   ////////////////////////
 
-  entropy_src_pkg::entropy_src_rng_req_t entropy_src_rng_req;
-  entropy_src_pkg::entropy_src_rng_rsp_t entropy_src_rng_rsp;
-
-  // TODO: Connect to AST Wrapper
-  assign entropy_src_rng_rsp = '0;
-
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -206,6 +200,12 @@ module top_earlgrey_asic (
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
   sensor_ctrl_pkg::ast_aux_t base_ast_aux;
+  entropy_src_pkg::entropy_src_rng_req_t base_ast_entropy_src;
+  entropy_src_pkg::entropy_src_rng_rsp_t ast_base_entropy_src;
+
+  // TODO: Connect to AST Wrapper
+  assign entropy_src_rng_rsp = '0;
+
   logic usb_ref_pulse;
   logic usb_ref_val;
 
@@ -224,8 +224,8 @@ module top_earlgrey_asic (
     .aux_i(base_ast_aux),
     .adc_i('0),
     .adc_o(),
-    .es_i('0),
-    .es_o(),
+    .es_i(base_ast_entropy_src),
+    .es_o(ast_base_entropy_src),
     .alert_i(base_ast_alerts),
     .alert_o(ast_base_alerts),
     .status_o(ast_base_status)
@@ -265,20 +265,20 @@ module top_earlgrey_asic (
     .dio_attr_o      ( dio_attr      ),
 
     // AST connections
-    .sensor_ctrl_ast_host      ( base_ast_bus    ),
-    .sensor_ctrl_ast_dev       ( ast_base_bus    ),
-    .sensor_ctrl_ast_status    ( ast_base_status ),
-    .sensor_ctrl_ast_alert_req ( ast_base_alerts ),
-    .sensor_ctrl_ast_alert_rsp ( base_ast_alerts ),
-    .pwrmgr_pwr_ast_req        ( base_ast_pwr    ),
-    .pwrmgr_pwr_ast_rsp        ( ast_base_pwr    ),
-    .rstmgr_ast                ( ast_base_rst    ),
-    .usbdev_usb_ref_pulse      ( usb_ref_pulse   ),
-    .usbdev_usb_ref_val        ( usb_ref_val     ),
-    .sensor_ctrl_ast_aux       ( base_ast_aux    ),
-    // entropy_src -> AST -> hook-up later
-    // .entropy_src_entropy_src_rng_req (entropy_src_rng_req),
-    // .entropy_src_entropy_src_rng_rsp (entropy_src_rng_rsp),
+    .sensor_ctrl_ast_host            ( base_ast_bus         ),
+    .sensor_ctrl_ast_dev             ( ast_base_bus         ),
+    .sensor_ctrl_ast_status          ( ast_base_status      ),
+    .sensor_ctrl_ast_alert_req       ( ast_base_alerts      ),
+    .sensor_ctrl_ast_alert_rsp       ( base_ast_alerts      ),
+    .pwrmgr_aon_pwr_ast_req          ( base_ast_pwr         ),
+    .pwrmgr_aon_pwr_ast_rsp          ( ast_base_pwr         ),
+    .rstmgr_aon_ast                  ( ast_base_rst         ),
+    .usbdev_aon_usb_ref_pulse        ( usb_ref_pulse        ),
+    .usbdev_aon_usb_ref_val          ( usb_ref_val          ),
+    .sensor_ctrl_ast_aux             ( base_ast_aux         ),
+    .entropy_src_entropy_src_rng_req ( base_ast_entropy_src ),
+    .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
+
     // DFT signals
     .scanmode_i      ( 1'b0          )
   );

@@ -17,17 +17,6 @@ package ast_wrapper_pkg;
     logic data_valid;
   } adc_ast_rsp_t;
 
-
-  typedef struct packed {
-    logic rng_en;
-  } es_ast_req_t;
-
-  typedef struct packed {
-    logic rng_ok;
-    logic [EntropyStreams-1:0] rng_b;
-  } es_ast_rsp_t;
-
-
   typedef struct packed {
     logic vcc_pok;
     logic aon_pok;
