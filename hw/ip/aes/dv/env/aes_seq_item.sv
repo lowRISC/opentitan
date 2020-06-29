@@ -15,6 +15,8 @@ class aes_seq_item extends uvm_sequence_item;
   //  control Knobs                    //
   ///////////////////////////////////////
 
+  // set if this item contains valid information
+  bit             valid = 0;
   // 0: auto mode 1: manual start
   bit             manual_op;
   // 0: output data cannot be overwritten
@@ -117,7 +119,7 @@ class aes_seq_item extends uvm_sequence_item;
   // if ret_celan = 1
   // return 1 if all or none of the registers have been written
   function bit key_clean(bit ret_clean);
-    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_HIGH)
     if(ret_clean) begin
       return ( (&key_vld) || ~(|key_vld));
     end else begin
@@ -142,17 +144,17 @@ class aes_seq_item extends uvm_sequence_item;
   function bit message_start();
     case(mode)
       AES_ECB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_HIGH)
         return (&key_vld);
       end
       AES_CBC: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_LOW)
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
         return (&key_vld && &iv_vld);
       end
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_LOW)
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
         return (&key_vld && &iv_vld);
       end
       default: begin
