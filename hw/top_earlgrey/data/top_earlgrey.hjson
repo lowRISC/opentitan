@@ -446,7 +446,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac" ]
+  alert_module: [ "hmac", "kmac" ]
 
   // generated list of alerts:
   alert: [
