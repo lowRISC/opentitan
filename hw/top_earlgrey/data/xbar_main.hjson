@@ -77,6 +77,12 @@
       reset:     "rst_main_ni",
       pipeline:  "false"
     },
+    { name:      "kmac",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipeline:  "false"
+    },
     { name:      "aes",
       type:      "device",
       clock:     "clk_main_i"
@@ -130,8 +136,8 @@
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr", "csrng", "entropy_src"],
+    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "keymgr", "csrng", "entropy_src"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "aon", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "alert_handler", "nmi_gen", "csrng", "entropy_src"],
+    "aes", "hmac", "kmac", "rv_plic", "alert_handler", "nmi_gen", "csrng", "entropy_src"],
   },
 }

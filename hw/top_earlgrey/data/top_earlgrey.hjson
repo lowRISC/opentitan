@@ -210,6 +210,13 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41110000",
     },
+    { name: "kmac",
+      type: "kmac",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "trans",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x41120000",
+    },
     { name: "rv_plic",
       type: "rv_plic",
       clock_srcs: {clk_i: "main"},
@@ -378,6 +385,8 @@
       'pwrmgr_aon.pwr_rst'  : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'  : ['clkmgr_aon.pwr'],
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
+      'keymgr.kmac_key': ['kmac.keymgr_key']
+      'keymgr.kmac_data': ['kmac.keymgr_data']
     }
 
     // top is to connect to top net/struct.
@@ -421,7 +430,8 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr_aon",
+                     "hmac", "kmac", "alert_handler", "nmi_gen", "usbdev_aon",
+                     "pwrmgr_aon",
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2"]
 
