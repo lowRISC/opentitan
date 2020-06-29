@@ -25,10 +25,10 @@ constexpr char kUsageString[] = R"R( usage options:
   --input=Input image in binary format.
 
 FTDI Options:
-  [--dev_id="vid:pid"] FTDI device ID.
+  [--dev-id="vid:pid"] FTDI device ID.
     vid: Vendor ID in string hex format.
     pid: Product ID in string hex format.
-  [--dev_sn=string] FTDI serial number. Requires --dev_id to be set.
+  [--dev-sn=string] FTDI serial number. Requires --dev-id to be set.
 
 Verilator Options:
   [--verilator=filehandle] Enables Verilator mode with SPI filehandle.)R";
@@ -84,7 +84,7 @@ static void PrintUsage(int argc, char *argv[]) {
 bool ParseDeviceID(const std::string &device_id, SpiFlashOpts *options) {
   size_t token_pos = device_id.find(':');
   if (token_pos == std::string::npos) {
-    std::cerr << "Unable to find device separator ':' in --device_id."
+    std::cerr << "Unable to find device separator ':' in --device-id."
               << std::endl;
     return false;
   }
@@ -108,8 +108,8 @@ bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
   assert(options);
   const struct option long_options[] = {
       {"input", required_argument, nullptr, 'i'},
-      {"dev_id", required_argument, nullptr, 'd'},
-      {"dev_sn", required_argument, nullptr, 'n'},
+      {"dev-id", required_argument, nullptr, 'd'},
+      {"dev-sn", required_argument, nullptr, 'n'},
       {"verilator", required_argument, nullptr, 's'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
