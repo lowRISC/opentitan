@@ -194,15 +194,54 @@ module top_earlgrey_asic (
   );
 
   //////////////////////
+  // AST              //
+  //////////////////////
+  tlul_pkg::tl_h2d_t base_ast_bus;
+  tlul_pkg::tl_d2h_t ast_base_bus;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_alert_rsp_t base_ast_alerts;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
+  ast_wrapper_pkg::ast_clks_t ast_base_clks;
+  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  sensor_ctrl_pkg::ast_aux_t base_ast_aux;
+  logic usb_ref_pulse;
+  logic usb_ref_val;
+
+
+  ast_wrapper ast_wrapper (
+    .clk_ext_i(clk),
+    .por_ni(rst_n),
+    .bus_i(base_ast_bus),
+    .bus_o(ast_base_bus),
+    .pwr_i(base_ast_pwr),
+    .pwr_o(ast_base_pwr),
+    .rst_o(ast_base_rst),
+    .clks_o(ast_base_clks),
+    .usb_ref_pulse_i(usb_ref_pulse),
+    .usb_ref_val_i(usb_ref_val),
+    .aux_i(base_ast_aux),
+    .adc_i('0),
+    .adc_o(),
+    .es_i('0),
+    .es_o(),
+    .alert_i(base_ast_alerts),
+    .alert_o(ast_base_alerts),
+    .status_o(ast_base_status)
+  );
+
+
+  //////////////////////
   // Top-level design //
   //////////////////////
 
   top_earlgrey top_earlgrey (
-    .clk_i           ( clk           ),
-    .rst_ni          ( rst_n         ),
-    .clk_io_i        ( clk           ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
+    .clk_i           ( ast_base_clks.clk_sys ),
+    .rst_ni          ( rst_n                ),
+    .clk_io_i        ( ast_base_clks.clk_io  ),
+    .clk_usb_i       ( ast_base_clks.clk_usb ),
+    .clk_aon_i       ( ast_base_clks.clk_aon ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),
@@ -225,9 +264,21 @@ module top_earlgrey_asic (
     .mio_attr_o      ( mio_attr      ),
     .dio_attr_o      ( dio_attr      ),
 
-    // entropy_src -> AST
-    .entropy_src_entropy_src_rng_req (entropy_src_rng_req),
-    .entropy_src_entropy_src_rng_rsp (entropy_src_rng_rsp),
+    // AST connections
+    .sensor_ctrl_ast_host      ( base_ast_bus    ),
+    .sensor_ctrl_ast_dev       ( ast_base_bus    ),
+    .sensor_ctrl_ast_status    ( ast_base_status ),
+    .sensor_ctrl_ast_alert_req ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp ( base_ast_alerts ),
+    .pwrmgr_pwr_ast_req        ( base_ast_pwr    ),
+    .pwrmgr_pwr_ast_rsp        ( ast_base_pwr    ),
+    .rstmgr_ast                ( ast_base_rst    ),
+    .usbdev_usb_ref_pulse      ( usb_ref_pulse   ),
+    .usbdev_usb_ref_val        ( usb_ref_val     ),
+    .sensor_ctrl_ast_aux       ( base_ast_aux    ),
+    // entropy_src -> AST -> hook-up later
+    // .entropy_src_entropy_src_rng_req (entropy_src_rng_req),
+    // .entropy_src_entropy_src_rng_rsp (entropy_src_rng_rsp),
     // DFT signals
     .scanmode_i      ( 1'b0          )
   );
