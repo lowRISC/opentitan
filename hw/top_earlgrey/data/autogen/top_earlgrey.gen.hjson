@@ -1707,6 +1707,25 @@
       }
     }
     {
+      name: ram_ret
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      type: ram_1p
+      base_addr: 0x18000000
+      size: 0x1000
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_infra
+      }
+    }
+    {
       name: eflash
       clock_srcs:
       {
@@ -1975,6 +1994,10 @@
               base_addr: 0x400C0000
               size_byte: 0x1000
             }
+            {
+              base_addr: 0x18000000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -2142,6 +2165,7 @@
           pwrmgr
           rstmgr
           clkmgr
+          ram_ret
         ]
       }
       nodes:
@@ -2286,6 +2310,23 @@
           [
             {
               base_addr: 0x400C0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: ram_ret
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: ram_1p
+          addr_range:
+          [
+            {
+              base_addr: 0x18000000
               size_byte: 0x1000
             }
           ]

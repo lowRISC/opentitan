@@ -401,6 +401,16 @@ extern "C" {
 #define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x10000u
 
 /**
+ * Memory base address for ram_ret in top earlgrey.
+ */
+#define TOP_EARLGREY_RAM_RET_BASE_ADDR 0x18000000u
+
+/**
+ * Memory size for ram_ret in top earlgrey.
+ */
+#define TOP_EARLGREY_RAM_RET_SIZE_BYTES 0x1000u
+
+/**
  * Memory base address for eflash in top earlgrey.
  */
 #define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000u

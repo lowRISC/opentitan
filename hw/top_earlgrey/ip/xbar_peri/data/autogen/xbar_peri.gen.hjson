@@ -34,6 +34,7 @@
       pwrmgr
       rstmgr
       clkmgr
+      ram_ret
     ]
   }
   nodes:
@@ -178,6 +179,23 @@
       [
         {
           base_addr: 0x400C0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: ram_ret
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: ram_1p
+      addr_range:
+      [
+        {
+          base_addr: 0x18000000
           size_byte: 0x1000
         }
       ]
