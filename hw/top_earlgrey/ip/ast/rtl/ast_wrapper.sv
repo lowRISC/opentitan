@@ -40,8 +40,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
-  input es_ast_req_t es_i,
-  output es_ast_rsp_t es_o,
+  input entropy_src_pkg::entropy_src_rng_req_t es_i,
+  output entropy_src_pkg::entropy_src_rng_rsp_t es_o,
 
   // alerts interface
   input ast_alert_rsp_t alert_i,
@@ -127,7 +127,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .adc_d_val_o(adc_o.data_valid),
 
     // entropy source interface
-    .rng_en_i(es_i.rng_en),
+    .rng_en_i(es_i.rng_enable),
     .rng_ok_o(es_o.rng_ok),
     .rng_b_o(es_o.rng_b),
 
