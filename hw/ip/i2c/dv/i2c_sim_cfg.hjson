@@ -54,6 +54,11 @@
       name: i2c_override
       uvm_test_seq: i2c_override_vseq
     }
+
+    {
+      name: i2c_fifo_watermark
+      uvm_test_seq: i2c_fifo_watermark_vseq
+    }
   ]
 
   // List of regressions.

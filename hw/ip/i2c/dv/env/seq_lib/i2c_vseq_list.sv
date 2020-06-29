@@ -8,3 +8,4 @@
 `include "i2c_sanity_vseq.sv"
 
 `include "i2c_override_vseq.sv"
+`include "i2c_fifo_watermark_vseq.sv"

@@ -9,8 +9,6 @@ class i2c_override_vseq extends i2c_base_vseq;
   rand bit sdaval;
   rand bit txovrden;
 
-  constraint num_trans_c { num_trans inside {[10:20]}; }
-
   `uvm_object_new
 
   virtual task body();
@@ -23,7 +21,7 @@ class i2c_override_vseq extends i2c_base_vseq;
     host_init();
 
     for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
-      `uvm_info(`gfn, $sformatf("\nTransaction %0d", cur_tran), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("\nTransaction %0d", cur_tran), UVM_DEBUG)
       // program to enable OVRD reg
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(sclval)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(sdaval)
