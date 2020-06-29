@@ -172,7 +172,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
               // verify that all 4 data_in and all 8 key are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
                         input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-
+  
               if(input_item.data_in_valid() && input_item.key_clean(1)) begin
                 //clone and add to ref and rec data fifo
                 `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
@@ -194,7 +194,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
               // verify that all 4 data_in and all 8 key  and all 4 IV are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
                                 input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-
+  
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
                 `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
@@ -271,6 +271,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
         endcase // case (input_item.mode)
       end // if (input_item.valid)
+      
 
       // forward item to receive side
       if(ok_to_fwd ) begin
