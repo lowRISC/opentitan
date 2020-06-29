@@ -17,8 +17,8 @@ module kmac
 
 `ifndef KMAC_STANDALONE
   input  keymgr_pkg::hw_key_req_t    keymgr_key_i,
-  input  keymgr_pkg::kmac_data_req_t keymgr_data_req_i,
-  output keymgr_pkg::kmac_data_rsp_t keymgr_data_rsp_o,
+  input  keymgr_pkg::kmac_data_req_t keymgr_data_i,
+  output keymgr_pkg::kmac_data_rsp_t keymgr_data_o,
 `endif // KMAC_STANDALONE
 
   output logic intr_kmac_done_o,
