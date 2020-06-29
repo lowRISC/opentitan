@@ -484,8 +484,7 @@ end
     end else if ((tl_s1n_24_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_24 = 5'd3;
 
-    end else if (((tl_s1n_24_us_h2d.a_address <= (ADDR_MASK_PERI + ADDR_SPACE_PERI)) &&
-       (tl_s1n_24_us_h2d.a_address >= ADDR_SPACE_PERI))) begin
+    end else if ((tl_s1n_24_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_24 = 5'd4;
 
     end else if ((tl_s1n_24_us_h2d.a_address & ~(ADDR_MASK_AON)) == ADDR_SPACE_AON) begin
@@ -535,8 +534,7 @@ end
     end else if ((tl_s1n_38_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_38 = 4'd2;
 
-    end else if (((tl_s1n_38_us_h2d.a_address <= (ADDR_MASK_PERI + ADDR_SPACE_PERI)) &&
-       (tl_s1n_38_us_h2d.a_address >= ADDR_SPACE_PERI))) begin
+    end else if ((tl_s1n_38_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_38 = 4'd3;
 
     end else if ((tl_s1n_38_us_h2d.a_address & ~(ADDR_MASK_AON)) == ADDR_SPACE_AON) begin

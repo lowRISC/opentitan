@@ -183,7 +183,7 @@
       [
         {
           base_addr: 0x40000000
-          size_byte: 0x101000
+          size_byte: 0x200000
         }
       ]
     }

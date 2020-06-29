@@ -193,6 +193,14 @@
 #define TOP_EARLGREY_I2C2_BASE_ADDR 0x400A0000u
 
 /**
+ * Base address for sensor_ctrl peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40110000u
+
+/**
  * Base address for aes peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

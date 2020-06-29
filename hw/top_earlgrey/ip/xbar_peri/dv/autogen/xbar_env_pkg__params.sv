@@ -39,6 +39,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"pattgen", '{
         '{32'h400e0000, 32'h400e0fff}
+    }},
+    '{"sensor_ctrl", '{
+        '{32'h40110000, 32'h4012ffff}
 }}};
 
   // List of Xbar hosts
@@ -54,5 +57,6 @@ tl_host_t xbar_hosts[$] = '{
         "i2c0",
         "i2c1",
         "i2c2",
-        "pattgen"}}
+        "pattgen",
+        "sensor_ctrl"}}
 };
