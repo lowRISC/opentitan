@@ -21,7 +21,7 @@ package csrng_pkg;
   parameter csrng_req_t CSRNG_REQ_DEFAULT = '{
     csrng_req_vld: 1'b0,
     csrng_req_bus:   '0,
-    genbits_rdy:   1'b0 
+    genbits_rdy:   1'b0
   };
 
 
@@ -39,7 +39,7 @@ package csrng_pkg;
     csrng_rsp_ack: 1'b0,
     csrng_rsp_sts: 2'b0,
     genbits_vld:   1'b0,
-    genbits_bus:     '0 
+    genbits_bus:     '0
   };
 
 

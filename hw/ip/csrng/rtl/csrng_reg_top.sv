@@ -93,6 +93,9 @@ module csrng_reg_top (
   logic cs_ctrl_cs_enable_qs;
   logic cs_ctrl_cs_enable_wd;
   logic cs_ctrl_cs_enable_we;
+  logic cs_ctrl_aes_cipher_enable_qs;
+  logic cs_ctrl_aes_cipher_enable_wd;
+  logic cs_ctrl_aes_cipher_enable_we;
   logic [3:0] cs_ctrl_fifo_depth_sts_sel_qs;
   logic [3:0] cs_ctrl_fifo_depth_sts_sel_wd;
   logic cs_ctrl_fifo_depth_sts_sel_we;
@@ -311,6 +314,32 @@ module csrng_reg_top (
 
     // to register interface (read)
     .qs     (cs_ctrl_cs_enable_qs)
+  );
+
+
+  //   F[aes_cipher_enable]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cs_ctrl_aes_cipher_enable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (cs_ctrl_aes_cipher_enable_we),
+    .wd     (cs_ctrl_aes_cipher_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cs_ctrl.aes_cipher_enable.q ),
+
+    // to register interface (read)
+    .qs     (cs_ctrl_aes_cipher_enable_qs)
   );
 
 
@@ -590,6 +619,9 @@ module csrng_reg_top (
   assign cs_ctrl_cs_enable_we = addr_hit[4] & reg_we & ~wr_err;
   assign cs_ctrl_cs_enable_wd = reg_wdata[0];
 
+  assign cs_ctrl_aes_cipher_enable_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cs_ctrl_aes_cipher_enable_wd = reg_wdata[1];
+
   assign cs_ctrl_fifo_depth_sts_sel_we = addr_hit[4] & reg_we & ~wr_err;
   assign cs_ctrl_fifo_depth_sts_sel_wd = reg_wdata[19:16];
 
@@ -640,6 +672,7 @@ module csrng_reg_top (
 
       addr_hit[4]: begin
         reg_rdata_next[0] = cs_ctrl_cs_enable_qs;
+        reg_rdata_next[1] = cs_ctrl_aes_cipher_enable_qs;
         reg_rdata_next[19:16] = cs_ctrl_fifo_depth_sts_sel_qs;
       end
 

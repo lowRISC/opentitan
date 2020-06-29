@@ -75,6 +75,15 @@
                   '''
         },
         {
+            bits: "1",
+            name: "AES_CIPHER_ENABLE",
+            desc: '''
+                  Setting this bit will enable the AES cipher core module. If not set, then commands will
+                  bypass the AES cipher core, but still move through the logical flow of CSRNG. This mode
+                  is primarily for debug purposes.
+                  '''
+        },
+        {
             bits: "19:16",
             name: "FIFO_DEPTH_STS_SEL",
             desc: "This field will select which FIFO depth will be read out for diagnostic purposes."
