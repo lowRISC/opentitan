@@ -37,6 +37,7 @@
       i2c1
       i2c2
       pattgen
+      sensor_ctrl
     ]
   }
   nodes:
@@ -233,6 +234,23 @@
         {
           base_addr: 0x400E0000
           size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: sensor_ctrl
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: sensor_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40110000
+          size_byte: 0x20000
         }
       ]
       xbar: false
