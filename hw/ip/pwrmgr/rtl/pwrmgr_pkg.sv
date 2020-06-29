@@ -140,12 +140,9 @@ package pwrmgr_pkg;
     core_sleeping: 1'b0
   };
 
-  logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
-  logic [HwRstReqs-1:0] rstreqs;
-
   // default value (for dangling ports)
-  parameter WAKEUPS_DEFAULT = '0;
-  parameter RSTREQS_DEFAULT = '0;
+  parameter int WAKEUPS_DEFAULT = '0;
+  parameter int RSTREQS_DEFAULT = '0;
 
   // peripherals to pwrmgr
   typedef struct packed {
