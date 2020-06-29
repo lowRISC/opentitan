@@ -14,6 +14,10 @@ module csrng_main_sm (
   input logic                acmd_avail_i,
   output logic               acmd_accept_o,
   input logic [2:0]          acmd_i,
+  input logic                acmd_eop_i,
+  input logic                ctr_drbg_cmd_req_rdy_i,
+  input logic                flag0_i,
+  input logic                cmd_entropy_avail_i,
   output logic               instant_req_o,
   output logic               reseed_req_o,
   output logic               generate_req_o,
@@ -29,9 +33,6 @@ module csrng_main_sm (
                             UNI = 3'h4
                             } acmd_e;
 
-  acmd_e acmd;
-
-
   typedef enum logic [2:0] {
                             IDLE = 3'h0,
                             INSR = 3'h1,
@@ -43,16 +44,12 @@ module csrng_main_sm (
 
   state_e state_q, state_d;
 
-
-  assign  acmd = acmd_i;
-
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       state_q    <= IDLE;
     end else begin
       state_q    <= state_d;
     end
-
 
   always_comb begin
     state_d = state_q;
@@ -63,26 +60,37 @@ module csrng_main_sm (
     update_req_o = 1'b0;
     uninstant_req_o = 1'b0;
     unique case (state_q)
-//  case (state_q)
+//    case (state_q)
       IDLE: begin
-        if (acmd_avail_i) begin
-          acmd_accept_o = 1'b1;
-          if (acmd == INS) begin
-            state_d = INSR;
-          end else if (acmd == RES) begin
-            state_d = RESR;
-          end else if (acmd == GEN) begin
-            state_d = GENR;
-          end else if (acmd == UPD) begin
-            state_d = UPDR;
-          end else if (acmd == UNI) begin
-            state_d = UNIR;
+        if (ctr_drbg_cmd_req_rdy_i) begin
+          if (acmd_avail_i) begin
+            acmd_accept_o = 1'b1;
+            if (acmd_i == INS) begin
+              if (flag0_i) begin
+                state_d = INSR;
+              end else begin
+                if (cmd_entropy_avail_i) begin
+                  state_d = INSR;
+                end
+              end
+            end else if (acmd_i == RES) begin
+              state_d = RESR;
+            end else if (acmd_i == GEN) begin
+              state_d = GENR;
+            end else if (acmd_i == UPD) begin
+              state_d = UPDR;
+            end else if (acmd_i == UNI) begin
+              state_d = UNIR;
+            end
           end
         end
       end
       INSR: begin
-        instant_req_o = 1'b1;
-        state_d = IDLE;
+        acmd_accept_o = 1'b1;
+        if (acmd_eop_i) begin
+          instant_req_o = 1'b1;
+          state_d = IDLE;
+        end
       end
       RESR: begin
         reseed_req_o = 1'b1;

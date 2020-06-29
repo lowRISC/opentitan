@@ -10,13 +10,18 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:ip:aes
       - lowrisc:ip:entropy_src_pkg
     files:
       - rtl/csrng_pkg.sv
       - rtl/csrng_reg_pkg.sv
       - rtl/csrng_reg_top.sv
-      - rtl/csrng_cmd_stage.sv
       - rtl/csrng_main_sm.sv
+      - rtl/csrng_cmd_stage.sv
+      - rtl/csrng_block_encrypt.sv
+      - rtl/csrng_ctr_drbg_cmd.sv
+      - rtl/csrng_ctr_drbg_upd.sv
+      - rtl/csrng_ctr_drbg_gen.sv
       - rtl/csrng_core.sv
       - rtl/csrng.sv
     file_type: systemVerilogSource

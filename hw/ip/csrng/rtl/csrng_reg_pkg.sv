@@ -50,6 +50,9 @@ package csrng_reg_pkg;
       logic        q;
     } cs_enable;
     struct packed {
+      logic        q;
+    } aes_cipher_enable;
+    struct packed {
       logic [3:0]  q;
     } fifo_depth_sts_sel;
   } csrng_reg2hw_cs_ctrl_reg_t;
@@ -115,11 +118,11 @@ package csrng_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [79:78]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [77:76]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [75:72]
-    csrng_reg2hw_cs_regen_reg_t cs_regen; // [71:71]
-    csrng_reg2hw_cs_ctrl_reg_t cs_ctrl; // [70:66]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [80:79]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [78:77]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [76:73]
+    csrng_reg2hw_cs_regen_reg_t cs_regen; // [72:72]
+    csrng_reg2hw_cs_ctrl_reg_t cs_ctrl; // [71:66]
     csrng_reg2hw_cs_cmd_req_reg_t cs_cmd_req; // [65:33]
     csrng_reg2hw_cs_genbits_reg_t cs_genbits; // [32:0]
   } csrng_reg2hw_t;
