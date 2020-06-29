@@ -21,41 +21,49 @@
 namespace opentitan {
 namespace spiflash {
 
-// Implements the bootstrap SPI frame message.
+/** Implements the bootstrap SPI frame message. */
 struct Frame {
-  // Frame header definition.
+  /** Frame header definition. */
   struct {
-    // SHA2 of the entire frame_t message starting at the `frame_num` offset.
+    /** Hash of the `Frame` message starting at the `frame_num` offset. */
     uint8_t hash[32];
 
-    // Frame number. Starting at 0.
+    /** Frame number. Starting at 0. */
     uint32_t frame_num;
 
-    // Flash target offset.
+    /** Flash target offset. */
     uint32_t offset;
   } hdr;
 
+  /** Frame payload. */
   uint8_t data[1024 - sizeof(hdr)];
 
-  // Returns available the frame available payload size in bytes.
+  /** Returns available the frame available payload size in bytes. */
   size_t PayloadSize() const { return 1024 - sizeof(hdr); }
 };
 
-// Implements SPI flash update protocol.
-//
-// The firmare image is split into frames, and then sent to the SPI device.
-// More details will be added on the ack protocol once implemented.
-// This class is not thread safe due to the spi driver dependency.
+/**
+ * Implements SPI flash update protocol.
+ *
+ * The firmare image is split into frames, and then sent to the SPI device.
+ * More details will be added on the ack protocol once implemented.
+ * This class is not thread safe due to the spi driver dependency.
+ */
 class Updater {
  public:
-  // Updater configuration settings.
+  /** Updater configuration settings. */
   struct Options {
-    // Firmware image in binary format.
+    /** Firmware image in binary format. */
     std::string code;
   };
 
-  // Constructs updater instance with given configuration `options` and `spi`
-  // interface.
+  /**
+   * Constructs updater instance with given configuration `options` and `spi`
+   * interface.
+   *
+   * @param options `Updater` options @see Updater::Options.
+   * @param spi     SPI interface @see SpiInterface.
+   */
   Updater(Options options, std::unique_ptr<SpiInterface> spi)
       : options_(options), spi_(std::move(spi)) {}
   virtual ~Updater() = default;
@@ -64,11 +72,22 @@ class Updater {
   Updater(const Updater &) = delete;
   Updater &operator=(const Updater &) = delete;
 
-  // Runs update flow returning true on success.
+  /**
+   * Runs update flow returning true on success.
+   *
+   * @return true on success, false otherwise.
+   */
   bool Run();
 
  private:
-  // Generates `frames` for `code` image.
+  /**
+   * Generates `frames` from `code` image.
+   *
+   * @param code   software image in binary format.
+   * @param frames output SPI frames.
+   *
+   * @return true on success, false otherwise.
+   */
   bool GenerateFrames(const std::string &code, std::vector<Frame> *frames);
 
   Options options_;
