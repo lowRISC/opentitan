@@ -33,23 +33,25 @@ FTDI Options:
 Verilator Options:
   [--verilator=filehandle] Enables Verilator mode with SPI filehandle.)R";
 
-// SPI flash configuration options.
+/** SPI flash configuration options. */
 struct SpiFlashOpts {
-  // Input file in binary format.
+  /** Input file in binary format. */
   std::string input;
 
-  // Target SPI device handle.
+  /** Target SPI device handle. */
   std::string target;
 
-  // Set to true to target Verilator environment.
+  /** Set to true to target Verilator environment. */
   bool verilator = false;
 
-  // FTDI configuration options.
+  /** FTDI configuration options. */
   FtdiSpiInterface::Options ftdi_options;
 };
 
-// Get |filename| contents and store them in |contents|. Using std::string for
-// |filename| because underlying open file call requires a C string.
+/**
+ * Get `filename` contents and store them in `contents`. Using std::string for
+ * `filename` because underlying open file call requires a C string.
+ */
 bool GetFileContents(const std::string &filename, std::string *contents) {
   assert(contents);
   std::ifstream file_stream(filename, std::ios::in | std::ios::binary);
@@ -65,15 +67,20 @@ bool GetFileContents(const std::string &filename, std::string *contents) {
   return true;
 }
 
-// Prints help menu.
+/** Print help menu. */
 static void PrintUsage(int argc, char *argv[]) {
   assert(argc >= 1);
   std::cerr << argv[0] << kUsageString << std::endl;
 }
 
-// Extracts the vendor and product ID from `device_id` and stores the values
-// in `options`. Returns true on success.
-// This function may throw exceptions.
+/*
+ * Extract the vendor and product ID from `device_id` and store the values
+ * in `options`.
+ *
+ * This function may throw exceptions.
+ *
+ * @return true on success.
+ */
 bool ParseDeviceID(const std::string &device_id, SpiFlashOpts *options) {
   size_t token_pos = device_id.find(':');
   if (token_pos == std::string::npos) {
@@ -94,7 +101,9 @@ bool ParseDeviceID(const std::string &device_id, SpiFlashOpts *options) {
   return true;
 }
 
-// Parse command line arguments and store results in |options|.
+/*
+ * Parse command line arguments and store results in `options`.
+ */
 bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
   assert(options);
   const struct option long_options[] = {
