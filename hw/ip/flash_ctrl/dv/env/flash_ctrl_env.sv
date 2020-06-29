@@ -57,10 +57,11 @@ class flash_ctrl_env extends cip_base_env #(
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
+    // We have a custom design wrapper around the flash controller, so we need to fix the
+    // HDL path root.
+    cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl");
     super.end_of_elaboration_phase(phase);
     cfg.eflash_ral.lock_model();
-    get_csr_addrs(cfg.eflash_ral, cfg.csr_addrs);
-    get_mem_addr_ranges(cfg.eflash_ral, cfg.mem_ranges);
 
     // Set the TL adapter / sequencer to the eflash_map.
     if (cfg.m_eflash_tl_agent_cfg.is_active) begin
