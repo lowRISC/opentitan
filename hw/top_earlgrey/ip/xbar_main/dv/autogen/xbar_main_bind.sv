@@ -74,6 +74,12 @@ module xbar_main_bind;
     .h2d    (tl_hmac_o),
     .d2h    (tl_hmac_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_kmac (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_kmac_o),
+    .d2h    (tl_kmac_i)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_aes (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

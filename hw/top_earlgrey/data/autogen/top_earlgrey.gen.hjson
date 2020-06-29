@@ -63,6 +63,7 @@
         {
           clk_main_aes: main
           clk_main_hmac: main
+          clk_main_kmac: main
           clk_main_keymgr: main
           clk_main_csrng: main
           clk_main_entropy_src: main
@@ -1634,6 +1635,111 @@
       scan: "false"
     }
     {
+      name: kmac
+      type: kmac
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x41120000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_kmac
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: kmac_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: fifo_empty
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: kmac_err
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: sram_uncorrectable
+          width: 1
+          type: alert
+          async: 0
+        }
+        {
+          name: data_parity
+          width: 1
+          type: alert
+          async: 0
+        }
+      ]
+      wakeup_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: hw_key_req
+          type: uni
+          name: keymgr_key
+          act: rcv
+          package: keymgr_pkg
+          inst_name: kmac
+          width: 1
+          top_signame: keymgr_kmac_key
+          index: -1
+        }
+        {
+          struct: kmac_data
+          type: req_rsp
+          name: keymgr_data
+          act: rsp
+          package: keymgr_pkg
+          inst_name: kmac
+          width: 1
+          top_signame: keymgr_kmac_data
+          index: -1
+        }
+      ]
+    }
+    {
       name: rv_plic
       type: rv_plic
       clock_srcs:
@@ -2760,7 +2866,7 @@
       inter_signal_list:
       [
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: aes_key
           act: req
@@ -2769,7 +2875,7 @@
           index: -1
         }
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: hmac_key
           act: req
@@ -2778,12 +2884,15 @@
           index: -1
         }
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: kmac_key
           act: req
           package: keymgr_pkg
           inst_name: keymgr
+          width: 1
+          top_type: broadcast
+          top_signame: keymgr_kmac_key
           index: -1
         }
         {
@@ -2793,6 +2902,8 @@
           act: req
           package: keymgr_pkg
           inst_name: keymgr
+          width: 1
+          top_signame: keymgr_kmac_data
           index: -1
         }
         {
@@ -3123,6 +3234,14 @@
       [
         entropy_src.entropy_src_hw_if
       ]
+      keymgr.kmac_key:
+      [
+        kmac.keymgr_key
+      ]
+      keymgr.kmac_data:
+      [
+        kmac.keymgr_data
+      ]
       pwrmgr_aon.wakeups:
       [
         pinmux_aon.aon_wkup_req
@@ -3182,6 +3301,7 @@
           flash_ctrl
           aes
           hmac
+          kmac
           rv_plic
           alert_handler
           nmi_gen
@@ -3199,6 +3319,7 @@
           flash_ctrl
           aes
           hmac
+          kmac
           rv_plic
           alert_handler
           nmi_gen
@@ -3430,6 +3551,23 @@
           [
             {
               base_addr: 0x41110000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: kmac
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: "false"
+          inst_type: kmac
+          addr_range:
+          [
+            {
+              base_addr: 0x41120000
               size_byte: 0x1000
             }
           ]
@@ -3961,6 +4099,7 @@
     flash_ctrl
     keymgr
     hmac
+    kmac
     alert_handler
     nmi_gen
     usbdev_aon
@@ -4298,6 +4437,45 @@
       ]
       type: interrupt
       module_name: hmac
+    }
+    {
+      name: kmac_kmac_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_fifo_empty
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_kmac_err
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: kmac
     }
     {
       name: alert_handler_classa
@@ -5291,6 +5469,7 @@
   alert_module:
   [
     hmac
+    kmac
   ]
   alert:
   [
@@ -5300,6 +5479,20 @@
       type: alert
       async: 0
       module_name: hmac
+    }
+    {
+      name: kmac_sram_uncorrectable
+      width: 1
+      type: alert
+      async: 0
+      module_name: kmac
+    }
+    {
+      name: kmac_data_parity
+      width: 1
+      type: alert
+      async: 0
+      module_name: kmac
     }
   ]
   pinmux:
@@ -5900,6 +6093,28 @@
         index: -1
       }
       {
+        struct: hw_key_req
+        type: uni
+        name: keymgr_key
+        act: rcv
+        package: keymgr_pkg
+        inst_name: kmac
+        width: 1
+        top_signame: keymgr_kmac_key
+        index: -1
+      }
+      {
+        struct: kmac_data
+        type: req_rsp
+        name: keymgr_data
+        act: rsp
+        package: keymgr_pkg
+        inst_name: kmac
+        width: 1
+        top_signame: keymgr_kmac_data
+        index: -1
+      }
+      {
         struct: lc_pinmux_strap
         type: req_rsp
         name: lc_pinmux_strap
@@ -6131,7 +6346,7 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: aes_key
         act: req
@@ -6140,7 +6355,7 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: hmac_key
         act: req
@@ -6149,12 +6364,15 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: kmac_key
         act: req
         package: keymgr_pkg
         inst_name: keymgr
+        width: 1
+        top_type: broadcast
+        top_signame: keymgr_kmac_key
         index: -1
       }
       {
@@ -6164,6 +6382,8 @@
         act: req
         package: keymgr_pkg
         inst_name: keymgr
+        width: 1
+        top_signame: keymgr_kmac_data
         index: -1
       }
       {
@@ -6343,6 +6563,27 @@
         package: entropy_src_pkg
         struct: entropy_src_hw_if_rsp
         signame: csrng_entropy_src_hw_if_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: keymgr_pkg
+        struct: hw_key_req
+        signame: keymgr_kmac_key
+        width: 1
+        type: uni
+      }
+      {
+        package: keymgr_pkg
+        struct: kmac_data_req
+        signame: keymgr_kmac_data_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: keymgr_pkg
+        struct: kmac_data_rsp
+        signame: keymgr_kmac_data_rsp
         width: 1
         type: req_rsp
       }

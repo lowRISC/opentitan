@@ -31,6 +31,9 @@ tl_device_t xbar_devices[$] = '{
     '{"hmac", '{
         '{32'h41110000, 32'h41110fff}
     }},
+    '{"kmac", '{
+        '{32'h41120000, 32'h41120fff}
+    }},
     '{"aes", '{
         '{32'h41100000, 32'h41100fff}
     }},
@@ -71,6 +74,7 @@ tl_host_t xbar_hosts[$] = '{
         "flash_ctrl",
         "aes",
         "hmac",
+        "kmac",
         "rv_plic",
         "alert_handler",
         "nmi_gen",
@@ -87,6 +91,7 @@ tl_host_t xbar_hosts[$] = '{
         "flash_ctrl",
         "aes",
         "hmac",
+        "kmac",
         "rv_plic",
         "alert_handler",
         "nmi_gen",

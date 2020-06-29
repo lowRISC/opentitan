@@ -45,6 +45,7 @@
       flash_ctrl
       aes
       hmac
+      kmac
       rv_plic
       alert_handler
       nmi_gen
@@ -62,6 +63,7 @@
       flash_ctrl
       aes
       hmac
+      kmac
       rv_plic
       alert_handler
       nmi_gen
@@ -229,6 +231,23 @@
       [
         {
           base_addr: 0x41110000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: kmac
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: kmac
+      addr_range:
+      [
+        {
+          base_addr: 0x41120000
           size_byte: 0x1000
         }
       ]

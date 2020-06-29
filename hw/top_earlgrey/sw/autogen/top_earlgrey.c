@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[133] = {
+    top_earlgrey_plic_interrupt_for_peripheral[136] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -69,6 +69,9 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdHmacHmacDone] = kTopEarlgreyPlicPeripheralHmac,
   [kTopEarlgreyPlicIrqIdHmacFifoEmpty] = kTopEarlgreyPlicPeripheralHmac,
   [kTopEarlgreyPlicIrqIdHmacHmacErr] = kTopEarlgreyPlicPeripheralHmac,
+  [kTopEarlgreyPlicIrqIdKmacKmacDone] = kTopEarlgreyPlicPeripheralKmac,
+  [kTopEarlgreyPlicIrqIdKmacFifoEmpty] = kTopEarlgreyPlicPeripheralKmac,
+  [kTopEarlgreyPlicIrqIdKmacKmacErr] = kTopEarlgreyPlicPeripheralKmac,
   [kTopEarlgreyPlicIrqIdAlertHandlerClassa] = kTopEarlgreyPlicPeripheralAlertHandler,
   [kTopEarlgreyPlicIrqIdAlertHandlerClassb] = kTopEarlgreyPlicPeripheralAlertHandler,
   [kTopEarlgreyPlicIrqIdAlertHandlerClassc] = kTopEarlgreyPlicPeripheralAlertHandler,

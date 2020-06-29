@@ -209,6 +209,8 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_main_aes_en;
   logic clk_main_hmac_hint;
   logic clk_main_hmac_en;
+  logic clk_main_kmac_hint;
+  logic clk_main_kmac_en;
   logic clk_main_keymgr_hint;
   logic clk_main_keymgr_en;
   logic clk_main_csrng_hint;
@@ -252,7 +254,25 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_hmac)
   );
 
-  assign clk_main_keymgr_en = clk_main_keymgr_hint | ~status_i.idle[2];
+  assign clk_main_kmac_en = clk_main_kmac_hint | ~status_i.idle[2];
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_main_kmac_hint_sync (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .d(reg2hw.clk_hints.clk_main_kmac_hint.q),
+    .q(clk_main_kmac_hint)
+  );
+
+  prim_clock_gating i_clk_main_kmac_cg (
+    .clk_i(clk_main_i),
+    .en_i(clk_main_kmac_en & clk_main_en),
+    .test_en_i(dft_i.test_en),
+    .clk_o(clocks_o.clk_main_kmac)
+  );
+
+  assign clk_main_keymgr_en = clk_main_keymgr_hint | ~status_i.idle[3];
 
   prim_flop_2sync #(
     .Width(1)
@@ -270,7 +290,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_keymgr)
   );
 
-  assign clk_main_csrng_en = clk_main_csrng_hint | ~status_i.idle[3];
+  assign clk_main_csrng_en = clk_main_csrng_hint | ~status_i.idle[4];
 
   prim_flop_2sync #(
     .Width(1)
@@ -288,7 +308,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_csrng)
   );
 
-  assign clk_main_entropy_src_en = clk_main_entropy_src_hint | ~status_i.idle[4];
+  assign clk_main_entropy_src_en = clk_main_entropy_src_hint | ~status_i.idle[5];
 
   prim_flop_2sync #(
     .Width(1)
@@ -312,6 +332,8 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.clk_main_aes_val.d = clk_main_aes_en;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_hmac_val.d = clk_main_hmac_en;
+  assign hw2reg.clk_hints_status.clk_main_kmac_val.de = 1'b1;
+  assign hw2reg.clk_hints_status.clk_main_kmac_val.d = clk_main_kmac_en;
   assign hw2reg.clk_hints_status.clk_main_keymgr_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_keymgr_val.d = clk_main_keymgr_en;
   assign hw2reg.clk_hints_status.clk_main_csrng_val.de = 1'b1;

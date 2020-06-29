@@ -136,6 +136,15 @@
         }
         {
           bits: "2",
+          name: "CLK_MAIN_KMAC_HINT",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_KMAC can be disabled.
+            1 CLK_MAIN_KMAC is enabled.
+          '''
+        }
+        {
+          bits: "3",
           name: "CLK_MAIN_KEYMGR_HINT",
           resval: 1,
           desc: '''
@@ -144,7 +153,7 @@
           '''
         }
         {
-          bits: "3",
+          bits: "4",
           name: "CLK_MAIN_CSRNG_HINT",
           resval: 1,
           desc: '''
@@ -153,7 +162,7 @@
           '''
         }
         {
-          bits: "4",
+          bits: "5",
           name: "CLK_MAIN_ENTROPY_SRC_HINT",
           resval: 1,
           desc: '''
@@ -196,6 +205,15 @@
         }
         {
           bits: "2",
+          name: "CLK_MAIN_KMAC_VAL",
+          resval: 1,
+          desc: '''
+            0 CLK_MAIN_KMAC is disabled.
+            1 CLK_MAIN_KMAC is enabled.
+          '''
+        }
+        {
+          bits: "3",
           name: "CLK_MAIN_KEYMGR_VAL",
           resval: 1,
           desc: '''
@@ -204,7 +222,7 @@
           '''
         }
         {
-          bits: "3",
+          bits: "4",
           name: "CLK_MAIN_CSRNG_VAL",
           resval: 1,
           desc: '''
@@ -213,7 +231,7 @@
           '''
         }
         {
-          bits: "4",
+          bits: "5",
           name: "CLK_MAIN_ENTROPY_SRC_VAL",
           resval: 1,
           desc: '''

@@ -102,6 +102,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_aes_d_d2h;
   tl_h2d_t  tl_hmac_d_h2d;
   tl_d2h_t  tl_hmac_d_d2h;
+  tl_h2d_t  tl_kmac_d_h2d;
+  tl_d2h_t  tl_kmac_d_d2h;
   tl_h2d_t  tl_rv_plic_d_h2d;
   tl_d2h_t  tl_rv_plic_d_d2h;
   tl_h2d_t  tl_pinmux_aon_d_h2d;
@@ -201,6 +203,7 @@ module top_earlgrey #(
   logic        cio_i2c2_scl_en_d2p;
   // aes
   // hmac
+  // kmac
   // rv_plic
   // pinmux_aon
   // padctrl_aon
@@ -267,7 +270,7 @@ module top_earlgrey #(
   // entropy_src
 
 
-  logic [132:0]  intr_vector;
+  logic [135:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -345,6 +348,9 @@ module top_earlgrey #(
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
+  logic intr_kmac_kmac_done;
+  logic intr_kmac_fifo_empty;
+  logic intr_kmac_kmac_err;
   logic intr_alert_handler_classa;
   logic intr_alert_handler_classb;
   logic intr_alert_handler_classc;
@@ -407,6 +413,9 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_aon_pwr_clk_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
+  keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
+  keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
+  keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
   logic       pwrmgr_aon_wakeups;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_aon_cpu;
@@ -926,6 +935,29 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
 
+  kmac u_kmac (
+      .tl_i (tl_kmac_d_h2d),
+      .tl_o (tl_kmac_d_d2h),
+
+      // Interrupt
+      .intr_kmac_done_o  (intr_kmac_kmac_done),
+      .intr_fifo_empty_o (intr_kmac_fifo_empty),
+      .intr_kmac_err_o   (intr_kmac_kmac_err),
+
+      // [1]: sram_uncorrectable
+      // [2]: data_parity
+      .alert_tx_o  ( alert_tx[2:1] ),
+      .alert_rx_i  ( alert_rx[2:1] ),
+
+      // Inter-module signals
+      .keymgr_key_i(keymgr_kmac_key),
+      .keymgr_data_i(keymgr_kmac_data_req),
+      .keymgr_data_o(keymgr_kmac_data_rsp),
+
+      .clk_i (clkmgr_aon_clocks.clk_main_kmac),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n)
+  );
+
   rv_plic u_rv_plic (
       .tl_i (tl_rv_plic_d_h2d),
       .tl_o (tl_rv_plic_d_d2h),
@@ -1217,9 +1249,9 @@ module top_earlgrey #(
       // Inter-module signals
       .aes_key_o(),
       .hmac_key_o(),
-      .kmac_key_o(),
-      .kmac_data_o(),
-      .kmac_data_i(keymgr_pkg::KMAC_DATA_RSP_DEFAULT),
+      .kmac_key_o(keymgr_kmac_key),
+      .kmac_data_o(keymgr_kmac_data_req),
+      .kmac_data_i(keymgr_kmac_data_rsp),
       .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
       .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
       .flash_i(keymgr_pkg::FLASH_KEY_DEFAULT),
@@ -1346,6 +1378,9 @@ module top_earlgrey #(
       intr_alert_handler_classc,
       intr_alert_handler_classb,
       intr_alert_handler_classa,
+      intr_kmac_kmac_err,
+      intr_kmac_fifo_empty,
+      intr_kmac_kmac_done,
       intr_hmac_hmac_err,
       intr_hmac_fifo_empty,
       intr_hmac_hmac_done,
@@ -1402,6 +1437,8 @@ module top_earlgrey #(
     .tl_flash_ctrl_i    (tl_flash_ctrl_d_d2h),
     .tl_hmac_o          (tl_hmac_d_h2d),
     .tl_hmac_i          (tl_hmac_d_d2h),
+    .tl_kmac_o          (tl_kmac_d_h2d),
+    .tl_kmac_i          (tl_kmac_d_d2h),
     .tl_aes_o           (tl_aes_d_h2d),
     .tl_aes_i           (tl_aes_d_d2h),
     .tl_keymgr_o        (tl_keymgr_d_h2d),
