@@ -422,6 +422,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
                      "hmac", "alert_handler", "nmi_gen", "usbdev_aon", "pwrmgr_aon",
+                     "csrng", "entropy_src",
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2"]
 

@@ -267,7 +267,7 @@ module top_earlgrey #(
   // entropy_src
 
 
-  logic [132:0]  intr_vector;
+  logic [138:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -1321,6 +1321,12 @@ module top_earlgrey #(
       intr_uart1_tx_empty,
       intr_uart1_rx_watermark,
       intr_uart1_tx_watermark,
+      intr_entropy_src_es_fifo_err,
+      intr_entropy_src_es_apt_failed,
+      intr_entropy_src_es_rct_failed,
+      intr_entropy_src_es_entropy_valid,
+      intr_csrng_cs_fifo_err,
+      intr_csrng_cs_cmd_req_done,
       intr_pwrmgr_aon_wakeup,
       intr_usbdev_aon_connected,
       intr_usbdev_aon_frame,

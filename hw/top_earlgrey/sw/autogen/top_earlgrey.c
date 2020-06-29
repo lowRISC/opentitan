@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[133] = {
+    top_earlgrey_plic_interrupt_for_peripheral[139] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -94,6 +94,12 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdUsbdevAonFrame] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdUsbdevAonConnected] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdPwrmgrAonWakeup] = kTopEarlgreyPlicPeripheralPwrmgrAon,
+  [kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdCsrngCsFifoErr] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid] = kTopEarlgreyPlicPeripheralEntropySrc,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsRctFailed] = kTopEarlgreyPlicPeripheralEntropySrc,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsAptFailed] = kTopEarlgreyPlicPeripheralEntropySrc,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsFifoErr] = kTopEarlgreyPlicPeripheralEntropySrc,
   [kTopEarlgreyPlicIrqIdUart1TxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1RxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1TxEmpty] = kTopEarlgreyPlicPeripheralUart1,

@@ -3965,6 +3965,8 @@
     nmi_gen
     usbdev_aon
     pwrmgr_aon
+    csrng
+    entropy_src
     uart1
     uart2
     uart3
@@ -4623,6 +4625,84 @@
       ]
       type: interrupt
       module_name: pwrmgr_aon
+    }
+    {
+      name: csrng_cs_cmd_req_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: csrng_cs_fifo_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: entropy_src_es_entropy_valid
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_es_rct_failed
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_es_apt_failed
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_es_fifo_err
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: entropy_src
     }
     {
       name: uart1_tx_watermark
