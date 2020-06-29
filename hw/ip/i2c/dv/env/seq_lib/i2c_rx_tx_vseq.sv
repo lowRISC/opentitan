@@ -9,46 +9,29 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   uint total_rd_bytes = 0;
 
-  virtual task host_init();
-    super.host_init();
-
-    // diable override
-    ral.ovrd.txovrden.set(1'b0);
-    csr_update(ral.ovrd);
-    // reset and set level of rx and fmt fifos
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rxilvl)
-    ral.fifo_ctrl.rxrst.set(1'b1);
-    ral.fifo_ctrl.fmtrst.set(1'b1);
-    ral.fifo_ctrl.rxilvl.set(rxilvl);
-    ral.fifo_ctrl.fmtilvl.set(fmtilvl);
-    csr_update(ral.fifo_ctrl);
-
-    //enable interrupt
-    if (do_interrupt) begin
-      csr_wr(.csr(ral.intr_enable), .value({TL_DW{1'b1}}));
-    end
-  endtask : host_init
-
-  virtual task host_send_trans(int num_trans);
+  virtual task host_send_trans(int num_trans, string trans_type = "");
     bit last_tran;
 
-    // setup config
-    force_use_incorrect_config = 1'b0;
     fmt_item = new("fmt_item");
     for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
       // re-programming timing registers for the first transaction
       // or when the previous transaction is completed
       if (fmt_item.stop || cur_tran == 1) begin
+        under_program_regs = 1'b1;
         `DV_CHECK_RANDOMIZE_FATAL(this)
+        // if trans_type is not empty (default), then rw_bit is overrided
+        // otherwise, rw_bit is randomized
+        rw_bit = (trans_type  == "WriteOnly") ? 1'b0 :
+                 ((trans_type == "ReadOnly")  ? 1'b1 : rw_bit);
         get_timing_values();
-        program_timing_regs();
+        program_registers();
+        under_program_regs = 1'b0;
       end
 
-      // program address for
-      if ((cur_tran == 1'b1) ||                       // first read
-          (!fmt_item.read)   ||                       // write trans.
-          (fmt_item.read && !fmt_item.rcont)) begin   // non-chained reads
+      // program address for folowing transaction types
+      if ((cur_tran == 1'b1) ||                       // first read transaction
+          (!fmt_item.read)   ||                       // write transactions
+          (fmt_item.read && !fmt_item.rcont)) begin   // non-chained read transactions
         host_program_target_address();
       end
 
@@ -86,6 +69,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   virtual task host_read_trans(bit last_tran);
     uint real_rd_bytes;
+    bit rxfull = 1'b0;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_rd_bytes)
     fork
@@ -113,16 +97,22 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         program_format_flag(fmt_item, "program number of bytes to read");
       end
       begin
-        if (!cfg.do_rd_overflow) begin
-          // if not a chained read, read out data sent over rx_fifo
-          while (!fmt_item.rcont && total_rd_bytes > 0) begin
-            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
-            csr_rd(.ptr(ral.rdata), .value(rd_data));
-            total_rd_bytes--;
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
-            cfg.m_i2c_agent_cfg.vif.wait_for_dly(rx_fifo_access_dly);
+        do begin
+          csr_rd(.ptr(ral.status.rxfull), .value(rxfull));
+          // if delay_read_rx_until_full is unset, rx_fifo is quickly filled up to full
+          // so watermark/overflow interrupt could be deterministically triggered
+          // if delay_read_rx_until_full is set or rx_fifo is full, start reading data
+          if (delay_read_rx_until_full || rxfull) begin
+            // if not a chained read, read out data sent over rx_fifo
+            while (!fmt_item.rcont && total_rd_bytes > 0) begin
+              csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
+              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
+              cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
+              csr_rd(.ptr(ral.rdata), .value(rd_data));
+              total_rd_bytes--;
+            end
           end
-        end
+        end while (!delay_read_rx_until_full && !rxfull);
       end
     join
   endtask : host_read_trans
@@ -150,28 +140,44 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   // read interrupts and randomly clear interrupts if set
   virtual task process_interrupts();
-    bit [TL_DW-1:0] intr_status, intr_clear;
+    bit [TL_DW-1:0] intr_state, intr_clear;
 
     // read interrupt
-    csr_rd(.ptr(ral.intr_state), .value(intr_status));
-    // clear interrupt, randomly clear the interrupt that is set, and
-    // don't clear the interrupt which isn't set
+    csr_rd(.ptr(ral.intr_state), .value(intr_state));
+    // clear interrupt if it is set
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(intr_clear,
                                        foreach (intr_clear[i]) {
-                                           intr_clear[i] -> intr_status[i] == 1;
+                                           intr_state[i] -> intr_clear[i] == 1;
                                        })
+
+    if (bit'(get_field_val(ral.intr_state.fmt_watermark, intr_clear))) begin
+      `uvm_info(`gfn, "\nClearing fmt_watermark", UVM_DEBUG)
+    end
+    if (bit'(get_field_val(ral.intr_state.rx_watermark, intr_clear))) begin
+      `uvm_info(`gfn, "\nClearing rx_watermark", UVM_DEBUG)
+    end
+
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(access_intr_dly)
     cfg.clk_rst_vif.wait_clks(access_intr_dly);
     csr_wr(.csr(ral.intr_state), .value(intr_clear));
   endtask : process_interrupts
 
+  // TODO: This task could be extended along with V2 test development
+  virtual task clear_interrupt(i2c_intr_e intr, bit verify_clear = 1'b1);
+    csr_wr(.csr(ral.intr_state), .value(1 << intr));
+    if (verify_clear) begin
+      case (intr)
+        FmtWatermark: csr_spinwait(.ptr(ral.intr_state.fmt_watermark), .exp_data(1'b0));
+        RxWatermark:  csr_spinwait(.ptr(ral.intr_state.rx_watermark), .exp_data(1'b0));
+        default: `uvm_fatal(`gfn, "Invalid intr input")
+      endcase
+    end
+  endtask : clear_interrupt
+
   virtual task post_start();
-    bit [TL_DW-1:0] intr_status;
-
     do_dut_shutdown = 0;
-
-    // TODO: tempraly disable below line (clear all interrupt since sda_interference and
-    // scl_interference are incorrectly asserted (to be fixed in other PR)
+    // TODO: tempraly disable the execution of clear_all_interrupt task due to
+    // incorrecly assertions of sda_interference and scl_interference (to be fixed with other PR)
     //super.post_start();
   endtask : post_start
 
