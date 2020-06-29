@@ -95,9 +95,11 @@ module prim_gate_gen #(
 
     for (genvar l = 0; l < NumInnerRounds; l++) begin : gen_inner
       // 2bit rotation + sbox layer
-      assign inner_data[l+1] = prim_cipher_pkg::sbox4_32bit({inner_data[l][1:0],
-                                                             inner_data[l][DataWidth-1:2]},
+      logic [31:0] comp_data;
+      assign comp_data = prim_cipher_pkg::sbox4_32bit(32'({inner_data[l][1:0],
+                                                             inner_data[l][DataWidth-1:2]}),
                                                              prim_cipher_pkg::PRINCE_SBOX4);
+      assign inner_data[l+1] = comp_data[DataWidth-1:0];
     end
 
     assign regs_d[k] = inner_data[NumInnerRounds];
