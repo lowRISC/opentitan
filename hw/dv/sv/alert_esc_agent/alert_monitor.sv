@@ -26,15 +26,10 @@ class alert_monitor extends alert_esc_base_monitor;
     join_none
   endtask : run_phase
 
-  virtual task reset_thread();
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      under_reset = 1;
-      under_ping_rsp = 0;
-      @(posedge cfg.vif.rst_n);
-      under_reset = 0;
-    end
-  endtask : reset_thread
+  virtual function void reset_signals();
+    under_reset = 1;
+    under_ping_rsp = 0;
+  endfunction : reset_signals
 
   virtual task ping_thread();
     alert_esc_seq_item req;

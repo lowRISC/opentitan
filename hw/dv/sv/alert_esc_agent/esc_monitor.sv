@@ -25,6 +25,10 @@ class esc_monitor extends alert_esc_base_monitor;
     join_none
   endtask : run_phase
 
+  virtual function void reset_signals();
+    under_esc_ping = 0;
+  endfunction
+
   virtual task esc_thread();
     alert_esc_seq_item req, req_clone;
     logic esc_p = get_esc();
@@ -88,10 +92,10 @@ class esc_monitor extends alert_esc_base_monitor;
   virtual task unexpected_resp_thread();
     alert_esc_seq_item req;
     forever @(cfg.vif.monitor_cb) begin
-      while (get_esc() === 1'b0 && !under_esc_ping && !under_reset) begin
+      while (get_esc() === 1'b0 && !under_esc_ping) begin
         @(cfg.vif.monitor_cb);
         if (cfg.vif.monitor_cb.esc_rx.resp_p === 1'b1 &&
-            cfg.vif.monitor_cb.esc_rx.resp_n === 1'b0) begin
+            cfg.vif.monitor_cb.esc_rx.resp_n === 1'b0 && !under_reset) begin
           req = alert_esc_seq_item::type_id::create("req");
           req.alert_esc_type = AlertEscIntFail;
           alert_esc_port.write(req);
