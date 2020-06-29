@@ -22,3 +22,4 @@ xbar_aon dut(
 `CONNECT_TL_DEVICE_IF(pinmux_aon)
 `CONNECT_TL_DEVICE_IF(padctrl_aon)
 `CONNECT_TL_DEVICE_IF(usbdev_aon)
+`CONNECT_TL_DEVICE_IF(ram_ret)

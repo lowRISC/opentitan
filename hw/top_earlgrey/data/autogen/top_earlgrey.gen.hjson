@@ -3291,6 +3291,25 @@
       }
     }
     {
+      name: ram_ret
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: sys_io
+      }
+      type: ram_1p
+      base_addr: 0x40510000
+      size: 0x1000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_infra
+      }
+    }
+    {
       name: eflash
       clock_srcs:
       {
@@ -3643,6 +3662,10 @@
             }
             {
               base_addr: 0x40500000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40510000
               size_byte: 0x1000
             }
           ]
@@ -4096,6 +4119,7 @@
           padctrl_aon
           usbdev_aon
           rbox_aon
+          ram_ret
         ]
       }
       nodes:
@@ -4228,6 +4252,23 @@
           ]
           xbar: false
           pipeline_byp: "true"
+        }
+        {
+          name: ram_ret
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline_byp: "true"
+          inst_type: ram_1p
+          addr_range:
+          [
+            {
+              base_addr: 0x40510000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline: "true"
         }
       ]
       clock: clk_aon_i
