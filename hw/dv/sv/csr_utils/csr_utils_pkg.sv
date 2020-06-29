@@ -63,7 +63,6 @@ package csr_utils_pkg;
   function automatic void get_csr_addrs(input uvm_reg_block ral, ref uvm_reg_addr_t csr_addrs[$]);
     uvm_reg csrs[$];
     ral.get_registers(csrs);
-    csr_addrs.delete();
     foreach (csrs[i]) begin
       csr_addrs.push_back(csrs[i].get_address());
     end

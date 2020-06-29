@@ -20,9 +20,6 @@
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson"
 
-  // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/ip/flash_ctrl/data/flash_ctrl.hjson"
-
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
@@ -53,9 +50,9 @@
 
   // List of regressions.
   regressions: [
-    {
-      name: sanity
-      tests: ["flash_ctrl_sanity"]
-    }
+    //{
+    //  name: sanity
+    //  tests: ["flash_ctrl_sanity"]
+    //}
   ]
 }

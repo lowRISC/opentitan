@@ -46,7 +46,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
     eflash_ral = flash_ctrl_eflash_reg_block::type_id::create("eflash_ral");
     // TODO: randomize upper bits of the memory
     eflash_ral.build(0, null);
-    ral_models.push_back(eflash_ral);
   endfunction
 
 endclass

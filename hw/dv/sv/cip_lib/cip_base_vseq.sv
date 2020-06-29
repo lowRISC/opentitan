@@ -345,7 +345,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         csr_wr(.csr(intr_state_csrs[i]), .value(data));
         csr_rd(.ptr(intr_state_csrs[i]), .value(data));
         if (!cfg.under_reset) `DV_CHECK_EQ(data, 0)
-        else                  break;
+        else break;
       end
     end
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
