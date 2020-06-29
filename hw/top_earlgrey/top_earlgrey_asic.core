@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:ibex:ibex_tracer:0.1
+      - lowrisc:systems:ast
     files:
       - rtl/top_earlgrey_asic.sv
     file_type: systemVerilogSource
