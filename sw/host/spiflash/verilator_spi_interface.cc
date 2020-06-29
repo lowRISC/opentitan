@@ -18,11 +18,11 @@ namespace opentitan {
 namespace spiflash {
 namespace {
 
-// Required delay to synchronize transactions with simulation environment.
 // TODO: If transmission is not successful, adapt this by an argument.
+/** Required delay to synchronize transactions with simulation environment. */
 constexpr int kWriteReadDelay = 20000000;
 
-// Configure |fd| as a serial port with baud rate 9600.
+/** Configure `fd` as a serial port with baud rate 9600. */
 bool SetTermOpts(int fd) {
   struct termios options;
   if (tcgetattr(fd, &options) != 0) {
@@ -42,9 +42,11 @@ bool SetTermOpts(int fd) {
   return true;
 }
 
-// Returns file handle on success, or nullopt on failure. This function
-// configures de file handle to behave as a serial port with baud rate 9600,
-// which is the baud rate supported by Verilator.
+/**
+ * Returns file handle on success, or -1 on failure. This function
+ * configures de file handle to behave as a serial port with baud rate 9600,
+ * which is the baud rate supported by Verilator.
+ */
 int OpenDevice(const std::string &filename) {
   int fd = open(filename.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_CLOEXEC);
   if (fd < 0) {
@@ -58,8 +60,10 @@ int OpenDevice(const std::string &filename) {
   return fd;
 }
 
-// Reads |size| bytes into |rx| buffer from |fd|. Returns the number of bytes
-// read.
+/**
+ * Reads `size` bytes into `rx` buffer from `fd`. Returns the number of bytes
+ * read.
+ */
 size_t ReadBytes(int fd, uint8_t *rx, size_t size) {
   size_t bytes_read = 0;
   while (bytes_read != size) {

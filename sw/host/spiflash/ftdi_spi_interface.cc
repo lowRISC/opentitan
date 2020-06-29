@@ -24,19 +24,22 @@ namespace opentitan {
 namespace spiflash {
 namespace {
 
+/** FTDI MPSSE GPIO Mappings */
 enum FtdiGpioMapping {
-  // SRST_N reset.
+  /** SRST_N reset. */
   kGpioJtagSrstN = GPIOL1,
 
-  // JTAG SPI_N select signal.
+  /** JTAG SPI_N select signal. */
   kGpioJtagSpiN = GPIOL2,
 
-  // Bootstrap pin.
+  /** Bootstrap pin. */
   kBootstrapH = GPIOL3,
 };
 
-// Resets the target to go back to boot_rom. Assumes boot_rom will enter
-// bootstrap mode.
+/**
+ * Resets the target to go back to boot_rom. Assumes boot_rom will enter
+ * bootstrap mode.
+ */
 void ResetTarget(struct mpsse_context *ctx) {
   // Set bootstrap pin high
   PinHigh(ctx, kBootstrapH);
@@ -54,8 +57,10 @@ void ResetTarget(struct mpsse_context *ctx) {
 }
 }  // namespace
 
-// Wrapper struct used to hide mpsse_context since incomplete C struct
-// declarations don't play in forward declarations.
+/**
+ * Wrapper struct used to hide mpsse_context since incomplete C struct
+ * declarations don't play in forward declarations.
+ */
 struct MpsseHandle {
   struct mpsse_context *ctx;
 
