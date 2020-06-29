@@ -42,7 +42,7 @@ module pattgen (
     .devmode_i (1'b0)
   );
 
-	// Pattgen core
+  // Pattgen core
   pattgen_core pattgen_core (
     .clk_i,
     .rst_ni,
