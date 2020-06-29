@@ -82,13 +82,19 @@
       clock:    "clk_aon_i",
       reset:    "rst_aon_ni",
       pipeline: "false"
+    },
+    { name:     "ram_ret"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline_byp: "true"
     }
   ]
 
   connections: {
     main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
-            "rbox_aon",
+            "rbox_aon", "ram_ret"
             // "dcd_aon", "aontimer_aon"
     ]
   }
