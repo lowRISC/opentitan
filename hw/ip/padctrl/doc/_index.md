@@ -62,11 +62,7 @@ Localparam     | Default (Min, Max)    | Description
 ---------------|-----------------------|---------------
 NMioPads       | 4 (1, -)              | Number of muxed output pads.
 NDioPads       | 16 (1, -)             | Number of dedicated output pads.
-AttrDw         | 8 (6, -)              | Width of the pad attribute vector.
-
-In addition to these localparams, both the `padctrl` and `padring` modules expose an "Impl" string parameter that is used to pass the implementation target down the hierarchy.
-The `padring` module uses this parameter to instantiate the correct pad implementation, and the `padctrl` module uses this parameter to determine which attribute bits are programmable (see programming guide below).
-The parameter values can be "generic" or "xilinx" as defined in the pad wrapper primitive.
+AttrDw         | 10 (9, -)             | Width of the pad attribute vector.
 
 ### Additional IOs
 
@@ -114,29 +110,37 @@ A specific implementation of a pad wrapper may choose to instantiate a technolog
 It is permissible to omit the implementation of all IO attributes except input/output inversion.
 
 The generic pad wrapper must expose the following IOs and parameters, even if they are not connected internally.
-In particular, the pad attribute vector `attr_i` must contain at least `AttrDw=6` bits, even if not all attributes are supported (it is permissible to just leave them unconnected in the pad wrapper implementation).
+In particular, the pad attribute vector `attr_i` must contain at least `AttrDw=9` bits, even if not all attributes are supported (it is permissible to just leave them unconnected in the pad wrapper implementation).
 
 Parameter      | Default (Min, Max)    | Description
 ---------------|-----------------------|-----------------------------------------------------
-Impl           | "generic"             | Implementation target (e.g., "generic", "xilinx").
+Variant        | 0                     | Pad variant to be instantiated (technology-specific)
 AttrDw         | 8 (6, -)              | Width of the pad attribute vector.
+WarlOnly       | 0 (0, 1)              | If set to 1, no pad is instantiated and only the WARL behavior of the `attr_i` bits is output via `warl_o`
 
-Note that the pad wrapper may implement a "virtual" open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
+Note that `Variant` is a technology-specific parameter.
+The generic pad wrapper only implements variant 0, but for other target technologies, this parameter can be used to select among a variety of different pad flavors.
 
-Signal               | Direction  | Type    | Description                         | Mandatory
----------------------|------------|---------|-------------------------------------|------------
-`inout_io`           | `inout`    | `wire`  | Bidirectional inout of the pad      | yes
-`in_o`               | `output`   | `logic` | Input data signal                   | yes
-`out_i`              | `input`    | `logic` | Output data signal                  | yes
-`oe_i`               | `input`    | `logic` | Output data enable                  | yes
-`attr_i[0]`          | `input`    | `logic` | Input/output inversion              | yes
-`attr_i[1]`          | `input`    | `logic` | Open drain enable                   | yes
-`attr_i[2]`          | `input`    | `logic` | Pull-down enable                    | no
-`attr_i[3]`          | `input`    | `logic` | Pull-up enable                      | no
-`attr_i[4]`          | `input`    | `logic` | Keeper enable                       | no
-`attr_i[5]`          | `input`    | `logic` | Drive strengh (0: strong, 1: weak)  | no
-`attr_i[AttrDw-1:6]` | `input`    | `logic` | Additional (optional) attributes    | no
+Also note that the pad wrapper may implement a "virtual" open drain termination, where standard bidirectional pads are employed, but instead of driving the output high for a logic 1 the pad is put into tristate mode.
 
+Signal               | Direction  | Type    | Description                                 | Mandatory
+---------------------|------------|---------|---------------------------------------------|------------
+`inout_io`           | `inout`    | `wire`  | Bidirectional inout of the pad              | yes
+`in_o`               | `output`   | `logic` | Input data signal                           | yes
+`out_i`              | `input`    | `logic` | Output data signal                          | yes
+`oe_i`               | `input`    | `logic` | Output data enable                          | yes
+`attr_i[0]`          | `input`    | `logic` | Input/output inversion                      | yes
+`attr_i[1]`          | `input`    | `logic` | Open drain enable                           | yes
+`attr_i[2]`          | `input`    | `logic` | Pull enable                                 | no
+`attr_i[3]`          | `input`    | `logic` | Pull select (0: down, 1: up)                | no
+`attr_i[4]`          | `input`    | `logic` | Keeper enable                               | no
+`attr_i[5]`          | `input`    | `logic` | Schmitt trigger enable                      | no
+`attr_i[6]`          | `input`    | `logic` | Slew rate (0: slow, 1: fast)                | no
+`attr_i[8:7]`        | `input`    | `logic` | Drive strengh (00: weakest, 11: strongest)  | no
+`attr_i[AttrDw-1:9]` | `input`    | `logic` | Additional (optional) attributes            | no
+`warl_o[AttrDw-1:0]` | `output`   | `logic` | Indicate which `attr_i` bits are supported  | yes
+
+The `warl_o` mask can be used to determine the WARL behavior of a specific pad variant.
 
 # Programmers Guide
 
@@ -152,15 +156,17 @@ One possible future enhancement is to individually lock each register instead of
 Note that the register description given in the next section is an example that has been generated with the default parameterization, and the layout may change once reparameterized.
 The following pad attributes are supported by this register layout by default:
 
-ATTR Bits | Description                          | Access
-----------|--------------------------------------|---------
-0         | Input/output inversion               | RW
-1         | Open drain enable                    | RW
-2         | Pull-down enable                     | WARL
-3         | Pull-up enable                       | WARL
-4         | Keeper enable                        | WARL
-5         | Drive strength (0: strong, 1: weak)  | WARL
-7:6       | Reserved                             | WARL
+ATTR Bits | Description                                 | Access
+----------|---------------------------------------------|---------
+0         | Input/output inversion                      | RW
+1         | Open drain enable                           | RW
+2         | Pull enable                                 | WARL
+3         | Pull select (0: down, 1: up)                | WARL
+4         | Keeper enable                               | WARL
+5         | Schmitt trigger enable                      | WARL
+6         | Slew rate (0: slow, 1: fast)                | WARL
+8:7       | Drive strengh (00: weakest, 11: strongest)  | WARL
+9         | Reserved                                    | WARL
 
 Since some of the pad attributes may not be implemented, software can probe this capability by writing the CSRs and read them back to determine whether the value was legal.
 This behavior is also referred to as "writes-any-reads-legal" or "WARL" in the RISC-V world.
