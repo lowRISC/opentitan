@@ -173,7 +173,7 @@
       desc: "Dummy register to make prim_gate_gen to not be optimized"
       swaccess: "rw"
       hwaccess: "hrw"
-      hwext: "true"
+      hwext: "false"
       hwqe: "true"
       fields: [
         { bits: "31:0"

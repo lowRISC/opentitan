@@ -166,10 +166,6 @@ module kmac_reg_top (
   logic [1:0] cfg_data_width_wd;
   logic cfg_data_width_we;
   logic cfg_data_width_re;
-  logic [7:0] cfg_sram_cfg_qs;
-  logic [7:0] cfg_sram_cfg_wd;
-  logic cfg_sram_cfg_we;
-  logic cfg_sram_cfg_re;
   logic cmd_start_wd;
   logic cmd_start_we;
   logic cmd_process_wd;
@@ -183,7 +179,6 @@ module kmac_reg_top (
   logic [31:0] dummy_qs;
   logic [31:0] dummy_wd;
   logic dummy_we;
-  logic dummy_re;
   logic alert_test_data_parity_wd;
   logic alert_test_data_parity_we;
   logic alert_test_sram_uncorrectable_wd;
@@ -475,21 +470,6 @@ module kmac_reg_top (
   );
 
 
-  //   F[sram_cfg]: 23:16
-  prim_subreg_ext #(
-    .DW    (8)
-  ) u_cfg_sram_cfg (
-    .re     (cfg_sram_cfg_re),
-    .we     (cfg_sram_cfg_we),
-    .wd     (cfg_sram_cfg_wd),
-    .d      (hw2reg.cfg.sram_cfg.d),
-    .qre    (),
-    .qe     (reg2hw.cfg.sram_cfg.qe),
-    .q      (reg2hw.cfg.sram_cfg.q ),
-    .qs     (cfg_sram_cfg_qs)
-  );
-
-
   // R[cmd]: V(True)
 
   //   F[start]: 0:0
@@ -569,18 +549,29 @@ module kmac_reg_top (
   );
 
 
-  // R[dummy]: V(True)
+  // R[dummy]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
   ) u_dummy (
-    .re     (dummy_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
     .we     (dummy_we),
     .wd     (dummy_wd),
-    .d      (hw2reg.dummy.d),
-    .qre    (),
+
+    // from internal hardware
+    .de     (hw2reg.dummy.de),
+    .d      (hw2reg.dummy.d ),
+
+    // to internal hardware
     .qe     (reg2hw.dummy.qe),
     .q      (reg2hw.dummy.q ),
+
+    // to register interface (read)
     .qs     (dummy_qs)
   );
 
@@ -742,10 +733,6 @@ module kmac_reg_top (
   assign cfg_data_width_wd = reg_wdata[9:8];
   assign cfg_data_width_re = addr_hit[3] && reg_re;
 
-  assign cfg_sram_cfg_we = addr_hit[3] & reg_we & ~wr_err;
-  assign cfg_sram_cfg_wd = reg_wdata[23:16];
-  assign cfg_sram_cfg_re = addr_hit[3] && reg_re;
-
   assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_start_wd = reg_wdata[0];
 
@@ -760,7 +747,6 @@ module kmac_reg_top (
 
   assign dummy_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_wd = reg_wdata[31:0];
-  assign dummy_re = addr_hit[6] && reg_re;
 
   assign alert_test_data_parity_we = addr_hit[7] & reg_we & ~wr_err;
   assign alert_test_data_parity_wd = reg_wdata[0];
@@ -797,7 +783,6 @@ module kmac_reg_top (
         reg_rdata_next[3] = cfg_digest_swap_qs;
         reg_rdata_next[5:4] = cfg_mode_qs;
         reg_rdata_next[9:8] = cfg_data_width_qs;
-        reg_rdata_next[23:16] = cfg_sram_cfg_qs;
       end
 
       addr_hit[4]: begin

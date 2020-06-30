@@ -137,14 +137,14 @@ module kmac
   // Random Gate Gen ==========================================================
   prim_gate_gen #(
     .DataWidth (32),
-    .NumGates  (70000)
+    .NumGates  (30000)
   )u_random_gates (
     .clk_i,
     .rst_ni,
     .valid_i (reg2hw.dummy.qe),
     .data_i  (reg2hw.dummy.q),
     .data_o  (hw2reg.dummy.d),
-    .valid_o ()
+    .valid_o (hw2reg.dummy.de)
   );
 
   // Register =================================================================
@@ -165,5 +165,20 @@ module kmac
   // Dummy connection =========================================================
   assign hw2reg.cfg = '0;
   assign hw2reg.status = '1;
+  // TODO: Connect interface from keymgr to dummy gates
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      keymgr_data_o <= '{
+        ready: 1'b1,
+        default: '0
+      };
+    end else if (keymgr_data_i.valid) begin
+      keymgr_data_o.done <= 1'b1;
+      keymgr_data_o.digest_share0 <= keymgr_key_i.key_share0 ^ keymgr_data_i.data;
+      keymgr_data_o.digest_share1 <= keymgr_key_i.key_share1 ^ keymgr_data_i.data;
+    end
+  end
+
 endmodule
 

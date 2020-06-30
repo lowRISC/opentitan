@@ -69,10 +69,6 @@ package kmac_reg_pkg;
       logic [1:0]  q;
       logic        qe;
     } data_width;
-    struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } sram_cfg;
   } kmac_reg2hw_cfg_reg_t;
 
   typedef struct packed {
@@ -134,9 +130,6 @@ package kmac_reg_pkg;
     struct packed {
       logic [1:0]  d;
     } data_width;
-    struct packed {
-      logic [7:0]  d;
-    } sram_cfg;
   } kmac_hw2reg_cfg_reg_t;
 
   typedef struct packed {
@@ -153,6 +146,7 @@ package kmac_reg_pkg;
 
   typedef struct packed {
     logic [31:0] d;
+    logic        de;
   } kmac_hw2reg_dummy_reg_t;
 
   typedef struct packed {
@@ -165,10 +159,10 @@ package kmac_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [73:71]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [70:68]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [67:62]
-    kmac_reg2hw_cfg_reg_t cfg; // [61:41]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [64:62]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [61:59]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [58:53]
+    kmac_reg2hw_cfg_reg_t cfg; // [52:41]
     kmac_reg2hw_cmd_reg_t cmd; // [40:37]
     kmac_reg2hw_dummy_reg_t dummy; // [36:4]
     kmac_reg2hw_alert_test_reg_t alert_test; // [3:0]
@@ -178,11 +172,11 @@ package kmac_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [92:90]
-    kmac_hw2reg_cfg_reg_t cfg; // [89:69]
-    kmac_hw2reg_status_reg_t status; // [68:69]
-    kmac_hw2reg_dummy_reg_t dummy; // [68:36]
-    kmac_hw2reg_err_code_reg_t err_code; // [35:36]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [85:83]
+    kmac_hw2reg_cfg_reg_t cfg; // [82:71]
+    kmac_hw2reg_status_reg_t status; // [70:71]
+    kmac_hw2reg_dummy_reg_t dummy; // [70:38]
+    kmac_hw2reg_err_code_reg_t err_code; // [37:38]
   } kmac_hw2reg_t;
 
   // Register Address
@@ -220,7 +214,7 @@ package kmac_reg_pkg;
     4'b 0001, // index[0] KMAC_INTR_STATE
     4'b 0001, // index[1] KMAC_INTR_ENABLE
     4'b 0001, // index[2] KMAC_INTR_TEST
-    4'b 0111, // index[3] KMAC_CFG
+    4'b 0011, // index[3] KMAC_CFG
     4'b 0001, // index[4] KMAC_CMD
     4'b 0011, // index[5] KMAC_STATUS
     4'b 1111, // index[6] KMAC_DUMMY
