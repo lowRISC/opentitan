@@ -5,7 +5,7 @@ title: "Primitive Component: PRINCE Scrambler"
 # Overview
 
 `prim_prince` is an (unhardened) implementation of the [64bit PRINCE block cipher](https://en.wikipedia.org/wiki/Prince_(cipher)).
-It is a fully unrolled combinational implementation with a configurable number of rounds.
+It is a fully unrolled combinational implementation with a configurable number of rounds (data and key state registers placed half-way in the design can optionally be enabled).
 Due to the mirrored construction of this cipher, the same circuit can be used for encryption and decryption, as described below.
 Further, the primitive supports a 32bit block cipher flavor which is not specified in the original paper.
 
@@ -22,35 +22,47 @@ DataWidth      | int    | Block size, can be 32 or 64.
 KeyWidth       | int    | Key size, can be 64 for block size 32, or 128 for block size 64
 NumRounds      | int    | Half the number of the reflected PRINCE rounds. Can range from 1 to 5. The effective number of non-linear layers is 2 + 2 * NumRounds.
 UseOldKeySched | bit    | If set to 1, fall back to the original keyschedule (not recommended). Defaults to 0.
+HalfwayDataReg | bit    | If set to 1, instantiates a data register half-way in the data path
+HalfwayKeyReg  | bit    | If set to 1, instantiates a key register half-way in the data path. This is only required if the key is not static and changes with every new data input.
 
 ## Signal Interfaces
 
 Name         | In/Out | Description
 -------------|--------|---------------------------------
+clk_i        | input  | Clock input
+rst_ni       | input  | Reset input
+valid_i      | input  | Data valid input
+data_i       | input  | Plaintext input
 data_i       | input  | Plaintext input
 key_i        | input  | Key input
 dec_i        | input  | Assert for decryption
+valid_o      | output | Data valid output
 data_o       | output | Output of the ciphertext
 
 # Theory of Operations
 
 ```
-             /----------------\
-dec_i        |                |
------------->|     PRINCE     |
-key_i        |                |
-=====/======>|    DataWidth   |
- [KeyWidth]  |    KeyWidth    |
-             |    NumRounds   |
-data_i       | UseOldKeySched |  data_o
-=====/======>|                |=====/=======>
- [DataWidth] |                |  [DataWidth]
-             |                |
-             \----------------/
+               /-----------------\
+clk_i / rst_ni |                 |
+-------------->|                 |
+dec_i          |                 |
+-------------->|     PRINCE      |
+valid_i        |                 | valid_o
+-------------->|    DataWidth    |--------------->
+key_i          |    KeyWidth     |
+=====/========>|    NumRounds    |
+ [KeyWidth]    |  UseOldKeySched | data_o
+               |  HalfwayDataReg |=======/=======>
+data_i         |  HalfwayKeyReg  | [DataWidth]
+=====/========>|                 |
+ [DataWidth]   |                 |
+               |                 |
+               \-----------------/
 ```
 
-The PRINCE module is fully unrolled and combinational, meaning that it does not have any clock, reset or handshaking inputs.
-The only inputs are the key and the plaintext, and the only output is the ciphertext.
+The PRINCE module is fully unrolled and combinational by default.
+But since data and key state registers can optionally be enabled, the primitive also has a clock, reset and valid input besides the key and plaintext inputs.
+On the output side it exposes the ciphertext with its corresponding valid signal.
 
 The internal construction follows the the algorithm described in the original [paper](https://eprint.iacr.org/2012/529.pdf).
 The block size is 64bit and the key size is 128bit.
