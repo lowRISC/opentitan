@@ -9,9 +9,7 @@ module padctrl_bind_fpv;
     .*
   );
 
-  bind padctrl padctrl_assert_fpv #(
-    .Impl(Impl)
-  ) i_padctrl_assert_fpv (
+  bind padctrl padctrl_assert_fpv i_padctrl_assert_fpv (
     .*
   );
 

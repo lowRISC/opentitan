@@ -8,13 +8,7 @@
 
 `include "prim_assert.sv"
 
-`ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-
-module padctrl_assert_fpv #(
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL
-) (
+module padctrl_assert_fpv (
   input                                       clk_i,
   input                                       rst_ni,
   // Bus Interface (device)
@@ -37,59 +31,64 @@ module padctrl_assert_fpv #(
   // Check muxed IO pads //
   /////////////////////////
 
+  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_warl_masks;
+  for (genvar k = 0; k < padctrl_reg_pkg::NMioPads; k++) begin : gen_mio_attr
+    prim_generic_pad_wrapper #(
+      .AttrDw   ( padctrl_reg_pkg::AttrDw ),
+      .WarlOnly ( 1'b1                    )
+    ) i_prim_generic_pad_wrapper (
+      .inout_io (                   ),
+      .in_o     (                   ),
+      .ie_i     ( 1'b0              ),
+      .out_i    ( 1'b0              ),
+      .oe_i     ( 1'b0              ),
+      .attr_i   ( '0                ),
+      .warl_o   ( mio_warl_masks[k] )
+    );
+  end
+
   `ASSUME(NMioRange_M, mio_sel < padctrl_reg_pkg::NMioPads, clk_i, !rst_ni)
   `ASSUME(NMioStable_M, ##1 $stable(mio_sel), clk_i, !rst_ni)
 
-  if (Impl == ImplGeneric) begin : gen_mio_generic
-    `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
-        !(|mio_attr_o[mio_sel][padctrl_reg_pkg::AttrDw-1:6]))
-    `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
-      mio_attr_o[mio_sel][5:0] == $past(padctrl.reg2hw.mio_pads[mio_sel].q[5:0]))
-    `ASSERT(MioBackwardCheck_A, ##2 !$stable(mio_attr_o[mio_sel]) |->
-        !$stable(padctrl.reg2hw.mio_pads[mio_sel].q[5:0]) ||
-        $rose($past(padctrl.reg2hw.mio_pads[mio_sel].qe)))
-
-  end else if (Impl == ImplXilinx) begin : gen_mio_xilinx
-    `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
-        !(|padctrl.mio_attr_q[mio_sel][padctrl_reg_pkg::AttrDw-1:2]))
-    `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
-        mio_attr_o[mio_sel][1:0] ==
-        $past(padctrl.reg2hw.mio_pads[mio_sel].q[1:0]))
-    `ASSERT(MioBackwardCheck_A, ##2 !$stable(mio_attr_o[mio_sel]) |->
-        !$stable(padctrl.reg2hw.mio_pads[mio_sel].q[1:0]) ||
-        $rose($past(padctrl.reg2hw.mio_pads[mio_sel].qe)))
-
-  end else begin : gen_mio_failure
-    `ASSERT_INIT(UnknownImpl_A, 0)
-  end
+  `ASSERT(MioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
+      (~mio_warl_masks[mio_sel] & mio_attr_o[mio_sel]) == '0)
+  `ASSERT(MioAttr_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
+      mio_attr_o[mio_sel] ==
+      $past(padctrl.reg2hw.mio_pads[mio_sel].q & mio_warl_masks[mio_sel]))
+  `ASSERT(MioBackwardCheck_A, ##2 !$stable(mio_attr_o[mio_sel]) |->
+      !$stable(padctrl.reg2hw.mio_pads[mio_sel] & mio_warl_masks[mio_sel]) ||
+      $rose($past(padctrl.reg2hw.mio_pads[mio_sel].qe)))
 
   /////////////////////////////
   // Check dedicated IO pads //
   /////////////////////////////
 
+  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_warl_masks;
+  for (genvar k = 0; k < padctrl_reg_pkg::NDioPads; k++) begin : gen_dio_attr
+    prim_generic_pad_wrapper #(
+      .AttrDw   ( padctrl_reg_pkg::AttrDw ),
+      .WarlOnly ( 1'b1                    )
+    ) i_prim_generic_pad_wrapper (
+      .inout_io (                   ),
+      .in_o     (                   ),
+      .ie_i     ( 1'b0              ),
+      .out_i    ( 1'b0              ),
+      .oe_i     ( 1'b0              ),
+      .attr_i   ( '0                ),
+      .warl_o   ( dio_warl_masks[k] )
+    );
+  end
+
   `ASSUME(NDioRange_M, dio_sel < padctrl_reg_pkg::NDioPads, clk_i, !rst_ni)
   `ASSUME(NDioStable_M, ##1 $stable(dio_sel), clk_i, !rst_ni)
-  if (Impl == ImplGeneric) begin : gen_dio_generic
-    `ASSERT(DioWarl_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
-        !(|dio_attr_o[dio_sel][padctrl_reg_pkg::AttrDw-1:6]))
-    `ASSERT(DioAttr_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
-      dio_attr_o[dio_sel][5:0] == $past(padctrl.reg2hw.dio_pads[dio_sel].q[5:0]))
-    `ASSERT(DioBackwardCheck_A, ##2 !$stable(dio_attr_o[dio_sel]) |->
-        !$stable(padctrl.reg2hw.dio_pads[dio_sel].q[5:0]) ||
-        $rose($past(padctrl.reg2hw.dio_pads[dio_sel].qe)))
 
-  end else if (Impl == ImplXilinx) begin : gen_dio_xilinx
-    `ASSERT(DioWarl_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
-        !(|padctrl.dio_attr_q[dio_sel][5:2]))
-    `ASSERT(DioAttr_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
-        dio_attr_o[dio_sel][1:0] ==
-        $past(padctrl.reg2hw.dio_pads[dio_sel].q[1:0]))
-    `ASSERT(DioBackwardCheck_A, ##2 !$stable(dio_attr_o[dio_sel]) |->
-        !$stable(padctrl.reg2hw.dio_pads[dio_sel].q[1:0]) ||
-        $rose($past(padctrl.reg2hw.dio_pads[dio_sel].qe)))
-
-  end else begin : gen_dio_failure
-    `ASSERT_INIT(UnknownImpl_A, 0)
-  end
+  `ASSERT(DioWarl_A, padctrl.reg2hw.mio_pads[mio_sel].qe |=>
+      (~dio_warl_masks[dio_sel] & dio_attr_o[dio_sel]) == '0)
+  `ASSERT(DioAttr_A, padctrl.reg2hw.dio_pads[dio_sel].qe |=>
+      dio_attr_o[dio_sel] ==
+      $past(padctrl.reg2hw.dio_pads[dio_sel].q & dio_warl_masks[dio_sel]))
+  `ASSERT(DioBackwardCheck_A, ##2 !$stable(dio_attr_o[dio_sel]) |->
+      !$stable(padctrl.reg2hw.dio_pads[dio_sel] & dio_warl_masks[dio_sel]) ||
+      $rose($past(padctrl.reg2hw.dio_pads[dio_sel].qe)))
 
 endmodule : padctrl_assert_fpv
