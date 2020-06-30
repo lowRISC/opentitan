@@ -81,8 +81,8 @@ module top_${top["name"]} #(
   ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 % endif
-
-  input               scanmode_i  // 1 for Scan
+  input               scan_rst_ni, // reset used for test mode
+  input               scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -636,7 +636,9 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
     % endif
-
+    % if m["scan_reset"] == "true":
+      .scan_rst_ni  (scan_rst_ni),
+    % endif
     % for k, v in m["clock_connections"].items():
       .${k} (${v}),
     % endfor
