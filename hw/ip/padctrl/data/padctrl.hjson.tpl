@@ -7,7 +7,7 @@
 # Parameter (given by Python tool)
 #  - n_dio_pads:      Number of dedicated IO pads
 #  - n_mio_pads:      Number of muxed IO pads
-#  - attr_dw:        Attribute datawidth
+#  - attr_dw:         Attribute datawidth
 {
   name: "PADCTRL",
   clock_primary: "clk_i",
@@ -64,7 +64,7 @@
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
-                    { bits: "7:0",
+                    { bits: "9:0",
                       name: "ATTR",
                       desc: '''Bit   0: input/output inversion,
                                Bit   1: Virtual open drain enable.
@@ -99,7 +99,7 @@
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
-                    { bits: "7:0",
+                    { bits: "9:0",
                       name: "ATTR",
                       desc: '''Bit   0: input/output inversion,
                                Bit   1: Virtual open drain enable.
