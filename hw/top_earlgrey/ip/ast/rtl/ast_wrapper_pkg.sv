@@ -18,12 +18,10 @@ package ast_wrapper_pkg;
   } adc_ast_rsp_t;
 
   typedef struct packed {
-    logic vcc_pok;
     logic aon_pok;
   } ast_rst_t;
 
   parameter ast_rst_t AST_RST_DEFAULT = '{
-    vcc_pok: 1'b1,
     aon_pok: 1'b1
   };
 
