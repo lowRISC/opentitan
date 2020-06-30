@@ -41,8 +41,8 @@ module top_earlgrey #(
   output logic[padctrl_reg_pkg::NDioPads-1:0]
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
-
-  input               scanmode_i  // 1 for Scan
+  input               scan_rst_ni, // reset used for test mode
+  input               scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -562,7 +562,6 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart_rx_break_err),
       .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
-
       .clk_i (clkmgr_clocks.clk_io_secure),
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
@@ -580,7 +579,6 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
-
       .clk_i (clkmgr_clocks.clk_io_peri),
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
@@ -606,7 +604,6 @@ module top_earlgrey #(
       .intr_rxoverflow_o  (intr_spi_device_rxoverflow),
       .intr_txunderflow_o (intr_spi_device_txunderflow),
       .scanmode_i   (scanmode_i),
-
       .clk_i (clkmgr_clocks.clk_io_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n)
   );
@@ -626,7 +623,6 @@ module top_earlgrey #(
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
-
       .clk_i (clkmgr_clocks.clk_main_infra),
       .rst_ni (rstmgr_resets.rst_lc_n)
   );
@@ -637,7 +633,6 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
-
       .clk_i (clkmgr_clocks.clk_io_timers),
       .rst_ni (rstmgr_resets.rst_sys_io_n)
   );
@@ -645,7 +640,6 @@ module top_earlgrey #(
   aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
-
       .clk_i (clkmgr_clocks.clk_main_aes),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -662,7 +656,6 @@ module top_earlgrey #(
       // [0]: msg_push_sha_disabled
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
-
       .clk_i (clkmgr_clocks.clk_main_hmac),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -675,7 +668,6 @@ module top_earlgrey #(
       .irq_o      (irq_plic),
       .irq_id_o   (irq_id),
       .msip_o     (msip),
-
       .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -705,7 +697,6 @@ module top_earlgrey #(
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
-
       .clk_i (clkmgr_clocks.clk_main_secure),
       .clk_aon_i (clkmgr_clocks.clk_io_secure),
       .rst_ni (rstmgr_resets.rst_sys_n),
@@ -718,7 +709,6 @@ module top_earlgrey #(
 
       .mio_attr_o,
       .dio_attr_o,
-
       .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -742,7 +732,6 @@ module top_earlgrey #(
       // escalation outputs
       .esc_rx_i    ( esc_rx   ),
       .esc_tx_o    ( esc_tx   ),
-
       .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -769,7 +758,6 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .wakeups_i(pwrmgr_wakeups),
       .rstreqs_i('0),
-
       .clk_i (clk_io_i),
       .clk_slow_i (clk_aon_i),
       .rst_ni (rstmgr_resets.rst_por_n),
@@ -787,7 +775,8 @@ module top_earlgrey #(
       .ast_i(rstmgr_pkg::RSTMGR_AST_DEFAULT),
       .cpu_i(rstmgr_cpu),
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
-
+      .scanmode_i   (scanmode_i),
+      .scan_rst_ni  (scan_rst_ni),
       .clk_i (clk_io_i),
       .clk_aon_i (clk_aon_i),
       .clk_main_i (clk_i),
@@ -806,7 +795,6 @@ module top_earlgrey #(
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
       .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
-
       .clk_i (clk_io_i),
       .clk_main_i (clk_i),
       .clk_io_i (clk_io_i),
@@ -830,7 +818,6 @@ module top_earlgrey #(
       // escalation signal inputs
       .esc_rx_o    ( esc_rx   ),
       .esc_tx_i    ( esc_tx   ),
-
       .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -884,7 +871,6 @@ module top_earlgrey #(
       // Inter-module signals
       .usb_ref_val_o(),
       .usb_ref_pulse_o(),
-
       .clk_i (clkmgr_clocks.clk_io_peri),
       .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
       .rst_ni (rstmgr_resets.rst_sys_io_n),
