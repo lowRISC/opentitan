@@ -13,5 +13,10 @@ waive -rules SELF_ASSIGN -regexp {LHS signal 'inout_io' encountered on the RHS o
       -comment "This implements a keeper termination (it's basically an explicit TRIREG)"
 waive -rules DRIVE_STRENGTH -regexp {Drive strength .* encountered on assignment to 'inout_io'} -location {prim_generic_pad_wrapper.sv} \
       -comment "The pad simulation model uses driving strength attributes to emulate different IO terminations."
-waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i\[.:6\]' is not read from} -location {prim_generic_pad_wrapper.sv}\
+waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i*' is not read from} -location {prim_generic_pad_wrapper.sv} \
       -comment "Some IO attributes may not be implemented."
+waive -rules Z_USE -regexp {Constant with 'Z literal value '1'bz' encountered} -location {prim_generic_pad_wrapper.sv} \
+      -comment "This z assignment is correct."
+waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
+      -comment "This parameter has been provisioned for later and is currently unused."
+
