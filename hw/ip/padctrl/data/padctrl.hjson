@@ -32,18 +32,6 @@
       default: "10",
       local: "true"
     },
-    { name: "MioVariant",
-      desc: "Pad variant to use for MIO pad",
-      type: "logic [NMioPads-1:0]",
-      default: "'0",
-      local: "true"
-    },
-    { name: "DioVariant",
-      desc: "Pad variant to use for DIO pad",
-      type: "logic [NDioPads-1:0]",
-      default: "'0",
-      local: "true"
-    },
   ],
   registers: [
     { name: "REGEN",
@@ -82,10 +70,10 @@
                                Bit   1: Virtual open drain enable.
                                Bit   2: Pull enable.
                                Bit   3: Pull select (0: pull down, 1: pull up).
-                               Bit   4: Slew rate (0: slow, 1: fast).
-                               Bit 6/5: Drive strength (00: weakest, 11: strongest).
-                               Bit   7: Keeper enable.
-                               Bit   8: Schmitt trigger enable.
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
                                Bit   9: Reserved.
                       '''
                       resval: 0
@@ -117,10 +105,10 @@
                                Bit   1: Virtual open drain enable.
                                Bit   2: Pull enable.
                                Bit   3: Pull select (0: pull down, 1: pull up).
-                               Bit   4: Slew rate (0: slow, 1: fast).
-                               Bit 6/5: Drive strength (00: weakest, 11: strongest).
-                               Bit   7: Keeper enable.
-                               Bit   8: Schmitt trigger enable.
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
                                Bit   9: Reserved.
                       '''
                       resval: 0
