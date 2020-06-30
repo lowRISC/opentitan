@@ -114,14 +114,14 @@ set_app_var case_analysis_propagate_through_icg FALSE
 set_app_var compile_enable_constant_propagation_with_no_boundary_opt FALSE
 
 # disable constant register removal
-set_app_var compile_seqmap_propagate_constants FALSE
+#set_app_var compile_seqmap_propagate_constants FALSE
 
 # disable deleting unloaded gates and flops
 set_compile_directives [get_designs] -delete_unloaded_gate FALSE
-set_app_var compile_delete_unloaded_sequential_cells FALSE
+#set_app_var compile_delete_unloaded_sequential_cells FALSE
 
 # disable register merging
-set_register_merging [all_designs] FALSE
+#set_register_merging [all_designs] FALSE
 
 # preserve hierarchy for reports
 compile_ultra -gate_clock -scan -no_autoungroup > "${REPDIR}/compile.rpt"
