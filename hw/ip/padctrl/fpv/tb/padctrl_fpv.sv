@@ -4,13 +4,7 @@
 //
 // Testbench module for padctrl. Intended to use with a formal tool.
 
-`ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-
-module padctrl_fpv #(
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL
-) (
+module padctrl_fpv (
   input wire                                    clk_i,
   input wire                                    rst_ni,
   output logic                                  clk_o,
@@ -30,9 +24,7 @@ module padctrl_fpv #(
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
 
-  padctrl #(
-    .Impl(Impl)
-  ) i_padctrl (
+  padctrl i_padctrl (
     .clk_i     ,
     .rst_ni    ,
     .tl_i      ,
