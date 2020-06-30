@@ -15,7 +15,7 @@
 //     -> padctrl_aon
 //     -> usbdev_aon
 //     -> rbox_aon
-//     -> ram_ret
+//     -> ram_ret_aon
 
 module xbar_aon (
   input clk_aon_i,
@@ -40,8 +40,8 @@ module xbar_aon (
   input  tlul_pkg::tl_d2h_t tl_padctrl_aon_i,
   output tlul_pkg::tl_h2d_t tl_usbdev_aon_o,
   input  tlul_pkg::tl_d2h_t tl_usbdev_aon_i,
-  output tlul_pkg::tl_h2d_t tl_ram_ret_o,
-  input  tlul_pkg::tl_d2h_t tl_ram_ret_i,
+  output tlul_pkg::tl_h2d_t tl_ram_ret_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_ram_ret_aon_i,
 
   input scanmode_i
 );
@@ -87,8 +87,8 @@ module xbar_aon (
   assign tl_rbox_aon_o = tl_s1n_9_ds_h2d[6];
   assign tl_s1n_9_ds_d2h[6] = tl_rbox_aon_i;
 
-  assign tl_ram_ret_o = tl_s1n_9_ds_h2d[7];
-  assign tl_s1n_9_ds_d2h[7] = tl_ram_ret_i;
+  assign tl_ram_ret_aon_o = tl_s1n_9_ds_h2d[7];
+  assign tl_s1n_9_ds_d2h[7] = tl_ram_ret_aon_i;
 
   assign tl_s1n_9_us_h2d = tl_main_i;
   assign tl_main_o = tl_s1n_9_us_d2h;
@@ -117,7 +117,7 @@ module xbar_aon (
     end else if ((tl_s1n_9_us_h2d.a_address & ~(ADDR_MASK_RBOX_AON)) == ADDR_SPACE_RBOX_AON) begin
       dev_sel_s1n_9 = 4'd6;
 
-    end else if ((tl_s1n_9_us_h2d.a_address & ~(ADDR_MASK_RAM_RET)) == ADDR_SPACE_RAM_RET) begin
+    end else if ((tl_s1n_9_us_h2d.a_address & ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
       dev_sel_s1n_9 = 4'd7;
 end
   end
