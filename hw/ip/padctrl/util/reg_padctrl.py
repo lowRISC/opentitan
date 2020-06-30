@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--attr_dw',
                         type=int,
                         help='Pad attribute data width',
-                        default = 8)
+                        default = 10)
 
     args = parser.parse_args()
 

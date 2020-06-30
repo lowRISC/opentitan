@@ -469,7 +469,7 @@ def generate_pinmux_and_padctrl(top, out_path):
         try:
             out = hjson_tpl.render(n_mio_pads=n_mio_pads,
                                    n_dio_pads=n_dio_pads,
-                                   attr_dw=8)
+                                   attr_dw=10)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PADCTRL HJSON: %s" % out)

@@ -56,33 +56,39 @@ module padring import padctrl_reg_pkg::*; #(
   assign rst_n         = rst_pad_ni;
 
   prim_pad_wrapper #(
-    .AttrDw(AttrDw)
+    .AttrDw  ( AttrDw )
   ) i_clk_pad (
     .inout_io ( clk   ),
     .in_o     ( clk_o ),
+    .ie_i     ( 1'b1  ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  )
+    .attr_i   (   '0  ),
+    .warl_o   (       )
   );
 
   prim_pad_wrapper #(
-    .AttrDw(AttrDw)
+    .AttrDw  ( AttrDw )
   ) i_clk_usb_48mhz_pad (
     .inout_io ( clk_usb_48mhz   ),
     .in_o     ( clk_usb_48mhz_o ),
+    .ie_i     ( 1'b1  ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  )
+    .attr_i   (   '0  ),
+    .warl_o   (       )
   );
 
   prim_pad_wrapper #(
-    .AttrDw(AttrDw)
+    .AttrDw  ( AttrDw )
   ) i_rst_pad (
     .inout_io ( rst_n  ),
     .in_o     ( rst_no ),
+    .ie_i     ( 1'b1  ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  )
+    .attr_i   (   '0  ),
+    .warl_o   (       )
   );
 
   //////////////
@@ -92,35 +98,41 @@ module padring import padctrl_reg_pkg::*; #(
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_pads
     if (ConnectMioIn[k] && ConnectMioOut[k]) begin : gen_mio_inout
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
+        .ie_i     ( 1'b1          ),
         .out_i    ( mio_out_i[k]  ),
         .oe_i     ( mio_oe_i[k]   ),
-        .attr_i   ( mio_attr_i[k] )
+        .attr_i   ( mio_attr_i[k] ),
+        .warl_o   (               )
       );
     end else if (ConnectMioOut[k]) begin : gen_mio_output
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     (               ),
+        .ie_i     ( 1'b0          ),
         .out_i    ( mio_out_i[k]  ),
         .oe_i     ( mio_oe_i[k]   ),
-        .attr_i   ( mio_attr_i[k] )
+        .attr_i   ( mio_attr_i[k] ),
+        .warl_o   (               )
       );
 
       assign mio_in_o[k]  = 1'b0;
     end else if (ConnectMioIn[k]) begin : gen_mio_input
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
+        .ie_i     ( 1'b1          ),
         .out_i    ( 1'b0          ),
         .oe_i     ( 1'b0          ),
-        .attr_i   ( mio_attr_i[k] )
+        .attr_i   ( mio_attr_i[k] ),
+        .warl_o   (               )
       );
 
       logic unused_out, unused_oe;
@@ -144,35 +156,41 @@ module padring import padctrl_reg_pkg::*; #(
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_pads
     if (ConnectDioIn[k] && ConnectDioOut[k]) begin : gen_dio_inout
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
+        .ie_i     ( 1'b1          ),
         .out_i    ( dio_out_i[k]  ),
         .oe_i     ( dio_oe_i[k]   ),
-        .attr_i   ( dio_attr_i[k] )
+        .attr_i   ( dio_attr_i[k] ),
+        .warl_o   (               )
       );
     end else if (ConnectDioOut[k]) begin : gen_dio_output
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     (               ),
+        .ie_i     ( 1'b0          ),
         .out_i    ( dio_out_i[k]  ),
         .oe_i     ( dio_oe_i[k]   ),
-        .attr_i   ( dio_attr_i[k] )
+        .attr_i   ( dio_attr_i[k] ),
+        .warl_o   (               )
       );
 
       assign dio_in_o[k]  = 1'b0;
     end else if (ConnectDioIn[k]) begin : gen_dio_input
       prim_pad_wrapper #(
-        .AttrDw(AttrDw)
+        .AttrDw  ( AttrDw        )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
+        .ie_i     ( 1'b1          ),
         .out_i    ( 1'b0          ),
         .oe_i     ( 1'b0          ),
-        .attr_i   ( dio_attr_i[k] )
+        .attr_i   ( dio_attr_i[k] ),
+        .warl_o   (               )
       );
 
       logic unused_out, unused_oe;
