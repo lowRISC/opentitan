@@ -28,7 +28,7 @@ tl_device_t xbar_devices[$] = '{
     '{"usbdev_aon", '{
         '{32'h40500000, 32'h40500fff}
     }},
-    '{"ram_ret", '{
+    '{"ram_ret_aon", '{
         '{32'h40510000, 32'h40510fff}
 }}};
 
@@ -42,5 +42,5 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl_aon",
         "usbdev_aon",
         "rbox_aon",
-        "ram_ret"}}
+        "ram_ret_aon"}}
 };

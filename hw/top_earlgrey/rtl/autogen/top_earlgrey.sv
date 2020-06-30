@@ -150,8 +150,8 @@ module top_earlgrey #(
   tl_d2h_t tl_rom_d_d2h;
   tl_h2d_t tl_ram_main_d_h2d;
   tl_d2h_t tl_ram_main_d_d2h;
-  tl_h2d_t tl_ram_ret_d_h2d;
-  tl_d2h_t tl_ram_ret_d_d2h;
+  tl_h2d_t tl_ram_ret_aon_d_h2d;
+  tl_d2h_t tl_ram_ret_aon_d_d2h;
   tl_h2d_t tl_eflash_d_h2d;
   tl_d2h_t tl_eflash_d_d2h;
 
@@ -619,34 +619,34 @@ module top_earlgrey #(
     .cfg_i    ('0)
   );
   // sram device
-  logic        ram_ret_req;
-  logic        ram_ret_we;
-  logic [9:0] ram_ret_addr;
-  logic [31:0] ram_ret_wdata;
-  logic [31:0] ram_ret_wmask;
-  logic [31:0] ram_ret_rdata;
-  logic        ram_ret_rvalid;
-  logic [1:0]  ram_ret_rerror;
+  logic        ram_ret_aon_req;
+  logic        ram_ret_aon_we;
+  logic [9:0] ram_ret_aon_addr;
+  logic [31:0] ram_ret_aon_wdata;
+  logic [31:0] ram_ret_aon_wmask;
+  logic [31:0] ram_ret_aon_rdata;
+  logic        ram_ret_aon_rvalid;
+  logic [1:0]  ram_ret_aon_rerror;
 
   tlul_adapter_sram #(
     .SramAw(10),
     .SramDw(32),
     .Outstanding(2)
-  ) u_tl_adapter_ram_ret (
+  ) u_tl_adapter_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_n),
-    .tl_i     (tl_ram_ret_d_h2d),
-    .tl_o     (tl_ram_ret_d_d2h),
+    .tl_i     (tl_ram_ret_aon_d_h2d),
+    .tl_o     (tl_ram_ret_aon_d_d2h),
 
-    .req_o    (ram_ret_req),
+    .req_o    (ram_ret_aon_req),
     .gnt_i    (1'b1), // Always grant as only one requester exists
-    .we_o     (ram_ret_we),
-    .addr_o   (ram_ret_addr),
-    .wdata_o  (ram_ret_wdata),
-    .wmask_o  (ram_ret_wmask),
-    .rdata_i  (ram_ret_rdata),
-    .rvalid_i (ram_ret_rvalid),
-    .rerror_i (ram_ret_rerror)
+    .we_o     (ram_ret_aon_we),
+    .addr_o   (ram_ret_aon_addr),
+    .wdata_o  (ram_ret_aon_wdata),
+    .wmask_o  (ram_ret_aon_wmask),
+    .rdata_i  (ram_ret_aon_rdata),
+    .rvalid_i (ram_ret_aon_rvalid),
+    .rerror_i (ram_ret_aon_rerror)
   );
 
   prim_ram_1p_adv #(
@@ -655,18 +655,18 @@ module top_earlgrey #(
     .DataBitsPerMask(8),
     .CfgW(8),
     .EnableParity(1)
-  ) u_ram1p_ram_ret (
+  ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_n),
 
-    .req_i    (ram_ret_req),
-    .write_i  (ram_ret_we),
-    .addr_i   (ram_ret_addr),
-    .wdata_i  (ram_ret_wdata),
-    .wmask_i  (ram_ret_wmask),
-    .rdata_o  (ram_ret_rdata),
-    .rvalid_o (ram_ret_rvalid),
-    .rerror_o (ram_ret_rerror),
+    .req_i    (ram_ret_aon_req),
+    .write_i  (ram_ret_aon_we),
+    .addr_i   (ram_ret_aon_addr),
+    .wdata_i  (ram_ret_aon_wdata),
+    .wmask_i  (ram_ret_aon_wmask),
+    .rdata_o  (ram_ret_aon_rdata),
+    .rvalid_o (ram_ret_aon_rvalid),
+    .rerror_o (ram_ret_aon_rerror),
     .cfg_i    ('0)
   );
 
@@ -1600,8 +1600,8 @@ module top_earlgrey #(
     .tl_padctrl_aon_i (tl_padctrl_aon_d_d2h),
     .tl_usbdev_aon_o  (tl_usbdev_aon_d_h2d),
     .tl_usbdev_aon_i  (tl_usbdev_aon_d_d2h),
-    .tl_ram_ret_o     (tl_ram_ret_d_h2d),
-    .tl_ram_ret_i     (tl_ram_ret_d_d2h),
+    .tl_ram_ret_aon_o (tl_ram_ret_aon_d_h2d),
+    .tl_ram_ret_aon_i (tl_ram_ret_aon_d_d2h),
 
     .scanmode_i
   );
