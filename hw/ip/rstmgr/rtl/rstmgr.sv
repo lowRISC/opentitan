@@ -37,9 +37,16 @@ module rstmgr import rstmgr_pkg::*; (
 
   // Interface to alert handler
   // always on resets
-  output rstmgr_out_t resets_o
+  output rstmgr_out_t resets_o,
+
+  input scan_rst_ni,
+  input scanmode_i
 
 );
+
+  localparam int NumRsts = 9;
+  logic [NumRsts-1:0] raw_resets, muxed_resets;
+  rstmgr_out_t resets_int;
 
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
@@ -47,7 +54,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_aon_i),
     .rst_ni,
     .pok_i(ast_i.aon_pok),
-    .rst_no(resets_o.rst_por_aon_n)
+    .rst_no(resets_int.rst_por_aon_n)
   );
 
   // POR usage for the clkmgr
@@ -58,7 +65,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(resets_o.rst_por_aon_n),
     .d(1'b1),
-    .q(resets_o.rst_por_n)
+    .q(resets_int.rst_por_n)
   );
 
   prim_flop_2sync #(
@@ -68,7 +75,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_i),
     .rst_ni(resets_o.rst_por_aon_n),
     .d(1'b1),
-    .q(resets_o.rst_por_io_n)
+    .q(resets_int.rst_por_io_n)
   );
 
   prim_flop_2sync #(
@@ -78,7 +85,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_usb_i),
     .rst_ni(resets_o.rst_por_aon_n),
     .d(1'b1),
-    .q(resets_o.rst_por_usb_n)
+    .q(resets_int.rst_por_usb_n)
   );
 
   ////////////////////////////////////////////////////
@@ -166,7 +173,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(resets_o.rst_lc_n)
+    .q(resets_int.rst_lc_n)
   );
 
   prim_flop_2sync #(
@@ -176,7 +183,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(resets_o.rst_sys_n)
+    .q(resets_int.rst_sys_n)
   );
 
   prim_flop_2sync #(
@@ -186,7 +193,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
-    .q(resets_o.rst_sys_io_n)
+    .q(resets_int.rst_sys_io_n)
   );
 
   prim_flop_2sync #(
@@ -196,7 +203,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_spi_device_n.q),
-    .q(resets_o.rst_spi_device_n)
+    .q(resets_int.rst_spi_device_n)
   );
 
   prim_flop_2sync #(
@@ -206,7 +213,7 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_usb_n.q),
-    .q(resets_o.rst_usb_n)
+    .q(resets_int.rst_usb_n)
   );
 
   ////////////////////////////////////////////////////
@@ -237,6 +244,35 @@ module rstmgr import rstmgr_pkg::*; (
     .data_i(reg2hw.reset_info.q),
     .rst_reasons_o(hw2reg.reset_info)
   );
+
+  ////////////////////////////////////////////////////
+  // Test reset bypass                              //
+  ////////////////////////////////////////////////////
+
+  assign raw_resets = {
+                      resets_int.rst_por_aon_n,
+                      resets_int.rst_por_n,
+                      resets_int.rst_por_io_n,
+                      resets_int.rst_por_usb_n,
+                      resets_int.rst_lc_n,
+                      resets_int.rst_sys_io_n,
+                      resets_int.rst_sys_n,
+                      resets_int.rst_spi_device_n,
+                      resets_int.rst_usb_n
+                      };
+
+  assign resets_o = muxed_resets;
+
+  // reuse clock muxes for balanced rise / fall
+  for (genvar i=0; i<NumRsts; i++) begin : gen_rst_muxes
+    prim_clock_mux2 u_rst_mux (
+      .clk0_i(raw_resets[i]),
+      .clk1_i(scan_rst_ni),
+      .sel_i(scanmode_i),
+      .clk_o(muxed_resets[i])
+    );
+  end
+
 
   ////////////////////////////////////////////////////
   // Assertions                                     //

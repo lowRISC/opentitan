@@ -19,7 +19,8 @@
   regwidth: "32",
   param_list: [
   ],
-
+  scan: "true",       // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `test_rst_ni` port
   // Define rstmgr struct package
   inter_signal_list: [
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
@@ -54,7 +55,7 @@
       name:    "peri",
       act:     "rcv",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
-    }
+    },
   ],
 
   registers: [

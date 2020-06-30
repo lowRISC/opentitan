@@ -280,6 +280,7 @@ module top_earlgrey_asic (
     .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
 
     // DFT signals
+    .scan_rst_ni     ( 1'b1          ),
     .scanmode_i      ( 1'b0          )
   );
 
