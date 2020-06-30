@@ -62,7 +62,6 @@ module ast_wrapper import ast_wrapper_pkg::*;
   assign pwr_o.io_clk_val[0]   = ~pwr_o.io_clk_val[1];
 
   ast #(
-    .NumIoRails(NumIoRails),
     .EntropyStreams(EntropyStreams),
     .AdcChannels(AdcChannels),
     .AdcDataWidth(AdcDataWidth)
@@ -83,18 +82,19 @@ module ast_wrapper import ast_wrapper_pkg::*;
 
     // power related
     .por_ni,
-    .vcc_pok_o(rst_o.vcc_pok),
-    .aon_pok_o(rst_o.aon_pok),
-    .main_pok_o(pwr_o.main_pok),
-    .io_pok_o(status_o.io_pok),
+    .vcaon_pok_o(rst_o.aon_pok),
+    .vcmain_pok_o(pwr_o.main_pok),
+    .vio1_pok_o(status_o.io_pok[0]),
+    .vio2_pok_o(status_o.io_pok[1]),
     .main_pd_ni(pwr_i.main_pd_n),
     .main_iso_en_i(pwr_i.pwr_clamp),
 
     // power OK control (for debug only). pok signal follows these inputs
-    .vcc_supp_i('0),                          // VCC Supply Test
-    .main_supp_i('0),                         // MAIN Supply Test
-    .aon_supp_i('0),                          // AON Supply Test
-    .io_supp_i('0),                           // IO Rails Supply Test
+    .vcc_supp_i(1'b1),                        // VCC Supply Test
+    .vcmain_supp_i(1'b1),                     // MAIN Supply Test
+    .vcaon_supp_i(1'b1),                      // AON Supply Test
+    .vio1_supp_i(1'b1),                       // IO Rails Supply Test
+    .vio2_supp_i(1'b1),                       // IO Rails Supply Test
 
     // output clocks and associated controls
     .clk_src_sys_o(clks_o.clk_sys),
@@ -169,6 +169,9 @@ module ast_wrapper import ast_wrapper_pkg::*;
     // flash interface
     .flash_power_down_h_o(),
     .flash_power_ready_h_o(),
+
+    // analog debug signals
+    .ast2pad_a_io(),
 
     // pad mux related - DFT
     .ast2padmux_o(),  // DFT_2_IO Output Signals

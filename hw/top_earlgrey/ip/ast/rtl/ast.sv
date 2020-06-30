@@ -7,7 +7,6 @@
 // open source repository.
 
 module ast #(
-  parameter int NumIoRails      = 1,
   parameter int EntropyStreams  = 4,
   parameter int AdcChannels     = 4,
   parameter int AdcDataWidth    = 10,
@@ -35,18 +34,19 @@ module ast #(
 
   // power related
   input por_ni,                               // Power ON Reset
-  output logic vcc_pok_o,                     // VCC Power OK
-  output logic main_pok_o,                    // MAIN Power OK
-  output logic aon_pok_o,                     // AON Power OK
-  output logic [NumIoRails-1:0] io_pok_o,     // IO Rails Power OK
+  output logic vcmain_pok_o,                  // MAIN Power OK
+  output logic vcaon_pok_o,                   // AON Power OK
+  output logic vio1_pok_o,                    // IO Rail Power OK
+  output logic vio2_pok_o,                    // IO Rail Power OK
   input main_pd_ni,                           // MAIN Power Down
   input main_iso_en_i,                        // MAIN Isolation Enable
 
   // power OK control (for debug only). pok signal follows these inputs
   input vcc_supp_i,                           // VCC Supply Test
-  input main_supp_i,                          // MAIN Supply Test
-  input aon_supp_i,                           // AON Supply Test
-  input [NumIoRails-1:0] io_supp_i,           // IO Rails Supply Test
+  input vcmain_supp_i,                        // MAIN Supply Test
+  input vcaon_supp_i,                         // AON Supply Test
+  input vio1_supp_i,                          // IO Rails Supply Test
+  input vio2_supp_i,                          // IO Rails Supply Test
 
   // output clocks and associated controls
   output logic clk_src_sys_o,                 // SYS Source Clock
@@ -124,6 +124,9 @@ module ast #(
   output logic flash_power_down_h_o,          // Flash Power Down
   output logic flash_power_ready_h_o,         // Flash Power Ready
 
+  // analog debug signals
+  inout wire ast2pad_a_io,
+
   // pad mux related - DFT
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
   input [Pad2AstInWidth-1:0] padmux2ast_i,          // IO_2_DFT Input Signals
@@ -140,24 +143,23 @@ module ast #(
   // aon powers up after vcc
   always_ff @(posedge clk_ast_ext_i or negedge por_ni) begin
     if (!por_ni) begin
-      vcc_pok_o <= 1'b0;
-      aon_pok_o <= 1'b0;
+      vcaon_pok_o <= 1'b0;
     end else begin
-      vcc_pok_o <= 1'b1;
-      aon_pok_o <= vcc_pok_o;
+      vcaon_pok_o <= 1'b1;
     end
   end
 
   // blind assumption that these power up at the same time
   // The model should be changed to detect VIO inputs
-  assign io_pok_o = {NumIoRails{vcc_pok_o}};
+  assign vio1_pok_o = 1'b1;
+  assign vio2_pok_o = 1'b1;
 
   // main power domain power up
   always_ff @(posedge clk_ast_ext_i or negedge por_ni) begin
     if (!por_ni) begin
-      main_pok_o <= 1'b0;
+      vcmain_pok_o <= 1'b0;
     end else if (main_pd_ni) begin
-      main_pok_o <= 1'b1;
+      vcmain_pok_o <= 1'b1;
     end
   end
 

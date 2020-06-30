@@ -46,7 +46,7 @@ module rstmgr import rstmgr_pkg::*; (
   rstmgr_por i_por (
     .clk_i(clk_aon_i),
     .rst_ni,
-    .pok_i(ast_i.vcc_pok & ast_i.aon_pok),
+    .pok_i(ast_i.aon_pok),
     .rst_no(resets_o.rst_por_aon_n)
   );
 
