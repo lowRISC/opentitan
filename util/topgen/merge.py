@@ -125,6 +125,12 @@ def amend_ip(top, ip):
         else:
             ip_module["scan"] = "false"
 
+        # scan_reset
+        if "scan_reset" in ip:
+            ip_module["scan_reset"] = ip["scan_reset"]
+        else:
+            ip_module["scan_reset"] = "false"
+
         # inter-module
         if "inter_signal_list" in ip:
             ip_module["inter_signal_list"] = ip["inter_signal_list"]
