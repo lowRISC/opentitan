@@ -66,12 +66,15 @@
                   fields: [
                     { bits: "7:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion,
-                               Bit 1: Virtual open drain enable.
-                               Bit 2: Pull-down enable.
-                               Bit 3: Pull-up enable.
-                               Bit 4: Keeper enable.
-                               Bit 5: Drive strength (0: strong, 1: weak).
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
                       '''
                       resval: 0
                     }
@@ -98,12 +101,15 @@
                   fields: [
                     { bits: "7:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion,
-                               Bit 1: Virtual open drain enable.
-                               Bit 2: Pull-down enable.
-                               Bit 3: Pull-up enable.
-                               Bit 4: Keeper enable.
-                               Bit 5: Drive strength (0: strong, 1: weak).
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
                       '''
                       resval: 0
                     }

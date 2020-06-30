@@ -7,7 +7,7 @@
 # Parameter (given by Python tool)
 #  - n_dio_pads:      Number of dedicated IO pads
 #  - n_mio_pads:      Number of muxed IO pads
-#  - attr_dw:        Attribute datawidth
+#  - attr_dw:         Attribute datawidth
 {
   name: "PADCTRL",
   clock_primary: "clk_i",
@@ -29,7 +29,19 @@
     { name: "AttrDw",
       desc: "Pad attribute data width",
       type: "int",
-      default: "8",
+      default: "10",
+      local: "true"
+    },
+    { name: "MioVariant",
+      desc: "Pad variant to use for MIO pad",
+      type: "logic [NMioPads-1:0]",
+      default: "'0",
+      local: "true"
+    },
+    { name: "DioVariant",
+      desc: "Pad variant to use for DIO pad",
+      type: "logic [NDioPads-1:0]",
+      default: "'0",
       local: "true"
     },
   ],
@@ -64,14 +76,17 @@
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
-                    { bits: "7:0",
+                    { bits: "9:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion,
-                               Bit 1: Virtual open drain enable.
-                               Bit 2: Pull-down enable.
-                               Bit 3: Pull-up enable.
-                               Bit 4: Keeper enable.
-                               Bit 5: Drive strength (0: strong, 1: weak).
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Slew rate (0: slow, 1: fast).
+                               Bit 6/5: Drive strength (00: weakest, 11: strongest).
+                               Bit   7: Keeper enable.
+                               Bit   8: Schmitt trigger enable.
+                               Bit   9: Reserved.
                       '''
                       resval: 0
                     }
@@ -96,14 +111,17 @@
                   regwen:   "REGEN",
                   cname:    "ATTR",
                   fields: [
-                    { bits: "7:0",
+                    { bits: "9:0",
                       name: "ATTR",
-                      desc: '''Bit 0: input/output inversion,
-                               Bit 1: Virtual open drain enable.
-                               Bit 2: Pull-down enable.
-                               Bit 3: Pull-up enable.
-                               Bit 4: Keeper enable.
-                               Bit 5: Drive strength (0: strong, 1: weak).
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Slew rate (0: slow, 1: fast).
+                               Bit 6/5: Drive strength (00: weakest, 11: strongest).
+                               Bit   7: Keeper enable.
+                               Bit   8: Schmitt trigger enable.
+                               Bit   9: Reserved.
                       '''
                       resval: 0
                     }
