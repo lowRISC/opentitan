@@ -331,6 +331,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: gpio
@@ -380,6 +381,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: spi_device
@@ -506,6 +508,7 @@
       alert_list: []
       wakeup_list: []
       scan: "true"
+      scan_reset: "false"
     }
     {
       name: flash_ctrl
@@ -608,6 +611,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -657,6 +661,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: aes
@@ -685,6 +690,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: hmac
@@ -759,6 +765,7 @@
       ]
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: rv_plic
@@ -788,6 +795,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: pinmux
@@ -826,6 +834,7 @@
         }
       ]
       scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -888,6 +897,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: alert_handler
@@ -973,6 +983,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: pwrmgr
@@ -1019,6 +1030,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1148,7 +1160,8 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
-      scan: "false"
+      scan: "true"
+      scan_reset: "true"
       inter_signal_list:
       [
         {
@@ -1243,6 +1256,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1364,6 +1378,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
     }
     {
       name: usbdev
@@ -1640,6 +1655,7 @@
       alert_list: []
       wakeup_list: []
       scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {
