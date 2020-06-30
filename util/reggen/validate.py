@@ -316,6 +316,7 @@ top_optional = {
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'param_list': ['lp', "list of parameters of the IP"],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
+    'scan_reset': ['pb', 'Indicates the module have `test_rst_ni`'],
     'SPDX-License-Identifier': [
         's', "License ientifier (if using pure json) "
         "Only use this if unable to put this "
