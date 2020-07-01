@@ -95,6 +95,14 @@ clock_srcs_required = {
     'freq': ['s', 'frequency of clock in Hz'],
 }
 
+derived_clock_srcs_required = {
+    'name': ['s', 'name of clock group'],
+    'aon': ['s', 'yes, no. aon attribute of a clock'],
+    'freq': ['s', 'frequency of clock in Hz'],
+    'src': ['s', 'source clock'],
+    'div': ['d', 'ratio between source clock and derived clock'],
+}
+
 clock_groups_required = {
     'name': ['s', 'name of clock group'],
     'src': ['s', 'yes, no. This clock group is directly from source'],
@@ -209,14 +217,28 @@ def check_clock_groups(top):
 
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
+    error = 0
+
     # check clock fields are all there
+    ext_srcs = []
     for src in top['clocks']['srcs']:
         check_keys(src, clock_srcs_required, {}, {}, "Clock source")
+        ext_srcs.append(src['name'])
+
+    # check derived clock sources
+    log.info("Collected clocks are {}".format(ext_srcs))
+    for src in top['clocks']['derived_srcs']:
+        check_keys(src, derived_clock_srcs_required, {}, {}, "Derived clocks")
+        try:
+            ext_srcs.index(src['src'])
+        except Exception:
+            error += 1
+            log.error("{} is not a valid src for {}".format(src['src'], src['name']))
 
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']]
-    clock_srcs = [clock['name'] for clock in top['clocks']['srcs']]
-    error = 0
+    clock_srcs = [clock['name'] for clock in top['clocks']['srcs'] +
+                  top['clocks']['derived_srcs']]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
