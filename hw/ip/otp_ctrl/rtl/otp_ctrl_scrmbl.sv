@@ -81,7 +81,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // FSM //
   /////////
 
-  typedef enum logic [1:0] {Idle, DecPass, EncPass, Digest} state_e;
+  typedef enum logic [1:0] {IdleSt, DecPassSt, EncPassSt, DigestSt} state_e;
   state_e state_d, state_q;
   logic valid_d, valid_q;
 
@@ -106,17 +106,17 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
     unique case (state_q)
       // Idle State: decode command and
       // load working regs accordingly
-      Idle: begin
+      IdleSt: begin
         cnt_clr = 1'b1;
         ready_o = 1'b1;
 
         if (cmd_i == Decrypt && valid_i) begin
-          state_d            = DecPass;
+          state_d            = DecPassSt;
           key_state_sel      = SelDecKeyInit;
           data_state_low_en  = 1'b1;
           key_state_en       = 1'b1;
         end else if (cmd_i == Encrypt && valid_i) begin
-          state_d            = EncPass;
+          state_d            = EncPassSt;
           key_state_sel      = SelEncKeyInit;
           data_state_low_en  = 1'b1;
           key_state_en       = 1'b1;
@@ -125,17 +125,17 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
         end else if (cmd_i == LoadHigh && valid_i) begin
           data_state_high_en = 1'b1;
         end else if (cmd_i == DigestFirst && valid_i) begin
-          state_d            = Digest;
+          state_d            = DigestSt;
           data_state_sel     = SelDigestIV;
           data_state_low_en  = 1'b1;
           key_state_en       = 1'b1;
         end else if (cmd_i == DigestUpdate && valid_i) begin
-          state_d            = Digest;
+          state_d            = DigestSt;
           data_state_sel     = SelDigestState;
           data_state_low_en  = 1'b1;
           key_state_en       = 1'b1;
         end else if (cmd_i == DigestFinalize && valid_i) begin
-          state_d            = Digest;
+          state_d            = DigestSt;
           data_state_sel     = SelDigestState;
           key_state_sel      = SelDigestConst;
           data_state_low_en  = 1'b1;
@@ -146,39 +146,39 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
         // 2) encrypt, then digest
       end
       // perform 31 decrypt rounds
-      DecPass: begin
+      DecPassSt: begin
         data_state_sel  = SelDecDataOut;
         key_state_sel   = SelDecKeyOut;
         digest_state_en = 1'b1;
         key_state_en    = 1'b1;
         cnt_en          = 1'b1;
         if (cnt_q == NumPresentRounds-1) begin
-          state_d = Idle;
+          state_d = IdleSt;
           valid_d = 1'b1;
         end
       end
       // perform 31 encrypt rounds
-      EncPass: begin
+      EncPassSt: begin
         data_state_sel  = SelEncDataOut;
         key_state_sel   = SelEncKeyOut;
         digest_state_en = 1'b1;
         key_state_en    = 1'b1;
         cnt_en          = 1'b1;
         if (cnt_q == NumPresentRounds-1) begin
-          state_d = Idle;
+          state_d = IdleSt;
           valid_d = 1'b1;
         end
       end
       // perform 4 hashing rounds
       // this uses the encrypt path
-      Digest: begin
+      DigestSt: begin
         data_state_sel  = SelEncDataOut;
         key_state_sel   = SelEncKeyOut;
         digest_state_en = 1'b1;
         key_state_en    = 1'b1;
         cnt_en          = 1'b1;
         if (cnt_q == NumDigestRounds-1) begin
-          state_d = Idle;
+          state_d = IdleSt;
           valid_d = 1'b1;
           // backup state digest for further updates
           digest_state_en = 1'b1;
@@ -220,7 +220,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q           <= Idle;
+      state_q           <= IdleSt;
       cnt_q             <= '0;
       key_state_q       <= '0;
       data_state_low_q  <= '0;
