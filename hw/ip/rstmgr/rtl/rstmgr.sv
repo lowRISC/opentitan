@@ -15,6 +15,7 @@ module rstmgr import rstmgr_pkg::*; (
   input rst_ni,
   input clk_main_i,
   input clk_io_i,
+  input clk_io_div2_i,
   input clk_usb_i,
   input clk_aon_i,
 
@@ -44,7 +45,7 @@ module rstmgr import rstmgr_pkg::*; (
 
 );
 
-  localparam int NumRsts = 9;
+  localparam int NumRsts = 10;
   logic [NumRsts-1:0] raw_resets, muxed_resets;
   rstmgr_out_t resets_int;
 
@@ -76,6 +77,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(resets_o.rst_por_aon_n),
     .d(1'b1),
     .q(resets_int.rst_por_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) i_por_io_div2_sync (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(resets_o.rst_por_aon_n),
+    .d(1'b1),
+    .q(resets_int.rst_por_io_div2_n)
   );
 
   prim_flop_2sync #(
@@ -170,7 +181,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue('0)
   ) i_lc (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io_div2_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_int.rst_lc_n)
@@ -190,7 +201,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue('0)
   ) i_sys_io (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_int.rst_sys_io_n)
@@ -200,7 +211,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue('0)
   ) i_spi_device (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(reg2hw.rst_spi_device_n.q),
     .q(resets_int.rst_spi_device_n)
@@ -253,6 +264,7 @@ module rstmgr import rstmgr_pkg::*; (
                       resets_int.rst_por_aon_n,
                       resets_int.rst_por_n,
                       resets_int.rst_por_io_n,
+                      resets_int.rst_por_io_div2_n,
                       resets_int.rst_por_usb_n,
                       resets_int.rst_lc_n,
                       resets_int.rst_sys_io_n,
