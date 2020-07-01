@@ -45,40 +45,17 @@ package otp_ctrl_pkg;
   // Typedefs for LC Interface //
   ///////////////////////////////
 
-  // TODO: move to lc_ctrl_pkg
-  typedef enum logic [7:0] {
-    Value0 = 8'h 00,
-    Value1 = 8'h 6D,
-    Value2 = 8'h 94,
-    ValueF = 8'h FF
-  } lc_value_e;
-
-  // TODO: move to lc_ctrl_pkg
-  // typedef enum lc_value_e [5:0] {
-  localparam int LcGroups = 6;
-  localparam int LcWidth = $bits(lc_value_e) * LcGroups;
-  typedef enum logic [LcWidth-1:0] {
-    //                GRP5    GRP4    GRP3    GRP2    GRP1    GRP0
-    LcStateRaw     = {6{Value0}},
-    LcStateTest    = {Value0, Value0, Value0, Value0, Value0, Value1},
-    LcStateDev     = {Value0, Value0, Value2, Value2, Value1, Value1},
-    LcStateProd    = {Value0, Value0, Value2, Value1, Value2, Value1},
-    LcStateProdEnd = {Value0, Value0, Value1, Value2, Value2, Value1},
-    LcStateRma     = {Value1, Value1, Value2, ValueF, ValueF, Value1},
-    LcStateScrap   = {6{ValueF}}
-  } lc_state_e;
-
   typedef struct packed {
-    logic             lc_state_valid;
-    lc_value_e [5:0]  lc_state;
-    logic      [7:0]  id_state;
-    logic      [7:0]  test_state_cnt;
-    logic      [31:0] test_unlock_token;
-    logic      [31:0] test_exit_token;
-    logic      [63:0] rma_unlock_token;
-    logic      [7:0]  test_unlock_cnt;
-    logic      [7:0]  test_exit_cnt;
-    logic      [7:0]  rma_unlock_cnt;
+    logic                            lc_state_valid;
+    lifecycle_pkg::lc_value_e [5:0]  lc_state;
+    logic                     [7:0]  id_state;
+    logic                     [7:0]  test_state_cnt;
+    logic                     [31:0] test_unlock_token;
+    logic                     [31:0] test_exit_token;
+    logic                     [63:0] rma_unlock_token;
+    logic                     [7:0]  test_unlock_cnt;
+    logic                     [7:0]  test_exit_cnt;
+    logic                     [7:0]  rma_unlock_cnt;
     // this must be incremented upon each state change
     // also, each invalid otp_program_cmd_e command will increment
     // this counter.
@@ -114,19 +91,6 @@ package otp_ctrl_pkg;
   typedef struct packed {
     logic  done;
   } lc_otp_program_rsp_t;
-
-  // TODO: move this to the LC ctrl package
-  typedef enum logic [2:0] {
-    On  = 3'b101,
-    Off = 3'b000
-  } lc_tx_e;
-
-  // TODO: move this to the LC ctrl package
-  typedef struct packed {
-    lc_tx_e state;
-  } lc_tx_t;
-
-  parameter lc_tx_t LC_TX_DEFAULT = '{state: Off};
 
   ////////////////////////////////
   // Typedefs for Key Broadcast //

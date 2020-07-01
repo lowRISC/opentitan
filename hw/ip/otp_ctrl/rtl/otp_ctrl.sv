@@ -31,8 +31,8 @@ module otp_ctrl
   input  lc_otp_program_req_t       lc_otp_program_i,
   output lc_otp_program_rsp_t       lc_otp_program_o,
   // Lifecycle broadcast inputs
-  input  lc_tx_t                    lc_provision_en_i,
-  input  lc_tx_t                    lc_test_en_i,
+  input  lifecycle_pkg::lc_tx_t     lc_provision_en_i,
+  input  lifecycle_pkg::lc_tx_t     lc_test_en_i,
   // OTP broadcast outputs
   output otp_lc_data_t              otp_lc_data_o,
   output keymgr_key_t               otp_keymgr_key_o,

@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
+      - lowrisc:ip:lifecycle_pkg
 
     files:
       - rtl/otp_ctrl_reg_pkg.sv

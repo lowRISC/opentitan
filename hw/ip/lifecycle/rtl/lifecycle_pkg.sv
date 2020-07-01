@@ -13,7 +13,10 @@ package lifecycle_pkg;
     ValueF = 8'h FF
   } lc_value_e;
 
-  typedef enum lc_value_e [5:0] {
+  //typedef enum lc_value_e [5:0] {
+  localparam int LcStateGroups = 6;
+  localparam int LcStateWidth = $bits(lc_value_e) * LcStateGroups;
+  typedef enum logic [LcStateWidth-1:0] {
     //                GRP5    GRP4    GRP3    GRP2    GRP1    GRP0
     LcStateRaw     = {6{Value0}},
     LcStateTest    = {Value0, Value0, Value0, Value0, Value0, Value1},
@@ -24,7 +27,9 @@ package lifecycle_pkg;
     LcStateScrap   = {6{ValueF}}
   } lc_state_e;
 
-  typedef enum lc_value_e [2:0] {
+  localparam int LcRstGroups = 3;
+  localparam int LcRstWidth = $bits(lc_value_e) * LcRstGroups;
+  typedef enum lc_value_e [LcRstWidth-1:0] {
     StReset        = {Value0, Value0, Value0}, // idle 0 at reset, move to next
     StInitWait     = {Value0, Value0, Value1}, // make idle 1 and wait lc_init
     StOtpReq       = {Value0, Value1, Value1}, // wait otp_data.lc_state_valid
@@ -32,10 +37,12 @@ package lifecycle_pkg;
     StStrapReq     = {Value1, Value1, Value0}, // send req to pinmux to strap based on state
     StStrapCheck   = {Value1, Value1, Value1},
     StLcBroadcast  = {Value1, Value0, Value1}, // valid output to rest of IPs
-    StScrap        = {Value1, Value0, Value0}, // Virtual Scrap state if life cycle check failed
+    StScrap        = {Value1, Value0, Value0}  // Virtual Scrap state if life cycle check failed
   } rst_state_e;
 
-  typedef enum lc_value_e [1:0] {
+  localparam int LcOtpGroups = 2;
+  localparam int LcOtpWidth = $bits(lc_value_e) * LcOtpGroups;
+  typedef enum lc_value_e [LcOtpWidth-1:0] {
     StIdle       = {Value0, Value0},
     StOtpProgram = {Value0, Value1}, // Sending program req w/ command
     StOtpDone    = {Value1, Value1}  // Make Lifecycle waiting reset
@@ -50,7 +57,7 @@ package lifecycle_pkg;
     lc_tx_e state;
   } lc_tx_t;
 
-  parameter LC_TX_DEFAULT = '{state: Off};
+  parameter lc_tx_t LC_TX_DEFAULT = '{state: Off};
 
   // from otp_ctrl_pkg
   //typedef enum logic [15:0] {

@@ -14,6 +14,7 @@ filesets:
       - lowrisc:ip:pwrmgr_only_reg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:lifecycle_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_scrmbl.sv

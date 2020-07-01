@@ -10,3 +10,8 @@ filesets:
     files:
       - rtl/lifecycle_pkg.sv
     file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
