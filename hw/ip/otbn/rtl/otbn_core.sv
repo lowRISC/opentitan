@@ -50,7 +50,23 @@ module otbn_core
 
   // TODO: This is probably not the final OTBN implementation.
 
-  assign imem_req_o = 1'b0;
+  assign imem_req_o = 1'b1;
   assign dmem_req_o = 1'b0;
   assign done_o = 1'b0;
+
+
+  // Dummy gates for bronze
+
+  prim_gate_gen #(
+    .DataWidth (32),
+    .NumGates  (157000)
+  ) u_random_gates (
+    .clk_i,
+    .rst_ni,
+    .valid_i (start_i),
+    .data_i  (imem_rdata_i),
+    .data_o  (imem_wdata_o),
+    .valid_o (done_o)
+  );
+
 endmodule
