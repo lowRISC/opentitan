@@ -63,10 +63,9 @@ class esc_receiver_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(r_esc_rsp_q.size() > 0 && !under_reset);
       req = r_esc_rsp_q.pop_front();
-      $cast(rsp, req.clone());
+      `downcast(rsp, req.clone());
       rsp.set_id_info(req);
-      `uvm_info(`gfn,
-                $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
+      `uvm_info(`gfn, $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
                 req.r_esc_rsp, req.int_err), UVM_HIGH)
       fork
         begin : non_blocking_fork
@@ -110,21 +109,27 @@ class esc_receiver_driver extends alert_esc_base_driver;
       if (is_ping) begin
         int toggle_cycle = 1;
         if (req.int_err) toggle_cycle = $urandom_range(0, cfg.ping_timeout_cycle);
-          repeat (toggle_cycle) toggle_resp_signal(req);
-          is_ping = 0;
-        end
+        repeat (toggle_cycle) toggle_resp_signal(req);
+        is_ping = 0;
+      end
       if (req.int_err) reset_resp();
     end
   endtask
 
+  // If do not request int_err: Toggle resp_p/n for two cycles,
+  // first cycle drives resp_p = 1, resp_n = 0; second cycle drives resp_p = 0, resp_n = 1
+  // If request int_err: random drives resp_p/n for two cycles
   task toggle_resp_signal(alert_esc_seq_item req);
-    if (req.int_err) random_drive_resp_signal();
-    else set_resp();
-    @(cfg.vif.receiver_cb);
-
-    if (req.int_err) random_drive_resp_signal();
-    else reset_resp();
-    @(cfg.vif.receiver_cb);
+    bit first_cycle_finished;
+    repeat(2) begin
+      if (req.int_err) random_drive_resp_signal();
+      else begin
+        if (!first_cycle_finished) set_resp();
+        else reset_resp();
+      end
+      @(cfg.vif.receiver_cb);
+      first_cycle_finished = 1;
+    end
   endtask : toggle_resp_signal
 
   task random_drive_resp_signal();
