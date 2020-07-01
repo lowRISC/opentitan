@@ -536,6 +536,7 @@ class Regressions(Modes):
                         log.error(
                             "Test \"%s\" added to regression \"%s\" not found!",
                             test, regression_obj.name)
+                        continue
                     tests_objs.append(test_obj)
                 regression_obj.tests = tests_objs
 
