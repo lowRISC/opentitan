@@ -19,6 +19,7 @@ package rstmgr_pkg;
     logic rst_por_aon_n;
     logic rst_por_n;
     logic rst_por_io_n;
+    logic rst_por_io_div2_n;
     logic rst_por_usb_n;
     logic rst_lc_n;
     logic rst_sys_io_n;

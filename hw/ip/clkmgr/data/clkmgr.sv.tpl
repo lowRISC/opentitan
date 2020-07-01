@@ -26,6 +26,12 @@ module clkmgr import clkmgr_pkg::*; (
   % endif
 % endfor
 
+  // Resets for derived clocks
+  // clocks are derived locally
+% for src in div_srcs:
+  input rst_${src['name']}_ni,
+% endfor
+
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -62,6 +68,18 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
+  ////////////////////////////////////////////////////
+  // Divided clocks
+  ////////////////////////////////////////////////////
+% for src in div_srcs:
+  logic clk_${src['name']}_i;
+% endfor
+
+% for src in div_srcs:
+  assign clk_${src['name']}_i = clk_${src['src']}_i;
+% endfor
+
+
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -72,7 +90,6 @@ module clkmgr import clkmgr_pkg::*; (
 % for k,v in ft_clks.items():
   assign clocks_o.${k} = clk_${v}_i;
 % endfor
-
 
   ////////////////////////////////////////////////////
   // Root gating

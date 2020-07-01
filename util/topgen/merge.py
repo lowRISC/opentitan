@@ -444,6 +444,12 @@ def amend_clocks(top: OrderedDict):
     clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
 
+    # Assign default parameters to source clocks
+    for src in clks_attr['srcs']:
+        if 'derived' not in src:
+            src['derived'] = "no"
+            src['params'] = {}
+
     # Default assignments
     for group in clks_attr['groups']:
 
