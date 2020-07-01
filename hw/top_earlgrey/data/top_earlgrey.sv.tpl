@@ -32,18 +32,8 @@ dm_rst = top["reset_paths"]["lc"]
 module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0
 ) (
-  // Clock and Reset
-  input               clk_i,
+  // Reset, clocks defined as part of intermodule
   input               rst_ni,
-
-  // Fixed io clock
-  input               clk_io_i,
-
-  // USB clock
-  input               clk_usb_i,
-
-  // aon clock
-  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
@@ -759,6 +749,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % endif
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_clk_main, 0)
 
 endmodule
