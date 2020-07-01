@@ -1047,6 +1047,17 @@
           top_signame: flash_ctrl_flash
           index: -1
         }
+        {
+          struct: flash_key
+          type: uni
+          name: otp
+          act: rcv
+          package: otp_ctrl_pkg
+          inst_name: flash_ctrl
+          width: 1
+          top_signame: otp_ctrl_otp_flash_key
+          index: -1
+        }
       ]
     }
     {
@@ -1638,6 +1649,154 @@
       ]
     }
     {
+      name: otp_ctrl
+      type: otp_ctrl
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: lc
+      }
+      base_addr: 0x40130000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_secure
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: otp_access_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: otp_ctrl_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: otp_reg_parity_mismatch
+          width: 1
+          type: alert
+          async: 1
+        }
+        {
+          name: otp_reg_digest_mismatch
+          width: 1
+          type: alert
+          async: 1
+        }
+      ]
+      wakeup_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          struct: pwr_otp
+          type: req_rsp
+          name: pwr_otp_init
+          act: rsp
+          package: pwrmgr_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_signame: pwrmgr_aon_pwr_otp
+          index: -1
+        }
+        {
+          struct: otp_pwr_state
+          type: broadcast
+          name: otp_pwr_state
+          act: sender
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_otp_program
+          type: req_rsp
+          name: lc_otp_program
+          act: rsp
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: otp_lc_data
+          type: broadcast
+          name: otp_lc_data
+          act: sender
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx_t
+          type: broadcast
+          name: lc_provision_en
+          act: receiver
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx_t
+          type: broadcast
+          name: lc_test_en
+          act: receiver
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: keymgr_key
+          type: broadcast
+          name: otp_keymgr_key
+          act: sender
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: flash_key
+          type: uni
+          name: otp_flash_key
+          act: req
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_flash_key
+          index: -1
+        }
+      ]
+    }
+    {
       name: aes
       type: aes
       clock_srcs:
@@ -2145,6 +2304,8 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
+          width: 1
+          top_signame: pwrmgr_aon_pwr_otp
           index: -1
         }
         {
@@ -3352,6 +3513,14 @@
       [
         eflash.flash_ctrl
       ]
+      otp_ctrl.otp_flash_key:
+      [
+        flash_ctrl.otp
+      ]
+      pwrmgr_aon.pwr_otp:
+      [
+        otp_ctrl.pwr_otp_init
+      ]
       pwrmgr_aon.pwr_rst:
       [
         rstmgr_aon.pwr
@@ -3624,6 +3793,10 @@
               base_addr: 0x40110000
               size_byte: 0x20000
             }
+            {
+              base_addr: 0x40130000
+              size_byte: 0x1000
+            }
           ]
         }
         {
@@ -3871,6 +4044,7 @@
           i2c2
           pattgen
           sensor_ctrl
+          otp_ctrl
         ]
       }
       nodes:
@@ -4089,6 +4263,23 @@
           xbar: false
           pipeline_byp: "true"
         }
+        {
+          name: otp_ctrl
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: otp_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40130000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
       ]
       clock: clk_peri_i
     }
@@ -4287,6 +4478,7 @@
     nmi_gen
     usbdev_aon
     pwrmgr_aon
+    otp_ctrl
     uart1
     uart2
     uart3
@@ -4986,6 +5178,32 @@
       module_name: pwrmgr_aon
     }
     {
+      name: otp_ctrl_otp_access_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_otp_ctrl_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: otp_ctrl
+    }
+    {
       name: uart1_tx_watermark
       width: 1
       bits: "0"
@@ -5654,6 +5872,7 @@
     hmac
     kmac
     sensor_ctrl
+    otp_ctrl
   ]
   alert:
   [
@@ -5684,6 +5903,20 @@
       type: alert
       async: 1
       module_name: sensor_ctrl
+    }
+    {
+      name: otp_ctrl_otp_reg_parity_mismatch
+      width: 1
+      type: alert
+      async: 1
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_otp_reg_digest_mismatch
+      width: 1
+      type: alert
+      async: 1
+      module_name: otp_ctrl
     }
   ]
   pinmux:
@@ -6284,6 +6517,17 @@
         index: -1
       }
       {
+        struct: flash_key
+        type: uni
+        name: otp
+        act: rcv
+        package: otp_ctrl_pkg
+        inst_name: flash_ctrl
+        width: 1
+        top_signame: otp_ctrl_otp_flash_key
+        index: -1
+      }
+      {
         struct: tl_h2d
         type: uni
         name: ast_host
@@ -6336,6 +6580,83 @@
         inst_name: sensor_ctrl
         width: 1
         top_signame: sensor_ctrl_ast_status
+        index: -1
+      }
+      {
+        struct: pwr_otp
+        type: req_rsp
+        name: pwr_otp_init
+        act: rsp
+        package: pwrmgr_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_signame: pwrmgr_aon_pwr_otp
+        index: -1
+      }
+      {
+        struct: otp_pwr_state
+        type: broadcast
+        name: otp_pwr_state
+        act: sender
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_otp_program
+        type: req_rsp
+        name: lc_otp_program
+        act: rsp
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: otp_lc_data
+        type: broadcast
+        name: otp_lc_data
+        act: sender
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx_t
+        type: broadcast
+        name: lc_provision_en
+        act: receiver
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx_t
+        type: broadcast
+        name: lc_test_en
+        act: receiver
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: keymgr_key
+        type: broadcast
+        name: otp_keymgr_key
+        act: sender
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: flash_key
+        type: uni
+        name: otp_flash_key
+        act: req
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_flash_key
         index: -1
       }
       {
@@ -6429,6 +6750,8 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
+        width: 1
+        top_signame: pwrmgr_aon_pwr_otp
         index: -1
       }
       {
@@ -6861,6 +7184,27 @@
         package: flash_ctrl_pkg
         struct: flash_rsp
         signame: flash_ctrl_flash_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: flash_key
+        signame: otp_ctrl_otp_flash_key
+        width: 1
+        type: uni
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_otp_req
+        signame: pwrmgr_aon_pwr_otp_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_otp_rsp
+        signame: pwrmgr_aon_pwr_otp_rsp
         width: 1
         type: req_rsp
       }

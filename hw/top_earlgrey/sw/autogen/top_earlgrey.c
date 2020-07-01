@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[136] = {
+    top_earlgrey_plic_interrupt_for_peripheral[138] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -97,6 +97,8 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdUsbdevAonFrame] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdUsbdevAonConnected] = kTopEarlgreyPlicPeripheralUsbdevAon,
   [kTopEarlgreyPlicIrqIdPwrmgrAonWakeup] = kTopEarlgreyPlicPeripheralPwrmgrAon,
+  [kTopEarlgreyPlicIrqIdOtpCtrlOtpAccessDone] = kTopEarlgreyPlicPeripheralOtpCtrl,
+  [kTopEarlgreyPlicIrqIdOtpCtrlOtpCtrlErr] = kTopEarlgreyPlicPeripheralOtpCtrl,
   [kTopEarlgreyPlicIrqIdUart1TxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1RxWatermark] = kTopEarlgreyPlicPeripheralUart1,
   [kTopEarlgreyPlicIrqIdUart1TxEmpty] = kTopEarlgreyPlicPeripheralUart1,

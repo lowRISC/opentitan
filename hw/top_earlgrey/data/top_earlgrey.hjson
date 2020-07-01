@@ -203,6 +203,13 @@
       reset_connections: {rst_ni: "sys_io", rst_aon_ni: "por_aon", rst_sys_ni: "sys", rst_usb_ni: "usb"},
       base_addr: "0x40110000",
     },
+    { name: "otp_ctrl",
+      type: "otp_ctrl",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: "0x40130000",
+    },
     { name: "aes",
       type: "aes",
       clock_srcs: {clk_i: "main"},
@@ -397,6 +404,8 @@
   inter_module: {
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
+      'otp_ctrl.otp_flash_key': ['flash_ctrl.otp']
+      'pwrmgr_aon.pwr_otp'  : ['otp_ctrl.pwr_otp_init'],
       'pwrmgr_aon.pwr_rst'  : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'  : ['clkmgr_aon.pwr'],
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
@@ -449,7 +458,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
                      "hmac", "kmac", "alert_handler", "nmi_gen", "usbdev_aon",
-                     "pwrmgr_aon",
+                     "pwrmgr_aon", "otp_ctrl",
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2"]
 
@@ -464,7 +473,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the interrupt source
-  alert_module: [ "hmac", "kmac", "sensor_ctrl" ]
+  alert_module: [ "hmac", "kmac", "sensor_ctrl", "otp_ctrl"]
 
   // generated list of alerts:
   alert: [

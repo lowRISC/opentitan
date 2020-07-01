@@ -42,6 +42,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sensor_ctrl", '{
         '{32'h40110000, 32'h4012ffff}
+    }},
+    '{"otp_ctrl", '{
+        '{32'h40130000, 32'h40130fff}
 }}};
 
   // List of Xbar hosts
@@ -58,5 +61,6 @@ tl_host_t xbar_hosts[$] = '{
         "i2c1",
         "i2c2",
         "pattgen",
-        "sensor_ctrl"}}
+        "sensor_ctrl",
+        "otp_ctrl"}}
 };
