@@ -16,17 +16,16 @@ num_grps = len(grps)
 {
   name: "CLKMGR",
   clock_primary: "clk_i",
-  other_clock_list: [
-% for src in srcs:
-    "clk_${src['name']}_i",
-% endfor
-  ],
+  other_clock_list: [],
   reset_primary: "rst_ni",
   other_reset_list: [
 % for src in srcs:
     % if src['aon'] == 'no':
     "rst_${src['name']}_ni"
     % endif
+% endfor
+% for src in div_srcs:
+    "rst_${src['name']}_ni"
 % endfor
   ]
   bus_device: "tlul",
@@ -40,7 +39,6 @@ num_grps = len(grps)
     },
   ],
 
-  // Define rstmgr struct package
   inter_signal_list: [
     { struct:  "clkmgr_out",
       type:    "uni",
@@ -48,6 +46,16 @@ num_grps = len(grps)
       act:     "req",
       package: "clkmgr_pkg",
     },
+
+  // All clock inputs
+% for src in srcs:
+    { struct:  "logic",
+      type:    "uni",
+      name:    "clk_${src['name']}",
+      act:     "rcv",
+      package: "",
+    },
+% endfor
 
     { struct:  "pwr_clk",
       type:    "req_rsp",
