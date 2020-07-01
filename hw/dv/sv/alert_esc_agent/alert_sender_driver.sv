@@ -37,7 +37,7 @@ class alert_sender_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(s_alert_send_q.size() > 0 && !under_reset);
       req = s_alert_send_q.pop_front();
-      $cast(rsp, req.clone());
+      `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -65,7 +65,7 @@ class alert_sender_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(s_alert_ping_rsp_q.size() > 0 && !under_reset);
       req = s_alert_ping_rsp_q.pop_front();
-      $cast(rsp, req.clone());
+      `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -105,6 +105,7 @@ class alert_sender_driver extends alert_esc_base_driver;
     if (!req.int_err) begin
       set_alert_pins(alert_delay);
       reset_alert_pins(ack_delay);
+
     // alert signals integrity fail
     end else begin
       if (req.alert_int_err_type & HasAlertBeforeIntFailOnly) set_alert_pins(alert_delay);
@@ -115,12 +116,15 @@ class alert_sender_driver extends alert_esc_base_driver;
         reset_alert();
       end
     end
+
   endtask : drive_alert_pins
 
   // this task set alert_p=1 and alert_n=0 after certain delay
   virtual task set_alert_pins(int alert_delay);
-    @(cfg.vif.sender_cb);
-    repeat (alert_delay) @(cfg.vif.sender_cb);
+    repeat (alert_delay + 1) begin
+      if (under_reset) return;
+      else @(cfg.vif.sender_cb);
+    end
     set_alert();
   endtask : set_alert_pins
 

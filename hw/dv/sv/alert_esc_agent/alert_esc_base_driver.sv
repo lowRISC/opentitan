@@ -30,7 +30,7 @@ class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_es
     forever begin
       alert_esc_seq_item req_clone;
       seq_item_port.get(req);
-      $cast(req_clone, req.clone());
+      `downcast(req_clone, req.clone());
       req_clone.set_id_info(req);
       // TODO: if any of the queue size is larger than 2, need additional support
       if (req.r_alert_ping_send) r_alert_ping_send_q.push_back(req_clone);

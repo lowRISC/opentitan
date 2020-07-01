@@ -35,7 +35,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(r_alert_ping_send_q.size() > 0 && !under_reset);
       req = r_alert_ping_send_q.pop_front();
-      $cast(rsp, req.clone());
+      `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
@@ -61,7 +61,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
       alert_esc_seq_item req, rsp;
       wait(r_alert_rsp_q.size() > 0 && !under_reset);
       req = r_alert_rsp_q.pop_front();
-      $cast(rsp, req.clone());
+      `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
           $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
