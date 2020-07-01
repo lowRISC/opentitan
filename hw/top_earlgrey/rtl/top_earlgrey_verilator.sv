@@ -75,11 +75,11 @@ module top_earlgrey_verilator (
 
   // Top-level design
   top_earlgrey top_earlgrey (
-    .clk_i                      (clk_i),
     .rst_ni                     (rst_ni),
-    .clk_io_i                   (clk_i),
-    .clk_usb_i                  (clk_i),
-    .clk_aon_i                  (clk_i),
+    .clkmgr_clk_main            (clk_i),
+    .clkmgr_clk_io              (clk_i),
+    .clkmgr_clk_usb             (clk_i),
+    .clkmgr_clk_aon             (clk_i),
 
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),

@@ -210,11 +210,11 @@ module top_earlgrey_nexysvideo #(
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
-    .clk_i           ( clk           ),
     .rst_ni          ( rst_n         ),
-    .clk_io_i        ( clk           ),
-    .clk_aon_i       ( clk           ),
-    .clk_usb_i       ( clk_usb_48mhz ),
+    .clkmgr_clk_main ( clk           ),
+    .clkmgr_clk_io   ( clk           ),
+    .clkmgr_clk_usb  ( clk_usb_48mhz ),
+    .clkmgr_clk_aon  ( clk           ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),
