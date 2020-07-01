@@ -6,18 +6,8 @@ module top_earlgrey #(
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
-  // Clock and Reset
-  input               clk_i,
+  // Reset, clocks defined as part of intermodule
   input               rst_ni,
-
-  // Fixed io clock
-  input               clk_io_i,
-
-  // USB clock
-  input               clk_usb_i,
-
-  // aon clock
-  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
@@ -41,6 +31,12 @@ module top_earlgrey #(
   output logic[padctrl_reg_pkg::NDioPads-1:0]
               [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
+
+  // Inter-module Signal External type
+  input  logic       clkmgr_clk_main,
+  input  logic       clkmgr_clk_io,
+  input  logic       clkmgr_clk_usb,
+  input  logic       clkmgr_clk_aon,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -758,8 +754,8 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .wakeups_i(pwrmgr_wakeups),
       .rstreqs_i('0),
-      .clk_i (clk_io_i),
-      .clk_slow_i (clk_aon_i),
+      .clk_i (clkmgr_clocks.clk_io_powerup),
+      .clk_slow_i (clkmgr_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_resets.rst_por_n),
       .rst_slow_ni (rstmgr_resets.rst_por_aon_n)
   );
@@ -777,11 +773,12 @@ module top_earlgrey #(
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
       .scanmode_i   (scanmode_i),
       .scan_rst_ni  (scan_rst_ni),
-      .clk_i (clk_io_i),
-      .clk_aon_i (clk_aon_i),
-      .clk_main_i (clk_i),
-      .clk_io_i (clk_io_i),
-      .clk_usb_i (clk_usb_i),
+      .clk_i (clkmgr_clocks.clk_io_powerup),
+      .clk_aon_i (clkmgr_clocks.clk_aon_powerup),
+      .clk_main_i (clkmgr_clocks.clk_main_powerup),
+      .clk_io_i (clkmgr_clocks.clk_io_powerup),
+      .clk_usb_i (clkmgr_clocks.clk_usb_powerup),
+      .clk_io_div2_i (clkmgr_clocks.clk_io_div2_powerup),
       .rst_ni (rst_ni)
   );
 
@@ -791,19 +788,20 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_clocks),
+      .clk_main_i(clkmgr_clk_main),
+      .clk_io_i(clkmgr_clk_io),
+      .clk_usb_i(clkmgr_clk_usb),
+      .clk_aon_i(clkmgr_clk_aon),
       .pwr_i(pwrmgr_pwr_clk_req),
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
       .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
-      .clk_i (clk_io_i),
-      .clk_main_i (clk_i),
-      .clk_io_i (clk_io_i),
-      .clk_usb_i (clk_usb_i),
-      .clk_aon_i (clk_aon_i),
+      .clk_i (clkmgr_clocks.clk_io_powerup),
       .rst_ni (rstmgr_resets.rst_por_io_n),
       .rst_main_ni (rstmgr_resets.rst_por_n),
       .rst_io_ni (rstmgr_resets.rst_por_io_n),
-      .rst_usb_ni (rstmgr_resets.rst_por_usb_n)
+      .rst_usb_ni (rstmgr_resets.rst_por_usb_n),
+      .rst_io_div2_ni (rstmgr_resets.rst_por_io_div2_n)
   );
 
   nmi_gen u_nmi_gen (
@@ -893,7 +891,6 @@ module top_earlgrey #(
 
       // Inter-module signals
       .idle_o(),
-
       .clk_i (clkmgr_clocks.clk_main_otbn),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -1091,6 +1088,6 @@ module top_earlgrey #(
   assign cio_usbdev_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_clk_main, 0)
 
 endmodule
