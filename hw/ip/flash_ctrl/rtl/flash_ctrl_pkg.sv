@@ -116,22 +116,6 @@ package flash_ctrl_pkg;
     init_busy:  1'b0
   };
 
-  ////////////////////////////
-  // The following inter-module should be moved to OTP
-  ////////////////////////////
-
-  // otp to flash_phy
-  typedef struct packed {
-    logic [127:0] addr_key;
-    logic [127:0] data_key;
-  } otp_flash_t;
-
-  // default value of otp_flash_t
-  parameter otp_flash_t OTP_FLASH_DEFAULT = '{
-    addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
-  };
-
 
 
 endpackage : flash_ctrl_pkg

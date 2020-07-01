@@ -21,7 +21,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   output       flash_req_t flash_o,
 
   // OTP Interface
-  input        otp_flash_t otp_i,
+  input        otp_ctrl_pkg::flash_key_t otp_i,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty

@@ -111,6 +111,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_i2c2_d_d2h;
   tl_h2d_t  tl_sensor_ctrl_d_h2d;
   tl_d2h_t  tl_sensor_ctrl_d_d2h;
+  tl_h2d_t  tl_otp_ctrl_d_h2d;
+  tl_d2h_t  tl_otp_ctrl_d_d2h;
   tl_h2d_t  tl_aes_d_h2d;
   tl_d2h_t  tl_aes_d_d2h;
   tl_h2d_t  tl_hmac_d_h2d;
@@ -217,6 +219,7 @@ module top_earlgrey #(
   logic        cio_i2c2_scl_d2p;
   logic        cio_i2c2_scl_en_d2p;
   // sensor_ctrl
+  // otp_ctrl
   // aes
   // hmac
   // kmac
@@ -286,7 +289,7 @@ module top_earlgrey #(
   // entropy_src
 
 
-  logic [135:0]  intr_vector;
+  logic [137:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -361,6 +364,8 @@ module top_earlgrey #(
   logic intr_i2c2_sda_interference;
   logic intr_i2c2_stretch_timeout;
   logic intr_i2c2_sda_unstable;
+  logic intr_otp_ctrl_otp_access_done;
+  logic intr_otp_ctrl_otp_ctrl_err;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -423,6 +428,9 @@ module top_earlgrey #(
   // define inter-module signals
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
+  otp_ctrl_pkg::flash_key_t       otp_ctrl_otp_flash_key;
+  pwrmgr_pkg::pwr_otp_req_t       pwrmgr_aon_pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -874,6 +882,7 @@ module top_earlgrey #(
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
+      .otp_i(otp_ctrl_otp_flash_key),
 
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n)
@@ -1003,6 +1012,30 @@ module top_earlgrey #(
       .rst_usb_ni (rstmgr_aon_resets.rst_usb_n)
   );
 
+  otp_ctrl u_otp_ctrl (
+      .tl_i (tl_otp_ctrl_d_h2d),
+      .tl_o (tl_otp_ctrl_d_d2h),
+
+      // Interrupt
+      .intr_otp_access_done_o (intr_otp_ctrl_otp_access_done),
+      .intr_otp_ctrl_err_o    (intr_otp_ctrl_otp_ctrl_err),
+
+      // [1]: otp_reg_parity_mismatch
+      // [2]: otp_reg_digest_mismatch
+      .alert_tx_o  ( alert_tx[2:1] ),
+      .alert_rx_i  ( alert_rx[2:1] ),
+
+      // Inter-module signals
+      .pwr_otp_init_i(pwrmgr_aon_pwr_otp_req),
+      .pwr_otp_init_o(pwrmgr_aon_pwr_otp_rsp),
+      .lc_otp_program_i(otp_ctrl_pkg::LC_OTP_PROGRAM_REQ_DEFAULT),
+      .lc_otp_program_o(),
+      .otp_flash_key_o(otp_ctrl_otp_flash_key),
+
+      .clk_i (clkmgr_aon_clocks.clk_io_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n)
+  );
+
   aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
@@ -1020,9 +1053,9 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
 
-      // [1]: msg_push_sha_disabled
-      .alert_tx_o  ( alert_tx[1:1] ),
-      .alert_rx_i  ( alert_rx[1:1] ),
+      // [3]: msg_push_sha_disabled
+      .alert_tx_o  ( alert_tx[3:3] ),
+      .alert_rx_i  ( alert_rx[3:3] ),
 
       .clk_i (clkmgr_aon_clocks.clk_main_hmac),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
@@ -1037,10 +1070,10 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
 
-      // [2]: sram_uncorrectable
-      // [3]: data_parity
-      .alert_tx_o  ( alert_tx[3:2] ),
-      .alert_rx_i  ( alert_rx[3:2] ),
+      // [4]: sram_uncorrectable
+      // [5]: data_parity
+      .alert_tx_o  ( alert_tx[5:4] ),
+      .alert_rx_i  ( alert_rx[5:4] ),
 
       // Inter-module signals
       .keymgr_key_i(keymgr_kmac_key),
@@ -1145,8 +1178,8 @@ module top_earlgrey #(
       .pwr_rst_i(pwrmgr_aon_pwr_rst_rsp),
       .pwr_clk_o(pwrmgr_aon_pwr_clk_req),
       .pwr_clk_i(pwrmgr_aon_pwr_clk_rsp),
-      .pwr_otp_o(),
-      .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
+      .pwr_otp_o(pwrmgr_aon_pwr_otp_req),
+      .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(),
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
       .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
@@ -1446,6 +1479,8 @@ module top_earlgrey #(
       intr_uart1_tx_empty,
       intr_uart1_rx_watermark,
       intr_uart1_tx_watermark,
+      intr_otp_ctrl_otp_ctrl_err,
+      intr_otp_ctrl_otp_access_done,
       intr_pwrmgr_aon_wakeup,
       intr_usbdev_aon_connected,
       intr_usbdev_aon_frame,
@@ -1578,6 +1613,8 @@ module top_earlgrey #(
     .tl_pattgen_i     (tl_pattgen_d_d2h),
     .tl_sensor_ctrl_o (tl_sensor_ctrl_d_h2d),
     .tl_sensor_ctrl_i (tl_sensor_ctrl_d_d2h),
+    .tl_otp_ctrl_o    (tl_otp_ctrl_d_h2d),
+    .tl_otp_ctrl_i    (tl_otp_ctrl_d_d2h),
 
     .scanmode_i
   );

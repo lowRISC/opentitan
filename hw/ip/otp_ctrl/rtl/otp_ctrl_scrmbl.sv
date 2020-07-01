@@ -41,6 +41,8 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   data_state_sel_e  data_state_sel;
   key_state_sel_e   key_state_sel;
   logic data_state_low_en, data_state_high_en, digest_state_en, key_state_en;
+  logic [PresentBlockSize-1:0] enc_data_in, enc_data_out, dec_data_in, dec_data_out;
+  logic [PresentKeySize-1:0] enc_key_in, enc_key_out, dec_key_in, dec_key_out;
 
   assign data_state_d    = (data_state_sel == SelEncDataOut)  ? enc_data_out   :
                            (data_state_sel == SelDecDataOut)  ? dec_data_out   :
@@ -84,6 +86,9 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   logic valid_d, valid_q;
 
   assign valid_o = valid_q;
+
+  // Okay to leave encrypted data here all the time since it is...encrypted...
+  assign data_o  = (data_state_sel == SelDecDataOut) ? dec_data_out : enc_data_out;
 
   always_comb begin : p_fsm
     state_d            = state_q;

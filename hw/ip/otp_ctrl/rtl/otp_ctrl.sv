@@ -24,12 +24,12 @@ module otp_ctrl
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Power manager interface
-  input  pwr_otp_init_req_t         pwr_otp_init_req_i,
-  output pwr_otp_init_rsp_t         pwr_otp_init_rsp_o,
+  input  pwrmgr_pkg::pwr_otp_req_t  pwr_otp_init_i,
+  output pwrmgr_pkg::pwr_otp_rsp_t  pwr_otp_init_o,
   output otp_pwr_state_t            otp_pwr_state_o,
   // Lifecycle transition command interface
-  input  lc_otp_program_req_t       lc_otp_program_req_i,
-  output lc_otp_program_rsp_t       lc_otp_program_rsp_o,
+  input  lc_otp_program_req_t       lc_otp_program_i,
+  output lc_otp_program_rsp_t       lc_otp_program_o,
   // Lifecycle broadcast inputs
   input  lc_tx_t                    lc_provision_en_i,
   input  lc_tx_t                    lc_test_en_i,
@@ -225,6 +225,23 @@ module otp_ctrl
   // Dummy Connections and Tie Off //
   ///////////////////////////////////
 
+  tlul_pkg::tl_h2d_t unused_tlul_link;
+  assign unused_tlul_link = tl_win_h2d[0];
+
+
+  assign tl_win_d2h[0] = ' {
+    d_valid  : '0,
+    d_opcode : tlul_pkg::AccessAck,
+    d_param  : '0,
+    d_size   : '0,
+    d_source : '0,
+    d_sink   : '0,
+    d_data   : '0,
+    d_user   : '0,
+    d_error  : '0,
+    a_ready  : 1'b1
+  };
+
   always_comb begin : p_tie_off_or_connect
     // tie off
     hw2reg.status                  = '0;
@@ -243,20 +260,38 @@ module otp_ctrl
     // TODO: initialization should only performed once after reset. subsequent
     // init requests should just be immediately ack'ed without performing the complete
     // OTP boot sequence.
-    pwr_otp_init_rsp_o   = '0;
+    pwr_otp_init_o.otp_done    = 1'b1;
+    pwr_otp_init_o.otp_idle    = 1'b1;
     otp_pwr_state_o      = '0;
-    lc_otp_program_rsp_o = '0;
+    lc_otp_program_o     = '0;
     otp_lc_data_o        = '0;
     otp_keymgr_key_o     = '0;
-    otp_flash_key_o      = '0;
+
 
     // dummy connections
     {hw2reg.direct_access_rdata[0].d,
      hw2reg.direct_access_rdata[1].d} = otp_scrambler_out ^ {gate_gen_out, gate_gen_out};
-    hw2reg.direct_access_rdata[0].de = gate_gen_out_valid ^ gate_gen_out_valid;
-    hw2reg.direct_access_rdata[1].de = gate_gen_out_valid ^ gate_gen_out_valid;
+    hw2reg.direct_access_rdata[0].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
+    hw2reg.direct_access_rdata[1].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
     hw2reg.lc_state[0]               = otp_rdata ^ {8{otp_rvalid}};
   end
+
+  // Dummy registers for flash key
+  localparam int Entries = FlashKeyWidth/32;
+  logic [Entries-1:0][31:0] addr_key_q, data_key_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_key_q <= '0;
+      data_key_q <= '0;
+    end else if (tl_win_h2d[1].a_valid) begin
+      addr_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
+      data_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
+    end
+  end
+
+  assign otp_flash_key_o.addr_key = addr_key_q;
+  assign otp_flash_key_o.data_key = data_key_q;
 
 
 endmodule : otp_ctrl

@@ -27,3 +27,4 @@ xbar_peri dut(
 `CONNECT_TL_DEVICE_IF(i2c2)
 `CONNECT_TL_DEVICE_IF(pattgen)
 `CONNECT_TL_DEVICE_IF(sensor_ctrl)
+`CONNECT_TL_DEVICE_IF(otp_ctrl)

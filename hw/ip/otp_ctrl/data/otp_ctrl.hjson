@@ -85,11 +85,11 @@
   /////////////////////////////
   inter_signal_list: [
     // Power manager init command
-    { struct: "pwr_otp_init"
+    { struct: "pwr_otp"
       type:   "req_rsp"
       name:   "pwr_otp_init"
-      act:    "receiver"
-      package: "otp_ctrl_pkg"
+      act:    "rsp"
+      package: "pwrmgr_pkg"
     }
     // Status output to power manager
     { struct: "otp_pwr_state"
@@ -102,7 +102,7 @@
     { struct: "lc_otp_program"
       type:   "req_rsp"
       name:   "lc_otp_program"
-      act:    "receiver"
+      act:    "rsp"
       package: "otp_ctrl_pkg"
     }
     // Broadcast to LC
@@ -134,9 +134,9 @@
     }
     //Broadcast to Flash Controller
     { struct: "flash_key"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"
       name:   "otp_flash_key"
-      act:    "sender"
+      act:    "req"
       package: "otp_ctrl_pkg"
     }
   ] // inter_signal_list

@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:otp
+      - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:otp_ctrl_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv

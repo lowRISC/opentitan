@@ -86,5 +86,11 @@ module xbar_peri_bind;
     .h2d    (tl_sensor_ctrl_o),
     .d2h    (tl_sensor_ctrl_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_otp_ctrl (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_otp_ctrl_o),
+    .d2h    (tl_otp_ctrl_i)
+  );
 
 endmodule

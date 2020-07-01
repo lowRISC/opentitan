@@ -22,11 +22,11 @@
       package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
     },
 
-    { struct: "otp_flash",
+    { struct: "flash_key",
       type: "uni",
       name: "otp",
       act:  "rcv",
-      package: "flash_ctrl_pkg"
+      package: "otp_ctrl_pkg"
     }
 
   ],
