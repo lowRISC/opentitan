@@ -30,6 +30,10 @@ module clkmgr import clkmgr_pkg::*; (
   input rst_usb_ni,
   input clk_aon_i,
 
+  // Resets for derived clocks
+  // clocks are derived locally
+  input rst_io_div2_ni,
+
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -66,6 +70,14 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
+  ////////////////////////////////////////////////////
+  // Divided clocks
+  ////////////////////////////////////////////////////
+  logic clk_io_div2_i;
+
+  assign clk_io_div2_i = clk_io_i;
+
+
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -73,8 +85,11 @@ module clkmgr import clkmgr_pkg::*; (
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_aon_i = clk_aon_i;
-
+  assign clocks_o.clk_io_powerup = clk_io_i;
+  assign clocks_o.clk_aon_powerup = clk_aon_i;
+  assign clocks_o.clk_main_powerup = clk_main_i;
+  assign clocks_o.clk_usb_powerup = clk_usb_i;
+  assign clocks_o.clk_io_div2_powerup = clk_io_div2_i;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -88,6 +103,8 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_en;
   logic clk_usb_root;
   logic clk_usb_en;
+  logic clk_io_div2_root;
+  logic clk_io_div2_en;
 
   prim_clock_gating_sync i_main_cg (
     .clk_i(clk_main_i),
@@ -113,12 +130,21 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
+  prim_clock_gating_sync i_io_div2_cg (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .test_en_i(dft_i.test_en),
+    .async_en_i(pwr_i.ip_clk_en),
+    .en_o(clk_io_div2_en),
+    .clk_o(clk_io_div2_root)
+  );
 
   // an async OR of all the synchronized enables
   assign async_roots_en =
     clk_main_en |
     clk_io_en |
-    clk_usb_en;
+    clk_usb_en |
+    clk_io_div2_en;
 
   // Sync the OR back into clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce

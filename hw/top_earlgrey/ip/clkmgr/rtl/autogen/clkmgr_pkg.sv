@@ -17,7 +17,11 @@ package clkmgr_pkg;
   };
 
   typedef struct packed {
-  logic clk_aon_i;
+  logic clk_io_powerup;
+  logic clk_aon_powerup;
+  logic clk_main_powerup;
+  logic clk_usb_powerup;
+  logic clk_io_div2_powerup;
   logic clk_main_aes;
   logic clk_main_hmac;
   logic clk_main_otbn;
