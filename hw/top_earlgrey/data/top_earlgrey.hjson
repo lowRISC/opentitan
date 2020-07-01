@@ -25,12 +25,22 @@
     // aon:  Whether the clock is free running all the time.
     //       If it is, the clock is not hanlded by clkmgr.
     // freq: Absolute frequency of clk in Hz
-
     srcs: [
       { name: "main", aon: "no",  freq: "100000000" }
       { name: "io",   aon: "no",  freq: "100000000" }
       { name: "usb",  aon: "no",  freq: "48000000" }
       { name: "aon",  aon: "yes", freq: "200000" }
+    ],
+
+    // Derived clock source attributes
+    // name: Name of group.
+    // aon:  Whether the clock is free running all the time.
+    //       If it is, the clock is not hanlded by clkmgr.
+    // freq: Absolute frequency of clk in Hz
+    // src:  From which clock source is the clock derived
+    // div:  Ratio between derived clock and source clock
+    derived_srcs: [
+      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "50000000" }
     ],
 
     // Clock Group attributes
@@ -56,7 +66,8 @@
     // The proc group is not peripheral, and direclty hardwired
 
     groups: [
-      { name: "powerup", src:"ext", sw_cg: "no"                   }
+      // the powerup group is used exclusively by clk/pwr/rstmgr
+      { name: "powerup", src:"top", sw_cg: "no"                   }
       { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
       { name: "infra",   src:"top", sw_cg: "no",                  }
       { name: "secure",  src:"top", sw_cg: "no"                   }
@@ -93,12 +104,13 @@
     { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
     { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
     //{ name: "por_rbox",   type: "top",  root: "por_aon", clk: "io",  sw:1  }
+    { name: "por_io_div2",type: "top",  root: "por_aon", clk: "io_div2"    }
     { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
     { name: "lc",         type: "top",  root: "lc",      clk: "io"         }
     { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
-    { name: "sys_io",     type: "top",  root: "sys",     clk: "io"         }
-    { name: "sys_aon",    type: "top",  root: "sys",     clk: "io"         }
-    { name: "spi_device", type: "top",  root: "sys",     clk: "io",  sw: 1 }
+    { name: "sys_io",     type: "top",  root: "sys",     clk: "io_div2"    }
+    { name: "sys_aon",    type: "top",  root: "sys",     clk: "io_div2"    }
+    { name: "spi_device", type: "top",  root: "sys",     clk: "io_div2",  sw: 1 }
     { name: "usb",        type: "top",  root: "sys",     clk: "usb", sw: 1 }
   ]
 
@@ -288,17 +300,20 @@
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
-      clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb"},
+      clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+                   clk_io_div2_i: "io_div2"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x40410000",
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
-      clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
+      //clock_srcs: {clk_i: "io", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"},
-      base_addr: "0x40420000",
+      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
+                          rst_io_div2_ni: "por_io_div2", },
+      base_addr: "0x400C0000",
       generated: "true"
     },
     { name: "rbox_aon",
@@ -464,7 +479,8 @@
     'external': ['sensor_ctrl.ast_host', 'sensor_ctrl.ast_dev', 'sensor_ctrl.ast_status',
                  'sensor_ctrl.ast_alert', 'sensor_ctrl.ast_aux', 'pwrmgr_aon.pwr_ast',
                  'rstmgr_aon.ast', 'usbdev_aon.usb_ref_pulse', 'usbdev_aon.usb_ref_val',
-                 'entropy_src.entropy_src_rng'],
+                 'entropy_src.entropy_src_rng',
+                 'clkmgr.clk_main', 'clkmgr.clk_io', 'clkmgr.clk_usb', 'clkmgr.clk_aon'],
   },
 
   debug_mem_base_addr: "0x1A110000",
