@@ -29,7 +29,7 @@ package lifecycle_pkg;
 
   localparam int LcRstGroups = 3;
   localparam int LcRstWidth = $bits(lc_value_e) * LcRstGroups;
-  typedef enum lc_value_e [LcRstWidth-1:0] {
+  typedef enum logic [LcRstWidth-1:0] {
     StReset        = {Value0, Value0, Value0}, // idle 0 at reset, move to next
     StInitWait     = {Value0, Value0, Value1}, // make idle 1 and wait lc_init
     StOtpReq       = {Value0, Value1, Value1}, // wait otp_data.lc_state_valid
@@ -42,7 +42,7 @@ package lifecycle_pkg;
 
   localparam int LcOtpGroups = 2;
   localparam int LcOtpWidth = $bits(lc_value_e) * LcOtpGroups;
-  typedef enum lc_value_e [LcOtpWidth-1:0] {
+  typedef enum logic [LcOtpWidth-1:0] {
     StIdle       = {Value0, Value0},
     StOtpProgram = {Value0, Value1}, // Sending program req w/ command
     StOtpDone    = {Value1, Value1}  // Make Lifecycle waiting reset
