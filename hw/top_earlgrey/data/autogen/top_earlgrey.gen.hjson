@@ -1731,9 +1731,9 @@
         }
         {
           struct: otp_pwr_state
-          type: broadcast
+          type: uni
           name: otp_pwr_state
-          act: sender
+          act: req
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
@@ -1749,36 +1749,36 @@
         }
         {
           struct: otp_lc_data
-          type: broadcast
+          type: uni
           name: otp_lc_data
-          act: sender
+          act: req
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
         }
         {
-          struct: lc_tx_t
-          type: broadcast
+          struct: lc_tx
+          type: uni
           name: lc_provision_en
-          act: receiver
+          act: rsp
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
         }
         {
-          struct: lc_tx_t
-          type: broadcast
+          struct: lc_tx
+          type: uni
           name: lc_test_en
-          act: receiver
+          act: rsp
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
         }
         {
           struct: keymgr_key
-          type: broadcast
+          type: uni
           name: otp_keymgr_key
-          act: sender
+          act: req
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
@@ -1793,6 +1793,18 @@
           width: 1
           top_type: broadcast
           top_signame: otp_ctrl_otp_flash_key
+          index: -1
+        }
+        {
+          struct: sram_key
+          type: uni
+          name: otp_sram_key
+          act: req
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_sram_key
           index: -1
         }
       ]
@@ -3604,6 +3616,7 @@
       [
         flash_ctrl.otp
       ]
+      otp_ctrl.otp_sram_key: []
       pwrmgr_aon.pwr_otp:
       [
         otp_ctrl.pwr_otp_init
@@ -6750,9 +6763,9 @@
       }
       {
         struct: otp_pwr_state
-        type: broadcast
+        type: uni
         name: otp_pwr_state
-        act: sender
+        act: req
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
@@ -6768,36 +6781,36 @@
       }
       {
         struct: otp_lc_data
-        type: broadcast
+        type: uni
         name: otp_lc_data
-        act: sender
+        act: req
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
       }
       {
-        struct: lc_tx_t
-        type: broadcast
+        struct: lc_tx
+        type: uni
         name: lc_provision_en
-        act: receiver
+        act: rsp
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
       }
       {
-        struct: lc_tx_t
-        type: broadcast
+        struct: lc_tx
+        type: uni
         name: lc_test_en
-        act: receiver
+        act: rsp
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
       }
       {
         struct: keymgr_key
-        type: broadcast
+        type: uni
         name: otp_keymgr_key
-        act: sender
+        act: req
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
@@ -6812,6 +6825,18 @@
         width: 1
         top_type: broadcast
         top_signame: otp_ctrl_otp_flash_key
+        index: -1
+      }
+      {
+        struct: sram_key
+        type: uni
+        name: otp_sram_key
+        act: req
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_sram_key
         index: -1
       }
       {
@@ -7355,6 +7380,13 @@
         package: otp_ctrl_pkg
         struct: flash_key
         signame: otp_ctrl_otp_flash_key
+        width: 1
+        type: uni
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: sram_key
+        signame: otp_ctrl_otp_sram_key
         width: 1
         type: uni
       }

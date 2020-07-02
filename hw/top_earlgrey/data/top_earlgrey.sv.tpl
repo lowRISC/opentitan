@@ -317,18 +317,27 @@ module top_${top["name"]} #(
      data_width = int(top["datawidth"])
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
+     nonce_width = 64 - addr_width
      sram_depth = (int(m["size"], 0) // dw_byte)
      max_char = len(str(max(data_width, addr_width)))
 %>\
   // sram device
-  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
-  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
-  logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
-  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
-  logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
+  logic ${lib.bitarray(1,           max_char)} ${m["name"]}_req;
+  logic ${lib.bitarray(1,           max_char)} ${m["name"]}_we;
+  logic ${lib.bitarray(addr_width,  max_char)} ${m["name"]}_addr;
+  logic ${lib.bitarray(data_width,  max_char)} ${m["name"]}_wdata;
+  logic ${lib.bitarray(data_width,  max_char)} ${m["name"]}_wmask;
+  logic ${lib.bitarray(data_width,  max_char)} ${m["name"]}_rdata;
+  logic ${lib.bitarray(1,           max_char)} ${m["name"]}_rvalid;
+  logic ${lib.bitarray(2,           max_char)} ${m["name"]}_rerror;
+  logic ${lib.bitarray(128,         max_char)} ${m["name"]}_key;
+  logic ${lib.bitarray(nonce_width, max_char)} ${m["name"]}_data_nonce;
+  logic ${lib.bitarray(addr_width,  max_char)} ${m["name"]}_addr_nonce;
+
+  // Note that this connection will change once we move to a fully comportable SRAM IP
+  assign ${m["name"]}_data_nonce = otp_ctrl_otp_sram_key.nonce[${nonce_width}-1:0];
+  assign ${m["name"]}_addr_nonce = otp_ctrl_otp_sram_key.nonce[${nonce_width}+${addr_width}-1:${nonce_width}];
+  assign ${m["name"]}_key = otp_ctrl_otp_sram_key.key;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
@@ -356,12 +365,11 @@ module top_${top["name"]} #(
   );
 
   ## TODO: Instantiate ram_1p model using RAMGEN (currently not available)
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    .EnableParity(1)
+    .CfgW(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -369,6 +377,10 @@ module top_${top["name"]} #(
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
+
+    .key_i        ( ${m["name"]}_key ),
+    .data_nonce_i ( ${m["name"]}_data_nonce ),
+    .addr_nonce_i ( ${m["name"]}_addr_nonce ),
 
     .req_i    (${m["name"]}_req),
     .write_i  (${m["name"]}_we),

@@ -434,6 +434,7 @@ module top_earlgrey #(
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   otp_ctrl_pkg::flash_key_t       otp_ctrl_otp_flash_key;
+  otp_ctrl_pkg::sram_key_t       otp_ctrl_otp_sram_key;
   pwrmgr_pkg::pwr_otp_req_t       pwrmgr_aon_pwr_otp_req;
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
@@ -589,6 +590,14 @@ module top_earlgrey #(
   logic [31:0] ram_main_rdata;
   logic        ram_main_rvalid;
   logic [1:0]  ram_main_rerror;
+  logic [127:0] ram_main_key;
+  logic [49:0] ram_main_data_nonce;
+  logic [13:0] ram_main_addr_nonce;
+
+  // Note that this connection will change once we move to a fully comportable SRAM IP
+  assign ram_main_data_nonce = otp_ctrl_otp_sram_key.nonce[50-1:0];
+  assign ram_main_addr_nonce = otp_ctrl_otp_sram_key.nonce[50+14-1:50];
+  assign ram_main_key = otp_ctrl_otp_sram_key.key;
 
   tlul_adapter_sram #(
     .SramAw(14),
@@ -611,15 +620,18 @@ module top_earlgrey #(
     .rerror_i (ram_main_rerror)
   );
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(32),
     .Depth(16384),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    .EnableParity(1)
+    .CfgW(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n),
+
+    .key_i        ( ram_main_key ),
+    .data_nonce_i ( ram_main_data_nonce ),
+    .addr_nonce_i ( ram_main_addr_nonce ),
 
     .req_i    (ram_main_req),
     .write_i  (ram_main_we),
@@ -640,6 +652,14 @@ module top_earlgrey #(
   logic [31:0] ram_ret_aon_rdata;
   logic        ram_ret_aon_rvalid;
   logic [1:0]  ram_ret_aon_rerror;
+  logic [127:0] ram_ret_aon_key;
+  logic [53:0] ram_ret_aon_data_nonce;
+  logic [9:0] ram_ret_aon_addr_nonce;
+
+  // Note that this connection will change once we move to a fully comportable SRAM IP
+  assign ram_ret_aon_data_nonce = otp_ctrl_otp_sram_key.nonce[54-1:0];
+  assign ram_ret_aon_addr_nonce = otp_ctrl_otp_sram_key.nonce[54+10-1:54];
+  assign ram_ret_aon_key = otp_ctrl_otp_sram_key.key;
 
   tlul_adapter_sram #(
     .SramAw(10),
@@ -662,15 +682,18 @@ module top_earlgrey #(
     .rerror_i (ram_ret_aon_rerror)
   );
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(32),
     .Depth(1024),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    .EnableParity(1)
+    .CfgW(8)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_n),
+
+    .key_i        ( ram_ret_aon_key ),
+    .data_nonce_i ( ram_ret_aon_data_nonce ),
+    .addr_nonce_i ( ram_ret_aon_addr_nonce ),
 
     .req_i    (ram_ret_aon_req),
     .write_i  (ram_ret_aon_we),
@@ -1033,9 +1056,15 @@ module top_earlgrey #(
       // Inter-module signals
       .pwr_otp_init_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_init_o(pwrmgr_aon_pwr_otp_rsp),
+      .otp_pwr_state_o(),
       .lc_otp_program_i(otp_ctrl_pkg::LC_OTP_PROGRAM_REQ_DEFAULT),
       .lc_otp_program_o(),
+      .otp_lc_data_o(),
+      .lc_provision_en_i(),
+      .lc_test_en_i(),
+      .otp_keymgr_key_o(),
       .otp_flash_key_o(otp_ctrl_otp_flash_key),
+      .otp_sram_key_o(otp_ctrl_otp_sram_key),
 
       .clk_i (clkmgr_aon_clocks.clk_io_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_n)

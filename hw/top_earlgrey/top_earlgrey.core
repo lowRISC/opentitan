@@ -29,6 +29,7 @@ filesets:
       - lowrisc:ip:keymgr
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:rom_adv
       - lowrisc:ip:rstmgr
       - lowrisc:ip:rbox
