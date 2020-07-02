@@ -43,6 +43,8 @@ module otbn
   localparam ImemAddrWidth = vbits(ImemSizeByte);
   localparam DmemAddrWidth = vbits(DmemSizeByte);
 
+  localparam int OTBNModel = 1; // TODO: Instead use package?
+
   logic start;
   logic busy_d, busy_q;
   logic done;
@@ -399,35 +401,72 @@ module otbn
   end
   assign busy_d = (busy_q | start) & ~done;
 
-  otbn_core #(
-    .DmemSizeByte(DmemSizeByte),
-    .ImemSizeByte(ImemSizeByte)
-  ) u_otbn_core (
-    .clk_i,
-    .rst_ni,
+  if (OTBNModel) begin : gen_impl_model
+    localparam ImemScope = "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic";
+    localparam DmemScope = "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic";
 
-    .start_i (start),
-    .done_o  (done),
+    otbn_core_model #(
+      .DmemSizeByte(DmemSizeByte),
+      .ImemSizeByte(ImemSizeByte),
+      .DmemScope(DmemScope),
+      .ImemScope(ImemScope)
+    ) u_otbn_core_model (
+      .clk_i,
+      .rst_ni,
 
-    .start_addr_i  (start_addr),
+      .start_i (start),
+      .done_o  (done),
 
-    .imem_req_o    (imem_req_core),
-    .imem_write_o  (imem_write_core),
-    .imem_addr_o   (imem_addr_core),
-    .imem_wdata_o  (imem_wdata_core),
-    .imem_rdata_i  (imem_rdata_core),
-    .imem_rvalid_i (imem_rvalid_core),
-    .imem_rerror_i (imem_rerror_core),
+      .start_addr_i  (start_addr),
 
-    .dmem_req_o    (dmem_req_core),
-    .dmem_write_o  (dmem_write_core),
-    .dmem_addr_o   (dmem_addr_core),
-    .dmem_wdata_o  (dmem_wdata_core),
-    .dmem_wmask_o  (dmem_wmask_core),
-    .dmem_rdata_i  (dmem_rdata_core),
-    .dmem_rvalid_i (dmem_rvalid_core),
-    .dmem_rerror_i (dmem_rerror_core)
-  );
+      .imem_req_o    (imem_req_core),
+      .imem_write_o  (imem_write_core),
+      .imem_addr_o   (imem_addr_core),
+      .imem_wdata_o  (imem_wdata_core),
+      .imem_rdata_i  (imem_rdata_core),
+      .imem_rvalid_i (imem_rvalid_core),
+      .imem_rerror_i (imem_rerror_core),
+
+      .dmem_req_o    (dmem_req_core),
+      .dmem_write_o  (dmem_write_core),
+      .dmem_addr_o   (dmem_addr_core),
+      .dmem_wdata_o  (dmem_wdata_core),
+      .dmem_wmask_o  (dmem_wmask_core),
+      .dmem_rdata_i  (dmem_rdata_core),
+      .dmem_rvalid_i (dmem_rvalid_core),
+      .dmem_rerror_i (dmem_rerror_core)
+    );
+  end else begin : gen_impl_rtl
+    otbn_core #(
+      .DmemSizeByte(DmemSizeByte),
+      .ImemSizeByte(ImemSizeByte)
+    ) u_otbn_core (
+      .clk_i,
+      .rst_ni,
+
+      .start_i (start),
+      .done_o  (done),
+
+      .start_addr_i  (start_addr),
+
+      .imem_req_o    (imem_req_core),
+      .imem_write_o  (imem_write_core),
+      .imem_addr_o   (imem_addr_core),
+      .imem_wdata_o  (imem_wdata_core),
+      .imem_rdata_i  (imem_rdata_core),
+      .imem_rvalid_i (imem_rvalid_core),
+      .imem_rerror_i (imem_rerror_core),
+
+      .dmem_req_o    (dmem_req_core),
+      .dmem_write_o  (dmem_write_core),
+      .dmem_addr_o   (dmem_addr_core),
+      .dmem_wdata_o  (dmem_wdata_core),
+      .dmem_wmask_o  (dmem_wmask_core),
+      .dmem_rdata_i  (dmem_rdata_core),
+      .dmem_rvalid_i (dmem_rvalid_core),
+      .dmem_rerror_i (dmem_rerror_core)
+    );
+  end
 
   // The core always writes full 32b words to IMEM.
   assign imem_wmask_core = 32'hFFFFFFFF;

@@ -1,12 +1,14 @@
-#include "svdpi.h"
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
-#include <sstream>
 #include <iostream>
-#include <string>
+#include <sstream>
+#include <svdpi.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -20,15 +22,15 @@
  * that exit the scope.
  */
 class SVScoped {
-  svScope m_prevScope = 0;
-  SVScoped() {}
+ private:
+  svScope prev_scope_ = 0;
 
  public:
   SVScoped(std::string scopeName) : SVScoped(scopeName.c_str()) {}
   SVScoped(const char *scopeName) : SVScoped(svGetScopeFromName(scopeName)) {}
 
-  SVScoped(svScope scope) { m_prevScope = svSetScope(scope); }
-  ~SVScoped() { svSetScope(m_prevScope); }
+  SVScoped(svScope scope) { prev_scope_ = svSetScope(scope); }
+  ~SVScoped() { svSetScope(prev_scope_); }
 };
 
 extern "C" {
@@ -38,23 +40,24 @@ extern int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 
 int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
               int dmem_words) {
-  FILE *fp = 0;
+  std::FILE *fp = nullptr;
 
   char dir[] = "/tmp/otbn_XXXXXX";
   char ifname[] = "/tmp/otbn_XXXXXX/imem";
   char dfname[] = "/tmp/otbn_XXXXXX/dmem";
   char cfname[] = "/tmp/otbn_XXXXXX/cycles";
-  if (mkdtemp(dir) == NULL) {
+
+  if (mkdtemp(dir) == nullptr) {
     std::cerr << "Cannot create temporary directory" << std::endl;
     return 0;
   }
 
-  memcpy(ifname, dir, strlen(dir));
-  memcpy(dfname, dir, strlen(dir));
-  memcpy(cfname, dir, strlen(dir));
+  std::memcpy(ifname, dir, strlen(dir));
+  std::memcpy(dfname, dir, strlen(dir));
+  std::memcpy(cfname, dir, strlen(dir));
 
-  fp = fopen(dfname, "w+");
-  if (!fp) {
+  fp = std::fopen(dfname, "w+");
+  if (fp == nullptr) {
     std::cerr << "Cannot open the file " << dfname << std::endl;
     return 0;
   }
@@ -62,17 +65,17 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     SVScoped scoped(dmem_scope);
     uint8_t buf[32];
     for (size_t w = 0; w < dmem_words; w++) {
-      if (!simutil_verilator_get_mem(w, (svBitVecVal *)buf)) {
+      if (!simutil_verilator_get_mem(w, reinterpret_cast<svBitVecVal *>(buf))) {
         std::cerr << "Cannot get dmem @ word " << w << std::endl;
         return 0;
       }
-      fwrite(buf, 1, 32, fp);
+      std::fwrite(buf, 1, 32, fp);
     }
   }
-  fclose(fp);
+  std::fclose(fp);
 
-  fp = fopen(ifname, "w+");
-  if (!fp) {
+  fp = std::fopen(ifname, "w+");
+  if (fp == nullptr) {
     std::cerr << "Cannot open the file " << ifname << std::endl;
     return 0;
   }
@@ -80,29 +83,26 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     SVScoped scoped(imem_scope);
     uint8_t buf[32];
     for (size_t w = 0; w < imem_words; w++) {
-      if (!simutil_verilator_get_mem(w, (svBitVecVal *)buf)) {
+      if (!simutil_verilator_get_mem(w, reinterpret_cast<svBitVecVal *>(buf))) {
         std::cerr << "Cannot get imem @ word " << w << std::endl;
         return 0;
       }
-      fwrite(buf, 1, 4, fp);
+      std::fwrite(buf, 1, 4, fp);
     }
   }
-  fclose(fp);
+  std::fclose(fp);
 
   std::stringstream strstr;
-  strstr << "otbn-python-model ";
-  strstr << imem_words << " " << ifname << " ";
-  strstr << dmem_words << " " << dfname << " " << cfname;
+  strstr << "otbn-python-model " << imem_words << " " << ifname << " "
+         << dmem_words << " " << dfname << " " << cfname;
 
-  std::cout << strstr.str() << std::endl;
-
-  if (system(strstr.str().c_str()) != 0) {
+  if (std::system(strstr.str().c_str()) != 0) {
     std::cerr << "Cannot execute model" << std::endl;
     return 0;
   }
 
-  fp = fopen(dfname, "r");
-  if (!fp) {
+  fp = std::fopen(dfname, "r");
+  if (fp == nullptr) {
     std::cerr << "Cannot open the file " << dfname << std::endl;
     return 0;
   }
@@ -111,30 +111,32 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
     SVScoped scoped(dmem_scope);
     uint8_t buf[32];
     for (size_t w = 0; w < dmem_words; w++) {
-      fread(buf, 1, 32, fp);
-      if (!simutil_verilator_set_mem(w, (svBitVecVal *)buf)) {
+      if (std::fread(buf, 1, 32, fp) != 32) {
+        std::cerr << "Cannot read from data memory file" << std::endl;
+      }
+      if (!simutil_verilator_set_mem(w, reinterpret_cast<svBitVecVal *>(buf))) {
         std::cerr << "Cannot set dmem @ word " << w << std::endl;
         return 0;
       }
     }
   }
 
-  fclose(fp);
+  std::fclose(fp);
 
   int cycles = 0;
 
-  fp = fopen(cfname, "r");
-  if (!fp) {
+  fp = std::fopen(cfname, "r");
+  if (fp == nullptr) {
     std::cerr << "Cannot open the file " << cfname << std::endl;
     return 0;
   }
 
-  if (fread(&cycles, 4, 1, fp) != 1) {
+  if (std::fread(&cycles, 4, 1, fp) != 1) {
     std::cerr << "Cannot readback cycles" << std::endl;
     return 0;
   }
 
-  fclose(fp);
+  std::fclose(fp);
 
   return cycles;
 }
