@@ -13,8 +13,8 @@ See that document for integration overview within the broader top level system.
 
 ## Features
 
-- Two-pin clock-data parallel bidirectional external interface
-- The initial revision only supports I2C as a Host ("I2C Master"<sup>1</sup>).
+- Two-pin clock-data parallel bidirectional external interface 
+- Support for I2C Host ("I2C Master"<sup>1</sup>) and I2C Target ("I2C Slave"<sup>1</sup>) device modes
 - Support for standard (100 kbaud), fast (400 kbaud) and fast-plus (1 Mbaud) modes
 - Bandwidth up to 1 Mbaud
 - Support for all "Mandatory" features as specified for I2C Hosts (as listed in Table 2 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)):
@@ -23,18 +23,20 @@ See that document for integration overview within the broader top level system.
     - Acknowledge
     - 7-bit target address
 - Support for the following optional capabilities:
-    - 10-bit target device addressing
-    - Clock stretching (may be required by some target devices)
-- *No support at this time* for I2C Target ("I2C Slave"<sup>1</sup>) functionality
+    - Clock stretching in the host mode
+    - Automatic clock stretching in the target mode when TX FIFO is empty during a read<sup>2</sup>
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
-- Byte-formatted register interface with two separate queues, one for holding read data, the other for holding bytes to be transmitted (addresses or write data)
+- Byte-formatted register interface with four separate queues: two queues in the host mode, one for holding read data, the other for holding bytes to be transmitted (addresses or write data) and two queues in the target mode, for holding read and write data
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux.
-- Interrupts for FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete.
+- Interrupts in the host mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
+- Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX and ACQ FIFO overflow, and host sending STOP after ACK
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
+
+<sup>2</sup> The target is only compatible with hosts that support clock stretching.
 
 ## Description
 
@@ -49,7 +51,7 @@ Every transaction consists of a number of bytes transmitted, either from host-to
 Each byte is typically followed by a single bit acknowledgement (ACK) from the receiving side.
 Typically each transaction consists of:
 1. A START signal, issued by host.
-1. An address, issued by host, encoded as 7 or 10 bits.
+1. An address, issued by host, encoded as 7 bits.
 1. A R/W bit indicating whether the transaction is a read from the target device, or a write to the target device.
 The R/W bit is encoded along with the address.
 1. An Acknowledge signal (ACK) sent by the target device.
@@ -67,8 +69,8 @@ This IP presents a simple register interface and state-machine to manage the cor
 ## Compatibility
 
 This IP block should be compatible with any target device covered by the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), operating at speeds up to 1 Mbaud.
-In order to support any target device, this IP issues addresses in 7-bit encoding whenever possible, as not all target devices may be able to support 10-bit encoding.
-(It remains the obligation of system designers to ensure that devices which cannot support 10-bit encoding remain in a 7-bit address space.)
+This IP in the host mode issues addresses in 7-bit encoding, and in the target mode, receives addresses in 7-bit encoding.
+(It remains the obligation of system designers to ensure that devices remain in a 7-bit address space.)
 This IP also supports clock-stretching, should that be required by target devices.
 
 # Theory of Operations
@@ -82,6 +84,12 @@ This IP also supports clock-stretching, should that be required by target device
 {{< hwcfg "hw/ip/i2c/data/i2c.hjson" >}}
 
 ## Design Details
+
+### Functional Modes
+
+I2C IP is a host-target combo that can function as either an I2C host or an I2C target.
+Although it is conceivable that an I2C combo can optionally function as both a host and a target at the same time, we do not support this feature at this time.
+These functional modes are enabled at runtime by setting the register fields {{< regref CTRL.ENABLEHOST >}} and {{< regref CTRL.ENABLETARGET >}}.
 
 ### Virtual Open Drain
 
@@ -109,6 +117,7 @@ In this state, with SCL or SDA asserted high, the register fields {{< regref VAL
 
 ### Byte-Formatted Programming Mode
 
+This section applies to I2C in the host mode.
 The state machine-controlled mode allows for higher-speed operation with less frequent software interaction.
 In this mode, the I2C pins are controlled by the I2C state machine, which in turn is controlled by a sequence of formatting indicators.
 The formatting indicators indicate:
@@ -141,6 +150,46 @@ Issue a STOP signal after processing this current entry in the FMT FIFO.
 Typically every byte transmitted must also receive an ACK signal, and the IP will raise an exception if no ACK is received.
 However, there are some I2C commands which do not require an ACK.
 In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.
+
+### Target Address Registers
+
+I2C target device is assigned two 7-bit address and 7-bit mask pairs.
+The target device accepts a transaction if the result of the bitwise AND operation performed on the transaction address sent by the host and a mask matches the assigned address corresponding to the mask.
+In other words, address matching is performed only for bits where the mask is "1".
+Thus, with the masks set to all ones (0x7F), the target device will respond to either of the two assigned unique addresses and no other.
+If the mask and the assigned address both have zeros in a particular bit position, that bit will be a match regardless of the value of that bit received from the host.
+Note that if, in any bit position, the mask has zero and the assigned address has one, no transaction can match and such mask/address pair is effectively disabled.
+The assigned address and mask pairs are set in registers {{< regref TARGET_ID.ADDRESS0 >}}, {{< regref TARGET_ID.MASK0 >}}, {{< regref TARGET_ID.ADDRESS1 >}}, and {{< regref TARGET_ID.MASK1 >}}. 
+
+### Acquired Formatted Data
+
+This section applies to I2C in the target mode.
+When the target accepts a transaction, it inserts the transaction address, read/write bit, and START signal sent by the host into ACQ FIFO where they can be accessed by software.
+ACQ FIFO output corresponds to {{< regref ACQDATA >}}.
+If the transaction is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transaction by sending a STOP or RESTART signal.
+A STOP or RESTART indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits are junk.
+The following diagram shows consecutive entries inserted into ACQ FIFO during a write operation:
+
+![](I2C_acq_fifo_write.svg)
+
+If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
+If TX FIFO holds no data, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO.
+TX FIFO input corresponds to {{< regref TXDATA >}}.
+Typically, a NACK signal is followed by a STOP or RESTART signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
+An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or RESTART signal. 
+For ACK and NACK signals, the value of the first bit is 0 and 1, respectively.
+The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
+
+![](I2C_acq_fifo_read.svg)
+
+The ACQ FIFO entry consists of 10 bits:
+- Address (bits 7:1) and R/W bit (bit 0) or data byte
+- Format flags (bits 9:8)
+The format flags indicate the following signals received from the host:
+- START: 01
+- STOP: 10
+- RESTART: 11
+- No START, STOP, or RESTART: 00
 
 ### Timing Control Registers
 
@@ -194,6 +243,7 @@ Other features may also be required for complete SMBus functionality.)
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
 
+#### Host Mode
 If the RX FIFO exceeds the designated depth of entries, the interrupt `rx_watermark` is raised to inform firmware.
 Firmware can configure the watermark value via the register {{< regref FIFO_CTRL.RXILVL >}}.
 
@@ -253,6 +303,17 @@ Transactions are terminated by a STOP signal.
 The host may send a repeated START signal instead of a STOP, which also terminates the preceeding transaction.
 In both cases, the `trans_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
 
+#### Target Mode
+If an I2C target receives a START signal followed by an address and R/W = 1 (read), accepts a read transaction and its TX FIFO is empty, the interrupt `tx_empty` is asserted to inform firmware.
+The interrupt `tx_empty` is asserted also when a target keeps transmitting data on the bus and needs more data, but TX FIFO is empty.
+
+If a target receives a STOP or RESTART signal and there are extra bytes left in TX FIFO, the interrupt `tx_nonempty` is asserted and the FIFO is flushed.
+
+When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a RESTART.
+In a case when a target receives an ACK and then a STOP/RESTART, the interrupt `tx_ack_stop` is asserted.
+
+If either TX or ACQ FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` or `acq_overflow` is asserted and the format indicator is dropped.
+
 ### Implementation Details: Format Flag Parsing
 
 To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the I2C_Host state machine.
@@ -277,7 +338,7 @@ After reset, the initialization of the I2C HWIP primarily consists of four steps
 1. Timing parameter initialization
 1. FIFO reset and configuration
 1. Interrupt configuration
-1. Enable I2C Host functionality
+1. Enable I2C Host or Target functionality
 
 ### Timing Parameter Tuning Algorithm
 
