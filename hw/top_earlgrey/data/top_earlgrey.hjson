@@ -40,13 +40,13 @@
     // "ext"  - clock is supplied from a port of the top module
     // "top"  - clock is supplied from a net inside the top module
     //
-    // sw_cfg: whether software is allowed to gate the clock
+    // sw_cg: whether software is allowed to gate the clock
     // "no"   - software is not allowed to gate clocks
     // "yes"  - software is allowed to gate clocks
     // "hint" - software can provide a hint, and hw controls the rest
     //
     // unique: whether each module in the group can be separately gated
-    //         if sw_cfg is "no", this field has no meaning
+    //         if sw_cg is "no", this field has no meaning
     // "yes"  - each clock is individually controlled
     // "no"   - the group is controlled as one single unit
     //
