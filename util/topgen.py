@@ -649,7 +649,7 @@ def generate_top_ral(top, ip_objs, out_path):
     for block in top_block.blocks:
         for module in top["module"]:
             if block.name == module["name"]:
-                block.base_addr = module["base_addr"]
+                block.base_addr = int(module["base_addr"], 0)
                 break
 
     top_block.blocks.sort(key=lambda block: block.base_addr)
