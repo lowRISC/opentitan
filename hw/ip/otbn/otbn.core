@@ -19,7 +19,11 @@ filesets:
       - rtl/otbn_reg_top.sv
       - rtl/otbn_core.sv
       - rtl/otbn.sv
-      - rtl/otbn_model.cc: { file_type: cppSource }
+    file_type: systemVerilogSource
+  files_model:
+    files:
+      - rtl/dv/dpi/otbn_model.cc: { file_type: cppSource }
+      - rtl/dv/otbn_core_model.sv
     file_type: systemVerilogSource
 
 parameters:
@@ -31,6 +35,7 @@ targets:
   default: &default_target
     filesets:
       - files_rtl
+      - files_model
     toplevel: otbn
 
   lint:

@@ -48,47 +48,10 @@ module otbn_core
   input  logic [1:0]               dmem_rerror_i
 );
 
-  localparam OTBN_MODEL = 1; // TODO: Instead use package?
-
   // TODO: This is probably not the final OTBN implementation.
-  generate
-    if (OTBN_MODEL) begin
-      import "DPI-C" context function int run_model(string imem_scope,
-                                             int    imem_size,
-                                             string dmem_scope,
-                                             int    dmem_size);
 
-      localparam ImemSizeWords = ImemSizeByte / 4;
-      localparam DmemSizeWords = DmemSizeByte / WLEN / 8;
+  assign imem_req_o = 1'b0;
+  assign dmem_req_o = 1'b0;
+  assign done_o = 1'b0;
 
-      int count;
-
-      always @(posedge clk_i) begin : model_run
-        if (!rst_ni) begin
-          done_o <= 1'b0;
-        end else begin
-          if (start_i) begin
-            count <= run_model("TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic",
-                               ImemSizeWords,
-                               "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic",
-                               DmemSizeWords);
-            $display("%t start", $time);
-            done_o <= 1'b0;
-          end else begin
-            if (count == 0) begin
-              done_o <= 1'b1;
-              $display("%t done", $time);
-            end else begin
-              done_o <= 1'b0;
-              count <= count - 1;
-            end
-          end
-        end
-      end
-    end else begin
-      assign imem_req_o = 1'b0;
-      assign dmem_req_o = 1'b0;
-      assign done_o = 1'b0;
-    end
-  endgenerate
 endmodule
