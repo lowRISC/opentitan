@@ -192,7 +192,7 @@ module prim_ram_1p_scr #(
 
   // Write path. Note that since this does not fan out into the interconnect, the write path is not
   // as critical as the read path below in terms of timing.
-  logic [Width-1:0] wdata_scr_d, wdata_scr_q;
+  logic [Width-1:0] wdata_scr_d, wdata_scr_q, wdata_q;
   for (genvar k = 0; k < Width/8; k++) begin : gen_diffuse_wdata
     // Apply the keystream first
     logic [7:0] wdata_xor;
@@ -272,7 +272,6 @@ module prim_ram_1p_scr #(
   // Registers //
   ///////////////
 
-  logic [Width-1:0] wdata_q;
   logic [Width-1:0] wmask_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin

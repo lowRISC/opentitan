@@ -106,7 +106,7 @@ package otp_ctrl_pkg;
     otp_program_cmd_e command;
   } lc_otp_program_req_t;
 
-  parameter lc_otp_program_req_t LC_OTP_PROGRAM_REQ_DEFAULT = {
+  parameter lc_otp_program_req_t LC_OTP_PROGRAM_REQ_DEFAULT = '{
     update: '0,
     command: '0
   };
@@ -126,6 +126,7 @@ package otp_ctrl_pkg;
     lc_tx_e state;
   } lc_tx_t;
 
+  parameter lc_tx_t LC_TX_DEFAULT = '{state: Off};
 
   ////////////////////////////////
   // Typedefs for Key Broadcast //
@@ -146,6 +147,13 @@ package otp_ctrl_pkg;
     logic [FlashKeyWidth-1:0] data_key;
   } flash_key_t;
 
+  // TODO: this is not final. we still need to figure out
+  // how and where key derivation for SRAM should happen.
+  typedef struct packed {
+    logic valid;
+    logic [FlashKeyWidth-1:0] key;
+    logic [64-1:0]            nonce;
+  } sram_key_t;
 
   ////////////////////////////////
   // Power/Reset Ctrl Interface //
