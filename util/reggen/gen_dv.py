@@ -39,8 +39,7 @@ def miname(m):
 
 # function get base addr in SV syntax
 def sv_base_addr(b):
-    sv_base_addr = b.base_addr.replace("0x", str(b.width) + "'h")
-    return sv_base_addr
+    return "{}'h{:x}".format(b.width, b.base_addr)
 
 
 # function generate dv ral model using raw dict object parsed from hjson
