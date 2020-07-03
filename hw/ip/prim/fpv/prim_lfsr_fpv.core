@@ -7,7 +7,7 @@ description: "ALERT_HANDLER FPV target"
 filesets:
   files_formal:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:lfsr
     files:
       - tb/prim_lfsr_fpv.sv
     file_type: systemVerilogSource
