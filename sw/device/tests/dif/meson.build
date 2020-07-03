@@ -114,4 +114,22 @@ dif_plic_sanitytest_lib = declare_dependency(
   ),
 )
 
-sw_tests += { 'dif_plic_sanitytest': dif_plic_sanitytest_lib }
+dif_pinmux_gpio_padctrl_sanitytest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_pinmux_gpio_padctrl_sanitytest_lib',
+    sources: ['dif_pinmux_gpio_padctrl_sanitytest.c'],
+    dependencies: [
+      dif_pinmux,
+      sw_lib_dif_gpio,
+      sw_lib_mmio,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
+sw_tests += {
+  'dif_plic_sanitytest': dif_plic_sanitytest_lib,
+  'dif_pinmux_gpio_padctrl_sanitytest': dif_pinmux_gpio_padctrl_sanitytest_lib,
+}
