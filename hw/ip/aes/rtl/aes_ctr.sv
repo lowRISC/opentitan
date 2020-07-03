@@ -102,7 +102,7 @@ module aes_ctr(
 
       INCR: begin
         // Increment slice index.
-        ctr_slice_idx_d = ctr_slice_idx_q + 3'b1;
+        ctr_slice_idx_d = ctr_slice_idx_q + 3'b001;
         ctr_carry_d     = ctr_value[16];
         ctr_we          = 1'b1;
 
