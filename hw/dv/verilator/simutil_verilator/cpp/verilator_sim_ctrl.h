@@ -46,10 +46,8 @@ class VerilatorSimCtrl {
    * SetTop() must be called before this function.
    *
    * This function performs the following tasks:
-   * 1. Sets up a signal handler to enable tracing to be turned on/off during
-   *    a run by sending SIGUSR1 to the process
-   * 2. Parses a C-style set of command line arguments.
-   * 3. Runs the simulation
+   * 1. Parses a C-style set of command line arguments (see ParseCommandArgs())
+   * 2. Runs the simulation (see RunSimulation())
    *
    * @return a main()-compatible process exit code: 0 for success, 1 in case
    *         of an error.
@@ -57,12 +55,25 @@ class VerilatorSimCtrl {
   int Exec(int argc, char **argv);
 
   /**
+   * Parse command line arguments
+   *
+   * Process all recognized command-line arguments from argc/argv.
+   *
+   * @param argc, argv Standard C command line arguments
+   * @param exit_app Indicate that program should terminate
+   * @return Return code, true == success
+   */
+  bool ParseCommandArgs(int argc, char **argv, bool &exit_app);
+
+  /**
    * A helper function to execute a standard set of run commands.
    *
    * This function performs the following tasks:
-   * 1. Prints some tracer-related helper messages
-   * 2. Runs the simulation
-   * 3. Prints some further helper messages and statistics once the simulation
+   * 1. Sets up a signal handler to enable tracing to be turned on/off during
+   *    a run by sending SIGUSR1 to the process
+   * 2. Prints some tracer-related helper messages
+   * 3. Runs the simulation
+   * 4. Prints some further helper messages and statistics once the simulation
    *    has run to completion
    */
   void RunSimulation();
@@ -136,17 +147,6 @@ class VerilatorSimCtrl {
    * Use RegisterSignalHandler() to setup.
    */
   static void SignalHandler(int sig);
-
-  /**
-   * Parse command line arguments
-   *
-   * Process all recognized command-line arguments from argc/argv.
-   *
-   * @param argc, argv Standard C command line arguments
-   * @param exit_app Indicate that program should terminate
-   * @return Return code, true == success
-   */
-  bool ParseCommandArgs(int argc, char **argv, bool &exit_app);
 
   /**
    * Print help how to use this tool
