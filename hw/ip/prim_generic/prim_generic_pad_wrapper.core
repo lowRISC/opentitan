@@ -7,6 +7,8 @@ name: "lowrisc:prim_generic:pad_wrapper"
 description: "Technology-independent pad wrapper implementation (for sim only!)"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
     files:
       - rtl/prim_generic_pad_wrapper.sv
     file_type: systemVerilogSource
