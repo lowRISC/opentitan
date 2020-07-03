@@ -28,7 +28,7 @@ module aes_reg_status #(
   // Collect write operations. Upon clear or use, we start over.
   assign we_d = (clear_i || use_i) ? '0 : (we_q | we_i);
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_we
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_ops
     if (!rst_ni) begin
       we_q <= '0;
     end else begin
