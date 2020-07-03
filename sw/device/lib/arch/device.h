@@ -57,4 +57,11 @@ extern const uint64_t kClockFreqHz;
  */
 extern const uint64_t kUartBaudrate;
 
+/**
+ * An address to write to to cause execution to stop.
+ *
+ * If this is zero, there is no address you can write to to stop execution.
+ */
+extern const uintptr_t kDeviceStopAddress;
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_

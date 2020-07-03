@@ -13,6 +13,9 @@ sw_lib_runtime_hart = declare_dependency(
   link_with: static_library(
     'runtime_hart_ot',
     sources: ['hart.c'],
-    dependencies: [sw_lib_runtime_ibex],
+    dependencies: [
+      sw_lib_runtime_ibex,
+      sw_lib_mmio,
+    ],
   )
 )
