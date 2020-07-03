@@ -32,7 +32,6 @@ filesets:
       - rtl/prim_flop_2sync.sv
       - rtl/prim_sync_reqack.sv
       - rtl/prim_keccak.sv
-      - rtl/prim_lfsr.sv
       - rtl/prim_packer.sv
       - rtl/prim_cipher_pkg.sv
       - rtl/prim_present.sv

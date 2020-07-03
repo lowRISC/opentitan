@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
     files:
       - rtl/aes_pkg.sv
@@ -104,5 +105,3 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-
-
