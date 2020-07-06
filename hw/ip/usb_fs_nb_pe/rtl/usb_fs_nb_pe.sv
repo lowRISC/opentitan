@@ -26,6 +26,7 @@ module usb_fs_nb_pe #(
   input  logic [6:0]             dev_addr_i,
 
   input  logic                   cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
+  input  logic                   cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
   input  logic                   tx_osc_test_mode_i, // Oscillator test mode (constantly output JK)
   input  logic [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
 
@@ -66,17 +67,25 @@ module usb_fs_nb_pe #(
   output logic                   sof_valid_o,
   output logic [10:0]            frame_index_o,
 
+  // RX line status
+  output logic                   rx_se0_det_o,
+  output logic                   rx_jjj_det_o,
+
   // RX errors
   output logic                   rx_crc_err_o,
   output logic                   rx_pid_err_o,
   output logic                   rx_bitstuff_err_o,
 
   ///////////////////////////////////////
-  // USB TX/RX Interface (synchronous) //
+  // USB RX Interface (asynchronous)   //
   ///////////////////////////////////////
   input  logic                   usb_d_i,
-  input  logic                   usb_se0_i,
+  input  logic                   usb_dp_i,
+  input  logic                   usb_dn_i,
 
+  ///////////////////////////////////////
+  // USB TX Interface (synchronous)    //
+  ///////////////////////////////////////
   output logic                   usb_d_o,
   output logic                   usb_se0_o,
   output logic                   usb_oe_o
@@ -203,8 +212,10 @@ module usb_fs_nb_pe #(
     .rst_ni                 (rst_ni),
     .link_reset_i           (link_reset_i),
     .cfg_eop_single_bit_i   (cfg_eop_single_bit_i),
+    .cfg_rx_differential_i  (cfg_rx_differential_i),
     .usb_d_i                (usb_d_i),
-    .usb_se0_i              (usb_se0_i),
+    .usb_dp_i               (usb_dp_i),
+    .usb_dn_i               (usb_dn_i),
     .tx_en_i                (usb_oe),
     .bit_strobe_o           (bit_strobe),
     .pkt_start_o            (rx_pkt_start),
@@ -216,6 +227,8 @@ module usb_fs_nb_pe #(
     .rx_data_put_o          (rx_data_put),
     .rx_data_o              (rx_data),
     .valid_packet_o         (rx_pkt_valid),
+    .rx_se0_det_o           (rx_se0_det_o),
+    .rx_jjj_det_o           (rx_jjj_det_o),
     .crc_error_o            (rx_crc_err_o),
     .pid_error_o            (rx_pid_err_o),
     .bitstuff_error_o       (rx_bitstuff_err_o)

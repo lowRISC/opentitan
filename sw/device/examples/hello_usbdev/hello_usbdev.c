@@ -75,10 +75,23 @@ static void usb_receipt_callback_1(uint8_t c) {
   ++usb_chars_recved_total;
 }
 
+static void usb_send_str(char *s, usb_ss_ctx_t *ss) {
+  while (*s) usb_simpleserial_send_byte(ss, *s++);
+}
+
 static dif_gpio_t gpio;
+
+#define PINFLIP 0
+#define DIFFIO 0
+
+// pre-processor magic, MKSTR will put arg in quotes
+// (Can't just use #p in PHY because it does not expand the define)
+#define MKSTR(s) #s
+#define PHY(p, d) "pinflip=" MKSTR(p) " differential io = " MKSTR(d)
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
   pinmux_init();
   spid_init();
 
@@ -90,13 +103,14 @@ int main(int argc, char **argv) {
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
+  LOG_INFO("PHY settings: " PHY(PINFLIP, DIFFIO));
 
   demo_gpio_startup(&gpio);
 
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev);
+  usbdev_init(&usbdev, PINFLIP, DIFFIO, DIFFIO);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
@@ -105,10 +119,11 @@ int main(int argc, char **argv) {
   spid_send("SPI!", 4);
 
   uint32_t gpio_state = 0;
+  bool say_hello = 1;
   bool pass_signaled = false;
   while (true) {
     usbdev_poll(&usbdev);
-
+    
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
     demo_spi_to_log_echo();
 
@@ -126,7 +141,10 @@ int main(int argc, char **argv) {
         usb_simpleserial_send_byte(&simple_serial1, rcv_char + 1);
       }
     }
-
+    if (say_hello && usb_chars_recved_total > 2) {
+      usb_send_str("Hello USB World!!!!", &simple_serial0);
+      say_hello = false;
+    }
     // Signal that the simulation succeeded.
     if (usb_chars_recved_total >= kExpectedUsbCharsRecved && !pass_signaled) {
       uart_send_str("\r\n");

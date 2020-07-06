@@ -209,14 +209,17 @@
               name: "suspend",
               desc: "Link suspended (constant idle for > 3 ms), was active before becoming suspended"
             },
-
+            { value: "5",
+              name: "active_nosof",
+              desc: "Link active but no SOF has been received since the last reset."
+            },
           ]
         }
         {
           bits: "15",
           name: "sense",
           desc: '''
-                Reflects the state of the sense pin. 1 indicates that the host is providing VBUS.
+                Reflects the state of the sense pin. 1 indicates that the host is providing VBUS. Note that this bit always shows the state of the actual pin and does not take account of the override control.
                 '''
         }
         {

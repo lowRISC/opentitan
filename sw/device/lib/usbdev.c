@@ -251,7 +251,8 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   }
 }
 
-void usbdev_init(usbdev_ctx_t *ctx) {
+void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
+  int phy_config;
   // setup context
   for (int i = 0; i < NUM_ENDPOINTS; i++) {
     usbdev_endpoint_setup(ctx, i, 0, NULL, NULL, NULL, NULL, NULL);
@@ -268,6 +269,10 @@ void usbdev_init(usbdev_ctx_t *ctx) {
 
   REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP0);
   REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT0);
-
+  phy_config = (((pinflip) ? (1 << USBDEV_PHY_CONFIG_PINFLIP) : 0) |
+		((diff_rx) ? (1 << USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE) : 0) |
+		((diff_tx) ? (1 << USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE) : 0) |
+		(1 << USBDEV_PHY_CONFIG_EOP_SINGLE_BIT));
+  REG32(USBDEV_PHY_CONFIG()) = phy_config;
   REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE);
 }

@@ -22,10 +22,12 @@ module usbdev_usbif  #(
   input  logic                     clk_48mhz_i, // 48MHz USB clock
   input  logic                     rst_ni,
 
-  // Pins (synchronous)
+  // Pins (asynchronous)
   input  logic                     usb_d_i,
-  input  logic                     usb_se0_i,
+  input  logic                     usb_dp_i,
+  input  logic                     usb_dn_i,
 
+  // Pins (synchronous)
   output logic                     usb_d_o,
   output logic                     usb_se0_o,
   output logic                     usb_oe_o,
@@ -70,6 +72,7 @@ module usbdev_usbif  #(
   output logic                     clr_devaddr_o,
   input  logic [NEndpoints-1:0]    ep_iso_i,
   input  logic                     cfg_eop_single_bit_i, // 1: detect a single SE0 bit as EOP
+  input  logic                     cfg_rx_differential_i, // 1: use differential rx data on usb_d_i
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
   input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
 
@@ -253,7 +256,8 @@ module usbdev_usbif  #(
   assign set_sent_o = in_ep_acked;
 
   logic [10:0]     frame_index_raw;
-
+  logic 	   rx_se0_det, rx_jjj_det;
+   
   usb_fs_nb_pe #(
     .NumOutEps      (NEndpoints),
     .NumInEps       (NEndpoints),
@@ -264,11 +268,13 @@ module usbdev_usbif  #(
     .link_reset_i          (link_reset),
 
     .cfg_eop_single_bit_i  (cfg_eop_single_bit_i),
+    .cfg_rx_differential_i (cfg_rx_differential_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
     .data_toggle_clear_i   (data_toggle_clear_i),
 
     .usb_d_i               (usb_d_i),
-    .usb_se0_i             (usb_se0_i),
+    .usb_dp_i              (usb_dp_i),
+    .usb_dn_i              (usb_dn_i),
     .usb_d_o               (usb_d_o),
     .usb_se0_o             (usb_se0_o),
     .usb_oe_o              (usb_oe_o),
@@ -300,6 +306,10 @@ module usbdev_usbif  #(
     .in_ep_data_i          (in_ep_data),
     .in_ep_data_done_i     (in_ep_data_done),
     .in_ep_iso_i           (ep_iso_i),
+
+    // rx status
+    .rx_se0_det_o          (rx_se0_det),
+    .rx_jjj_det_o          (rx_jjj_det),
 
     // error signals
     .rx_crc_err_o          (rx_crc_err_o),
@@ -344,8 +354,8 @@ module usbdev_usbif  #(
     .rst_ni            (rst_ni),
     .us_tick_i         (us_tick),
     .usb_sense_i       (usb_sense_i),
-    .usb_rx_d_i        (usb_d_i),
-    .usb_rx_se0_i      (usb_se0_i),
+    .rx_se0_det_i      (rx_se0_det),
+    .rx_jjj_det_i      (rx_jjj_det),
     .sof_valid_i       (sof_valid),
     .link_disconnect_o (link_disconnect_o),
     .link_connect_o    (link_connect_o),

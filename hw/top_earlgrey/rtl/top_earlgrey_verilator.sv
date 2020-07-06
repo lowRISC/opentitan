@@ -172,37 +172,33 @@ module top_earlgrey_verilator (
 
   // USB DPI
   usbdpi u_usbdpi (
-    .clk_i         (clk_i),
-    .rst_ni        (rst_ni),
-    .clk_48MHz_i   (clk_i),
-    .sense_p2d     (cio_usbdev_sense_p2d),
-    .pullup_d2p    (cio_usbdev_dp_pullup_d2p),
-    .pullup_en_d2p (cio_usbdev_dp_pullup_en_d2p),
-    .dp_p2d        (cio_usbdev_dp_p2d),
-    .dp_d2p        (cio_usbdev_dp_d2p),
-    .dp_en_d2p     (cio_usbdev_dp_en_d2p),
-    .dn_p2d        (cio_usbdev_dn_p2d),
-    .dn_d2p        (cio_usbdev_dn_d2p),
-    .dn_en_d2p     (cio_usbdev_dn_en_d2p)
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+    .clk_48MHz_i     (clk_i),
+    .sense_p2d       (cio_usbdev_sense_p2d),
+    .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
+    .pullupdp_en_d2p (cio_usbdev_dp_pullup_en_d2p),
+    .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),
+    .pullupdn_en_d2p (cio_usbdev_dn_pullup_en_d2p),
+    .dp_p2d          (cio_usbdev_dp_p2d),
+    .dp_d2p          (cio_usbdev_dp_d2p),
+    .dp_en_d2p       (cio_usbdev_dp_en_d2p),
+    .dn_p2d          (cio_usbdev_dn_p2d),
+    .dn_d2p          (cio_usbdev_dn_d2p),
+    .dn_en_d2p       (cio_usbdev_dn_en_d2p),
+    .d_p2d           (cio_usbdev_d_p2d),
+    .d_d2p           (cio_usbdev_d_d2p),
+    .d_en_d2p        (cio_usbdev_d_en_d2p),
+    .se0_d2p         (cio_usbdev_se0_d2p),
+    .se0_en_d2p      (cio_usbdev_se0_en_d2p),
+    .txmode_d2p      (cio_usbdev_tx_mode_se_d2p),
+    .txmode_en_d2p   (cio_usbdev_tx_mode_se_en_d2p)
   );
 
   // Tie off unused signals.
-  logic unused_cio_usbdev_se0_d2p, unused_cio_usbdev_se0_en_d2p;
-  logic unused_cio_usbdev_dn_pullup_d2p, unused_cio_usbdev_dn_pullup_en_d2p;
-  logic unused_cio_usbdev_tx_mode_se_d2p, unused_cio_usbdev_tx_mode_se_en_d2p;
   logic unused_cio_usbdev_suspend_d2p, unused_cio_usbdev_suspend_en_d2p;
-  logic unused_cio_usbdev_d_d2p, unused_cio_usbdev_d_en_d2p;
-  assign unused_cio_usbdev_se0_d2p = cio_usbdev_se0_d2p;
-  assign unused_cio_usbdev_se0_en_d2p = cio_usbdev_se0_en_d2p;
-  assign unused_cio_usbdev_dn_pullup_d2p = cio_usbdev_dn_pullup_d2p;
-  assign unused_cio_usbdev_dn_pullup_en_d2p = cio_usbdev_dn_pullup_en_d2p;
-  assign unused_cio_usbdev_tx_mode_se_d2p = cio_usbdev_tx_mode_se_d2p;
-  assign unused_cio_usbdev_tx_mode_se_en_d2p = cio_usbdev_tx_mode_se_en_d2p;
   assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
   assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
-  assign cio_usbdev_d_p2d = 1'b0;
-  assign unused_cio_usbdev_d_d2p = cio_usbdev_d_d2p;
-  assign unused_cio_usbdev_d_en_d2p = cio_usbdev_d_en_d2p;
 
   // monitor for termination
 `ifndef END_MON_PATH

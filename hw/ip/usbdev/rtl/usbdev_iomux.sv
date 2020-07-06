@@ -6,8 +6,8 @@
 // USB IO Mux
 //
 // Muxes the USB IO signals from register access, differential signaling, single-ended signaling
-// and swaps D+/D- if configured. The incomming signals are also muxed and synchronized to the
-// corresponding clock domain.
+// and swaps D+/D- if configured. The incomming signals are also muxed but
+// remain async because the clock recovery is done in the usb_fs_rx logic
 
 module usbdev_iomux
   import usbdev_reg_pkg::*;
@@ -38,28 +38,28 @@ module usbdev_iomux
   output logic                          cio_usb_dn_pullup_en_o,
   output logic                          cio_usb_suspend_o,
 
-  // Internal USB Interface (usb clk)
+  // Internal USB Interface (async, clock recovered in usb_fs_rx)
   output logic                          usb_rx_d_o,
-  output logic                          usb_rx_se0_o,
-
+  output logic                          usb_rx_dp_o,
+  output logic                          usb_rx_dn_o,
+  // Internal USB Interface (usb clk)
   input  logic                          usb_tx_d_i,
   input  logic                          usb_tx_se0_i,
   input  logic                          usb_tx_oe_i,
-
   output logic                          usb_pwr_sense_o,
   input  logic                          usb_pullup_en_i,
   input  logic                          usb_suspend_i
 );
 
   logic async_pwr_sense, sys_usb_sense;
-  logic cio_usb_dp, cio_usb_dn, cio_usb_d;
-  logic usb_rx_dp, usb_rx_dn, usb_rx_d;
   logic pinflip;
   logic unused_eop_single_bit;
+  logic unused_rx_differential_mode;
   logic unused_usb_ref_disable;
 
   assign unused_eop_single_bit  = sys_reg2hw_config_i.eop_single_bit.q;
   assign unused_usb_ref_disable = sys_reg2hw_config_i.usb_ref_disable.q;
+  assign unused_rx_differential_mode = sys_reg2hw_config_i.rx_differential_mode.q;
 
   //////////
   // CDCs //
@@ -77,20 +77,14 @@ module usbdev_iomux
 
   assign sys_usb_sense_o = sys_usb_sense;
 
-  // USB input pins (to usbclk)
+  // USB sense pin or overidden value (to usbclk)
   prim_flop_2sync #(
-    .Width (4)
+    .Width (1)
   ) cdc_io_to_usb (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      ({cio_usb_dp_i,
-              cio_usb_dn_i,
-              cio_usb_d_i,
-              async_pwr_sense}),
-    .q      ({cio_usb_dp,
-              cio_usb_dn,
-              cio_usb_d,
-              usb_pwr_sense_o})
+    .d      (async_pwr_sense),
+    .q      (usb_pwr_sense_o)
   );
 
   ////////////////////////
@@ -111,11 +105,12 @@ module usbdev_iomux
 
     // The single-ended signals are only driven in single-ended mode.
     if (sys_reg2hw_config_i.tx_differential_mode.q) begin
-      // Differential TX mode
+      // Differential TX mode (physical IO takes d and se0)
+      // i.e. expect the "else" logic to be in the physical interface
       cio_usb_tx_mode_se_o   = 1'b0;
 
     end else begin
-      // Single-ended TX mode
+      // Single-ended TX mode (physical IO takes dp and dn)
       cio_usb_tx_mode_se_o   = 1'b1;
       if (usb_tx_se0_i) begin
         cio_usb_dp_o = 1'b0;
@@ -137,26 +132,11 @@ module usbdev_iomux
   // USB input pin mux //
   ///////////////////////
 
-  // Note that while transmitting, we fix the receive line to 1. If the receive line isn't fixed,
-  // we are trying to regenerate the bit clock from the bit clock we are regenerating, rather than
-  // just holding the phase.
+  // Note: fixing rx to J moved to fs_rx since that is what needs it
   // D+/D- can be swapped based on a config register.
-  assign usb_rx_dp = usb_tx_oe_i ? 1'b1 : (pinflip ?  cio_usb_dn : cio_usb_dp);
-  assign usb_rx_dn = usb_tx_oe_i ? 1'b0 : (pinflip ?  cio_usb_dp : cio_usb_dn);
-  assign usb_rx_d  = usb_tx_oe_i ? 1'b1 : (pinflip ? ~cio_usb_d  : cio_usb_d);
-
-  always_comb begin : proc_diff_se_mux_in
-    usb_rx_se0_o = ~usb_rx_dp & ~usb_rx_dn;
-
-    if (sys_reg2hw_config_i.rx_differential_mode.q) begin
-      // Differential RX mode
-      usb_rx_d_o = usb_rx_d;
-
-    end else begin
-      // Single-ended RX mode
-      usb_rx_d_o = usb_rx_dp; // SE1 is interpreted as differential 1
-    end
-  end
+  assign usb_rx_dp_o = pinflip ?  cio_usb_dn_i : cio_usb_dp_i;
+  assign usb_rx_dn_o = pinflip ?  cio_usb_dp_i : cio_usb_dn_i;
+  assign usb_rx_d_o  = pinflip ? ~cio_usb_d_i  : cio_usb_d_i;
 
   // Power sense mux
   always_comb begin : proc_mux_pwr_sense

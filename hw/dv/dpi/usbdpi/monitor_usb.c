@@ -97,22 +97,43 @@ void monitor_usb(void *mon_void, int fifo_fd, int loglevel, int tick,
   log = (loglevel & 0x2);
   compact = (loglevel & 0x1);
 
-  if ((d2p & D2P_DP_EN) || (d2p & D2P_DN_EN)) {
+  if ((d2p & D2P_DP_EN) || (d2p & D2P_DN_EN) || (d2p & D2P_D_EN)) {
     if (hdrive) {
       dprintf(fifo_fd, "mon: %8d: Bus clash\n", tick);
     }
-    dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ? 1 : 0;
-    dn = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ? 1 : 0;
+    if (d2p & D2P_TXMODE_SE) {
+      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ? 1 : 0;
+      dn = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ? 1 : 0;
+    } else {
+      if ((d2p & D2P_SE0) || !(d2p & D2P_D_EN)) {
+	dp = 0;
+	dn = 0;
+      } else {
+	dp = (d2p & D2P_D) ? 1 : 0;
+	dn = (d2p & D2P_D) ? 0 : 1;
+      }
+    }
     mon->driver = M_DEVICE;
   } else if (hdrive) {
-    dp = (p2d & P2D_DP) ? 1 : 0;
-    dn = (p2d & P2D_DN) ? 1 : 0;
+    if (d2p & D2P_TXMODE_SE) {
+      dp = (p2d & P2D_DP) ? 1 : 0;
+      dn = (p2d & P2D_DN) ? 1 : 0;
+    } else {
+      if (p2d & (P2D_DP | P2D_DN)) {
+	dp = (p2d & P2D_D) ? 1 : 0; 
+	dn = (p2d & P2D_D) ? 0 : 1;
+      } else {
+	dp = 0;
+	dn = 0;
+      }
+    }
     mon->driver = M_HOST;
   } else {
     if ((mon->driver != M_NONE) || (mon->pu != (d2p & D2P_PU))) {
       if (log) {
         if (d2p & D2P_PU) {
-          dprintf(fifo_fd, "mon: %8d: Idle, FS resistor\n", tick);
+          dprintf(fifo_fd, "mon: %8d: Idle, FS resistor (d2p 0x%x)\n", tick,
+		  d2p);
         } else {
           dprintf(fifo_fd, "mon: %8d: Idle, SE0\n", tick);
         }
@@ -122,6 +143,12 @@ void monitor_usb(void *mon_void, int fifo_fd, int loglevel, int tick,
     }
     mon->line = 0;
     return;
+  }
+  // If the DN pullup is there then swap
+  if (d2p & D2P_DNPU) {
+    int tmp = dp;
+    dp = dn;
+    dn = tmp;
   }
   mon->line = (mon->line << 2) | dp << 1 | dn;
 

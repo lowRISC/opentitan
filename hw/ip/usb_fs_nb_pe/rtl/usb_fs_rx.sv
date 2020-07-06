@@ -10,12 +10,14 @@ module usb_fs_rx (
   input  logic rst_ni,
   input  logic link_reset_i,
 
-  // EOP configuration
+  // configuration
   input  logic cfg_eop_single_bit_i,
+  input  logic cfg_rx_differential_i,
 
-  // USB data+ and data- lines (synchronous)
+  // USB data+ and data- lines (asynchronous from pin)
   input  logic usb_d_i,
-  input  logic usb_se0_i,
+  input  logic usb_dp_i,
+  input  logic usb_dn_i,
 
   // Transmit enable disables the receier
   input  logic tx_en_i,
@@ -42,6 +44,10 @@ module usb_fs_rx (
   // Most recent packet passes PID and CRC checks
   output logic valid_packet_o,
 
+  // line status for the status detection (actual rx bits after clock recovery)
+  output logic rx_se0_det_o,
+  output logic rx_jjj_det_o,
+
   // Error detection
   output logic crc_error_o,
   output logic pid_error_o,
@@ -56,12 +62,13 @@ module usb_fs_rx (
   // usb receive path //
   //////////////////////
 
+   
   ///////////////////////////////////////
   // line state recovery state machine //
   ///////////////////////////////////////
 
-  // The receive path doesn't currently use a differential reciever.  because of
-  // this there is a chance that one of the differential pairs will appear to have
+  // If the receive path is set not to use a differential reciever:
+  // There is a chance that one of the differential pairs will appear to have
   // changed to the new state while the other is still in the old state.  the
   // following state machine detects transitions and waits an extra sampling clock
   // before decoding the state on the differential pair.  this transition period
@@ -69,31 +76,51 @@ module usb_fs_rx (
   // if there is enough noise on the line then the data may be corrupted and the
   // packet will fail the data integrity checks.
 
+  // If the receive path uses a differential receiver:
+  // The single ended signals must still be recovered to detect SE0
+  // Note that the spec warns in section 7.1.4.1:
+  // Both D+ and D- may temporarily be less than VIH (min) during differential
+  // signal transitions. This period can be up to 14 ns (TFST) for full-speed
+  // transitions and up to 210 ns (TLST) for low-speed transitions. Logic in the
+  // receiver must ensure that that this is not interpreted as an SE0.
+  // Since the 48MHz sample clock is 20.833ns period we will either miss this or
+  // sample it only once, so it will be covered by line_state=DT and the next
+  // sample will not be SE0 unless this was a real SE0 transition
+  // Note: if it is a real SE0 the differential rx could be doing anything
+
   logic [2:0] line_state_q, line_state_d;
+  logic [2:0] diff_state_q, diff_state_d;
+  logic [2:0] line_state_rx;
+   
   localparam logic [2:0]  DT = 3'b100; // transition state
   localparam logic [2:0]  DJ = 3'b010; // J - idle line state
-  // localparam logic [2:0]  DK = 3'b001; // K - inverse of J
+  localparam logic [2:0]  DK = 3'b001; // K - inverse of J
   localparam logic [2:0] SE0 = 3'b000; // single-ended 0 - end of packet or detached
   // localparam logic [2:0] SE1 = 3'b011; // single-ended 1 - illegal
 
   // Mute the input if we're transmitting
-  logic [1:0] dpair;
+  logic [1:0] dpair, ddiff;
   always_comb begin : proc_dpair_mute
     if (tx_en_i) begin
       dpair = DJ[1:0]; // J
+      ddiff = DJ[1:0]; // J
     end else begin
-      dpair = (usb_se0_i) ? 2'b00 : {usb_d_i, ~usb_d_i};
+      dpair = {usb_dp_i, usb_dn_i};
+      ddiff = usb_d_i ? DJ[1:0] : DK[1:0]; // equiv to {usb_d_i, ~usb_d_i}
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_line_state_q
     if (!rst_ni) begin
       line_state_q <= SE0;
+      diff_state_q <= SE0;
     end else begin
       if (link_reset_i) begin
         line_state_q <= SE0;
+        diff_state_q <= SE0;
       end else begin
         line_state_q <= line_state_d;
+        diff_state_q <= diff_state_d;
       end
     end
   end
@@ -116,6 +143,45 @@ module usb_fs_rx (
     end
   end
 
+  always_comb begin : proc_diff_state_d
+    // Default assignment
+    diff_state_d = diff_state_q;
+
+    if (diff_state_q == DT) begin
+      // if we are in a transition state, then we can sample the diff input and
+      // move to the next corresponding line state
+      diff_state_d = {1'b0, ddiff};
+
+    end else begin
+      // if we are in a valid line state and the value of the diff input changes,
+      // then we need to move to the transition state
+      if (ddiff != diff_state_q[1:0]) begin
+        diff_state_d = DT;
+      end
+    end
+  end
+
+  // The received line state depends on how the receiver is configured:
+  // Single ended only: it is just the line_state_q that was captured
+  //
+  // Differential: recovered from the differential receiver (diff_state_q)
+  //               unless the single ended indicate SE0 when the differential
+  //               receiver could produce any value
+  //
+  // Transition where single ended happens to see SE0 look like (driven by diff DT)
+  // line_state    D? DT D?...
+  // diff_state    Dx DT Dy
+  // Transition to SE0 will look like:
+  // line_state    D? DT SE0 SE0... (DT is the first sample at SE0)
+  // diff_state    Dx DT ??  ??...  (diff saw transition as line went SE0)
+  //    --> out    Dx DT SE0 SE0
+  // line_state    D? DT SE0 SE0... (DT is the first sample at SE0)
+  // diff_state    Dx Dx ??  ??...  (diff no transition as line went SE0)
+  //    --> out    Dx Dx SE0 SE0
+
+  assign line_state_rx = cfg_rx_differential_i ? ((line_state_q == SE0) ? SE0 : diff_state_q) :
+                                                 line_state_q;
+
   ////////////////////
   // clock recovery //
   ////////////////////
@@ -137,7 +203,7 @@ module usb_fs_rx (
   assign bit_strobe_o     = (bit_phase_q == 2'd2);
 
   // keep track of phase within each bit
-  assign bit_phase_d = (line_state_q == DT) ? 0 : bit_phase_q + 1;
+  assign bit_phase_d = (line_state_rx == DT) ? 0 : bit_phase_q + 1;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bit_phase_q
     if (!rst_ni) begin
@@ -193,7 +259,7 @@ module usb_fs_rx (
   end
 
   // keep a history of the last two states on the line
-  assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_q[1:0]} :
+  assign line_history_d = line_state_valid ? {line_history_q[9:0], line_state_rx[1:0]} :
                                               line_history_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_pkt_line
@@ -211,6 +277,9 @@ module usb_fs_rx (
     end
   end
 
+  // mask out jjj detection when tranmitting (because rx is forced to J)
+  assign rx_se0_det_o = line_history_q[5:0] == 6'b000000; // three SE0s
+  assign rx_jjj_det_o = ~tx_en_i & (line_history_q[5:0] == 6'b101010); // three Js
 
   /////////////////
   // NRZI decode //
