@@ -139,12 +139,26 @@
       act:    "req"
       package: "otp_ctrl_pkg"
     }
-    //Broadcast to SRAM Scramblers
-    { struct: "sram_key"
+    //Broadcast to Main RAM Scrambler
+    { struct: "ram_main_key"
       type:   "uni"
-      name:   "otp_sram_key"
+      name:   "otp_ram_main_key"
       act:    "req"
       package: "otp_ctrl_pkg"
+    }
+    //Broadcast to Retention RAM Scrambler
+    { struct: "ram_ret_aon_key"
+      type:   "uni"
+      name:   "otp_ram_ret_aon_key"
+      act:    "req"
+      package: "otp_ctrl_pkg"
+    }
+    //Broadcast to OTBN RAM Scrambler
+    { struct: "otbn_ram_key"
+      type:   "uni"
+      name:   "otp_otbn_ram_key"
+      act:    "req"
+      package: "otbn_pkg"
     }
   ] // inter_signal_list
 

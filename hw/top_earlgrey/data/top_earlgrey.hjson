@@ -412,7 +412,9 @@
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'otp_ctrl.otp_flash_key': ['flash_ctrl.otp']
-      'otp_ctrl.otp_sram_key': []
+      'otp_ctrl.otp_ram_main_key': []
+      'otp_ctrl.otp_ram_ret_aon_key': []
+      'otp_ctrl.otp_otbn_ram_key': ['otbn.otp_otbn_ram_key']
       'pwrmgr_aon.pwr_otp'  : ['otp_ctrl.pwr_otp_init'],
       'pwrmgr_aon.pwr_rst'  : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'  : ['clkmgr_aon.pwr'],

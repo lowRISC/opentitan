@@ -18,4 +18,10 @@ package otbn_pkg;
     ErrCodeNoError = 32'h 0000_0000
   } err_code_e;
 
+  typedef struct packed {
+    logic valid;
+    logic [128-1:0] key;
+    logic [256-1:0] nonce;
+  } otbn_ram_key_t;
+
 endpackage
