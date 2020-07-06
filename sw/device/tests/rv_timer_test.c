@@ -4,13 +4,15 @@
 
 #include "sw/device/lib/rv_timer.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_main.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_gpio_t gpio;
 // Flag to indicate that the interrupt was seen. Declared as volatile since it
@@ -25,8 +27,8 @@ bool test_main(void) {
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
   dif_gpio_config_t gpio_config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  dif_gpio_init(&gpio_config, &gpio);
-  dif_gpio_output_mode_all_set(&gpio, 0xFF00);
+  CHECKZ(dif_gpio_init(&gpio_config, &gpio));
+  CHECKZ(dif_gpio_output_mode_all_set(&gpio, 0xFF00));
 
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
@@ -37,15 +39,13 @@ bool test_main(void) {
   rv_timer_set_cmp(hart, cmp);
   rv_timer_ctrl(hart, true);
 
-  dif_gpio_all_write(&gpio, 0xFF00);  // all LEDs on
+  CHECKZ(dif_gpio_all_write(&gpio, 0xFF00));  // all LEDs on
 
-  while (1) {
-    if (intr_handling_success) {
-      break;
-    }
+  while (!intr_handling_success) {
+    wait_for_interrupt();
   }
 
-  dif_gpio_all_write(&gpio, 0xAA00);  // Test Completed
+  CHECKZ(dif_gpio_all_write(&gpio, 0xAA00));  // Test Completed
 
   return true;
 }

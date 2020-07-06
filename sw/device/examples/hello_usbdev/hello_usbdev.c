@@ -11,6 +11,7 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
@@ -79,14 +80,17 @@ static dif_gpio_t gpio;
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
+  base_set_stdout(uart_stdout);
+
   pinmux_init();
   spid_init();
 
-  dif_gpio_config_t gpio_config = {.base_addr =
-                                       mmio_region_from_addr(0x40010000)};
-  dif_gpio_init(&gpio_config, &gpio);
+  dif_gpio_config_t gpio_config = {
+      .base_addr = mmio_region_from_addr(0x40010000),
+  };
+  CHECKZ(dif_gpio_init(&gpio_config, &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  dif_gpio_output_mode_all_set(&gpio, 0x0ff00);
+  CHECKZ(dif_gpio_output_mode_all_set(&gpio, 0x0ff00));
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -115,7 +119,7 @@ int main(int argc, char **argv) {
     char rcv_char;
     while (uart_rcv_char(&rcv_char) != -1) {
       uart_send_char(rcv_char);
-      dif_gpio_all_write(&gpio, rcv_char << 8);
+      CHECKZ(dif_gpio_all_write(&gpio, rcv_char << 8));
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state = REG32(USBDEV_INTR_STATE());

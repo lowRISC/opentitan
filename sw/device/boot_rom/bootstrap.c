@@ -37,10 +37,16 @@ static bool bootstrap_requested(void) {
   dif_gpio_t gpio;
   dif_gpio_config_t gpio_config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  dif_gpio_init(&gpio_config, &gpio);
+  if (dif_gpio_init(&gpio_config, &gpio) != kDifGpioOk) {
+    LOG_ERROR("Failed to initialize GPIO for bootstrap checking.");
+    return false;
+  }
 
   uint32_t gpio_in;
-  dif_gpio_all_read(&gpio, &gpio_in);
+  if (dif_gpio_all_read(&gpio, &gpio_in) != kDifGpioOk) {
+    LOG_ERROR("Failed to read GPIO for bootstrap checking.");
+    return false;
+  }
   return (gpio_in & GPIO_BOOTSTRAP_BIT_MASK) != 0;
 }
 
