@@ -22,11 +22,19 @@ void uart_init(unsigned int baud) {
   };
 
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
-  (void)dif_uart_init(base_addr, &config, &uart0);
+  // Note that, due to a GCC bug, we cannot use the standard `(void) expr`
+  // syntax to drop this value on the ground.
+  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=25509
+  if (dif_uart_init(base_addr, &config, &uart0)) {
+  }
 }
 
 void uart_send_char(char c) {
-  (void)dif_uart_byte_send_polled(&uart0, (uint8_t)c);
+  // Note that, due to a GCC bug, we cannot use the standard `(void) expr`
+  // syntax to drop this value on the ground.
+  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=25509
+  if (dif_uart_byte_send_polled(&uart0, (uint8_t)c)) {
+  }
 }
 
 void uart_send_str(char *str) {

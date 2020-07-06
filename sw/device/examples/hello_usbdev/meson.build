@@ -23,6 +23,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       riscv_crt,
       sw_lib_irq_handlers,
       device_lib,
+      sw_lib_testing_test_status,
     ],
   )
 
