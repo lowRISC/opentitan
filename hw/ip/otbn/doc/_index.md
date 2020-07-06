@@ -2348,8 +2348,8 @@ Four `BN.MULQACC` can be used to replace one `BN.MULH` instruction, which is abl
 
 ```
 BN.MULQACC.Z      r0.0, r0.2, 0
-BN.MULQACC        r0.1, r0.0, 64
 BN.MULQACC        r0.0, r0.3, 64
+BN.MULQACC        r0.1, r0.2, 64
 BN.MULQACC.WO r1, r0.1, r0.3, 128
 ```
 
