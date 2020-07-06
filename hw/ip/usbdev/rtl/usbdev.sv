@@ -141,13 +141,20 @@ module usbdev (
 
 
   /////////////////////////////////
-  // USB IO after CDC & muxing   //
+  // USB RX after CDC & muxing   //
   /////////////////////////////////
   logic usb_rx_d;
-  logic usb_rx_se0;
+  logic usb_rx_dp;
+  logic usb_rx_dn;
+  /////////////////////////////////
+  // USB TX after CDC & muxing   //
+  /////////////////////////////////
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_oe;
+  /////////////////////////////////
+  // USB contol pins after CDC   //
+  /////////////////////////////////
   logic usb_pwr_sense;
   logic usb_pullup_en;
 
@@ -471,7 +478,8 @@ module usbdev (
 
     // Pins
     .usb_d_i              (usb_rx_d),
-    .usb_se0_i            (usb_rx_se0),
+    .usb_dp_i             (usb_rx_dp),
+    .usb_dn_i             (usb_rx_dn),
     .usb_oe_o             (usb_tx_oe),
     .usb_d_o              (usb_tx_d),
     .usb_se0_o            (usb_tx_se0),
@@ -518,6 +526,7 @@ module usbdev (
     .ep_iso_i             (ep_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
+    .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
 
     // status
@@ -944,7 +953,8 @@ module usbdev (
 
     // Internal interface
     .usb_rx_d_o             (usb_rx_d),
-    .usb_rx_se0_o           (usb_rx_se0),
+    .usb_rx_dp_o            (usb_rx_dp),
+    .usb_rx_dn_o            (usb_rx_dn),
     .usb_tx_d_i             (usb_tx_d),
     .usb_tx_se0_i           (usb_tx_se0),
     .usb_tx_oe_i            (usb_tx_oe),

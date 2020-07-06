@@ -76,8 +76,27 @@ static void usb_receipt_callback_1(uint8_t c) {
   ++usb_chars_recved_total;
 }
 
+/**
+ * USB Send String
+ *
+ * Send a 0 terminated string to the USB one byte at a time.
+ * The send byte code will flush the endpoint if needed.
+ *
+ * @param string Zero terminated string to send.
+ * @param ss_ctx Pointer to simple string endpoint context to send through.
+ */
+static void usb_send_str(const char *string, usb_ss_ctx_t *ss_ctx) {
+  for (int i = 0; string[i] != 0; ++i) {
+    usb_simpleserial_send_byte(ss_ctx, string[i]);
+  }
+}
+
 static dif_gpio_t gpio;
 static dif_spi_device_t spi;
+
+// These GPIO bits control USB PHY configuration
+static const uint32_t kPinflipMask = 1;
+static const uint32_t kDiffMask = 2;
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
@@ -113,7 +132,13 @@ int main(int argc, char **argv) {
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev);
+  uint32_t gpio_state;
+  CHECK(dif_gpio_read_all(&gpio, &gpio_state) == kDifGpioOk);
+  bool pinflip = gpio_state & kPinflipMask ? true : false;
+  bool differential = gpio_state & kDiffMask ? true : false;
+  LOG_INFO("PHY settings: pinflip=%d differential=%d", pinflip, differential);
+  usbdev_init(&usbdev, pinflip, differential, differential);
+
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
@@ -122,7 +147,7 @@ int main(int argc, char **argv) {
   CHECK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL) ==
         kDifSpiDeviceResultOk);
 
-  uint32_t gpio_state = 0;
+  bool say_hello = true;
   bool pass_signaled = false;
   while (true) {
     usbdev_poll(&usbdev);
@@ -144,7 +169,10 @@ int main(int argc, char **argv) {
         usb_simpleserial_send_byte(&simple_serial1, rcv_char + 1);
       }
     }
-
+    if (say_hello && usb_chars_recved_total > 2) {
+      usb_send_str("Hello USB World!!!!", &simple_serial0);
+      say_hello = false;
+    }
     // Signal that the simulation succeeded.
     if (usb_chars_recved_total >= kExpectedUsbCharsRecved && !pass_signaled) {
       uart_send_str("\r\n");
