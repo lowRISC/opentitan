@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// print.h's polyglotness is not part of its public API at the moment; we wrap
+// it in an `extern` here for the time being.
 extern "C" {
 #include "sw/device/lib/base/print.h"
 }  // extern "C"
