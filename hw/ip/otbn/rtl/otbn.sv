@@ -272,7 +272,7 @@ module otbn
 
   // Data Memory (DMEM) ========================================================
 
-  localparam DmemSizeWords = DmemSizeByte / WLEN / 8;
+  localparam DmemSizeWords = DmemSizeByte / (WLEN / 8);
   localparam DmemIndexWidth = vbits(DmemSizeWords);
 
   // Access select to DMEM: core (1), or bus (0)
