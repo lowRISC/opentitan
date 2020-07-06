@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:ram_1p_scr
     files:
       - rtl/otbn_pkg.sv
       - rtl/otbn_reg_pkg.sv

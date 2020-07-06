@@ -335,9 +335,9 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(addr_width,  max_char)} ${m["name"]}_addr_nonce;
 
   // Note that this connection will change once we move to a fully comportable SRAM IP
-  assign ${m["name"]}_data_nonce = otp_ctrl_otp_sram_key.nonce[${nonce_width}-1:0];
-  assign ${m["name"]}_addr_nonce = otp_ctrl_otp_sram_key.nonce[${nonce_width}+${addr_width}-1:${nonce_width}];
-  assign ${m["name"]}_key = otp_ctrl_otp_sram_key.key;
+  assign ${m["name"]}_data_nonce = otp_ctrl_otp_${m["name"]}_key.nonce[${nonce_width}-1:0];
+  assign ${m["name"]}_addr_nonce = otp_ctrl_otp_${m["name"]}_key.nonce[${nonce_width}+${addr_width}-1:${nonce_width}];
+  assign ${m["name"]}_key = otp_ctrl_otp_${m["name"]}_key.key;
 
   tlul_adapter_sram #(
     .SramAw(${addr_width}),

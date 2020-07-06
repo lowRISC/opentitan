@@ -26,7 +26,12 @@ module otbn
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [otbn_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [otbn_pkg::NumAlerts-1:0] alert_tx_o
+  output prim_alert_pkg::alert_tx_t [otbn_pkg::NumAlerts-1:0] alert_tx_o,
+
+  // Key input for memory scrambling
+  // TODO: this is preliminary.
+  // The key request and delivery handshake protocol needs to be updated.
+  input otbn_ram_key_t otp_otbn_ram_key_i
 
   // CSRNG interface
   // TODO: Needs to be connected to RNG distribution network (#2638)
@@ -299,7 +304,7 @@ module otbn
   logic [DmemAddrWidth-1:0] dmem_addr_core;
   assign dmem_index_core = dmem_addr_core[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width           (WLEN),
     .Depth           (DmemSizeWords),
     .DataBitsPerMask (32), // 32b write masks for 32b word writes from bus
@@ -307,6 +312,11 @@ module otbn
   ) u_dmem (
     .clk_i,
     .rst_ni,
+
+    .key_i        (otp_otbn_ram_key_i.key),
+    .data_nonce_i (otp_otbn_ram_key_i.nonce[0 +: 256 - 4*DmemIndexWidth]),
+    .addr_nonce_i (otp_otbn_ram_key_i.nonce[255 -: DmemIndexWidth]),
+
     .req_i    (dmem_req),
     .write_i  (dmem_write),
     .addr_i   (dmem_index),

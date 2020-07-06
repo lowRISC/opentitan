@@ -153,7 +153,13 @@ package otp_ctrl_pkg;
     logic valid;
     logic [FlashKeyWidth-1:0] key;
     logic [64-1:0]            nonce;
-  } sram_key_t;
+  } ram_main_key_t;
+
+  typedef struct packed {
+    logic valid;
+    logic [FlashKeyWidth-1:0] key;
+    logic [64-1:0]            nonce;
+  } ram_ret_aon_key_t;
 
   ////////////////////////////////
   // Power/Reset Ctrl Interface //

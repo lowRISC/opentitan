@@ -43,6 +43,14 @@
       width:   "1",
       act:     "req",
     },
+
+    //Broadcast to OTBN RAM Scrambler
+    { struct: "otbn_ram_key"
+      type:   "uni"
+      name:   "otp_otbn_ram_key"
+      act:    "rcv"
+      package: "otbn_pkg"
+    }
   ],
 
   regwidth: "32"

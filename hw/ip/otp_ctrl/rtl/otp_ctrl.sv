@@ -37,7 +37,9 @@ module otp_ctrl
   output otp_lc_data_t              otp_lc_data_o,
   output keymgr_key_t               otp_keymgr_key_o,
   output flash_key_t                otp_flash_key_o,
-  output sram_key_t                 otp_sram_key_o
+  output ram_main_key_t             otp_ram_main_key_o,
+  output ram_ret_aon_key_t          otp_ram_ret_aon_key_o,
+  output otbn_pkg::otbn_ram_key_t   otp_otbn_ram_key_o
   // TODO: other hardware broadcast outputs
 );
 
@@ -280,31 +282,48 @@ module otp_ctrl
   // Dummy registers for flash key
   localparam int Entries = FlashKeyWidth/32;
   logic [Entries-1:0][31:0] addr_key_q, data_key_q;
-  logic [Entries-1:0][31:0] sram_key_q;
-  logic [2-1:0][31:0]       nonce_q;
+  logic [Entries-1:0][31:0] ram_main_key_q;
+  logic [2-1:0][31:0]       ram_main_nonce_q;
+  logic [Entries-1:0][31:0] ram_ret_aon_key_q;
+  logic [2-1:0][31:0]       ram_ret_aon_nonce_q;
+  logic [Entries-1:0][31:0] otbn_ram_key_q;
+  logic [8-1:0][31:0]       otbn_ram_nonce_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_key_q <= '0;
       data_key_q <= '0;
-      sram_key_q <= '0;
-      nonce_q    <= '0;
+      ram_main_key_q <= '0;
+      ram_main_nonce_q    <= '0;
     end else if (tl_win_h2d[1].a_valid) begin
-      unique case (tl_win_h2d[1].a_address[3:2])
-        2'd0: addr_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
-        2'd1: data_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
-        2'd2: sram_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
-        2'd3: nonce_q[tl_win_h2d[1].a_address[0]]      <= tl_win_h2d[1].a_data;
+      unique case (tl_win_h2d[1].a_address[5:3])
+        3'd0: addr_key_q[tl_win_h2d[1].a_address[1:0]]        <= tl_win_h2d[1].a_data;
+        3'd1: data_key_q[tl_win_h2d[1].a_address[1:0]]        <= tl_win_h2d[1].a_data;
+        3'd2: ram_main_key_q[tl_win_h2d[1].a_address[1:0]]    <= tl_win_h2d[1].a_data;
+        3'd3: ram_main_nonce_q[tl_win_h2d[1].a_address[0]]    <= tl_win_h2d[1].a_data;
+        3'd4: ram_ret_aon_key_q[tl_win_h2d[1].a_address[1:0]] <= tl_win_h2d[1].a_data;
+        3'd5: ram_ret_aon_nonce_q[tl_win_h2d[1].a_address[0]] <= tl_win_h2d[1].a_data;
+        3'd6: otbn_ram_key_q[tl_win_h2d[1].a_address[1:0]]    <= tl_win_h2d[1].a_data;
+        3'd7: otbn_ram_nonce_q[tl_win_h2d[1].a_address[2:0]]  <= tl_win_h2d[1].a_data;
         default: ;
       endcase
     end
   end
 
+  assign otp_flash_key_o.valid    = 1'b1;
   assign otp_flash_key_o.addr_key = addr_key_q;
   assign otp_flash_key_o.data_key = data_key_q;
 
-  assign otp_sram_key_o.valid     = 1'b0;
-  assign otp_sram_key_o.key       = sram_key_q;
-  assign otp_sram_key_o.nonce     = nonce_q;
+  assign otp_ram_main_key_o.valid     = 1'b1;
+  assign otp_ram_main_key_o.key       = ram_main_key_q;
+  assign otp_ram_main_key_o.nonce     = ram_main_nonce_q;
+
+  assign otp_ram_ret_aon_key_o.valid     = 1'b1;
+  assign otp_ram_ret_aon_key_o.key       = ram_ret_aon_key_q;
+  assign otp_ram_ret_aon_key_o.nonce     = ram_ret_aon_nonce_q;
+
+  assign otp_otbn_ram_key_o.valid     = 1'b1;
+  assign otp_otbn_ram_key_o.key       = otbn_ram_key_q;
+  assign otp_otbn_ram_key_o.nonce     = otbn_ram_nonce_q;
 
 endmodule : otp_ctrl

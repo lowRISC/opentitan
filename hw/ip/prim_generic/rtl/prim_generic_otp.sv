@@ -70,7 +70,7 @@ module prim_generic_otp #(
 
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
   // thrown when using $readmemh system task to backdoor load an image
-  always @(posedge clk_i) begin
+  always_ff @(posedge clk_i) begin
     if (req) begin
       if (write_q) begin
         mem[addr] <= wdata;

@@ -1796,15 +1796,39 @@
           index: -1
         }
         {
-          struct: sram_key
+          struct: ram_main_key
           type: uni
-          name: otp_sram_key
+          name: otp_ram_main_key
           act: req
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
           top_type: broadcast
-          top_signame: otp_ctrl_otp_sram_key
+          top_signame: otp_ctrl_otp_ram_main_key
+          index: -1
+        }
+        {
+          struct: ram_ret_aon_key
+          type: uni
+          name: otp_ram_ret_aon_key
+          act: req
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_ram_ret_aon_key
+          index: -1
+        }
+        {
+          struct: otbn_ram_key
+          type: uni
+          name: otp_otbn_ram_key
+          act: req
+          package: otbn_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_otbn_ram_key
           index: -1
         }
       ]
@@ -3506,6 +3530,17 @@
           inst_name: otbn
           index: -1
         }
+        {
+          struct: otbn_ram_key
+          type: uni
+          name: otp_otbn_ram_key
+          act: rcv
+          package: otbn_pkg
+          inst_name: otbn
+          width: 1
+          top_signame: otp_ctrl_otp_otbn_ram_key
+          index: -1
+        }
       ]
     }
   ]
@@ -3616,7 +3651,12 @@
       [
         flash_ctrl.otp
       ]
-      otp_ctrl.otp_sram_key: []
+      otp_ctrl.otp_ram_main_key: []
+      otp_ctrl.otp_ram_ret_aon_key: []
+      otp_ctrl.otp_otbn_ram_key:
+      [
+        otbn.otp_otbn_ram_key
+      ]
       pwrmgr_aon.pwr_otp:
       [
         otp_ctrl.pwr_otp_init
@@ -6828,15 +6868,39 @@
         index: -1
       }
       {
-        struct: sram_key
+        struct: ram_main_key
         type: uni
-        name: otp_sram_key
+        name: otp_ram_main_key
         act: req
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
         top_type: broadcast
-        top_signame: otp_ctrl_otp_sram_key
+        top_signame: otp_ctrl_otp_ram_main_key
+        index: -1
+      }
+      {
+        struct: ram_ret_aon_key
+        type: uni
+        name: otp_ram_ret_aon_key
+        act: req
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_ram_ret_aon_key
+        index: -1
+      }
+      {
+        struct: otbn_ram_key
+        type: uni
+        name: otp_otbn_ram_key
+        act: req
+        package: otbn_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_otbn_ram_key
         index: -1
       }
       {
@@ -7242,6 +7306,17 @@
         index: -1
       }
       {
+        struct: otbn_ram_key
+        type: uni
+        name: otp_otbn_ram_key
+        act: rcv
+        package: otbn_pkg
+        inst_name: otbn
+        width: 1
+        top_signame: otp_ctrl_otp_otbn_ram_key
+        index: -1
+      }
+      {
         struct: flash
         type: req_rsp
         name: flash_ctrl
@@ -7385,8 +7460,22 @@
       }
       {
         package: otp_ctrl_pkg
-        struct: sram_key
-        signame: otp_ctrl_otp_sram_key
+        struct: ram_main_key
+        signame: otp_ctrl_otp_ram_main_key
+        width: 1
+        type: uni
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: ram_ret_aon_key
+        signame: otp_ctrl_otp_ram_ret_aon_key
+        width: 1
+        type: uni
+      }
+      {
+        package: otbn_pkg
+        struct: otbn_ram_key
+        signame: otp_ctrl_otp_otbn_ram_key
         width: 1
         type: uni
       }
