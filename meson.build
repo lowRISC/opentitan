@@ -58,8 +58,6 @@ c_cpp_args = [
   # We use absolute include paths as much as possible.
   '-I' + meson.source_root(),
   '-I' + meson.build_root(),
-  # Remove once we've fully adopted warn_unused_result.
-  '-Wno-error=unused-result',
 ]
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: false)
 add_project_arguments(c_cpp_args, language: ['c', 'cpp'], native: true)
