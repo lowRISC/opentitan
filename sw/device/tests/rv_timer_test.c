@@ -7,6 +7,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/testing/test_main.h"
