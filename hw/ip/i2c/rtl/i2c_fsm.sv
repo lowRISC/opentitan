@@ -75,6 +75,9 @@ module i2c_fsm (
   logic [7:0]  read_byte;     // register for reads from target
   logic        read_byte_clr; // clear read_byte contents
   logic        shift_data_en; // indicates data must be shifted in from the bus
+  logic        start_unpaired;// indicates unpaired start has been issued
+  logic        log_start;     // indicates start is been issued
+  logic        log_stop;      // indicates stop is been issued
   logic        restart;       // indicates repeated start state is entered into
 
   // Clock counter implementation
@@ -180,6 +183,19 @@ module i2c_fsm (
     end else begin
       scl_i_q <= scl_i;
       sda_i_q <= sda_i;
+    end
+  end
+
+  // Start unpaired by Stop
+  always_ff @ (posedge clk_i or negedge rst_ni) begin : start_state
+    if (!rst_ni) begin
+      start_unpaired <= 1'b0;
+    end else if (log_start) begin
+      start_unpaired <= 1'b1;
+    end else if (log_stop) begin
+      start_unpaired <= 1'b0;
+    end else begin
+      start_unpaired <= start_unpaired;
     end
   end
 
@@ -428,6 +444,8 @@ module i2c_fsm (
     byte_clr = 1'b0;
     read_byte_clr = 1'b0;
     shift_data_en = 1'b0;
+    log_start = 1'b0;
+    log_stop = 1'b0;
     restart = 1'b0;
 
     unique case (state_q)
@@ -435,20 +453,7 @@ module i2c_fsm (
       Idle : begin
         if (!host_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (!fmt_fifo_rvalid_i) state_d = Idle;
-        else if (fmt_flag_read_bytes_i) begin
-          byte_clr = 1'b1;
-          state_d = ReadClockLow;
-          load_tcount = 1'b1;
-          tcount_sel = tClockLow;
-        end else if (fmt_flag_start_before_i) begin
-          state_d = SetupStart;
-          load_tcount = 1'b1;
-          tcount_sel = tSetupStart;
-        end else begin
-          state_d = ClockLow;
-          load_tcount = 1'b1;
-          tcount_sel = tClockLow;
-        end
+        else state_d = Active;
       end
 
       // SetupStart: SDA and SCL are released
@@ -655,6 +660,7 @@ module i2c_fsm (
           state_d = HoldStop;
           load_tcount = 1'b1;
           tcount_sel = tHoldStop;
+          log_stop = 1'b1;
         end
       end
       // HoldStop: SDA and SCL are released
@@ -683,7 +689,8 @@ module i2c_fsm (
           state_d = SetupStart;
           load_tcount = 1'b1;
           tcount_sel = tSetupStart;
-          restart = 1'b1;
+          log_start = 1'b1;
+          if (start_unpaired) restart = 1'b1;
         end else begin
           state_d = ClockLow;
           load_tcount = 1'b1;
@@ -719,6 +726,8 @@ module i2c_fsm (
         byte_clr = 1'b0;
         read_byte_clr = 1'b0;
         shift_data_en = 1'b0;
+        log_start = 1'b0;
+        log_stop = 1'b0;
         restart = 1'b0;
       end
     endcase
