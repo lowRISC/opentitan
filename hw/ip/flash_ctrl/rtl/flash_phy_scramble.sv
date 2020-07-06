@@ -27,7 +27,6 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   output logic [DataWidth-1:0] scrambled_data_o
   );
 
-  localparam int CntWidth = (CipherCycles == 1) ? 1 : $clog2(CipherCycles);
   localparam int AddrPadWidth = DataWidth - BankAddrW;
   localparam int UnusedWidth = KeySize - AddrPadWidth;
 
@@ -50,34 +49,27 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   );
 
   // Cipher portion
-  logic [CntWidth-1:0] cnt;
   logic dec;
   logic [DataWidth-1:0] data;
-
-  assign op_ack_o = cnt == (CipherCycles - 1);
   assign dec = op_type_i == DeScrambleOp;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cnt <= '0;
-    end else if (op_req_i && op_ack_o) begin
-      cnt <= '0;
-    end else if (op_req_i) begin
-      cnt <= cnt + 1'b1;
-    end
-  end
 
   // Previous discussion settled on PRESENT, using PRINCE here for now
   // just to get some area idea
   prim_prince # (
     .DataWidth(DataWidth),
     .KeyWidth(KeySize),
-    .UseOldKeySched(1'b1)
+    .UseOldKeySched(1'b0),
+    .HalfwayDataReg(1'b1), // instantiate a register halfway in the primitive
+    .HalfwayKeyReg (1'b0)  // no need to instantiate a key register as the key remains static
   ) u_cipher (
+    .clk_i,
+    .rst_ni,
+    .valid_i(op_req_i),
     .data_i(dec ? scrambled_data_i : plain_data_i),
     .key_i(data_key_i),
     .dec_i(dec),
-    .data_o(data)
+    .data_o(data),
+    .valid_o(op_ack_o)
   );
 
   // if decrypt, output the unscrambled data, feed input through otherwise
