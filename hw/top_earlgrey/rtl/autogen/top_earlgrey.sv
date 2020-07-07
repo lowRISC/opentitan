@@ -135,6 +135,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_clkmgr_aon_d_d2h;
   tl_h2d_t  tl_rbox_aon_d_h2d;
   tl_d2h_t  tl_rbox_aon_d_d2h;
+  tl_h2d_t  tl_timer_aon_d_h2d;
+  tl_d2h_t  tl_timer_aon_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
   tl_d2h_t  tl_nmi_gen_d_d2h;
   tl_h2d_t  tl_usbdev_aon_d_h2d;
@@ -255,6 +257,7 @@ module top_earlgrey #(
   logic        cio_rbox_aon_key2_out_en_d2p;
   logic        cio_rbox_aon_pwrb_out_d2p;
   logic        cio_rbox_aon_pwrb_out_en_d2p;
+  // timer_aon
   // nmi_gen
   // usbdev_aon
   logic        cio_usbdev_aon_sense_p2d;
@@ -380,6 +383,7 @@ module top_earlgrey #(
   logic intr_alert_handler_classc;
   logic intr_alert_handler_classd;
   logic intr_pwrmgr_aon_wakeup;
+  logic intr_timer_aon_timer_expired_0_0;
   logic intr_nmi_gen_esc0;
   logic intr_nmi_gen_esc1;
   logic intr_nmi_gen_esc2;
@@ -1308,6 +1312,17 @@ module top_earlgrey #(
       .sw_rst_ni (rstmgr_aon_resets.rst_por_io_n)
   );
 
+  rv_timer u_timer_aon (
+      .tl_i (tl_timer_aon_d_h2d),
+      .tl_o (tl_timer_aon_d_d2h),
+
+      // Interrupt
+      .intr_timer_expired_0_0_o (intr_timer_aon_timer_expired_0_0),
+
+      .clk_i (clk_aon_i),
+      .rst_ni (rstmgr_aon_resets.rst_por_aon_n)
+  );
+
   nmi_gen u_nmi_gen (
       .tl_i (tl_nmi_gen_d_h2d),
       .tl_o (tl_nmi_gen_d_d2h),
@@ -1699,6 +1714,8 @@ module top_earlgrey #(
     .tl_pinmux_aon_i  (tl_pinmux_aon_d_d2h),
     .tl_padctrl_aon_o (tl_padctrl_aon_d_h2d),
     .tl_padctrl_aon_i (tl_padctrl_aon_d_d2h),
+    .tl_timer_aon_o   (tl_timer_aon_d_h2d),
+    .tl_timer_aon_i   (tl_timer_aon_d_d2h),
     .tl_usbdev_aon_o  (tl_usbdev_aon_d_h2d),
     .tl_usbdev_aon_i  (tl_usbdev_aon_d_d2h),
     .tl_ram_ret_aon_o (tl_ram_ret_aon_d_h2d),

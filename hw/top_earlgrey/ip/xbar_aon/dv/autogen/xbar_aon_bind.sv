@@ -50,6 +50,12 @@ module xbar_aon_bind;
     .h2d    (tl_padctrl_aon_o),
     .d2h    (tl_padctrl_aon_i)
   );
+  bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_timer_aon (
+    .clk_i  (clk_aon_i),
+    .rst_ni (rst_aon_ni),
+    .h2d    (tl_timer_aon_o),
+    .d2h    (tl_timer_aon_i)
+  );
   bind xbar_aon tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev_aon (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),

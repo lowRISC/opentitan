@@ -2677,6 +2677,41 @@
       scan: "false"
     }
     {
+      name: timer_aon
+      type: rv_timer
+      clock_srcs:
+      {
+        clk_i: aon
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por_aon
+      }
+      base_addr: 0x40480000
+      clock_connections:
+      {
+        clk_i: clk_aon_i
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: timer_expired_0_0
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      scan: "false"
+    }
+    {
       name: nmi_gen
       type: nmi_gen
       clock_srcs:
@@ -3976,6 +4011,10 @@
               size_byte: 0x1000
             }
             {
+              base_addr: 0x40480000
+              size_byte: 0x1000
+            }
+            {
               base_addr: 0x40500000
               size_byte: 0x1000
             }
@@ -4470,6 +4509,7 @@
           usbdev_aon
           rbox_aon
           ram_ret_aon
+          timer_aon
         ]
       }
       nodes:
@@ -4580,6 +4620,23 @@
           [
             {
               base_addr: 0x40470000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: timer_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: rv_timer
+          addr_range:
+          [
+            {
+              base_addr: 0x40480000
               size_byte: 0x1000
             }
           ]
