@@ -191,7 +191,6 @@ def _parse_parameter_port_list(parameter_port_list):
 def _check_gapi(gapi):
     if not 'cores' in gapi:
         print("Key 'cores' not found in GAPI structure. "
-              "At least FuseSoC 1.11 is needed. "
               "Install a compatible version with "
               "'pip3 install --user -r python-requirements.txt'.")
         return False
