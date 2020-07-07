@@ -38,7 +38,7 @@
     // Define lc <-> pinmux signal for strap sampling
     { struct:  "lc_pinmux_strap",
       type:    "req_rsp",
-      name:    "lc_pinmux_strap",
+      name:    "lc_strap",
       act:     "rsp",
       package: "pinmux_pkg",
     }
