@@ -36,9 +36,9 @@
 
   inter_signal_list: [
     // Define lc <-> pinmux signal for strap sampling
-    { struct:  "lc_pinmux_strap",
+    { struct:  "lc_strap",
       type:    "req_rsp",
-      name:    "lc_strap",
+      name:    "lc_pinmux_strap",
       act:     "rsp",
       package: "pinmux_pkg",
     }
