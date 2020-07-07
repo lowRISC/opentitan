@@ -8,6 +8,7 @@ description: "prim"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:assert
       - lowrisc:prim:util_memload
     files:
       - rtl/prim_generic_ram_2p.sv
