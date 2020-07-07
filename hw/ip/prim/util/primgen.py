@@ -5,7 +5,6 @@
 import os
 import re
 import shutil
-import subprocess
 import sys
 
 import yaml
@@ -45,6 +44,7 @@ def _prim_cores(cores, prim_name=None):
         if (vlnv['vendor'] == 'lowrisc' and
                 vlnv['library'].startswith('prim_') and
             (prim_name is None or vlnv['name'] == prim_name)):
+
             return core
         return None
 
@@ -197,7 +197,7 @@ def _parse_parameter_port_list(parameter_port_list):
 
 
 def _check_gapi(gapi):
-    if not 'cores' in gapi:
+    if 'cores' not in gapi:
         print("Key 'cores' not found in GAPI structure. "
               "Install a compatible version with "
               "'pip3 install --user -r python-requirements.txt'.")
@@ -300,7 +300,7 @@ def _generate_abstract_impl(gapi):
 
     techlibs = _techlibs(prim_cores)
 
-    if not 'generic' in techlibs:
+    if 'generic' not in techlibs:
         raise ValueError("Techlib generic is required, but not found for "
                          "primitive %s." % prim_name)
     print("Implementations for primitive %s: %s" %
