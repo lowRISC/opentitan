@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
@@ -12,15 +13,13 @@
 
 static dif_otbn_t otbn;
 
-#define OTBN_BASE_ADDR 0x50000000ULL
-
 static const uint32_t otbn_imem[] = {
     0xDEADBEEF,
     0xABCD0123,
     0x42424242,
 };
 
-static uint32_t otbn_imem_readback[sizeof(otbn_imem) / sizeof(uint32_t)] = {0};
+static uint32_t otbn_imem_readback[sizeof(otbn_imem) / sizeof(uint32_t)];
 
 // DMEM must be 256b words!
 static const uint32_t otbn_dmem[] = {
@@ -29,14 +28,14 @@ static const uint32_t otbn_dmem[] = {
     0xDEADBEEF, 0x42424242, 0x01234567, 0x89ABCDEF,
 };
 
-static uint32_t otbn_dmem_readback[sizeof(otbn_dmem) / sizeof(uint32_t)] = {0};
+static uint32_t otbn_dmem_readback[sizeof(otbn_dmem) / sizeof(uint32_t)];
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
 
   dif_otbn_config_t otbn_config = {.base_addr =
-                                       mmio_region_from_addr(OTBN_BASE_ADDR)};
+                                       mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)};
   dif_otbn_init(&otbn_config, &otbn);
 
   LOG_INFO("Hello OTBN!");
