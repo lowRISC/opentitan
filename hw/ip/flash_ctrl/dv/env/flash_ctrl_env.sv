@@ -61,13 +61,6 @@ class flash_ctrl_env extends cip_base_env #(
     // HDL path root.
     cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl");
     super.end_of_elaboration_phase(phase);
-    cfg.eflash_ral.lock_model();
-
-    // Set the TL adapter / sequencer to the eflash_map.
-    if (cfg.m_eflash_tl_agent_cfg.is_active) begin
-      cfg.eflash_ral.default_map.set_sequencer(m_eflash_tl_agent.sequencer,
-                                               m_eflash_tl_reg_adapter);
-    end
   endfunction : end_of_elaboration_phase
 
 endclass

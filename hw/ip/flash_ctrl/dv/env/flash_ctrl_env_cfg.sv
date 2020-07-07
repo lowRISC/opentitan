@@ -5,13 +5,13 @@
 class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block));
 
   // vifs
-  mem_bkdr_vif      mem_bkdr_vifs[NUM_FLASH_BANKS];
-
-  // additional RAL
-  rand flash_ctrl_eflash_reg_block eflash_ral;
+  mem_bkdr_vif mem_bkdr_vifs[FLASH_CTRL_NUM_BANKS];
 
   // ext component cfgs
   rand tl_agent_cfg m_eflash_tl_agent_cfg;
+
+  // seq cfg
+  flash_ctrl_seq_cfg seq_cfg;
 
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
@@ -28,11 +28,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
     this.csr_addr_map_size = FLASH_CTRL_ADDR_MAP_SIZE;
   endfunction : initialize_csr_addr_map_size
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
     // create tl agent config obj
     m_eflash_tl_agent_cfg = tl_agent_cfg::type_id::create("m_eflash_tl_agent_cfg");
     m_eflash_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
+
+    // create the seq_cfg
+    seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
 
     // set num_interrupts & num_alerts
     begin
@@ -41,11 +44,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
-
-    // Create the eflash RAL model.
-    eflash_ral = flash_ctrl_eflash_reg_block::type_id::create("eflash_ral");
-    // TODO: randomize upper bits of the memory
-    eflash_ral.build(0, null);
   endfunction
 
 endclass

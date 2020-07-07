@@ -331,4 +331,11 @@ interface mem_bkdr_if();
     foreach (`mem_array_path_slice[i]) `mem_array_path_slice[i] = {$urandom, $urandom};
   endfunction
 
+  // invalidate the memory.
+  function automatic void invalidate_mem();
+    init();
+    `uvm_info(path, "Invalidating (Xs) mem contents", UVM_LOW)
+    `mem_array_path_slice = '{default:'X};
+  endfunction
+
 endinterface
