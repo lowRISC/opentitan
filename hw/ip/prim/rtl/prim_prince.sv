@@ -24,7 +24,7 @@
 
 // TODO: this module has not been verified yet, and has only been used in
 // synthesis experiments.
-
+`include "prim_assert.sv"
 module prim_prince #(
   parameter int DataWidth     = 64,
   parameter int KeyWidth      = 128,

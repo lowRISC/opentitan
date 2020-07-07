@@ -5,7 +5,7 @@
 // Synchronous dual-port SRAM register model
 //   This module is for simulation and small size SRAM.
 //   Implementing ECC should be done inside wrapper not this model.
-
+`include "prim_assert.sv"
 module prim_generic_ram_2p #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
