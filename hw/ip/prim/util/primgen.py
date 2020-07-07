@@ -159,6 +159,14 @@ def _parse_module_header(generic_impl_filepath, module_name):
     }
 
 
+def test_parse_parameter_port_list():
+    assert _parse_parameter_port_list("parameter integer P") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = '0") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 'b0") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 2'd0") == {'P'}
+
+
 def _parse_parameter_port_list(parameter_port_list):
     """ Parse a list of ports in a module header into individual parameters """
 
@@ -177,9 +185,9 @@ def _parse_parameter_port_list(parameter_port_list):
     # XXX: Not covering the complete grammar, e.g. `parameter x, y`
     RE_PARAMS = (
         r'parameter\s+'
-        r'(?:[a-zA-Z0-9\]\[:\s\$]+\s+)?'  # type
+        r'(?:[a-zA-Z0-9\]\[:\s\$-]+\s+)?'  # type
         r'(?P<name>\w+)'  # name
-        r'(?:\s*=\s*[^,;]+)'  # initial value
+        r'(?:\s*=\s*[^,;]+)?'  # initial value
     )
     re_params = re.compile(RE_PARAMS)
     parameters = set()
