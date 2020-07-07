@@ -23,7 +23,7 @@ package pinmux_pkg;
     logic sample_pulse;
   } lc_strap_req_t;
 
-  parameter lc_strap_req_t LC_PINMUX_STRAP_REQ_DEFAULT = '{
+  parameter lc_strap_req_t LC_STRAP_REQ_DEFAULT = '{
     sample_pulse: 1'b0
   };
 
@@ -31,5 +31,10 @@ package pinmux_pkg;
     logic               valid;
     logic [NStraps-1:0] straps;
   } lc_strap_rsp_t;
+
+  parameter lc_strap_rsp_t LC_STRAP_RSP_DEFAULT = '{
+    valid: 1'b0,
+    straps: '0
+  };
 
 endpackage : pinmux_pkg
