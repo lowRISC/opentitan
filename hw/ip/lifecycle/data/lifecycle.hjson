@@ -1,5 +1,6 @@
 {
   name: "lifecycle"
+  clock_primary: "clk_i",
   bus_device: "tlul"
   bus_host: "none"
   description: '''LifeCycle Controller
@@ -89,5 +90,116 @@
   ]
   reg_width: "32"
   registers: [
+    { name: "CMD"
+      desc: "LC commands"
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwqe: "true"
+      hwext: "true"
+      fields: [
+        { bits: "0"
+          name: "update_state"
+          desc: "Initiate update LC state by comparing the given token"
+        }
+      ]
+    }
+    { name: "STATUS"
+      desc: "Lifecycle Status"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          name: "update_done"
+          desc: "update operation completed"
+        }
+        { bits: "1"
+          name: "update_err"
+          desc: "otp update process has errors"
+        }
+        { bits: "23:16"
+          name: "lifecycle_state"
+          desc: "Current lifecycle state"
+        }
+      ]
+    }
+    { name: "TOKEN_UPPER"
+      desc: '''Upper 63:32 bits of token[63:0].
+            If token required is 32bit for current state,
+            This register value is ignored
+            '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "token"
+          desc: "upper 32bits of token"
+        }
+      ]
+    }
+    { name: "TOKEN_LOWER"
+      desc: '''Lower 31:0 bits of token[63:0].
+            '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "token"
+          desc: "lower 32bits of token"
+        }
+      ]
+    }
+
+    // Dummy register for skeleton design
+    { skipto: "0x800" }
+    { name: "DUMMY_OTP"
+      desc: "Dummy OTP Command register. Shall be removed after bronze"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwext: "true"
+      hwqe: "true"
+      fields: [
+        { bits: "15:0"
+          name: "cmd"
+          desc: "command of otp interface. Look at otp_ctrl_pkg::otp_program_cmd_e"
+        }
+      ]
+    }
+    { name: "DUMMY_CTRL"
+      desc: "Dummy Enable register. Shall be removed after bronze"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "2:0"
+          name: "dft_en"
+          desc: "dft enable"
+          resval: "0b101" // en
+        }
+        { bits: "6:4"
+          name: "hw_dbg_en"
+          desc: "hardware debug enable"
+          resval: "0b101" // en
+        }
+        { bits: "10:8"
+          name: "nvm_dbg_en"
+          desc: "Non-volatile Memory Debug enable"
+          resval: "0b101" // en
+        }
+        { bits: "14:12"
+          name: "cpu_en"
+          desc: "CPU Debug Enable"
+          resval: "0b101" // en
+        }
+        { bits: "18:16"
+          name: "provision_en"
+          desc: "Provision enable"
+          resval: "0b101" // en
+        }
+        { bits: "22:20"
+          name: "keymgr_en"
+          desc: "KeyManager enable"
+          resval: "0b101" // en
+        }
+      ]
+    }
   ]
 }

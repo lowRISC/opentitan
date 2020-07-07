@@ -18,6 +18,7 @@ IPS ?= aes           \
        csrng         \
        nmi_gen       \
        otp_ctrl      \
+       lifecycle     \
        padctrl       \
        pinmux        \
        pwrmgr        \
