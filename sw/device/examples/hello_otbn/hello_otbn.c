@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
@@ -10,6 +9,8 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_otbn_t otbn;
 
@@ -34,8 +35,9 @@ int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
 
-  dif_otbn_config_t otbn_config = {.base_addr =
-                                       mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)};
+  dif_otbn_config_t otbn_config = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
+  };
   dif_otbn_init(&otbn_config, &otbn);
 
   LOG_INFO("Hello OTBN!");
@@ -52,7 +54,7 @@ int main(int argc, char **argv) {
   LOG_INFO("Verifying IMEM through readback");
   if (dif_otbn_imem_read(&otbn, 0, &otbn_imem_readback,
                          sizeof(otbn_imem_readback)) == kDifOtbnOk) {
-    for (int i = 0; i < sizeof(otbn_imem_readback) / sizeof(uint32_t); i++) {
+    for (int i = 0; i < sizeof(otbn_imem_readback) / sizeof(uint32_t); ++i) {
       if (otbn_imem[i] != otbn_imem_readback[i]) {
         LOG_ERROR("IMEM mismatch at %d: 0x%x written, 0x%x read", i,
                   otbn_imem[i], otbn_imem_readback[i]);
@@ -73,7 +75,7 @@ int main(int argc, char **argv) {
   LOG_INFO("Verifying DMEM through readback");
   if (dif_otbn_dmem_read(&otbn, 0, &otbn_dmem_readback,
                          sizeof(otbn_dmem_readback)) == kDifOtbnOk) {
-    for (int i = 0; i < sizeof(otbn_dmem_readback) / sizeof(uint32_t); i++) {
+    for (int i = 0; i < sizeof(otbn_dmem_readback) / sizeof(uint32_t); ++i) {
       if (otbn_dmem[i] != otbn_dmem_readback[i]) {
         LOG_ERROR("DMEM mismatch at %d: 0x%x written, 0x%x read", i,
                   otbn_dmem[i], otbn_dmem_readback[i]);
@@ -86,12 +88,12 @@ int main(int argc, char **argv) {
   LOG_INFO("Starting OTBN ...");
   dif_otbn_start(&otbn);
 
-  bool busy = false;
-  do {
+  bool busy = true;
+  while (busy) {
     if (!dif_otbn_is_busy(&otbn, &busy)) {
       busy = false;
     }
-  } while (busy);
+  }
 
   LOG_INFO("OTBN finished its operation");
 
