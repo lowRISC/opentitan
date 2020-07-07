@@ -84,6 +84,9 @@ module lifecycle_reg_top (
   logic [15:0] dummy_otp_wd;
   logic dummy_otp_we;
   logic dummy_otp_re;
+  logic [31:0] dummy_gate_qs;
+  logic [31:0] dummy_gate_wd;
+  logic dummy_gate_we;
   logic [2:0] dummy_ctrl_dft_en_qs;
   logic [2:0] dummy_ctrl_dft_en_wd;
   logic dummy_ctrl_dft_en_we;
@@ -265,6 +268,33 @@ module lifecycle_reg_top (
   );
 
 
+  // R[dummy_gate]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dummy_gate (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_gate_we),
+    .wd     (dummy_gate_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dummy_gate.de),
+    .d      (hw2reg.dummy_gate.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.dummy_gate.qe),
+    .q      (reg2hw.dummy_gate.q ),
+
+    // to register interface (read)
+    .qs     (dummy_gate_qs)
+  );
+
+
   // R[dummy_ctrl]: V(False)
 
   //   F[dft_en]: 2:0
@@ -425,7 +455,7 @@ module lifecycle_reg_top (
 
 
 
-  logic [5:0] addr_hit;
+  logic [6:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == LIFECYCLE_CMD_OFFSET);
@@ -433,7 +463,8 @@ module lifecycle_reg_top (
     addr_hit[2] = (reg_addr == LIFECYCLE_TOKEN_UPPER_OFFSET);
     addr_hit[3] = (reg_addr == LIFECYCLE_TOKEN_LOWER_OFFSET);
     addr_hit[4] = (reg_addr == LIFECYCLE_DUMMY_OTP_OFFSET);
-    addr_hit[5] = (reg_addr == LIFECYCLE_DUMMY_CTRL_OFFSET);
+    addr_hit[5] = (reg_addr == LIFECYCLE_DUMMY_GATE_OFFSET);
+    addr_hit[6] = (reg_addr == LIFECYCLE_DUMMY_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -447,6 +478,7 @@ module lifecycle_reg_top (
     if (addr_hit[3] && reg_we && (LIFECYCLE_PERMIT[3] != (LIFECYCLE_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[4] && reg_we && (LIFECYCLE_PERMIT[4] != (LIFECYCLE_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[5] && reg_we && (LIFECYCLE_PERMIT[5] != (LIFECYCLE_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[6] && reg_we && (LIFECYCLE_PERMIT[6] != (LIFECYCLE_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign cmd_we = addr_hit[0] & reg_we & ~wr_err;
@@ -465,22 +497,25 @@ module lifecycle_reg_top (
   assign dummy_otp_wd = reg_wdata[15:0];
   assign dummy_otp_re = addr_hit[4] && reg_re;
 
-  assign dummy_ctrl_dft_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_gate_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_gate_wd = reg_wdata[31:0];
+
+  assign dummy_ctrl_dft_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_dft_en_wd = reg_wdata[2:0];
 
-  assign dummy_ctrl_hw_dbg_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_ctrl_hw_dbg_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_hw_dbg_en_wd = reg_wdata[6:4];
 
-  assign dummy_ctrl_nvm_dbg_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_ctrl_nvm_dbg_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_nvm_dbg_en_wd = reg_wdata[10:8];
 
-  assign dummy_ctrl_cpu_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_ctrl_cpu_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_cpu_en_wd = reg_wdata[14:12];
 
-  assign dummy_ctrl_provision_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_ctrl_provision_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_provision_en_wd = reg_wdata[18:16];
 
-  assign dummy_ctrl_keymgr_en_we = addr_hit[5] & reg_we & ~wr_err;
+  assign dummy_ctrl_keymgr_en_we = addr_hit[6] & reg_we & ~wr_err;
   assign dummy_ctrl_keymgr_en_wd = reg_wdata[22:20];
 
   // Read data return
@@ -510,6 +545,10 @@ module lifecycle_reg_top (
       end
 
       addr_hit[5]: begin
+        reg_rdata_next[31:0] = dummy_gate_qs;
+      end
+
+      addr_hit[6]: begin
         reg_rdata_next[2:0] = dummy_ctrl_dft_en_qs;
         reg_rdata_next[6:4] = dummy_ctrl_hw_dbg_en_qs;
         reg_rdata_next[10:8] = dummy_ctrl_nvm_dbg_en_qs;

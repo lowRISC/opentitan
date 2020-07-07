@@ -164,6 +164,18 @@
         }
       ]
     }
+    { name: "DUMMY_GATE"
+      desc: "Dummy control of gate gen"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "dummy"
+          desc: "dummy gate input/output"
+        }
+      ]
+    }
     { name: "DUMMY_CTRL"
       desc: "Dummy Enable register. Shall be removed after bronze"
       swaccess: "rw"

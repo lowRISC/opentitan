@@ -74,5 +74,17 @@ module lifecycle
     .devmode_i (devmode_i)
   );
 
+  // TODO: Remove after bronze
+  prim_gate_gen #(
+    .NumGates(2000)
+  ) u_random_gates (
+    .clk_i,
+    .rst_ni,
+    .valid_i (reg2hw.dummy_gate.qe),
+    .data_i  (reg2hw.dummy_gate.q),
+    .valid_o (hw2reg.dummy_gate.de),
+    .data_o  (hw2reg.dummy_gate.d)
+  );
+
 endmodule
 
