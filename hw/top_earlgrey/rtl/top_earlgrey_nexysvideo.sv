@@ -238,6 +238,7 @@ module top_earlgrey_nexysvideo #(
     .dio_attr_o      ( dio_attr      ),
 
     // DFT signals
+    .scan_rst_ni     ( 1'b1          ),
     .scanmode_i      ( 1'b0          )
   );
 
