@@ -162,7 +162,7 @@ OpenTitan used as a security key has the following provisioning requirements:
   The identifier is stored in One Time Programmable (OTP) storage during manufacturing.
 * Attestation Key: Unique cryptographic identity used for attestation purposes.
 * Self-Signed Attestation Certificate: Self signed certificate and extracted at manufacturing time for registration purposes.
-  U2F backend servers can whitelist the list of certificates reported by the secure key manufacturer, and use them to perform authenticity checks as part of the registration flow.
+  U2F backend servers can create an allow-list of certificates reported by the secure key manufacturer, and use them to perform authenticity checks as part of the registration flow.
 * Factory Firmware: Baseline image with support for firmware update via USB, and the USB HID U2F command spec.
 
 ### Additional Requirements
