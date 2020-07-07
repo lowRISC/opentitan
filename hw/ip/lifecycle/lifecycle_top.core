@@ -1,0 +1,64 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:lifecycle_top:0.1"
+description: "LifeCycle IP"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:lifecycle_pkg
+      - lowrisc:ip:otp_ctrl_pkg
+    files:
+      - rtl/lifecycle_reg_pkg.sv
+      - rtl/lifecycle_reg_top.sv
+      - rtl/lifecycle.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/lifecycle.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/lifecycle.waiver
+    file_type: waiver
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - target_formal   ? (files_formal)
+      - files_rtl
+    toplevel: lifecycle
+
+  formal:
+    filesets:
+      - files_rtl
+      - files_formal
+    toplevel: lifecycle
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
