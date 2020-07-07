@@ -71,12 +71,12 @@
         size_byte: "0x1000",
         }],
     }
-    //{ name:     "aontimer_aon"
-    //  type:     "device"
-    //  clock:    "clk_aon_i",
-    //  reset:    "rst_aon_ni",
-    //  pipeline: "false"
-    //}
+    { name:     "timer_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
     { name:     "usbdev_aon"
       type:     "device"
       clock:    "clk_aon_i",
@@ -94,8 +94,9 @@
   connections: {
     main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
-            "rbox_aon", "ram_ret_aon"
-            // "dcd_aon", "aontimer_aon"
+            "rbox_aon", "ram_ret_aon",
+            "timer_aon"
+            // "dcd_aon",
     ]
   }
 }

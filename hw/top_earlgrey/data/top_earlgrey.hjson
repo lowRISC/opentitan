@@ -304,6 +304,13 @@
       reset_connections: { rst_ni: "por_io", sw_rst_ni: "por_io"}
       base_addr: "0x40430000"
     }
+    { name: "timer_aon",
+      type: "rv_timer",
+      clock_srcs: {clk_i: "aon"},
+      clock_group: "powerup",
+      reset_connections: {rst_ni: "por_aon"},
+      base_addr: "0x40480000",
+    },
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
     { name: "nmi_gen",
