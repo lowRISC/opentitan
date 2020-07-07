@@ -31,8 +31,8 @@ module lifecycle
   output lc_tx_t provision_o,
   output lc_tx_t test_o,
 
-  output pinmux_pkg::lc_straps_req_t strap_sample_o,
-  input  pinmux_pkg::lc_straps_rsp_t strap_sample_i//,
+  output pinmux_pkg::lc_strap_req_t strap_sample_o,
+  input  pinmux_pkg::lc_strap_rsp_t strap_sample_i//,
 
   //output flash_ctrl_pkg::flash_erase_req_t flash_erase_o,
   //input  flash_ctrl_pkg::flash_erase_rsp_t flash_erase_i//,
@@ -49,8 +49,8 @@ module lifecycle
   logic lc_init; // from pwrmgr
   logic lc_done; // to pwrmgr
 
-  assign pwr_lc_o = '{lc_done: lc_done, lc_idle: idle};
-  assign lc_init = pwr_lc_i.lc_init;
+  assign pwrmgr_o = '{lc_done: lc_done, lc_idle: idle};
+  assign lc_init = pwrmgr_i.lc_init;
   // BEGIN: Dummy impl here
 
 
@@ -72,7 +72,7 @@ module lifecycle
     .hw2reg,
 
     .devmode_i (devmode_i)
-  )
+  );
 
 endmodule
 

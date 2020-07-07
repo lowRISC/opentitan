@@ -75,7 +75,7 @@
       type: "req_rsp",
       act: "req",
       width: 1,
-      struct: "lc_straps",
+      struct: "lc_strap",
       package: "pinmux_pkg"
     }
 

@@ -10,7 +10,10 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:ip:pwrmgr_only_reg
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:pinmux_reg
+      - lowrisc:ip:pinmux_component
       - lowrisc:ip:lifecycle_pkg
       - lowrisc:ip:otp_ctrl_pkg
     files:
@@ -36,6 +39,11 @@ filesets:
     files:
       - lint/lifecycle.waiver
     file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
 
 targets:
   default: &default_target

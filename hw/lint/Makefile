@@ -23,6 +23,7 @@ IPS ?=  ip-aes                 \
         ip-kmac                \
         ip-i2c                 \
         ip-otp_ctrl            \
+        ip-lifecycle           \
         ip-keymgr              \
         ip-nmi_gen             \
         ip-padctrl             \
