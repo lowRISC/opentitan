@@ -293,8 +293,12 @@ module otp_ctrl
     if (!rst_ni) begin
       addr_key_q <= '0;
       data_key_q <= '0;
-      ram_main_key_q <= '0;
-      ram_main_nonce_q    <= '0;
+      ram_main_key_q   <= '0;
+      ram_main_nonce_q <= '0;
+      ram_ret_aon_key_q   <= '0;
+      ram_ret_aon_nonce_q <= '0;
+      otbn_ram_key_q   <= '0;
+      otbn_ram_nonce_q <= '0;
     end else if (tl_win_h2d[1].a_valid) begin
       unique case (tl_win_h2d[1].a_address[5:3])
         3'd0: addr_key_q[tl_win_h2d[1].a_address[1:0]]        <= tl_win_h2d[1].a_data;
@@ -314,16 +318,16 @@ module otp_ctrl
   assign otp_flash_key_o.addr_key = addr_key_q;
   assign otp_flash_key_o.data_key = data_key_q;
 
-  assign otp_ram_main_key_o.valid     = 1'b1;
-  assign otp_ram_main_key_o.key       = ram_main_key_q;
-  assign otp_ram_main_key_o.nonce     = ram_main_nonce_q;
+  assign otp_ram_main_key_o.valid = 1'b1;
+  assign otp_ram_main_key_o.key   = ram_main_key_q;
+  assign otp_ram_main_key_o.nonce = ram_main_nonce_q;
 
-  assign otp_ram_ret_aon_key_o.valid     = 1'b1;
-  assign otp_ram_ret_aon_key_o.key       = ram_ret_aon_key_q;
-  assign otp_ram_ret_aon_key_o.nonce     = ram_ret_aon_nonce_q;
+  assign otp_ram_ret_aon_key_o.valid = 1'b1;
+  assign otp_ram_ret_aon_key_o.key   = ram_ret_aon_key_q;
+  assign otp_ram_ret_aon_key_o.nonce = ram_ret_aon_nonce_q;
 
-  assign otp_otbn_ram_key_o.valid     = 1'b1;
-  assign otp_otbn_ram_key_o.key       = otbn_ram_key_q;
-  assign otp_otbn_ram_key_o.nonce     = otbn_ram_nonce_q;
+  assign otp_otbn_ram_key_o.valid = 1'b1;
+  assign otp_otbn_ram_key_o.key   = otbn_ram_key_q;
+  assign otp_otbn_ram_key_o.nonce = otbn_ram_nonce_q;
 
 endmodule : otp_ctrl
