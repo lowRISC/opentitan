@@ -29,7 +29,7 @@ module lifecycle
   output lc_tx_t nvm_debug_o,
   output lc_tx_t cpu_o,
   output lc_tx_t provision_o,
-  output lc_tx_t test_o,
+  output lc_tx_t keymgr_o,
 
   output pinmux_pkg::lc_strap_req_t strap_sample_o,
   input  pinmux_pkg::lc_strap_rsp_t strap_sample_i//,
@@ -85,6 +85,21 @@ module lifecycle
     .valid_o (hw2reg.dummy_gate.de),
     .data_o  (hw2reg.dummy_gate.d)
   );
+
+  // Dummy assign
+  assign otp_program_o = '{
+    update: reg2hw.cmd.qe & reg2hw.cmd.q,
+    command: reg2hw.dummy_otp.q
+  };
+  assign hw2reg.status.update_done.de = otp_program_i.done;
+  assign hw2reg.status.update_done.d = 1'b1;
+
+  assign dft_o.state       = reg2hw.dummy_ctrl.dft_en.q;
+  assign hw_debug_o.state  = reg2hw.dummy_ctrl.hw_dbg_en.q;
+  assign nvm_debug_o.state = reg2hw.dummy_ctrl.nvm_dbg_en.q;
+  assign cpu_o.state       = reg2hw.dummy_ctrl.cpu_en.q;
+  assign provision_o.state = reg2hw.dummy_ctrl.provision_en.q;
+  assign keymgr_o.state    = reg2hw.dummy_ctrl.keymgr_en.q;
 
 endmodule
 

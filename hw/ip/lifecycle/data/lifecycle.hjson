@@ -62,7 +62,7 @@
       struct: "lc_tx",
       package: "lifecycle_pkg"
     }
-    { name: "test",
+    { name: "keymgr",
       type: "uni",
       act: "req",
       width: 1,
