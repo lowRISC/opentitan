@@ -94,28 +94,28 @@ module pattgen_reg_top (
   logic start_start0_we;
   logic start_start1_wd;
   logic start_start1_we;
-  logic [31:0] prediv0_qs;
   logic [31:0] prediv0_wd;
   logic prediv0_we;
-  logic [31:0] prediv1_qs;
   logic [31:0] prediv1_wd;
   logic prediv1_we;
-  logic [5:0] patt_len_len0_qs;
+  logic [31:0] patt0_data0_wd;
+  logic patt0_data0_we;
+  logic [31:0] patt0_data1_wd;
+  logic patt0_data1_we;
+  logic [31:0] patt1_data0_wd;
+  logic patt1_data0_we;
+  logic [31:0] patt1_data1_wd;
+  logic patt1_data1_we;
   logic [5:0] patt_len_len0_wd;
   logic patt_len_len0_we;
-  logic [5:0] patt_len_len1_qs;
   logic [5:0] patt_len_len1_wd;
   logic patt_len_len1_we;
-  logic [9:0] patt_loop_loop0_qs;
   logic [9:0] patt_loop_loop0_wd;
   logic patt_loop_loop0_we;
-  logic [9:0] patt_loop_loop1_qs;
   logic [9:0] patt_loop_loop1_wd;
   logic patt_loop_loop1_we;
-  logic intr_mask_mask0_qs;
   logic intr_mask_mask0_wd;
   logic intr_mask_mask0_we;
-  logic intr_mask_mask1_qs;
   logic intr_mask_mask1_wd;
   logic intr_mask_mask1_we;
 
@@ -345,7 +345,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_prediv0 (
     .clk_i   (clk_i    ),
@@ -363,8 +363,7 @@ module pattgen_reg_top (
     .qe     (reg2hw.prediv[0].qe),
     .q      (reg2hw.prediv[0].q ),
 
-    // to register interface (read)
-    .qs     (prediv0_qs)
+    .qs     ()
   );
 
   // Subregister 1 of Multireg prediv
@@ -372,7 +371,7 @@ module pattgen_reg_top (
 
   prim_subreg #(
     .DW      (32),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_prediv1 (
     .clk_i   (clk_i    ),
@@ -390,8 +389,115 @@ module pattgen_reg_top (
     .qe     (reg2hw.prediv[1].qe),
     .q      (reg2hw.prediv[1].q ),
 
-    // to register interface (read)
-    .qs     (prediv1_qs)
+    .qs     ()
+  );
+
+
+
+  // Subregister 0 of Multireg patt0_data
+  // R[patt0_data0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt0_data0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt0_data0_we),
+    .wd     (patt0_data0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt0_data[0].qe),
+    .q      (reg2hw.patt0_data[0].q ),
+
+    .qs     ()
+  );
+
+  // Subregister 1 of Multireg patt0_data
+  // R[patt0_data1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt0_data1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt0_data1_we),
+    .wd     (patt0_data1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt0_data[1].qe),
+    .q      (reg2hw.patt0_data[1].q ),
+
+    .qs     ()
+  );
+
+
+
+  // Subregister 0 of Multireg patt1_data
+  // R[patt1_data0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt1_data0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt1_data0_we),
+    .wd     (patt1_data0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt1_data[0].qe),
+    .q      (reg2hw.patt1_data[0].q ),
+
+    .qs     ()
+  );
+
+  // Subregister 1 of Multireg patt1_data
+  // R[patt1_data1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt1_data1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt1_data1_we),
+    .wd     (patt1_data1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt1_data[1].qe),
+    .q      (reg2hw.patt1_data[1].q ),
+
+    .qs     ()
   );
 
 
@@ -400,7 +506,7 @@ module pattgen_reg_top (
   //   F[len0]: 5:0
   prim_subreg #(
     .DW      (6),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (6'h0)
   ) u_patt_len_len0 (
     .clk_i   (clk_i    ),
@@ -418,15 +524,14 @@ module pattgen_reg_top (
     .qe     (reg2hw.patt_len.len0.qe),
     .q      (reg2hw.patt_len.len0.q ),
 
-    // to register interface (read)
-    .qs     (patt_len_len0_qs)
+    .qs     ()
   );
 
 
   //   F[len1]: 12:7
   prim_subreg #(
     .DW      (6),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (6'h0)
   ) u_patt_len_len1 (
     .clk_i   (clk_i    ),
@@ -444,8 +549,7 @@ module pattgen_reg_top (
     .qe     (reg2hw.patt_len.len1.qe),
     .q      (reg2hw.patt_len.len1.q ),
 
-    // to register interface (read)
-    .qs     (patt_len_len1_qs)
+    .qs     ()
   );
 
 
@@ -454,7 +558,7 @@ module pattgen_reg_top (
   //   F[loop0]: 9:0
   prim_subreg #(
     .DW      (10),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (10'h0)
   ) u_patt_loop_loop0 (
     .clk_i   (clk_i    ),
@@ -472,15 +576,14 @@ module pattgen_reg_top (
     .qe     (reg2hw.patt_loop.loop0.qe),
     .q      (reg2hw.patt_loop.loop0.q ),
 
-    // to register interface (read)
-    .qs     (patt_loop_loop0_qs)
+    .qs     ()
   );
 
 
   //   F[loop1]: 19:10
   prim_subreg #(
     .DW      (10),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (10'h0)
   ) u_patt_loop_loop1 (
     .clk_i   (clk_i    ),
@@ -498,8 +601,7 @@ module pattgen_reg_top (
     .qe     (reg2hw.patt_loop.loop1.qe),
     .q      (reg2hw.patt_loop.loop1.q ),
 
-    // to register interface (read)
-    .qs     (patt_loop_loop1_qs)
+    .qs     ()
   );
 
 
@@ -508,7 +610,7 @@ module pattgen_reg_top (
   //   F[mask0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_intr_mask_mask0 (
     .clk_i   (clk_i    ),
@@ -526,15 +628,14 @@ module pattgen_reg_top (
     .qe     (reg2hw.intr_mask.mask0.qe),
     .q      (reg2hw.intr_mask.mask0.q ),
 
-    // to register interface (read)
-    .qs     (intr_mask_mask0_qs)
+    .qs     ()
   );
 
 
   //   F[mask1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_intr_mask_mask1 (
     .clk_i   (clk_i    ),
@@ -552,26 +653,29 @@ module pattgen_reg_top (
     .qe     (reg2hw.intr_mask.mask1.qe),
     .q      (reg2hw.intr_mask.mask1.q ),
 
-    // to register interface (read)
-    .qs     (intr_mask_mask1_qs)
+    .qs     ()
   );
 
 
 
 
-  logic [9:0] addr_hit;
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == PATTGEN_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == PATTGEN_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == PATTGEN_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == PATTGEN_CTRL_OFFSET);
-    addr_hit[4] = (reg_addr == PATTGEN_START_OFFSET);
-    addr_hit[5] = (reg_addr == PATTGEN_PREDIV0_OFFSET);
-    addr_hit[6] = (reg_addr == PATTGEN_PREDIV1_OFFSET);
-    addr_hit[7] = (reg_addr == PATTGEN_PATT_LEN_OFFSET);
-    addr_hit[8] = (reg_addr == PATTGEN_PATT_LOOP_OFFSET);
-    addr_hit[9] = (reg_addr == PATTGEN_INTR_MASK_OFFSET);
+    addr_hit[ 0] = (reg_addr == PATTGEN_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == PATTGEN_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == PATTGEN_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == PATTGEN_CTRL_OFFSET);
+    addr_hit[ 4] = (reg_addr == PATTGEN_START_OFFSET);
+    addr_hit[ 5] = (reg_addr == PATTGEN_PREDIV0_OFFSET);
+    addr_hit[ 6] = (reg_addr == PATTGEN_PREDIV1_OFFSET);
+    addr_hit[ 7] = (reg_addr == PATTGEN_PATT0_DATA0_OFFSET);
+    addr_hit[ 8] = (reg_addr == PATTGEN_PATT0_DATA1_OFFSET);
+    addr_hit[ 9] = (reg_addr == PATTGEN_PATT1_DATA0_OFFSET);
+    addr_hit[10] = (reg_addr == PATTGEN_PATT1_DATA1_OFFSET);
+    addr_hit[11] = (reg_addr == PATTGEN_PATT_LEN_OFFSET);
+    addr_hit[12] = (reg_addr == PATTGEN_PATT_LOOP_OFFSET);
+    addr_hit[13] = (reg_addr == PATTGEN_INTR_MASK_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -579,16 +683,20 @@ module pattgen_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (PATTGEN_PERMIT[0] != (PATTGEN_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (PATTGEN_PERMIT[1] != (PATTGEN_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (PATTGEN_PERMIT[2] != (PATTGEN_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[3] && reg_we && (PATTGEN_PERMIT[3] != (PATTGEN_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[4] && reg_we && (PATTGEN_PERMIT[4] != (PATTGEN_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[5] && reg_we && (PATTGEN_PERMIT[5] != (PATTGEN_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[6] && reg_we && (PATTGEN_PERMIT[6] != (PATTGEN_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[7] && reg_we && (PATTGEN_PERMIT[7] != (PATTGEN_PERMIT[7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[8] && reg_we && (PATTGEN_PERMIT[8] != (PATTGEN_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[9] && reg_we && (PATTGEN_PERMIT[9] != (PATTGEN_PERMIT[9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 0] && reg_we && (PATTGEN_PERMIT[ 0] != (PATTGEN_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (PATTGEN_PERMIT[ 1] != (PATTGEN_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (PATTGEN_PERMIT[ 2] != (PATTGEN_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (PATTGEN_PERMIT[ 3] != (PATTGEN_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (PATTGEN_PERMIT[ 4] != (PATTGEN_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (PATTGEN_PERMIT[ 5] != (PATTGEN_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (PATTGEN_PERMIT[ 6] != (PATTGEN_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (PATTGEN_PERMIT[ 7] != (PATTGEN_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (PATTGEN_PERMIT[ 8] != (PATTGEN_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (PATTGEN_PERMIT[ 9] != (PATTGEN_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (PATTGEN_PERMIT[10] != (PATTGEN_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (PATTGEN_PERMIT[11] != (PATTGEN_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (PATTGEN_PERMIT[12] != (PATTGEN_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (PATTGEN_PERMIT[13] != (PATTGEN_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_patt_done0_we = addr_hit[0] & reg_we & ~wr_err;
@@ -624,22 +732,34 @@ module pattgen_reg_top (
   assign prediv1_we = addr_hit[6] & reg_we & ~wr_err;
   assign prediv1_wd = reg_wdata[31:0];
 
-  assign patt_len_len0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign patt0_data0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign patt0_data0_wd = reg_wdata[31:0];
+
+  assign patt0_data1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign patt0_data1_wd = reg_wdata[31:0];
+
+  assign patt1_data0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign patt1_data0_wd = reg_wdata[31:0];
+
+  assign patt1_data1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign patt1_data1_wd = reg_wdata[31:0];
+
+  assign patt_len_len0_we = addr_hit[11] & reg_we & ~wr_err;
   assign patt_len_len0_wd = reg_wdata[5:0];
 
-  assign patt_len_len1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign patt_len_len1_we = addr_hit[11] & reg_we & ~wr_err;
   assign patt_len_len1_wd = reg_wdata[12:7];
 
-  assign patt_loop_loop0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign patt_loop_loop0_we = addr_hit[12] & reg_we & ~wr_err;
   assign patt_loop_loop0_wd = reg_wdata[9:0];
 
-  assign patt_loop_loop1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign patt_loop_loop1_we = addr_hit[12] & reg_we & ~wr_err;
   assign patt_loop_loop1_wd = reg_wdata[19:10];
 
-  assign intr_mask_mask0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign intr_mask_mask0_we = addr_hit[13] & reg_we & ~wr_err;
   assign intr_mask_mask0_wd = reg_wdata[0];
 
-  assign intr_mask_mask1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign intr_mask_mask1_we = addr_hit[13] & reg_we & ~wr_err;
   assign intr_mask_mask1_wd = reg_wdata[1];
 
   // Read data return
@@ -671,26 +791,42 @@ module pattgen_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[31:0] = prediv0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = prediv1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[5:0] = patt_len_len0_qs;
-        reg_rdata_next[12:7] = patt_len_len1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[9:0] = patt_loop_loop0_qs;
-        reg_rdata_next[19:10] = patt_loop_loop1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[0] = intr_mask_mask0_qs;
-        reg_rdata_next[1] = intr_mask_mask1_qs;
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[5:0] = '0;
+        reg_rdata_next[12:7] = '0;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[9:0] = '0;
+        reg_rdata_next[19:10] = '0;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       default: begin

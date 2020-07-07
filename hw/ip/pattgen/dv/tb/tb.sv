@@ -14,10 +14,16 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire pda0_tx_o;
-  wire pcl0_tx_o;
-  wire pda1_tx_o;
-  wire pcl1_tx_o;
+  wire cio_pda0_tx_o;
+  wire cio_pda0_tx_en_o;
+  wire cio_pcl0_tx_o;
+  wire cio_pcl0_tx_en_o;
+
+  wire cio_pda1_tx_o;
+  wire cio_pda1_tx_en_o;
+  wire cio_pcl1_tx_o;
+  wire cio_pcl1_tx_en_o;
+
 
   wire intr_patt_done0;
   wire intr_patt_done1;
@@ -38,10 +44,15 @@ module tb;
     .tl_i                 (tl_if.h2d ),
     .tl_o                 (tl_if.d2h ),
 
-    .pda0_tx_o            (pda0_tx_o       ),
-    .pcl0_tx_o            (pcl0_tx_o       ),
-    .pda1_tx_o            (pda1_tx_o       ),
-    .pcl1_tx_o            (pcl1_tx_o       ),
+    .cio_pda0_tx_o        (cio_pda0_tx_o     ),
+    .cio_pda0_tx_en_o     (cio_pda0_tx_en_o  ),
+    .cio_pcl0_tx_o        (cio_pcl0_tx_o     ),
+    .cio_pcl0_tx_en_o     (cio_pcl0_tx_en_o  ),
+
+    .cio_pda1_tx_o        (cio_pda1_tx_o     ),
+    .cio_pda1_tx_en_o     (cio_pda1_tx_en_o  ),
+    .cio_pcl1_tx_o        (cio_pcl1_tx_o     ),
+    .cio_pcl1_tx_en_o     (cio_pcl1_tx_en_o  ),
 
     .intr_patt_done0_o    (intr_patt_done0 ),
     .intr_patt_done1_o    (intr_patt_done1 )

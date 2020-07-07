@@ -28,7 +28,13 @@
     { name:    "NumRegsPrediv",
       type:    "int",
       default: "2",
-      desc:    "Number pre-dividers",
+      desc:    "Number pre-dividers reg",
+      local:   "true"
+    }
+    { name:    "NumRegsData",
+      type:    "int",
+      default: "2",
+      desc:    "Number data_out reg per each pattern",
       local:   "true"
     }
   ],
@@ -42,9 +48,9 @@
       fields: [
         { bits: "0",
           resval: "0",
-          name: "ENABLE",
+          name: "START",
           desc: '''
-                Enable pattern generator functionality
+                Start pattern generator functionality
                 '''
         }
       ]
@@ -72,7 +78,7 @@
         desc: "Pre-divider multi registers",
         count: "NumRegsPrediv",
         cname: "PATTGEN",
-        swaccess: "rw",
+        swaccess: "wo",
         hwaccess: "hro",
         hwqe: "true",
         fields: [
@@ -83,17 +89,51 @@
           }
         ]
       }
-    }
+    },
+    { multireg: {
+        name: "PATT0_DATA",
+        desc: "Data_out registers for channel 0",
+        count: "NumRegsData",
+        cname: "PATTGEN",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe: "true",
+        fields: [
+          { bits: "31:0",
+            resval: "0",
+            name: "DATA",
+            desc: "Data generated on channel 0 (length is defined by patt_len.len0 register)"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name: "PATT1_DATA",
+        desc: "Data_out registers for channel 1",
+        count: "NumRegsData",
+        cname: "PATTGEN",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwqe: "true",
+        fields: [
+          { bits: "31:0",
+            resval: "0",
+            name: "DATA",
+            desc: "Data generated on channel 1 (length is defined by patt_len.len1 register)"
+          }
+        ]
+      }
+    },
     { name: "PATT_LEN",
       desc: "PATTGEN pattern length (base is 2)",
-      swaccess: "rw",
+      swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
       fields: [
         { bits: "5:0",
           resval: "0",
           name: "LEN0",
-          desc: "Length of pattern generated on channel 0 (base is 2)"
+          desc: "Data generated on channel 1 (length is define by patt_len.len1 register)"
         }
         { bits: "12:7",
           resval: "0",
@@ -104,7 +144,7 @@
     }
     { name: "PATT_LOOP",
       desc: "PATTGEN number of pattern repeatedly generated before halt (base is 1)",
-      swaccess: "rw",
+      swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
       fields: [
@@ -122,7 +162,7 @@
     }
     { name: "INTR_MASK",
       desc: "PATTGEN mask registers for channel interrupts",
-      swaccess: "rw",
+      swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
       fields: [
