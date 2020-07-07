@@ -8,6 +8,7 @@ package pattgen_reg_pkg;
 
   // Param list
   parameter int NumRegsPrediv = 2;
+  parameter int NumRegsData = 2;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -62,6 +63,16 @@ package pattgen_reg_pkg;
   } pattgen_reg2hw_prediv_mreg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } pattgen_reg2hw_patt0_data_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } pattgen_reg2hw_patt1_data_mreg_t;
+
+  typedef struct packed {
     struct packed {
       logic [5:0]  q;
       logic        qe;
@@ -111,12 +122,14 @@ package pattgen_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pattgen_reg2hw_intr_state_reg_t intr_state; // [118:117]
-    pattgen_reg2hw_intr_enable_reg_t intr_enable; // [116:115]
-    pattgen_reg2hw_intr_test_reg_t intr_test; // [114:111]
-    pattgen_reg2hw_ctrl_reg_t ctrl; // [110:110]
-    pattgen_reg2hw_start_reg_t start; // [109:106]
-    pattgen_reg2hw_prediv_mreg_t [1:0] prediv; // [105:40]
+    pattgen_reg2hw_intr_state_reg_t intr_state; // [250:249]
+    pattgen_reg2hw_intr_enable_reg_t intr_enable; // [248:247]
+    pattgen_reg2hw_intr_test_reg_t intr_test; // [246:243]
+    pattgen_reg2hw_ctrl_reg_t ctrl; // [242:242]
+    pattgen_reg2hw_start_reg_t start; // [241:238]
+    pattgen_reg2hw_prediv_mreg_t [1:0] prediv; // [237:172]
+    pattgen_reg2hw_patt0_data_mreg_t [1:0] patt0_data; // [171:106]
+    pattgen_reg2hw_patt1_data_mreg_t [1:0] patt1_data; // [105:40]
     pattgen_reg2hw_patt_len_reg_t patt_len; // [39:26]
     pattgen_reg2hw_patt_loop_reg_t patt_loop; // [25:4]
     pattgen_reg2hw_intr_mask_reg_t intr_mask; // [3:0]
@@ -137,9 +150,13 @@ package pattgen_reg_pkg;
   parameter logic [5:0] PATTGEN_START_OFFSET = 6'h 10;
   parameter logic [5:0] PATTGEN_PREDIV0_OFFSET = 6'h 14;
   parameter logic [5:0] PATTGEN_PREDIV1_OFFSET = 6'h 18;
-  parameter logic [5:0] PATTGEN_PATT_LEN_OFFSET = 6'h 1c;
-  parameter logic [5:0] PATTGEN_PATT_LOOP_OFFSET = 6'h 20;
-  parameter logic [5:0] PATTGEN_INTR_MASK_OFFSET = 6'h 24;
+  parameter logic [5:0] PATTGEN_PATT0_DATA0_OFFSET = 6'h 1c;
+  parameter logic [5:0] PATTGEN_PATT0_DATA1_OFFSET = 6'h 20;
+  parameter logic [5:0] PATTGEN_PATT1_DATA0_OFFSET = 6'h 24;
+  parameter logic [5:0] PATTGEN_PATT1_DATA1_OFFSET = 6'h 28;
+  parameter logic [5:0] PATTGEN_PATT_LEN_OFFSET = 6'h 2c;
+  parameter logic [5:0] PATTGEN_PATT_LOOP_OFFSET = 6'h 30;
+  parameter logic [5:0] PATTGEN_INTR_MASK_OFFSET = 6'h 34;
 
 
   // Register Index
@@ -151,23 +168,31 @@ package pattgen_reg_pkg;
     PATTGEN_START,
     PATTGEN_PREDIV0,
     PATTGEN_PREDIV1,
+    PATTGEN_PATT0_DATA0,
+    PATTGEN_PATT0_DATA1,
+    PATTGEN_PATT1_DATA0,
+    PATTGEN_PATT1_DATA1,
     PATTGEN_PATT_LEN,
     PATTGEN_PATT_LOOP,
     PATTGEN_INTR_MASK
   } pattgen_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PATTGEN_PERMIT [10] = '{
-    4'b 0001, // index[0] PATTGEN_INTR_STATE
-    4'b 0001, // index[1] PATTGEN_INTR_ENABLE
-    4'b 0001, // index[2] PATTGEN_INTR_TEST
-    4'b 0001, // index[3] PATTGEN_CTRL
-    4'b 0001, // index[4] PATTGEN_START
-    4'b 1111, // index[5] PATTGEN_PREDIV0
-    4'b 1111, // index[6] PATTGEN_PREDIV1
-    4'b 0011, // index[7] PATTGEN_PATT_LEN
-    4'b 0111, // index[8] PATTGEN_PATT_LOOP
-    4'b 0001  // index[9] PATTGEN_INTR_MASK
+  parameter logic [3:0] PATTGEN_PERMIT [14] = '{
+    4'b 0001, // index[ 0] PATTGEN_INTR_STATE
+    4'b 0001, // index[ 1] PATTGEN_INTR_ENABLE
+    4'b 0001, // index[ 2] PATTGEN_INTR_TEST
+    4'b 0001, // index[ 3] PATTGEN_CTRL
+    4'b 0001, // index[ 4] PATTGEN_START
+    4'b 1111, // index[ 5] PATTGEN_PREDIV0
+    4'b 1111, // index[ 6] PATTGEN_PREDIV1
+    4'b 1111, // index[ 7] PATTGEN_PATT0_DATA0
+    4'b 1111, // index[ 8] PATTGEN_PATT0_DATA1
+    4'b 1111, // index[ 9] PATTGEN_PATT1_DATA0
+    4'b 1111, // index[10] PATTGEN_PATT1_DATA1
+    4'b 0011, // index[11] PATTGEN_PATT_LEN
+    4'b 0111, // index[12] PATTGEN_PATT_LOOP
+    4'b 0001  // index[13] PATTGEN_INTR_MASK
   };
 endpackage
 
