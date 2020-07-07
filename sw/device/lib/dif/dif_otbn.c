@@ -4,9 +4,13 @@
 
 #include "sw/device/lib/dif/dif_otbn.h"
 
-#include "sw/device/lib/common.h"
-
+#include "sw/device/lib/base/bitfield.h"
 #include "otbn_regs.h"  // Generated.
+
+/**
+ * WLEN: width of wide instructions in OTBN, in bits.
+ */
+const int kDifOtbnWlen = 256;
 
 dif_otbn_result_t dif_otbn_init(const dif_otbn_config_t *config,
                                 dif_otbn_t *otbn) {
@@ -14,9 +18,7 @@ dif_otbn_result_t dif_otbn_init(const dif_otbn_config_t *config,
     return kDifOtbnBadArg;
   }
 
-  // Save internal state in the given `dif_otbn_t` instance.
   otbn->base_addr = config->base_addr;
-  // Reset the OTBN device at the given `base_addr`.
   dif_otbn_reset(otbn);
 
   return kDifOtbnOk;
@@ -30,7 +32,7 @@ dif_otbn_result_t dif_otbn_reset(const dif_otbn_t *otbn) {
   mmio_region_write32(otbn->base_addr, OTBN_INTR_ENABLE_REG_OFFSET, 0);
 
   // Clear all pending interrupts.
-  mmio_region_write32(otbn->base_addr, OTBN_INTR_STATE_REG_OFFSET, 0xFFFFFFFFu);
+  mmio_region_write32(otbn->base_addr, OTBN_INTR_STATE_REG_OFFSET, 0xFFFFFFFF);
 
   return kDifOtbnOk;
 }
@@ -52,7 +54,11 @@ dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy) {
   }
 
   uint32_t status = mmio_region_read32(otbn->base_addr, OTBN_STATUS_REG_OFFSET);
-  *busy = (status >> OTBN_STATUS_BUSY) & 0x1;
+  *busy = bitfield_get_field32(
+    status,
+    (bitfield_field32_t){
+        .mask = 1, .index = OTBN_STATUS_BUSY,
+    });
 
   return kDifOtbnOk;
 }
@@ -110,11 +116,11 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn, uint32_t offset,
     return kDifOtbnBadArg;
   }
 
-  if (len % (OTBN_WLEN / 8) != 0) {
+  if (len % (kDifOtbnWlen / 8) != 0) {
     // Only WLEN word access is allowed.
     return kDifOtbnBadArg;
   }
-  if (offset % (OTBN_WLEN / 8) != 0) {
+  if (offset % (kDifOtbnWlen / 8) != 0) {
     // Only WLEN word access is allowed.
     return kDifOtbnBadArg;
   }
@@ -134,11 +140,11 @@ dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset,
     return kDifOtbnBadArg;
   }
 
-  if (len % (OTBN_WLEN / 8) != 0) {
+  if (len % (kDifOtbnWlen / 8) != 0) {
     // Only WLEN word access is allowed.
     return kDifOtbnBadArg;
   }
-  if (offset % (OTBN_WLEN / 8) != 0) {
+  if (offset % (kDifOtbnWlen / 8) != 0) {
     // Only WLEN word access is allowed.
     return kDifOtbnBadArg;
   }

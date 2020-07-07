@@ -9,15 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * Width of wide instructions in OTBN, in bit.
- */
-#define OTBN_WLEN 256
 
 /**
  * Configuration for initializing an OTBN device.
@@ -67,8 +61,7 @@ typedef enum dif_otbn_result {
  * @param config Configuration for initializing an OTBN device.
  * @param otbn OTBN instance that will store the internal state of the
  *             initialized OTBN device.
- * @return `kDifOtbnBadArg` if `config` or `otbn` is `NULL`,
- *         `kDifOtbnOk` otherwise.
+ * @return The result of the operation.
  */
 dif_otbn_result_t dif_otbn_init(const dif_otbn_config_t *config,
                                 dif_otbn_t *otbn);
