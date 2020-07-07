@@ -54,7 +54,7 @@ module tb;
       dut.u_flash_eflash.gen_flash_banks[``i``].i_core.i_flash.gen_generic.u_impl_generic.u_mem
 
   generate
-    for (genvar i = 0; i < NUM_FLASH_BANKS; i++) begin : mem_bkdr_if_i
+    for (genvar i = 0; i < FLASH_CTRL_NUM_BANKS; i++) begin : mem_bkdr_if_i
       bind `FLASH_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
       initial begin
         uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0d]", i),
