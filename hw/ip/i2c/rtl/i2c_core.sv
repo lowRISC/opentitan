@@ -24,7 +24,8 @@ module  i2c_core (
   output logic                     intr_scl_interference_o,
   output logic                     intr_sda_interference_o,
   output logic                     intr_stretch_timeout_o,
-  output logic                     intr_sda_unstable_o
+  output logic                     intr_sda_unstable_o,
+  output logic                     intr_trans_complete_o
 );
 
   logic [15:0] thigh;
@@ -52,6 +53,7 @@ module  i2c_core (
   logic event_sda_interference;
   logic event_stretch_timeout;
   logic event_sda_unstable;
+  logic event_trans_complete;
 
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
@@ -122,8 +124,8 @@ module  i2c_core (
 
   assign host_enable = reg2hw.ctrl.q;
 
-  // TODO: Establish a sample clock period for scl and sda
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  // Sample scl_i and sda_i at system clock
+  always_ff @ (posedge clk_i or negedge rst_ni) begin : rx_oversampling
     if(!rst_ni) begin
        scl_rx_val <= 16'h0;
        sda_rx_val <= 16'h0;
@@ -297,7 +299,8 @@ module  i2c_core (
     .event_scl_interference_o(event_scl_interference),
     .event_sda_interference_o(event_sda_interference),
     .event_stretch_timeout_o (event_stretch_timeout),
-    .event_sda_unstable_o    (event_sda_unstable)
+    .event_sda_unstable_o    (event_sda_unstable),
+    .event_trans_complete_o  (event_trans_complete)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
@@ -397,6 +400,17 @@ module  i2c_core (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.sda_unstable.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.sda_unstable.d),
     .intr_o                 (intr_sda_unstable_o)
+  );
+
+  prim_intr_hw #(.Width(1)) intr_hw_trans_complete (
+    .event_intr_i           (event_trans_complete),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.trans_complete.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.trans_complete.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.trans_complete.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.trans_complete.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.trans_complete.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.trans_complete.d),
+    .intr_o                 (intr_trans_complete_o)
   );
 
 endmodule

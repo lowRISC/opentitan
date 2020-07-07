@@ -39,6 +39,10 @@ class aes_base_vseq extends cip_base_vseq #(
     bit [31:0] aes_ctrl    = '0;
     bit [31:0] aes_trigger = '0;
 
+    `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_MEDIUM)
+     // Wait for DUT ready
+    csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+
     // initialize control register
     aes_ctrl[0]    = 0;        // set to encryption
     aes_ctrl[3:1] = aes_pkg::AES_ECB;   //3'b001;   // set to ECB MODE

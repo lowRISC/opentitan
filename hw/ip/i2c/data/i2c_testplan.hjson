@@ -104,38 +104,21 @@
       tests: ["i2c_override"]
     }
     {
-      name: fmt_watermark
+      name: fifo_watermark
       desc: '''
-            Test fmt_watermark interrupt.
+            Test the watermark interrupt of fmt_fifo and rx_fifo.
 
             Stimulus:
-              - Program random fmt watermark level
-              - Program large enough values into timing registers
-              - Write data quickly to fmt_fifo
+              - Program random fmt_fifo and rx_fifo watermark level
+              - Write data quickly to fmt_fifo and rx_fifo for triggering watermark interrupts
 
             Checking:
-              - Ensure the intr_fmt watermark interrupt is asserted
-              - Ensure the intr_fmt watermark interrupt stays asserted until cleared
+              - Ensure the fmt_fifo and rx_fifo watermark interrupts are asserted
+              - Ensure the fmt_fifo and rx_fifo watermark interrupts stay asserted until cleared
+              - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       milestone: V2
-      tests: [""]
-    }
-    {
-      name: rx_watermark
-      desc: '''
-            Test rx_watermark interrupt.
-
-            Stimulus:
-              - Program random rx watermark level
-              - Keep sending data over rx
-              - Read data in rx_fifo slowly
-
-            Checking:
-              - Ensure the intr_rx watermark interrupt is asserted
-              - Ensure the intr_rx watermark interrupt stays asserted until cleared
-            '''
-      milestone: V2
-      tests: [""]
+      tests: ["i2c_fifo_watermark"]
     }
     {
       name: fmt_reset
@@ -150,7 +133,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: rx_reset
@@ -165,7 +148,7 @@
               - Ensure that reads to rdata register yield 0s after rx_fifo is reset
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: fmt_overflow
@@ -180,7 +163,7 @@
               - Ensure intr_fmt_overflow interrupt is asserted
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: rx_overflow
@@ -195,7 +178,7 @@
               - Ensure intr_rx_overflow interrupt is asserted
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: fmt_rx_fifo_full
@@ -210,7 +193,7 @@
               - Check fifo full states by reading status register
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: rx_timeout
@@ -226,7 +209,7 @@
               - Ensure intr_stretch_timeout interrupt is asserted
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: rx_oversample
@@ -241,7 +224,7 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
     {
       name: rw_loopback
@@ -255,7 +238,7 @@
               - Ensure read data is matched with write data
             '''
       milestone: V2
-      tests: [""]
+      tests: []
     }
   ]
 }

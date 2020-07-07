@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
     files:
       - rtl/aes_pkg.sv
@@ -17,6 +18,7 @@ filesets:
       - rtl/aes_prng.sv
       - rtl/aes_ctr.sv
       - rtl/aes_control.sv
+      - rtl/aes_reg_status.sv
       - rtl/aes_cipher_core.sv
       - rtl/aes_cipher_control.sv
       - rtl/aes_sub_bytes.sv
@@ -103,5 +105,3 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-
-

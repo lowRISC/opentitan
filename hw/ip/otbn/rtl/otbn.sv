@@ -47,7 +47,7 @@ module otbn
   logic busy_d, busy_q;
   logic done;
 
-  logic err_valid;
+  logic        err_valid;
   logic [31:0] err_code;
 
   logic [ImemAddrWidth-1:0] start_addr;
@@ -69,7 +69,7 @@ module otbn
 
   // TODO: Better define what "idle" means -- only the core, or also the
   // register interface?
-  assign idle_o = ~busy_q | start;
+  assign idle_o = ~busy_q | ~start;
 
 
   // Interrupts ================================================================
@@ -132,10 +132,12 @@ module otbn
 
   // Errors ====================================================================
 
-  // Update the ERR_CODE register and trigger an interrupt only if there's no
-  // other interrupt pending to ensure that only the first event in a series can
-  // be seen by software. Software should read the ERR_CODE register before
-  // clearing the interrupt to avoid race conditions.
+  // err_valid goes high if there is a new error this cycle. This causes the
+  // register block to take a new error code (stored as ERR_CODE) and triggers
+  // an interrupt. To ensure software on the host CPU only sees the first event
+  // in a series, err_valid is squashed if there is an existing error. Software
+  // should read the ERR_CODE register before clearing the interrupt to avoid
+  // race conditions.
   assign err_valid = ~reg2hw.intr_state.err.q &
     (1'b0); // TODO: OR error signals here.
 
@@ -242,9 +244,16 @@ module otbn
 
   assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core : imem_write_bus;
-  assign imem_wmask = imem_access_core ? imem_wmask_core : imem_wmask_bus;
   assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
   assign imem_wdata = imem_access_core ? imem_wdata_core : imem_wdata_bus;
+
+  // The instruction memory only supports 32b word accesses; ensure that all
+  // users follow this restriction.
+  assign imem_wmask = 32'hFFFFFFFF;
+  `ASSERT(ImemWmaskCoreIsFullWord_A,
+      imem_req_core |-> imem_wmask_core == 32'hFFFFFFFF)
+  `ASSERT(ImemWmaskBusIsFullWord_A,
+      imem_req_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
@@ -256,14 +265,14 @@ module otbn
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
   // Since rerror depends on rvalid we could save this mux, but could
-  // potentially leak rerror to the bus. Err on the side of caution for now.
+  // potentially leak rerror to the bus. Err on the side of caution.
   assign imem_rerror_bus  = !imem_access_core ? imem_rerror : 2'b00;
   assign imem_rerror_core = imem_rerror;
 
 
   // Data Memory (DMEM) ========================================================
 
-  localparam DmemSizeWords = DmemSizeByte / WLEN / 8;
+  localparam DmemSizeWords = DmemSizeByte / (WLEN / 8);
   localparam DmemIndexWidth = vbits(DmemSizeWords);
 
   // Access select to DMEM: core (1), or bus (0)
@@ -364,7 +373,7 @@ module otbn
   assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
 
   // Since rerror depends on rvalid we could save this mux, but could
-  // potentially leak rerror to the bus. Err on the side of caution for now.
+  // potentially leak rerror to the bus. Err on the side of caution.
   assign dmem_rerror_bus  = !dmem_access_core ? dmem_rerror : 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
@@ -375,17 +384,17 @@ module otbn
   assign alerts[AlertImemUncorrectable] = imem_rerror[1];
   assign alerts[AlertDmemUncorrectable] = dmem_rerror[1];
   assign alerts[AlertRegUncorrectable] = 1'b0; // TODO: Implement
-  for (genvar i = 0 ; i < NumAlerts; i++) begin: alert_tx
+  for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i])
     ) i_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_i    ( alerts[i]     ),
-      .alert_rx_i ( alert_rx_i[i] ),
-      .alert_tx_o ( alert_tx_o[i] )
+      .alert_i    (alerts[i]    ),
+      .alert_rx_i (alert_rx_i[i]),
+      .alert_tx_o (alert_tx_o[i])
     );
-  end : alert_tx
+  end
 
 
   // OTBN Core =================================================================
@@ -443,10 +452,10 @@ module otbn
   // Asserts ===================================================================
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
-  `ASSERT_KNOWN(IntrErrOKnown_A, intr_err_o)
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
+  `ASSERT_KNOWN(IntrErrOKnown_A, intr_err_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
 
 endmodule

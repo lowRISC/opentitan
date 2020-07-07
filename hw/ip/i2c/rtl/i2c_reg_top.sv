@@ -98,6 +98,9 @@ module i2c_reg_top (
   logic intr_state_sda_unstable_qs;
   logic intr_state_sda_unstable_wd;
   logic intr_state_sda_unstable_we;
+  logic intr_state_trans_complete_qs;
+  logic intr_state_trans_complete_wd;
+  logic intr_state_trans_complete_we;
   logic intr_enable_fmt_watermark_qs;
   logic intr_enable_fmt_watermark_wd;
   logic intr_enable_fmt_watermark_we;
@@ -125,6 +128,9 @@ module i2c_reg_top (
   logic intr_enable_sda_unstable_qs;
   logic intr_enable_sda_unstable_wd;
   logic intr_enable_sda_unstable_we;
+  logic intr_enable_trans_complete_qs;
+  logic intr_enable_trans_complete_wd;
+  logic intr_enable_trans_complete_we;
   logic intr_test_fmt_watermark_wd;
   logic intr_test_fmt_watermark_we;
   logic intr_test_rx_watermark_wd;
@@ -143,6 +149,8 @@ module i2c_reg_top (
   logic intr_test_stretch_timeout_we;
   logic intr_test_sda_unstable_wd;
   logic intr_test_sda_unstable_we;
+  logic intr_test_trans_complete_wd;
+  logic intr_test_trans_complete_we;
   logic ctrl_qs;
   logic ctrl_wd;
   logic ctrl_we;
@@ -473,6 +481,32 @@ module i2c_reg_top (
   );
 
 
+  //   F[trans_complete]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_trans_complete (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_trans_complete_we),
+    .wd     (intr_state_trans_complete_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.trans_complete.de),
+    .d      (hw2reg.intr_state.trans_complete.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.trans_complete.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_trans_complete_qs)
+  );
+
+
   // R[intr_enable]: V(False)
 
   //   F[fmt_watermark]: 0:0
@@ -709,6 +743,32 @@ module i2c_reg_top (
   );
 
 
+  //   F[trans_complete]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_trans_complete (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_trans_complete_we),
+    .wd     (intr_enable_trans_complete_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.trans_complete.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_trans_complete_qs)
+  );
+
+
   // R[intr_test]: V(True)
 
   //   F[fmt_watermark]: 0:0
@@ -842,6 +902,21 @@ module i2c_reg_top (
     .qre    (),
     .qe     (reg2hw.intr_test.sda_unstable.qe),
     .q      (reg2hw.intr_test.sda_unstable.q ),
+    .qs     ()
+  );
+
+
+  //   F[trans_complete]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_trans_complete (
+    .re     (1'b0),
+    .we     (intr_test_trans_complete_we),
+    .wd     (intr_test_trans_complete_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.trans_complete.qe),
+    .q      (reg2hw.intr_test.trans_complete.q ),
     .qs     ()
   );
 
@@ -1780,6 +1855,9 @@ module i2c_reg_top (
   assign intr_state_sda_unstable_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_sda_unstable_wd = reg_wdata[8];
 
+  assign intr_state_trans_complete_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_trans_complete_wd = reg_wdata[9];
+
   assign intr_enable_fmt_watermark_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_fmt_watermark_wd = reg_wdata[0];
 
@@ -1807,6 +1885,9 @@ module i2c_reg_top (
   assign intr_enable_sda_unstable_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_sda_unstable_wd = reg_wdata[8];
 
+  assign intr_enable_trans_complete_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_trans_complete_wd = reg_wdata[9];
+
   assign intr_test_fmt_watermark_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_fmt_watermark_wd = reg_wdata[0];
 
@@ -1833,6 +1914,9 @@ module i2c_reg_top (
 
   assign intr_test_sda_unstable_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_sda_unstable_wd = reg_wdata[8];
+
+  assign intr_test_trans_complete_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_trans_complete_wd = reg_wdata[9];
 
   assign ctrl_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_wd = reg_wdata[0];
@@ -1948,6 +2032,7 @@ module i2c_reg_top (
         reg_rdata_next[6] = intr_state_sda_interference_qs;
         reg_rdata_next[7] = intr_state_stretch_timeout_qs;
         reg_rdata_next[8] = intr_state_sda_unstable_qs;
+        reg_rdata_next[9] = intr_state_trans_complete_qs;
       end
 
       addr_hit[1]: begin
@@ -1960,6 +2045,7 @@ module i2c_reg_top (
         reg_rdata_next[6] = intr_enable_sda_interference_qs;
         reg_rdata_next[7] = intr_enable_stretch_timeout_qs;
         reg_rdata_next[8] = intr_enable_sda_unstable_qs;
+        reg_rdata_next[9] = intr_enable_trans_complete_qs;
       end
 
       addr_hit[2]: begin
@@ -1972,6 +2058,7 @@ module i2c_reg_top (
         reg_rdata_next[6] = '0;
         reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = '0;
       end
 
       addr_hit[3]: begin

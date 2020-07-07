@@ -15,8 +15,10 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
+      under_reset = 1;
       reset_alert();
       @(posedge cfg.vif.rst_n);
+      under_reset = 0;
     end
   endtask
 
@@ -33,7 +35,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task send_alert();
     forever begin
       alert_esc_seq_item req, rsp;
-      wait(s_alert_send_q.size() > 0);
+      wait(s_alert_send_q.size() > 0 && !under_reset);
       req = s_alert_send_q.pop_front();
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
@@ -41,7 +43,15 @@ class alert_sender_driver extends alert_esc_base_driver;
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
 
-      drive_alert_pins(req);
+      fork
+        begin : isolation_fork
+          fork
+            drive_alert_pins(req);
+            wait(under_reset);
+          join_any
+          disable fork;
+        end
+      join
 
       `uvm_info(`gfn,
           $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -53,7 +63,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   virtual task rsp_ping();
     forever begin
       alert_esc_seq_item req, rsp;
-      wait(s_alert_ping_rsp_q.size() > 0);
+      wait(s_alert_ping_rsp_q.size() > 0 && !under_reset);
       req = s_alert_ping_rsp_q.pop_front();
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
@@ -61,11 +71,22 @@ class alert_sender_driver extends alert_esc_base_driver;
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
 
-      wait_ping();
-
-      // TODO: solve this: if alert and ping all this task together
-      if (!req.timeout) drive_alert_pins(req);
-      else repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+      fork
+        begin : isolation_fork
+          fork
+            begin
+              wait_ping();
+              // TODO: solve this: if alert and ping all this task together
+              if (!req.timeout) drive_alert_pins(req);
+              else repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+            end
+            begin
+              wait(under_reset);
+            end
+          join_any
+          disable fork;
+        end
+      join
 
       `uvm_info(`gfn,
           $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -99,31 +120,29 @@ class alert_sender_driver extends alert_esc_base_driver;
   // this task set alert_p=1 and alert_n=0 after certain delay
   virtual task set_alert_pins(int alert_delay);
     @(cfg.vif.sender_cb);
-    repeat (alert_delay) begin
-      if (under_reset) return;
-      else @(cfg.vif.sender_cb);
-    end
-    if (!under_reset) set_alert();
+    repeat (alert_delay) @(cfg.vif.sender_cb);
+    set_alert();
   endtask : set_alert_pins
 
   // this task reset alert_p=0 and alert_n=1 after certain delay when:
   // ack handshake is finished or when timeout
   virtual task reset_alert_pins(int ack_delay);
     fork
-      begin : alert_timeout
-        repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
+      begin : isolation_fork
+        fork
+          begin : alert_timeout
+            repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
+          end
+          begin : wait_alert_handshake
+            wait_ack();
+            @(cfg.vif.sender_cb);
+            repeat (ack_delay) @(cfg.vif.sender_cb);
+            reset_alert();
+          end
+        join_any
+        disable fork;
       end
-      begin : wait_alert_handshake
-        wait_ack();
-        @(cfg.vif.sender_cb);
-        repeat (ack_delay) @(cfg.vif.sender_cb);
-        reset_alert();
-      end
-      begin : reset_thread
-        wait(under_reset);
-      end
-    join_any
-    disable fork;
+    join
   endtask : reset_alert_pins
 
   virtual task random_drive_int_fail(int int_err_cyc);

@@ -12,26 +12,26 @@
 namespace opentitan {
 namespace spiflash {
 
-// Implements SPI interface for an OpenTitan instance running on Verilator.
-// The OpenTitan Verilator model provides a file handle for the SPI device
-// interface. This class sends ands recevies data to the device handle, and
-// adds synchronication delays between writes and reads.
-// This class is not thread safe.
+/**
+ * Implements SPI interface for an OpenTitan instance running on Verilator.
+ * The OpenTitan Verilator model provides a file handle for the SPI device
+ * interface. This class sends ands recevies data to the device handle, and
+ * adds synchronication delays between writes and reads.
+ * This class is not thread safe.
+ */
 class VerilatorSpiInterface : public SpiInterface {
  public:
-  // Constructs instance pointing to the `spi_filename` file path.
+  /** Constructs instance pointing to the `spi_filename` file path. */
   explicit VerilatorSpiInterface(std::string spi_filename)
       : spi_filename_(spi_filename), fd_(-1) {}
 
-  // Closes the internal file handle used to communicate with the SPI device.
+  /**
+   * Closes the internal file handle used to communicate with the SPI device.
+   */
   ~VerilatorSpiInterface() override;
 
-  // Initialize interface.
   bool Init() final;
-
-  // Transmit bytes from `tx` buffer. The number of bytes are defined by `size`.
   bool TransmitFrame(const uint8_t *tx, size_t size) final;
-
   bool CheckHash(const uint8_t *tx, size_t size) final;
 
  private:

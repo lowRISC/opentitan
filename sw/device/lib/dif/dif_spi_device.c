@@ -14,6 +14,7 @@ const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
  * Computes the required value of the control register from a given
  * configuration.
  */
+DIF_WARN_UNUSED_RESULT
 static dif_spi_device_result_t build_control_word(
     const dif_spi_device_config_t *config, uint32_t *control_word) {
   *control_word = 0;

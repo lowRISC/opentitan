@@ -36,8 +36,6 @@ void VerilatorSimCtrl::SetTop(VerilatedToplevel *top, CData *sig_clk,
 }
 
 int VerilatorSimCtrl::Exec(int argc, char **argv) {
-  RegisterSignalHandler();
-
   bool exit_app = false;
   if (!ParseCommandArgs(argc, argv, exit_app)) {
     return 1;
@@ -55,7 +53,68 @@ int VerilatorSimCtrl::Exec(int argc, char **argv) {
   return 0;
 }
 
+bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
+  const struct option long_options[] = {
+      {"term-after-cycles", required_argument, nullptr, 'c'},
+      {"trace", no_argument, nullptr, 't'},
+      {"help", no_argument, nullptr, 'h'},
+      {nullptr, no_argument, nullptr, 0}};
+
+  while (1) {
+    int c = getopt_long(argc, argv, ":c:th", long_options, nullptr);
+    if (c == -1) {
+      break;
+    }
+
+    // Disable error reporting by getopt
+    opterr = 0;
+
+    switch (c) {
+      case 0:
+        break;
+      case 't':
+        if (!tracing_possible_) {
+          std::cerr << "ERROR: Tracing has not been enabled at compile time."
+                    << std::endl;
+          return false;
+        }
+        TraceOn();
+        break;
+      case 'c':
+        term_after_cycles_ = atoi(optarg);
+        break;
+      case 'h':
+        PrintHelp();
+        exit_app = true;
+        break;
+      case ':':  // missing argument
+        std::cerr << "ERROR: Missing argument." << std::endl << std::endl;
+        return false;
+      case '?':
+      default:;
+        // Ignore unrecognized options since they might be consumed by
+        // Verilator's built-in parsing below.
+    }
+  }
+
+  // Pass args to verilator
+  Verilated::commandArgs(argc, argv);
+
+  // Parse arguments for all registered extensions
+  for (auto it = extension_array_.begin(); it != extension_array_.end(); ++it) {
+    if (!(*it)->ParseCLIArguments(argc, argv, exit_app)) {
+      return false;
+      if (exit_app) {
+        return true;
+      }
+    }
+  }
+  return true;
+}
+
 void VerilatorSimCtrl::RunSimulation() {
+  RegisterSignalHandler();
+
   // Print helper message for tracing
   if (TracingPossible()) {
     std::cout << "Tracing can be toggled by sending SIGUSR1 to this process:"
@@ -139,65 +198,6 @@ void VerilatorSimCtrl::SignalHandler(int sig) {
       }
       break;
   }
-}
-
-bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
-  const struct option long_options[] = {
-      {"term-after-cycles", required_argument, nullptr, 'c'},
-      {"trace", no_argument, nullptr, 't'},
-      {"help", no_argument, nullptr, 'h'},
-      {nullptr, no_argument, nullptr, 0}};
-
-  while (1) {
-    int c = getopt_long(argc, argv, ":c:th", long_options, nullptr);
-    if (c == -1) {
-      break;
-    }
-
-    // Disable error reporting by getopt
-    opterr = 0;
-
-    switch (c) {
-      case 0:
-        break;
-      case 't':
-        if (!tracing_possible_) {
-          std::cerr << "ERROR: Tracing has not been enabled at compile time."
-                    << std::endl;
-          return false;
-        }
-        TraceOn();
-        break;
-      case 'c':
-        term_after_cycles_ = atoi(optarg);
-        break;
-      case 'h':
-        PrintHelp();
-        exit_app = true;
-        break;
-      case ':':  // missing argument
-        std::cerr << "ERROR: Missing argument." << std::endl << std::endl;
-        return false;
-      case '?':
-      default:;
-        // Ignore unrecognized options since they might be consumed by
-        // Verilator's built-in parsing below.
-    }
-  }
-
-  // Pass args to verilator
-  Verilated::commandArgs(argc, argv);
-
-  // Parse arguments for all registered extensions
-  for (auto it = extension_array_.begin(); it != extension_array_.end(); ++it) {
-    if (!(*it)->ParseCLIArguments(argc, argv, exit_app)) {
-      return false;
-      if (exit_app) {
-        return true;
-      }
-    }
-  }
-  return true;
 }
 
 void VerilatorSimCtrl::PrintHelp() const {

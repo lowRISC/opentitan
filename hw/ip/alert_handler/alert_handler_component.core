@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:lfsr
     files:
       - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv

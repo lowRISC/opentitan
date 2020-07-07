@@ -45,7 +45,7 @@
 // Note that the generator is not very accurate for smaller gate counts due
 // to the generate loop granularity. Hence, do not use for fever than 500 GE.
 
-
+`include "prim_assert.sv"
 module prim_gate_gen #(
   parameter int DataWidth = 32,
   parameter int NumGates = 1000

@@ -24,6 +24,7 @@ module tb;
   wire intr_sda_interference;
   wire intr_stretch_timeout;
   wire intr_sda_unstable;
+  wire intr_trans_complete;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   wire cio_scl_i;
@@ -64,7 +65,8 @@ module tb;
     .intr_scl_interference_o (intr_scl_interference ),
     .intr_sda_interference_o (intr_sda_interference ),
     .intr_stretch_timeout_o  (intr_stretch_timeout  ),
-    .intr_sda_unstable_o     (intr_sda_unstable     )
+    .intr_sda_unstable_o     (intr_sda_unstable     ),
+    .intr_trans_complete_o   (intr_trans_complete   )
   );
 
   // virtual open drain
@@ -87,6 +89,7 @@ module tb;
   assign interrupts[SdaInference]   = intr_sda_interference;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
+  assign interrupts[TransComplete]  = intr_trans_complete;
 
   initial begin
     // drive clk and rst_n from clk_if

@@ -89,9 +89,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
       case (1)
         // add individual case item for each csr
          (!uvm_re_match("ctrl", csr_name)): begin
+
           input_item.manual_op = item.a_data[7];
           input_item.key_len   = item.a_data[6:4];
           `downcast(input_item.operation, item.a_data[0]);
+          input_item.valid = 1'b1;
+           
           case (item.a_data[3:1])
             3'b001:  input_item.mode = AES_ECB;
             3'b010:  input_item.mode = AES_CBC;
@@ -153,74 +156,77 @@ class aes_scoreboard extends cip_base_scoreboard #(
       ///////////////////////////////////////
 
       // check that the item is valid - all registers clean base on mode //
-      case (input_item.mode)
-        AES_ECB: begin
-          if(aes_from_rst) begin
-            // verify that all 4 data_in and all 8 key have been updated
-            if(input_item.data_in_valid() && input_item.key_clean(0)) begin
-              //clone and add to ref and rec data fifo
-              ok_to_fwd    = 1;
-              aes_from_rst = 0;
-              `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
-            end
-          end else begin
-            // verify that all 4 data_in and all 8 key are clean
-            `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                      input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-
-            if(input_item.data_in_valid() && input_item.key_clean(1)) begin
-              //clone and add to ref and rec data fifo
-              `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
-              ok_to_fwd = 1;
-            end
-          end
-        end
-
-        AES_CBC: begin
-          if(aes_from_rst) begin
-            // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-            if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
-              //clone and add to ref and rec data fifo
-              ok_to_fwd    = 1;
-              aes_from_rst = 0;
-              `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
-            end
-          end else begin
-            // verify that all 4 data_in and all 8 key  and all 4 IV are clean
-            `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                              input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-
-            if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
-              //clone and add to ref and rec data fifo
-              `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
-              ok_to_fwd = 1;
+      if(input_item.valid) begin
+        case (input_item.mode)
+          AES_ECB: begin
+            if(aes_from_rst) begin
+              // verify that all 4 data_in and all 8 key have been updated
+              if(input_item.data_in_valid() && input_item.key_clean(0)) begin
+                //clone and add to ref and rec data fifo
+                ok_to_fwd    = 1;
+                aes_from_rst = 0;
+                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
+              end
+            end else begin
+              // verify that all 4 data_in and all 8 key are clean
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
+                        input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+  
+              if(input_item.data_in_valid() && input_item.key_clean(1)) begin
+                //clone and add to ref and rec data fifo
+                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
+                ok_to_fwd = 1;
+              end
             end
           end
-        end
-
-        AES_CTR: begin
-          if(aes_from_rst) begin
-            // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-            if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
-              //clone and add to ref and rec data fifo
-              ok_to_fwd    = 1;
-              aes_from_rst = 0;
-              `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
-            end
-          end else begin
-            // verify that all 4 data_in and all 8 and all 4 IV  key are clean
-            `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
-            if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
-              //clone and add to ref and rec data fifo
-              `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
-              ok_to_fwd = 1;
+  
+          AES_CBC: begin
+            if(aes_from_rst) begin
+              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
+              if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
+                //clone and add to ref and rec data fifo
+                ok_to_fwd    = 1;
+                aes_from_rst = 0;
+                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
+              end
+            end else begin
+              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
+                                input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+  
+              if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
+                //clone and add to ref and rec data fifo
+                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
+                ok_to_fwd = 1;
+              end
             end
           end
-        end
-        default: begin
-          `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
-        end
-      endcase // case (input_item.mode)
+  
+          AES_CTR: begin
+            if(aes_from_rst) begin
+              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
+              if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
+                //clone and add to ref and rec data fifo
+                ok_to_fwd    = 1;
+                aes_from_rst = 0;
+                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
+              end
+            end else begin
+              // verify that all 4 data_in and all 8 and all 4 IV  key are clean
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+              if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
+                //clone and add to ref and rec data fifo
+                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
+                ok_to_fwd = 1;
+              end
+            end
+          end
+          default: begin
+            `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
+          end
+        endcase // case (input_item.mode)
+      end // if (input_item.valid)
+      
 
       // forward item to receive side
       if(ok_to_fwd ) begin
@@ -425,7 +431,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     string txt =  "";
     if (cfg.en_scb) begin
-      `uvm_info(`gfn, $sformatf(" RASMUS JUST CHECKING"), UVM_LOW)
       super.check_phase(phase);
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)

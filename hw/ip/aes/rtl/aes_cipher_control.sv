@@ -186,7 +186,7 @@ module aes_cipher_control (
         round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
 
         // Update round
-        round_d = round_q + 4'b1;
+        round_d = round_q + 4'b0001;
 
         // Are we doing the last regular round?
         if (round_q == num_rounds_regular) begin

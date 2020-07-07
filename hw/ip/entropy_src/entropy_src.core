@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
+      - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
     files:
       - rtl/entropy_src_pkg.sv
@@ -62,5 +63,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-

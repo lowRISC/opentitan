@@ -10,7 +10,7 @@ class flash_ctrl_mem_eflash extends dv_base_mem;
   function new(string           name = "flash_ctrl_mem_eflash",
                longint unsigned size = 131072,
                int unsigned     n_bits = 32,
-               string           access = "RW",
+               string           access = "RO",
                int              has_coverage = UVM_NO_COVERAGE);
     super.new(name, size, n_bits, access, has_coverage);
   endfunction : new
@@ -37,12 +37,14 @@ class flash_ctrl_eflash_reg_block extends dv_base_reg_block;
                                   .base_addr(base_addr),
                                   .n_bytes(4),
                                   .endian(UVM_LITTLE_ENDIAN));
+    set_hdl_path_root("tb.dut.eflash");
+
     // create memory
     eflash = flash_ctrl_mem_eflash::type_id::create("eflash");
     eflash.configure(.parent(this));
     default_map.add_mem(.mem(eflash),
                        .offset(32'h0),
-                       .rights("RW"));
+                       .rights("RO"));
   endfunction : build
 
 endclass : flash_ctrl_eflash_reg_block

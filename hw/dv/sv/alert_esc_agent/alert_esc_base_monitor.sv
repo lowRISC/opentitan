@@ -37,7 +37,14 @@ class alert_esc_base_monitor extends dv_base_monitor#(
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
       @(posedge cfg.vif.rst_n);
+      // reset signals at posedge rst_n to avoid race condition at negedge rst_n
+      reset_signals();
       under_reset = 0;
     end
   endtask : reset_thread
+
+  // this function can be used in derived classes to reset local signals/variables if needed
+  virtual function void reset_signals();
+  endfunction
+
 endclass

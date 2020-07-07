@@ -43,4 +43,4 @@ endif
 # Include the tool Makefile below  #
 # Dont add anything else below it! #
 ####################################
-include ${DV_DIR}/../../../dv/tools/Makefile
+include ${DV_DIR}/../../../../dv/tools/Makefile

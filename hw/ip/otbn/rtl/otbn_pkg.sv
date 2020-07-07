@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 package otbn_pkg;
-  // Data path width for BN (wide) instructions, in bit.
+  // Data path width for BN (wide) instructions, in bits.
   parameter int WLEN = 256;
 
   // Alerts

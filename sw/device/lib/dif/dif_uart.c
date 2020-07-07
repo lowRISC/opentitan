@@ -97,6 +97,7 @@ static void uart_reset(const dif_uart_t *uart) {
 /**
  * Performs fundamental UART configuration.
  */
+DIF_WARN_UNUSED_RESULT
 static dif_uart_config_result_t uart_configure(
     const dif_uart_t *uart, const dif_uart_config_t *config) {
   if (config->baudrate == 0 || config->clk_freq_hz == 0) {

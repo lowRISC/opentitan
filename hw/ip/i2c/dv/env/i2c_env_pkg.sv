@@ -29,19 +29,22 @@ package i2c_env_pkg;
     SdaInference   = 6,
     StretchTimeout = 7,
     SdaUnstable    = 8,
-    NumI2cIntr     = 9
+    TransComplete  = 9,
+    NumI2cIntr     = 10
   } i2c_intr_e;
 
   // csr and mem total size for IP, TODO confirm below value with spec
-  parameter uint I2C_ADDR_MAP_SIZE = 128;
+  parameter uint I2C_ADDR_MAP_SIZE  = 128;
+  parameter uint I2C_FMT_FIFO_DEPTH = 32;
+  parameter uint I2C_RX_FIFO_DEPTH  = 32;
 
   // for constrains
   parameter uint I2C_MIN_TRAN    = 10;
-  parameter uint I2C_MAX_TRAN    = 200;
+  parameter uint I2C_MAX_TRAN    = 20;
   parameter uint I2C_MIN_ADDR    = 0;
   parameter uint I2C_MAX_ADDR    = 127;
   parameter uint I2C_MIN_DLY     = 0;
-  parameter uint I2C_MAX_DLY     = 2;
+  parameter uint I2C_MAX_DLY     = 5;
   parameter uint I2C_MIN_DATA    = 0;
   parameter uint I2C_MAX_DATA    = 255;
   parameter uint I2C_MIN_TIMING  = 1; // at least 1
@@ -50,40 +53,8 @@ package i2c_env_pkg;
   parameter uint I2C_TIMEOUT_ENB = 1;
   parameter uint I2C_MIN_TIMEOUT = 1;
   parameter uint I2C_MAX_TIMEOUT = 4;
-  parameter uint I2C_IDLE_TIME   = 1200;
-
-  // ok_to_end_delay_ns for EoT
-  parameter uint DELAY_FOR_EOT_NS = 5000;
-
-  // functions
-  // get the number of bytes that triggers watermark interrupt
-  function automatic int get_watermark_bytes_by_level(int lvl);
-    case(lvl)
-      0: return 1;
-      1: return 4;
-      2: return 8;
-      3: return 16;
-      4: return 30;
-      default: begin
-        `uvm_fatal("i2c_env_pkg::get_watermark_bytes_by_level",
-                   $sformatf("invalid watermark level value - %0d", lvl))
-      end
-    endcase
-  endfunction : get_watermark_bytes_by_level
-
-  // get the number of bytes that triggers break interrupt
-  function automatic int get_break_bytes_by_level(int lvl);
-    case(lvl)
-      0: return 2;
-      1: return 4;
-      2: return 8;
-      3: return 16;
-      default: begin
-        `uvm_fatal("i2c_env_pkg::get_break_bytes_by_level",
-                   $sformatf("invalid break level value - %0d", lvl))
-      end
-    endcase
-  endfunction : get_break_bytes_by_level
+  parameter uint I2C_MAX_RXILVL  = 7;
+  parameter uint I2C_MAX_FMTILVL = 3;
 
   // package sources
   `include "i2c_env_cfg.sv"

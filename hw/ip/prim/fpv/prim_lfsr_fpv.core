@@ -3,11 +3,11 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:fpv:prim_lfsr_fpv:0.1"
-description: "ALERT_HANDLER FPV target"
+description: "LFSR primitive FPV target"
 filesets:
   files_formal:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:lfsr
     files:
       - tb/prim_lfsr_fpv.sv
     file_type: systemVerilogSource

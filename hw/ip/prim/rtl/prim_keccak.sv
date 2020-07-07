@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // prim_keccak is single round permutation module
-
+`include "prim_assert.sv"
 module prim_keccak #(
   parameter int Width = 1600, // b= {25, 50, 100, 200, 400, 800, 1600}
 

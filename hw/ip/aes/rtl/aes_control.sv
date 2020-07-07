@@ -110,17 +110,14 @@ module aes_control (
 
   // Signals
   logic       key_init_clear;
-  logic [7:0] key_init_new_d, key_init_new_q;
   logic       key_init_new;
   logic       dec_key_gen;
+  logic       key_init_ready;
 
   logic [7:0] iv_qe;
   logic       iv_clear;
-  logic [7:0] iv_new_d, iv_new_q;
-  logic       iv_new;
-  logic       iv_clean;
   logic       iv_load;
-  logic       iv_ready_d, iv_ready_q;
+  logic       iv_ready;
 
   logic [3:0] data_in_new_d, data_in_new_q;
   logic       data_in_new;
@@ -143,10 +140,11 @@ module aes_control (
   // If set to start manually, we just wait for the trigger. Otherwise, we start once we have valid
   // data available. If the IV (and counter) is needed, we only start if also the IV (and counter)
   // is ready.
-  assign start = manual_operation_i ? start_i                                  :
-                (mode_i == AES_ECB) ? data_in_new                              :
-                (mode_i == AES_CBC) ? (data_in_new & iv_ready_q)               :
-                (mode_i == AES_CTR) ? (data_in_new & iv_ready_q & ctr_ready_i) : 1'b0;
+  assign start =
+       manual_operation_i ? start_i                                                 :
+      (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
+      (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
+      (mode_i == AES_CTR) ? (key_init_ready & data_in_new & iv_ready & ctr_ready_i) : 1'b0;
 
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
   // synchronously clears output_valid_q, unless new output data is written in the exact same
@@ -419,16 +417,39 @@ module aes_control (
     end
   end
 
-  // Detect new key, new IV, new input, output read.
+  // We only use clean initial keys. Either software/counter has updated
+  // - all initial key registers, or
+  // - none of the initial key registers but the registers were updated in the past.
+  aes_reg_status #(
+    .Width ( $bits(key_init_we_o) )
+  ) u_reg_status_key_init (
+    .clk_i   ( clk_i          ),
+    .rst_ni  ( rst_ni         ),
+    .we_i    ( key_init_we_o  ),
+    .use_i   ( dec_key_gen    ),
+    .clear_i ( key_init_clear ),
+    .new_o   ( key_init_new   ),
+    .clean_o ( key_init_ready )
+  );
+
+  // We only use clean and unused IVs. Either software/counter has updated
+  // - all IV registers, or
+  // - none of the IV registers but the registers were updated in the past
+  // and this particular IV has not yet been used.
+  aes_reg_status #(
+    .Width ( $bits(iv_we_o) )
+  ) u_reg_status_iv (
+    .clk_i   ( clk_i    ),
+    .rst_ni  ( rst_ni   ),
+    .we_i    ( iv_we_o  ),
+    .use_i   ( iv_load  ),
+    .clear_i ( iv_clear ),
+    .new_o   ( iv_ready ),
+    .clean_o (          )
+  );
+
+  // Detect new input and output read.
   // Edge detectors are cleared by the FSM.
-  assign key_init_new_d = (dec_key_gen || key_init_clear) ? '0 : (key_init_new_q | key_init_we_o);
-  assign key_init_new   = &key_init_new_d;
-
-  // The IV regs can be updated by both software or the counter.
-  assign iv_new_d = (iv_load || iv_clear) ? '0 : (iv_new_q | iv_we_o);
-  assign iv_new   = &iv_new_d; // All of the IV regs have been updated.
-  assign iv_clean = ~(|iv_new_d); // None of the IV regs have been updated.
-
   assign data_in_new_d = (data_in_load || data_in_we_o) ? '0 : (data_in_new_q | data_in_qe_i);
   assign data_in_new   = &data_in_new_d;
 
@@ -439,28 +460,11 @@ module aes_control (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_edge_detection
     if (!rst_ni) begin
-      key_init_new_q  <= '0;
-      iv_new_q        <= '0;
       data_in_new_q   <= '0;
       data_out_read_q <= '0;
     end else begin
-      key_init_new_q  <= key_init_new_d;
-      iv_new_q        <= iv_new_d;
       data_in_new_q   <= data_in_new_d;
       data_out_read_q <= data_out_read_d;
-    end
-  end
-
-  // We only use complete IVs. Either software/counter has updated
-  // - all IV registers (iv_new), or
-  // - none of the IV registers (iv_clean), but the registers were updated in the past.
-  assign iv_ready_d = (iv_load || iv_clear) ? 1'b0 : iv_new | (iv_clean & iv_ready_q);
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_iv_ready
-    if (!rst_ni) begin
-      iv_ready_q <= 1'b0;
-    end else begin
-      iv_ready_q <= iv_ready_d;
     end
   end
 

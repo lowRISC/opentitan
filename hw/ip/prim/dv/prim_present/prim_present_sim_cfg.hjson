@@ -1,0 +1,61 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_present
+
+  // Top level dut name (sv module).
+  dut: prim_present
+
+  // Top level testbench name (sv module).
+  tb: prim_present_tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_present_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/dv/data/common_sim_cfg.hjson"]
+
+  // Add additional tops for simulation.
+  //sim_tops: ["-top prim_present_bind"]
+  sim_tops: []
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Add excl files to tool_srcs so that it gets copied over to the scratch area.
+  //tool_srcs: ["{proj_root}/hw/ip/prim/dv/prim_present/prim_present_cov_excl.el"]
+  tool_srcs: []
+
+  // Refer to the excl file with vcs_cov_excl_files var with the rel path from tool_srcs_dir
+  // so the VCS can find it.
+  //vcs_cov_excl_files: ["{tool_srcs_dir}/prim_present_cov_excl.el"]
+  vcs_cov_excl_files: []
+
+  // Default UVM test and seq class name.
+  uvm_test: ""
+  uvm_test_seq: ""
+
+  // List of test specifications.
+  tests: [
+    {
+      name: prim_present_sanity
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["prim_present_sanity"]
+    }
+  ]
+}
+

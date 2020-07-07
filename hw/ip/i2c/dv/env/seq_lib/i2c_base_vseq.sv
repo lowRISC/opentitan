@@ -11,22 +11,35 @@ class i2c_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(i2c_base_vseq)
 
   // class property
+  bit                         do_interrupt = 1'b1;
+  bit                         under_program_regs = 1'b0;
+  bit                         program_incorrect_regs = 1'b0;
+
+  // bits to control fifos access
+  // delay_read_rx_until_full is unset delay reading rx_fifo until rx_fifo is full or
+  // delay_read_rx_until_full is unset (used in fifo_watermark test)
+  bit                         delay_read_rx_until_full = 1'b1;
+  // avoid_write_fmt_overflow is set to prevent writing to fmt_fifo from overflow,
+  // by checking fmt_fifo is not full (used in fifo_overflow)
+  bit                         avoid_write_fmt_overflow = 1'b1;
+  
   local timing_cfg_t          timing_cfg;
   bit [7:0]                   rd_data;
-  bit                         do_interrupt = 1'b1;
-  bit                         force_use_incorrect_config = 1'b0;
+  i2c_item                    fmt_item;
+
   // random property
   rand uint                   fmt_fifo_access_dly;
   rand uint                   rx_fifo_access_dly;
+  rand uint                   access_intr_dly;
 
-  rand bit   [NumI2cIntr-1:0] en_intr;
   rand uint                   num_trans;
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
+  rand bit                    rw_bit;
   rand bit   [7:0]            wr_data;
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
-  rand bit                    rw_bit;
-  i2c_item                    fmt_item;
+  rand bit   [2:0]            rxilvl;
+  rand bit   [1:0]            fmtilvl;
 
   // timing property
   rand bit [15:0]             thigh;      // high period of the SCL in clock units
@@ -43,10 +56,50 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit                    e_timeout;  // max time target may stretch the clock
 
   // constraints
-  constraint rw_bit_c    { rw_bit     inside {0, 1}; }
-  constraint addr_c      { addr       inside {[I2C_MIN_ADDR : I2C_MAX_ADDR]}; }
-  constraint wr_data_c   { wr_data    inside {[I2C_MIN_DATA : I2C_MAX_DATA]}; }
-  constraint num_trans_c { num_trans  inside {[I2C_MIN_TRAN : I2C_MAX_TRAN]}; }
+  constraint addr_c         { addr         inside {[I2C_MIN_ADDR : I2C_MAX_ADDR]}; }
+  constraint wr_data_c      { wr_data      inside {[I2C_MIN_DATA : I2C_MAX_DATA]}; }
+  constraint fmtilvl_c      { fmtilvl      inside {[0 : I2C_MAX_FMTILVL]}; }
+  constraint num_trans_c    { num_trans    inside {[I2C_MIN_TRAN : I2C_MAX_TRAN]}; }
+
+  // create uniform assertion distributions of rx_watermark interrupt
+  constraint rxilvl_c {
+    rxilvl dist {
+      0     :/ 17,
+      1     :/ 17,
+      2     :/ 17,
+      3     :/ 16,
+      4     :/ 17,
+      [5:7] :/ 16
+    };
+  }
+  constraint num_wr_bytes_c {
+    num_wr_bytes dist {
+      1       :/ 1,
+      [2:4]   :/ 1,
+      [5:8]   :/ 1,
+      [9:20]  :/ 1
+    };
+  }
+  constraint num_rd_bytes_c {
+    num_rd_bytes dist {
+      1       :/ 17,
+      [2:4]   :/ 17,
+      [5:8]   :/ 17,
+      [9:16]  :/ 16,
+      [17:30] :/ 17,
+      31      :/ 16
+    };
+  }
+
+  constraint access_intr_dly_c {
+    access_intr_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+  }
+  constraint fmt_fifo_access_dly_c {
+    fmt_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+  }
+  constraint rx_fifo_access_dly_c {
+    rx_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+  }
 
   constraint timing_val_c {
     thigh     inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
@@ -61,7 +114,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
-    if (force_use_incorrect_config) {
+    if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
       tlow    == 2;                // negative tClockLow
@@ -74,33 +127,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       t_buf    inside { [(tsu_sta - t_r + 1) :
                          (tsu_sta - t_r + 1) + I2C_TIME_RANGE] };
     }
-  }
-
-  constraint num_wr_bytes_c {
-    num_wr_bytes dist {
-      1      :/ 2,
-      [2:5]  :/ 5,
-      [6:9]  :/ 5,
-      [9:12] :/ 2
-    };
-  }
-  constraint num_rd_bytes_c {
-    num_rd_bytes dist {
-      0      :/ 1,
-      1      :/ 2,
-      [2:5]  :/ 5,
-      [6:9]  :/ 5,
-      [9:12] :/ 2
-    };
-  }
-  constraint en_intr_c {
-    en_intr inside {[0: ((1 << NumI2cIntr) - 1)]};
-  }
-  constraint fmt_fifo_access_dly_c {
-    fmt_fifo_access_dly inside {[1:5]};
-  }
-  constraint rx_fifo_access_dly_c {
-    rx_fifo_access_dly inside {[1:5]};
   }
 
   `uvm_object_new
@@ -116,16 +142,24 @@ class i2c_base_vseq extends cip_base_vseq #(
   endtask : device_init
 
   virtual task host_init();
-    `uvm_info(`gfn, "initialize i2c host registers", UVM_DEBUG)
+    bit [TL_DW-1: 0] intr_state;
+
+    `uvm_info(`gfn, "initialize i2c host registers", UVM_LOW)
     ral.ctrl.enablehost.set(1'b1);
     csr_update(ral.ctrl);
-    if (do_interrupt) begin
-      ral.intr_enable.set(en_intr);
-      csr_update(ral.intr_enable);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.rxilvl, value <= 4;)
-      `DV_CHECK_RANDOMIZE_FATAL(ral.fifo_ctrl.fmtilvl)
-      csr_update(ral.fifo_ctrl);
-    end
+
+    // diable override
+    ral.ovrd.txovrden.set(1'b0);
+    csr_update(ral.ovrd);
+
+    // clear fifos
+    ral.fifo_ctrl.rxrst.set(1'b1);
+    ral.fifo_ctrl.fmtrst.set(1'b1);
+    csr_update(ral.fifo_ctrl);
+
+    //enable then clear interrupts
+    csr_wr(.csr(ral.intr_enable), .value({TL_DW{1'b1}}));
+    csr_wr(.csr(ral.intr_state), .value({TL_DW{1'b0}}));
   endtask : host_init
 
   virtual task check_host_idle();
@@ -153,43 +187,67 @@ class i2c_base_vseq extends cip_base_vseq #(
     timing_cfg.tSetupStop  = t_r + tsu_sto;
     timing_cfg.tHoldStop   = t_r + t_buf - tsu_sta;
     // ensure these parameter must be greater than zeros
-    if (!force_use_incorrect_config) begin
+    if (!program_incorrect_regs) begin
       `DV_CHECK_GT_FATAL(timing_cfg.tClockLow, 0)
       `DV_CHECK_GT_FATAL(timing_cfg.tClockStop, 0)
       `DV_CHECK_GT_FATAL(timing_cfg.tHoldStop, 0)
     end
   endfunction : get_timing_values
 
-  virtual task program_timing_regs();
-    csr_wr(.csr(ral.timing0), .value({tlow, thigh}));
-    csr_wr(.csr(ral.timing1), .value({t_f, t_r}));
-    csr_wr(.csr(ral.timing2), .value({thd_sta, tsu_sta}));
-    csr_wr(.csr(ral.timing3), .value({thd_dat, tsu_dat}));
-    csr_wr(.csr(ral.timing4), .value({t_buf,   tsu_sto}));
-    csr_wr(.csr(ral.timeout_ctrl), .value({e_timeout, t_timeout}));
+  virtual task program_registers();
+    //*** program timing register
+    ral.timing0.tlow.set(tlow);
+    ral.timing0.thigh.set(thigh);
+    csr_update(.csr(ral.timing0));
+    ral.timing1.t_f.set(t_f);
+    ral.timing1.t_r.set(t_r);
+    csr_update(.csr(ral.timing1));
+    ral.timing2.thd_sta.set(thd_sta);
+    ral.timing2.tsu_sta.set(tsu_sta);
+    csr_update(.csr(ral.timing2));
+    ral.timing3.thd_dat.set(thd_dat);
+    ral.timing3.tsu_dat.set(tsu_dat);
+    csr_update(.csr(ral.timing3));
+    ral.timing4.tsu_sto.set(tsu_sto);
+    ral.timing4.t_buf.set(t_buf);
+    csr_update(.csr(ral.timing4));
+    ral.timeout_ctrl.en.set(e_timeout);
+    ral.timeout_ctrl.val.set(t_timeout);
+    csr_update(.csr(ral.timeout_ctrl));
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     // set time to stop test
-    cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = DELAY_FOR_EOT_NS;
+    cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = cfg.ok_to_end_delay_ns;
     // config target address mode of agent to the same
     cfg.m_i2c_agent_cfg.target_addr_mode = cfg.target_addr_mode;
-  endtask : program_timing_regs
 
-  virtual task program_format_flag(i2c_item item, string msg="");
-    csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
+    //*** program ilvl
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rxilvl)
+    ral.fifo_ctrl.rxilvl.set(rxilvl);
+    ral.fifo_ctrl.fmtilvl.set(fmtilvl);
+    csr_update(ral.fifo_ctrl);
+  endtask : program_registers
+
+  virtual task program_format_flag(i2c_item item, string msg="");     
     ral.fdata.nakok.set(item.nakok);
     ral.fdata.rcont.set(item.rcont);
     ral.fdata.read.set(item.read);
     ral.fdata.stop.set(item.stop);
     ral.fdata.start.set(item.start);
     ral.fdata.fbyte.set(item.fbyte);
+    // avoid_write_fmt_overflow is set, ensure fmt_fifo is not full before write
+    // otherwise, fmt_fifo can be overflow written
+    if (avoid_write_fmt_overflow) begin
+      csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
+    end  
     csr_update(.csr(ral.fdata));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
-    cfg.m_i2c_agent_cfg.vif.wait_for_dly(fmt_fifo_access_dly);
+    cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
     print_format_flag(item, msg);
   endtask : program_format_flag
 
-  task print_format_flag(i2c_item item, string msg="");
+  task print_format_flag(i2c_item item, string msg = "");
     string str;
 
     str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
@@ -209,23 +267,4 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
   endtask : print_format_flag
 
-  //*******************************************
-  // TODO: below functions/tasks
-  //*******************************************
-  virtual task clear_all_interrupts();
-    bit [TL_DW-1:0] data;
-
-    foreach (intr_state_csrs[i]) begin
-      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-      `uvm_info(`gfn, $sformatf("%s 0x%08h", intr_state_csrs[i].get_name(), data), UVM_DEBUG)
-      if (data != 0) begin
-        csr_wr(.csr(intr_state_csrs[i]), .value(data));
-        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-        // TODO: check the initial value fmt_watermark interrupt in/out of reset
-        //`DV_CHECK_EQ(data, 0)
-      end
-    end
-    // TODO:
-    //`DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
-  endtask : clear_all_interrupts
 endclass : i2c_base_vseq

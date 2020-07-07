@@ -61,7 +61,7 @@ FLAGS_force=false
 FLAGS_reconfigure=""
 FLAGS_keep_includes=false
 FLAGS_specified_toolchain_file=false
-ARG_toolchain_file="${TOOLCHAIN_PATH}/meson-riscv32-unknown-elf-gcc.txt"
+ARG_toolchain_file="${TOOLCHAIN_PATH}/meson-riscv32-unknown-elf-clang.txt"
 ARG_tock_dir=""
 while getopts 'r?:f?:K?:A?:T:t:' flag; do
   case "${flag}" in

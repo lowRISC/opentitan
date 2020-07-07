@@ -118,6 +118,11 @@
       sw_test: sw/device/tests/aes_test
     }
     {
+      name: chip_gpio
+      uvm_test_seq: chip_sw_gpio_vseq
+      sw_test: sw/device/tests/gpio_test
+    }
+    {
       name: chip_dif_plic_sanitytest
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/dif_plic_sanitytest
