@@ -101,6 +101,8 @@ module top_earlgrey_verilator (
     .mio_attr_o                 ( ),
     .dio_attr_o                 ( ),
 
+    // DFT signals
+    .scan_rst_ni                (1'b1),
     .scanmode_i                 (1'b0)
   );
 
