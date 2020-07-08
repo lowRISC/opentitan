@@ -68,12 +68,17 @@ module clkmgr import clkmgr_pkg::*; (
 
 
   ////////////////////////////////////////////////////
+  // Feed through clocks
+  // Feed through clocks do not actually need to be in clkmgr, as they are
+  // completely untouched. The only reason they are here is for easier
+  // bundling management purposes through clocks_o
+  ////////////////////////////////////////////////////
+  assign clocks_o.clk_aon_i = clk_aon_i;
+
+
+  ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
-
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
 
   logic async_roots_en;
   logic roots_en_q2, roots_en_q1, roots_en_d;
@@ -156,9 +161,6 @@ module clkmgr import clkmgr_pkg::*; (
   // Software direct control group
   ////////////////////////////////////////////////////
 
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
@@ -200,10 +202,6 @@ module clkmgr import clkmgr_pkg::*; (
   // The idle hint feedback is assumed to be synchronous to the
   // clock target
   ////////////////////////////////////////////////////
-
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
 
   logic clk_main_aes_hint;
   logic clk_main_aes_en;

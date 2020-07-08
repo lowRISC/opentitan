@@ -830,7 +830,7 @@
       inter_signal_list:
       [
         {
-          struct: lc_pinmux_strap
+          struct: lc_strap
           type: req_rsp
           name: lc_pinmux_strap
           act: rsp
@@ -3476,7 +3476,7 @@
         index: -1
       }
       {
-        struct: lc_pinmux_strap
+        struct: lc_strap
         type: req_rsp
         name: lc_pinmux_strap
         act: rsp

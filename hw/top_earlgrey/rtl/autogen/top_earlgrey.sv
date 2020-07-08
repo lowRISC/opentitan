@@ -685,7 +685,7 @@ module top_earlgrey #(
       .tl_o (tl_pinmux_d_d2h),
 
       // Inter-module signals
-      .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
+      .lc_pinmux_strap_i(pinmux_pkg::LC_STRAP_REQ_DEFAULT),
       .lc_pinmux_strap_o(),
       .sleep_en_i('0),
       .aon_wkup_req_o(pwrmgr_wakeups),

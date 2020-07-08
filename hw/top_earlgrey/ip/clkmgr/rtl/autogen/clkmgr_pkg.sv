@@ -17,6 +17,7 @@ package clkmgr_pkg;
   };
 
   typedef struct packed {
+  logic clk_aon_i;
   logic clk_main_aes;
   logic clk_main_hmac;
   logic clk_main_otbn;
