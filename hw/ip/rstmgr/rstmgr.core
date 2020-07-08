@@ -10,14 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:ip:rstmgr_component
     files:
-      - rtl/rstmgr_reg_pkg.sv
-      - rtl/rstmgr_reg_top.sv
-      - rtl/rstmgr_ctrl.sv
-      - rtl/rstmgr_por.sv
-      - rtl/rstmgr_info.sv
       - rtl/rstmgr.sv
     file_type: systemVerilogSource
 
