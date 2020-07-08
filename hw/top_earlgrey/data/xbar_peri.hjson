@@ -12,12 +12,12 @@
       pipeline: "false"
 
     },
-    //{ name:      "lifecycle",
-    //  type:      "device",
-    //  clock:     "clk_peri_i",
-    //  reset:     "rst_peri_ni",
-    //  pipeline:  "false"
-    //},
+    { name:      "lifecycle",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "uart",
       type:      "device",
       clock:     "clk_peri_i",
@@ -107,6 +107,6 @@
     main:  ["uart", "uart1", "uart2", "uart3",
             "gpio", "spi_device", "rv_timer",
             "i2c0", "i2c1", "i2c2", "pattgen",
-            "sensor_ctrl", "otp_ctrl"],
+            "sensor_ctrl", "otp_ctrl", "lifecycle"],
   },
 }

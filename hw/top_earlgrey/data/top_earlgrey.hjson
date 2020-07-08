@@ -216,7 +216,7 @@
       clock_srcs: {clk_i: "io"}
       clock_group: "secure"
       reset_connections: {rst_ni: "lc"}
-      base_addr: "0x400E0000"
+      base_addr: "0x40140000"
     }
     { name: "aes",
       type: "aes",
