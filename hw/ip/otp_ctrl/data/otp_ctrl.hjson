@@ -116,14 +116,14 @@
     { struct: "lc_tx"
       type:   "uni"  // no `_req/rsp`
       name:   "lc_provision_en"
-      act:    "rsp"
-      package: "otp_ctrl_pkg" // TODO: move to LC package
+      act:    "rcv"
+      package: "lifecycle_pkg" // TODO: move to LC package
     }
     { struct: "lc_tx"
       type:   "uni"  // no `_req/rsp`
       name:   "lc_test_en"
-      act:    "rsp"
-      package: "otp_ctrl_pkg" // TODO: move to LC package
+      act:    "rcv"
+      package: "lifecycle_pkg" // TODO: move to LC package
     }
     //Broadcast to Key Manager
     { struct: "keymgr_key"
