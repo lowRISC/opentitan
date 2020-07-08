@@ -18,7 +18,7 @@ Finally, we provide the same set of information for all available [top level des
 ## Results of tool-flows
 
 * [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary.html)
-* FPV summary results (nightly) (TBD)
+* [FPV summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/fpv/summary.html)
 * [Lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/summary.html)
 * [Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/summary.html)
 
