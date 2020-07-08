@@ -113,6 +113,7 @@ dif_plic_sanitytest_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'dif_plic_sanitytest': dif_plic_sanitytest_lib }
 
 dif_uart_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -125,8 +126,20 @@ dif_uart_sanitytest_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'dif_uart_sanitytest': dif_uart_sanitytest_lib }
 
-sw_tests += {
-  'dif_plic_sanitytest': dif_plic_sanitytest_lib,
-  'dif_uart_sanitytest': dif_uart_sanitytest_lib,
-}
+dif_rv_timer_sanitytest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_rv_timer_sanitytest_lib',
+    sources: ['dif_rv_timer_sanitytest.c'],
+    dependencies: [
+      dif_rv_timer,
+      sw_lib_base_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      sw_lib_irq,
+    ],
+  ),
+)
+sw_tests += { 'dif_rv_timer_sanitytest': dif_rv_timer_sanitytest_lib }
+

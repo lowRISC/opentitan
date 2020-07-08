@@ -37,20 +37,6 @@ flash_ctrl_test_lib = declare_dependency(
   ),
 )
 
-rv_timer_test_lib = declare_dependency(
-  link_with: static_library(
-    'rv_timer_test_lib',
-    sources: ['rv_timer_test.c'],
-    dependencies: [
-      sw_lib_irq,
-      sw_lib_pinmux,
-      dif_rv_timer,
-      sw_lib_base_log,
-      sw_lib_dif_gpio,
-    ],
-  ),
-)
-
 sha256_test_lib = declare_dependency(
   link_with: static_library(
     'sha256_test_lib',
@@ -66,7 +52,6 @@ sha256_test_lib = declare_dependency(
 sw_tests += {
   'aes_test': aes_test_lib,
   'flash_ctrl_test': flash_ctrl_test_lib,
-  'rv_timer_test': rv_timer_test_lib,
   'sha256_test': sha256_test_lib,
 }
 

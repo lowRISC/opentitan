@@ -18,10 +18,10 @@ TEST_TARGETS=(
   "examples/hello_usbdev/hello_usbdev_sim_verilator.elf"
   "tests/aes_test_sim_verilator.elf"
   "tests/dif_plic_sanitytest_sim_verilator.elf"
+  "tests/dif_rv_timer_sanitytest_sim_verilator.elf"
   "tests/dif_uart_sanitytest_sim_verilator.elf"
   "tests/flash_ctrl_test_sim_verilator.elf"
   "tests/sha256_test_sim_verilator.elf"
-  "tests/rv_timer_test_sim_verilator.elf"
 )
 
 FAIL_TARGETS=()
