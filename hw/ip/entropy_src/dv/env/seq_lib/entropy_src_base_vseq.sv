@@ -10,8 +10,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(entropy_src_base_vseq)
 
+  bit  efuse_es_sw_reg_en = 1'b1;
+  
   // various knobs to enable certain routines
-  bit do_entropy_src_init = 1'b1;
+  bit  do_entropy_src_init = 1'b1;
 
   `uvm_object_new
 
@@ -27,6 +29,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   // setup basic entropy_src features
   virtual task entropy_src_init();
+    cfg.efuse_es_sw_reg_en_vif.drive_pin(.idx(0), .val(efuse_es_sw_reg_en));
   endtask
 
 endclass : entropy_src_base_vseq
