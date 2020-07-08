@@ -44,7 +44,7 @@ rv_timer_test_lib = declare_dependency(
     dependencies: [
       sw_lib_irq,
       sw_lib_pinmux,
-      sw_lib_rv_timer,
+      dif_rv_timer,
       sw_lib_base_log,
       sw_lib_dif_gpio,
     ],

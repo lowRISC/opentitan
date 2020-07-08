@@ -115,21 +115,6 @@ sw_lib_irq_handlers = declare_dependency(
   )
 )
 
-# RV_TIMER library (sw_lib_rv_timer)
-sw_lib_rv_timer = declare_dependency(
-  link_with: static_library(
-    'rv_timer_ot',
-    sources: [
-      hw_ip_rv_timer_reg_h,
-      'rv_timer.c',
-    ],
-    dependencies: [
-      sw_lib_runtime_ibex,
-      top_earlgrey,
-    ],
-  )
-)
-
 # SPI device library (sw_lib_spi_device)
 sw_lib_spi_device = declare_dependency(
   link_with: static_library(
