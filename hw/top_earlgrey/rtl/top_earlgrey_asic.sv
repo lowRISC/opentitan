@@ -10,10 +10,10 @@ module top_earlgrey_asic (
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
-  inout               IO_DPS1, // IO_JTDI,    IO_SDMOSI
+  inout               IO_DPS1, // IO_JTDI,    IO_SDSDI
   inout               IO_DPS4, // IO_JTRST_N,
   inout               IO_DPS5, // IO_JSRST_N,
-  inout               IO_DPS2, // IO_JTDO,    IO_MISO
+  inout               IO_DPS2, // IO_JTDO,    IO_SDO
   inout               IO_DPS6, // JTAG=1,     SPI=0
   inout               IO_DPS7, // BOOTSTRAP=1
   // UART interface
@@ -105,8 +105,8 @@ module top_earlgrey_asic (
     // DIO Pads
     .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
                              IO_DPS3, // CSB, JTAG_TMS
-                             IO_DPS1, // MOSI, JTAG_TDI
-                             IO_DPS2, // MISO, JTAG_TDO
+                             IO_DPS1, // SDI, JTAG_TDI
+                             IO_DPS2, // SDO, JTAG_TDO
                              IO_URX,
                              IO_UTX,
                              IO_USB_SENSE0,
@@ -162,9 +162,9 @@ module top_earlgrey_asic (
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
     .TdiIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMosi ),
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdi ),
     .TdoIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMiso )
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdo )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),

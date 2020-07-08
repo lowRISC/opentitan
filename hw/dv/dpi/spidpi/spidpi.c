@@ -58,15 +58,15 @@ void *spidpi_create(const char *name, int mode, int loglevel) {
   struct termios tty;
   cfmakeraw(&tty);
 
-  rv = openpty(&ctx->master, &ctx->slave, 0, &tty, 0);
+  rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
   assert(rv != -1);
 
-  rv = ttyname_r(ctx->slave, ctx->ptyname, 64);
+  rv = ttyname_r(ctx->device, ctx->ptyname, 64);
   assert(rv == 0 && "ttyname_r failed");
 
-  int cur_flags = fcntl(ctx->master, F_GETFL, 0);
+  int cur_flags = fcntl(ctx->host, F_GETFL, 0);
   assert(cur_flags != -1 && "Unable to read current flags.");
-  int new_flags = fcntl(ctx->master, F_SETFL, cur_flags | O_NONBLOCK);
+  int new_flags = fcntl(ctx->host, F_SETFL, cur_flags | O_NONBLOCK);
   assert(new_flags != -1 && "Unable to set FD flags");
 
   printf(
@@ -99,7 +99,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
   assert(ctx);
   int d2p = d2p_data->aval;
 
-  // Will tick at the master clock
+  // Will tick at the host clock
   ctx->tick++;
 
 #ifdef CONTROL_TRACE
@@ -112,7 +112,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
               d2p);
 
   if (ctx->state == SP_IDLE) {
-    int n = read(ctx->master, &(ctx->buf[ctx->nin]), ctx->nmax - ctx->nin);
+    int n = read(ctx->host, &(ctx->buf[ctx->nin]), ctx->nmax - ctx->nin);
     if (n == -1) {
       if (errno != EAGAIN) {
         fprintf(stderr, "Read on SPI FIFO gave %s\n", strerror(errno));
@@ -132,7 +132,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
       }
     }
   }
-  // SPI clock toggles every 4th tick (i.e. freq=master/8)
+  // SPI clock toggles every 4th tick (i.e. freq=primary_frequency/8)
   if ((ctx->tick & 3) || (ctx->state == SP_IDLE)) {
     return ctx->driving;
   }
@@ -145,12 +145,12 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
   }
 
   if (internal_sck == ctx->cpha) {
-    // master driving edge (falling for mode 0)
+    // host driving edge (falling for mode 0)
     switch (ctx->state) {
       case SP_DMOVE:
         // SCLK low, CSB low
         ctx->driving =
-            set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_MOSI : 0;
+            set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0;
         ctx->bout = (ctx->msbfirst) ? ctx->bout >> 1 : ctx->bout << 1;
         if ((ctx->bout & 0xff) == 0) {
           ctx->bout = ctx->msbfirst ? 0x80 : 0x01;
@@ -168,16 +168,16 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         break;
     }
   } else {
-    // master other edge (rising for mode 0)
+    // host other edge (rising for mode 0)
     switch (ctx->state) {
         // Read input data (opposite edge to sending)
         // both DMOVE and LASTBIT states are data moving ones!
       case SP_DMOVE:
       case SP_LASTBIT:
-        ctx->din = ctx->din | ((d2p & D2P_MISO) ? ctx->bin : 0);
+        ctx->din = ctx->din | ((d2p & D2P_SDO) ? ctx->bin : 0);
         ctx->bin = (ctx->msbfirst) ? ctx->bin >> 1 : ctx->bin << 1;
         if (ctx->bin == 0) {
-          int rv = write(ctx->master, &(ctx->din), 1);
+          int rv = write(ctx->host, &(ctx->din), 1);
           assert(rv == 1 && "write() failed.");
           ctx->bin = (ctx->msbfirst) ? 0x80 : 0x01;
           ctx->din = 0;
@@ -185,9 +185,9 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
         break;
       case SP_CSFALL:
-        // CSB low, drive MOSI to first bit
+        // CSB low, drive SDI to first bit
         ctx->driving =
-            (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_MOSI : 0);
+            (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
         ctx->state = SP_DMOVE;
         break;
       case SP_CSRISE:

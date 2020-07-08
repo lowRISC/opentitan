@@ -100,7 +100,7 @@ $ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool a
 where the `top_earlgrey_lint_cfgs.hjson` file contains all the lint targets to be run in that regression (currently all available comportable IPs and the top-level are run).
 The `purge` option ensures that the scratch directory is fully erased before starting the build, and `mp 1` sets the number of parallel workers to one (should be set depending on your licensing situation).
 
-The batch regression is regularly run on the master branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
+The batch regression is regularly run on the `master` branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
 The dashboard can be found by following the appropriate link on the [hardware IP overview page](https://docs.opentitan.org/hw).
 
 # CDC Linting

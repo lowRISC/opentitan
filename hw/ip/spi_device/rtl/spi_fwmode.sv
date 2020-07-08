@@ -6,11 +6,11 @@
 //
 
 module spi_fwmode (
-  // MOSI
+  // SDI
   input clk_in_i,
   input rst_in_ni,
 
-  // MISO
+  // SDO
   input clk_out_i,
   input rst_out_ni,
 
@@ -35,9 +35,9 @@ module spi_fwmode (
 
   // SPI Interface: clock is given (ckl_in_i, clk_out_i)
   input        csb_i,
-  input        mosi,
-  output logic miso,
-  output logic miso_oe
+  input        sdi,
+  output logic sdo,
+  output logic sdo_oe
 );
 
   import spi_device_pkg::*;
@@ -58,9 +58,9 @@ module spi_fwmode (
   // Serial to Parallel
   always_comb begin
     if (cfg_rxorder_i) begin
-      rx_data_d = {mosi, rx_data_q[BITS-1:1]};
+      rx_data_d = {sdi, rx_data_q[BITS-1:1]};
     end else begin
-      rx_data_d = {rx_data_q[BITS-2:0], mosi};
+      rx_data_d = {rx_data_q[BITS-2:0], sdi};
     end
   end
 
@@ -69,7 +69,7 @@ module spi_fwmode (
   end
 
   // As SCK shut off right after bytes are transferred,
-  // HW should give current MOSI and latched version of rx_data
+  // HW should give current SDI and latched version of rx_data
   // if not, FIFO request should be generated next cycle but it cannot be (as no clock exist)
   // It means RX_FIFO should latch the write request at negedge of clk_in_i
   assign rx_data_o = rx_data_d;
@@ -92,7 +92,7 @@ module spi_fwmode (
   // TX Serialize
   logic [BITWIDTH-1:0] tx_bitcount;
   logic first_bit, last_bit;
-  spi_byte_t miso_shift;
+  spi_byte_t sdo_shift;
 
   assign first_bit = (tx_bitcount == BITWIDTH'(BITS-1)) ? 1'b1 : 1'b0;
   assign last_bit  = (tx_bitcount == '0) ? 1'b1 : 1'b0;
@@ -121,25 +121,25 @@ module spi_fwmode (
     end
   end
 
-  assign miso = (cfg_txorder_i) ? ((~first_bit) ? miso_shift[0] : tx_data_i[0]) :
-                (~first_bit) ? miso_shift[7] : tx_data_i[7] ;
-  assign miso_oe = ~csb_i;
+  assign sdo = (cfg_txorder_i) ? ((~first_bit) ? sdo_shift[0] : tx_data_i[0]) :
+                (~first_bit) ? sdo_shift[7] : tx_data_i[7] ;
+  assign sdo_oe = ~csb_i;
 
   always_ff @(posedge clk_out_i) begin
     if (cfg_txorder_i) begin
       if (first_bit) begin
-        miso_shift <= {1'b0, tx_data_i[7:1]};
+        sdo_shift <= {1'b0, tx_data_i[7:1]};
       end else begin
-        miso_shift <= {1'b0, miso_shift[7:1]};
+        sdo_shift <= {1'b0, sdo_shift[7:1]};
       end
     end else begin
       if (first_bit) begin
         // Dummy byte cannot be used. empty signal could be delayed two clocks to cross
         // async clock domain. It means even FW writes value to FIFO, empty signal deasserts
         // after two negative edge of SCK. HW module already in the middle of sending DUMMY.
-        miso_shift <= {tx_data_i[6:0], 1'b0};
+        sdo_shift <= {tx_data_i[6:0], 1'b0};
       end else begin
-        miso_shift <= {miso_shift[6:0], 1'b0};
+        sdo_shift <= {sdo_shift[6:0], 1'b0};
       end
     end
   end

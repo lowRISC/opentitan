@@ -7,16 +7,16 @@
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },
     { name: "csb", desc: "Chip Enable#" },
-    { name: "mosi", desc: "SPI Input" },
+    { name: "sdi", desc: "SPI Input" },
   ],
   available_output_list: [
-    { name: "miso", desc: "SPI Output" },
+    { name: "sdo", desc: "SPI Output" },
   ],
   interrupt_list: [
     { name: "rxf",         desc: "RX SRAM FIFO Full" },
     { name: "rxlvl",       desc: "RX SRAM FIFO is above the level" },
     { name: "txlvl",       desc: "TX SRAM FIFO is under the level" },
-    { name: "rxerr",       desc: "MOSI in FwMode has error" },
+    { name: "rxerr",       desc: "SDI in FwMode has error" },
     { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
     { name: "txunderflow", desc: "TX Async FIFO underflow" },
   ],
@@ -46,7 +46,7 @@
                 FW operation mode.
 
                 HW just dumps incoming data to SRAM and reads from SRAM and
-                sends to MISO. This mode doesn't support Dual or Quad mode
+                sends to SDO. This mode doesn't support Dual or Quad mode
                 '''
             },
           ]
@@ -96,12 +96,12 @@
         },
         { bits: "2",
           name: "tx_order",
-          desc: "TX bit order on MISO. 0 for MSB to LSB, 1 for LSB to MSB",
+          desc: "TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB",
           resval: "0",
         },
         { bits: "3",
           name: "rx_order",
-          desc: "RX bit order on MOSI. Module stores bitstream from MSB to LSB if value is 0.",
+          desc: "RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.",
           resval: "0",
         },
         { bits: "15:8",

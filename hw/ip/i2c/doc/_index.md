@@ -4,20 +4,20 @@ title: "I2C HWIP Technical Specification"
 ---
 
 
-# Overview 
+# Overview
 
 This document specifies I2C hardware IP functionality.
 This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
 See that document for integration overview within the broader top level system.
 
 
-## Features 
+## Features
 
-- Two-pin clock-data parallel bidirectional external interface 
+- Two-pin clock-data parallel bidirectional external interface
 - The initial revision only supports I2C as a Host ("I2C Master"<sup>1</sup>).
 - Support for standard (100 kbaud), fast (400 kbaud) and fast-plus (1 Mbaud) modes
 - Bandwidth up to 1 Mbaud
-- Support for all "Mandatory" features as specified for I2C Hosts (as listed in Table 2 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)): 
+- Support for all "Mandatory" features as specified for I2C Hosts (as listed in Table 2 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)):
     - Start Condition
     - Stop Condition
     - Acknowledge
@@ -29,17 +29,17 @@ See that document for integration overview within the broader top level system.
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
-- Byte-formatted register interface with two separate queues, one for holding read data, the other for holding bytes to be transmitted (addresses or write data) 
+- Byte-formatted register interface with two separate queues, one for holding read data, the other for holding bytes to be transmitted (addresses or write data)
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux.
 - Interrupts for FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete.
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
 
-## Description 
+## Description
 
 This IP block  implements the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), though with some variation in nomenclature.
-For the purposes of this document, a "I2C Host" meets the specifications put forth for a "Master" device. 
+For the purposes of this document, a "I2C Host" meets the specifications put forth for a "Master" device.
 Furthermore, a device which meets the specifications put forward for an I2C "Slave" device is here referred to as an "I2C Target" or "I2C Target Device".
 
 At a high-level, the I2C protocol is a clock-parallel serial protocol, with at least one host issuing transactions to a number of targets on the same bus.
@@ -51,14 +51,14 @@ Typically each transaction consists of:
 1. A START signal, issued by host.
 1. An address, issued by host, encoded as 7 or 10 bits.
 1. A R/W bit indicating whether the transaction is a read from the target device, or a write to the target device.
-The R/W bit is encoded along with the address. 
-1. An Acknowledge signal (ACK) sent by the target device. 
+The R/W bit is encoded along with the address.
+1. An Acknowledge signal (ACK) sent by the target device.
 1. Data bytes, where the number of bytes required is indicated by the host,
 in a manner which differs between reads and writes.
     - For write transactions, the target device sends an ACK signal after every byte received.
     The host indicates the end of a transaction by sending a STOP or RESTART signal.
     - For read transactions, the target device continues to send data as long as the host acknowledges the target-issued data by sending an ACK signal.
-    Once the host has received all the required data it indicates that no more data is needed by explicitly de-asserting the ACK signal (this is called a NACK signal) just before sending a STOP or RESTART signal. 
+    Once the host has received all the required data it indicates that no more data is needed by explicitly de-asserting the ACK signal (this is called a NACK signal) just before sending a STOP or RESTART signal.
 1. A STOP signal or a RESTART signal.
 
 This protocol is generally quite flexible with respect to timing constraints, and slow enough to be managed by a software microcontroller, however such an implementation requires frequent activity on the part of the microcontroller.
@@ -71,7 +71,7 @@ In order to support any target device, this IP issues addresses in 7-bit encodin
 (It remains the obligation of system designers to ensure that devices which cannot support 10-bit encoding remain in a 7-bit address space.)
 This IP also supports clock-stretching, should that be required by target devices.
 
-# Theory of Operations 
+# Theory of Operations
 
 ## Block Diagram
 
@@ -81,7 +81,7 @@ This IP also supports clock-stretching, should that be required by target device
 
 {{< hwcfg "hw/ip/i2c/data/i2c.hjson" >}}
 
-## Design Details 
+## Design Details
 
 ### Virtual Open Drain
 
@@ -107,7 +107,7 @@ In this state the output drivers `scl_tx_o` and `sda_tx_o` are controlled direct
 When {{< regref OVRD.SCLVAL >}} and {{< regref OVRD.SDAVAL >}} are set high, the virtual open drain configuration will leave the output resistively pulled high, and controllable by remote targets.
 In this state, with SCL or SDA asserted high, the register fields {{< regref VAL.SCL_RX >}} and {{< regref VAL.SDA_RX >}} can be used to receive inputs (including remote acknowledgments) from target devices.
 
-### Byte-Formatted Programming Mode 
+### Byte-Formatted Programming Mode
 
 The state machine-controlled mode allows for higher-speed operation with less frequent software interaction.
 In this mode, the I2C pins are controlled by the I2C state machine, which in turn is controlled by a sequence of formatting indicators.
@@ -140,7 +140,7 @@ Issue a STOP signal after processing this current entry in the FMT FIFO.
 - NAKOK (corresponds to {{< regref FDATA.NAKOK >}}, Not compatible with READ):
 Typically every byte transmitted must also receive an ACK signal, and the IP will raise an exception if no ACK is received.
 However, there are some I2C commands which do not require an ACK.
-In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received. 
+In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.
 
 ### Timing Control Registers
 
@@ -149,9 +149,9 @@ In order to claim complete compatibility at each mode, the state machine timings
 Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1Mbaud.
 For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
 Assuming no clock stretching, for a given set of these four parameters the baud rate is then given to be:
-$$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$ 
+$$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$
 
-Thus in order to ensure compliance with the spec in any particular configuration, software will program the I2C host IP with explicit values for each of the following timing parameters, as defined in Figure 38 of the specification.   
+Thus in order to ensure compliance with the spec in any particular configuration, software will program the I2C host IP with explicit values for each of the following timing parameters, as defined in Figure 38 of the specification.
 - t<sub>LOW</sub>: set in register {{< regref TIMING0.TLOW >}}.
 - t<sub>HIGH</sub>: set in register {{< regref TIMING0.THIGH >}}.
 - t<sub>r</sub>: set in register {{< regref TIMING1.T_R >}}.
@@ -160,11 +160,11 @@ Thus this parameter is largely budgetary, meaning that it tells the state machin
 - t<sub>f</sub>: set in register {{< regref TIMING1.T_F >}}.
 (Note: The fall time cannot be explicitly controlled by internal hardware, and is a function of the pin driver.
 Thus this parameter is also budgetary.
-Given that the actual fall time cannot be controlled to stay above the minimum values set in Table 10 of the specification, and so this in this regard this module currently is not strictly compliant to the I2C spec.) 
+Given that the actual fall time cannot be controlled to stay above the minimum values set in Table 10 of the specification, and so this in this regard this module currently is not strictly compliant to the I2C spec.)
 - t<sub>SU,STA</sub>: set in register {{< regref TIMING2.TSU_STA >}}
 - t<sub>HD,STA</sub>: set in register {{< regref TIMING2.THD_STA >}}
 - t<sub>SU,DAT</sub>: set in register {{< regref TIMING3.TSU_DAT >}}.
-Taken to be synonymous with T<sub>SU,ACK</sub> 
+Taken to be synonymous with T<sub>SU,ACK</sub>
 - t<sub>HD,DAT</sub>: set in register {{< regref TIMING3.THD_DAT >}}.
 Taken to be synonymous with T<sub>HD,ACK</sub>.
 Moreover, since the pin driver fall time is likely to be less then one clock cycle, this parameter is also taken to be synonymous with the parameters T<sub>VD,DAT</sub> and T<sub>VD,ACK</sub>
@@ -181,7 +181,7 @@ A detailed description of the algorithm for determining these parameters--as wel
 ### Timeout Control
 A malfunctioning (or otherwise very slow) target device can hold SCL low indefinitely, stalling the bus.
 For this reason {{< regref TIMEOUT_CTRL >}} provides a clock-stretching timeout mechanism to notify firmware of this sort of condition.
-If {{< regref TIMEOUT_CTRL.EN >}} is asserted, an interrupt will be asserted when the IP detects that another device (a target or, in possible future revisions, an alternate master) has been holding SCL low for more than {{< regref TIMEOUT_CTRL.VAL >}} clock ticks.
+If {{< regref TIMEOUT_CTRL.EN >}} is asserted, an interrupt will be asserted when the IP detects that another device (a target or, in possible future revisions, an alternate host) has been holding SCL low for more than {{< regref TIMEOUT_CTRL.VAL >}} clock ticks.
 
 
 This feature is added as a utility, though it is not required by the I2C specification.
@@ -289,7 +289,7 @@ The values of these parameters will depend primarily on three bus details:
 - The expected signal rise time, t<sub>r</sub>, in ns.
    - This is not a firmware-controlled parameter.
 Rather, it is a function of the capacitance and physical design of the bus.
-The specification provides detailed guidelines on how to manage capacitance in an I2C system: 
+The specification provides detailed guidelines on how to manage capacitance in an I2C system:
    - Section 5.2 of the I2C specification indicates that Fast-mode plus devices may operate at reduced clock speeds if the bus capacitance drives signal rise times (t<sub>r</sub>) outside the nominal 120ns limit.
 Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for fast-mode plus devices (as described in section 7.1 of the I2C specificaion).
 However the specification places a hard limit on rise times capping them at 1000ns.
@@ -315,7 +315,7 @@ $$ \textrm{THD_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
 $$ \textrm{TSU_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_BUF_MIN}= \lceil{t\_{BUF,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
-   
+
 1. Input the integer timing parameters, THD_STA_MIN, TSU_STA_MIN, THD_DAT_MIN, TSU_DAT_MIN, T_BUF_MIN and T_STO_MIN into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
     - This step allows the firmware to manage SDA signal delays to ensure that the SDA outputs are compliant with the specification.
     - The registers `TIMING0.THIGH` and `TIMING0.TLOW` will be taken care of in a later step.
@@ -350,7 +350,7 @@ Both examples assume a desired datarate of 1 Mbaud (the bus maximum) for an SCL 
 |-----------------|------------------|------------|----------------|-----------------------------------------------|
 | TIMING0.THIGH   | 260              | 120        | 360            | Chosen to satisfy SCL Period Minimum          |
 | TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
-| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         | 
+| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         |
 | TIMING1.T_R     | 0                | 40         | 120            | Based on pull-up resistance, line capacitance |
 | SCL Period      | 1000             | N/A        | 1002           | Constraint on THIGH+TLOW+T_R+T_F              |
 | TIMING2.THD_STA | 260              | 87         | 261            | Spec. Minimum                                 |
@@ -362,13 +362,13 @@ Both examples assume a desired datarate of 1 Mbaud (the bus maximum) for an SCL 
 
 This next example shows how the first SCL timing registers: `TIMING0` and `TIMING1` are altered in a high-capacitance Fast-mode Plus bus, where the physical value of t<sub>r</sub> driven to an atypical value of 400ns.
 As in the previous example the integer register values are determined based on a system clock period, t<sub>clk</sub>, of 3ns.
-All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged from the previous example. 
+All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged from the previous example.
 
 | Parameter       | Spec. Min. (ns)  | Reg. Val.  | Phys. Val (ns) | Comment                                       |
 |-----------------|------------------|------------|----------------|-----------------------------------------------|
 | TIMING0.THIGH   | 260              | 87         | 261            | Spec. t<sub>HIGH</sub> Minimum                |
 | TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
-| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         | 
+| TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         |
 | TIMING1.T_R     | 0                | 134        | 402            | Atypicallly high line capacitance             |
 | SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
@@ -376,6 +376,6 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 
 {{< dif_listing "sw/device/lib/dif/dif_i2c.h" >}}
 
-## Register Table 
+## Register Table
 
 {{<registers "hw/ip/i2c/data/i2c.hjson" >}}

@@ -26,15 +26,15 @@ void *uartdpi_create(const char *name) {
   struct termios tty;
   cfmakeraw(&tty);
 
-  rv = openpty(&ctx->master, &ctx->slave, 0, &tty, 0);
+  rv = openpty(&ctx->host, &ctx->device, 0, &tty, 0);
   assert(rv != -1);
 
-  rv = ttyname_r(ctx->slave, ctx->ptyname, 64);
+  rv = ttyname_r(ctx->device, ctx->ptyname, 64);
   assert(rv == 0 && "ttyname_r failed");
 
-  int cur_flags = fcntl(ctx->master, F_GETFL, 0);
+  int cur_flags = fcntl(ctx->host, F_GETFL, 0);
   assert(cur_flags != -1 && "Unable to read current flags.");
-  int new_flags = fcntl(ctx->master, F_SETFL, cur_flags | O_NONBLOCK);
+  int new_flags = fcntl(ctx->host, F_SETFL, cur_flags | O_NONBLOCK);
   assert(new_flags != -1 && "Unable to set FD flags");
 
   printf(
@@ -49,7 +49,7 @@ void *uartdpi_create(const char *name) {
 int uartdpi_can_read(void *ctx_void) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
-  int rv = read(ctx->master, &ctx->tmp_read, 1);
+  int rv = read(ctx->host, &ctx->tmp_read, 1);
   return (rv == 1);
 }
 
@@ -62,6 +62,6 @@ char uartdpi_read(void *ctx_void) {
 void uartdpi_write(void *ctx_void, char c) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
-  int rv = write(ctx->master, &c, 1);
+  int rv = write(ctx->host, &c, 1);
   assert(rv == 1 && "write() failed.");
 }

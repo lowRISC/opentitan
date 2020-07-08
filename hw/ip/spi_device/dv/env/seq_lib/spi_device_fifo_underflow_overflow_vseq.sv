@@ -10,7 +10,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
 
   virtual task body();
     allow_underflow_overflow = 1;
-    // when underflow, miso may be unknown, disable checking it
+    // when underflow, sdo may be unknown, disable checking it
     cfg.m_spi_agent_cfg.en_monitor_checks = 0;
     super.body();
     cfg.m_spi_agent_cfg.en_monitor_checks = 1;

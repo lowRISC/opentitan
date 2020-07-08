@@ -36,8 +36,8 @@ package top_earlgrey_pkg;
     TopEarlgreyDioPinUsbdevSense = 8,
     TopEarlgreyDioPinUartTx = 9,
     TopEarlgreyDioPinUartRx = 10,
-    TopEarlgreyDioPinSpiDeviceMiso = 11,
-    TopEarlgreyDioPinSpiDeviceMosi = 12,
+    TopEarlgreyDioPinSpiDeviceSdo = 11,
+    TopEarlgreyDioPinSpiDeviceSdi = 12,
     TopEarlgreyDioPinSpiDeviceCsb = 13,
     TopEarlgreyDioPinSpiDeviceSck = 14,
     TopEarlgreyDioPinCount = 15

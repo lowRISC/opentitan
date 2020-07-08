@@ -20,7 +20,7 @@ Updated output bitfile located : at the same place as raw vivado bitfile @
 
 This directory contains following files:
 
-* `splice_nexysvideo.sh` - master script
+* `splice_nexysvideo.sh` - main script to load memory contents into bitfile
 * `bram_load.mmi` - format which vivado tool understands on which FPGA
   BRAM locations the SW contents should go
 * `addr4x.py` - utility script used underneath to do address calculation

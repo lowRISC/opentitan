@@ -104,9 +104,9 @@ These are the internal signals between that module and the pads of the platform 
 | `jtag_trst_ni` | input | JTAG Test Reset |
 | `dio_spi_device_sck_i` | input | SPI device clock |
 | `dio_spi_device_csb_i` | input | SPI device chip select |
-| `dio_spi_device_mosi_i` | input | SPI device input data |
-| `dio_spi_device_miso_o` | output | SPI device output data |
-| `dio_spi_device_miso_en_o` | output | SPI device output enable |
+| `dio_spi_device_sdi_i` | input | SPI device input data |
+| `dio_spi_device_sdo_o` | output | SPI device output data |
+| `dio_spi_device_sdo_en_o` | output | SPI device output enable |
 | `dio_uart_rx_i` | input | UART input receive data |
 | `dio_uart_tx_o` | output | UART output transmit data |
 | `dio_uart_tx_en_o` | output | UART output transmit output enable |
@@ -121,8 +121,8 @@ Below are the hardware interfaces of the FPGA target `top_earlgrey_nexsysvideo` 
 | `IO_CLK`    | input  | Chip level functional clock |
 | `IO_RST_N`  | input  | Chip level reset, active low |
 | `IO_DPS0`   | input  | Muxed functionality: JTAG `TCK` and `spi_device_sck_i` |
-| `IO_DPS1`   | input  | Muxed functionality: JTAG `TDI` and `spi_device_mosi_i` |
-| `IO_DPS2`   | output | Muxed functionality: JTAG `TDO` and `spi_device_miso_o` |
+| `IO_DPS1`   | input  | Muxed functionality: JTAG `TDI` and `spi_device_sdi_i` |
+| `IO_DPS2`   | output | Muxed functionality: JTAG `TDO` and `spi_device_sdo_o` |
 | `IO_DPS3`   | input  | Muxed functionality: JTAG `TMS` and `spi_device_csb_i` |
 | `IO_DPS4`   | input  | JTAG `TRST_N` |
 | `IO_DPS5`   | input  | JTAG `SRST_N` |

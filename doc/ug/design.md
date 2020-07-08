@@ -174,11 +174,11 @@ Most modern SystemVerilog-based projects work around the weaknesses in the langu
 But our first goal is to take full advantage of the language as much as possible, and only resort to generated code where necessary.
 
 At the moment, all generated code is checked in with the source files.
-The pros and cons of this decision are still being discussed, and the decision may be reversed, to be replaced with a master build-all script to prepare a final design as source files changed.
+The pros and cons of this decision are still being discussed, and the decision may be reversed, to be replaced with an over-arching build-all script to prepare a final design as source files changed.
 Until that time, all generated files (see for example the output files from the
 [register generation tool]({{< relref "doc/rm/register_tool" >}}))
 are checked in.
-There is a master build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
+There is an over-arching build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
 This is used by an Azure Pipelines pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
 
 ## Getting Started with a Design

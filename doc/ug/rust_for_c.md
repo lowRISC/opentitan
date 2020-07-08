@@ -54,7 +54,7 @@ A complete Rust toolchain consists of a few major parts:
 *   `std` and `core`, the standard libraries.
 
 The Rust toolchain is on a six-week release cycle, similar to Chrome's: every six weeks, a release branch is cut as the next beta, and after six weeks it becomes the next stable.
-Nightly Rust is cut from master every day; it is on nightly that unstable features can be enabled.
+Nightly Rust is cut from `master` every day; it is on nightly that unstable features can be enabled.
 Some unstable features[^5] are very useful for embedded, so it is not uncommon for embedded Rust projects to use a nightly compiler.
 
 `rustup` is used for managing Rust installations.
@@ -572,7 +572,7 @@ The names of external symbols can be "forward-declared" using an `extern` block,
 ``` rust
 extern "C" {
   fn malloc(bytes: usize) -> *mut u8;
-  static mut errno: i32; 
+  static mut errno: i32;
 }
 ```
 When the ABI specified is `"C"`, it can be left off; `extern {}` is implicitly `extern "C" {}`.
@@ -1879,7 +1879,7 @@ Here are a few examples of particularly useful combinators:
 *   `iter.enumerate()`.
     Changes the `Item` type from `T` into `(usize, T)`, tracking the current index in the sequence along with the value.
 *   `iter.step_by(n)`.
-    Changes the iterator to return every `n`th element. 
+    Changes the iterator to return every `n`th element.
 *   `iter.take(n)`.
     Shortens the iterator to return `n` elements before fusing.
 *   `iter.map(|x| /* ... */)`.

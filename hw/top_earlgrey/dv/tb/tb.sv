@@ -30,8 +30,8 @@ module tb;
 
   wire spi_device_sck;
   wire spi_device_csb;
-  wire spi_device_miso_o;
-  wire spi_device_mosi_i;
+  wire spi_device_sdo_o;
+  wire spi_device_sdi_i;
 
   wire srst_n;
   wire jtag_spi_n;
@@ -136,14 +136,14 @@ module tb;
 
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
-  assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_mosi_i;
+  assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_sdi_i;
   assign io_dps[3]  = jtag_spi_n ? jtag_tms : spi_device_csb;
   assign io_dps[4]  = jtag_trst_n;
   assign io_dps[5]  = srst_n;
   assign io_dps[6]  = jtag_spi_n;
   assign io_dps[7]  = bootstrap;
-  assign spi_device_miso_o  = jtag_spi_n ? 1'b0 : io_dps[2];
-  assign jtag_tdo           = jtag_spi_n ? io_dps[2] : 1'b0;
+  assign spi_device_sdo_o  = jtag_spi_n ? 1'b0 : io_dps[2];
+  assign jtag_tdo          = jtag_spi_n ? io_dps[2] : 1'b0;
 
   assign jtag_tck         = jtag_if.tck;
   assign jtag_tms         = jtag_if.tms;
@@ -153,8 +153,8 @@ module tb;
 
   assign spi_device_sck     = spi_if.sck;
   assign spi_device_csb     = spi_if.csb;
-  assign spi_device_mosi_i  = spi_if.mosi;
-  assign spi_if.miso        = spi_device_miso_o;
+  assign spi_device_sdi_i   = spi_if.sdi;
+  assign spi_if.sdo         = spi_device_sdo_o;
 
   assign uart_rx = uart_if.uart_rx;
   assign uart_if.uart_tx = uart_tx;

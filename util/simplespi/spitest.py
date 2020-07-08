@@ -87,8 +87,8 @@ def main():
     # interfaces start from 1 here, so this is Channel A (called 0 in jtag)
     spi.configure('ftdi://ftdi:2232h/1')
 
-    # Get a port to a SPI slave w/ /CS on A*BUS3 and SPI mode 0 @ 1MHz
-    slave = spi.get_port(cs=0, freq=1E6, mode=0)
+    # Get a port to a SPI device w/ /CS on A*BUS3 and SPI mode 0 @ 1MHz
+    device = spi.get_port(cs=0, freq=1E6, mode=0)
 
     # Get GPIO port to manage extra pins
     # BUS4 = JTAG TRST_N, BUS5 = JTAG SRST_N, BUS6 = JTAG_SPIN
@@ -120,7 +120,7 @@ def main():
 
     print("Select SPI")
     gpio.write(0x30)
-    # Synchronous exchange with the remote SPI slave
+    # Synchronous exchange with the remote SPI device
     if args.length:
         s = ''
         for i in range(args.length):
@@ -137,7 +137,7 @@ def main():
 
     while len(s):
         write_buf = bytes(s[:4], encoding='utf8')
-        read_buf = slave.exchange(write_buf, duplex=True).tobytes()
+        read_buf = device.exchange(write_buf, duplex=True).tobytes()
         print("Got " + str(read_buf))
         s = s[4:]
 

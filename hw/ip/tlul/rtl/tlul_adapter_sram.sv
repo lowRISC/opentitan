@@ -8,7 +8,7 @@
  * Tile-Link UL adapter for SRAM-like devices
  *
  * - Intentionally omitted BaseAddr in case of multiple memory maps are used in a SoC,
- *   it means that aliasing can happen if target slave size in TL-UL crossbar is bigger
+ *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
  */
 module tlul_adapter_sram #(

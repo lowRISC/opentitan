@@ -135,7 +135,7 @@ $ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator
 
 ## SPI device test interface
 
-The simulation contains code to monitor the SPI bus and provide a master interface to allow interaction with the `spi_device`.
+The simulation contains code to monitor the SPI bus and provide a host interface to allow interaction with the `spi_device`.
 When starting the simulation you should see a message like
 
 ```console
