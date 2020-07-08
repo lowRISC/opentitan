@@ -5,7 +5,6 @@
 subdir('base')
 subdir('arch')
 subdir('runtime')
-subdir('testing')
 subdir('dif')
 
 # UART library (sw_lib_uart)
@@ -21,6 +20,10 @@ sw_lib_uart = declare_dependency(
     ],
   )
 )
+
+# NOTE: this needs to come *after* the UART library for now, until `test_main.c`
+# no longer depends on `uart.c`.
+subdir('testing')
 
 # Flash controller library (sw_lib_flash_ctrl)
 sw_lib_flash_ctrl = declare_dependency(
