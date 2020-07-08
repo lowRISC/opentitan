@@ -160,7 +160,7 @@ class SimCfg(FlowCfg):
         self.cov_report_deploy = None
         self.results_summary = OrderedDict()
 
-        # If is_master_cfg is set, then each cfg will have its own cov_deploy.
+        # If is_primary_cfg is set, then each cfg will have its own cov_deploy.
         # Maintain an array of those in cov_deploys.
         self.cov_deploys = []
 
@@ -190,19 +190,19 @@ class SimCfg(FlowCfg):
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
                                                       ignored_wildcards,
-                                                      self.is_master_cfg)
+                                                      self.is_primary_cfg)
 
         # Set the title for simulation results.
         self.results_title = self.name.upper() + " Simulation Results"
 
-        # Stuff below only pertains to individual cfg (not master cfg)
+        # Stuff below only pertains to individual cfg (not primary cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
         # TODO: find a better way to support select_cfgs
-        if not self.is_master_cfg and (not self.select_cfgs or
-                                       self.name in self.select_cfgs):
+        if not self.is_primary_cfg and (not self.select_cfgs or
+                                        self.name in self.select_cfgs):
             # If self.tool is None at this point, there was no --tool argument on
             # the command line, and there is no default tool set in the config
-            # file. That's ok if this is a master config (where the
+            # file. That's ok if this is a primary config (where the
             # sub-configurations can choose tools themselves), but not otherwise.
             if self.tool is None:
                 log.error('Config file does not specify a default tool, '
@@ -227,7 +227,7 @@ class SimCfg(FlowCfg):
             self._process_exports()
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-            # tests and regressions, only if not a master cfg obj
+            # tests and regressions, only if not a primary cfg obj
             self._create_objects()
 
         # Post init checks

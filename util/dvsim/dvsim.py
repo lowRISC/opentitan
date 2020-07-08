@@ -244,10 +244,10 @@ def parse_args():
     whatg.add_argument("--select-cfgs",
                        nargs="*",
                        metavar="CFG",
-                       help=('The .hjson file is a master config. Only run '
+                       help=('The .hjson file is a primary config. Only run '
                              'the given configs from it. If this argument is '
                              'not used, dvsim will process all configs listed '
-                             'in a master config.'))
+                             'in a primary config.'))
 
     disg = parser.add_argument_group('Dispatch options')
 

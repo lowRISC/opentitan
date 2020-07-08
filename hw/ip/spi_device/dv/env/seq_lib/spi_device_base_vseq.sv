@@ -105,8 +105,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
   endtask
 
   // NOTE on terminology
-  // from spi_device IP perspective, tx is data sent out over miso (device traffic from the IP),
-  // rx is data received over mosi (host traffic from SPI agent)
+  // from spi_device IP perspective, tx is data sent out over sdo (device traffic from the IP),
+  // rx is data received over sdi (host traffic from SPI agent)
 
   // TODO: use spi_device_pkg spi_mode enum instead
   virtual task spi_device_init();

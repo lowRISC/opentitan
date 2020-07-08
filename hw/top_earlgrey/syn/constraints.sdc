@@ -17,8 +17,8 @@ puts "Applying constraints for top level"
 #####################
 set PORT_SPI_DEVICE_SCK 14
 set PORT_SPI_DEVICE_CSB 13
-set PORT_SPI_DEVICE_MOSI 12
-set PORT_SPI_DEVICE_MISO 11
+set PORT_SPI_DEVICE_SDI 12
+set PORT_SPI_DEVICE_SDO 11
 
 set PORT_UART_RX 10
 set PORT_UART_TX 9
@@ -160,11 +160,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPID_CLK]
 set IN_DEL    6.0
 set OUT_DEL   6.0
 
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_CSB]]     -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_MOSI]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_CSB]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_SDI]]    -clock SPID_CLK
 
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_MISO]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_MISO]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_SDO]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_SDO]]  -clock SPID_CLK
 
 #####################
 # CDC               #

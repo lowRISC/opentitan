@@ -110,9 +110,9 @@ static void log_signals(struct mon_ctx *mon, FILE *mon_file, int tick, int p2d,
   fprintf(mon_file, "%8d SPI: ", tick);
   fprintf(mon_file, "%s  ", vertical_bit(p2d, mon->prev_p2d, P2D_CSB, 0));
   fprintf(mon_file, "%s  ", vertical_bit(p2d, mon->prev_p2d, P2D_SCK, 0));
-  fprintf(mon_file, "%s  ", vertical_bit(p2d, mon->prev_p2d, P2D_MOSI, 0));
+  fprintf(mon_file, "%s  ", vertical_bit(p2d, mon->prev_p2d, P2D_SDI, 0));
   fprintf(mon_file, "%s  ",
-          vertical_bit(d2p, mon->prev_d2p, D2P_MISO, D2P_MISO_EN));
+          vertical_bit(d2p, mon->prev_d2p, D2P_SDO, D2P_SDO_EN));
 }
 
 static void log_packet(struct mon_ctx *mon, FILE *mon_file) {
@@ -130,14 +130,14 @@ static void log_packet(struct mon_ctx *mon, FILE *mon_file) {
 static void capture_bit(struct mon_ctx *mon, FILE *mon_file, int p2d, int d2p) {
   if (((mon->cpol == mon->cpha) && (p2d & P2D_SCK)) ||
       ((mon->cpol != mon->cpha) && !(p2d & P2D_SCK))) {
-    uint32_t new_mobit = (p2d & P2D_MOSI) ? mon->bpos : 0;
-    uint32_t new_sobit = (d2p & D2P_MISO) ? mon->bpos : 0;
+    uint32_t new_mobit = (p2d & P2D_SDI) ? mon->bpos : 0;
+    uint32_t new_sobit = (d2p & D2P_SDO) ? mon->bpos : 0;
     // check for setup time
-    if ((p2d & P2D_MOSI) != (mon->prev_p2d & P2D_MOSI)) {
-      fprintf(mon_file, "Check MOSI tSU ");
+    if ((p2d & P2D_SDI) != (mon->prev_p2d & P2D_SDI)) {
+      fprintf(mon_file, "Check SDI tSU ");
     }
-    if ((d2p & D2P_MISO) != (mon->prev_d2p & D2P_MISO)) {
-      fprintf(mon_file, "Check MISO tSU ");
+    if ((d2p & D2P_SDO) != (mon->prev_d2p & D2P_SDO)) {
+      fprintf(mon_file, "Check SDO tSU ");
     }
     mon->mobuf[mon->poff] |= new_mobit;
     mon->sobuf[mon->poff] |= new_sobit;

@@ -22,9 +22,9 @@ module spi_device #(
   // SPI Interface
   input              cio_sck_i,
   input              cio_csb_i,
-  output logic       cio_miso_o,
-  output logic       cio_miso_en_o,
-  input              cio_mosi_i,
+  output logic       cio_sdo_o,
+  output logic       cio_sdo_en_o,
+  input              cio_sdi_i,
 
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
@@ -46,8 +46,8 @@ module spi_device #(
   localparam int PtrW = SramAw + 1 + SDW;
   localparam int AsFifoDepthW = $clog2(FifoDepth+1);
 
-  logic clk_spi_in;   // clock for latch MOSI
-  logic clk_spi_out;  // clock for driving MISO
+  logic clk_spi_in;   // clock for latch SDI
+  logic clk_spi_out;  // clock for driving SDO
 
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
@@ -310,7 +310,7 @@ module spi_device #(
   //////////////////////////////
   //  clk_spi cannot use glitch-free clock mux as clock switching in glitch-free
   //  requires two clocks to propagate clock selection and enable but SPI clock
-  //  doesn't exist until it transmits data through MOSI
+  //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
 
@@ -353,9 +353,9 @@ module spi_device #(
 
     // SPI signal
     .csb_i         (cio_csb_i),
-    .mosi          (cio_mosi_i),
-    .miso          (cio_miso_o),
-    .miso_oe       (cio_miso_en_o)
+    .sdi           (cio_sdi_i),
+    .sdo           (cio_sdo_o),
+    .sdo_oe        (cio_sdo_en_o)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -571,7 +571,7 @@ module spi_device #(
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioMisoEnOKnown, cio_miso_en_o)
+  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sdo_en_o)
 
   `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
   `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Convert I2C master format to SVG
+# Convert I2C host format to SVG
 
 import logging as log
 from collections import namedtuple
@@ -121,7 +121,7 @@ def parse_i2c_code(line):
         S - Start flag, P - stop flag,
         R - read flag, C - continue read flag, N - NackOk flag
         followed by the data byte
-        Special cases: 
+        Special cases:
         M - indicates multiple bytes instead of data byte
         A - followed by 0 or 1 address/direction or 2 address/data
         Data value in quotes is a tag

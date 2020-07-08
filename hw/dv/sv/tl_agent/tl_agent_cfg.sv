@@ -14,7 +14,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   tl_level_e tl_level = kTLUL;
 
   // Maximum outstanding transaction
-  // 0: Unlimited from the master perspective, might be back-pressured by the slave
+  // 0: Unlimited from the host perspective, might be back-pressured by the device
   // 1: Only single transaction at a time
   // n: Number of maximum oustanding requests
 

@@ -18,9 +18,9 @@ module spidpi
   input  logic rst_ni,
   output logic spi_device_sck_o,
   output logic spi_device_csb_o,
-  output logic spi_device_mosi_o,
-  input  logic spi_device_miso_i,
-  input  logic spi_device_miso_en_i
+  output logic spi_device_sdi_o,
+  input  logic spi_device_sdo_i,
+  input  logic spi_device_sdo_en_i
 
 );
   import "DPI-C" function
@@ -46,12 +46,12 @@ module spidpi
   logic [1:0] d2p;
   logic       unused_dummy;
 
-  assign d2p = { spi_device_miso_i, spi_device_miso_en_i};
+  assign d2p = { spi_device_sdo_i, spi_device_sdo_en_i};
   always_ff @(posedge clk_i) begin
     automatic byte p2d = spidpi_tick(ctx, d2p);
     spi_device_sck_o <= p2d[0];
     spi_device_csb_o <= p2d[1];
-    spi_device_mosi_o <= p2d[2];
+    spi_device_sdi_o <= p2d[2];
     // stop verilator warning
     unused_dummy <= |p2d[7:3];
   end

@@ -51,27 +51,27 @@ class spi_monitor extends dv_base_monitor#(
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
             forever begin
-              bit [7:0] host_byte;    // from mosi
-              bit [7:0] device_byte;  // from miso
+              bit [7:0] host_byte;    // from sdi
+              bit [7:0] device_byte;  // from sdo
               int       which_bit;
               for (int i = 0; i < 8; i++) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);
-                // check mosi/miso not x or z
+                // check sdi/sdo not x or z
                 if (cfg.en_monitor_checks) begin
-                  `DV_CHECK_CASE_NE(cfg.vif.mosi, 1'bx)
-                  `DV_CHECK_CASE_NE(cfg.vif.mosi, 1'bz)
-                  `DV_CHECK_CASE_NE(cfg.vif.miso, 1'bx)
-                  `DV_CHECK_CASE_NE(cfg.vif.miso, 1'bz)
+                  `DV_CHECK_CASE_NE(cfg.vif.sdi, 1'bx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sdi, 1'bz)
+                  `DV_CHECK_CASE_NE(cfg.vif.sdo, 1'bx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sdo, 1'bz)
                 end
-                // sample mosi
+                // sample sdi
                 which_bit = cfg.host_bit_dir ? i : 7 - i;
-                host_byte[which_bit] = cfg.vif.mosi;
+                host_byte[which_bit] = cfg.vif.sdi;
                 cfg.vif.host_bit = which_bit;
                 cfg.vif.host_byte = host_byte;
-                // sample miso
+                // sample sdo
                 which_bit = cfg.device_bit_dir ? i : 7 - i;
-                device_byte[which_bit] = cfg.vif.miso;
+                device_byte[which_bit] = cfg.vif.sdo;
                 cfg.vif.device_bit = which_bit;
                 cfg.vif.device_byte = device_byte;
               end

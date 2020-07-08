@@ -7,8 +7,8 @@ interface spi_if (input rst_n);
   // standard spi interface pins
   logic sck;
   logic csb;
-  logic miso;
-  logic mosi;
+  logic sdo;
+  logic sdi;
 
   // debug signals
   logic [7:0] host_byte;

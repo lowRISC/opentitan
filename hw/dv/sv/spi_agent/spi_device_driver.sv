@@ -10,7 +10,7 @@ class spi_device_driver extends spi_driver;
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1'b1;
-      cfg.vif.miso <= 1'b0;
+      cfg.vif.sdo <= 1'b0;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
     end

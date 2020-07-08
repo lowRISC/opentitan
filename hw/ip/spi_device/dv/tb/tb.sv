@@ -20,9 +20,9 @@ module tb;
 
   wire sck;
   wire csb;
-  wire miso_o;
-  wire miso_en;
-  wire mosi_i;
+  wire sdo_o;
+  wire sdo_en;
+  wire sdi_i;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -48,9 +48,9 @@ module tb;
 
     .cio_sck_i      (sck       ),
     .cio_csb_i      (csb       ),
-    .cio_miso_o     (miso_o    ),
-    .cio_miso_en_o  (miso_en   ),
-    .cio_mosi_i     (mosi_i    ),
+    .cio_sdo_o      (sdo_o    ),
+    .cio_sdo_en_o   (sdo_en   ),
+    .cio_sdi_i      (sdi_i    ),
 
     .intr_rxf_o     (intr_rxf  ),
     .intr_rxlvl_o   (intr_rxlvl),
@@ -63,8 +63,8 @@ module tb;
 
   assign sck          = spi_if.sck;
   assign csb          = spi_if.csb;
-  assign mosi_i       = spi_if.mosi;
-  assign spi_if.miso  = miso_en ? miso_o : 1'bz;
+  assign sdi_i        = spi_if.sdi;
+  assign spi_if.sdo   = sdo_en ? sdo_o : 1'bz;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;

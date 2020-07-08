@@ -15,8 +15,8 @@ module top_earlgrey_verilator (
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
   logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d;
-  logic cio_spi_device_mosi_p2d;
-  logic cio_spi_device_miso_d2p, cio_spi_device_miso_en_d2p;
+  logic cio_spi_device_sdi_p2d;
+  logic cio_spi_device_sdo_d2p, cio_spi_device_sdo_en_d2p;
 
   logic cio_usbdev_sense_p2d;
   logic cio_usbdev_se0_d2p, cio_usbdev_se0_en_d2p;
@@ -37,7 +37,7 @@ module top_earlgrey_verilator (
 
   assign dio_in = {cio_spi_device_sck_p2d,
                    cio_spi_device_csb_p2d,
-                   cio_spi_device_mosi_p2d,
+                   cio_spi_device_sdi_p2d,
                    1'b0,
                    cio_uart_rx_p2d,
                    1'b0,
@@ -60,7 +60,7 @@ module top_earlgrey_verilator (
   assign cio_usbdev_dp_pullup_d2p = dio_out[6];
   assign cio_usbdev_se0_d2p = dio_out[7];
   assign cio_uart_tx_d2p = dio_out[9];
-  assign cio_spi_device_miso_d2p = dio_out[11];
+  assign cio_spi_device_sdo_d2p = dio_out[11];
 
   assign cio_usbdev_dn_en_d2p = dio_oe[0];
   assign cio_usbdev_dp_en_d2p = dio_oe[1];
@@ -71,7 +71,7 @@ module top_earlgrey_verilator (
   assign cio_usbdev_dp_pullup_en_d2p = dio_oe[6];
   assign cio_usbdev_se0_en_d2p = dio_oe[7];
   assign cio_uart_tx_en_d2p = dio_oe[9];
-  assign cio_spi_device_miso_en_d2p = dio_oe[11];
+  assign cio_spi_device_sdo_en_d2p = dio_oe[11];
 
   // Top-level design
   top_earlgrey top_earlgrey (
@@ -167,9 +167,9 @@ module top_earlgrey_verilator (
     .rst_ni (rst_ni),
     .spi_device_sck_o     (cio_spi_device_sck_p2d),
     .spi_device_csb_o     (cio_spi_device_csb_p2d),
-    .spi_device_mosi_o    (cio_spi_device_mosi_p2d),
-    .spi_device_miso_i    (cio_spi_device_miso_d2p),
-    .spi_device_miso_en_i (cio_spi_device_miso_en_d2p)
+    .spi_device_sdi_o     (cio_spi_device_sdi_p2d),
+    .spi_device_sdo_i     (cio_spi_device_sdo_d2p),
+    .spi_device_sdo_en_i  (cio_spi_device_sdo_en_d2p)
   );
 
   // USB DPI
