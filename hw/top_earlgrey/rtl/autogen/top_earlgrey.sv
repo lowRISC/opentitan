@@ -137,6 +137,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_clkmgr_aon_d_d2h;
   tl_h2d_t  tl_rbox_aon_d_h2d;
   tl_d2h_t  tl_rbox_aon_d_d2h;
+  tl_h2d_t  tl_pwm_aon_d_h2d;
+  tl_d2h_t  tl_pwm_aon_d_d2h;
   tl_h2d_t  tl_timer_aon_d_h2d;
   tl_d2h_t  tl_timer_aon_d_d2h;
   tl_h2d_t  tl_nmi_gen_d_h2d;
@@ -260,6 +262,9 @@ module top_earlgrey #(
   logic        cio_rbox_aon_key2_out_en_d2p;
   logic        cio_rbox_aon_pwrb_out_d2p;
   logic        cio_rbox_aon_pwrb_out_en_d2p;
+  // pwm_aon
+  logic [8:0]  cio_pwm_aon_pwm_d2p;
+  logic [8:0]  cio_pwm_aon_pwm_en_d2p;
   // timer_aon
   // nmi_gen
   // usbdev_aon
@@ -1347,6 +1352,18 @@ module top_earlgrey #(
       .sw_rst_ni (rstmgr_aon_resets.rst_por_io_n)
   );
 
+  pwm u_pwm_aon (
+      .tl_i (tl_pwm_aon_d_h2d),
+      .tl_o (tl_pwm_aon_d_d2h),
+
+      // Output
+      .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
+      .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
+
+      .clk_i (clk_io_i),
+      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
+  );
+
   rv_timer u_timer_aon (
       .tl_i (tl_timer_aon_d_h2d),
       .tl_o (tl_timer_aon_d_d2h),
@@ -1747,6 +1764,8 @@ module top_earlgrey #(
     .tl_clkmgr_aon_i  (tl_clkmgr_aon_d_d2h),
     .tl_rbox_aon_o    (tl_rbox_aon_d_h2d),
     .tl_rbox_aon_i    (tl_rbox_aon_d_d2h),
+    .tl_pwm_aon_o     (tl_pwm_aon_d_h2d),
+    .tl_pwm_aon_i     (tl_pwm_aon_d_d2h),
     .tl_pinmux_aon_o  (tl_pinmux_aon_d_h2d),
     .tl_pinmux_aon_i  (tl_pinmux_aon_d_d2h),
     .tl_padctrl_aon_o (tl_padctrl_aon_d_h2d),

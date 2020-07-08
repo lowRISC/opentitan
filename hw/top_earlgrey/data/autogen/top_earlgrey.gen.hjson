@@ -2829,6 +2829,41 @@
       scan: "false"
     }
     {
+      name: pwm_aon
+      type: pwm
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por_io
+      }
+      base_addr: 0x40450000
+      clock_connections:
+      {
+        clk_i: clk_io_i
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list:
+      [
+        {
+          name: pwm
+          width: 9
+          type: output
+        }
+      ]
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      wakeup_list: []
+      scan: "false"
+    }
+    {
       name: timer_aon
       type: rv_timer
       clock_srcs:
@@ -4183,6 +4218,10 @@
               size_byte: 0x1000
             }
             {
+              base_addr: 0x40450000
+              size_byte: 0x1000
+            }
+            {
               base_addr: 0x40460000
               size_byte: 0x1000
             }
@@ -4706,6 +4745,7 @@
           padctrl_aon
           usbdev_aon
           rbox_aon
+          pwm_aon
           ram_ret_aon
           timer_aon
         ]
@@ -4784,6 +4824,23 @@
           [
             {
               base_addr: 0x40430000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: pwm_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: pwm
+          addr_range:
+          [
+            {
+              base_addr: 0x40450000
               size_byte: 0x1000
             }
           ]

@@ -33,6 +33,7 @@
       padctrl_aon
       usbdev_aon
       rbox_aon
+      pwm_aon
       ram_ret_aon
       timer_aon
     ]
@@ -111,6 +112,23 @@
       [
         {
           base_addr: 0x40430000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: pwm_aon
+      type: device
+      clock: clk_aon_i
+      reset: rst_aon_ni
+      pipeline: "false"
+      inst_type: pwm
+      addr_range:
+      [
+        {
+          base_addr: 0x40450000
           size_byte: 0x1000
         }
       ]

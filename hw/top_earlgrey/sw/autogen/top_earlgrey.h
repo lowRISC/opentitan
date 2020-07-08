@@ -305,6 +305,14 @@
 #define TOP_EARLGREY_RBOX_AON_BASE_ADDR 0x40430000u
 
 /**
+ * Base address for pwm_aon peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PWM_AON_BASE_ADDR 0x40450000u
+
+/**
  * Base address for timer_aon peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

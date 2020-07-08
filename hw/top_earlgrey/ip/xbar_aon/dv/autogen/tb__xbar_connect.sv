@@ -19,6 +19,7 @@ xbar_aon dut(
 `CONNECT_TL_DEVICE_IF(rstmgr_aon)
 `CONNECT_TL_DEVICE_IF(clkmgr_aon)
 `CONNECT_TL_DEVICE_IF(rbox_aon)
+`CONNECT_TL_DEVICE_IF(pwm_aon)
 `CONNECT_TL_DEVICE_IF(pinmux_aon)
 `CONNECT_TL_DEVICE_IF(padctrl_aon)
 `CONNECT_TL_DEVICE_IF(timer_aon)
