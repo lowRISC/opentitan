@@ -372,7 +372,10 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 | TIMING1.T_R     | 0                | 134        | 402            | Atypicallly high line capacitance             |
 | SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_i2c.h" >}}
+
 ## Register Table 
 
 {{<registers "hw/ip/i2c/data/i2c.hjson" >}}
-

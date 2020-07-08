@@ -240,6 +240,10 @@ Clearing the interrupt can be done by writing 1 into the Interrupt Status regist
 The RV_TIMER module also follows RISC-V Previliged spec that requires the interrupt to be cleared by updating `mtimecmp` memory-mapped CSRs.
 In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_0">}} can clear the interrupt source.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_rv_timer.h" >}}
+
 ## Register Table
 
 {{< registers "hw/ip/rv_timer/data/rv_timer.hjson" >}}
