@@ -88,55 +88,55 @@
     { struct: "pwr_otp_init"
       type:   "req_rsp"
       name:   "pwr_otp_init"
-      act:    "receiver"
+      act:    "rsp"
       package: "otp_ctrl_pkg"
     }
     // Status output to power manager
     { struct: "otp_pwr_state"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "otp_pwr_state"
-      act:    "sender"
+      act:    "req"
       package: "otp_ctrl_pkg"
     }
     // LC transition command
     { struct: "lc_otp_program"
       type:   "req_rsp"
       name:   "lc_otp_program"
-      act:    "receiver"
+      act:    "rsp"
       package: "otp_ctrl_pkg"
     }
     // Broadcast to LC
     { struct: "otp_lc_data"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "otp_lc_data"
-      act:    "sender"
+      act:    "req"
       package: "otp_ctrl_pkg"
     }
     // Broadcast from LC
     { struct: "lc_tx_t"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "lc_provision_en"
-      act:    "receiver"
+      act:    "rcv"
       package: "otp_ctrl_pkg" // TODO: move to LC package
     }
     { struct: "lc_tx_t"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "lc_test_en"
-      act:    "receiver"
+      act:    "rcv"
       package: "otp_ctrl_pkg" // TODO: move to LC package
     }
     //Broadcast to Key Manager
     { struct: "keymgr_key"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "otp_keymgr_key"
-      act:    "sender"
+      act:    "req"
       package: "otp_ctrl_pkg" // TODO: move this to keymgr package
     }
     //Broadcast to Flash Controller
     { struct: "flash_key"
-      type:   "broadcast"  // no `_req/rsp`
+      type:   "uni"  // no `_req/rsp`
       name:   "otp_flash_key"
-      act:    "sender"
+      act:    "req"
       package: "otp_ctrl_pkg"
     }
   ] // inter_signal_list
