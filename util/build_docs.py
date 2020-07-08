@@ -293,6 +293,22 @@ def generate_dif_docs():
         logging.info("Generated DIF Listing for {}".format(dif_header))
 
 
+def generate_otbn_isa():
+    '''Generate the OTBN ISA documentation fragment
+
+    The result is in Markdown format and is written to
+    outdir-generated/otbn-isa.md
+
+    '''
+    otbn_dir = SRCTREE_TOP / 'hw/ip/otbn'
+    script = otbn_dir / 'util/yaml_to_doc.py'
+    yaml_file = otbn_dir / 'data/insns.yml'
+
+    out_path = config['outdir-generated'].joinpath('otbn-isa.md')
+    with open(str(out_path), 'w') as handle:
+        subprocess.run([str(script), str(yaml_file)], stdout=handle, check=True)
+
+
 def hugo_match_version(hugo_bin_path, version):
     logging.info("Hugo binary path: %s", hugo_bin_path)
     args = [str(hugo_bin_path), "version"]
@@ -400,6 +416,7 @@ def main():
     generate_apt_reqs()
     generate_tool_versions()
     generate_dif_docs()
+    generate_otbn_isa()
 
     hugo_localinstall_dir = SRCTREE_TOP / 'build' / 'docs-hugo'
     os.environ["PATH"] += os.pathsep + str(hugo_localinstall_dir)
