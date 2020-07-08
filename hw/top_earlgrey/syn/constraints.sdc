@@ -90,7 +90,7 @@ set IO_CLK_PIN clk_io_i
 set IO_TCK 40.0
 set_ideal_network ${IO_CLK_PIN}
 
-create_clock -name IO_CLK -period ${IO_TCK} [get_ports ${IO_CLK_PIN}] 
+create_clock -name IO_CLK -period ${IO_TCK} [get_ports ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # TODO: generated clock
@@ -186,8 +186,8 @@ set_false_path -from dio_in_i[$PORT_UART_RX] -to dio_out_o[$PORT_UART_TX]
 #####################
 
 # attach load and drivers to IOs to get a more realistic estimate
-set_driving_cell  -no_design_rule -lib_cell ${driving_cell} -pin X [all_inputs]
-set_load [load_of ${load_lib}/${load_cell}/A] [all_outputs]
+set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin X [all_inputs]
+set_load [load_of ${LOAD_LIB}/${LOAD_CELL}/A] [all_outputs]
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report
