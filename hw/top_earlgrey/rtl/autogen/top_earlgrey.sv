@@ -602,23 +602,23 @@ module top_earlgrey #(
   // sram device
   logic        ram_main_req;
   logic        ram_main_we;
-  logic [13:0] ram_main_addr;
+  logic [14:0] ram_main_addr;
   logic [31:0] ram_main_wdata;
   logic [31:0] ram_main_wmask;
   logic [31:0] ram_main_rdata;
   logic        ram_main_rvalid;
   logic [1:0]  ram_main_rerror;
   logic [127:0] ram_main_key;
-  logic [49:0] ram_main_data_nonce;
-  logic [13:0] ram_main_addr_nonce;
+  logic [48:0] ram_main_data_nonce;
+  logic [14:0] ram_main_addr_nonce;
 
   // Note that this connection will change once we move to a fully comportable SRAM IP
-  assign ram_main_data_nonce = otp_ctrl_otp_ram_main_key.nonce[50-1:0];
-  assign ram_main_addr_nonce = otp_ctrl_otp_ram_main_key.nonce[50+14-1:50];
+  assign ram_main_data_nonce = otp_ctrl_otp_ram_main_key.nonce[49-1:0];
+  assign ram_main_addr_nonce = otp_ctrl_otp_ram_main_key.nonce[49+15-1:49];
   assign ram_main_key = otp_ctrl_otp_ram_main_key.key;
 
   tlul_adapter_sram #(
-    .SramAw(14),
+    .SramAw(15),
     .SramDw(32),
     .Outstanding(2)
   ) u_tl_adapter_ram_main (
@@ -640,7 +640,7 @@ module top_earlgrey #(
 
   prim_ram_1p_scr #(
     .Width(32),
-    .Depth(16384),
+    .Depth(32768),
     .DataBitsPerMask(8),
     .CfgW(8)
   ) u_ram1p_ram_main (
