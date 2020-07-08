@@ -16,23 +16,23 @@ filesets:
       - rtl/pwm.sv
     file_type: systemVerilogSource
 
-  files_verilator_waiver:
-    depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/pwm.vlt
-    file_type: vlt
+  #files_verilator_waiver:
+  #  depend:
+  #    # common waivers
+  #    - lowrisc:lint:common
+  #    - lowrisc:lint:comportable
+  #  files:
+  #    - lint/pwm.vlt
+  #  file_type: vlt
 
-  files_ascentlint_waiver:
-    depend:
-      # common waivers
-      - lowrisc:lint:common
-      - lowrisc:lint:comportable
-    files:
-      - lint/pwm.waiver
-    file_type: waiver
+  #files_ascentlint_waiver:
+  #  depend:
+  #    # common waivers
+  #    - lowrisc:lint:common
+  #    - lowrisc:lint:comportable
+  #  files:
+  #    - lint/pwm.waiver
+  #  file_type: waiver
 
 
 parameters:
@@ -44,8 +44,8 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      # - tool_verilator  ? (files_verilator_waiver)
+      # - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
     toplevel: pwm
 
