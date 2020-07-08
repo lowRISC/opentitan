@@ -62,7 +62,7 @@ set_app_var hdlin_enable_hier_map true
 # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
 # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
 # PRIM_DEFAULT_IMPL is set inside the library setup script
-set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL} "
+set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 
 # additional parameters
 set PARAMS ""
