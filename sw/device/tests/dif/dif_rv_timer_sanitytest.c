@@ -5,17 +5,14 @@
 #include "sw/device/lib/dif/dif_rv_timer.h"
 
 #include "sw/device/lib/base/log.h"
-#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
 
 // Flag for checking whether the interrupt handler was called. When the handler
@@ -32,58 +29,6 @@ static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
 static const uint64_t kDeadline = 0x10000;        // 10 ms.
-
-const test_config_t kTestConfig = {};
-
-bool test_main(void) {
-  pinmux_init();
-  // Enable GPIO: 0-7 and 16 is input, 8-15 is output
-  dif_gpio_config_t gpio_config = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  CHECK(dif_gpio_init(&gpio_config, &gpio) == kDifGpioOk);
-  CHECK(dif_gpio_output_mode_all_set(&gpio, 0xFF00) == kDifGpioOk);
-
-  irq_global_ctrl(true);
-  irq_timer_ctrl(true);
-
-  mmio_region_t timer_reg =
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
-  CHECK(dif_rv_timer_init(
-            timer_reg,
-            (dif_rv_timer_config_t){.hart_count = 1, .comparator_count = 1},
-            &timer) == kDifRvTimerOk);
-
-  CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
-                                kDifRvTimerEnabled) == kDifRvTimerOk);
-
-  dif_rv_timer_tick_params_t tick_params;
-  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqHz, kTickFreqHz,
-                                             &tick_params) == kDifRvTimerOk);
-  CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
-        kDifRvTimerOk);
-
-  uint64_t current_time;
-  CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
-        kDifRvTimerOk);
-  LOG_INFO("Current time: %d; timer theshold: %d", (uint32_t)current_time,
-           (uint32_t)(current_time + kDeadline));
-  CHECK(dif_rv_timer_arm(&timer, kHart, kComparator,
-                         current_time + kDeadline) == kDifRvTimerOk);
-
-  irq_fired = false;
-  CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerEnabled) ==
-        kDifRvTimerOk);
-
-  CHECK(dif_gpio_all_write(&gpio, 0xFF00) == kDifGpioOk);  // all LEDs on
-
-  while (!irq_fired) {
-    wait_for_interrupt();
-  }
-
-  CHECK(dif_gpio_all_write(&gpio, 0xAA00) == kDifGpioOk);  // Test Completed
-
-  return true;
-}
 
 static void test_handler(void) {
   CHECK(!irq_fired, "Entered IRQ handler, but `irq_fired` was not false!");
@@ -105,4 +50,46 @@ void handler_irq_timer(void) {
   LOG_INFO("Entering handler_irq_timer()");
   test_handler();
   LOG_INFO("Exiting handler_irq_timer()");
+}
+
+const test_config_t kTestConfig = {};
+
+bool test_main(void) {
+  irq_global_ctrl(true);
+  irq_timer_ctrl(true);
+
+  mmio_region_t timer_reg =
+      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
+  CHECK(dif_rv_timer_init(
+            timer_reg,
+            (dif_rv_timer_config_t){.hart_count = 1, .comparator_count = 1},
+            &timer) == kDifRvTimerOk);
+
+  dif_rv_timer_tick_params_t tick_params;
+  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqHz, kTickFreqHz,
+                                             &tick_params) ==
+        kDifRvTimerApproximateTickParamsOk);
+  CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
+        kDifRvTimerOk);
+  CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
+                                kDifRvTimerEnabled) == kDifRvTimerOk);
+
+  uint64_t current_time;
+  CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
+        kDifRvTimerOk);
+  LOG_INFO("Current time: %d; timer theshold: %d", (uint32_t)current_time,
+           (uint32_t)(current_time + kDeadline));
+  CHECK(dif_rv_timer_arm(&timer, kHart, kComparator,
+                         current_time + kDeadline) == kDifRvTimerOk);
+
+  irq_fired = false;
+  CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerEnabled) ==
+        kDifRvTimerOk);
+
+  while (!irq_fired) {
+    LOG_INFO("Waiting...");
+    wait_for_interrupt();
+  }
+
+  return true;
 }
