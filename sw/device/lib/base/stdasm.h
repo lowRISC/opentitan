@@ -7,7 +7,9 @@
 
 /**
  * @file
- * @brief This header simply provides the `asm` keyword, in analogy with the ISO
+ * @brief The `asm` keyword.
+ *
+ * This header simply provides the `asm` keyword, in analogy with the ISO
  * C headers `stdbool.h`, `stdnoreturn.h`, and so on.
  */
 

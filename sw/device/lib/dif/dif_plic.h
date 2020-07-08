@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -21,11 +26,6 @@ extern const uint32_t kDifPlicMinPriority;
 
 /** The highest interrupt priority. */
 extern const uint32_t kDifPlicMaxPriority;
-
-/**
- * @file
- * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
- */
 
 /**
  * PLIC interrupt source identifier.

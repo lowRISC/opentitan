@@ -6,7 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
 
 /**
- * Generic preprocessor macros that don't really fit anywhere else.
+ * @file
+ * @brief Generic preprocessor macros that don't really fit anywhere else.
  */
 
 /**

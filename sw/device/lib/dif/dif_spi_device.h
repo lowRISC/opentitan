@@ -5,6 +5,12 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_DEVICE_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_DEVICE_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/spi_device/doc/">SPI Device</a> Device Interface
+ * Functions
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,12 +21,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * @file
- * @brief <a href="/hw/ip/spi_device/doc/">SPI Device</a> Device Interface
- * Functions
- */
 
 /**
  * Represents a signal edge type.

@@ -12,7 +12,8 @@
 #include "sw/device/lib/base/macros.h"
 
 /**
- * Generic logging APIs
+ * @file
+ * @brief Generic logging APIs
  *
  * The logging APIs below take a format string with a variable number of
  * arguments for the type specifiers. The APIs are designed to provide a way
