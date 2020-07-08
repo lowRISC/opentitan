@@ -312,6 +312,13 @@
       reset_connections: { rst_ni: "por_io", sw_rst_ni: "por_io"}
       base_addr: "0x40430000"
     }
+    { name: "pwm_aon"
+      type: "pwm"
+      clock_srcs: {clk_i: "io"}
+      clock_group: "powerup"
+      reset_connections: {rst_ni: "por_io"}
+      base_addr: "0x40450000"
+    }
     { name: "timer_aon",
       type: "rv_timer",
       clock_srcs: {clk_i: "aon"},

@@ -45,6 +45,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_aon
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pattgen
+      - lowrisc:ip:pwm
       - lowrisc:top_earlgrey:pwrmgr_only_reg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:pwrmgr_component

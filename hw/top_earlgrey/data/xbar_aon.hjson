@@ -43,12 +43,12 @@
     //  reset:    "rst_aon_ni",
     //  pipeline: "false"
     //}
-    //{ name:     "pwm_aon"
-    //  type:     "device"
-    //  clock:    "clk_aon_i",
-    //  reset:    "rst_aon_ni",
-    //  pipeline: "false"
-    //}
+    { name:     "pwm_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
     { name:     "pinmux_aon"
       type:     "device"
       inst_type: "pinmux",
@@ -94,7 +94,7 @@
   connections: {
     main: [ "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
             "padctrl_aon", "usbdev_aon",
-            "rbox_aon", "ram_ret_aon",
+            "rbox_aon", "pwm_aon", "ram_ret_aon",
             "timer_aon"
             // "dcd_aon",
     ]
