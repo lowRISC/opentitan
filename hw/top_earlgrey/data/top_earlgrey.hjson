@@ -210,6 +210,14 @@
       reset_connections: {rst_ni: "lc"},
       base_addr: "0x40130000",
     },
+    {
+      name: "lifecycle"
+      type: "lifecycle"
+      clock_srcs: {clk_i: "io"}
+      clock_group: "secure"
+      reset_connections: {rst_ni: "lc"}
+      base_addr: "0x400E0000"
+    }
     { name: "aes",
       type: "aes",
       clock_srcs: {clk_i: "main"},
@@ -417,16 +425,25 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'flash_ctrl.flash': ['eflash.flash_ctrl']
-      'otp_ctrl.otp_flash_key': ['flash_ctrl.otp']
-      'otp_ctrl.otp_ram_main_key': []
-      'otp_ctrl.otp_ram_ret_aon_key': []
-      'otp_ctrl.otp_otbn_ram_key': ['otbn.otp_otbn_ram_key']
+      'flash_ctrl.flash': ['eflash.flash_ctrl'],
+      'otp_ctrl.otp_flash_key': ['flash_ctrl.otp'],
+      // 'otp_ctrl.otp_ram_main_key': [],
+      // 'otp_ctrl.otp_ram_ret_aon_key': [],
+      'otp_ctrl.otp_otbn_ram_key': ['otbn.otp_otbn_ram_key'],
+      'otp_ctrl.lc_otp_program': ['lifecycle.otp_program'],
+      'otp_ctrl.otp_lc_data': ['lifecycle.otp_data'],
+      // 'lifecycle.dft': [],
+      // 'lifecycle.hw_debug': [],
+      'lifecycle.nvm_debug': ['otp_ctrl.lc_test_en' ], // TODO: connect flash
+      // 'lifecycle.cpu': [],
+      'lifecycle.provision': ['otp_ctrl.lc_provision_en'],
+      // 'lifecycle.keymgr': [], // TODO: change keymgr lc_data format
       'pwrmgr_aon.pwr_otp'  : ['otp_ctrl.pwr_otp_init'],
       'pwrmgr_aon.pwr_rst'  : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'  : ['clkmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_lc'   : ['lifecycle.pwrmgr'],
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
-      'keymgr.kmac_key': ['kmac.keymgr_key']
+      'keymgr.kmac_key': ['kmac.keymgr_key'],
       'keymgr.kmac_data': ['kmac.keymgr_data']
     }
 
