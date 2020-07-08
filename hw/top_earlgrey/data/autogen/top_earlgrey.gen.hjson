@@ -3766,7 +3766,7 @@
       }
       type: ram_1p
       base_addr: 0x10000000
-      size: 0x10000
+      size: 0x20000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -3805,7 +3805,7 @@
       type: eflash
       base_addr: 0x20000000
       swaccess: ro
-      size: 0x80000
+      size: 0x100000
       inter_signal_list:
       [
         {
@@ -4065,7 +4065,7 @@
           [
             {
               base_addr: 0x10000000
-              size_byte: 0x10000
+              size_byte: 0x20000
             }
           ]
           xbar: false
@@ -4082,7 +4082,7 @@
           [
             {
               base_addr: 0x20000000
-              size_byte: 0x80000
+              size_byte: 0x100000
             }
           ]
           xbar: false
