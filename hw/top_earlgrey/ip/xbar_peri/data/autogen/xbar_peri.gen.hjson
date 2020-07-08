@@ -39,6 +39,7 @@
       pattgen
       sensor_ctrl
       otp_ctrl
+      lifecycle
     ]
   }
   nodes:
@@ -51,6 +52,23 @@
       xbar: true
       pipeline: "false"
       inst_type: ""
+      pipeline_byp: "true"
+    }
+    {
+      name: lifecycle
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: lifecycle
+      addr_range:
+      [
+        {
+          base_addr: 0x40140000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
       pipeline_byp: "true"
     }
     {

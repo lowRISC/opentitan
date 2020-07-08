@@ -6,6 +6,7 @@
 
 package tl_peri_pkg;
 
+  localparam logic [31:0] ADDR_SPACE_LIFECYCLE   = 32'h 40140000;
   localparam logic [31:0] ADDR_SPACE_UART        = 32'h 40000000;
   localparam logic [31:0] ADDR_SPACE_UART1       = 32'h 40010000;
   localparam logic [31:0] ADDR_SPACE_UART2       = 32'h 40020000;
@@ -20,6 +21,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL = 32'h 40110000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL    = 32'h 40130000;
 
+  localparam logic [31:0] ADDR_MASK_LIFECYCLE   = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_UART        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_UART1       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_UART2       = 32'h 00000fff;
@@ -35,22 +37,23 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL    = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 13;
+  localparam int N_DEVICE = 14;
 
   typedef enum int {
-    TlUart = 0,
-    TlUart1 = 1,
-    TlUart2 = 2,
-    TlUart3 = 3,
-    TlGpio = 4,
-    TlSpiDevice = 5,
-    TlRvTimer = 6,
-    TlI2C0 = 7,
-    TlI2C1 = 8,
-    TlI2C2 = 9,
-    TlPattgen = 10,
-    TlSensorCtrl = 11,
-    TlOtpCtrl = 12
+    TlLifecycle = 0,
+    TlUart = 1,
+    TlUart1 = 2,
+    TlUart2 = 3,
+    TlUart3 = 4,
+    TlGpio = 5,
+    TlSpiDevice = 6,
+    TlRvTimer = 7,
+    TlI2C0 = 8,
+    TlI2C1 = 9,
+    TlI2C2 = 10,
+    TlPattgen = 11,
+    TlSensorCtrl = 12,
+    TlOtpCtrl = 13
   } tl_device_e;
 
   typedef enum int {

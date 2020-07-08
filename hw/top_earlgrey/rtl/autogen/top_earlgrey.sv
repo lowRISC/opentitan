@@ -113,6 +113,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_sensor_ctrl_d_d2h;
   tl_h2d_t  tl_otp_ctrl_d_h2d;
   tl_d2h_t  tl_otp_ctrl_d_d2h;
+  tl_h2d_t  tl_lifecycle_d_h2d;
+  tl_d2h_t  tl_lifecycle_d_d2h;
   tl_h2d_t  tl_aes_d_h2d;
   tl_d2h_t  tl_aes_d_d2h;
   tl_h2d_t  tl_hmac_d_h2d;
@@ -224,6 +226,7 @@ module top_earlgrey #(
   logic        cio_i2c2_scl_en_d2p;
   // sensor_ctrl
   // otp_ctrl
+  // lifecycle
   // aes
   // hmac
   // kmac
@@ -441,12 +444,21 @@ module top_earlgrey #(
   otp_ctrl_pkg::ram_main_key_t       otp_ctrl_otp_ram_main_key;
   otp_ctrl_pkg::ram_ret_aon_key_t       otp_ctrl_otp_ram_ret_aon_key;
   otbn_pkg::otbn_ram_key_t       otp_ctrl_otp_otbn_ram_key;
+  otp_ctrl_pkg::lc_otp_program_req_t       otp_ctrl_lc_otp_program_req;
+  otp_ctrl_pkg::lc_otp_program_rsp_t       otp_ctrl_lc_otp_program_rsp;
+  otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
+  lifecycle_pkg::lc_tx_t       lifecycle_nvm_debug;
+  lifecycle_pkg::lc_tx_t       lifecycle_provision;
+  pinmux_pkg::lc_strap_req_t       lifecycle_strap_sample_req;
+  pinmux_pkg::lc_strap_rsp_t       lifecycle_strap_sample_rsp;
   pwrmgr_pkg::pwr_otp_req_t       pwrmgr_aon_pwr_otp_req;
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_aon_pwr_clk_rsp;
+  pwrmgr_pkg::pwr_lc_req_t       pwrmgr_aon_pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
@@ -1063,16 +1075,39 @@ module top_earlgrey #(
       .pwr_otp_init_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_init_o(pwrmgr_aon_pwr_otp_rsp),
       .otp_pwr_state_o(),
-      .lc_otp_program_i(otp_ctrl_pkg::LC_OTP_PROGRAM_REQ_DEFAULT),
-      .lc_otp_program_o(),
-      .otp_lc_data_o(),
-      .lc_provision_en_i(),
-      .lc_test_en_i(),
+      .lc_otp_program_i(otp_ctrl_lc_otp_program_req),
+      .lc_otp_program_o(otp_ctrl_lc_otp_program_rsp),
+      .otp_lc_data_o(otp_ctrl_otp_lc_data),
+      .lc_provision_en_i(lifecycle_provision),
+      .lc_test_en_i(lifecycle_nvm_debug),
       .otp_keymgr_key_o(),
       .otp_flash_key_o(otp_ctrl_otp_flash_key),
       .otp_ram_main_key_o(otp_ctrl_otp_ram_main_key),
       .otp_ram_ret_aon_key_o(otp_ctrl_otp_ram_ret_aon_key),
       .otp_otbn_ram_key_o(otp_ctrl_otp_otbn_ram_key),
+
+      .clk_i (clkmgr_aon_clocks.clk_io_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n)
+  );
+
+  lifecycle u_lifecycle (
+      .tl_i (tl_lifecycle_d_h2d),
+      .tl_o (tl_lifecycle_d_d2h),
+
+      // Inter-module signals
+      .pwrmgr_i(pwrmgr_aon_pwr_lc_req),
+      .pwrmgr_o(pwrmgr_aon_pwr_lc_rsp),
+      .otp_program_o(otp_ctrl_lc_otp_program_req),
+      .otp_program_i(otp_ctrl_lc_otp_program_rsp),
+      .otp_data_i(otp_ctrl_otp_lc_data),
+      .dft_o(),
+      .hw_debug_o(),
+      .nvm_debug_o(lifecycle_nvm_debug),
+      .cpu_o(),
+      .provision_o(lifecycle_provision),
+      .keymgr_o(),
+      .strap_sample_o(lifecycle_strap_sample_req),
+      .strap_sample_i(lifecycle_strap_sample_rsp),
 
       .clk_i (clkmgr_aon_clocks.clk_io_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_n)
@@ -1144,8 +1179,8 @@ module top_earlgrey #(
       .tl_o (tl_pinmux_aon_d_d2h),
 
       // Inter-module signals
-      .lc_pinmux_strap_i(pinmux_pkg::LC_PINMUX_STRAP_REQ_DEFAULT),
-      .lc_pinmux_strap_o(),
+      .lc_pinmux_strap_i(lifecycle_strap_sample_req),
+      .lc_pinmux_strap_o(lifecycle_strap_sample_rsp),
       .sleep_en_i('0),
       .aon_wkup_req_o(pwrmgr_aon_wakeups),
 
@@ -1222,8 +1257,8 @@ module top_earlgrey #(
       .pwr_clk_i(pwrmgr_aon_pwr_clk_rsp),
       .pwr_otp_o(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
-      .pwr_lc_o(),
-      .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
+      .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
+      .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
       .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
       .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
       .wakeups_i(pwrmgr_aon_wakeups),
@@ -1668,6 +1703,8 @@ module top_earlgrey #(
     .rst_peri_ni (rstmgr_aon_resets.rst_sys_io_n),
     .tl_main_i        (tl_main_peri_h2d),
     .tl_main_o        (tl_main_peri_d2h),
+    .tl_lifecycle_o   (tl_lifecycle_d_h2d),
+    .tl_lifecycle_i   (tl_lifecycle_d_d2h),
     .tl_uart_o        (tl_uart_d_h2d),
     .tl_uart_i        (tl_uart_d_d2h),
     .tl_uart1_o       (tl_uart1_d_h2d),

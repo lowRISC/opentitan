@@ -7,6 +7,9 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
+    '{"lifecycle", '{
+        '{32'h40140000, 32'h40140fff}
+    }},
     '{"uart", '{
         '{32'h40000000, 32'h40000fff}
     }},
@@ -62,5 +65,6 @@ tl_host_t xbar_hosts[$] = '{
         "i2c2",
         "pattgen",
         "sensor_ctrl",
-        "otp_ctrl"}}
+        "otp_ctrl",
+        "lifecycle"}}
 };

@@ -15,6 +15,7 @@ xbar_peri dut(
 `CONNECT_TL_HOST_IF(main)
 
 // Device TileLink interface connections
+`CONNECT_TL_DEVICE_IF(lifecycle)
 `CONNECT_TL_DEVICE_IF(uart)
 `CONNECT_TL_DEVICE_IF(uart1)
 `CONNECT_TL_DEVICE_IF(uart2)

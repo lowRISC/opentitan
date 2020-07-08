@@ -209,6 +209,14 @@
 #define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x40130000u
 
 /**
+ * Base address for lifecycle peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_LIFECYCLE_BASE_ADDR 0x40140000u
+
+/**
  * Base address for aes peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

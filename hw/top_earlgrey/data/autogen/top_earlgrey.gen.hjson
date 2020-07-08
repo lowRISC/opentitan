@@ -1745,6 +1745,8 @@
           act: rsp
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: otp_ctrl_lc_otp_program
           index: -1
         }
         {
@@ -1754,24 +1756,31 @@
           act: req
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_lc_data
           index: -1
         }
         {
           struct: lc_tx
           type: uni
           name: lc_provision_en
-          act: rsp
-          package: otp_ctrl_pkg
+          act: rcv
+          package: lifecycle_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lifecycle_provision
           index: -1
         }
         {
           struct: lc_tx
           type: uni
           name: lc_test_en
-          act: rsp
-          package: otp_ctrl_pkg
+          act: rcv
+          package: lifecycle_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lifecycle_nvm_debug
           index: -1
         }
         {
@@ -1829,6 +1838,145 @@
           width: 1
           top_type: broadcast
           top_signame: otp_ctrl_otp_otbn_ram_key
+          index: -1
+        }
+      ]
+    }
+    {
+      name: lifecycle
+      type: lifecycle
+      clock_srcs:
+      {
+        clk_i: io
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: lc
+      }
+      base_addr: 0x40140000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_secure
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list: []
+      alert_list: []
+      wakeup_list: []
+      scan: "false"
+      inter_signal_list:
+      [
+        {
+          name: pwrmgr
+          type: req_rsp
+          act: rsp
+          width: 1
+          struct: pwr_lc
+          package: pwrmgr_pkg
+          inst_name: lifecycle
+          top_signame: pwrmgr_aon_pwr_lc
+          index: -1
+        }
+        {
+          name: otp_program
+          type: req_rsp
+          act: req
+          width: 1
+          struct: lc_otp_program
+          package: otp_ctrl_pkg
+          inst_name: lifecycle
+          top_signame: otp_ctrl_lc_otp_program
+          index: -1
+        }
+        {
+          name: otp_data
+          type: uni
+          act: rcv
+          width: 1
+          struct: otp_lc_data
+          package: otp_ctrl_pkg
+          inst_name: lifecycle
+          top_signame: otp_ctrl_otp_lc_data
+          index: -1
+        }
+        {
+          name: dft
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          index: -1
+        }
+        {
+          name: hw_debug
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          index: -1
+        }
+        {
+          name: nvm_debug
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          top_type: broadcast
+          top_signame: lifecycle_nvm_debug
+          index: -1
+        }
+        {
+          name: cpu
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          index: -1
+        }
+        {
+          name: provision
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          top_type: broadcast
+          top_signame: lifecycle_provision
+          index: -1
+        }
+        {
+          name: keymgr
+          type: uni
+          act: req
+          width: 1
+          struct: lc_tx
+          package: lifecycle_pkg
+          inst_name: lifecycle
+          index: -1
+        }
+        {
+          name: strap_sample
+          type: req_rsp
+          act: req
+          width: 1
+          struct: lc_strap
+          package: pinmux_pkg
+          inst_name: lifecycle
+          top_signame: lifecycle_strap_sample
           index: -1
         }
       ]
@@ -2109,12 +2257,14 @@
       inter_signal_list:
       [
         {
-          struct: lc_pinmux_strap
+          struct: lc_strap
           type: req_rsp
           name: lc_pinmux_strap
           act: rsp
           package: pinmux_pkg
           inst_name: pinmux_aon
+          width: 1
+          top_signame: lifecycle_strap_sample
           index: -1
         }
         {
@@ -2352,6 +2502,8 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
+          width: 1
+          top_signame: pwrmgr_aon_pwr_lc
           index: -1
         }
         {
@@ -3692,6 +3844,26 @@
       [
         otbn.otp_otbn_ram_key
       ]
+      otp_ctrl.lc_otp_program:
+      [
+        lifecycle.otp_program
+      ]
+      otp_ctrl.otp_lc_data:
+      [
+        lifecycle.otp_data
+      ]
+      lifecycle.nvm_debug:
+      [
+        otp_ctrl.lc_test_en
+      ]
+      lifecycle.provision:
+      [
+        otp_ctrl.lc_provision_en
+      ]
+      lifecycle.strap_sample:
+      [
+        pinmux_aon.lc_pinmux_strap
+      ]
       pwrmgr_aon.pwr_otp:
       [
         otp_ctrl.pwr_otp_init
@@ -3703,6 +3875,10 @@
       pwrmgr_aon.pwr_clk:
       [
         clkmgr_aon.pwr
+      ]
+      pwrmgr_aon.pwr_lc:
+      [
+        lifecycle.pwrmgr
       ]
       csrng.entropy_src_hw_if:
       [
@@ -3922,6 +4098,10 @@
           pipeline: "true"
           addr_range:
           [
+            {
+              base_addr: 0x40140000
+              size_byte: 0x1000
+            }
             {
               base_addr: 0x40000000
               size_byte: 0x1000
@@ -4243,6 +4423,7 @@
           pattgen
           sensor_ctrl
           otp_ctrl
+          lifecycle
         ]
       }
       nodes:
@@ -4255,6 +4436,23 @@
           xbar: true
           pipeline: "false"
           inst_type: ""
+          pipeline_byp: "true"
+        }
+        {
+          name: lifecycle
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: lifecycle
+          addr_range:
+          [
+            {
+              base_addr: 0x40140000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
           pipeline_byp: "true"
         }
         {
@@ -6874,6 +7072,8 @@
         act: rsp
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: otp_ctrl_lc_otp_program
         index: -1
       }
       {
@@ -6883,24 +7083,31 @@
         act: req
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_lc_data
         index: -1
       }
       {
         struct: lc_tx
         type: uni
         name: lc_provision_en
-        act: rsp
-        package: otp_ctrl_pkg
+        act: rcv
+        package: lifecycle_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lifecycle_provision
         index: -1
       }
       {
         struct: lc_tx
         type: uni
         name: lc_test_en
-        act: rsp
-        package: otp_ctrl_pkg
+        act: rcv
+        package: lifecycle_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lifecycle_nvm_debug
         index: -1
       }
       {
@@ -6961,6 +7168,114 @@
         index: -1
       }
       {
+        name: pwrmgr
+        type: req_rsp
+        act: rsp
+        width: 1
+        struct: pwr_lc
+        package: pwrmgr_pkg
+        inst_name: lifecycle
+        top_signame: pwrmgr_aon_pwr_lc
+        index: -1
+      }
+      {
+        name: otp_program
+        type: req_rsp
+        act: req
+        width: 1
+        struct: lc_otp_program
+        package: otp_ctrl_pkg
+        inst_name: lifecycle
+        top_signame: otp_ctrl_lc_otp_program
+        index: -1
+      }
+      {
+        name: otp_data
+        type: uni
+        act: rcv
+        width: 1
+        struct: otp_lc_data
+        package: otp_ctrl_pkg
+        inst_name: lifecycle
+        top_signame: otp_ctrl_otp_lc_data
+        index: -1
+      }
+      {
+        name: dft
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        index: -1
+      }
+      {
+        name: hw_debug
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        index: -1
+      }
+      {
+        name: nvm_debug
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        top_type: broadcast
+        top_signame: lifecycle_nvm_debug
+        index: -1
+      }
+      {
+        name: cpu
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        index: -1
+      }
+      {
+        name: provision
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        top_type: broadcast
+        top_signame: lifecycle_provision
+        index: -1
+      }
+      {
+        name: keymgr
+        type: uni
+        act: req
+        width: 1
+        struct: lc_tx
+        package: lifecycle_pkg
+        inst_name: lifecycle
+        index: -1
+      }
+      {
+        name: strap_sample
+        type: req_rsp
+        act: req
+        width: 1
+        struct: lc_strap
+        package: pinmux_pkg
+        inst_name: lifecycle
+        top_signame: lifecycle_strap_sample
+        index: -1
+      }
+      {
         struct: hw_key_req
         type: uni
         name: keymgr_key
@@ -6983,12 +7298,14 @@
         index: -1
       }
       {
-        struct: lc_pinmux_strap
+        struct: lc_strap
         type: req_rsp
         name: lc_pinmux_strap
         act: rsp
         package: pinmux_pkg
         inst_name: pinmux_aon
+        width: 1
+        top_signame: lifecycle_strap_sample
         index: -1
       }
       {
@@ -7062,6 +7379,8 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
+        width: 1
+        top_signame: pwrmgr_aon_pwr_lc
         index: -1
       }
       {
@@ -7537,6 +7856,55 @@
         type: uni
       }
       {
+        package: otp_ctrl_pkg
+        struct: lc_otp_program_req
+        signame: otp_ctrl_lc_otp_program_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_program_rsp
+        signame: otp_ctrl_lc_otp_program_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_lc_data
+        signame: otp_ctrl_otp_lc_data
+        width: 1
+        type: uni
+      }
+      {
+        package: lifecycle_pkg
+        struct: lc_tx
+        signame: lifecycle_nvm_debug
+        width: 1
+        type: uni
+      }
+      {
+        package: lifecycle_pkg
+        struct: lc_tx
+        signame: lifecycle_provision
+        width: 1
+        type: uni
+      }
+      {
+        package: pinmux_pkg
+        struct: lc_strap_req
+        signame: lifecycle_strap_sample_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pinmux_pkg
+        struct: lc_strap_rsp
+        signame: lifecycle_strap_sample_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
         package: pwrmgr_pkg
         struct: pwr_otp_req
         signame: pwrmgr_aon_pwr_otp_req
@@ -7575,6 +7943,20 @@
         package: pwrmgr_pkg
         struct: pwr_clk_rsp
         signame: pwrmgr_aon_pwr_clk_rsp
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_lc_req
+        signame: pwrmgr_aon_pwr_lc_req
+        width: 1
+        type: req_rsp
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_lc_rsp
+        signame: pwrmgr_aon_pwr_lc_rsp
         width: 1
         type: req_rsp
       }

@@ -14,6 +14,12 @@ module xbar_peri_bind;
   );
 
   // Device interfaces
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_lifecycle (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_lifecycle_o),
+    .d2h    (tl_lifecycle_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
