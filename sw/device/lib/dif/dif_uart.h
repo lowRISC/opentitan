@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
+#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
+
 /**
  * @file
  * @brief <a href="/hw/ip/uart/doc/">UART</a> Device Interface Functions
  */
-
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_UART_H_
 
 #include <stdbool.h>
 #include <stdint.h>

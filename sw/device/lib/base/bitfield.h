@@ -13,6 +13,11 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * @file
+ * @brief Bitfield Manipulation Functions
+ */
+
+/**
  * Masked field offset for 32-bit bitfields, with optional value.
  *
  * `index` represents a shift in bits starting from the 0 bit of a given 32-bit

@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_TIMER_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_TIMER_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/rv_timer/doc/">RV Timer</a> Device Interface Functions
+ */
+
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"

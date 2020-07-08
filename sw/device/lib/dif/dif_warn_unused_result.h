@@ -6,6 +6,11 @@
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_WARN_UNUSED_RESULT_H_
 
 /**
+ * @file
+ * @brief Unused Result Warning Macro for DIFs.
+ */
+
+/**
  * Attribute for functions which return errors that must be acknowledged.
  *
  * This attribute must be used to mark all DIFs which return an error value of
