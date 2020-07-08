@@ -6,6 +6,12 @@
   bus_device: "tlul",
   bus_host: "none",
   regwidth: "32",
+  available_output_list: [
+    { name: "pwm"
+      desc: "pulse output"
+      width: 9
+    }
+  ]
   registers: [
     { name: "CFG",
       desc: "Configuration register",

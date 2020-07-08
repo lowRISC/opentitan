@@ -14,7 +14,8 @@ module pwm #(
   input              tlul_pkg::tl_h2d_t tl_i,
   output             tlul_pkg::tl_d2h_t tl_o,
   // PWM outputs
-  output logic [8:0] pwm_o
+  output logic [8:0] cio_pwm_o,
+  output logic [8:0] cio_pwm_en_o
 );
 
   import pwm_reg_pkg::*;
@@ -41,7 +42,9 @@ module pwm #(
        .rst_ni,
        .reg2hw,
        //.hw2reg, // pwm_top has no hw2reg outputs defined in pwm.json
-       .pwm_o(pwm_o)
+       .pwm_o(cio_pwm_o)
        );
+
+  assign cio_pwm_en_o = '1; // always enable
 
 endmodule
