@@ -87,30 +87,49 @@
   // Reset attributes
   // name: name of reset.
   //
+  // leaf: whether the reset is a leaf node
+  // 1: it is a leaf node and will not be used to generate other resets
+  // 0: it is not a leaf and will be used to generate other resets
+  //
+  // width: the width of a reset. A reset can be multi-bits to
+  // represent power domains
+  //
   // type: the reset type [ext, top]
   // ext: the reset is coming in from the ports, external to earlgrey
-  // top: the reset is coming from top level, the rstmgr output struct
+  // top: the reset is output from rstmgr to top level struct
+  //
+  // inst: the cell used to generate this reset.
+  // por: generated through rstmgr_por
+  // leaf: generated through sync cell
+  // ctrl: generated through rstmgr_ctrl
   //
   // root: The parent reset
   // If type is "ext", there is no root, since it is external
+  //
+  // domain: The power domain
+  // If no domain, it means there is no choice, just inherits from root.
+  // Otherwise, selects the domain to which it is related
+  // 0 is defaulted for always on.
   //
   // clk:  related clock domain for synchronous release
   // If type is "por", there is not related clock, since it is
   // likely external or generated from a voltage comparator
   //
   resets: [
-    { name: "rst_ni",     type: "ext"                                      }
-    { name: "por_aon",    type: "top",  root: "rst_ni",  clk: "aon"        }
-    { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
-    { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
-    { name: "por_io_div2",type: "top",  root: "por_aon", clk: "io_div2"    }
-    { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
-    { name: "lc",         type: "top",  root: "lc",      clk: "io"         }
-    { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
-    { name: "sys_io",     type: "top",  root: "sys",     clk: "io_div2"    }
-    { name: "sys_aon",    type: "top",  root: "sys",     clk: "io_div2"    }
-    { name: "spi_device", type: "top",  root: "sys",     clk: "io_div2",  sw: 1 }
-    { name: "usb",        type: "top",  root: "sys",     clk: "usb", sw: 1 }
+    { name: "rst_ni",      leaf: 0, width: 1, type: "ext"                                                  }
+    { name: "por_aon",     leaf: 0, width: 1, type: "top",              root: "rst_ni",  clk: "aon"        }
+    { name: "lc_src",      leaf: 0, width: 2, type: "top",              root: "por",     clk: "io_div2"    }
+    { name: "sys_src",     leaf: 0, width: 2, type: "top",              root: "por",     clk: "io_div2"    }
+    { name: "por",         leaf: 1, width: 1, type: "top",              root: "por_aon", clk: "main"       }
+    { name: "por_io",      leaf: 1, width: 1, type: "top",              root: "por_aon", clk: "io"         }
+    { name: "por_io_div2", leaf: 1, width: 1, type: "top",              root: "por_aon", clk: "io_div2"    }
+    { name: "por_usb",     leaf: 1, width: 1, type: "top",              root: "por_aon", clk: "usb"        }
+    { name: "lc",          leaf: 1, width: 1, type: "top", domain: "0", root: "lc_src",  clk: "io_div2"    }
+    { name: "sys",         leaf: 1, width: 1, type: "top", domain: "0", root: "sys_src", clk: "main"       }
+    { name: "sys_io",      leaf: 1, width: 1, type: "top", domain: "0", root: "sys_src", clk: "io_div2"    }
+    { name: "sys_aon",     leaf: 1, width: 1, type: "top", domain: "0", root: "sys_src", clk: "aon"        }
+    { name: "spi_device",  leaf: 1, width: 1, type: "top", domain: "0", root: "sys_src", clk: "io_div2",  sw: 1 }
+    { name: "usb",         leaf: 1, width: 1, type: "top", domain: "0", root: "sys_src", clk: "usb", sw: 1 }
   ]
 
   // Number of cores: used in rv_plic and timer

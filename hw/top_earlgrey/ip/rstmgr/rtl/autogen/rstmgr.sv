@@ -28,7 +28,7 @@ module rstmgr import rstmgr_pkg::*; (
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
 
   // ast interface
-  input ast_wrapper_pkg::ast_rst_t ast_i,
+  input rstmgr_ast_t ast_i,
 
   // cpu related inputs
   input rstmgr_cpu_t cpu_i,
@@ -38,16 +38,9 @@ module rstmgr import rstmgr_pkg::*; (
 
   // Interface to alert handler
   // always on resets
-  output rstmgr_out_t resets_o,
-
-  input scan_rst_ni,
-  input scanmode_i
+  output rstmgr_out_t resets_o
 
 );
-
-  localparam int NumRsts = 10;
-  logic [NumRsts-1:0] raw_resets, muxed_resets;
-  rstmgr_out_t resets_int;
 
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
@@ -55,9 +48,10 @@ module rstmgr import rstmgr_pkg::*; (
   rstmgr_por u_rst_por_aon (
     .clk_i(clk_aon_i),
     .rst_ni,
-    .pok_i(ast_i.aon_pok),
+    .pok_i(ast_i.vcc_pok & ast_i.aon_pok),
     .rst_no(resets_o.rst_por_aon_n)
   );
+
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -193,7 +187,6 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(resets_o.rst_sys_src_n[0]),
     .d(1'b1),
     .q(resets_o.rst_sys_n)
-
   );
 
   prim_flop_2sync #(
@@ -356,36 +349,6 @@ module rstmgr import rstmgr_pkg::*; (
     .data_i(reg2hw.reset_info.q),
     .rst_reasons_o(hw2reg.reset_info)
   );
-
-  ////////////////////////////////////////////////////
-  // Test reset bypass                              //
-  ////////////////////////////////////////////////////
-
-  assign raw_resets = {
-                      resets_int.rst_por_aon_n,
-                      resets_int.rst_por_n,
-                      resets_int.rst_por_io_n,
-                      resets_int.rst_por_io_div2_n,
-                      resets_int.rst_por_usb_n,
-                      resets_int.rst_lc_n,
-                      resets_int.rst_sys_io_n,
-                      resets_int.rst_sys_n,
-                      resets_int.rst_spi_device_n,
-                      resets_int.rst_usb_n
-                      };
-
-  assign resets_o = muxed_resets;
-
-  // reuse clock muxes for balanced rise / fall
-  for (genvar i=0; i<NumRsts; i++) begin : gen_rst_muxes
-    prim_clock_mux2 u_rst_mux (
-      .clk0_i(raw_resets[i]),
-      .clk1_i(scan_rst_ni),
-      .sel_i(scanmode_i),
-      .clk_o(muxed_resets[i])
-    );
-  end
-
 
   ////////////////////////////////////////////////////
   // Assertions                                     //
