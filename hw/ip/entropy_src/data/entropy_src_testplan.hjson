@@ -83,14 +83,16 @@
     {
       name: stress_all
       desc: '''
-            This will combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.'''
+            This will combine the other individual testpoints while injecting TL errors and
+	    running CSR tests in parallel.'''
       milestone: V2
       tests: []
     }
     {
       name: stress_all_with_random_reset
       desc: '''
-            This will combine the other individual testpoints while injecting TL errors and running CSR tests in parallel and asserting reset in the middle of test.'''
+            This will combine the other individual testpoints while injecting TL errors and
+	    running CSR tests in parallel and asserting reset in the middle of test.'''
       milestone: V2
       tests: []
     }

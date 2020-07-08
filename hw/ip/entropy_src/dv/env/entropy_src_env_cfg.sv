@@ -11,6 +11,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   `uvm_object_new
 
+  virtual pins_if   efuse_es_sw_reg_en_vif;
+    
   virtual function void initialize_csr_addr_map_size();
     this.csr_addr_map_size = ENTROPY_SRC_ADDR_MAP_SIZE;
   endfunction : initialize_csr_addr_map_size
