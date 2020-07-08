@@ -51,6 +51,7 @@ filesets:
       - lowrisc:ip:sensor_ctrl
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:otp_ctrl_component
+      - lowrisc:ip:lifecycle_top
       - lowrisc:tlul:headers
       - lowrisc:systems:ast_pkg
       - lowrisc:prim:all
