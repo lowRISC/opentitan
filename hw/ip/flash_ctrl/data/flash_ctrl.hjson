@@ -164,7 +164,7 @@
         },
         { bits: "27:16",
           name: "NUM",
-          desc: "Number of flash words the flash operation should read or program.",
+          desc: "Number of bus words the flash operation should read or program.",
           resval: "0"
         },
       ]
