@@ -2206,7 +2206,7 @@ BN.WSRRS <wrd>, <wsr>, <wrs>
 **Atomic Read/Write WSR.**
 
 ```python3
-BN.WSRRW <wrd>, <csr>, <wrs>
+BN.WSRRW <wrd>, <wsr>, <wrs>
 ```
 
 ## Pseudo-Code Functions for BN Instructions
