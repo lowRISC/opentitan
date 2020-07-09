@@ -34,8 +34,8 @@ module prim_generic_ram_1p #(
   for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
     assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
-    // Ensure that all mask bits within a group have the same value
-    `ASSERT(MaskCheck_A, req_i |->
+    // Ensure that all mask bits within a group have the same value for a write
+    `ASSERT(MaskCheck_A, req_i && write_i |->
         wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_i, '0)
   end
