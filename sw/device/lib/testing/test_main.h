@@ -23,4 +23,12 @@
  */
 extern bool test_main(void);
 
+/**
+ * This flag should be defined in the test runner with the default value,
+ * which then can be overriden by individual tests when required. For example,
+ * when a test configures UART to non-standard settings for internal use, the
+ * flag has to be set to `true` in such test.
+ */
+extern bool uart_reconfigure_required;
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_MAIN_H_
