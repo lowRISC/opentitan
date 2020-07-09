@@ -6,7 +6,7 @@ Going along the lines of what it takes to design an IP that adheres to the
 [Comportability Specifications](/doc/rm/comportability_specification),
 we attempt to standardize the DV methodology for developing the IP level
 testbench environment as well by following the same approach. This document describes
-the Comportable IP (CIP) library, which is a complete UVM enviromnent framework that
+the Comportable IP (CIP) library, which is a complete UVM environment framework that
 each IP level environment components can extend from to get started with DV. The goal
 here is to maximize code reuse across all test benches so that we can improve the
 efficiency and time to market. The features described here are not exhaustive,
@@ -81,8 +81,8 @@ method is required to be overridden to create those objects as well.
 
 We make all downstream interface agent cfg handles as a part of IP extension of
 cip_base_env_cfg so that all settings for the env and all downstream agents are
-avaiable within the env cfg handle. Since the env cfg handle is passed to all cip
-components, all those settings are also accesible.
+available within the env cfg handle. Since the env cfg handle is passed to all cip
+components, all those settings are also accessible.
 
 ### cip_base_env_cov
 This is the base coverage object that contain all functional coverpoints and
