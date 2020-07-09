@@ -59,7 +59,7 @@ module otbn_core
 
   prim_gate_gen #(
     .DataWidth (32),
-    .NumGates  (157000)
+    .NumGates  (167000)
   ) u_random_gates (
     .clk_i,
     .rst_ni,
