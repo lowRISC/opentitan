@@ -293,14 +293,14 @@
               ''',
               resval: "0"
             },
-            { bits: "24:16",
+            { bits: "25:16", // need to template this term long term for flash size
               name: "SIZE",
               desc: '''
                 Region size in number of pages
               ''',
               resval: "0"
             },
-            { bits: "25",
+            { bits: "28",
               name: "PARTITION",
               desc: '''
                 Region partition select

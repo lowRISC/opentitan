@@ -55,7 +55,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   localparam int LastValidInfoPage = InfosPerBank - 1;
 
   // There could be multiple region matches due to region overlap
-  logic [AllPagesW-1:0] region_end[TotalRegions];
+  // region_end is +1 bit from however bits are needed to address regions
+  logic [AllPagesW:0] region_end[TotalRegions];
   logic [TotalRegions-1:0] region_match;
   logic [TotalRegions-1:0] region_sel;
   logic [TotalRegions-1:0] rd_en;
@@ -76,11 +77,11 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   // check for region match
   always_comb begin
     for (int unsigned i = 0; i < TotalRegions; i++) begin: region_comps
-      region_end[i] = region_cfgs_i[i].base.q + region_cfgs_i[i].size.q;
+      region_end[i] = {1'b0, region_cfgs_i[i].base.q} + region_cfgs_i[i].size.q;
 
       // region matches if address within range and if the partition matches
       region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
-                        req_addr_i <  region_end[i] &
+                        {1'b0, req_addr_i} < region_end[i] &
                         req_part_i == region_cfgs_i[i].partition.q &
                         region_cfgs_i[i].en.q &
                         req_i;
