@@ -82,11 +82,12 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
       region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
                         req_addr_i <  region_end[i] &
                         req_part_i == region_cfgs_i[i].partition.q &
+                        region_cfgs_i[i].en.q &
                         req_i;
 
-      rd_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].rd_en.q & region_sel[i];
-      prog_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].prog_en.q & region_sel[i];
-      pg_erase_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].erase_en.q & region_sel[i];
+      rd_en[i] =  region_cfgs_i[i].rd_en.q & region_sel[i];
+      prog_en[i] = region_cfgs_i[i].prog_en.q & region_sel[i];
+      pg_erase_en[i] = region_cfgs_i[i].erase_en.q & region_sel[i];
     end
   end
 
