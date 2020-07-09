@@ -121,7 +121,7 @@ package flash_ctrl_reg_pkg;
       logic [8:0]  q;
     } base;
     struct packed {
-      logic [8:0]  q;
+      logic [9:0] q;
     } size;
     struct packed {
       logic        q;
@@ -240,12 +240,12 @@ package flash_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [304:299]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [298:293]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [292:281]
-    flash_ctrl_reg2hw_control_reg_t control; // [280:264]
-    flash_ctrl_reg2hw_addr_reg_t addr; // [263:232]
-    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [231:48]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [312:307]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [306:301]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [300:289]
+    flash_ctrl_reg2hw_control_reg_t control; // [288:272]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [271:240]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [239:48]
     flash_ctrl_reg2hw_default_region_reg_t default_region; // [47:45]
     flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [1:0] mp_bank_cfg; // [44:43]
     flash_ctrl_reg2hw_scratch_reg_t scratch; // [42:11]

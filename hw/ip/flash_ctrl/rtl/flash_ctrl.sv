@@ -312,7 +312,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   //default region
   assign region_cfgs[MpRegions].base.q = '0;
-  assign region_cfgs[MpRegions].size.q = {AllPagesW{1'b1}};
+  assign region_cfgs[MpRegions].size.q = NumBanks * PagesPerBank;
   assign region_cfgs[MpRegions].en.q = 1'b1;
   assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
   assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
