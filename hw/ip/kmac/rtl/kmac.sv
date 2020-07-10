@@ -175,8 +175,8 @@ module kmac
       };
     end else if (keymgr_data_i.valid) begin
       keymgr_data_o.done <= 1'b1;
-      keymgr_data_o.digest_share0 <= keymgr_key_i.key_share0 ^ keymgr_data_i.data;
-      keymgr_data_o.digest_share1 <= keymgr_key_i.key_share1 ^ keymgr_data_i.data;
+      keymgr_data_o.digest_share0 <= keymgr_key_i.key_share0 ^ {4{keymgr_data_i.data}};
+      keymgr_data_o.digest_share1 <= keymgr_key_i.key_share1 ^ {4{keymgr_data_i.data}};
     end
   end
 
