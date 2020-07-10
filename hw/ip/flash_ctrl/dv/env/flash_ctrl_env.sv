@@ -29,10 +29,16 @@ class flash_ctrl_env extends cip_base_env #(
     end
 
     // get the vifs from config db
-    foreach (cfg.mem_bkdr_vifs[i]) begin
-      if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", $sformatf("mem_bkdr_vifs[%0d]", i),
-                                             cfg.mem_bkdr_vifs[i])) begin
-        `uvm_fatal(`gfn, $sformatf("failed to get mem_bkdr_vifs[%0d] from uvm_config_db", i))
+    begin
+      flash_ctrl_partition_e part = part.first();
+      for (int i = 0; i < part.num(); i++, part = part.next()) begin
+        foreach (cfg.mem_bkdr_vifs[, bank]) begin
+          string vif_name = $sformatf("mem_bkdr_vifs[%0s][%0d]", part.name(), bank);
+          if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", vif_name,
+                                                 cfg.mem_bkdr_vifs[part][bank])) begin
+            `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", vif_name))
+          end
+        end
       end
     end
 

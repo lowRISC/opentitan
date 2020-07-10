@@ -175,19 +175,20 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Convenience function to clear / set / randomize flash memory. Operates in the entire
   // flash memory.
-  virtual function void flash_mem_bkdr_init(flash_mem_init_e flash_mem_init);
+  virtual function void flash_mem_bkdr_init(flash_ctrl_partition_e part = FlashCtrlPartitionData,
+                                            flash_mem_init_e flash_mem_init);
     case (flash_mem_init)
       FlashMemInitSet: begin
-        foreach (cfg.mem_bkdr_vifs[i]) cfg.mem_bkdr_vifs[i].set_mem();
+        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].set_mem();
       end
       FlashMemInitClear: begin
-        foreach (cfg.mem_bkdr_vifs[i]) cfg.mem_bkdr_vifs[i].clear_mem();
+        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].clear_mem();
       end
       FlashMemInitRandomize: begin
-        foreach (cfg.mem_bkdr_vifs[i]) cfg.mem_bkdr_vifs[i].randomize_mem();
+        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].randomize_mem();
       end
       FlashMemInitInvalidate: begin
-        foreach (cfg.mem_bkdr_vifs[i]) cfg.mem_bkdr_vifs[i].invalidate_mem();
+        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].invalidate_mem();
       end
     endcase
   endfunction
@@ -200,7 +201,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_mem_addr_attrs addr_attrs = new(flash_ctrl_op.addr);
     data.delete();
     for (int i = 0; i < flash_ctrl_op.num_words; i++) begin
-      data[i] = cfg.mem_bkdr_vifs[addr_attrs.bank].read32(addr_attrs.bank_addr);
+      data[i] = cfg.mem_bkdr_vifs[flash_ctrl_op.partition][addr_attrs.bank].read32(
+          addr_attrs.bank_addr);
       `uvm_info(`gfn, $sformatf("flash_mem_bkdr_read: {%s} = 0x%0h",
                                 addr_attrs.sprint(), data[i]), UVM_LOW)
       addr_attrs.incr(TL_DBW);
@@ -211,7 +213,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 `define FLASH_MEM_BKDR_WRITE_CASE(_data) \
   for (int i = 0; i < flash_ctrl_op.num_words; i++) begin \
     logic [TL_DW-1:0] loc_data = _data; \
-    cfg.mem_bkdr_vifs[addr_attrs.bank].write32(addr_attrs.bank_addr, loc_data); \
+    cfg.mem_bkdr_vifs[flash_ctrl_op.partition][addr_attrs.bank].write32( \
+        addr_attrs.bank_addr, loc_data); \
     `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: {%s} = 0x%0h", \
                               addr_attrs.sprint(), loc_data), UVM_LOW) \
     addr_attrs.incr(TL_DBW); \
@@ -282,7 +285,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
       addr_attrs.incr(TL_DBW);
-      data = cfg.mem_bkdr_vifs[addr_attrs.bank].read32(addr_attrs.bank_addr);
+      data = cfg.mem_bkdr_vifs[flash_ctrl_op.partition][addr_attrs.bank].read32(
+          addr_attrs.bank_addr);
       `DV_CHECK_CASE_EQ(data, '1)
     end
   endfunction
