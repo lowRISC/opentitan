@@ -9,7 +9,7 @@
 module rbox (
   input clk_i,//Always-on slow clock
   input rst_ni,//power-on hardware reset
-  input sw_rst_ni,//software reset
+  //input sw_rst_ni,//software reset
 
   //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -56,7 +56,102 @@ module rbox (
     .hw2reg,
     .devmode_i  (1'b1)
   );
+
+  logic ac_present_i;
+  logic ec_entering_rw_i;
+  logic key0_in_i;
+  logic key1_in_i;
+  logic key2_in_i;
+  logic pwrb_in_i;
+
+
   // TBD RTL
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ac_present_i <= 1'b0;
+      ec_entering_rw_i <= 1'b0;
+      key0_in_i <= 1'b0;
+      key1_in_i <= 1'b0;
+      key2_in_i <= 1'b0;
+      pwrb_in_i <= 1'b0;
+    end else begin
+      ac_present_i <= cio_ac_present_i;
+      ec_entering_rw_i <= cio_ec_entering_rw_i;
+      key0_in_i <= cio_key0_in_i;
+      key1_in_i <= cio_key1_in_i;
+      key2_in_i <= cio_key2_in_i;
+      pwrb_in_i <= cio_pwrb_in_i;
+    end
+  end
+
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cio_bat_en_o <= 1'b0;
+      cio_ec_in_rw_o <= 1'b0;
+      cio_ec_rst_l_o <= 1'b0;
+      cio_flash_wp_l_o <= 1'b0;
+      cio_key0_out_o <= 1'b0;
+      cio_key1_out_o <= 1'b0;
+      cio_key2_out_o <= 1'b0;
+      cio_pwrb_out_o <= 1'b0;
+    end else begin
+      cio_bat_en_o <= 1'b1;//TBD
+      cio_ec_in_rw_o <= 1'b1;//TBD
+      cio_ec_rst_l_o <= 1'b1;//TBD
+      cio_flash_wp_l_o <= 1'b1;//TBD
+      cio_key0_out_o <= 1'b1;//TBD
+      cio_key1_out_o <= 1'b1;//TBD
+      cio_key2_out_o <= 1'b1;//TBD
+      cio_pwrb_out_o <= 1'b1;//TBD
+    end
+  end
+  
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cio_bat_en_en_o <= 1'b0;
+      cio_ec_in_rw_en_o <= 1'b0;
+      cio_ec_rst_l_en_o <= 1'b0;
+      cio_flash_wp_l_en_o <= 1'b0;
+      cio_key0_out_en_o <= 1'b0;
+      cio_key1_out_en_o <= 1'b0;
+      cio_key2_out_en_o <= 1'b0;
+      cio_pwrb_out_en_o <= 1'b0;
+    end else begin
+      cio_bat_en_en_o <= 1'b1;//TBD
+      cio_ec_in_rw_en_o <= 1'b1;//TBD
+      cio_ec_rst_l_en_o <= 1'b1;//TBD
+      cio_flash_wp_l_en_o <= 1'b1;//TBD
+      cio_key0_out_en_o <= 1'b1;//TBD
+      cio_key1_out_en_o <= 1'b1;//TBD
+      cio_key2_out_en_o <= 1'b1;//TBD
+      cio_pwrb_out_en_o <= 1'b1;//TBD
+    end
+
   // TBD Assert Known: Outputs
+  // TODO: to be replaced later by true rtl
+  localparam DataWidth = 6;
+  localparam NumGates  = 1000;
+
+  logic [DataWidth-1:0] data_i;
+  logic [DataWidth-1:0] data_o;
+  logic valid_i;
+  logic valid_o;
+
+  assign valid_i    = |data_i;
+  assign data_i     = {ac_present_i, ec_entering_rw_i, key0_in_i, key1_in_i, key2_in_i, pwrb_in_i};
+
+  // TODO: pseudo-logic 1k gate are added
+  prim_gate_gen  #(
+    .DataWidth ( DataWidth ),
+    .NumGates  ( NumGates  )
+  ) prim_gate_gen (
+    .clk_i     (clk_i   ),
+    .rst_ni    (rst_ni  ),
+    .valid_i   (valid_i ),
+    .data_i    (data_i  ),
+    .data_o    (data_o  ),
+    .valid_o   (valid_o )
+  );
 
 endmodule
