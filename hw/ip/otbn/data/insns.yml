@@ -398,36 +398,15 @@ insns:
     group: bignum
     synopsis: Quarter-word Multiply and Accumulate
     operands:
-      - name: wb_variant
-        type: enum(.SO,.WO)
-        doc: |
-          Result writeback instruction variant.
-          If no writeback variant is chosen, no destination register is written, and the multiplication result is only stored in the accumulator.
-
-          Valid values:
-          - `.SO`: Shift out the lower half-word of the value stored
-            in the accumulator to a WLEN/2-sized half-word of the
-            destination WDR. The destination half-word is selected by
-            the "wrd_hwsel" field.
-          - `.WO`: Write the value stored in the accumulator to the
-            destination WDR.
-      - name: zero_acc
+      - &mulqacc-zero-acc
+        name: zero_acc
         type: option(.Z)
-        doc: |
-          Zero the accumulator before accumulating the multiply result.
-      - name: wrd
-        doc: |
-          Name of the destination WDR.
-          Only required for .SO/.WO instruction variant.
-      - name: wrd_hwsel
-        type: enum(L,U)
-        doc: |
-          Half-word select for `<wrd>`.
-          Only required for the .SO instruction variant.
-          A value of `L` means the less significant half-word; `U` means the more significant half-word.
-      - name: wrs1
-        doc: Name of the first source WDR
-      - name: wrs1_qwsel
+        doc: Zero the accumulator before accumulating the multiply result.
+      - &mulqacc-wrs1
+        name: wrs1
+        doc: First source WDR
+      - &mulqacc-wrs1-qwsel
+        name: wrs1_qwsel
         type: imm2
         doc: |
           Quarter-word select for `<wrs1>`.
@@ -437,9 +416,11 @@ insns:
           - `1`: Select wrs1[WLEN/2:WLEN/4]
           - `2`: Select wrs1[WLEN/4*3-1:WLEN/2]
           - `3`: Select wrs1[WLEN-1:WLEN/4*3] (most significant quarter-word)
-      - name: wrs2
-        doc: Name of the second source WDR
-      - name: wrs2_qwsel
+      - &mulqacc-wrs2
+        name: wrs2
+        doc: Second source WDR
+      - &mulqacc-wrs2-qwsel
+        name: wrs2_qwsel
         type: imm2
         doc: |
           Quarter-word select for `<wrs2>`.
@@ -449,28 +430,29 @@ insns:
           - `1`: Select wrs1[WLEN/2:WLEN/4]
           - `2`: Select wrs1[WLEN/4*3-1:WLEN/2]
           - `3`: Select wrs1[WLEN-1:WLEN/4*3] (most significant quarter-word)
-      - name: acc_shift_imm
+      - &mulqacc-acc-shift-imm
+        name: acc_shift_imm
         type: imm2
         doc: |
           How many quarter-words (`WLEN/4` bits) to shift the `WLEN/2`-bit multiply result before accumulating.
     syntax: |
-      [<wb_variant>][<zero_acc>] [<wrd><wrd_hwsel>,]
-      <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+      [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
     doc: |
-      Multiplies two `WLEN/4` WDR values and adds the result to an accumulator after shifting it.
-      Optionally shifts some/all of the resulting accumulator value out to a destination WDR.
+      Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
+
+      For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
     decode: |
-      writeback_variant = DecodeMulqaccVariant(wb_variant)
+      writeback_variant = None
       zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
 
-      d = UInt(wrd)
+      d = None
       a = UInt(wrs1)
       b = UInt(wrs2)
 
-      d_hwsel = DecodeHalfWordSelect(wrd_hwsel)
+      d_hwsel = None
       a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
       b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
-    operation: |
+    operation: &mulqacc-operation |
       a_qw = GetQuarterWord(a, a_qwsel)
       b_qw = GetQuarterWord(b, b_qwsel)
 
@@ -490,6 +472,74 @@ insns:
 
       elif writeback_variant == 'writeout':
         WDR[d] = ACC
+
+  - mnemonic: bn.mulqacc.wo
+    group: bignum
+    synopsis: Quarter-word Multiply and Accumulate with half-word writeback
+    operands:
+      - *mulqacc-zero-acc
+      - &mulqacc-wrd
+        name: wrd
+        doc: Destination WDR.
+      - *mulqacc-wrs1
+      - *mulqacc-wrs1-qwsel
+      - *mulqacc-wrs2
+      - *mulqacc-wrs2-qwsel
+      - *mulqacc-acc-shift-imm
+    syntax: |
+      [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    doc: |
+      Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
+      Writes the resulting accumulator to `<wrd>`.
+    decode: |
+      writeback_variant = 'writeout'
+      zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
+
+      d = UInt(wrd)
+      a = UInt(wrs1)
+      b = UInt(wrs2)
+
+      d_hwsel = None
+      a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
+      b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
+    operation: *mulqacc-operation
+
+  - mnemonic: bn.mulqacc.so
+    group: bignum
+    synopsis: Quarter-word Multiply and Accumulate with half-word writeback
+    operands:
+      - *mulqacc-zero-acc
+      - *mulqacc-wrd
+      - name: wrd_hwsel
+        type: enum(L,U)
+        doc: |
+          Half-word select for `<wrd>`.
+          A value of `L` means the less significant half-word; `U` means the more significant half-word.
+      - *mulqacc-wrs1
+      - *mulqacc-wrs1-qwsel
+      - *mulqacc-wrs2
+      - *mulqacc-wrs2-qwsel
+      - *mulqacc-acc-shift-imm
+    syntax: |
+      [<zero_acc>] <wrd><wrd_hwsel>,
+      <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    doc: |
+      Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
+      Next, shifts the resulting accumulator right by half a word.
+      The bits that are shifted out are written to a half-word of `<wrd>`, selected with `<wrd_hwsel>`.
+
+    decode: |
+      writeback_variant = 'shiftout'
+      zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
+
+      d = UInt(wrd)
+      a = UInt(wrs1)
+      b = UInt(wrs2)
+
+      d_hwsel = DecodeHalfWordSelect(wrd_hwsel)
+      a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
+      b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
+    operation: *mulqacc-operation
 
   - mnemonic: bn.sub
     group: bignum
