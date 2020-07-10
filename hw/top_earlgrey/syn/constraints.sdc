@@ -36,7 +36,7 @@ set PORT_USBDEV_DN 0
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN clk_i
+set MAIN_CLK_PIN clkmgr_aon_clk_main
 set MAIN_RST_PIN rst_ni
 # 125 MHz
 set MAIN_TCK  8.0
@@ -59,7 +59,7 @@ set OUT_DEL   5.5
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN clk_usb_i
+set USB_CLK_PIN clkmgr_aon_clk_usb
 # 50MHz
 set USB_TCK 20.0
 set_ideal_network ${USB_CLK_PIN}
@@ -86,7 +86,7 @@ set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_USBDEV_DN]]         -clock
 #####################
 # IO clk (24MHz)    #
 #####################
-set IO_CLK_PIN clk_io_i
+set IO_CLK_PIN clkmgr_aon_clk_io
 set IO_TCK 40.0
 set_ideal_network ${IO_CLK_PIN}
 
@@ -114,7 +114,7 @@ set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_UART_TX]]     -clock IO_CL
 #####################
 # AON clk (300kHz)  #
 #####################
-set AON_CLK_PIN clk_aon_i
+set AON_CLK_PIN clkmgr_aon_clk_aon
 set AON_TCK 3333.0
 set_ideal_network ${AON_CLK_PIN}
 
