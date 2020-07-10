@@ -20,8 +20,7 @@ class aes_seq_item extends uvm_sequence_item;
   // 0: auto mode 1: manual start
   bit             manual_op;
   // 0: output data cannot be overwritten
-  // 1: new output will overwrite old output even if not read.
-  bit             allow_data_ovrwrt;
+
   // lenth of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
   bit [3:0]       data_len            = 0;
@@ -198,6 +197,8 @@ class aes_seq_item extends uvm_sequence_item;
     iv_vld       = rhs_.iv_vld;
     data_out     = rhs_.data_out;
     data_len     = rhs_.data_len;
+    manual_op    = rhs_.manual_op;
+    key_mask     = rhs_.key_mask;
   endfunction // copy
 
 
@@ -231,6 +232,7 @@ class aes_seq_item extends uvm_sequence_item;
     for(int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[i])};
     end
+    str = {str,  $psprintf("\n\t ----| key_mask: \t %d |----\t  \t", key_mask) };
     str = {str,  $psprintf("\n\t ----| Data Length: \t %d |----\t  \t", data_len) };
     str = {str,  $psprintf("\n\t ----| Input data:  \t %h |----\t ", data_in) };
     str = {str,  $psprintf("\n\t ----| Output data: \t %h |----\t ", data_out) };

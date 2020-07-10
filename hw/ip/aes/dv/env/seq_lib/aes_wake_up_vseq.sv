@@ -46,6 +46,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
     `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data register %s",
                               ral.status.convert2string()), UVM_DEBUG)
 
+    csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));
     read_data(cypher_text);
     // read output
     `uvm_info(`gfn, $sformatf("\n\t ------|WAIT 0 |-------"), UVM_HIGH)
@@ -65,7 +66,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
               UVM_DEBUG)
 
     cfg.clk_rst_vif.wait_clks(20);
-
+    csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));
     read_data(decrypted_text);
     //need scoreboard disable
     foreach(plain_text[i]) begin

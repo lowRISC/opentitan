@@ -13,29 +13,50 @@ class aes_message_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // min number of data bytes
-  int    message_len_max     = 16;
+  int    message_len_max      = 16;
   // Max number of data bytes
-  int    message_len_min     = 1;
+  int    message_len_min      = 1;
   // percentage of configuration errors
-  int    config_error_pct    = 20;
+  int    config_error_pct     = 20;
   // errors enabled
-  bit    errors_en           = 1;
+  bit    errors_en            = 1;
   // configuraiton errors enabled
-  bit    config_err          = 0;
+  bit    config_err           = 0;
+  // manual mode percentage
+  int    manual_operation_pct = 10;
+  // maskout unused key bits
+  bit    keymask              = 0;
+  // use fixed key
+  bit    fixed_key_en         = 0;
+  //used fixed key length
+  bit    fixed_keylen_en      = 0;
+  // use fixed data (same data for each block in a message
+  bit    fixed_data_en        = 0;
+  // fixed operation
+  bit    fixed_operation_en   = 0;
+
+  // predefined values for fixed mode
+  bit [3:0] [31:0]    fixed_data       = 128'hDEADBEEFEEDDBBAABAADBEEFDEAFBEAD;
+//  bit [7:0] [31:0]    fixed_key        = 256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF;
+  bit [2:0]           fixed_keylen     = 3'b001;
+  bit                 fixed_operation  = 1'b0;
+
+  bit [7:0] [31:0]    fixed_key        = 256'h810bc3d67ba454931230494129d3067f3418391a0c8a12ad046a08a34f511400;
+
 
   // Mode distribution //
   // chance of selection ecb_mode
   // ecb_mode /(ecb_mode + cbc_mode + cfb_mode + ofb_mode + ctr_mode)
   // with the defaults 10/50 = 1/5 (20%)
-  int    ecb_weight          = 10;
-  int    cbc_weight          = 10;
+  int    ecb_weight           = 10;
+  int    cbc_weight           = 10;
   int    cfb_weight          = 10;
   int    ofb_weight          = 10;
-  int    ctr_weight          = 10;
+  int    ctr_weight           = 10;
   // KEYLEN weights
-  int    key_128b_weight     = 10;
-  int    key_192b_weight     = 10;
-  int    key_256b_weight     = 10;
+  int    key_128b_weight      = 10;
+  int    key_192b_weight      = 10;
+  int    key_256b_weight      = 10;
 
   ///////////////////////////////////////
   // Randomizable variables            //
@@ -55,6 +76,9 @@ class aes_message_item extends uvm_sequence_item;
   rand bit [3:0][31:0] aes_iv;
   // configuration error                                       //
   rand bit             has_config_error;
+  // run AES in manual mode
+  rand bit             manual_operation;
+  
 
   ///////////////////////////////////////
   // FIXED variables                   //
@@ -76,12 +100,30 @@ class aes_message_item extends uvm_sequence_item;
       // key len 001: 128, 010: 192, 100: 256
       aes_keylen inside { 3'b001, 3'b010, 3'b100 };
       // mode distribution
-      aes_keylen dist  { 3'b001 := key_128b_weight, 3'b010 := key_192b_weight, 3'b100 := key_256b_weight };
+      aes_keylen dist  { 3'b001 := key_128b_weight,
+                         3'b010 := key_192b_weight,
+                         3'b100 := key_256b_weight };
     } else {
-      !(aes_keylen inside { 3'b001, 3'b010, 3'b100 });  // force the selection to be something invalid     
+      // force the selection to be something invalid
+      !(aes_keylen inside { 3'b001, 3'b010, 3'b100 });
     }
+    if( fixed_keylen_en ) {
+      aes_keylen == fixed_keylen
+    };
   }
 
+  constraint c_key {
+    if ( fixed_key_en ) {
+      aes_key == fixed_key 
+    };
+  }
+
+  constraint c_operation {
+     if ( fixed_operation_en ) {
+         aes_operation == fixed_operation
+     };
+  }
+  
   constraint c_mode { aes_mode dist  { AES_ECB := ecb_weight,
                                        AES_CBC := cbc_weight,
                                        AES_CFB := cfb_weight,
@@ -91,12 +133,16 @@ class aes_message_item extends uvm_sequence_item;
   constraint c_has_config_error {
     if(errors_en && config_err)
       {
-      has_config_error dist { 0 :/ (100-config_error_pct),
+      has_config_error dist { 0 :/ (100 - config_error_pct),
                               1 :/ config_error_pct    };
     }
     else { has_config_error == 0; }
   }
 
+   constraint c_manual_operation {
+                  manual_operation dist { 0:/ (100 - manual_operation_pct),
+                                          1:/ manual_operation_pct };
+   };
 
 
   function void add_data_item(aes_seq_item item);
@@ -147,6 +193,8 @@ class aes_message_item extends uvm_sequence_item;
     for(int i=0; i <8; i++) begin
       str = {str, $sformatf("%h ",aes_key[i])};
     end
+    str = {str,  $sformatf("\n\t ----| Key Mask:    \t %0b                             |----\t ",
+                           keymask) };    
     str = {str,  $sformatf("\n\t ----| errors_enabled: %b         \t ", errors_en) };
     str = {str,  $sformatf("\n\t ----| config_err: %b         \t ", config_err) };
     str = {str,  $sformatf("\n\t ----| MODE Distribution:     \t " ) };
@@ -188,5 +236,9 @@ class aes_message_item extends uvm_sequence_item;
     input_msg        = rhs_.input_msg;
     output_msg       = rhs_.output_msg;
     predicted_msg    = rhs_.predicted_msg;
+    manual_operation = rhs_.manual_operation;
+    keymask          = rhs_.keymask;  
+    fixed_data_en    = rhs_.fixed_data_en;   
+    fixed_data       = rhs_.fixed_data;
   endfunction // copy
 endclass

@@ -48,8 +48,12 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 4'b0001
     aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
     csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1));
-    csr_wr(.csr(ral.trigger), .value(aes_trigger));
-  endtask
+  endtask // aes_init
+
+
+  virtual task trigger();    
+      csr_wr(.csr(ral.trigger), .value(32'h00000001));
+  endtask // trigger
 
 
   virtual task set_operation(bit operation);
@@ -101,24 +105,15 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in0: %h ", data[0][31:0]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in1: %h ", data[1][31:0]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in2: %h ", data[2][31:0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in3: %h ", data[3][31:0]), UVM_HIGH)     
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in3: %h ", data[3][31:0]), UVM_HIGH)
     csr_wr(.csr(ral.data_in0), .value(data[0][31:0]) );
     csr_wr(.csr(ral.data_in1), .value(data[1][31:0]) );
     csr_wr(.csr(ral.data_in2), .value(data[2][31:0]) );
     csr_wr(.csr(ral.data_in3), .value(data[3][31:0]) );
-  endtask
+  endtask // add_data
 
-
-  ///////////////////////////////////////
-  // ADVANCED TASKS                    //
-  ///////////////////////////////////////
 
   virtual task read_data(ref bit [3:0] [31:0] cypher_txt);
-    bit [3:0] [31:0] rd_txt;
-
-    `uvm_info(`gfn, $sformatf("\n\t ----| POLLING FOR DATA"), UVM_DEBUG)
-    csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
-
     csr_rd(.ptr(ral.data_out0), .value(cypher_txt[0][31:0]));
     csr_rd(.ptr(ral.data_out1), .value(cypher_txt[1][31:0]));
     csr_rd(.ptr(ral.data_out2), .value(cypher_txt[2][31:0]));
@@ -129,15 +124,26 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out0: %h ", cypher_txt[0][31:0]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out1: %h ", cypher_txt[1][31:0]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out2: %h ", cypher_txt[2][31:0]), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out3: %h ", cypher_txt[3][31:0]), UVM_HIGH)       
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out3: %h ", cypher_txt[3][31:0]), UVM_HIGH)
   endtask
 
 
+
+  ///////////////////////////////////////
+  // ADVANCED TASKS                    //
+  ///////////////////////////////////////
+
+
+
   virtual task setup_dut(aes_seq_item item);
+    //CTRL reg
     set_operation(item.operation);
     set_mode(item.mode);
     set_key_len(item.key_len);
+    set_manual_operation(item.manual_op);
+    // Key
     write_key(item.key);
+    // IV
     write_iv(item.iv);
   endtask
 
@@ -162,10 +168,16 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_seq_item item_clone;
 
     // generate an item for each 128b message block
+    `uvm_info(`gfn, $sformatf("\n\t ----| FIXED DATA ENABLED? : %0b", msg_item.fixed_data_en), UVM_LOW)
     for (int n=0; n<msg_item.message_length - 15; n += 16 ) begin
-      `DV_CHECK_RANDOMIZE_FATAL(aes_item)
+      if(msg_item.fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data; )
+      end else begin
+        `DV_CHECK_RANDOMIZE_FATAL(aes_item)
+      end
+      
       aes_item.item_type = AES_DATA;
-      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_FULL)
+      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
       `uvm_info(`gfn, $sformatf("\n ----| generating data item %d", n), UVM_MEDIUM)
@@ -175,7 +187,11 @@ class aes_base_vseq extends cip_base_vseq #(
     if( msg_item.message_length[3:0] != 4'd0) begin
       `uvm_info(`gfn, $sformatf("\n ----| generating runt "), UVM_MEDIUM)
       aes_item.data_len = msg_item.message_length[3:0];
-      `DV_CHECK_RANDOMIZE_FATAL(aes_item)
+      if(msg_item.fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data; )
+      end else begin
+        `DV_CHECK_RANDOMIZE_FATAL(aes_item)
+      end     
       aes_item.item_type = AES_DATA;
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
@@ -192,8 +208,8 @@ class aes_base_vseq extends cip_base_vseq #(
   // endtask
 
 
-  // this function starst the transmission of items to the dut,
-  // while at the same time offloads the output when ready
+  // This function starts an operation and waits for the result of a block
+  // before proceeding witht he next block
   virtual task transmit_message_with_rd_back();
     aes_seq_item nxt_item = new();
     nxt_item = aes_item_queue.pop_back();
@@ -202,10 +218,62 @@ class aes_base_vseq extends cip_base_vseq #(
     while(aes_item_queue.size() > 0) begin
       nxt_item = aes_item_queue.pop_back();
       add_data(nxt_item.data_in);
+
+      `uvm_info(`gfn, $sformatf("\n\t ----| POLLING FOR DATA"), UVM_DEBUG)
+      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
+
       read_data(nxt_item.data_out);
     end
 
   endtask // transmit_message_with_rd_back
+
+  // transmits data as fast as input ready is set
+  // readback happens with random delay
+  virtual task transmit_message_with_rand_rd_back();
+   // TODO
+
+  endtask // transmit_message_with_rd_back
+
+
+  // Transmit using manual mode of operation
+  // if errors are enabled it will overwride output
+  // for some blocks (not read the output)
+  virtual task transmit_message_manual_op();
+    aes_seq_item nxt_item   = new();
+    logic [31:0] status     = 32'd0;
+    bit   [31:0] num_blocks = 0;
+
+    num_blocks = aes_item_queue.size() -1;  // subtract cfg item
+    nxt_item   = aes_item_queue.pop_back();
+    setup_dut(aes_item);
+    `uvm_info(`gfn, $sformatf("\n\t ....| STARTING MANUAL OPERATION |...."), UVM_LOW)
+    while(num_blocks > 0) begin // until all block has been processed and read out
+      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks), UVM_LOW)      
+      
+      csr_rd(.ptr(ral.status), .value(status));
+      `uvm_info(`gfn, $sformatf("\n\t ....| POLLED STATUS %h |....",status), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....",aes_item_queue.size()), UVM_LOW)      
+      // randomize the order of the write and read
+      fork
+        begin : write_next_block
+           if(status[3] &&  (aes_item_queue.size() >0)  ) begin
+             nxt_item = aes_item_queue.pop_back();
+             add_data(nxt_item.data_in);
+             trigger();
+           end
+        end
+
+        begin : read_output
+          if(status[2]) begin
+            read_data(nxt_item.data_out);
+            num_blocks -= 1;
+          end
+        end
+      join
+    end
+  endtask // transmit_message_with_rd_back
+
+
 
 
   // TODO think about how to randomize error objects vs normal that
@@ -222,6 +290,10 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item.mode      = message_item.aes_mode;
     aes_item.key_len   = message_item.aes_keylen;
     aes_item.key       = message_item.aes_key;
+    aes_item.manual_op = message_item.manual_operation;
+    aes_item.key_mask  = message_item.keymask;
+
+    `DV_CHECK_RANDOMIZE_FATAL(aes_item)
     `uvm_info(`gfn, $sformatf("----| CONFIG  AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
 
     `downcast(item_clone, aes_item.clone());
@@ -232,16 +304,25 @@ class aes_base_vseq extends cip_base_vseq #(
   // init the first message - following will rerandomize with the same constraints
   function void aes_message_init();
     aes_message = new();
-    aes_message.ecb_weight        = cfg.ecb_weight;
-    aes_message.cbc_weight        = cfg.cbc_weight;
-    aes_message.ctr_weight        = cfg.ctr_weight;
-    aes_message.key_128b_weight   = cfg.key_128b_weight;
-    aes_message.key_192b_weight   = cfg.key_192b_weight;
-    aes_message.key_256b_weight   = cfg.key_256b_weight;
-    aes_message.message_len_max   = cfg.message_len_max;
-    aes_message.message_len_min   = cfg.message_len_min;
-    aes_message.config_error_pct  = cfg.config_error_pct;
-    aes_message.errors_en         = cfg.errors_en;
+    aes_message.ecb_weight           = cfg.ecb_weight;
+    aes_message.cbc_weight           = cfg.cbc_weight;
+    aes_message.ctr_weight           = cfg.ctr_weight;
+    aes_message.key_128b_weight      = cfg.key_128b_weight;
+    aes_message.key_192b_weight      = cfg.key_192b_weight;
+    aes_message.key_256b_weight      = cfg.key_256b_weight;
+    aes_message.message_len_max      = cfg.message_len_max;
+    aes_message.message_len_min      = cfg.message_len_min;
+    aes_message.config_error_pct     = cfg.config_error_pct;
+    aes_message.errors_en            = cfg.errors_en;
+    aes_message.manual_operation_pct = cfg.manual_operation_pct;
+    aes_message.keymask              = cfg.key_mask;
+    aes_message.fixed_key_en         = cfg.fixed_key_en;
+    aes_message.fixed_data_en        = cfg.fixed_data_en;
+    aes_message.fixed_operation_en   = cfg.fixed_operation_en;
+    aes_message.fixed_operation      = cfg.fixed_operation;
+    aes_message.fixed_keylen_en      = cfg.fixed_keylen_en;
+    aes_message.fixed_keylen         = cfg.fixed_keylen;
+    
   endfunction
 
 

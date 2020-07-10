@@ -160,6 +160,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if(input_item.valid) begin
         case (input_item.mode)
           AES_ECB: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| ECB mode"), UVM_HIGH)
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0)) begin
@@ -182,6 +183,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
   
           AES_CBC: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| CBC mode"), UVM_HIGH)            
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
@@ -248,6 +250,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
 
           AES_CTR: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| CTR mode"), UVM_HIGH)            
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
@@ -413,7 +416,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       msg.alloc_predicted_msg();
       //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
       c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, 
-                              msg.aes_keylen, msg.aes_key, msg.input_msg, msg.predicted_msg);
+                            msg.aes_keylen, msg.aes_key, msg.input_msg, msg.predicted_msg);
 
       `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string() )
                 , UVM_HIGH)
@@ -424,6 +427,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       end
 
       `uvm_info(`gfn, $sformatf("\n\t input \t output \t predicted %s",txt), UVM_HIGH)
+
 
       for( int n =0 ; n < msg.input_msg.size(); n++) begin
         if( msg.output_msg[n] != msg.predicted_msg[n]) begin

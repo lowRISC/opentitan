@@ -9,29 +9,44 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   `uvm_object_new
 
+  // TODO sort knobs into test/SEQUENCE/message/item 
+    
   // Knobs //
-  int          num_messages_min   = 1;
-  int          num_messages_max   = 1;
-  int          message_len_min    = 128;
-  int          message_len_max    = 128;
-  bit          use_key_mask       = 0;
-  bit          use_c_model_pct    = 0;
-  bit          errors_en          = 0;
+  int          num_messages_min     = 1;
+  int          num_messages_max     = 1;
+  int          message_len_min      = 128;
+  int          message_len_max      = 128;
+  bit          use_key_mask         = 0;
+  bit          use_c_model_pct      = 0;
+  bit          errors_en            = 0;
   // Mode distribution //
   // chance of selection ecb_mode
   // ecb_mode /(ecb_mode + cbc_mode + ctr_mode)
   // with the defaults 10/30 = 1/3 (33%)
-  int          ecb_weight         = 10;
-  int          cbc_weight         = 10;
-  int          ctr_weight         = 10;
+  int          ecb_weight           = 10;
+  int          cbc_weight           = 10;
+  int          ctr_weight           = 10;
   // KEYLEN weights
   // change of selecting 128b key
   //  128b/(128+192+256) = 10/30 = (33%)
-  int          key_128b_weight    = 10;
-  int          key_192b_weight    = 10;
-  int          key_256b_weight    = 10;
+  int          key_128b_weight      = 10;
+  int          key_192b_weight      = 10;
+  int          key_256b_weight      = 10;
 
-  bit  [2:0]   error_types        = 3'b111;      //   001: configuration errors
+  int          manual_operation_pct = 10;
+
+  // debug / directed test knobs
+  // use fixed key
+  bit    fixed_key_en               = 0;
+  // use fixed data (same data for each block in a message
+  bit    fixed_data_en              = 0;
+  // fixed operation
+  bit    fixed_operation_en         = 0;
+  bit    fixed_operation            = 0;
+  bit    fixed_keylen_en            = 0;
+  bit [2:0] fixed_keylen            = 3'b001;
+  
+  bit  [2:0]   error_types          = 3'b111;      //   001: configuration errors
                                                  //   010: malicous injection
                                                  //   100: random resets
 
@@ -65,7 +80,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages) };
     str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight) };
     str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight) };   
-    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) }; 
+    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) };
+    str = {str,  $sformatf("\n\t ----| key mask:   %b         \t ", key_mask)}; 
     str = {str, "\n"};
     return str;
   endfunction
