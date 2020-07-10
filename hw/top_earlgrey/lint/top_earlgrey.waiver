@@ -8,7 +8,7 @@
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_resets\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 ## xbar

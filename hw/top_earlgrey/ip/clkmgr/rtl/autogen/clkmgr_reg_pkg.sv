@@ -15,6 +15,9 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } clk_io_div2_peri_en;
+    struct packed {
+      logic        q;
     } clk_io_peri_en;
     struct packed {
       logic        q;
@@ -82,7 +85,7 @@ package clkmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [8:7]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [9:7]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [6:0]
   } clkmgr_reg2hw_t;
 

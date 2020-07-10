@@ -506,10 +506,19 @@ end
     end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_25 = 5'd3;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+    end else if (
+      ((tl_s1n_25_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
+       (tl_s1n_25_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
+      ((tl_s1n_25_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
+       (tl_s1n_25_us_h2d.a_address >= ADDR_SPACE_PERI[1]))
+    ) begin
       dev_sel_s1n_25 = 5'd4;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_AON)) == ADDR_SPACE_AON) begin
+    end else if (
+      ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_AON[0])) == ADDR_SPACE_AON[0]) ||
+      ((tl_s1n_25_us_h2d.a_address <= (ADDR_MASK_AON[1] + ADDR_SPACE_AON[1])) &&
+       (tl_s1n_25_us_h2d.a_address >= ADDR_SPACE_AON[1]))
+    ) begin
       dev_sel_s1n_25 = 5'd5;
 
     end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
@@ -559,10 +568,19 @@ end
     end else if ((tl_s1n_40_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_40 = 4'd2;
 
-    end else if ((tl_s1n_40_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+    end else if (
+      ((tl_s1n_40_us_h2d.a_address <= (ADDR_MASK_PERI[0] + ADDR_SPACE_PERI[0])) &&
+       (tl_s1n_40_us_h2d.a_address >= ADDR_SPACE_PERI[0])) ||
+      ((tl_s1n_40_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
+       (tl_s1n_40_us_h2d.a_address >= ADDR_SPACE_PERI[1]))
+    ) begin
       dev_sel_s1n_40 = 4'd3;
 
-    end else if ((tl_s1n_40_us_h2d.a_address & ~(ADDR_MASK_AON)) == ADDR_SPACE_AON) begin
+    end else if (
+      ((tl_s1n_40_us_h2d.a_address & ~(ADDR_MASK_AON[0])) == ADDR_SPACE_AON[0]) ||
+      ((tl_s1n_40_us_h2d.a_address <= (ADDR_MASK_AON[1] + ADDR_SPACE_AON[1])) &&
+       (tl_s1n_40_us_h2d.a_address >= ADDR_SPACE_AON[1]))
+    ) begin
       dev_sel_s1n_40 = 4'd4;
 
     end else if ((tl_s1n_40_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin

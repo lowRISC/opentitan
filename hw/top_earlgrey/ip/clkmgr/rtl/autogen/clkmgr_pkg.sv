@@ -17,6 +17,11 @@ package clkmgr_pkg;
   };
 
   typedef struct packed {
+  logic clk_io_div2_powerup;
+  logic clk_aon_powerup;
+  logic clk_main_powerup;
+  logic clk_io_powerup;
+  logic clk_usb_powerup;
   logic clk_aon_secure;
   logic clk_main_aes;
   logic clk_main_hmac;
@@ -27,11 +32,14 @@ package clkmgr_pkg;
   logic clk_main_otbn;
   logic clk_main_infra;
   logic clk_io_infra;
-  logic clk_io_secure;
+  logic clk_io_div2_infra;
+  logic clk_io_div2_secure;
   logic clk_main_secure;
   logic clk_usb_secure;
-  logic clk_io_timers;
+  logic clk_io_secure;
+  logic clk_io_div2_timers;
   logic clk_proc_main;
+  logic clk_io_div2_peri;
   logic clk_io_peri;
   logic clk_usb_peri;
 

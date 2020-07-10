@@ -17,17 +17,13 @@
 {
   name: "CLKMGR",
   clock_primary: "clk_i",
-  other_clock_list: [
-    "clk_main_i",
-    "clk_io_i",
-    "clk_usb_i",
-    "clk_aon_i",
-  ],
+  other_clock_list: [],
   reset_primary: "rst_ni",
   other_reset_list: [
     "rst_main_ni"
     "rst_io_ni"
     "rst_usb_ni"
+    "rst_io_div2_ni"
   ]
   bus_device: "tlul",
   regwidth: "32",
@@ -40,13 +36,38 @@
     },
   ],
 
-  // Define rstmgr struct package
   inter_signal_list: [
     { struct:  "clkmgr_out",
       type:    "uni",
       name:    "clocks",
       act:     "req",
       package: "clkmgr_pkg",
+    },
+
+  // All clock inputs
+    { struct:  "logic",
+      type:    "uni",
+      name:    "clk_main",
+      act:     "rcv",
+      package: "",
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "clk_io",
+      act:     "rcv",
+      package: "",
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "clk_usb",
+      act:     "rcv",
+      package: "",
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "clk_aon",
+      act:     "rcv",
+      package: "",
     },
 
     { struct:  "pwr_clk",
@@ -82,6 +103,15 @@
       fields: [
         {
           bits: "0",
+          name: "CLK_IO_DIV2_PERI_EN",
+          resval: 1,
+          desc: '''
+            0 CLK_IO_DIV2_PERI is disabled.
+            1 CLK_IO_DIV2_PERI is enabled.
+          '''
+        }
+        {
+          bits: "1",
           name: "CLK_IO_PERI_EN",
           resval: 1,
           desc: '''
@@ -90,7 +120,7 @@
           '''
         }
         {
-          bits: "1",
+          bits: "2",
           name: "CLK_USB_PERI_EN",
           resval: 1,
           desc: '''

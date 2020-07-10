@@ -71,6 +71,9 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic clk_enables_clk_io_div2_peri_en_qs;
+  logic clk_enables_clk_io_div2_peri_en_wd;
+  logic clk_enables_clk_io_div2_peri_en_we;
   logic clk_enables_clk_io_peri_en_qs;
   logic clk_enables_clk_io_peri_en_wd;
   logic clk_enables_clk_io_peri_en_we;
@@ -109,7 +112,33 @@ module clkmgr_reg_top (
   // Register instances
   // R[clk_enables]: V(False)
 
-  //   F[clk_io_peri_en]: 0:0
+  //   F[clk_io_div2_peri_en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_clk_enables_clk_io_div2_peri_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_enables_clk_io_div2_peri_en_we),
+    .wd     (clk_enables_clk_io_div2_peri_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_enables.clk_io_div2_peri_en.q ),
+
+    // to register interface (read)
+    .qs     (clk_enables_clk_io_div2_peri_en_qs)
+  );
+
+
+  //   F[clk_io_peri_en]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -135,7 +164,7 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_usb_peri_en]: 1:1
+  //   F[clk_usb_peri_en]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -542,11 +571,14 @@ module clkmgr_reg_top (
     if (addr_hit[2] && reg_we && (CLKMGR_PERMIT[2] != (CLKMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
   end
 
+  assign clk_enables_clk_io_div2_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
+  assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[0];
+
   assign clk_enables_clk_io_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
-  assign clk_enables_clk_io_peri_en_wd = reg_wdata[0];
+  assign clk_enables_clk_io_peri_en_wd = reg_wdata[1];
 
   assign clk_enables_clk_usb_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
-  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[1];
+  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[2];
 
   assign clk_hints_clk_main_aes_hint_we = addr_hit[1] & reg_we & ~wr_err;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
@@ -581,8 +613,9 @@ module clkmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = clk_enables_clk_io_peri_en_qs;
-        reg_rdata_next[1] = clk_enables_clk_usb_peri_en_qs;
+        reg_rdata_next[0] = clk_enables_clk_io_div2_peri_en_qs;
+        reg_rdata_next[1] = clk_enables_clk_io_peri_en_qs;
+        reg_rdata_next[2] = clk_enables_clk_usb_peri_en_qs;
       end
 
       addr_hit[1]: begin

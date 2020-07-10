@@ -10,7 +10,7 @@
   name: aon
   clock_srcs:
   {
-    clk_aon_i: io
+    clk_aon_i: io_div2
   }
   clock_group: infra
   reset: rst_aon_ni
@@ -20,7 +20,7 @@
   }
   clock_connections:
   {
-    clk_aon_i: clkmgr_aon_clocks.clk_io_infra
+    clk_aon_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   connections:
   {
@@ -94,7 +94,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40420000
+          base_addr: 0x400C0000
           size_byte: 0x1000
         }
       ]

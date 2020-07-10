@@ -103,6 +103,15 @@
 #define PINMUX_UART1_TX_OUT 42
 #define PINMUX_UART2_TX_OUT 43
 #define PINMUX_UART3_TX_OUT 44
+#define PINMUX_PWM_AON_PWM_0_OUT 45
+#define PINMUX_PWM_AON_PWM_1_OUT 46
+#define PINMUX_PWM_AON_PWM_2_OUT 47
+#define PINMUX_PWM_AON_PWM_3_OUT 48
+#define PINMUX_PWM_AON_PWM_4_OUT 49
+#define PINMUX_PWM_AON_PWM_5_OUT 50
+#define PINMUX_PWM_AON_PWM_6_OUT 51
+#define PINMUX_PWM_AON_PWM_7_OUT 52
+#define PINMUX_PWM_AON_PWM_8_OUT 53
 
 /**
  * Base address for uart peripheral in top earlgrey.
@@ -294,7 +303,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_CLKMGR_AON_BASE_ADDR 0x40420000u
+#define TOP_EARLGREY_CLKMGR_AON_BASE_ADDR 0x400C0000u
 
 /**
  * Base address for rbox_aon peripheral in top earlgrey.
