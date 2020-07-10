@@ -8,7 +8,7 @@ package tl_aon_pkg;
 
   localparam logic [31:0] ADDR_SPACE_PWRMGR_AON  = 32'h 40400000;
   localparam logic [31:0] ADDR_SPACE_RSTMGR_AON  = 32'h 40410000;
-  localparam logic [31:0] ADDR_SPACE_CLKMGR_AON  = 32'h 40420000;
+  localparam logic [31:0] ADDR_SPACE_CLKMGR_AON  = 32'h 400c0000;
   localparam logic [31:0] ADDR_SPACE_RBOX_AON    = 32'h 40430000;
   localparam logic [31:0] ADDR_SPACE_PWM_AON     = 32'h 40450000;
   localparam logic [31:0] ADDR_SPACE_PINMUX_AON  = 32'h 40460000;

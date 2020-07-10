@@ -10,10 +10,12 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_DEBUG_MEM     = 32'h 1a110000;
   localparam logic [31:0] ADDR_SPACE_RAM_MAIN      = 32'h 10000000;
   localparam logic [31:0] ADDR_SPACE_EFLASH        = 32'h 20000000;
-  localparam logic [0:0][31:0] ADDR_SPACE_PERI          = {
-    32'h 40000000
+  localparam logic [1:0][31:0] ADDR_SPACE_PERI          = {
+    32'h 40000000,
+    32'h 400e0000
   };
-  localparam logic [0:0][31:0] ADDR_SPACE_AON           = {
+  localparam logic [1:0][31:0] ADDR_SPACE_AON           = {
+    32'h 400c0000,
     32'h 40400000
   };
   localparam logic [31:0] ADDR_SPACE_FLASH_CTRL    = 32'h 41000000;
@@ -32,10 +34,12 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0001ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 000fffff;
-  localparam logic [0:0][31:0] ADDR_MASK_PERI          = {
-    32'h 001fffff
+  localparam logic [1:0][31:0] ADDR_MASK_PERI          = {
+    32'h 000a0fff,
+    32'h 00060fff
   };
-  localparam logic [0:0][31:0] ADDR_MASK_AON           = {
+  localparam logic [1:0][31:0] ADDR_MASK_AON           = {
+    32'h 00000fff,
     32'h 001fffff
   };
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL    = 32'h 00000fff;

@@ -237,11 +237,11 @@ module top_earlgrey_asic (
   //////////////////////
 
   top_earlgrey top_earlgrey (
-    .rst_ni          ( rst_n                 ),
-    .clkmgr_clk_main ( ast_base_clks.clk_sys ),
-    .clkmgr_clk_io   ( ast_base_clks.clk_io  ),
-    .clkmgr_clk_usb  ( ast_base_clks.clk_usb ),
-    .clkmgr_clk_aon  ( ast_base_clks.clk_aon ),
+    .rst_ni              ( rst_n                 ),
+    .clkmgr_aon_clk_main ( ast_base_clks.clk_sys ),
+    .clkmgr_aon_clk_io   ( ast_base_clks.clk_io  ),
+    .clkmgr_aon_clk_usb  ( ast_base_clks.clk_usb ),
+    .clkmgr_aon_clk_aon  ( ast_base_clks.clk_aon ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

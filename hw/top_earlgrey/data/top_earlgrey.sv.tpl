@@ -749,6 +749,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % endif
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_clk_main, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_aon_clk_main, 0)
 
 endmodule

@@ -10,7 +10,7 @@
   name: peri
   clock_srcs:
   {
-    clk_peri_i: io
+    clk_peri_i: io_div2
   }
   clock_group: infra
   reset: rst_peri_ni
@@ -20,7 +20,7 @@
   }
   clock_connections:
   {
-    clk_peri_i: clkmgr_aon_clocks.clk_io_infra
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   connections:
   {
