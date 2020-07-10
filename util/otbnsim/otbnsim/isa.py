@@ -9,6 +9,8 @@ from riscvmodel.types import Immediate
 
 from .variant import RV32IXotbn
 
+from enum import Enum
+
 class InstructionLType(Instruction):
     def __init__(self, rs1: int = None, bodysize: int = None):
         super().__init__()
@@ -67,6 +69,86 @@ class InstructionLIType(Instruction):
         if not super().__eq__(other):
             return False
         return self.iter == other.iter and self.bodysize == other.bodysize
+
+class ShiftType(Enum):
+  LSL = 0 # logical shift left
+  LSR = 1 # logical shift right
+
+def DecodeShiftType(st: int) -> ShiftType:
+  if st == 0:
+    return ShiftType.LSL
+  elif st == 1:
+    return ShiftType.LSR
+  else:
+    raise Exception()
+
+class InstructionBNAType(Instruction):
+    def __init__(self, wrd: int=None, wrs1: int=None, wrs2: int=None, shift_bytes: int=None, shift_type: int=None):
+        super().__init__()
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.wrs2 = wrs2
+        self.shift_bytes = Immediate(bits=5, signed=False, init=shift_bytes)
+        self.shift_type = DecodeShiftType(shift_type) if shift_type is not None else shift_type
+
+    def randomize(self, variant):
+        # TODO: shift randomization
+        self.wrd.randomize()
+        self.wrs1.randomize()
+        self.wrs2.randomize()
+
+    def ops_from_string(self, ops):
+        # TODO: shift
+        ops = [op for op in ops.split(",")]
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[1][1:])
+
+    def __str__(self):
+        return "{} w{}, w{}, w{}".format(self._mnemonic, self.wrd, self.wrs1, self.wrs2)
+
+    def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
+        return self.wrd == other.wrd and self.wrs1 == other.wrs1 and self.wrs2 == other.wrs2 and self.shift_bytes == other.shift_bytes and self.shift_type == other.shift_type
+
+
+class InstructionBNCSType(Instruction):
+    def __init__(self, wrd: int=None, wsr: int=None, wcsr: int=None):
+        super().__init__()
+        self.wrd = wrd
+        self.wsr = wsr
+        self.wcsr = Immediate(bits=8, signed=False, init=wcsr)
+
+    def randomize(self, variant: Variant):
+        self.wrd.randomize()
+        self.wsr.randomize()
+        self.wcsr.randomize()
+
+    def decode(self, machinecode: int):
+        self.wrd = (machinecode >> 7) & 0x1f
+        self.wsr = (machinecode >> 15) & 0x1f
+        self.wcsr.set_from_bits((machinecode >> 20) & 0xff)
+
+    def encode(self) -> int:
+      x  = self._opcode | (self._funct3 << 12)
+      x |= (self._funct31 << 31) | (self._funct30 << 30) | (self._funct29 << 29) | (self._funct28 << 28)
+      x |= (self.wrd << 7) | (self.wsr << 15) | (int(self.wcsr) << 20)
+      return x
+
+    def ops_from_string(self, ops):
+        ops = [op for op in ops.split(",")]
+        self.wrd = int(ops[0][1:])
+        self.wsr = int(ops[1][1:])
+        self.wcsr.set(int(ops[2], 0))
+
+    def __str__(self):
+        return "{} w{}, w{}, {}".format(self._mnemonic, self.wrd, self.wsr, self.wcsr)
+
+    def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
+        return self.wrd == other.wrd and self.wsr == other.wrd and self.wcsr == other.wcsr
 
 
 def isaOTBN(mnemonic: str, *, opcode: int, funct3: int=None, funct28: int=None, funct29: int=None, funct30: int=None, funct31: int=None):

@@ -60,11 +60,12 @@ class OTBNIntRegisterFile(RegisterFile):
       self.cs_update.clear()
       super().commit()
 
+
 class OTBNState(State):
     def __init__(self):
         super().__init__(RV32IXotbn)
         self.intreg = OTBNIntRegisterFile(32, 32, {0: 0})
-        self.wreg = RegisterFile(32, 256, {})
+        self.wreg = RegisterFile(32, 256, {}, prefix="w")
         self.flags = Register(8)
         self.mod0 = Register(32)
         self.mod1 = Register(32)
@@ -98,8 +99,14 @@ class OTBNState(State):
         elif index == 0x7D7:
           return int(self.mod7)
         elif index == 0xFC0:
-          return randrange(0, 2^32)
+          return randrange(0, 1<<32)
+        return super().csr_read(self, index)
 
+    def csr_read(self, index):
+        if index == 0:
+          return 0
+        elif index == 1:
+          return randrange(0, 1<<256)
 
     def loop_start(self, iterations, bodysize):
         self.loop.appendleft({"iterations": iterations,
@@ -124,10 +131,12 @@ class OTBNState(State):
           else:
             self.loop[0]["count_instructions"] += 1
         c += self.loop_trace
+        c += self.wreg.changes()
         return c
 
     def commit(self):
         super().commit()
+        self.wreg.commit()
         self.loop_trace.clear()
 
 class OTBNEnvironment(Environment):

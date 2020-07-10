@@ -25,7 +25,7 @@ operands: OPERAND ("," OPERAND)*
 loop: "LOOP"i REGNAME "(" "\n" statement+ ")" "\n"
     | "LOOPI"i NUMBER "(" "\n" statement+ ")" "\n"
 
-MNEMONIC: ("a".."z" | "A".."Z")+
+MNEMONIC: ("a".."z" | "A".."Z" | ".")+
 NUMBER: ("0".."9")+
 OPERAND: ("a".."z" | "A".."Z" | "0".."9" | "(" | ")" | "+" | "-")+
 REGNAME: "a".."z" NUMBER
@@ -57,7 +57,7 @@ class lowerLoop:
     elif t.data == "instruction":
       mnemonic = str(t.children[0]).lower()
       cls = reverse_lookup(mnemonic, RV32IXotbn)
-      assert cls
+      assert cls, "Unknown instruction: {}".format(mnemonic)
       insn = cls()
       if len(t.children) > 1:
         insn.ops_from_string(",".join([str(o) for o in t.children[1].children]))
