@@ -112,7 +112,6 @@
           clk_aon_secure: aon
           clk_main_secure: main
           clk_usb_secure: usb
-          clk_io_secure: io
         }
       }
       {
@@ -198,6 +197,18 @@
       clk: io_div2
     }
     {
+      name: lc_aon
+      type: top
+      root: lc
+      clk: aon
+    }
+    {
+      name: lc_usb
+      type: top
+      root: lc
+      clk: usb
+    }
+    {
       name: sys
       type: top
       root: sys
@@ -213,7 +224,7 @@
       name: sys_aon
       type: top
       root: sys
-      clk: io_div2
+      clk: aon
     }
     {
       name: spi_device
@@ -1604,10 +1615,10 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys_io
-        rst_aon_ni: por_aon
-        rst_sys_ni: sys
-        rst_usb_ni: usb
+        rst_ni: lc_io
+        rst_aon_ni: lc_aon
+        rst_sys_ni: lc
+        rst_usb_ni: lc_usb
       }
       base_addr: 0x40110000
       clock_connections:
@@ -1705,7 +1716,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: lc
+        rst_ni: lc_io
       }
       base_addr: 0x40130000
       clock_connections:
@@ -1899,7 +1910,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: lc
+        rst_ni: lc_io
       }
       base_addr: 0x40140000
       clock_connections:
@@ -2275,21 +2286,21 @@
       clock: main
       clock_srcs:
       {
-        clk_i: main
-        clk_aon_i: io
+        clk_i: io_div2
+        clk_aon_i: aon
       }
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
-        rst_aon_ni: sys_io
+        rst_ni: sys_io
+        rst_aon_ni: sys_aon
       }
       base_addr: 0x40460000
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_main_secure
-        clk_aon_i: clkmgr_aon_clocks.clk_io_secure
+        clk_i: clkmgr_aon_clocks.clk_io_div2_secure
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -2348,18 +2359,18 @@
       clock: main
       clock_srcs:
       {
-        clk_i: main
+        clk_i: io_div2
       }
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: sys_io
       }
       base_addr: 0x40470000
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_main_secure
+        clk_i: clkmgr_aon_clocks.clk_io_div2_secure
       }
       size: 0x1000
       bus_device: tlul
@@ -2383,7 +2394,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: lc
       }
       base_addr: 0x41170000
       generated: "true"
@@ -2936,7 +2947,7 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_io
+        rst_ni: sys_io
       }
       base_addr: 0x40450000
       clock_connections:
@@ -2967,17 +2978,17 @@
       type: rv_timer
       clock_srcs:
       {
-        clk_i: aon
+        clk_i: io_div2
       }
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_aon
+        rst_ni: sys_io
       }
       base_addr: 0x40480000
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_aon_powerup
+        clk_i: clkmgr_aon_clocks.clk_io_div2_powerup
       }
       size: 0x1000
       bus_device: tlul
@@ -7131,6 +7142,8 @@
     por_usb: rstmgr_aon_resets.rst_por_usb_n
     lc: rstmgr_aon_resets.rst_lc_n
     lc_io: rstmgr_aon_resets.rst_lc_io_n
+    lc_aon: rstmgr_aon_resets.rst_lc_aon_n
+    lc_usb: rstmgr_aon_resets.rst_lc_usb_n
     sys: rstmgr_aon_resets.rst_sys_n
     sys_io: rstmgr_aon_resets.rst_sys_io_n
     sys_aon: rstmgr_aon_resets.rst_sys_aon_n

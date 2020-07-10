@@ -183,7 +183,6 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_io_div2_secure = clk_io_div2_root;
   assign clocks_o.clk_main_secure = clk_main_root;
   assign clocks_o.clk_usb_secure = clk_usb_root;
-  assign clocks_o.clk_io_secure = clk_io_root;
   assign clocks_o.clk_io_div2_timers = clk_io_div2_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 

@@ -1039,10 +1039,10 @@ module top_earlgrey #(
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
       .clk_sys_i (clkmgr_aon_clocks.clk_main_secure),
       .clk_usb_i (clkmgr_aon_clocks.clk_usb_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n),
-      .rst_aon_ni (rstmgr_aon_resets.rst_por_aon_n),
-      .rst_sys_ni (rstmgr_aon_resets.rst_sys_n),
-      .rst_usb_ni (rstmgr_aon_resets.rst_usb_n)
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_n),
+      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n),
+      .rst_sys_ni (rstmgr_aon_resets.rst_lc_n),
+      .rst_usb_ni (rstmgr_aon_resets.rst_lc_usb_n)
   );
 
   otp_ctrl u_otp_ctrl (
@@ -1073,7 +1073,7 @@ module top_earlgrey #(
       .otp_ram_ret_aon_key_o(otp_ctrl_otp_ram_ret_aon_key),
       .otp_otbn_ram_key_o(otp_ctrl_otp_otbn_ram_key),
       .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n)
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
   );
 
   lifecycle u_lifecycle (
@@ -1095,7 +1095,7 @@ module top_earlgrey #(
       .strap_sample_o(lifecycle_strap_sample_req),
       .strap_sample_i(lifecycle_strap_sample_rsp),
       .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n)
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
   );
 
   aes u_aes (
@@ -1180,10 +1180,10 @@ module top_earlgrey #(
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
-      .clk_i (clkmgr_aon_clocks.clk_main_secure),
-      .clk_aon_i (clkmgr_aon_clocks.clk_io_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n),
-      .rst_aon_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n),
+      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n)
   );
 
   padctrl u_padctrl_aon (
@@ -1192,8 +1192,8 @@ module top_earlgrey #(
 
       .mio_attr_o,
       .dio_attr_o,
-      .clk_i (clkmgr_aon_clocks.clk_main_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
   alert_handler u_alert_handler (
@@ -1216,7 +1216,7 @@ module top_earlgrey #(
       .esc_rx_i    ( esc_rx   ),
       .esc_tx_o    ( esc_tx   ),
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n)
+      .rst_ni (rstmgr_aon_resets.rst_lc_n)
   );
 
   pwrmgr u_pwrmgr_aon (
@@ -1333,7 +1333,7 @@ module top_earlgrey #(
       .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
       .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
       .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
   rv_timer u_timer_aon (
@@ -1342,8 +1342,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_0_0_o (intr_timer_aon_timer_expired_0_0),
-      .clk_i (clkmgr_aon_clocks.clk_aon_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_aon_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
   nmi_gen u_nmi_gen (

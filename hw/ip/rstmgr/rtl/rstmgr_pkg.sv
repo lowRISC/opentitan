@@ -22,11 +22,17 @@ package rstmgr_pkg;
     logic rst_por_io_div2_n;
     logic rst_por_usb_n;
     logic rst_lc_n;
-    logic rst_sys_io_n;
+    logic rst_lc_io_n;
+    logic rst_lc_aon_n;
+    logic rst_lc_usb_n;
     logic rst_sys_n;
+    logic rst_sys_io_n;
+    logic rst_sys_aon_n;
     logic rst_spi_device_n;
     logic rst_usb_n;
   } rstmgr_out_t;
+
+  localparam int NumRsts = $bits(rstmgr_out_t);
 
   // peripherals reset requests
   typedef struct packed {
