@@ -108,9 +108,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [AllPagesW-1:0] err_page;
   logic [BankW-1:0] err_bank;
 
-  assign rd_op = reg2hw.control.op.q == FlashRead;
-  assign prog_op = reg2hw.control.op.q == FlashProg;
-  assign erase_op = reg2hw.control.op.q == FlashErase;
+  assign rd_op = reg2hw.control.op.q == FlashOpRead;
+  assign prog_op = reg2hw.control.op.q == FlashOpProgram;
+  assign erase_op = reg2hw.control.op.q == FlashOpErase;
 
   // Program FIFO
   // Since the program and read FIFOs are never used at the same time, it should really be one
@@ -289,15 +289,15 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Final muxing to flash macro module
   always_comb begin
     unique case (reg2hw.control.op.q)
-      FlashRead: begin
+      FlashOpRead: begin
         flash_req = rd_flash_req;
         flash_addr = rd_flash_addr;
       end
-      FlashProg: begin
+      FlashOpProgram: begin
         flash_req = prog_flash_req;
         flash_addr = prog_flash_addr;
       end
-      FlashErase: begin
+      FlashOpErase: begin
         flash_req = erase_flash_req;
         flash_addr = erase_flash_addr;
       end
@@ -322,7 +322,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
   // we are allowed to set default accessibility of data partitions
   // however info partitions default to inaccessible
-  assign region_cfgs[MpRegions].partition.q = DataPart;
+  assign region_cfgs[MpRegions].partition.q = FlashPartData;
 
   flash_part_e flash_part_sel;
   assign flash_part_sel = flash_part_e'(reg2hw.control.partition_sel.q);
@@ -350,8 +350,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .req_bk_i(flash_addr[BusAddrW-1 -: BankW]),
     .rd_i(rd_op),
     .prog_i(prog_op),
-    .pg_erase_i(erase_op & (erase_flash_type == PageErase)),
-    .bk_erase_i(erase_op & (erase_flash_type == BankErase)),
+    .pg_erase_i(erase_op & (erase_flash_type == FlashErasePage)),
+    .bk_erase_i(erase_op & (erase_flash_type == FlashEraseBank)),
     .rd_done_o(flash_rd_done),
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
