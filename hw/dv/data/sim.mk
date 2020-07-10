@@ -122,10 +122,6 @@ cov_report:
 	@echo "[make]: cov_report"
 	${cov_report_cmd} ${cov_report_opts}
 
-clean:
-	echo "[make]: clean"
-	rm -rf ${scratch_root}/${dut}/*
-
 .PHONY: build \
 	run \
 	reg \
