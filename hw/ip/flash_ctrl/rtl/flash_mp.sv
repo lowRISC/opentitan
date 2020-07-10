@@ -97,7 +97,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
       bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q &
-                       (req_part_i == DataPart);
+                       (req_part_i == FlashPartData);
     end
   end
 
@@ -105,13 +105,13 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
 
   // invalid info page access
   assign invalid_info_access = req_i &
-                               (req_part_i == InfoPart) &
+                               (req_part_i == FlashPartInfo) &
                                (rd_i | prog_i | pg_erase_i) &
                                (req_addr_i[0 +: PageW] > LastValidInfoPage);
 
   // invalid info page erase
   assign invalid_info_erase  = req_i & bk_erase_i &
-                               (req_part_i == InfoPart);
+                               (req_part_i == FlashPartInfo);
 
   assign invalid_info_txn    = invalid_info_access | invalid_info_erase;
 
