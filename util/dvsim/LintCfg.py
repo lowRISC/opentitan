@@ -47,7 +47,11 @@ class LintCfg(OneShotCfg):
         log.info("Create summary of lint results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
-        results_str += "### " + self.timestamp_long + "\n\n"
+        results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
+        results_str += "\n"
+
 
         header = [
             "Name", "Tool Warnings", "Tool Errors", "Lint Warnings",
@@ -110,6 +114,8 @@ class LintCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
 
         header = [
