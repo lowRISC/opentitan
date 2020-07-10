@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
       - lowrisc:prim:ram_2p_adv
+      - lowrisc:ip:spi_pkg
     files:
       - rtl/spi_device_reg_pkg.sv
       - rtl/spi_device_reg_top.sv
