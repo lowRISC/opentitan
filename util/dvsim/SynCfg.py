@@ -35,7 +35,10 @@ class SynCfg(OneShotCfg):
         log.info("Create summary of synthesis results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
-        results_str += "### " + self.timestamp_long + "\n\n"
+        results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
+        results_str += "\n"
 
         self.results_summary_md = results_str + "\nNot supported yet.\n"
 
@@ -142,6 +145,8 @@ class SynCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 
         # TODO: extend this to support multiple build modes
