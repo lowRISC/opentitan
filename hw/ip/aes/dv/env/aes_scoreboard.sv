@@ -52,7 +52,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_MEDIUM)
     if(cfg.en_scb) begin
       fork
         compare();
@@ -84,7 +84,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
-      `uvm_info(`gfn, $sformatf("ITEM received reg name : %s",csr.get_name() ), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name() ), UVM_MEDIUM)
       csr_name = csr.get_name();
       case (1)
         // add individual case item for each csr
@@ -134,22 +134,58 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
        end
 
-     //    TODO
-     //   "trigger": begin
-     //     if (item.a_data[0]) begin
-     //       //            `downcast(ref_item, input_item.clone());
-     //       //            ref_fifo.put(ref_item);
-     //     end
-     //   end
-     //
-     //   "status": begin
-     //     //TBD
-     //   end
-
-        default: begin
-          // DO nothing- trying to write to a read only register
+      (!uvm_re_match("trigger", csr_name)): begin
+        //start triggered
+        if (item.a_data[0]) begin
+           ok_to_fwd    = 1;
+           aes_from_rst = 0;
         end
-      endcase
+        // clear key
+        if (item.a_data[1]) begin
+          if(cfg.clear_reg_w_rand) begin
+            input_item.key = {8{$urandom()}};
+          end else begin
+            input_item.key = '0;
+          end
+        end
+        // clear IV
+        if (item.a_data[2]) begin
+          if(cfg.clear_reg_w_rand) begin
+            input_item.iv = {4{$urandom()}};
+          end else begin
+            input_item.iv = '0;
+          end
+        end
+        // clear data_in
+        if (item.a_data[3]) begin
+          if(cfg.clear_reg_w_rand) begin
+            input_item.data_in = {4{$urandom()}};
+          end else begin
+            input_item.data_in = '0;
+          end
+        end
+        // clear data out
+        if (item.a_data[4]) begin
+          if(cfg.clear_reg_w_rand) begin
+            input_item.data_out = {4{$urandom()}};
+          end else begin
+            input_item.data_out = '0;
+          end
+        end
+        // reseed
+         if (item.a_data[5]) begin
+           // nothing to do for DV
+        end
+       end
+
+      // "status": begin
+      //   //TBD
+      // end
+
+       default: begin
+         // DO nothing- trying to write to a read only register
+       end
+     endcase
 
 
       ///////////////////////////////////////
@@ -157,52 +193,50 @@ class aes_scoreboard extends cip_base_scoreboard #(
       ///////////////////////////////////////
 
       // check that the item is valid - all registers clean base on mode //
-      if(input_item.valid) begin
+      if(input_item.valid && !input_item.manual_op) begin
         case (input_item.mode)
           AES_ECB: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| ECB mode"), UVM_MEDIUM)
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0)) begin
                 //clone and add to ref and rec data fifo
                 ok_to_fwd    = 1;
                 aes_from_rst = 0;
-                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
               end
             end else begin
               // verify that all 4 data_in and all 8 key are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                        input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+                        input_item.data_in_valid(), input_item.key_clean(1) ), UVM_MEDIUM)
 
               if(input_item.data_in_valid() && input_item.key_clean(1)) begin
                 //clone and add to ref and rec data fifo
-                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
                 ok_to_fwd = 1;
               end
             end
           end
-  
+
           AES_CBC: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| CBC mode"), UVM_MEDIUM)
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
                 //clone and add to ref and rec data fifo
                 ok_to_fwd    = 1;
                 aes_from_rst = 0;
-                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
               end
             end else begin
               // verify that all 4 data_in and all 8 key  and all 4 IV are clean
               `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                                input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+                                input_item.data_in_valid(), input_item.key_clean(1) ), UVM_MEDIUM)
 
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
-                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
                 ok_to_fwd = 1;
               end
             end
           end
-  
+
           AES_CFB: begin
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
@@ -210,7 +244,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 //clone and add to ref and rec data fifo
                 ok_to_fwd    = 1;
                 aes_from_rst = 0;
-                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
               end
             end else begin
               // verify that all 4 data_in and all 8 key  and all 4 IV are clean
@@ -219,7 +252,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
-                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
                 ok_to_fwd = 1;
               end
             end
@@ -232,7 +264,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 //clone and add to ref and rec data fifo
                 ok_to_fwd    = 1;
                 aes_from_rst = 0;
-                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
               end
             end else begin
               // verify that all 4 data_in and all 8 key  and all 4 IV are clean
@@ -241,27 +272,25 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
-                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
                 ok_to_fwd = 1;
               end
             end
           end
 
           AES_CTR: begin
+            `uvm_info(`gfn, $sformatf("\n\t ----| CTR mode"), UVM_MEDIUM)
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
               if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
                 //clone and add to ref and rec data fifo
                 ok_to_fwd    = 1;
                 aes_from_rst = 0;
-                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
               end
             end else begin
               // verify that all 4 data_in and all 8 and all 4 IV  key are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(), input_item.key_clean(1) ), UVM_MEDIUM)
               if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
                 //clone and add to ref and rec data fifo
-                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
                 ok_to_fwd = 1;
               end
             end
@@ -276,7 +305,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if(ok_to_fwd ) begin
         ok_to_fwd = 0;
         `downcast(input_clone, input_item.clone());
-        `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s", input_clone.convert2string()), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s", input_clone.convert2string()), UVM_MEDIUM)
         rcv_item_q.push_front(input_clone);
         input_item.clean();
       end
@@ -287,7 +316,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     // get an item from the rcv queue and wait for all output data to be received
     //////////////////////////////////////////////////////////////////////////////
 
-    `uvm_info(`gfn, $sformatf("\n\t ---| channel  %h", channel), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ---| channel  %h", channel), UVM_DEBUG)
     if (!write && channel == DataChannel) begin
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
@@ -295,7 +324,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       `uvm_info(`gfn, $sformatf("\n\t ----| SAW READ - %s data %02h",csr.get_name(),  item.d_data)
-                , UVM_HIGH)
+                , UVM_MEDIUM)
 
       case (csr.get_name())
         "data_out0": begin
@@ -330,8 +359,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
         output_item                = new();
         complete_item              = new();
         `uvm_info(`gfn,
-          $sformatf("\n\t ----|added data to item_fifo (output received) fifo entries %d", 
-                   item_fifo.num()), UVM_HIGH)
+          $sformatf("\n\t ----|added data to item_fifo (output received) fifo entries %d",
+                   item_fifo.num()), UVM_MEDIUM)
       end
     end
   endtask // process_tl_access
@@ -383,8 +412,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
       begin
         wait( finish_message )
-        `uvm_info(`gfn, $sformatf("\n\t ----|Finish test received adding message item to mg_fifo")
-         , UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("\n\t ----| Finish test received adding message item to mg_fifo")
+         , UVM_MEDIUM)
 
         `downcast(msg_clone, message.clone());
         msg_fifo.put(msg_clone);
@@ -401,40 +430,36 @@ class aes_scoreboard extends cip_base_scoreboard #(
     forever begin
       aes_message_item msg;
 
-      `uvm_info(`gfn, $sformatf("\n\t ----| TRYING to get item "), UVM_HIGH)
       msg_fifo.get(msg);
-
-      `uvm_info(`gfn, $sformatf("\n\t ----| GOT item "), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key %h ",
                                 cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, msg.aes_keylen, msg.aes_key)
-                , UVM_HIGH)
+                , UVM_MEDIUM)
 
       msg.alloc_predicted_msg();
       //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
-      c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, 
-                              msg.aes_keylen, msg.aes_key, msg.input_msg, msg.predicted_msg);
+      c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
+                            msg.aes_keylen, msg.aes_key, msg.input_msg, msg.predicted_msg);
 
       `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string() )
-                , UVM_HIGH)
+                , UVM_MEDIUM)
       txt = "";
       foreach(msg.input_msg[i]) begin
         txt = { txt, $sformatf("\n\t  %h \t %h \t %h",
                                msg.input_msg[i],msg.output_msg[i], msg.predicted_msg[i])};
       end
 
-      `uvm_info(`gfn, $sformatf("\n\t input \t output \t predicted %s",txt), UVM_HIGH)
 
       for( int n =0 ; n < msg.input_msg.size(); n++) begin
         if( msg.output_msg[n] != msg.predicted_msg[n]) begin
           txt = "\t TEST FAILED MESSAGES DID NOT MATCH";
 
           txt = {txt,  $sformatf("\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
-          txt = {txt, $sformatf("\n\t ----| FAILED AT BLOCK #%d \t ACTUAL: %h \t PREDICTED: %h, ", 
+          txt = {txt, $sformatf("\n\t ----| FAILED AT BLOCK #%d \t ACTUAL: %h \t PREDICTED: %h, ",
                                 n, msg.output_msg[n], msg.predicted_msg[n] )};
           `uvm_fatal(`gfn, $sformatf(" # %d  \n\t %s \n",message_cnt, txt))
         end
       end
-      `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%d MATCHED    |-----",message_cnt), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----",message_cnt), UVM_MEDIUM)
       message_cnt++;
     end
   endtask
@@ -445,7 +470,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
     // the message currently being reassembled is should be sent for scoring
     finish_message = 1;
-    `uvm_info(`gfn, $sformatf("Finish message: %b", finish_message), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Finish message: %b", finish_message), UVM_MEDIUM)
 
     // AEs needs this objection - because PHASE READY TO END
     // is the only way to know that the very last message is now complete
@@ -459,7 +484,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
 
   virtual task wait_fifo_empty();
-    `uvm_info(`gfn, $sformatf("item fifo entries %d", item_fifo.num()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("item fifo entries %d", item_fifo.num()), UVM_MEDIUM)
     wait (rcv_item_q.size() == 0 );
     wait (item_fifo.num()   == 0 );
     wait (msg_fifo.num()    == 0 );
@@ -474,13 +499,20 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void check_phase(uvm_phase phase);
     string txt =  "";
+    uvm_report_server rpt_srvr;
+
     if (cfg.en_scb) begin
       super.check_phase(phase);
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
       if(message_cnt != cfg.num_messages) begin
-        txt = "\n\t ----| NO FAILURES BUT DIDN*T SEE ALL EXPECTED MESSAGES";
+        rpt_srvr = uvm_report_server::get_server();
+        if(rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
+          txt = "\n\t ----| NO FAILURES BUT DIDN*T SEE ALL EXPECTED MESSAGES";
+        end else begin
+          txt = "\n\t ----| TEST FAILED";
+          end
         txt = { txt, $sformatf(" \n\t ----| expected %d, seen: %d", cfg.num_messages, message_cnt ) };
         `uvm_fatal(`gfn, $sformatf("%s", txt) )
       end
@@ -508,7 +540,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       txt = { txt,"\n\t----            TEST PASSED        ----"};
       txt = { txt,"\n\t---------------------------------------"};
     end
-    `uvm_info(`gfn, $sformatf("%s", txt), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("%s", txt), UVM_MEDIUM)
 
   endfunction // report_phase
 endclass
