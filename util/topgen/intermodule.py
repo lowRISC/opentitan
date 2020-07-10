@@ -207,7 +207,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     for s in topcfg["inter_module"]["top"]:
         sig_m, sig_s, sig_i = filter_index(s)
-        assert sig_i is -1, 'top net connection should not use bit index'
+        assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
         sig_name = intersignal_format(sig)
         sig["top_signame"] = sig_name
@@ -241,7 +241,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     for s in topcfg["inter_module"]["external"]:
         sig_m, sig_s, sig_i = filter_index(s)
-        assert sig_i is -1, 'top net connection should not use bit index'
+        assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
         sig_name = intersignal_format(sig)
         sig["top_signame"] = sig_name
