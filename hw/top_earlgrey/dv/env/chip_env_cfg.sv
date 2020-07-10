@@ -88,6 +88,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
     // ram_main mem and hmac mem support partial write
     ral.ram_main.set_mem_partial_write_support(1);
+    ral.ram_ret.set_mem_partial_write_support(1);
     ral.hmac.msg_fifo.set_mem_partial_write_support(1);
   endfunction
 
