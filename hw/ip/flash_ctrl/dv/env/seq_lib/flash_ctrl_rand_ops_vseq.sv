@@ -240,7 +240,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     // chunk of space. The rest of the flash mem is essentially dont-care. If the flash ctrl
     // does not work correctly, the check will result in an access from the invalidated mem
     // region exposing the issue.
-    flash_mem_bkdr_init(FlashMemInitInvalidate);
+    flash_mem_bkdr_init(flash_ctrl_op.partition, FlashMemInitInvalidate);
     case (flash_ctrl_op.op)
       FlashCtrlOpRead: begin
         // Initialize the targeted mem region with random data.

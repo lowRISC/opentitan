@@ -50,20 +50,31 @@ module tb;
   );
 
   // bind mem_bkdr_if
-  `define FLASH_MEM_HIER(i) \
+  `define FLASH_DATA_MEM_HIER(i) \
       dut.u_flash_eflash.gen_flash_banks[``i``].i_core.i_flash.gen_generic.u_impl_generic.u_mem
+
+  `define FLASH_INFO_MEM_HIER(i) \
+      dut.u_flash_eflash.gen_flash_banks[``i``].i_core.i_flash.gen_generic.u_impl_generic.u_info_mem
 
   generate
     for (genvar i = 0; i < FLASH_CTRL_NUM_BANKS; i++) begin : mem_bkdr_if_i
-      bind `FLASH_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
+      bind `FLASH_DATA_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
+      bind `FLASH_INFO_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
       initial begin
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0d]", i),
-                                          `FLASH_MEM_HIER(i).mem_bkdr_if);
+        flash_ctrl_partition_e part;
+        part = FlashCtrlPartitionData;
+        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
+            part.name(), i), `FLASH_DATA_MEM_HIER(i).mem_bkdr_if);
+
+        part = FlashCtrlPartitionInfo;
+        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
+            part.name(), i), `FLASH_INFO_MEM_HIER(i).mem_bkdr_if);
       end
     end
   endgenerate
 
-  `undef FLASH_MEM_HIER
+  `undef FLASH_DATA_MEM_HIER
+  `undef FLASH_INFO_MEM_HIER
 
   // Connect the interrupts
   assign interrupts[FlashCtrlIntrProgEmpty] = intr_prog_empty;
