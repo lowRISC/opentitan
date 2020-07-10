@@ -46,7 +46,6 @@ module rstmgr import rstmgr_pkg::*; (
 );
 
 
-  localparam int NumRsts = 10;
   logic [NumRsts-1:0] raw_resets, muxed_resets;
   rstmgr_out_t resets_int;
 
@@ -182,10 +181,40 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue(0)
   ) i_lc (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_int.rst_lc_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_lc_io (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
+    .d(1'b1),
+    .q(resets_int.rst_lc_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_lc_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
+    .d(1'b1),
+    .q(resets_int.rst_lc_aon_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_lc_usb (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
+    .d(1'b1),
+    .q(resets_int.rst_lc_usb_n)
   );
 
   prim_flop_2sync #(
@@ -206,6 +235,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_int.rst_sys_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_sys_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
+    .d(1'b1),
+    .q(resets_int.rst_sys_aon_n)
   );
 
   prim_flop_2sync #(
@@ -268,8 +307,12 @@ module rstmgr import rstmgr_pkg::*; (
                       resets_int.rst_por_io_div2_n,
                       resets_int.rst_por_usb_n,
                       resets_int.rst_lc_n,
-                      resets_int.rst_sys_io_n,
+                      resets_int.rst_lc_io_n,
+                      resets_int.rst_lc_aon_n,
+                      resets_int.rst_lc_usb_n,
                       resets_int.rst_sys_n,
+                      resets_int.rst_sys_io_n,
+                      resets_int.rst_sys_aon_n,
                       resets_int.rst_spi_device_n,
                       resets_int.rst_usb_n
                       };
