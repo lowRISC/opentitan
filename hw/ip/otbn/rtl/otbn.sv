@@ -173,7 +173,6 @@ module otbn
   logic imem_write_core;
   logic [ImemIndexWidth-1:0] imem_index_core;
   logic [31:0] imem_wdata_core;
-  logic [31:0] imem_wmask_core;
   logic [31:0] imem_rdata_core;
   logic imem_rvalid_core;
   logic [1:0] imem_rerror_core;
@@ -247,13 +246,17 @@ module otbn
   assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
   assign imem_wdata = imem_access_core ? imem_wdata_core : imem_wdata_bus;
 
-  // The instruction memory only supports 32b word accesses; ensure that all
-  // users follow this restriction.
+  // The instruction memory only supports 32b word writes, so we hardcode its
+  // wmask here.
+  //
+  // Since this could cause confusion if the bus tried to do a partial write
+  // (which wasn't caught in the TLUL adapter for some reason), we assert that
+  // the wmask signal from the bus is indeed '1 when it requests a write. We
+  // don't have the corresponding check for writes from the core because the
+  // core cannot perform writes (and has no imem_wmask_o port).
   assign imem_wmask = 32'hFFFFFFFF;
-  `ASSERT(ImemWmaskCoreIsFullWord_A,
-      imem_req_core |-> imem_wmask_core == 32'hFFFFFFFF)
   `ASSERT(ImemWmaskBusIsFullWord_A,
-      imem_req_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
+      imem_req_bus && imem_write_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
@@ -421,7 +424,6 @@ module otbn
     .start_addr_i  (start_addr),
 
     .imem_req_o    (imem_req_core),
-    .imem_write_o  (imem_write_core),
     .imem_addr_o   (imem_addr_core),
     .imem_wdata_o  (imem_wdata_core),
     .imem_rdata_i  (imem_rdata_core),
@@ -438,9 +440,8 @@ module otbn
     .dmem_rerror_i (dmem_rerror_core)
   );
 
-  // The core always writes full 32b words to IMEM.
-  assign imem_wmask_core = 32'hFFFFFFFF;
-
+  // The core can never signal a write to IMEM
+  assign imem_write_core = 1'b0;
 
   // LFSR ======================================================================
 
