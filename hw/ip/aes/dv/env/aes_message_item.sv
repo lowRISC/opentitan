@@ -13,29 +13,52 @@ class aes_message_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // min number of data bytes
-  int    message_len_max     = 16;
+  int    message_len_max      = 16;
   // Max number of data bytes
-  int    message_len_min     = 1;
+  int    message_len_min      = 1;
   // percentage of configuration errors
-  int    config_error_pct    = 20;
+  int    config_error_pct     = 20;
   // errors enabled
-  bit    errors_en           = 1;
+  bit    errors_en            = 1;
   // configuraiton errors enabled
-  bit    config_err          = 0;
+  bit    config_err           = 0;
+  // manual mode percentage
+  int    manual_operation_pct = 10;
+  // maskout unused key bits
+  bit    keymask              = 0;
+  // use fixed key
+  bit    fixed_key_en         = 0;
+  //used fixed key length
+  bit    fixed_keylen_en      = 0;
+  // use fixed data (same data for each block in a message
+  bit    fixed_data_en        = 0;
+  // fixed operation
+  bit    fixed_operation_en   = 0;
+  // fixed IV
+  bit    fixed_iv_en          = 0;
+
+
+
+  // predefined values for fixed mode
+  bit [3:0] [31:0]    fixed_data       = 128'hDEADBEEFEEDDBBAABAADBEEFDEAFBEAD;
+  bit [7:0] [31:0]    fixed_key        = 256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF;
+  bit [2:0]           fixed_keylen     = 3'b001;
+  bit                 fixed_operation  = 1'b0;
+  bit [3:0] [31:0]    fixed_iv         = 128'h00000000000000000000000000000000;
 
   // Mode distribution //
   // chance of selection ecb_mode
   // ecb_mode /(ecb_mode + cbc_mode + cfb_mode + ofb_mode + ctr_mode)
   // with the defaults 10/50 = 1/5 (20%)
-  int    ecb_weight          = 10;
-  int    cbc_weight          = 10;
-  int    cfb_weight          = 10;
-  int    ofb_weight          = 10;
-  int    ctr_weight          = 10;
+  int    ecb_weight           = 10;
+  int    cbc_weight           = 10;
+  int    cfb_weight           = 10;
+  int    ofb_weight           = 10;
+  int    ctr_weight           = 10;
   // KEYLEN weights
-  int    key_128b_weight     = 10;
-  int    key_192b_weight     = 10;
-  int    key_256b_weight     = 10;
+  int    key_128b_weight      = 10;
+  int    key_192b_weight      = 10;
+  int    key_256b_weight      = 10;
 
   ///////////////////////////////////////
   // Randomizable variables            //
@@ -55,6 +78,9 @@ class aes_message_item extends uvm_sequence_item;
   rand bit [3:0][31:0] aes_iv;
   // configuration error                                       //
   rand bit             has_config_error;
+  // run AES in manual mode
+  rand bit             manual_operation;
+
 
   ///////////////////////////////////////
   // FIXED variables                   //
@@ -72,31 +98,60 @@ class aes_message_item extends uvm_sequence_item;
 
   constraint c_keylen {
     solve has_config_error before aes_keylen;
-    if(!has_config_error) {
+    if (!has_config_error) {
       // key len 001: 128, 010: 192, 100: 256
       aes_keylen inside { 3'b001, 3'b010, 3'b100 };
       // mode distribution
-      aes_keylen dist  { 3'b001 := key_128b_weight, 3'b010 := key_192b_weight, 3'b100 := key_256b_weight };
+      aes_keylen dist  { 3'b001 := key_128b_weight,
+                         3'b010 := key_192b_weight,
+                         3'b100 := key_256b_weight };
     } else {
-      !(aes_keylen inside { 3'b001, 3'b010, 3'b100 });  // force the selection to be something invalid     
+      // force the selection to be something invalid
+      !(aes_keylen inside { 3'b001, 3'b010, 3'b100 });
     }
+    if (fixed_keylen_en) {
+      aes_keylen == fixed_keylen
+    };
+  }
+
+  constraint c_key {
+    if (fixed_key_en) {
+      aes_key == fixed_key
+    };
+  }
+
+  constraint c_iv {
+    if (fixed_iv_en) {
+      aes_iv == fixed_iv
+    };
+  }
+
+  constraint c_operation {
+     if (fixed_operation_en) {
+         aes_operation == fixed_operation
+     };
   }
 
   constraint c_mode { aes_mode dist  { AES_ECB := ecb_weight,
                                        AES_CBC := cbc_weight,
                                        AES_CFB := cfb_weight,
                                        AES_OFB := ofb_weight,
-                                       AES_CTR := ctr_weight };}
+                                       AES_CTR := ctr_weight };
+                    }
 
   constraint c_has_config_error {
-    if(errors_en && config_err)
+    if (errors_en && config_err)
       {
-      has_config_error dist { 0 :/ (100-config_error_pct),
+      has_config_error dist { 0 :/ (100 - config_error_pct),
                               1 :/ config_error_pct    };
-    }
+      }
     else { has_config_error == 0; }
   }
 
+   constraint c_manual_operation {
+                  manual_operation dist { 0:/ (100 - manual_operation_pct),
+                                          1:/ manual_operation_pct };
+   };
 
 
   function void add_data_item(aes_seq_item item);
@@ -116,6 +171,7 @@ class aes_message_item extends uvm_sequence_item;
     this.aes_operation = item.operation;
     this.aes_keylen    = item.key_len;
     this.aes_key       = item.key;
+    this.aes_iv        = item.iv;
 
     add_data_item(item);
   endfunction // add_start_msg_item
@@ -130,35 +186,41 @@ class aes_message_item extends uvm_sequence_item;
   virtual function string convert2string();
     string str;
     str = super.convert2string();
-    str = {str,  $sformatf("\n\t ----| AES MESSAGE ITEM                                  |----\t ")
+    str = {str,  $sformatf("\n\t ----| AES MESSAGE ITEM   \t                                 |----\t ")
            };
-    str = {str,  $sformatf("\n\t ----| Mode:    \t %s                         |----\t ",
+    str = {str, "\n\t ----| " };
+    str = {str,  $sformatf("\n\t ----| Mode: \t  \t \t %s                         |----\t ",
                            aes_mode.name() ) };
-    str = {str,  $sformatf("\n\t ----| Operation:    \t %s                     |----\t ",
+    str = {str,  $sformatf("\n\t ----| Operation:   \t \t %s                         |----\t ",
                            aes_operation.name() ) };
-    str = {str,  $sformatf("\n\t ----| has Configuration error:    \t %s           |----\t ",
+    str = {str,  $sformatf("\n\t ----| has Configuration error:  %s  \t          |----\t ",
                            (has_config_error==1) ? "TRUE" : "FALSE" ) };
-    str = {str,  $sformatf("\n\t ----| Message Length:    \t %d             |----\t ",
+    str = {str,  $sformatf("\n\t ----| Message Length:  \t  \t %d             |----\t ",
                            message_length ) };
 
-    str = {str,  $sformatf("\n\t ----| Key Length:    \t %03b                             |----\t ",
+    str = {str,  $sformatf("\n\t ----| Key Length:   \t \t %03b                             |----\t ",
                            aes_keylen) };
-    str = {str,  $sformatf("\n\t ----| Key:         \t ") };
+    str = {str,  $sformatf("\n\t ----| Key:        \t \t ") };
     for(int i=0; i <8; i++) begin
       str = {str, $sformatf("%h ",aes_key[i])};
     end
-    str = {str,  $sformatf("\n\t ----| errors_enabled: %b         \t ", errors_en) };
-    str = {str,  $sformatf("\n\t ----| config_err: %b         \t ", config_err) };
-    str = {str,  $sformatf("\n\t ----| MODE Distribution:     \t " ) };
-    str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight) };
-    str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight) };
-    str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight) };
-    str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight) };
-    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) };
-    str = {str,  $sformatf("\n\t ----| Key Len Distribution   :\t " ) };
-    str = {str,  $sformatf("\n\t ----| 128 Weight: %d         \t ", key_128b_weight) };
-    str = {str,  $sformatf("\n\t ----| 192 Weight: %d         \t ", key_192b_weight) };
-    str = {str,  $sformatf("\n\t ----| 256 Weight: %d         \t ", key_256b_weight) };
+    str = {str,  $sformatf("\n\t ----| Key Mask:  \t  \t %0b                               |----\t ",
+                           keymask) };
+     str = {str,  $sformatf("\n\t ----| Initializaion vector:     \t    \t ") };
+    for(int i=0; i <4; i++) begin
+      str = {str, $sformatf("%h ",aes_iv[i])};
+    end
+    str = {str,  $sformatf("\n\t ----| Manual Mode : %b      \t   \t ", manual_operation) };
+    str = {str,  $sformatf("\n\t ----| errors_enabled: %b      \t   \t ", errors_en) };
+    str = {str,  $sformatf("\n\t ----| CFB Weight: %d       \t \t ", cfb_weight) };
+    str = {str,  $sformatf("\n\t ----| OFB Weight: %d       \t \t ", ofb_weight) };
+    str = {str,  $sformatf("\n\t ----| ECB Weight: %d       \t \t ", ecb_weight) };
+    str = {str,  $sformatf("\n\t ----| CBC Weight: %d       \t \t ", cbc_weight) };
+    str = {str,  $sformatf("\n\t ----| CTR Weight: %d       \t \t ", ctr_weight) };
+    str = {str,  $sformatf("\n\t ----| Key Len Distribution: \t \t " ) };
+    str = {str,  $sformatf("\n\t ----| 128 Weight: %d       \t \t ", key_128b_weight) };
+    str = {str,  $sformatf("\n\t ----| 192 Weight: %d       \t \t ", key_192b_weight) };
+    str = {str,  $sformatf("\n\t ----| 256 Weight: %d       \t \t ", key_256b_weight) };
     str = {str,  $sformatf("\n\t") };
 
     return str;
@@ -188,5 +250,11 @@ class aes_message_item extends uvm_sequence_item;
     input_msg        = rhs_.input_msg;
     output_msg       = rhs_.output_msg;
     predicted_msg    = rhs_.predicted_msg;
+    manual_operation = rhs_.manual_operation;
+    keymask          = rhs_.keymask;
+    fixed_data_en    = rhs_.fixed_data_en;
+    fixed_data       = rhs_.fixed_data;
+    fixed_iv_en      = rhs_.fixed_iv_en;
+
   endfunction // copy
 endclass
