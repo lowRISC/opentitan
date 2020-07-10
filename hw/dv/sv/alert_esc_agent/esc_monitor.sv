@@ -185,7 +185,7 @@ class esc_monitor extends alert_esc_base_monitor;
   // end phase when no escalation signal is triggered
   virtual task monitor_ready_to_end();
     forever @(cfg.vif.monitor_cb.esc_rx.resp_p || cfg.vif.monitor_cb.esc_tx.esc_p) begin
-      ok_to_end = !cfg.vif.monitor_cb.esc_rx.resp_p && cfg.vif.monitor_cb.esc_rx.resp_p &&
+      ok_to_end = !cfg.vif.monitor_cb.esc_rx.resp_p && cfg.vif.monitor_cb.esc_rx.resp_n &&
                   !get_esc();
     end
   endtask
