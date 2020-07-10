@@ -7,11 +7,26 @@
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },
     { name: "csb", desc: "Chip Enable#" },
-    { name: "mosi", desc: "SPI Input" },
   ],
   available_output_list: [
-    { name: "miso", desc: "SPI Output" },
   ],
+  available_inout_list: [
+    { name: "s", width: 4, desc: "SPI In/Out ports"}
+  ]
+  inter_signal_list: [
+    { name: "spi_d2h"
+      struct: "spi_d2h"
+      package: "spi_pkg"
+      type: "uni"
+      act: "req"
+    }
+    { name: "spi_h2d"
+      struct: "spi_h2d"
+      package: "spi_pkg"
+      type: "uni"
+      act: "rcv"
+    }
+  ]
   interrupt_list: [
     { name: "rxf",         desc: "RX SRAM FIFO Full" },
     { name: "rxlvl",       desc: "RX SRAM FIFO is above the level" },
@@ -270,11 +285,51 @@
         }
       ],
     },
+    { name: "DUMMY_CTRL"
+      desc: "Dummy controller for passthrough"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          name: "sel_csb"
+          desc: "enable csb passthrough"
+        }
+        { bits: "1"
+          name: "sel_write"
+          desc: "enable passthrough from SPI MOSI to spi_host IP"
+        }
+        { bits: "2"
+          name: "sel_read"
+          desc: "enable S[3:0] input from SPI_HOST to host system"
+        }
+        { bits: "7:4"
+          name: "passthrough_rd_en"
+          desc: "passthrough read output enable signals"
+        }
+
+        { bits: "8"
+          name: "filtered_d2h_so"
+          desc: "emulate filtered downstream signal"
+        }
+        { bits: "9"
+          name: "filtered_d2h_so_en"
+          desc: "emulate output enable of filtered downstream signal"
+        }
+        { bits: "15:12"
+          name: "internal_so"
+          desc: "emulated internal output signal"
+        }
+        { bits: "19:16"
+          name: "internal_so_en"
+          desc: "emulated internal output enable signal"
+        }
+      ]
+    }
     { window: {
         name: "buffer",
         items: "512",
         validbits: "32",
-        byte-write: "false",
+        byte-write: "true",
         unusual: "false"
         swaccess: "rw",
         desc: '''
@@ -284,5 +339,18 @@
           '''
       },
     },
+
+    { window: {
+        name: "cmd_buffer"
+        items: "128"
+        validbits: "32"
+        byte-write: "true"
+        unusual: "true"
+        swaccess: "ro"
+        desc: '''
+          SPI Command/Payload buffer
+          '''
+      }
+    }
   ]
 }

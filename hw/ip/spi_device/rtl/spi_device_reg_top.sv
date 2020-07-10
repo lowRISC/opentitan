@@ -15,8 +15,8 @@ module spi_device_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [1],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [1],
+  output tlul_pkg::tl_h2d_t tl_win_o  [2],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
 
   // To HW
   output spi_device_reg_pkg::spi_device_reg2hw_t reg2hw, // Write
@@ -28,7 +28,7 @@ module spi_device_reg_top (
 
   import spi_device_reg_pkg::* ;
 
-  localparam int AW = 12;
+  localparam int AW = 13;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -48,29 +48,31 @@ module spi_device_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [2];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [2];
+  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
 
   logic [1:0] reg_steer;
 
   // socket_1n connection
-  assign tl_reg_h2d = tl_socket_h2d[1];
-  assign tl_socket_d2h[1] = tl_reg_d2h;
+  assign tl_reg_h2d = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_reg_d2h;
 
   assign tl_win_o[0] = tl_socket_h2d[0];
   assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o[1] = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_win_i[1];
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (2),
+    .N          (3),
     .HReqPass   (1'b1),
     .HRspPass   (1'b1),
-    .DReqPass   ({2{1'b1}}),
-    .DRspPass   ({2{1'b1}}),
+    .DReqPass   ({3{1'b1}}),
+    .DRspPass   ({3{1'b1}}),
     .HReqDepth  (4'h0),
     .HRspDepth  (4'h0),
-    .DReqDepth  ({2{4'h0}}),
-    .DRspDepth  ({2{4'h0}})
+    .DReqDepth  ({3{4'h0}}),
+    .DRspDepth  ({3{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,
@@ -83,12 +85,14 @@ module spi_device_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 1;       // Default set to register
+    reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 2048) begin
-      // Exceed or meet the address range. Removed the comparison of limit addr 'h 1000
+    if (tl_i.a_address[AW-1:0] >= 2048 && tl_i.a_address[AW-1:0] < 4096) begin
       reg_steer = 0;
+    end
+    if (tl_i.a_address[AW-1:0] >= 4096 && tl_i.a_address[AW-1:0] < 4608) begin
+      reg_steer = 1;
     end
   end
 
@@ -234,6 +238,30 @@ module spi_device_reg_top (
   logic [15:0] txf_addr_limit_qs;
   logic [15:0] txf_addr_limit_wd;
   logic txf_addr_limit_we;
+  logic dummy_ctrl_sel_csb_qs;
+  logic dummy_ctrl_sel_csb_wd;
+  logic dummy_ctrl_sel_csb_we;
+  logic dummy_ctrl_sel_write_qs;
+  logic dummy_ctrl_sel_write_wd;
+  logic dummy_ctrl_sel_write_we;
+  logic dummy_ctrl_sel_read_qs;
+  logic dummy_ctrl_sel_read_wd;
+  logic dummy_ctrl_sel_read_we;
+  logic [3:0] dummy_ctrl_passthrough_rd_en_qs;
+  logic [3:0] dummy_ctrl_passthrough_rd_en_wd;
+  logic dummy_ctrl_passthrough_rd_en_we;
+  logic dummy_ctrl_filtered_d2h_so_qs;
+  logic dummy_ctrl_filtered_d2h_so_wd;
+  logic dummy_ctrl_filtered_d2h_so_we;
+  logic dummy_ctrl_filtered_d2h_so_en_qs;
+  logic dummy_ctrl_filtered_d2h_so_en_wd;
+  logic dummy_ctrl_filtered_d2h_so_en_we;
+  logic [3:0] dummy_ctrl_internal_so_qs;
+  logic [3:0] dummy_ctrl_internal_so_wd;
+  logic dummy_ctrl_internal_so_we;
+  logic [3:0] dummy_ctrl_internal_so_en_qs;
+  logic [3:0] dummy_ctrl_internal_so_en_wd;
+  logic dummy_ctrl_internal_so_en_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1274,9 +1302,219 @@ module spi_device_reg_top (
   );
 
 
+  // R[dummy_ctrl]: V(False)
+
+  //   F[sel_csb]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_sel_csb (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_sel_csb_we),
+    .wd     (dummy_ctrl_sel_csb_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.sel_csb.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_sel_csb_qs)
+  );
 
 
-  logic [11:0] addr_hit;
+  //   F[sel_write]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_sel_write (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_sel_write_we),
+    .wd     (dummy_ctrl_sel_write_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.sel_write.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_sel_write_qs)
+  );
+
+
+  //   F[sel_read]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_sel_read (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_sel_read_we),
+    .wd     (dummy_ctrl_sel_read_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.sel_read.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_sel_read_qs)
+  );
+
+
+  //   F[passthrough_rd_en]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_dummy_ctrl_passthrough_rd_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_passthrough_rd_en_we),
+    .wd     (dummy_ctrl_passthrough_rd_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.passthrough_rd_en.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_passthrough_rd_en_qs)
+  );
+
+
+  //   F[filtered_d2h_so]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_filtered_d2h_so (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_filtered_d2h_so_we),
+    .wd     (dummy_ctrl_filtered_d2h_so_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.filtered_d2h_so.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_filtered_d2h_so_qs)
+  );
+
+
+  //   F[filtered_d2h_so_en]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_filtered_d2h_so_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_filtered_d2h_so_en_we),
+    .wd     (dummy_ctrl_filtered_d2h_so_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.filtered_d2h_so_en.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_filtered_d2h_so_en_qs)
+  );
+
+
+  //   F[internal_so]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_dummy_ctrl_internal_so (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_internal_so_we),
+    .wd     (dummy_ctrl_internal_so_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.internal_so.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_internal_so_qs)
+  );
+
+
+  //   F[internal_so_en]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_dummy_ctrl_internal_so_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_internal_so_en_we),
+    .wd     (dummy_ctrl_internal_so_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.internal_so_en.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_internal_so_en_qs)
+  );
+
+
+
+
+  logic [12:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -1291,6 +1529,7 @@ module spi_device_reg_top (
     addr_hit[ 9] = (reg_addr == SPI_DEVICE_TXF_PTR_OFFSET);
     addr_hit[10] = (reg_addr == SPI_DEVICE_RXF_ADDR_OFFSET);
     addr_hit[11] = (reg_addr == SPI_DEVICE_TXF_ADDR_OFFSET);
+    addr_hit[12] = (reg_addr == SPI_DEVICE_DUMMY_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1310,6 +1549,7 @@ module spi_device_reg_top (
     if (addr_hit[ 9] && reg_we && (SPI_DEVICE_PERMIT[ 9] != (SPI_DEVICE_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[10] && reg_we && (SPI_DEVICE_PERMIT[10] != (SPI_DEVICE_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (SPI_DEVICE_PERMIT[11] != (SPI_DEVICE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (SPI_DEVICE_PERMIT[12] != (SPI_DEVICE_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_rxf_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1435,6 +1675,30 @@ module spi_device_reg_top (
   assign txf_addr_limit_we = addr_hit[11] & reg_we & ~wr_err;
   assign txf_addr_limit_wd = reg_wdata[31:16];
 
+  assign dummy_ctrl_sel_csb_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_sel_csb_wd = reg_wdata[0];
+
+  assign dummy_ctrl_sel_write_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_sel_write_wd = reg_wdata[1];
+
+  assign dummy_ctrl_sel_read_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_sel_read_wd = reg_wdata[2];
+
+  assign dummy_ctrl_passthrough_rd_en_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_passthrough_rd_en_wd = reg_wdata[7:4];
+
+  assign dummy_ctrl_filtered_d2h_so_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_filtered_d2h_so_wd = reg_wdata[8];
+
+  assign dummy_ctrl_filtered_d2h_so_en_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_filtered_d2h_so_en_wd = reg_wdata[9];
+
+  assign dummy_ctrl_internal_so_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_internal_so_wd = reg_wdata[15:12];
+
+  assign dummy_ctrl_internal_so_en_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_internal_so_en_wd = reg_wdata[19:16];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1518,6 +1782,17 @@ module spi_device_reg_top (
       addr_hit[11]: begin
         reg_rdata_next[15:0] = txf_addr_base_qs;
         reg_rdata_next[31:16] = txf_addr_limit_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[0] = dummy_ctrl_sel_csb_qs;
+        reg_rdata_next[1] = dummy_ctrl_sel_write_qs;
+        reg_rdata_next[2] = dummy_ctrl_sel_read_qs;
+        reg_rdata_next[7:4] = dummy_ctrl_passthrough_rd_en_qs;
+        reg_rdata_next[8] = dummy_ctrl_filtered_d2h_so_qs;
+        reg_rdata_next[9] = dummy_ctrl_filtered_d2h_so_en_qs;
+        reg_rdata_next[15:12] = dummy_ctrl_internal_so_qs;
+        reg_rdata_next[19:16] = dummy_ctrl_internal_so_en_qs;
       end
 
       default: begin

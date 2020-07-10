@@ -150,6 +150,33 @@ package spi_device_reg_pkg;
     } limit;
   } spi_device_reg2hw_txf_addr_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } sel_csb;
+    struct packed {
+      logic        q;
+    } sel_write;
+    struct packed {
+      logic        q;
+    } sel_read;
+    struct packed {
+      logic [3:0]  q;
+    } passthrough_rd_en;
+    struct packed {
+      logic        q;
+    } filtered_d2h_so;
+    struct packed {
+      logic        q;
+    } filtered_d2h_so_en;
+    struct packed {
+      logic [3:0]  q;
+    } internal_so;
+    struct packed {
+      logic [3:0]  q;
+    } internal_so_en;
+  } spi_device_reg2hw_dummy_ctrl_reg_t;
+
 
   typedef struct packed {
     struct packed {
@@ -227,16 +254,17 @@ package spi_device_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [168:163]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [162:157]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [156:145]
-    spi_device_reg2hw_control_reg_t control; // [144:140]
-    spi_device_reg2hw_cfg_reg_t cfg; // [139:128]
-    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [127:96]
-    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [95:80]
-    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [79:64]
-    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [63:32]
-    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [31:0]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [185:180]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [179:174]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [173:162]
+    spi_device_reg2hw_control_reg_t control; // [161:157]
+    spi_device_reg2hw_cfg_reg_t cfg; // [156:145]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [144:113]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [112:97]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [96:81]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [80:49]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [48:17]
+    spi_device_reg2hw_dummy_ctrl_reg_t dummy_ctrl; // [16:0]
   } spi_device_reg2hw_t;
 
   ///////////////////////////////////////
@@ -251,22 +279,25 @@ package spi_device_reg_pkg;
   } spi_device_hw2reg_t;
 
   // Register Address
-  parameter logic [11:0] SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;
-  parameter logic [11:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter logic [11:0] SPI_DEVICE_INTR_TEST_OFFSET = 12'h 8;
-  parameter logic [11:0] SPI_DEVICE_CONTROL_OFFSET = 12'h c;
-  parameter logic [11:0] SPI_DEVICE_CFG_OFFSET = 12'h 10;
-  parameter logic [11:0] SPI_DEVICE_FIFO_LEVEL_OFFSET = 12'h 14;
-  parameter logic [11:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 12'h 18;
-  parameter logic [11:0] SPI_DEVICE_STATUS_OFFSET = 12'h 1c;
-  parameter logic [11:0] SPI_DEVICE_RXF_PTR_OFFSET = 12'h 20;
-  parameter logic [11:0] SPI_DEVICE_TXF_PTR_OFFSET = 12'h 24;
-  parameter logic [11:0] SPI_DEVICE_RXF_ADDR_OFFSET = 12'h 28;
-  parameter logic [11:0] SPI_DEVICE_TXF_ADDR_OFFSET = 12'h 2c;
+  parameter logic [12:0] SPI_DEVICE_INTR_STATE_OFFSET = 13'h 0;
+  parameter logic [12:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 13'h 4;
+  parameter logic [12:0] SPI_DEVICE_INTR_TEST_OFFSET = 13'h 8;
+  parameter logic [12:0] SPI_DEVICE_CONTROL_OFFSET = 13'h c;
+  parameter logic [12:0] SPI_DEVICE_CFG_OFFSET = 13'h 10;
+  parameter logic [12:0] SPI_DEVICE_FIFO_LEVEL_OFFSET = 13'h 14;
+  parameter logic [12:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 13'h 18;
+  parameter logic [12:0] SPI_DEVICE_STATUS_OFFSET = 13'h 1c;
+  parameter logic [12:0] SPI_DEVICE_RXF_PTR_OFFSET = 13'h 20;
+  parameter logic [12:0] SPI_DEVICE_TXF_PTR_OFFSET = 13'h 24;
+  parameter logic [12:0] SPI_DEVICE_RXF_ADDR_OFFSET = 13'h 28;
+  parameter logic [12:0] SPI_DEVICE_TXF_ADDR_OFFSET = 13'h 2c;
+  parameter logic [12:0] SPI_DEVICE_DUMMY_CTRL_OFFSET = 13'h 30;
 
   // Window parameter
-  parameter logic [11:0] SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
-  parameter logic [11:0] SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
+  parameter logic [12:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 800;
+  parameter logic [12:0] SPI_DEVICE_BUFFER_SIZE   = 13'h 800;
+  parameter logic [12:0] SPI_DEVICE_CMD_BUFFER_OFFSET = 13'h 1000;
+  parameter logic [12:0] SPI_DEVICE_CMD_BUFFER_SIZE   = 13'h 200;
 
   // Register Index
   typedef enum int {
@@ -281,11 +312,12 @@ package spi_device_reg_pkg;
     SPI_DEVICE_RXF_PTR,
     SPI_DEVICE_TXF_PTR,
     SPI_DEVICE_RXF_ADDR,
-    SPI_DEVICE_TXF_ADDR
+    SPI_DEVICE_TXF_ADDR,
+    SPI_DEVICE_DUMMY_CTRL
   } spi_device_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SPI_DEVICE_PERMIT [12] = '{
+  parameter logic [3:0] SPI_DEVICE_PERMIT [13] = '{
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
@@ -297,7 +329,8 @@ package spi_device_reg_pkg;
     4'b 1111, // index[ 8] SPI_DEVICE_RXF_PTR
     4'b 1111, // index[ 9] SPI_DEVICE_TXF_PTR
     4'b 1111, // index[10] SPI_DEVICE_RXF_ADDR
-    4'b 1111  // index[11] SPI_DEVICE_TXF_ADDR
+    4'b 1111, // index[11] SPI_DEVICE_TXF_ADDR
+    4'b 0111  // index[12] SPI_DEVICE_DUMMY_CTRL
   };
 endpackage
 

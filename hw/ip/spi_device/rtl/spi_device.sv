@@ -22,9 +22,16 @@ module spi_device #(
   // SPI Interface
   input              cio_sck_i,
   input              cio_csb_i,
-  output logic       cio_miso_o,
-  output logic       cio_miso_en_o,
-  input              cio_mosi_i,
+  input        [3:0] cio_s_i,
+  output logic [3:0] cio_s_o,
+  output logic [3:0] cio_s_en_o,
+  //output logic       cio_miso_o,
+  //output logic       cio_miso_en_o,
+  //input              cio_mosi_i,
+
+  // inter-signal to spi_host for passthrough
+  output spi_pkg::spi_d2h_t  spi_d2h_o,
+  input  spi_pkg::spi_h2d_t  spi_h2d_i,
 
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
@@ -52,9 +59,14 @@ module spi_device #(
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t tl_sram_h2d [1];
-  tlul_pkg::tl_d2h_t tl_sram_d2h [1];
+  tlul_pkg::tl_h2d_t tl_sram_h2d [2];
+  tlul_pkg::tl_d2h_t tl_sram_d2h [2];
 
+  // Temp connection
+
+  logic       mosi_i;
+  logic       miso_o;
+  logic       miso_en_o;
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
   logic              mem_a_req;
   logic              mem_a_write;
@@ -141,6 +153,13 @@ module spi_device #(
 
   logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
 
+  // Skeleton design
+  logic       sel_csb, sel_write, sel_read, passthrough_rd_en;
+  logic [3:0] internal_si;
+  logic [3:0] internal_so;
+  logic [3:0] internal_so_en;
+  logic       filtered_d2h_so;
+  logic       filtered_d2h_so_en;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -174,6 +193,7 @@ module spi_device #(
 
   assign hw2reg.status.rxf_empty.d = ~rxf_rvalid;
   assign hw2reg.status.txf_full.d  = ~txf_wready;
+
 
   // SYNC logic required
   assign hw2reg.status.rxf_full.d = rxf_full_syncd;
@@ -353,9 +373,9 @@ module spi_device #(
 
     // SPI signal
     .csb_i         (cio_csb_i),
-    .mosi          (cio_mosi_i),
-    .miso          (cio_miso_o),
-    .miso_oe       (cio_miso_en_o)
+    .mosi          (mosi_i),
+    .miso          (miso_o),
+    .miso_oe       (miso_en_o)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -498,7 +518,7 @@ module spi_device #(
     .SramAw      (SramAw),
     .SramDw      (SramDw),
     .Outstanding (1),
-    .ByteAccess  (0)
+    .ByteAccess  (1)
   ) u_tlul2sram (
     .clk_i,
     .rst_ni,
@@ -579,5 +599,113 @@ module spi_device #(
   `ASSERT_KNOWN(IntrRxerrOKnown,       intr_rxerr_o      )
   `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_rxoverflow_o )
   `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_txunderflow_o)
+
+  // ==========================================================================
+  // Dummy passthrough path
+
+  // sel_csb : 1: enable to spi_host
+  // sel_write: 1: enable spi_d2h.s
+  // sel_read: 1: s_o from spi_h2d.s
+  assign sel_csb            = reg2hw.dummy_ctrl.sel_csb.q;
+  assign sel_write          = reg2hw.dummy_ctrl.sel_write.q;
+  assign sel_read           = reg2hw.dummy_ctrl.sel_read.q;
+  assign passthrough_rd_en  = reg2hw.dummy_ctrl.passthrough_rd_en.q;
+  assign filtered_d2h_so    = reg2hw.dummy_ctrl.filtered_d2h_so.q;
+  assign filtered_d2h_so_en = reg2hw.dummy_ctrl.filtered_d2h_so_en.q;
+  assign internal_so        = reg2hw.dummy_ctrl.internal_so.q;
+  assign internal_so_en     = reg2hw.dummy_ctrl.internal_so_en.q;
+
+  assign spi_d2h_o.csb      = (sel_csb)   ? cio_csb_i : 1'b 1;
+  assign spi_d2h_o.s        = (sel_write) ? filtered_d2h_so : 1'b0;
+  assign spi_d2h_o.s_en     = (sel_write) ? filtered_d2h_so_en : 1'b0;
+
+  assign cio_s_o            = (sel_read)  ? spi_h2d_i.s : internal_so ;
+  assign cio_s_en_o         = (sel_read)  ? passthrough_rd_en : internal_so_en;
+  // --------------------------------------------------------------------------
+
+  // Dummy SRAM wrapper (for command buffer)
+  localparam int CmdSramDepth = 128; // 512B
+  localparam int CmdSramAw    = $clog2(CmdSramDepth);
+  logic                 cmdmem_a_req;
+  logic                 cmdmem_a_write;
+  logic [CmdSramAw-1:0] cmdmem_a_addr;
+  logic [SramDw-1:0]    cmdmem_a_wdata;
+  logic [SramDw-1:0]    cmdmem_a_wmask;
+  logic                 cmdmem_a_rvalid;
+  logic [SramDw-1:0]    cmdmem_a_rdata;
+  logic [1:0]           cmdmem_a_rerror;
+
+  logic                 cmdmem_b_req;
+  logic                 cmdmem_b_write;
+  logic [CmdSramAw-1:0] cmdmem_b_addr;
+  logic [SramDw-1:0]    cmdmem_b_wdata;
+  logic [SramDw-1:0]    cmdmem_b_wmask;
+  logic                 cmdmem_b_rvalid;
+  logic [SramDw-1:0]    cmdmem_b_rdata;
+  logic [1:0]           cmdmem_b_rerror;
+
+  assign cmdmem_b_req    = 1'b0;
+  assign cmdmem_b_write  = 1'b0;
+  assign cmdmem_b_addr   = '0  ;
+  assign cmdmem_b_wdata  = '0  ;
+  assign cmdmem_b_wmask  = '0  ;
+
+  tlul_adapter_sram #(
+    .SramAw      (CmdSramAw),
+    .SramDw      (SramDw),
+    .Outstanding (1),
+    .ByteAccess  (1)
+  ) u_tlul2cmdsram (
+    .clk_i,
+    .rst_ni,
+
+    .tl_i (tl_sram_h2d [1]),
+    .tl_o (tl_sram_d2h [1]),
+
+    .req_o    (cmdmem_a_req),
+    .gnt_i    (cmdmem_a_req),  //Always grant when request
+    .we_o     (cmdmem_a_write),
+    .addr_o   (cmdmem_a_addr),
+    .wdata_o  (cmdmem_a_wdata),
+    .wmask_o  (),           // Not used
+    .rdata_i  (cmdmem_a_rdata),
+    .rvalid_i (cmdmem_a_rvalid),
+    .rerror_i (cmdmem_a_rerror)
+  );
+
+  // SRAM Wrapper
+  prim_ram_2p_adv #(
+    .Depth (CmdSramDepth),
+    .Width (SramDw),    // 32 x 512 --> 2kB
+    .DataBitsPerMask (1),
+    .CfgW  (8),
+
+    .EnableECC           (0),
+    .EnableParity        (1),
+    .EnableInputPipeline (0),
+    .EnableOutputPipeline(0)
+  ) u_cmd_data (
+    .clk_i,
+    .rst_ni,
+    .a_req_i    (cmdmem_a_req),
+    .a_write_i  (cmdmem_a_write),
+    .a_addr_i   (cmdmem_a_addr),
+    .a_wdata_i  (cmdmem_a_wdata),
+    .a_wmask_i  (cmdmem_a_wmask),
+    .a_rvalid_o (cmdmem_a_rvalid),
+    .a_rdata_o  (cmdmem_a_rdata),
+    .a_rerror_o (cmdmem_a_rerror),
+
+    .b_req_i    (cmdmem_b_req),
+    .b_write_i  (cmdmem_b_write),
+    .b_addr_i   (cmdmem_b_addr),
+    .b_wdata_i  (cmdmem_b_wdata),
+    .b_wmask_i  (cmdmem_b_wmask),
+    .b_rvalid_o (cmdmem_b_rvalid),
+    .b_rdata_o  (cmdmem_b_rdata),
+    .b_rerror_o (cmdmem_b_rerror),
+
+    .cfg_i      ('0)
+  );
 
 endmodule
