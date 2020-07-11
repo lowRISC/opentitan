@@ -121,6 +121,22 @@
       tests: ["i2c_fifo_watermark"]
     }
     {
+      name: fifo_overflow
+      desc: '''
+            Test the overflow interrupt of fmt_fifo and rx_fifo.
+
+            Stimulus:
+              - Keep sending a number of format byte higher than fmt_fifo and rx_fifo depth
+
+            Checking:
+              - Ensure excess format bytes are dropped
+              - Ensure fmt_overflow and rx_overflow interrupt are asserted
+              - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
+            '''
+      milestone: V2
+      tests: ["i2c_fifo_overflow"]
+    }
+    {
       name: fmt_reset
       desc: '''
             Test fmt_fifo reset.
@@ -138,44 +154,14 @@
     {
       name: rx_reset
       desc: '''
-            Test rx_reset reset.
+            Test rx_fifo reset.
 
             Stimulus:
               - Fill up the rx fifo by sending data bytes over rx
-              - Reset the rx_fifo randomly after a random number of bytes shows up on rx_fifo, 
+              - Reset the rx_fifo randomly after a random number of bytes shows up on rx_fifo
 
             Checking:
               - Ensure that reads to rdata register yield 0s after rx_fifo is reset
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: fmt_overflow
-      desc: '''
-            Test fmt_overflow interrupt.
-
-            Stimulus:
-              - Keep sending a number of format byte higher than fmt_fifo depth, delay the target response
-
-            Checking:
-              - Ensure excess format bytes are dropped
-              - Ensure intr_fmt_overflow interrupt is asserted
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rx_overflow
-      desc: '''
-            Test rx_overflow interrupt.
-
-            Stimulus:
-              - Request a number of bytes higher than rx_fifo depth, delay rx_fifo reading
-
-            Checking:
-              - Ensure excess data bytes are dropped
-              - Ensure intr_rx_overflow interrupt is asserted
             '''
       milestone: V2
       tests: []
