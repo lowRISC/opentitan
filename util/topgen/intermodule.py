@@ -150,13 +150,15 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', req_struct["struct"] + "_req"),
                              ('signame', sig_name + "_req"),
                              ('width', req_struct["width"]),
-                             ('type', req_struct["type"])]))
+                             ('type', req_struct["type"]),
+                             ('default', req_struct["default"])]))
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"] + "_rsp"),
                              ('signame', sig_name + "_rsp"),
                              ('width', req_struct["width"]),
-                             ('type', req_struct["type"])]))
+                             ('type', req_struct["type"]),
+                             ('default', req_struct["default"])]))
         else:
             # unidirection
             definitions.append(
@@ -164,7 +166,8 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', req_struct["struct"]),
                              ('signame', sig_name),
                              ('width', req_struct["width"]),
-                             ('type', req_struct["type"])]))
+                             ('type', req_struct["type"]),
+                             ('default', req_struct["default"])]))
 
         req_struct["index"] = -1
 
@@ -220,17 +223,23 @@ def elab_intermodule(topcfg: OrderedDict):
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_req"),
                              ('signame', sig_name + "_req"),
-                             ('width', sig["width"]), ('type', sig["type"])]))
+                             ('width', sig["width"]),
+                             ('type', sig["type"]),
+                             ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_rsp"),
                              ('signame', sig_name + "_rsp"),
-                             ('width', sig["width"]), ('type', sig["type"])]))
+                             ('width', sig["width"]),
+                             ('type', sig["type"]),
+                             ('default', sig["default"])]))
         else:  # if sig["type"] == "uni":
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
-                             ('width', sig["width"]), ('type', sig["type"])]))
+                             ('width', sig["width"]),
+                             ('type', sig["type"]),
+                             ('default', sig["default"])]))
 
     if "external" not in topcfg["inter_module"]:
         topcfg["inter_module"]["external"] = []
@@ -257,6 +266,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', sig["struct"] + "_req"),
                              ('signame', sig_name + "_req"),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('default', sig["default"]),
                              ('direction',
                               'out' if sig['act'] == "req" else 'in')]))
             topcfg["inter_signal"]["external"].append(
@@ -264,6 +274,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', sig["struct"] + "_rsp"),
                              ('signame', sig_name + "_rsp"),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('default', sig["default"]),
                              ('direction',
                               'in' if sig['act'] == "req" else 'out')]))
         else:  # uni
@@ -271,6 +282,7 @@ def elab_intermodule(topcfg: OrderedDict):
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('default', sig["default"]),
                              ('direction',
                               'out' if sig['act'] == "req" else 'in')]))
 
@@ -362,6 +374,13 @@ def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
         else:
             # convert to int value
             obj["width"] = width
+
+    # Add empty string if no explicit default for dangling pins is given.
+    # In that case, dangling pins of type struct will be tied to the default
+    # parameter in the corresponding package, and dangling pins of type logic
+    # will be tied off to '0.
+    if "default" not in obj:
+        obj["default"] = ""
 
     return error
 
@@ -550,8 +569,10 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     """return top signal name with index
     """
 
+    # sanity check and add missing fields
+    check_intermodule_field(obj)
+
     # Floating signals
-    # TODO: Check logic type too
     # TODO: Find smarter way to assign default?
     if "top_signame" not in obj:
         if obj["act"] == "req" and suffix == "req":
@@ -559,14 +580,26 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
         if obj["act"] == "rsp" and suffix == "rsp":
             return ""
         if obj["act"] == "req" and suffix == "rsp":
+            # custom default has been specified
+            if obj["default"]:
+                return obj["default"]
             return "{package}::{struct}_RSP_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rsp" and suffix == "req":
+            # custom default has been specified
+            if obj["default"]:
+                return obj["default"]
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
+            # custom default has been specified
+            if obj["default"]:
+                return obj["default"]
             return "'0"
         if obj["act"] == "rcv" and suffix == "":
+            # custom default has been specified
+            if obj["default"]:
+                return obj["default"]
             return "{package}::{struct}_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
 
