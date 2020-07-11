@@ -49,19 +49,38 @@
       name:    "lc_pinmux_strap",
       act:     "rsp",
       package: "pinmux_pkg",
+      default: "'0"
+    }
+    // Testmode signals to AST
+    { struct:  "dft_strap_test",
+      type:    "uni",
+      name:    "dft_strap_test",
+      act:     "req",
+      package: "pinmux_pkg",
+      default: "'0"
+    }
+    // IO POK signal from AST
+    { struct:  "io_pok",
+      type:    "uni",
+      name:    "io_pok",
+      act:     "rcv",
+      package: "pinmux_pkg",
+      default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
     }
     // Define pwr mgr <-> pinmux signals
     { struct:  "logic",
       type:    "uni",
       name:    "sleep_en",
       act:     "rcv",
-      package: ""
+      package: "",
+      default: "1'b0"
     },
     { struct:  "logic",
       type:    "uni",
       name:    "aon_wkup_req",
       act:     "req",
-      package: ""
+      package: "",
+      default: "1'b0"
     },
   ]
 

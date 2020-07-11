@@ -674,9 +674,11 @@ module top_earlgrey #(
       .tl_o (tl_pinmux_d_d2h),
 
       // Inter-module signals
-      .lc_pinmux_strap_i(pinmux_pkg::LC_STRAP_REQ_DEFAULT),
+      .lc_pinmux_strap_i('0),
       .lc_pinmux_strap_o(),
-      .sleep_en_i('0),
+      .dft_strap_test_o(),
+      .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
+      .sleep_en_i(1'b0),
       .aon_wkup_req_o(pwrmgr_wakeups),
 
       .periph_to_mio_i      (mio_d2p    ),
