@@ -5,8 +5,15 @@
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
+  uint ok_to_end_delay_ns = I2C_IDLE_TIME;
 
-  uint ok_to_end_delay_ns = 5000;
+  // bits to control fifos access
+  // set en_fmt_overflow to ensure fmt_overflow irq is triggered
+  bit en_fmt_overflow = 1'b0;
+  // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
+  bit en_rx_overflow = 1'b0;
+  // set en_rx_watermark to ensure rx_watermark irq is triggered
+  bit en_rx_watermark = 1'b0;
 
   rand i2c_agent_cfg m_i2c_agent_cfg;
 

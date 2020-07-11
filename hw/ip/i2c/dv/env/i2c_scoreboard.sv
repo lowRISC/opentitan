@@ -18,7 +18,6 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   local i2c_item  exp_rd_q[$];
   local i2c_item  exp_wr_q[$];
   local uint      rd_wait;
-
   local bit       host_init = 1'b0;
   local uint      rdata_cnt = 0;
   local uint      tran_id = 0;
@@ -52,6 +51,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;
     bit do_read_check = 1'b0;
+
     bit write = item.is_write();
 
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
@@ -121,13 +121,20 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end else begin // transaction begins with started/rstarted
               // write transaction
               if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
-                exp_wr_item.data_q.push_back(fbyte);
-                exp_wr_item.num_data++;
-                exp_wr_item.stop = stop;
-                if (exp_wr_item.stop) begin
-                  // get a complete write
-                  `downcast(sb_exp_wr_item, exp_wr_item.clone());
-                  exp_wr_item.clear_all();
+                cfg.clk_rst_vif.wait_clks(1); // irq appears with one cycle latency
+                if (cfg.intr_vif.pins[FmtOverflow]) begin
+                  // fmt_fifo is overflow, capture dropped data
+                  exp_wr_item.fmt_ovf_data_q.push_back(fbyte);
+                end else begin
+                  // fmt_fifo is underflow then collect data, otherwise drop data
+                  exp_wr_item.data_q.push_back(fbyte);
+                  exp_wr_item.num_data++;
+                  exp_wr_item.stop = stop;
+                  if (exp_wr_item.stop) begin
+                    // get a complete write
+                    `downcast(sb_exp_wr_item, exp_wr_item.clone());
+                    exp_wr_item.clear_all();
+                  end
                 end
               end
               // read transaction
@@ -148,6 +155,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                   exp_rd_item.nakok  = nakok;
                   exp_rd_item.nack   = ~exp_rd_item.rcont;
                   exp_rd_item.rstart = (exp_rd_item.stop) ? 1'b0 : 1'b1;
+                  // decrement since data is dropped by rx_overflow
+                  if (cfg.en_rx_overflow) exp_rd_item.num_data--;
                   // if not a chained read (stop is issued)
                   if (exp_rd_item.stop) begin
                     `uvm_info(`gfn, $sformatf("\n\nscoreboard, exp_rd_item\n\%s",
@@ -188,7 +197,6 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               `DV_CHECK_GE_FATAL(rd_pending_q.size(), 0)
               rd_pending_item = rd_pending_q.pop_front();
             end
-            // collect read data byte
             rd_pending_item.data_q.push_back(ral.rdata.get_mirrored_value());
             rdata_cnt++;
             `uvm_info(`gfn, $sformatf("\n\nscoreboard, rd_pending_item\n\%s",
@@ -210,27 +218,45 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   endtask : process_tl_access
 
   task compare_trans(bus_op_e dir = BusOpWrite);
-    i2c_item   exp_item;
+    i2c_item   exp_trn;
     i2c_item   dut_trn;
     forever begin
       if (dir == BusOpWrite) begin
         wr_item_fifo.get(dut_trn);
         wait(exp_wr_q.size() > 0);
-        exp_item = exp_wr_q.pop_front();
+        exp_trn = exp_wr_q.pop_front();
       end else begin  // BusOpRead
         rd_item_fifo.get(dut_trn);
         wait(exp_rd_q.size() > 0);
-        exp_item = exp_rd_q.pop_front();
+        exp_trn = exp_rd_q.pop_front();
       end
-      if (!dut_trn.compare(exp_item)) begin
-        `uvm_error(`gfn, $sformatf("%s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
-            (dir == BusOpWrite) ? "WRITE" : "READ", exp_item.sprint(), dut_trn.sprint()))
+
+      // when rx_fifo is overflow, dut_trn containts data which is dropped from exp_trn
+      if (cfg.en_rx_overflow) begin
+        dut_trn.data_q.pop_back();
+        dut_trn.num_data--;
+      end
+
+      if (!dut_trn.compare(exp_trn)) begin
+          if (!check_overflow_data_fmt_fifo(exp_trn, dut_trn)) begin  // fmt_overflow transaction
+            `uvm_error(`gfn, $sformatf("%s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
+              (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()))
+          end
       end else begin
         `uvm_info(`gfn, $sformatf("direction %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
-            (dir == BusOpWrite) ? "WRITE" : "READ", exp_item.sprint(), dut_trn.sprint()), UVM_DEBUG)
+            (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()), UVM_DEBUG)
       end
     end
   endtask : compare_trans
+
+  function bit check_overflow_data_fmt_fifo(i2c_item exp_trn, i2c_item dut_trn);
+    // check overflow data is not captured
+    if (exp_trn.fmt_ovf_data_q.size() > 0) begin
+      bit [7:0] unique_q[$] = dut_trn.data_q.find with
+                              ( item inside {exp_trn.fmt_ovf_data_q} );
+      return (unique_q.size() == 0);
+    end
+  endfunction : check_overflow_data_fmt_fifo
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);

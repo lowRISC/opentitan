@@ -6,12 +6,16 @@ class i2c_device_driver extends i2c_driver;
   `uvm_component_utils(i2c_device_driver)
   `uvm_component_new
 
-  rand bit [7:0] rd_data;
+  rand bit [7:0] rd_data[256]; // max length of read transaction
 
-  constraint rd_data_c { rd_data inside {[0 : 127]}; }
+  // get an array with unique read data
+  constraint rd_data_c {
+    unique { rd_data };
+  }
 
   virtual task get_and_drive();
-    int num_stretch_host_clks;
+    uint num_stretch_host_clks;
+    uint rd_data_cnt = 0;
     i2c_item rsp_item;
 
     @(posedge cfg.vif.rst_ni);
@@ -42,11 +46,12 @@ class i2c_device_driver extends i2c_driver;
         end
         RdData: begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+          rd_data_cnt++;
           for (int i = 7; i >= 0; i--) begin
-            cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[i]);
+            cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
           end
-          `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0b",
-              rsp_item.tran_id, rsp_item.num_data+1, rd_data), UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0x",
+              rsp_item.tran_id, rsp_item.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
         end
         default: begin
           `uvm_fatal(`gfn, $sformatf("driver, received invalid request from monitor/seq"))
