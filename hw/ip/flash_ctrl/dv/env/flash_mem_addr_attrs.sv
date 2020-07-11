@@ -12,7 +12,7 @@ class flash_mem_addr_attrs;
 
     uint            bank;             // The bank the address belongs to.
     uint            page;             // The page within the bank.
-    uint            word_line;        // The word line within the page.
+    uint            line;             // The word line within the page.
 
   function new(bit [TL_AW-1:0] addr = 0);
     set_attrs(addr);
@@ -21,17 +21,15 @@ class flash_mem_addr_attrs;
   // Set attributes from a sample input addr.
   function void set_attrs(bit [TL_AW-1:0] addr);
     this.addr = {addr[TL_AW-1:TL_SZW], {TL_SZW{1'b0}}};
-    bank_addr = this.addr[FLASH_CTRL_MEM_ADDR_PAGE_MSB:0];
+    bank_addr = this.addr[FlashMemAddrPageMsbBit : 0];
 
-    bank_start_addr =
-        {addr[TL_AW-1:FLASH_CTRL_MEM_ADDR_PAGE_MSB+1], {FLASH_CTRL_MEM_ADDR_PAGE_MSB+1{1'b0}}};
-    page_start_addr =
-        {addr[FLASH_CTRL_MEM_ADDR_PAGE_MSB:FLASH_CTRL_MEM_ADDR_WORD_LINE_MSB+1],
-         {FLASH_CTRL_MEM_ADDR_WORD_LINE_MSB+1{1'b0}}};
+    bank_start_addr = {addr[TL_AW-1 : FlashMemAddrPageMsbBit+1], {FlashMemAddrPageMsbBit+1{1'b0}}};
+    page_start_addr = {addr[FlashMemAddrPageMsbBit : FlashMemAddrLineMsbBit+1],
+                       {FlashMemAddrLineMsbBit+1{1'b0}}};
 
-    bank = addr[FLASH_CTRL_MEM_ADDR_BANK_MSB:FLASH_CTRL_MEM_ADDR_PAGE_MSB + 1];
-    page = addr[FLASH_CTRL_MEM_ADDR_PAGE_MSB:FLASH_CTRL_MEM_ADDR_WORD_LINE_MSB + 1];
-    word_line = addr[FLASH_CTRL_MEM_ADDR_WORD_LINE_MSB:FLASH_CTRL_MEM_ADDR_WORD_MSB + 1];
+    bank = addr[FlashMemAddrBankMsbBit : FlashMemAddrPageMsbBit+1];
+    page = addr[FlashMemAddrPageMsbBit : FlashMemAddrLineMsbBit+1];
+    line = addr[FlashMemAddrLineMsbBit : FlashMemAddrWordMsbBit+1];
   endfunction
 
   function void incr(bit [TL_AW-1:0] offset);
@@ -42,9 +40,9 @@ class flash_mem_addr_attrs;
   function string sprint();
     return $sformatf({{"addr_attrs: addr = 0x%0h, bank_addr = 0x%0h "},
                       {"bank_start_addr = 0x%0h, page_start_addr = 0x%0h "},
-                      {"bank = %0d, page = %0d, word_line = %0d"}},
+                      {"bank = %0d, page = %0d, line = %0d"}},
                      addr, bank_addr, bank_start_addr, page_start_addr,
-                     bank, page, word_line);
+                     bank, page, line);
   endfunction
 
 endclass

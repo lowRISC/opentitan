@@ -13,7 +13,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint max_num_trans = 20;
 
   // Memory protection configuration.
-  uint num_en_mp_regions = FLASH_CTRL_NUM_MP_REGIONS;
+  uint num_en_mp_regions = flash_ctrl_pkg::MpRegions;
 
   // This enables memory protection regions to overlap.
   bit allow_mp_region_overlap = 1'b0;

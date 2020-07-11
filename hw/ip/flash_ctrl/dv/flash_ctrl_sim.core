@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:constants:top_pkg
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:ip:flash_ctrl:0.1
     files:
