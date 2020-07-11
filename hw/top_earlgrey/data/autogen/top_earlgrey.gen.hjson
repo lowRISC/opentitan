@@ -648,6 +648,7 @@
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
           width: 1
+          default: ""
           top_signame: flash_ctrl_flash
           index: -1
         }
@@ -878,6 +879,27 @@
           name: lc_pinmux_strap
           act: rsp
           package: pinmux_pkg
+          default: "'0"
+          inst_name: pinmux
+          index: -1
+        }
+        {
+          struct: dft_strap_test
+          type: uni
+          name: dft_strap_test
+          act: req
+          package: pinmux_pkg
+          default: "'0"
+          inst_name: pinmux
+          index: -1
+        }
+        {
+          struct: io_pok
+          type: uni
+          name: io_pok
+          act: rcv
+          package: pinmux_pkg
+          default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
           inst_name: pinmux
           index: -1
         }
@@ -887,6 +909,7 @@
           name: sleep_en
           act: rcv
           package: ""
+          default: 1'b0
           inst_name: pinmux
           index: -1
         }
@@ -896,6 +919,7 @@
           name: aon_wkup_req
           act: req
           package: ""
+          default: 1'b0
           inst_name: pinmux
           width: 1
           top_signame: pwrmgr_wakeups
@@ -1085,6 +1109,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr
           width: 1
+          default: ""
           top_signame: pwrmgr_pwr_rst
           index: -1
         }
@@ -1096,6 +1121,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr
           width: 1
+          default: ""
           top_signame: pwrmgr_pwr_clk
           index: -1
         }
@@ -1134,6 +1160,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr
           width: 1
+          default: ""
           top_signame: pwrmgr_pwr_cpu
           index: -1
         }
@@ -1145,6 +1172,7 @@
           act: rcv
           package: ""
           inst_name: pwrmgr
+          default: ""
           top_type: broadcast
           top_signame: pwrmgr_wakeups
           index: -1
@@ -1208,6 +1236,7 @@
           act: rsp
           inst_name: rstmgr
           width: 1
+          default: ""
           package: pwrmgr_pkg
           top_signame: pwrmgr_pwr_rst
           index: -1
@@ -1220,6 +1249,7 @@
           package: rstmgr_pkg
           inst_name: rstmgr
           width: 1
+          default: ""
           top_signame: rstmgr_resets
           index: -1
         }
@@ -1240,6 +1270,7 @@
           package: rstmgr_pkg
           inst_name: rstmgr
           width: 1
+          default: ""
           top_signame: rstmgr_cpu
           index: -1
         }
@@ -1297,6 +1328,7 @@
           package: clkmgr_pkg
           inst_name: clkmgr
           width: 1
+          default: ""
           top_signame: clkmgr_clocks
           index: -1
         }
@@ -1308,6 +1340,7 @@
           package: ""
           inst_name: clkmgr
           width: 1
+          default: ""
           top_signame: clkmgr_clk_main
           index: -1
         }
@@ -1319,6 +1352,7 @@
           package: ""
           inst_name: clkmgr
           width: 1
+          default: ""
           top_signame: clkmgr_clk_io
           index: -1
         }
@@ -1330,6 +1364,7 @@
           package: ""
           inst_name: clkmgr
           width: 1
+          default: ""
           top_signame: clkmgr_clk_usb
           index: -1
         }
@@ -1341,6 +1376,7 @@
           package: ""
           inst_name: clkmgr
           width: 1
+          default: ""
           top_signame: clkmgr_clk_aon
           index: -1
         }
@@ -1351,6 +1387,7 @@
           act: rsp
           inst_name: clkmgr
           width: 1
+          default: ""
           package: pwrmgr_pkg
           top_signame: pwrmgr_pwr_clk
           index: -1
@@ -1926,6 +1963,7 @@
           act: rsp
           inst_name: eflash
           width: 1
+          default: ""
           package: flash_ctrl_pkg
           top_signame: flash_ctrl_flash
           index: -1
@@ -3569,6 +3607,7 @@
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
         width: 1
+        default: ""
         top_signame: flash_ctrl_flash
         index: -1
       }
@@ -3587,6 +3626,27 @@
         name: lc_pinmux_strap
         act: rsp
         package: pinmux_pkg
+        default: "'0"
+        inst_name: pinmux
+        index: -1
+      }
+      {
+        struct: dft_strap_test
+        type: uni
+        name: dft_strap_test
+        act: req
+        package: pinmux_pkg
+        default: "'0"
+        inst_name: pinmux
+        index: -1
+      }
+      {
+        struct: io_pok
+        type: uni
+        name: io_pok
+        act: rcv
+        package: pinmux_pkg
+        default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
         inst_name: pinmux
         index: -1
       }
@@ -3596,6 +3656,7 @@
         name: sleep_en
         act: rcv
         package: ""
+        default: 1'b0
         inst_name: pinmux
         index: -1
       }
@@ -3605,6 +3666,7 @@
         name: aon_wkup_req
         act: req
         package: ""
+        default: 1'b0
         inst_name: pinmux
         width: 1
         top_signame: pwrmgr_wakeups
@@ -3627,6 +3689,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr
         width: 1
+        default: ""
         top_signame: pwrmgr_pwr_rst
         index: -1
       }
@@ -3638,6 +3701,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr
         width: 1
+        default: ""
         top_signame: pwrmgr_pwr_clk
         index: -1
       }
@@ -3676,6 +3740,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr
         width: 1
+        default: ""
         top_signame: pwrmgr_pwr_cpu
         index: -1
       }
@@ -3687,6 +3752,7 @@
         act: rcv
         package: ""
         inst_name: pwrmgr
+        default: ""
         top_type: broadcast
         top_signame: pwrmgr_wakeups
         index: -1
@@ -3708,6 +3774,7 @@
         act: rsp
         inst_name: rstmgr
         width: 1
+        default: ""
         package: pwrmgr_pkg
         top_signame: pwrmgr_pwr_rst
         index: -1
@@ -3720,6 +3787,7 @@
         package: rstmgr_pkg
         inst_name: rstmgr
         width: 1
+        default: ""
         top_signame: rstmgr_resets
         index: -1
       }
@@ -3740,6 +3808,7 @@
         package: rstmgr_pkg
         inst_name: rstmgr
         width: 1
+        default: ""
         top_signame: rstmgr_cpu
         index: -1
       }
@@ -3760,6 +3829,7 @@
         package: clkmgr_pkg
         inst_name: clkmgr
         width: 1
+        default: ""
         top_signame: clkmgr_clocks
         index: -1
       }
@@ -3771,6 +3841,7 @@
         package: ""
         inst_name: clkmgr
         width: 1
+        default: ""
         top_signame: clkmgr_clk_main
         index: -1
       }
@@ -3782,6 +3853,7 @@
         package: ""
         inst_name: clkmgr
         width: 1
+        default: ""
         top_signame: clkmgr_clk_io
         index: -1
       }
@@ -3793,6 +3865,7 @@
         package: ""
         inst_name: clkmgr
         width: 1
+        default: ""
         top_signame: clkmgr_clk_usb
         index: -1
       }
@@ -3804,6 +3877,7 @@
         package: ""
         inst_name: clkmgr
         width: 1
+        default: ""
         top_signame: clkmgr_clk_aon
         index: -1
       }
@@ -3814,6 +3888,7 @@
         act: rsp
         inst_name: clkmgr
         width: 1
+        default: ""
         package: pwrmgr_pkg
         top_signame: pwrmgr_pwr_clk
         index: -1
@@ -3872,6 +3947,7 @@
         act: rsp
         inst_name: eflash
         width: 1
+        default: ""
         package: flash_ctrl_pkg
         top_signame: flash_ctrl_flash
         index: -1
@@ -3885,6 +3961,7 @@
         signame: clkmgr_clk_main
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -3893,6 +3970,7 @@
         signame: clkmgr_clk_io
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -3901,6 +3979,7 @@
         signame: clkmgr_clk_usb
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -3909,6 +3988,7 @@
         signame: clkmgr_clk_aon
         width: 1
         type: uni
+        default: ""
         direction: in
       }
     ]
@@ -3920,6 +4000,7 @@
         signame: flash_ctrl_flash_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: flash_ctrl_pkg
@@ -3927,6 +4008,7 @@
         signame: flash_ctrl_flash_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -3934,6 +4016,7 @@
         signame: pwrmgr_pwr_rst_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -3941,6 +4024,7 @@
         signame: pwrmgr_pwr_rst_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -3948,6 +4032,7 @@
         signame: pwrmgr_pwr_clk_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -3955,6 +4040,7 @@
         signame: pwrmgr_pwr_clk_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: ""
@@ -3962,6 +4048,7 @@
         signame: pwrmgr_wakeups
         width: 1
         type: uni
+        default: ""
       }
       {
         package: rstmgr_pkg
@@ -3969,6 +4056,7 @@
         signame: rstmgr_resets
         width: 1
         type: uni
+        default: ""
       }
       {
         package: rstmgr_pkg
@@ -3976,6 +4064,7 @@
         signame: rstmgr_cpu
         width: 1
         type: uni
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -3983,6 +4072,7 @@
         signame: pwrmgr_pwr_cpu
         width: 1
         type: uni
+        default: ""
       }
       {
         package: clkmgr_pkg
@@ -3990,6 +4080,7 @@
         signame: clkmgr_clocks
         width: 1
         type: uni
+        default: ""
       }
     ]
   }
