@@ -5,7 +5,7 @@
 class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block));
 
   // vifs
-  mem_bkdr_vif mem_bkdr_vifs[flash_ctrl_partition_e][FLASH_CTRL_NUM_BANKS];
+  mem_bkdr_vif mem_bkdr_vifs[flash_part_e][flash_ctrl_pkg::NumBanks];
 
   // ext component cfgs
   rand tl_agent_cfg m_eflash_tl_agent_cfg;

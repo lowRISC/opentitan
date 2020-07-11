@@ -12,6 +12,8 @@ filesets:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
       - lowrisc:dv:mem_bkdr_if
+      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:constants:top_pkg
     files:
       - flash_ctrl_env_pkg.sv
       - flash_mem_addr_attrs.sv: {is_include_file: true}
