@@ -7,22 +7,23 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   `uvm_object_new
 
-  uint total_rd_bytes = 0;
+  uint total_rd_bytes;
 
-  virtual task host_send_trans(int num_trans, string trans_type = "");
+  virtual task host_send_trans(int num_trans, tran_type_e trans_type = ReadWrite);
     bit last_tran;
 
     fmt_item = new("fmt_item");
+    total_rd_bytes = 0;
     for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
       // re-programming timing registers for the first transaction
       // or when the previous transaction is completed
       if (fmt_item.stop || cur_tran == 1) begin
         under_program_regs = 1'b1;
         `DV_CHECK_RANDOMIZE_FATAL(this)
-        // if trans_type is not empty (default), then rw_bit is overrided
+        // if trans_type is provided, then rw_bit is overridden
         // otherwise, rw_bit is randomized
-        rw_bit = (trans_type  == "WriteOnly") ? 1'b0 :
-                 ((trans_type == "ReadOnly")  ? 1'b1 : rw_bit);
+        rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                 ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
         get_timing_values();
         program_registers();
         under_program_regs = 1'b0;
@@ -68,8 +69,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   endtask : host_program_target_address
 
   virtual task host_read_trans(bit last_tran);
-    uint real_rd_bytes;
-    bit rxfull = 1'b0;
+    bit  rx_sanity, rx_full, rx_overflow, rx_watermark, start_read;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_rd_bytes)
     fork
@@ -85,8 +85,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         )
         `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
 
-        real_rd_bytes = (num_rd_bytes) ? num_rd_bytes : 256;
-        total_rd_bytes += real_rd_bytes;
+        // accumulate number of read byte
+        total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
         if (fmt_item.rcont) begin
           `uvm_info(`gfn, "\nTransaction READ is chained with next READ transaction", UVM_DEBUG)
         end else begin
@@ -97,35 +97,46 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         program_format_flag(fmt_item, "program number of bytes to read");
       end
       begin
-        do begin
-          csr_rd(.ptr(ral.status.rxfull), .value(rxfull));
-          // if delay_read_rx_until_full is unset, rx_fifo is quickly filled up to full
-          // so watermark/overflow interrupt could be deterministically triggered
-          // if delay_read_rx_until_full is set or rx_fifo is full, start reading data
-          if (delay_read_rx_until_full || rxfull) begin
-            // if not a chained read, read out data sent over rx_fifo
-            while (!fmt_item.rcont && total_rd_bytes > 0) begin
-              csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
-              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
-              cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
-              csr_rd(.ptr(ral.rdata), .value(rd_data));
-              total_rd_bytes--;
+        // if not a chained read, read out data sent over rx_fifo
+        rx_overflow = 1'b0;
+        rx_watermark = 1'b0;
+        // decrement total_rd_bytes since one data is must be dropped in fifo_overflow test
+        if (cfg.en_rx_overflow) total_rd_bytes--;
+        while (!fmt_item.rcont && total_rd_bytes > 0) begin
+          csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
+          rx_sanity     = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
+          rx_watermark |= cfg.en_rx_watermark && rx_full;
+          rx_overflow  |= cfg.en_rx_overflow && cfg.intr_vif.pins[RxOverflow];
+
+          start_read = rx_sanity    | // sanity test: read rx_fifo asap when there are valid data
+                       rx_watermark | // watermark test: read rx_fifo when rx_watermark is triggered
+                       rx_overflow;   // overflow test: read rx_fifo when rx_overflow is triggered
+
+          while (start_read && total_rd_bytes > 0) begin
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
+            // constraint rx_fifo access delay to a high value that ensures rx_overflow is triggered
+            if (!rx_watermark && !rx_overflow && !rx_sanity) begin
+              rx_fifo_access_dly = (I2C_RX_FIFO_DEPTH + 5) * get_byte_latency();
             end
+            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
+            cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
+            csr_rd(.ptr(ral.rdata), .value(rd_data));
+            total_rd_bytes--;
           end
-        end while (!delay_read_rx_until_full && !rxfull);
+        end
       end
     join
   endtask : host_read_trans
 
   virtual task host_write_trans(bit last_tran);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
     for (int i = 1; i <= num_wr_bytes; i++) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
         start == 1'b0;
         read  == 1'b0;
       )
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
-      fmt_item.fbyte = wr_data;
+      fmt_item.fbyte = wr_data[i];
       // last write byte of last  tran., stop flag must be set to issue stop bit
       // last write byte of other tran., stop is randomly set/unset to issue stop/rstart bit
       fmt_item.stop = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
@@ -165,13 +176,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   // TODO: This task could be extended along with V2 test development
   virtual task clear_interrupt(i2c_intr_e intr, bit verify_clear = 1'b1);
     csr_wr(.csr(ral.intr_state), .value(1 << intr));
-    if (verify_clear) begin
-      case (intr)
-        FmtWatermark: csr_spinwait(.ptr(ral.intr_state.fmt_watermark), .exp_data(1'b0));
-        RxWatermark:  csr_spinwait(.ptr(ral.intr_state.rx_watermark), .exp_data(1'b0));
-        default: `uvm_fatal(`gfn, "Invalid intr input")
-      endcase
-    end
+    if (verify_clear) wait(!cfg.intr_vif.pins[intr]);
   endtask : clear_interrupt
 
   virtual task post_start();

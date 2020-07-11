@@ -15,14 +15,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   bit                         under_program_regs = 1'b0;
   bit                         program_incorrect_regs = 1'b0;
 
-  // bits to control fifos access
-  // delay_read_rx_until_full is unset delay reading rx_fifo until rx_fifo is full or
-  // delay_read_rx_until_full is unset (used in fifo_watermark test)
-  bit                         delay_read_rx_until_full = 1'b1;
-  // avoid_write_fmt_overflow is set to prevent writing to fmt_fifo from overflow,
-  // by checking fmt_fifo is not full (used in fifo_overflow)
-  bit                         avoid_write_fmt_overflow = 1'b1;
-  
   local timing_cfg_t          timing_cfg;
   bit [7:0]                   rd_data;
   i2c_item                    fmt_item;
@@ -35,8 +27,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   num_trans;
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
+  rand uint                   num_data_ovf;
   rand bit                    rw_bit;
-  rand bit   [7:0]            wr_data;
+  rand bit   [7:0]            wr_data[$];
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit   [2:0]            rxilvl;
   rand bit   [1:0]            fmtilvl;
@@ -57,9 +50,18 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   // constraints
   constraint addr_c         { addr         inside {[I2C_MIN_ADDR : I2C_MAX_ADDR]}; }
-  constraint wr_data_c      { wr_data      inside {[I2C_MIN_DATA : I2C_MAX_DATA]}; }
   constraint fmtilvl_c      { fmtilvl      inside {[0 : I2C_MAX_FMTILVL]}; }
   constraint num_trans_c    { num_trans    inside {[I2C_MIN_TRAN : I2C_MAX_TRAN]}; }
+  // get an array with unique write data
+  constraint wr_data_c {
+    solve num_wr_bytes before wr_data;
+    wr_data.size == num_wr_bytes;
+    unique { wr_data };
+  }
+
+  // number of extra data write written to fmt to trigger interrupts
+  // i.e. overflow, watermark
+  constraint num_data_ovf_c { num_data_ovf inside {[5 : 10]}; }
 
   // create uniform assertion distributions of rx_watermark interrupt
   constraint rxilvl_c {
@@ -81,6 +83,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     };
   }
   constraint num_rd_bytes_c {
+    num_rd_bytes < 128;
     num_rd_bytes dist {
       1       :/ 17,
       [2:4]   :/ 17,
@@ -229,18 +232,30 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
-  virtual task program_format_flag(i2c_item item, string msg="");     
+  function automatic int get_byte_latency();
+    return 8*(timing_cfg.tClockLow + timing_cfg.tSetupBit +
+              timing_cfg.tClockPulse + timing_cfg.tHoldBit);
+  endfunction : get_byte_latency
+
+  virtual task program_format_flag(i2c_item item, string msg="");
+    bit fmtfull;
+
     ral.fdata.nakok.set(item.nakok);
     ral.fdata.rcont.set(item.rcont);
     ral.fdata.read.set(item.read);
     ral.fdata.stop.set(item.stop);
     ral.fdata.start.set(item.start);
     ral.fdata.fbyte.set(item.fbyte);
-    // avoid_write_fmt_overflow is set, ensure fmt_fifo is not full before write
-    // otherwise, fmt_fifo can be overflow written
-    if (avoid_write_fmt_overflow) begin
+    // en_fmt_underflow is set to ensure no write data overflow with fmt_fifo
+    // regardless en_fmt_underflow, the last data (consist of STOP bit) must be
+    // pushed into fmt_fifo to safely complete transaction
+    if (!cfg.en_fmt_overflow || fmt_item.stop) begin
       csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
-    end  
+    end
+    // if fmt_overflow irq is triggered it must be cleared before new fmt data is program
+    // otherwise, scoreboard can drop this data while fmt_fifo is not full
+    wait(!cfg.intr_vif.pins[FmtOverflow]);
+    // program fmt_fifo
     csr_update(.csr(ral.fdata));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
