@@ -1097,6 +1097,7 @@
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
           width: 1
+          default: ""
           top_signame: flash_ctrl_flash
           index: -1
         }
@@ -1108,6 +1109,7 @@
           package: otp_ctrl_pkg
           inst_name: flash_ctrl
           width: 1
+          default: ""
           top_signame: otp_ctrl_otp_flash_key
           index: -1
         }
@@ -1657,6 +1659,7 @@
           package: tlul_pkg
           inst_name: sensor_ctrl
           width: 1
+          default: ""
           top_signame: sensor_ctrl_ast_host
           index: -1
         }
@@ -1668,6 +1671,7 @@
           package: tlul_pkg
           inst_name: sensor_ctrl
           width: 1
+          default: ""
           top_signame: sensor_ctrl_ast_dev
           index: -1
         }
@@ -1679,6 +1683,7 @@
           package: sensor_ctrl_pkg
           inst_name: sensor_ctrl
           width: 1
+          default: ""
           top_signame: sensor_ctrl_ast_aux
           index: -1
         }
@@ -1690,6 +1695,7 @@
           package: ast_wrapper_pkg
           inst_name: sensor_ctrl
           width: 1
+          default: ""
           top_signame: sensor_ctrl_ast_alert
           index: -1
         }
@@ -1701,6 +1707,7 @@
           package: ast_wrapper_pkg
           inst_name: sensor_ctrl
           width: 1
+          default: ""
           top_signame: sensor_ctrl_ast_status
           index: -1
         }
@@ -1784,6 +1791,7 @@
           package: pwrmgr_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_otp
           index: -1
         }
@@ -1804,6 +1812,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_signame: otp_ctrl_lc_otp_program
           index: -1
         }
@@ -1815,6 +1824,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: otp_ctrl_otp_lc_data
           index: -1
@@ -1827,6 +1837,7 @@
           package: lifecycle_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_signame: lifecycle_provision
           index: -1
         }
@@ -1838,6 +1849,7 @@
           package: lifecycle_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_signame: lifecycle_nvm_debug
           index: -1
         }
@@ -1858,6 +1870,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: otp_ctrl_otp_flash_key
           index: -1
@@ -1870,6 +1883,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: otp_ctrl_otp_ram_main_key
           index: -1
@@ -1882,6 +1896,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: otp_ctrl_otp_ram_ret_aon_key
           index: -1
@@ -1894,6 +1909,7 @@
           package: otbn_pkg
           inst_name: otp_ctrl
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: otp_ctrl_otp_otbn_ram_key
           index: -1
@@ -1938,6 +1954,7 @@
           struct: pwr_lc
           package: pwrmgr_pkg
           inst_name: lifecycle
+          default: ""
           top_signame: pwrmgr_aon_pwr_lc
           index: -1
         }
@@ -1949,6 +1966,7 @@
           struct: lc_otp_program
           package: otp_ctrl_pkg
           inst_name: lifecycle
+          default: ""
           top_signame: otp_ctrl_lc_otp_program
           index: -1
         }
@@ -1960,6 +1978,7 @@
           struct: otp_lc_data
           package: otp_ctrl_pkg
           inst_name: lifecycle
+          default: ""
           top_signame: otp_ctrl_otp_lc_data
           index: -1
         }
@@ -1991,6 +2010,7 @@
           struct: lc_tx
           package: lifecycle_pkg
           inst_name: lifecycle
+          default: ""
           top_type: broadcast
           top_signame: lifecycle_nvm_debug
           index: -1
@@ -2013,6 +2033,7 @@
           struct: lc_tx
           package: lifecycle_pkg
           inst_name: lifecycle
+          default: ""
           top_type: broadcast
           top_signame: lifecycle_provision
           index: -1
@@ -2035,6 +2056,7 @@
           struct: lc_strap
           package: pinmux_pkg
           inst_name: lifecycle
+          default: ""
           top_signame: lifecycle_strap_sample
           index: -1
         }
@@ -2255,6 +2277,7 @@
           package: keymgr_pkg
           inst_name: kmac
           width: 1
+          default: ""
           top_signame: keymgr_kmac_key
           index: -1
         }
@@ -2266,6 +2289,7 @@
           package: keymgr_pkg
           inst_name: kmac
           width: 1
+          default: ""
           top_signame: keymgr_kmac_data
           index: -1
         }
@@ -2347,9 +2371,30 @@
           name: lc_pinmux_strap
           act: rsp
           package: pinmux_pkg
+          default: "'0"
           inst_name: pinmux_aon
           width: 1
           top_signame: lifecycle_strap_sample
+          index: -1
+        }
+        {
+          struct: dft_strap_test
+          type: uni
+          name: dft_strap_test
+          act: req
+          package: pinmux_pkg
+          default: "'0"
+          inst_name: pinmux_aon
+          index: -1
+        }
+        {
+          struct: io_pok
+          type: uni
+          name: io_pok
+          act: rcv
+          package: pinmux_pkg
+          default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
+          inst_name: pinmux_aon
           index: -1
         }
         {
@@ -2358,6 +2403,7 @@
           name: sleep_en
           act: rcv
           package: ""
+          default: 1'b0
           inst_name: pinmux_aon
           index: -1
         }
@@ -2367,6 +2413,7 @@
           name: aon_wkup_req
           act: req
           package: ""
+          default: 1'b0
           inst_name: pinmux_aon
           width: 1
           top_signame: pwrmgr_aon_wakeups
@@ -2547,6 +2594,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_ast
           index: -1
         }
@@ -2558,6 +2606,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_rst
           index: -1
         }
@@ -2569,6 +2618,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_clk
           index: -1
         }
@@ -2580,6 +2630,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_otp
           index: -1
         }
@@ -2591,6 +2642,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_lc
           index: -1
         }
@@ -2611,6 +2663,7 @@
           package: pwrmgr_pkg
           inst_name: pwrmgr_aon
           width: 1
+          default: ""
           top_signame: pwrmgr_aon_pwr_cpu
           index: -1
         }
@@ -2622,6 +2675,7 @@
           act: rcv
           package: ""
           inst_name: pwrmgr_aon
+          default: ""
           top_type: broadcast
           top_signame: pwrmgr_aon_wakeups
           index: -1
@@ -2685,6 +2739,7 @@
           act: rsp
           inst_name: rstmgr_aon
           width: 1
+          default: ""
           package: pwrmgr_pkg
           top_signame: pwrmgr_aon_pwr_rst
           index: -1
@@ -2697,6 +2752,7 @@
           package: rstmgr_pkg
           inst_name: rstmgr_aon
           width: 1
+          default: ""
           top_signame: rstmgr_aon_resets
           index: -1
         }
@@ -2708,6 +2764,7 @@
           package: ast_wrapper_pkg
           inst_name: rstmgr_aon
           width: 1
+          default: ""
           top_signame: rstmgr_aon_ast
           index: -1
         }
@@ -2719,6 +2776,7 @@
           package: rstmgr_pkg
           inst_name: rstmgr_aon
           width: 1
+          default: ""
           top_signame: rstmgr_aon_cpu
           index: -1
         }
@@ -2776,6 +2834,7 @@
           package: clkmgr_pkg
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_clocks
           index: -1
         }
@@ -2787,6 +2846,7 @@
           package: ""
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_clk_main
           index: -1
         }
@@ -2798,6 +2858,7 @@
           package: ""
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_clk_io
           index: -1
         }
@@ -2809,6 +2870,7 @@
           package: ""
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_clk_usb
           index: -1
         }
@@ -2820,6 +2882,7 @@
           package: ""
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_clk_aon
           index: -1
         }
@@ -2830,6 +2893,7 @@
           act: rsp
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           package: pwrmgr_pkg
           top_signame: pwrmgr_aon_pwr_clk
           index: -1
@@ -3394,6 +3458,7 @@
           struct: logic
           width: 1
           inst_name: usbdev_aon
+          default: ""
           top_signame: usbdev_aon_usb_ref_val
           index: -1
         }
@@ -3405,6 +3470,7 @@
           struct: logic
           width: 1
           inst_name: usbdev_aon
+          default: ""
           top_signame: usbdev_aon_usb_ref_pulse
           index: -1
         }
@@ -3557,6 +3623,7 @@
           package: keymgr_pkg
           inst_name: keymgr
           width: 1
+          default: ""
           top_type: broadcast
           top_signame: keymgr_kmac_key
           index: -1
@@ -3569,6 +3636,7 @@
           package: keymgr_pkg
           inst_name: keymgr
           width: 1
+          default: ""
           top_signame: keymgr_kmac_data
           index: -1
         }
@@ -3665,6 +3733,7 @@
           width: 3
           package: csrng_pkg
           inst_name: csrng
+          default: ""
           top_signame: csrng_csrng_cmd
           index: -1
         }
@@ -3676,6 +3745,7 @@
           width: 1
           package: entropy_src_pkg
           inst_name: csrng
+          default: ""
           top_signame: csrng_entropy_src_hw_if
           index: -1
         }
@@ -3779,6 +3849,7 @@
           package: entropy_src_pkg
           inst_name: entropy_src
           width: 1
+          default: ""
           top_signame: csrng_entropy_src_hw_if
           index: -1
         }
@@ -3790,6 +3861,7 @@
           package: entropy_src_pkg
           inst_name: entropy_src
           width: 1
+          default: ""
           top_signame: entropy_src_entropy_src_rng
           index: -1
         }
@@ -3898,6 +3970,7 @@
           package: otbn_pkg
           inst_name: otbn
           width: 1
+          default: ""
           top_signame: otp_ctrl_otp_otbn_ram_key
           index: -1
         }
@@ -3988,6 +4061,7 @@
           act: rsp
           inst_name: eflash
           width: 1
+          default: ""
           package: flash_ctrl_pkg
           top_signame: flash_ctrl_flash
           index: -1
@@ -7194,6 +7268,7 @@
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
         width: 1
+        default: ""
         top_signame: flash_ctrl_flash
         index: -1
       }
@@ -7205,6 +7280,7 @@
         package: otp_ctrl_pkg
         inst_name: flash_ctrl
         width: 1
+        default: ""
         top_signame: otp_ctrl_otp_flash_key
         index: -1
       }
@@ -7216,6 +7292,7 @@
         package: tlul_pkg
         inst_name: sensor_ctrl
         width: 1
+        default: ""
         top_signame: sensor_ctrl_ast_host
         index: -1
       }
@@ -7227,6 +7304,7 @@
         package: tlul_pkg
         inst_name: sensor_ctrl
         width: 1
+        default: ""
         top_signame: sensor_ctrl_ast_dev
         index: -1
       }
@@ -7238,6 +7316,7 @@
         package: sensor_ctrl_pkg
         inst_name: sensor_ctrl
         width: 1
+        default: ""
         top_signame: sensor_ctrl_ast_aux
         index: -1
       }
@@ -7249,6 +7328,7 @@
         package: ast_wrapper_pkg
         inst_name: sensor_ctrl
         width: 1
+        default: ""
         top_signame: sensor_ctrl_ast_alert
         index: -1
       }
@@ -7260,6 +7340,7 @@
         package: ast_wrapper_pkg
         inst_name: sensor_ctrl
         width: 1
+        default: ""
         top_signame: sensor_ctrl_ast_status
         index: -1
       }
@@ -7271,6 +7352,7 @@
         package: pwrmgr_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_otp
         index: -1
       }
@@ -7291,6 +7373,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_signame: otp_ctrl_lc_otp_program
         index: -1
       }
@@ -7302,6 +7385,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: otp_ctrl_otp_lc_data
         index: -1
@@ -7314,6 +7398,7 @@
         package: lifecycle_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_signame: lifecycle_provision
         index: -1
       }
@@ -7325,6 +7410,7 @@
         package: lifecycle_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_signame: lifecycle_nvm_debug
         index: -1
       }
@@ -7345,6 +7431,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: otp_ctrl_otp_flash_key
         index: -1
@@ -7357,6 +7444,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: otp_ctrl_otp_ram_main_key
         index: -1
@@ -7369,6 +7457,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: otp_ctrl_otp_ram_ret_aon_key
         index: -1
@@ -7381,6 +7470,7 @@
         package: otbn_pkg
         inst_name: otp_ctrl
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: otp_ctrl_otp_otbn_ram_key
         index: -1
@@ -7393,6 +7483,7 @@
         struct: pwr_lc
         package: pwrmgr_pkg
         inst_name: lifecycle
+        default: ""
         top_signame: pwrmgr_aon_pwr_lc
         index: -1
       }
@@ -7404,6 +7495,7 @@
         struct: lc_otp_program
         package: otp_ctrl_pkg
         inst_name: lifecycle
+        default: ""
         top_signame: otp_ctrl_lc_otp_program
         index: -1
       }
@@ -7415,6 +7507,7 @@
         struct: otp_lc_data
         package: otp_ctrl_pkg
         inst_name: lifecycle
+        default: ""
         top_signame: otp_ctrl_otp_lc_data
         index: -1
       }
@@ -7446,6 +7539,7 @@
         struct: lc_tx
         package: lifecycle_pkg
         inst_name: lifecycle
+        default: ""
         top_type: broadcast
         top_signame: lifecycle_nvm_debug
         index: -1
@@ -7468,6 +7562,7 @@
         struct: lc_tx
         package: lifecycle_pkg
         inst_name: lifecycle
+        default: ""
         top_type: broadcast
         top_signame: lifecycle_provision
         index: -1
@@ -7490,6 +7585,7 @@
         struct: lc_strap
         package: pinmux_pkg
         inst_name: lifecycle
+        default: ""
         top_signame: lifecycle_strap_sample
         index: -1
       }
@@ -7511,6 +7607,7 @@
         package: keymgr_pkg
         inst_name: kmac
         width: 1
+        default: ""
         top_signame: keymgr_kmac_key
         index: -1
       }
@@ -7522,6 +7619,7 @@
         package: keymgr_pkg
         inst_name: kmac
         width: 1
+        default: ""
         top_signame: keymgr_kmac_data
         index: -1
       }
@@ -7531,9 +7629,30 @@
         name: lc_pinmux_strap
         act: rsp
         package: pinmux_pkg
+        default: "'0"
         inst_name: pinmux_aon
         width: 1
         top_signame: lifecycle_strap_sample
+        index: -1
+      }
+      {
+        struct: dft_strap_test
+        type: uni
+        name: dft_strap_test
+        act: req
+        package: pinmux_pkg
+        default: "'0"
+        inst_name: pinmux_aon
+        index: -1
+      }
+      {
+        struct: io_pok
+        type: uni
+        name: io_pok
+        act: rcv
+        package: pinmux_pkg
+        default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
+        inst_name: pinmux_aon
         index: -1
       }
       {
@@ -7542,6 +7661,7 @@
         name: sleep_en
         act: rcv
         package: ""
+        default: 1'b0
         inst_name: pinmux_aon
         index: -1
       }
@@ -7551,6 +7671,7 @@
         name: aon_wkup_req
         act: req
         package: ""
+        default: 1'b0
         inst_name: pinmux_aon
         width: 1
         top_signame: pwrmgr_aon_wakeups
@@ -7564,6 +7685,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_ast
         index: -1
       }
@@ -7575,6 +7697,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_rst
         index: -1
       }
@@ -7586,6 +7709,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_clk
         index: -1
       }
@@ -7597,6 +7721,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_otp
         index: -1
       }
@@ -7608,6 +7733,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_lc
         index: -1
       }
@@ -7628,6 +7754,7 @@
         package: pwrmgr_pkg
         inst_name: pwrmgr_aon
         width: 1
+        default: ""
         top_signame: pwrmgr_aon_pwr_cpu
         index: -1
       }
@@ -7639,6 +7766,7 @@
         act: rcv
         package: ""
         inst_name: pwrmgr_aon
+        default: ""
         top_type: broadcast
         top_signame: pwrmgr_aon_wakeups
         index: -1
@@ -7660,6 +7788,7 @@
         act: rsp
         inst_name: rstmgr_aon
         width: 1
+        default: ""
         package: pwrmgr_pkg
         top_signame: pwrmgr_aon_pwr_rst
         index: -1
@@ -7672,6 +7801,7 @@
         package: rstmgr_pkg
         inst_name: rstmgr_aon
         width: 1
+        default: ""
         top_signame: rstmgr_aon_resets
         index: -1
       }
@@ -7683,6 +7813,7 @@
         package: ast_wrapper_pkg
         inst_name: rstmgr_aon
         width: 1
+        default: ""
         top_signame: rstmgr_aon_ast
         index: -1
       }
@@ -7694,6 +7825,7 @@
         package: rstmgr_pkg
         inst_name: rstmgr_aon
         width: 1
+        default: ""
         top_signame: rstmgr_aon_cpu
         index: -1
       }
@@ -7714,6 +7846,7 @@
         package: clkmgr_pkg
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_clocks
         index: -1
       }
@@ -7725,6 +7858,7 @@
         package: ""
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_clk_main
         index: -1
       }
@@ -7736,6 +7870,7 @@
         package: ""
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_clk_io
         index: -1
       }
@@ -7747,6 +7882,7 @@
         package: ""
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_clk_usb
         index: -1
       }
@@ -7758,6 +7894,7 @@
         package: ""
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_clk_aon
         index: -1
       }
@@ -7768,6 +7905,7 @@
         act: rsp
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         package: pwrmgr_pkg
         top_signame: pwrmgr_aon_pwr_clk
         index: -1
@@ -7798,6 +7936,7 @@
         struct: logic
         width: 1
         inst_name: usbdev_aon
+        default: ""
         top_signame: usbdev_aon_usb_ref_val
         index: -1
       }
@@ -7809,6 +7948,7 @@
         struct: logic
         width: 1
         inst_name: usbdev_aon
+        default: ""
         top_signame: usbdev_aon_usb_ref_pulse
         index: -1
       }
@@ -7838,6 +7978,7 @@
         package: keymgr_pkg
         inst_name: keymgr
         width: 1
+        default: ""
         top_type: broadcast
         top_signame: keymgr_kmac_key
         index: -1
@@ -7850,6 +7991,7 @@
         package: keymgr_pkg
         inst_name: keymgr
         width: 1
+        default: ""
         top_signame: keymgr_kmac_data
         index: -1
       }
@@ -7888,6 +8030,7 @@
         width: 3
         package: csrng_pkg
         inst_name: csrng
+        default: ""
         top_signame: csrng_csrng_cmd
         index: -1
       }
@@ -7899,6 +8042,7 @@
         width: 1
         package: entropy_src_pkg
         inst_name: csrng
+        default: ""
         top_signame: csrng_entropy_src_hw_if
         index: -1
       }
@@ -7920,6 +8064,7 @@
         package: entropy_src_pkg
         inst_name: entropy_src
         width: 1
+        default: ""
         top_signame: csrng_entropy_src_hw_if
         index: -1
       }
@@ -7931,6 +8076,7 @@
         package: entropy_src_pkg
         inst_name: entropy_src
         width: 1
+        default: ""
         top_signame: entropy_src_entropy_src_rng
         index: -1
       }
@@ -7961,6 +8107,7 @@
         package: otbn_pkg
         inst_name: otbn
         width: 1
+        default: ""
         top_signame: otp_ctrl_otp_otbn_ram_key
         index: -1
       }
@@ -7971,6 +8118,7 @@
         act: rsp
         inst_name: eflash
         width: 1
+        default: ""
         package: flash_ctrl_pkg
         top_signame: flash_ctrl_flash
         index: -1
@@ -7984,6 +8132,7 @@
         signame: sensor_ctrl_ast_host
         width: 1
         type: uni
+        default: ""
         direction: out
       }
       {
@@ -7992,6 +8141,7 @@
         signame: sensor_ctrl_ast_dev
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8000,6 +8150,7 @@
         signame: sensor_ctrl_ast_status
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8008,6 +8159,7 @@
         signame: sensor_ctrl_ast_alert_req
         width: 1
         type: req_rsp
+        default: ""
         direction: in
       }
       {
@@ -8016,6 +8168,7 @@
         signame: sensor_ctrl_ast_alert_rsp
         width: 1
         type: req_rsp
+        default: ""
         direction: out
       }
       {
@@ -8024,6 +8177,7 @@
         signame: sensor_ctrl_ast_aux
         width: 1
         type: uni
+        default: ""
         direction: out
       }
       {
@@ -8032,6 +8186,7 @@
         signame: pwrmgr_aon_pwr_ast_req
         width: 1
         type: req_rsp
+        default: ""
         direction: out
       }
       {
@@ -8040,6 +8195,7 @@
         signame: pwrmgr_aon_pwr_ast_rsp
         width: 1
         type: req_rsp
+        default: ""
         direction: in
       }
       {
@@ -8048,6 +8204,7 @@
         signame: rstmgr_aon_ast
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8056,6 +8213,7 @@
         signame: usbdev_aon_usb_ref_pulse
         width: 1
         type: uni
+        default: ""
         direction: out
       }
       {
@@ -8064,6 +8222,7 @@
         signame: usbdev_aon_usb_ref_val
         width: 1
         type: uni
+        default: ""
         direction: out
       }
       {
@@ -8072,6 +8231,7 @@
         signame: entropy_src_entropy_src_rng_req
         width: 1
         type: req_rsp
+        default: ""
         direction: out
       }
       {
@@ -8080,6 +8240,7 @@
         signame: entropy_src_entropy_src_rng_rsp
         width: 1
         type: req_rsp
+        default: ""
         direction: in
       }
       {
@@ -8088,6 +8249,7 @@
         signame: clkmgr_aon_clk_main
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8096,6 +8258,7 @@
         signame: clkmgr_aon_clk_io
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8104,6 +8267,7 @@
         signame: clkmgr_aon_clk_usb
         width: 1
         type: uni
+        default: ""
         direction: in
       }
       {
@@ -8112,6 +8276,7 @@
         signame: clkmgr_aon_clk_aon
         width: 1
         type: uni
+        default: ""
         direction: in
       }
     ]
@@ -8123,6 +8288,7 @@
         signame: flash_ctrl_flash_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: flash_ctrl_pkg
@@ -8130,6 +8296,7 @@
         signame: flash_ctrl_flash_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8137,6 +8304,7 @@
         signame: otp_ctrl_otp_flash_key
         width: 1
         type: uni
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8144,6 +8312,7 @@
         signame: otp_ctrl_otp_ram_main_key
         width: 1
         type: uni
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8151,6 +8320,7 @@
         signame: otp_ctrl_otp_ram_ret_aon_key
         width: 1
         type: uni
+        default: ""
       }
       {
         package: otbn_pkg
@@ -8158,6 +8328,7 @@
         signame: otp_ctrl_otp_otbn_ram_key
         width: 1
         type: uni
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8165,6 +8336,7 @@
         signame: otp_ctrl_lc_otp_program_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8172,6 +8344,7 @@
         signame: otp_ctrl_lc_otp_program_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: otp_ctrl_pkg
@@ -8179,6 +8352,7 @@
         signame: otp_ctrl_otp_lc_data
         width: 1
         type: uni
+        default: ""
       }
       {
         package: lifecycle_pkg
@@ -8186,6 +8360,7 @@
         signame: lifecycle_nvm_debug
         width: 1
         type: uni
+        default: ""
       }
       {
         package: lifecycle_pkg
@@ -8193,6 +8368,7 @@
         signame: lifecycle_provision
         width: 1
         type: uni
+        default: ""
       }
       {
         package: pinmux_pkg
@@ -8200,6 +8376,7 @@
         signame: lifecycle_strap_sample_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pinmux_pkg
@@ -8207,6 +8384,7 @@
         signame: lifecycle_strap_sample_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8214,6 +8392,7 @@
         signame: pwrmgr_aon_pwr_otp_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8221,6 +8400,7 @@
         signame: pwrmgr_aon_pwr_otp_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8228,6 +8408,7 @@
         signame: pwrmgr_aon_pwr_rst_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8235,6 +8416,7 @@
         signame: pwrmgr_aon_pwr_rst_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8242,6 +8424,7 @@
         signame: pwrmgr_aon_pwr_clk_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8249,6 +8432,7 @@
         signame: pwrmgr_aon_pwr_clk_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8256,6 +8440,7 @@
         signame: pwrmgr_aon_pwr_lc_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8263,6 +8448,7 @@
         signame: pwrmgr_aon_pwr_lc_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: entropy_src_pkg
@@ -8270,6 +8456,7 @@
         signame: csrng_entropy_src_hw_if_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: entropy_src_pkg
@@ -8277,6 +8464,7 @@
         signame: csrng_entropy_src_hw_if_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: keymgr_pkg
@@ -8284,6 +8472,7 @@
         signame: keymgr_kmac_key
         width: 1
         type: uni
+        default: ""
       }
       {
         package: keymgr_pkg
@@ -8291,6 +8480,7 @@
         signame: keymgr_kmac_data_req
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: keymgr_pkg
@@ -8298,6 +8488,7 @@
         signame: keymgr_kmac_data_rsp
         width: 1
         type: req_rsp
+        default: ""
       }
       {
         package: ""
@@ -8305,6 +8496,7 @@
         signame: pwrmgr_aon_wakeups
         width: 1
         type: uni
+        default: ""
       }
       {
         package: rstmgr_pkg
@@ -8312,6 +8504,7 @@
         signame: rstmgr_aon_resets
         width: 1
         type: uni
+        default: ""
       }
       {
         package: rstmgr_pkg
@@ -8319,6 +8512,7 @@
         signame: rstmgr_aon_cpu
         width: 1
         type: uni
+        default: ""
       }
       {
         package: pwrmgr_pkg
@@ -8326,6 +8520,7 @@
         signame: pwrmgr_aon_pwr_cpu
         width: 1
         type: uni
+        default: ""
       }
       {
         package: clkmgr_pkg
@@ -8333,6 +8528,7 @@
         signame: clkmgr_aon_clocks
         width: 1
         type: uni
+        default: ""
       }
       {
         package: csrng_pkg
@@ -8340,6 +8536,7 @@
         signame: csrng_csrng_cmd_req
         width: 3
         type: req_rsp
+        default: ""
       }
       {
         package: csrng_pkg
@@ -8347,6 +8544,7 @@
         signame: csrng_csrng_cmd_rsp
         width: 3
         type: req_rsp
+        default: ""
       }
     ]
   }
