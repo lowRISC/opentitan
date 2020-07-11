@@ -14,27 +14,37 @@ package pinmux_pkg;
     HighTimed = 3'b101
   } wkup_mode_e;
 
-  // Interface with LC controller
-  parameter int NStraps  = 2;
-  // Strap sampling is only supported on MIOs at the moment
-  parameter int MioStrapPos [NStraps] = '{1, 0};
+  // Number of IO power OK signals
+  parameter int NIOPokSignals = 2;
 
+  typedef struct packed {
+    logic [NIOPokSignals-1:0] domain;
+  } io_pok_req_t;
+
+  // DFT Test Mode straps
+  parameter int NDFTStraps  = 2;
+  // Strap sampling is only supported on MIOs at the moment
+  parameter int DftStrapPos [NDFTStraps] = '{3, 2};
+
+  // Interface with LC controller
+  typedef struct packed {
+    logic                  valid;
+    logic [NDFTStraps-1:0] straps;
+  } dft_strap_test_req_t;
+
+  // Life cycle DFT straps for TAP select
+  parameter int NLcStraps  = 2;
+  // Strap sampling is only supported on MIOs at the moment
+  parameter int LcStrapPos [NLcStraps] = '{1, 0};
+
+  // Interface with LC controller
   typedef struct packed {
     logic sample_pulse;
   } lc_strap_req_t;
 
-  parameter lc_strap_req_t LC_STRAP_REQ_DEFAULT = '{
-    sample_pulse: 1'b0
-  };
-
   typedef struct packed {
-    logic               valid;
-    logic [NStraps-1:0] straps;
+    logic                 valid;
+    logic [NLcStraps-1:0] straps;
   } lc_strap_rsp_t;
-
-  parameter lc_strap_rsp_t LC_STRAP_RSP_DEFAULT = '{
-    valid: 1'b0,
-    straps: '0
-  };
 
 endpackage : pinmux_pkg
