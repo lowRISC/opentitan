@@ -1169,7 +1169,9 @@ module top_earlgrey #(
       // Inter-module signals
       .lc_pinmux_strap_i(lifecycle_strap_sample_req),
       .lc_pinmux_strap_o(lifecycle_strap_sample_rsp),
-      .sleep_en_i('0),
+      .dft_strap_test_o(),
+      .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
+      .sleep_en_i(1'b0),
       .aon_wkup_req_o(pwrmgr_aon_wakeups),
 
       .periph_to_mio_i      (mio_d2p    ),
