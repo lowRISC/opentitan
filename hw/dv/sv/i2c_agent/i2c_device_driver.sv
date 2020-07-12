@@ -47,6 +47,7 @@ class i2c_device_driver extends i2c_driver;
         RdData: begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
           rd_data_cnt++;
+          `DV_CHECK_LE(rd_data_cnt, 256);
           for (int i = 7; i >= 0; i--) begin
             cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
           end

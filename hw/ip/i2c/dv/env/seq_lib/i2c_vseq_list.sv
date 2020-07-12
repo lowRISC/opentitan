@@ -10,3 +10,4 @@
 `include "i2c_override_vseq.sv"
 `include "i2c_fifo_watermark_vseq.sv"
 `include "i2c_fifo_overflow_vseq.sv"
+`include "i2c_perf_vseq.sv"

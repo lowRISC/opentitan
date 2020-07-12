@@ -120,3 +120,4 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   endtask : check_rx_watermark_intr
 
 endclass : i2c_fifo_watermark_vseq
+
