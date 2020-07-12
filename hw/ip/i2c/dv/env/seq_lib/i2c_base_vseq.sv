@@ -22,7 +22,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // random property
   rand uint                   fmt_fifo_access_dly;
   rand uint                   rx_fifo_access_dly;
-  rand uint                   access_intr_dly;
+  rand uint                   clear_intr_dly;
 
   rand uint                   num_trans;
   rand uint                   num_wr_bytes;
@@ -61,7 +61,9 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   // number of extra data write written to fmt to trigger interrupts
   // i.e. overflow, watermark
-  constraint num_data_ovf_c { num_data_ovf inside {[5 : 10]}; }
+  constraint num_data_ovf_c {
+    num_data_ovf inside {[I2C_RX_FIFO_DEPTH/4 : I2C_RX_FIFO_DEPTH/2]};
+  }
 
   // create uniform assertion distributions of rx_watermark interrupt
   constraint rxilvl_c {
@@ -83,7 +85,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     };
   }
   constraint num_rd_bytes_c {
-    num_rd_bytes < 128;
     num_rd_bytes dist {
       1       :/ 17,
       [2:4]   :/ 17,
@@ -94,8 +95,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     };
   }
 
-  constraint access_intr_dly_c {
-    access_intr_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+  constraint clear_intr_dly_c {
+    clear_intr_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
   }
   constraint fmt_fifo_access_dly_c {
     fmt_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
@@ -113,7 +114,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     tsu_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
     thd_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
     t_timeout inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    e_timeout inside { [0 : I2C_TIMEOUT_ENB] };
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
@@ -147,7 +147,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task host_init();
     bit [TL_DW-1: 0] intr_state;
 
-    `uvm_info(`gfn, "initialize i2c host registers", UVM_LOW)
+    `uvm_info(`gfn, "initialize i2c host registers", UVM_DEBUG)
     ral.ctrl.enablehost.set(1'b1);
     csr_update(ral.ctrl);
 

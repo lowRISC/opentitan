@@ -50,8 +50,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     uvm_reg   csr;
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;
-    bit do_read_check = 1'b0;
-
+    bit do_read_check = 1'b0;    // TODO: Enable this bit later
     bit write = item.is_write();
 
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
@@ -122,6 +121,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               // write transaction
               if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
                 cfg.clk_rst_vif.wait_clks(1); // irq appears with one cycle latency
+                // TODO: Gather all irq verification in SCB instead of distribute in vseq
                 if (cfg.intr_vif.pins[FmtOverflow]) begin
                   // fmt_fifo is overflow, capture dropped data
                   exp_wr_item.fmt_ovf_data_q.push_back(fbyte);

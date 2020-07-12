@@ -67,7 +67,7 @@
               - Reduce access latency for fmt_fifo and rx_fifo
               - Issue long read/write back-to-back transactions 
               - Read rx_fifo as soon as read data valid
-
+              - Clear interrupt quickly
             Checking:
               - Ensure transactions are transceivered correctly
             '''

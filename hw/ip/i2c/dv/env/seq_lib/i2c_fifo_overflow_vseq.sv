@@ -32,7 +32,7 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     for (int i = 0; i < num_trans; i++) begin
       check_fmt_overflow = 1'b1; // set to gracefully stop check_fmt_overflow_intr
-      check_rx_overflow  = 1'b1; // set to gracefully stop check_ex_overflow_intr
+      check_rx_overflow  = 1'b1; // set to gracefully stop check_rx_overflow_intr
       num_fmt_overflow   = 0;
       num_rx_overflow    = 0;
 
@@ -59,14 +59,14 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
           // -> send read transaction -> pooling and counting rx_overflow interrupt
           // -> check write complete -> stop pooling rx_overflow interrupt
           // -> verify the number of received rx_overflow interrupt
-          // TODO: -> verify the rx_data dropped should be performed in scoreboard
+          // -> verify the rx_data dropped is performed in scoreboard
           if (check_rx_overflow) begin
             host_send_trans(.num_trans(1), .trans_type(ReadOnly));
             csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
             check_rx_overflow = 1'b0;
             `DV_CHECK_EQ(num_rx_overflow, 1)
             `uvm_info(`gfn, $sformatf("\nRun %0d, num_rx_overflow %d",
-                i, num_rx_overflow), UVM_LOW)
+                i, num_rx_overflow), UVM_DEBUG)
           end
         end
         begin

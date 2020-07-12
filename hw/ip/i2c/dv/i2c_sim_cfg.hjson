@@ -64,6 +64,13 @@
       name: i2c_fifo_overflow
       uvm_test_seq: i2c_fifo_overflow_vseq
     }
+
+    {
+      name: i2c_perf
+      // define low reseed due to long simulation time
+      reseed: 5
+      uvm_test_seq: i2c_perf_vseq
+    }
   ]
 
   // List of regressions.

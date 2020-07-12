@@ -84,6 +84,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           stop  == (last_tran) ? 1'b1 : stop;
         )
         `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
+        if (num_rd_bytes == 0) begin
+          `uvm_info(`gfn, "\nRead transaction length is 256 byte", UVM_DEBUG)
+        end
 
         // accumulate number of read byte
         total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
@@ -131,6 +134,10 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   virtual task host_write_trans(bit last_tran);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
+    if (num_wr_bytes == 256) begin
+      `uvm_info(`gfn, "\nWrite transaction length is 256 byte", UVM_DEBUG)
+    end
+
     for (int i = 1; i <= num_wr_bytes; i++) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
         start == 1'b0;
@@ -168,8 +175,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       `uvm_info(`gfn, "\nClearing rx_watermark", UVM_DEBUG)
     end
 
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(access_intr_dly)
-    cfg.clk_rst_vif.wait_clks(access_intr_dly);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
+    cfg.clk_rst_vif.wait_clks(clear_intr_dly);
     csr_wr(.csr(ral.intr_state), .value(intr_clear));
   endtask : process_interrupts
 
