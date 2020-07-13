@@ -551,7 +551,7 @@
     // Dedicated IO modules. The in/out ports of the modules below are connected
     //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
     dio_modules: [
-      { name: "spi_device", pad: ["ChB[0..3]"] },
+      { name: "spi_device", pad: ["ChB[0..5]"] },
       //{ name: "uart.tx", pad: ["ChA[0]"]},
       { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
@@ -599,7 +599,7 @@
     attr_default: ["STRONG"],
     pads: [
       { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
-      { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
+      { name: "ChB" type: "IO_33V", count: 6, attr: ["KEEP", "WEAK"]},
       { name: "ChC" type: "IO_33V", count: 4, attr: ["KEEP", "STRONG"]},
       { name: "ChD" type: "IO_33V", count: 14, attr: ["KEEP", "WEAK"]},
     ]
