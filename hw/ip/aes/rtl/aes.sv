@@ -23,6 +23,9 @@ module aes #(
   //input  logic              entropy_ack_i,
   //input  logic [63:0]       entropy_i,
 
+  // Idle indicator for clock manager
+  output logic              idle_o,
+
   // Bus interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o
@@ -83,8 +86,11 @@ module aes #(
     .entropy_i    ( 64'hFEDCBA9876543210 )
   );
 
+  assign idle_o = hw2reg.status.idle.d;
+
   // All outputs should have a known value after reset
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(IdleKnown, idle_o)
 
 endmodule

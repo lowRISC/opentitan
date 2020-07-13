@@ -29,6 +29,8 @@ module tb;
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
 
+    .idle_o               (           ),
+
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  )
   );
