@@ -106,7 +106,7 @@ module rbox (
       cio_pwrb_out_o <= 1'b1;//TBD
     end
   end
-  
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cio_bat_en_en_o <= 1'b0;
@@ -127,6 +127,7 @@ module rbox (
       cio_key2_out_en_o <= 1'b1;//TBD
       cio_pwrb_out_en_o <= 1'b1;//TBD
     end
+  end
 
   // TBD Assert Known: Outputs
   // TODO: to be replaced later by true rtl
