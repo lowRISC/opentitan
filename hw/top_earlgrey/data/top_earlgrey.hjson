@@ -474,7 +474,7 @@
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks', 'csrng.csrng_cmd'],
+    'top': ['rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks', 'csrng.csrng_cmd', 'aes.idle', 'clkmgr_aon.status'],
 
     // ext is to create port in the top.
     'external': ['sensor_ctrl.ast_host', 'sensor_ctrl.ast_dev', 'sensor_ctrl.ast_status',

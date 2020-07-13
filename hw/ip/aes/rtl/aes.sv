@@ -20,6 +20,9 @@ module aes #(
   // TODO: CSRNG peripheral interface/RNG distribution network interface needs to be defined first,
   // see https://github.com/lowRISC/opentitan/issues/2693.
 
+  // Idle indicator for clock manager
+  output logic              idle_o,
+
   // Bus interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -100,9 +103,13 @@ module aes #(
     );
   end
 
+  // TODO: idle.d is actually only valid together with idle.de.
+  idle_o = hw2reg.idle.d;
+
   // All outputs should have a known value after reset
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
+  `ASSERT_KNOWN(IdleKnown, idle_o)
 
 endmodule

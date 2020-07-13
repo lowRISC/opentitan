@@ -37,6 +37,13 @@
       struct:  "hw_key_req",
       width:   "1"
     }
+    { name:    "idle",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
     // TODO: CSRNG peripheral interface/RNG distribution network interface needs to be defined first, see https://github.com/lowRISC/opentitan/issues/2693.
     /*{ name:    "entropy",
       type:    "req_rsp",

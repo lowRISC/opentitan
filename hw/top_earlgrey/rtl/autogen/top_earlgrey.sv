@@ -470,6 +470,14 @@ module top_earlgrey #(
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   csrng_pkg::csrng_req_t [2:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [2:0] csrng_csrng_cmd_rsp;
+  logic       aes_idle;
+  clkmgr_pkg::clk_hint_status_t       clkmgr_aon_status;
+
+  always_comb begin
+    // TODO: So far just aes is connected
+    clkmgr_aon_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
+    clkmgr_aon_status.idle[0] = aes_idle;
+  end
 
   assign csrng_csrng_cmd_req = '0;
 
@@ -1112,6 +1120,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .keymgr_key_i(keymgr_pkg::HW_KEY_REQ_DEFAULT),
+      .idle_o(aes_idle),
       .clk_i (clkmgr_aon_clocks.clk_main_aes),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
@@ -1295,7 +1304,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_aon_pwr_clk_req),
       .pwr_o(pwrmgr_aon_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
-      .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
+      .status_i(clkmgr_aon_status),
       .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
       .rst_ni (rstmgr_aon_resets.rst_por_io_n),
       .rst_main_ni (rstmgr_aon_resets.rst_por_n),

@@ -2126,6 +2126,17 @@
           inst_name: aes
           index: -1
         }
+        {
+          name: idle
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: aes
+          top_signame: aes_idle
+          index: -1
+        }
       ]
     }
     {
@@ -2930,6 +2941,8 @@
           act: rcv
           package: clkmgr_pkg
           inst_name: clkmgr_aon
+          width: 1
+          top_signame: clkmgr_aon_status
           index: -1
         }
       ]
@@ -4167,6 +4180,8 @@
       pwrmgr_aon.pwr_cpu
       clkmgr_aon.clocks
       csrng.csrng_cmd
+      aes.idle
+      clkmgr_aon.status
     ]
     external:
     [
@@ -7633,6 +7648,17 @@
         index: -1
       }
       {
+        name: idle
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: aes
+        top_signame: aes_idle
+        index: -1
+      }
+      {
         struct: hw_key_req
         type: uni
         name: keymgr_key
@@ -7959,6 +7985,8 @@
         act: rcv
         package: clkmgr_pkg
         inst_name: clkmgr_aon
+        width: 1
+        top_signame: clkmgr_aon_status
         index: -1
       }
       {
@@ -8578,6 +8606,20 @@
         width: 3
         type: req_rsp
         default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: aes_idle
+        width: 1
+        type: uni
+      }
+      {
+        package: clkmgr_pkg
+        struct: clk_hint_status
+        signame: clkmgr_aon_status
+        width: 1
+        type: uni
       }
     ]
   }
