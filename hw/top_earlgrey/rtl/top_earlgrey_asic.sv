@@ -81,7 +81,7 @@ module top_earlgrey_asic (
     .clk_usb_48mhz_o     ( clk_usb_48mhz    ),
     .rst_no              ( rst_n            ),
     // MIO Pads
-    .mio_pad_io          ( { 12'bz,   // Note that 31:20 are currently not mapped
+    .mio_pad_io          ( { 12'hzzz, // Note that 31:20 are currently not mapped
                              IO_DPS5, // Use GPIO19 to pass JTAG_SRST
                              IO_DPS4, // Use GPIO18 to pass JTAG_TRST
                              IO_DPS7, // Use GPIO17 to pass rom boot_strap indication
