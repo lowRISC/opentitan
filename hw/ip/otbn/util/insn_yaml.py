@@ -1252,6 +1252,9 @@ def load_file(path: str) -> InsnsFile:
     try:
         with open(path, 'r') as handle:
             return InsnsFile(yaml.load(handle, Loader=yaml.SafeLoader))
+    except FileNotFoundError:
+        raise RuntimeError('Cannot find YAML file at {!r}.'
+                           .format(path)) from None
     except yaml.YAMLError as err:
         raise RuntimeError('Failed to parse YAML file at {!r}: {}'
                            .format(path, err)) from None
