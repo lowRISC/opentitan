@@ -36,13 +36,4 @@
     }                                         \
   } while (false)
 
-/**
- * Shorthand for CHECK(value == 0).
- *
- * @param condition a value to check.
- * @param ... arguments to a LOG_* macro, which are evaluated if the check
- * fails.
- */
-#define CHECKZ(value, ...) CHECK((value) == 0, ##__VA_ARGS__)
-
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
