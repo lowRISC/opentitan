@@ -18,12 +18,12 @@ void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");
 
   // Give a LED pattern as startup indicator for 5 seconds.
-  CHECKZ(dif_gpio_all_write(gpio, 0xff00));
+  CHECK(dif_gpio_all_write(gpio, 0xff00) == kDifGpioOk);
   for (int i = 0; i < 32; ++i) {
     usleep(5 * 1000);  // 5 ms
-    CHECKZ(dif_gpio_pin_write(gpio, 8 + (i % 8), (i / 8) % 2));
+    CHECK(dif_gpio_pin_write(gpio, 8 + (i % 8), (i / 8) % 2) == kDifGpioOk);
   }
-  CHECKZ(dif_gpio_all_write(gpio, 0x0000));  // All LEDs off.
+  CHECK(dif_gpio_all_write(gpio, 0x0000) == kDifGpioOk);  // All LEDs off.
 }
 
 /**
@@ -39,7 +39,7 @@ static const uint32_t kFtdiMask = 0x10000;
 
 uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   uint32_t gpio_state;
-  CHECKZ(dif_gpio_all_read(gpio, &gpio_state));
+  CHECK(dif_gpio_all_read(gpio, &gpio_state) == kDifGpioOk);
   gpio_state &= kGpioMask;
 
   uint32_t state_delta = prev_gpio_state ^ gpio_state;
@@ -76,6 +76,6 @@ void demo_uart_to_uart_and_gpio_echo(dif_gpio_t *gpio) {
   char rcv_char;
   while (uart_rcv_char(&rcv_char) != -1) {
     uart_send_char(rcv_char);
-    CHECKZ(dif_gpio_all_write(gpio, rcv_char << 8));
+    CHECK(dif_gpio_all_write(gpio, rcv_char << 8) == kDifGpioOk);
   }
 }

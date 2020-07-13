@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
   dif_gpio_config_t gpio_config = {
       .base_addr = mmio_region_from_addr(0x40010000),
   };
-  CHECKZ(dif_gpio_init(&gpio_config, &gpio));
+  CHECK(dif_gpio_init(&gpio_config, &gpio) == kDifGpioOk);
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECKZ(dif_gpio_output_mode_all_set(&gpio, 0x0ff00));
+  CHECK(dif_gpio_output_mode_all_set(&gpio, 0x0ff00) == kDifGpioOk);
   // Add DATE and TIME because I keep fooling myself with old versions
   LOG_INFO("Hello World!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
-  CHECKZ(dif_gpio_all_write(&gpio, 0x0000));
+  CHECK(dif_gpio_all_write(&gpio, 0x0000) == kDifGpioOk);
   LOG_INFO("Try out the switches on the board");
   LOG_INFO("or type anything into the console window.");
   LOG_INFO("The LEDs show the ASCII code of the last character.");

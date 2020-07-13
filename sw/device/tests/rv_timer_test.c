@@ -27,8 +27,8 @@ bool test_main(void) {
   // Enable GPIO: 0-7 and 16 is input, 8-15 is output
   dif_gpio_config_t gpio_config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
-  CHECKZ(dif_gpio_init(&gpio_config, &gpio));
-  CHECKZ(dif_gpio_output_mode_all_set(&gpio, 0xFF00));
+  CHECK(dif_gpio_init(&gpio_config, &gpio) == kDifGpioOk);
+  CHECK(dif_gpio_output_mode_all_set(&gpio, 0xFF00) == kDifGpioOk);
 
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
@@ -39,13 +39,13 @@ bool test_main(void) {
   rv_timer_set_cmp(hart, cmp);
   rv_timer_ctrl(hart, true);
 
-  CHECKZ(dif_gpio_all_write(&gpio, 0xFF00));  // all LEDs on
+  CHECK(dif_gpio_all_write(&gpio, 0xFF00) == kDifGpioOk);  // all LEDs on
 
   while (!intr_handling_success) {
     wait_for_interrupt();
   }
 
-  CHECKZ(dif_gpio_all_write(&gpio, 0xAA00));  // Test Completed
+  CHECK(dif_gpio_all_write(&gpio, 0xAA00) == kDifGpioOk);  // Test Completed
 
   return true;
 }
