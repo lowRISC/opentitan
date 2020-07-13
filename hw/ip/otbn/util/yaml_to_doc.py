@@ -170,7 +170,7 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     # Syntax example: either given explicitly or figured out from operands
     parts.append("```\n")
     parts.append(insn.mnemonic.upper() + ('' if insn.glued_ops else ' '))
-    parts.append(insn.syntax.raw_string())
+    parts.append(insn.syntax.render_doc())
     parts.append("\n```\n\n")
 
     # If this came from the RV32I instruction set, say so.
