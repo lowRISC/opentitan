@@ -751,74 +751,222 @@ class Operand:
         self.doc = doc
 
 
+class SyntaxToken:
+    '''An object representing a single token in an instruction's syntax
+
+    See InsnSyntax for more details. The is_literal attribute is true if this
+    is a literal hunk of text (rather than an operand name). The text attribute
+    either holds the literal syntax or the operand name.
+
+    '''
+    def __init__(self, is_literal: bool, text: str) -> None:
+        assert text
+        self.is_literal = is_literal
+        # Make whitespace canonical for literals
+        self.text = re.sub(r'\s+', ' ', text) if is_literal else text
+
+    def render_doc(self) -> str:
+        '''Return how this syntax token should look in the documentation'''
+        if self.is_literal:
+            return self.text
+        else:
+            return '<{}>'.format(self.text)
+
+
+class SyntaxHunk:
+    '''An object representing a hunk of syntax that might be optional'''
+    def __init__(self,
+                 is_optional: bool,
+                 tokens: List[SyntaxToken],
+                 operands: Set[str]) -> None:
+        assert tokens
+        self.is_optional = is_optional
+        self.tokens = tokens
+        self.operands = operands
+
+    @staticmethod
+    def from_list(operands: List[str]) -> 'SyntaxHunk':
+        '''Smart constructor for a list of operands with "normal" syntax'''
+        assert operands
+        comma = SyntaxToken(True, ', ')
+        tokens = [SyntaxToken(False, operands[0])]
+        for op in operands[1:]:
+            tokens.append(comma)
+            tokens.append(SyntaxToken(False, op))
+
+        op_set = set(operands)
+        assert len(op_set) == len(operands)
+
+        return SyntaxHunk(False, tokens, op_set)
+
+    @staticmethod
+    def from_string(mnemonic: str, optional: bool, raw: str) -> 'SyntaxHunk':
+        '''Smart constructor that parses YAML syntax (see InsnSyntax)'''
+        print('from_string({!r}, {!r}, {!r})'.format(mnemonic, optional, raw))
+        assert raw
+
+        tokens = []
+        op_set = set()
+
+        parts = re.split(r'<([^>]+)>', raw)
+        for idx, part in enumerate(parts):
+            # The matches for the regex appear in positions 1, 3, 5, ...
+            is_literal = not (idx & 1)
+            if ('<' in part or '>' in part) and not is_literal:
+                raise ValueError("Syntax for {!r} has hunk {!r} which doesn't "
+                                 "seem to surround <operand>s properly."
+                                 .format(mnemonic, raw))
+
+            if not is_literal:
+                assert part
+                if part in op_set:
+                    raise ValueError("Syntax for {!r} has hunk {!r} with "
+                                     "more than one occurrence of <{}>."
+                                     .format(mnemonic, raw, part))
+                op_set.add(part)
+
+            # Only allow empty parts (and skip their tokens) if at one end or
+            # the other
+            if not part and idx not in [0, len(parts) - 1]:
+                raise ValueError("Syntax for {!r} has two adjacent operand "
+                                 "tokens, with no intervening syntax."
+                                 .format(mnemonic))
+
+            if part:
+                tokens.append(SyntaxToken(is_literal, part))
+
+        return SyntaxHunk(optional, tokens, op_set)
+
+    def render_doc(self) -> str:
+        '''Return how this hunk should look in the documentation'''
+        parts = []
+        for token in self.tokens:
+            parts.append(token.render_doc())
+
+        body = ''.join(parts)
+        return '[{}]'.format(body) if self.is_optional else body
+
+
 class InsnSyntax:
     '''A class representing the syntax of an instruction
 
-    The pairs attribute gives the operands to the instruction, together with
-    the text between them. For example, if the instruction had the following
-    form:
+    An instruction's syntax is specified in the YAML file by writing it out
+    with operand names surrounded by angle brackets. For example, a simple NOT
+    instruction might have a syntax of
 
-        my_mnemonic  (<op_0>, <op_1>), <op_2>
+        <dst>, <src>
 
-    then it would be represented as:
+    which should be interpreted as the following tokens:
 
-        prefix = '('
-        pairs = [('op_0', ', '),
-                 ('op_1', '), '),
-                 ('op_2', '')]
+        - Operand called 'dst'
+        - A literal ','
+        - Operand called 'src'
 
-    The operands attribute is just the set of operand names (in the example, it
-    would be {'op_0', 'op_1', 'op_2'}).
+    Between the tokens, whitespace is optional (so "r0 , r1" and "r0,r1" both
+    match the syntax above) unless a literal token is just a space, in which
+    case some whitespace is required. For example
+
+        <dst> <src>
+
+    would match "r0 r1" but not "r0r1". Whitespace within literal syntax tokens
+    means that some space is required, matching the regex \\s+. For example,
+    the (rather strange) syntax
+
+       <dst> + - <src>
+
+    would match "r0 + - r1" or "r0+ -r1", but not "r0 +- r1".
+
+    Some operands (and surrounding syntax) might be optional. The optional
+    syntax is surrounded by square brackets. Nesting is not supported. For
+    example:
+
+       <dst>, <src>[, <offset>]
+
+    would match "r0, r1, 123" or "r0, r1".
+
+    Note that a given syntax might be ambiguous. For example,
+
+       <dst>, <src>[, <offset>][, <flavour>]
+
+    With "r0, r1, 123", is 123 an offset or a flavour? (We choose not to embed
+    typing information into the syntax, because that results in very confusing
+    assembler error messages). We break ties in the same way as the underlying
+    regex engine, assigning the operand to the first group, so 123 is an offset
+    in this case. Such syntaxes are rather confusing though, so probably not a
+    good idea.
+
+    The parsed syntax is stored as a list of "hunks". Each hunk contains a flag
+    showing whether the hunk is optional or required and also a list of
+    SyntaxToken objects.
 
     '''
     def __init__(self,
-                 prefix: str,
-                 pairs: List[Tuple[str, str]],
+                 hunks: List[SyntaxHunk],
                  operands: Set[str]) -> None:
-        self.prefix = prefix
-        self.pairs = pairs
+        self.hunks = hunks
         self.operands = operands
-
-    def raw_string(self) -> str:
-        '''Return the raw string of the syntax'''
-        parts = [self.prefix]
-        for operand, suffix in self.pairs:
-            parts.append('<{}>'.format(operand))
-            parts.append(suffix)
-        return ''.join(parts)
 
     @staticmethod
     def from_list(operands: List[str]) -> 'InsnSyntax':
-        op_set = set(operands)
-        assert len(op_set) == len(operands)
-        return InsnSyntax('', [(op, ', ') for op in operands], op_set)
+        '''Smart constructor for a list of operands with "normal" syntax'''
+        if not operands:
+            return InsnSyntax([], set())
+
+        hunk = SyntaxHunk.from_list(operands)
+        return InsnSyntax([hunk], hunk.operands)
 
     @staticmethod
-    def from_yaml(raw: str) -> 'InsnSyntax':
+    def from_yaml(mnemonic: str, raw: str) -> 'InsnSyntax':
         '''Parse the syntax in the YAML file'''
 
-        # The raw syntax looks something like "<foo> + <bar> (baz <qux>)". We
-        # need to check that each <..> holds an operand name. Conveniently,
-        # re.split does exactly what we need, always yielding an odd number of
-        # parts and starting with an empty string if there's a match at the
-        # start.
-        parts = re.split(r'<([^>]+)>', raw)
-        prefix = parts[0]
-        pairs = list(zip(parts[1::2], parts[2::2]))
+        # The raw syntax looks something like
+        #
+        #    <op0>, <op1>[(<op2>)]
+        #
+        # to mean that you either have "r0, r1" or "r0, r2(r3)". First, split
+        # out the bracketed parts.
+        by_left = raw.split('[')
+        parts = [(False, by_left[0])]
+        for after_left in by_left[1:]:
+            split = after_left.split(']', 1)
+            if len(split) != 2:
+                raise ValueError('Unbalanced or nested [] in instruction '
+                                 'syntax for {!r}.'
+                                 .format(mnemonic))
 
-        assert len(parts) == 1 + 2 * len(pairs)
+            parts += [(True, split[0]), (False, split[1])]
 
-        # Collect up the named operands that we've seen, checking for
-        # duplicates
-        operands = set()  # type: Set[str]
-        for operand, _ in pairs:
-            if operand in operands:
-                raise ValueError('Instruction syntax ({!r}) has duplicate '
-                                 'occurrence of the {!r} operand.'
-                                 .format(raw, operand))
-            operands.add(operand)
+        # Now parts contains a list of pairs (required, txt) where txt is a
+        # hunk of the syntax and req is true if this hunk is required. A part
+        # might be empty. For example, "[a]b c[d]" with both lead and trail
+        # with an empty part. But it shouldn't be empty if it's marked
+        # optional: that would be something like "a[]b", which doesn't make
+        # much sense.
+        hunks = []
+        for optional, raw in parts:
+            if raw:
+                hunks.append(SyntaxHunk.from_string(mnemonic, optional, raw))
+            elif optional:
+                raise ValueError('Empty [] in instruction syntax for {!r}.'
+                                 .format(mnemonic))
 
-        return InsnSyntax(prefix, pairs, operands)
+        # Collect up operands across the hunks
+        op_count = 0
+        op_set = set()
+        for hunk in hunks:
+            op_count += len(hunk.operands)
+            op_set |= hunk.operands
+
+        if op_count != len(op_set):
+            raise ValueError('Instruction syntax for {!r} is not '
+                             'linear in its operands.'
+                             .format(mnemonic))
+
+        return InsnSyntax(hunks, op_set)
+
+    def render_doc(self) -> str:
+        '''Return how this syntax should look in the documentation'''
+        return ''.join(hunk.render_doc() for hunk in self.hunks)
 
 
 class EncodingField:
@@ -997,10 +1145,11 @@ class Insn:
 
         raw_syntax = get_optional_str(yd, 'syntax', what)
         if raw_syntax is not None:
-            self.syntax = InsnSyntax.from_yaml(raw_syntax)
+            self.syntax = InsnSyntax.from_yaml(self.mnemonic,
+                                               raw_syntax.strip())
         else:
-            op_name_list = [op.name for op in self.operands]
-            self.syntax = InsnSyntax.from_list(op_name_list)
+            self.syntax = InsnSyntax.from_list([op.name
+                                                for op in self.operands])
 
         # Make sure we have exactly the operands we expect.
         if set(self.name_to_operand.keys()) != self.syntax.operands:
