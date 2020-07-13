@@ -2865,7 +2865,6 @@
       reset_connections:
       {
         rst_ni: por_io
-        sw_rst_ni: por_io
       }
       base_addr: 0x40430000
       clock_connections:

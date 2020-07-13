@@ -1328,8 +1328,7 @@ module top_earlgrey #(
       .cio_pwrb_out_o          (cio_rbox_aon_pwrb_out_d2p),
       .cio_pwrb_out_en_o       (cio_rbox_aon_pwrb_out_en_d2p),
       .clk_i (clkmgr_aon_clocks.clk_io_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n),
-      .sw_rst_ni (rstmgr_aon_resets.rst_por_io_n)
+      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
   );
 
   pwm u_pwm_aon (
