@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_status.h"
 
@@ -23,17 +24,25 @@
  * @param ... arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECK(condition, ...)                 \
-  do {                                        \
-    if (!(condition)) {                       \
-      LOG_ERROR("CHECK-fail: " __VA_ARGS__);  \
-      /* Currently, this macro will call into \
-         the test failure code, which logs    \
-         "FAIL" and aborts. In the future,    \
-         we will try to condition on whether  \
-         or not this is a test.*/             \
-      test_status_set(kTestStatusFailed);     \
-    }                                         \
+#define CHECK(condition, ...)                             \
+  do {                                                    \
+    if (!(condition)) {                                   \
+      /* NOTE: because the condition in this if           \
+         statement can be statically determined,          \
+         only one of the below string constants           \
+         will be included in the final binary.*/          \
+      if (GET_NUM_VARIABLE_ARGS(_, ##__VA_ARGS__) == 0) { \
+        LOG_ERROR("CHECK-fail: " #condition);             \
+      } else {                                            \
+        LOG_ERROR("CHECK-fail: " __VA_ARGS__);            \
+      }                                                   \
+      /* Currently, this macro will call into             \
+         the test failure code, which logs                \
+         "FAIL" and aborts. In the future,                \
+         we will try to condition on whether              \
+         or not this is a test.*/                         \
+      test_status_set(kTestStatusFailed);                 \
+    }                                                     \
   } while (false)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_CHECK_H_
