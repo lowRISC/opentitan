@@ -18,6 +18,8 @@ static const uint32_t kExpectedDigest[8] = {0xdc96c23d, 0xaf36e268, 0xcb68ff71,
                                             0xe92f76e2, 0xb8a8379d, 0x426dc745,
                                             0x19f5cff7, 0x4ec9c6d6};
 
+const test_config_t kTestConfig = {};
+
 bool test_main(void) {
   LOG_INFO("Running SHA256 test");
 

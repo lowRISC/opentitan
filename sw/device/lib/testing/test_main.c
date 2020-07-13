@@ -10,9 +10,6 @@
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 
-// Must be set to `true` in any test that reconfigures UART.
-bool uart_reconfigure_required = false;
-
 int main(int argc, char **argv) {
   test_status_set(kTestStatusInTest);
 
@@ -26,7 +23,7 @@ int main(int argc, char **argv) {
   bool result = test_main();
 
   // Must happen before any debug output.
-  if (uart_reconfigure_required) {
+  if (kTestConfig.can_clobber_uart) {
     uart_init(kUartBaudrate);
   }
 

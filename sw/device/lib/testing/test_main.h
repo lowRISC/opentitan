@@ -13,6 +13,41 @@
  */
 
 /**
+ * Configuration variables for an on-device test.
+ *
+ * This type represents configuration values for an on-device test, which allow
+ * tests to configure the behavior of the `test_main.h` harness.
+ *
+ * New fields can be safely added to this struct without affecting any tests;
+ * the "default" value of all fields should be zero (or NULL, or equivalent).
+ *
+ * See `kTestConfig`.
+ */
+typedef struct test_config {
+  /**
+   * Indicates that `test_main()` does something non-trivial to the UART
+   * device. Setting this to true will make `test_main()` guard against this
+   * by resetting the UART device before printing debug information.
+   */
+  bool can_clobber_uart;
+} test_config_t;
+
+/**
+ * Global test configuration.
+ *
+ * This symbol should be defined externally in a standalone SW test. For most
+ * tests, this will just look like the following:
+ *
+ *   const test_config_t kTestConfig = {};
+ *
+ * The zero values of all of the fields will behave like sane defaults.
+ *
+ * This value needs to be provided as a global so that the code that runs
+ * before `test_main()` is called can take note of it.
+ */
+extern const test_config_t kTestConfig;
+
+/**
  * Entry point for a SW on-device test.
  *
  * This function should be defined externally in a standalone SW test, linked
@@ -22,13 +57,5 @@
  * @return success or failure of the test as boolean.
  */
 extern bool test_main(void);
-
-/**
- * This flag should be defined in the test runner with the default value,
- * which then can be overriden by individual tests when required. For example,
- * when a test configures UART to non-standard settings for internal use, the
- * flag has to be set to `true` in such test.
- */
-extern bool uart_reconfigure_required;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_MAIN_H_
