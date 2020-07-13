@@ -727,6 +727,21 @@
       wakeup_list: []
       scan: "false"
       scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          name: idle
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: aes
+          default: ""
+          top_signame: aes_idle
+          index: -1
+        }
+      ]
     }
     {
       name: hmac
@@ -1408,6 +1423,9 @@
           act: rcv
           package: clkmgr_pkg
           inst_name: clkmgr
+          width: 1
+          default: ""
+          top_signame: clkmgr_status
           index: -1
         }
       ]
@@ -2002,6 +2020,8 @@
       rstmgr.cpu
       pwrmgr.pwr_cpu
       clkmgr.clocks
+      aes.idle
+      clkmgr.status
     ]
     external:
     [
@@ -3621,6 +3641,18 @@
         index: -1
       }
       {
+        name: idle
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: aes
+        default: ""
+        top_signame: aes_idle
+        index: -1
+      }
+      {
         struct: lc_strap
         type: req_rsp
         name: lc_pinmux_strap
@@ -3909,6 +3941,9 @@
         act: rcv
         package: clkmgr_pkg
         inst_name: clkmgr
+        width: 1
+        default: ""
+        top_signame: clkmgr_status
         index: -1
       }
       {
@@ -4078,6 +4113,22 @@
         package: clkmgr_pkg
         struct: clkmgr_out
         signame: clkmgr_clocks
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: aes_idle
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: clkmgr_pkg
+        struct: clk_hint_status
+        signame: clkmgr_status
         width: 1
         type: uni
         default: ""

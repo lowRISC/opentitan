@@ -7,7 +7,6 @@
   name: "aes",
   clock_primary: "clk_i",
   bus_device: "tlul",
-  regwidth: "32",
   # Note: All parameters are local, they are not actually configurable.
   # Selecting values different from the default values below might cause undefined behavior.
   param_list: [
@@ -30,6 +29,16 @@
       local:   "true"
     }
   ],
+  inter_signal_list: [
+    { name:    "idle",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+  ],
+  regwidth: "32",
   registers: [
 ##############################################################################
 # initial key registers

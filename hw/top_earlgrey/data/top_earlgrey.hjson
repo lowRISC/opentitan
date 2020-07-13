@@ -331,7 +331,7 @@
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
-    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks'],
+    'top': ['rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks', 'aes.idle', 'clkmgr.status'],
 
     // ext is to create port in the top.
     'external': ['clkmgr.clk_main', 'clkmgr.clk_io', 'clkmgr.clk_usb', 'clkmgr.clk_aon'],
