@@ -752,31 +752,32 @@ class Operand:
 
 
 class InsnSyntax:
-    def __init__(self, raw: str) -> None:
-        # The raw syntax looks something like "<foo> + <bar> (baz <qux>)". We
-        # need to check that each <..> holds an operand name. We want to
-        # tokenize the string to split out the operands. The easiest way to
-        # encode this in the types is as a string followed by zero or more
-        # pairs, (operand, string).
-        #
-        # Conveniently, re.split does exactly what we need, always yielding an
-        # odd number of parts and starting with an empty string if there's a
-        # match at the start.
-        parts = re.split(r'<([^>]+)>', raw)
-        self.prefix = parts[0]
-        self.pairs = list(zip(parts[1::2], parts[2::2]))
+    '''A class representing the syntax of an instruction
 
-        assert len(parts) == 1 + 2 * len(self.pairs)
+    The pairs attribute gives the operands to the instruction, together with
+    the text between them. For example, if the instruction had the following
+    form:
 
-        # Collect up the named operands that we've seen, checking for
-        # duplicates
-        self.operands = set()  # type: Set[str]
-        for operand, _ in self.pairs:
-            if operand in self.operands:
-                raise ValueError('Instruction syntax ({!r}) has duplicate '
-                                 'occurrence of the {!r} operand.'
-                                 .format(raw, operand))
-            self.operands.add(operand)
+        my_mnemonic  (<op_0>, <op_1>), <op_2>
+
+    then it would be represented as:
+
+        prefix = '('
+        pairs = [('op_0', ', '),
+                 ('op_1', '), '),
+                 ('op_2', '')]
+
+    The operands attribute is just the set of operand names (in the example, it
+    would be {'op_0', 'op_1', 'op_2'}).
+
+    '''
+    def __init__(self,
+                 prefix: str,
+                 pairs: List[Tuple[str, str]],
+                 operands: Set[str]) -> None:
+        self.prefix = prefix
+        self.pairs = pairs
+        self.operands = operands
 
     def raw_string(self) -> str:
         '''Return the raw string of the syntax'''
@@ -785,6 +786,39 @@ class InsnSyntax:
             parts.append('<{}>'.format(operand))
             parts.append(suffix)
         return ''.join(parts)
+
+    @staticmethod
+    def from_list(operands: List[str]) -> 'InsnSyntax':
+        op_set = set(operands)
+        assert len(op_set) == len(operands)
+        return InsnSyntax('', [(op, ', ') for op in operands], op_set)
+
+    @staticmethod
+    def from_yaml(raw: str) -> 'InsnSyntax':
+        '''Parse the syntax in the YAML file'''
+
+        # The raw syntax looks something like "<foo> + <bar> (baz <qux>)". We
+        # need to check that each <..> holds an operand name. Conveniently,
+        # re.split does exactly what we need, always yielding an odd number of
+        # parts and starting with an empty string if there's a match at the
+        # start.
+        parts = re.split(r'<([^>]+)>', raw)
+        prefix = parts[0]
+        pairs = list(zip(parts[1::2], parts[2::2]))
+
+        assert len(parts) == 1 + 2 * len(pairs)
+
+        # Collect up the named operands that we've seen, checking for
+        # duplicates
+        operands = set()  # type: Set[str]
+        for operand, _ in pairs:
+            if operand in operands:
+                raise ValueError('Instruction syntax ({!r}) has duplicate '
+                                 'occurrence of the {!r} operand.'
+                                 .format(raw, operand))
+            operands.add(operand)
+
+        return InsnSyntax(prefix, pairs, operands)
 
 
 class EncodingField:
@@ -962,19 +996,21 @@ class Insn:
         self.operation = get_optional_str(yd, 'operation', what)
 
         raw_syntax = get_optional_str(yd, 'syntax', what)
-        self.syntax = None  # type: Optional[InsnSyntax]
         if raw_syntax is not None:
-            self.syntax = InsnSyntax(raw_syntax)
+            self.syntax = InsnSyntax.from_yaml(raw_syntax)
+        else:
+            op_name_list = [op.name for op in self.operands]
+            self.syntax = InsnSyntax.from_list(op_name_list)
 
-            # Make sure we have exactly the operands we expect.
-            if set(self.name_to_operand.keys()) != self.syntax.operands:
-                raise ValueError("Operand syntax for {!r} doesn't have the "
-                                 "same list of operands as given in the "
-                                 "operand list. The syntax uses {}, "
-                                 "but the list of operands gives {}."
-                                 .format(self.mnemonic,
-                                         list(sorted(self.syntax.operands)),
-                                         list(sorted(self.name_to_operand))))
+        # Make sure we have exactly the operands we expect.
+        if set(self.name_to_operand.keys()) != self.syntax.operands:
+            raise ValueError("Operand syntax for {!r} doesn't have the "
+                             "same list of operands as given in the "
+                             "operand list. The syntax uses {}, "
+                             "but the list of operands gives {}."
+                             .format(self.mnemonic,
+                                     list(sorted(self.syntax.operands)),
+                                     list(sorted(self.name_to_operand))))
 
         encoding_yml = yd.get('encoding')
         self.encoding = None
