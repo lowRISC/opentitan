@@ -10,7 +10,7 @@ package pinmux_reg_pkg;
   parameter int NMioPeriphIn = 41;
   parameter int NMioPeriphOut = 50;
   parameter int NMioPads = 32;
-  parameter int NDioPads = 29;
+  parameter int NDioPads = 31;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
 
@@ -77,10 +77,10 @@ package pinmux_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pinmux_reg2hw_periph_insel_mreg_t [40:0] periph_insel; // [756:511]
-    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [510:319]
-    pinmux_reg2hw_mio_out_sleep_val_mreg_t [31:0] mio_out_sleep_val; // [318:255]
-    pinmux_reg2hw_dio_out_sleep_val_mreg_t [28:0] dio_out_sleep_val; // [254:168]
+    pinmux_reg2hw_periph_insel_mreg_t [40:0] periph_insel; // [762:517]
+    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [516:325]
+    pinmux_reg2hw_mio_out_sleep_val_mreg_t [31:0] mio_out_sleep_val; // [324:261]
+    pinmux_reg2hw_dio_out_sleep_val_mreg_t [30:0] dio_out_sleep_val; // [260:168]
     pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [167:160]
     pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [159:120]
     pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [119:56]
@@ -92,7 +92,7 @@ package pinmux_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    pinmux_hw2reg_dio_out_sleep_val_mreg_t [28:0] dio_out_sleep_val; // [65:8]
+    pinmux_hw2reg_dio_out_sleep_val_mreg_t [30:0] dio_out_sleep_val; // [69:8]
     pinmux_hw2reg_wkup_cause_mreg_t [7:0] wkup_cause; // [7:0]
   } pinmux_hw2reg_t;
 

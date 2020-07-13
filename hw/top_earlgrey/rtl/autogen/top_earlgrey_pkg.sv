@@ -67,11 +67,10 @@ package top_earlgrey_pkg;
     TopEarlgreyDioPinUsbdevAonSense = 22,
     TopEarlgreyDioPinUartTx = 23,
     TopEarlgreyDioPinUartRx = 24,
-    TopEarlgreyDioPinSpiDeviceMiso = 25,
-    TopEarlgreyDioPinSpiDeviceMosi = 26,
-    TopEarlgreyDioPinSpiDeviceCsb = 27,
-    TopEarlgreyDioPinSpiDeviceSck = 28,
-    TopEarlgreyDioPinCount = 29
+    TopEarlgreyDioPinSpiDeviceS[4] = 25,
+    TopEarlgreyDioPinSpiDeviceCsb = 29,
+    TopEarlgreyDioPinSpiDeviceSck = 30,
+    TopEarlgreyDioPinCount = 31
   } top_earlgrey_dio_pin_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.

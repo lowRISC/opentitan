@@ -875,7 +875,7 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
-      size: 0x1000
+      size: 0x2000
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -890,21 +890,16 @@
           width: 1
           type: input
         }
-        {
-          name: mosi
-          width: 1
-          type: input
-        }
       ]
-      available_output_list:
+      available_output_list: []
+      available_inout_list:
       [
         {
-          name: miso
-          width: 1
-          type: output
+          name: s
+          width: 4
+          type: inout
         }
       ]
-      available_inout_list: []
       interrupt_list:
       [
         {
@@ -984,6 +979,27 @@
       wakeup_list: []
       scan: "true"
       scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          name: spi_d2h
+          struct: spi_d2h
+          package: spi_pkg
+          type: uni
+          act: req
+          inst_name: spi_device
+          index: -1
+        }
+        {
+          name: spi_h2d
+          struct: spi_h2d
+          package: spi_pkg
+          type: uni
+          act: rcv
+          inst_name: spi_device
+          index: -1
+        }
+      ]
     }
     {
       name: flash_ctrl
@@ -4375,7 +4391,7 @@
             }
             {
               base_addr: 0x40050000
-              size_byte: 0x1000
+              size_byte: 0x2000
             }
             {
               base_addr: 0x40100000
@@ -4806,7 +4822,7 @@
           [
             {
               base_addr: 0x40050000
-              size_byte: 0x1000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -6672,7 +6688,7 @@
         name: spi_device
         pad:
         [
-          ChB[0..3]
+          ChB[0..5]
         ]
       }
       {
@@ -6744,9 +6760,9 @@
         ]
       }
       {
-        name: spi_device_mosi
-        width: 1
-        type: input
+        name: spi_device_s
+        width: 4
+        type: inout
         module_name: spi_device
         pad:
         [
@@ -6754,18 +6770,17 @@
             name: ChB
             index: 2
           }
-        ]
-      }
-      {
-        name: spi_device_miso
-        width: 1
-        type: output
-        module_name: spi_device
-        pad:
-        [
           {
             name: ChB
             index: 3
+          }
+          {
+            name: ChB
+            index: 4
+          }
+          {
+            name: ChB
+            index: 5
           }
         ]
       }
@@ -7205,7 +7220,7 @@
       {
         name: ChB
         type: IO_33V
-        count: 4
+        count: 6
         attr:
         [
           KEEP
@@ -7260,6 +7275,24 @@
   {
     signals:
     [
+      {
+        name: spi_d2h
+        struct: spi_d2h
+        package: spi_pkg
+        type: uni
+        act: req
+        inst_name: spi_device
+        index: -1
+      }
+      {
+        name: spi_h2d
+        struct: spi_h2d
+        package: spi_pkg
+        type: uni
+        act: rcv
+        inst_name: spi_device
+        index: -1
+      }
       {
         struct: flash
         type: req_rsp

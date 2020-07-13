@@ -27,7 +27,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_UART2       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_UART3       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_GPIO        = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_SPI_DEVICE  = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_SPI_DEVICE  = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER    = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_I2C0        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_I2C1        = 32'h 00000fff;

@@ -190,6 +190,14 @@ module padctrl_reg_top (
   logic [9:0] dio_pads9_attr28_wd;
   logic dio_pads9_attr28_we;
   logic dio_pads9_attr28_re;
+  logic [9:0] dio_pads9_attr29_qs;
+  logic [9:0] dio_pads9_attr29_wd;
+  logic dio_pads9_attr29_we;
+  logic dio_pads9_attr29_re;
+  logic [9:0] dio_pads10_qs;
+  logic [9:0] dio_pads10_wd;
+  logic dio_pads10_we;
+  logic dio_pads10_re;
   logic [9:0] mio_pads0_attr0_qs;
   logic [9:0] mio_pads0_attr0_wd;
   logic mio_pads0_attr0_we;
@@ -842,6 +850,39 @@ module padctrl_reg_top (
   );
 
 
+  // F[attr29]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads9_attr29 (
+    .re     (dio_pads9_attr29_re),
+    // qualified with register enable
+    .we     (dio_pads9_attr29_we & regen_qs),
+    .wd     (dio_pads9_attr29_wd),
+    .d      (hw2reg.dio_pads[29].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[29].qe),
+    .q      (reg2hw.dio_pads[29].q ),
+    .qs     (dio_pads9_attr29_qs)
+  );
+
+
+  // Subregister 30 of Multireg dio_pads
+  // R[dio_pads10]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads10 (
+    .re     (dio_pads10_re),
+    // qualified with register enable
+    .we     (dio_pads10_we & regen_qs),
+    .wd     (dio_pads10_wd),
+    .d      (hw2reg.dio_pads[30].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[30].qe),
+    .q      (reg2hw.dio_pads[30].q ),
+    .qs     (dio_pads10_qs)
+  );
+
 
 
   // Subregister 0 of Multireg mio_pads
@@ -1392,7 +1433,7 @@ module padctrl_reg_top (
 
 
 
-  logic [21:0] addr_hit;
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PADCTRL_REGEN_OFFSET);
@@ -1406,17 +1447,18 @@ module padctrl_reg_top (
     addr_hit[ 8] = (reg_addr == PADCTRL_DIO_PADS7_OFFSET);
     addr_hit[ 9] = (reg_addr == PADCTRL_DIO_PADS8_OFFSET);
     addr_hit[10] = (reg_addr == PADCTRL_DIO_PADS9_OFFSET);
-    addr_hit[11] = (reg_addr == PADCTRL_MIO_PADS0_OFFSET);
-    addr_hit[12] = (reg_addr == PADCTRL_MIO_PADS1_OFFSET);
-    addr_hit[13] = (reg_addr == PADCTRL_MIO_PADS2_OFFSET);
-    addr_hit[14] = (reg_addr == PADCTRL_MIO_PADS3_OFFSET);
-    addr_hit[15] = (reg_addr == PADCTRL_MIO_PADS4_OFFSET);
-    addr_hit[16] = (reg_addr == PADCTRL_MIO_PADS5_OFFSET);
-    addr_hit[17] = (reg_addr == PADCTRL_MIO_PADS6_OFFSET);
-    addr_hit[18] = (reg_addr == PADCTRL_MIO_PADS7_OFFSET);
-    addr_hit[19] = (reg_addr == PADCTRL_MIO_PADS8_OFFSET);
-    addr_hit[20] = (reg_addr == PADCTRL_MIO_PADS9_OFFSET);
-    addr_hit[21] = (reg_addr == PADCTRL_MIO_PADS10_OFFSET);
+    addr_hit[11] = (reg_addr == PADCTRL_DIO_PADS10_OFFSET);
+    addr_hit[12] = (reg_addr == PADCTRL_MIO_PADS0_OFFSET);
+    addr_hit[13] = (reg_addr == PADCTRL_MIO_PADS1_OFFSET);
+    addr_hit[14] = (reg_addr == PADCTRL_MIO_PADS2_OFFSET);
+    addr_hit[15] = (reg_addr == PADCTRL_MIO_PADS3_OFFSET);
+    addr_hit[16] = (reg_addr == PADCTRL_MIO_PADS4_OFFSET);
+    addr_hit[17] = (reg_addr == PADCTRL_MIO_PADS5_OFFSET);
+    addr_hit[18] = (reg_addr == PADCTRL_MIO_PADS6_OFFSET);
+    addr_hit[19] = (reg_addr == PADCTRL_MIO_PADS7_OFFSET);
+    addr_hit[20] = (reg_addr == PADCTRL_MIO_PADS8_OFFSET);
+    addr_hit[21] = (reg_addr == PADCTRL_MIO_PADS9_OFFSET);
+    addr_hit[22] = (reg_addr == PADCTRL_MIO_PADS10_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1446,6 +1488,7 @@ module padctrl_reg_top (
     if (addr_hit[19] && reg_we && (PADCTRL_PERMIT[19] != (PADCTRL_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[20] && reg_we && (PADCTRL_PERMIT[20] != (PADCTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[21] && reg_we && (PADCTRL_PERMIT[21] != (PADCTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (PADCTRL_PERMIT[22] != (PADCTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign regen_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1567,133 +1610,141 @@ module padctrl_reg_top (
   assign dio_pads9_attr28_wd = reg_wdata[19:10];
   assign dio_pads9_attr28_re = addr_hit[10] && reg_re;
 
-  assign mio_pads0_attr0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign dio_pads9_attr29_we = addr_hit[10] & reg_we & ~wr_err;
+  assign dio_pads9_attr29_wd = reg_wdata[29:20];
+  assign dio_pads9_attr29_re = addr_hit[10] && reg_re;
+
+  assign dio_pads10_we = addr_hit[11] & reg_we & ~wr_err;
+  assign dio_pads10_wd = reg_wdata[9:0];
+  assign dio_pads10_re = addr_hit[11] && reg_re;
+
+  assign mio_pads0_attr0_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads0_attr0_wd = reg_wdata[9:0];
-  assign mio_pads0_attr0_re = addr_hit[11] && reg_re;
+  assign mio_pads0_attr0_re = addr_hit[12] && reg_re;
 
-  assign mio_pads0_attr1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_pads0_attr1_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads0_attr1_wd = reg_wdata[19:10];
-  assign mio_pads0_attr1_re = addr_hit[11] && reg_re;
+  assign mio_pads0_attr1_re = addr_hit[12] && reg_re;
 
-  assign mio_pads0_attr2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_pads0_attr2_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads0_attr2_wd = reg_wdata[29:20];
-  assign mio_pads0_attr2_re = addr_hit[11] && reg_re;
+  assign mio_pads0_attr2_re = addr_hit[12] && reg_re;
 
-  assign mio_pads1_attr3_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads1_attr3_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads1_attr3_wd = reg_wdata[9:0];
-  assign mio_pads1_attr3_re = addr_hit[12] && reg_re;
+  assign mio_pads1_attr3_re = addr_hit[13] && reg_re;
 
-  assign mio_pads1_attr4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads1_attr4_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads1_attr4_wd = reg_wdata[19:10];
-  assign mio_pads1_attr4_re = addr_hit[12] && reg_re;
+  assign mio_pads1_attr4_re = addr_hit[13] && reg_re;
 
-  assign mio_pads1_attr5_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads1_attr5_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads1_attr5_wd = reg_wdata[29:20];
-  assign mio_pads1_attr5_re = addr_hit[12] && reg_re;
+  assign mio_pads1_attr5_re = addr_hit[13] && reg_re;
 
-  assign mio_pads2_attr6_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads2_attr6_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads2_attr6_wd = reg_wdata[9:0];
-  assign mio_pads2_attr6_re = addr_hit[13] && reg_re;
+  assign mio_pads2_attr6_re = addr_hit[14] && reg_re;
 
-  assign mio_pads2_attr7_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads2_attr7_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads2_attr7_wd = reg_wdata[19:10];
-  assign mio_pads2_attr7_re = addr_hit[13] && reg_re;
+  assign mio_pads2_attr7_re = addr_hit[14] && reg_re;
 
-  assign mio_pads2_attr8_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads2_attr8_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads2_attr8_wd = reg_wdata[29:20];
-  assign mio_pads2_attr8_re = addr_hit[13] && reg_re;
+  assign mio_pads2_attr8_re = addr_hit[14] && reg_re;
 
-  assign mio_pads3_attr9_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads3_attr9_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads3_attr9_wd = reg_wdata[9:0];
-  assign mio_pads3_attr9_re = addr_hit[14] && reg_re;
+  assign mio_pads3_attr9_re = addr_hit[15] && reg_re;
 
-  assign mio_pads3_attr10_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads3_attr10_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads3_attr10_wd = reg_wdata[19:10];
-  assign mio_pads3_attr10_re = addr_hit[14] && reg_re;
+  assign mio_pads3_attr10_re = addr_hit[15] && reg_re;
 
-  assign mio_pads3_attr11_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads3_attr11_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads3_attr11_wd = reg_wdata[29:20];
-  assign mio_pads3_attr11_re = addr_hit[14] && reg_re;
+  assign mio_pads3_attr11_re = addr_hit[15] && reg_re;
 
-  assign mio_pads4_attr12_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads4_attr12_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads4_attr12_wd = reg_wdata[9:0];
-  assign mio_pads4_attr12_re = addr_hit[15] && reg_re;
+  assign mio_pads4_attr12_re = addr_hit[16] && reg_re;
 
-  assign mio_pads4_attr13_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads4_attr13_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads4_attr13_wd = reg_wdata[19:10];
-  assign mio_pads4_attr13_re = addr_hit[15] && reg_re;
+  assign mio_pads4_attr13_re = addr_hit[16] && reg_re;
 
-  assign mio_pads4_attr14_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads4_attr14_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads4_attr14_wd = reg_wdata[29:20];
-  assign mio_pads4_attr14_re = addr_hit[15] && reg_re;
+  assign mio_pads4_attr14_re = addr_hit[16] && reg_re;
 
-  assign mio_pads5_attr15_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_pads5_attr15_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads5_attr15_wd = reg_wdata[9:0];
-  assign mio_pads5_attr15_re = addr_hit[16] && reg_re;
+  assign mio_pads5_attr15_re = addr_hit[17] && reg_re;
 
-  assign mio_pads5_attr16_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_pads5_attr16_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads5_attr16_wd = reg_wdata[19:10];
-  assign mio_pads5_attr16_re = addr_hit[16] && reg_re;
+  assign mio_pads5_attr16_re = addr_hit[17] && reg_re;
 
-  assign mio_pads5_attr17_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_pads5_attr17_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads5_attr17_wd = reg_wdata[29:20];
-  assign mio_pads5_attr17_re = addr_hit[16] && reg_re;
+  assign mio_pads5_attr17_re = addr_hit[17] && reg_re;
 
-  assign mio_pads6_attr18_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mio_pads6_attr18_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_pads6_attr18_wd = reg_wdata[9:0];
-  assign mio_pads6_attr18_re = addr_hit[17] && reg_re;
+  assign mio_pads6_attr18_re = addr_hit[18] && reg_re;
 
-  assign mio_pads6_attr19_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mio_pads6_attr19_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_pads6_attr19_wd = reg_wdata[19:10];
-  assign mio_pads6_attr19_re = addr_hit[17] && reg_re;
+  assign mio_pads6_attr19_re = addr_hit[18] && reg_re;
 
-  assign mio_pads6_attr20_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mio_pads6_attr20_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_pads6_attr20_wd = reg_wdata[29:20];
-  assign mio_pads6_attr20_re = addr_hit[17] && reg_re;
+  assign mio_pads6_attr20_re = addr_hit[18] && reg_re;
 
-  assign mio_pads7_attr21_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mio_pads7_attr21_we = addr_hit[19] & reg_we & ~wr_err;
   assign mio_pads7_attr21_wd = reg_wdata[9:0];
-  assign mio_pads7_attr21_re = addr_hit[18] && reg_re;
+  assign mio_pads7_attr21_re = addr_hit[19] && reg_re;
 
-  assign mio_pads7_attr22_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mio_pads7_attr22_we = addr_hit[19] & reg_we & ~wr_err;
   assign mio_pads7_attr22_wd = reg_wdata[19:10];
-  assign mio_pads7_attr22_re = addr_hit[18] && reg_re;
+  assign mio_pads7_attr22_re = addr_hit[19] && reg_re;
 
-  assign mio_pads7_attr23_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mio_pads7_attr23_we = addr_hit[19] & reg_we & ~wr_err;
   assign mio_pads7_attr23_wd = reg_wdata[29:20];
-  assign mio_pads7_attr23_re = addr_hit[18] && reg_re;
+  assign mio_pads7_attr23_re = addr_hit[19] && reg_re;
 
-  assign mio_pads8_attr24_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads8_attr24_we = addr_hit[20] & reg_we & ~wr_err;
   assign mio_pads8_attr24_wd = reg_wdata[9:0];
-  assign mio_pads8_attr24_re = addr_hit[19] && reg_re;
+  assign mio_pads8_attr24_re = addr_hit[20] && reg_re;
 
-  assign mio_pads8_attr25_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads8_attr25_we = addr_hit[20] & reg_we & ~wr_err;
   assign mio_pads8_attr25_wd = reg_wdata[19:10];
-  assign mio_pads8_attr25_re = addr_hit[19] && reg_re;
+  assign mio_pads8_attr25_re = addr_hit[20] && reg_re;
 
-  assign mio_pads8_attr26_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads8_attr26_we = addr_hit[20] & reg_we & ~wr_err;
   assign mio_pads8_attr26_wd = reg_wdata[29:20];
-  assign mio_pads8_attr26_re = addr_hit[19] && reg_re;
+  assign mio_pads8_attr26_re = addr_hit[20] && reg_re;
 
-  assign mio_pads9_attr27_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads9_attr27_we = addr_hit[21] & reg_we & ~wr_err;
   assign mio_pads9_attr27_wd = reg_wdata[9:0];
-  assign mio_pads9_attr27_re = addr_hit[20] && reg_re;
+  assign mio_pads9_attr27_re = addr_hit[21] && reg_re;
 
-  assign mio_pads9_attr28_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads9_attr28_we = addr_hit[21] & reg_we & ~wr_err;
   assign mio_pads9_attr28_wd = reg_wdata[19:10];
-  assign mio_pads9_attr28_re = addr_hit[20] && reg_re;
+  assign mio_pads9_attr28_re = addr_hit[21] && reg_re;
 
-  assign mio_pads9_attr29_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads9_attr29_we = addr_hit[21] & reg_we & ~wr_err;
   assign mio_pads9_attr29_wd = reg_wdata[29:20];
-  assign mio_pads9_attr29_re = addr_hit[20] && reg_re;
+  assign mio_pads9_attr29_re = addr_hit[21] && reg_re;
 
-  assign mio_pads10_attr30_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_pads10_attr30_we = addr_hit[22] & reg_we & ~wr_err;
   assign mio_pads10_attr30_wd = reg_wdata[9:0];
-  assign mio_pads10_attr30_re = addr_hit[21] && reg_re;
+  assign mio_pads10_attr30_re = addr_hit[22] && reg_re;
 
-  assign mio_pads10_attr31_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_pads10_attr31_we = addr_hit[22] & reg_we & ~wr_err;
   assign mio_pads10_attr31_wd = reg_wdata[19:10];
-  assign mio_pads10_attr31_re = addr_hit[21] && reg_re;
+  assign mio_pads10_attr31_re = addr_hit[22] && reg_re;
 
   // Read data return
   always_comb begin
@@ -1760,69 +1811,74 @@ module padctrl_reg_top (
       addr_hit[10]: begin
         reg_rdata_next[9:0] = dio_pads9_attr27_qs;
         reg_rdata_next[19:10] = dio_pads9_attr28_qs;
+        reg_rdata_next[29:20] = dio_pads9_attr29_qs;
       end
 
       addr_hit[11]: begin
+        reg_rdata_next[9:0] = dio_pads10_qs;
+      end
+
+      addr_hit[12]: begin
         reg_rdata_next[9:0] = mio_pads0_attr0_qs;
         reg_rdata_next[19:10] = mio_pads0_attr1_qs;
         reg_rdata_next[29:20] = mio_pads0_attr2_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[9:0] = mio_pads1_attr3_qs;
         reg_rdata_next[19:10] = mio_pads1_attr4_qs;
         reg_rdata_next[29:20] = mio_pads1_attr5_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[9:0] = mio_pads2_attr6_qs;
         reg_rdata_next[19:10] = mio_pads2_attr7_qs;
         reg_rdata_next[29:20] = mio_pads2_attr8_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[9:0] = mio_pads3_attr9_qs;
         reg_rdata_next[19:10] = mio_pads3_attr10_qs;
         reg_rdata_next[29:20] = mio_pads3_attr11_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[9:0] = mio_pads4_attr12_qs;
         reg_rdata_next[19:10] = mio_pads4_attr13_qs;
         reg_rdata_next[29:20] = mio_pads4_attr14_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[9:0] = mio_pads5_attr15_qs;
         reg_rdata_next[19:10] = mio_pads5_attr16_qs;
         reg_rdata_next[29:20] = mio_pads5_attr17_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[9:0] = mio_pads6_attr18_qs;
         reg_rdata_next[19:10] = mio_pads6_attr19_qs;
         reg_rdata_next[29:20] = mio_pads6_attr20_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[9:0] = mio_pads7_attr21_qs;
         reg_rdata_next[19:10] = mio_pads7_attr22_qs;
         reg_rdata_next[29:20] = mio_pads7_attr23_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[9:0] = mio_pads8_attr24_qs;
         reg_rdata_next[19:10] = mio_pads8_attr25_qs;
         reg_rdata_next[29:20] = mio_pads8_attr26_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[9:0] = mio_pads9_attr27_qs;
         reg_rdata_next[19:10] = mio_pads9_attr28_qs;
         reg_rdata_next[29:20] = mio_pads9_attr29_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[9:0] = mio_pads10_attr30_qs;
         reg_rdata_next[19:10] = mio_pads10_attr31_qs;
       end
