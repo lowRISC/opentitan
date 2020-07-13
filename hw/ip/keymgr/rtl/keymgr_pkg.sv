@@ -110,11 +110,21 @@ package keymgr_pkg;
     logic [KeyWidth-1:0] key_share1;
   } hw_key_req_t;
 
+  parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
+    valid: 1'b0,
+    key_share0: 256'h DEADBEEFBEEFFACEDEADBEEF5A5AA5A5DEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
+    key_share1: 256'h DEADBEEF5A5AA5A5DEADBEEFBEEFFACEDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+  };
+
   typedef struct packed {
     logic valid;
     logic [KmacDataIfWidth-1:0] data;
     logic [KmacDataIfWidth/8-1:0] strb;
   } kmac_data_req_t;
+
+  parameter kmac_data_req_t KMAC_DATA_REQ_DEFAULT = '{
+    default: '0
+  };
 
   typedef struct packed {
     logic ready;
