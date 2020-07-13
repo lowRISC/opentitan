@@ -1207,7 +1207,7 @@ insns:
       - *mulqacc-wrs2-qwsel
       - *mulqacc-acc-shift-imm
     syntax: |
-      [<zero_acc>] <wrd><wrd_hwsel>,
+      [<zero_acc>] <wrd>.<wrd_hwsel>,
       <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
     glued-ops: true
     doc: |
