@@ -325,7 +325,7 @@
       }
       clock_group: "powerup",
       // TODO make sw_rst_ni to be software controlled reset or revise rbox
-      reset_connections: { rst_ni: "por_io", sw_rst_ni: "por_io"}
+      reset_connections: { rst_ni: "por_io"}
       base_addr: "0x40430000"
     }
     { name: "pwm_aon"
