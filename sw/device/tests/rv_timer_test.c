@@ -20,6 +20,8 @@ static dif_gpio_t gpio;
 static volatile bool intr_handling_success;
 static const uint32_t hart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 
+const test_config_t kTestConfig = {};
+
 bool test_main(void) {
   const uint64_t cmp = 0x000000000000000F;
 
