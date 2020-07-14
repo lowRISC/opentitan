@@ -6,7 +6,29 @@ name: "lowrisc:ip:otbn:0.1"
 description: "OpenTitan Big Number Accelerator (OTBN)"
 
 filesets:
-  files_rtl:
+  files_rtl_pkg:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - rtl/otbn_pkg.sv
+    file_type: systemVerilogSource
+
+  files_rtl_core:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:util
+    files:
+      - rtl/otbn_controller.sv
+      - rtl/otbn_decoder.sv
+      - rtl/otbn_instruction_fetch.sv
+      - rtl/otbn_rf_base.sv
+      - rtl/otbn_status_registers.sv
+      - rtl/otbn_lsu.sv
+      - rtl/otbn_alu_base.sv
+      - rtl/otbn_core.sv
+    file_type: systemVerilogSource
+
+  files_rtl_top:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
@@ -14,10 +36,8 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
     files:
-      - rtl/otbn_pkg.sv
       - rtl/otbn_reg_pkg.sv
       - rtl/otbn_reg_top.sv
-      - rtl/otbn_core.sv
       - rtl/otbn.sv
     file_type: systemVerilogSource
 
@@ -29,11 +49,30 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - files_rtl
+      - files_rtl_pkg
+      - files_rtl_core
+      - files_rtl_top
     toplevel: otbn
 
   lint:
     <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  lint-core:
+    filesets:
+      - files_rtl_pkg
+      - files_rtl_core
+    toplevel: otbn_core
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
