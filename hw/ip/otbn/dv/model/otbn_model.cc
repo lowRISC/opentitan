@@ -232,6 +232,7 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
   char ifname[] = "/tmp/otbn_XXXXXX/imem";
   char dfname[] = "/tmp/otbn_XXXXXX/dmem";
   char cfname[] = "/tmp/otbn_XXXXXX/cycles";
+  char tfname[] = "/tmp/otbn_XXXXXX/trace";
 
   if (mkdtemp(dir) == nullptr) {
     std::cerr << "Cannot create temporary directory" << std::endl;
@@ -241,6 +242,7 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
   std::memcpy(ifname, dir, strlen(dir));
   std::memcpy(dfname, dir, strlen(dir));
   std::memcpy(cfname, dir, strlen(dir));
+  std::memcpy(tfname, dir, strlen(dir));
 
   try {
     dump_memory(dfname, dmem_scope, dmem_words, 32);
@@ -260,7 +262,7 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
 
   std::ostringstream cmd;
   cmd << model_path << " " << imem_words << " " << ifname << " " << dmem_words
-      << " " << dfname << " " << cfname;
+      << " " << dfname << " " << cfname << " " << tfname;
 
   if (std::system(cmd.str().c_str()) != 0) {
     std::cerr << "Failed to execute model (cmd was: '" << cmd.str() << "').\n";
