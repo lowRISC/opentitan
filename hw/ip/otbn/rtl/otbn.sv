@@ -43,7 +43,11 @@ module otbn
   localparam int ImemAddrWidth = vbits(ImemSizeByte);
   localparam int DmemAddrWidth = vbits(DmemSizeByte);
 
-  localparam int OTBNModel = 1; // TODO: Instead use package?
+`ifdef OTBN_MODEL
+  localparam int OTBNModel = 1;
+`else
+  localparam int OTBNModel = 0;
+`endif
 
   logic start;
   logic busy_d, busy_q;
