@@ -14,18 +14,18 @@ module prim_fifo_async #(
   // write port
   input                  clk_wr_i,
   input                  rst_wr_ni,
-  input                  wvalid,
-  output                 wready,
-  input [Width-1:0]      wdata,
-  output [DepthW-1:0]    wdepth,
+  input                  wvalid_i,
+  output                 wready_o,
+  input [Width-1:0]      wdata_i,
+  output [DepthW-1:0]    wdepth_o,
 
   // read port
   input                  clk_rd_i,
   input                  rst_rd_ni,
-  output                 rvalid,
-  input                  rready,
-  output [Width-1:0]     rdata,
-  output [DepthW-1:0]    rdepth
+  output                 rvalid_o,
+  input                  rready_i,
+  output [Width-1:0]     rdata_o,
+  output [DepthW-1:0]    rdepth_o
 );
 
   `ASSERT_INIT(paramCheckDepth,  Depth >= 3)
@@ -42,13 +42,13 @@ module prim_fifo_async #(
 
   logic full_wclk, full_rclk;
 
-  assign wready = !full_wclk;
-  assign rvalid = !empty;
+  assign wready_o = !full_wclk;
+  assign rvalid_o = !empty;
 
   // create the write and read pointers
 
-  assign fifo_incr_wptr = wvalid & wready;
-  assign fifo_incr_rptr = rvalid & rready;
+  assign fifo_incr_wptr = wvalid_i & wready_o;
+  assign fifo_incr_rptr = rvalid_o & rready_i;
 
   ///////////////////
   // write pointer //
@@ -141,9 +141,9 @@ module prim_fifo_async #(
   assign rptr_sync_msb = fifo_rptr_sync[PTR_WIDTH-1];
   assign wptr_value = fifo_wptr[0+:PTRV_W];
   assign rptr_sync_value = fifo_rptr_sync[0+:PTRV_W];
-  assign wdepth = (full_wclk) ? DepthW'(Depth) :
-                  (wptr_msb == rptr_sync_msb) ? DepthW'(wptr_value) - DepthW'(rptr_sync_value) :
-                  (DepthW'(Depth) - DepthW'(rptr_sync_value) + DepthW'(wptr_value)) ;
+  assign wdepth_o = (full_wclk) ? DepthW'(Depth) :
+                    (wptr_msb == rptr_sync_msb) ? DepthW'(wptr_value) - DepthW'(rptr_sync_value) :
+                    (DepthW'(Depth) - DepthW'(rptr_sync_value) + DepthW'(wptr_value)) ;
 
   // Same again in the read clock side
   assign empty = (fifo_wptr_sync_combi ==  fifo_rptr);
@@ -155,9 +155,9 @@ module prim_fifo_async #(
   assign rptr_msb = fifo_rptr[PTR_WIDTH-1];
   assign wptr_sync_value = fifo_wptr_sync_combi[0+:PTRV_W];
   assign rptr_value = fifo_rptr[0+:PTRV_W];
-  assign rdepth = (full_rclk) ? DepthW'(Depth) :
-                  (wptr_sync_msb == rptr_msb) ? DepthW'(wptr_sync_value) - DepthW'(rptr_value) :
-                  (DepthW'(Depth) - DepthW'(rptr_value) + DepthW'(wptr_sync_value)) ;
+  assign rdepth_o = (full_rclk) ? DepthW'(Depth) :
+                    (wptr_sync_msb == rptr_msb) ? DepthW'(wptr_sync_value) - DepthW'(rptr_value) :
+                    (DepthW'(Depth) - DepthW'(rptr_value) + DepthW'(wptr_sync_value)) ;
 
   /////////////
   // storage //
@@ -167,10 +167,10 @@ module prim_fifo_async #(
 
   always_ff @(posedge clk_wr_i)
     if (fifo_incr_wptr) begin
-      storage[fifo_wptr[PTR_WIDTH-2:0]] <= wdata;
+      storage[fifo_wptr[PTR_WIDTH-2:0]] <= wdata_i;
     end
 
-  assign rdata = storage[fifo_rptr[PTR_WIDTH-2:0]];
+  assign rdata_o = storage[fifo_rptr[PTR_WIDTH-2:0]];
 
   // gray code conversion functions.  algorithm walks up from 0..N-1
   // then flips the upper bit and walks down from N-1 to 0.

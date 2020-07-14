@@ -274,13 +274,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_esdig_clr),
-    .wvalid         (sfifo_esdig_push),
-    .wready         (sfifo_esdig_not_full),
-    .wdata          (sfifo_esdig_wdata),
-    .rvalid         (sfifo_esdig_not_empty),
-    .rready         (sfifo_esdig_pop),
-    .rdata          (sfifo_esdig_rdata),
-    .depth          (sfifo_esdig_depth)
+    .wvalid_i       (sfifo_esdig_push),
+    .wready_o       (sfifo_esdig_not_full),
+    .wdata_i        (sfifo_esdig_wdata),
+    .rvalid_o       (sfifo_esdig_not_empty),
+    .rready_i       (sfifo_esdig_pop),
+    .rdata_o        (sfifo_esdig_rdata),
+    .depth_o        (sfifo_esdig_depth)
   );
 
   // fifo controls
@@ -353,13 +353,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_postht_clr),
-    .wvalid         (sfifo_postht_push),
-    .wready         (sfifo_postht_not_full),
-    .wdata          (sfifo_postht_wdata),
-    .rvalid         (sfifo_postht_not_empty),
-    .rready         (sfifo_postht_pop),
-    .rdata          (sfifo_postht_rdata),
-    .depth          (sfifo_postht_depth)
+    .wvalid_i       (sfifo_postht_push),
+    .wready_o       (sfifo_postht_not_full),
+    .wdata_i        (sfifo_postht_wdata),
+    .rvalid_o       (sfifo_postht_not_empty),
+    .rready_i       (sfifo_postht_pop),
+    .rdata_o        (sfifo_postht_rdata),
+    .depth_o        (sfifo_postht_depth)
   );
 
   // fifo controls
@@ -435,13 +435,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_essw_clr),
-    .wvalid         (sfifo_essw_push),
-    .wready         (sfifo_essw_not_full),
-    .wdata          (sfifo_essw_wdata),
-    .rvalid         (sfifo_essw_not_empty),
-    .rready         (sfifo_essw_pop),
-    .rdata          (sfifo_essw_rdata),
-    .depth          (sfifo_essw_depth)
+    .wvalid_i       (sfifo_essw_push),
+    .wready_o       (sfifo_essw_not_full),
+    .wdata_i        (sfifo_essw_wdata),
+    .rvalid_o       (sfifo_essw_not_empty),
+    .rready_i       (sfifo_essw_pop),
+    .rdata_o        (sfifo_essw_rdata),
+    .depth_o        (sfifo_essw_depth)
   );
 
   // fifo controls
@@ -477,13 +477,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_eshw_clr),
-    .wvalid         (sfifo_eshw_push),
-    .wready         (sfifo_eshw_not_full),
-    .wdata          (sfifo_eshw_wdata),
-    .rvalid         (sfifo_eshw_not_empty),
-    .rready         (sfifo_eshw_pop),
-    .rdata          (sfifo_eshw_rdata),
-    .depth          (sfifo_eshw_depth)
+    .wvalid_i       (sfifo_eshw_push),
+    .wready_o       (sfifo_eshw_not_full),
+    .wdata_i        (sfifo_eshw_wdata),
+    .rvalid_o       (sfifo_eshw_not_empty),
+    .rready_i       (sfifo_eshw_pop),
+    .rdata_o        (sfifo_eshw_rdata),
+    .depth_o        (sfifo_eshw_depth)
   );
 
   // fifo controls
