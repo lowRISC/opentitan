@@ -145,7 +145,29 @@ class InsnGroups:
 
 class BitRanges:
     '''Represents the bit ranges used for a field in an encoding scheme'''
-    def __init__(self, as_string: str, what: str) -> None:
+    def __init__(self,
+                 mask: int,
+                 ranges: List[Tuple[int, int]],
+                 width: int) -> None:
+        self.mask = mask
+        self.ranges = ranges
+        self.width = width
+
+    @staticmethod
+    def from_list(ranges: List[Tuple[int, int]]) -> 'BitRanges':
+        mask = 0
+        width = 0
+        for msb, lsb in ranges:
+            assert 0 <= lsb <= msb <= 31
+            rng_mask = (1 << (msb + 1)) - (1 << lsb)
+            assert not (rng_mask & mask)
+            mask |= rng_mask
+            width += msb - lsb + 1
+
+        return BitRanges(mask, ranges, width)
+
+    @staticmethod
+    def from_yaml(as_string: str, what: str) -> 'BitRanges':
         #   ranges ::= range
         #            | range ',' ranges
         #
@@ -160,9 +182,9 @@ class BitRanges:
 
         overlaps = 0
 
-        self.mask = 0
-        self.ranges = []
-        self.width = 0
+        mask = 0
+        ranges = []
+        width = 0
 
         for rng in as_string.split(','):
             match = re.match(r'([0-9]+)(?:-([0-9]+))?$', rng)
@@ -183,28 +205,63 @@ class BitRanges:
                                  .format(rng, what))
 
             rng_mask = (1 << (msb + 1)) - (1 << lsb)
-            overlaps |= rng_mask & self.mask
-            self.mask |= rng_mask
+            overlaps |= rng_mask & mask
+            mask |= rng_mask
 
-            self.ranges.append((msb, lsb))
-            self.width += msb - lsb + 1
+            ranges.append((msb, lsb))
+            width += msb - lsb + 1
 
         if overlaps:
             raise ValueError('Bits for {} have overlapping ranges '
                              '(mask: {:#08x})'
                              .format(what, overlaps))
 
+        return BitRanges(mask, ranges, width)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, BitRanges) and self.ranges == other.ranges
+
+    def encode(self, value: int) -> int:
+        '''Encode the given value as bit fields'''
+        ret = 0
+        bits_taken = 0
+        for msb, lsb in self.ranges:
+            rng_width = msb - lsb + 1
+            value_msb = self.width - 1 - bits_taken
+            value_lsb = value_msb - rng_width + 1
+
+            rng_mask = (1 << rng_width) - 1
+            rng_value = (value >> value_lsb) & rng_mask
+            ret |= rng_value << lsb
+            bits_taken += rng_width
+
+        assert bits_taken == self.width
+        return ret
+
 
 class BoolLiteral:
-    '''Represents a boolean literal, with possible 'x characters'''
-    def __init__(self, as_string: str, what: str) -> None:
-        # We represent this as 2 masks: "ones" and "x". The ones mask is the
-        # bits that are marked 1. The x mask is the bits that are marked x.
-        # Then you can test whether a particular value matches the literal by
-        # zeroing all bits in the x mask and then comparing with the ones mask.
-        self.ones = 0
-        self.xs = 0
-        self.width = 0
+    '''Represents a boolean literal, with possible 'x characters
+
+    We represent this as 2 masks: "ones" and "xs". The ones mask is the bits
+    that are marked 1. The xs mask is the bits that are marked x. Then you can
+    test whether a particular value matches the literal by zeroing all bits in
+    the x mask and then comparing with the ones mask.
+
+    '''
+    def __init__(self, ones: int, xs: int, width: int) -> None:
+        assert width > 0
+        assert (ones >> width) == 0
+        assert (xs >> width) == 0
+
+        self.ones = ones
+        self.xs = xs
+        self.width = width
+
+    @staticmethod
+    def from_string(as_string: str, what: str) -> 'BoolLiteral':
+        ones = 0
+        xs = 0
+        width = 0
 
         # The literal should always start with a 'b'
         if not as_string.startswith('b'):
@@ -215,23 +272,25 @@ class BoolLiteral:
             if char == '_':
                 continue
 
-            self.ones <<= 1
-            self.xs <<= 1
-            self.width += 1
+            ones <<= 1
+            xs <<= 1
+            width += 1
 
             if char == '0':
                 continue
             elif char == '1':
-                self.ones |= 1
+                ones |= 1
             elif char == 'x':
-                self.xs |= 1
+                xs |= 1
             else:
                 raise ValueError('Boolean literal for {} has '
                                  'unsupported character: {!r}.'
                                  .format(what, char))
 
-        if not self.width:
+        if not width:
             raise ValueError('Empty boolean literal for {}.'.format(what))
+
+        return BoolLiteral(ones, xs, width)
 
     def char_for_bit(self, bit: int) -> str:
         '''Return 0, 1 or x for the bit at the given position'''
@@ -319,10 +378,10 @@ class EncSchemeField:
         # fine, but we turn it back into a string to be re-parsed by BitRanges.
         assert isinstance(bits_yml, str) or isinstance(bits_yml, int)
 
-        bits = BitRanges(str(bits_yml), bits_what)
+        bits = BitRanges.from_yaml(str(bits_yml), bits_what)
         value = None
         if raw_value is not None:
-            value = BoolLiteral(raw_value, value_what)
+            value = BoolLiteral.from_string(raw_value, value_what)
             if bits.width != value.width:
                 raise ValueError('{} has bits that imply a width of {}, but '
                                  'a value with width {}.'
@@ -375,7 +434,7 @@ class EncSchemeImport:
                 field_what = ('literal value for field {!r} when inheriting '
                               'from {!r} in encoding scheme {!r}'
                               .format(arg_parts[0], self.parent, importer_name))
-                field_value = BoolLiteral(arg_parts[1], field_what)
+                field_value = BoolLiteral.from_string(arg_parts[1], field_what)
 
                 if field_name in self.settings:
                     raise ValueError('{}, found multiple arguments assigning '
@@ -602,18 +661,64 @@ class OperandType:
         '''
         return None
 
+    def syntax_determines_value(self) -> bool:
+        '''Can the value of this operand always be inferred from asm syntax?
+
+        This is true for things like registers (the value "5" only comes from
+        "r5", for example), but false for arbitrary immediates: an immediate
+        operand might have a value that comes from a relocation.
+
+        '''
+        return False
+
+    def read_index(self, as_str: str) -> Optional[int]:
+        '''Try to read the given syntax as an actual integer index
+
+        Raises a ValueError on definite failure ("found cabbage when I expected
+        a register name"). Returns None on a soft failure: "this is a
+        complicated looking expression, but it might be a sensible immediate".
+
+        '''
+        return None
+
 
 class RegOperandType(OperandType):
     '''A class representing a register operand type'''
-    TYPE_WIDTHS = {'gpr': 5, 'wdr': 5, 'csr': 12, 'wsr': 8}
+    TYPE_FMTS = {
+        'gpr': (5, 'x'),
+        'wdr': (5, 'w'),
+        'csr': (12, None),
+        'wsr': (8, None)
+    }
 
     def __init__(self, reg_type: str, is_dest: bool):
-        type_width = RegOperandType.TYPE_WIDTHS.get(reg_type)
-        assert type_width is not None
-        super().__init__(type_width)
+        fmt = RegOperandType.TYPE_FMTS.get(reg_type)
+        assert fmt is not None
+        width, _ = fmt
+        super().__init__(width)
 
         self.reg_type = reg_type
         self.is_dest = is_dest
+
+    def syntax_determines_value(self) -> bool:
+        return True
+
+    def read_index(self, as_str: str) -> int:
+        width, pfx = RegOperandType.TYPE_FMTS[self.reg_type]
+
+        re_pfx = '' if pfx is None else re.escape(pfx)
+        match = re.match(re_pfx + '([0-9]+)$', as_str)
+        if match is None:
+            raise ValueError("Expression {!r} can't be parsed as a {}."
+                             .format(as_str, self.reg_type))
+
+        idx = int(match.group(1))
+        assert 0 <= idx
+        if idx >> width:
+            raise ValueError("Invalid register of type {}: {!r}."
+                             .format(self.reg_type, as_str))
+
+        return idx
 
 
 class ImmOperandType(OperandType):
@@ -624,6 +729,13 @@ class ImmOperandType(OperandType):
             return None
 
         return 'Valid range: `0..{}`'.format((1 << self.width) - 1)
+
+    def read_index(self, as_str: str) -> Optional[int]:
+        # We only support simple integer literals.
+        try:
+            return int(as_str)
+        except ValueError:
+            return None
 
 
 class EnumOperandType(ImmOperandType):
@@ -643,6 +755,19 @@ class EnumOperandType(ImmOperandType):
                          .format(item, idx))
         return ''.join(parts)
 
+    def syntax_determines_value(self) -> bool:
+        return True
+
+    def read_index(self, as_str: str) -> Optional[int]:
+        for idx, item in enumerate(self.items):
+            if as_str == item:
+                return idx
+
+        known_vals = ', '.join(repr(item) for item in self.items)
+        raise ValueError('Invalid enum value, {!r}. '
+                         'Supported values: {}.'
+                         .format(as_str, known_vals))
+
 
 class OptionOperandType(ImmOperandType):
     '''A class representing an option operand type'''
@@ -653,6 +778,17 @@ class OptionOperandType(ImmOperandType):
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
         return 'To specify, use the literal syntax `{}`\n'.format(self.option)
+
+    def syntax_determines_value(self) -> bool:
+        return True
+
+    def read_index(self, as_str: str) -> Optional[int]:
+        if as_str == self.option:
+            return 1
+
+        raise ValueError('Invalid option value, {!r}. '
+                         'If specified, it should have been {!r}.'
+                         .format(as_str, self.option))
 
 
 def parse_operand_type(fmt: str) -> OperandType:
@@ -772,17 +908,64 @@ class SyntaxToken:
         else:
             return '<{}>'.format(self.text)
 
+    def asm_pattern(self) -> str:
+        '''Return a regex pattern that can be used for matching this token
+
+        If the token represents an operand, the pattern is wrapped in a group
+        (to capture the operand). For more details about the syntax, see
+        InsnSyntax.
+
+        '''
+        if self.is_literal:
+            # A literal that is pure whitespace "requires the whitespace".
+            # Otherwise, replace all internal whitespace with \s+ and allow
+            # optional whitespace afterwards. To do this easily, we split the
+            # literal on whitespace. The result is empty iff it was just
+            # whitespace in the first place.
+            words = self.text.split()
+            if not words:
+                return r'\s+'
+
+            # For non-whitespace literals, we disallow leading space and add
+            # optional trailing space. This convention should avoid lots of
+            # \s*\s* pairs.
+            parts = [re.escape(words[0])]
+            for w in words[1:]:
+                parts.append(r'\s+')
+                parts.append(re.escape(w))
+            parts.append(r'\s*')
+
+            return ''.join(parts)
+
+        # Otherwise, this is an operand. For now, at least, we're very
+        # restrictive for operands. No spaces and no commas (the second rule
+        # avoids silliness like "a, b, c" matching a syntax with only two
+        # operands by setting the second to "b, c").
+        #
+        # We also split out ++ and -- separately, to disambiguate things like
+        # x1++, which must be parsed as x1 followed by ++.
+        #
+        # If we want to do better and allow things like
+        #
+        #    addi x0, x1, 1 + 3
+        #
+        # then we need to use something more serious than just regexes for
+        # parsing.
+        return r'([^ ,+\-]+|[+\-]+)\s*'
+
 
 class SyntaxHunk:
     '''An object representing a hunk of syntax that might be optional'''
     def __init__(self,
                  is_optional: bool,
                  tokens: List[SyntaxToken],
-                 operands: Set[str]) -> None:
+                 op_list: List[str],
+                 op_set: Set[str]) -> None:
         assert tokens
         self.is_optional = is_optional
         self.tokens = tokens
-        self.operands = operands
+        self.op_list = op_list
+        self.op_set = op_set
 
     @staticmethod
     def from_list(operands: List[str]) -> 'SyntaxHunk':
@@ -797,7 +980,7 @@ class SyntaxHunk:
         op_set = set(operands)
         assert len(op_set) == len(operands)
 
-        return SyntaxHunk(False, tokens, op_set)
+        return SyntaxHunk(False, tokens, operands, op_set)
 
     @staticmethod
     def from_string(mnemonic: str, optional: bool, raw: str) -> 'SyntaxHunk':
@@ -805,6 +988,7 @@ class SyntaxHunk:
         assert raw
 
         tokens = []
+        op_list = []
         op_set = set()
 
         parts = re.split(r'<([^>]+)>', raw)
@@ -822,6 +1006,7 @@ class SyntaxHunk:
                     raise ValueError("Syntax for {!r} has hunk {!r} with "
                                      "more than one occurrence of <{}>."
                                      .format(mnemonic, raw, part))
+                op_list.append(part)
                 op_set.add(part)
 
             # Only allow empty parts (and skip their tokens) if at one end or
@@ -834,7 +1019,7 @@ class SyntaxHunk:
             if part:
                 tokens.append(SyntaxToken(is_literal, part))
 
-        return SyntaxHunk(optional, tokens, op_set)
+        return SyntaxHunk(optional, tokens, op_list, op_set)
 
     def render_doc(self) -> str:
         '''Return how this hunk should look in the documentation'''
@@ -844,6 +1029,23 @@ class SyntaxHunk:
 
         body = ''.join(parts)
         return '[{}]'.format(body) if self.is_optional else body
+
+    def asm_pattern(self) -> str:
+        '''Return a regex pattern that can be used for matching this hunk
+
+        The result will have a group per operand. It allows trailing, but not
+        leading, space within the hunk.
+
+        '''
+        parts = []
+        for token in self.tokens:
+            parts.append(token.asm_pattern())
+        body = ''.join(parts)
+
+        # For an optional hunk, we build it up in the form "(?:foo)?". This
+        # puts a non-capturing group around foo and then applies "?"
+        # (one-or-more) to it.
+        return '(?:{})?'.format(body) if self.is_optional else body
 
 
 class InsnSyntax:
@@ -861,19 +1063,19 @@ class InsnSyntax:
         - A literal ','
         - Operand called 'src'
 
-    Between the tokens, whitespace is optional (so "r0 , r1" and "r0,r1" both
+    Between the tokens, whitespace is optional (so "x0 , x1" and "x0,x1" both
     match the syntax above) unless a literal token is just a space, in which
     case some whitespace is required. For example
 
         <dst> <src>
 
-    would match "r0 r1" but not "r0r1". Whitespace within literal syntax tokens
+    would match "x0 x1" but not "x0x1". Whitespace within literal syntax tokens
     means that some space is required, matching the regex \\s+. For example,
     the (rather strange) syntax
 
        <dst> + - <src>
 
-    would match "r0 + - r1" or "r0+ -r1", but not "r0 +- r1".
+    would match "x0 + - x1" or "x0+ -x1", but not "x0 +- x1".
 
     Some operands (and surrounding syntax) might be optional. The optional
     syntax is surrounded by square brackets. Nesting is not supported. For
@@ -881,13 +1083,13 @@ class InsnSyntax:
 
        <dst>, <src>[, <offset>]
 
-    would match "r0, r1, 123" or "r0, r1".
+    would match "x0, x1, 123" or "x0, x1".
 
     Note that a given syntax might be ambiguous. For example,
 
        <dst>, <src>[, <offset>][, <flavour>]
 
-    With "r0, r1, 123", is 123 an offset or a flavour? (We choose not to embed
+    With "x0, x1, 123", is 123 an offset or a flavour? (We choose not to embed
     typing information into the syntax, because that results in very confusing
     assembler error messages). We break ties in the same way as the underlying
     regex engine, assigning the operand to the first group, so 123 is an offset
@@ -901,18 +1103,20 @@ class InsnSyntax:
     '''
     def __init__(self,
                  hunks: List[SyntaxHunk],
-                 operands: Set[str]) -> None:
+                 op_list: List[str],
+                 op_set: Set[str]) -> None:
         self.hunks = hunks
-        self.operands = operands
+        self.op_list = op_list
+        self.op_set = op_set
 
     @staticmethod
     def from_list(operands: List[str]) -> 'InsnSyntax':
         '''Smart constructor for a list of operands with "normal" syntax'''
         if not operands:
-            return InsnSyntax([], set())
+            return InsnSyntax([], [], set())
 
         hunk = SyntaxHunk.from_list(operands)
-        return InsnSyntax([hunk], hunk.operands)
+        return InsnSyntax([hunk], hunk.op_list, hunk.op_set)
 
     @staticmethod
     def from_yaml(mnemonic: str, raw: str) -> 'InsnSyntax':
@@ -922,7 +1126,7 @@ class InsnSyntax:
         #
         #    <op0>, <op1>[(<op2>)]
         #
-        # to mean that you either have "r0, r1" or "r0, r2(r3)". First, split
+        # to mean that you either have "x0, x1" or "x0, x2(x3)". First, split
         # out the bracketed parts.
         by_left = raw.split('[')
         parts = [(False, by_left[0])]
@@ -950,22 +1154,36 @@ class InsnSyntax:
                                  .format(mnemonic))
 
         # Collect up operands across the hunks
-        op_count = 0
+        op_list = []
         op_set = set()
         for hunk in hunks:
-            op_count += len(hunk.operands)
-            op_set |= hunk.operands
+            op_list += hunk.op_list
+            op_set |= hunk.op_set
 
-        if op_count != len(op_set):
+        if len(op_list) != len(op_set):
             raise ValueError('Instruction syntax for {!r} is not '
                              'linear in its operands.'
                              .format(mnemonic))
 
-        return InsnSyntax(hunks, op_set)
+        return InsnSyntax(hunks, op_list, op_set)
 
     def render_doc(self) -> str:
         '''Return how this syntax should look in the documentation'''
         return ''.join(hunk.render_doc() for hunk in self.hunks)
+
+    def asm_pattern(self) -> Tuple[str, Dict[str, int]]:
+        '''Return a regex pattern and a group name map for this syntax'''
+        parts = [r'\s*']
+        for hunk in self.hunks:
+            parts.append(hunk.asm_pattern())
+        parts.append('$')
+        pattern = ''.join(parts)
+
+        op_to_grp = {}
+        for idx, op in enumerate(self.op_list):
+            op_to_grp[op] = 1 + idx
+
+        return (pattern, op_to_grp)
 
 
 class EncodingField:
@@ -991,7 +1209,7 @@ class EncodingField:
         value_width = None
         value = ''  # type: Union[BoolLiteral, str]
         if re.match(r'b[01x_]+$', as_str):
-            value = BoolLiteral(as_str, what)
+            value = BoolLiteral.from_string(as_str, what)
             value_width = value.width
             value_type = 'a literal value'
         else:
@@ -1101,6 +1319,64 @@ class Encoding:
         assert (m0 | m1) == all_bits
         return (m0, m1)
 
+    def get_ones_mask(self) -> int:
+        '''Return the mask of fixed bits that are set
+
+        For literal values of x (unused bits in the encoding), we'll prefer
+        '0'.
+
+        '''
+        m0, m1 = self.get_masks()
+        return m1 & ~m0
+
+    def assemble(self, op_to_idx: Dict[str, int]) -> int:
+        '''Assemble an instruction
+
+        op_to_idx should map each operand in the encoding to some integer
+        index, which should be small enough to fit in the width of the
+        operand's type and should be representable after any shift. Will raise
+        a ValueError if not.
+
+        '''
+        val = self.get_ones_mask()
+        for field_name, field in self.fields.items():
+            if not isinstance(field.value, str):
+                # We've done this field already (in get_ones_mask)
+                continue
+
+            # Try to get the operand value for the field. If this is an
+            # optional operand, we might not have one, and just encode zero.
+            field_val = op_to_idx.get(field.value, 0)
+
+            # Are there any low bits that shouldn't be there?
+            shift_mask = (1 << field.scheme_field.shift) - 1
+            if field_val & shift_mask:
+                raise ValueError("operand field {} has a shift of {}, "
+                                 "so can't represent the value {:#x}."
+                                 .format(field.value,
+                                         field.scheme_field.shift,
+                                         field_val))
+
+            shifted = field_val >> field.scheme_field.shift
+
+            # Is the number too big? At the moment, we are assuming immediates
+            # are unsigned (because the OTBN big number instructions all have
+            # unsigned immediates).
+            if shifted >> field.scheme_field.bits.width:
+                shift_msg = ((' (shifted right by {} bits from {:#x})'
+                              .format(field.scheme_field.shift, field_val))
+                             if field.scheme_field.shift
+                             else '')
+                raise ValueError("operand field {} has a width of {}, "
+                                 "so can't represent the value {:#x}{}."
+                                 .format(field.value,
+                                         field.scheme_field.bits.width,
+                                         shifted, shift_msg))
+
+            val |= field.scheme_field.bits.encode(shifted)
+
+        return val
+
 
 class Insn:
     def __init__(self,
@@ -1150,14 +1426,18 @@ class Insn:
             self.syntax = InsnSyntax.from_list([op.name
                                                 for op in self.operands])
 
+        pattern, op_to_grp = self.syntax.asm_pattern()
+        self.asm_pattern = re.compile(pattern)
+        self.pattern_op_to_grp = op_to_grp
+
         # Make sure we have exactly the operands we expect.
-        if set(self.name_to_operand.keys()) != self.syntax.operands:
+        if set(self.name_to_operand.keys()) != self.syntax.op_set:
             raise ValueError("Operand syntax for {!r} doesn't have the "
                              "same list of operands as given in the "
                              "operand list. The syntax uses {}, "
                              "but the list of operands gives {}."
                              .format(self.mnemonic,
-                                     list(sorted(self.syntax.operands)),
+                                     list(sorted(self.syntax.op_set)),
                                      list(sorted(self.name_to_operand))))
 
         encoding_yml = yd.get('encoding')
@@ -1210,7 +1490,7 @@ class InsnsFile:
         self.insns = [Insn(i, self.groups, self.encoding_schemes)
                       for i in check_list(yd['insns'], 'insns')]
         self.mnemonic_to_insn = index_list('insns', self.insns,
-                                           lambda insn: insn.mnemonic)
+                                           lambda insn: insn.mnemonic.lower())
 
         ambiguous_encodings = find_ambiguous_encodings(self.insns)
         if ambiguous_encodings:
