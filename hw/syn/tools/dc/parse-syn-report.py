@@ -98,7 +98,6 @@ def _extract_area(full_file, results, key):
     This extracts detailed area information from the report.
     Area will be reported in gate equivalents.
     """
-    # TODO: covert to gate equivalents
     patterns = [("comb", r"^Combinational area: \s* (\d+\.\d+)"),
                 ("buf", r"^Buf/Inv area: \s* (\d+\.\d+)"),
                 ("reg", r"^Noncombinational area: \s* (\d+\.\d+)"),
@@ -106,7 +105,11 @@ def _extract_area(full_file, results, key):
                 ("total", r"^Total cell area: \s* (\d+\.\d+)")]
 
     nums, errs = _match_fp_number(full_file, patterns)
-    results[key] = nums
+
+    # only overwrite default values if a match has been returned
+    for num_key in nums.keys():
+        results[key][num_key] = nums[num_key]
+
     results['messages']['flow_errors'] += errs
 
     # aggregate one level of sub-modules
@@ -145,20 +148,20 @@ def _extract_area(full_file, results, key):
         results["messages"]["flow_errors"] += ["ValueError: %s" % err]
 
     # cross check whether the above accounting is correct
-    if _rel_err(comb_check, results["area"]["comb"]) > CROSSCHECK_REL_TOL:
+    if _rel_err(comb_check, results[key]["comb"]) > CROSSCHECK_REL_TOL:
         results["messages"]["flow_errors"] += [
             "Reporting error: comb_check (%e) != (%e)" %
-            (comb_check, results["area"]["comb"])
+            (comb_check, results[key]["comb"])
         ]
-    if _rel_err(reg_check, results["area"]["reg"]) > CROSSCHECK_REL_TOL:
+    if _rel_err(reg_check, results[key]["reg"]) > CROSSCHECK_REL_TOL:
         results["messages"]["flow_errors"] += [
             "Reporting error: reg_check (%e) != (%e)" %
-            (reg_check, results["area"]["reg"])
+            (reg_check, results[key]["reg"])
         ]
-    if _rel_err(macro_check, results["area"]["macro"]) > CROSSCHECK_REL_TOL:
+    if _rel_err(macro_check, results[key]["macro"]) > CROSSCHECK_REL_TOL:
         results["messages"]["flow_errors"] += [
             "Reporting error: macro_check (%e) != (%e)" %
-            (macro_check, results["area"]["macro"])
+            (macro_check, results[key]["macro"])
         ]
 
     return results
@@ -295,7 +298,11 @@ def _extract_power(full_file, results, key):
                  FP_NUMBER + r"\s*(" + FP_NUMBER + r")")]
 
     nums, errs = _match_fp_number(full_file, patterns)
-    results[key] = nums
+
+    # only overwrite default values if a match has been returned
+    for num_key in nums.keys():
+        results[key][num_key] = nums[num_key]
+
     results['messages']['flow_errors'] += errs
 
     return results
