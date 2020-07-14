@@ -9,16 +9,17 @@ from riscvmodel.types import Immediate
 
 from .variant import RV32IXotbn
 
-from enum import Enum
+from enum import IntEnum
 from abc import ABCMeta
 
 
 class InstructionFunct2Type(Instruction):
     field_funct2 = Field(name="funct2",
-                          base=12,
-                          size=2,
-                          description="",
-                          static=True)
+                         base=12,
+                         size=2,
+                         description="",
+                         static=True)
+
 
 class InstructionFunct31Type(Instruction):
     field_funct31 = Field(name="funct31",
@@ -27,12 +28,14 @@ class InstructionFunct31Type(Instruction):
                           description="",
                           static=True)
 
+
 class InstructionFunct30Type(Instruction):
     field_funct30 = Field(name="funct30",
                           base=30,
                           size=1,
                           description="",
                           static=True)
+
 
 class InstructionW3Type(Instruction):
     field_wrd = Field(name="wrd", base=7, size=5)
@@ -97,15 +100,15 @@ class InstructionLIType(InstructionFunct2Type):
         self.iter = Immediate(bits=10, signed=False, init=iter)
         self.bodysize = Immediate(bits=12, signed=False, init=bodysize)
 
-    def randomize(self, variant: Variant):
-        self.iter.randomize()
-        self.bodysize.randomize()
+    def ops_from_list(self, ops):
+        self.iter.set(int(ops[0]))
+        self.bodysize.set(int(ops[1]))
 
     def __str__(self):
         return "{} {}, {}".format(self.mnemonic, self.iter, self.bodysize)
 
 
-class ShiftType(Enum):
+class ShiftType(IntEnum):
     LSL = 0  # logical shift left
     LSR = 1  # logical shift right
 
@@ -137,8 +140,8 @@ class InstructionBNAType(InstructionFunct3Type,
                  wrd: int = None,
                  wrs1: int = None,
                  wrs2: int = None,
-                 shift_bytes: int = None,
-                 shift_type: int = None):
+                 shift_bytes: int = 0,
+                 shift_type: int = ShiftType.LSL):
         super().__init__()
         self.wrd = wrd
         self.wrs1 = wrs1
@@ -147,15 +150,6 @@ class InstructionBNAType(InstructionFunct3Type,
                                      signed=False,
                                      init=shift_bytes or 0)
         self.shift_type = shift_type
-
-    def randomize(self, variant):
-        # TODO: shift randomization
-        self.wrd.randomize()
-        self.wrs1.randomize()
-        self.wrs2.randomize()
-
-    def ops_from_string(self, ops):
-        self.ops_from_list([op for op in ops.split(",")])
 
     def ops_from_list(self, ops):
         self.wrd = int(ops[0][1:])
@@ -187,34 +181,23 @@ class InstructionBNANType(InstructionFunct3Type, InstructionFunct31Type,
     def __init__(self,
                  wrd: int = None,
                  wrs1: int = None,
-                 shift_bytes: int = None,
-                 shift_type: int = None):
+                 shift_bytes: int = 0,
+                 shift_type: int = ShiftType.LSL):
         super().__init__()
         self.wrd = wrd
         self.wrs1 = wrs1
         self.shift_bytes = Immediate(bits=5, signed=False, init=shift_bytes)
-        self.shift_type = DecodeShiftType(
-            shift_type) if shift_type is not None else shift_type
-
-    def randomize(self, variant):
-        # TODO: shift randomization
-        self.wrd.randomize()
-        self.wrs1.randomize()
-
-    def ops_from_string(self, ops):
-        ops = ops.split(",")
+        self.shift_type = shift_type
 
     def ops_from_list(self, ops):
         self.wrd = int(ops[0][1:])
         self.wrs1 = int(ops[1][1:])
+        if len(ops) > 2:
+            self.shift_bytes.set(int(ops[3][:-1]))
+            self.shift_type = ShiftType.LSL if ops[2] == "<<" else ShiftType.LSR
 
     def __str__(self):
         return "{} w{}, w{}".format(self.mnemonic, self.wrd, self.wrs1)
-
-    def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        return self.wrd == other.wrd and self.wrs1 == other.wrs1 and self.shift_bytes == other.shift_bytes and self.shift_type == other.shift_type
 
 
 class InstructionBNCSType(InstructionFunct3Type, InstructionFunct31Type):
@@ -224,48 +207,119 @@ class InstructionBNCSType(InstructionFunct3Type, InstructionFunct31Type):
 
     field_wrd = Field(name="wrd", base=7, size=5)
     field_wrs = Field(name="wrs", base=15, size=5)
-    field_wcsr = Field(name="wcsr", base=20, size=8)
+    field_wsr = Field(name="wsr", base=20, size=8)
 
-    def __init__(self, wrd: int = None, wsr: int = None, wcsr: int = None):
+    def __init__(self, wrd: int = None, wsr: int = None, wrs: int = None):
         super().__init__()
         self.wrd = wrd
-        self.wsr = wsr
-        self.wcsr = Immediate(bits=8, signed=False, init=wcsr)
-
-    def randomize(self, variant: Variant):
-        self.wrd.randomize()
-        self.wsr.randomize()
-        self.wcsr.randomize()
+        self.wrs = wrs
+        self.wsr = Immediate(bits=8, signed=False, init=wrs)
 
     def ops_from_list(self, ops):
         self.wrd = int(ops[0][1:])
-        self.wsr = int(ops[1][1:])
-        self.wcsr.set(int(ops[2], 0))
+        self.wrs = int(ops[2][1:])
+        self.wsr.set(int(ops[1], 0))
 
     def __str__(self):
-        return "{} w{}, w{}, {}".format(self.mnemonic, self.wrd, self.wsr,
-                                        self.wcsr)
+        return "{} w{}, {}, w{}".format(self.mnemonic, self.wrd, self.wsr,
+                                        self.wrs)
 
 
 class InstructionBNAFType(InstructionFunct3Type, InstructionW3Type,
                           InstructionFGType, InstructionShiftType):
+
     isa_format_id = "BNAF"
 
-    asm_arg_signature = "<wrd>, <wrs1>, <wrs2> [, <shift_type> <shift_bytes>B] [, FG<flag_group>]"
+    asm_arg_signature = "<wrd>, <wrs1>, <wrs2>[<shift_type> <shift_bytes>B] [, FG<flag_group>]"
+
+    def __init__(self,
+                 wrd: int = None,
+                 wrs1: int = None,
+                 wrs2: int = None,
+                 shift_bytes: int = 0,
+                 shift_type: int = ShiftType.LSL,
+                 fg: int = 0):
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.wrs2 = wrs2
+        self.shift_bytes = Immediate(bits=5, signed=False, init=shift_bytes)
+        self.shift_type = shift_type
+        self.fg = fg
+
+    def ops_from_list(self, ops):
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[2][1:])
+        if len(ops) > 3:
+            off = 3
+            if ops[3] == "<<":
+                self.shift_type = ShiftType.LSL if ops[
+                    3] == "<<" else ShiftType.LSR
+                self.shift_bytes.set(int(ops[4][:-1]))
+                off += 2
+            if len(ops) > off:
+                self.fg = int(ops[off][2:])
+
+    def __str__(self):
+        shift = "{} {}B".format(
+            "<<" if self.shift_type == ShiftType.LSL else ">>",
+            self.shift_bytes)
+        return "{} w{}, w{}, w{}{}, FG{}".format(self.mnemonic, self.wrd,
+                                                 self.wrs1, self.wrs2, shift,
+                                                 self.fg)
 
 
-class InstructionBNAIType(InstructionFunct3Type, InstructionFGType, InstructionFunct30Type):
+class InstructionBNAIType(InstructionFunct3Type, InstructionFGType,
+                          InstructionFunct30Type):
     isa_format_id = "BNAI"
+
+    asm_arg_signature = "<wrd>, <wrs1>, <imm> [, FG<flag_group>]"
 
     field_wrd = Field(name="wrd", base=7, size=5)
     field_wrs1 = Field(name="wrs1", base=15, size=5)
     field_imm = Field(name="imm", base=20, size=10)
-    field_sign = Field(name="sign", base=30, size=10)
+    field_sign = Field(name="sign", base=30, size=1)
+
+    def __init__(self,
+                 wrd: int = None,
+                 wrs1: int = None,
+                 imm: int = None,
+                 fg: int = 0):
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.imm = Immediate(bits=10, signed=False, init=imm)
+        self.shift_type = shift_type
+        self.fg = fg
+
+    def ops_from_list(self, ops):
+        print(ops)
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[2], 0)
+        if len(ops) > 3:
+            self.fg = int(ops[3])
 
 
 class InstructionBNAMType(InstructionFunct3Type, InstructionW3Type,
                           InstructionFunct30Type):
     isa_format_id = "BNAM"
+
+    asm_arg_signature = "<wrd>, <wrs1>, <wrs2>"
+
+    def __init__(self, wrd: int = None, wrs1: int = None, wrs2: int = None):
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.wrs1 = wrs1
+
+    def ops_from_list(self, ops):
+        print(ops)
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[2][1:])
+
+    def __str__(self):
+        return "{} w{}, w{}, w{}".format(self.mnemonic, self.wrd, self.wrs1,
+                                         self.wrs2)
 
 
 class InstructionBNAQType(InstructionW3Type):
@@ -377,22 +431,107 @@ To specify, use the literal syntax .Z""")
 class InstructionBNRType(InstructionW3Type, InstructionFunct2Type):
     isa_format_id = "BNR"
 
+    asm_arg_signature = "<wrd>, <wrs1>, <wrs2> >> <imm>"
+
     field_imm = Field(name="imm", base=[14, 25], size=[1, 7], description="")
+
+    def __init__(self,
+                 wrd: int = None,
+                 wrs1: int = None,
+                 wrs2: int = None,
+                 imm: int = None):
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.wrs2 = wrs2
+        self.imm = Immediate(bits=8, signed=False, init=imm)
+
+    def ops_from_list(self, ops):
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[2][1:])
+        self.imm.set_from_bits(int(ops[4]))
+
+    def __str__(self):
+        return "{} w{}, w{}, w{} >> {}".format(self.mnemonic, self.wrd,
+                                               self.wrs1, self.wrs2, self.imm)
 
 
 class InstructionBNSType(InstructionW3Type, InstructionFunct3Type,
                          InstructionFGType):
     isa_format_id = "BNS"
 
+    asm_arg_signature = "<wrd>, <wrs1>, <wrs2>, [FG<flag_group>.]flag"
+
     field_flag = Field(name="flag", base=25, size=2, description="")
+
+    def __init__(self,
+                 wrd: int = None,
+                 wrs1: int = None,
+                 wrs2: int = None,
+                 fg: int = 0,
+                 flag: int = None):
+        self.wrd = wrd
+        self.wrs1 = wrs1
+        self.wrs2 = wrs2
+        self.fg = fg
+        self.flag = flag
+
+    def ops_from_list(self, ops):
+        self.wrd = int(ops[0][1:])
+        self.wrs1 = int(ops[1][1:])
+        self.wrs2 = int(ops[2][1:])
+        if len(ops) > 4:
+            self.fg = int(ops[3])
+            self.flag = int(ops[4])
+        else:
+            self.flag = int(ops[3])
+
+    def __str__(self):
+        return "{} w{}, w{}, w{}{}, FG{}".format(self.mnemonic, self.wrd,
+                                                 self.wrs1, self.wrs2, self.fg,
+                                                 self.flag)
 
 
 class InstructionBNCType(InstructionFunct3Type, InstructionFGType,
                          InstructionShiftType):
     isa_format_id = "BNC"
 
+    asm_arg_signature = "<wrs1>, <wrs2>[<shift_type> <shift_bytes>B] [, FG<flag_group>]"
+
     field_wrs1 = Field(name="wrs1", base=15, size=5)
     field_wrs2 = Field(name="wrs2", base=20, size=5)
+
+    def __init__(self,
+                 wrs1: int = None,
+                 wrs2: int = None,
+                 shift_bytes: int = 0,
+                 shift_type: int = ShiftType.LSL,
+                 fg: int = 0):
+        self.wrs1 = wrs1
+        self.wrs2 = wrs2
+        self.shift_bytes = Immediate(bits=5, signed=False, init=shift_bytes)
+        self.shift_type = shift_type
+        self.fg = fg
+
+    def ops_from_list(self, ops):
+        self.wrs1 = int(ops[0][1:])
+        self.wrs2 = int(ops[1][1:])
+        if len(ops) > 2:
+            off = 2
+            if ops[2] == "<<":
+                self.shift_type = ShiftType.LSL if ops[
+                    2] == "<<" else ShiftType.LSR
+                self.shift_bytes.set(int(ops[3][:-1]))
+                off += 2
+            if len(ops) > off:
+                self.fg = int(ops[off][2:])
+
+    def __str__(self):
+        shift = "{} {}B".format(
+            "<<" if self.shift_type == ShiftType.LSL else ">>",
+            self.shift_bytes)
+        return "{} w{}, w{}{}, FG{}".format(self.mnemonic, self.wrs1,
+                                            self.wrs2, shift, self.fg)
 
 
 class InstructionBNIType(InstructionFunct3Type):
@@ -464,14 +603,51 @@ class InstructionBNISType(InstructionFunct3Type):
 class InstructionBNMVType(InstructionFunct3Type, InstructionFunct31Type):
     isa_format_id = "BNMV"
 
+    asm_arg_signature = "<wrd>, <wrs>"
+
     field_wrd = Field(name="wrd", base=7, size=5)
     field_wrs = Field(name="wrs", base=15, size=5)
+
+    def __init__(self, wrd: int = None, wrs: int = None):
+        self.wrd = wrd
+        self.wrs = wrs
+
+    def ops_from_list(self, ops):
+        self.wrd = ops[0][1:]
+        self.wrs = ops[1][1:]
+
+    def __str__(self):
+        return "{} w{}, w{}".format(self.mnemonic, self.wrd, self.wrs)
 
 
 class InstructionBNMVRType(InstructionFunct3Type, InstructionFunct31Type):
     isa_format_id = "BNMVR"
 
+    asm_arg_signature = "<rd>[<rd_inc>], <rs>[<rs_inc>]"
+
     field_rd = Field(name="rd", base=7, size=5)
     field_rs = Field(name="rs", base=15, size=5)
     field_rd_inc = Field(name="rd_inc", base=20, size=1)
     field_rs_inc = Field(name="rs_inc", base=21, size=1)
+
+    def __init__(self,
+                 rd: int = None,
+                 rs: int = None,
+                 rd_inc: bool = False,
+                 rs_inc: bool = False):
+        self.rd = rd
+        self.rs = rs
+        self.rd_inc = rd_inc
+        self.rs_inc = rs_inc
+
+    def ops_from_list(self, ops):
+        self.rd_inc = ops[0].endswith("++")
+        self.rd = int(ops[0][1:-2] if self.rd_inc else ops[0][1:])
+        self.rs_inc = ops[1].endswith("++")
+        self.rs = int(ops[1][1:-2] if self.rs_inc else ops[1][1:])
+
+    def __str__(self):
+        dpp = "++" if self.rd_inc else ""
+        spp = "++" if self.rs_inc else ""
+        return "{} x{}{}, x{}{}".format(self.mnemonic, self.rd, dpp, self.rs,
+                                        spp)

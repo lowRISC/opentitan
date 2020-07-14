@@ -58,6 +58,17 @@ BN.MULQACC.SO w3.l, w0.2, w1.3, 64
 BN.MULQACC.SO w3.u, w0.3, w1.3, 0
 """
 
+code_random = """
+ADDI x5, x0, 0
+ADDI x6, x0, 6
+BN.XOR w5, w5, w5
+BN.NOT w5, w5
+LOOPI 4(
+    BN.WSRRS w6, w5, 2
+    BN.MOVR x5+, x6
+)
+"""
+
 if __name__ == "__main__":
     codes = [code[5:] for code in dir() if code.startswith("code_")]
     parser = argparse.ArgumentParser()

@@ -11,7 +11,7 @@ import argparse
 import sys
 
 
-def run(program, data, *, verbose=True):
+def run(program, data=[], *, verbose=True):
     sim = Simulator(OTBNModel(verbose=verbose))
     sim.load_program(program)
     sim.load_data(data)
@@ -28,7 +28,7 @@ def main():
     parser.add_argument("data", nargs='?', type=argparse.FileType('rb'))
     args = parser.parse_args()
 
-    run(parse(args.program.read()), args.data.read() if args.data else None)
+    run(parse(args.program.read()), args.data.read() if args.data else [])
 
 
 if __name__ == "__main__":

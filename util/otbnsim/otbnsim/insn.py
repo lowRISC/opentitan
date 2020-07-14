@@ -59,28 +59,46 @@ class InstructionBNADD(InstructionBNAFType):
     before it is consumed by the operation.
     """
     def execute(self, model: OTBNModel):
-        b_shifted = ShiftReg(model.state.wreg[self.wrs2], self.shift_type,
-                             self.shift_bytes)
-        a = model.state.wreg[self.wrs1]
-        model.state.wreg[self.wrd] = a + b_shifted
+        a = int(model.state.wreg[self.wrs1].unsigned())
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2].unsigned()),
+                             self.shift_type, self.shift_bytes)
+        (result, flags) = model.add_with_carry(a, b_shifted, 0)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.addc", RV32IXotbn, opcode=0b0101011, funct3=0b010)
 class InstructionBNADDC(InstructionBNAFType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1].unsigned())
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2].unsigned()),
+                             self.shift_type, self.shift_bytes)
+        print(model.state.flags[self.fg].C)
+        (result, flags) = model.add_with_carry(a, b_shifted,
+                                               model.state.flags[self.fg].C)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.addi", RV32IXotbn, opcode=0b0101011, funct3=0b100, funct30=0)
 class InstructionBNADDI(InstructionBNAIType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1].unsigned())
+        b = int(self.imm)
+        (result, flags) = model.add_with_carry(a, b, 0)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.addm", RV32IXotbn, opcode=0b0101011, funct3=0b101, funct30=0)
 class InstructionBNADDM(InstructionBNAMType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1].unsigned())
+        b = int(model.state.wreg[self.wrs2].unsigned())
+        (result, _) = model.add_with_carry(a, b, 0)
+        if result >= int(model.state.mod):
+            result -= int(model.state.mod)
+        model.state.wreg[self.wrd] = result
 
 
 @isa("bn.mulqacc", RV32IXotbn, opcode=0b1011011)
@@ -118,25 +136,46 @@ class InstructionBNMULQACC(InstructionBNAQType):
 @isa("bn.sub", RV32IXotbn, opcode=0b0101011, funct3=0b001)
 class InstructionBNSUB(InstructionBNAFType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2]), self.shift_type,
+                             self.shift_bytes)
+        (result, flags) = model.add_with_carry(a, -b_shifted, 0)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.subb", RV32IXotbn, opcode=0b0101011, funct3=0b011)
 class InstructionBNSUBB(InstructionBNAFType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2]), self.shift_type,
+                             self.shift_bytes)
+        (result,
+         flags) = model.add_with_carry(a, -b_shifted,
+                                       1 - model.state.flags[self.fg].C)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.subi", RV32IXotbn, opcode=0b0101011, funct3=0b100, funct30=1)
 class InstructionBNSUBI(InstructionBNAIType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b = int(model.state.wreg[self.wrs2])
+        (result, flags) = model.add_with_carry(a, -b, 0)
+        model.state.wreg[self.wrd] = result
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.subm", RV32IXotbn, opcode=0b0101011, funct3=0b101, funct30=1)
 class InstructionBNSUBM(InstructionBNAMType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b = int(model.state.wreg[self.wrs2])
+        (result, ) = model.add_with_carry(a, -b, 0)
+        if result >= model.state.mod:
+            result -= model.state.mod
+        model.state.wreg[self.wrd] = result
 
 
 @isa("bn.and", RV32IXotbn, opcode=0b0101011, funct3=0b110, funct31=0)
@@ -205,25 +244,40 @@ class InstructionBNXOR(InstructionBNAType):
 @isa("bn.rshi", RV32IXotbn, opcode=0b1111011, funct2=0b11)
 class InstructionBNRSHI(InstructionBNRType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b = int(model.state.wreg[self.wrs2])
+        shift_bit = int(self.imm)
+        model.state.wreg[self.wrd] = (((a << 256) | b) >> shift_bit) & (
+            (1 << 256) - 1)
 
 
 @isa("bn.sel", RV32IXotbn, opcode=0b0001011, funct3=0b000)
 class InstructionBNSEL(InstructionBNSType):
     def execute(self, model: OTBNModel):
-        pass
+        flag_is_set = model.state.flags[self.fg].get(flag)
+
+        WDR[d] = wrs1 if flag_is_set else wrs2
 
 
 @isa("bn.cmp", RV32IXotbn, opcode=0b0001011, funct3=0b001)
 class InstructionBNCMP(InstructionBNCType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2]), self.shift_type,
+                             self.shift_bytes)
+        (_, flags) = model.add_with_carry(a, -b_shifted, 0)
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.cmpb", RV32IXotbn, opcode=0b0001011, funct3=0b011)
 class InstructionBNCMPB(InstructionBNCType):
     def execute(self, model: OTBNModel):
-        pass
+        a = int(model.state.wreg[self.wrs1])
+        b_shifted = ShiftReg(int(model.state.wreg[self.wrs2]), self.shift_type,
+                             self.shift_bytes)
+        (_, flags) = model.add_with_carry(a, -b_shifted,
+                                          1 - model.state.flags[self.fg].C)
+        model.state.flags[self.fg] = flags
 
 
 @isa("bn.lid", RV32IXotbn, opcode=0b0001011, funct3=0b100)
@@ -281,7 +335,13 @@ class InstructionBNMOV(InstructionBNMVType):
 @isa("bn.movr", RV32IXotbn, opcode=0b0001011, funct3=0b110, funct31=1)
 class InstructionBNMOVR(InstructionBNMVRType):
     def execute(self, model: OTBNModel):
-        pass
+        wrd = int(model.state.intreg[self.rd])
+        wrs = int(model.state.intreg[self.rs])
+        model.state.wreg[wrd] = model.state.wreg[wrs]
+        if self.rd_inc:
+            model.state.intreg[self.rd] += 1
+        if self.rs_inc:
+            model.state.intreg[self.rs] += 1
 
 
 @isa("bn.wsrrs", RV32IXotbn, opcode=0b0001011, funct3=0b111, funct31=0)
@@ -290,11 +350,12 @@ class InstructionBNWSRRS(InstructionBNCSType):
     Atomic Read and Set Bits in WSR
     """
     def execute(self, model: OTBNModel):
-        csr = model.state.csr_read(self.wcsr)
-        model.state.wreg[self.wrd] = model.state.wreg[self.wsr] & csr
+        csr = model.state.wcsr_read(self.wsr)
+        model.state.wreg[self.wrd] = model.state.wreg[self.wrs] & csr
 
 
 @isa("bn.wsrrw", RV32IXotbn, opcode=0b0001011, funct3=0b111, funct31=1)
 class InstructionBNWSRRW(InstructionBNCSType):
     def execute(self, model: OTBNModel):
-        pass
+        model.state.wreg[self.wrd] = model.state.wcsr_write(
+            self.wsr, model.state.wreg[self.wrs])

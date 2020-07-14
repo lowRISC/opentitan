@@ -10,8 +10,7 @@ from riscvmodel.code import read_from_binary
 import argparse
 import struct
 
-from .model import Model
-from .variant import RV32IXotbn
+from .model import OTBNModel
 from .insn import *
 
 

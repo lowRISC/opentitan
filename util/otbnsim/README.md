@@ -104,12 +104,12 @@ $ pytest --model-verbose
 
 ## Get program from database of test programs
 
-Test programs are available in a python module. Assembler codes are stored in
-this file and they can be generated as with the assembler.
+Test programs are available in a python module. Assembly code are stored in this
+file and they can be generated as with the assembler.
 
 Examples:
 
-- Produce assembler code
+- Produce assembly code
 
 ```console
 $ python test/programs.py mul_256x256
