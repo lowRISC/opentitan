@@ -29,6 +29,353 @@ insn-groups:
     doc: |
       All Big Number (BN) instructions operate on the wide register file WREG.
 
+# Instruction encoding schemes
+#
+# These define the mapping between instruction operands and bits in the
+# encoding. A scheme names zero or more named fields. It can also inherit from
+# zero or more other schemes.
+#
+# The direct fields of a scheme are defined as a dictionary, mapping a field
+# name (which will be matched up with instruction operands) to a value. In
+# general, this value is itself a dictionary with the following keys:
+#
+#  bits: A list of ranges of bits. A range is written <msb>-<lsb>, where both
+#        are integers (and msb >= lsb). Multiple ranges can be separated by
+#        commas. A degenerate range (with msb == lsb) can be written as a bare
+#        integer. Required.
+#
+#  value: Optional. If specified, this should be a binary string for a fixed
+#         value for this field, prefixed with a "b" (to avoid the YAML parser
+#         reading it as a decimal number). Underscores in the string are
+#         ignored (to make it easier to show grouping) and 'x' means don't
+#         care.
+#
+#  shift: Optional. If specified, this is the number of bits to shift the
+#         encoded value left to get the logical value.
+#
+# For brevity, if value and shift have their default values, the bits string
+# can be used as the value for the field.
+#
+# A scheme can inherit from other schemes by listing their names in a 'parents'
+# attribute. If the child scheme needs to set the value of a parents' field to
+# something fixed, it can do so with the following syntax:
+#
+#     parent_name(field_name=b11101, field_name2=b111)
+#
+# The fields of a scheme are recursively defined to be its direct fields plus
+# the fields all its ancestors.
+#
+# A scheme is called complete if its fields cover the entire range of bits
+# (0-31) and partial otherwise.
+
+encoding-schemes:
+  # A partial scheme that sets the bottom two bits to 2'b11 (as for all RISC-V
+  # uncompressed instructions) and defines an 'opcode' field for bits 6-2
+  # (standard for RV32I instructions)
+  rv:
+    fields:
+      opcode: 6-2
+      uncomp:
+        bits: 1-0
+        value: b11
+
+  # A partial scheme defining a funct3 field in bits 14-12 (used in most RV32I
+  # instructions, and most BN.* custom instructions)
+  funct3:
+    fields:
+      funct3: 14-12
+
+  # RISC-V "R-type" encoding (reg <- fun(reg, reg))
+  R:
+    parents:
+      - rv
+      - funct3
+    fields:
+      funct7: 31-25
+      rs2: 24-20
+      rs1: 19-15
+      rd: 11-7
+
+  # RISC-V "I-type" encoding (reg <- fun(imm, reg))
+  I:
+    parents:
+      - rv
+      - funct3
+    fields:
+      imm: 31-20
+      rs1: 19-15
+      rd: 11-7
+
+  # RISC-V "S-type" encoding (_ <- fun(reg, imm))
+  S:
+    parents:
+      - rv
+      - funct3
+    fields:
+      imm: 31-25,11-7
+      rs2: 24-20
+      rs1: 19-15
+
+  # RISC-V "B-type" encoding (like S, but different immediate layout; used for
+  # branches)
+  B:
+    parents:
+      - rv
+      - funct3
+    fields:
+      imm:
+        bits: 31,7,30-25,11-8
+        shift: 1
+      rs2: 24-20
+      rs1: 19-15
+
+  # RISC-V "U-type" encoding (reg <- fun(imm))
+  U:
+    parents:
+      - rv
+    fields:
+      imm:
+        bits: 31-12
+        shift: 12
+      rd: 11-7
+
+  # RISC-V "J-type" encoding (like U, but different immediate layout; used for
+  # jumps)
+  J:
+    parents:
+      - rv
+    fields:
+      imm:
+        bits: 31,19-12,20,30-21
+        shift: 1
+      rd: 11-7
+
+  # A partial scheme for custom instructions with opcode b00010
+  custom0:
+    parents:
+      - rv(opcode=b00010)
+
+  # A partial scheme for custom instructions with opcode b01010
+  custom1:
+    parents:
+      - rv(opcode=b01010)
+
+  # A partial scheme for custom instructions with opcode b01110
+  custom2:
+    parents:
+      - rv(opcode=b01110)
+
+  # A partial scheme for custom instructions with opcode b11110
+  custom3:
+    parents:
+      - rv(opcode=b11110)
+
+  # A partial scheme for instructions that produce a dest WDR.
+  wrd:
+    fields:
+      wrd: 11-7
+
+  # A partial scheme for instructions that take two source WDRs and produce a
+  # dest WDR.
+  wdr3:
+    parents:
+      - wrd
+    fields:
+      wrs2: 24-20
+      wrs1: 19-15
+
+  # A partial scheme that defines the 'fg' field (for <flag_group> operands)
+  fg:
+    fields:
+      fg: 31
+
+  # A partial scheme that defines the shift fields (type and bytes)
+  shift:
+    fields:
+      shift_type: 30
+      shift_bytes: 29-25
+
+  # A partial scheme that defines a function field at bit 31 for OTBN logical
+  # operations
+  funct31:
+    fields:
+      funct31: 31
+
+  # A partial scheme for specialized 2 bit function field, we need a reduced
+  # size in the lower two bits of funct3 as RSHI spills over 1 bit from its
+  # immediate
+  funct2:
+    fields:
+      funct2: 13-12
+
+  # A specialised encoding for the loop instruction (only one source, no
+  # destination)
+  loop:
+    parents:
+      - custom3
+      - funct2(funct2=b00)
+    fields:
+      bodysize: 31-20
+      grs: 19-15
+      fixed:
+        bits: 14,11-7
+        value: bxxxxxx
+
+  # A specialised encoding for the loopi instruction (which, unusually, has 2
+  # immediates)
+  loopi:
+    parents:
+      - custom3
+      - funct2(funct2=b01)
+    fields:
+      bodysize: 31-20
+      iterations: 19-15,11-7
+      fixed:
+        bits: 14
+        value: bx
+
+  # Used wide logical operations (bn.and, bn.or, bn.xor).
+  bna:
+    parents:
+      - custom1
+      - wdr3
+      - funct3
+      - shift
+      - funct31
+
+  # Used for bn.not (no second source reg).
+  bnan:
+    parents:
+      - custom1
+      - shift
+      - funct31
+      - wrd
+    fields:
+      wrs1: 24-20
+      fixed:
+        bits: 19-15
+        value: bxxxxx
+
+  # Used for the wide reg/reg ALU instructions.
+  bnaf:
+    parents:
+      - custom1
+      - wdr3
+      - funct3
+      - shift
+      - fg
+
+  # Used for the wide bn.addi and bn.subi instructions.
+  bnai:
+    parents:
+      - custom1
+      - wrd
+      - funct3
+      - fg
+    fields:
+      sub: 30
+      imm: 29-20
+      wrs: 19-15
+
+  # Used for bn.addm, bn.subm
+  bnam:
+    parents:
+      - custom1
+      - wdr3
+      - funct3
+    fields:
+      sub: 30
+      fixed:
+        bits: 31,29-25
+        value: bxxxxxx
+
+  # Used for bn.mulqacc
+  bnaq:
+    parents:
+      - custom2
+      - wdr3
+    fields:
+      wb: 31-30
+      dh: 29
+      qs2: 28-27
+      qs1: 26-25
+      acc: 14-13
+      z: 12
+
+  # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
+  # field)
+  bnr:
+    parents:
+      - custom3
+      - wdr3
+    fields:
+      imm: 31-25,14
+      funct2: 13-12
+
+  # Used by bn.sel.
+  bns:
+    parents:
+      - custom0
+      - wdr3
+      - funct3(funct3=b000)
+      - fg
+    fields:
+      fixed:
+        bits: 30-27
+        value: bxxxx
+      flag: 26-25
+
+  # Used by bn.cmp and bn.cmpb
+  bnc:
+    parents:
+      - custom0
+      - wdr3(wrd=bxxxxx)
+      - funct3
+      - shift
+      - fg
+
+  # Used by bn.lid and bn.sid
+  bnxid:
+    parents:
+      - custom0
+      - funct3
+    fields:
+      imm:
+        bits: 24-22,31-25
+        shift: 4
+      spp: 21
+      dpp: 20
+      rs: 19-15
+      rd: 11-7
+
+  # Used by bn.mov and bn.movr
+  bnmov:
+    parents:
+      - custom0
+      - funct3(funct3=b110)
+    fields:
+      indirect: 31
+      fixed_top:
+        bits: 30-22
+        value: bxxxxxxxxx
+      spp: 21
+      dpp: 20
+      src: 19-15
+      dst: 11-7
+
+  # Used by bn.wsrrs and bn.wsrrw
+  wcsr:
+    parents:
+      - custom0
+      - funct3(funct3=b111)
+    fields:
+      write: 31
+      wcsr: 27-20
+      wrs: 19-15
+      wrd: 11-7
+      fixed:
+        bits: 30-28
+        value: bxxx
 
 # The instructions. Instructions are listed in the given order within
 # each instruction group. There are the following fields:
@@ -123,73 +470,260 @@ insns:
     rv32i: true
     synopsis: Add
     operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b000
+        rd: grd
+        opcode: b01100
 
   - mnemonic: addi
     rv32i: true
     synopsis: Add Immediate
     operands: [grd, grs1, imm]
+    encoding:
+      scheme: I
+      mapping:
+        imm: imm
+        rs1: grs1
+        funct3: b000
+        rd: grd
+        opcode: b00100
 
   - mnemonic: lui
     rv32i: true
     synopsis: Load Upper Immediate
     operands: [grd, imm]
+    encoding:
+      scheme: U
+      mapping:
+        imm: imm
+        rd: grd
+        opcode: b01101
 
   - mnemonic: sub
     rv32i: true
     synopsis: Subtract
     operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0100000
+        rs2: grs2
+        rs1: grs1
+        funct3: b000
+        rd: grd
+        opcode: b01100
 
   - mnemonic: and
     rv32i: true
     synopsis: Bitwise AND
     operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b111
+        rd: grd
+        opcode: b01100
 
   - mnemonic: andi
     rv32i: true
     synopsis: Bitwise AND with Immediate
     operands: [grd, grs1, imm]
+    encoding:
+      scheme: I
+      mapping:
+        imm: imm
+        rs1: grs1
+        funct3: b111
+        rd: grd
+        opcode: b00100
 
   - mnemonic: or
     rv32i: true
     synopsis: Bitwise OR
     operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b110
+        rd: grd
+        opcode: b01100
 
   - mnemonic: ori
     rv32i: true
     synopsis: Bitwise OR with Immediate
     operands: [grd, grs1, imm]
+    encoding:
+      scheme: I
+      mapping:
+        imm: imm
+        rs1: grs1
+        funct3: b110
+        rd: grd
+        opcode: b00100
 
   - mnemonic: xor
     rv32i: true
     synopsis: Bitwise XOR
     operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b100
+        rd: grd
+        opcode: b01100
 
   - mnemonic: xori
     rv32i: true
     synopsis: Bitwise XOR with Immediate
-    operands: [grd, grs1, grs2]
+    operands: [grd, grs, imm]
+    encoding:
+      scheme: I
+      mapping:
+        imm: imm
+        rs1: grs
+        funct3: b100
+        rd: grd
+        opcode: b00100
 
   - mnemonic: lw
     rv32i: true
     synopsis: Load Word
     operands: [grd, offset, grs1]
     syntax: <grd>, <offset>(<grs1>)
+    encoding:
+      scheme: I
+      mapping:
+        imm: offset
+        rs1: grs1
+        funct3: b010
+        rd: grd
+        opcode: b00000
 
   - mnemonic: sw
     rv32i: true
     synopsis: Store Word
     operands: [grs2, offset, grs1]
     syntax: <grs2>, <offset>(<grs1>)
+    encoding:
+      scheme: S
+      mapping:
+        imm: offset
+        rs2: grs2
+        rs1: grs1
+        funct3: b010
+        opcode: b01000
 
   - mnemonic: beq
     rv32i: true
     synopsis: Branch Equal
     operands: [grs1, grs2, offset]
+    encoding:
+      scheme: B
+      mapping:
+        imm: offset
+        rs2: grs2
+        rs1: grs1
+        funct3: b000
+        opcode: b11000
 
   - mnemonic: bne
     rv32i: true
     synopsis: Branch Not Equal
     operands: [grs1, grs2, offset]
+    encoding:
+      scheme: B
+      mapping:
+        imm: offset
+        rs2: grs2
+        rs1: grs1
+        funct3: b001
+        opcode: b11000
+
+  - mnemonic: jal
+    rv32i: true
+    synopsis: Jump And Link
+    operands: [grd, offset]
+    trailing-doc: |
+      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
+      stack. To call a subroutine use `jal x1, <offset>`.
+    encoding:
+      scheme: J
+      mapping:
+        imm: offset
+        rd: grd
+        opcode: b11011
+
+  - mnemonic: jalr
+    rv32i: true
+    synopsis: Jump And Link Register
+    operands: [grd, grs1, offset]
+    trailing-doc: |
+      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
+      stack. To return from a subroutine, use `jalr x0, x1, 0`.
+    encoding:
+      scheme: I
+      mapping:
+        imm: offset
+        rs1: grs1
+        funct3: b000
+        rd: grd
+        opcode: b11001
+
+  - mnemonic: csrrs
+    rv32i: true
+    synopsis: Atomic Read and Set bits in CSR
+    operands: [grd, csr, grs]
+    encoding:
+      scheme: I
+      mapping:
+        imm: csr
+        rs1: grs
+        funct3: b010
+        rd: grd
+        opcode: b11100
+
+  - mnemonic: csrrw
+    rv32i: true
+    synopsis: Atomic Read/Write CSR
+    operands: [grd, csr, grs]
+    encoding:
+      scheme: I
+      mapping:
+        imm: csr
+        rs1: grs
+        funct3: b001
+        rd: grd
+        opcode: b11100
+
+  - mnemonic: ecall
+    rv32i: true
+    synopsis: Environment Call
+    operands: []
+    doc: |
+      Triggers the `done` interrupt to indicate the completion of the
+      operation.
+    encoding:
+      scheme: I
+      mapping:
+        imm: b000000000000
+        rs1: b00000
+        funct3: b000
+        rd: b00000
+        opcode: b11100
 
   - mnemonic: loop
     synopsis: Loop (indirect)
@@ -217,6 +751,11 @@ insns:
         # loop body
       )
       ```
+    encoding:
+      scheme: loop
+      mapping:
+        bodysize: bodysize
+        grs: grs
 
   - mnemonic: loopi
     synopsis: Loop Immediate
@@ -239,40 +778,11 @@ insns:
         # loop body
       )
       ```
-
-  - mnemonic: jal
-    rv32i: true
-    synopsis: Jump And Link
-    operands: [grd, offset]
-    trailing-doc: |
-      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
-      stack. To call a subroutine use `jal x1, <offset>`.
-
-  - mnemonic: jalr
-    rv32i: true
-    synopsis: Jump And Link Register
-    operands: [grd, grs1, offset]
-    trailing-doc: |
-      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
-      stack. To return from a subroutine, use `jalr x0, x1, 0`.
-
-  - mnemonic: csrrs
-    rv32i: true
-    synopsis: Atomic Read and Set bits in CSR
-    operands: [grd, csr, grs]
-
-  - mnemonic: csrrw
-    rv32i: true
-    synopsis: Atomic Read/Write CSR
-    operands: [grd, csr, grs]
-
-  - mnemonic: ecall
-    rv32i: true
-    synopsis: Environment Call
-    operands: []
-    doc: |
-      Triggers the `done` interrupt to indicate the completion of the
-      operation.
+    encoding:
+      scheme: loopi
+      mapping:
+        bodysize: bodysize
+        iterations: iterations
 
   - mnemonic: bn.add
     group: bignum
@@ -318,6 +828,16 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnaf
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b000
+        wrd: wrd
 
   - mnemonic: bn.addc
     group: bignum
@@ -343,6 +863,16 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnaf
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b010
+        wrd: wrd
 
   - mnemonic: bn.addi
     group: bignum
@@ -371,6 +901,15 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnai
+      mapping:
+        fg: flag_group
+        sub: b0
+        imm: imm
+        wrs: wrs
+        funct3: b100
+        wrd: wrd
 
   - mnemonic: bn.addm
     group: bignum
@@ -393,6 +932,14 @@ insns:
         result = result - MOD
 
       WDR[d] = result
+    encoding:
+      scheme: bnam
+      mapping:
+        sub: b0
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b101
+        wrd: wrd
 
   - mnemonic: bn.mulqacc
     group: bignum
@@ -472,6 +1019,18 @@ insns:
 
       elif writeback_variant == 'writeout':
         WDR[d] = ACC
+    encoding:
+      scheme: bnaq
+      mapping:
+        wb: b00
+        dh: bx
+        qs2: wrs2_qwsel
+        qs1: wrs1_qwsel
+        wrs2: wrs2
+        wrs1: wrs1
+        acc: acc_shift_imm
+        z: zero_acc
+        wrd: bxxxxx
 
   - mnemonic: bn.mulqacc.wo
     group: bignum
@@ -503,6 +1062,18 @@ insns:
       a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
       b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
     operation: *mulqacc-operation
+    encoding:
+      scheme: bnaq
+      mapping:
+        wb: b01
+        dh: bx
+        qs2: wrs2_qwsel
+        qs1: wrs1_qwsel
+        wrs2: wrs2
+        wrs1: wrs1
+        acc: acc_shift_imm
+        z: zero_acc
+        wrd: wrd
 
   - mnemonic: bn.mulqacc.so
     group: bignum
@@ -540,6 +1111,18 @@ insns:
       a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
       b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
     operation: *mulqacc-operation
+    encoding:
+      scheme: bnaq
+      mapping:
+        wb: b1x
+        dh: wrd_hwsel
+        qs2: wrs2_qwsel
+        qs1: wrs1_qwsel
+        wrs2: wrs2
+        wrs1: wrs1
+        acc: acc_shift_imm
+        z: zero_acc
+        wrd: wrd
 
   - mnemonic: bn.sub
     group: bignum
@@ -573,6 +1156,16 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnaf
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b001
+        wrd: wrd
 
   - mnemonic: bn.subb
     group: bignum
@@ -589,6 +1182,16 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnaf
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b011
+        wrd: wrd
 
   - mnemonic: bn.subi
     group: bignum
@@ -615,6 +1218,15 @@ insns:
 
       WDR[d] = result
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnai
+      mapping:
+        fg: flag_group
+        sub: b1
+        imm: imm
+        wrs: wrs
+        funct3: b100
+        wrd: wrd
 
   - mnemonic: bn.subm
     group: bignum
@@ -636,6 +1248,14 @@ insns:
         result = result - MOD
 
       WDR[d] = result
+    encoding:
+      scheme: bnam
+      mapping:
+        sub: b1
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b101
+        wrd: wrd
 
   - mnemonic: bn.and
     group: bignum
@@ -667,6 +1287,16 @@ insns:
       result = a & b_shifted
 
       WDR[d] = result
+    encoding:
+      scheme: bna
+      mapping:
+        funct31: b0
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b110
+        wrd: wrd
 
   - mnemonic: bn.or
     group: bignum
@@ -683,6 +1313,16 @@ insns:
       result = a | b_shifted
 
       WDR[d] = result
+    encoding:
+      scheme: bna
+      mapping:
+        funct31: b1
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b110
+        wrd: wrd
 
   - mnemonic: bn.not
     group: bignum
@@ -710,6 +1350,16 @@ insns:
       result = ~a_shifted
 
       WDR[d] = result
+    encoding:
+      scheme: bna
+      mapping:
+        funct31: b0
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs
+        wrs1: bxxxxx
+        funct3: b111
+        wrd: wrd
 
   - mnemonic: bn.xor
     group: bignum
@@ -726,6 +1376,16 @@ insns:
       result = a ^ b_shifted
 
       WDR[d] = result
+    encoding:
+      scheme: bnaf
+      mapping:
+        fg: b1
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b111
+        wrd: wrd
 
   - mnemonic: bn.rshi
     group: bignum
@@ -752,6 +1412,14 @@ insns:
       imm = Uint(imm)
     operation: |
       WDR[d] = ((rs1 | rs2) >> im)[WLEN-1:0]
+    encoding:
+      scheme: bnr
+      mapping:
+        imm: imm
+        wrs2: wrs2
+        wrs1: wrs1
+        funct2: b11
+        wrd: wrd
 
   - mnemonic: bn.sel
     group: bignum
@@ -786,6 +1454,14 @@ insns:
       flag_is_set = FLAGS[fg].get(flag)
 
       WDR[d] = wrs1 if flag_is_set else wrs2
+    encoding:
+      scheme: bns
+      mapping:
+        fg: flag_group
+        flag: flag
+        wrs2: wrs2
+        wrs1: wrs1
+        wrd: wrd
 
   - mnemonic: bn.cmp
     group: bignum
@@ -815,6 +1491,15 @@ insns:
       (, flags_out) = AddWithCarry(a, -b_shifted, "0")
 
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnc
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b001
 
   - mnemonic: bn.cmpb
     group: bignum
@@ -829,6 +1514,15 @@ insns:
       (, flags_out) = AddWithCarry(a, -b, ~FLAGS[flag_group].C)
 
       FLAGS[flag_group] = flags_out
+    encoding:
+      scheme: bnc
+      mapping:
+        fg: flag_group
+        shift_type: shift_type
+        shift_bytes: shift_bytes
+        wrs2: wrs2
+        wrs1: wrs1
+        funct3: b011
 
   - mnemonic: bn.lid
     group: bignum
@@ -882,6 +1576,15 @@ insns:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grd_inc:
           GPR[rd] = GPR[rd] + 1
+    encoding:
+      scheme: bnxid
+      mapping:
+        imm: offset
+        spp: grs1_inc
+        dpp: grd_inc
+        rs: grs1
+        funct3: b100
+        rd: grd
 
   - mnemonic: bn.sid
     group: bignum
@@ -933,6 +1636,15 @@ insns:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grs2_inc:
           GPR[rs2] = GPR[rs2] + 1
+    encoding:
+      scheme: bnxid
+      mapping:
+        imm: offset
+        spp: grs1_inc
+        dpp: grs2_inc
+        rs: grs1
+        funct3: b101
+        rd: grs2
 
   - mnemonic: bn.mov
     group: bignum
@@ -942,6 +1654,14 @@ insns:
       s = UInt(wrs)
       d = UInt(wrd)
     operation: WDR[d] = WDR[s]
+    encoding:
+      scheme: bnmov
+      mapping:
+        indirect: b0
+        spp: bx
+        dpp: bx
+        src: wrs
+        dst: wrd
 
   - mnemonic: bn.movr
     group: bignum
@@ -976,13 +1696,35 @@ insns:
         GPR[s] = GPR[s] + 1
       if grd_inc:
         GPR[d] = GPR[d] + 1
+    encoding:
+      scheme: bnmov
+      mapping:
+        indirect: b1
+        spp: grs_inc
+        dpp: grd_inc
+        src: grs
+        dst: grd
 
   - mnemonic: bn.wsrrs
     group: bignum
     synopsis: Atomic Read and Set Bits in WSR
     operands: [wrd, wsr, wrs]
+    encoding:
+      scheme: wcsr
+      mapping:
+        write: b0
+        wcsr: wsr
+        wrs: wrs
+        wrd: wrd
 
   - mnemonic: bn.wsrrw
     group: bignum
     synopsis: Atomic Read/Write WSR
     operands: [wrd, wsr, wrs]
+    encoding:
+      scheme: wcsr
+      mapping:
+        write: b1
+        wcsr: wsr
+        wrs: wrs
+        wrd: wrd

@@ -8,7 +8,8 @@
 import argparse
 import sys
 
-from insn_yaml import Insn, InsnsFile, Operand, load_file
+from insn_yaml import (BoolLiteral, Encoding, Insn, InsnsFile, Operand,
+                       load_file)
 
 
 def render_operand_row(operand: Operand) -> str:
@@ -54,6 +55,82 @@ def render_operand_table(insn: Insn) -> str:
     for operand in insn.operands:
         parts.append(render_operand_row(operand))
     parts.append('</tbody></table>\n\n')
+    return ''.join(parts)
+
+
+def render_encoding(mnemonic: str, encoding: Encoding) -> str:
+    '''Generate a table displaying an instruction encoding'''
+    parts = []
+    parts.append('<table style="font-size: 75%">')
+    parts.append('<tr>')
+    parts.append('<td></td>')
+    for bit in range(31, -1, -1):
+        parts.append('<td>{}</td>'.format(bit))
+    parts.append('</tr>')
+
+    # Build dictionary of bit ranges, keyed by the msb and with value a pair
+    # (width, desc) where width is the width of the range in bits and desc is a
+    # string describing what is stored in the range.
+    by_msb = {}
+
+    for field_name, field in encoding.fields.items():
+        scheme_field = field.scheme_field
+        # If this field is a literal value, explode it into single bits. To do
+        # so, we walk the ranges and match up with ranges in the value.
+        if isinstance(field.value, BoolLiteral):
+            assert field.value.width > 0
+            assert field.value.width == scheme_field.bits.width
+            bits_seen = 0
+            for msb, lsb in scheme_field.bits.ranges:
+                val_msb = scheme_field.bits.width - 1 - bits_seen
+                val_lsb = val_msb - msb + lsb
+                bits_seen += msb - lsb + 1
+
+                for idx in range(0, msb - lsb + 1):
+                    desc = field.value.char_for_bit(val_lsb + idx)
+                    by_msb[lsb + idx] = (1, '' if desc == 'x' else desc)
+            continue
+
+        # Otherwise this field's value is an operand name
+        assert isinstance(field.value, str)
+        operand_name = field.value
+
+        # If there is only one range (and no shifting), that's easy.
+        if len(scheme_field.bits.ranges) == 1 and scheme_field.shift == 0:
+            msb, lsb = scheme_field.bits.ranges[0]
+            by_msb[msb] = (msb - lsb + 1, operand_name)
+            continue
+
+        # Otherwise, we have to split up the operand into things like "foo[8:5]"
+        bits_seen = 0
+        for msb, lsb in scheme_field.bits.ranges:
+            val_msb = scheme_field.shift + scheme_field.bits.width - 1 - bits_seen
+            val_lsb = val_msb - msb + lsb
+            bits_seen += msb - lsb + 1
+            if msb == lsb:
+                desc = '{}[{}]'.format(operand_name, val_msb)
+            else:
+                desc = '{}[{}:{}]'.format(operand_name, val_msb, val_lsb)
+            by_msb[msb] = (msb - lsb + 1, desc)
+
+    parts.append('<tr>')
+    parts.append('<td>{}</td>'.format(mnemonic.upper()))
+
+    # Now run down the ranges in descending order of msb to get the table cells
+    next_bit = 31
+    for msb in sorted(by_msb.keys(), reverse=True):
+        # Sanity check to make sure we have a dense table
+        assert msb == next_bit
+
+        width, desc = by_msb[msb]
+        next_bit = msb - width
+
+        parts.append('<td colspan="{}">{}</td>'.format(width, desc))
+
+    assert next_bit == -1
+    parts.append('</tr>')
+
+    parts.append('</table>\n\n')
     return ''.join(parts)
 
 
@@ -114,6 +191,10 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     # description.
     if any(op.doc is not None for op in insn.operands):
         parts.append(render_operand_table(insn))
+
+    # Show encoding if we have one
+    if insn.encoding is not None:
+        parts.append(render_encoding(insn.mnemonic, insn.encoding))
 
     # Show decode pseudo-code if given
     if insn.decode is not None:
