@@ -14,36 +14,76 @@
 
 static dif_otbn_t otbn;
 
+// python test/programs.py -O carray -s mul_256x256
 static const uint32_t otbn_imem [] = {
-  0x00000293, // li	t0,0
-  0x10000313, // li	t1,256
-  0x0002a503, // loop: lw	a0,0(t0)
-  0x00851793, // slli	a5,a0,0x8
-  0x00ff06b7, // lui	a3,0xff0
-  0x00d7f7b3, // and	a5,a5,a3
-  0x000106b7, // lui	a3,0x10
-  0x40855713, // srai	a4,a0,0x8
-  0xf0068693, // addi	a3,a3,-256
-  0x00d77733, // and	a4,a4,a3
-  0x00e7e7b3, // or	a5,a5,a4
-  0x01855713, // srli	a4,a0,0x18
-  0x00e7e7b3, // or	a5,a5,a4
-  0x01851513, // slli	a0,a0,0x18
-  0x00a7e533, // or	a0,a5,a0
-  0x00a2a023, // sw	a0,0(t0)
-  0x00428293, // addi	t0,t0,4
-  0xfc6292e3, // bne	t0,t1,8
-  0x00000073, // ecall
+    0x00000213, // addi x4, x0, 0
+    0x0000420b, // bn.lid x4, 0(x0)
+    0x00100213, // addi x4, x0, 1
+    0x0040420b, // bn.lid x4, 1(x0)
+    0x00200213, // addi x4, x0, 2
+    0x0080420b, // bn.lid x4, 2(x0)
+    0x00300213, // addi x4, x0, 3
+    0x00c0420b, // bn.lid x4, 3(x0)
+    0x0010105b, // bn.mulqacc.z w0.0, w1.0, 0
+    0x0810205b, // bn.mulqacc w0.1, w1.0, 64
+    0x4210215b, // bn.mulqacc.so w2.l, w0.0, w1.1, 64
+    0x1010005b, // bn.mulqacc w0.2, w1.0, 0
+    0x0a10005b, // bn.mulqacc w0.1, w1.1, 0
+    0x0410005b, // bn.mulqacc w0.0, w1.2, 0
+    0x1810205b, // bn.mulqacc w0.3, w1.0, 64
+    0x1210205b, // bn.mulqacc w0.2, w1.1, 64
+    0x0c10205b, // bn.mulqacc w0.1, w1.2, 64
+    0x6610215b, // bn.mulqacc.so w2.u, w0.0, w1.3, 64
+    0x1a10005b, // bn.mulqacc w0.3, w1.1, 0
+    0x1410005b, // bn.mulqacc w0.2, w1.2, 0
+    0x0e10005b, // bn.mulqacc w0.1, w1.3, 0
+    0x1c10205b, // bn.mulqacc w0.3, w1.2, 64
+    0x561021db, // bn.mulqacc.so w3.l, w0.2, w1.3, 64
+    0x7e1001db, // bn.mulqacc.so w3.u, w0.3, w1.3, 0
+    0x00000213, // addi x4, x0, 0
+    0x0000520b, // bn.sid x4, 0(x0)
+    0x00100213, // addi x4, x0, 1
+    0x0040520b, // bn.sid x4, 1(x0)
+    0x00200213, // addi x4, x0, 2
+    0x0080520b, // bn.sid x4, 2(x0)
+    0x00300213, // addi x4, x0, 3
+    0x00c0520b, // bn.sid x4, 3(x0)
 };
 
 static uint32_t otbn_imem_readback[sizeof(otbn_imem) / sizeof(uint32_t)];
 
+
 // DMEM must be 256b words!
 static const uint32_t otbn_dmem[] = {
-    // Word 0, least significant to most significant 32b sub-word
-    0x01234567, 0x89ABCDEF, 0xDEADBEEF, 0x42424242,
-    0xDEADBEEF, 0x42424242, 0x01234567, 0x89ABCDEF,
+    // Word 0, op A
+    0xB986BF4C, 0xD3EB86EB, 0x201DDDCF, 0xAE35732E,
+    0xAC0E011B, 0x603A253C, 0x17F7F2F2, 0xCC3F07BF,
+    // Word 1, op B
+    0x37FD474E, 0xAEBC5362, 0x7C19ACF7, 0x8C4660FB,
+    0x913308D2, 0xE0AF2287, 0x38458651, 0xE84DE529,
+    // Word 2, result
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    // Word 3, result
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,
 };
+
+static const uint32_t otbn_dmem_expected[] = {
+    // Word 0, op A
+    0xB986BF4C, 0xD3EB86EB, 0x201DDDCF, 0xAE35732E,
+    0xAC0E011B, 0x603A253C, 0x17F7F2F2, 0xCC3F07BF,
+    // Word 1, op B
+    0x37FD474E, 0xAEBC5362, 0x7C19ACF7, 0x8C4660FB,
+    0x913308D2, 0xE0AF2287, 0x38458651, 0xE84DE529,
+    // Word 2, result
+    0x48385D28, 0xB96BA8A3, 0xC09DCD8B, 0x25240D7D,
+    0x26BF6CD7, 0x7E831234, 0x24CD1C7D, 0x6C2BA57B,
+    // Word 3, result
+    0x24892710, 0xFF85C501, 0x49A2E079, 0x26BAE148,
+    0x83824BBB, 0x92266A87, 0xC71E59A4, 0xB95744CF,
+};
+
 
 static uint32_t otbn_dmem_readback[sizeof(otbn_dmem) / sizeof(uint32_t)];
 
@@ -117,8 +157,8 @@ int main(int argc, char **argv) {
   if (dif_otbn_dmem_read(&otbn, 0, &otbn_dmem_readback,
                          sizeof(otbn_dmem_readback)) == kDifOtbnOk) {
     for (int i = 0; i < sizeof(otbn_dmem_readback) / sizeof(uint32_t); i++) {
-      LOG_INFO("DMEM at 32b word %d modified from 0x%x to 0x%x", i,
-               otbn_dmem[i], otbn_dmem_readback[i]);
+      LOG_INFO("DMEM at 32b word %2d modified from 0x%08x to 0x%08x, expected 0x%08x", i,
+               otbn_dmem[i], otbn_dmem_readback[i], otbn_dmem_expected[i]);
     }
   } else {
     LOG_ERROR("Error reading back DMEM");
