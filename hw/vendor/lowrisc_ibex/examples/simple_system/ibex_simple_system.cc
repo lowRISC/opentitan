@@ -21,11 +21,19 @@ int main(int argc, char **argv) {
       "ram", "TOP.ibex_simple_system.u_ram.u_ram.gen_generic.u_impl_generic");
   simctrl.RegisterExtension(&memutil);
 
+  bool exit_app = false;
+  int ret_code = simctrl.ParseCommandArgs(argc, argv, exit_app);
+  if (exit_app) {
+    return ret_code;
+  }
+
   std::cout << "Simulation of Ibex" << std::endl
             << "==================" << std::endl
             << std::endl;
 
-  if (simctrl.Exec(argc, argv)) {
+  simctrl.RunSimulation();
+
+  if (!simctrl.WasSimulationSuccessful()) {
     return 1;
   }
 
@@ -33,9 +41,7 @@ int main(int argc, char **argv) {
   // doesn't know the scope itself. Could be moved to ibex_pcount_string, but
   // would require a way to set the scope name from here, similar to MemUtil.
   svSetScope(svGetScopeFromName("TOP.ibex_simple_system"));
-  // TODO: Exec can return with "true" (e.g. with `-h`), but that does not mean
-  // `RunSimulation()` was executed. The folllowing values will not be useful
-  // in this case.
+
   std::cout << "\nPerformance Counters" << std::endl
             << "====================" << std::endl;
   std::cout << ibex_pcount_string(false);

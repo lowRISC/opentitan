@@ -17,10 +17,19 @@ steps:
         fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing $IBEX_CONFIG_OPTS
         if [ $? != 0 ]; then
           echo -n "##vso[task.logissue type=error]"
-          echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing' to check and fix all errors."
+          echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint --tool=verilator lowrisc:ibex:ibex_core_tracing $IBEX_CONFIG_OPTS' to check and fix all errors."
           exit 1
         fi
       displayName: Lint Verilog source files with Verilator for ${{ config }}
+
+    - bash: |
+        fusesoc --cores-root . run --target=lint lowrisc:ibex:ibex_core_tracing $IBEX_CONFIG_OPTS
+        if [ $? != 0 ]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Verilog lint failed. Run 'fusesoc --cores-root . run --target=lint --tool=veriblelint lowrisc:ibex:ibex_core_tracing $IBEX_CONFIG_OPTS' to check and fix all errors."
+          exit 1
+        fi
+      displayName: Lint Verilog source files with Verible Verilog Lint for ${{ config }}
 
     - bash: |
         # Build simulation model of Ibex

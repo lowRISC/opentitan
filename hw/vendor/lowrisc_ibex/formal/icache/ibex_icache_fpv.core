@@ -1,0 +1,73 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:fpv:ibex_icache_fpv:0.1"
+description: "Formal properties for Ibex ICache"
+
+filesets:
+  all:
+    depend:
+      - lowrisc:ibex:ibex_icache
+      - lowrisc:prim:assert
+    files:
+      - run.sby : {file_type: sbyConfig}
+      - formal_tb_frag.svh : {file_type: systemVerilogSource, is_include_file: true}
+      - formal_tb.sv : {file_type: systemVerilogSource}
+      - sv2v_in_place.py : { copyto: sv2v_in_place.py }
+
+scripts:
+  sv2v_in_place:
+    cmd:
+      - python3
+      - sv2v_in_place.py
+      - --incdir-list=incdirs.txt
+        # A bit of a hack: The primitives directory (vendored from OpenTitan)
+        # contains SystemVerilog code that has proper SVA assertions, using
+        # things like the |-> operator.
+        #
+        # The Yosys-style prim_assert.sv assertions are immediate, rather than
+        # concurrent. Such assertions only allow expressions (not full property
+        # specifiers), which cause a syntax error if you try to use them with
+        # the assertions in the primitives directory.
+        #
+        # Since we don't care about those assertions here, we want to strip
+        # them out. The code that selects an assertion backend in
+        # prim_assert.sv doesn't have an explicit "NO_ASSERTIONS" mode, but
+        # "SYNTHESIS" implies the same thing, so we use that.
+      - --define-if=prim:SYNTHESIS
+      - -DYOSYS
+      - -DFORMAL
+      - -v
+      - files.txt
+
+parameters:
+  ICacheECC:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+
+targets:
+  prove: &prove
+    parameters:
+      - ICacheECC
+    hooks:
+      pre_build:
+        - sv2v_in_place
+    filesets:
+      - all
+    toplevel: ibex_icache
+    default_tool: symbiyosys
+    tools:
+      symbiyosys:
+        tasknames:
+        - prove
+
+  cover:
+    <<: *prove
+    tools:
+      symbiyosys:
+        tasknames:
+        - cover

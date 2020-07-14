@@ -9,7 +9,7 @@ variables:
   VERILATOR_VERSION: 4.032
   RISCV_TOOLCHAIN_TAR_VERSION: 20200323-1
   RISCV_COMPLIANCE_GIT_VERSION: 844c6660ef3f0d9b96957991109dfd80cc4938e2
-  VERIBLE_VERSION: v0.0-266-g9e55307
+  VERIBLE_VERSION: v0.0-459-g4d6929e
 
 trigger:
   batch: true
@@ -97,22 +97,11 @@ jobs:
       fusesoc --version
       verilator --version
       riscv32-unknown-elf-gcc --version
-      verilog_lint --version
+      verible-verilog-lint --version
     displayName: Display environment
 
-  # Verible lint/format is experimental so only run on default config for now,
+  # Verible format is experimental so only run on default config for now,
   # will eventually become part of the per-config CI
-  - bash: |
-      fusesoc --cores-root . run --no-export --target=lint --tool=veriblelint lowrisc:ibex:ibex_core_tracing
-      if [ $? != 0 ]; then
-        echo -n "##vso[task.logissue type=error]"
-        echo "Verilog lint with Verible failed. Run 'fusesoc --cores-root . run --target=lint --tool=veriblelint lowrisc:ibex:ibex_core_tracing' to check and fix all errors."
-        echo "This flow is currently experimental and failures can be ignored."
-        exit 1
-      fi
-    continueOnError: true
-    displayName: Lint Verilog source files with Verible (experimental)
-
   - bash: |
       fusesoc --cores-root . run --no-export --target=format --tool=veribleformat lowrisc:ibex:ibex_core_tracing
       if [ $? != 0 ]; then
@@ -159,4 +148,23 @@ jobs:
       ibex_configs:
         - small
         - experimental-maxperf-pmp
-        - experimental-maxperf-pmp-bm
+        - experimental-maxperf-pmp-bmfull
+
+  # Run lint on simple system
+  - bash: |
+      fusesoc --cores-root . run --target=lint --tool=verilator lowrisc:ibex:ibex_simple_system
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Verilog lint with Verilator failed. Run 'fusesoc --cores-root . run --target=lint --tool=verilator lowrisc:ibex:ibex_simple_system' to check and fix all errors."
+        exit 1
+      fi
+    displayName: Run Verilator lint on simple system
+
+  - bash: |
+      fusesoc --cores-root . run --target=lint --tool=veriblelint lowrisc:ibex:ibex_simple_system
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Verilog lint with Verible failed. Run 'fusesoc --cores-root . run --target=lint --tool=veriblelint lowrisc:ibex:ibex_simple_system' to check and fix all errors."
+        exit 1
+      fi
+    displayName: Run Verible lint on simple system

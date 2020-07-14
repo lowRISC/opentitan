@@ -862,7 +862,8 @@ module ibex_cs_registers #(
   // update enable signals
   always_comb begin : mcountinhibit_update
     if (mcountinhibit_we == 1'b1) begin
-      mcountinhibit_d = {csr_wdata_int[MHPMCounterNum+2:2], 1'b0, csr_wdata_int[0]}; // bit 1 must always be 0
+      // bit 1 must always be 0
+      mcountinhibit_d = {csr_wdata_int[MHPMCounterNum+2:2], 1'b0, csr_wdata_int[0]};
     end else begin
       mcountinhibit_d = mcountinhibit_q;
     end

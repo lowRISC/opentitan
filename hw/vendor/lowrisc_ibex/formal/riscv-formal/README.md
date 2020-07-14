@@ -29,8 +29,8 @@ It should not be necessary to create the Verilog source manually as it is used b
 Run the following command from the top level directory of Ibex to create the Verilog source.
 
 ```console
-make -C formal
+make -C formal/riscv-formal
 ```
 
-This will create a directory *formal/build* which contains an equivalent Verilog file for each SystemVerilog source.
-The single output file *formal/ibex.v* contains the complete Ibex source, which can then be imported by riscv-formal.
+This will create a directory *formal/riscv-formal/build* which contains an equivalent Verilog file for each SystemVerilog source.
+The single output file *formal/riscv-formal/ibex.v* contains the complete Ibex source, which can then be imported by riscv-formal.

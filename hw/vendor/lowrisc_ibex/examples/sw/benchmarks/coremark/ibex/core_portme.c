@@ -160,7 +160,7 @@ ee_u32 default_num_contexts = 1;
         Test for some common mistakes.
 */
 void portable_init(core_portable *p, int *argc, char *argv[]) {
-  ee_printf("Ibex coremark platform init...\n");
+  ee_printf("Ibex CoreMark platform init...\n");
   if (sizeof(ee_ptr_int) != sizeof(ee_u8 *)) {
     ee_printf(
         "ERROR! Please define ee_ptr_int to a type that holds a pointer!\n");
@@ -181,7 +181,7 @@ void portable_fini(core_portable *p) {
 
   coremark_mhz = (1000000.0f * (float)ITERATIONS) / elapsed;
 
-  ee_printf("Coremark / MHz: %f\n", coremark_mhz);
+  ee_printf("CoreMark / MHz: %f\n", coremark_mhz);
 
   p->portable_id = 0;
 }

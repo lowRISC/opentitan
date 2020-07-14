@@ -9,10 +9,10 @@
  * Execution block: Hosts ALU and MUL/DIV unit
  */
 module ibex_ex_block #(
-    parameter bit RV32M                    = 1,
-    parameter bit RV32B                    = 0,
-    parameter bit BranchTargetALU          = 0,
-    parameter     MultiplierImplementation = "fast"
+    parameter bit               RV32M                    = 1,
+    parameter ibex_pkg::rv32b_e RV32B                    = ibex_pkg::RV32BNone,
+    parameter bit               BranchTargetALU          = 0,
+    parameter                   MultiplierImplementation = "fast"
 ) (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -41,9 +41,9 @@ module ibex_ex_block #(
     input  logic                  data_ind_timing_i,
 
     // intermediate val reg
-    output logic                  imd_val_we_o,
-    output logic [33:0]           imd_val_d_o,
-    input  logic [33:0]           imd_val_q_i,
+    output logic [1:0]            imd_val_we_o,
+    output logic [33:0]           imd_val_d_o[2],
+    input  logic [33:0]           imd_val_q_i[2],
 
     // Outputs
     output logic [31:0]           alu_adder_result_ex_o, // to LSU
@@ -63,10 +63,11 @@ module ibex_ex_block #(
   logic        alu_cmp_result, alu_is_equal_result;
   logic        multdiv_valid;
   logic        multdiv_sel;
-  logic [31:0] alu_imd_val_d;
-  logic        alu_imd_val_we;
-  logic [33:0] multdiv_imd_val_d;
-  logic        multdiv_imd_val_we;
+  logic [31:0] alu_imd_val_q[2];
+  logic [31:0] alu_imd_val_d[2];
+  logic [ 1:0] alu_imd_val_we;
+  logic [33:0] multdiv_imd_val_d[2];
+  logic [ 1:0] multdiv_imd_val_we;
 
   /*
     The multdiv_i output is never selected if RV32M=0
@@ -80,8 +81,11 @@ module ibex_ex_block #(
   end
 
   // Intermediate Value Register Mux
-  assign imd_val_d_o  = multdiv_sel ? multdiv_imd_val_d : {2'b0, alu_imd_val_d};
-  assign imd_val_we_o = multdiv_sel ? multdiv_imd_val_we : alu_imd_val_we;
+  assign imd_val_d_o[0] = multdiv_sel ? multdiv_imd_val_d[0] : {2'b0, alu_imd_val_d[0]};
+  assign imd_val_d_o[1] = multdiv_sel ? multdiv_imd_val_d[1] : {2'b0, alu_imd_val_d[1]};
+  assign imd_val_we_o   = multdiv_sel ? multdiv_imd_val_we : alu_imd_val_we;
+
+  assign alu_imd_val_q = '{imd_val_q_i[0][31:0], imd_val_q_i[1][31:0]};
 
   assign result_ex_o  = multdiv_sel ? multdiv_result : alu_result;
 
@@ -117,7 +121,7 @@ module ibex_ex_block #(
       .operand_a_i         ( alu_operand_a_i         ),
       .operand_b_i         ( alu_operand_b_i         ),
       .instr_first_cycle_i ( alu_instr_first_cycle_i ),
-      .imd_val_q_i         ( imd_val_q_i[31:0]       ),
+      .imd_val_q_i         ( alu_imd_val_q           ),
       .imd_val_we_o        ( alu_imd_val_we          ),
       .imd_val_d_o         ( alu_imd_val_d           ),
       .multdiv_operand_a_i ( multdiv_alu_operand_a   ),
@@ -218,6 +222,6 @@ module ibex_ex_block #(
   // Multiplier/divider may require multiple cycles. The ALU output is valid in the same cycle
   // unless the intermediate result register is being written (which indicates this isn't the
   // final cycle of ALU operation).
-  assign ex_valid_o = multdiv_sel ? multdiv_valid : !alu_imd_val_we;
+  assign ex_valid_o = multdiv_sel ? multdiv_valid : ~(|alu_imd_val_we);
 
 endmodule

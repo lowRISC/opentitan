@@ -31,9 +31,9 @@ module ibex_multdiv_slow
     output logic [32:0]      alu_operand_a_o,
     output logic [32:0]      alu_operand_b_o,
 
-    input  logic [33:0]      imd_val_q_i,
-    output logic [33:0]      imd_val_d_o,
-    output logic             imd_val_we_o,
+    input  logic [33:0]      imd_val_q_i[2],
+    output logic [33:0]      imd_val_d_o[2],
+    output logic  [1:0]      imd_val_we_o,
 
     input  logic             multdiv_ready_id_i,
 
@@ -50,7 +50,8 @@ module ibex_multdiv_slow
   md_fsm_e md_state_q, md_state_d;
 
   logic [32:0] accum_window_q, accum_window_d;
-  logic        unused_imd_val;
+  logic        unused_imd_val0;
+  logic [ 1:0] unused_imd_val1;
 
   logic [32:0] res_adder_l;
   logic [32:0] res_adder_h;
@@ -81,11 +82,16 @@ module ibex_multdiv_slow
   // ALU Operand MUX //
   /////////////////////
 
-  // Use shared intermediate value register in id_stage for accum_window
-  assign imd_val_d_o    = {1'b0,accum_window_d};
-  assign imd_val_we_o   = ~multdiv_hold;
-  assign accum_window_q = imd_val_q_i[32:0];
-  assign unused_imd_val = imd_val_q_i[33];
+  // Intermediate value register shared with ALU
+  assign imd_val_d_o[0]  = {1'b0,accum_window_d};
+  assign imd_val_we_o[0] = ~multdiv_hold;
+  assign accum_window_q  = imd_val_q_i[0][32:0];
+  assign unused_imd_val0 = imd_val_q_i[0][33];
+
+  assign imd_val_d_o[1]  = {2'b00, op_numerator_d};
+  assign imd_val_we_o[1] = multdiv_en;
+  assign op_numerator_q  = imd_val_q_i[1][31:0];
+  assign unused_imd_val1 = imd_val_q_i[1][33:32];
 
   always_comb begin
     alu_operand_a_o = accum_window_q;
@@ -328,14 +334,12 @@ module ibex_multdiv_slow
       multdiv_count_q  <= 5'h0;
       op_b_shift_q     <= 33'h0;
       op_a_shift_q     <= 33'h0;
-      op_numerator_q   <= 32'h0;
       md_state_q       <= MD_IDLE;
       div_by_zero_q    <= 1'b0;
     end else if (multdiv_en) begin
       multdiv_count_q  <= multdiv_count_d;
       op_b_shift_q     <= op_b_shift_d;
       op_a_shift_q     <= op_a_shift_d;
-      op_numerator_q   <= op_numerator_d;
       md_state_q       <= md_state_d;
       div_by_zero_q    <= div_by_zero_d;
     end

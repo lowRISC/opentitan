@@ -7,7 +7,7 @@
  * Arithmetic logic unit
  */
 module ibex_alu #(
-  parameter bit RV32B = 1'b0
+  parameter ibex_pkg::rv32b_e RV32B = ibex_pkg::RV32BNone
 ) (
     input  ibex_pkg::alu_op_e operator_i,
     input  logic [31:0]       operand_a_i,
@@ -20,9 +20,9 @@ module ibex_alu #(
 
     input  logic              multdiv_sel_i,
 
-    input  logic [31:0]       imd_val_q_i,
-    output logic [31:0]       imd_val_d_o,
-    output logic              imd_val_we_o,
+    input  logic [31:0]       imd_val_q_i[2],
+    output logic [31:0]       imd_val_d_o[2],
+    output logic [1:0]        imd_val_we_o,
 
     output logic [31:0]       adder_result_o,
     output logic [33:0]       adder_result_ext_o,
@@ -241,16 +241,16 @@ module ibex_alu #(
   logic [31:0] bfp_result;
 
   // bfp: shares the shifter structure to compute bfp_mask << bfp_off
-  assign bfp_op = RV32B ? (operator_i == ALU_BFP) : 1'b0;
+  assign bfp_op = (RV32B != RV32BNone) ? (operator_i == ALU_BFP) : 1'b0;
   assign bfp_len = {~(|operand_b_i[27:24]), operand_b_i[27:24]}; // len = 0 encodes for len = 16
   assign bfp_off = operand_b_i[20:16];
-  assign bfp_mask = RV32B ? ~(32'hffff_ffff << bfp_len) : '0;
+  assign bfp_mask = (RV32B != RV32BNone) ? ~(32'hffff_ffff << bfp_len) : '0;
   for (genvar i=0; i<32; i++) begin : gen_rev_bfp_mask
     assign bfp_mask_rev[i] = bfp_mask[31-i];
   end
 
-  assign bfp_result =
-      RV32B ? (~shift_result & operand_a_i) | ((operand_b_i & bfp_mask) << bfp_off) : '0;
+  assign bfp_result =(RV32B != RV32BNone) ?
+      (~shift_result & operand_a_i) | ((operand_b_i & bfp_mask) << bfp_off) : '0;
 
   // bit shift_amt[5]: word swap bit: only considered for FSL/FSR.
   // if set, reverse operations in first and second cycle.
@@ -267,9 +267,8 @@ module ibex_alu #(
     end
   end
 
-
   // single-bit mode: shift
-  assign shift_sbmode = RV32B ?
+  assign shift_sbmode = (RV32B != RV32BNone) ?
       (operator_i == ALU_SBSET) | (operator_i == ALU_SBCLR) | (operator_i == ALU_SBINV) : 1'b0;
 
   // left shift if this is:
@@ -284,13 +283,13 @@ module ibex_alu #(
     unique case (operator_i)
       ALU_SLL: shift_left = 1'b1;
       ALU_SLO,
-      ALU_BFP: shift_left = RV32B ? 1'b1 : 1'b0;
-      ALU_ROL: shift_left = RV32B ? instr_first_cycle_i : 0;
-      ALU_ROR: shift_left = RV32B ? ~instr_first_cycle_i : 0;
-      ALU_FSL: shift_left =
-          RV32B ? (shift_amt[5] ? ~instr_first_cycle_i : instr_first_cycle_i) : 1'b0;
-      ALU_FSR: shift_left =
-          RV32B ? (shift_amt[5] ? instr_first_cycle_i : ~instr_first_cycle_i) : 1'b0;
+      ALU_BFP: shift_left = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
+      ALU_ROL: shift_left = (RV32B != RV32BNone) ? instr_first_cycle_i : 0;
+      ALU_ROR: shift_left = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 0;
+      ALU_FSL: shift_left = (RV32B != RV32BNone) ?
+        (shift_amt[5] ? ~instr_first_cycle_i : instr_first_cycle_i) : 1'b0;
+      ALU_FSR: shift_left = (RV32B != RV32BNone) ?
+          (shift_amt[5] ? instr_first_cycle_i : ~instr_first_cycle_i) : 1'b0;
       default: shift_left = 1'b0;
     endcase
     if (shift_sbmode) begin
@@ -298,25 +297,25 @@ module ibex_alu #(
     end
   end
 
-  assign shift_arith      = (operator_i == ALU_SRA);
-  assign shift_ones       = RV32B ? (operator_i == ALU_SLO) | (operator_i == ALU_SRO) : 1'b0;
-  assign shift_funnel     = RV32B ? (operator_i == ALU_FSL) | (operator_i == ALU_FSR) : 1'b0;
+  assign shift_arith  = (operator_i == ALU_SRA);
+  assign shift_ones   =
+      (RV32B != RV32BNone) ? (operator_i == ALU_SLO) | (operator_i == ALU_SRO) : 1'b0;
+  assign shift_funnel =
+      (RV32B != RV32BNone) ? (operator_i == ALU_FSL) | (operator_i == ALU_FSR) : 1'b0;
 
   // shifter structure.
   always_comb begin
-
     // select shifter input
     // for bfp, sbmode and shift_left the corresponding bit-reversed input is chosen.
-    if (shift_sbmode) begin
-      shift_result = 32'h8000_0000; // rev(32'h1)
+    if (RV32B == RV32BNone) begin
+      shift_result = shift_left ? operand_a_rev : operand_a_i;
     end else begin
       unique case (1'b1)
         bfp_op:       shift_result = bfp_mask_rev;
-        shift_left:   shift_result = operand_a_rev;
-        default:      shift_result = operand_a_i;
+        shift_sbmode: shift_result = 32'h8000_0000;
+        default:      shift_result = shift_left ? operand_a_rev : operand_a_i;
       endcase
     end
-
 
     shift_result_ext =
         $signed({shift_ones | (shift_arith & shift_result[31]), shift_result}) >>> shift_amt[4:0];
@@ -350,8 +349,8 @@ module ibex_alu #(
       // Logic-with-negate OPs (RV32B Ops)
       ALU_XNOR,
       ALU_ORN,
-      ALU_ANDN: bwlogic_op_b_negate = RV32B ? 1'b1 : 1'b0;
-      ALU_CMIX: bwlogic_op_b_negate = RV32B ? ~instr_first_cycle_i : 1'b0;
+      ALU_ANDN: bwlogic_op_b_negate = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
+      ALU_CMIX: bwlogic_op_b_negate = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 1'b0;
       default:  bwlogic_op_b_negate = 1'b0;
     endcase
   end
@@ -373,19 +372,19 @@ module ibex_alu #(
     endcase
   end
 
+  logic [5:0]  bitcnt_result;
+  logic [31:0] minmax_result;
+  logic [31:0] pack_result;
+  logic [31:0] sext_result;
+  logic [31:0] singlebit_result;
+  logic [31:0] rev_result;
   logic [31:0] shuffle_result;
   logic [31:0] butterfly_result;
   logic [31:0] invbutterfly_result;
-
-  logic [31:0] minmax_result;
-  logic [5:0]  bitcnt_result;
-  logic [31:0] pack_result;
-  logic [31:0] sext_result;
-  logic [31:0] multicycle_result;
-  logic [31:0] singlebit_result;
   logic [31:0] clmul_result;
+  logic [31:0] multicycle_result;
 
-  if (RV32B) begin : g_alu_rvb
+  if (RV32B != RV32BNone) begin : g_alu_rvb
 
     /////////////////
     // Bitcounting //
@@ -404,6 +403,8 @@ module ibex_alu #(
     logic [31:0] bitcnt_mask_op;
     logic [31:0] bitcnt_bit_mask;
     logic [ 5:0] bitcnt_partial [32];
+    logic [31:0] bitcnt_partial_lsb_d;
+    logic [31:0] bitcnt_partial_msb_d;
 
 
     assign bitcnt_ctz    = operator_i == ALU_CTZ;
@@ -426,6 +427,8 @@ module ibex_alu #(
       bitcnt_bit_mask |= bitcnt_bit_mask << 16;
       bitcnt_bit_mask = ~bitcnt_bit_mask;
     end
+
+    assign zbe_op = (operator_i == ALU_BEXT) | (operator_i == ALU_BDEP);
 
     always_comb begin
       case(1'b1)
@@ -518,522 +521,10 @@ module ibex_alu #(
     end
 
     ///////////////
-    // Butterfly //
-    ///////////////
-
-    // The butterfly / inverse butterfly network is shared between bext/bdep (zbe)instructions
-    // respectively and grev / gorc instructions (zbp).
-    // For bdep, the control bits mask of a local left region is generated by
-    // the inverse of a n-bit left rotate and complement upon wrap (LROTC) operation by the number
-    // of ones in the deposit bitmask to the right of the segment. n hereby denotes the width
-    // of the according segment. The bitmask for a pertaining local right region is equal to the
-    // corresponding local left region. Bext uses an analogue inverse process.
-    // Consider the following 8-bit example.  For details, see Hilewitz et al. "Fast Bit Gather,
-    // Bit Scatter and Bit Permuation Instructions for Commodity Microprocessors", (2008).
-
-    // 8-bit example:  (Hilewitz et al.)
-    // Consider the instruction bdep operand_a_i deposit_mask
-    // Let operand_a_i = 8'babcd_efgh
-    //    deposit_mask = 8'b1010_1101
-    //
-    // control bitmask for stage 1:
-    //  - number of ones in the right half of the deposit bitmask: 3
-    //  - width of the segment: 4
-    //  - control bitmask = ~LROTC(4'b0, 3)[3:0] = 4'b1000
-    //
-    // control bitmask:   c3 c2  c1 c0  c3 c2  c1 c0
-    //                    1  0   0  0   1  0   0  0
-    //                    <- L ----->   <- R ----->
-    // operand_a_i        a  b   c  d   e  f   g  h
-    //                    :\ |   |  |  /:  |   |  |
-    //                    : +|---|--|-+ :  |   |  |
-    //                    :/ |   |  |  \:  |   |  |
-    // stage 1            e  b   c  d   a  f   g  h
-    //                    <L->   <R->   <L->   <R->
-    // control bitmask:   c3 c2  c3 c2  c1 c0  c1 c0
-    //                    1  1   1  1   1  0   1  0
-    //                    :\ :\ /: /:   :\ |  /:  |
-    //                    : +:-+-:+ :   : +|-+ :  |
-    //                    :/ :/ \: \:   :/ |  \:  |
-    // stage 2            c  d   e  b   g  f   a  h
-    //                    L  R   L  R   L  R   L  R
-    // control bitmask:   c3 c3  c2 c2  c1 c1  c0 c0
-    //                    1  1   0  0   1  1   0  0
-    //                    :\/:   |  |   :\/:   |  |
-    //                    :  :   |  |   :  :   |  |
-    //                    :/\:   |  |   :/\:   |  |
-    // stage 3            d  c   e  b   f  g   a  h
-    // & deposit bitmask: 1  0   1  0   1  1   0  1
-    // result:            d  0   e  0   f  g   0  h
-
-    assign zbe_op = (operator_i == ALU_BEXT) | (operator_i == ALU_BDEP);
-
-    logic [31:0] butterfly_mask_l[5];
-    logic [31:0] butterfly_mask_r[5];
-    logic [31:0] butterfly_mask_not[5];
-    logic [31:0] lrotc_stage [5]; // left rotate and complement upon wrap
-
-    // bext / bdep
-    logic [31:0] butterfly_zbe_mask_l[5];
-    logic [31:0] butterfly_zbe_mask_r[5];
-    logic [31:0] butterfly_zbe_mask_not[5];
-
-    // grev / gorc
-    logic [31:0] butterfly_zbp_mask_l[5];
-    logic [31:0] butterfly_zbp_mask_r[5];
-    logic [31:0] butterfly_zbp_mask_not[5];
-
-    logic grev_op;
-    logic gorc_op;
-    logic zbp_op;
-
-    // number of bits in local r = 32 / 2**(stage + 1) = 16/2**stage
-    `define _N(stg) (16 >> stg)
-
-    // bext / bdep control bit generation
-    for (genvar stg=0; stg<5; stg++) begin : gen_stage
-      // number of segs: 2** stg
-      for (genvar seg=0; seg<2**stg; seg++) begin : gen_segment
-
-        assign lrotc_stage[stg][2*`_N(stg)*(seg+1)-1 : 2*`_N(stg)*seg] =
-            {{`_N(stg){1'b0}},{`_N(stg){1'b1}}} <<
-                bitcnt_partial[`_N(stg)*(2*seg+1)-1][$clog2(`_N(stg)):0];
-
-        assign butterfly_zbe_mask_l[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)]
-                     = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
-
-        assign butterfly_zbe_mask_r[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]
-                     = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
-
-        assign butterfly_zbe_mask_l[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]   = '0;
-        assign butterfly_zbe_mask_r[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)] = '0;
-      end
-    end
-    `undef _N
-
-    for (genvar stg=0; stg<5; stg++) begin : gen_zbe_mask
-      assign butterfly_zbe_mask_not[stg] =
-          ~(butterfly_zbe_mask_l[stg] | butterfly_zbe_mask_r[stg]);
-    end
-
-    // grev / gorc control bit generation
-    assign butterfly_zbp_mask_l[0] = shift_amt[4] ? 32'hffff_0000 : 32'h0000_0000;
-    assign butterfly_zbp_mask_r[0] = shift_amt[4] ? 32'h0000_ffff : 32'h0000_0000;
-    assign butterfly_zbp_mask_not[0] =
-       !shift_amt[4] || (shift_amt[4] && gorc_op) ? 32'hffff_ffff : 32'h0000_0000;
-
-    assign butterfly_zbp_mask_l[1] = shift_amt[3] ? 32'hff00_ff00 : 32'h0000_0000;
-    assign butterfly_zbp_mask_r[1] = shift_amt[3] ? 32'h00ff_00ff : 32'h0000_0000;
-    assign butterfly_zbp_mask_not[1] =
-       !shift_amt[3] || (shift_amt[3] && gorc_op) ? 32'hffff_ffff : 32'h0000_0000;
-
-    assign butterfly_zbp_mask_l[2] = shift_amt[2] ? 32'hf0f0_f0f0 : 32'h0000_0000;
-    assign butterfly_zbp_mask_r[2] = shift_amt[2] ? 32'h0f0f_0f0f : 32'h0000_0000;
-    assign butterfly_zbp_mask_not[2] =
-       !shift_amt[2] || (shift_amt[2] && gorc_op) ? 32'hffff_ffff : 32'h0000_0000;
-
-    assign butterfly_zbp_mask_l[3] = shift_amt[1] ? 32'hcccc_cccc : 32'h0000_0000;
-    assign butterfly_zbp_mask_r[3] = shift_amt[1] ? 32'h3333_3333 : 32'h0000_0000;
-    assign butterfly_zbp_mask_not[3] =
-       !shift_amt[1] || (shift_amt[1] && gorc_op) ? 32'hffff_ffff : 32'h0000_0000;
-
-    assign butterfly_zbp_mask_l[4] = shift_amt[0] ? 32'haaaa_aaaa : 32'h0000_0000;
-    assign butterfly_zbp_mask_r[4] = shift_amt[0] ? 32'h5555_5555 : 32'h0000_0000;
-    assign butterfly_zbp_mask_not[4] =
-       !shift_amt[0] || (shift_amt[0] && gorc_op) ? 32'hffff_ffff : 32'h0000_0000;
-
-    // grev / gorc instructions
-    assign grev_op = RV32B ? (operator_i == ALU_GREV) : 1'b0;
-    assign gorc_op = RV32B ? (operator_i == ALU_GORC) : 1'b0;
-    assign zbp_op = grev_op | gorc_op;
-
-    // select set of masks:
-    assign butterfly_mask_l   = zbp_op ? butterfly_zbp_mask_l   : butterfly_zbe_mask_l;
-    assign butterfly_mask_r   = zbp_op ? butterfly_zbp_mask_r   : butterfly_zbe_mask_r;
-    assign butterfly_mask_not = zbp_op ? butterfly_zbp_mask_not : butterfly_zbe_mask_not;
-
-    always_comb begin
-      butterfly_result = operand_a_i;
-
-      butterfly_result = butterfly_result & butterfly_mask_not[0] |
-          ((butterfly_result & butterfly_mask_l[0]) >> 16)|
-          ((butterfly_result & butterfly_mask_r[0]) << 16);
-
-      butterfly_result = butterfly_result & butterfly_mask_not[1] |
-          ((butterfly_result & butterfly_mask_l[1]) >> 8)|
-          ((butterfly_result & butterfly_mask_r[1]) << 8);
-
-      butterfly_result = butterfly_result & butterfly_mask_not[2] |
-          ((butterfly_result & butterfly_mask_l[2]) >> 4)|
-          ((butterfly_result & butterfly_mask_r[2]) << 4);
-
-      butterfly_result = butterfly_result & butterfly_mask_not[3] |
-          ((butterfly_result & butterfly_mask_l[3]) >> 2)|
-          ((butterfly_result & butterfly_mask_r[3]) << 2);
-
-      butterfly_result = butterfly_result & butterfly_mask_not[4] |
-          ((butterfly_result & butterfly_mask_l[4]) >> 1)|
-          ((butterfly_result & butterfly_mask_r[4]) << 1);
-
-      if (!zbp_op) begin
-        butterfly_result = butterfly_result & operand_b_i;
-      end
-    end
-
-    always_comb begin
-      invbutterfly_result = operand_a_i & operand_b_i;
-
-      invbutterfly_result = invbutterfly_result & butterfly_mask_not[4] |
-          ((invbutterfly_result & butterfly_mask_l[4]) >> 1)|
-          ((invbutterfly_result & butterfly_mask_r[4]) << 1);
-
-      invbutterfly_result = invbutterfly_result & butterfly_mask_not[3] |
-          ((invbutterfly_result & butterfly_mask_l[3]) >> 2)|
-          ((invbutterfly_result & butterfly_mask_r[3]) << 2);
-
-      invbutterfly_result = invbutterfly_result & butterfly_mask_not[2] |
-          ((invbutterfly_result & butterfly_mask_l[2]) >> 4)|
-          ((invbutterfly_result & butterfly_mask_r[2]) << 4);
-
-      invbutterfly_result = invbutterfly_result & butterfly_mask_not[1] |
-          ((invbutterfly_result & butterfly_mask_l[1]) >> 8)|
-          ((invbutterfly_result & butterfly_mask_r[1]) << 8);
-
-      invbutterfly_result = invbutterfly_result & butterfly_mask_not[0] |
-          ((invbutterfly_result & butterfly_mask_l[0]) >> 16)|
-          ((invbutterfly_result & butterfly_mask_r[0]) << 16);
-    end
-
-    /////////////////////////
-    // Shuffle / Unshuffle //
-    /////////////////////////
-
-    localparam logic [31:0] SHUFFLE_MASK_L [4] =
-        '{32'h4444_4444, 32'h3030_3030, 32'h0f00_0f00, 32'h00ff_0000};
-    localparam logic [31:0] SHUFFLE_MASK_R [4] =
-        '{32'h2222_2222, 32'h0c0c_0c0c, 32'h00f0_00f0, 32'h0000_ff00};
-
-    localparam logic [31:0] FLIP_MASK_L [4] =
-        '{32'h1100_0000, 32'h4411_0000, 32'h0044_0000, 32'h2200_1100};
-    localparam logic [31:0] FLIP_MASK_R [4] =
-        '{32'h0000_0088, 32'h0000_8822, 32'h0000_2200, 32'h0088_0044};
-
-    logic [31:0] SHUFFLE_MASK_NOT [4];
-    for(genvar i = 0; i < 4; i++) begin : gen_shuffle_mask_not
-      assign SHUFFLE_MASK_NOT[i] = ~(SHUFFLE_MASK_L[i] | SHUFFLE_MASK_R[i]);
-    end
-
-    logic shuffle_flip;
-    assign shuffle_flip = operator_i == ALU_UNSHFL;
-
-    logic [3:0] shuffle_mode;
-
-    always_comb begin
-      shuffle_result = operand_a_i;
-
-      if (shuffle_flip) begin
-        shuffle_mode[3] = shift_amt[0];
-        shuffle_mode[2] = shift_amt[1];
-        shuffle_mode[1] = shift_amt[2];
-        shuffle_mode[0] = shift_amt[3];
-      end else begin
-        shuffle_mode = shift_amt[3:0];
-      end
-
-      if (shuffle_flip) begin
-        shuffle_result = (shuffle_result & 32'h8822_4411) |
-            ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6)  & FLIP_MASK_R[0]) |
-            ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9)  & FLIP_MASK_R[1]) |
-            ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
-            ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
-      end
-
-      if (shuffle_mode[3]) begin
-        shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[0]) |
-            (((shuffle_result << 8) & SHUFFLE_MASK_L[0]) |
-            ((shuffle_result >> 8) & SHUFFLE_MASK_R[0]));
-      end
-      if (shuffle_mode[2]) begin
-        shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[1]) |
-            (((shuffle_result << 4) & SHUFFLE_MASK_L[1]) |
-            ((shuffle_result >> 4) & SHUFFLE_MASK_R[1]));
-      end
-      if (shuffle_mode[1]) begin
-        shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[2]) |
-            (((shuffle_result << 2) & SHUFFLE_MASK_L[2]) |
-            ((shuffle_result >> 2) & SHUFFLE_MASK_R[2]));
-      end
-      if (shuffle_mode[0]) begin
-        shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[3]) |
-            (((shuffle_result << 1) & SHUFFLE_MASK_L[3]) |
-            ((shuffle_result >> 1) & SHUFFLE_MASK_R[3]));
-      end
-
-      if (shuffle_flip) begin
-        shuffle_result = (shuffle_result & 32'h8822_4411) |
-            ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6) & FLIP_MASK_R[0])  |
-            ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9) & FLIP_MASK_R[1])  |
-            ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
-            ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
-      end
-
-    end
-    ///////////////////////////////////////////////////
-    // Carry-less Multiply + Cyclic Redundancy Check //
-    ///////////////////////////////////////////////////
-
-    // Carry-less multiplication can be understood as multiplication based on
-    // the addition interpreted as the bit-wise xor operation.
-    //
-    // Example: 1101 X 1011 = 1111111:
-    //
-    //       1011 X 1101
-    //       -----------
-    //              1101
-    //         xor 1101
-    //         ---------
-    //             10111
-    //        xor 0000
-    //        ----------
-    //            010111
-    //       xor 1101
-    //       -----------
-    //           1111111
-    //
-    // Architectural details:
-    //         A 32 x 32-bit array
-    //         [ operand_b[i] ? (operand_a << i) : '0 for i in 0 ... 31 ]
-    //         is generated. The entries of the array are pairwise 'xor-ed'
-    //         together in a 5-stage binary tree.
-    //
-    //
-    // Cyclic Redundancy Check:
-    //
-    // CRC-32 (CRC-32/ISO-HDLC) and CRC-32C (CRC-32/ISCSI) are directly implemented. For
-    // documentation of the crc configuration (crc-polynomials, initialization, reflection, etc.)
-    // see http://reveng.sourceforge.net/crc-catalogue/all.htm
-    // A useful guide to crc arithmetic and algorithms is given here:
-    // http://www.piclist.com/techref/method/math/crcguide.html.
-    //
-    // The CRC operation solves the following equation using binary polynomial arithmetic:
-    //
-    // rev(rd)(x) = rev(rs1)(x) * x**n mod {1, P}(x)
-    //
-    // where P denotes lower 32 bits of the corresponding CRC polynomial, rev(a) the bit reversal
-    // of a, n = 8,16, or 32 for .b, .h, .w -variants. {a, b} denotes bit concatenation.
-    //
-    // Using barret reduction, one can show that
-    //
-    // M(x) mod P(x) = R(x) =
-    //          (M(x) * x**n) & {deg(P(x)'{1'b1}}) ^ (M(x) x**-(deg(P(x) - n)) cx mu(x) cx P(x),
-    //
-    // Where mu(x) = polydiv(x**64, {1,P}) & 0xffffffff. Here, 'cx' refers to carry-less
-    // multiplication. Substituting rev(rd)(x) for R(x) and rev(rs1)(x) for M(x) and solving for
-    // rd(x) with P(x) a crc32 polynomial (deg(P(x)) = 32), we get
-    //
-    // rd = rev( (rev(rs1) << n)  ^ ((rev(rs1) >> (32-n)) cx mu cx P)
-    //    = (rs1 >> n) ^ rev(rev( (rs1 << (32-n)) cx rev(mu)) cx P)
-    //                       ^-- cycle 0--------------------^
-    //      ^- cycle 1 -------------------------------------------^
-    //
-    // In the last step we used the fact that carry-less multiplication is bit-order agnostic:
-    // rev(a cx b) = rev(a) cx rev(b).
-
-    logic clmul_rmode;
-    logic clmul_hmode;
-    logic [31:0] clmul_op_a;
-    logic [31:0] clmul_op_b;
-    logic [31:0] operand_b_rev;
-    logic [31:0] clmul_and_stage[32];
-    logic [31:0] clmul_xor_stage1[16];
-    logic [31:0] clmul_xor_stage2[8];
-    logic [31:0] clmul_xor_stage3[4];
-    logic [31:0] clmul_xor_stage4[2];
-
-    logic [31:0] clmul_result_raw;
-    logic [31:0] clmul_result_rev;
-
-    for (genvar i=0; i<32; i++) begin: gen_rev_operand_b
-      assign operand_b_rev[i] = operand_b_i[31-i];
-    end
-
-    assign clmul_rmode = operator_i == ALU_CLMULR;
-    assign clmul_hmode = operator_i == ALU_CLMULH;
-
-    // CRC
-    localparam logic [31:0] CRC32_POLYNOMIAL = 32'h04c1_1db7;
-    localparam logic [31:0] CRC32_MU_REV = 32'hf701_1641;
-
-    localparam logic [31:0] CRC32C_POLYNOMIAL = 32'h1edc_6f41;
-    localparam logic [31:0] CRC32C_MU_REV = 32'hdea7_13f1;
-
-    logic crc_op;
-    logic crc_hmode;
-    logic crc_bmode;
-
-    logic crc_cpoly;
-
-    logic [31:0] crc_operand;
-    logic [31:0] crc_poly;
-    logic [31:0] crc_mu_rev;
-
-    assign crc_op = (operator_i == ALU_CRC32C_W) | (operator_i == ALU_CRC32_W) |
-                    (operator_i == ALU_CRC32C_H) | (operator_i == ALU_CRC32_H) |
-                    (operator_i == ALU_CRC32C_B) | (operator_i == ALU_CRC32_B);
-
-    assign crc_cpoly = (operator_i == ALU_CRC32C_W) |
-                       (operator_i == ALU_CRC32C_H) |
-                       (operator_i == ALU_CRC32C_B);
-
-    assign crc_hmode = (operator_i == ALU_CRC32_H) | (operator_i == ALU_CRC32C_H);
-    assign crc_bmode = (operator_i == ALU_CRC32_B) | (operator_i == ALU_CRC32C_B);
-
-    assign crc_poly   = crc_cpoly ? CRC32C_POLYNOMIAL : CRC32_POLYNOMIAL;
-    assign crc_mu_rev = crc_cpoly ? CRC32C_MU_REV : CRC32_MU_REV;
-
-    always_comb begin
-      unique case(1'b1)
-        crc_bmode: crc_operand = {operand_a_i[7:0], 24'h0};
-        crc_hmode: crc_operand = {operand_a_i[15:0], 16'h0};
-        default:   crc_operand = operand_a_i;
-      endcase
-    end
-
-    // Select clmul input
-    always_comb begin
-      if (crc_op) begin
-        clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i;
-        clmul_op_b = instr_first_cycle_i ? crc_mu_rev : crc_poly;
-      end else begin
-        clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
-        clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
-      end
-    end
-
-    for (genvar i=0; i<32; i++) begin : gen_clmul_and_op
-      assign clmul_and_stage[i] = clmul_op_b[i] ? clmul_op_a << i : '0;
-    end
-
-    for (genvar i=0; i<16; i++) begin : gen_clmul_xor_op_l1
-      assign clmul_xor_stage1[i] = clmul_and_stage[2*i] ^ clmul_and_stage[2*i+1];
-    end
-
-    for (genvar i=0; i<8; i++) begin : gen_clmul_xor_op_l2
-      assign clmul_xor_stage2[i] = clmul_xor_stage1[2*i] ^ clmul_xor_stage1[2*i+1];
-    end
-
-    for (genvar i=0; i<4; i++) begin : gen_clmul_xor_op_l3
-      assign clmul_xor_stage3[i] = clmul_xor_stage2[2*i] ^ clmul_xor_stage2[2*i+1];
-    end
-
-    for (genvar i=0; i<2; i++) begin : gen_clmul_xor_op_l4
-      assign clmul_xor_stage4[i] = clmul_xor_stage3[2*i] ^ clmul_xor_stage3[2*i+1];
-    end
-
-    assign clmul_result_raw = clmul_xor_stage4[0] ^ clmul_xor_stage4[1];
-
-    for (genvar i=0; i<32; i++) begin : gen_rev_clmul_result
-      assign clmul_result_rev[i] = clmul_result_raw[31-i];
-    end
-
-    // clmulr_result = rev(clmul(rev(a), rev(b)))
-    // clmulh_result = clmulr_result >> 1
-    always_comb begin
-      case(1'b1)
-        clmul_rmode: clmul_result = clmul_result_rev;
-        clmul_hmode: clmul_result = {1'b0, clmul_result_rev[31:1]};
-        default:     clmul_result = clmul_result_raw;
-      endcase
-    end
-
-    //////////////////////////////////////
-    // Multicycle Bitmanip Instructions //
-    //////////////////////////////////////
-    // Ternary instructions + Shift Rotations + CRC
-    // For ternary instructions (zbt), operand_a_i is tied to rs1 in the first cycle and rs3 in the
-    // second cycle. operand_b_i is always tied to rs2.
-
-
-    always_comb begin
-      unique case (operator_i)
-        ALU_CMOV: begin
-            imd_val_d_o = operand_a_i;
-            multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i;
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_CMIX: begin
-          multicycle_result = imd_val_q_i | bwlogic_and_result;
-          imd_val_d_o = bwlogic_and_result;
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_FSR, ALU_FSL,
-        ALU_ROL, ALU_ROR: begin
-          if (shift_amt[4:0] == 5'h0) begin
-            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i;
-          end else begin
-            multicycle_result = imd_val_q_i | shift_result;
-          end
-          imd_val_d_o = shift_result;
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_CRC32_W, ALU_CRC32C_W,
-        ALU_CRC32_H, ALU_CRC32C_H,
-        ALU_CRC32_B, ALU_CRC32C_B: begin
-          imd_val_d_o = clmul_result_rev;
-          unique case(1'b1)
-            crc_bmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 8);
-            crc_hmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 16);
-            default:   multicycle_result = clmul_result_rev;
-          endcase
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        default: begin
-          imd_val_d_o = operand_a_i;
-          imd_val_we_o = 1'b0;
-          multicycle_result = operand_a_i;
-        end
-      endcase
-    end
-
-    /////////////////////////////
-    // Single-bit Instructions //
-    /////////////////////////////
-
-    always_comb begin
-      unique case (operator_i)
-        ALU_SBSET: singlebit_result = operand_a_i | shift_result;
-        ALU_SBCLR: singlebit_result = operand_a_i & ~shift_result;
-        ALU_SBINV: singlebit_result = operand_a_i ^ shift_result;
-        default:   singlebit_result = {31'h0, shift_result[0]}; // ALU_SBEXT
-      endcase
-    end
-
-    ///////////////
     // Min / Max //
     ///////////////
 
     assign minmax_result = cmp_result ? operand_a_i : operand_b_i;
-
 
     //////////
     // Pack //
@@ -1059,21 +550,623 @@ module ibex_alu #(
     assign sext_result = (operator_i == ALU_SEXTB) ?
         { {24{operand_a_i[7]}}, operand_a_i[7:0]} : { {16{operand_a_i[15]}}, operand_a_i[15:0]};
 
+    /////////////////////////////
+    // Single-bit Instructions //
+    /////////////////////////////
+
+    always_comb begin
+      unique case (operator_i)
+        ALU_SBSET: singlebit_result = operand_a_i | shift_result;
+        ALU_SBCLR: singlebit_result = operand_a_i & ~shift_result;
+        ALU_SBINV: singlebit_result = operand_a_i ^ shift_result;
+        default:   singlebit_result = {31'h0, shift_result[0]}; // ALU_SBEXT
+      endcase
+    end
+
+    ////////////////////////////////////
+    // General Reverse and Or-combine //
+    ////////////////////////////////////
+
+    // Only a subset of the General reverse and or-combine instructions are implemented in the
+    // balanced version of the B extension. Currently rev, rev8 and orc.b are supported in the
+    // base extension.
+
+    logic [4:0] zbp_shift_amt;
+    logic gorc_op;
+
+    assign gorc_op = (operator_i == ALU_GORC);
+    assign zbp_shift_amt[2:0] = (RV32B == RV32BFull) ? shift_amt[2:0] : {3{&shift_amt[2:0]}};
+    assign zbp_shift_amt[4:3] = (RV32B == RV32BFull) ? shift_amt[4:3] : {2{&shift_amt[4:3]}};
+
+    always_comb begin
+      rev_result = operand_a_i;
+
+      if (zbp_shift_amt[0]) begin
+        rev_result = (gorc_op ? rev_result : 32'h0)       |
+                     ((rev_result & 32'h5555_5555) <<  1) |
+                     ((rev_result & 32'haaaa_aaaa) >>  1);
+      end
+
+      if (zbp_shift_amt[1]) begin
+        rev_result = (gorc_op ? rev_result : 32'h0)       |
+                     ((rev_result & 32'h3333_3333) <<  2) |
+                     ((rev_result & 32'hcccc_cccc) >>  2);
+      end
+
+      if (zbp_shift_amt[2]) begin
+        rev_result = (gorc_op ? rev_result : 32'h0)       |
+                     ((rev_result & 32'h0f0f_0f0f) <<  4) |
+                     ((rev_result & 32'hf0f0_f0f0) >>  4);
+      end
+
+      if (zbp_shift_amt[3]) begin
+        rev_result = (gorc_op & (RV32B == RV32BFull) ? rev_result : 32'h0) |
+                     ((rev_result & 32'h00ff_00ff) <<  8) |
+                     ((rev_result & 32'hff00_ff00) >>  8);
+      end
+
+      if (zbp_shift_amt[4]) begin
+        rev_result = (gorc_op & (RV32B == RV32BFull) ? rev_result : 32'h0) |
+                     ((rev_result & 32'h0000_ffff) << 16) |
+                     ((rev_result & 32'hffff_0000) >> 16);
+      end
+    end
+
+    logic crc_hmode;
+    logic crc_bmode;
+    logic [31:0] clmul_result_rev;
+
+    if (RV32B == RV32BFull) begin : gen_alu_rvb_full
+
+      /////////////////////////
+      // Shuffle / Unshuffle //
+      /////////////////////////
+
+      localparam logic [31:0] SHUFFLE_MASK_L [4] =
+          '{32'h00ff_0000, 32'h0f00_0f00, 32'h3030_3030, 32'h4444_4444};
+      localparam logic [31:0] SHUFFLE_MASK_R [4] =
+          '{32'h0000_ff00, 32'h00f0_00f0, 32'h0c0c_0c0c, 32'h2222_2222};
+
+      localparam logic [31:0] FLIP_MASK_L [4] =
+          '{32'h2200_1100, 32'h0044_0000, 32'h4411_0000, 32'h1100_0000};
+      localparam logic [31:0] FLIP_MASK_R [4] =
+          '{32'h0088_0044, 32'h0000_2200, 32'h0000_8822, 32'h0000_0088};
+
+      logic [31:0] SHUFFLE_MASK_NOT [4];
+      for(genvar i = 0; i < 4; i++) begin : gen_shuffle_mask_not
+        assign SHUFFLE_MASK_NOT[i] = ~(SHUFFLE_MASK_L[i] | SHUFFLE_MASK_R[i]);
+      end
+
+      logic shuffle_flip;
+      assign shuffle_flip = operator_i == ALU_UNSHFL;
+
+      logic [3:0] shuffle_mode;
+
+      always_comb begin
+        shuffle_result = operand_a_i;
+
+        if (shuffle_flip) begin
+          shuffle_mode[3] = shift_amt[0];
+          shuffle_mode[2] = shift_amt[1];
+          shuffle_mode[1] = shift_amt[2];
+          shuffle_mode[0] = shift_amt[3];
+        end else begin
+          shuffle_mode = shift_amt[3:0];
+        end
+
+        if (shuffle_flip) begin
+          shuffle_result = (shuffle_result & 32'h8822_4411) |
+              ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6)  & FLIP_MASK_R[0]) |
+              ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9)  & FLIP_MASK_R[1]) |
+              ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
+              ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
+        end
+
+        if (shuffle_mode[3]) begin
+          shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[0]) |
+              (((shuffle_result << 8) & SHUFFLE_MASK_L[0]) |
+              ((shuffle_result >> 8) & SHUFFLE_MASK_R[0]));
+        end
+        if (shuffle_mode[2]) begin
+          shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[1]) |
+              (((shuffle_result << 4) & SHUFFLE_MASK_L[1]) |
+              ((shuffle_result >> 4) & SHUFFLE_MASK_R[1]));
+        end
+        if (shuffle_mode[1]) begin
+          shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[2]) |
+              (((shuffle_result << 2) & SHUFFLE_MASK_L[2]) |
+              ((shuffle_result >> 2) & SHUFFLE_MASK_R[2]));
+        end
+        if (shuffle_mode[0]) begin
+          shuffle_result = (shuffle_result & SHUFFLE_MASK_NOT[3]) |
+              (((shuffle_result << 1) & SHUFFLE_MASK_L[3]) |
+              ((shuffle_result >> 1) & SHUFFLE_MASK_R[3]));
+        end
+
+        if (shuffle_flip) begin
+          shuffle_result = (shuffle_result & 32'h8822_4411) |
+              ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6) & FLIP_MASK_R[0])  |
+              ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9) & FLIP_MASK_R[1])  |
+              ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
+              ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
+        end
+      end
+
+      ///////////////
+      // Butterfly //
+      ///////////////
+
+      // The butterfly / inverse butterfly network executing bext/bdep (zbe) instructions.
+      // For bdep, the control bits mask of a local left region is generated by
+      // the inverse of a n-bit left rotate and complement upon wrap (LROTC) operation by the number
+      // of ones in the deposit bitmask to the right of the segment. n hereby denotes the width
+      // of the according segment. The bitmask for a pertaining local right region is equal to the
+      // corresponding local left region. Bext uses an analogue inverse process.
+      // Consider the following 8-bit example.  For details, see Hilewitz et al. "Fast Bit Gather,
+      // Bit Scatter and Bit Permuation Instructions for Commodity Microprocessors", (2008).
+      //
+      // The bext/bdep instructions are completed in 2 cycles. In the first cycle, the control
+      // bitmask is prepared by executing the parallel prefix bit count. In the second cycle,
+      // the bit swapping is executed according to the control masks.
+
+      // 8-bit example:  (Hilewitz et al.)
+      // Consider the instruction bdep operand_a_i deposit_mask
+      // Let operand_a_i = 8'babcd_efgh
+      //    deposit_mask = 8'b1010_1101
+      //
+      // control bitmask for stage 1:
+      //  - number of ones in the right half of the deposit bitmask: 3
+      //  - width of the segment: 4
+      //  - control bitmask = ~LROTC(4'b0, 3)[3:0] = 4'b1000
+      //
+      // control bitmask:   c3 c2  c1 c0  c3 c2  c1 c0
+      //                    1  0   0  0   1  0   0  0
+      //                    <- L ----->   <- R ----->
+      // operand_a_i        a  b   c  d   e  f   g  h
+      //                    :\ |   |  |  /:  |   |  |
+      //                    : +|---|--|-+ :  |   |  |
+      //                    :/ |   |  |  \:  |   |  |
+      // stage 1            e  b   c  d   a  f   g  h
+      //                    <L->   <R->   <L->   <R->
+      // control bitmask:   c3 c2  c3 c2  c1 c0  c1 c0
+      //                    1  1   1  1   1  0   1  0
+      //                    :\ :\ /: /:   :\ |  /:  |
+      //                    : +:-+-:+ :   : +|-+ :  |
+      //                    :/ :/ \: \:   :/ |  \:  |
+      // stage 2            c  d   e  b   g  f   a  h
+      //                    L  R   L  R   L  R   L  R
+      // control bitmask:   c3 c3  c2 c2  c1 c1  c0 c0
+      //                    1  1   0  0   1  1   0  0
+      //                    :\/:   |  |   :\/:   |  |
+      //                    :  :   |  |   :  :   |  |
+      //                    :/\:   |  |   :/\:   |  |
+      // stage 3            d  c   e  b   f  g   a  h
+      // & deposit bitmask: 1  0   1  0   1  1   0  1
+      // result:            d  0   e  0   f  g   0  h
+
+      logic [ 5:0] bitcnt_partial_q [32];
+
+      // first cycle
+      // Store partial bitcnts
+      for (genvar i=0; i<32; i++) begin : gen_bitcnt_reg_in_lsb
+        assign bitcnt_partial_lsb_d[i] = bitcnt_partial[i][0];
+      end
+
+      for (genvar i=0; i<16; i++) begin : gen_bitcnt_reg_in_b1
+        assign bitcnt_partial_msb_d[i] = bitcnt_partial[2*i+1][1];
+      end
+
+      for (genvar i=0; i<8; i++) begin : gen_bitcnt_reg_in_b2
+        assign bitcnt_partial_msb_d[16+i] = bitcnt_partial[4*i+3][2];
+      end
+
+      for (genvar i=0; i<4; i++) begin : gen_bitcnt_reg_in_b3
+        assign bitcnt_partial_msb_d[24+i] = bitcnt_partial[8*i+7][3];
+      end
+
+      for (genvar i=0; i<2; i++) begin : gen_bitcnt_reg_in_b4
+        assign bitcnt_partial_msb_d[28+i] = bitcnt_partial[16*i+15][4];
+      end
+
+      assign bitcnt_partial_msb_d[30] = bitcnt_partial[31][5];
+      assign bitcnt_partial_msb_d[31] = 1'b0; // unused
+
+      // Second cycle
+      // Load partial bitcnts
+      always_comb begin
+        bitcnt_partial_q = '{default: '0};
+
+        for (int unsigned i=0; i<32; i++) begin : gen_bitcnt_reg_out_lsb
+          bitcnt_partial_q[i][0] = imd_val_q_i[0][i];
+        end
+
+        for (int unsigned i=0; i<16; i++) begin : gen_bitcnt_reg_out_b1
+          bitcnt_partial_q[2*i+1][1] = imd_val_q_i[1][i];
+        end
+
+        for (int unsigned i=0; i<8; i++) begin : gen_bitcnt_reg_out_b2
+          bitcnt_partial_q[4*i+3][2] = imd_val_q_i[1][16+i];
+        end
+
+        for (int unsigned i=0; i<4; i++) begin : gen_bitcnt_reg_out_b3
+          bitcnt_partial_q[8*i+7][3] = imd_val_q_i[1][24+i];
+        end
+
+        for (int unsigned i=0; i<2; i++) begin : gen_bitcnt_reg_out_b4
+          bitcnt_partial_q[16*i+15][4] = imd_val_q_i[1][28+i];
+        end
+
+        bitcnt_partial_q[31][5] = imd_val_q_i[1][30];
+      end
+
+      logic [31:0] butterfly_mask_l[5];
+      logic [31:0] butterfly_mask_r[5];
+      logic [31:0] butterfly_mask_not[5];
+      logic [31:0] lrotc_stage [5]; // left rotate and complement upon wrap
+
+      // number of bits in local r = 32 / 2**(stage + 1) = 16/2**stage
+      `define _N(stg) (16 >> stg)
+
+      // bext / bdep control bit generation
+      for (genvar stg=0; stg<5; stg++) begin : gen_butterfly_ctrl_stage
+        // number of segs: 2** stg
+        for (genvar seg=0; seg<2**stg; seg++) begin : gen_butterfly_ctrl
+
+          assign lrotc_stage[stg][2*`_N(stg)*(seg+1)-1 : 2*`_N(stg)*seg] =
+              {{`_N(stg){1'b0}},{`_N(stg){1'b1}}} <<
+                bitcnt_partial_q[`_N(stg)*(2*seg+1)-1][$clog2(`_N(stg)):0];
+
+          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)]
+                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
+
+          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]
+                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
+
+          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]   = '0;
+          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)] = '0;
+        end
+      end
+      `undef _N
+
+      for (genvar stg=0; stg<5; stg++) begin : gen_butterfly_not
+        assign butterfly_mask_not[stg] =
+            ~(butterfly_mask_l[stg] | butterfly_mask_r[stg]);
+      end
+
+      always_comb begin
+        butterfly_result = operand_a_i;
+
+        butterfly_result = butterfly_result & butterfly_mask_not[0] |
+            ((butterfly_result & butterfly_mask_l[0]) >> 16)|
+            ((butterfly_result & butterfly_mask_r[0]) << 16);
+
+        butterfly_result = butterfly_result & butterfly_mask_not[1] |
+            ((butterfly_result & butterfly_mask_l[1]) >> 8)|
+            ((butterfly_result & butterfly_mask_r[1]) << 8);
+
+        butterfly_result = butterfly_result & butterfly_mask_not[2] |
+            ((butterfly_result & butterfly_mask_l[2]) >> 4)|
+            ((butterfly_result & butterfly_mask_r[2]) << 4);
+
+        butterfly_result = butterfly_result & butterfly_mask_not[3] |
+            ((butterfly_result & butterfly_mask_l[3]) >> 2)|
+            ((butterfly_result & butterfly_mask_r[3]) << 2);
+
+        butterfly_result = butterfly_result & butterfly_mask_not[4] |
+            ((butterfly_result & butterfly_mask_l[4]) >> 1)|
+            ((butterfly_result & butterfly_mask_r[4]) << 1);
+
+        butterfly_result = butterfly_result & operand_b_i;
+      end
+
+      always_comb begin
+        invbutterfly_result = operand_a_i & operand_b_i;
+
+        invbutterfly_result = invbutterfly_result & butterfly_mask_not[4] |
+            ((invbutterfly_result & butterfly_mask_l[4]) >> 1)|
+            ((invbutterfly_result & butterfly_mask_r[4]) << 1);
+
+        invbutterfly_result = invbutterfly_result & butterfly_mask_not[3] |
+            ((invbutterfly_result & butterfly_mask_l[3]) >> 2)|
+            ((invbutterfly_result & butterfly_mask_r[3]) << 2);
+
+        invbutterfly_result = invbutterfly_result & butterfly_mask_not[2] |
+            ((invbutterfly_result & butterfly_mask_l[2]) >> 4)|
+            ((invbutterfly_result & butterfly_mask_r[2]) << 4);
+
+        invbutterfly_result = invbutterfly_result & butterfly_mask_not[1] |
+            ((invbutterfly_result & butterfly_mask_l[1]) >> 8)|
+            ((invbutterfly_result & butterfly_mask_r[1]) << 8);
+
+        invbutterfly_result = invbutterfly_result & butterfly_mask_not[0] |
+            ((invbutterfly_result & butterfly_mask_l[0]) >> 16)|
+            ((invbutterfly_result & butterfly_mask_r[0]) << 16);
+      end
+
+      ///////////////////////////////////////////////////
+      // Carry-less Multiply + Cyclic Redundancy Check //
+      ///////////////////////////////////////////////////
+
+      // Carry-less multiplication can be understood as multiplication based on
+      // the addition interpreted as the bit-wise xor operation.
+      //
+      // Example: 1101 X 1011 = 1111111:
+      //
+      //       1011 X 1101
+      //       -----------
+      //              1101
+      //         xor 1101
+      //         ---------
+      //             10111
+      //        xor 0000
+      //        ----------
+      //            010111
+      //       xor 1101
+      //       -----------
+      //           1111111
+      //
+      // Architectural details:
+      //         A 32 x 32-bit array
+      //         [ operand_b[i] ? (operand_a << i) : '0 for i in 0 ... 31 ]
+      //         is generated. The entries of the array are pairwise 'xor-ed'
+      //         together in a 5-stage binary tree.
+      //
+      //
+      // Cyclic Redundancy Check:
+      //
+      // CRC-32 (CRC-32/ISO-HDLC) and CRC-32C (CRC-32/ISCSI) are directly implemented. For
+      // documentation of the crc configuration (crc-polynomials, initialization, reflection, etc.)
+      // see http://reveng.sourceforge.net/crc-catalogue/all.htm
+      // A useful guide to crc arithmetic and algorithms is given here:
+      // http://www.piclist.com/techref/method/math/crcguide.html.
+      //
+      // The CRC operation solves the following equation using binary polynomial arithmetic:
+      //
+      // rev(rd)(x) = rev(rs1)(x) * x**n mod {1, P}(x)
+      //
+      // where P denotes lower 32 bits of the corresponding CRC polynomial, rev(a) the bit reversal
+      // of a, n = 8,16, or 32 for .b, .h, .w -variants. {a, b} denotes bit concatenation.
+      //
+      // Using barret reduction, one can show that
+      //
+      // M(x) mod P(x) = R(x) =
+      //          (M(x) * x**n) & {deg(P(x)'{1'b1}}) ^ (M(x) x**-(deg(P(x) - n)) cx mu(x) cx P(x),
+      //
+      // Where mu(x) = polydiv(x**64, {1,P}) & 0xffffffff. Here, 'cx' refers to carry-less
+      // multiplication. Substituting rev(rd)(x) for R(x) and rev(rs1)(x) for M(x) and solving for
+      // rd(x) with P(x) a crc32 polynomial (deg(P(x)) = 32), we get
+      //
+      // rd = rev( (rev(rs1) << n)  ^ ((rev(rs1) >> (32-n)) cx mu cx P)
+      //    = (rs1 >> n) ^ rev(rev( (rs1 << (32-n)) cx rev(mu)) cx P)
+      //                       ^-- cycle 0--------------------^
+      //      ^- cycle 1 -------------------------------------------^
+      //
+      // In the last step we used the fact that carry-less multiplication is bit-order agnostic:
+      // rev(a cx b) = rev(a) cx rev(b).
+
+      logic clmul_rmode;
+      logic clmul_hmode;
+      logic [31:0] clmul_op_a;
+      logic [31:0] clmul_op_b;
+      logic [31:0] operand_b_rev;
+      logic [31:0] clmul_and_stage[32];
+      logic [31:0] clmul_xor_stage1[16];
+      logic [31:0] clmul_xor_stage2[8];
+      logic [31:0] clmul_xor_stage3[4];
+      logic [31:0] clmul_xor_stage4[2];
+
+      logic [31:0] clmul_result_raw;
+
+      for (genvar i=0; i<32; i++) begin: gen_rev_operand_b
+        assign operand_b_rev[i] = operand_b_i[31-i];
+      end
+
+      assign clmul_rmode = operator_i == ALU_CLMULR;
+      assign clmul_hmode = operator_i == ALU_CLMULH;
+
+      // CRC
+      localparam logic [31:0] CRC32_POLYNOMIAL = 32'h04c1_1db7;
+      localparam logic [31:0] CRC32_MU_REV = 32'hf701_1641;
+
+      localparam logic [31:0] CRC32C_POLYNOMIAL = 32'h1edc_6f41;
+      localparam logic [31:0] CRC32C_MU_REV = 32'hdea7_13f1;
+
+      logic crc_op;
+
+      logic crc_cpoly;
+
+      logic [31:0] crc_operand;
+      logic [31:0] crc_poly;
+      logic [31:0] crc_mu_rev;
+
+      assign crc_op = (operator_i == ALU_CRC32C_W) | (operator_i == ALU_CRC32_W) |
+                      (operator_i == ALU_CRC32C_H) | (operator_i == ALU_CRC32_H) |
+                      (operator_i == ALU_CRC32C_B) | (operator_i == ALU_CRC32_B);
+
+      assign crc_cpoly = (operator_i == ALU_CRC32C_W) |
+                         (operator_i == ALU_CRC32C_H) |
+                         (operator_i == ALU_CRC32C_B);
+
+      assign crc_hmode = (operator_i == ALU_CRC32_H) | (operator_i == ALU_CRC32C_H);
+      assign crc_bmode = (operator_i == ALU_CRC32_B) | (operator_i == ALU_CRC32C_B);
+
+      assign crc_poly   = crc_cpoly ? CRC32C_POLYNOMIAL : CRC32_POLYNOMIAL;
+      assign crc_mu_rev = crc_cpoly ? CRC32C_MU_REV : CRC32_MU_REV;
+
+      always_comb begin
+        unique case(1'b1)
+          crc_bmode: crc_operand = {operand_a_i[7:0], 24'h0};
+          crc_hmode: crc_operand = {operand_a_i[15:0], 16'h0};
+          default:   crc_operand = operand_a_i;
+        endcase
+      end
+
+      // Select clmul input
+      always_comb begin
+        if (crc_op) begin
+          clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i[0];
+          clmul_op_b = instr_first_cycle_i ? crc_mu_rev : crc_poly;
+        end else begin
+          clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
+          clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
+        end
+      end
+
+      for (genvar i=0; i<32; i++) begin : gen_clmul_and_op
+        assign clmul_and_stage[i] = clmul_op_b[i] ? clmul_op_a << i : '0;
+      end
+
+      for (genvar i=0; i<16; i++) begin : gen_clmul_xor_op_l1
+        assign clmul_xor_stage1[i] = clmul_and_stage[2*i] ^ clmul_and_stage[2*i+1];
+      end
+
+      for (genvar i=0; i<8; i++) begin : gen_clmul_xor_op_l2
+        assign clmul_xor_stage2[i] = clmul_xor_stage1[2*i] ^ clmul_xor_stage1[2*i+1];
+      end
+
+      for (genvar i=0; i<4; i++) begin : gen_clmul_xor_op_l3
+        assign clmul_xor_stage3[i] = clmul_xor_stage2[2*i] ^ clmul_xor_stage2[2*i+1];
+      end
+
+      for (genvar i=0; i<2; i++) begin : gen_clmul_xor_op_l4
+        assign clmul_xor_stage4[i] = clmul_xor_stage3[2*i] ^ clmul_xor_stage3[2*i+1];
+      end
+
+      assign clmul_result_raw = clmul_xor_stage4[0] ^ clmul_xor_stage4[1];
+
+      for (genvar i=0; i<32; i++) begin : gen_rev_clmul_result
+        assign clmul_result_rev[i] = clmul_result_raw[31-i];
+      end
+
+      // clmulr_result = rev(clmul(rev(a), rev(b)))
+      // clmulh_result = clmulr_result >> 1
+      always_comb begin
+        case(1'b1)
+          clmul_rmode: clmul_result = clmul_result_rev;
+          clmul_hmode: clmul_result = {1'b0, clmul_result_rev[31:1]};
+          default:     clmul_result = clmul_result_raw;
+        endcase
+      end
+    end else begin : gen_alu_rvb_notfull
+      assign shuffle_result       = '0;
+      assign butterfly_result     = '0;
+      assign invbutterfly_result  = '0;
+      assign clmul_result         = '0;
+      // support signals
+      assign bitcnt_partial_lsb_d = '0;
+      assign bitcnt_partial_msb_d = '0;
+      assign clmul_result_rev     = '0;
+      assign crc_bmode            = '0;
+      assign crc_hmode            = '0;
+    end
+
+    //////////////////////////////////////
+    // Multicycle Bitmanip Instructions //
+    //////////////////////////////////////
+    // Ternary instructions + Shift Rotations + Bit extract/deposit + CRC
+    // For ternary instructions (zbt), operand_a_i is tied to rs1 in the first cycle and rs3 in the
+    // second cycle. operand_b_i is always tied to rs2.
+
+    always_comb begin
+      unique case (operator_i)
+        ALU_CMOV: begin
+            multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i[0];
+            imd_val_d_o = '{operand_a_i, 32'h0};
+          if (instr_first_cycle_i) begin
+            imd_val_we_o = 2'b01;
+          end else begin
+            imd_val_we_o = 2'b00;
+          end
+        end
+
+        ALU_CMIX: begin
+          multicycle_result = imd_val_q_i[0] | bwlogic_and_result;
+          imd_val_d_o = '{bwlogic_and_result, 32'h0};
+          if (instr_first_cycle_i) begin
+            imd_val_we_o = 2'b01;
+          end else begin
+            imd_val_we_o = 2'b00;
+          end
+        end
+
+        ALU_FSR, ALU_FSL,
+        ALU_ROL, ALU_ROR: begin
+          if (shift_amt[4:0] == 5'h0) begin
+            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i[0];
+          end else begin
+            multicycle_result = imd_val_q_i[0] | shift_result;
+          end
+          imd_val_d_o = '{shift_result, 32'h0};
+          if (instr_first_cycle_i) begin
+            imd_val_we_o = 2'b01;
+          end else begin
+            imd_val_we_o = 2'b00;
+          end
+        end
+
+        ALU_CRC32_W, ALU_CRC32C_W,
+        ALU_CRC32_H, ALU_CRC32C_H,
+        ALU_CRC32_B, ALU_CRC32C_B: begin
+          if (RV32B == RV32BFull) begin
+            unique case(1'b1)
+              crc_bmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 8);
+              crc_hmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 16);
+              default:   multicycle_result = clmul_result_rev;
+            endcase
+            imd_val_d_o = '{clmul_result_rev, 32'h0};
+            if (instr_first_cycle_i) begin
+              imd_val_we_o = 2'b01;
+            end else begin
+              imd_val_we_o = 2'b00;
+            end
+          end else begin
+            imd_val_d_o = '{operand_a_i, 32'h0};
+            imd_val_we_o = 2'b00;
+            multicycle_result = '0;
+          end
+        end
+
+        ALU_BEXT, ALU_BDEP: begin
+          if (RV32B == RV32BFull) begin
+            multicycle_result = (operator_i == ALU_BDEP) ? butterfly_result : invbutterfly_result;
+            imd_val_d_o = '{bitcnt_partial_lsb_d, bitcnt_partial_msb_d};
+            if (instr_first_cycle_i) begin
+              imd_val_we_o = 2'b11;
+            end else begin
+              imd_val_we_o = 2'b00;
+            end
+          end else begin
+            imd_val_d_o = '{operand_a_i, 32'h0};
+            imd_val_we_o = 2'b00;
+            multicycle_result = '0;
+          end
+        end
+
+        default: begin
+          imd_val_d_o = '{operand_a_i, 32'h0};
+          imd_val_we_o = 2'b00;
+          multicycle_result = '0;
+        end
+      endcase
+    end
+
+
   end else begin : g_no_alu_rvb
     // RV32B result signals
-    assign minmax_result       = '0;
     assign bitcnt_result       = '0;
+    assign minmax_result       = '0;
     assign pack_result         = '0;
     assign sext_result         = '0;
-    assign multicycle_result   = '0;
     assign singlebit_result    = '0;
+    assign rev_result          = '0;
     assign shuffle_result      = '0;
     assign butterfly_result    = '0;
     assign invbutterfly_result = '0;
     assign clmul_result        = '0;
+    assign multicycle_result   = '0;
     // RV32B support signals
-    assign imd_val_d_o         = '0;
-    assign imd_val_we_o        = '0;
+    assign imd_val_d_o         = '{default: '0};
+    assign imd_val_we_o        = '{default: '0};
   end
 
   ////////////////
@@ -1130,18 +1223,16 @@ module ibex_alu #(
       // Cyclic Redundancy Checks (RV32B)
       ALU_CRC32_W, ALU_CRC32C_W,
       ALU_CRC32_H, ALU_CRC32C_H,
-      ALU_CRC32_B, ALU_CRC32C_B: result_o = multicycle_result;
+      ALU_CRC32_B, ALU_CRC32C_B,
+      // Bit Extract / Deposit (RV32B)
+      ALU_BEXT, ALU_BDEP: result_o = multicycle_result;
 
       // Single-Bit Bitmanip Operations (RV32B)
       ALU_SBSET, ALU_SBCLR,
       ALU_SBINV, ALU_SBEXT: result_o = singlebit_result;
 
-      // Bit Extract / Deposit (RV32B)
-      ALU_BDEP:  result_o = butterfly_result;
-      ALU_BEXT:  result_o = invbutterfly_result;
-
       // General Reverse / Or-combine (RV32B)
-      ALU_GREV, ALU_GORC: result_o = butterfly_result;
+      ALU_GREV, ALU_GORC: result_o = rev_result;
 
       // Bit Field Place (RV32B)
       ALU_BFP: result_o = bfp_result;

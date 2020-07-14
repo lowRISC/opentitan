@@ -76,7 +76,7 @@ extern unsigned int _stack_start;
 
         *Imprtant* :
         ee_ptr_int needs to be the data type used to hold pointers, otherwise
-   coremark may fail!!!
+   CoreMark may fail!!!
 */
 typedef signed short ee_s16;
 typedef unsigned short ee_u16;
