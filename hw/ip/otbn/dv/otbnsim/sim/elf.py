@@ -14,6 +14,7 @@ from riscvmodel.variant import RV32I  # type: ignore
 from shared.mem_layout import get_memory_layout
 
 from .decode import decode_bytes
+from .variant import RV32IXotbn
 
 _SegList = List[Tuple[int, bytes]]
 
@@ -135,7 +136,7 @@ def load_elf(sim: Simulator, path: str) -> None:
                            'not a multiple of 4.'
                            .format(path, len(imem_bytes)))
 
-    imem_insns = decode_bytes(imem_bytes, RV32I)
+    imem_insns = decode_bytes(imem_bytes, RV32IXotbn)
 
     sim.load_program(imem_insns)
     sim.load_data(dmem_bytes)

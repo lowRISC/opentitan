@@ -7,10 +7,9 @@ import argparse
 import sys
 
 from riscvmodel.sim import Simulator  # type: ignore
-from riscvmodel.model import Model  # type: ignore
-from riscvmodel.variant import RV32I  # type: ignore
 
 from sim.elf import load_elf
+from sim.model import OTBNModel
 
 
 def main() -> int:
@@ -21,7 +20,8 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    sim = Simulator(Model(RV32I, verbose=args.verbose))
+    model = OTBNModel(verbose=args.verbose)
+    sim = Simulator(model)
     load_elf(sim, args.elf)
 
     sim.run()

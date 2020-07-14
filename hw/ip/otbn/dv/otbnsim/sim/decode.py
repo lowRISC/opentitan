@@ -16,6 +16,12 @@ from riscvmodel.isa import Instruction, isa  # type: ignore
 from riscvmodel.model import Model  # type: ignore
 from riscvmodel.variant import Variant, RV32I  # type: ignore
 
+# The riscvmodel decoder works by introspection, checking all the instruction
+# classes that have been defined so far. This implicit approach only works if
+# we make absolutely sure that we *have* loaded the instruction definitions we
+# use. So we do this useless import to ensure it.
+from .insn import InstructionLOOP  # noqa: F401
+
 # A subclass of Instruction
 _InsnSubclass = TypeVar('_InsnSubclass', bound=Instruction)
 
