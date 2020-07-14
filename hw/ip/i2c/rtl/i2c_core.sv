@@ -219,39 +219,39 @@ module  i2c_core (
   assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;
 
   prim_fifo_sync #(
-    .Width(13),
-    .Pass(1'b1),
-    .Depth(32)
+    .Width   (13),
+    .Pass    (1'b1),
+    .Depth   (32)
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni,
-    .clr_i (i2c_fifo_fmtrst),
-    .wvalid(fmt_fifo_wvalid),
-    .wready(fmt_fifo_wready),
-    .wdata(fmt_fifo_wdata),
-    .depth(fmt_fifo_depth),
-    .rvalid(fmt_fifo_rvalid),
-    .rready(fmt_fifo_rready),
-    .rdata(fmt_fifo_rdata)
+    .clr_i   (i2c_fifo_fmtrst),
+    .wvalid_i(fmt_fifo_wvalid),
+    .wready_o(fmt_fifo_wready),
+    .wdata_i (fmt_fifo_wdata),
+    .depth_o (fmt_fifo_depth),
+    .rvalid_o(fmt_fifo_rvalid),
+    .rready_i(fmt_fifo_rready),
+    .rdata_o (fmt_fifo_rdata)
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
 
   prim_fifo_sync #(
-    .Width(8),
-    .Pass(1'b0),
-    .Depth(32)
+    .Width   (8),
+    .Pass    (1'b0),
+    .Depth   (32)
   ) u_i2c_rxfifo (
     .clk_i,
     .rst_ni,
-    .clr_i (i2c_fifo_rxrst),
-    .wvalid(rx_fifo_wvalid),
-    .wready(rx_fifo_wready),
-    .wdata(rx_fifo_wdata),
-    .depth(rx_fifo_depth),
-    .rvalid(rx_fifo_rvalid),
-    .rready(rx_fifo_rready),
-    .rdata(rx_fifo_rdata)
+    .clr_i   (i2c_fifo_rxrst),
+    .wvalid_i(rx_fifo_wvalid),
+    .wready_o(rx_fifo_wready),
+    .wdata_i (rx_fifo_wdata),
+    .depth_o (rx_fifo_depth),
+    .rvalid_o(rx_fifo_rvalid),
+    .rready_i(rx_fifo_rready),
+    .rdata_o (rx_fifo_rdata)
   );
 
   i2c_fsm u_i2c_fsm (

@@ -170,20 +170,20 @@ module uart_core (
   assign tx_fifo_rready = tx_uart_idle & tx_fifo_rvalid & tx_enable;
 
   prim_fifo_sync #(
-    .Width(8),
-    .Pass (1'b0),
-    .Depth(32)
+    .Width   (8),
+    .Pass    (1'b0),
+    .Depth   (32)
   ) u_uart_txfifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (uart_fifo_txrst),
-    .wvalid (reg2hw.wdata.qe),
-    .wready (tx_fifo_wready),
-    .wdata  (reg2hw.wdata.q),
-    .depth  (tx_fifo_depth),
-    .rvalid (tx_fifo_rvalid),
-    .rready (tx_fifo_rready),
-    .rdata  (tx_fifo_data)
+    .clr_i   (uart_fifo_txrst),
+    .wvalid_i(reg2hw.wdata.qe),
+    .wready_o(tx_fifo_wready),
+    .wdata_i (reg2hw.wdata.q),
+    .depth_o (tx_fifo_depth),
+    .rvalid_o(tx_fifo_rvalid),
+    .rready_i(tx_fifo_rready),
+    .rdata_o (tx_fifo_data)
   );
 
   uart_tx uart_tx (
@@ -269,20 +269,20 @@ module uart_core (
   assign rx_fifo_wvalid = rx_valid & ~event_rx_frame_err & ~event_rx_parity_err;
 
   prim_fifo_sync #(
-    .Width (8),
-    .Pass  (1'b0),
-    .Depth (32)
+    .Width   (8),
+    .Pass    (1'b0),
+    .Depth   (32)
   ) u_uart_rxfifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (uart_fifo_rxrst),
-    .wvalid (rx_fifo_wvalid),
-    .wready (rx_fifo_wready),
-    .wdata  (rx_fifo_data),
-    .depth  (rx_fifo_depth),
-    .rvalid (rx_fifo_rvalid),
-    .rready (reg2hw.rdata.re),
-    .rdata  (uart_rdata)
+    .clr_i   (uart_fifo_rxrst),
+    .wvalid_i(rx_fifo_wvalid),
+    .wready_o(rx_fifo_wready),
+    .wdata_i (rx_fifo_data),
+    .depth_o (rx_fifo_depth),
+    .rvalid_o(rx_fifo_rvalid),
+    .rready_i(reg2hw.rdata.re),
+    .rdata_o (uart_rdata)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

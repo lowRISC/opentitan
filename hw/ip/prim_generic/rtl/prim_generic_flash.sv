@@ -77,20 +77,20 @@ module prim_generic_flash #(
   flash_ctrl_pkg::flash_part_e part_q;
 
   prim_fifo_sync #(
-      .Width  (AddrW + $bits(flash_ctrl_pkg::flash_part_e)),
-      .Pass   (0),
-      .Depth  (2)
+    .Width   (AddrW + $bits(flash_ctrl_pkg::flash_part_e)),
+    .Pass    (0),
+    .Depth   (2)
   ) i_slice (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (rd_i),
-    .wready (),
-    .wdata  ({part_i, addr_i}),
-    .depth  (),
-    .rvalid (rd_q),
-    .rready (hold_cmd), //whenver command is held, pop
-    .rdata  ({part_q, addr_q})
+    .clr_i   (1'b0),
+    .wvalid_i(rd_i),
+    .wready_o(),
+    .wdata_i ({part_i, addr_i}),
+    .depth_o (),
+    .rvalid_o(rd_q),
+    .rready_i(hold_cmd), //whenver command is held, pop
+    .rdata_o ({part_q, addr_q})
   );
 
 

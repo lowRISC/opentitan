@@ -172,17 +172,17 @@ module usbuart_core (
   ) usbuart_txfifo (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (tx_fifo_rst_n),
-    .wvalid    (reg2hw.wdata.qe),
-    .wready    (tx_fifo_wready),
-    .wdata     (reg2hw.wdata.q),
-    .wdepth    (tx_fifo_depth),
+    .wvalid_i  (reg2hw.wdata.qe),
+    .wready_o  (tx_fifo_wready),
+    .wdata_i   (reg2hw.wdata.q),
+    .wdepth_o  (tx_fifo_depth),
 
     .clk_rd_i  (clk_usb_48mhz_i),
     .rst_rd_ni (tx_fifo_rst_n), // CDC: rely on it being there a long time
-    .rvalid    (usb_tx_rvalid),
-    .rready    (usb_tx_rready),
-    .rdata     (usb_tx_fifo_rdata),
-    .rdepth    () // only using empty
+    .rvalid_o  (usb_tx_rvalid),
+    .rready_i  (usb_tx_rready),
+    .rdata_o   (usb_tx_fifo_rdata),
+    .rdepth_o  () // only using empty
   );
 
   //////////////
@@ -200,17 +200,17 @@ module usbuart_core (
   ) usbuart_rxfifo (
     .clk_wr_i  (clk_usb_48mhz_i),
     .rst_wr_ni (rx_fifo_rst_n),  // CDC: rely on it being there a long time
-    .wvalid    (usb_rx_wvalid),
-    .wready    (usb_rx_wready),
-    .wdata     (usb_rx_fifo_wdata),
-    .wdepth    (), // only using full
+    .wvalid_i  (usb_rx_wvalid),
+    .wready_o  (usb_rx_wready),
+    .wdata_i   (usb_rx_fifo_wdata),
+    .wdepth_o  (), // only using full
 
     .clk_rd_i  (clk_i),
     .rst_rd_ni (rx_fifo_rst_n),
-    .rvalid    (rx_fifo_rvalid),
-    .rready    (reg2hw.rdata.re),
-    .rdata     (uart_rdata),
-    .rdepth    (rx_fifo_depth)
+    .rvalid_o  (rx_fifo_rvalid),
+    .rready_i  (reg2hw.rdata.re),
+    .rdata_o   (uart_rdata),
+    .rdepth_o  (rx_fifo_depth)
   );
 
 

@@ -242,20 +242,20 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // response order FIFO
   prim_fifo_sync #(
-      .Width  (RspOrderFifoWidth),
-      .Pass   (0),
-      .Depth  (RspOrderDepth)
+    .Width  (RspOrderFifoWidth),
+    .Pass   (0),
+    .Depth  (RspOrderDepth)
   ) i_rsp_order_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (req_i && rdy_o),
-    .wready (rsp_fifo_rdy),
-    .wdata  (rsp_fifo_wdata),
-    .depth  (),
-    .rvalid (rsp_fifo_vld),
-    .rready (data_valid_o), // pop when a match has been found
-    .rdata  (rsp_fifo_rdata)
+    .clr_i   (1'b0),
+    .wvalid_i(req_i && rdy_o),
+    .wready_o(rsp_fifo_rdy),
+    .wdata_i (rsp_fifo_wdata),
+    .depth_o (),
+    .rvalid_o(rsp_fifo_vld),
+    .rready_i(data_valid_o), // pop when a match has been found
+    .rdata_o (rsp_fifo_rdata)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -332,38 +332,38 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // the user would need to correctly setup constraints on either flash / gf_mult
   // timing change.
   prim_fifo_sync #(
-    .Width  (DataWidth + 2 + NumBuf),
-    .Pass   (0),
-    .Depth  (2)
+    .Width   (DataWidth + 2 + NumBuf),
+    .Pass    (0),
+    .Depth   (2)
   ) u_rd_storage (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (rd_done),
-    .wready (data_fifo_rdy),
-    .wdata  ({alloc_q, rd_attrs.descramble,forward,data_i}),
-    .depth  (),
-    .rvalid (fifo_data_valid),
-    .rready (fifo_data_ready | hint_forward),
-    .rdata  ({alloc_q2, hint_descram,hint_forward,fifo_data})
+    .clr_i   (1'b0),
+    .wvalid_i(rd_done),
+    .wready_o(data_fifo_rdy),
+    .wdata_i ({alloc_q, rd_attrs.descramble,forward,data_i}),
+    .depth_o (),
+    .rvalid_o(fifo_data_valid),
+    .rready_i(fifo_data_ready | hint_forward),
+    .rdata_o ({alloc_q2, hint_descram,hint_forward,fifo_data})
   );
 
   // storage for mask calculations
   prim_fifo_sync #(
-      .Width  (DataWidth),
-      .Pass   (0),
-      .Depth  (2)
+    .Width   (DataWidth),
+    .Pass    (0),
+    .Depth   (2)
   ) u_mask_storage (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (calc_req_o & calc_ack_i),
-    .wready (mask_fifo_rdy),
-    .wdata  (mask_i),
-    .depth  (),
-    .rvalid (mask_valid),
-    .rready (fifo_data_ready | hint_forward),
-    .rdata  (mask)
+    .clr_i   (1'b0),
+    .wvalid_i(calc_req_o & calc_ack_i),
+    .wready_o(mask_fifo_rdy),
+    .wdata_i (mask_i),
+    .depth_o (),
+    .rvalid_o(mask_valid),
+    .rready_i(fifo_data_ready | hint_forward),
+    .rdata_o (mask)
   );
 
   // generate the mask calculation request

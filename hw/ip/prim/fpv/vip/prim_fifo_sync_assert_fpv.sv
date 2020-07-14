@@ -19,13 +19,13 @@ module prim_fifo_sync_assert_fpv #(
   input  clk_i,
   input  rst_ni,
   input  clr_i,
-  input  wvalid,
-  input  wready,
-  input [Width-1:0] wdata,
-  input  rvalid,
-  input  rready,
-  input [Width-1:0] rdata,
-  input [DepthW-1:0] depth
+  input  wvalid_i,
+  input  wready_o,
+  input [Width-1:0] wdata_i,
+  input  rvalid_o,
+  input  rready_i,
+  input [Width-1:0] rdata_o,
+  input [DepthW-1:0] depth_o
 );
 
   /////////////////
@@ -34,7 +34,7 @@ module prim_fifo_sync_assert_fpv #(
 
   // no need to consider all possible input words
   // 2-3 different values suffice
-  `ASSUME(WdataValues_M, wdata inside {Width'(1'b0), Width'(1'b1), {Width{1'b1}}}, clk_i, !rst_ni)
+  `ASSUME(WdataValues_M, wdata_i inside {Width'(1'b0), Width'(1'b1), {Width{1'b1}}}, clk_i, !rst_ni)
 
   ////////////////////////////////
   // Data and Depth Value Check //
@@ -59,12 +59,12 @@ module prim_fifo_sync_assert_fpv #(
           if (clr_i) begin
             ref_depth <= 0;
           end else begin
-            if (wvalid && wready && rvalid && rready) begin
-              fifo <= wdata;
-            end else if (wvalid && wready) begin
-              fifo <= wdata;
+            if (wvalid_i && wready_o && rvalid_o && rready_i) begin
+              fifo <= wdata_i;
+            end else if (wvalid_i && wready_o) begin
+              fifo <= wdata_i;
               ref_depth <= ref_depth + 1;
-            end else if (rvalid && rready) begin
+            end else if (rvalid_o && rready_i) begin
               ref_depth <= ref_depth - 1;
             end
           end
@@ -72,7 +72,7 @@ module prim_fifo_sync_assert_fpv #(
       end
 
       if (Pass) begin : gen_pass
-        assign ref_rdata = (ref_depth == 0) ? wdata : fifo;
+        assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo;
       end else begin : no_pass
         assign ref_rdata = fifo;
       end
@@ -101,15 +101,15 @@ module prim_fifo_sync_assert_fpv #(
             rptr      <= 0;
             ref_depth <= 0;
           end else begin
-            if (wvalid && wready && rvalid && rready) begin
-              fifo[wptr] <= wdata;
+            if (wvalid_i && wready_o && rvalid_o && rready_i) begin
+              fifo[wptr] <= wdata_i;
               wptr <= modinc(wptr, Depth);
               rptr <= modinc(rptr, Depth);
-            end else if (wvalid && wready) begin
-              fifo[wptr] <= wdata;
+            end else if (wvalid_i && wready_o) begin
+              fifo[wptr] <= wdata_i;
               wptr <= modinc(wptr, Depth);
               ref_depth <= ref_depth + 1;
-            end else if (rvalid && rready) begin
+            end else if (rvalid_o && rready_i) begin
               rptr <= modinc(rptr, Depth);
               ref_depth <= ref_depth - 1;
             end
@@ -118,7 +118,7 @@ module prim_fifo_sync_assert_fpv #(
       end
 
       if (Pass) begin : gen_pass
-        assign ref_rdata = (ref_depth == 0) ? wdata : fifo[rptr];
+        assign ref_rdata = (ref_depth == 0) ? wdata_i : fifo[rptr];
       end else begin : no_pass
         assign ref_rdata = fifo[rptr];
       end
@@ -126,9 +126,9 @@ module prim_fifo_sync_assert_fpv #(
     end
 
     // check the data
-    `ASSERT(DataCheck_A, rvalid |-> rdata == ref_rdata)
+    `ASSERT(DataCheck_A, rvalid_o |-> rdata_o == ref_rdata)
     // check the depth
-    `ASSERT(DepthCheck_A, ref_depth == depth)
+    `ASSERT(DepthCheck_A, ref_depth == depth_o)
 
   end
 
@@ -137,20 +137,20 @@ module prim_fifo_sync_assert_fpv #(
   ////////////////////////
 
   // assert depth of FIFO
-  `ASSERT(Depth_A, depth <= Depth)
+  `ASSERT(Depth_A, depth_o <= Depth)
   // if we clear the FIFO, it must be empty in the next cycle
-  `ASSERT(CheckClrDepth_A, clr_i |=> depth == 0)
+  `ASSERT(CheckClrDepth_A, clr_i |=> depth_o == 0)
   // check write on full
-  `ASSERT(WriteFull_A, depth == Depth && wvalid && !rready |=> depth == $past(depth),
+  `ASSERT(WriteFull_A, depth_o == Depth && wvalid_i && !rready_i |=> depth_o == $past(depth_o),
       clk_i, !rst_ni || clr_i)
   // read empty
-  `ASSERT(ReadEmpty_A, depth == 0 && rready && !wvalid |=> depth == 0,
+  `ASSERT(ReadEmpty_A, depth_o == 0 && rready_i && !wvalid_i |=> depth_o == 0,
       clk_i, !rst_ni || clr_i)
 
   // this is unreachable in depth 1 no-pass through mode
   if (Depth == 1 && Pass) begin : gen_d1_passthru
     // check simultaneous write and read
-    `ASSERT(WriteAndRead_A, wready && wvalid && rvalid && rready |=> depth == $past(depth),
+    `ASSERT(WriteAndRead_A, wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o),
         clk_i, !rst_ni || clr_i)
   end
 
@@ -158,35 +158,35 @@ module prim_fifo_sync_assert_fpv #(
     // if there is no register, the FIFO is per definition pass-through
     `ASSERT_INIT(ZeroDepthNeedsPass_A, Pass == 1)
     // depth must remain zero
-    `ASSERT(DepthAlwaysZero_A, depth == 0)
+    `ASSERT(DepthAlwaysZero_A, depth_o == 0)
     // data is just passed through
-    `ASSERT(DataPassThru_A, wdata == rdata)
+    `ASSERT(DataPassThru_A, wdata_i == rdata_o)
     // FIFO is ready if downstream logic is ready
-    `ASSERT(Wready_A, rready == wready)
+    `ASSERT(Wready_A, rready_i == wready_o)
     // valid input is valid output
-    `ASSERT(Rvalid_A, rvalid == wvalid)
+    `ASSERT(Rvalid_A, rvalid_o == wvalid_i)
     // ensure full coverage
     `ASSERT(UnusedClr_A, prim_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
   end else begin : gen_depth_gt0
     // check wready
-    `ASSERT(Wready_A, depth < Depth |-> wready)
+    `ASSERT(Wready_A, depth_o < Depth |-> wready_o)
     // check rvalid
-    `ASSERT(Rvalid_A, depth > 0 |-> rvalid)
+    `ASSERT(Rvalid_A, depth_o > 0 |-> rvalid_o)
     // check write only
-    `ASSERT(WriteOnly_A, wvalid && wready && !rready && depth < Depth |=>
-        depth == $past(depth) + 1, clk_i, !rst_ni || clr_i)
+    `ASSERT(WriteOnly_A, wvalid_i && wready_o && !rready_i && depth_o < Depth |=>
+        depth_o == $past(depth_o) + 1, clk_i, !rst_ni || clr_i)
     // check read only
-    `ASSERT(ReadOnly_A, !wvalid && rready && rvalid && depth > 0 |=>
-      depth == $past(depth) - 1, clk_i, !rst_ni || clr_i)
+    `ASSERT(ReadOnly_A, !wvalid_i && rready_i && rvalid_o && depth_o > 0 |=>
+      depth_o == $past(depth_o) - 1, clk_i, !rst_ni || clr_i)
   end
 
   if (Pass) begin : gen_pass_fwd
     // if we clear the FIFO, it must be empty in the next cycle
     // but we may also get a pass through
-    `ASSERT(CheckClrValid_A, clr_i |=> wvalid == rvalid)
+    `ASSERT(CheckClrValid_A, clr_i |=> wvalid_i == rvalid_o)
   end else begin : gen_nopass_fwd
     // if we clear the FIFO, it must be empty in the next cycle
-    `ASSERT(CheckClrValid_A, clr_i |=> !rvalid)
+    `ASSERT(CheckClrValid_A, clr_i |=> !rvalid_o)
   end
 
   /////////////////////////
@@ -195,19 +195,19 @@ module prim_fifo_sync_assert_fpv #(
 
   if (Pass) begin : gen_pass_bkwd
     // there is still space in the FIFO or downstream logic is ready
-    `ASSERT(WreadySpacekBkwd_A, wready |-> depth < Depth || rready)
+    `ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth || rready_i)
     // elements ready to be read or upstream data is valid
-    `ASSERT(RvalidElemskBkwd_A, rvalid |-> depth > 0 || wvalid)
+    `ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0 || wvalid_i)
   end else begin : gen_nopass_bkwd
     // there is still space in the FIFO
-    `ASSERT(WreadySpacekBkwd_A, wready |-> depth < Depth)
+    `ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth)
     // elements ready to be read
-    `ASSERT(RvalidElemskBkwd_A, rvalid |-> depth > 0)
+    `ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0)
   end
 
   // no more space in the FIFO
-  `ASSERT(WreadyNoSpaceBkwd_A, !wready |-> depth == Depth)
+  `ASSERT(WreadyNoSpaceBkwd_A, !wready_o |-> depth_o == Depth)
   // elements ready to be read
-  `ASSERT(RvalidNoElemskBkwd_A, !rvalid |-> depth == 0)
+  `ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
 
 endmodule : prim_fifo_sync_assert_fpv
