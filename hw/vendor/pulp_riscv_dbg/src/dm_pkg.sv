@@ -201,7 +201,7 @@ package dm;
     logic         sbaccess8;
   } sbcs_t;
 
-  localparam logic[1:0] DTM_SUCCESS = 2'h0;
+  localparam logic [1:0] DTM_SUCCESS = 2'h0;
 
   typedef struct packed {
     logic [6:0]  addr;
