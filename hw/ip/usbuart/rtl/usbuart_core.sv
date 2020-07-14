@@ -445,6 +445,7 @@ module usbuart_core (
   assign usb_phy_config.override_pwr_sense_en.q  = 1'b0;
   assign usb_phy_config.override_pwr_sense_val.q = 1'b0;
   assign usb_phy_config.usb_ref_disable.q        = 1'b0;
+  assign usb_phy_config.tx_osc_test_mode.q       = 1'b0;
 
   usbdev_iomux i_usbdev_iomux (
     .clk_i                  ( clk_i                  ),

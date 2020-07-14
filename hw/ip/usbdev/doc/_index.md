@@ -65,6 +65,11 @@ This module features the following output signals to provide a reference for syn
 Both these signals are synchronous to the 48 MHz clock.
 They can be forced to zero by setting {{< regref "phy_config.usb_ref_disable" >}} to `1`.
 
+To externally monitor the 48 MHz clock, the USB device supports an oscillator test mode which can be enabled by setting {{< regref "phy_config.tx_osc_test_mode" >}} to `1`.
+In this mode, the device constantly transmits a J/K pattern but no longer receives SOF packets.
+Consequently, it does not generate reference pulses for clock synchronization.
+The clock might drift off.
+
 Control transfers pass through asynchronous FIFOs or have a ready bit
 synchronized across the clock domain boundary. A dual-port
 asynchronous buffer SRAM is used for data transfers between the bus

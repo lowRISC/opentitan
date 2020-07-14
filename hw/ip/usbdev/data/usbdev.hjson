@@ -555,6 +555,18 @@
 
                 '''
         }
+        {
+          bits: "7",
+          resval: "0",
+          name: "tx_osc_test_mode",
+          desc: '''
+                Disable (0) or enable (1) oscillator test mode.
+                If enabled, the device constantly transmits a J/K pattern, which is useful for testing the USB clock.
+                Note that while in oscillator test mode, the device no longer receives SOFs and consequently does not generate the reference signal for clock synchronization.
+                The clock might drift off.
+
+                '''
+        }
       ]
     }
 

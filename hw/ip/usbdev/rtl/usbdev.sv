@@ -517,7 +517,7 @@ module usbdev (
     .clr_devaddr_o        (usb_clr_devaddr),
     .ep_iso_i             (ep_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
-    .tx_osc_test_mode_i   (1'b0), // cdc ok: quasi-static & testmode only
+    .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
 
     // status
