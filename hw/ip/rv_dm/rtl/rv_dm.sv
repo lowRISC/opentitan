@@ -239,7 +239,13 @@ module rv_dm #(
   dm_mem #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
-    .SelectableHarts(SelectableHarts)
+    .SelectableHarts(SelectableHarts),
+    // The debug module provides a simplified ROM for systems that map the debug ROM to offset 0x0
+    // on the system bus. In that case, only one scratch register has to be implemented in the core.
+    // However, we require that the DM can be placed at arbitrary offsets in the system, which
+    // requires the generalized debug ROM implementation and two scratch registers. We hence set
+    // this parameter to a non-zero value (inside dm_mem, this just feeds into a comparison with 0).
+    .DmBaseAddress(1)
   ) i_dm_mem (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
