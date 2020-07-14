@@ -5,12 +5,14 @@
 # Execute the simulation
 
 from riscvmodel.sim import Simulator
-from riscvmodel.model import Model
-from riscvmodel.variant import RV32I
 from riscvmodel.code import read_from_binary
 
 import argparse
 import struct
+
+from .model import Model
+from .variant import RV32IXotbn
+from .insn import *
 
 
 def main():
@@ -22,7 +24,7 @@ def main():
     parser.add_argument("cycles_file")
 
     args = parser.parse_args()
-    sim = Simulator(Model(RV32I))
+    sim = Simulator(OTBNModel())
 
     sim.load_program(read_from_binary(args.imem_file, stoponerror=True))
     with open(args.dmem_file, "rb") as f:
