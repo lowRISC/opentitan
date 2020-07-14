@@ -24,16 +24,16 @@ index f131392..b7fc5e1 100644
 @@ -85,10 +86,6 @@ module dm_csrs #(
    dm::dtm_op_e dtm_op;
    assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
- 
+
 -  logic        resp_queue_full;
 -  logic        resp_queue_empty;
 -  logic        resp_queue_push;
 -  logic        resp_queue_pop;
    logic [31:0] resp_queue_data;
- 
+
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h1);
 @@ -180,9 +177,6 @@ module dm_csrs #(
- 
+
    // a successful response returns zero
    assign dmi_resp_o.resp = dm::DTM_SUCCESS;
 -  assign dmi_resp_valid_o     = ~resp_queue_empty;
@@ -45,11 +45,11 @@ index f131392..b7fc5e1 100644
 @@ -550,27 +544,27 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
- 
+
 -  assign resp_queue_pop = dmi_resp_ready_i & ~resp_queue_empty;
 -
    assign ndmreset_o = dmcontrol_q.ndmreset;
- 
+
 +  logic unused_testmode;
 +  assign unused_testmode = testmode_i;
 +
@@ -58,9 +58,9 @@ index f131392..b7fc5e1 100644
 -    .dtype            ( logic [31:0]         ),
 -    .DEPTH            ( 2                    )
 +  prim_fifo_sync #(
-+    .Width (32),
-+    .Pass  (1'b0),
-+    .Depth (2)
++    .Width   (32),
++    .Pass    (1'b0),
++    .Depth   (2)
    ) i_fifo (
 -    .clk_i            ( clk_i                ),
 -    .rst_ni           ( dmi_rst_ni           ), // reset only when system is re-set
@@ -77,15 +77,15 @@ index f131392..b7fc5e1 100644
 +    .clk_i   ( clk_i                ),
 +    .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
 +    .clr_i   ( 1'b0                 ),
-+    .wdata   ( resp_queue_data      ),
-+    .wvalid  ( dmi_req_valid_i      ),
-+    .wready  ( dmi_req_ready_o      ),
-+    .rdata   ( dmi_resp_o.data      ),
-+    .rvalid  ( dmi_resp_valid_o     ),
-+    .rready  ( dmi_resp_ready_i     ),
-+    .depth   (                      )  // Doesn't use
++    .wdata_i ( resp_queue_data      ),
++    .wvalid_i( dmi_req_valid_i      ),
++    .wready_o( dmi_req_ready_o      ),
++    .rdata_o ( dmi_resp_o.data      ),
++    .rvalid_o( dmi_resp_valid_o     ),
++    .rready_i( dmi_resp_ready_i     ),
++    .depth_o (                      )  // Doesn't use
    );
- 
+
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 diff --git a/src/dmi_cdc.sv b/src/dmi_cdc.sv
 index 4665c91..1e4a6f3 100644
@@ -94,7 +94,7 @@ index 4665c91..1e4a6f3 100644
 @@ -42,32 +42,44 @@ module dmi_cdc (
    input  logic             core_dmi_valid_i
  );
- 
+
 -  cdc_2phase #(.T(dm::dmi_req_t)) i_cdc_req (
 -    .src_rst_ni  ( trst_ni          ),
 -    .src_clk_i   ( tck_i            ),
@@ -102,31 +102,31 @@ index 4665c91..1e4a6f3 100644
 -    .src_valid_i ( jtag_dmi_valid_i ),
 -    .src_ready_o ( jtag_dmi_ready_o ),
 +  // TODO: Make it clean for synthesis.
- 
+
 -    .dst_rst_ni  ( rst_ni           ),
 -    .dst_clk_i   ( clk_i            ),
 -    .dst_data_o  ( core_dmi_req_o   ),
 -    .dst_valid_o ( core_dmi_valid_o ),
 -    .dst_ready_i ( core_dmi_ready_i )
 +  prim_fifo_async #(
-+    .Width( $bits(dm::dmi_req_t) ),
-+    .Depth( 4 )
++    .Width       ( $bits(dm::dmi_req_t) ),
++    .Depth       ( 4 )
 +  ) i_cdc_req (
 +    .clk_wr_i    ( tck_i            ),
 +    .rst_wr_ni   ( trst_ni          ),
-+    .wvalid      ( jtag_dmi_valid_i ),
-+    .wready      ( jtag_dmi_ready_o ), // wrclk
-+    .wdata       ( jtag_dmi_req_i   ),
-+    .wdepth      (                  ),
++    .wvalid_i    ( jtag_dmi_valid_i ),
++    .wready_o    ( jtag_dmi_ready_o ), // wrclk
++    .wdata_i     ( jtag_dmi_req_i   ),
++    .wdepth_o    (                  ),
 +
 +    .clk_rd_i    ( clk_i            ),
 +    .rst_rd_ni   ( rst_ni           ),
-+    .rvalid      ( core_dmi_valid_o ),
-+    .rready      ( core_dmi_ready_i ),
-+    .rdata       ( core_dmi_req_o   ),
-+    .rdepth      (                  )
++    .rvalid_o    ( core_dmi_valid_o ),
++    .rready_i    ( core_dmi_ready_i ),
++    .rdata_o     ( core_dmi_req_o   ),
++    .rdepth_o    (                  )
    );
- 
+
 -  cdc_2phase #(.T(dm::dmi_resp_t)) i_cdc_resp (
 -    .src_rst_ni  ( rst_ni           ),
 -    .src_clk_i   ( clk_i            ),
@@ -134,16 +134,16 @@ index 4665c91..1e4a6f3 100644
 -    .src_valid_i ( core_dmi_valid_i ),
 -    .src_ready_o ( core_dmi_ready_o ),
 +  prim_fifo_async #(
-+    .Width( $bits(dm::dmi_resp_t) ),
-+    .Depth( 4 )
++    .Width       ( $bits(dm::dmi_resp_t) ),
++    .Depth       ( 4 )
 +  ) i_cdc_resp (
 +    .clk_wr_i    ( clk_i            ),
 +    .rst_wr_ni   ( rst_ni           ),
-+    .wvalid      ( core_dmi_valid_i ),
-+    .wready      ( core_dmi_ready_o ), // wrclk
-+    .wdata       ( core_dmi_resp_i  ),
-+    .wdepth      (                  ),
- 
++    .wvalid_i    ( core_dmi_valid_i ),
++    .wready_o    ( core_dmi_ready_o ), // wrclk
++    .wdata_i     ( core_dmi_resp_i  ),
++    .wdepth_o    (                  ),
+
 -    .dst_rst_ni  ( trst_ni          ),
 -    .dst_clk_i   ( tck_i            ),
 -    .dst_data_o  ( jtag_dmi_resp_o  ),
@@ -151,12 +151,12 @@ index 4665c91..1e4a6f3 100644
 -    .dst_ready_i ( jtag_dmi_ready_i )
 +    .clk_rd_i    ( tck_i            ),
 +    .rst_rd_ni   ( trst_ni          ),
-+    .rvalid      ( jtag_dmi_valid_o ),
-+    .rready      ( jtag_dmi_ready_i ),
-+    .rdata       ( jtag_dmi_resp_o  ),
-+    .rdepth      (                  )
++    .rvalid_o    ( jtag_dmi_valid_o ),
++    .rready_i    ( jtag_dmi_ready_i ),
++    .rdata_o     ( jtag_dmi_resp_o  ),
++    .rdepth_o    (                  )
    );
- 
+
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
 index 3d11145..ca6b824 100644
@@ -187,8 +187,8 @@ index 3d11145..ca6b824 100644
 +    .clk_no     ( tck_n      ),
 +    .scanmode_i ( testmode_i )
    );
- 
+
    // TDO changes state at negative edge of TCK
--- 
+--
 2.27.0.389.gc38d7665816-goog
 

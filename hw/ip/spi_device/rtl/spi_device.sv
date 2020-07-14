@@ -369,16 +369,16 @@ module spi_device #(
     .clk_rd_i     (clk_i),
     .rst_rd_ni    (rst_rxfifo_n),
 
-    .wvalid       (rxf_wvalid),
-    .wready       (rxf_wready),
-    .wdata        (rxf_wdata),
+    .wvalid_i     (rxf_wvalid),
+    .wready_o     (rxf_wready),
+    .wdata_i      (rxf_wdata),
 
-    .rvalid       (rxf_rvalid),
-    .rready       (rxf_rready),
-    .rdata        (rxf_rdata),
+    .rvalid_o     (rxf_rvalid),
+    .rready_i     (rxf_rready),
+    .rdata_o      (rxf_rdata),
 
-    .wdepth       (),
-    .rdepth       (as_rxfifo_depth)
+    .wdepth_o     (),
+    .rdepth_o     (as_rxfifo_depth)
   );
 
   prim_fifo_async #(
@@ -391,16 +391,16 @@ module spi_device #(
     .clk_rd_i     (clk_spi_out),
     .rst_rd_ni    (rst_txfifo_n),
 
-    .wvalid       (txf_wvalid),
-    .wready       (txf_wready),
-    .wdata        (txf_wdata),
+    .wvalid_i     (txf_wvalid),
+    .wready_o     (txf_wready),
+    .wdata_i      (txf_wdata),
 
-    .rvalid       (txf_rvalid),
-    .rready       (txf_rready),
-    .rdata        (txf_rdata),
+    .rvalid_o     (txf_rvalid),
+    .rready_i     (txf_rready),
+    .rdata_o      (txf_rdata),
 
-    .wdepth       (as_txfifo_depth),
-    .rdepth       ()
+    .wdepth_o     (as_txfifo_depth),
+    .rdepth_o     ()
   );
 
   // RX Fifo control (FIFO Read port --> SRAM request)

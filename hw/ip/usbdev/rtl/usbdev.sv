@@ -176,17 +176,17 @@ module usbdev (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
 
-    .wvalid    (reg2hw.avbuffer.qe),
-    .wready    (av_fifo_wready),
-    .wdata     (reg2hw.avbuffer.q),
-    .wdepth    (hw2reg.usbstat.av_depth.d),
+    .wvalid_i  (reg2hw.avbuffer.qe),
+    .wready_o  (av_fifo_wready),
+    .wdata_i   (reg2hw.avbuffer.q),
+    .wdepth_o  (hw2reg.usbstat.av_depth.d),
 
     .clk_rd_i  (clk_usb_48mhz_i),
     .rst_rd_ni (rst_usb_48mhz_ni),
-    .rvalid    (usb_av_rvalid),
-    .rready    (usb_av_rready),
-    .rdata     (usb_av_rdata),
-    .rdepth    () // only using empty
+    .rvalid_o  (usb_av_rvalid),
+    .rready_i  (usb_av_rready),
+    .rdata_o   (usb_av_rdata),
+    .rdepth_o  () // only using empty
   );
 
   assign rx_fifo_re = reg2hw.rxfifo.ep.re | reg2hw.rxfifo.setup.re |
@@ -199,17 +199,17 @@ module usbdev (
     .clk_wr_i  (clk_usb_48mhz_i),
     .rst_wr_ni (rst_usb_48mhz_ni),
 
-    .wvalid    (usb_rx_wvalid),
-    .wready    (usb_rx_wready),
-    .wdata     (usb_rx_wdata),
-    .wdepth    (),
+    .wvalid_i  (usb_rx_wvalid),
+    .wready_o  (usb_rx_wready),
+    .wdata_i   (usb_rx_wdata),
+    .wdepth_o  (),
 
     .clk_rd_i  (clk_i),
     .rst_rd_ni (rst_ni),
-    .rvalid    (rx_fifo_rvalid),
-    .rready    (rx_fifo_re),
-    .rdata     (rx_rdata_raw),
-    .rdepth    (hw2reg.usbstat.rx_depth.d)
+    .rvalid_o  (rx_fifo_rvalid),
+    .rready_i  (rx_fifo_re),
+    .rdata_o   (rx_rdata_raw),
+    .rdepth_o  (hw2reg.usbstat.rx_depth.d)
   );
 
   // Return all zero if the FIFO is empty (instead of X)

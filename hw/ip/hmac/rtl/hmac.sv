@@ -258,23 +258,23 @@ module hmac
                                        : reg_fifo_wentry;
 
   prim_fifo_sync #(
-    .Width ($bits(sha_fifo_t)),
-    .Pass  (1'b0),
-    .Depth (MsgFifoDepth)
+    .Width   ($bits(sha_fifo_t)),
+    .Pass    (1'b0),
+    .Depth   (MsgFifoDepth)
   ) u_msg_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
+    .clr_i   (1'b0),
 
-    .wvalid (fifo_wvalid & sha_en),
-    .wready (fifo_wready),
-    .wdata  (fifo_wdata),
+    .wvalid_i(fifo_wvalid & sha_en),
+    .wready_o(fifo_wready),
+    .wdata_i (fifo_wdata),
 
-    .depth  (fifo_depth),
+    .depth_o (fifo_depth),
 
-    .rvalid (fifo_rvalid),
-    .rready (fifo_rready),
-    .rdata  (fifo_rdata)
+    .rvalid_o(fifo_rvalid),
+    .rready_i(fifo_rready),
+    .rdata_o (fifo_rdata)
   );
 
   // TL ADAPTER SRAM

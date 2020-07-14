@@ -280,20 +280,20 @@ module tlul_adapter_sram #(
   // of the response in the same cycle.  Doing so however creates a path from
   // ready_i to ready_o, which may not be desireable.
   prim_fifo_sync #(
-    .Width  (ReqFifoWidth),
-    .Pass   (1'b0),
-    .Depth  (Outstanding)
+    .Width   (ReqFifoWidth),
+    .Pass    (1'b0),
+    .Depth   (Outstanding)
   ) u_reqfifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (reqfifo_wvalid),
-    .wready (reqfifo_wready),
-    .wdata  (reqfifo_wdata),
-    .depth  (),
-    .rvalid (reqfifo_rvalid),
-    .rready (reqfifo_rready),
-    .rdata  (reqfifo_rdata)
+    .clr_i   (1'b0),
+    .wvalid_i(reqfifo_wvalid),
+    .wready_o(reqfifo_wready),
+    .wdata_i (reqfifo_wdata),
+    .depth_o (),
+    .rvalid_o(reqfifo_rvalid),
+    .rready_i(reqfifo_rready),
+    .rdata_o (reqfifo_rdata)
   );
 
   // sramreqfifo:
@@ -301,20 +301,20 @@ module tlul_adapter_sram #(
   //    sramreqfifo only needs to hold the mask and word offset until the read
   //    data returns from memory.
   prim_fifo_sync #(
-    .Width  (SramReqFifoWidth),
-    .Pass   (1'b0),
-    .Depth  (Outstanding)
+    .Width   (SramReqFifoWidth),
+    .Pass    (1'b0),
+    .Depth   (Outstanding)
   ) u_sramreqfifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (sramreqfifo_wvalid),
-    .wready (sramreqfifo_wready),
-    .wdata  (sramreqfifo_wdata),
-    .depth  (),
-    .rvalid (),
-    .rready (sramreqfifo_rready),
-    .rdata  (sramreqfifo_rdata)
+    .clr_i   (1'b0),
+    .wvalid_i(sramreqfifo_wvalid),
+    .wready_o(sramreqfifo_wready),
+    .wdata_i (sramreqfifo_wdata),
+    .depth_o (),
+    .rvalid_o(),
+    .rready_i(sramreqfifo_rready),
+    .rdata_o (sramreqfifo_rdata)
   );
 
   // Rationale having #Outstanding depth in response FIFO.
@@ -324,20 +324,20 @@ module tlul_adapter_sram #(
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
   prim_fifo_sync #(
-    .Width (RspFifoWidth),
-    .Pass  (1'b1),
-    .Depth (Outstanding)
+    .Width   (RspFifoWidth),
+    .Pass    (1'b1),
+    .Depth   (Outstanding)
   ) u_rspfifo (
     .clk_i,
     .rst_ni,
-    .clr_i  (1'b0),
-    .wvalid (rspfifo_wvalid),
-    .wready (rspfifo_wready),
-    .wdata  (rspfifo_wdata),
-    .depth  (),
-    .rvalid (rspfifo_rvalid),
-    .rready (rspfifo_rready),
-    .rdata  (rspfifo_rdata)
+    .clr_i   (1'b0),
+    .wvalid_i(rspfifo_wvalid),
+    .wready_o(rspfifo_wready),
+    .wdata_i (rspfifo_wdata),
+    .depth_o (),
+    .rvalid_o(rspfifo_rvalid),
+    .rready_i(rspfifo_rready),
+    .rdata_o (rspfifo_rdata)
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
