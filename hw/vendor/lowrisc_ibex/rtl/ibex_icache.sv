@@ -56,9 +56,6 @@ module ibex_icache #(
     input  logic                icache_inval_i,
     output logic                busy_o
 );
-
-  // NOTE RTL IS DRAFT
-
   // Local constants
   localparam int unsigned ADDR_W       = 32;
   // Number of fill buffers (must be >= 2)
@@ -427,8 +424,11 @@ module ibex_icache #(
     assign ecc_err_ic1 = lookup_valid_ic1 & ((|data_err_ic1) | (|tag_err_ic1));
 
     // Error correction
-    // The way(s) producing the error will be invalidated in the next cycle.
-    assign ecc_correction_ways_d  = tag_err_ic1 | (tag_match_ic1 & {NumWays{|data_err_ic1}});
+    // All ways will be invalidated on a tag error to prevent X-propagation from data_err_ic1 on
+    // spurious hits. Also prevents the same line being allocated twice when there was a true
+    // hit and a spurious hit.
+    assign ecc_correction_ways_d  = {NumWays{|tag_err_ic1}} |
+                                    (tag_match_ic1 & {NumWays{|data_err_ic1}});
     assign ecc_correction_write_d = ecc_err_ic1;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1018,5 +1018,23 @@ module ibex_icache #(
   // Lookups in the tag ram should always give a known result
   `ASSERT_KNOWN(TagHitKnown,     lookup_valid_ic1 & tag_hit_ic1)
   `ASSERT_KNOWN(TagInvalidKnown, lookup_valid_ic1 & tag_invalid_ic1)
+
+  // This is only used for the Yosys-based formal flow. Once we have working bind support, we can
+  // get rid of it.
+`ifdef FORMAL
+ `ifdef YOSYS
+  // Unfortunately, Yosys doesn't support passing unpacked arrays as ports. Explicitly pack up the
+  // signals we need.
+  logic [NUM_FB-1:0][ADDR_W-1:0] packed_fill_addr_q;
+  always_comb begin
+    for (int i = 0; i < NUM_FB; i++) begin
+      packed_fill_addr_q[i][ADDR_W-1:0] = fill_addr_q[i];
+    end
+  end
+
+  `include "formal_tb_frag.svh"
+ `endif
+`endif
+
 
 endmodule

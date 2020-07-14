@@ -1,0 +1,1 @@
+waive --rule=module-filename --regex=".*" --location="ibex_register_file_.+"

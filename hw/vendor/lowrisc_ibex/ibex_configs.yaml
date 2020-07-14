@@ -10,7 +10,7 @@
 small:
   RV32E                    : 0
   RV32M                    : 1
-  RV32B                    : 0
+  RV32B                    : "ibex_pkg::RV32BNone"
   BranchTargetALU          : 0
   WritebackStage           : 0
   MultiplierImplementation : "fast"
@@ -28,7 +28,7 @@ small:
 experimental-maxperf:
   RV32E                    : 0
   RV32M                    : 1
-  RV32B                    : 0
+  RV32B                    : "ibex_pkg::RV32BNone"
   BranchTargetALU          : 1
   WritebackStage           : 1
   MultiplierImplementation : "single-cycle"
@@ -40,7 +40,7 @@ experimental-maxperf:
 experimental-maxperf-pmp:
   RV32E                    : 0
   RV32M                    : 1
-  RV32B                    : 0
+  RV32B                    : "ibex_pkg::RV32BNone"
   BranchTargetALU          : 1
   WritebackStage           : 1
   MultiplierImplementation : "single-cycle"
@@ -48,14 +48,27 @@ experimental-maxperf-pmp:
   PMPGranularity           : 0
   PMPNumRegions            : 16
 
-# experimental-maxperf-pmp config above with bitmanip extension
-experimental-maxperf-pmp-bm:
+# experimental-maxperf-pmp config above with balanced bitmanip extension
+experimental-maxperf-pmp-bmbalanced:
   RV32E                    : 0
   RV32M                    : 1
-  RV32B                    : 1
+  RV32B                    : "ibex_pkg::RV32BBalanced"
   BranchTargetALU          : 1
   WritebackStage           : 1
   MultiplierImplementation : "single-cycle"
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
+
+# experimental-maxperf-pmp config above with full bitmanip extension
+experimental-maxperf-pmp-bmfull:
+  RV32E                    : 0
+  RV32M                    : 1
+  RV32B                    : "ibex_pkg::RV32BFull"
+  BranchTargetALU          : 1
+  WritebackStage           : 1
+  MultiplierImplementation : "single-cycle"
+  PMPEnable                : 1
+  PMPGranularity           : 0
+  PMPNumRegions            : 16
+

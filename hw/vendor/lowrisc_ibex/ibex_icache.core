@@ -3,12 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_icache:0.1"
-description: "IBEX_ICACHE DV sim target"
+description: "Ibex instruction cache"
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:secded
       - lowrisc:prim:ram_1p
+      - lowrisc:prim:assert
     files:
       - rtl/ibex_icache.sv
     file_type: systemVerilogSource

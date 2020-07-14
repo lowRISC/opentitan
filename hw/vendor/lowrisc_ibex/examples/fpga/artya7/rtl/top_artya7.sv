@@ -8,9 +8,10 @@ module top_artya7 (
     output [3:0]        LED
 );
 
-  parameter int          MEM_SIZE  = 64 * 1024; // 64 kB
-  parameter logic [31:0] MEM_START = 32'h00000000;
-  parameter logic [31:0] MEM_MASK  = MEM_SIZE-1;
+  parameter int          MEM_SIZE     = 64 * 1024; // 64 kB
+  parameter logic [31:0] MEM_START    = 32'h00000000;
+  parameter logic [31:0] MEM_MASK     = MEM_SIZE-1;
+  parameter              SRAMInitFile = "";
 
   logic clk_sys, rst_sys_n;
 
@@ -104,7 +105,8 @@ module top_artya7 (
 
   // SRAM block for instruction and data storage
   ram_1p #(
-    .Depth(MEM_SIZE / 4)
+    .Depth(MEM_SIZE / 4),
+    .MemInitFile(SRAMInitFile)
   ) u_ram (
     .clk_i     ( clk_sys        ),
     .rst_ni    ( rst_sys_n      ),
