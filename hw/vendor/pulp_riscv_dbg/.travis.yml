@@ -1,0 +1,85 @@
+language: cpp
+# run on new infrastructure
+dist: xenial
+sudo: false
+cache:
+  apt: true
+  directories:
+    $RISCV
+    $VERILATOR_ROOT
+  timeout: 1000
+
+# required packages to install
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+      - g++-7
+      - gperf
+      - autoconf
+      - automake
+      - autotools-dev
+      - libmpc-dev
+      - libmpfr-dev
+      - libgmp-dev
+      - gawk
+      - build-essential
+      - bison
+      - flex
+      - texinfo
+      - python-pexpect
+      - libusb-1.0-0-dev
+      - default-jdk
+      - zlib1g-dev
+      - valgrind
+env:
+  global:
+    - RISCV="/home/travis/riscv_install"
+    - VERILATOR_ROOT="/home/travis/verilator-4.018"
+
+
+before_install:
+  - export CXX=g++-7 CC=gcc-7
+  # setup dependent paths
+  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+  - export LIBRARY_PATH=$RISCV/lib
+  - export LD_LIBRARY_PATH=$RISCV/lib
+  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/share/verilator/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/share/verilator/include
+  - export PKG_CONFIG_PATH=$VERILATOR_ROOT/share/pkgconfig
+  # number of parallel jobs to use for make commands and simulation
+  - export NUM_JOBS=4
+  - ci/make-tmp.sh
+  - git submodule update --init --recursive
+
+stages:
+  - download
+  - compile1
+  - compile2
+  - test
+
+jobs:
+  include:
+    - stage: download
+      name: download pulp gcc
+      script:
+        - ci/download-pulp-gcc.sh
+
+    - stage: compile2
+      name: build verilator
+      script:
+        - ci/install-verilator.sh
+    - stage: compile2
+      name: build openocd
+      script:
+        - ci/get-openocd.sh
+
+    - stage: test
+      name: run openocd debug module tests
+      script:
+        - ci/veri-run-openocd-compliance.sh
+
+# extra time during long builds
+install: travis_wait
