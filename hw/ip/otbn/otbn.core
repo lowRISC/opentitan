@@ -22,8 +22,8 @@ filesets:
     file_type: systemVerilogSource
   files_model:
     files:
-      - rtl/dv/model/otbn_model.cc: { file_type: cppSource }
-      - rtl/dv/model/otbn_core_model.sv
+      - dv/model/otbn_model.cc: { file_type: cppSource }
+      - dv/model/otbn_core_model.sv
     file_type: systemVerilogSource
 
 parameters:
