@@ -293,8 +293,8 @@ module usb_serial_ctrl_ep  #(
           end
         endcase
       end else if ((ctrl_xfr_state == StDataIn) && more_data_to_send && in_ep_data_get_i) begin
-        rom_addr   <= rom_addr + 7'b1;
-        bytes_sent <= bytes_sent + 8'b1;
+        rom_addr   <= rom_addr + 7'h1;
+        bytes_sent <= bytes_sent + 8'h1;
       end else if (status_stage_end) begin
         bytes_sent <= '0;
         rom_addr <= '0;
