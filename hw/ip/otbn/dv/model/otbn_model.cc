@@ -46,6 +46,7 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
   char ifname[] = "/tmp/otbn_XXXXXX/imem";
   char dfname[] = "/tmp/otbn_XXXXXX/dmem";
   char cfname[] = "/tmp/otbn_XXXXXX/cycles";
+  char tfname[] = "/tmp/otbn_XXXXXX/trace";
 
   if (mkdtemp(dir) == nullptr) {
     std::cerr << "Cannot create temporary directory" << std::endl;
@@ -55,6 +56,7 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
   std::memcpy(ifname, dir, strlen(dir));
   std::memcpy(dfname, dir, strlen(dir));
   std::memcpy(cfname, dir, strlen(dir));
+  std::memcpy(tfname, dir, strlen(dir));
 
   fp = std::fopen(dfname, "w+");
   if (fp == nullptr) {
@@ -94,7 +96,9 @@ int run_model(const char *imem_scope, int imem_words, const char *dmem_scope,
 
   std::stringstream strstr;
   strstr << "otbn-python-model " << imem_words << " " << ifname << " "
-         << dmem_words << " " << dfname << " " << cfname;
+         << dmem_words << " " << dfname << " " << cfname << " " << tfname;
+
+  std::cout << "Execute OTBN in " << dir << std::endl;
 
   if (std::system(strstr.str().c_str()) != 0) {
     std::cerr << "Cannot execute model" << std::endl;

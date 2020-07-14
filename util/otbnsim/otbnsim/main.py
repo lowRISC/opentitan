@@ -22,9 +22,10 @@ def main():
     parser.add_argument("dmem_words", type=int)
     parser.add_argument("dmem_file")
     parser.add_argument("cycles_file")
+    parser.add_argument("trace_file")
 
     args = parser.parse_args()
-    sim = Simulator(OTBNModel())
+    sim = Simulator(OTBNModel(verbose=args.trace_file))
 
     sim.load_program(read_from_binary(args.imem_file, stoponerror=True))
     with open(args.dmem_file, "rb") as f:
