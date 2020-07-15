@@ -11,6 +11,7 @@ package spi_pkg;
   // SPI_DEVICE to SPI_HOST
   // single write only
   typedef struct packed {
+    logic sck;
     logic csb;
     logic s;
     logic s_en;

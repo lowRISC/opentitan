@@ -154,7 +154,7 @@ module spi_device #(
   logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
 
   // Skeleton design
-  logic       sel_csb, sel_write, sel_read, passthrough_rd_en;
+  logic       sel_sck, sel_csb, sel_write, sel_read, passthrough_rd_en;
   logic [3:0] internal_si;
   logic [3:0] internal_so;
   logic [3:0] internal_so_en;
@@ -615,9 +615,11 @@ module spi_device #(
   assign internal_so        = reg2hw.dummy_ctrl.internal_so.q;
   assign internal_so_en     = reg2hw.dummy_ctrl.internal_so_en.q;
 
+  // TODO: Replace to prim clock mux or explicit mux cell to set the timing constraints
+  assign spi_d2h_o.sck      = (sel_sck)   ? cio_sck_i : 1'b 0;
   assign spi_d2h_o.csb      = (sel_csb)   ? cio_csb_i : 1'b 1;
-  assign spi_d2h_o.s        = (sel_write) ? filtered_d2h_so : 1'b0;
-  assign spi_d2h_o.s_en     = (sel_write) ? filtered_d2h_so_en : 1'b0;
+  assign spi_d2h_o.s        = (sel_write) ? filtered_d2h_so : 1'b 0;
+  assign spi_d2h_o.s_en     = (sel_write) ? filtered_d2h_so_en : 1'b 0;
 
   assign cio_s_o            = (sel_read)  ? spi_h2d_i.s : internal_so ;
   assign cio_s_en_o         = (sel_read)  ? passthrough_rd_en : internal_so_en;

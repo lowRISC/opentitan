@@ -291,14 +291,18 @@
       hwaccess: "hro"
       fields: [
         { bits: "0"
+          name: "sel_sck"
+          desc: "enable sck passthrough"
+        }
+        { bits: "1"
           name: "sel_csb"
           desc: "enable csb passthrough"
         }
-        { bits: "1"
+        { bits: "2"
           name: "sel_write"
           desc: "enable passthrough from SPI MOSI to spi_host IP"
         }
-        { bits: "2"
+        { bits: "3"
           name: "sel_read"
           desc: "enable S[3:0] input from SPI_HOST to host system"
         }

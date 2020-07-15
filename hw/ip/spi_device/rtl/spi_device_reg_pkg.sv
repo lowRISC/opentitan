@@ -153,6 +153,9 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } sel_sck;
+    struct packed {
+      logic        q;
     } sel_csb;
     struct packed {
       logic        q;
@@ -254,17 +257,17 @@ package spi_device_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [185:180]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [179:174]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [173:162]
-    spi_device_reg2hw_control_reg_t control; // [161:157]
-    spi_device_reg2hw_cfg_reg_t cfg; // [156:145]
-    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [144:113]
-    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [112:97]
-    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [96:81]
-    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [80:49]
-    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [48:17]
-    spi_device_reg2hw_dummy_ctrl_reg_t dummy_ctrl; // [16:0]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [186:181]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [180:175]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [174:163]
+    spi_device_reg2hw_control_reg_t control; // [162:158]
+    spi_device_reg2hw_cfg_reg_t cfg; // [157:146]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [145:114]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [113:98]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [97:82]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [81:50]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [49:18]
+    spi_device_reg2hw_dummy_ctrl_reg_t dummy_ctrl; // [17:0]
   } spi_device_reg2hw_t;
 
   ///////////////////////////////////////

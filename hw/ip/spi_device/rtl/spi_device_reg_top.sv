@@ -238,6 +238,9 @@ module spi_device_reg_top (
   logic [15:0] txf_addr_limit_qs;
   logic [15:0] txf_addr_limit_wd;
   logic txf_addr_limit_we;
+  logic dummy_ctrl_sel_sck_qs;
+  logic dummy_ctrl_sel_sck_wd;
+  logic dummy_ctrl_sel_sck_we;
   logic dummy_ctrl_sel_csb_qs;
   logic dummy_ctrl_sel_csb_wd;
   logic dummy_ctrl_sel_csb_we;
@@ -1304,7 +1307,33 @@ module spi_device_reg_top (
 
   // R[dummy_ctrl]: V(False)
 
-  //   F[sel_csb]: 0:0
+  //   F[sel_sck]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_dummy_ctrl_sel_sck (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_ctrl_sel_sck_we),
+    .wd     (dummy_ctrl_sel_sck_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dummy_ctrl.sel_sck.q ),
+
+    // to register interface (read)
+    .qs     (dummy_ctrl_sel_sck_qs)
+  );
+
+
+  //   F[sel_csb]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -1330,7 +1359,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[sel_write]: 1:1
+  //   F[sel_write]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -1356,7 +1385,7 @@ module spi_device_reg_top (
   );
 
 
-  //   F[sel_read]: 2:2
+  //   F[sel_read]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -1675,14 +1704,17 @@ module spi_device_reg_top (
   assign txf_addr_limit_we = addr_hit[11] & reg_we & ~wr_err;
   assign txf_addr_limit_wd = reg_wdata[31:16];
 
+  assign dummy_ctrl_sel_sck_we = addr_hit[12] & reg_we & ~wr_err;
+  assign dummy_ctrl_sel_sck_wd = reg_wdata[0];
+
   assign dummy_ctrl_sel_csb_we = addr_hit[12] & reg_we & ~wr_err;
-  assign dummy_ctrl_sel_csb_wd = reg_wdata[0];
+  assign dummy_ctrl_sel_csb_wd = reg_wdata[1];
 
   assign dummy_ctrl_sel_write_we = addr_hit[12] & reg_we & ~wr_err;
-  assign dummy_ctrl_sel_write_wd = reg_wdata[1];
+  assign dummy_ctrl_sel_write_wd = reg_wdata[2];
 
   assign dummy_ctrl_sel_read_we = addr_hit[12] & reg_we & ~wr_err;
-  assign dummy_ctrl_sel_read_wd = reg_wdata[2];
+  assign dummy_ctrl_sel_read_wd = reg_wdata[3];
 
   assign dummy_ctrl_passthrough_rd_en_we = addr_hit[12] & reg_we & ~wr_err;
   assign dummy_ctrl_passthrough_rd_en_wd = reg_wdata[7:4];
@@ -1785,9 +1817,10 @@ module spi_device_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[0] = dummy_ctrl_sel_csb_qs;
-        reg_rdata_next[1] = dummy_ctrl_sel_write_qs;
-        reg_rdata_next[2] = dummy_ctrl_sel_read_qs;
+        reg_rdata_next[0] = dummy_ctrl_sel_sck_qs;
+        reg_rdata_next[1] = dummy_ctrl_sel_csb_qs;
+        reg_rdata_next[2] = dummy_ctrl_sel_write_qs;
+        reg_rdata_next[3] = dummy_ctrl_sel_read_qs;
         reg_rdata_next[7:4] = dummy_ctrl_passthrough_rd_en_qs;
         reg_rdata_next[8] = dummy_ctrl_filtered_d2h_so_qs;
         reg_rdata_next[9] = dummy_ctrl_filtered_d2h_so_en_qs;
