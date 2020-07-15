@@ -334,7 +334,7 @@ class MmioTest {
 #define EXPECT_WRITE32(offset, ...) \
   EXPECT_WRITE32_AT(this->dev(), offset, __VA_ARGS__);
 
-#define EXPECT_MASK_INTERAL_(width, dev, off, ...)                         \
+#define EXPECT_MASK_INTERNAL_(width, dev, off, ...)                        \
   do {                                                                     \
     auto &device = dev;                                                    \
     std::initializer_list<mock_mmio::MaskedBitField> fields = __VA_ARGS__; \
@@ -368,7 +368,7 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK8(offset, ...) \
-  EXPECT_MASK_INTERAL_(8, this->dev(), offset, __VA_ARGS__)
+  EXPECT_MASK_INTERNAL_(8, this->dev(), offset, __VA_ARGS__)
 
 /**
  * Expect an unspecified 32-bit read at the given offset, followed by a write to
@@ -384,6 +384,6 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK32(offset, ...) \
-  EXPECT_MASK_INTERAL_(32, this->dev(), offset, __VA_ARGS__)
+  EXPECT_MASK_INTERNAL_(32, this->dev(), offset, __VA_ARGS__)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_MOCK_MMIO_H_
