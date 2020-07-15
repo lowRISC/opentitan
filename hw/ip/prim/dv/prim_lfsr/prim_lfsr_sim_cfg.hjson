@@ -1,0 +1,61 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_lfsr
+
+  // Top level dut name (sv module).
+  dut: prim_lfsr
+
+  // Top level testbench name (sv module).
+  tb: prim_lfsr_tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_lfsr_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/dv/data/common_sim_cfg.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  build_modes: [
+    {
+      name: prim_lfsr_dw_8
+      build_opts: ["+define+MAX_LFSR_DW=8"]
+    }
+    {
+      name: prim_lfsr_dw_24
+      build_opts: ["+define+MAX_LFSR_DW=24"]
+    }
+  ]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: prim_lfsr_sanity
+      // limit max lfsr length to reduce private CI runtime.
+      build_mode: prim_lfsr_dw_8
+    }
+    {
+      name: prim_lfsr_basic_test
+      build_mode: prim_lfsr_dw_24
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["prim_lfsr_sanity"]
+    }
+  ]
+}
+
