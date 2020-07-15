@@ -42,6 +42,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     // create components
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
+
     // create alert agents and cfgs
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
@@ -52,6 +53,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfg[alert_name]);
     end
+
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
   endfunction
 
@@ -59,6 +61,12 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     super.connect_phase(phase);
     m_tl_agent.monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
     m_tl_agent.monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
+    foreach (cfg.list_of_alerts[i]) begin
+      string alert_name = cfg.list_of_alerts[i];
+      m_alert_agent[alert_name].monitor.alert_esc_port.connect(
+          scoreboard.alert_fifos[alert_name].analysis_export);
+    end
+
     if (cfg.is_active) begin
       virtual_sequencer.tl_sequencer_h = m_tl_agent.sequencer;
     end

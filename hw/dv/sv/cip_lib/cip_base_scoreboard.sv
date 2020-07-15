@@ -12,6 +12,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifo;
 
+  // Alert_fifo to notify scb if DUT sends an alert
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
+
   mem_model#() exp_mem;
 
   `uvm_component_new
@@ -20,6 +23,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.build_phase(phase);
     tl_a_chan_fifo = new("tl_a_chan_fifo", this);
     tl_d_chan_fifo = new("tl_d_chan_fifo", this);
+    foreach(cfg.list_of_alerts[i]) begin
+      string alert_name = cfg.list_of_alerts[i];
+      alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
+    end
     exp_mem = mem_model#()::type_id::create("exp_mem", this);
   endfunction
 
@@ -28,6 +35,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     fork
       process_tl_a_chan_fifo();
       process_tl_d_chan_fifo();
+      if (cfg.list_of_alerts.size()) process_alert_fifos();
     join_none
   endtask
 
@@ -63,6 +71,35 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       process_tl_access(item, DataChannel);
     end
   endtask
+
+  virtual task process_alert_fifos();
+    foreach (alert_fifos[i]) begin
+      automatic string alert_name = i;
+      fork
+        forever begin
+          alert_esc_seq_item item;
+          alert_fifos[alert_name].get(item);
+          if (!cfg.en_scb) continue;
+          if (item.alert_esc_type == AlertEscSigTrans && !item.timeout &&
+              item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
+            process_alert(alert_name, item);
+          // IP level alert protocol does not drive any sig_int_err or ping response
+          end else if (item.alert_esc_type == AlertEscIntFail) begin
+            `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
+          end else if (item.timeout) begin
+            `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
+          end else if (item.alert_esc_type == AlertEscPingTrans) begin
+            `uvm_error(`gfn, $sformatf("alert %s has unexpected alert ping response", alert_name))
+          end
+        end
+      join_none
+    end
+  endtask
+
+  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+    `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s", alert_name,
+                              item.alert_handshake_sta), UVM_DEBUG)
+  endfunction
 
   // task to process tl access
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
