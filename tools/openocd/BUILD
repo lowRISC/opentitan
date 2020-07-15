@@ -12,3 +12,16 @@ stardoc(
     out = "openocd.md",
     input = "defs.bzl",
 )
+
+load(":defs.bzl", "openocd_execution_wrapper")
+
+openocd_execution_wrapper(
+    name = "stm32h7",
+    device_configs = [
+        "target/stm32h7x_dual_bank.cfg",
+    ],
+    interface_configs = [
+        "interface/stlink.cfg",
+    ],
+    transport = "hla_swd",
+)

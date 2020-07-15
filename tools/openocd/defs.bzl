@@ -152,3 +152,89 @@ Example:
     },
     executable = True,
 )
+
+def _openocd_execution_wrapper_impl(ctx):
+    # Write firmware to memory location 0x8000000 i.e. start of executable flash
+    interface_config_string = ""
+    for config in ctx.attr.interface_configs:
+        interface_config_string = interface_config_string + " -f " + config
+    chip_config_string = ""
+    for config in ctx.attr.device_configs:
+        chip_config_string = chip_config_string + " -f " + config
+    script_template = """
+{openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit {flash_offset}"
+"""
+    script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
+
+    #
+    runfiles_path = "$0.runfiles/"
+
+    # Each runfile under the runfiles path resides under a directory with
+    # with the same name as its workspace.
+    data_file_root = runfiles_path + ctx.workspace_name + "/"
+
+    openocd_path = data_file_root + ctx.files._openocd[0].path
+
+    script_content = script_template.format(
+        openocd = openocd_path,
+        interface_config_string = interface_config_string,
+        chip_config_string = chip_config_string,
+        flash_offset = ctx.attr.flash_offset,
+        programmer_frequency = ctx.attr.programmer_frequency,
+        transport = ctx.attr.transport,
+    )
+    ctx.actions.write(script, script_content, is_executable = True)
+    runfiles = ctx.runfiles(files = [ctx.file._openocd])
+    return [DefaultInfo(executable = script, runfiles = runfiles)]
+
+openocd_execution_wrapper = rule(
+    implementation = _openocd_execution_wrapper_impl,
+    doc = """
+Starts gdb debug server on TCP port :3333
+
+Example:
+    openocd_execution_wrapper(
+        name = "stm32h7",
+        device_configs = [
+            "target/stm32h7x_dual_bank.cfg",
+        ],
+        interface_configs = [
+            "interface/stlink.cfg",
+        ],
+        transport = "hla_swd",
+    )
+""",
+    attrs = {
+        "device_configs": attr.string_list(
+            doc = "openocd config path for chip/board/interface",
+            mandatory = True,
+            allow_empty = False,
+        ),
+        "interface_configs": attr.string_list(
+            doc = "openocd config path for interface",
+            mandatory = True,
+            allow_empty = False,
+        ),
+        "_openocd": attr.label(
+            doc = "Executable for flashing using stlink",
+            default = "@com_openocd//:openocd",
+            allow_single_file = True,
+        ),
+        "programmer_frequency": attr.string(
+            doc = "The programming frequency of the adapter",
+            default = "3300",
+            mandatory = False,
+        ),
+        "transport": attr.string(
+            doc = "Debugger transport interface",
+            default = "hla_swd",
+            mandatory = False,
+        ),
+        "flash_offset": attr.string(
+            doc = "The starting point of the flash memory",
+            mandatory = False,
+            default = "0x8000000",
+        ),
+    },
+    executable = True,
+)
