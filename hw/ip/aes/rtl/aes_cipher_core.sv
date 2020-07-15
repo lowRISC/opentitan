@@ -48,6 +48,8 @@ module aes_cipher_core #(
   import aes_pkg::*;
 
   // Generate gates to represent hardening cost for the bronze netlist.
+  logic [31:0] hardening_data;
+  logic        hardening_valid;
   prim_gate_gen #(
     .DataWidth ( 32    ),
     .NumGates  ( 43000 )
@@ -56,11 +58,13 @@ module aes_cipher_core #(
     .rst_ni  ( rst_ni            ),
     .valid_i ( in_valid_i        ),
     .data_i  ( prng_data_i[31:0] ),
-    .data_o  (                   ),
-    .valid_o (                   )
+    .data_o  ( hardening_data    ),
+    .valid_o ( hardening_valid   )
   );
 
   // Generate gates to represent cost of high-bandwidth, local PRNG for the bronze netlist.
+  logic [31:0] prng_data;
+  logic        prng_valid;
   prim_gate_gen #(
     .DataWidth ( 32    ),
     .NumGates  ( 30000 )
@@ -69,9 +73,13 @@ module aes_cipher_core #(
     .rst_ni  ( rst_ni            ),
     .valid_i ( in_valid_i        ),
     .data_i  ( prng_data_i[31:0] ),
-    .data_o  (                   ),
-    .valid_o (                   )
+    .data_o  ( prng_data         ),
+    .valid_o ( prng_valid        )
   );
+
+  logic [127:0] gate_gen_mod;
+  assign gate_gen_mod = (hardening_valid || prng_valid) ?
+      {hardening_data, hardening_data, prng_data, prng_data} : '0;
 
   // Signals
   logic [3:0][3:0][7:0] state_d;
@@ -114,7 +122,7 @@ module aes_cipher_core #(
   always_comb begin : state_mux
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
-      STATE_ROUND: state_d = add_round_key_out;
+      STATE_ROUND: state_d = add_round_key_out ^ gate_gen_mod;
       STATE_CLEAR: state_d = {prng_data_i, prng_data_i};
       default:     state_d = {prng_data_i, prng_data_i};
     endcase
