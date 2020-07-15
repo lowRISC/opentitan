@@ -394,7 +394,7 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK8(offset, ...) \
-  EXPECT_MASK32_AT(this->dev(), offset, __VA_ARGS__)
+  EXPECT_MASK8_AT(this->dev(), offset, __VA_ARGS__)
 
 /**
  * Expect an unspecified 32-bit read at the given offset, followed by a write to
