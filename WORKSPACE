@@ -44,6 +44,10 @@ http_archive(
     ],
 )
 
+load("//tools/openocd:openocd_repository.bzl", "openocd_deps")
+
+openocd_deps()
+
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()

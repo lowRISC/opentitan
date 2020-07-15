@@ -16,7 +16,7 @@ stardoc(
 load(":defs.bzl", "openocd_execution_wrapper")
 
 openocd_execution_wrapper(
-    name = "stm32h7",
+    name = "test_wrapper",
     device_configs = [
         "target/stm32h7x_dual_bank.cfg",
     ],
