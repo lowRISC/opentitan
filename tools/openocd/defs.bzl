@@ -173,7 +173,7 @@ def _openocd_execution_wrapper_impl(ctx):
     # with the same name as its workspace.
     data_file_root = runfiles_path + ctx.workspace_name + "/"
 
-    openocd_path = data_file_root + ctx.files._openocd[0].path
+    openocd_path = runfiles_path + "openocd"
 
     script_content = script_template.format(
         openocd = openocd_path,
@@ -184,7 +184,10 @@ def _openocd_execution_wrapper_impl(ctx):
         transport = ctx.attr.transport,
     )
     ctx.actions.write(script, script_content, is_executable = True)
-    runfiles = ctx.runfiles(files = [ctx.file._openocd])
+    runfiles = ctx.runfiles(
+        files = [ctx.files._openocd[0]],
+        root_symlinks = {"openocd": ctx.files._openocd[0]},
+    )
     return [DefaultInfo(executable = script, runfiles = runfiles)]
 
 openocd_execution_wrapper = rule(
