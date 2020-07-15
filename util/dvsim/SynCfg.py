@@ -358,14 +358,17 @@ class SynCfg(OneShotCfg):
                              ("Elab Errors", "elab_errors"),
                              ("Compile Warnings", "compile_warnings"),
                              ("Compile Errors", "compile_errors")]
+
+            # Synthesis fails if any warning or error message has occurred
+            self.errors_seen = False
             fail_msgs = ""
-            has_msg = False
             for _, key in hdr_key_pairs:
                 if key in self.result['messages']:
-                    has_msg = True
-                    break
+                    if self.result.get(key):
+                        self.errors_seen = True
+                        break
 
-            if has_msg:
+            if self.errors_seen:
                 fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
                 for hdr, key in hdr_key_pairs:
                     msgs = self.result['messages'].get(key)
