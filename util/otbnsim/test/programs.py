@@ -7,6 +7,11 @@ import sys
 
 from otbnsim.asm import parse, output
 
+# Prolog to load the memory content into w registers
+# w0 <= mem[255:0]
+# w1 <= mem[511:256]
+# w2 <= mem[767:512]
+# w3 <= mem[1023:768]
 w04_prolog = """
 addi x4, x0, 0
 bn.lid x4, 0(x0)
@@ -18,13 +23,18 @@ addi x4, x0, 3
 bn.lid x4, 3(x0)
 """
 
+# Epilog to write w0-w4 registers into memory
+# mem[255:0] <= w0
+# mem[511:256] <= w1
+# mem[767:512] <= w2
+# mem[1023:768] <= w3
 w04_epilog = """
 addi x4, x0, 0
 bn.sid x4, 0(x0)
 addi x4, x0, 1
 bn.sid x4, 1(x0)
 addi x4, x0, 2
-bn.sid x4, 3(x0)
+bn.sid x4, 2(x0)
 addi x4, x0, 3
 bn.sid x4, 3(x0)
 """
@@ -66,7 +76,7 @@ if __name__ == "__main__":
                         default="asm")
 
     args = parser.parse_args()
-    code = parse(globals()["code_"+args.test])
+    code = globals()["code_" + args.test]
     if args.standalone:
         code = w04_prolog + code + w04_epilog
-    output(code, args.outfile, args.output_format)
+    output(parse(code), args.outfile, args.output_format)
