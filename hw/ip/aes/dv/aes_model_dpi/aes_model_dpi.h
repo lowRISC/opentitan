@@ -11,6 +11,15 @@
 extern "C" {
 #endif
 
+// Masks for ignoring unused bits in data passed from the simulator (their value
+// is undetermined).
+#define impl_mask 0x1
+#define op_mask 0x1
+#define mode_mask 0x7
+#define key_len_mask 0x7
+#define rcon_mask 0xFF
+#define round_mask 0xF
+
 /**
  * Perform encryption/decryption of one block.
  *
