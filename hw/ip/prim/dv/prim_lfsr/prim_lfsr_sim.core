@@ -7,7 +7,7 @@ description: "LFSR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:lfsr:0.1
     file_type: systemVerilogSource
 
   files_dv:
