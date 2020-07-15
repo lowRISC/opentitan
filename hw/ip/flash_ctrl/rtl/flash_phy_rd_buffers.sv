@@ -35,7 +35,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
     if (!rst_ni) begin
       out_o.data <= '0;
       out_o.addr <= '0;
-      out_o.part <= flash_ctrl_pkg::DataPart;
+      out_o.part <= flash_ctrl_pkg::FlashPartData;
       out_o.attr <= Invalid;
     end else if (wipe_i) begin
       out_o.attr <= Invalid;

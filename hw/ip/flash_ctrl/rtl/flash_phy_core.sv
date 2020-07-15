@@ -208,7 +208,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   end // always_comb
 
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
-  assign muxed_part = host_sel ? flash_ctrl_pkg::DataPart : part_i;
+  assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
   assign rd_done_o = ctrl_rsp_vld & rd_i;
   assign prog_done_o = ctrl_rsp_vld & prog_i;
   assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i);

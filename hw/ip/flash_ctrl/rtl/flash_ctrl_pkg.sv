@@ -7,13 +7,18 @@
 
 package flash_ctrl_pkg;
 
-  // flash phy parameters
+  // design constants
   parameter int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
-  parameter int DataByteWidth   = $clog2(DataWidth / 8);
   parameter int NumBanks        = top_pkg::FLASH_BANKS;
-  parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  //Info pages per bank
-  parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; //Data pages per bank
-  parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; //Number of bus words per page
+  parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  // Info pages per bank
+  parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; // Data pages per bank
+  parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of bus words per page
+  parameter int BusWidth        = top_pkg::TL_DW;
+  parameter int MpRegions       = 8;  // flash controller protection regions
+  parameter int FifoDepth       = 16; // rd / prog fifos
+
+  // flash phy parameters
+  parameter int DataByteWidth   = $clog2(DataWidth / 8);
   parameter int BankW           = $clog2(NumBanks);
   parameter int PageW           = $clog2(PagesPerBank);
   parameter int WordW           = $clog2(WordsPerPage);
@@ -23,7 +28,6 @@ package flash_ctrl_pkg;
 
   // flash ctrl / bus parameters
   // flash / bus width may be different from actual flash word width
-  parameter int BusWidth        = top_pkg::TL_DW;
   parameter int BusByteWidth    = $clog2(BusWidth / 8);
   parameter int WidthMultiple   = DataWidth / BusWidth;
   parameter int BusWordsPerPage = WordsPerPage * WidthMultiple;
@@ -32,27 +36,24 @@ package flash_ctrl_pkg;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
-  // flash controller protection regions
-  parameter int MpRegions       = 8;
-
   // fifo parameters
-  parameter int FifoDepth       = 16;
   parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
-    FlashRead      = 2'h0,
-    FlashProg      = 2'h1,
-    FlashErase     = 2'h2
+    FlashOpRead     = 2'h0,
+    FlashOpProgram  = 2'h1,
+    FlashOpErase    = 2'h2,
+    FlashOpInvalid  = 2'h3
   } flash_op_e;
 
   // Flash Erase Operations Supported
   typedef enum logic  {
-    PageErase     = 0,
-    BankErase     = 1
-  } flash_erase_op_e;
+    FlashErasePage  = 0,
+    FlashEraseBank  = 1
+  } flash_erase_e;
 
-  parameter int EraseBitWidth = $bits(flash_erase_op_e);
+  parameter int EraseBitWidth = $bits(flash_erase_e);
 
   // Flash tlul to fifo direction
   typedef enum logic  {
@@ -62,8 +63,8 @@ package flash_ctrl_pkg;
 
   // Flash partition type
   typedef enum logic {
-    DataPart     = 1'b0,
-    InfoPart     = 1'b1
+    FlashPartData = 1'b0,
+    FlashPartInfo = 1'b1
   } flash_part_e;
 
   // Flash controller to memory
@@ -89,7 +90,7 @@ package flash_ctrl_pkg;
     prog:      1'b0,
     pg_erase:  1'b0,
     bk_erase:  1'b0,
-    part:      DataPart,
+    part:      FlashPartData,
     addr:      '0,
     prog_data: '0,
     prog_last: '0,

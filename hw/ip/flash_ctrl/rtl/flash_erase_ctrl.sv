@@ -48,7 +48,7 @@ module flash_erase_ctrl #(
   // Flash Interface assignments
   assign flash_req_o = op_start_i;
   assign flash_op_o = op_type_i;
-  assign flash_addr_o = (op_type_i == PageErase) ?
+  assign flash_addr_o = (op_type_i == FlashErasePage) ?
                         op_addr_i & PageAddrMask :
                         op_addr_i & BankAddrMask;
 
