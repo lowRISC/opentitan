@@ -355,32 +355,6 @@ class MmioTest {
   } while (false)
 
 /**
- * Expect an unspecified 8-bit read to the device `dev` at the given offset,
- * followed by a write to the same location, with the same value but with some
- * bits changed; the remaining bits must be untouched.
- *
- * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_MASK8_AT(dev, offset, ...) \
-  EXPECT_MASK_INTERAL_(8, dev, offset, __VA_ARGS__)
-
-/**
- * Expect an unspecified 32-bit read to the device `dev` at the given offset,
- * followed by a write to the same location, with the same value but with some
- * bits changed; the remaining bits must be untouched.
- *
- * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_MASK32_AT(dev, offset, ...) \
-  EXPECT_MASK_INTERAL_(32, dev, offset, __VA_ARGS__)
-
-/**
  * Expect an unspecified 8-bit read at the given offset, followed by a write to
  * the same location, with the same value but with some bits changed; the
  * remaining bits must be untouched.
@@ -394,7 +368,7 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK8(offset, ...) \
-  EXPECT_MASK8_AT(this->dev(), offset, __VA_ARGS__)
+  EXPECT_MASK_INTERAL_(8, this->dev(), offset, __VA_ARGS__)
 
 /**
  * Expect an unspecified 32-bit read at the given offset, followed by a write to
@@ -410,6 +384,6 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK32(offset, ...) \
-  EXPECT_MASK32_AT(this->dev(), offset, __VA_ARGS__)
+  EXPECT_MASK_INTERAL_(32, this->dev(), offset, __VA_ARGS__)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_MOCK_MMIO_H_
