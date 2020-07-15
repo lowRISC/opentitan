@@ -64,21 +64,6 @@ inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
 }
 
 /**
- * Reads an aligned uint16_t from the MMIO region `base` at the given byte
- * offset.
- *
- * This function is guaranteed to commit a read to memory, and will not be
- * reordered with respect to other MMIO manipulations.
- *
- * @param base the region to read from.
- * @param offset the offset to read at, in bytes.
- * @return the read value.
- */
-inline uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset) {
-  return ((volatile uint16_t *)base.base)[offset / sizeof(uint16_t)];
-}
-
-/**
  * Reads an aligned uint32_t from the MMIO region `base` at the given byte
  * offset.
  *
@@ -107,22 +92,6 @@ inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
 inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
                                uint8_t value) {
   ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
-}
-
-/**
- * Writes an aligned uint16_t to the MMIO region `base` at the given byte
- * offset.
- *
- * This function is guaranteed to commit a write to memory, and will not be
- * reordered with respect to other region manipulations.
- *
- * @param base the region to write to.
- * @param offset the offset to write at, in bytes.
- * @param value the value to write.
- */
-inline void mmio_region_write16(mmio_region_t base, ptrdiff_t offset,
-                                uint16_t value) {
-  ((volatile uint16_t *)base.base)[offset / sizeof(uint16_t)] = value;
 }
 
 /**
@@ -155,11 +124,9 @@ typedef struct mmio_region { void *mock; } mmio_region_t;
  * Stubbed-out read/write operations for overriding by a testing library.
  */
 uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
-uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset);
 uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
 
 void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value);
-void mmio_region_write16(mmio_region_t base, ptrdiff_t offset, uint16_t value);
 void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value);
 #endif  // MOCK_MMIO
 

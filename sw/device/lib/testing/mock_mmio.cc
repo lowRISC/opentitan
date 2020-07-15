@@ -16,11 +16,6 @@ uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
   return dev->Read8(offset);
 }
 
-uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset) {
-  auto *dev = static_cast<MockDevice *>(base.mock);
-  return dev->Read16(offset);
-}
-
 uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
   auto *dev = static_cast<MockDevice *>(base.mock);
   return dev->Read32(offset);
@@ -29,11 +24,6 @@ uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
 void mmio_region_write8(mmio_region_t base, ptrdiff_t offset, uint8_t value) {
   auto *dev = static_cast<MockDevice *>(base.mock);
   dev->Write8(offset, value);
-}
-
-void mmio_region_write16(mmio_region_t base, ptrdiff_t offset, uint16_t value) {
-  auto *dev = static_cast<MockDevice *>(base.mock);
-  dev->Write16(offset, value);
 }
 
 void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value) {

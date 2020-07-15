@@ -175,11 +175,9 @@ class MockDevice {
   mmio_region_t region() { return {this}; }
 
   MOCK_METHOD(uint8_t, Read8, (ptrdiff_t offset));
-  MOCK_METHOD(uint16_t, Read16, (ptrdiff_t offset));
   MOCK_METHOD(uint32_t, Read32, (ptrdiff_t offset));
 
   MOCK_METHOD(void, Write8, (ptrdiff_t offset, uint8_t value));
-  MOCK_METHOD(void, Write16, (ptrdiff_t offset, uint16_t value));
   MOCK_METHOD(void, Write32, (ptrdiff_t offset, uint32_t value));
 
   /**
@@ -235,21 +233,6 @@ class MmioTest {
 
 /**
  * Expect a read to the device `dev` at the given offset, returning the given
- * 16-bit value.
- *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_READ16_AT(dev, offset, ...) \
-  EXPECT_CALL(dev, Read16(offset))         \
-      .WillOnce(                           \
-          testing::Return(mock_mmio::internal::ToInt<uint16_t>(__VA_ARGS__)))
-
-/**
- * Expect a read to the device `dev` at the given offset, returning the given
  * 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
@@ -276,20 +259,6 @@ class MmioTest {
 #define EXPECT_WRITE8_AT(dev, offset, ...) \
   EXPECT_CALL(                             \
       dev, Write8(offset, mock_mmio::internal::ToInt<uint8_t>(__VA_ARGS__)))
-
-/**
- * Expect a write to the device `dev` at the given offset with the given 16-bit
- * value.
- *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_WRITE16_AT(dev, offset, ...) \
-  EXPECT_CALL(                              \
-      dev, Write16(offset, mock_mmio::internal::ToInt<uint16_t>(__VA_ARGS__)))
 
 /**
  * Expect a write to the device `dev` at the given offset with the given 32-bit
@@ -321,21 +290,6 @@ class MmioTest {
   EXPECT_READ8_AT(this->dev(), offset, __VA_ARGS__)
 
 /**
- * Expect a read at the given offset, returning the given 16-bit value.
- *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_READ16(offset, ...) \
-  EXPECT_READ16_AT(this->dev(), offset, __VA_ARGS__)
-
-/**
  * Expect a read at the given offset, returning the given 32-bit value.
  *
  * The value may be given as an integer, a pointer to little-endian data,
@@ -364,21 +318,6 @@ class MmioTest {
  */
 #define EXPECT_WRITE8(offset, ...) \
   EXPECT_WRITE8_AT(this->dev(), offset, __VA_ARGS__);
-
-/**
- * Expect a write to the given offset with the given 16-bit value.
- *
- * The value may be given as an integer, a pointer to little-endian data,
- * or a `std::initializer_list<BitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_WRITE16(offset, ...) \
-  EXPECT_WRITE16_AT(this->dev(), offset, __VA_ARGS__);
 
 /**
  * Expect a write to the given offset with the given 32-bit value.
@@ -429,19 +368,6 @@ class MmioTest {
   EXPECT_MASK_INTERAL_(8, dev, offset, __VA_ARGS__)
 
 /**
- * Expect an unspecified 16-bit read to the device `dev` at the given offset,
- * followed by a write to the same location, with the same value but with some
- * bits changed; the remaining bits must be untouched.
- *
- * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_MASK16_AT(dev, offset, ...) \
-  EXPECT_MASK_INTERAL_(16, dev, offset, __VA_ARGS__)
-
-/**
  * Expect an unspecified 32-bit read to the device `dev` at the given offset,
  * followed by a write to the same location, with the same value but with some
  * bits changed; the remaining bits must be untouched.
@@ -468,22 +394,6 @@ class MmioTest {
  * calls.
  */
 #define EXPECT_MASK8(offset, ...) \
-  EXPECT_MASK32_AT(this->dev(), offset, __VA_ARGS__)
-
-/**
- * Expect an unspecified 16-bit read at the given offset, followed by a write to
- * the same location, with the same value but with some bits changed; the
- * remaining bits must be untouched.
- *
- * The changed bits are specified by a `std::initializer_list<MaskedBitField>`.
- *
- * This function is only available in tests using a fixture that derives
- * `MmioTest`.
- *
- * This expectation is sequenced with all other `EXPECT_READ` and `EXPECT_WRITE`
- * calls.
- */
-#define EXPECT_MASK16(offset, ...) \
   EXPECT_MASK32_AT(this->dev(), offset, __VA_ARGS__)
 
 /**
