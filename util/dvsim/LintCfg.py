@@ -140,7 +140,7 @@ class LintCfg(OneShotCfg):
             log.info("looking for result data file at %s", result_data)
 
             try:
-                with open(result_data, "r") as results_file:
+                with result_data.open() as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
             except IOError as err:
                 log.warning("%s", err)
