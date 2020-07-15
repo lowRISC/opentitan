@@ -710,4 +710,16 @@ module spi_device #(
     .cfg_i      ('0)
   );
 
+  // Dummy gates
+  prim_gate_gen #(
+    .NumGates (10000)
+  ) u_passthrough_gates (
+    .clk_i,
+    .rst_ni,
+    .valid_i ( reg2hw.dummy_gate.qe ),
+    .data_i  ( reg2hw.dummy_gate.q  ),
+    .valid_o ( hw2reg.dummy_gate.de ),
+    .data_o  ( hw2reg.dummy_gate.d  )
+  );
+
 endmodule

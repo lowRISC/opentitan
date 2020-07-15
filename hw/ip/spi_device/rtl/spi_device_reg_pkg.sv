@@ -180,6 +180,11 @@ package spi_device_reg_pkg;
     } internal_so_en;
   } spi_device_reg2hw_dummy_ctrl_reg_t;
 
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } spi_device_reg2hw_dummy_gate_reg_t;
+
 
   typedef struct packed {
     struct packed {
@@ -252,33 +257,40 @@ package spi_device_reg_pkg;
     } rptr;
   } spi_device_hw2reg_txf_ptr_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } spi_device_hw2reg_dummy_gate_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [186:181]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [180:175]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [174:163]
-    spi_device_reg2hw_control_reg_t control; // [162:158]
-    spi_device_reg2hw_cfg_reg_t cfg; // [157:146]
-    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [145:114]
-    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [113:98]
-    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [97:82]
-    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [81:50]
-    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [49:18]
-    spi_device_reg2hw_dummy_ctrl_reg_t dummy_ctrl; // [17:0]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [219:214]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [213:208]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [207:196]
+    spi_device_reg2hw_control_reg_t control; // [195:191]
+    spi_device_reg2hw_cfg_reg_t cfg; // [190:179]
+    spi_device_reg2hw_fifo_level_reg_t fifo_level; // [178:147]
+    spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [146:131]
+    spi_device_reg2hw_txf_ptr_reg_t txf_ptr; // [130:115]
+    spi_device_reg2hw_rxf_addr_reg_t rxf_addr; // [114:83]
+    spi_device_reg2hw_txf_addr_reg_t txf_addr; // [82:51]
+    spi_device_reg2hw_dummy_ctrl_reg_t dummy_ctrl; // [50:33]
+    spi_device_reg2hw_dummy_gate_reg_t dummy_gate; // [32:0]
   } spi_device_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [67:62]
-    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [61:62]
-    spi_device_hw2reg_status_reg_t status; // [61:62]
-    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [61:46]
-    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [45:30]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [100:95]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [94:95]
+    spi_device_hw2reg_status_reg_t status; // [94:95]
+    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [94:79]
+    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [78:63]
+    spi_device_hw2reg_dummy_gate_reg_t dummy_gate; // [62:30]
   } spi_device_hw2reg_t;
 
   // Register Address
@@ -295,6 +307,7 @@ package spi_device_reg_pkg;
   parameter logic [12:0] SPI_DEVICE_RXF_ADDR_OFFSET = 13'h 28;
   parameter logic [12:0] SPI_DEVICE_TXF_ADDR_OFFSET = 13'h 2c;
   parameter logic [12:0] SPI_DEVICE_DUMMY_CTRL_OFFSET = 13'h 30;
+  parameter logic [12:0] SPI_DEVICE_DUMMY_GATE_OFFSET = 13'h 34;
 
   // Window parameter
   parameter logic [12:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 800;
@@ -316,11 +329,12 @@ package spi_device_reg_pkg;
     SPI_DEVICE_TXF_PTR,
     SPI_DEVICE_RXF_ADDR,
     SPI_DEVICE_TXF_ADDR,
-    SPI_DEVICE_DUMMY_CTRL
+    SPI_DEVICE_DUMMY_CTRL,
+    SPI_DEVICE_DUMMY_GATE
   } spi_device_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SPI_DEVICE_PERMIT [13] = '{
+  parameter logic [3:0] SPI_DEVICE_PERMIT [14] = '{
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
@@ -333,7 +347,8 @@ package spi_device_reg_pkg;
     4'b 1111, // index[ 9] SPI_DEVICE_TXF_PTR
     4'b 1111, // index[10] SPI_DEVICE_RXF_ADDR
     4'b 1111, // index[11] SPI_DEVICE_TXF_ADDR
-    4'b 0111  // index[12] SPI_DEVICE_DUMMY_CTRL
+    4'b 0111, // index[12] SPI_DEVICE_DUMMY_CTRL
+    4'b 1111  // index[13] SPI_DEVICE_DUMMY_GATE
   };
 endpackage
 

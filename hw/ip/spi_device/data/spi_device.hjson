@@ -329,6 +329,18 @@
         }
       ]
     }
+    { name: "DUMMY_GATE"
+      desc: "Dummy gates"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "dummy"
+          desc: "dummy virtual interface"
+        }
+      ]
+    }
     { window: {
         name: "buffer",
         items: "512",

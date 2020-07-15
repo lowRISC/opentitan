@@ -265,6 +265,9 @@ module spi_device_reg_top (
   logic [3:0] dummy_ctrl_internal_so_en_qs;
   logic [3:0] dummy_ctrl_internal_so_en_wd;
   logic dummy_ctrl_internal_so_en_we;
+  logic [31:0] dummy_gate_qs;
+  logic [31:0] dummy_gate_wd;
+  logic dummy_gate_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1541,9 +1544,36 @@ module spi_device_reg_top (
   );
 
 
+  // R[dummy_gate]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dummy_gate (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dummy_gate_we),
+    .wd     (dummy_gate_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dummy_gate.de),
+    .d      (hw2reg.dummy_gate.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.dummy_gate.qe),
+    .q      (reg2hw.dummy_gate.q ),
+
+    // to register interface (read)
+    .qs     (dummy_gate_qs)
+  );
 
 
-  logic [12:0] addr_hit;
+
+
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SPI_DEVICE_INTR_STATE_OFFSET);
@@ -1559,6 +1589,7 @@ module spi_device_reg_top (
     addr_hit[10] = (reg_addr == SPI_DEVICE_RXF_ADDR_OFFSET);
     addr_hit[11] = (reg_addr == SPI_DEVICE_TXF_ADDR_OFFSET);
     addr_hit[12] = (reg_addr == SPI_DEVICE_DUMMY_CTRL_OFFSET);
+    addr_hit[13] = (reg_addr == SPI_DEVICE_DUMMY_GATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1579,6 +1610,7 @@ module spi_device_reg_top (
     if (addr_hit[10] && reg_we && (SPI_DEVICE_PERMIT[10] != (SPI_DEVICE_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (SPI_DEVICE_PERMIT[11] != (SPI_DEVICE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[12] && reg_we && (SPI_DEVICE_PERMIT[12] != (SPI_DEVICE_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (SPI_DEVICE_PERMIT[13] != (SPI_DEVICE_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_rxf_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1731,6 +1763,9 @@ module spi_device_reg_top (
   assign dummy_ctrl_internal_so_en_we = addr_hit[12] & reg_we & ~wr_err;
   assign dummy_ctrl_internal_so_en_wd = reg_wdata[19:16];
 
+  assign dummy_gate_we = addr_hit[13] & reg_we & ~wr_err;
+  assign dummy_gate_wd = reg_wdata[31:0];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1826,6 +1861,10 @@ module spi_device_reg_top (
         reg_rdata_next[9] = dummy_ctrl_filtered_d2h_so_en_qs;
         reg_rdata_next[15:12] = dummy_ctrl_internal_so_qs;
         reg_rdata_next[19:16] = dummy_ctrl_internal_so_en_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[31:0] = dummy_gate_qs;
       end
 
       default: begin
