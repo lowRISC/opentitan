@@ -89,3 +89,41 @@ addi x2, x2, 1                      | [x2 = 00000006, pc = 00000004, LOOP iterat
 addi x2, x2, 1                      | [x2 = 00000007, pc = 00000004, LOOP iteration 7/8]
 addi x2, x2, 1                      | [x2 = 00000008, LOOP iteration 8/8]
 ```
+
+## Run pytest
+
+```console
+$ pytest
+```
+
+Grab model trace for debugging
+
+```console
+$ pytest --model-verbose
+```
+
+## Get program from database of test programs
+
+Test programs are available in a python module. Assembler codes are stored in
+this file and they can be generated as with the assembler.
+
+Examples:
+
+- Produce assembler code
+
+```console
+$ python test/programs.py mul_256x256
+```
+
+Produce C array
+
+
+```console
+$ python test/programs.py -O carray mul_256x256
+```
+
+Produce binary file
+
+```console
+$ python test/programs.py -O binary mul_256x256 program.bin
+```
