@@ -192,3 +192,11 @@ set_load [load_of ${LOAD_LIB}/${LOAD_CELL}/A] [all_outputs]
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report
 set_critical_range 0.5 ${DUT}
+
+#####################
+# Size Only Cells   #
+#####################
+
+set_size_only -all_instances [get_cells -h *u_size_only*] true
+
+puts "Done applying constraints for top level"
