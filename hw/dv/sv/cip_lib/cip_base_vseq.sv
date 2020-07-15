@@ -10,6 +10,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `uvm_object_new
   // knobs to disable post_start clear interrupt routine
   bit  do_clear_all_interrupts = 1'b1;
+  // knobs to enable alert auto reponse, once disabled it won't be able to enable again unless
+  // dut_init is issued
+  bit  en_auto_alerts_response = 1'b1;
+
   // csr queue for intr test/enable/state
   dv_base_reg intr_test_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -46,6 +50,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   `uvm_object_utils_end
 
   `include "cip_base_vseq__tl_errors.svh"
+
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    if (en_auto_alerts_response && cfg.list_of_alerts.size()) run_alert_rsp_seq_nonblocking();
+  endtask
 
   task pre_start();
     csr_utils_pkg::max_outstanding_accesses = 1 << TL_AIW;
@@ -556,13 +565,22 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_alert_rsp_seq_nonblocking();
     foreach (cfg.list_of_alerts[i]) begin
-      automatic string seqr_name = cfg.list_of_alerts[i];
+      automatic string alert_name = cfg.list_of_alerts[i];
       fork
-        forever begin
-          alert_receiver_alert_rsp_seq ack_seq =
-              alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
-          `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
-          ack_seq.start(p_sequencer.alert_esc_sequencer_h[seqr_name]);
+        begin
+          fork
+            forever begin
+              alert_receiver_alert_rsp_seq ack_seq =
+                  alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
+              `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
+              ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
+            end
+            begin
+              wait(!en_auto_alerts_response || cfg.under_reset);
+              cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+            end
+          join_any
+          disable fork;
         end
       join_none
     end

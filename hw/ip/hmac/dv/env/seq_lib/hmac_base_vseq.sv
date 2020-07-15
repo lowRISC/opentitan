@@ -33,15 +33,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    alert_send_ping();
     if (do_hmac_init) hmac_init();
-  endtask
-
-  virtual task alert_send_ping();
-    alert_receiver_seq ping_seq;
-    `uvm_create_on(ping_seq, p_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[0]]);
-    `DV_CHECK_RANDOMIZE_FATAL(ping_seq)
-    `uvm_send(ping_seq)
   endtask
 
   virtual task dut_shutdown();
