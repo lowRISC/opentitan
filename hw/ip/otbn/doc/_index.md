@@ -275,6 +275,15 @@ In addition to the Wide Data Registers, BN instructions can also access WLEN-siz
         A random number.
       </td>
     </tr>
+    <tr>
+      <td>0x3</td>
+      <td>RW</td>
+      <td>
+        <strong>ACC</strong>
+        MAC Accumulator.
+        This gives direct access to the accumulator register used by the BN.MULQACC instruction.
+      </td>
+    </tr>
   </tbody>
 </table>
 
