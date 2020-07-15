@@ -143,10 +143,12 @@ extern void mmio_region_write_only_set_mask32(mmio_region_t base,
                                               uint32_t mask_index);
 extern void mmio_region_nonatomic_set_field32(mmio_region_t base,
                                               ptrdiff_t offset,
-                                              bitfield_field32_t field);
+                                              bitfield_field32_t field,
+                                              uint32_t value);
 extern void mmio_region_write_only_set_field32(mmio_region_t base,
                                                ptrdiff_t offset,
-                                               bitfield_field32_t field);
+                                               bitfield_field32_t field,
+                                               uint32_t value);
 extern void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               uint32_t bit_index);
