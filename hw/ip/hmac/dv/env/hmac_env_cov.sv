@@ -26,6 +26,18 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     fifo_depth_cross: cross sta_fifo_depth, hmac_en, endian_swap, digest_swap;
   endgroup : status_cg
 
+  covergroup err_code_cg with function sample (bit [TL_DW-1:0] err_code);
+    hmac_errors: coverpoint err_code {
+      bins no_error                     = {NoError};
+      bins push_msg_when_sha_sisabled   = {SwPushMsgWhenShaDisabled};
+      bins hash_start_when_sha_disabled = {SwHashStartWhenShaDisabled};
+      bins update_secret_key_in_process = {SwUpdateSecretKeyInProcess};
+      bins hash_start_when_active       = {SwHashStartWhenActive};
+      bins push_msg_when_idle           = {SwPushMsgWhenIdle};
+      illegal_bins illegalvalue         = default;
+    }
+  endgroup : err_code_cg
+
   covergroup msg_len_cg with function sample (bit [TL_DW-1:0] msg_len_lower, bit [TL_DW-1:0] cfg);
     hmac_en: coverpoint cfg[HmacEn];
     msg_len: coverpoint (msg_len_lower / 8) {
@@ -62,9 +74,10 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    cfg_cg     = new();
-    status_cg  = new();
-    msg_len_cg = new();
+    cfg_cg      = new();
+    status_cg   = new();
+    msg_len_cg  = new();
+    err_code_cg = new();
   endfunction : new
 
 endclass

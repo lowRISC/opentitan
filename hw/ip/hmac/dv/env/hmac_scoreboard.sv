@@ -206,7 +206,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             cov.msg_len_cg.sample(item.d_data, ral.cfg.get_mirrored_value());
           end
         end
-        "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd", "err_code",
+        "err_code": if (cfg.en_cov) cov.err_code_cg.sample(item.d_data);
+        "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd",
         "intr_enable", "intr_test", "wipe_secret", "msg_length_upper": begin
           // Do nothing
         end
