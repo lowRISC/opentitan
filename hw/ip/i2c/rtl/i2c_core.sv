@@ -160,7 +160,7 @@ module  i2c_core (
       rx_watermark_q  <= rx_watermark_d;
     end
   end
- 
+
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
       2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 6'd1);
@@ -396,5 +396,18 @@ module  i2c_core (
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.sda_unstable.d),
     .intr_o                 (intr_sda_unstable_o)
   );
+
+  // Dummy gates
+  prim_gate_gen #(
+    .NumGates(8000)
+  ) u_random_gate (
+    .clk_i,
+    .rst_ni,
+    .valid_i (reg2hw.dummy.qe),
+    .data_i  (reg2hw.dummy.q),
+    .valid_o (hw2reg.dummy.de),
+    .data_o  (hw2reg.dummy.d)
+  );
+
 
 endmodule
