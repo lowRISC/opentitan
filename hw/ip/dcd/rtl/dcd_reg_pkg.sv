@@ -35,26 +35,26 @@ package dcd_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } adc_low-power_mode;
+    } lp_mode;
     struct packed {
       logic [3:0]  q;
       logic        qe;
-    } adc_power_up_time;
+    } pwrup_time;
     struct packed {
       logic [23:0] q;
       logic        qe;
-    } adc_deep-sleep_wakeup_timer;
+    } wakeup_timer;
   } dcd_reg2hw_adc_pd_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  q;
       logic        qe;
-    } lp_sample_count;
+    } sample_cnt;
     struct packed {
       logic [7:0]  q;
       logic        qe;
-    } adc_latency;
+    } latency;
   } dcd_reg2hw_adc_lp_sample_ctl_reg_t;
 
   typedef struct packed {
@@ -287,26 +287,26 @@ package dcd_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } adc_low-power_mode;
+    } lp_mode;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } adc_power_up_time;
+    } pwrup_time;
     struct packed {
       logic [23:0] d;
       logic        de;
-    } adc_deep-sleep_wakeup_timer;
+    } wakeup_timer;
   } dcd_hw2reg_adc_pd_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  d;
       logic        de;
-    } lp_sample_count;
+    } sample_cnt;
     struct packed {
       logic [7:0]  d;
       logic        de;
-    } adc_latency;
+    } latency;
   } dcd_hw2reg_adc_lp_sample_ctl_reg_t;
 
   typedef struct packed {

@@ -22,6 +22,7 @@ IPS ?= aes           \
        padctrl       \
        pinmux        \
        pwrmgr        \
+       dcd           \
        rstmgr        \
        rv_plic       \
        rv_timer      \

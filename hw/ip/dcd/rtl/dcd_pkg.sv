@@ -15,7 +15,7 @@ package dcd_pkg;
  	 logic       valid;
 	} adc_rsp_t;
 
-	localparam ADC_REQ_DEFAULT = '{default:'0'}';
-	localparam ADC_RSP_DEFAULT = '{default:'0'}';
+	localparam adc_req_t ADC_REQ_DEFAULT = '{default:'0};
+	localparam adc_rsp_t ADC_RSP_DEFAULT = '{default:'0};
 
 endpackage

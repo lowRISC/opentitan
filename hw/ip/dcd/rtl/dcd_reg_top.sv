@@ -82,21 +82,21 @@ module dcd_reg_top (
   logic adc_en_ctl_qs;
   logic adc_en_ctl_wd;
   logic adc_en_ctl_we;
-  logic adc_pd_ctl_adc_low-power_mode_qs;
-  logic adc_pd_ctl_adc_low-power_mode_wd;
-  logic adc_pd_ctl_adc_low-power_mode_we;
-  logic [3:0] adc_pd_ctl_adc_power_up_time_qs;
-  logic [3:0] adc_pd_ctl_adc_power_up_time_wd;
-  logic adc_pd_ctl_adc_power_up_time_we;
-  logic [23:0] adc_pd_ctl_adc_deep-sleep_wakeup_timer_qs;
-  logic [23:0] adc_pd_ctl_adc_deep-sleep_wakeup_timer_wd;
-  logic adc_pd_ctl_adc_deep-sleep_wakeup_timer_we;
-  logic [7:0] adc_lp_sample_ctl_lp_sample_count_qs;
-  logic [7:0] adc_lp_sample_ctl_lp_sample_count_wd;
-  logic adc_lp_sample_ctl_lp_sample_count_we;
-  logic [7:0] adc_lp_sample_ctl_adc_latency_qs;
-  logic [7:0] adc_lp_sample_ctl_adc_latency_wd;
-  logic adc_lp_sample_ctl_adc_latency_we;
+  logic adc_pd_ctl_lp_mode_qs;
+  logic adc_pd_ctl_lp_mode_wd;
+  logic adc_pd_ctl_lp_mode_we;
+  logic [3:0] adc_pd_ctl_pwrup_time_qs;
+  logic [3:0] adc_pd_ctl_pwrup_time_wd;
+  logic adc_pd_ctl_pwrup_time_we;
+  logic [23:0] adc_pd_ctl_wakeup_timer_qs;
+  logic [23:0] adc_pd_ctl_wakeup_timer_wd;
+  logic adc_pd_ctl_wakeup_timer_we;
+  logic [7:0] adc_lp_sample_ctl_sample_cnt_qs;
+  logic [7:0] adc_lp_sample_ctl_sample_cnt_wd;
+  logic adc_lp_sample_ctl_sample_cnt_we;
+  logic [7:0] adc_lp_sample_ctl_latency_qs;
+  logic [7:0] adc_lp_sample_ctl_latency_wd;
+  logic adc_lp_sample_ctl_latency_we;
   logic [15:0] adc_sample_ctl_qs;
   logic [15:0] adc_sample_ctl_wd;
   logic adc_sample_ctl_we;
@@ -564,135 +564,135 @@ module dcd_reg_top (
 
   // R[adc_pd_ctl]: V(False)
 
-  //   F[adc_low-power_mode]: 0:0
+  //   F[lp_mode]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_adc_pd_ctl_adc_low-power_mode (
+  ) u_adc_pd_ctl_lp_mode (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_pd_ctl_adc_low-power_mode_we),
-    .wd     (adc_pd_ctl_adc_low-power_mode_wd),
+    .we     (adc_pd_ctl_lp_mode_we),
+    .wd     (adc_pd_ctl_lp_mode_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_pd_ctl.adc_low-power_mode.de),
-    .d      (hw2reg.adc_pd_ctl.adc_low-power_mode.d ),
+    .de     (hw2reg.adc_pd_ctl.lp_mode.de),
+    .d      (hw2reg.adc_pd_ctl.lp_mode.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_pd_ctl.adc_low-power_mode.qe),
-    .q      (reg2hw.adc_pd_ctl.adc_low-power_mode.q ),
+    .qe     (reg2hw.adc_pd_ctl.lp_mode.qe),
+    .q      (reg2hw.adc_pd_ctl.lp_mode.q ),
 
     // to register interface (read)
-    .qs     (adc_pd_ctl_adc_low-power_mode_qs)
+    .qs     (adc_pd_ctl_lp_mode_qs)
   );
 
 
-  //   F[adc_power_up_time]: 7:4
+  //   F[pwrup_time]: 7:4
   prim_subreg #(
     .DW      (4),
     .SWACCESS("RW"),
     .RESVAL  (4'h6)
-  ) u_adc_pd_ctl_adc_power_up_time (
+  ) u_adc_pd_ctl_pwrup_time (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_pd_ctl_adc_power_up_time_we),
-    .wd     (adc_pd_ctl_adc_power_up_time_wd),
+    .we     (adc_pd_ctl_pwrup_time_we),
+    .wd     (adc_pd_ctl_pwrup_time_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_pd_ctl.adc_power_up_time.de),
-    .d      (hw2reg.adc_pd_ctl.adc_power_up_time.d ),
+    .de     (hw2reg.adc_pd_ctl.pwrup_time.de),
+    .d      (hw2reg.adc_pd_ctl.pwrup_time.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_pd_ctl.adc_power_up_time.qe),
-    .q      (reg2hw.adc_pd_ctl.adc_power_up_time.q ),
+    .qe     (reg2hw.adc_pd_ctl.pwrup_time.qe),
+    .q      (reg2hw.adc_pd_ctl.pwrup_time.q ),
 
     // to register interface (read)
-    .qs     (adc_pd_ctl_adc_power_up_time_qs)
+    .qs     (adc_pd_ctl_pwrup_time_qs)
   );
 
 
-  //   F[adc_deep-sleep_wakeup_timer]: 31:8
+  //   F[wakeup_timer]: 31:8
   prim_subreg #(
     .DW      (24),
     .SWACCESS("RW"),
     .RESVAL  (24'h640)
-  ) u_adc_pd_ctl_adc_deep-sleep_wakeup_timer (
+  ) u_adc_pd_ctl_wakeup_timer (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_pd_ctl_adc_deep-sleep_wakeup_timer_we),
-    .wd     (adc_pd_ctl_adc_deep-sleep_wakeup_timer_wd),
+    .we     (adc_pd_ctl_wakeup_timer_we),
+    .wd     (adc_pd_ctl_wakeup_timer_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_pd_ctl.adc_deep-sleep_wakeup_timer.de),
-    .d      (hw2reg.adc_pd_ctl.adc_deep-sleep_wakeup_timer.d ),
+    .de     (hw2reg.adc_pd_ctl.wakeup_timer.de),
+    .d      (hw2reg.adc_pd_ctl.wakeup_timer.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_pd_ctl.adc_deep-sleep_wakeup_timer.qe),
-    .q      (reg2hw.adc_pd_ctl.adc_deep-sleep_wakeup_timer.q ),
+    .qe     (reg2hw.adc_pd_ctl.wakeup_timer.qe),
+    .q      (reg2hw.adc_pd_ctl.wakeup_timer.q ),
 
     // to register interface (read)
-    .qs     (adc_pd_ctl_adc_deep-sleep_wakeup_timer_qs)
+    .qs     (adc_pd_ctl_wakeup_timer_qs)
   );
 
 
   // R[adc_lp_sample_ctl]: V(False)
 
-  //   F[lp_sample_count]: 7:0
+  //   F[sample_cnt]: 7:0
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RW"),
     .RESVAL  (8'h4)
-  ) u_adc_lp_sample_ctl_lp_sample_count (
+  ) u_adc_lp_sample_ctl_sample_cnt (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_lp_sample_ctl_lp_sample_count_we),
-    .wd     (adc_lp_sample_ctl_lp_sample_count_wd),
+    .we     (adc_lp_sample_ctl_sample_cnt_we),
+    .wd     (adc_lp_sample_ctl_sample_cnt_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_lp_sample_ctl.lp_sample_count.de),
-    .d      (hw2reg.adc_lp_sample_ctl.lp_sample_count.d ),
+    .de     (hw2reg.adc_lp_sample_ctl.sample_cnt.de),
+    .d      (hw2reg.adc_lp_sample_ctl.sample_cnt.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_lp_sample_ctl.lp_sample_count.qe),
-    .q      (reg2hw.adc_lp_sample_ctl.lp_sample_count.q ),
+    .qe     (reg2hw.adc_lp_sample_ctl.sample_cnt.qe),
+    .q      (reg2hw.adc_lp_sample_ctl.sample_cnt.q ),
 
     // to register interface (read)
-    .qs     (adc_lp_sample_ctl_lp_sample_count_qs)
+    .qs     (adc_lp_sample_ctl_sample_cnt_qs)
   );
 
 
-  //   F[adc_latency]: 15:8
+  //   F[latency]: 15:8
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RW"),
     .RESVAL  (8'h2c)
-  ) u_adc_lp_sample_ctl_adc_latency (
+  ) u_adc_lp_sample_ctl_latency (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_lp_sample_ctl_adc_latency_we),
-    .wd     (adc_lp_sample_ctl_adc_latency_wd),
+    .we     (adc_lp_sample_ctl_latency_we),
+    .wd     (adc_lp_sample_ctl_latency_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_lp_sample_ctl.adc_latency.de),
-    .d      (hw2reg.adc_lp_sample_ctl.adc_latency.d ),
+    .de     (hw2reg.adc_lp_sample_ctl.latency.de),
+    .d      (hw2reg.adc_lp_sample_ctl.latency.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_lp_sample_ctl.adc_latency.qe),
-    .q      (reg2hw.adc_lp_sample_ctl.adc_latency.q ),
+    .qe     (reg2hw.adc_lp_sample_ctl.latency.qe),
+    .q      (reg2hw.adc_lp_sample_ctl.latency.q ),
 
     // to register interface (read)
-    .qs     (adc_lp_sample_ctl_adc_latency_qs)
+    .qs     (adc_lp_sample_ctl_latency_qs)
   );
 
 
@@ -4024,20 +4024,20 @@ module dcd_reg_top (
   assign adc_en_ctl_we = addr_hit[3] & reg_we & ~wr_err;
   assign adc_en_ctl_wd = reg_wdata[0];
 
-  assign adc_pd_ctl_adc_low-power_mode_we = addr_hit[4] & reg_we & ~wr_err;
-  assign adc_pd_ctl_adc_low-power_mode_wd = reg_wdata[0];
+  assign adc_pd_ctl_lp_mode_we = addr_hit[4] & reg_we & ~wr_err;
+  assign adc_pd_ctl_lp_mode_wd = reg_wdata[0];
 
-  assign adc_pd_ctl_adc_power_up_time_we = addr_hit[4] & reg_we & ~wr_err;
-  assign adc_pd_ctl_adc_power_up_time_wd = reg_wdata[7:4];
+  assign adc_pd_ctl_pwrup_time_we = addr_hit[4] & reg_we & ~wr_err;
+  assign adc_pd_ctl_pwrup_time_wd = reg_wdata[7:4];
 
-  assign adc_pd_ctl_adc_deep-sleep_wakeup_timer_we = addr_hit[4] & reg_we & ~wr_err;
-  assign adc_pd_ctl_adc_deep-sleep_wakeup_timer_wd = reg_wdata[31:8];
+  assign adc_pd_ctl_wakeup_timer_we = addr_hit[4] & reg_we & ~wr_err;
+  assign adc_pd_ctl_wakeup_timer_wd = reg_wdata[31:8];
 
-  assign adc_lp_sample_ctl_lp_sample_count_we = addr_hit[5] & reg_we & ~wr_err;
-  assign adc_lp_sample_ctl_lp_sample_count_wd = reg_wdata[7:0];
+  assign adc_lp_sample_ctl_sample_cnt_we = addr_hit[5] & reg_we & ~wr_err;
+  assign adc_lp_sample_ctl_sample_cnt_wd = reg_wdata[7:0];
 
-  assign adc_lp_sample_ctl_adc_latency_we = addr_hit[5] & reg_we & ~wr_err;
-  assign adc_lp_sample_ctl_adc_latency_wd = reg_wdata[15:8];
+  assign adc_lp_sample_ctl_latency_we = addr_hit[5] & reg_we & ~wr_err;
+  assign adc_lp_sample_ctl_latency_wd = reg_wdata[15:8];
 
   assign adc_sample_ctl_we = addr_hit[6] & reg_we & ~wr_err;
   assign adc_sample_ctl_wd = reg_wdata[15:0];
@@ -4426,14 +4426,14 @@ module dcd_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = adc_pd_ctl_adc_low-power_mode_qs;
-        reg_rdata_next[7:4] = adc_pd_ctl_adc_power_up_time_qs;
-        reg_rdata_next[31:8] = adc_pd_ctl_adc_deep-sleep_wakeup_timer_qs;
+        reg_rdata_next[0] = adc_pd_ctl_lp_mode_qs;
+        reg_rdata_next[7:4] = adc_pd_ctl_pwrup_time_qs;
+        reg_rdata_next[31:8] = adc_pd_ctl_wakeup_timer_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[7:0] = adc_lp_sample_ctl_lp_sample_count_qs;
-        reg_rdata_next[15:8] = adc_lp_sample_ctl_adc_latency_qs;
+        reg_rdata_next[7:0] = adc_lp_sample_ctl_sample_cnt_qs;
+        reg_rdata_next[15:8] = adc_lp_sample_ctl_latency_qs;
       end
 
       addr_hit[6]: begin

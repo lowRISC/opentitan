@@ -13,7 +13,7 @@ filesets:
     files:
       - rtl/dcd_reg_pkg.sv
       - rtl/dcd_reg_top.sv
-      - rtl/dcd_core.sv
+      - rtl/dcd_pkg.sv
       - rtl/dcd.sv
     file_type: systemVerilogSource
 

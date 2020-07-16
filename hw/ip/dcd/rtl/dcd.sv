@@ -8,10 +8,10 @@
 
 module dcd import dcd_pkg::*;(
   input clk_i,//regular core clock for SW config interface
-  input aon_clk_i,//always-on slow clock for internal logic
+  input clk_aon_i,//always-on slow clock for internal logic
   input rst_ni,//power-on hardware reset
 
-  //Regster interface 
+  //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -24,12 +24,12 @@ module dcd import dcd_pkg::*;(
   //input  adc_d_val,//Valid bit(pulse) for adc_d
   //output logic adc_pd,//Power down ADC(used in deep sleep mode to save power)
   //output logic [1:0] adc_chnsel,//channel select for ADC; 2’b0 means stop, 2’b01 means first channel, 2’b10 means second channel, 2’b11 ilegal
-  
+
   //interrupt interface
-  output logic debug_cable_update,// Debug cable is detected(attached or disconnected); raise the interrupt to CPU
+  output logic intr_debug_cable_update_o,// Debug cable is detected(attached or disconnected); raise the interrupt to CPU
 
   //pwrmgr interface
-  output logic debug_cable_wakeup,//Debug cable is detected; wake up the GSC(CPU) in normal sleep and deep sleep mode
+  output logic debug_cable_wakeup //Debug cable is detected; wake up the GSC(CPU) in normal sleep and deep sleep mode
   //input  [2:0] pwr_sts,//3’b001: deep sleep, 3’b010: normal sleep, 3’b100: fully active
 );
 
@@ -55,7 +55,7 @@ module dcd import dcd_pkg::*;(
   logic adc_d_val;
   logic [9:0] adc_d;
   // TBD RTL
-  always_ff @(posedge aon_clk_i or negedge rst_int_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_int_ni) begin
     if (!rst_int_ni) begin
       adc_d     <= 10'h0;
       adc_d_val <= 1'b0;
@@ -64,8 +64,8 @@ module dcd import dcd_pkg::*;(
       adc_d_val <= adc_i.valid;
     end
   end
-  
-  always_ff @(posedge aon_clk_i or negedge rst_int_ni) begin
+
+  always_ff @(posedge clk_aon_i or negedge rst_int_ni) begin
     if (!rst_int_ni) begin
       adc_o.powerdown  <= 1'b1;
       adc_o.chnsel     <= 2'h0;
@@ -74,14 +74,14 @@ module dcd import dcd_pkg::*;(
       adc_o.chnsel     <= 2'b01;//TBD
     end
   end
-  
-  always_ff @(posedge aon_clk_i or negedge rst_int_ni) begin
+
+  always_ff @(posedge clk_aon_i or negedge rst_int_ni) begin
     if (!rst_int_ni) begin
       debug_cable_wakeup    <= 1'b0;
-      debug_cable_update  <= 1'b0;
+      intr_debug_cable_update_o  <= 1'b0;
     end else begin
       debug_cable_wakeup    <= 1'b1;//TBD
-      debug_cable_update  <= 1'b1;//TBD
+      intr_debug_cable_update_o  <= 1'b1;//TBD
     end
   end
   // TBD Assert Known: Outputs
@@ -103,7 +103,7 @@ module dcd import dcd_pkg::*;(
     .DataWidth ( DataWidth ),
     .NumGates  ( NumGates  )
   ) prim_gate_gen (
-    .clk_i     (aon_clk_i   ),
+    .clk_i     (clk_aon_i   ),
     .rst_ni    (rst_ni  ),
     .valid_i   (valid_i ),
     .data_i    (data_i  ),
