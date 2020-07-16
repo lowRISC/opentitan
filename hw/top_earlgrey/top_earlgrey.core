@@ -33,6 +33,7 @@ filesets:
       - lowrisc:prim:rom_adv
       - lowrisc:ip:rstmgr
       - lowrisc:ip:rbox
+      - lowrisc:ip:dcd
       - lowrisc:ip:csrng
       - lowrisc:ip:entropy_src
       - lowrisc:prim:flash
