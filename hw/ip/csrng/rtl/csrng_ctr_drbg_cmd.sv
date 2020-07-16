@@ -12,7 +12,7 @@ module csrng_ctr_drbg_cmd #(
   parameter int unsigned BlkLen = 128,
   parameter int unsigned KeyLen = 256,
   parameter int unsigned SeedLen = 384,
-  parameter int unsigned CtrLen  = 32s
+  parameter int unsigned CtrLen  = 32
 ) (
   input                  clk_i,
   input                  rst_ni,
