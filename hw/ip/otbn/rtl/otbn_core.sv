@@ -52,8 +52,6 @@ module otbn_core
 
   assign imem_req_o = 1'b1;
   assign dmem_req_o = 1'b0;
-  assign done_o = 1'b0;
-
 
   // Dummy gates for bronze
 
