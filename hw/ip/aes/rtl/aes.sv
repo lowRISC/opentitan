@@ -104,7 +104,7 @@ module aes #(
   end
 
   // TODO: idle.d is actually only valid together with idle.de.
-  idle_o = hw2reg.idle.d;
+  assign idle_o = hw2reg.status.idle.d;
 
   // All outputs should have a known value after reset
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
