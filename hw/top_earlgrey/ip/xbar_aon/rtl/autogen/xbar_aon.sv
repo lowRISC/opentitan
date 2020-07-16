@@ -7,7 +7,7 @@
 //
 // Interconnect
 // main
-//   -> s1n_11
+//   -> s1n_12
 //     -> pwrmgr_aon
 //     -> rstmgr_aon
 //     -> clkmgr_aon
@@ -18,6 +18,7 @@
 //     -> pwm_aon
 //     -> ram_ret_aon
 //     -> timer_aon
+//     -> dcd_aon
 
 module xbar_aon (
   input clk_aon_i,
@@ -36,6 +37,8 @@ module xbar_aon (
   input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
   output tlul_pkg::tl_h2d_t tl_rbox_aon_o,
   input  tlul_pkg::tl_d2h_t tl_rbox_aon_i,
+  output tlul_pkg::tl_h2d_t tl_dcd_aon_o,
+  input  tlul_pkg::tl_d2h_t tl_dcd_aon_i,
   output tlul_pkg::tl_h2d_t tl_pwm_aon_o,
   input  tlul_pkg::tl_d2h_t tl_pwm_aon_i,
   output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
@@ -60,83 +63,89 @@ module xbar_aon (
   logic unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
-  tl_h2d_t tl_s1n_11_us_h2d ;
-  tl_d2h_t tl_s1n_11_us_d2h ;
+  tl_h2d_t tl_s1n_12_us_h2d ;
+  tl_d2h_t tl_s1n_12_us_d2h ;
 
 
-  tl_h2d_t tl_s1n_11_ds_h2d [10];
-  tl_d2h_t tl_s1n_11_ds_d2h [10];
+  tl_h2d_t tl_s1n_12_ds_h2d [11];
+  tl_d2h_t tl_s1n_12_ds_d2h [11];
 
   // Create steering signal
-  logic [3:0] dev_sel_s1n_11;
+  logic [3:0] dev_sel_s1n_12;
 
 
 
-  assign tl_pwrmgr_aon_o = tl_s1n_11_ds_h2d[0];
-  assign tl_s1n_11_ds_d2h[0] = tl_pwrmgr_aon_i;
+  assign tl_pwrmgr_aon_o = tl_s1n_12_ds_h2d[0];
+  assign tl_s1n_12_ds_d2h[0] = tl_pwrmgr_aon_i;
 
-  assign tl_rstmgr_aon_o = tl_s1n_11_ds_h2d[1];
-  assign tl_s1n_11_ds_d2h[1] = tl_rstmgr_aon_i;
+  assign tl_rstmgr_aon_o = tl_s1n_12_ds_h2d[1];
+  assign tl_s1n_12_ds_d2h[1] = tl_rstmgr_aon_i;
 
-  assign tl_clkmgr_aon_o = tl_s1n_11_ds_h2d[2];
-  assign tl_s1n_11_ds_d2h[2] = tl_clkmgr_aon_i;
+  assign tl_clkmgr_aon_o = tl_s1n_12_ds_h2d[2];
+  assign tl_s1n_12_ds_d2h[2] = tl_clkmgr_aon_i;
 
-  assign tl_pinmux_aon_o = tl_s1n_11_ds_h2d[3];
-  assign tl_s1n_11_ds_d2h[3] = tl_pinmux_aon_i;
+  assign tl_pinmux_aon_o = tl_s1n_12_ds_h2d[3];
+  assign tl_s1n_12_ds_d2h[3] = tl_pinmux_aon_i;
 
-  assign tl_padctrl_aon_o = tl_s1n_11_ds_h2d[4];
-  assign tl_s1n_11_ds_d2h[4] = tl_padctrl_aon_i;
+  assign tl_padctrl_aon_o = tl_s1n_12_ds_h2d[4];
+  assign tl_s1n_12_ds_d2h[4] = tl_padctrl_aon_i;
 
-  assign tl_usbdev_aon_o = tl_s1n_11_ds_h2d[5];
-  assign tl_s1n_11_ds_d2h[5] = tl_usbdev_aon_i;
+  assign tl_usbdev_aon_o = tl_s1n_12_ds_h2d[5];
+  assign tl_s1n_12_ds_d2h[5] = tl_usbdev_aon_i;
 
-  assign tl_rbox_aon_o = tl_s1n_11_ds_h2d[6];
-  assign tl_s1n_11_ds_d2h[6] = tl_rbox_aon_i;
+  assign tl_rbox_aon_o = tl_s1n_12_ds_h2d[6];
+  assign tl_s1n_12_ds_d2h[6] = tl_rbox_aon_i;
 
-  assign tl_pwm_aon_o = tl_s1n_11_ds_h2d[7];
-  assign tl_s1n_11_ds_d2h[7] = tl_pwm_aon_i;
+  assign tl_pwm_aon_o = tl_s1n_12_ds_h2d[7];
+  assign tl_s1n_12_ds_d2h[7] = tl_pwm_aon_i;
 
-  assign tl_ram_ret_aon_o = tl_s1n_11_ds_h2d[8];
-  assign tl_s1n_11_ds_d2h[8] = tl_ram_ret_aon_i;
+  assign tl_ram_ret_aon_o = tl_s1n_12_ds_h2d[8];
+  assign tl_s1n_12_ds_d2h[8] = tl_ram_ret_aon_i;
 
-  assign tl_timer_aon_o = tl_s1n_11_ds_h2d[9];
-  assign tl_s1n_11_ds_d2h[9] = tl_timer_aon_i;
+  assign tl_timer_aon_o = tl_s1n_12_ds_h2d[9];
+  assign tl_s1n_12_ds_d2h[9] = tl_timer_aon_i;
 
-  assign tl_s1n_11_us_h2d = tl_main_i;
-  assign tl_main_o = tl_s1n_11_us_d2h;
+  assign tl_dcd_aon_o = tl_s1n_12_ds_h2d[10];
+  assign tl_s1n_12_ds_d2h[10] = tl_dcd_aon_i;
+
+  assign tl_s1n_12_us_h2d = tl_main_i;
+  assign tl_main_o = tl_s1n_12_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
-    dev_sel_s1n_11 = 4'd10;
-    if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
-      dev_sel_s1n_11 = 4'd0;
+    dev_sel_s1n_12 = 4'd11;
+    if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
+      dev_sel_s1n_12 = 4'd0;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
-      dev_sel_s1n_11 = 4'd1;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
+      dev_sel_s1n_12 = 4'd1;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
-      dev_sel_s1n_11 = 4'd2;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
+      dev_sel_s1n_12 = 4'd2;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
-      dev_sel_s1n_11 = 4'd3;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
+      dev_sel_s1n_12 = 4'd3;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_PADCTRL_AON)) == ADDR_SPACE_PADCTRL_AON) begin
-      dev_sel_s1n_11 = 4'd4;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_PADCTRL_AON)) == ADDR_SPACE_PADCTRL_AON) begin
+      dev_sel_s1n_12 = 4'd4;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_USBDEV_AON)) == ADDR_SPACE_USBDEV_AON) begin
-      dev_sel_s1n_11 = 4'd5;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_USBDEV_AON)) == ADDR_SPACE_USBDEV_AON) begin
+      dev_sel_s1n_12 = 4'd5;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_RBOX_AON)) == ADDR_SPACE_RBOX_AON) begin
-      dev_sel_s1n_11 = 4'd6;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_RBOX_AON)) == ADDR_SPACE_RBOX_AON) begin
+      dev_sel_s1n_12 = 4'd6;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_PWM_AON)) == ADDR_SPACE_PWM_AON) begin
-      dev_sel_s1n_11 = 4'd7;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_PWM_AON)) == ADDR_SPACE_PWM_AON) begin
+      dev_sel_s1n_12 = 4'd7;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
-      dev_sel_s1n_11 = 4'd8;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
+      dev_sel_s1n_12 = 4'd8;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_TIMER_AON)) == ADDR_SPACE_TIMER_AON) begin
-      dev_sel_s1n_11 = 4'd9;
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_TIMER_AON)) == ADDR_SPACE_TIMER_AON) begin
+      dev_sel_s1n_12 = 4'd9;
+
+    end else if ((tl_s1n_12_us_h2d.a_address & ~(ADDR_MASK_DCD_AON)) == ADDR_SPACE_DCD_AON) begin
+      dev_sel_s1n_12 = 4'd10;
 end
   end
 
@@ -145,17 +154,17 @@ end
   tlul_socket_1n #(
     .HReqDepth (4'h0),
     .HRspDepth (4'h0),
-    .DReqDepth (40'h200000000),
-    .DRspDepth (40'h200000000),
-    .N         (10)
-  ) u_s1n_11 (
+    .DReqDepth (44'h200000000),
+    .DRspDepth (44'h200000000),
+    .N         (11)
+  ) u_s1n_12 (
     .clk_i        (clk_aon_i),
     .rst_ni       (rst_aon_ni),
-    .tl_h_i       (tl_s1n_11_us_h2d),
-    .tl_h_o       (tl_s1n_11_us_d2h),
-    .tl_d_o       (tl_s1n_11_ds_h2d),
-    .tl_d_i       (tl_s1n_11_ds_d2h),
-    .dev_select   (dev_sel_s1n_11)
+    .tl_h_i       (tl_s1n_12_us_h2d),
+    .tl_h_o       (tl_s1n_12_us_d2h),
+    .tl_d_o       (tl_s1n_12_ds_h2d),
+    .tl_d_i       (tl_s1n_12_ds_d2h),
+    .dev_select   (dev_sel_s1n_12)
   );
 
 endmodule

@@ -314,6 +314,14 @@
 #define TOP_EARLGREY_RBOX_AON_BASE_ADDR 0x40430000u
 
 /**
+ * Base address for dcd_aon peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_DCD_AON_BASE_ADDR 0x40440000u
+
+/**
  * Base address for pwm_aon peripheral in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -406,14 +414,15 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUsbdevAon = 10, /**< usbdev_aon */
   kTopEarlgreyPlicPeripheralPwrmgrAon = 11, /**< pwrmgr_aon */
   kTopEarlgreyPlicPeripheralOtpCtrl = 12, /**< otp_ctrl */
-  kTopEarlgreyPlicPeripheralUart1 = 13, /**< uart1 */
-  kTopEarlgreyPlicPeripheralUart2 = 14, /**< uart2 */
-  kTopEarlgreyPlicPeripheralUart3 = 15, /**< uart3 */
-  kTopEarlgreyPlicPeripheralI2c0 = 16, /**< i2c0 */
-  kTopEarlgreyPlicPeripheralI2c1 = 17, /**< i2c1 */
-  kTopEarlgreyPlicPeripheralI2c2 = 18, /**< i2c2 */
-  kTopEarlgreyPlicPeripheralOtbn = 19, /**< otbn */
-  kTopEarlgreyPlicPeripheralLast = 19, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralDcdAon = 13, /**< dcd_aon */
+  kTopEarlgreyPlicPeripheralUart1 = 14, /**< uart1 */
+  kTopEarlgreyPlicPeripheralUart2 = 15, /**< uart2 */
+  kTopEarlgreyPlicPeripheralUart3 = 16, /**< uart3 */
+  kTopEarlgreyPlicPeripheralI2c0 = 17, /**< i2c0 */
+  kTopEarlgreyPlicPeripheralI2c1 = 18, /**< i2c1 */
+  kTopEarlgreyPlicPeripheralI2c2 = 19, /**< i2c2 */
+  kTopEarlgreyPlicPeripheralOtbn = 20, /**< otbn */
+  kTopEarlgreyPlicPeripheralLast = 20, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -510,60 +519,61 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 84, /**< pwrmgr_aon_wakeup */
   kTopEarlgreyPlicIrqIdOtpCtrlOtpAccessDone = 85, /**< otp_ctrl_otp_access_done */
   kTopEarlgreyPlicIrqIdOtpCtrlOtpCtrlErr = 86, /**< otp_ctrl_otp_ctrl_err */
-  kTopEarlgreyPlicIrqIdUart1TxWatermark = 87, /**< uart1_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart1RxWatermark = 88, /**< uart1_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart1TxEmpty = 89, /**< uart1_tx_empty */
-  kTopEarlgreyPlicIrqIdUart1RxOverflow = 90, /**< uart1_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart1RxFrameErr = 91, /**< uart1_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart1RxBreakErr = 92, /**< uart1_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart1RxTimeout = 93, /**< uart1_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart1RxParityErr = 94, /**< uart1_rx_parity_err */
-  kTopEarlgreyPlicIrqIdUart2TxWatermark = 95, /**< uart2_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart2RxWatermark = 96, /**< uart2_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart2TxEmpty = 97, /**< uart2_tx_empty */
-  kTopEarlgreyPlicIrqIdUart2RxOverflow = 98, /**< uart2_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart2RxFrameErr = 99, /**< uart2_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart2RxBreakErr = 100, /**< uart2_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart2RxTimeout = 101, /**< uart2_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart2RxParityErr = 102, /**< uart2_rx_parity_err */
-  kTopEarlgreyPlicIrqIdUart3TxWatermark = 103, /**< uart3_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart3RxWatermark = 104, /**< uart3_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart3TxEmpty = 105, /**< uart3_tx_empty */
-  kTopEarlgreyPlicIrqIdUart3RxOverflow = 106, /**< uart3_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart3RxFrameErr = 107, /**< uart3_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart3RxBreakErr = 108, /**< uart3_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart3RxTimeout = 109, /**< uart3_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart3RxParityErr = 110, /**< uart3_rx_parity_err */
-  kTopEarlgreyPlicIrqIdI2c0FmtWatermark = 111, /**< i2c0_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c0RxWatermark = 112, /**< i2c0_rx_watermark */
-  kTopEarlgreyPlicIrqIdI2c0FmtOverflow = 113, /**< i2c0_fmt_overflow */
-  kTopEarlgreyPlicIrqIdI2c0RxOverflow = 114, /**< i2c0_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c0Nak = 115, /**< i2c0_nak */
-  kTopEarlgreyPlicIrqIdI2c0SclInterference = 116, /**< i2c0_scl_interference */
-  kTopEarlgreyPlicIrqIdI2c0SdaInterference = 117, /**< i2c0_sda_interference */
-  kTopEarlgreyPlicIrqIdI2c0StretchTimeout = 118, /**< i2c0_stretch_timeout */
-  kTopEarlgreyPlicIrqIdI2c0SdaUnstable = 119, /**< i2c0_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2c1FmtWatermark = 120, /**< i2c1_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c1RxWatermark = 121, /**< i2c1_rx_watermark */
-  kTopEarlgreyPlicIrqIdI2c1FmtOverflow = 122, /**< i2c1_fmt_overflow */
-  kTopEarlgreyPlicIrqIdI2c1RxOverflow = 123, /**< i2c1_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c1Nak = 124, /**< i2c1_nak */
-  kTopEarlgreyPlicIrqIdI2c1SclInterference = 125, /**< i2c1_scl_interference */
-  kTopEarlgreyPlicIrqIdI2c1SdaInterference = 126, /**< i2c1_sda_interference */
-  kTopEarlgreyPlicIrqIdI2c1StretchTimeout = 127, /**< i2c1_stretch_timeout */
-  kTopEarlgreyPlicIrqIdI2c1SdaUnstable = 128, /**< i2c1_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2c2FmtWatermark = 129, /**< i2c2_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c2RxWatermark = 130, /**< i2c2_rx_watermark */
-  kTopEarlgreyPlicIrqIdI2c2FmtOverflow = 131, /**< i2c2_fmt_overflow */
-  kTopEarlgreyPlicIrqIdI2c2RxOverflow = 132, /**< i2c2_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c2Nak = 133, /**< i2c2_nak */
-  kTopEarlgreyPlicIrqIdI2c2SclInterference = 134, /**< i2c2_scl_interference */
-  kTopEarlgreyPlicIrqIdI2c2SdaInterference = 135, /**< i2c2_sda_interference */
-  kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 136, /**< i2c2_stretch_timeout */
-  kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 137, /**< i2c2_sda_unstable */
-  kTopEarlgreyPlicIrqIdOtbnDone = 138, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdOtbnErr = 139, /**< otbn_err */
-  kTopEarlgreyPlicIrqIdLast = 139, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdDcdAonDebugCableUpdate = 87, /**< dcd_aon_debug_cable_update */
+  kTopEarlgreyPlicIrqIdUart1TxWatermark = 88, /**< uart1_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart1RxWatermark = 89, /**< uart1_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart1TxEmpty = 90, /**< uart1_tx_empty */
+  kTopEarlgreyPlicIrqIdUart1RxOverflow = 91, /**< uart1_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart1RxFrameErr = 92, /**< uart1_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart1RxBreakErr = 93, /**< uart1_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart1RxTimeout = 94, /**< uart1_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart1RxParityErr = 95, /**< uart1_rx_parity_err */
+  kTopEarlgreyPlicIrqIdUart2TxWatermark = 96, /**< uart2_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart2RxWatermark = 97, /**< uart2_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart2TxEmpty = 98, /**< uart2_tx_empty */
+  kTopEarlgreyPlicIrqIdUart2RxOverflow = 99, /**< uart2_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart2RxFrameErr = 100, /**< uart2_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart2RxBreakErr = 101, /**< uart2_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart2RxTimeout = 102, /**< uart2_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart2RxParityErr = 103, /**< uart2_rx_parity_err */
+  kTopEarlgreyPlicIrqIdUart3TxWatermark = 104, /**< uart3_tx_watermark */
+  kTopEarlgreyPlicIrqIdUart3RxWatermark = 105, /**< uart3_rx_watermark */
+  kTopEarlgreyPlicIrqIdUart3TxEmpty = 106, /**< uart3_tx_empty */
+  kTopEarlgreyPlicIrqIdUart3RxOverflow = 107, /**< uart3_rx_overflow */
+  kTopEarlgreyPlicIrqIdUart3RxFrameErr = 108, /**< uart3_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUart3RxBreakErr = 109, /**< uart3_rx_break_err */
+  kTopEarlgreyPlicIrqIdUart3RxTimeout = 110, /**< uart3_rx_timeout */
+  kTopEarlgreyPlicIrqIdUart3RxParityErr = 111, /**< uart3_rx_parity_err */
+  kTopEarlgreyPlicIrqIdI2c0FmtWatermark = 112, /**< i2c0_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c0RxWatermark = 113, /**< i2c0_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c0FmtOverflow = 114, /**< i2c0_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c0RxOverflow = 115, /**< i2c0_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c0Nak = 116, /**< i2c0_nak */
+  kTopEarlgreyPlicIrqIdI2c0SclInterference = 117, /**< i2c0_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c0SdaInterference = 118, /**< i2c0_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c0StretchTimeout = 119, /**< i2c0_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c0SdaUnstable = 120, /**< i2c0_sda_unstable */
+  kTopEarlgreyPlicIrqIdI2c1FmtWatermark = 121, /**< i2c1_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c1RxWatermark = 122, /**< i2c1_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c1FmtOverflow = 123, /**< i2c1_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c1RxOverflow = 124, /**< i2c1_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c1Nak = 125, /**< i2c1_nak */
+  kTopEarlgreyPlicIrqIdI2c1SclInterference = 126, /**< i2c1_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c1SdaInterference = 127, /**< i2c1_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c1StretchTimeout = 128, /**< i2c1_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c1SdaUnstable = 129, /**< i2c1_sda_unstable */
+  kTopEarlgreyPlicIrqIdI2c2FmtWatermark = 130, /**< i2c2_fmt_watermark */
+  kTopEarlgreyPlicIrqIdI2c2RxWatermark = 131, /**< i2c2_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c2FmtOverflow = 132, /**< i2c2_fmt_overflow */
+  kTopEarlgreyPlicIrqIdI2c2RxOverflow = 133, /**< i2c2_rx_overflow */
+  kTopEarlgreyPlicIrqIdI2c2Nak = 134, /**< i2c2_nak */
+  kTopEarlgreyPlicIrqIdI2c2SclInterference = 135, /**< i2c2_scl_interference */
+  kTopEarlgreyPlicIrqIdI2c2SdaInterference = 136, /**< i2c2_sda_interference */
+  kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 137, /**< i2c2_stretch_timeout */
+  kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 138, /**< i2c2_sda_unstable */
+  kTopEarlgreyPlicIrqIdOtbnDone = 139, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdOtbnErr = 140, /**< otbn_err */
+  kTopEarlgreyPlicIrqIdLast = 140, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -573,7 +583,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[140];
+    top_earlgrey_plic_interrupt_for_peripheral[141];
 
 /**
  * PLIC external interrupt target.

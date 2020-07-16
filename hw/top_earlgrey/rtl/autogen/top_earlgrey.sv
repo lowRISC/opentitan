@@ -49,6 +49,8 @@ module top_earlgrey #(
   input  logic       clkmgr_aon_clk_io,
   input  logic       clkmgr_aon_clk_usb,
   input  logic       clkmgr_aon_clk_aon,
+  output dcd_pkg::adc_req_t       dcd_aon_adc_req,
+  input  dcd_pkg::adc_rsp_t       dcd_aon_adc_rsp,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -131,6 +133,8 @@ module top_earlgrey #(
   tl_d2h_t  tl_clkmgr_aon_d_d2h;
   tl_h2d_t  tl_rbox_aon_d_h2d;
   tl_d2h_t  tl_rbox_aon_d_d2h;
+  tl_h2d_t  tl_dcd_aon_d_h2d;
+  tl_d2h_t  tl_dcd_aon_d_d2h;
   tl_h2d_t  tl_pwm_aon_d_h2d;
   tl_d2h_t  tl_pwm_aon_d_d2h;
   tl_h2d_t  tl_timer_aon_d_h2d;
@@ -256,6 +260,7 @@ module top_earlgrey #(
   logic        cio_rbox_aon_key2_out_en_d2p;
   logic        cio_rbox_aon_pwrb_out_d2p;
   logic        cio_rbox_aon_pwrb_out_en_d2p;
+  // dcd_aon
   // pwm_aon
   logic [8:0]  cio_pwm_aon_pwm_d2p;
   logic [8:0]  cio_pwm_aon_pwm_en_d2p;
@@ -297,7 +302,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [139:0]  intr_vector;
+  logic [140:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -385,6 +390,7 @@ module top_earlgrey #(
   logic intr_alert_handler_classc;
   logic intr_alert_handler_classd;
   logic intr_pwrmgr_aon_wakeup;
+  logic intr_dcd_aon_debug_cable_update;
   logic intr_timer_aon_timer_expired_0_0;
   logic intr_nmi_gen_esc0;
   logic intr_nmi_gen_esc1;
@@ -440,8 +446,6 @@ module top_earlgrey #(
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   otp_ctrl_pkg::flash_key_t       otp_ctrl_otp_flash_key;
-  otp_ctrl_pkg::ram_main_key_t       otp_ctrl_otp_ram_main_key;
-  otp_ctrl_pkg::ram_ret_aon_key_t       otp_ctrl_otp_ram_ret_aon_key;
   otbn_pkg::otbn_ram_key_t       otp_ctrl_otp_otbn_ram_key;
   otp_ctrl_pkg::lc_otp_program_req_t       otp_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       otp_ctrl_lc_otp_program_rsp;
@@ -472,6 +476,8 @@ module top_earlgrey #(
   csrng_pkg::csrng_rsp_t [2:0] csrng_csrng_cmd_rsp;
   logic       aes_idle;
   clkmgr_pkg::clk_hint_status_t       clkmgr_aon_status;
+  otp_ctrl_pkg::ram_main_key_t       otp_ctrl_otp_ram_main_key;
+  otp_ctrl_pkg::ram_ret_aon_key_t       otp_ctrl_otp_ram_ret_aon_key;
 
   always_comb begin
     // TODO: So far just aes is connected
@@ -1346,6 +1352,21 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_por_io_n)
   );
 
+  dcd u_dcd_aon (
+      .tl_i (tl_dcd_aon_d_h2d),
+      .tl_o (tl_dcd_aon_d_d2h),
+
+      // Interrupt
+      .intr_debug_cable_update_o (intr_dcd_aon_debug_cable_update),
+
+      // Inter-module signals
+      .adc_o(dcd_aon_adc_req),
+      .adc_i(dcd_aon_adc_rsp),
+      .clk_i (clkmgr_aon_clocks.clk_io_powerup),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
+      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
+  );
+
   pwm u_pwm_aon (
       .tl_i (tl_pwm_aon_d_h2d),
       .tl_o (tl_pwm_aon_d_d2h),
@@ -1593,6 +1614,7 @@ module top_earlgrey #(
       intr_uart1_tx_empty,
       intr_uart1_rx_watermark,
       intr_uart1_tx_watermark,
+      intr_dcd_aon_debug_cable_update,
       intr_otp_ctrl_otp_ctrl_err,
       intr_otp_ctrl_otp_access_done,
       intr_pwrmgr_aon_wakeup,
@@ -1749,6 +1771,8 @@ module top_earlgrey #(
     .tl_clkmgr_aon_i  (tl_clkmgr_aon_d_d2h),
     .tl_rbox_aon_o    (tl_rbox_aon_d_h2d),
     .tl_rbox_aon_i    (tl_rbox_aon_d_d2h),
+    .tl_dcd_aon_o     (tl_dcd_aon_d_h2d),
+    .tl_dcd_aon_i     (tl_dcd_aon_d_d2h),
     .tl_pwm_aon_o     (tl_pwm_aon_d_h2d),
     .tl_pwm_aon_i     (tl_pwm_aon_d_d2h),
     .tl_pinmux_aon_o  (tl_pinmux_aon_d_h2d),

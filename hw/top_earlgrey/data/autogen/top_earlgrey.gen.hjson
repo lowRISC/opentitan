@@ -1900,7 +1900,6 @@
           inst_name: otp_ctrl
           width: 1
           default: ""
-          top_type: broadcast
           top_signame: otp_ctrl_otp_ram_main_key
           index: -1
         }
@@ -1913,7 +1912,6 @@
           inst_name: otp_ctrl
           width: 1
           default: ""
-          top_type: broadcast
           top_signame: otp_ctrl_otp_ram_ret_aon_key
           index: -1
         }
@@ -2134,6 +2132,7 @@
           struct: logic
           width: 1
           inst_name: aes
+          default: ""
           top_signame: aes_idle
           index: -1
         }
@@ -2942,6 +2941,7 @@
           package: clkmgr_pkg
           inst_name: clkmgr_aon
           width: 1
+          default: ""
           top_signame: clkmgr_aon_status
           index: -1
         }
@@ -3049,6 +3049,66 @@
       wakeup_list: []
       scan: "false"
       scan_reset: "false"
+    }
+    {
+      name: dcd_aon
+      type: dcd
+      clock_srcs:
+      {
+        clk_i: io
+        clk_aon_i: aon
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por_io
+      }
+      base_addr: 0x40440000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_powerup
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: debug_cable_update
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: adc
+          type: req_rsp
+          act: req
+          name: adc
+          package: dcd_pkg
+          inst_name: dcd_aon
+          width: 1
+          default: ""
+          top_signame: dcd_aon_adc
+          index: -1
+        }
+      ]
     }
     {
       name: pwm_aon
@@ -4114,8 +4174,6 @@
       [
         flash_ctrl.otp
       ]
-      otp_ctrl.otp_ram_main_key: []
-      otp_ctrl.otp_ram_ret_aon_key: []
       otp_ctrl.otp_otbn_ram_key:
       [
         otbn.otp_otbn_ram_key
@@ -4182,6 +4240,8 @@
       csrng.csrng_cmd
       aes.idle
       clkmgr_aon.status
+      otp_ctrl.otp_ram_main_key
+      otp_ctrl.otp_ram_ret_aon_key
     ]
     external:
     [
@@ -4199,6 +4259,7 @@
       clkmgr_aon.clk_io
       clkmgr_aon.clk_usb
       clkmgr_aon.clk_aon
+      dcd_aon.adc
     ]
   }
   xbar:
@@ -4462,6 +4523,10 @@
             }
             {
               base_addr: 0x40430000
+              size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40440000
               size_byte: 0x1000
             }
             {
@@ -4995,6 +5060,7 @@
           pwm_aon
           ram_ret_aon
           timer_aon
+          dcd_aon
         ]
       }
       nodes:
@@ -5071,6 +5137,23 @@
           [
             {
               base_addr: 0x40430000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: dcd_aon
+          type: device
+          clock: clk_aon_i
+          reset: rst_aon_ni
+          pipeline: "false"
+          inst_type: dcd
+          addr_range:
+          [
+            {
+              base_addr: 0x40440000
               size_byte: 0x1000
             }
           ]
@@ -5197,6 +5280,7 @@
     usbdev_aon
     pwrmgr_aon
     otp_ctrl
+    dcd_aon
     uart1
     uart2
     uart3
@@ -5921,6 +6005,19 @@
       ]
       type: interrupt
       module_name: otp_ctrl
+    }
+    {
+      name: dcd_aon_debug_cable_update
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: dcd_aon
     }
     {
       name: uart1_tx_watermark
@@ -7493,7 +7590,6 @@
         inst_name: otp_ctrl
         width: 1
         default: ""
-        top_type: broadcast
         top_signame: otp_ctrl_otp_ram_main_key
         index: -1
       }
@@ -7506,7 +7602,6 @@
         inst_name: otp_ctrl
         width: 1
         default: ""
-        top_type: broadcast
         top_signame: otp_ctrl_otp_ram_ret_aon_key
         index: -1
       }
@@ -7655,6 +7750,7 @@
         struct: logic
         width: 1
         inst_name: aes
+        default: ""
         top_signame: aes_idle
         index: -1
       }
@@ -7986,7 +8082,20 @@
         package: clkmgr_pkg
         inst_name: clkmgr_aon
         width: 1
+        default: ""
         top_signame: clkmgr_aon_status
+        index: -1
+      }
+      {
+        struct: adc
+        type: req_rsp
+        act: req
+        name: adc
+        package: dcd_pkg
+        inst_name: dcd_aon
+        width: 1
+        default: ""
+        top_signame: dcd_aon_adc
         index: -1
       }
       {
@@ -8340,6 +8449,24 @@
         default: ""
         direction: in
       }
+      {
+        package: dcd_pkg
+        struct: adc_req
+        signame: dcd_aon_adc_req
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+      }
+      {
+        package: dcd_pkg
+        struct: adc_rsp
+        signame: dcd_aon_adc_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+      }
     ]
     definitions:
     [
@@ -8363,22 +8490,6 @@
         package: otp_ctrl_pkg
         struct: flash_key
         signame: otp_ctrl_otp_flash_key
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: ram_main_key
-        signame: otp_ctrl_otp_ram_main_key
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: ram_ret_aon_key
-        signame: otp_ctrl_otp_ram_ret_aon_key
         width: 1
         type: uni
         default: ""
@@ -8613,6 +8724,7 @@
         signame: aes_idle
         width: 1
         type: uni
+        default: ""
       }
       {
         package: clkmgr_pkg
@@ -8620,6 +8732,23 @@
         signame: clkmgr_aon_status
         width: 1
         type: uni
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: ram_main_key
+        signame: otp_ctrl_otp_ram_main_key
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: ram_ret_aon_key
+        signame: otp_ctrl_otp_ram_ret_aon_key
+        width: 1
+        type: uni
+        default: ""
       }
     ]
   }

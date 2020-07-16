@@ -36,6 +36,7 @@
       pwm_aon
       ram_ret_aon
       timer_aon
+      dcd_aon
     ]
   }
   nodes:
@@ -112,6 +113,23 @@
       [
         {
           base_addr: 0x40430000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: dcd_aon
+      type: device
+      clock: clk_aon_i
+      reset: rst_aon_ni
+      pipeline: "false"
+      inst_type: dcd
+      addr_range:
+      [
+        {
+          base_addr: 0x40440000
           size_byte: 0x1000
         }
       ]
