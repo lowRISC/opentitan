@@ -1416,9 +1416,9 @@ insns:
       d = UInt(wrd)
       a = UInt(wrs1)
       b = UInt(wrs2)
-      imm = Uint(imm)
+      shift_bit = Uint(imm)
     operation: |
-      WDR[d] = ((rs1 | rs2) >> im)[WLEN-1:0]
+      WDR[d] = (((a << WLEN) | b) >> shift_bit)[WLEN-1:0]
     encoding:
       scheme: bnr
       mapping:
