@@ -313,7 +313,9 @@ encoding-schemes:
       dh: 29
       qs2: 28-27
       qs1: 26-25
-      acc: 14-13
+      acc:
+        bits: 14-13
+        shift: 6
       z: 12
 
   # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
@@ -922,7 +924,7 @@ insns:
         type: imm1
         doc: Flag group to use. Defaults to 0.
     syntax: &bn-add-syntax |
-      <wrd>, <wrs1>, <wrs2> [, <shift_type> <shift_bytes>B] [, FG<flag_group>]
+      <wrd>, <wrs1>, <wrs2>[<shift_type> <shift_bytes>B][, FG<flag_group>]
     doc: |
       Adds two WDR values, writes the result to the destination WDR and updates
       flags. The content of the second source WDR can be shifted by an
@@ -1253,8 +1255,7 @@ insns:
       - *bn-shift-type-operand
       - *bn-shift-bytes-operand
       - *bn-flag-group-operand
-    syntax: &bn-sub-syntax |
-      <wrd>, <wrs1>, <wrs2> [, <shift_type> <shift_bytes>B] [, FG<flag_group>]
+    syntax: *bn-add-syntax
     doc: |
       Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
       The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
@@ -1287,7 +1288,7 @@ insns:
     group: bignum
     synopsis: Subtract with borrow
     operands: *bn-sub-operands
-    syntax: *bn-sub-syntax
+    syntax: *bn-add-syntax
     doc: |
       Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
       The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
@@ -1591,7 +1592,7 @@ insns:
       - *bn-shift-bytes-operand
       - *bn-flag-group-operand
     syntax: &bn-cmp-syntax |
-      <wrs1>, <wrs2> [, <shift_type> <shift_bytes>B] [, FG<flag_group>]
+      <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
     doc: |
       Subtracts the second WDR value from the first one and updates flags.
       This instruction is identical to BN.SUB, except that no result register is written.
@@ -1655,12 +1656,12 @@ insns:
           Offset value.
           Must be WLEN-aligned.
       - name: grs1_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grs1>` by WLEN/8 (one word).
           Cannot be specified together with `grd_inc`.
       - name: grd_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grd>` by one.
           Cannot be specified together with `grs1_inc`.
@@ -1717,12 +1718,12 @@ insns:
           Offset value.
           Must be WLEN-aligned.
       - name: grs1_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grs1>` by WLEN/8 (one word).
           Cannot be specified together with `grs2_inc`.
       - name: grs2_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grs2>` by one.
           Cannot be specified together with `grs1_inc`.
@@ -1788,12 +1789,12 @@ insns:
       - name: grs
         doc: Name of the GPR referencing the source WDR.
       - name: grd_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grd>` by one.
           Cannot be specified together with `grs_inc`.
       - name: grs_inc
-        type: option(+)
+        type: option(++)
         doc: |
           Increment the value in `<grs>` by one.
           Cannot be specified together with `grd_inc`.
