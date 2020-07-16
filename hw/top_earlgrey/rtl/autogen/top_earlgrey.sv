@@ -1029,6 +1029,12 @@ module top_earlgrey #(
       .tl_o (tl_sensor_ctrl_d_d2h),
 
       // [0]: ast_alerts
+      // [1]: ast_alerts
+      // [2]: ast_alerts
+      // [3]: ast_alerts
+      // [4]: ast_alerts
+      // [5]: ast_alerts
+      // [6]: ast_alerts
       .alert_tx_o  ( alert_tx[6:0] ),
       .alert_rx_i  ( alert_rx[6:0] ),
 
@@ -1057,10 +1063,10 @@ module top_earlgrey #(
       .intr_otp_access_done_o (intr_otp_ctrl_otp_access_done),
       .intr_otp_ctrl_err_o    (intr_otp_ctrl_otp_ctrl_err),
 
-      // [1]: otp_reg_parity_mismatch
-      // [2]: otp_reg_digest_mismatch
-      .alert_tx_o  ( alert_tx[2:1] ),
-      .alert_rx_i  ( alert_rx[2:1] ),
+      // [7]: otp_reg_parity_mismatch
+      // [8]: otp_reg_digest_mismatch
+      .alert_tx_o  ( alert_tx[8:7] ),
+      .alert_rx_i  ( alert_rx[8:7] ),
 
       // Inter-module signals
       .pwr_otp_init_i(pwrmgr_aon_pwr_otp_req),
@@ -1106,9 +1112,9 @@ module top_earlgrey #(
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
 
-      // [3]: ctrl_err
-      .alert_tx_o  ( alert_tx[3:3] ),
-      .alert_rx_i  ( alert_rx[3:3] ),
+      // [9]: ctrl_err
+      .alert_tx_o  ( alert_tx[9:9] ),
+      .alert_rx_i  ( alert_rx[9:9] ),
 
       // Inter-module signals
       .keymgr_key_i(keymgr_pkg::HW_KEY_REQ_DEFAULT),
@@ -1125,9 +1131,9 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
 
-      // [4]: msg_push_sha_disabled
-      .alert_tx_o  ( alert_tx[4:4] ),
-      .alert_rx_i  ( alert_rx[4:4] ),
+      // [10]: msg_push_sha_disabled
+      .alert_tx_o  ( alert_tx[10:10] ),
+      .alert_rx_i  ( alert_rx[10:10] ),
       .clk_i (clkmgr_aon_clocks.clk_main_hmac),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
@@ -1141,10 +1147,10 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
 
-      // [5]: sram_uncorrectable
-      // [6]: data_parity
-      .alert_tx_o  ( alert_tx[6:5] ),
-      .alert_rx_i  ( alert_rx[6:5] ),
+      // [11]: sram_uncorrectable
+      // [12]: data_parity
+      .alert_tx_o  ( alert_tx[12:11] ),
+      .alert_rx_i  ( alert_rx[12:11] ),
 
       // Inter-module signals
       .keymgr_key_i(keymgr_kmac_key),
@@ -1516,11 +1522,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [7]: imem_uncorrectable
-      // [8]: dmem_uncorrectable
-      // [9]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[9:7] ),
-      .alert_rx_i  ( alert_rx[9:7] ),
+      // [13]: imem_uncorrectable
+      // [14]: dmem_uncorrectable
+      // [15]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[15:13] ),
+      .alert_rx_i  ( alert_rx[15:13] ),
 
       // Inter-module signals
       .idle_o(),
