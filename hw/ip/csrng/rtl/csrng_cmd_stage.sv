@@ -60,17 +60,17 @@ module csrng_cmd_stage #(
   logic                    sfifo_genbits_err;
   logic                    sfifo_genbits_not_full;
   logic                    sfifo_genbits_not_empty;
-  
+
   logic [3:0]              cmd_len;
   logic                    cmd_arrived;
   logic                    cmd_fifo_zero;
   logic                    cmd_fifo_one;
   logic                    cmd_fifo_pop;
-  
+
   logic                    cmd_ack_q, cmd_ack_d;
   logic [1:0]              cmd_ack_sts_q, cmd_ack_sts_d;
-  
-  
+
+
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       cmd_ack_q       <= '0;
@@ -114,10 +114,10 @@ module csrng_cmd_stage #(
          (sfifo_cmd_pop && !sfifo_cmd_not_empty);
 
 
-  assign cmd_len = sfifo_cmd_rdata[11:8] + 4'h01;
+  assign cmd_len = sfifo_cmd_rdata[11:8] + 4'h1;
   assign cmd_arrived = (sfifo_cmd_depth == {cmd_len});
   assign cmd_fifo_zero = (sfifo_cmd_depth == '0);
-  assign cmd_fifo_one  = (sfifo_cmd_depth == 4'h01); 
+  assign cmd_fifo_one  = (sfifo_cmd_depth == 4'h1);
 
   //---------------------------------------------------------
   // state machine to process command
@@ -206,7 +206,7 @@ module csrng_cmd_stage #(
   // genbits fifo
   //---------------------------------------------------------
 
-  prim_fifo_sync # (.Width(128),.Pass(0),.Depth(2)) 
+  prim_fifo_sync # (.Width(128),.Pass(0),.Depth(2))
     u_prim_fifo_genbits
       (
        .clk_i          (clk_i),
