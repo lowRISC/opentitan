@@ -258,7 +258,7 @@ In addition to the Wide Data Registers, BN instructions can also access WLEN-siz
   </thead>
   <tbody>
     <tr>
-      <td>0x1</td>
+      <td>0x0</td>
       <td>RW</td>
       <td>
         <strong>MOD</strong>
@@ -268,7 +268,7 @@ In addition to the Wide Data Registers, BN instructions can also access WLEN-siz
       </td>
     </tr>
     <tr>
-      <td>0x2</td>
+      <td>0x1</td>
       <td>R</td>
       <td>
         <strong>RND</strong>
@@ -276,7 +276,7 @@ In addition to the Wide Data Registers, BN instructions can also access WLEN-siz
       </td>
     </tr>
     <tr>
-      <td>0x3</td>
+      <td>0x2</td>
       <td>RW</td>
       <td>
         <strong>ACC</strong>
