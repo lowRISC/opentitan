@@ -105,7 +105,7 @@ module keymgr import keymgr_pkg::*;(
     .keymgr_en_i(lc_i.keymgr_en),
     .entropy_i(lfsr[63:32]),  // TBD, recommend directly interfacing with DRBG for keymgr_ctrl
     .init_i(reg2hw.control.init.q),
-    .op_i(reg2hw.control.operation.q),
+    .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
     .status_o(hw2reg.op_status.status.d),
@@ -266,7 +266,7 @@ module keymgr import keymgr_pkg::*;(
   keymgr_key_dest_e dest_sel;
   logic aes_sel, hmac_sel, kmac_sel;
 
-  assign dest_sel = reg2hw.control.dest_sel;
+  assign dest_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
   assign aes_sel  = dest_sel == Aes  & key_sel == HwKey;
   assign hmac_sel = dest_sel == Hmac & key_sel == HwKey;
   assign kmac_sel = dest_sel == Kmac & key_sel == HwKey;
