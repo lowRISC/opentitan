@@ -223,22 +223,19 @@ def elab_intermodule(topcfg: OrderedDict):
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_req"),
                              ('signame', sig_name + "_req"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_rsp"),
                              ('signame', sig_name + "_rsp"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
         else:  # if sig["type"] == "uni":
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
 
     if "external" not in topcfg["inter_module"]:
@@ -535,8 +532,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
         if req_struct["width"] != rsps_width:
             log.error(
-                "Request {} width is not matched with total responses width {}"
-                .format(req_struct["width"], rsps_width))
+                "Request {} {} width is not matched with total responses width {}"
+                .format(req_struct["name"], req_struct["width"], rsps_width))
             error += 1
 
     for item in topcfg["inter_module"]["top"] + topcfg["inter_module"][
