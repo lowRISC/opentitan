@@ -727,6 +727,9 @@ insns:
         funct3: b010
         rd: grd
         opcode: b00000
+    trailing-doc: |
+      Unaligned accesses are not supported.
+      Any unaligned access will result in an error.
 
   - mnemonic: sw
     rv32i: true
@@ -741,6 +744,9 @@ insns:
         rs1: grs1
         funct3: b010
         opcode: b01000
+    trailing-doc: |
+      Unaligned accesses are not supported.
+      Any unaligned access will result in an error.
 
   - mnemonic: beq
     rv32i: true
@@ -1676,19 +1682,27 @@ insns:
       - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
       - If `grd_inc` is set, the value in `grd` is incremented by the value 1.
 
+      Only aligned (to WLEN sized regions) accesses are supported.
+      Any unaligned access will result in an error.
+
       TODO: how to handle overflows?
     decode: |
       rd = UInt(grd)
       rs1 = UInt(grs1)
       offset = UInt(offset)
     operation: |
-      memaddr = GPR[rs1] + (offset / WLEN / 8)
+      mem_addr = GPR[rs1] + offset
       wdr_dest = GPR[rd]
 
-      WDR[wdr_dest] = LoadWlenWordFromMemory(memaddr)
-
       if grs1_inc and grd_inc:
-          raise Unsupported() \# prevented in encoding
+          raise Unsupported() # prevented in encoding
+      if mem_addr % (WLEN / 8):
+          raise Unaligned()
+
+      mem_index = mem_addr // (WLEN / 8)
+
+      WDR[wdr_dest] = LoadWlenWordFromMemory(mem_index)
+
       if grs1_inc:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grd_inc:
@@ -1737,18 +1751,26 @@ insns:
 
       - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
       - If `grs2_inc` is set, the value in `grs2` is incremented by the value 1.
+
+      Only aligned (to WLEN sized regions) accesses are supported.
+      Any unaligned access will result in an error.
     decode: |
       rs1 = UInt(grs1)
       rs2 = UInt(grs2)
       offset = UInt(offset)
     operation: |
-      memaddr = GPR[rs1] + offset / WLEN / 8
+      mem_addr = GPR[rs1] + offset
       wdr_src = GPR[rs2]
-
-      StoreWlenWordToMemory(memaddr, WDR[wdr_src])
 
       if grs1_inc and grs2_inc:
           raise Unsupported() # prevented in encoding
+      if mem_addr % (WLEN / 8):
+          raise Unaligned()
+
+      mem_index = mem_addr // (WLEN / 8)
+
+      StoreWlenWordToMemory(mem_index, WDR[wdr_src])
+
       if grs1_inc:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grs2_inc:
