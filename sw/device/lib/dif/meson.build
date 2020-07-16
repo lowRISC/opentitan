@@ -973,6 +973,7 @@ sw_lib_dif_flash_ctrl = declare_dependency(
     'sw_lib_dif_flash_ctrl',
     sources: [
       hw_ip_flash_ctrl_reg_h,
+      'dif_flash_ctrl.c',
     ],
     dependencies: [
       sw_lib_mmio,
@@ -984,7 +985,10 @@ sw_lib_dif_flash_ctrl = declare_dependency(
 test('dif_flash_ctrl_unittest', executable(
     'dif_flash_ctrl_unittest',
     sources: [
+      'dif_flash_ctrl_unittest.cc',
       'autogen/dif_flash_ctrl_autogen_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_base.c',
+      meson.source_root() / 'sw/device/lib/dif/dif_flash_ctrl.c',
       meson.source_root() / 'sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.c',
       hw_ip_flash_ctrl_reg_h,
     ],

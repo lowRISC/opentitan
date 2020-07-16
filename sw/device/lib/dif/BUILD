@@ -930,6 +930,8 @@ cc_library(
     srcs = [
         "autogen/dif_flash_ctrl_autogen.c",
         "autogen/dif_flash_ctrl_autogen.h",
+        "dif_flash_ctrl.c",
+        "dif_flash_ctrl.h",
     ],
     deps = [
         ":base",
@@ -944,6 +946,9 @@ cc_test(
         "autogen/dif_flash_ctrl_autogen.c",
         "autogen/dif_flash_ctrl_autogen.h",
         "autogen/dif_flash_ctrl_autogen_unittest.cc",
+        "dif_flash_ctrl.c",
+        "dif_flash_ctrl.h",
+        "dif_flash_ctrl_unittest.cc",
     ],
     defines = [
         "MOCK_MMIO=1",
