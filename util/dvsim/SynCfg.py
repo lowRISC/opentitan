@@ -364,7 +364,7 @@ class SynCfg(OneShotCfg):
             fail_msgs = ""
             for _, key in hdr_key_pairs:
                 if key in self.result['messages']:
-                    if self.result.get(key):
+                    if self.result['messages'].get(key):
                         self.errors_seen = True
                         break
 
