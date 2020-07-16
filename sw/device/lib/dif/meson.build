@@ -158,6 +158,21 @@ sw_lib_dif_rstmgr = declare_dependency(
   )
 )
 
+# FLAH CTRL DIF library
+sw_lib_dif_flash_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_flash_ctrl',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+      'dif_flash_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # Alert handler library
 sw_lib_dif_alert_handler = declare_dependency(
   link_with: static_library(
