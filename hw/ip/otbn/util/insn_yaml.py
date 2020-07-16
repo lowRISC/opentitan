@@ -930,7 +930,7 @@ class Insn:
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
                          'syntax', 'doc', 'note', 'trailing-doc',
-                         'decode', 'operation', 'encoding'])
+                         'decode', 'operation', 'encoding', 'glued-ops'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -952,6 +952,8 @@ class Insn:
 
         self.rv32i = check_bool(yd.get('rv32i', False),
                                 'rv32i flag for ' + what)
+        self.glued_ops = check_bool(yd.get('glued-ops', False),
+                                    'glued-ops flag for ' + what)
         self.synopsis = get_optional_str(yd, 'synopsis', what)
         self.doc = get_optional_str(yd, 'doc', what)
         self.note = get_optional_str(yd, 'note', what)

@@ -411,6 +411,10 @@ encoding-schemes:
 #  note:      Text that should appear in a callout banner at the top of the
 #             instruction documentation. (optional)
 #
+#  glued-ops: A boolean. If true, the first operand in the syntax can appear
+#             immediately after the mnemonic (with no space). Optional,
+#             defaults to false.
+#
 #  trailing-doc: Documentation that should appear after the syntax example but
 #                before the operand table. Useful for things like alternative
 #                assembly syntax, or deviations from the usual meaning of the
@@ -984,6 +988,7 @@ insns:
           How many quarter-words (`WLEN/4` bits) to shift the `WLEN/2`-bit multiply result before accumulating.
     syntax: |
       [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    glued-ops: true
     doc: |
       Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
 
@@ -1047,6 +1052,7 @@ insns:
       - *mulqacc-acc-shift-imm
     syntax: |
       [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    glued-ops: true
     doc: |
       Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
       Writes the resulting accumulator to `<wrd>`.
@@ -1094,6 +1100,7 @@ insns:
     syntax: |
       [<zero_acc>] <wrd><wrd_hwsel>,
       <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    glued-ops: true
     doc: |
       Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
       Next, shifts the resulting accumulator right by half a word.

@@ -169,7 +169,7 @@ def render_insn(insn: Insn, heading_level: int) -> str:
 
     # Syntax example: either given explicitly or figured out from operands
     parts.append("```\n")
-    parts.append(insn.mnemonic.upper() + ' ')
+    parts.append(insn.mnemonic.upper() + ('' if insn.glued_ops else ' '))
     if insn.syntax is not None:
         parts.append(insn.syntax.raw_string())
     else:
