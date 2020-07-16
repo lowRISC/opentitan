@@ -14,5 +14,4 @@
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/ip/aes/syn/constraints.sdc"
 
-  // TODO: add support for loading the constraints here
  }

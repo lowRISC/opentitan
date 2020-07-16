@@ -123,12 +123,9 @@ void mmio_region_memcpy_to_mmio32(mmio_region_t base, uint32_t offset,
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 extern uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
-extern uint16_t mmio_region_read16(mmio_region_t base, ptrdiff_t offset);
 extern uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset);
 extern void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
                                uint8_t value);
-extern void mmio_region_write16(mmio_region_t base, ptrdiff_t offset,
-                                uint16_t value);
 extern void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
                                 uint32_t value);
 extern uint32_t mmio_region_read_mask32(mmio_region_t base, ptrdiff_t offset,
@@ -146,10 +143,12 @@ extern void mmio_region_write_only_set_mask32(mmio_region_t base,
                                               uint32_t mask_index);
 extern void mmio_region_nonatomic_set_field32(mmio_region_t base,
                                               ptrdiff_t offset,
-                                              bitfield_field32_t field);
+                                              bitfield_field32_t field,
+                                              uint32_t value);
 extern void mmio_region_write_only_set_field32(mmio_region_t base,
                                                ptrdiff_t offset,
-                                               bitfield_field32_t field);
+                                               bitfield_field32_t field,
+                                               uint32_t value);
 extern void mmio_region_nonatomic_clear_bit32(mmio_region_t base,
                                               ptrdiff_t offset,
                                               uint32_t bit_index);

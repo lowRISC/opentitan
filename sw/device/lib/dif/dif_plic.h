@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PLIC_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -29,7 +34,7 @@ extern const uint32_t kDifPlicMaxPriority;
  * from.
  *
  * This is an unsigned 32-bit value that is at least zero and is less than the
- * `NumSrc` instantiation parameter of the `rv_plic` device.
+ * `NumSrc` instantiation parameterof the `rv_plic` device.
  *
  * The value 0 corresponds to "No Interrupt".
  */

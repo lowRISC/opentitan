@@ -6,6 +6,9 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDBOOL_H_
 
 /**
+ * @file
+ * @brief C Library Boolean type and values (Freestanding)
+ *
  * This header implements the stdbool.h standard header, as required by C11
  * S4p6. This header is specified in detail in S7.18 of the same.
  */

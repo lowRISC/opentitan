@@ -15,6 +15,8 @@ filesets:
       - lowrisc:prim:pad_wrapper
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:clock_mux2
+      - lowrisc:prim:flop
+      - lowrisc:prim:flop_2sync
     files:
       - rtl/prim_clock_inverter.sv
       - rtl/prim_clock_gating_sync.sv
@@ -29,7 +31,6 @@ filesets:
       - rtl/prim_sram_arbiter.sv
       - rtl/prim_fifo_async.sv
       - rtl/prim_fifo_sync.sv
-      - rtl/prim_flop_2sync.sv
       - rtl/prim_sync_reqack.sv
       - rtl/prim_keccak.sv
       - rtl/prim_packer.sv
@@ -41,8 +42,10 @@ filesets:
       - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
       - rtl/prim_filter_ctr.sv
+      - rtl/prim_subreg_arb.sv
       - rtl/prim_subreg.sv
       - rtl/prim_subreg_ext.sv
+      - rtl/prim_subreg_shadow.sv
       - rtl/prim_intr_hw.sv
     file_type: systemVerilogSource
 

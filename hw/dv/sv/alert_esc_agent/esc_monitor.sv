@@ -63,8 +63,6 @@ class esc_monitor extends alert_esc_base_monitor;
               check_esc_resp(.req(req), .is_ping(1), .do_wait_clk(0));
             end
           end
-          // TODO: one corner case still confirming with design: when sig_int_err with esc_en,
-          // which one has priority?
           if (cfg.probe_vif.get_esc_en()) begin
             // wait a clk cycle to enter the esc_p/n mode
             @(cfg.vif.monitor_cb);
@@ -185,7 +183,7 @@ class esc_monitor extends alert_esc_base_monitor;
   // end phase when no escalation signal is triggered
   virtual task monitor_ready_to_end();
     forever @(cfg.vif.monitor_cb.esc_rx.resp_p || cfg.vif.monitor_cb.esc_tx.esc_p) begin
-      ok_to_end = !cfg.vif.monitor_cb.esc_rx.resp_p && cfg.vif.monitor_cb.esc_rx.resp_p &&
+      ok_to_end = !cfg.vif.monitor_cb.esc_rx.resp_p && cfg.vif.monitor_cb.esc_rx.resp_n &&
                   !get_esc();
     end
   endtask

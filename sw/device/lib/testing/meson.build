@@ -15,6 +15,18 @@ sw_lib_testing_test_status = declare_dependency(
   )
 )
 
+sw_lib_testing_test_main = declare_dependency(
+  link_with: static_library(
+    'test_main_ot',
+    sources: ['test_main.c'],
+    dependencies: [
+      sw_lib_uart,
+      sw_lib_base_log,
+      sw_lib_testing_test_status,
+    ],
+  )
+)
+
 sw_lib_testing_mock_mmio = declare_dependency(
   link_with: static_library(
     'mock_mmio',

@@ -77,8 +77,8 @@ set_max_delay ${DELAY} -from [all_inputs] -to [all_outputs]
 set_input_delay ${IN_DEL} [remove_from_collection [all_inputs] {${CLK_PIN}}] -clock ${CLK_PIN}
 set_output_delay ${OUT_DEL}  [all_outputs] -clock ${CLK_PIN}
 
-set_driving_cell  -no_design_rule -lib_cell ${driving_cell} -pin X [all_inputs]
-set_load [load_of ${load_lib}/${load_cell}/A] [all_outputs]
+set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin X [all_inputs]
+set_load [load_of ${LOAD_LIB}/${LOAD_CELL}/A] [all_outputs]
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report

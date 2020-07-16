@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "uart_regs.h"  // Generated.
 
@@ -199,21 +200,22 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
   bitfield_field32_t field = {
       .mask = UART_FIFO_CTRL_RXILVL_MASK, .index = UART_FIFO_CTRL_RXILVL_OFFSET,
   };
+  uint32_t value;
   switch (watermark) {
     case kDifUartWatermarkByte1:
-      field.value = UART_FIFO_CTRL_RXILVL_RXLVL1;
+      value = UART_FIFO_CTRL_RXILVL_RXLVL1;
       break;
     case kDifUartWatermarkByte4:
-      field.value = UART_FIFO_CTRL_RXILVL_RXLVL4;
+      value = UART_FIFO_CTRL_RXILVL_RXLVL4;
       break;
     case kDifUartWatermarkByte8:
-      field.value = UART_FIFO_CTRL_RXILVL_RXLVL8;
+      value = UART_FIFO_CTRL_RXILVL_RXLVL8;
       break;
     case kDifUartWatermarkByte16:
-      field.value = UART_FIFO_CTRL_RXILVL_RXLVL16;
+      value = UART_FIFO_CTRL_RXILVL_RXLVL16;
       break;
     case kDifUartWatermarkByte30:
-      field.value = UART_FIFO_CTRL_RXILVL_RXLVL30;
+      value = UART_FIFO_CTRL_RXILVL_RXLVL30;
       break;
     default:
       return kDifUartError;
@@ -221,7 +223,7 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
-                                    field);
+                                    field, value);
 
   return kDifUartOk;
 }
@@ -237,18 +239,19 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
   bitfield_field32_t field = {
       .mask = UART_FIFO_CTRL_TXILVL_MASK, .index = UART_FIFO_CTRL_TXILVL_OFFSET,
   };
+  uint32_t value;
   switch (watermark) {
     case kDifUartWatermarkByte1:
-      field.value = UART_FIFO_CTRL_TXILVL_TXLVL1;
+      value = UART_FIFO_CTRL_TXILVL_TXLVL1;
       break;
     case kDifUartWatermarkByte4:
-      field.value = UART_FIFO_CTRL_TXILVL_TXLVL4;
+      value = UART_FIFO_CTRL_TXILVL_TXLVL4;
       break;
     case kDifUartWatermarkByte8:
-      field.value = UART_FIFO_CTRL_TXILVL_TXLVL8;
+      value = UART_FIFO_CTRL_TXILVL_TXLVL8;
       break;
     case kDifUartWatermarkByte16:
-      field.value = UART_FIFO_CTRL_TXILVL_TXLVL16;
+      value = UART_FIFO_CTRL_TXILVL_TXLVL16;
       break;
     default:
       // The minimal TX watermark is 1 byte, maximal 16 bytes.
@@ -257,7 +260,7 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET,
-                                    field);
+                                    field, value);
 
   return kDifUartOk;
 }
@@ -469,6 +472,54 @@ dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
       UART_FIFO_STATUS_TXLVL_OFFSET);
 
   *num_bytes = kDifUartFifoSizeBytes - fill_bytes;
+
+  return kDifUartOk;
+}
+
+dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
+                                      dif_uart_fifo_reset_t reset) {
+  if (uart == NULL) {
+    return kDifUartBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET);
+
+  if (reset == kDifUartFifoResetRx || reset == kDifUartFifoResetAll) {
+    reg = bitfield_field32_write(reg,
+                                 (bitfield_field32_t){
+                                     .mask = 0x1, .index = UART_FIFO_CTRL_RXRST,
+                                 },
+                                 1);
+  }
+
+  if (reset == kDifUartFifoResetTx || reset == kDifUartFifoResetAll) {
+    reg = bitfield_field32_write(reg,
+                                 (bitfield_field32_t){
+                                     .mask = 0x1, .index = UART_FIFO_CTRL_TXRST,
+                                 },
+                                 1);
+  }
+
+  mmio_region_write32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET, reg);
+
+  return kDifUartOk;
+}
+
+dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
+                                        dif_uart_loopback_t loopback,
+                                        dif_uart_enable_t enable) {
+  if (uart == NULL) {
+    return kDifUartBadArg;
+  }
+
+  bitfield_field32_t field = {
+      .mask = 0x1,
+      .index = loopback ? UART_CTRL_LLPBK : UART_CTRL_SLPBK,
+  };
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_CTRL_REG_OFFSET);
+  reg = bitfield_field32_write(reg, field, enable ? 1 : 0);
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
 
   return kDifUartOk;
 }

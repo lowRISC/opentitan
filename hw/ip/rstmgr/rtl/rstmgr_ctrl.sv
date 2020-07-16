@@ -25,10 +25,10 @@ module rstmgr_ctrl import rstmgr_pkg::*; #(
   localparam int OffDomainSelStart = ALWAYS_ON_SEL + 1;
 
   // the always on root reset
-  logic rst_aon_n;
+  logic rst_aon_nq;
 
   // the remaining resets
-  logic [OffDomains-1:0] rst_pd_n;
+  logic [OffDomains-1:0] rst_pd_nd, rst_pd_nq;
 
   // Parent resets may assert asynchronously, so we need to sync before using it as part
   // of the control path
@@ -44,28 +44,27 @@ module rstmgr_ctrl import rstmgr_pkg::*; #(
   );
 
   // always on handling
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rst_aon_n <= '0;
-    end else begin
-      // if the parent is in reset, OR there's an always on reset request
-      // reset this node
-      rst_aon_n <= ~rst_req_i[ALWAYS_ON_SEL] & rst_parent_synced[ALWAYS_ON_SEL];
-    end
-  end
+  prim_flop u_aon_rst (
+    .clk_i,
+    .rst_ni,
+    .d_i(~rst_req_i[ALWAYS_ON_SEL] & rst_parent_synced[ALWAYS_ON_SEL]),
+    .q_o(rst_aon_nq)
+  );
+
 
   // the non-always-on domains
   // These reset whenever the always on domain reset, to ensure power definition consistency.
   // By extension, they also reset whenever the root (rst_ni) resets
-  always_ff @(posedge clk_i or negedge rst_aon_n) begin
-    if (!rst_aon_n) begin
-      rst_pd_n <= '0;
-    end else begin
-      rst_pd_n <= ~rst_req_i[OffDomainSelStart +: OffDomains] &
-                  rst_parent_synced[OffDomainSelStart +: OffDomains];
-    end
-  end
+  assign rst_pd_nd = ~rst_req_i[OffDomainSelStart +: OffDomains] &
+                     rst_parent_synced[OffDomainSelStart +: OffDomains];
 
-  assign rst_no = {rst_pd_n, rst_aon_n};
+  prim_flop u_pd_rst (
+    .clk_i,
+    .rst_ni(rst_aon_nq),
+    .d_i(rst_pd_nd),
+    .q_o(rst_pd_nq)
+  );
+
+  assign rst_no = {rst_pd_nq, rst_aon_nq};
 
 endmodule // rstmgr_ctrl

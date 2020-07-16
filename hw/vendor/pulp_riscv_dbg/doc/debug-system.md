@@ -9,6 +9,8 @@ This document specifies the processor debug system. The debug system implements 
 - JTAG Debug Transport Module (DTM) according to the RISC-V Debug Specification.
 - System Bus Access with generic 32 or 64 bit bus interface.
 - Support for up to 2^20 harts through one Debug Module
+- Support for arbitrary memory location of DM
+- Support for one debug scratch register if the DM is located at the zero page.
 
 ## Description
 
@@ -205,11 +207,11 @@ unavailable_i[NrHarts-1] | input         | Set to 0 to mark the hart has unavail
 Four debug-specific CSRs must be supported by the core, as described in the Debug Specification Section 4.8.
 
 **Address** | **Name**  | **Access**                    | **Description**
------------ | --------- | ----------------------------- | ------------------------
+----------- | --------- | ----------------------------- | ----------------------------------------------------------------------------
 0x7b0       | dcsr      | _field-dependent; check spec_ | Debug Control and Status
 0x7b1       | dpc       | RW from Debug Mode only       | Debug PC
 0x7b2       | dscratch0 | RW from Debug Mode only       | Debug Scratch Register 0
-0x7b3       | dscratch1 | RW from Debug Mode only       | Debug Scratch Register 1
+0x7b3       | dscratch1 | RW from Debug Mode only       | Debug Scratch Register 1 (only required if DM is not located at address 0x0)
 
 #### DRET Instruction
 
@@ -272,6 +274,66 @@ input  logic [BusWidth-1:0]   slave_addr_i,
 input  logic [BusWidth/8-1:0] slave_be_i,
 input  logic [BusWidth-1:0]   slave_wdata_i,
 output logic [BusWidth-1:0]   slave_rdata_o
+```
+### OBI Bus Interface (optional)
+
+A wrapper (called dm_obi_top) is provided which wraps the Debug Module (dm_top) and makes it OBI compliant. This wrapper
+can be ignored (and dm_top can be used directly instead) in case of non OBI compatible systems.
+
+The OBI (Open Bus Interface) specification is at https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/.
+
+The Debug Module connects to the system bus as device, exposing the debug memory (the Program Buffer and the Debug ROM),
+and as host for the System Bus Access (SBA) functionality. The bus interface is according to the OBI specification in both cases.
+The bus width is configurable to be 32 or 64 bit using the `BusWidth` parameter. The transfer identifier width is configurable
+using the `IdWidth` parameter.
+
+#### Host (Master) OBI Interface
+
+Compared to dm_top the slave interface of dm_obi_top has the following additional signals: slave_gnt_o, slave_rvalid_o, slave_aid_i,
+slave_rid_o. Compared to dm_top the master interface of dm_obi_top has some renamed signals (master_addr_o, master_rvalid_i, master_rdata_i
+instead of master_add_o, master_r_valid_i, master_r_rdata_i).
+
+Both interfaces are OBI compliant.
+
+**Signal** | **Width (bit)** | **Direction** | **Description**
+---------- | --------------- | ------------- | ---------------------------------------------------------------------------------------------------------
+req        | 1               | output        | Request valid, must stay high until gnt is high for one cycle
+addr       | BusWidth        | output        | Address, word aligned
+we         | BusWidth        | output        | Write Enable, high for writes, low for reads. Sent together with req
+be         | 1               | output        | Byte Enable. Is set for the bytes to write/read, sent together with req
+wdata      | BusWidth        | output        | Data to be written to device, sent together with req
+gnt        | 1               | input         | The device accepted the request. Host outputs may change in the next cycle.
+rvalid     | 1               | input         | r_rdata hold valid data when r_valid is high. This signal will be high for exactly one cycle per request.
+rdata      | BusWidth        | input         | Data read from the device
+
+No error response is currently implemented.
+
+**SystemVerilog interface definition (host side)**
+
+```verilog
+output logic                  master_req_o,
+output logic [BusWidth-1:0]   master_addr_o,
+output logic                  master_we_o,
+output logic [BusWidth-1:0]   master_wdata_o,
+output logic [BusWidth/8-1:0] master_be_o,
+input  logic                  master_gnt_i,
+input  logic                  master_rvalid_i,
+input  logic [BusWidth-1:0]   master_rdata_i
+```
+
+**SystemVerilog interface definition (device side)**
+
+```verilog
+input  logic                  slave_req_i,
+output logic                  slave_gnt_o,
+input  logic                  slave_we_i,
+input  logic [BusWidth-1:0]   slave_addr_i,
+input  logic [BusWidth/8-1:0] slave_be_i,
+input  logic [BusWidth-1:0]   slave_wdata_i,
+input  logic [IdWidth-1:0]    slave_aid_i,
+output logic                  slave_rvalid_o,
+output logic [BusWidth-1:0]   slave_rdata_o,
+output logic [IdWidth-1:0]    slave_rid_o
 ```
 
 ### The Debug Module Interface (DMI)

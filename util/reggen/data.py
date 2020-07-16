@@ -33,6 +33,7 @@ class Field():
     hwre = False
     hwext = False
     tags = []
+    shadowed = False
 
     def __init__(self):
         self.name = ""  # required
@@ -47,6 +48,7 @@ class Field():
         self.hwre = False
         self.hwext = False
         self.tags = []
+        self.shadowed = False
 
     def get_n_bits(self, bittype=["q"]):
         n_bits = 0
@@ -82,6 +84,7 @@ class Reg():
     width = 0  # indicate register size
     ishomog = 0
     tags = []
+    shadowed = False
 
     def __init__(self, name=""):
         self.name = name
@@ -96,6 +99,7 @@ class Reg():
         self.width = 0
         self.ishomog = 0
         self.tags = []
+        self.shadowed = False
 
     def is_multi_reg(self):
         """Returns true if this is a multireg"""

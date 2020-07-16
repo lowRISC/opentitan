@@ -473,6 +473,10 @@ timer), the third just before the timeout from the second etc. In this
 case the host will eventually get a watermark interrupt, this will happen
 `((RXILVL - 1)*timeout)` after the first character was received.
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_uart.h" >}}
+
 ## Register Table
 
 {{< registers "hw/ip/uart/data/uart.hjson" >}}

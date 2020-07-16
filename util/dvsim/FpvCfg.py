@@ -125,7 +125,10 @@ class FpvCfg(OneShotCfg):
         log.info("Create summary of FPV results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
-        results_str += "### " + self.timestamp_long + "\n\n"
+        results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
+        results_str += "\n"
 
         colalign = ("center", ) * len(self.summary_header)
         table = [self.summary_header]
@@ -216,6 +219,8 @@ class FpvCfg(OneShotCfg):
         #   }
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
         results_str += "### FPV Tool: " + self.tool.upper() + "\n"
         results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
 

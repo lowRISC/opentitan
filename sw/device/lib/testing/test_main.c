@@ -2,12 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/testing/test_main.h"
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/print.h"
-#include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
+
+// Must be set to `true` in any test that reconfigures UART.
+bool uart_reconfigure_required = false;
 
 int main(int argc, char **argv) {
   test_status_set(kTestStatusInTest);
@@ -20,6 +24,12 @@ int main(int argc, char **argv) {
 
   // Run the SW test which is fully contained within `test_main()`.
   bool result = test_main();
+
+  // Must happen before any debug output.
+  if (uart_reconfigure_required) {
+    uart_init(kUartBaudrate);
+  }
+
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 
   // Unreachable code.

@@ -4,6 +4,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+RV_ISA = rv32im
+
 OUTFILES = $(OPATH)coremark.dis $(OPATH)coremark.map
 
 NAME                 = coremark
@@ -27,7 +29,7 @@ LD = riscv32-unknown-elf-ld
 AS = riscv32-unknown-elf-as
 # Flag : CFLAGS
 #	Use this flag to define compiler options. Note, you can add compiler options from the command line using XCFLAGS="other flags"
-PORT_CFLAGS = -g -march=rv32imc -mabi=ilp32 -static -mcmodel=medlow -mtune=sifive-3-series \
+PORT_CFLAGS = -g -march=$(RV_ISA) -mabi=ilp32 -static -mcmodel=medlow -mtune=sifive-3-series \
   -O3 -falign-functions=16 -funroll-all-loops \
 	-finline-functions -falign-jumps=4 \
   -nostdlib -nostartfiles -ffreestanding -mstrict-align \

@@ -5,7 +5,6 @@
 import os
 import re
 import shutil
-import subprocess
 import sys
 
 import yaml
@@ -45,6 +44,7 @@ def _prim_cores(cores, prim_name=None):
         if (vlnv['vendor'] == 'lowrisc' and
                 vlnv['library'].startswith('prim_') and
             (prim_name is None or vlnv['name'] == prim_name)):
+
             return core
         return None
 
@@ -159,6 +159,14 @@ def _parse_module_header(generic_impl_filepath, module_name):
     }
 
 
+def test_parse_parameter_port_list():
+    assert _parse_parameter_port_list("parameter integer P") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = '0") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 'b0") == {'P'}
+    assert _parse_parameter_port_list("parameter logic [W-1:0] P = 2'd0") == {'P'}
+
+
 def _parse_parameter_port_list(parameter_port_list):
     """ Parse a list of ports in a module header into individual parameters """
 
@@ -177,9 +185,9 @@ def _parse_parameter_port_list(parameter_port_list):
     # XXX: Not covering the complete grammar, e.g. `parameter x, y`
     RE_PARAMS = (
         r'parameter\s+'
-        r'(?:[a-zA-Z0-9\]\[:\s\$]+\s+)?'  # type
+        r'(?:[a-zA-Z0-9\]\[:\s\$-]+\s+)?'  # type
         r'(?P<name>\w+)'  # name
-        r'(?:\s*=\s*[^,;]+)'  # initial value
+        r'(?:\s*=\s*[^,;]+)?'  # initial value
     )
     re_params = re.compile(RE_PARAMS)
     parameters = set()
@@ -189,9 +197,8 @@ def _parse_parameter_port_list(parameter_port_list):
 
 
 def _check_gapi(gapi):
-    if not 'cores' in gapi:
+    if 'cores' not in gapi:
         print("Key 'cores' not found in GAPI structure. "
-              "At least FuseSoC 1.11 is needed. "
               "Install a compatible version with "
               "'pip3 install --user -r python-requirements.txt'.")
         return False
@@ -293,7 +300,7 @@ def _generate_abstract_impl(gapi):
 
     techlibs = _techlibs(prim_cores)
 
-    if not 'generic' in techlibs:
+    if 'generic' not in techlibs:
         raise ValueError("Techlib generic is required, but not found for "
                          "primitive %s." % prim_name)
     print("Implementations for primitive %s: %s" %
@@ -371,7 +378,8 @@ def _generate_abstract_impl(gapi):
                   f,
                   encoding="utf-8",
                   default_flow_style=False,
-                  sort_keys=False)
+                  sort_keys=False,
+                  Dumper=YamlDumper)
     print("Core file written to %s" % (abstract_prim_core_filepath, ))
 
 

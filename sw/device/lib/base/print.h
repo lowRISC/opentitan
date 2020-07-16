@@ -9,6 +9,9 @@
 #include <stddef.h>
 
 /**
+ * @file
+ * @brief Libc-like printing facilities.
+ *
  * This header provides libc-like printing facilities, which is agnostic of the
  * underlying hardware printing mechanism.
  *

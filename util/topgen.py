@@ -469,7 +469,7 @@ def generate_pinmux_and_padctrl(top, out_path):
         try:
             out = hjson_tpl.render(n_mio_pads=n_mio_pads,
                                    n_dio_pads=n_dio_pads,
-                                   attr_dw=8)
+                                   attr_dw=10)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PADCTRL HJSON: %s" % out)
@@ -520,7 +520,7 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # construct a dictionary of the aon attribute for easier lookup
     # ie, src_name_A: True, src_name_B: False
-    for src in top['clocks']['srcs']:
+    for src in top['clocks']['srcs'] + top['clocks']['derived_srcs']:
         if src['aon'] == 'yes':
             src_aon_attr[src['name']] = True
         else:
@@ -530,10 +530,13 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # clocks fed through clkmgr but are not disturbed in any way
     # This maintains the clocking structure consistency
+    # This includes two groups of clocks
+    # Clocks fed from the always-on source
+    # Clocks fed to the powerup group
     ft_clks = {
         clk: src
         for grp in grps for (clk, src) in grp['clocks'].items()
-        if src_aon_attr[src]
+        if src_aon_attr[src] or grp['name'] == 'powerup'
     }
 
     # root-gate clocks
@@ -564,6 +567,7 @@ def generate_clkmgr(top, cfg_path, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(cfg=top,
+                                 div_srcs=top['clocks']['derived_srcs'],
                                  rg_srcs=rg_srcs,
                                  ft_clks=ft_clks,
                                  rg_clks=rg_clks,

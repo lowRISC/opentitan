@@ -32,7 +32,7 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").expect("no OUT_DIR env variable");
 
-    generate_bindings(&source_root, &build_root, &out_dir);
+    generate_bindings(&source_root, &out_dir);
 
     // Link against specified OT DIF libraries.
     let dif_path = Path::new(&build_root).join(DIF_RELATIVE_PATH);
@@ -58,13 +58,17 @@ fn libraries_link(path: &str, libs: &[&str]) {
     }
 }
 
-fn generate_bindings(source_root: &str, build_root: &str, out_dir: &str) {
+fn generate_bindings(source_root: &str, out_dir: &str) {
     let mut binding_builder = bindgen::builder()
         .raw_line("use riscv32_c_types;")
         .ctypes_prefix("riscv32_c_types")
         .clang_arg("--target=riscv32")
-        .clang_args(&["-I", source_root])
-        .clang_args(&["-I", build_root]);
+        .clang_args(&["-I", &source_root])
+        .derive_default(true)
+        .prepend_enum_name(false)
+        .rustfmt_bindings(true)
+        .size_t_is_usize(true)
+        .use_core();
 
     let dif_path = Path::new(&source_root).join(DIF_RELATIVE_PATH);
     let dif_build_meson = dif_path.join("meson.build");

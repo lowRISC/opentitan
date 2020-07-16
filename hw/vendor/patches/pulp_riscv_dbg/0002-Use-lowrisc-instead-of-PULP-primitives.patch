@@ -1,7 +1,7 @@
-From 2179b843c1a753642d803918170c21d6e74b9beb Mon Sep 17 00:00:00 2001
+From 570145de9ffca99595e2fee9fcfb433fee6c3610 Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
-Subject: [PATCH] Use lowrisc instead of PULP primitives
+Subject: [PATCH 2/2] Use lowrisc instead of PULP primitives
 
 ---
  src/dm_csrs.sv      | 42 +++++++++++++++-------------------
@@ -10,7 +10,7 @@ Subject: [PATCH] Use lowrisc instead of PULP primitives
  3 files changed, 60 insertions(+), 58 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 807bb19..6f9028b 100644
+index f131392..b7fc5e1 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -78,6 +78,7 @@ module dm_csrs #(
@@ -31,7 +31,7 @@ index 807bb19..6f9028b 100644
 -  logic        resp_queue_pop;
    logic [31:0] resp_queue_data;
  
-   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'((dm::Data0 + {4'b0, dm::DataCount}));
+   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h1);
 @@ -180,9 +177,6 @@ module dm_csrs #(
  
    // a successful response returns zero
@@ -190,5 +190,5 @@ index 3d11145..ca6b824 100644
  
    // TDO changes state at negative edge of TCK
 -- 
-2.25.0.341.g760bfbb309-goog
+2.27.0.389.gc38d7665816-goog
 

@@ -94,7 +94,10 @@ dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
   // Save internal state in the given `dif_gpio_t` instance.
   gpio->base_addr = config->base_addr;
   // Reset the GPIO device at the given `base_addr`.
-  dif_gpio_reset(gpio);
+  dif_gpio_result_t err = dif_gpio_reset(gpio);
+  if (err != kDifGpioOk) {
+    return err;
+  }
 
   return kDifGpioOk;
 }
@@ -335,7 +338,10 @@ dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
   }
 
   // Disable all interrupt triggers for the given mask
-  dif_gpio_irq_trigger_masked_disable(gpio, mask);
+  dif_gpio_result_t error = dif_gpio_irq_trigger_masked_disable(gpio, mask);
+  if (error != kDifGpioOk) {
+    return error;
+  }
 
   switch (config) {
     case kDifGpioIrqEdgeRising:

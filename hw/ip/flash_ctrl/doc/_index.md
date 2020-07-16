@@ -4,9 +4,9 @@ title: "Flash Controller HWIP Technical Specification"
 
 # Overview
 
-This document describes the flash hardware functionality.
-The flash hardware is broken down into 3 major components
-* Open source flash controllers
+This document describes the flash controller functionality.
+The flash controller is broken down into 3 major components
+* Open source flash controller
 * Closed source vendor flash wrapper
 * Closed source vendor flash module
 
@@ -27,17 +27,18 @@ See that document for integration overview within the broader top level system.
 ## Features
 
 ### Flash Protocol Controller Features
-The flash protocol controller interfaces with software and other hardware components in the system (such as life cycle and key manager).
+The flash protocol controller interfaces with software and other hardware components in the system (such as life cycle, key manager and OTP).
 Regardless of the flash size underneath, the flash controller maintains the same data resolution as the bus and processor (default 4B).
-The flash physical controller (see section below) is then responsible for bridging that gap.
+The flash physical controller (see section below) is then responsible for bridging that size gap between the default data resolution and the actual flash memory.
 
 The protocol controller currently supports the following features:
 
 *  Controller initiated read, program and erase of flash.
    *  Erase can be either of a page, or an entire bank.
 *  Support for differentiation between informational and data flash partitions.
-*  Parameterized support for burst program, up to 64B
-   *  Longer programs are supported, however the protocol controller will directly back-pressure the bus.
+*  Parameterized support for burst program / read, up to 64B.
+   *  Longer programs / reads are supported, however the protocol controller will directly back-pressure the bus if software supplies more data than can be consumed, or if software reads more than there is data available.
+   *  Software can also choose to operate by polling the current state of the FIFO or through FIFO interrupts (empty / full / level).
 *  Flash memory protection at page boundaries
 *  Features to be added if required
    *  Program verification
@@ -51,8 +52,17 @@ The protocol controller currently supports the following features:
 Features to be implemented
 
 *  Enhanced memory protection
+   * This may take the form of sub-page protection or additional memory protection regions.
+   * This feature is pending software discussions.
 *  Life cycle feature support
+   * The flash protocol controller interfaces directly with the life cycle controller to support life cycle operations such as RMA
 *  Key manager feature support
+   * The flash protocol controller supplies seed material to the key manager after power-up
+*  Ability to access multiple types of information partition.
+   * This feature is pending software / vendor  discussions.
+*  Ability to access flash metadata bits (see flash ECC)
+   * This feature is pending software discussions.
+
 
 ### Flash Physical Controller Features
 
@@ -65,40 +75,148 @@ The physical controller supports the following features
 *  Data and informational paritions within each bank of flash memory
 *  Arbitration between host requests and controller requests at the bank level
    *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration
-   *  Since banks are arbitrated independently, where transactions may take different amounts of times to complete, the physical controller is also responsible for ensuring in-order response to both the controller and host.
+   *  Since banks are arbitrated independently and transactions may take different amounts of times to complete, the physical controller is also responsible for ensuring in-order response to both the controller and host.
 *  Flash read stage
-   *  Each bank maintains a parameterizable number of read buffers in front of the flash memory
+   *  Each bank maintains a parameterizable number of read buffers in front of the flash memory (default to 4).
    *  The read buffers behave as miniature read-only-caches to store flash data when flash words are greater than bus words.
+   *  When a program or erase collides with an entry already stored in the read buffer, the buffer contents are invalidated.
+      * This situation may arise if a read is followed by a program or erase.
 *  Flash program stage
-   *  Flash data work packing when flash word size is an integer multiple of bus word size.
+   *  Flash data word packing when flash word size is an integer multiple of bus word size.
+*  Flash scrambling
+   * Flash supports XEX scrambling using the prince cipher
 
 Features to be implemented
 
 *  Flash scrambling
+   * Scrambling is optional based on page boundaries and is configurable by software
 *  Flash ECC
+   * Flash supports SECDED on the flash word boundary, the ECC bits are stored in the metadata bits and are not normally visible to software.
+   * A feature is under consideration to expose the metadata bits to the flash protocol controller.
+   * ECC is optional based on page boudaries and is configurable by software
+
+### Flash Memory Overview
+
+Unlike sram, flash memory is not typically organized as a contiguous block of generic storage.
+Instead it is organized into data partitions and information partitions.
+
+The data partition holds generic data like a generic memory would.
+The information partition typically holds metadata about the data partition.
+This includes but is not limited to:
+*  Redundancy information.
+*  Manufacturer specific information.
+*  Manufacturer flash timing information.
+
+Note, there **can** be more than one information partition, and none of them are required to be the same size as the data partition.
+See the diagram below for an illustrative example.
+![Flash Example Partition](flash_partitions.svg)
+
+Which type of partition is accessed is controlled through the {{< regref "CONTROL.PARTITION_SEL" >}} field.
+The current flash controller implements one type of information partition and thus is controlled by 1 bit only.
+This may change in the future.
+
+Lastly, while the different partitions may be identical in some attributes, they are different in others.
+*  All types of partitions must have the same page size and word size; however they are not required to have the same number of pages, thus some partitions may be larger and others smaller.
+*  All types of partitions obey the same program and erase rules :
+   * A bit cannot be programmed back to 1 once it has been programmed to 0.
+   * Only erase can restore a bit to 1 under normal circumstances.
+*  Data partitions can be directly read by software and other hardware hosts, while information partitions can only be read by the flash controller
+
+By default, this design assumes 1 type of information partition and 4 pages per type of information partition.
 
 
 # Theory of Operation
 
 ## Block Diagram
 
+![Flash Block Diagram](flash_block_diagram.svg)
+
 ### Flash Protocol Controller
 
-The Flash Protocol Controller sits between the host software interface and the flash physical controller, which contains the physical flash.
-Its primary function is to translate software requests into a high level protocol for the actual flash block.
-Importantly, the flash protocol controller is not responsible for the detailed timing and waveform control of the flash.
-Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls.
+The Flash Protocol Controller sits between the host software interface, other hardware components and the flash physical controller.
+Its primary functions are two fold
+*  Translate software program, erase and read requests into a high level protocol for the actual flash physical controller
+*  Act as communication interface between flash and other components in the system, such as life cycle and key manager.
+
+Importantly, the flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as parity and ECC.
+Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls as well as error handling.
+
+There are two hardware connections between the flash controller and the rest of the design.
+*  The first is to life cycle, in which the flash content plays a part.
+*  The second is to key manager, whose seed material may be partially sourced from flash.
 
 ### Flash Physical Controller
 
-The Flash Physical Controller is the wrapper module that contains the actual vendor flash memory instantiation.
-It is responsible for arbitrating high level protocol commands (such as read, program, erase) as well as any additional security and reliability features.
+The Flash Physical Controller is the wrapper module that contains the actual flash memory instantiation.
+It is responsible for arbitrating high level protocol commands (such as read, program, erase) as well as any additional security (scrambling) and reliability (ECC) features.
 The contained vendor wrapper module is then responsible for converting high level commands into low level signaling and timing specific to a particular flash vendor.
 The vendor wrapper module is also responsible for any BIST, redundancy handling, remapping features or custom configurations required for the flash.
 
-The diagram below summarizes the high level breakdown.
+The scramble keys are provided by an external static block such as the OTP.
 
-![Flash High Level Abstraction](flash_abstraction.svg)
+### Flash Scrambling
+
+Flash scrambling is built using the [XEX tweakable block cipher](https://en.wikipedia.org/wiki/Disk_encryption_theory#Xor%E2%80%93encrypt%E2%80%93xor_(XEX)).
+
+When a read transaction is sent to flash, the following steps are taken:
+*  The tweak is calculated using the transaction address and a secret address key through a galois multiplier.
+*  The data content is read out of flash.
+*  If the data content is scrambled, the tweak is XOR'd with the scrambled text and then decrypted through the prince block cipher using a secret data key.
+*  The output of the prince cipher is XOR'd again with the tweak and the final results are presented
+*  If the data content is not scrambled, the prince and XOR steps are skipped and data provided directly back to the requestor.
+
+When a program transaction is sent to flash, the same steps are taken if the address in question has scrambling enabled.
+During a program, the text is encrypted through the prince block cipher.
+
+Note, at the moment scrambling is enabled on the entire 2nd bank of flash, but in the future will be a page boundary attribute.
+
+
+#### Scrambling Consistency
+The flash physical controller does not keep a history of when a particular memory location has scrambling enabled or disabled.
+This means if a memory locaiton was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
+Similarly, if a location was programmed while non-scrambled, enabling scrambling and then reading it back will also result in gargabe.
+
+It it thus the programmer's responsibility to maintain a consistent definition of whether a location is scrambled.
+It is also highly recommended in a normal use case to setup up scramble and non-scramble regions and not change it further.
+
+### Flash Read Pipeline
+
+Since the system host reads directly from the flash for instructions, it is critical to not add significant latency during read, especially if de-scrambling is required.
+As such, the flash read is actually a two stage pipeline, where each stage can take multiple cycles.
+
+Additionally, since the flash word size is typically larger than the bus word, recently read flash entries are locally cached.
+The cache behaves as a highly simplified read-only-cache and holds by default 4 flash words per flash bank.
+
+When a read transaction is sent to flash, the following steps are taken:
+*  A check is performed against the local cache
+   * If there is a hit (either the entry is already in cache, or the entry is currently being processed), the transacton is immediately forwarded to the response queue.
+   * If there is not a hit, an entry in the local cache is selected for allocation (round robin arbitration) and a flash read is issued.
+*  When the flash read completes, its descrambling attributes are checked:
+   * If descrambling is required, the read data begins the descrambling phase - at this time, a new flash read can be issued for the following transaction.
+   * if descrambling is not required, the descrambling phase is skipped and the transaction is pushed to the response queue.
+*  When the descrambling is complete, the descrambled text is pushed to the response queue.
+
+The following diagram shows how the flash read pipeline timing works.
+![Flash Read Pipeline](flash_read_pipeline.svg)
+
+
+In this example, the first two host requests trigger a full sequence.
+The third host requests immediately hits in the local cache and responds in order after the first two.
+
+### Accessing Information Partition
+
+The information partition uses the same address scheme as the data partition - which is directly accessible by software.
+This means the address of page{N}.word{M} is the same no matter which type of partition is accessed.
+
+Which partition a specific transaction accesses is denoted through a separate field {{< regref "CONTROL.PARTITION_SEL" >}} in the {{< regref "CONTROL" >}} register.
+If {{< regref "CONTROL.PARTITION_SEL" >}} is set, then the information partition is accessed.
+If {{< regref "CONTROL.PARTITION_SEL" >}} is not set, then the corresponding word in the data partition is accessed.
+
+Flash scrambling, if enabled, also applies to information partitions.
+However, one TBD feature is related to flash support of life cycle and manufacturing.
+It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
+For these pages, scramble shall be permanently disabled as the manufacturer should not be aware of scrambling functions.
+
 
 ## Hardware Interfaces
 

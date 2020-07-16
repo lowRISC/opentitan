@@ -5,10 +5,19 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/i2c/doc/">I2C</a> Device Interface Functions
+ */
+
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_warn_unused_result.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 /**
  * Represents a speed setting for an I2C component: standard, fast, and
@@ -497,5 +506,9 @@ typedef enum dif_i2c_fmt {
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
                                     dif_i2c_fmt_t code, bool supress_nak_irq);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_

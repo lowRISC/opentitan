@@ -35,7 +35,6 @@ module otbn_core_model
 
   // Instruction memory (IMEM)
   output logic                     imem_req_o,
-  output logic                     imem_write_o,
   output logic [ImemAddrWidth-1:0] imem_addr_o,
   output logic [31:0]              imem_wdata_o,
   input  logic [31:0]              imem_rdata_i,

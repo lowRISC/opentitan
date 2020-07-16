@@ -12,7 +12,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifo;
 
-  mem_model exp_mem;
+  mem_model#() exp_mem;
 
   `uvm_component_new
 
@@ -20,7 +20,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.build_phase(phase);
     tl_a_chan_fifo = new("tl_a_chan_fifo", this);
     tl_d_chan_fifo = new("tl_d_chan_fifo", this);
-    exp_mem = mem_model::type_id::create("exp_mem", this);
+    exp_mem = mem_model#()::type_id::create("exp_mem", this);
   endfunction
 
   virtual task run_phase(uvm_phase phase);

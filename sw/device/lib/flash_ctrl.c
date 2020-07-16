@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
+#include "sw/device/lib/common.h"
+
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/common.h"
 
 #define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
 
@@ -129,6 +130,10 @@ int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data) {
   }
   wait_done_and_ack();
   return get_clr_err();
+}
+
+void flash_cfg_scramble_enable(bool en) {
+  REG32(FLASH_CTRL_SCRAMBLE_EN(0)) = en & 1;
 }
 
 void flash_cfg_bank_erase(bank_index_t bank, bool erase_en) {

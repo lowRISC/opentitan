@@ -37,11 +37,30 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `uvm_object_new
 
-  task pre_start();
-    super.pre_start();
+  virtual function void set_handles();
+    `DV_CHECK_NE_FATAL(p_sequencer, null, "Did you forget to call `set_sequencer()`?")
     cfg = p_sequencer.cfg;
     cov = p_sequencer.cov;
     ral = cfg.ral;
+  endfunction
+
+  // This function is invoked in pre_randomize(). Override it in the extended classes to configure
+  // / control the randomization of this sequence.
+  virtual function void configure_vseq();
+  endfunction
+
+  function void pre_randomize();
+    // Set the handles in pre_randomize(), so that the knobs in cfg are available during sequence
+    // randomization. This forces `p_sequencer` handle to be set before the randomization - users
+    // are required to call `set_sequencer()` right after creating the sequence and before
+    // randomizing it.
+    if (cfg == null) set_handles();
+    configure_vseq();
+  endfunction
+
+  task pre_start();
+    super.pre_start();
+    if (cfg == null) set_handles();
     if (do_dut_init) dut_init("HARD");
     num_trans.rand_mode(0);
   endtask

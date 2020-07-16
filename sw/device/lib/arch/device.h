@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 /**
+ * @file
+ * @brief This header contains declarations of device-specific information.
+ *
  * This header contains "device-specific" declarations, i.e., information that
  * all devices are known to provide, but which is specific to the particular
  * choice of platform, which can range from a software simulation, like
@@ -56,5 +59,12 @@ extern const uint64_t kClockFreqHz;
  * The baudrate of the UART peripheral (if such a thing is present).
  */
 extern const uint64_t kUartBaudrate;
+
+/**
+ * An address to write to to cause execution to stop.
+ *
+ * If this is zero, there is no address you can write to to stop execution.
+ */
+extern const uintptr_t kDeviceStopAddress;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_

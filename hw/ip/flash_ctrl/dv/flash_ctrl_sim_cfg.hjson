@@ -50,9 +50,9 @@
 
   // List of regressions.
   regressions: [
-    //{
-    //  name: sanity
-    //  tests: ["flash_ctrl_sanity"]
-    //}
+    {
+      name: sanity
+      tests: ["flash_ctrl_sanity"]
+    }
   ]
 }

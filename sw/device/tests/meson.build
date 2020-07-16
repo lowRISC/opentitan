@@ -74,17 +74,13 @@ foreach sw_test_name, sw_test_lib : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
       sw_test_name + '_' + device_name,
-      sources: ['main.c'],
       name_suffix: 'elf',
       dependencies: [
         riscv_crt,
         device_lib,
         sw_test_lib,
-        sw_lib_uart,
         sw_lib_irq_handlers,
-        sw_lib_base_log,
-        sw_lib_base_print,
-        sw_lib_testing_test_status,
+        sw_lib_testing_test_main,
       ],
     )
 

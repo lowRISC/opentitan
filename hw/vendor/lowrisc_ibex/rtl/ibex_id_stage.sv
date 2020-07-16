@@ -17,13 +17,13 @@
 `include "prim_assert.sv"
 
 module ibex_id_stage #(
-    parameter bit RV32E           = 0,
-    parameter bit RV32M           = 1,
-    parameter bit RV32B           = 0,
-    parameter bit DataIndTiming   = 1'b0,
-    parameter bit BranchTargetALU = 0,
-    parameter bit SpecBranch      = 0,
-    parameter bit WritebackStage  = 0
+    parameter bit               RV32E           = 0,
+    parameter bit               RV32M           = 1,
+    parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
+    parameter bit               DataIndTiming   = 1'b0,
+    parameter bit               BranchTargetALU = 0,
+    parameter bit               SpecBranch      = 0,
+    parameter bit               WritebackStage  = 0
 ) (
     input  logic                      clk_i,
     input  logic                      rst_ni,
@@ -68,9 +68,9 @@ module ibex_id_stage #(
     output logic [31:0]               alu_operand_b_ex_o,
 
     // Multicycle Operation Stage Register
-    input  logic                      imd_val_we_ex_i,
-    input  logic [33:0]               imd_val_d_ex_i,
-    output logic [33:0]               imd_val_q_ex_o,
+    input  logic [1:0]                imd_val_we_ex_i,
+    input  logic [33:0]               imd_val_d_ex_i[2],
+    output logic [33:0]               imd_val_q_ex_o[2],
 
     // Branch target ALU
     output logic [31:0]               bt_a_operand_o,
@@ -247,7 +247,7 @@ module ibex_id_stage #(
   logic        alu_multicycle_dec;
   logic        stall_alu;
 
-  logic [33:0] imd_val_q;
+  logic [33:0] imd_val_q[2];
 
   op_a_sel_e   bt_a_mux_sel;
   imm_b_sel_e  bt_b_mux_sel;
@@ -379,11 +379,13 @@ module ibex_id_stage #(
   // Multicycle Operation Stage Register //
   /////////////////////////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : intermediate_val_reg
-    if (!rst_ni) begin
-      imd_val_q <= '0;
-    end else if (imd_val_we_ex_i) begin
-      imd_val_q <= imd_val_d_ex_i;
+  for (genvar i=0; i<2; i++) begin : gen_intermediate_val_reg
+    always_ff @(posedge clk_i or negedge rst_ni) begin : intermediate_val_reg
+      if (!rst_ni) begin
+        imd_val_q[i] <= '0;
+      end else if (imd_val_we_ex_i[i]) begin
+        imd_val_q[i] <= imd_val_d_ex_i[i];
+      end
     end
   end
 
@@ -875,7 +877,8 @@ module ibex_id_stage #(
     //   precise exceptions)
     // * There is a load/store request not being granted or which is unaligned and waiting to issue
     //   a second request (needs to stay in ID for the address calculation)
-    assign stall_mem = instr_valid_i & (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
+    assign stall_mem = instr_valid_i &
+                       (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
 
     // If we stall a load in ID for any reason, it must not make an LSU request
     // (otherwide we might issue two requests for the same instruction)
@@ -913,7 +916,8 @@ module ibex_id_stage #(
     // Stall ID/EX as instruction in ID/EX cannot proceed to writeback yet
     assign stall_wb = en_wb_o & ~ready_wb_i;
 
-    assign perf_dside_wait_o = instr_valid_i & ~instr_kill & (outstanding_memory_access | stall_ld_hz);
+    assign perf_dside_wait_o = instr_valid_i & ~instr_kill &
+                               (outstanding_memory_access | stall_ld_hz);
   end else begin : gen_no_stall_mem
 
     assign multicycle_done = lsu_req_dec ? lsu_resp_valid_i : ex_valid_i;

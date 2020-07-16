@@ -85,11 +85,11 @@ module ibex_tracer (
   logic        insn_is_compressed;
 
   // Data items accessed during this instruction
-  localparam RS1 = (1 << 0);
-  localparam RS2 = (1 << 1);
-  localparam RS3 = (1 << 2);
-  localparam RD  = (1 << 3);
-  localparam MEM = (1 << 4);
+  localparam logic [4:0] RS1 = (1 << 0);
+  localparam logic [4:0] RS2 = (1 << 1);
+  localparam logic [4:0] RS3 = (1 << 2);
+  localparam logic [4:0] RD  = (1 << 3);
+  localparam logic [4:0] MEM = (1 << 4);
   logic [4:0] data_accessed;
 
   function automatic void printbuffer_dumpline();
@@ -130,10 +130,10 @@ module ibex_tracer (
     if ((data_accessed & MEM) != 0) begin
       $fwrite(file_handle, " PA:0x%08x", rvfi_mem_addr);
 
-      if (rvfi_mem_rmask != 4'b000) begin
+      if (rvfi_mem_rmask != 4'b0000) begin
         $fwrite(file_handle, " store:0x%08x", rvfi_mem_wdata);
       end
-      if (rvfi_mem_wmask != 4'b000) begin
+      if (rvfi_mem_wmask != 4'b0000) begin
         $fwrite(file_handle, " load:0x%08x", rvfi_mem_rdata);
       end
     end

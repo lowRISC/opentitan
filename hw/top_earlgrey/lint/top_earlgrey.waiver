@@ -5,15 +5,10 @@
 # waiver file for top_earlgrey
 
 # dedicated reset drivers / muxes
-waive -rules RESET_DRIVER -location {top_earlgrey.sv} -msg {sys_rst_n' is driven here, and used as an asynchronous reset 'rst_ni'} \
-      -comment "This is dedicated reset infrastructure, and hence permissible"
-waive -rules RESET_DRIVER -location {top_earlgrey.sv} -msg {'spi_device_rst_n' is driven here, and used as an asynchronous reset 'rst_ni' at spi_device} \
-      -comment "This is dedicated reset infrastructure, and hence permissible"
-waive -rules RESET_DRIVER -location {top_earlgrey.sv} -msg {'spi_device_rst_n' driven in module 'top_earlgrey' by 'sys_rst_n' at top_earlgrey} \
-      -comment "This is dedicated reset infrastructure, and hence permissible"
-waive -rules RESET_DRIVER -location {top_earlgrey.sv} -msg {'sys_rst_n' driven in module 'top_earlgrey' at top_earlgrey} \
-      -comment "This is dedicated reset infrastructure, and hence permissible"
-waive -rules RESET_MUX -location {top_earlgrey.sv} -msg {Asynchronous reset 'sys_rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at rv_core_ibex} \
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+
+# All leaf resets have a reset multiplex
+waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_resets\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 ## xbar

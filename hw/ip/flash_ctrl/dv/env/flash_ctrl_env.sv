@@ -29,10 +29,16 @@ class flash_ctrl_env extends cip_base_env #(
     end
 
     // get the vifs from config db
-    foreach (cfg.mem_bkdr_vifs[i]) begin
-      if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", $sformatf("mem_bkdr_vifs[%0d]", i),
-                                             cfg.mem_bkdr_vifs[i])) begin
-        `uvm_fatal(`gfn, $sformatf("failed to get mem_bkdr_vifs[%0d] from uvm_config_db", i))
+    begin
+      flash_part_e part = part.first();
+      for (int i = 0; i < part.num(); i++, part = part.next()) begin
+        foreach (cfg.mem_bkdr_vifs[, bank]) begin
+          string vif_name = $sformatf("mem_bkdr_vifs[%0s][%0d]", part.name(), bank);
+          if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", vif_name,
+                                                 cfg.mem_bkdr_vifs[part][bank])) begin
+            `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", vif_name))
+          end
+        end
       end
     end
 
@@ -61,13 +67,6 @@ class flash_ctrl_env extends cip_base_env #(
     // HDL path root.
     cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl");
     super.end_of_elaboration_phase(phase);
-    cfg.eflash_ral.lock_model();
-
-    // Set the TL adapter / sequencer to the eflash_map.
-    if (cfg.m_eflash_tl_agent_cfg.is_active) begin
-      cfg.eflash_ral.default_map.set_sequencer(m_eflash_tl_agent.sequencer,
-                                               m_eflash_tl_reg_adapter);
-    end
   endfunction : end_of_elaboration_phase
 
 endclass

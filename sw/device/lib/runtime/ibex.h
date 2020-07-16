@@ -10,8 +10,9 @@
 #include "sw/device/lib/base/stdasm.h"
 
 /**
- * This header provides Ibex-specific functions, such as cycle-accurate busy
- * loops.
+ * @file
+ * @brief This header provides Ibex-specific functions, such as cycle-accurate
+ * busy loops.
  */
 
 /**

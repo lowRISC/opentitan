@@ -5,10 +5,11 @@
 class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_common_vseq)
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
   `uvm_object_new
+
+  virtual function void configure_vseq();
+    cfg.seq_cfg.max_num_trans = 2;
+  endfunction
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);

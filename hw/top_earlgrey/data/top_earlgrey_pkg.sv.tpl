@@ -24,9 +24,9 @@ package top_${top["name"]}_pkg;
 
   // Base addresses of all peripherals.
   % for m in top["module"]:
-  ${"parameter TOP_{}_{}_BASE_ADDR = 32'h{}".format(top["name"].upper(),
-                                                    m["name"].upper(),
-                                                    m["base_addr"][2:])};
+  ${"parameter logic [31:0] TOP_{}_{}_BASE_ADDR = 32'h{}".format(top["name"].upper(),
+                                                                 m["name"].upper(),
+                                                                 m["base_addr"][2:])};
   % endfor
 
   // Enumeration for DIO pins.

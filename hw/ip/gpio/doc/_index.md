@@ -275,6 +275,10 @@ printf("0b%b", *GPIO_INTR_STATE);       // 0b00001100
 
 ```
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_gpio.h" >}}
+
 ## Register Table
 
 {{< registers "hw/ip/gpio/data/gpio.hjson" >}}

@@ -1,6 +1,6 @@
 # See LICENSE.SiFive for license details
 
-debug_rom = debug_rom.sv
+debug_rom = debug_rom.sv debug_rom_one_scratch.sv
 
 GCC?=riscv64-unknown-elf-gcc
 OBJCOPY?=riscv64-unknown-elf-objcopy
@@ -18,8 +18,8 @@ all: $(debug_rom)
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
 
-%.elf: %.S link.ld
-	$(GCC) -I$(RISCV)/include -Tlink.ld $< -nostdlib -fPIC -static -Wl,--no-gc-sections -o $@
+%.elf: $(findstring debug_rom, $(debug_rom)).S link.ld
+	$(GCC) $(if  $(findstring one_scratch,$@),,-DSND_SCRATCH=1) -I$(RISCV)/include -Tlink.ld $< -nostdlib -fPIC -static -Wl,--no-gc-sections -o $@
 
 %.dump: %.elf
 	$(OBJDUMP) -d $< --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data  > $@

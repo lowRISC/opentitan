@@ -48,8 +48,8 @@ module dm_csrs #(
 
   output logic                              cmd_valid_o,       // debugger writing to cmd field
   output dm::command_t                      cmd_o,             // abstract command
-  input  logic                              cmderror_valid_i,  // an error occured
-  input  dm::cmderr_e                       cmderror_i,        // this error occured
+  input  logic                              cmderror_valid_i,  // an error occurred
+  input  dm::cmderr_e                       cmderror_i,        // this error occurred
   input  logic                              cmdbusy_i,         // cmd is currently busy executing
 
   output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
@@ -88,17 +88,17 @@ module dm_csrs #(
 
   logic [31:0] resp_queue_data;
 
-  localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'((dm::Data0 + {4'b0, dm::DataCount}));
-  localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'((dm::ProgBuf0 + {4'b0, dm::ProgBufSize}));
+  localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h1);
+  localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'b0, dm::ProgBufSize} - 8'h1);
 
   logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
   logic [((NrHarts-1)/2**5 + 1) * 32 - 1 : 0] halted;
   logic [(NrHarts-1)/2**5:0][31:0] halted_reshaped0;
-  logic [NrHarts/2**10:0][31:0] halted_reshaped1;
-  logic [NrHarts/2**15:0][31:0] halted_reshaped2;
-  logic [(NrHarts/2**10+1)*32-1:0] halted_flat1;
-  logic [(NrHarts/2**15+1)*32-1:0] halted_flat2;
-  logic [32-1:0] halted_flat3;
+  logic [(NrHarts-1)/2**10:0][31:0] halted_reshaped1;
+  logic [(NrHarts-1)/2**15:0][31:0] halted_reshaped2;
+  logic [((NrHarts-1)/2**10+1)*32-1:0] halted_flat1;
+  logic [((NrHarts-1)/2**15+1)*32-1:0] halted_flat2;
+  logic [31:0] halted_flat3;
 
   // haltsum0
   logic [14:0] hartsel_idx0;
@@ -120,12 +120,12 @@ module dm_csrs #(
     haltsum1     = '0;
     hartsel_idx1 = hartsel_o[19:10];
 
-    for (int unsigned k = 0; k < NrHarts/2**5+1; k++) begin
+    for (int unsigned k = 0; k < (NrHarts-1)/2**5+1; k++) begin
       halted_flat1[k] = |halted_reshaped0[k];
     end
     halted_reshaped1 = halted_flat1;
 
-    if (hartsel_idx1 < 10'((NrHarts/2**10+1))) begin
+    if (hartsel_idx1 < 10'(((NrHarts-1)/2**10+1))) begin
       haltsum1 = halted_reshaped1[hartsel_idx1];
     end
   end
@@ -137,12 +137,12 @@ module dm_csrs #(
     haltsum2     = '0;
     hartsel_idx2 = hartsel_o[19:15];
 
-    for (int unsigned k = 0; k < NrHarts/2**10+1; k++) begin
+    for (int unsigned k = 0; k < (NrHarts-1)/2**10+1; k++) begin
       halted_flat2[k] = |halted_reshaped1[k];
     end
     halted_reshaped2 = halted_flat2;
 
-    if (hartsel_idx2 < 5'((NrHarts/2**15+1))) begin
+    if (hartsel_idx2 < 5'(((NrHarts-1)/2**15+1))) begin
       haltsum2         = halted_reshaped2[hartsel_idx2];
     end
   end
@@ -515,7 +515,7 @@ module dm_csrs #(
       dmcontrol_d.resumereq = 1'b0;
     end
     // static values for dcsr
-    sbcs_d.sbversion            = 3'b1;
+    sbcs_d.sbversion            = 3'd1;
     sbcs_d.sbbusy               = sbbusy_i;
     sbcs_d.sbasize              = $bits(sbcs_d.sbasize)'(BusWidth);
     sbcs_d.sbaccess128          = 1'b0;
@@ -574,6 +574,7 @@ module dm_csrs #(
       // this is the only write-able bit during reset
       cmderr_q       <= dm::CmdErrNone;
       command_q      <= '0;
+      cmd_valid_q    <= '0;
       abstractauto_q <= '0;
       progbuf_q      <= '0;
       data_q         <= '0;

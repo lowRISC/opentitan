@@ -42,8 +42,9 @@ module tlul_adapter_sram #(
 
   localparam int SramByte = SramDw/8;
   localparam int DataBitWidth = prim_util_pkg::vbits(SramByte);
-
-  localparam int WoffsetWidth = DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
+  localparam int WidthMult = SramDw / top_pkg::TL_DW;
+  localparam int WoffsetWidth = (SramByte == top_pkg::TL_DBW) ? 1 :
+                                DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
 
   typedef struct packed {
     logic [top_pkg::TL_DBW-1:0] mask ; // Byte mask within the TL-UL word
@@ -170,14 +171,23 @@ module tlul_adapter_sram #(
   end
 
   // Convert byte mask to SRAM bit mask for writes, and only forward valid data
+  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] wmask_int;
+  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] wdata_int;
+
   always_comb begin
-    wmask_o = '0;
-    wdata_o = '0;
-    for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-      wmask_o[woffset * top_pkg::TL_DW + 8*i +: 8] = (tl_i.a_valid) ? {8{tl_i.a_mask[i]}} : '0;
-      wdata_o[woffset * top_pkg::TL_DW +8*i +: 8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
+    wmask_int = '0;
+    wdata_int = '0;
+
+    if (tl_i.a_valid) begin
+      for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
+        wmask_int[woffset][8*i +: 8] = {8{tl_i.a_mask[i]}};
+        wdata_int[woffset][8*i +: 8] = (tl_i.a_mask[i] && we_o) ? tl_i.a_data[8*i+:8] : '0;
+      end
     end
   end
+
+  assign wmask_o = wmask_int;
+  assign wdata_o = wdata_int;
 
   // Begin: Request Error Detection
 
@@ -231,14 +241,17 @@ module tlul_adapter_sram #(
 
   // Make sure only requested bytes are forwarded
   logic [SramDw-1:0] rdata;
-  logic [SramDw-1:0] rmask;
+  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] rmask;
+  //logic [SramDw-1:0] rmask;
   logic [top_pkg::TL_DW-1:0] rdata_tlword;
+
   always_comb begin
     rmask = '0;
     for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-      rmask[sramreqfifo_rdata.woffset * top_pkg::TL_DW + 8*i+:8] = {8{sramreqfifo_rdata.mask[i]}};
+      rmask[sramreqfifo_rdata.woffset][8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
     end
   end
+
   assign rdata = rdata_i & rmask;
   assign rdata_tlword = rdata[sramreqfifo_rdata.woffset * top_pkg::TL_DW +: top_pkg::TL_DW];
 

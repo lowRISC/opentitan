@@ -55,7 +55,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   localparam int LastValidInfoPage = InfosPerBank - 1;
 
   // There could be multiple region matches due to region overlap
-  logic [AllPagesW-1:0] region_end[TotalRegions];
+  // region_end is +1 bit from however bits are needed to address regions
+  logic [AllPagesW:0] region_end[TotalRegions];
   logic [TotalRegions-1:0] region_match;
   logic [TotalRegions-1:0] region_sel;
   logic [TotalRegions-1:0] rd_en;
@@ -76,17 +77,18 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   // check for region match
   always_comb begin
     for (int unsigned i = 0; i < TotalRegions; i++) begin: region_comps
-      region_end[i] = region_cfgs_i[i].base.q + region_cfgs_i[i].size.q;
+      region_end[i] = {1'b0, region_cfgs_i[i].base.q} + region_cfgs_i[i].size.q;
 
       // region matches if address within range and if the partition matches
       region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
-                        req_addr_i <  region_end[i] &
+                        {1'b0, req_addr_i} < region_end[i] &
                         req_part_i == region_cfgs_i[i].partition.q &
+                        region_cfgs_i[i].en.q &
                         req_i;
 
-      rd_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].rd_en.q & region_sel[i];
-      prog_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].prog_en.q & region_sel[i];
-      pg_erase_en[i] = region_cfgs_i[i].en.q & region_cfgs_i[i].erase_en.q & region_sel[i];
+      rd_en[i] =  region_cfgs_i[i].rd_en.q & region_sel[i];
+      prog_en[i] = region_cfgs_i[i].prog_en.q & region_sel[i];
+      pg_erase_en[i] = region_cfgs_i[i].erase_en.q & region_sel[i];
     end
   end
 
@@ -95,7 +97,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
       bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q &
-                       (req_part_i == DataPart);
+                       (req_part_i == FlashPartData);
     end
   end
 
@@ -103,13 +105,13 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
 
   // invalid info page access
   assign invalid_info_access = req_i &
-                               (req_part_i == InfoPart) &
+                               (req_part_i == FlashPartInfo) &
                                (rd_i | prog_i | pg_erase_i) &
                                (req_addr_i[0 +: PageW] > LastValidInfoPage);
 
   // invalid info page erase
   assign invalid_info_erase  = req_i & bk_erase_i &
-                               (req_part_i == InfoPart);
+                               (req_part_i == FlashPartInfo);
 
   assign invalid_info_txn    = invalid_info_access | invalid_info_erase;
 

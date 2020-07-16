@@ -29,8 +29,12 @@ package ${block.name}_reg_pkg;
     % if r.get_field_flat(0).hwqe:
     logic        qe;
     % endif
-    % if r.get_field_flat(0).hwre:
+    % if r.get_field_flat(0).hwre or (r.get_field_flat(0).shadowed and r.get_field_flat(0).hwext):
     logic        re;
+    % endif
+    % if r.get_field_flat(0).shadowed and not r.get_field_flat(0).hwext:
+    logic        err_update;
+    logic        err_storage;
     % endif
   } ${block.name + "_reg2hw_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
 
@@ -44,8 +48,12 @@ package ${block.name}_reg_pkg;
       % if f.hwqe:
       logic        qe;
       % endif
-      % if f.hwre:
+      % if f.hwre or (f.shadowed and f.hwext):
       logic        re;
+      % endif
+      % if f.shadowed and not f.hwext:
+      logic        err_update;
+      logic        err_storage;
       % endif
     } ${f.get_basename() if r.is_multi_reg() else f.name};
       %endif

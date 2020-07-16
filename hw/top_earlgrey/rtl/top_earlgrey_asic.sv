@@ -81,7 +81,7 @@ module top_earlgrey_asic (
     .clk_usb_48mhz_o     ( clk_usb_48mhz    ),
     .rst_no              ( rst_n            ),
     // MIO Pads
-    .mio_pad_io          ( { 12'bz,   // Note that 31:20 are currently not mapped
+    .mio_pad_io          ( { 12'hzzz, // Note that 31:20 are currently not mapped
                              IO_DPS5, // Use GPIO19 to pass JTAG_SRST
                              IO_DPS4, // Use GPIO18 to pass JTAG_TRST
                              IO_DPS7, // Use GPIO17 to pass rom boot_strap indication
@@ -188,11 +188,11 @@ module top_earlgrey_asic (
   //////////////////////
 
   top_earlgrey top_earlgrey (
-    .clk_i           ( clk           ),
     .rst_ni          ( rst_n         ),
-    .clk_io_i        ( clk           ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
+    .clkmgr_clk_main ( clk           ),
+    .clkmgr_clk_io   ( clk           ),
+    .clkmgr_clk_usb  ( clk_usb_48mhz ),
+    .clkmgr_clk_aon  ( clk           ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),
@@ -216,6 +216,7 @@ module top_earlgrey_asic (
     .dio_attr_o      ( dio_attr      ),
 
     // DFT signals
+    .scan_rst_ni     ( 1'b1          ),
     .scanmode_i      ( 1'b0          )
   );
 

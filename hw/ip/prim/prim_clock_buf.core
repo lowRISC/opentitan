@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:clock_buf"
+description: "Generic clock buffer"
+filesets:
+  primgen_dep:
+    depend:
+      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:primgen
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: clock_buf
+
+targets:
+  default:
+    filesets:
+      - primgen_dep
+    generate:
+      - impl

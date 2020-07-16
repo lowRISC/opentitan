@@ -54,9 +54,20 @@ module ibex_dummy_instr (
   logic [6:0]               dummy_set;
   logic [2:0]               dummy_opcode;
   logic [31:0]              dummy_instr;
+  logic [31:0]              dummy_instr_seed_q, dummy_instr_seed_d;
 
   // Shift the LFSR every time we insert an instruction
   assign lfsr_en = insert_dummy_instr & id_in_ready_i;
+
+  assign dummy_instr_seed_d = dummy_instr_seed_q ^ dummy_instr_seed_i;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dummy_instr_seed_q <= '0;
+    end else if (dummy_instr_seed_en_i) begin
+      dummy_instr_seed_q <= dummy_instr_seed_d;
+    end
+  end
 
   prim_lfsr #(
       .LfsrDw      ( 32         ),
@@ -65,7 +76,7 @@ module ibex_dummy_instr (
       .clk_i     ( clk_i                 ),
       .rst_ni    ( rst_ni                ),
       .seed_en_i ( dummy_instr_seed_en_i ),
-      .seed_i    ( dummy_instr_seed_i    ),
+      .seed_i    ( dummy_instr_seed_d    ),
       .lfsr_en_i ( lfsr_en               ),
       .entropy_i ( '0                    ),
       .state_o   ( lfsr_state            )

@@ -52,6 +52,11 @@ def main():
                         type=str,
                         default="AT Plot",
                         help='Title of AT plot.')
+    parser.add_argument('-l',
+                        '--labels',
+                        type=str,
+                        default="",
+                        help='Comma separated labels for plots.')
     parser.add_argument('--semilogy',
                         action='store_true',
                         help='semilogy plot.')
@@ -170,7 +175,10 @@ def main():
     else:
         plt.ylabel('Complexity [GE]')
     plt.grid(which='both')
-    plt.legend(labels)
+    if args.labels:
+        plt.legend(args.labels.split(','))
+    else:
+        plt.legend(labels)
     plt.title(args.title)
     plt.savefig(args.output)
     plt.show()

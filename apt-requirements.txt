@@ -8,6 +8,7 @@ bison
 build-essential
 clang-format
 curl
+doxygen
 flex
 g++
 git
@@ -29,4 +30,5 @@ python3-wheel
 python3-yaml
 srecord
 tree
+xsltproc
 zlib1g-dev

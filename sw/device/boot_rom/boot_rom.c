@@ -6,6 +6,7 @@
 #include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/print.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
@@ -48,4 +49,13 @@ void _boot_start(void) {
   // flash binary's responsibily to set up its own stack, and to never
   // return.
   _flash_header.entry();
+
+  // If there's a stop address, write to it.
+  if (kDeviceStopAddress != 0) {
+    mmio_region_t end_sim_addr = mmio_region_from_addr(kDeviceStopAddress);
+    // We write `0xFFFFFFFE` to differentiate from `abort` (which writes
+    // `0xFFFFFFFF`), and the `main` function in the flash image (which is
+    // likely to return `0x0` or `0x1` to match unix exit codes).
+    mmio_region_write32(end_sim_addr, 0x0, 0xFFFFFFFE);
+  }
 }

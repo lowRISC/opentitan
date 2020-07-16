@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/gpio/doc/">GPIO</a> Device Interface Functions
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 

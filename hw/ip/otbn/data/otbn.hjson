@@ -61,6 +61,8 @@
 
             The completion is signalled by the done interrupt.
           '''
+          tags: [// Do not randomly start big num operations
+                 "excl:CsrNonInitTests:CsrExclWrite"],
         }
         { bits: "1",
           name: "dummy",

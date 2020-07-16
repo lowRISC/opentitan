@@ -5,6 +5,12 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_DEVICE_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_DEVICE_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/spi_device/doc/">SPI Device</a> Device Interface
+ * Functions
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -251,7 +257,7 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
  * @param spi A SPI device.
  * @param buf A pointer to bytes to be written.
  * @param buf_len The length of the buffer `buf` points to.
- * @param bytes_recved Out param for the number of bytes successfully written;
+ * @param bytes_sent Out param for the number of bytes successfully written;
  * may be null.
  * @return The result of the operation.
  */

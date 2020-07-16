@@ -125,6 +125,12 @@ def amend_ip(top, ip):
         else:
             ip_module["scan"] = "false"
 
+        # scan_reset
+        if "scan_reset" in ip:
+            ip_module["scan_reset"] = ip["scan_reset"]
+        else:
+            ip_module["scan_reset"] = "false"
+
         # inter-module
         if "inter_signal_list" in ip:
             ip_module["inter_signal_list"] = ip["inter_signal_list"]
@@ -436,6 +442,12 @@ def amend_clocks(top: OrderedDict):
     clks_attr = top['clocks']
     clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
+
+    # Assign default parameters to source clocks
+    for src in clks_attr['srcs']:
+        if 'derived' not in src:
+            src['derived'] = "no"
+            src['params'] = {}
 
     # Default assignments
     for group in clks_attr['groups']:

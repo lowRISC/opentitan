@@ -12,6 +12,7 @@ package flash_ctrl_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
+  import flash_ctrl_pkg::*;
   import flash_ctrl_ral_pkg::*;
 
   // macro includes
@@ -21,10 +22,27 @@ package flash_ctrl_env_pkg;
   // parameters
   parameter uint FLASH_CTRL_ADDR_MAP_SIZE = 128;
 
-  // TODO: These might be made into RTL design parameters.
-  parameter NUM_FLASH_BANKS = 2;
+  parameter uint FlashNumPages            = top_pkg::FLASH_BANKS * top_pkg::FLASH_PAGES_PER_BANK;
+  parameter uint FlashSizeBytes           = FlashNumPages * top_pkg::FLASH_WORDS_PER_PAGE *
+                                            top_pkg::FLASH_DATA_WIDTH / 8;
 
-  // types
+  parameter uint FlashNumBusWords         = FlashSizeBytes / top_pkg::TL_DBW;
+  parameter uint FlashNumBusWordsPerBank  = FlashNumBusWords / top_pkg::FLASH_BANKS;
+  parameter uint FlashNumBusWordsPerPage  = FlashNumBusWordsPerBank / top_pkg::FLASH_PAGES_PER_BANK;
+
+  parameter uint FlashDataByteWidth       = $clog2(top_pkg::FLASH_DATA_WIDTH / 8);
+  parameter uint FlashWordLineWidth       = $clog2(top_pkg::FLASH_WORDS_PER_PAGE);
+  parameter uint FlashPageWidth           = $clog2(top_pkg::FLASH_PAGES_PER_BANK);
+  parameter uint FlashBankWidth           = $clog2(top_pkg::FLASH_BANKS);
+
+  parameter uint FlashMemAddrWordMsbBit   = FlashDataByteWidth - 1;
+  parameter uint FlashMemAddrLineMsbBit   = FlashDataByteWidth + FlashWordLineWidth - 1;
+  parameter uint FlashMemAddrPageMsbBit   = FlashDataByteWidth + FlashWordLineWidth +
+                                            FlashPageWidth - 1;
+  parameter uint FlashMemAddrBankMsbBit   = FlashDataByteWidth + FlashWordLineWidth +
+                                            FlashPageWidth + FlashBankWidth - 1;
+
+// types
   typedef enum int {
     FlashCtrlIntrProgEmpty  = 0,
     FlashCtrlIntrProgLvl    = 1,
@@ -35,12 +53,39 @@ package flash_ctrl_env_pkg;
     NumFlashCtrlIntr        = 6
   } flash_ctrl_intr_e;
 
+  typedef enum {
+    FlashMemInitCustom,     // Initialize flash (via bkdr) with custom data set.
+    FlashMemInitSet,        // Initialize with all 1s.
+    FlashMemInitClear,      // Initialize with all 0s.
+    FlashMemInitRandomize,  // Initialize with random data.
+    FlashMemInitInvalidate  // Initialize with Xs.
+  } flash_mem_init_e;
+
+  typedef struct packed {
+    bit           en;         // enable this region
+    bit           read_en;    // enable reads
+    bit           program_en; // enable write
+    bit           erase_en;   // enable erase
+    flash_part_e  partition;  // info or data
+    uint          num_pages;  // 0:NumPages % start_page
+    uint          start_page; // 0:NumPages-1
+  } flash_mp_region_cfg_t;
+
+  typedef struct packed {
+    flash_part_e    partition;  // data or info partition
+    flash_erase_e   erase_type; // erase page or the whole bank
+    flash_op_e      op;         // read / program or erase
+    uint            num_words;  // number of words to read or program (TL_DW)
+    bit [TL_AW-1:0] addr;       // starting addr for the op
+  } flash_op_t;
+
   typedef virtual mem_bkdr_if mem_bkdr_vif;
 
   // functions
 
   // package sources
-  `include "flash_ctrl_eflash_reg_block.sv"
+  `include "flash_mem_addr_attrs.sv"
+  `include "flash_ctrl_seq_cfg.sv"
   `include "flash_ctrl_env_cfg.sv"
   `include "flash_ctrl_env_cov.sv"
   `include "flash_ctrl_virtual_sequencer.sv"

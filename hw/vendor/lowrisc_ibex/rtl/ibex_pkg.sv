@@ -8,6 +8,15 @@
  */
 package ibex_pkg;
 
+/////////////////////////
+// RV32B Paramter Enum //
+/////////////////////////
+
+typedef enum integer {
+  RV32BNone,
+  RV32BBalanced,
+  RV32BFull
+} rv32b_e;
 
 /////////////
 // Opcodes //

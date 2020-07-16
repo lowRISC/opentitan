@@ -1,0 +1,6 @@
+{{ $difName := .Get 0 }}
+{{ $path := path.Join .Site.Params.generatedRoot (printf "sw/difref/%s.html" $difName) }}
+{{ if not (fileExists $path) }}
+  {{ errorf "DIF reference has not been generated for %s" $difName }}
+{{ end }}
+{{ readFile $path | safeHTML }}

@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_core_tracing:0.1"
-description: "Ibex CPU core with tracing enabled"
+description: "Ibex, a small RV32 CPU core with tracing enabled"
 filesets:
   files_rtl:
     depend:
@@ -12,14 +12,6 @@ filesets:
     files:
       - rtl/ibex_core_tracing.sv
     file_type: systemVerilogSource
-
-  files_lint:
-    depend:
-      - lowrisc:ibex:sim_shared
-
-  files_lint_verilator:
-    files:
-      - lint/verilator_waiver.vlt: {file_type: vlt}
 
 parameters:
   # The tracer uses the RISC-V Formal Interface (RVFI) to collect trace signals.
@@ -43,9 +35,10 @@ parameters:
     paramtype: vlogparam
 
   RV32B:
-    datatype: int
-    default: 0
-    paramtype: vlogparam
+    datatype: str
+    default: ibex_pkg::RV32BNone
+    paramtype: vlogdefine
+    description: "Bitmanip implementation parameter enum. See ibex_pkg.sv (EXPERIMENTAL)"
 
   MultiplierImplementation:
     datatype: str
@@ -102,20 +95,15 @@ parameters:
     description: "Number of PMP regions"
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - files_rtl
     parameters:
       - RVFI=true
+    toplevel: ibex_core_tracing
 
   lint:
-    filesets:
-      # Note on Verilator waivers:
-      # You *must* include the waiver file first, otherwise only global waivers
-      # are applied, but not file-specific waivers.
-      - tool_verilator ? (files_lint_verilator)
-      - files_rtl
-      - files_lint
+    <<: *default_target
     parameters:
       - RVFI=true
       - SYNTHESIS=true
@@ -130,7 +118,6 @@ targets:
       - PMPGranularity
       - PMPNumRegions
     default_tool: verilator
-    toplevel: ibex_core_tracing
     tools:
       verilator:
         mode: lint-only
@@ -139,10 +126,6 @@ targets:
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
           - "--unroll-count 72"
-      veriblelint:
-        ruleset: default
-        rules:
-          - "-parameter-name-style"
   format:
     filesets:
       - files_rtl

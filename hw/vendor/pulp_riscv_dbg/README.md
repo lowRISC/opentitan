@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/pulp-platform/riscv-dbg.svg?branch=master)](https://travis-ci.com/pulp-platform/riscv-dbg)
+
 # RISC-V Debug Support for PULP Cores
 
 This module is an implementation of a debug unit compliant with the [RISC-V
@@ -33,6 +35,5 @@ These are not implemented (yet)
 
 We use OpenOCD's [RISC-V compliance
 tests](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv-013.c),
-our custom testbench in
-[PULPissimo](https://github.com/pulp-platform/pulpissimo) and
+our custom testbench in `tb/` and
 [riscv-tests/debug](https://github.com/riscv/riscv-tests/tree/master/debug).

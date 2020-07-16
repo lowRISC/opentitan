@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/dif/dif_i2c.h"
+
 #include <cstring>
 #include <limits>
 #include <ostream>
 
-extern "C" {
-#include "sw/device/lib/dif/dif_i2c.h"
-#include "i2c_regs.h"  // Generated.
-}  // extern "C"
-
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
+
+#include "i2c_regs.h"  // Generated.
 
 // We define global namespace == and << to make `dif_i2c_timing_params_t` work
 // nicely with EXPECT_EQ.

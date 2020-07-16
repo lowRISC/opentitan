@@ -3,15 +3,14 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ibex:ibex_core:0.1"
-description: "CPU core with 2 stage pipeline implementing the RV32IMC_Zicsr_Zifencei ISA"
+description: "Ibex, a small RV32 CPU core"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      # TODO: Only lfsr is needed. Replace with a more specific dependency
-      # once available.
-      - lowrisc:prim:all
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:lfsr
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_icache
     files:
@@ -40,13 +39,13 @@ filesets:
       - rtl/ibex_core.sv
     file_type: systemVerilogSource
 
-  files_lint:
-    depend:
-      - lowrisc:ibex:sim_shared
-
   files_lint_verilator:
     files:
       - lint/verilator_waiver.vlt: {file_type: vlt}
+
+  files_lint_verible:
+    files:
+      - lint/verible_waiver.vbw: {file_type: veribleLintWaiver}
 
   files_check_tool_requirements:
     depend:
@@ -72,9 +71,10 @@ parameters:
     paramtype: vlogparam
 
   RV32B:
-    datatype: int
-    default: 0
-    paramtype: vlogparam
+    datatype: str
+    default: ibex_pkg::RV32BNone
+    paramtype: vlogdefine
+    description: "Bitmanip implementation parameter enum. See ibex_pkg.sv (EXPERIMENTAL)"
 
   MultiplierImplementation:
     datatype: str
@@ -131,22 +131,19 @@ parameters:
     description: "Number of PMP regions"
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - tool_verilator ? (files_lint_verilator)
+      - tool_veriblelint ? (files_lint_verible)
       - files_rtl
       - files_check_tool_requirements
+    toplevel: ibex_core
   lint:
-    filesets:
-      - tool_verilator ? (files_lint_verilator)
-      - files_rtl
-      - files_lint
-      - files_check_tool_requirements
+    <<: *default_target
     parameters:
       - SYNTHESIS=true
       - RVFI=true
     default_tool: verilator
-    toplevel: ibex_core
     tools:
       verilator:
         mode: lint-only
@@ -155,10 +152,6 @@ targets:
           # RAM primitives wider than 64bit (required for ECC) fail to build in
           # Verilator without increasing the unroll count (see Verilator#1266)
           - "--unroll-count 72"
-      veriblelint:
-        ruleset: default
-        rules:
-          - "-parameter-name-style"
   format:
     filesets:
       - files_rtl

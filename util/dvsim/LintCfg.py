@@ -14,6 +14,7 @@ from tabulate import tabulate
 from OneShotCfg import OneShotCfg
 from utils import print_msg_list, subst_wildcards
 
+
 class LintCfg(OneShotCfg):
     """Derivative class for linting purposes.
     """
@@ -46,7 +47,11 @@ class LintCfg(OneShotCfg):
         log.info("Create summary of lint results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
-        results_str += "### " + self.timestamp_long + "\n\n"
+        results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
+        results_str += "\n"
+
 
         header = [
             "Name", "Tool Warnings", "Tool Errors", "Lint Warnings",
@@ -109,6 +114,8 @@ class LintCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
 
         header = [
@@ -133,7 +140,7 @@ class LintCfg(OneShotCfg):
             log.info("looking for result data file at %s", result_data)
 
             try:
-                with open(result_data, "r") as results_file:
+                with result_data.open() as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
             except IOError as err:
                 log.warning("%s", err)
@@ -177,13 +184,16 @@ class LintCfg(OneShotCfg):
                              ("Lint Warnings", "lint_warnings"),
                              ("Lint Errors", "lint_errors")]
 
-            has_msg = False
+
+            # Lint fails if any warning or error message has occurred
+            self.errors_seen = False
             for _, key in hdr_key_pairs:
                 if key in self.result:
-                    has_msg = True
-                    break
+                    if self.result.get(key):
+                        self.errors_seen = True
+                        break
 
-            if has_msg:
+            if self.errors_seen:
                 fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
                 for hdr, key in hdr_key_pairs:
                     msgs = self.result.get(key)
@@ -192,9 +202,21 @@ class LintCfg(OneShotCfg):
         if len(table) > 1:
             self.results_md = results_str + tabulate(
                 table, headers="firstrow", tablefmt="pipe",
-                colalign=colalign) + "\n" + fail_msgs
+                colalign=colalign) + "\n"
+
+            # the email and published reports will default to self.results_md if they are
+            # empty. in case they need to be sanitized, override them and do not append
+            # detailed messages.
+            if self.sanitize_email_results:
+                self.email_results_md = self.results_md
+            if self.sanitize_publish_results:
+                self.publish_results_md = self.results_md
+            # locally generated result always contains all details
+            self.results_md += fail_msgs
         else:
             self.results_md = results_str + "\nNo results to display.\n"
+            self.email_results_md = self.results_md
+            self.publish_results_md = self.results_md
 
         # Write results to the scratch area
         self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"

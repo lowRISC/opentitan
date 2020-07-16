@@ -104,7 +104,7 @@ module dm_sba #(
             be[int'({be_idx[$high(be_idx):1], 1'b0}) +: 2] = '1;
           end
           3'b010: begin
-            if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'b0}) +: 4] = '1;
+            if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'h0}) +: 4] = '1;
             else                    be = '1;
           end
           3'b011: be = '1;
@@ -117,7 +117,7 @@ module dm_sba #(
         if (sbdata_valid_o) begin
           state_d = Idle;
           // auto-increment address
-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'b1 << sbaccess_i);
+          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
         end
       end
 
@@ -125,7 +125,7 @@ module dm_sba #(
         if (sbdata_valid_o) begin
           state_d = Idle;
           // auto-increment address
-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'b1 << sbaccess_i);
+          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
         end
       end
 

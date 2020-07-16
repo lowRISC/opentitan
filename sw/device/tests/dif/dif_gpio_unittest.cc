@@ -4,10 +4,11 @@
 
 #include "sw/device/lib/dif/dif_gpio.h"
 
+#include <limits>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
-#include <limits>
 
 #include "gpio_regs.h"  // Generated
 

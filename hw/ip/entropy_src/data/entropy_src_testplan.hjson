@@ -9,9 +9,90 @@
   entries: [
     {
       name: sanity
-      desc: '''Enable entropy_src. Verify entropy, status, interrupt bits.'''
+      desc: '''Enable entropy_src in LFSR mode, wait for interrupt, verify entropy.'''
       milestone: V1
       tests: ["entropy_src_sanity"]
+    }
+    {
+      name: efuse
+      desc: '''Verify entropy is not available via register if efuse input is 0.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lfsr_seed
+      desc: '''Verify different seeds produce different entropy.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lfsr_rng
+      desc: '''Verify rng activity does not affect lfsr operation.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lfsr_entropy
+      desc: '''Verify digital entropy for all fifo depths.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rng_entropy
+      desc: '''Verify rng entropy for various clk speeds, fifo_depths.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rng_single_bit
+      desc: '''Verify rng single_bit_mode for all bit_selector values.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: regen
+      desc: '''Verify es_regen bit enables/disables write access to control registers.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: entropy_rate
+      desc: '''Verify entropy for various entropy_rate values.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: health_check_apt
+      desc: '''Verify APT health check for various cutoff/window values.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: health_check_rct
+      desc: '''Verify RCT health check for various cutoff values.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: interrupts
+      desc: '''
+            Verify correct conditions cause proper interrupts for all fifo depths.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            This will combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.'''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_all_with_random_reset
+      desc: '''
+            This will combine the other individual testpoints while injecting TL errors and running CSR tests in parallel and asserting reset in the middle of test.'''
+      milestone: V2
+      tests: []
     }
   ]
 }

@@ -226,6 +226,10 @@ void interrupt_service() {
 }
 ~~~~
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_plic.h" >}}
+
 ## Registers
 
 The register description below matches the instance in the [Earl Grey top level

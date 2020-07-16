@@ -6,6 +6,16 @@
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_WARN_UNUSED_RESULT_H_
 
 /**
+ * @file
+ * @brief Unused Result Warning Macro for DIFs.
+ */
+
+// Header Extern Guard (so header can be used from C and C++)
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
+/**
  * Attribute for functions which return errors that must be acknowledged.
  *
  * This attribute must be used to mark all DIFs which return an error value of
@@ -13,5 +23,9 @@
  * ground.
  */
 #define DIF_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_WARN_UNUSED_RESULT_H_

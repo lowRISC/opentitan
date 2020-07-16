@@ -31,9 +31,9 @@ static size_t uart0_send_buf(void *ignored, const char *buf, size_t len) {
   size_t total_len = len;
   while (len > 0) {
     size_t bytes_written;
-    bool success =
+    dif_uart_result_t success =
         dif_uart_bytes_send(&uart0, (const uint8_t *)buf, len, &bytes_written);
-    if (!success) {
+    if (success != kDifUartOk) {
       // We have no way of logging this failure for now, since we're in the
       // middle of the UART stdout... which is used for logging. Oops.
       abort();
@@ -54,7 +54,15 @@ void uart_log_init(void) {
   };
 
   mmio_region_t addr = mmio_region_from_addr(0x40000000);
-  dif_uart_init(addr, &config, &uart0);
+
+  // Drop the error on the ground. There is no way to log this failure, because
+  // this is the logging setup routine.
+  //
+  // Due to a GCC bug, we can't `(void) expr` this away, so we do this silly
+  // empty conditional instead.
+  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=25509
+  if (dif_uart_init(addr, &config, &uart0)) {
+  }
 
   base_set_stdout((buffer_sink_t){
       .sink = &uart0_send_buf,

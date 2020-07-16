@@ -5,7 +5,8 @@
 #include "sw/device/lib/arch/device.h"
 
 /**
- * Device-specific symbol definitions for the Nexysvideo device.
+ * @file
+ * @brief Device-specific symbol definitions for the Nexysvideo device.
  */
 
 const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
@@ -13,3 +14,6 @@ const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
 const uint64_t kClockFreqHz = 50 * 1000 * 1000;  // 50MHz
 
 const uint64_t kUartBaudrate = 230400;
+
+// No Device Stop Address in our FPGA implementation.
+const uintptr_t kDeviceStopAddress = 0;

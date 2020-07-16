@@ -17,9 +17,12 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   output logic                     aon_wkup_req_o,
   // Sleep enable, running on clk_i
   input                            sleep_en_i,
+  // IO Power OK signal
+  input  io_pok_req_t              io_pok_i,
   // Strap sample request
   input  lc_strap_req_t            lc_pinmux_strap_i,
   output lc_strap_rsp_t            lc_pinmux_strap_o,
+  output dft_strap_test_req_t      dft_strap_test_o,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
   output tlul_pkg::tl_d2h_t        tl_o,
@@ -153,33 +156,38 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // Input Mux //
   ///////////////
 
+  localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2**$clog2(NMioPads + 2) :
+                                                              2**$clog2(NDioPads);
+
+  // stack input and default signals for convenient indexing below possible defaults: constant 0 or
+  // 1. make sure mux is aligned to a power of 2 to avoid Xes.
+  logic [AlignedMuxSize-1:0] mio_data_mux;
+  // TODO: need a way to select which IO POK signal to use por pin
+  assign mio_data_mux = AlignedMuxSize'({(&io_pok_i) ? mio_in_i : '0, 1'b1, 1'b0});
+
   for (genvar k = 0; k < NMioPeriphIn; k++) begin : gen_mio_periph_in
-    logic [2**$clog2(NMioPads+2)-1:0] data_mux;
-    // stack input and default signals for convenient indexing below
-    // possible defaults: constant 0 or 1
-    assign data_mux = $bits(data_mux)'({mio_in_i, 1'b1, 1'b0});
     // index using configured insel
-    assign mio_to_periph_o[k] = data_mux[reg2hw.periph_insel[k].q];
+    assign mio_to_periph_o[k] = mio_data_mux[reg2hw.periph_insel[k].q];
   end
 
   ////////////////
   // Output Mux //
   ////////////////
 
+  // stack output data/enable and default signals for convenient indexing below
+  // possible defaults: 0, 1 or 2 (high-Z). make sure mux is aligned to a power of 2 to avoid Xes.
+  logic [2**$clog2(NMioPeriphOut+3)-1:0] periph_data_mux, periph_oe_mux, periph_sleep_mux;
+  assign periph_data_mux  = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
+  assign periph_oe_mux    = $bits(periph_oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
+  assign periph_sleep_mux = $bits(periph_sleep_mux)'({MioPeriphHasSleepMode,  1'b1, 1'b1, 1'b1});
+
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_out
     logic sleep_en;
-    logic [2**$clog2(NMioPeriphOut+3)-1:0] data_mux, oe_mux, sleep_mux;
-    // stack output data/enable and default signals for convenient indexing below
-    // possible defaults: 0, 1 or 2 (high-Z)
-    assign data_mux  = $bits(data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
-    assign oe_mux    = $bits(oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
-    assign sleep_mux = $bits(sleep_mux)'({MioPeriphHasSleepMode,  1'b1, 1'b1, 1'b1});
-
     // check whether this peripheral can actually go to sleep
-    assign sleep_en = sleep_mux[reg2hw.mio_outsel[k].q] & sleep_en_q;
+    assign sleep_en = periph_sleep_mux[reg2hw.mio_outsel[k].q] & sleep_en_q;
     // index using configured outsel
-    assign mio_out_o[k] = (sleep_en) ? mio_out_sleep_q[k] : data_mux[reg2hw.mio_outsel[k].q];
-    assign mio_oe_o[k]  = (sleep_en) ? mio_oe_sleep_q[k]  : oe_mux[reg2hw.mio_outsel[k].q];
+    assign mio_out_o[k] = (sleep_en) ? mio_out_sleep_q[k] : periph_data_mux[reg2hw.mio_outsel[k].q];
+    assign mio_oe_o[k]  = (sleep_en) ? mio_oe_sleep_q[k]  : periph_oe_mux[reg2hw.mio_outsel[k].q];
   end
 
   /////////////////////
@@ -204,16 +212,14 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // Wakeup detectors //
   //////////////////////
 
-  localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2**$clog2(NMioPads + 2) :
-                                                              2**$clog2(NDioPads);
   logic [NWkupDetect-1:0] aon_wkup_req;
-  logic [AlignedMuxSize-1:0] dio_data_mux, mio_data_mux;
-  assign mio_data_mux = AlignedMuxSize'({mio_in_i, 1'b0, 1'b0});
+  logic [AlignedMuxSize-1:0] dio_data_mux;
 
   // Only connect DIOs that are not excempt
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_wkup
     if (DioPeriphHasWkup[k]) begin : gen_dio_wkup_connect
-      assign dio_data_mux[k] = dio_in_i[k];
+      // TODO: need a way to select which IO POK signal to use por pin
+      assign dio_data_mux[k] = (&io_pok_i) ? dio_in_i[k] : 1'b0;
     end else begin : gen_dio_wkup_tie_off
       assign dio_data_mux[k] = 1'b0;
     end
@@ -256,11 +262,17 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // Strap Sampling //
   ////////////////////
 
-  logic [NStraps-1:0] lc_strap_taps;
+  logic [NLcStraps-1:0] lc_strap_taps;
+  logic [NDFTStraps-1:0] dft_strap_taps;
   lc_strap_rsp_t lc_strap_d, lc_strap_q;
+  dft_strap_test_req_t dft_strap_test_d, dft_strap_test_q;
 
-  for (genvar k = 0; k < NStraps; k++) begin : gen_strap_taps
-    assign lc_strap_taps[k] = mio_in_i[MioStrapPos[k]];
+  for (genvar k = 0; k < NLcStraps; k++) begin : gen_lc_strap_taps
+    assign lc_strap_taps[k] = mio_in_i[LcStrapPos[k]];
+  end
+
+  for (genvar k = 0; k < NDFTStraps; k++) begin : gen_dft_strap_taps
+    assign dft_strap_taps[k] = mio_in_i[DftStrapPos[k]];
   end
 
   assign lc_pinmux_strap_o = lc_strap_q;
@@ -268,11 +280,19 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
                       '{valid: 1'b1, straps: lc_strap_taps} :
                       lc_strap_q;
 
+  // DFT straps are triggered by the same LC sampling pulse
+  assign dft_strap_test_o = dft_strap_test_q;
+  assign dft_strap_test_d = (lc_pinmux_strap_i.sample_pulse) ?
+                            '{valid: 1'b1, straps: dft_strap_taps} :
+                            dft_strap_test_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_sample
     if (!rst_ni) begin
-      lc_strap_q <= '0;
+      lc_strap_q       <= '0;
+      dft_strap_test_q <= '0;
     end else begin
-      lc_strap_q <= lc_strap_d;
+      lc_strap_q       <= lc_strap_d;
+      dft_strap_test_q <= dft_strap_test_d;
     end
   end
 

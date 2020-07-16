@@ -26,6 +26,12 @@ module clkmgr import clkmgr_pkg::*; (
   % endif
 % endfor
 
+  // Resets for derived clocks
+  // clocks are derived locally
+% for src in div_srcs:
+  input rst_${src['name']}_ni,
+% endfor
+
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
@@ -62,14 +68,32 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
+  ////////////////////////////////////////////////////
+  // Divided clocks
+  ////////////////////////////////////////////////////
+% for src in div_srcs:
+  logic clk_${src['name']}_i;
+% endfor
+
+% for src in div_srcs:
+  assign clk_${src['name']}_i = clk_${src['src']}_i;
+% endfor
+
+
+
+  ////////////////////////////////////////////////////
+  // Feed through clocks
+  // Feed through clocks do not actually need to be in clkmgr, as they are
+  // completely untouched. The only reason they are here is for easier
+  // bundling management purposes through clocks_o
+  ////////////////////////////////////////////////////
+% for k,v in ft_clks.items():
+  assign clocks_o.${k} = clk_${v}_i;
+% endfor
 
   ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
-
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
 
   logic async_roots_en;
   logic roots_en_q2, roots_en_q1, roots_en_d;
@@ -137,9 +161,6 @@ module clkmgr import clkmgr_pkg::*; (
   // Software direct control group
   ////////////////////////////////////////////////////
 
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
 % for k in sw_clks:
   logic ${k}_sw_en;
 % endfor
@@ -168,10 +189,6 @@ module clkmgr import clkmgr_pkg::*; (
   // The idle hint feedback is assumed to be synchronous to the
   // clock target
   ////////////////////////////////////////////////////
-
-  // the rst_ni connection below is incorrect, need to find a proper reset in the sequence to use
-  // if the clkmgr is always on, can use por synced directly
-  // if not, then need to generate something ahead of lc/sys
 
 % for k in hint_clks:
   logic ${k}_hint;

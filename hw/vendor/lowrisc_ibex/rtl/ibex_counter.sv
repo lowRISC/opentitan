@@ -56,7 +56,7 @@ module ibex_counter #(
 `endif
 
   // Counter flop
-  always @(`COUNTER_FLOP_RST) begin
+  always_ff @(`COUNTER_FLOP_RST) begin
     if (!rst_ni) begin
       counter_q <= '0;
     end else begin

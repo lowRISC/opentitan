@@ -33,18 +33,8 @@ module top_${top["name"]} #(
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
-  // Clock and Reset
-  input               clk_i,
+  // Reset, clocks defined as part of intermodule
   input               rst_ni,
-
-  // Fixed io clock
-  input               clk_io_i,
-
-  // USB clock
-  input               clk_usb_i,
-
-  // aon clock
-  input               clk_aon_i,
 
   // JTAG interface
   input               jtag_tck_i,
@@ -81,8 +71,8 @@ module top_${top["name"]} #(
   ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 % endif
-
-  input               scanmode_i  // 1 for Scan
+  input               scan_rst_ni, // reset used for test mode
+  input               scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -636,7 +626,9 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
     % endif
-
+    % if m["scan_reset"] == "true":
+      .scan_rst_ni  (scan_rst_ni),
+    % endif
     % for k, v in m["clock_connections"].items():
       .${k} (${v}),
     % endfor
@@ -747,6 +739,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % endif
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_clk_main, 0)
 
 endmodule
