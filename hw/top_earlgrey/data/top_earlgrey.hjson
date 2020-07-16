@@ -328,6 +328,16 @@
       reset_connections: { rst_ni: "por_io"}
       base_addr: "0x40430000"
     }
+    { name: "dcd_aon"
+      type: "dcd"
+      clock_srcs: {
+        clk_i: "io"
+        clk_aon_i: "aon"
+      }
+      clock_group: "powerup"
+      reset_connections: { rst_ni: "por_io" }
+      base_addr: "0x40440000"
+    }
     { name: "pwm_aon"
       type: "pwm"
       clock_srcs: {clk_i: "io_div2"}
@@ -450,8 +460,8 @@
     'connect': {
       'flash_ctrl.flash': ['eflash.flash_ctrl'],
       'otp_ctrl.otp_flash_key': ['flash_ctrl.otp'],
-      'otp_ctrl.otp_ram_main_key': [],
-      'otp_ctrl.otp_ram_ret_aon_key': [],
+      //'otp_ctrl.otp_ram_main_key': [],
+      //'otp_ctrl.otp_ram_ret_aon_key': [],
       'otp_ctrl.otp_otbn_ram_key': ['otbn.otp_otbn_ram_key'],
       'otp_ctrl.lc_otp_program': ['lifecycle.otp_program'],
       'otp_ctrl.otp_lc_data': ['lifecycle.otp_data'],
@@ -481,7 +491,8 @@
                  'sensor_ctrl.ast_alert', 'sensor_ctrl.ast_aux', 'pwrmgr_aon.pwr_ast',
                  'rstmgr_aon.ast', 'usbdev_aon.usb_ref_pulse', 'usbdev_aon.usb_ref_val',
                  'entropy_src.entropy_src_rng',
-                 'clkmgr_aon.clk_main', 'clkmgr_aon.clk_io', 'clkmgr_aon.clk_usb', 'clkmgr_aon.clk_aon'],
+                 'clkmgr_aon.clk_main', 'clkmgr_aon.clk_io', 'clkmgr_aon.clk_usb', 'clkmgr_aon.clk_aon',
+                 'dcd_aon.adc'],
   },
 
   debug_mem_base_addr: "0x1A110000",
@@ -517,7 +528,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl", "keymgr",
                      "hmac", "kmac", "alert_handler", "nmi_gen", "usbdev_aon",
-                     "pwrmgr_aon", "otp_ctrl",
+                     "pwrmgr_aon", "otp_ctrl", "dcd_aon"
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2",
                      "otbn",]

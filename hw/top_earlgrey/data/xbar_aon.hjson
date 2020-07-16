@@ -37,6 +37,12 @@
       reset:    "rst_aon_ni",
       pipeline: "false"
     }
+    { name:     "dcd_aon"
+      type:     "device"
+      clock:    "clk_aon_i",
+      reset:    "rst_aon_ni",
+      pipeline: "false"
+    }
     //{ name:     "dcd_aon"
     //  type:     "device"
     //  clock:    "clk_aon_i",
@@ -96,7 +102,7 @@
             "padctrl_aon", "usbdev_aon",
             "rbox_aon", "pwm_aon", "ram_ret_aon",
             "timer_aon"
-            // "dcd_aon",
+            "dcd_aon",
     ]
   }
 }
