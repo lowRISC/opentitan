@@ -10,11 +10,11 @@
   bus_device: "tlul",
   bus_host: "none",
   inter_signal_list: [
-    { struct: "adc",
+    { struct: "adc_ast",
       type: "req_rsp",
       act: "req",
       name: "adc",
-      package: "dcd_pkg",
+      package: "ast_wrapper_pkg",
     }
   ],
   interrupt_list: [

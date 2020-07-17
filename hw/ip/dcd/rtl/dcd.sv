@@ -15,8 +15,8 @@ module dcd import dcd_pkg::*;(
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  output adc_req_t adc_o,
-  input adc_rsp_t adc_i,
+  output ast_wrapper_pkg::adc_ast_req_t adc_o,
+  input  ast_wrapper_pkg::adc_ast_rsp_t adc_i,
 
   //Inter-module IO
   //AST interface
@@ -61,16 +61,16 @@ module dcd import dcd_pkg::*;(
       adc_d_val <= 1'b0;
     end else begin
       adc_d     <= adc_i.data;
-      adc_d_val <= adc_i.valid;
+      adc_d_val <= adc_i.data_valid;
     end
   end
 
   always_ff @(posedge clk_aon_i or negedge rst_int_ni) begin
     if (!rst_int_ni) begin
-      adc_o.powerdown  <= 1'b1;
+      adc_o.pd         <= 1'b1;
       adc_o.chnsel     <= 2'h0;
     end else begin
-      adc_o.powerdown  <= 1'b0;//TBD
+      adc_o.pd         <= 1'b0;//TBD
       adc_o.chnsel     <= 2'b01;//TBD
     end
   end
