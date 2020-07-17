@@ -99,7 +99,7 @@ class aes_seq_item extends uvm_sequence_item;
   // have been updated.
   function bit data_in_valid();
     `uvm_info(`gfn, $sformatf("\n\t ----| Checking if ALL data is updated %4b", data_in_vld)
-              , UVM_FULL)
+              , UVM_MEDIUM)
 
     return &data_in_vld;
   endfunction // data_in_valid
@@ -118,7 +118,7 @@ class aes_seq_item extends uvm_sequence_item;
   // if ret_celan = 1
   // return 1 if all or none of the registers have been written
   function bit key_clean(bit ret_clean);
-    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_MEDIUM)
     if(ret_clean) begin
       return ( (&key_vld) || ~(|key_vld));
     end else begin
@@ -143,12 +143,12 @@ class aes_seq_item extends uvm_sequence_item;
   function bit message_start();
     case(mode)
       AES_ECB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_MEDIUM)
         return (&key_vld);
       end
       AES_CBC: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_MEDIUM)
         return (&key_vld && &iv_vld);
       end
       AES_CFB: begin
@@ -163,7 +163,7 @@ class aes_seq_item extends uvm_sequence_item;
       end
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_MEDIUM)
         return (&key_vld && &iv_vld);
       end
       default: begin
@@ -231,6 +231,10 @@ class aes_seq_item extends uvm_sequence_item;
     str = {str,  $psprintf("\n\t ----| Key:         \t ") };
     for(int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[i])};
+    end
+    str = {str,  $sformatf("\n\t ----| Initializaion vector:         \t ") };
+    for(int i=0; i <4; i++) begin
+      str = {str, $sformatf("%h ",iv[i])};
     end
     str = {str,  $psprintf("\n\t ----| key_mask: \t %d |----\t  \t", key_mask) };
     str = {str,  $psprintf("\n\t ----| Data Length: \t %d |----\t  \t", data_len) };

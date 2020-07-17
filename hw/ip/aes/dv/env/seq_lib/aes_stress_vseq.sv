@@ -26,10 +26,10 @@ class aes_stress_vseq extends aes_base_vseq;
       generate_aes_item_queue(my_message);
       // setup and transmit based on settings
       if(my_message.manual_operation) begin
-        transmit_message_manual_op();        
-      end else begin       
+        transmit_message_manual_op();
+      end else begin
         transmit_message_with_rd_back();
-      end      
+      end
     end
   endtask : body
 endclass
