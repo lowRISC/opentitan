@@ -8,11 +8,21 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
-      - lowrisc:ibex:ibex_tracer:0.1
       - lowrisc:systems:ast
     files:
       - rtl/top_earlgrey_asic.sv
     file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  #PRIM_DEFAULT_IMPL:
+  #  datatype: str
+  #  paramtype: vlogdefine
+  #  description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  #  default: prim_pkg::ImplGeneric
 
 
 targets:
@@ -29,3 +39,16 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: top_earlgrey_asic
+
+  formal:
+    <<: *default_target
+    toplevel: top_earlgrey_asic
