@@ -467,31 +467,31 @@ module spi_device #(
 
   // Arbiter for FIFOs : Connecting between SRAM Ctrls and SRAM interface
   prim_sram_arbiter #(
-    .N       (2),  // RXF, TXF
-    .SramDw (SramDw),
-    .SramAw (SramAw)   // 2kB
+    .N            (2),  // RXF, TXF
+    .SramDw       (SramDw),
+    .SramAw       (SramAw)   // 2kB
   ) u_fwmode_arb (
     .clk_i,
     .rst_ni,
 
-    .req          (fwm_sram_req),
-    .req_addr     (fwm_sram_addr),
-    .req_write    (fwm_sram_write),
-    .req_wdata    (fwm_sram_wdata),
-    .gnt          (fwm_sram_gnt),
+    .req_i        (fwm_sram_req),
+    .req_addr_i   (fwm_sram_addr),
+    .req_write_i  (fwm_sram_write),
+    .req_wdata_i  (fwm_sram_wdata),
+    .gnt_o        (fwm_sram_gnt),
 
-    .rsp_rvalid   (fwm_sram_rvalid),
-    .rsp_rdata    (fwm_sram_rdata),
-    .rsp_error    (fwm_sram_error),
+    .rsp_rvalid_o (fwm_sram_rvalid),
+    .rsp_rdata_o  (fwm_sram_rdata),
+    .rsp_error_o  (fwm_sram_error),
 
-    .sram_req     (mem_b_req),
-    .sram_addr    (mem_b_addr),
-    .sram_write   (mem_b_write),
-    .sram_wdata   (mem_b_wdata),
+    .sram_req_o   (mem_b_req),
+    .sram_addr_o  (mem_b_addr),
+    .sram_write_o (mem_b_write),
+    .sram_wdata_o (mem_b_wdata),
 
-    .sram_rvalid  (mem_b_rvalid),
-    .sram_rdata   (mem_b_rdata),
-    .sram_rerror  (mem_b_rerror)
+    .sram_rvalid_i(mem_b_rvalid),
+    .sram_rdata_i (mem_b_rdata),
+    .sram_rerror_i(mem_b_rerror)
   );
 
   tlul_adapter_sram #(
