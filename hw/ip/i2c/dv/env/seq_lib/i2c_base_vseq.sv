@@ -68,12 +68,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   // create uniform assertion distributions of rx_watermark interrupt
   constraint rxilvl_c {
     rxilvl dist {
-      0     :/ 17,
-      1     :/ 17,
-      2     :/ 17,
-      3     :/ 16,
-      4     :/ 17,
-      [5:7] :/ 16
+      [0:4] :/ 5,
+      [5:7] :/ 1
     };
   }
   constraint num_wr_bytes_c {
@@ -81,17 +77,19 @@ class i2c_base_vseq extends cip_base_vseq #(
       1       :/ 1,
       [2:4]   :/ 1,
       [5:8]   :/ 1,
-      [9:20]  :/ 1
+      [9:31]  :/ 1,
+      32      :/ 1
     };
   }
   constraint num_rd_bytes_c {
+    num_rd_bytes < 256;
     num_rd_bytes dist {
-      1       :/ 17,
-      [2:4]   :/ 17,
-      [5:8]   :/ 17,
-      [9:16]  :/ 16,
-      [17:30] :/ 17,
-      31      :/ 16
+      1       :/ 1,
+      [2:4]   :/ 1,
+      [5:8]   :/ 1,
+      [9:16]  :/ 1,
+      [17:31] :/ 1,
+      32      :/ 1
     };
   }
 
@@ -105,6 +103,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     rx_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
   }
 
+  constraint t_timeout_c {
+    t_timeout inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
+  }
+
   constraint timing_val_c {
     thigh     inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
     t_r       inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
@@ -113,7 +115,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     tsu_sto   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
     tsu_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
     thd_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    t_timeout inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
@@ -237,7 +238,7 @@ class i2c_base_vseq extends cip_base_vseq #(
               timing_cfg.tClockPulse + timing_cfg.tHoldBit);
   endfunction : get_byte_latency
 
-  virtual task program_format_flag(i2c_item item, string msg="");
+  virtual task program_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
     bit fmtfull;
 
     ral.fdata.nakok.set(item.nakok);
@@ -247,22 +248,22 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.fdata.start.set(item.start);
     ral.fdata.fbyte.set(item.fbyte);
     // en_fmt_underflow is set to ensure no write data overflow with fmt_fifo
-    // regardless en_fmt_underflow, the last data (consist of STOP bit) must be
+    // regardless en_fmt_underflow set/unset, the last data (consist of STOP bit) must be
     // pushed into fmt_fifo to safely complete transaction
     if (!cfg.en_fmt_overflow || fmt_item.stop) begin
       csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
     end
-    // if fmt_overflow irq is triggered it must be cleared before new fmt data is program
+    // if fmt_overflow irq is triggered it must be cleared before new fmt data is programmed
     // otherwise, scoreboard can drop this data while fmt_fifo is not full
     wait(!cfg.intr_vif.pins[FmtOverflow]);
     // program fmt_fifo
     csr_update(.csr(ral.fdata));
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
-    print_format_flag(item, msg);
+    print_format_flag(item, msg, en_print);
   endtask : program_format_flag
 
-  task print_format_flag(i2c_item item, string msg = "");
+  task print_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
     string str;
 
     str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
@@ -279,7 +280,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x |",
           item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte)};
     end
-    `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
+    if (en_print) `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
   endtask : print_format_flag
 
 endclass : i2c_base_vseq

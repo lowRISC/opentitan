@@ -18,7 +18,7 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
     num_rd_bytes == I2C_RX_FIFO_DEPTH + 1;
   }
 
-  task body();
+  virtual task body();
     bit check_fmt_overflow;
     bit check_rx_overflow;
     bit rxempty = 1'b0;

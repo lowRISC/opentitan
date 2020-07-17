@@ -10,11 +10,9 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task reset_signals();
     `uvm_info(`gfn, "driver in reset progress", UVM_HIGH)
     @(negedge cfg.vif.rst_ni);
-    cfg.vif.scl_o <= 1'b0;
-    cfg.vif.sda_o <= 1'b0;
-    @(posedge cfg.vif.rst_ni);
     cfg.vif.scl_o <= 1'b1;
     cfg.vif.sda_o <= 1'b1;
+    @(posedge cfg.vif.rst_ni);
     `uvm_info(`gfn, "driver out of reset", UVM_HIGH)
   endtask : reset_signals
 

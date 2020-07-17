@@ -69,7 +69,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   endtask : host_program_target_address
 
   virtual task host_read_trans(bit last_tran);
-    bit  rx_sanity, rx_full, rx_overflow, rx_watermark, start_read;
+    bit rx_sanity, rx_full, rx_overflow, rx_watermark, start_read;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_rd_bytes)
     fork
@@ -107,9 +107,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         if (cfg.en_rx_overflow) total_rd_bytes--;
         while (!fmt_item.rcont && total_rd_bytes > 0) begin
           csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
-          rx_sanity     = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
-          rx_watermark |= cfg.en_rx_watermark && rx_full;
-          rx_overflow  |= cfg.en_rx_overflow && cfg.intr_vif.pins[RxOverflow];
+          rx_sanity      = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
+          rx_watermark  |= cfg.en_rx_watermark && rx_full;
+          rx_overflow   |= cfg.en_rx_overflow && cfg.intr_vif.pins[RxOverflow];
 
           start_read = rx_sanity    | // sanity test: read rx_fifo asap when there are valid data
                        rx_watermark | // watermark test: read rx_fifo when rx_watermark is triggered
@@ -139,11 +139,16 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end
 
     for (int i = 1; i <= num_wr_bytes; i++) begin
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
-        start == 1'b0;
-        read  == 1'b0;
-      )
-      fmt_item.fbyte = wr_data[i];
+      // randomize until at least one of format bits is non-zero to ensure
+      // data format will be pushed into fmt_fifo (if not empty)
+      do begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
+          start == 1'b0;
+          read  == 1'b0;
+        )
+        fmt_item.fbyte = wr_data[i];
+      end while (!fmt_item.nakok && !fmt_item.rcont && !fmt_item.fbyte);
+
       // last write byte of last  tran., stop flag must be set to issue stop bit
       // last write byte of other tran., stop is randomly set/unset to issue stop/rstart bit
       fmt_item.stop = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
