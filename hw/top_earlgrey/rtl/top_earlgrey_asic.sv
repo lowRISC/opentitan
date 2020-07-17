@@ -60,6 +60,11 @@ module top_earlgrey_asic (
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
+  // unused pad signals. need to hook these wires up since lint does not like module ports that are
+  // tied to 1'bz.
+  wire unused_usbdev_se0, unused_usbdev_tx_mode, unused_usbdev_suspend, unused_usbdev_d;
+  wire [11:0] unused_mio;
+
   padring #(
     // MIOs 31:20 are currently not
     // connected to pads and hence tied off
@@ -81,11 +86,11 @@ module top_earlgrey_asic (
     .clk_usb_48mhz_o     ( clk_usb_48mhz    ),
     .rst_no              ( rst_n            ),
     // MIO Pads
-    .mio_pad_io          ( { 12'hzzz, // Note that 31:20 are currently not mapped
-                             IO_DPS5, // Use GPIO19 to pass JTAG_SRST
-                             IO_DPS4, // Use GPIO18 to pass JTAG_TRST
-                             IO_DPS7, // Use GPIO17 to pass rom boot_strap indication
-                             IO_DPS6, // Use GPIO16 to pass SPI/JTAG control flag
+    .mio_pad_io          ( { unused_mio, // Note that 31:20 are currently not mapped
+                             IO_DPS5,    // Use GPIO19 to pass JTAG_SRST
+                             IO_DPS4,    // Use GPIO18 to pass JTAG_TRST
+                             IO_DPS7,    // Use GPIO17 to pass rom boot_strap indication
+                             IO_DPS6,    // Use GPIO16 to pass SPI/JTAG control flag
                              IO_GP15,
                              IO_GP14,
                              IO_GP13,
@@ -110,12 +115,12 @@ module top_earlgrey_asic (
                              IO_URX,
                              IO_UTX,
                              IO_USB_SENSE0,
-                             1'bz,    // usbdev_se0
+                             unused_usbdev_se0, // usbdev_se0
                              IO_USB_DPPULLUP0,
                              IO_USB_DNPULLUP0,
-                             1'bz,    // usbdev_tx_mode
-                             1'bz,    // usbdev_suspend
-                             1'bz,    // usbdev_d
+                             unused_usbdev_tx_mode, // usbdev_tx_mode
+                             unused_usbdev_suspend, // usbdev_suspend
+                             unused_usbdev_d,       // usbdev_d
                              IO_USB_DP0,
                              IO_USB_DN0 } ),
     // Muxed IOs
