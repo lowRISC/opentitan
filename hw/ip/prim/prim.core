@@ -18,7 +18,6 @@ filesets:
       - lowrisc:prim:flop
       - lowrisc:prim:flop_2sync
     files:
-      - rtl/prim_clock_inverter.sv
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_alert_pkg.sv
       - rtl/prim_alert_receiver.sv
