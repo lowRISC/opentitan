@@ -13,8 +13,8 @@ module prim_generic_flop_2sync #(
 ) (
   input                    clk_i,       // receive clock
   input                    rst_ni,
-  input        [Width-1:0] d,
-  output logic [Width-1:0] q
+  input        [Width-1:0] d_i,
+  output logic [Width-1:0] q_o
 );
 
   logic [Width-1:0] intq;
@@ -25,7 +25,7 @@ module prim_generic_flop_2sync #(
   ) u_sync_1 (
     .clk_i,
     .rst_ni,
-    .d_i(d),
+    .d_i,
     .q_o(intq)
   );
 
@@ -36,7 +36,7 @@ module prim_generic_flop_2sync #(
     .clk_i,
     .rst_ni,
     .d_i(intq),
-    .q_o(q)
+    .q_o
   );
 
 

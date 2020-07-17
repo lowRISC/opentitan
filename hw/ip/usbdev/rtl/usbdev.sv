@@ -262,8 +262,8 @@ module usbdev (
   ) usbdev_sync_ep_cfg (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      ({enable_setup, enable_out, ep_stall}),
-    .q      ({usb_enable_setup, usb_enable_out, usb_ep_stall})
+    .d_i    ({enable_setup, enable_out, ep_stall}),
+    .q_o    ({usb_enable_setup, usb_enable_out, usb_ep_stall})
   );
 
   // CDC: ok, quasi-static
@@ -292,8 +292,8 @@ module usbdev (
   ) usbdev_rdysync (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      (in_rdy_async),
-    .q      (usb_in_rdy)
+    .d_i    (in_rdy_async),
+    .q_o    (usb_in_rdy)
   );
 
   // CDC: We synchronize the qe (write pulse) and assume that the
@@ -547,8 +547,8 @@ module usbdev (
   ) cdc_usb_to_sys (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
-    .d      ({usb_link_state,              usb_frame}),
-    .q      ({hw2reg.usbstat.link_state.d, hw2reg.usbstat.frame.d})
+    .d_i    ({usb_link_state,              usb_frame}),
+    .q_o    ({hw2reg.usbstat.link_state.d, hw2reg.usbstat.frame.d})
   );
 
   // sys clk -> USB clk
@@ -557,8 +557,8 @@ module usbdev (
   ) cdc_sys_to_usb (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      ({reg2hw.usbctrl.enable.q, reg2hw.usbctrl.device_address.q}),
-    .q      ({usb_enable,              usb_device_addr})
+    .d_i    ({reg2hw.usbctrl.enable.q, reg2hw.usbctrl.device_address.q}),
+    .q_o    ({usb_enable,              usb_device_addr})
   );
 
   // CDC for event signals (arguably they are there for a long time so would be ok)
@@ -566,9 +566,9 @@ module usbdev (
   usbdev_flop_2syncpulse #(.Width(5)) syncevent (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
-    .d      ({usb_event_disconnect, usb_event_link_reset, usb_event_link_suspend,
+    .d_i    ({usb_event_disconnect, usb_event_link_reset, usb_event_link_suspend,
               usb_event_host_lost, usb_event_connect}),
-    .q      ({event_disconnect, event_link_reset, event_link_suspend,
+    .q_o    ({event_disconnect, event_link_reset, event_link_suspend,
               event_host_lost, event_connect})
   );
 
@@ -952,8 +952,8 @@ module usbdev (
   ) usbdev_sync_phy_config (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      (reg2hw.phy_config.usb_ref_disable.q),
-    .q      (usb_ref_disable)
+    .d_i    (reg2hw.phy_config.usb_ref_disable.q),
+    .q_o    (usb_ref_disable)
   );
 
   // Directly forward the pulse unless disabled.

@@ -33,8 +33,8 @@ module rstmgr_por #(
   ) rst_sync (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(1'b1),
-    .q(rst_root_n)
+    .d_i(1'b1),
+    .q_o(rst_root_n)
   );
 
   // filter the POR

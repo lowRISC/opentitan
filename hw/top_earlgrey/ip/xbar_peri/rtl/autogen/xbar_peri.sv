@@ -146,7 +146,7 @@ end
     .tl_h_o       (tl_s1n_10_us_d2h),
     .tl_d_o       (tl_s1n_10_ds_h2d),
     .tl_d_i       (tl_s1n_10_ds_d2h),
-    .dev_select   (dev_sel_s1n_10)
+    .dev_select_i (dev_sel_s1n_10)
   );
 
 endmodule

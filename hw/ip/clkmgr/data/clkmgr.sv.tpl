@@ -131,8 +131,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_roots_en_sync (
     .clk_i,
     .rst_ni,
-    .d(async_roots_en),
-    .q(roots_en_d)
+    .d_i(async_roots_en),
+    .q_o(roots_en_d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -171,8 +171,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_${k}_sw_en_sync (
     .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
-    .d(reg2hw.clk_enables.${k}_en.q),
-    .q(${k}_sw_en)
+    .d_i(reg2hw.clk_enables.${k}_en.q),
+    .q_o(${k}_sw_en)
   );
 
   prim_clock_gating i_${k}_cg (
@@ -203,8 +203,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_${k}_hint_sync (
     .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
-    .d(reg2hw.clk_hints.${k}_hint.q),
-    .q(${k}_hint)
+    .d_i(reg2hw.clk_hints.${k}_hint.q),
+    .q_o(${k}_hint)
   );
 
   prim_clock_gating i_${k}_cg (

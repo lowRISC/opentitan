@@ -184,8 +184,8 @@ module spi_device #(
   prim_flop_2sync #(.Width(1)) u_sync_csb (
     .clk_i,
     .rst_ni,
-    .d(cio_csb_i),
-    .q(csb_syncd)
+    .d_i(cio_csb_i),
+    .q_o(csb_syncd)
   );
 
   logic rxf_full_q, txf_empty_q;
@@ -200,14 +200,14 @@ module spi_device #(
   prim_flop_2sync #(.Width(1)) u_sync_rxf (
     .clk_i,
     .rst_ni,
-    .d(rxf_full_q),
-    .q(rxf_full_syncd)
+    .d_i(rxf_full_q),
+    .q_o(rxf_full_syncd)
   );
   prim_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
     .clk_i,
     .rst_ni,
-    .d(txf_empty_q),
-    .q(txf_empty_syncd)
+    .d_i(txf_empty_q),
+    .q_o(txf_empty_syncd)
   );
 
   assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
@@ -353,9 +353,9 @@ module spi_device #(
 
     // SPI signal
     .csb_i         (cio_csb_i),
-    .sdi           (cio_sdi_i),
-    .sdo           (cio_sdo_o),
-    .sdo_oe        (cio_sdo_en_o)
+    .sdi_i         (cio_sdi_i),
+    .sdo_o         (cio_sdo_o),
+    .sdo_oe_o      (cio_sdo_en_o)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs

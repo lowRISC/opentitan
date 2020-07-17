@@ -557,7 +557,7 @@ end
     .tl_h_o       (tl_s1n_17_us_d2h),
     .tl_d_o       (tl_s1n_17_ds_h2d),
     .tl_d_i       (tl_s1n_17_ds_d2h),
-    .dev_select   (dev_sel_s1n_17)
+    .dev_select_i (dev_sel_s1n_17)
   );
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
@@ -628,7 +628,7 @@ end
     .tl_h_o       (tl_s1n_22_us_d2h),
     .tl_d_o       (tl_s1n_22_ds_h2d),
     .tl_d_i       (tl_s1n_22_ds_d2h),
-    .dev_select   (dev_sel_s1n_22)
+    .dev_select_i (dev_sel_s1n_22)
   );
   tlul_fifo_async #(
     .ReqDepth        (3),// At least 3 to make async work
@@ -796,7 +796,7 @@ end
     .tl_h_o       (tl_s1n_34_us_d2h),
     .tl_d_o       (tl_s1n_34_ds_h2d),
     .tl_d_i       (tl_s1n_34_ds_d2h),
-    .dev_select   (dev_sel_s1n_34)
+    .dev_select_i (dev_sel_s1n_34)
   );
 
 endmodule
