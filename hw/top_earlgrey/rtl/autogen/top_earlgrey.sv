@@ -49,8 +49,8 @@ module top_earlgrey #(
   input  logic       clkmgr_aon_clk_io,
   input  logic       clkmgr_aon_clk_usb,
   input  logic       clkmgr_aon_clk_aon,
-  output dcd_pkg::adc_req_t       dcd_aon_adc_req,
-  input  dcd_pkg::adc_rsp_t       dcd_aon_adc_rsp,
+  output ast_wrapper_pkg::adc_ast_req_t       dcd_aon_adc_req,
+  input  ast_wrapper_pkg::adc_ast_rsp_t       dcd_aon_adc_rsp,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );

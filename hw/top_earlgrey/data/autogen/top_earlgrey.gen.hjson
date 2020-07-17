@@ -3097,11 +3097,11 @@
       inter_signal_list:
       [
         {
-          struct: adc
+          struct: adc_ast
           type: req_rsp
           act: req
           name: adc
-          package: dcd_pkg
+          package: ast_wrapper_pkg
           inst_name: dcd_aon
           width: 1
           default: ""
@@ -8087,11 +8087,11 @@
         index: -1
       }
       {
-        struct: adc
+        struct: adc_ast
         type: req_rsp
         act: req
         name: adc
-        package: dcd_pkg
+        package: ast_wrapper_pkg
         inst_name: dcd_aon
         width: 1
         default: ""
@@ -8450,8 +8450,8 @@
         direction: in
       }
       {
-        package: dcd_pkg
-        struct: adc_req
+        package: ast_wrapper_pkg
+        struct: adc_ast_req
         signame: dcd_aon_adc_req
         width: 1
         type: req_rsp
@@ -8459,8 +8459,8 @@
         direction: out
       }
       {
-        package: dcd_pkg
-        struct: adc_rsp
+        package: ast_wrapper_pkg
+        struct: adc_ast_rsp
         signame: dcd_aon_adc_rsp
         width: 1
         type: req_rsp
