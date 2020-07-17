@@ -170,9 +170,7 @@ module otbn
   logic [1:0] imem_rerror;
 
   logic imem_req_core;
-  logic imem_write_core;
   logic [ImemIndexWidth-1:0] imem_index_core;
-  logic [31:0] imem_wdata_core;
   logic [31:0] imem_rdata_core;
   logic imem_rvalid_core;
   logic [1:0] imem_rerror_core;
@@ -242,9 +240,10 @@ module otbn
   assign imem_access_core = busy_q;
 
   assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
-  assign imem_write = imem_access_core ? imem_write_core : imem_write_bus;
   assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
-  assign imem_wdata = imem_access_core ? imem_wdata_core : imem_wdata_bus;
+  // The core cannot write to IMEM.
+  assign imem_write = imem_write_bus;
+  assign imem_wdata = imem_wdata_bus;
 
   // The instruction memory only supports 32b word writes, so we hardcode its
   // wmask here.
@@ -425,7 +424,6 @@ module otbn
 
     .imem_req_o    (imem_req_core),
     .imem_addr_o   (imem_addr_core),
-    .imem_wdata_o  (imem_wdata_core),
     .imem_rdata_i  (imem_rdata_core),
     .imem_rvalid_i (imem_rvalid_core),
     .imem_rerror_i (imem_rerror_core),
@@ -439,9 +437,6 @@ module otbn
     .dmem_rvalid_i (dmem_rvalid_core),
     .dmem_rerror_i (dmem_rerror_core)
   );
-
-  // The core can never signal a write to IMEM
-  assign imem_write_core = 1'b0;
 
   // LFSR ======================================================================
 
