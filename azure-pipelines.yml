@@ -61,8 +61,11 @@ jobs:
     displayName: Display tool versions
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
-      git diff --name-only "$fork_origin" "*.py" \
-        | xargs -r util/lintpy.py --tools flake8 -f
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin" | grep -v /vendor/ | grep -v /lowrisc_misc-linters/ | grep -E '.py$')"
+      if [[ -n "$changed_files" ]]; then
+        set -e
+        xargs util/lintpy.py --tools flake8 -f <<< "$changed_files" | tee lintpy-output
+      fi
     displayName: Run Python lint
     continueOnError: true
   - bash: |
