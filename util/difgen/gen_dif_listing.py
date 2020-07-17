@@ -97,6 +97,7 @@ def _get_dif_function_info(compound, file_id):
             # The +2 here is because of the weird `_1` separator
             func_id = func_id[len(file_id) + 2:]
         else:
+            # I think this denotes that this function isn't from this file
             continue
 
         func_info = {}
@@ -105,10 +106,22 @@ def _get_dif_function_info(compound, file_id):
         func_info["local_id"] = func_id
         func_info["full_url"] = "/sw/apis/{}.html#{}".format(file_id, func_id)
 
-        func_info["name"] = m.find("name").text
-        func_info["prototype"] = m.find("definition").text + m.find("argsstring").text
-        func_info["description"] = m.find("briefdescription/para").text
+        func_info["name"] = _get_text_or_empty(m, "name")
+        func_info["prototype"] = _get_text_or_empty(
+            m, "definition") + _get_text_or_empty(m, "argsstring")
+        func_info["description"] = _get_text_or_empty(m,
+                                                      "briefdescription/para")
 
         functions.append(func_info)
 
     return functions
+
+
+def _get_text_or_empty(element, xpath):
+    inner = element.find(xpath)
+    # if the element isn't found, return ""
+    if inner is None:
+        return ""
+
+    # If there's no inner text, return ""
+    return inner.text or ""

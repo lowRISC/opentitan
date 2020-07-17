@@ -78,6 +78,7 @@ jobs:
     condition: always()
     displayName: Ensure all generated files are clean and up-to-date
   - bash: |
+      set -e
       util/build_docs.py
       # Upload Doxygen Warnings if Present
       if [[ -f "build/docs-generated/sw/doxygen_warnings.log" ]]; then
