@@ -113,7 +113,7 @@ module otbn
     .reg2hw,
     .hw2reg,
 
-    .devmode_i (1'b0)
+    .devmode_i (1'b1)
   );
 
   // CMD register
