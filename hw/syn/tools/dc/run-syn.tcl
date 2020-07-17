@@ -22,7 +22,7 @@ set BUILD_DIR $::env(BUILD_DIR)
 # just compile the "core" toplevel at the moment
 # might want to switch to top_earlgrey_asic later on (with pads)
 set DUT $::env(DUT)
-set CONSTRAINT $::env(CONSTRAINT)
+set CONSTRAINT $::env(CONSTRANT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
