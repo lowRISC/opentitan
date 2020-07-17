@@ -9,7 +9,8 @@ from riscvmodel.model import Model
 from riscvmodel.variant import RV32I
 from riscvmodel.code import read_from_binary
 
-import argparse, struct
+import argparse
+import struct
 
 
 def main():
