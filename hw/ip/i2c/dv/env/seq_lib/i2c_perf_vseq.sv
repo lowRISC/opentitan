@@ -29,7 +29,7 @@ class i2c_perf_vseq extends i2c_sanity_vseq;
   // clear interrupt immediately
   constraint clear_intr_dly_c { clear_intr_dly == 0; }
   
-  // zero fifo access latency
+  // set latency to zero values for fatest access fmt_fifo and rx_fifo
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
   constraint rx_fifo_access_dly_c  { rx_fifo_access_dly  == 0;}
 

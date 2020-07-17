@@ -9,8 +9,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // counting the number of received watermark interrupts
-  local uint num_fmt_watermark;
-  local uint num_rx_watermark;
+  local uint cnt_fmt_watermark;
+  local uint cnt_rx_watermark;
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
@@ -39,8 +39,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     for (int i = 0; i < num_trans; i++) begin
       check_fmt_watermark = 1'b1;
       check_rx_watermark  = 1'b1;
-      num_fmt_watermark   = 0;
-      num_rx_watermark    = 0;
+      cnt_fmt_watermark   = 0;
+      cnt_rx_watermark    = 0;
 
       fork
         begin
@@ -51,15 +51,15 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           if (check_fmt_watermark) begin
             host_send_trans(.num_trans(1), .trans_type(WriteOnly));
             csr_spinwait(.ptr(ral.status.fmtempty), .exp_data(1'b1));
-            check_fmt_watermark = 1'b0;  // gracefully stop check_fmt_watermark_intr
+            check_fmt_watermark = 1'b0;  // gracefully stop process_fmt_watermark_intr
             // depending the programmed fmtivl and the DUT configuration
-            // (timing regsisters), num_fmt_watermark could be
+            // (timing regsisters), cnt_fmt_watermark could be
             //   1: fmtilvl is crossed one   when data drains from fmt_fifo
             //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
-            `DV_CHECK_GT(num_fmt_watermark, 0)
-            `DV_CHECK_LE(num_fmt_watermark, 2)
-            `uvm_info(`gfn, $sformatf("\nRun %0d, num_fmt_watermark %0d",
-                i, num_fmt_watermark), UVM_DEBUG)
+            `DV_CHECK_GT(cnt_fmt_watermark, 0)
+            `DV_CHECK_LE(cnt_fmt_watermark, 2)
+            `uvm_info(`gfn, $sformatf("\nRun %0d, cnt_fmt_watermark %0d",
+                i, cnt_fmt_watermark), UVM_DEBUG)
           end
 
           //*** verify rx_watermark irq:
@@ -72,13 +72,13 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
             host_send_trans(.num_trans(1), .trans_type(ReadOnly));
             csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
-            check_rx_watermark = 1'b0; // gracefully stop check_rx_watermark_intr
-            // for fmtilvl > 4, rx_watermark is disable (num_rx_watermark = 0)
-            // otherwise, num_rx_watermark must be 1
+            check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
+            // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
+            // otherwise, cnt_rx_watermark must be 1
             if ( rxilvl <= 4) begin
-              `DV_CHECK_EQ(num_rx_watermark, 1)
+              `DV_CHECK_EQ(cnt_rx_watermark, 1)
             end else begin
-              `DV_CHECK_EQ(num_rx_watermark, 0)
+              `DV_CHECK_EQ(cnt_rx_watermark, 0)
             end
             // during a read transaction, fmt_watermark could be triggered since read address
             // and control byte are programmed to fmt_fifo and possibly cross fmtilvl
@@ -89,34 +89,34 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           end
         end
         begin
-          while (check_fmt_watermark) check_fmt_watermark_intr();
+          while (check_fmt_watermark) process_fmt_watermark_intr();
         end
         begin
-          while (check_rx_watermark) check_rx_watermark_intr();
+          while (check_rx_watermark) process_rx_watermark_intr();
         end
       join
     end
   endtask : body
 
-  task check_fmt_watermark_intr();
+  task process_fmt_watermark_intr();
     bit fmt_watermark;
 
     csr_rd(.ptr(ral.intr_state.fmt_watermark), .value(fmt_watermark));
     if (fmt_watermark) begin
       clear_interrupt(FmtWatermark);
-      num_fmt_watermark++;
+      cnt_fmt_watermark++;
     end
-  endtask : check_fmt_watermark_intr
+  endtask : process_fmt_watermark_intr
 
-  task check_rx_watermark_intr();
+  task process_rx_watermark_intr();
     bit rx_watermark;
 
     csr_rd(.ptr(ral.intr_state.rx_watermark), .value(rx_watermark));
     if (rx_watermark) begin
       clear_interrupt(RxWatermark);
-      num_rx_watermark++;
+      cnt_rx_watermark++;
     end
-  endtask : check_rx_watermark_intr
+  endtask : process_rx_watermark_intr
 
 endclass : i2c_fifo_watermark_vseq
 
