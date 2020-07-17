@@ -11,6 +11,7 @@
 
   // Environment variables that are needed in the synthesis script
   exports: [{"DUT"       : "{dut}"},
+            {"CONSTRAINT": "{sdc_file}"},
             {"BUILD_DIR" : "{build_dir}"},
             {"SV_FLIST"  : "{sv_flist}"}]
 
