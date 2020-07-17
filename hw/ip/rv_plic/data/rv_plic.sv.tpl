@@ -143,18 +143,18 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // Gateways //
   //////////////
   rv_plic_gateway #(
-    .N_SOURCE (NumSrc)
+    .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
     .rst_ni,
 
-    .src (intr_src_i),
-    .le,
+    .src_i      (intr_src_i),
+    .le_i       (le),
 
-    .claim,
-    .complete,
+    .claim_i    (claim),
+    .complete_i (complete),
 
-    .ip
+    .ip_o       (ip)
   );
 
   ///////////////////////////////////
@@ -162,20 +162,20 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ///////////////////////////////////
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
     rv_plic_target #(
-      .N_SOURCE (NumSrc),
-      .MAX_PRIO (MAX_PRIO)
+      .N_SOURCE    (NumSrc),
+      .MAX_PRIO    (MAX_PRIO)
     ) u_target (
       .clk_i,
       .rst_ni,
 
-      .ip,
-      .ie        (ie[i]),
+      .ip_i        (ip),
+      .ie_i        (ie[i]),
 
-      .prio,
-      .threshold (threshold[i]),
+      .prio_i      (prio),
+      .threshold_i (threshold[i]),
 
-      .irq       (irq_o[i]),
-      .irq_id    (irq_id_o[i])
+      .irq_o       (irq_o[i]),
+      .irq_id_o    (irq_id_o[i])
 
     );
   end
