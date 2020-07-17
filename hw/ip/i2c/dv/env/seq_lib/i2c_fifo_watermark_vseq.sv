@@ -25,9 +25,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   }
   // read transaction length is equal to rx_fifo depth to cross rxilvl
   constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
-  constraint num_trans_c    { num_trans inside {[8 : 12]}; }
 
-  task body();
+  virtual task body();
     bit check_fmt_watermark, check_rx_watermark;
 
     device_init();

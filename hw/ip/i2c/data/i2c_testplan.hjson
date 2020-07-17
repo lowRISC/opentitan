@@ -167,35 +167,36 @@
       tests: []
     }
     {
-      name: fmt_rx_fifo_full
+      name: fifo_full
       desc: '''
             Test fmt_fifo and rx_fifo in full states.
 
             Stimulus:
-              - Send enough read requests, not read data out,
-                then stop until both fmt and rx fifo is full
+              - Send enough read and write requests to fmt_fifo
+              - Hold reading data from rx_fifo until rx fifo is full
 
             Checking:
               - Check fifo full states by reading status register
             '''
       milestone: V2
-      tests: []
+      tests: ["i2c_fifo_full"]
     }
     {
-      name: rx_timeout
+      name: stretch_timeout,
       desc: '''
-            Test rx_timeout state.
+            Test host clock stretching.
 
             Stimulus:
-              - Program timeout enable bit into timeout_ctrl register
+              - Set timeout enable bit into timeout_ctrl register
               - Program timeout values (higher than host scl clock pulse) into timeout_ctrl register
-              - Configure agent to pull down target(device) scl after the bit 9 (acknowledge bit) is transmitted
+              - Configure agent to pull down target (device) scl after the bit 9 (ACK) is transmitted
 
             Checking:
-              - Ensure intr_stretch_timeout interrupt is asserted
+              - Ensure stretch_timeout interrupt is asserted
+              - Ensure receving the correct number of stretch_timeout interrupt
             '''
       milestone: V2
-      tests: []
+      tests: ["i2c_stretch_timeout"]
     }
     {
       name: rx_oversample

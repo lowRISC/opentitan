@@ -3,28 +3,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // performance test vseq
-class i2c_perf_vseq extends i2c_rx_tx_vseq;
+class i2c_perf_vseq extends i2c_sanity_vseq;
   `uvm_object_utils(i2c_perf_vseq)
   `uvm_object_new
-
-  constraint num_trans_c { num_trans inside {[10 : 16]}; }
 
   // should have few long transactions
   constraint num_wr_bytes_c {
     num_wr_bytes dist {
-      1       :/ 15,
-      [2:8]   :/ 20,
-      [9:32]  :/ 15,
-      256     :/ 50
+      1       :/ 1,
+      [2:8]   :/ 1,
+      [9:32]  :/ 1,
+      256     :/ 1
     };
   }
-  // num_rd_bytes = 1: read transaction length is 256b bytes
+  // num_rd_bytes = 0: read transaction length is 256b bytes
   constraint num_rd_bytes_c {
     num_rd_bytes dist {
-      0       :/ 50,
-      1       :/ 15,
-      [2:8]   :/ 20,
-      [9:32]  :/ 15
+      0       :/ 1,
+      1       :/ 1,
+      [2:8]   :/ 1,
+      [9:32]  :/ 1
     };
   }
   
@@ -51,21 +49,4 @@ class i2c_perf_vseq extends i2c_rx_tx_vseq;
     t_buf     == 1;  // min:  (tsu_sta - t_r + 1)
   }
 
-  task body();
-    device_init();
-    host_init();
-
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
-    fork
-      begin
-        while (do_interrupt) process_interrupts();
-      end
-      begin
-        host_send_trans(num_trans);
-        do_interrupt = 1'b0; // gracefully stop process_interrupts
-      end
-    join
-  endtask : body
-
 endclass : i2c_perf_vseq
-

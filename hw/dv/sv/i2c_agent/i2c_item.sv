@@ -26,10 +26,8 @@ class i2c_item extends uvm_sequence_item;
   constraint fbyte_c     { fbyte      inside {[0 : 127]}; }
   constraint rcont_c     {
      solve read, stop before rcont;
-     if (read) {
-       // for read request, rcont and stop must be complementary set
-       rcont  == ~stop;
-     }
+     // for read request, rcont and stop must be complementary set
+     read -> rcont == ~stop;
   }
 
   `uvm_object_utils_begin(i2c_item)
