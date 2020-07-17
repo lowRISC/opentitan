@@ -27,7 +27,7 @@ insn-groups:
   - key: bignum
     title: Big Number Instruction Subset
     doc: |
-      All Big Number (BN) instructions operate on the wide register file WREG.
+      All Big Number (BN) instructions operate on the Wide Data Registers (WDRs).
 
 # Instruction encoding schemes
 #
