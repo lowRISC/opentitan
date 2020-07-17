@@ -18,30 +18,20 @@
   fusesoc_core: lowrisc:dv:prim_present_sim:0.1
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_testplan.hjson"
+  testplan: "{proj_root}/hw/ip/prim/dv/prim_present/data/prim_present_testplan.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/data/common_sim_cfg.hjson"]
 
-  // Add additional tops for simulation.
-  //sim_tops: ["-top prim_present_bind"]
-  sim_tops: []
-
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  // Add excl files to tool_srcs so that it gets copied over to the scratch area.
-  //tool_srcs: ["{proj_root}/hw/ip/prim/dv/prim_present/prim_present_cov_excl.el"]
-  tool_srcs: []
-
-  // Refer to the excl file with vcs_cov_excl_files var with the rel path from tool_srcs_dir
-  // so the VCS can find it.
-  //vcs_cov_excl_files: ["{tool_srcs_dir}/prim_present_cov_excl.el"]
-  vcs_cov_excl_files: []
-
-  // Default UVM test and seq class name.
-  uvm_test: ""
-  uvm_test_seq: ""
+  overrides: [
+    {
+      name: vcs_cov_hier
+      value: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_present/data/cover.cfg"
+    }
+  ]
 
   // List of test specifications.
   tests: [
