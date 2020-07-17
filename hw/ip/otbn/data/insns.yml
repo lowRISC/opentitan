@@ -106,6 +106,20 @@ encoding-schemes:
       rs1: 19-15
       rd: 11-7
 
+  # RISC-V "I-type" encoding sub-type for shifts (reg <- fun(imm, reg))
+  Is:
+    parents:
+      - rv
+      - funct3
+    fields:
+      arithmetic: 30
+      shamt: 24-20
+      rs1: 19-15
+      rd: 11-7
+      unused:
+        bits: 31,29-25
+        value: b000000
+
   # RISC-V "S-type" encoding (_ <- fun(reg, imm))
   S:
     parents:
@@ -521,6 +535,101 @@ insns:
         funct3: b000
         rd: grd
         opcode: b01100
+
+  - mnemonic: sll
+    rv32i: true
+    synopsis: Logical left shift
+    operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b001
+        rd: grd
+        opcode: b01100
+
+  - mnemonic: slli
+    rv32i: true
+    synopsis: Logical left shift with Immediate
+    operands:
+      - grd
+      - grs1
+      - &shamt-operand
+        name: shamt
+        type: imm
+    encoding:
+      scheme: Is
+      mapping:
+        arithmetic: b0
+        shamt: shamt
+        rs1: grs1
+        funct3: b001
+        rd: grd
+        opcode: b00100
+
+  - mnemonic: srl
+    rv32i: true
+    synopsis: Logical right shift
+    operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0000000
+        rs2: grs2
+        rs1: grs1
+        funct3: b101
+        rd: grd
+        opcode: b01100
+
+  - mnemonic: srli
+    rv32i: true
+    synopsis: Logical right shift with Immediate
+    operands:
+      - grd
+      - grs1
+      - *shamt-operand
+    encoding:
+      scheme: Is
+      mapping:
+        arithmetic: b0
+        shamt: shamt
+        rs1: grs1
+        funct3: b101
+        rd: grd
+        opcode: b00100
+
+  - mnemonic: sra
+    rv32i: true
+    synopsis: Arithmetic right shift
+    operands: [grd, grs1, grs2]
+    encoding:
+      scheme: R
+      mapping:
+        funct7: b0100000
+        rs2: grs2
+        rs1: grs1
+        funct3: b101
+        rd: grd
+        opcode: b01100
+
+  - mnemonic: srai
+    rv32i: true
+    synopsis: Arithmetic right shift with Immediate
+    operands:
+      - grd
+      - grs1
+      - *shamt-operand
+    encoding:
+      scheme: Is
+      mapping:
+        arithmetic: b1
+        shamt: shamt
+        rs1: grs1
+        funct3: b101
+        rd: grd
+        opcode: b00100
 
   - mnemonic: and
     rv32i: true
