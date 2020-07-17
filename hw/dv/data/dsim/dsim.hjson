@@ -28,7 +28,7 @@
                "-work {build_dir}/dsim_out",
                "-image image",
                // UVM DPI
-               "-sv_lib {UVM_HOME}/src/dpi/libuvm_dpi.so",
+               "-sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
                "-sv_seed {seed}",
                // tell DSim to write line-buffered std output (lines will be written in proper order)
                "-linebuf",
@@ -109,7 +109,7 @@
     }
     // TODO: support coverage mode
     // Note: no specific build or run options are required for dsim to produce functional
-    // coverage. Code coverage support is evolving. 
+    // coverage. Code coverage support is evolving.
     {
       name: dsim_cov
       is_sim_mode: 1
