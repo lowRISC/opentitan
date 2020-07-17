@@ -22,9 +22,9 @@ module spi_device #(
   // SPI Interface
   input              cio_sck_i,
   input              cio_csb_i,
-  output logic       cio_miso_o,
-  output logic       cio_miso_en_o,
-  input              cio_mosi_i,
+  output logic       cio_sdo_o,
+  output logic       cio_sdo_en_o,
+  input              cio_sdi_i,
 
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
@@ -46,8 +46,8 @@ module spi_device #(
   localparam int PtrW = SramAw + 1 + SDW;
   localparam int AsFifoDepthW = $clog2(FifoDepth+1);
 
-  logic clk_spi_in;   // clock for latch MOSI
-  logic clk_spi_out;  // clock for driving MISO
+  logic clk_spi_in;   // clock for latch SDI
+  logic clk_spi_out;  // clock for driving SDO
 
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
@@ -310,7 +310,7 @@ module spi_device #(
   //////////////////////////////
   //  clk_spi cannot use glitch-free clock mux as clock switching in glitch-free
   //  requires two clocks to propagate clock selection and enable but SPI clock
-  //  doesn't exist until it transmits data through MOSI
+  //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
 
@@ -353,9 +353,9 @@ module spi_device #(
 
     // SPI signal
     .csb_i         (cio_csb_i),
-    .mosi          (cio_mosi_i),
-    .miso          (cio_miso_o),
-    .miso_oe       (cio_miso_en_o)
+    .sdi           (cio_sdi_i),
+    .sdo           (cio_sdo_o),
+    .sdo_oe        (cio_sdo_en_o)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -369,16 +369,16 @@ module spi_device #(
     .clk_rd_i     (clk_i),
     .rst_rd_ni    (rst_rxfifo_n),
 
-    .wvalid       (rxf_wvalid),
-    .wready       (rxf_wready),
-    .wdata        (rxf_wdata),
+    .wvalid_i     (rxf_wvalid),
+    .wready_o     (rxf_wready),
+    .wdata_i      (rxf_wdata),
 
-    .rvalid       (rxf_rvalid),
-    .rready       (rxf_rready),
-    .rdata        (rxf_rdata),
+    .rvalid_o     (rxf_rvalid),
+    .rready_i     (rxf_rready),
+    .rdata_o      (rxf_rdata),
 
-    .wdepth       (),
-    .rdepth       (as_rxfifo_depth)
+    .wdepth_o     (),
+    .rdepth_o     (as_rxfifo_depth)
   );
 
   prim_fifo_async #(
@@ -391,16 +391,16 @@ module spi_device #(
     .clk_rd_i     (clk_spi_out),
     .rst_rd_ni    (rst_txfifo_n),
 
-    .wvalid       (txf_wvalid),
-    .wready       (txf_wready),
-    .wdata        (txf_wdata),
+    .wvalid_i     (txf_wvalid),
+    .wready_o     (txf_wready),
+    .wdata_i      (txf_wdata),
 
-    .rvalid       (txf_rvalid),
-    .rready       (txf_rready),
-    .rdata        (txf_rdata),
+    .rvalid_o     (txf_rvalid),
+    .rready_i     (txf_rready),
+    .rdata_o      (txf_rdata),
 
-    .wdepth       (as_txfifo_depth),
-    .rdepth       ()
+    .wdepth_o     (as_txfifo_depth),
+    .rdepth_o     ()
   );
 
   // RX Fifo control (FIFO Read port --> SRAM request)
@@ -571,7 +571,7 @@ module spi_device #(
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioMisoEnOKnown, cio_miso_en_o)
+  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sdo_en_o)
 
   `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
   `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )

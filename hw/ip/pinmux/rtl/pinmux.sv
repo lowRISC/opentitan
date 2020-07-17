@@ -308,7 +308,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   `ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
   `ASSERT_KNOWN(LcPinmuxStrapKnownO_A, lc_pinmux_strap_o)
 
-  // TODO: need to check why some outputs are not valid (e.g. SPI device MISO)
+  // TODO: need to check why some outputs are not valid (e.g. SPI device SDO)
   // for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_known_if
   //   `ASSERT_KNOWN_IF(MioOutKnownO_A, mio_out_o[k], mio_oe_o[k])
   // end

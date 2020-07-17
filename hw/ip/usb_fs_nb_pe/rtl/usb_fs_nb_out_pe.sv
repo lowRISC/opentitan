@@ -105,7 +105,7 @@ module usb_fs_nb_out_pe #(
   logic       token_received, out_token_received, setup_token_received;
   logic       invalid_packet_received, data_packet_received, non_data_packet_received;
   logic       bad_data_toggle;
-  logic       ep_impl;
+  logic       ep_impl_d, ep_impl_q;
   logic [3:0] out_ep_current_d;
 
   // 1: If the current transfer is a SETUP, 0: OUT
@@ -118,15 +118,13 @@ module usb_fs_nb_out_pe #(
   assign rx_pid      = usb_pid_e'(rx_pid_i);
 
   // Is the specified endpoint actually implemented?
-  assign ep_impl = {1'b0, rx_endp_i} < NumOutEps;
+  assign ep_impl_d = {1'b0, rx_endp_i} < NumOutEps;
 
-  // If the specified endpoint is not implemented, we don't process the token and just ignore it.
   assign token_received =
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     rx_pid_type == UsbPidTypeToken &&
-    rx_addr_i == dev_addr_i &&
-    ep_impl;
+    rx_addr_i == dev_addr_i;
 
   assign out_token_received =
     token_received &&
@@ -150,10 +148,11 @@ module usb_fs_nb_out_pe #(
     rx_pkt_valid_i &&
     !((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
-  assign out_ep_current_d = ep_impl ? rx_endp_i : '0;
+  assign out_ep_current_d = ep_impl_d ? rx_endp_i : '0;
 
   // Make widths work - out_ep_current_d/out_ep_current_o only hold implemented endpoint IDs.
   // These signals can be used to index signals of NumOutEps width.
+  // They are only valid if ep_impl_d/q are set, i.e., if the specified endpoint is implemented.
   logic [OutEpW-1:0] out_ep_index;
   logic [OutEpW-1:0] out_ep_index_d;
   assign out_ep_index   = out_ep_current_o[0 +: OutEpW];
@@ -161,15 +160,16 @@ module usb_fs_nb_out_pe #(
 
   assign bad_data_toggle =
     data_packet_received &&
+    ep_impl_d &&
     rx_pid_i[3] != data_toggle_q[out_ep_index_d];
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_ep_setup_o <= '0;
     end else begin
-      if (setup_token_received) begin
+      if (setup_token_received && ep_impl_d) begin
         out_ep_setup_o[out_ep_index_d] <= 1'b1;
-      end else if (out_token_received) begin
+      end else if (out_token_received && ep_impl_d) begin
         out_ep_setup_o[out_ep_index_d] <= 1'b0;
       end
     end
@@ -200,7 +200,10 @@ module usb_fs_nb_out_pe #(
 
     unique case (out_xfr_state)
       StIdle: begin
-        if (out_token_received || setup_token_received) begin
+        // For unimplemented EPs:
+        // - OUT transfers are stalled.
+        // - SETUP transfers are ignored.
+        if (out_token_received || (setup_token_received && ep_impl_d)) begin
           out_xfr_state_next = StRcvdOut;
           out_xfr_start = 1'b1;
         end else begin
@@ -217,10 +220,12 @@ module usb_fs_nb_out_pe #(
       end
 
       StRcvdDataStart: begin
-        if (out_ep_iso_i[out_ep_index] && data_packet_received) begin
-          // ISO endpoint: Don't send a handshake, ignore toggle
+        if (ep_impl_q && out_ep_iso_i[out_ep_index] && data_packet_received) begin
+          // ISO EP: Don't send a handshake, ignore toggle. Note an unimplemented EP cannot be an
+          // ISO EP.
           out_xfr_state_next = StRcvdIsoDataEnd;
-        end else if (bad_data_toggle) begin
+        end else if (ep_impl_q && bad_data_toggle) begin
+          // Note: bad_data_toggle is meaningless for unimplemented EPs.
           out_xfr_state_next = StIdle;
           rollback_data = 1'b1;
           tx_pkt_start_o = 1'b1;
@@ -240,8 +245,11 @@ module usb_fs_nb_out_pe #(
         out_xfr_state_next = StIdle;
         tx_pkt_start_o = 1'b1;
 
-        if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin
-          // We only send STALL for OUT transfers, not for SETUP transfers
+        if ((!ep_impl_q || out_ep_stall_i[out_ep_index]) && !current_xfer_setup_q) begin
+          // We only send STALL for OUT transfers if the specified EP:
+          // - is not implemented,
+          // - is not set up.
+          // SETUP transfers are not stalled.
           tx_pid_o = {UsbPidStall}; // STALL
         end else if (nak_out_transfer) begin
           tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
@@ -256,6 +264,7 @@ module usb_fs_nb_out_pe #(
       StRcvdIsoDataEnd: begin
         out_xfr_state_next = StIdle;
 
+        // An unimplemented EP cannot be in ISO mode, no need to check ep_impl_q here.
         if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin
           // Send a STALL (something bad happened and the host needs to resolve it)
           tx_pkt_start_o = 1'b1;
@@ -289,7 +298,7 @@ module usb_fs_nb_out_pe #(
   always_comb begin : proc_data_toggle_d
     data_toggle_d = data_toggle_q;
 
-    if (setup_token_received) begin
+    if (setup_token_received && ep_impl_d) begin
       data_toggle_d[out_ep_index_d] = 1'b0;
     end else if (new_pkt_end) begin
       data_toggle_d[out_ep_index] = ~data_toggle_q[out_ep_index];
@@ -313,11 +322,13 @@ module usb_fs_nb_out_pe #(
       out_ep_newpkt_o       <= 1'b0;
       out_ep_current_o      <= '0;
       current_xfer_setup_q  <= 1'b0;
+      ep_impl_q             <= 1'b0;
     end else begin
-      if (out_xfr_start) begin // ep_impl factored in already
+      if (out_xfr_start) begin
         out_ep_newpkt_o      <= 1'b1;
         out_ep_current_o     <= out_ep_current_d;
         current_xfer_setup_q <= setup_token_received;
+        ep_impl_q            <= ep_impl_d;
       end else begin
         out_ep_newpkt_o <= 1'b0;
       end
@@ -371,12 +382,5 @@ module usb_fs_nb_out_pe #(
   ////////////////
   // Assertions //
   ////////////////
-
-  // We receive a token for an endpoint that is not implemented.
-  `ASSERT(UsbOutEndPImpl,
-      (rx_pkt_end_i &&
-      rx_pkt_valid_i &&
-      rx_pid_type == UsbPidTypeToken &&
-      rx_addr_i == dev_addr_i) |-> ep_impl, clk_48mhz_i)
 
 endmodule

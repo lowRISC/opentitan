@@ -551,20 +551,20 @@ module dm_csrs #(
 
   // response FIFO
   prim_fifo_sync #(
-    .Width (32),
-    .Pass  (1'b0),
-    .Depth (2)
+    .Width   (32),
+    .Pass    (1'b0),
+    .Depth   (2)
   ) i_fifo (
     .clk_i   ( clk_i                ),
     .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
     .clr_i   ( 1'b0                 ),
-    .wdata   ( resp_queue_data      ),
-    .wvalid  ( dmi_req_valid_i      ),
-    .wready  ( dmi_req_ready_o      ),
-    .rdata   ( dmi_resp_o.data      ),
-    .rvalid  ( dmi_resp_valid_o     ),
-    .rready  ( dmi_resp_ready_i     ),
-    .depth   (                      )  // Doesn't use
+    .wdata_i ( resp_queue_data      ),
+    .wvalid_i( dmi_req_valid_i      ),
+    .wready_o( dmi_req_ready_o      ),
+    .rdata_o ( dmi_resp_o.data      ),
+    .rvalid_o( dmi_resp_valid_o     ),
+    .rready_i( dmi_resp_ready_i     ),
+    .depth_o (                      )  // Doesn't use
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

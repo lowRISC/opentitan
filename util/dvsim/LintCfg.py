@@ -107,7 +107,7 @@ class LintCfg(OneShotCfg):
         # parsing script that transforms the tool output into the hjson above
         # needs to be adapted.
         #
-        # note that if this is a master config, the results will
+        # note that if this is a primary config, the results will
         # be generated using the _gen_results_summary function
         # '''
 

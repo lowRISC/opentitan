@@ -134,9 +134,9 @@ module top_earlgrey #(
   // spi_device
   logic        cio_spi_device_sck_p2d;
   logic        cio_spi_device_csb_p2d;
-  logic        cio_spi_device_mosi_p2d;
-  logic        cio_spi_device_miso_d2p;
-  logic        cio_spi_device_miso_en_d2p;
+  logic        cio_spi_device_sdi_p2d;
+  logic        cio_spi_device_sdo_d2p;
+  logic        cio_spi_device_sdo_en_d2p;
   // flash_ctrl
   // rv_timer
   // aes
@@ -586,11 +586,11 @@ module top_earlgrey #(
       // Input
       .cio_sck_i     (cio_spi_device_sck_p2d),
       .cio_csb_i     (cio_spi_device_csb_p2d),
-      .cio_mosi_i    (cio_spi_device_mosi_p2d),
+      .cio_sdi_i     (cio_spi_device_sdi_p2d),
 
       // Output
-      .cio_miso_o    (cio_spi_device_miso_d2p),
-      .cio_miso_en_o (cio_spi_device_miso_en_d2p),
+      .cio_sdo_o     (cio_spi_device_sdo_d2p),
+      .cio_sdo_en_o  (cio_spi_device_sdo_en_d2p),
 
       // Interrupt
       .intr_rxf_o         (intr_spi_device_rxf),
@@ -1040,8 +1040,8 @@ module top_earlgrey #(
   assign dio_d2p = {
     1'b0, // DIO14: cio_spi_device_sck
     1'b0, // DIO13: cio_spi_device_csb
-    1'b0, // DIO12: cio_spi_device_mosi
-    cio_spi_device_miso_d2p, // DIO11
+    1'b0, // DIO12: cio_spi_device_sdi
+    cio_spi_device_sdo_d2p, // DIO11
     1'b0, // DIO10: cio_uart_rx
     cio_uart_tx_d2p, // DIO9
     1'b0, // DIO8: cio_usbdev_sense
@@ -1058,8 +1058,8 @@ module top_earlgrey #(
   assign dio_d2p_en = {
     1'b0, // DIO14: cio_spi_device_sck
     1'b0, // DIO13: cio_spi_device_csb
-    1'b0, // DIO12: cio_spi_device_mosi
-    cio_spi_device_miso_en_d2p, // DIO11
+    1'b0, // DIO12: cio_spi_device_sdi
+    cio_spi_device_sdo_en_d2p, // DIO11
     1'b0, // DIO10: cio_uart_rx
     cio_uart_tx_en_d2p, // DIO9
     1'b0, // DIO8: cio_usbdev_sense
@@ -1076,8 +1076,8 @@ module top_earlgrey #(
   // Output-only DIOs have no p2d signal
   assign cio_spi_device_sck_p2d    = dio_p2d[14]; // DIO14
   assign cio_spi_device_csb_p2d    = dio_p2d[13]; // DIO13
-  assign cio_spi_device_mosi_p2d   = dio_p2d[12]; // DIO12
-  // DIO11: cio_spi_device_miso
+  assign cio_spi_device_sdi_p2d    = dio_p2d[12]; // DIO12
+  // DIO11: cio_spi_device_sdo
   assign cio_uart_rx_p2d           = dio_p2d[10]; // DIO10
   // DIO9: cio_uart_tx
   assign cio_usbdev_sense_p2d      = dio_p2d[8]; // DIO8

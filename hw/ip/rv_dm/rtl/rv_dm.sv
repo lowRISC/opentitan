@@ -155,29 +155,29 @@ module rv_dm #(
     .sberror_i               ( sberror               )
   );
 
-  logic                   master_req;
-  logic   [BusWidth-1:0]  master_add;
-  logic                   master_we;
-  logic   [BusWidth-1:0]  master_wdata;
-  logic [BusWidth/8-1:0]  master_be;
-  logic                   master_gnt;
-  logic                   master_r_valid;
-  logic   [BusWidth-1:0]  master_r_rdata;
-  logic                   master_r_err;
+  logic                   host_req;
+  logic   [BusWidth-1:0]  host_add;
+  logic                   host_we;
+  logic   [BusWidth-1:0]  host_wdata;
+  logic [BusWidth/8-1:0]  host_be;
+  logic                   host_gnt;
+  logic                   host_r_valid;
+  logic   [BusWidth-1:0]  host_r_rdata;
+  logic                   host_r_err;
 
   dm_sba #(
     .BusWidth(BusWidth)
   ) i_dm_sba (
     .clk_i                   ( clk_i                 ),
     .rst_ni                  ( rst_ni                ),
-    .master_req_o            ( master_req            ),
-    .master_add_o            ( master_add            ),
-    .master_we_o             ( master_we             ),
-    .master_wdata_o          ( master_wdata          ),
-    .master_be_o             ( master_be             ),
-    .master_gnt_i            ( master_gnt            ),
-    .master_r_valid_i        ( master_r_valid        ),
-    .master_r_rdata_i        ( master_r_rdata        ),
+    .master_req_o            ( host_req              ),
+    .master_add_o            ( host_add              ),
+    .master_we_o             ( host_we               ),
+    .master_wdata_o          ( host_wdata            ),
+    .master_be_o             ( host_be               ),
+    .master_gnt_i            ( host_gnt              ),
+    .master_r_valid_i        ( host_r_valid          ),
+    .master_r_rdata_i        ( host_r_rdata          ),
     .dmactive_i              ( dmactive_o            ),
     .sbaddress_i             ( sbaddress_csrs_sba    ),
     .sbaddress_o             ( sbaddress_sba_csrs    ),
@@ -201,21 +201,21 @@ module rv_dm #(
   ) tl_adapter_host_sba (
     .clk_i,
     .rst_ni,
-    .req_i        (master_req),
-    .gnt_o        (master_gnt),
-    .addr_i       (master_add),
-    .we_i         (master_we),
-    .wdata_i      (master_wdata),
-    .be_i         (master_be),
-    .valid_o      (master_r_valid),
-    .rdata_o      (master_r_rdata),
-    .err_o        (master_r_err),
+    .req_i        (host_req),
+    .gnt_o        (host_gnt),
+    .addr_i       (host_add),
+    .we_i         (host_we),
+    .wdata_i      (host_wdata),
+    .be_i         (host_be),
+    .valid_o      (host_r_valid),
+    .rdata_o      (host_r_rdata),
+    .err_o        (host_r_err),
     .tl_o         (tl_h_o),
     .tl_i         (tl_h_i)
   );
 
   // DBG doesn't handle error responses so raise assertion if we see one
-  `ASSERT(dbgNoErrorResponse, master_r_valid |-> !master_r_err)
+  `ASSERT(dbgNoErrorResponse, host_r_valid |-> !host_r_err)
 
   localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
 

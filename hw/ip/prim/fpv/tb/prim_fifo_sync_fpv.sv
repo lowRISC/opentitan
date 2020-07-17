@@ -25,13 +25,13 @@ module prim_fifo_sync_fpv #(
   input               clk_i,
   input               rst_ni,
   input               clr_i,
-  input               wvalid [NumDuts],
-  output              wready [NumDuts],
-  input  [Width-1:0]  wdata  [NumDuts],
-  output              rvalid [NumDuts],
-  input               rready [NumDuts],
-  output [Width-1:0]  rdata  [NumDuts],
-  output [DepthW-1:0] depth  [NumDuts]
+  input               wvalid_i[NumDuts],
+  output              wready_o[NumDuts],
+  input  [Width-1:0]  wdata_i [NumDuts],
+  output              rvalid_o[NumDuts],
+  input               rready_i[NumDuts],
+  output [Width-1:0]  rdata_o [NumDuts],
+  output [DepthW-1:0] depth_o [NumDuts]
 );
 
   // need to instantiate by hand since bind statements inside
@@ -49,13 +49,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[0]),
-    .wready(wready[0]),
-    .wdata(wdata[0]),
-    .rvalid(rvalid[0]),
-    .rready(rready[0]),
-    .rdata(rdata[0]),
-    .depth(depth[0][0])
+    .wvalid_i(wvalid_i[0]),
+    .wready_o(wready_o[0]),
+    .wdata_i(wdata_i[0]),
+    .rvalid_o(rvalid_o[0]),
+    .rready_i(rready_i[0]),
+    .rdata_o(rdata_o[0]),
+    .depth_o(depth_o[0][0])
   );
 
   prim_fifo_sync #(
@@ -66,13 +66,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[1]),
-    .wready(wready[1]),
-    .wdata(wdata[1]),
-    .rvalid(rvalid[1]),
-    .rready(rready[1]),
-    .rdata(rdata[1]),
-    .depth(depth[1][2:0])
+    .wvalid_i(wvalid_i[1]),
+    .wready_o(wready_o[1]),
+    .wdata_i(wdata_i[1]),
+    .rvalid_o(rvalid_o[1]),
+    .rready_i(rready_i[1]),
+    .rdata_o(rdata_o[1]),
+    .depth_o(depth_o[1][2:0])
   );
 
   prim_fifo_sync #(
@@ -83,13 +83,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[2]),
-    .wready(wready[2]),
-    .wdata(wdata[2]),
-    .rvalid(rvalid[2]),
-    .rready(rready[2]),
-    .rdata(rdata[2]),
-    .depth(depth[2][3:0])
+    .wvalid_i(wvalid_i[2]),
+    .wready_o(wready_o[2]),
+    .wdata_i(wdata_i[2]),
+    .rvalid_o(rvalid_o[2]),
+    .rready_i(rready_i[2]),
+    .rdata_o(rdata_o[2]),
+    .depth_o(depth_o[2][3:0])
   );
 
   prim_fifo_sync #(
@@ -100,13 +100,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[3]),
-    .wready(wready[3]),
-    .wdata(wdata[3]),
-    .rvalid(rvalid[3]),
-    .rready(rready[3]),
-    .rdata(rdata[3]),
-    .depth(depth[3][3:0])
+    .wvalid_i(wvalid_i[3]),
+    .wready_o(wready_o[3]),
+    .wdata_i(wdata_i[3]),
+    .rvalid_o(rvalid_o[3]),
+    .rready_i(rready_i[3]),
+    .rdata_o(rdata_o[3]),
+    .depth_o(depth_o[3][3:0])
   );
 
   prim_fifo_sync #(
@@ -117,20 +117,20 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[4]),
-    .wready(wready[4]),
-    .wdata(wdata[4]),
-    .rvalid(rvalid[4]),
-    .rready(rready[4]),
-    .rdata(rdata[4]),
-    .depth(depth[4][4:0])
+    .wvalid_i(wvalid_i[4]),
+    .wready_o(wready_o[4]),
+    .wdata_i(wdata_i[4]),
+    .rvalid_o(rvalid_o[4]),
+    .rready_i(rready_i[4]),
+    .rdata_o(rdata_o[4]),
+    .depth_o(depth_o[4][4:0])
   );
 
   ////////////////
   // pass FIFOs //
   ////////////////
 
-  // depth-zero is per definition a pass-through FIFO
+  // depth_o-zero is per definition a pass-through FIFO
   prim_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
@@ -139,13 +139,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[5]),
-    .wready(wready[5]),
-    .wdata(wdata[5]),
-    .rvalid(rvalid[5]),
-    .rready(rready[5]),
-    .rdata(rdata[5]),
-    .depth(depth[5][0])
+    .wvalid_i(wvalid_i[5]),
+    .wready_o(wready_o[5]),
+    .wdata_i(wdata_i[5]),
+    .rvalid_o(rvalid_o[5]),
+    .rready_i(rready_i[5]),
+    .rdata_o(rdata_o[5]),
+    .depth_o(depth_o[5][0])
   );
 
   prim_fifo_sync #(
@@ -156,13 +156,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[6]),
-    .wready(wready[6]),
-    .wdata(wdata[6]),
-    .rvalid(rvalid[6]),
-    .rready(rready[6]),
-    .rdata(rdata[6]),
-    .depth(depth[6][0])
+    .wvalid_i(wvalid_i[6]),
+    .wready_o(wready_o[6]),
+    .wdata_i(wdata_i[6]),
+    .rvalid_o(rvalid_o[6]),
+    .rready_i(rready_i[6]),
+    .rdata_o(rdata_o[6]),
+    .depth_o(depth_o[6][0])
   );
 
   prim_fifo_sync #(
@@ -173,13 +173,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[7]),
-    .wready(wready[7]),
-    .wdata(wdata[7]),
-    .rvalid(rvalid[7]),
-    .rready(rready[7]),
-    .rdata(rdata[7]),
-    .depth(depth[7][2:0])
+    .wvalid_i(wvalid_i[7]),
+    .wready_o(wready_o[7]),
+    .wdata_i(wdata_i[7]),
+    .rvalid_o(rvalid_o[7]),
+    .rready_i(rready_i[7]),
+    .rdata_o(rdata_o[7]),
+    .depth_o(depth_o[7][2:0])
   );
 
   prim_fifo_sync #(
@@ -190,13 +190,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[8]),
-    .wready(wready[8]),
-    .wdata(wdata[8]),
-    .rvalid(rvalid[8]),
-    .rready(rready[8]),
-    .rdata(rdata[8]),
-    .depth(depth[8][3:0])
+    .wvalid_i(wvalid_i[8]),
+    .wready_o(wready_o[8]),
+    .wdata_i(wdata_i[8]),
+    .rvalid_o(rvalid_o[8]),
+    .rready_i(rready_i[8]),
+    .rdata_o(rdata_o[8]),
+    .depth_o(depth_o[8][3:0])
   );
 
   prim_fifo_sync #(
@@ -207,13 +207,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[9]),
-    .wready(wready[9]),
-    .wdata(wdata[9]),
-    .rvalid(rvalid[9]),
-    .rready(rready[9]),
-    .rdata(rdata[9]),
-    .depth(depth[9][3:0])
+    .wvalid_i(wvalid_i[9]),
+    .wready_o(wready_o[9]),
+    .wdata_i(wdata_i[9]),
+    .rvalid_o(rvalid_o[9]),
+    .rready_i(rready_i[9]),
+    .rdata_o(rdata_o[9]),
+    .depth_o(depth_o[9][3:0])
   );
 
   prim_fifo_sync #(
@@ -224,13 +224,13 @@ module prim_fifo_sync_fpv #(
     .clk_i,
     .rst_ni,
     .clr_i,
-    .wvalid(wvalid[10]),
-    .wready(wready[10]),
-    .wdata(wdata[10]),
-    .rvalid(rvalid[10]),
-    .rready(rready[10]),
-    .rdata(rdata[10]),
-    .depth(depth[10][4:0])
+    .wvalid_i(wvalid_i[10]),
+    .wready_o(wready_o[10]),
+    .wdata_i(wdata_i[10]),
+    .rvalid_o(rvalid_o[10]),
+    .rready_i(rready_i[10]),
+    .rdata_o(rdata_o[10]),
+    .depth_o(depth_o[10][4:0])
   );
 
 endmodule : prim_fifo_sync_fpv

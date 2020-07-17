@@ -79,9 +79,9 @@ $ git config user.email "my_name@lowrisc.org"
 ## Working in your local repo
 
 The repository that you have created locally will initially be on the
-**master** branch. In general you should not make changes on this
+`master` branch. In general you should not make changes on this
 branch, just use it to track your GitHub repository and synchronize with the
-lowRISC master repo.
+main lowRISC repository.
 
 The typical workflow is to make your own branch which it is
 conventional to name based on the change you are making:
@@ -196,7 +196,7 @@ $ chmod +x .git/hooks/prepare-commit-msg
 ## Update your repository with changes in the lowRISC repo
 
 There is a little work to do to keep everything in sync. Normally you
-want to first get your local repository master branch up to date with the
+want to first get your local repository `master` branch up to date with the
 lowRISC repository (**upstream**) and then you use that to update your GitHub
 copy (**origin**).
 
@@ -208,9 +208,9 @@ $ git push origin
 
 If you do this while you have changes on some other branch then before
 a Pull Request will work you need to be sure your branch merges
-cleanly into the new lowRISC repo. Assuming you got the local master
+cleanly into the new lowRISC repo. Assuming you got the local `master`
 branch up to date with the procedure above you can now **rebase** your
-changes on the new master. Assuming you have your changes on the local
+changes on the new `master`. Assuming you have your changes on the local
 branch `forchange`:
 
 ```console
@@ -219,7 +219,7 @@ $ git rebase master
 ```
 
 If you are lucky this will just work, it unwinds your changes, gets
-the updated master and replays your changes. If there are conflicts
+the updated `master` and replays your changes. If there are conflicts
 then you need a big pot of coffee and patience (see next section).
 
 Once everything has rebased properly you can do
@@ -230,7 +230,7 @@ $ git log
 ```
 
 And see that the changes you commited on the branch are at the top of
-the log followed by the latest changes on the master branch.
+the log followed by the latest changes on the `master` branch.
 
 ## Dealing with conflicts after a rebase
 
@@ -301,15 +301,19 @@ import livereload
 
 ```
 
-In this case the master tree (between `<<<<<<< HEAD` and `=======`)
-was modified to import `docgen.generate` rather than just `docgen` and
-the local tree (between `=======` and `>>>>>>>` followed by the first
-line of the commit message) had been changed to re-order the
-imports. These lines have to be edited to get the correct merged
+In this case, the upstream repository's copy of `util/build_docs.py`
+was modified to import `docgen.generate` rather than just `docgen`.
+Because git couldn't automatically merge that change with the one
+we made, it gave up. The code between `<<<<<<< HEAD` and `=======`
+represents the change in the upstream repository and the code between
+`=======` and `>>>>>>>` represents the change in our copy.
+
+These lines have to be edited to get the correct merged
 result and the diff markers removed. There may be multiple points in
 the file where fixes are needed. Once all conflicts have been
 addressed the file can be `git add`ed and once all files addressed the
 rebase continued.
+
 
 After the fix a status report will remind you where you are.
 
@@ -350,7 +354,7 @@ replayed.
 
 You can check the rebase worked as expected by looking at the log to
 see your branch is one commit (or more if there were more) ahead of
-the master branch.
+the `master` branch.
 
 ```console
 $ git log
@@ -372,7 +376,7 @@ commit cb85dc42199e925ad09c45d33f6483a14764b93e (upstream/master, origin/master,
 This shows the new commit (`HEAD` of the branch `sastyle`) and the
 preceding commit is at the `master` branch (and at the same point as
 `master` on both `origin` and `upstream` so everything is in sync at
-master).
+`master`).
 
 At this point the conflicts have been cleared and the local repository can
 be used as expected.

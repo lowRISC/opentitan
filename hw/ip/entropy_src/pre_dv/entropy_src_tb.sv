@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Description: entropy_src system verilog unit test bench
-//   The intent of this test bench is to get basics running,          
+//   The intent of this test bench is to get basics running,
 //   such as clocks and reset, basic register writes and reads,
 //   basic block operation. No configurable BFMs are included
 //   in this environment.
 
-module entropy_src_tb; 
+module entropy_src_tb;
 
   import tlul_pkg::*;
   import entropy_src_reg_pkg::*;
@@ -19,7 +19,7 @@ module entropy_src_tb;
   bit lfsr_update_test = 0;
   bit basic_entropy_test = 0;
   bit stress_test = 1;
-  
+
   // options
   bit  msg_rd_data = 0;
 
@@ -27,7 +27,7 @@ module entropy_src_tb;
   localparam EsFifoDepth = 32;
   localparam MAX_INTRP_CNT = 25;
   localparam WD_DELAY = 1000*MAX_INTRP_CNT;
-  
+
   // general signals
   logic      clk;
   logic      rst_n;
@@ -37,10 +37,10 @@ module entropy_src_tb;
   // tlul signals
   tlul_pkg::tl_h2d_t tl_i;
   tlul_pkg::tl_d2h_t tl_o;
- 
+
 
   // imported register parameters (for reference)
-  
+
   // Register Address
 //  parameter ENTROPY_SRC_INTR_STATE_OFFSET = 6'h 0;
 //  parameter ENTROPY_SRC_INTR_ENABLE_OFFSET = 6'h 4;
@@ -73,15 +73,15 @@ module entropy_src_tb;
       tl_i.a_valid = 0;
       tl_i.a_address = 0;
       tl_i.a_opcode = PutFullData; // write as default
-      tl_i.a_param  = 3'h0; 
-      tl_i.a_size   = 2'h0; 
-      tl_i.a_source = 8'h0; 
-      tl_i.a_user  = 0; 
+      tl_i.a_param  = 3'h0;
+      tl_i.a_size   = 2'h0;
+      tl_i.a_source = 8'h0;
+      tl_i.a_user  = 0;
       tl_i.a_mask = 0;
       tl_i.a_data = 0;
       tl_i.d_ready =1;
     end
- 
+
   initial // clock generation
     begin
       clk = 0;
@@ -91,14 +91,14 @@ module entropy_src_tb;
     end
 
   initial // reset generation
-    begin 
-      repeat (4) @ (posedge clk); 
+    begin
+      repeat (4) @ (posedge clk);
       rst_n = 1;
     end
 
   initial // watchdog
-    begin 
-      repeat (WD_DELAY) @ (posedge clk); 
+    begin
+      repeat (WD_DELAY) @ (posedge clk);
       $display("%t %c[1;31mEntropy_Src watchdog triggered -  FAIL!!! %c[0m",$time,27,27);
       $finish;
     end
@@ -112,22 +112,22 @@ module entropy_src_tb;
      tl_i.a_valid =1;
      tl_i.a_address = addr;
      tl_i.a_opcode = PutFullData; // write = 0
-     tl_i.a_param  = 3'h0; 
-     tl_i.a_size   = 2'h2; 
-     tl_i.a_source = 8'h0; 
+     tl_i.a_param  = 3'h0;
+     tl_i.a_size   = 2'h2;
+     tl_i.a_source = 8'h0;
      tl_i.a_mask = 4'hf;
      tl_i.a_data = wdata;
      repeat (1) @ (posedge clk); #1ps;
      tl_i.a_valid = 0;
      tl_i.a_address = 0;
      tl_i.a_opcode = PutFullData; // write as default
-     tl_i.a_param  = 3'h0; 
-     tl_i.a_size   = 2'h0; 
-     tl_i.a_source = 8'h0; 
+     tl_i.a_param  = 3'h0;
+     tl_i.a_size   = 2'h0;
+     tl_i.a_source = 8'h0;
      tl_i.a_mask = 0;
      tl_i.a_data = 0;
      repeat (1) @ (posedge clk); #1ps;
-  endtask 
+  endtask
 
   task rd_reg(input logic [31:0] addr, output logic [31:0] rdata);
      repeat (1) @ (posedge clk); #1ps;
@@ -138,9 +138,9 @@ module entropy_src_tb;
      tl_i.a_valid =1;
      tl_i.a_address = addr;
      tl_i.a_opcode = Get; // read = 4
-     tl_i.a_param  = 3'h0; 
-     tl_i.a_size   = 2'h2; 
-     tl_i.a_source = 8'h0; 
+     tl_i.a_param  = 3'h0;
+     tl_i.a_size   = 2'h2;
+     tl_i.a_source = 8'h0;
      tl_i.a_mask = 4'hf;
      while (tl_o.d_valid != 1) begin
        repeat (1) @ (posedge clk); #1ps;
@@ -149,15 +149,15 @@ module entropy_src_tb;
      tl_i.d_ready = 1;
      tl_i.a_address = 0;
      tl_i.a_opcode = PutFullData; // write as default
-     tl_i.a_param  = 3'h0; 
-     tl_i.a_size   = 2'h0; 
-     tl_i.a_source = 8'h0; 
+     tl_i.a_param  = 3'h0;
+     tl_i.a_size   = 2'h0;
+     tl_i.a_source = 8'h0;
      tl_i.a_mask = 0;
      tl_i.a_data = 0;
      rdata = tl_o.d_data;
      if (msg_rd_data) $display("%t rdata = %h",$time,rdata);
      repeat (1) @ (posedge clk); #1ps;
-  endtask 
+  endtask
 
   task cmp_reg(input logic [31:0] addr, logic [31:0] cdata, logic [31:0] cmask);
      logic [31:0] rdata;
@@ -171,9 +171,9 @@ module entropy_src_tb;
        $finish;
        // errflag = 1;
      end
-  endtask 
+  endtask
 
-  
+
   task test_end(input bit errflag);
      cmp_reg(ENTROPY_SRC_ES_STATUS_OFFSET,32'h0000_0000,32'hffff_ffff);
      if (errflag == 1) begin
@@ -182,20 +182,20 @@ module entropy_src_tb;
        $display("%t %c[1;32mEntropy_Src Test PASSED... %c[0m",$time,27,27);
      end
      $finish;
-  endtask 
+  endtask
 
- 
+
   always @ (posedge es_entropy_valid_o) // interrupt handler
     begin
       if (rst_n) begin  // handle reset case
         if (stress_test) begin
           rd_data = 0;
           for (int i=0; i < thresh_level; i=i+1) begin
-            rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data); 
+            rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data);
           end
           repeat (1) @ (posedge clk); #1ps;
           // reset interrupt
-          wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0001); 
+          wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0001);
           if (es_entropy_valid_o !== 0) begin
             $display("%t %c[1;31mInterrupt did not reset FAIL!!! %c[0m",$time,27,27);
             $finish;
@@ -225,10 +225,10 @@ module entropy_src_tb;
     //-----------------------------------------------------
     if (sanity_test) begin
       $display("%t Running sanity_test...",$time);
-      cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h1234_5678,32'hffff_ffff); 
+      cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h1234_5678,32'hffff_ffff);
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'habdc_efab); // wr config reg
-      cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'habdc_efab,32'hffff_ffff); 
-      cmp_reg({26'b0,ENTROPY_SRC_ES_REV_OFFSET},32'h0001_0201,32'hffff_ffff); 
+      cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'habdc_efab,32'hffff_ffff);
+      cmp_reg({26'b0,ENTROPY_SRC_ES_REV_OFFSET},32'h0001_0201,32'hffff_ffff);
     end
     //-----------------------------------------------------
     if (interrupt_test) begin
@@ -236,14 +236,14 @@ module entropy_src_tb;
       wr_reg({26'b0,ENTROPY_SRC_INTR_ENABLE_OFFSET},32'h0000_0003); // enable intrs
       cmp_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h000000000,32'hffff_ffff);  // check to see that interrupts are off
       // test intrp 0
-      wr_reg({26'b0,ENTROPY_SRC_INTR_TEST_OFFSET},32'h0000_0001); 
+      wr_reg({26'b0,ENTROPY_SRC_INTR_TEST_OFFSET},32'h0000_0001);
       cmp_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h000000001,32'hffff_ffff);  // check interrupt state
-      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0001); 
+      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0001);
       cmp_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h000000000,32'hffff_ffff);  // check to see that interrupts are off
       // test intrp 1
-      wr_reg({26'b0,ENTROPY_SRC_INTR_TEST_OFFSET},32'h0000_0002); 
+      wr_reg({26'b0,ENTROPY_SRC_INTR_TEST_OFFSET},32'h0000_0002);
       cmp_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h000000002,32'hffff_ffff);  // check interrupt state
-      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0002); 
+      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0002);
       cmp_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h000000000,32'hffff_ffff);  // check to see that interrupts are off
     end
     //-----------------------------------------------------
@@ -252,7 +252,7 @@ module entropy_src_tb;
       wr_reg({26'b0,ENTROPY_SRC_ES_RATE_OFFSET},32'h0000_0001); // rate
       wr_reg({26'b0,ENTROPY_SRC_ES_THRESH_OFFSET},32'h0000_0001); // thresh level
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h1111_1111); // seed
-      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // master enable
+      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // primary enable
       repeat (10) @ (posedge clk);
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h2222_2222); // change seed, should not write since fifo is not full
       wr_reg({26'b0,ENTROPY_SRC_ES_CTRL_OFFSET},32'h0000_0001); // init bit on
@@ -273,10 +273,10 @@ module entropy_src_tb;
       wr_reg({26'b0,ENTROPY_SRC_ES_RATE_OFFSET},32'h0000_0000); // rate turned off
       // drain the fifo
       for (int i=0; i < 32; i=i+1) begin
-        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data); 
+        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data);
       end
       // clear any interrupts
-      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0003); 
+      wr_reg({26'b0,ENTROPY_SRC_INTR_STATE_OFFSET},32'h0000_0003);
     end
     //-----------------------------------------------------
     if (basic_entropy_test) begin
@@ -286,7 +286,7 @@ module entropy_src_tb;
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h2345_3456); // seed
       wr_reg({26'b0,ENTROPY_SRC_ES_RATE_OFFSET},32'h0000_0008); // rate
       wr_reg({26'b0,ENTROPY_SRC_ES_THRESH_OFFSET},thresh_level); // thresh level
-      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // master enable
+      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // primary enable
       // read out entropy
       rd_data = 0;
       repeat (20) @ (posedge clk);
@@ -296,12 +296,12 @@ module entropy_src_tb;
       // set entropy to super slow
       wr_reg({26'b0,ENTROPY_SRC_ES_RATE_OFFSET},32'h0000_ffff); // rate
       for (int i=0; i < thresh_level; i=i+1) begin
-        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data); 
+        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data);
       end
       rd_reg({26'b0,ENTROPY_SRC_ES_FDEPTHST_OFFSET},fifo_depth);
       // drain the rest of the fifo
       for (int i=0; i < fifo_depth; i=i+1) begin
-        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data); 
+        rd_reg({26'b0,ENTROPY_SRC_ES_ENTROPY_OFFSET},rd_data);
       end
       repeat (10) @ (posedge clk);
     end
@@ -313,7 +313,7 @@ module entropy_src_tb;
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h2345_3456); // seed
       wr_reg({26'b0,ENTROPY_SRC_ES_RATE_OFFSET},32'h0000_0006); // rate
       wr_reg({26'b0,ENTROPY_SRC_ES_THRESH_OFFSET},thresh_level); // thresh level
-      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // master enable
+      wr_reg({26'b0,ENTROPY_SRC_ES_CONF_OFFSET},32'h0000_0001); // primary enable
       // wait for interrupts to process
       while (intrp_cnt < MAX_INTRP_CNT) begin
         repeat (20) @ (posedge clk);
@@ -324,7 +324,7 @@ module entropy_src_tb;
     test_end(errflag);
   end
 
- 
+
   //-------------------------------------
   // entropy_src instantiation
   //-------------------------------------
@@ -339,6 +339,6 @@ module entropy_src_tb;
        .es_entropy_valid_o(es_entropy_valid_o),
        .es_entropy_fifo_err_o(es_entropy_fifo_err_o)
        );
-  
+
 endmodule
 

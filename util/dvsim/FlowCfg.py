@@ -51,15 +51,15 @@ class FlowCfg():
         # are overridden with the override values.
         self.overrides = []
 
-        # List of cfgs if the parsed cfg is a master cfg list
+        # List of cfgs if the parsed cfg is a primary cfg list
         self.cfgs = []
 
-        # Add a notion of "master" cfg - this is indicated using
+        # Add a notion of "primary" cfg - this is indicated using
         # a special key 'use_cfgs' within the hjson cfg.
-        self.is_master_cfg = False
+        self.is_primary_cfg = False
 
-        # For a master cfg, it is the aggregated list of all deploy objects under self.cfgs.
-        # For a non-master cfg, it is the list of items slated for dispatch.
+        # For a primary cfg, it is the aggregated list of all deploy objects under self.cfgs.
+        # For a non-primary cfg, it is the list of items slated for dispatch.
         self.deploy = []
 
         # Timestamp
@@ -97,7 +97,7 @@ class FlowCfg():
 
     def __post_init__(self):
         # Run some post init checks
-        if not self.is_master_cfg:
+        if not self.is_primary_cfg:
             # Check if self.cfgs is a list of exactly 1 item (self)
             if not (len(self.cfgs) == 1 and self.cfgs[0].name == self.name):
                 log.error("Parse error!\n%s", self.cfgs)
@@ -129,12 +129,12 @@ class FlowCfg():
         '''
         hjson_dict = parse_hjson(flow_cfg_file)
 
-        # Check if this is the master cfg, if this is the entry point cfg file
+        # Check if this is the primary cfg, if this is the entry point cfg file
         if is_entry_point:
-            self.is_master_cfg = self.check_if_master_cfg(hjson_dict)
+            self.is_primary_cfg = self.check_if_primary_cfg(hjson_dict)
 
-            # If not a master cfg, then register self with self.cfgs
-            if self.is_master_cfg is False:
+            # If not a primary cfg, then register self with self.cfgs
+            if self.is_primary_cfg is False:
                 self.cfgs.append(self)
 
         # Resolve the raw hjson dict to build this object
@@ -148,8 +148,8 @@ class FlowCfg():
             self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
                 self.proj_root + '/', '')
 
-    def check_if_master_cfg(self, hjson_dict):
-        # This is a master cfg only if it has a single key called "use_cfgs"
+    def check_if_primary_cfg(self, hjson_dict):
+        # This is a primary cfg only if it has a single key called "use_cfgs"
         # which contains a list of actual flow cfgs.
         hjson_cfg_dict_keys = hjson_dict.keys()
         return ("use_cfgs" in hjson_cfg_dict_keys and type(hjson_dict["use_cfgs"]) is list)
@@ -226,15 +226,15 @@ class FlowCfg():
                 import_cfgs.extend(hjson_dict[key])
                 rm_hjson_dict_keys.append(key)
 
-            # If this is a master cfg list and the key is 'use_cfgs'
-            elif self.is_master_cfg and key == "use_cfgs":
+            # If this is a primary cfg list and the key is 'use_cfgs'
+            elif self.is_primary_cfg and key == "use_cfgs":
                 use_cfgs.extend(hjson_dict[key])
 
-            # If this is a not master cfg list and the key is 'use_cfgs'
-            elif not self.is_master_cfg and key == "use_cfgs":
+            # If this is a not primary cfg list and the key is 'use_cfgs'
+            elif not self.is_primary_cfg and key == "use_cfgs":
                 # Throw an error and exit
                 log.error(
-                    "Key \"use_cfgs\" encountered in a non-master cfg file list \"%s\"",
+                    "Key \"use_cfgs\" encountered in a non-primary cfg file list \"%s\"",
                     self.flow_cfg_file)
                 sys.exit(1)
 
@@ -254,8 +254,8 @@ class FlowCfg():
             else:
                 log.error("Cfg file \"%s\" has already been parsed", cfg_file)
 
-        # Parse master cfg files
-        if self.is_master_cfg:
+        # Parse primary cfg files
+        if self.is_primary_cfg:
             for entry in use_cfgs:
                 if type(entry) is str:
                     # Treat this as a file entry
@@ -290,10 +290,10 @@ class FlowCfg():
 
     def _conv_inline_cfg_to_hjson(self, idict):
         '''Dump a temp hjson file in the scratch space from input dict.
-        This method is to be called only by a master cfg'''
+        This method is to be called only by a primary cfg'''
 
-        if not self.is_master_cfg:
-            log.fatal("This method can only be called by a master cfg")
+        if not self.is_primary_cfg:
+            log.fatal("This method can only be called by a primary cfg")
             sys.exit(1)
 
         name = idict["name"] if "name" in idict.keys() else None
@@ -412,7 +412,7 @@ class FlowCfg():
             item._print_list()
 
     def prune_selected_cfgs(self):
-        '''Prune the list of configs for a master config file'''
+        '''Prune the list of configs for a primary config file'''
 
         # This should run after self.cfgs has been set
         assert self.cfgs
@@ -421,10 +421,10 @@ class FlowCfg():
         if self.select_cfgs is None:
             return
 
-        # If the user passed --select-cfgs, but this isn't a master config
+        # If the user passed --select-cfgs, but this isn't a primary config
         # file, we should probably complain.
-        if not self.is_master_cfg:
-            log.error('The configuration file at {!r} is not a master config, '
+        if not self.is_primary_cfg:
+            log.error('The configuration file at {!r} is not a primary config, '
                       'but --select-cfgs was passed on the command line.'
                       .format(self.flow_cfg_file))
             sys.exit(1)
@@ -443,7 +443,7 @@ class FlowCfg():
         '''Public facing API for _create_deploy_objects().
         '''
         self.prune_selected_cfgs()
-        if self.is_master_cfg:
+        if self.is_primary_cfg:
             self.deploy = []
             for item in self.cfgs:
                 item._create_deploy_objects()
@@ -475,7 +475,7 @@ class FlowCfg():
             results.append(result)
             self.errors_seen |= item.errors_seen
 
-        if self.is_master_cfg:
+        if self.is_primary_cfg:
             self.gen_results_summary()
         self.gen_email_html_summary()
 
@@ -492,7 +492,7 @@ class FlowCfg():
         return "[%s](%s)" % (link_text, results_page_url)
 
     def gen_email_html_summary(self):
-        if self.is_master_cfg:
+        if self.is_primary_cfg:
             # user can customize email content by using email_summary_md,
             # otherwise default to send out results_summary_md
             gen_results = self.email_summary_md or self.results_summary_md
@@ -651,7 +651,7 @@ class FlowCfg():
         for item in self.cfgs:
             item._publish_results()
 
-        if self.is_master_cfg:
+        if self.is_primary_cfg:
             self.publish_results_summary()
 
     def publish_results_summary(self):

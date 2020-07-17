@@ -206,12 +206,13 @@ def _extract_timing(full_file, results, key):
         # get TNS and WNS in that group
         for k, g in enumerate(groups):
             if g.strip() not in results[key]:
-                results[key].update(
-                    {g.strip(): {
-                         "tns": 0.0,
-                         "wns": 0.0,
-                         "period": float("nan")
-                     }})
+                results[key].update({
+                    g.strip(): {
+                        "tns": 0.0,
+                        "wns": 0.0,
+                        "period": float("nan")
+                    }
+                })
             value = float(slack[k]) if float(slack[k]) < 0.0 else 0.0
             results[key][g]["wns"] = min(results[key][g]["wns"], value)
             results[key][g]["tns"] += value

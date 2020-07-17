@@ -442,7 +442,7 @@
           type: input
         }
         {
-          name: mosi
+          name: sdi
           width: 1
           type: input
         }
@@ -450,7 +450,7 @@
       available_output_list:
       [
         {
-          name: miso
+          name: sdo
           width: 1
           type: output
         }
@@ -3360,7 +3360,7 @@
         ]
       }
       {
-        name: spi_device_mosi
+        name: spi_device_sdi
         width: 1
         type: input
         module_name: spi_device
@@ -3373,7 +3373,7 @@
         ]
       }
       {
-        name: spi_device_miso
+        name: spi_device_sdo
         width: 1
         type: output
         module_name: spi_device

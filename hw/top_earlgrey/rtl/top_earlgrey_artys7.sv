@@ -13,10 +13,10 @@ module top_earlgrey_artys7  #(
   // JTAG interface -- not hooked up at the moment
   // inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   // inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
-  // inout               IO_DPS1, // IO_JTDI,    IO_SDMOSI
+  // inout               IO_DPS1, // IO_JTDI,    IO_SDSDI
   // inout               IO_DPS4, // IO_JTRST_N,
   // inout               IO_DPS5, // IO_JSRST_N,
-  // inout               IO_DPS2, // IO_JTDO,    IO_MISO
+  // inout               IO_DPS2, // IO_JTDO,    IO_SDO
   // inout               IO_DPS6, // JTAG=1,     SPI=0
   // inout               IO_DPS7, // BOOTSTRAP=1
   // UART interface

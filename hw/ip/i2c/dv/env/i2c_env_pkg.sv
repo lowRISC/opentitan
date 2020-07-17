@@ -33,6 +33,12 @@ package i2c_env_pkg;
     NumI2cIntr     = 10
   } i2c_intr_e;
 
+  typedef enum int {
+    ReadOnly  = 0,
+    WriteOnly = 1,
+    ReadWrite = 2
+  } tran_type_e;
+
   // csr and mem total size for IP, TODO confirm below value with spec
   parameter uint I2C_ADDR_MAP_SIZE  = 128;
   parameter uint I2C_FMT_FIFO_DEPTH = 32;
@@ -50,12 +56,11 @@ package i2c_env_pkg;
   parameter uint I2C_MIN_TIMING  = 1; // at least 1
   parameter uint I2C_MAX_TIMING  = 5;
   parameter uint I2C_TIME_RANGE  = I2C_MAX_TIMING - I2C_MIN_TIMING;
-  parameter uint I2C_TIMEOUT_ENB = 1;
   parameter uint I2C_MIN_TIMEOUT = 1;
   parameter uint I2C_MAX_TIMEOUT = 4;
   parameter uint I2C_MAX_RXILVL  = 7;
   parameter uint I2C_MAX_FMTILVL = 3;
-
+  parameter uint I2C_IDLE_TIME   = 5000;
   // package sources
   `include "i2c_env_cfg.sv"
   `include "i2c_env_cov.sv"

@@ -80,21 +80,21 @@ module flash_phy import flash_ctrl_pkg::*; (
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
-      .Width  (BankW),
-      .Pass   (0),
-      .Depth  (SeqFifoDepth)
-    ) i_bank_sequence_fifo (
-      .clk_i,
-      .rst_ni,
-      .clr_i  (1'b0),
-      .wvalid (host_req_i & host_req_rdy_o),
-      .wready (seq_fifo_rdy),
-      .wdata  (host_bank_sel),
-      .depth  (),
-      .rvalid (seq_fifo_pending),
-      .rready (host_req_done_o),
-      .rdata  (rsp_bank_sel)
-    );
+    .Width   (BankW),
+    .Pass    (0),
+    .Depth   (SeqFifoDepth)
+  ) i_bank_sequence_fifo (
+    .clk_i,
+    .rst_ni,
+    .clr_i   (1'b0),
+    .wvalid_i(host_req_i & host_req_rdy_o),
+    .wready_o(seq_fifo_rdy),
+    .wdata_i (host_bank_sel),
+    .depth_o (),
+    .rvalid_o(seq_fifo_pending),
+    .rready_i(host_req_done_o),
+    .rdata_o (rsp_bank_sel)
+  );
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
 
@@ -102,20 +102,20 @@ module flash_phy import flash_ctrl_pkg::*; (
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
 
     prim_fifo_sync #(
-      .Width  (BusWidth),
-      .Pass   (1'b1),
-      .Depth  (FlashMacroOustanding)
+      .Width   (BusWidth),
+      .Pass    (1'b1),
+      .Depth   (FlashMacroOustanding)
     ) i_host_rsp_fifo (
       .clk_i,
       .rst_ni,
-      .clr_i  (1'b0),
-      .wvalid (host_req_done[bank]),
-      .wready (host_rsp_avail[bank]),
-      .wdata  (rd_data[bank]),
-      .depth  (),
-      .rvalid (host_rsp_vld[bank]),
-      .rready (host_rsp_ack[bank]),
-      .rdata  (host_rsp_data[bank])
+      .clr_i   (1'b0),
+      .wvalid_i(host_req_done[bank]),
+      .wready_o(host_rsp_avail[bank]),
+      .wdata_i (rd_data[bank]),
+      .depth_o (),
+      .rvalid_o(host_rsp_vld[bank]),
+      .rready_i(host_rsp_ack[bank]),
+      .rdata_o (host_rsp_data[bank])
     );
 
     logic host_req;

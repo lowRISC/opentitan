@@ -24,9 +24,9 @@ title: "SPI Device HWIP Technical Specification"
 The SPI device module is a serial-to-parallel receive (RX) and
 parallel-to-serial transmit (TX) full duplex design (single line mode) used to communicate
 with an outside host. This first version of the module supports operations
-controlled by firmware to dump incoming single-line RX data (MOSI) to an
+controlled by firmware to dump incoming single-line RX data (SDI) to an
 internal RX buffer, and send data from a transmit buffer to single-line TX
-output (MISO). The clock for the peripheral data transfer uses the SPI
+output (SDO). The clock for the peripheral data transfer uses the SPI
 peripheral pin SCK. In this design the SCK is directly used to drive the
 interface logic as its primary clock, which has performance benefits, but incurs
 design complications described later.
@@ -42,7 +42,7 @@ The SPI device doesn't support emulating an EEPROM as of this initial version.
 ![Block Diagram](block_diagram.svg)
 
 The block diagram above shows how the SPI Device IP converts incoming
-bit-serialized MOSI data into a valid byte, where the data bit is valid when the
+bit-serialized SDI data into a valid byte, where the data bit is valid when the
 chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
 edge (configurable, henceforth called the "active edge"). The bit order within
 the byte is determined by {{< regref "CFG.rx_order" >}} configuration register field. After a
@@ -52,14 +52,14 @@ buffer SRAM ("DP_SRAM") using the system bus clock. If RXFIFO is full, this is
 an error condition and the interface module discards the byte.
 
 The interface module also serializes data from the small transmit FIFO
-("TXFIFO") and shifts it out on the MISO pin when CSB is 0 and SCK is at the
+("TXFIFO") and shifts it out on the SDO pin when CSB is 0 and SCK is at the
 active edge. The bit order within the byte can be configured with configuration
 register field {{< regref "CFG.tx_order" >}}. It is expected that software has prepared TX data
 based on the description in the "Defining
 Firmware Operation Mode" section below. Since SCK is not under the control of
 software or the device (it is driven by the external SPI host), it is possible
 that there is no data ready in the TXFIFO when chip select becomes active and
-the interface needs to send data on the MISO pin. Either software has not
+the interface needs to send data on the SDO pin. Either software has not
 prepared TX data or software does not care about the contents of the TX data -
 then the hardware will send whatever lingering data is in the empty TXFIFO. If
 this is a functional issue, then software should at least soft-reset the contents
@@ -74,12 +74,12 @@ signal when the SPI interface is idle.
 ## General Data Transfer on Pins
 
 Data transfers with the SPI device module involve four peripheral SPI pins: SCK,
-CSB, MOSI, MISO. SCK is the SPI clock driven by an external SPI host. CSB (chip
+CSB, SDI, SDO. SCK is the SPI clock driven by an external SPI host. CSB (chip
 select bar) is an active low enable signal that frames a transfer, driven by the
 external host. Transfers with active SCK edges but inactive (high) CSB are
-ignored. Data is driven into the SPI device on the MOSI pin ("Master Out Slave
+ignored. Data is driven into the SPI device on the SDI pin ("Serial Data
 In", though we're otherwise using host/device terminology) and driven out on
-MISO. Any transfer length is legal, though higher level protocols typically
+SDO. Any transfer length is legal, though higher level protocols typically
 assume word width boundaries. See details on protocols and transfers that
 follow. The diagram below shows a typical transfer, here for 8 bytes (64 cycles,
 showing the beginning and end of the transfer). Configurability for active
@@ -89,10 +89,10 @@ edges, polarities, and bit orders are described later.
 { signal: [
   { name: 'CSB',  wave: '10.........|....1.'},
   { name: 'SCK',  wave: '0.p........|....l.'},
-  { name: 'MOSI', wave: 'z.=..=.=.=.=.=.=.=.=.=|=.=.=.=.z....',
+  { name: 'SDI',  wave: 'z.=..=.=.=.=.=.=.=.=.=|=.=.=.=.z....',
     data:['R07','R06','R05','R04','R03','R02','R01','R00','R17',
           '','R73','R72','R71','R70'], period:0.5, },
-  { name: 'MISO', wave: 'z.=..=.=.=.=.=.=.=.=.=|=.=.=.=.z....',
+  { name: 'SDO',  wave: 'z.=..=.=.=.=.=.=.=.=.=|=.=.=.=.z....',
     data:['T07','T06','T05','T04','T03','T02','T01','T00','T17',
           '','T73','T72','T71','T70'], period:0.5}],
   head:{
@@ -118,7 +118,7 @@ SCK edge is received, a bit of RX data is latched into the peripheral, and a bit
 of TX data is sent out of the peripheral. If transfers only require
 unidirectional movement of data, the other direction can be ignored but will
 still be active. For instance, if only receive data is needed in the transfer,
-the device will still be transmitting data out on the TX ("MISO") pin.
+the device will still be transmitting data out on the TX ("SDO") pin.
 
 ## SPI Generic Protocol
 
@@ -169,8 +169,8 @@ as the response is transmitted successfully.
 ### Firmware Operation Mode
 
 Taking this example as a guide, we can see the general method of the SPI
-Firmware Operation Mode. On every active SCK clock edge, data is received from the MOSI
-pin into the SPI device, and data is transmitted on the MISO pin. Received data
+Firmware Operation Mode. On every active SCK clock edge, data is received from the SDI
+pin into the SPI device, and data is transmitted on the SDO pin. Received data
 is gathered into bytes and written into the RX circular buffer in the SPI Device
 SRAM as it is accumulated. Whatever data exists in the TX circular buffer is
 serialized and transmitted. Transfers are framed using the active low chip
@@ -197,7 +197,7 @@ there is no clock for any of this logic.  So for instance there is no guarantee
 of the two-clock-edges normally required for asynchronous handshaking protocols.
 The RXFIFO and TXFIFO exist to facilitate this situation.
 
-In the receive direction, data gathered from the MOSI pin is written into the
+In the receive direction, data gathered from the SDI pin is written into the
 RXFIFO (see details below) at appropriate size boundaries. This data is
 handshake-received on the core clock side, gathered into byte or word quantity,
 and written into the RX circular buffer of the dual-port SRAM. On each write,
@@ -235,7 +235,7 @@ the TXFIFO detects the change in TXF write pointer and begins reading from the
 SRAM and prefilling the TXFIFO until it is full or until all valid TXF data has
 been read. This prepares the TXFIFO with the desired data for when the next SCK
 data arrives. As the SCK domain logic pulls data out of the TXFIFO to transmit
-on the MISO pin, that TXFIFO read is detected (after synchronization to the core
+on the SDO pin, that TXFIFO read is detected (after synchronization to the core
 clock domain) and potentially another word of data is read from the SRAM and
 written into the TXFIFO. Each time the SRAM is read the hardware increments the
 TXF read pointer making the space available to software. Like above, though
@@ -266,15 +266,15 @@ higher level protocol. Data is sent from the TXF SRAM contents via TXFIFO.
 
 It is important that the data path inside the block should meet the timing that
 is a half cycle of SCK. As SCK clock is shut off right after the last bit of the
-last byte is received, the hardware module cannot register the MOSI signal. The
-module registers bits [7:1] and combines them with the MOSI signal directly to
+last byte is received, the hardware module cannot register the SDI signal. The
+module registers bits [7:1] and combines them with the SDI signal directly to
 form the input to RXFIFO. This is detailed in the waveform below.
 
 {{< wavejson >}}
 { signal: [
   { name: 'CSB', wave: '10.||...|..1'},
   { name: 'SCK', wave: '0.p||...|..l', node:'......b' },
-  { name: 'MOSI', wave: '0.=..=|=|=.=.=.=|=.=.z..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
+  { name: 'SDI', wave: '0.=..=|=|=.=.=.=|=.=.z..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
   { name: 'BitCount', wave: '=...=.=|=|=.=.=.=|=.=...', data:['7','6','5','1','0','7','6','1','0','7'], period:0.5},
   { name: 'RX_WEN', wave: '0....|....1.0.|...1.0...' , period:0.5},
   { name: 'RXFIFO_D', wave:'x.=.=================.x.', node: '...........a',period:0.5},
@@ -291,19 +291,19 @@ BitCount reaches 0h. Bitcount is reset by CSB asynchronously, returning to 7h
 for the next round. RXFIFO input data changes on the half clock cycle. RXFIFO
 latches WEN at the positive edge of SCK. When BitCount is 0h, bit 0 of FIFO data
 shows the bit 1 value for the first half clock cycle then shows correct value
-once the incoming MOSI value is updated.
+once the incoming SDI value is updated.
 
 TXFIFO is similar. TX_REN is asserted when Tx BitCount reaches 1, and the
 current entry of TXFIFO is popped at the negative edge of SCK. It results in a
-change of MISO value at the negative edge of SCK. MISO_OE is controlled by the
-CSB signal. If CSB goes to high, MISO is returned to High-Z state.
+change of SDO value at the negative edge of SCK. SDO_OE is controlled by the
+CSB signal. If CSB goes to high, SDO is returned to High-Z state.
 
 {{< wavejson >}}
 { signal: [
   { name: 'CSB',      wave:'10.||...|..1'},
   { name: 'SCK',      wave:'0...p.|.|...|l' , node:'.............a', period:0.5},
-  { name: 'MISO',     wave:'x.=..=|=|=.=.=.=|=.=.x..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
-  { name: 'MISO_OE',  wave:'0.1...................0.', period:0.5},
+  { name: 'SDO',     wave:'x.=..=|=|=.=.=.=|=.=.x..', data:['7','6','5','1','0','7','6','1','0'], period:0.5, },
+  { name: 'SDO_OE',  wave:'0.1...................0.', period:0.5},
   { name: 'BitCount', wave:'=....=.=|=|=.=.=.=|=.=..', data:['7','6','5','1','0','7','6','1','0','7'], period:0.5},
   { name: 'TX_REN',   wave:'0.....|..1.0...|.1.0....' , node:'..........c',period:0.5},
   { name: 'TX_DATA_i',wave:'=.....|....=.......=....',data:['D0','Dn','Dn+1'], node:'...........b', period:0.5},

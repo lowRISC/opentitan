@@ -23,9 +23,9 @@
 //   DRspDepth:     (one per device_count) Depth of device i response FIFO,
 //                  default 2
 //
-// Requests must stall to one slave until all responses from other slaves
+// Requests must stall to one device until all responses from other devices
 // have returned.  Need to keep a counter of all outstanding requests and
-// wait until that counter is zero before switching slaves.
+// wait until that counter is zero before switching devices.
 //
 // This module will return a request error if the input value of 'dev_select'
 // is not within the range 0..N-1. Thus the instantiator of the socket
@@ -142,7 +142,7 @@ module tlul_socket_1n #(
 
   tlul_pkg::tl_d2h_t tl_t_p ;
 
-  // for the returning reqready, only look at the slave we're addressing
+  // for the returning reqready, only look at the device we're addressing
   logic hfifo_reqready;
   always_comb begin
     hfifo_reqready = tl_u_i[N].a_ready; // default to error

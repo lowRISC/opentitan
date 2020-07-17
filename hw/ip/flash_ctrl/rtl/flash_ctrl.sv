@@ -145,15 +145,15 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .Depth(FifoDepth)
   ) u_prog_fifo (
     .clk_i,
-    .rst_ni (rst_ni),
-    .clr_i  (reg2hw.fifo_rst.q),
-    .wvalid (prog_fifo_req & prog_fifo_wen & prog_op_valid),
-    .wready (prog_fifo_wready),
-    .wdata  (prog_fifo_wdata),
-    .depth  (prog_fifo_depth),
-    .rvalid (prog_fifo_rvalid),
-    .rready (prog_fifo_ren),
-    .rdata  (prog_fifo_rdata)
+    .rst_ni,
+    .clr_i   (reg2hw.fifo_rst.q),
+    .wvalid_i(prog_fifo_req & prog_fifo_wen & prog_op_valid),
+    .wready_o(prog_fifo_wready),
+    .wdata_i (prog_fifo_wdata),
+    .depth_o (prog_fifo_depth),
+    .rvalid_o(prog_fifo_rvalid),
+    .rready_i(prog_fifo_ren),
+    .rdata_o (prog_fifo_rdata)
   );
 
   // Program handler is consumer of prog_fifo
@@ -222,17 +222,17 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .Depth(FifoDepth)
   ) u_rd_fifo (
     .clk_i,
-    .rst_ni (rst_ni),
-    .clr_i  (reg2hw.fifo_rst.q),
-    .wvalid (rd_fifo_wen),
-    .wready (rd_fifo_wready),
-    .wdata  (rd_fifo_wdata),
-    .depth  (rd_fifo_depth),
-    .rvalid (rd_fifo_rvalid),
+    .rst_ni,
+    .clr_i   (reg2hw.fifo_rst.q),
+    .wvalid_i(rd_fifo_wen),
+    .wready_o(rd_fifo_wready),
+    .wdata_i (rd_fifo_wdata),
+    .depth_o (rd_fifo_depth),
+    .rvalid_o(rd_fifo_rvalid),
     //adapter_rvalid is used here because adapter_sram does not accept data the same cycle.
     //It expects an sram like interface where data arrives during the next cycle
-    .rready (adapter_rvalid),
-    .rdata  (rd_fifo_rdata)
+    .rready_i(adapter_rvalid),
+    .rdata_o (rd_fifo_rdata)
   );
 
   // Read handler is consumer of rd_fifo

@@ -32,7 +32,7 @@
       desc: "raised if the SCL line drops early (not supported without clock synchronization)."
     }
     { name: "sda_interference"
-      desc: "raised if the SDA line goes low when master is trying to assert high"
+      desc: "raised if the SDA line goes low when host is trying to assert high"
     }
     { name: "stretch_timeout"
       desc: "raised if target stretches the clock beyond the allowed timeout period"

@@ -93,8 +93,8 @@ class OneShotCfg(FlowCfg):
                                                       self.__dict__,
                                                       ignored_wildcards)
 
-        # Stuff below only pertains to individual cfg (not master cfg).
-        if not self.is_master_cfg:
+        # Stuff below only pertains to individual cfg (not primary cfg).
+        if not self.is_primary_cfg:
             # Print info
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
@@ -113,7 +113,7 @@ class OneShotCfg(FlowCfg):
             self._process_exports()
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-            # tests and regressions, only if not a master cfg obj
+            # tests and regressions, only if not a primary cfg obj
             self._create_objects()
 
         # Post init checks

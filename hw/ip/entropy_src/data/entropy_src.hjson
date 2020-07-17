@@ -97,8 +97,8 @@
       fields: [
         { bits: "1:0",
           name: "ENABLE",
-          desc: '''Master enable for the ENTROPY_SRC entropy generation function.
-                This two bit field determines what source will be used for health 
+          desc: '''Primary enable for the ENTROPY_SRC entropy generation function.
+                This two bit field determines what source will be used for health
                 check processing:
                 0b00: Disabled
                 0b01: LFSR mode enabled

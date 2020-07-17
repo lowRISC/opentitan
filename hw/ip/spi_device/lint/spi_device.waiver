@@ -44,7 +44,7 @@ waive -rules CONST_OUTPUT -location {spi_fwm_txf_ctrl.sv} -regexp {Output 'sram_
 waive -rules CONST_OUTPUT -location {spi_fwm_*xf_ctrl.sv} -regexp {Output 'depth.*} \
       -comment "Based on the SRAM size 2kB, it cannot hit the case"
 
-waive -rules CONST_FF -location {spi_fwmode.sv} -regexp {Flip-flop 'miso_shift\[0\]' is driven} \
+waive -rules CONST_FF -location {spi_fwmode.sv} -regexp {Flip-flop 'sdo_shift\[0\]' is driven} \
       -comment "Intended behavior"
 waive -rules CONST_FF -location {spi_device.sv} -regexp {fwm_rerr_q} \
       -comment "Will implement the interrupt later. Waive for now"

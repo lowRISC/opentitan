@@ -22,7 +22,7 @@ See discussion below on tracking progress.
 
 For professional tooling, the team has chosen [Synopsys' VCS](https://www.synopsys.com/verification/simulation/vcs.html) as the simulator of choice with respect to the tracking of verification completeness and [JasperGold](https://www.cadence.com/content/cadence-www/global/en_US/home/tools/system-design-and-verification/formal-and-static-verification/jasper-gold-verification-platform.html) for FPV.
 Wherever possible we attempt to remain tool-agnostic, but we must choose a simulator as our ground truth for our own confidence of signoff-level assurances.
-Likewise, for FPV, [Synopsys VC Formal](https://www.synopsys.com/verification/static-and-formal-verification/vc-formal.html) is also supported within the same flow, and can be used by those with access to VC Formal licenses. 
+Likewise, for FPV, [Synopsys VC Formal](https://www.synopsys.com/verification/static-and-formal-verification/vc-formal.html) is also supported within the same flow, and can be used by those with access to VC Formal licenses.
 At this time there is also some support for Cadence's Xcelium, for those organizations which have few Synopsys VCS licenses.
 However support is not as mature as for VCS, which remains the tool for signoff.
 Furthermore, as a project we promote other open source verification methodologies - Verilator, Yosys, cocoTB, etc - and work towards a future where these are signoff-grade.
@@ -272,7 +272,7 @@ It is necessary for each DUT testbench to provide a set of simple sanity test th
 Categorizing such tests into a sanity suite provides a quick path for users who touch common / shared piece of code to run those tests for all DUTs and ensure no breakages occur.
 If the DUT testbench has more than one compile-time configuration, there needs to be at least 1 sanity test per configuration.
 
-Ideally, the sanity regression is run as a part of the CI check whenever a PR is submitted. Due to use of proprietary tools for running DV simulations, this cannot be accomplished. Instead, we run a daily cron job locally on the up-to-date master branch to identify such breakages and deploy fixes quickly.
+Ideally, the sanity regression is run as a part of the CI check whenever a PR is submitted. Due to use of proprietary tools for running DV simulations, this cannot be accomplished. Instead, we run a daily cron job locally on the up-to-date `master` branch to identify such breakages and deploy fixes quickly.
 
 ### Nightly
 
