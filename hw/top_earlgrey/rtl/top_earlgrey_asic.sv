@@ -43,21 +43,23 @@ module top_earlgrey_asic (
   inout               IO_GP15,
 
   // RBOX
-  input               IO_RBOX0,     // PwrBO
-  input               IO_RBOX1,     // Key2O
-  input               IO_RBOX2,     // Key1O
-  input               IO_RBOX3,     // Key0O
-  input               IO_RBOX4,     // FlashWpL
-  input               IO_RBOX5,     // EcRstL
-  input               IO_RBOX6,     // EcInRw
-  input               IO_RBOX7,     // BatEn
-  input               IO_RBOX8,     // PwrBI
-  input               IO_RBOX9,     // Key2I
-  input               IO_RBOX10,    // Key1I
-  input               IO_RBOX11,    // Key0I
-  input               IO_RBOX12,    //EcEnteringRw
-  input               IO_RBOX13     // AcPresent
+  inout               IOR0,  // EcRstL
+  inout               IOR1,  // PwrBI
+  inout               IOR2,  // EcEnteringRw
+  inout               IOR3,  // AcPresent
+  inout               IOR4,  // FlashWpL
+  inout               IOR5,  // PwrBO
+  inout               IOR6,  // EcInRw
+  inout               IOR7,  // BatEn
+  inout               IOR8,  // Key0I (volup, column out from EC in laptop)
+  inout               IOR9,  // Key1I (voldown, row input from keyboard matrix in laptop)
+  inout               IOR10, // Key2I (tbd, row input from keyboard matrix in laptop)
+  inout               IOR11, // Key0O (passthrough from Key0I)
+  inout               IOR12, // Key1O (passthrough from Key1I)
+  inout               IOR13  // Key2O (passthrough from Key2I)
 );
+
+
 
   import top_earlgrey_pkg::*;
 
@@ -145,20 +147,20 @@ module top_earlgrey_asic (
                              unused_usbdev_d,       // usbdev_d
                              IO_USB_DP0,
                              IO_USB_DN0,
-                             IO_RBOX13,
-                             IO_RBOX12,
-                             IO_RBOX11,
-                             IO_RBOX10,
-                             IO_RBOX9,
-                             IO_RBOX8,
-                             IO_RBOX7,
-                             IO_RBOX6,
-                             IO_RBOX5,
-                             IO_RBOX4,
-                             IO_RBOX3,
-                             IO_RBOX2,
-                             IO_RBOX1,
-                             IO_RBOX0
+                             IOR3,  // AcPresent
+                             IOR2,  // EcEnteringRw
+                             IOR8,  // Key0I (volup, column out from EC in laptop)
+                             IOR9,  // Key1I (voldown, row input from keyboard matrix in laptop)
+                             IOR10, // Key2I (tbd, row input from keyboard matrix in laptop)
+                             IOR1,  // PwrBI
+                             IOR7,  // BatEn
+                             IOR6,  // EcInRw
+                             IOR0,  // EcRstL
+                             IOR4,  // FlashWpL
+                             IOR11, // Key0O (passthrough from Key0I)
+                             IOR12, // Key1O (passthrough from Key1I)
+                             IOR13, // Key2O (passthrough from Key2I)
+                             IOR5   // PwrBO
                            } ),
     // Muxed IOs
     .mio_in_o            ( mio_in_padring   ),
