@@ -14,5 +14,6 @@
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/top_earlgrey/syn/asic.constraints.sdc"
 
+  area_depth: 2
   // TODO: add support for loading the constraints here
  }
