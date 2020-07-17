@@ -1,0 +1,216 @@
+From 50425c66be52b7d97071e285e6899ed4e33484f1 Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@google.com>
+Date: Mon, 13 Jul 2020 19:25:04 -0700
+Subject: [PATCH 1/2] Style lint cleanup to make Verible lint happy
+
+Signed-off-by: Michael Schaffner <msf@google.com>
+---
+ src/dm_csrs.sv    |  6 +++---
+ src/dm_mem.sv     |  7 +++++--
+ src/dm_obi_top.sv | 50 ++++++++++++++++++++++++++---------------------
+ src/dm_pkg.sv     |  2 +-
+ src/dm_sba.sv     |  6 +++---
+ 5 files changed, 40 insertions(+), 31 deletions(-)
+
+diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
+index 78fd32a..f131392 100644
+--- a/src/dm_csrs.sv
++++ b/src/dm_csrs.sv
+@@ -91,8 +91,8 @@ module dm_csrs #(
+   logic        resp_queue_pop;
+   logic [31:0] resp_queue_data;
+ 
+-  localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h01);
+-  localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'b0, dm::ProgBufSize} - 8'h01);
++  localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h1);
++  localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'b0, dm::ProgBufSize} - 8'h1);
+ 
+   logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
+   logic [((NrHarts-1)/2**5 + 1) * 32 - 1 : 0] halted;
+@@ -521,7 +521,7 @@ module dm_csrs #(
+       dmcontrol_d.resumereq = 1'b0;
+     end
+     // static values for dcsr
+-    sbcs_d.sbversion            = 3'b1;
++    sbcs_d.sbversion            = 3'd1;
+     sbcs_d.sbbusy               = sbbusy_i;
+     sbcs_d.sbasize              = $bits(sbcs_d.sbasize)'(BusWidth);
+     sbcs_d.sbaccess128          = 1'b0;
+diff --git a/src/dm_mem.sv b/src/dm_mem.sv
+index 6f0da5e..550b7cc 100755
+--- a/src/dm_mem.sv
++++ b/src/dm_mem.sv
+@@ -336,7 +336,8 @@ module dm_mem #(
+     abstract_cmd[0][31:0]  = dm::illegal();
+     // load debug module base address into a0, this is shared among all commands
+     abstract_cmd[0][63:32] = HasSndScratch ? dm::auipc(5'd10, '0) : dm::nop();
+-    abstract_cmd[1][31:0]  = HasSndScratch ? dm::srli(5'd10, 5'd10, 6'd12) : dm::nop(); // clr lowest 12b -> DM base offset
++    // clr lowest 12b -> DM base offset
++    abstract_cmd[1][31:0]  = HasSndScratch ? dm::srli(5'd10, 5'd10, 6'd12) : dm::nop();
+     abstract_cmd[1][63:32] = HasSndScratch ? dm::slli(5'd10, 5'd10, 6'd12) : dm::nop();
+     abstract_cmd[2][31:0]  = dm::nop();
+     abstract_cmd[2][63:32] = dm::nop();
+@@ -395,7 +396,9 @@ module dm_mem #(
+           end
+         end else if (32'(ac_ar.aarsize) < MaxAar && ac_ar.transfer && !ac_ar.write) begin
+           // store a0 in dscratch1
+-          abstract_cmd[0][31:0]  = HasSndScratch ? dm::csrr(dm::CSR_DSCRATCH1, LoadBaseAddr) : dm::nop();
++          abstract_cmd[0][31:0]  = HasSndScratch ?
++                                   dm::csrr(dm::CSR_DSCRATCH1, LoadBaseAddr) :
++                                   dm::nop();
+           // this range is reserved
+           if (ac_ar.regno[15:14] != '0) begin
+               abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
+diff --git a/src/dm_obi_top.sv b/src/dm_obi_top.sv
+index 635f37e..190830c 100644
+--- a/src/dm_obi_top.sv
++++ b/src/dm_obi_top.sv
+@@ -61,42 +61,48 @@
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+ module dm_obi_top #(
+-  parameter int unsigned        IdWidth          = 1,                   // Width of aid/rid
++  parameter int unsigned        IdWidth          = 1,      // Width of aid/rid
+   parameter int unsigned        NrHarts          = 1,
+   parameter int unsigned        BusWidth         = 32,
+-  parameter int unsigned        DmBaseAddress    = 'h1000,              // default to non-zero page
++  parameter int unsigned        DmBaseAddress    = 'h1000, // default to non-zero page
+   // Bitmask to select physically available harts for systems
+   // that don't use hart numbers in a contiguous fashion.
+   parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}}
+ ) (
+-  input  logic                  clk_i,                                  // clock
+-  input  logic                  rst_ni,                                 // asynchronous reset active low, connect PoR here, not the system reset
++  input  logic                  clk_i,           // clock
++  // asynchronous reset active low, connect PoR here, not the system reset
++  input  logic                  rst_ni,
+   input  logic                  testmode_i,
+-  output logic                  ndmreset_o,                             // non-debug module reset
+-  output logic                  dmactive_o,                             // debug module is active
+-  output logic [NrHarts-1:0]    debug_req_o,                            // async debug request
+-  input  logic [NrHarts-1:0]    unavailable_i,                          // communicate whether the hart is unavailable (e.g.: power down)
++  output logic                  ndmreset_o,      // non-debug module reset
++  output logic                  dmactive_o,      // debug module is active
++  output logic [NrHarts-1:0]    debug_req_o,     // async debug request
++  // communicate whether the hart is unavailable (e.g.: power down)
++  input  logic [NrHarts-1:0]    unavailable_i,
+   dm::hartinfo_t [NrHarts-1:0]  hartinfo_i,
+ 
+   input  logic                  slave_req_i,
+-  output logic                  slave_gnt_o,                            // OBI grant for slave_req_i (not present on dm_top)
++  // OBI grant for slave_req_i (not present on dm_top)
++  output logic                  slave_gnt_o,
+   input  logic                  slave_we_i,
+   input  logic [BusWidth-1:0]   slave_addr_i,
+   input  logic [BusWidth/8-1:0] slave_be_i,
+   input  logic [BusWidth-1:0]   slave_wdata_i,
+-  input  logic [IdWidth-1:0]    slave_aid_i,                            // Address phase transaction identifier (not present on dm_top)
+-  output logic                  slave_rvalid_o,                         // OBI rvalid signal (end of response phase for reads/writes) (not present on dm_top)
++  // Address phase transaction identifier (not present on dm_top)
++  input  logic [IdWidth-1:0]    slave_aid_i,
++  // OBI rvalid signal (end of response phase for reads/writes) (not present on dm_top)
++  output logic                  slave_rvalid_o,
+   output logic [BusWidth-1:0]   slave_rdata_o,
+-  output logic [IdWidth-1:0]    slave_rid_o,                            // Response phase transaction identifier (not present on dm_top)
++  // Response phase transaction identifier (not present on dm_top)
++  output logic [IdWidth-1:0]    slave_rid_o,
+ 
+   output logic                  master_req_o,
+-  output logic [BusWidth-1:0]   master_addr_o,                          // Renamed according to OBI spec
++  output logic [BusWidth-1:0]   master_addr_o,   // Renamed according to OBI spec
+   output logic                  master_we_o,
+   output logic [BusWidth-1:0]   master_wdata_o,
+   output logic [BusWidth/8-1:0] master_be_o,
+   input  logic                  master_gnt_i,
+-  input  logic                  master_rvalid_i,                        // Renamed according to OBI spec
+-  input  logic [BusWidth-1:0]   master_rdata_i,                         // Renamed according to OBI spec
++  input  logic                  master_rvalid_i, // Renamed according to OBI spec
++  input  logic [BusWidth-1:0]   master_rdata_i,  // Renamed according to OBI spec
+ 
+   // Connection to DTM - compatible to RocketChip Debug Module
+   input  logic                  dmi_rst_ni,
+@@ -137,13 +143,13 @@ module dm_obi_top #(
+     .slave_rdata_o           ( slave_rdata_o         ),
+ 
+     .master_req_o            ( master_req_o          ),
+-    .master_add_o            ( master_addr_o         ),         // Renamed according to OBI spec
++    .master_add_o            ( master_addr_o         ), // Renamed according to OBI spec
+     .master_we_o             ( master_we_o           ),
+     .master_wdata_o          ( master_wdata_o        ),
+     .master_be_o             ( master_be_o           ),
+     .master_gnt_i            ( master_gnt_i          ),
+-    .master_r_valid_i        ( master_rvalid_i       ),         // Renamed according to OBI spec
+-    .master_r_rdata_i        ( master_rdata_i        ),         // Renamed according to OBI spec
++    .master_r_valid_i        ( master_rvalid_i       ), // Renamed according to OBI spec
++    .master_r_rdata_i        ( master_rdata_i        ), // Renamed according to OBI spec
+ 
+     .dmi_rst_ni              ( dmi_rst_ni            ),
+     .dmi_req_valid_i         ( dmi_req_valid_i       ),
+@@ -165,16 +171,16 @@ module dm_obi_top #(
+       slave_rvalid_q   <= 1'b0;
+       slave_rid_q      <= 'b0;
+     end else begin
+-      if (slave_req_i && slave_gnt_o) begin                     // 1 cycle pulse on rvalid for every granted request
++      if (slave_req_i && slave_gnt_o) begin // 1 cycle pulse on rvalid for every granted request
+         slave_rvalid_q <= 1'b1;
+-        slave_rid_q    <= slave_aid_i;                          // Mirror aid to rid
++        slave_rid_q    <= slave_aid_i;      // Mirror aid to rid
+       end else begin
+-        slave_rvalid_q <= 1'b0;                                 // rid is don't care if rvalid = 0
++        slave_rvalid_q <= 1'b0;             // rid is don't care if rvalid = 0
+       end
+     end
+   end
+ 
+-  assign slave_gnt_o = 1'b1;                                    // Always receptive to request (slave_req_i)
++  assign slave_gnt_o = 1'b1;                // Always receptive to request (slave_req_i)
+   assign slave_rvalid_o = slave_rvalid_q;
+   assign slave_rid_o = slave_rid_q;
+ 
+diff --git a/src/dm_pkg.sv b/src/dm_pkg.sv
+index de75c3e..1b7d0f5 100644
+--- a/src/dm_pkg.sv
++++ b/src/dm_pkg.sv
+@@ -201,7 +201,7 @@ package dm;
+     logic         sbaccess8;
+   } sbcs_t;
+ 
+-  localparam logic[1:0] DTM_SUCCESS = 2'h0;
++  localparam logic [1:0] DTM_SUCCESS = 2'h0;
+ 
+   typedef struct packed {
+     logic [6:0]  addr;
+diff --git a/src/dm_sba.sv b/src/dm_sba.sv
+index f605088..c97f956 100644
+--- a/src/dm_sba.sv
++++ b/src/dm_sba.sv
+@@ -104,7 +104,7 @@ module dm_sba #(
+             be[int'({be_idx[$high(be_idx):1], 1'b0}) +: 2] = '1;
+           end
+           3'b010: begin
+-            if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'b0}) +: 4] = '1;
++            if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'h0}) +: 4] = '1;
+             else                    be = '1;
+           end
+           3'b011: be = '1;
+@@ -117,7 +117,7 @@ module dm_sba #(
+         if (sbdata_valid_o) begin
+           state_d = Idle;
+           // auto-increment address
+-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'b1 << sbaccess_i);
++          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
+         end
+       end
+ 
+@@ -125,7 +125,7 @@ module dm_sba #(
+         if (sbdata_valid_o) begin
+           state_d = Idle;
+           // auto-increment address
+-          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'b1 << sbaccess_i);
++          if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
+         end
+       end
+ 
+-- 
+2.28.0.rc0.105.gf9edc3c819-goog
+
