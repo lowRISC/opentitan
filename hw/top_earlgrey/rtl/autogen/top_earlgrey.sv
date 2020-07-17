@@ -584,13 +584,13 @@ module top_earlgrey #(
       .tl_o (tl_spi_device_d_d2h),
 
       // Input
-      .cio_sck_i     (cio_spi_device_sck_p2d),
-      .cio_csb_i     (cio_spi_device_csb_p2d),
-      .cio_sdi_i     (cio_spi_device_sdi_p2d),
+      .cio_sck_i    (cio_spi_device_sck_p2d),
+      .cio_csb_i    (cio_spi_device_csb_p2d),
+      .cio_sdi_i    (cio_spi_device_sdi_p2d),
 
       // Output
-      .cio_sdo_o     (cio_spi_device_sdo_d2p),
-      .cio_sdo_en_o  (cio_spi_device_sdo_en_d2p),
+      .cio_sdo_o    (cio_spi_device_sdo_d2p),
+      .cio_sdo_en_o (cio_spi_device_sdo_en_d2p),
 
       // Interrupt
       .intr_rxf_o         (intr_spi_device_rxf),
