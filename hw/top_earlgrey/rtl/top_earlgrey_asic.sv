@@ -76,7 +76,10 @@ module top_earlgrey_asic (
     // 4: usbdev_tx_mode
     // 7: usbdev_se
     .ConnectDioIn  ( 15'h7F63 ),
-    .ConnectDioOut ( 15'h7F63 )
+    .ConnectDioOut ( 15'h7F63 ),
+    // Pad types
+    .MioPadVariant ( '{default: 0} ),
+    .DioPadVariant ( '{default: 0} )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( IO_CLK           ),

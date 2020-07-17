@@ -15,7 +15,11 @@ module padring import padctrl_reg_pkg::*; #(
   parameter logic [NMioPads-1:0] ConnectMioIn = '1,
   parameter logic [NMioPads-1:0] ConnectMioOut = '1,
   parameter logic [NDioPads-1:0] ConnectDioIn = '1,
-  parameter logic [NDioPads-1:0] ConnectDioOut = '1
+  parameter logic [NDioPads-1:0] ConnectDioOut = '1,
+
+  // 0: bidir, 1: input, 2: tolerant, 3: open drain
+  parameter int MioPadVariant [NMioPads] = '{default: 0},
+  parameter int DioPadVariant [NDioPads] = '{default: 0}
 ) (
   // pad input
   input wire                  clk_pad_i,
@@ -56,7 +60,8 @@ module padring import padctrl_reg_pkg::*; #(
   assign rst_n         = rst_pad_ni;
 
   prim_pad_wrapper #(
-    .AttrDw  ( AttrDw )
+    .AttrDw  ( AttrDw ),
+    .Variant ( 1      ) // input-only
   ) i_clk_pad (
     .inout_io ( clk   ),
     .in_o     ( clk_o ),
@@ -68,7 +73,8 @@ module padring import padctrl_reg_pkg::*; #(
   );
 
   prim_pad_wrapper #(
-    .AttrDw  ( AttrDw )
+    .AttrDw  ( AttrDw ),
+    .Variant ( 1      ) // input-only
   ) i_clk_usb_48mhz_pad (
     .inout_io ( clk_usb_48mhz   ),
     .in_o     ( clk_usb_48mhz_o ),
@@ -80,7 +86,8 @@ module padring import padctrl_reg_pkg::*; #(
   );
 
   prim_pad_wrapper #(
-    .AttrDw  ( AttrDw )
+    .AttrDw  ( AttrDw ),
+    .Variant ( 1      ) // input-only
   ) i_rst_pad (
     .inout_io ( rst_n  ),
     .in_o     ( rst_no ),
@@ -98,7 +105,8 @@ module padring import padctrl_reg_pkg::*; #(
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_pads
     if (ConnectMioIn[k] && ConnectMioOut[k]) begin : gen_mio_inout
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( MioPadVariant[k] )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
@@ -110,7 +118,8 @@ module padring import padctrl_reg_pkg::*; #(
       );
     end else if (ConnectMioOut[k]) begin : gen_mio_output
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( MioPadVariant[k] )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     (               ),
@@ -124,7 +133,8 @@ module padring import padctrl_reg_pkg::*; #(
       assign mio_in_o[k]  = 1'b0;
     end else if (ConnectMioIn[k]) begin : gen_mio_input
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( MioPadVariant[k] )
       ) i_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
@@ -139,9 +149,10 @@ module padring import padctrl_reg_pkg::*; #(
       assign unused_out   = mio_out_i[k];
       assign unused_oe    = mio_oe_i[k];
     end else begin : gen_mio_tie_off
-      logic unused_out, unused_oe;
+      logic unused_out, unused_oe, unused_pad;
       logic [AttrDw-1:0] unused_attr;
-      assign mio_pad_io[k] = 1'bz;
+      assign mio_pad_io[k] = 1'b0;
+      assign unused_pad   = mio_pad_io[k];
       assign unused_out   = mio_out_i[k];
       assign unused_oe    = mio_oe_i[k];
       assign unused_attr  = mio_attr_i[k];
@@ -156,7 +167,8 @@ module padring import padctrl_reg_pkg::*; #(
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_pads
     if (ConnectDioIn[k] && ConnectDioOut[k]) begin : gen_dio_inout
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( DioPadVariant[k] )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
@@ -168,7 +180,8 @@ module padring import padctrl_reg_pkg::*; #(
       );
     end else if (ConnectDioOut[k]) begin : gen_dio_output
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( DioPadVariant[k] )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     (               ),
@@ -182,7 +195,8 @@ module padring import padctrl_reg_pkg::*; #(
       assign dio_in_o[k]  = 1'b0;
     end else if (ConnectDioIn[k]) begin : gen_dio_input
       prim_pad_wrapper #(
-        .AttrDw  ( AttrDw        )
+        .AttrDw  ( AttrDw           ),
+        .Variant ( DioPadVariant[k] )
       ) i_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
@@ -197,9 +211,10 @@ module padring import padctrl_reg_pkg::*; #(
       assign unused_out   = dio_out_i[k];
       assign unused_oe    = dio_oe_i[k];
     end else begin : gen_dio_tie_off
-      logic unused_out, unused_oe;
+      logic unused_out, unused_oe, unused_pad;
       logic [AttrDw-1:0] unused_attr;
-      assign dio_pad_io[k] = 1'bz;
+      assign dio_pad_io[k] = 1'b0;
+      assign unused_pad   = dio_pad_io[k];
       assign unused_out   = dio_out_i[k];
       assign unused_oe    = dio_oe_i[k];
       assign unused_attr  = dio_attr_i[k];
