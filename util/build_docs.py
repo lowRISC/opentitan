@@ -277,18 +277,17 @@ def generate_dif_docs():
         dif_listings_filename = dif_listings_root_path.joinpath(dif_header + ".html")
         dif_listings_filename.parent.mkdir(parents=True, exist_ok=True)
 
-        dif_listings_html = open(str(dif_listings_filename), mode='w')
-        gen_dif_listing.gen_listing_html(combined_xml, dif_header, dif_listings_html)
-        dif_listings_html.close()
+        with open(str(dif_listings_filename), mode='w') as dif_listings_html:
+            gen_dif_listing.gen_listing_html(combined_xml, dif_header,
+                                             dif_listings_html)
 
         difref_functions = gen_dif_listing.get_difref_info(combined_xml, dif_header)
         for function in difref_functions:
             difref_filename = difrefs_root_path.joinpath(function["name"] + '.html')
             difref_filename.parent.mkdir(parents=True, exist_ok=True)
 
-            difref_html = open(str(difref_filename), mode='w')
-            gen_dif_listing.gen_difref_html(function, difref_html)
-            difref_html.close()
+            with open(str(difref_filename), mode='w') as difref_html:
+                gen_dif_listing.gen_difref_html(function, difref_html)
 
         logging.info("Generated DIF Listing for {}".format(dif_header))
 
