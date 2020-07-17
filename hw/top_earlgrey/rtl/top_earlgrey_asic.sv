@@ -10,10 +10,10 @@ module top_earlgrey_asic (
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
-  inout               IO_DPS1, // IO_JTDI,    IO_SDMOSI
-  inout               IO_DPS4, // IO_JTRST_N,
-  inout               IO_DPS5, // IO_JSRST_N,
-  inout               IO_DPS2, // IO_JTDO,    IO_MISO
+  inout               IO_DPS1, // IO_JTDI,    IO_SDS[0] MOSI
+  inout               IO_DPS4, // IO_JTRST_N, IO_SDS[2]
+  inout               IO_DPS5, // IO_JSRST_N, IO_SDS[3]
+  inout               IO_DPS2, // IO_JTDO,    IO_SDS[1] MISO
   inout               IO_DPS6, // JTAG=1,     SPI=0
   inout               IO_DPS7, // BOOTSTRAP=1
   // UART interface
@@ -41,7 +41,23 @@ module top_earlgrey_asic (
   inout               IO_GP12,
   inout               IO_GP13,
   inout               IO_GP14,
-  inout               IO_GP15
+  inout               IO_GP15,
+
+  // RBOX
+  input               IO_RBOX0,     // PwrBO
+  input               IO_RBOX1,     // Key2O
+  input               IO_RBOX2,     // Key1O
+  input               IO_RBOX3,     // Key0O
+  input               IO_RBOX4,     // FlashWpL
+  input               IO_RBOX5,     // EcRstL
+  input               IO_RBOX6,     // EcInRw
+  input               IO_RBOX7,     // BatEn
+  input               IO_RBOX8,     // PwrBI
+  input               IO_RBOX9,     // Key2I
+  input               IO_RBOX10,    // Key1I
+  input               IO_RBOX11,    // Key0I
+  input               IO_RBOX12,    //EcEnteringRw
+  input               IO_RBOX13     // AcPresent
 );
 
   import top_earlgrey_pkg::*;
@@ -117,6 +133,8 @@ module top_earlgrey_asic (
     // DIO Pads
     .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
                              IO_DPS3, // CSB, JTAG_TMS
+                             IO_DPS5,
+                             IO_DPS4,
                              IO_DPS1, // MOSI, JTAG_TDI
                              IO_DPS2, // MISO, JTAG_TDO
                              IO_URX,
@@ -129,7 +147,22 @@ module top_earlgrey_asic (
                              unused_usbdev_suspend, // usbdev_suspend
                              unused_usbdev_d,       // usbdev_d
                              IO_USB_DP0,
-                             IO_USB_DN0 } ),
+                             IO_USB_DN0,
+                             IO_RBOX13,
+                             IO_RBOX12,
+                             IO_RBOX11,
+                             IO_RBOX10,
+                             IO_RBOX9,
+                             IO_RBOX8,
+                             IO_RBOX7,
+                             IO_RBOX6,
+                             IO_RBOX5,
+                             IO_RBOX4,
+                             IO_RBOX3,
+                             IO_RBOX2,
+                             IO_RBOX1,
+                             IO_RBOX0
+                           } ),
     // Muxed IOs
     .mio_in_o            ( mio_in_padring   ),
     .mio_out_i           ( mio_out_padring  ),
@@ -174,9 +207,9 @@ module top_earlgrey_asic (
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
     .TdiIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMosi ),
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS0 ),
     .TdoIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceMiso )
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS1 )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),
