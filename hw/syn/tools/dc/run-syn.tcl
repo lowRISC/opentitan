@@ -26,6 +26,7 @@ set BUILD_DIR $::env(BUILD_DIR)
 # just compile the "core" toplevel at the moment
 # might want to switch to top_earlgrey_asic later on (with pads)
 set DUT $::env(DUT)
+set CONSTRAINT $::env(CONSTRAINT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
@@ -99,7 +100,7 @@ write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
 ##   APPLY CONSTRAINTS   ##
 ###########################
 
-source constraints.sdc
+source ${CONSTRAINT}
 
 # If hold time should be fixed
 # set_fix_hold ${CLK_PIN}
