@@ -964,9 +964,9 @@ insns:
 
           Valid values:
           - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
-          - `1`: Select wrs1[WLEN/2:WLEN/4]
-          - `2`: Select wrs1[WLEN/4*3-1:WLEN/2]
-          - `3`: Select wrs1[WLEN-1:WLEN/4*3] (most significant quarter-word)
+          - `1`: Select `wrs1[WLEN/2:WLEN/4]`
+          - `2`: Select `wrs1[WLEN/4*3-1:WLEN/2]`
+          - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
       - &mulqacc-wrs2
         name: wrs2
         doc: Second source WDR
@@ -978,9 +978,9 @@ insns:
 
           Valid values:
           - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
-          - `1`: Select wrs1[WLEN/2:WLEN/4]
-          - `2`: Select wrs1[WLEN/4*3-1:WLEN/2]
-          - `3`: Select wrs1[WLEN-1:WLEN/4*3] (most significant quarter-word)
+          - `1`: Select `wrs1[WLEN/2:WLEN/4]`
+          - `2`: Select `wrs1[WLEN/4*3-1:WLEN/2]`
+          - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
       - &mulqacc-acc-shift-imm
         name: acc_shift_imm
         type: imm2
