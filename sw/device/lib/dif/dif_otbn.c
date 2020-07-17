@@ -54,7 +54,7 @@ dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy) {
   }
 
   uint32_t status = mmio_region_read32(otbn->base_addr, OTBN_STATUS_REG_OFFSET);
-  *busy = bitfield_get_field32(
+  *busy = bitfield_field32_read(
     status,
     (bitfield_field32_t){
         .mask = 1, .index = OTBN_STATUS_BUSY,
