@@ -67,11 +67,11 @@ module dcd import dcd_pkg::*;(
 
   always_ff @(posedge clk_aon_i or negedge rst_int_ni) begin
     if (!rst_int_ni) begin
-      adc_o.pd         <= 1'b1;
-      adc_o.chnsel     <= 2'h0;
+      adc_o.pd          <= 1'b1;
+      adc_o.channel_sel <= 2'h0;
     end else begin
-      adc_o.pd         <= 1'b0;//TBD
-      adc_o.chnsel     <= 2'b01;//TBD
+      adc_o.pd          <= 1'b0;//TBD
+      adc_o.channel_sel <= 2'b01;//TBD
     end
   end
 
