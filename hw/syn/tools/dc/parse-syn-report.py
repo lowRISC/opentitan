@@ -39,8 +39,8 @@ def _match_fp_number(full_file, patterns):
         floats = []
         matches = re.findall(pattern, full_file, flags=re.MULTILINE)
         if not matches:
-            errs.append('Pattern {!r} of key {!r} not found'
-                        .format(pattern, key))
+            errs.append('Pattern {!r} of key {!r} not found'.format(
+                pattern, key))
             continue
 
         for match in matches:
@@ -113,7 +113,12 @@ def _extract_area(full_file, results, key):
     results['messages']['flow_errors'] += errs
 
     # aggregate one level of sub-modules
-    pattern = r"^([\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+    # TODO: Depth dependent pattern
+    # pattern = r"^([\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+
+    # two sub-levels
+    pattern = r"^top_earlgrey/([\.0-9A-Za-z_\[\]]+){1}" + \
+        r"(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
     for k in range(5):
         pattern += r"\s+(" + FP_NUMBER + r")"
     matches = re.findall(pattern, full_file, flags=re.MULTILINE)
@@ -138,8 +143,7 @@ def _extract_area(full_file, results, key):
             results[key]["instances"][item[0]]["reg"] += float(item[4])
             results[key]["instances"][item[0]]["macro"] += float(item[5])
             results[key]["instances"][item[0]]["total"] += float(item[3]) + \
-                                                           float(item[4]) + \
-                                                           float(item[5])
+                float(item[4]) + float(item[5])
             comb_check += float(item[3])
             reg_check += float(item[4])
             macro_check += float(item[5])
@@ -206,12 +210,13 @@ def _extract_timing(full_file, results, key):
         # get TNS and WNS in that group
         for k, g in enumerate(groups):
             if g.strip() not in results[key]:
-                results[key].update(
-                    {g.strip(): {
-                         "tns": 0.0,
-                         "wns": 0.0,
-                         "period": float("nan")
-                     }})
+                results[key].update({
+                    g.strip(): {
+                        "tns": 0.0,
+                        "wns": 0.0,
+                        "period": float("nan")
+                    }
+                })
             value = float(slack[k]) if float(slack[k]) < 0.0 else 0.0
             results[key][g]["wns"] = min(results[key][g]["wns"], value)
             results[key][g]["tns"] += value
@@ -321,7 +326,7 @@ def _parse_file(path, name, results, handler, key):
     return results
 
 
-def get_results(logpath, reppath, dut):
+def get_results(logpath, reppath, dut, depth):
     """
     Parse report and corresponding logfiles and extract error, warning
     and info messages for each IP present in the result folder
@@ -510,8 +515,13 @@ def main():
                         help="""Output directory for the 'results.hjson' file.
                         Defaults to './'""")
 
+    parser.add_argument('--depth',
+                        type=int,
+                        default=1,
+                        help="""Area Report with hierarchical depth""")
+
     args = parser.parse_args()
-    results = get_results(args.logpath, args.reppath, args.dut)
+    results = get_results(args.logpath, args.reppath, args.dut, args.depth)
 
     with Path(args.outdir).joinpath("results.hjson").open("w") as results_file:
         hjson.dump(results,
@@ -522,10 +532,10 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    nr_errors = len(results["messages"]["flow_errors"])     + \
-                len(results["messages"]["analyze_errors"])  + \
-                len(results["messages"]["elab_errors"])     + \
-                len(results["messages"]["compile_errors"])
+    nr_errors = len(results["messages"]["flow_errors"]) + \
+        len(results["messages"]["analyze_errors"]) +      \
+        len(results["messages"]["elab_errors"]) +         \
+        len(results["messages"]["compile_errors"])
 
     print("""------------- Summary -------------
 Flow Warnings:      %s
