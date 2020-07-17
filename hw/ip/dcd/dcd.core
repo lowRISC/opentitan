@@ -10,6 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:systems:ast_pkg
     files:
       - rtl/dcd_reg_pkg.sv
       - rtl/dcd_reg_top.sv
