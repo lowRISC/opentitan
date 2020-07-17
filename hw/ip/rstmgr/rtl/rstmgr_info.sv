@@ -30,8 +30,8 @@ module rstmgr_info #(
   ) u_cpu_reset_synced (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(rst_cpu_ni),
-    .q(rst_cpu_nq)
+    .d_i(rst_cpu_ni),
+    .q_o(rst_cpu_nq)
   );
 
   // first reset is a flag that blocks reset recording until first de-assertion

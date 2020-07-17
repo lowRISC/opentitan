@@ -39,11 +39,11 @@ module prim_pulse_sync (
 
   prim_flop_2sync #(.Width(1)) prim_flop_2sync (
     // source clock domain
-    .d      (src_level),
+    .d_i    (src_level),
     // destination clock domain
     .clk_i  (clk_dst_i),
     .rst_ni (rst_dst_ni),
-    .q      (dst_level)
+    .q_o    (dst_level)
   );
 
   ////////////////////////////////////////

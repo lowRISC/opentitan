@@ -44,8 +44,8 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
   ) i_prim_flop_2sync_config (
     .clk_i  ( clk_aon_i      ),
     .rst_ni ( rst_aon_ni     ),
-    .d      ( wkup_en_i     ),
-    .q      ( aon_wkup_en_d )
+    .d_i    ( wkup_en_i     ),
+    .q_o    ( aon_wkup_en_d )
   );
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : p_sync
@@ -93,8 +93,8 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
   ) i_prim_flop_2sync_filter (
     .clk_i  ( clk_aon_i  ),
     .rst_ni ( rst_aon_ni ),
-    .d      ( aon_filter_out ),
-    .q      ( aon_filter_out_d )
+    .d_i    ( aon_filter_out ),
+    .q_o    ( aon_filter_out_d )
   );
 
   //////////////////////
@@ -157,8 +157,8 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
   ) i_prim_flop_2sync_cause_in (
     .clk_i  ( clk_aon_i  ),
     .rst_ni ( rst_aon_ni ),
-    .d      ( wkup_cause_data_i   ),
-    .q      ( aon_wkup_cause_data )
+    .d_i    ( wkup_cause_data_i   ),
+    .q_o    ( aon_wkup_cause_data )
   );
 
   prim_pulse_sync i_prim_pulse_sync_cause (
@@ -183,8 +183,8 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
   ) i_prim_flop_2sync_cause_out (
     .clk_i,
     .rst_ni,
-    .d      ( aon_wkup_cause_q  ),
-    .q      ( wkup_cause_data_o )
+    .d_i    ( aon_wkup_cause_q  ),
+    .q_o    ( wkup_cause_data_o )
   );
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : p_aon_cause

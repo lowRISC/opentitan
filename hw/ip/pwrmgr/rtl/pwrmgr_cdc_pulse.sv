@@ -48,8 +48,8 @@ module pwrmgr_cdc_pulse (
   ) i_pos_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_toggle_pq),
-    .q(clk_slow_pq)
+    .d_i(slow_toggle_pq),
+    .q_o(clk_slow_pq)
   );
 
   prim_flop_2sync # (
@@ -57,8 +57,8 @@ module pwrmgr_cdc_pulse (
   ) i_neg_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_toggle_nq),
-    .q(clk_slow_nq)
+    .d_i(slow_toggle_nq),
+    .q_o(clk_slow_nq)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

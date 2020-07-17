@@ -71,8 +71,8 @@ module usbdev_iomux
   ) cdc_io_to_sys (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
-    .d      ({cio_usb_sense_i}),
-    .q      ({sys_usb_sense})
+    .d_i    ({cio_usb_sense_i}),
+    .q_o    ({sys_usb_sense})
   );
 
   assign sys_usb_sense_o = sys_usb_sense;
@@ -83,11 +83,11 @@ module usbdev_iomux
   ) cdc_io_to_usb (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      ({cio_usb_dp_i,
+    .d_i    ({cio_usb_dp_i,
               cio_usb_dn_i,
               cio_usb_d_i,
               async_pwr_sense}),
-    .q      ({cio_usb_dp,
+    .q_o    ({cio_usb_dp,
               cio_usb_dn,
               cio_usb_d,
               usb_pwr_sense_o})

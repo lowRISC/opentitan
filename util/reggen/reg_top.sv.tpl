@@ -97,7 +97,7 @@ module ${block.name}_reg_top ${print_param(params)}(
     .tl_h_o (tl_o),
     .tl_d_o (tl_socket_h2d),
     .tl_d_i (tl_socket_d2h),
-    .dev_select (reg_steer)
+    .dev_select_i (reg_steer)
   );
 
   // Create steering logic

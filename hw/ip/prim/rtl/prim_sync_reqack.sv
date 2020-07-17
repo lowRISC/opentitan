@@ -53,8 +53,8 @@ module prim_sync_reqack (
   ) req_sync (
     .clk_i  (clk_dst_i),
     .rst_ni (rst_dst_ni),
-    .d      (src_req_q),
-    .q      (dst_req)
+    .d_i    (src_req_q),
+    .q_o    (dst_req)
   );
 
   // Move ACK over to REQ side.
@@ -63,8 +63,8 @@ module prim_sync_reqack (
   ) ack_sync (
     .clk_i  (clk_src_i),
     .rst_ni (rst_src_ni),
-    .d      (dst_ack_q),
-    .q      (src_ack)
+    .d_i    (dst_ack_q),
+    .q_o    (src_ack)
   );
 
   // REQ-side FSM (source domain)

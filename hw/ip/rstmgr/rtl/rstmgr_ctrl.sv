@@ -39,8 +39,8 @@ module rstmgr_ctrl import rstmgr_pkg::*; #(
   ) u_lc (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(rst_parent_ni),
-    .q(rst_parent_synced)
+    .d_i(rst_parent_ni),
+    .q_o(rst_parent_synced)
   );
 
   // always on handling
