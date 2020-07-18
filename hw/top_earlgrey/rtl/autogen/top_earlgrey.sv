@@ -16,13 +16,13 @@ module top_earlgrey #(
   output              jtag_tdo_o,
 
   // Multiplexed I/O
-  input        [31:0] mio_in_i,
-  output logic [31:0] mio_out_o,
-  output logic [31:0] mio_oe_o,
+  input        [46:0] mio_in_i,
+  output logic [46:0] mio_out_o,
+  output logic [46:0] mio_oe_o,
   // Dedicated I/O
-  input        [30:0] dio_in_i,
-  output logic [30:0] dio_out_o,
-  output logic [30:0] dio_oe_o,
+  input        [14:0] dio_in_i,
+  output logic [14:0] dio_out_o,
+  output logic [14:0] dio_oe_o,
 
   // pad attributes to padring
   output logic[padctrl_reg_pkg::NMioPads-1:0]
@@ -169,12 +169,12 @@ module top_earlgrey #(
   tl_d2h_t tl_main_aon_d2h;
 
   // Signals
-  logic [40:0] mio_p2d;
-  logic [49:0] mio_d2p;
-  logic [49:0] mio_d2p_en;
-  logic [30:0] dio_p2d;
-  logic [30:0] dio_d2p;
-  logic [30:0] dio_d2p_en;
+  logic [47:0] mio_p2d;
+  logic [58:0] mio_d2p;
+  logic [58:0] mio_d2p_en;
+  logic [14:0] dio_p2d;
+  logic [14:0] dio_d2p;
+  logic [14:0] dio_d2p_en;
   // uart
   logic        cio_uart_rx_p2d;
   logic        cio_uart_tx_d2p;
@@ -1804,10 +1804,19 @@ module top_earlgrey #(
     cio_i2c1_scl_d2p,
     cio_i2c2_sda_d2p,
     cio_i2c2_scl_d2p,
+    cio_uart_tx_d2p,
     cio_uart1_tx_d2p,
     cio_uart2_tx_d2p,
     cio_uart3_tx_d2p,
-    cio_pwm_aon_pwm_d2p
+    cio_pwm_aon_pwm_d2p,
+    cio_rbox_aon_bat_en_d2p,
+    cio_rbox_aon_ec_in_rw_d2p,
+    cio_rbox_aon_ec_rst_l_d2p,
+    cio_rbox_aon_flash_wp_l_d2p,
+    cio_rbox_aon_key0_out_d2p,
+    cio_rbox_aon_key1_out_d2p,
+    cio_rbox_aon_key2_out_d2p,
+    cio_rbox_aon_pwrb_out_d2p
   };
   assign mio_d2p_en = {
     cio_gpio_gpio_en_d2p,
@@ -1817,10 +1826,19 @@ module top_earlgrey #(
     cio_i2c1_scl_en_d2p,
     cio_i2c2_sda_en_d2p,
     cio_i2c2_scl_en_d2p,
+    cio_uart_tx_en_d2p,
     cio_uart1_tx_en_d2p,
     cio_uart2_tx_en_d2p,
     cio_uart3_tx_en_d2p,
-    cio_pwm_aon_pwm_en_d2p
+    cio_pwm_aon_pwm_en_d2p,
+    cio_rbox_aon_bat_en_en_d2p,
+    cio_rbox_aon_ec_in_rw_en_d2p,
+    cio_rbox_aon_ec_rst_l_en_d2p,
+    cio_rbox_aon_flash_wp_l_en_d2p,
+    cio_rbox_aon_key0_out_en_d2p,
+    cio_rbox_aon_key1_out_en_d2p,
+    cio_rbox_aon_key2_out_en_d2p,
+    cio_rbox_aon_pwrb_out_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d,
@@ -1830,104 +1848,72 @@ module top_earlgrey #(
     cio_i2c1_scl_p2d,
     cio_i2c2_sda_p2d,
     cio_i2c2_scl_p2d,
+    cio_uart_rx_p2d,
     cio_uart1_rx_p2d,
     cio_uart2_rx_p2d,
-    cio_uart3_rx_p2d
+    cio_uart3_rx_p2d,
+    cio_rbox_aon_ac_present_p2d,
+    cio_rbox_aon_ec_entering_rw_p2d,
+    cio_rbox_aon_key0_in_p2d,
+    cio_rbox_aon_key1_in_p2d,
+    cio_rbox_aon_key2_in_p2d,
+    cio_rbox_aon_pwrb_in_p2d
   } = mio_p2d;
 
   // Dedicated IO connections
   // Input-only DIOs have no d2p signals
   assign dio_d2p = {
-    1'b0, // DIO30: cio_spi_device_sck
-    1'b0, // DIO29: cio_spi_device_csb
-    cio_spi_device_s_d2p, // DIO28
-    1'b0, // DIO27: cio_uart_rx
-    cio_uart_tx_d2p, // DIO26
-    1'b0, // DIO25: cio_usbdev_aon_sense
-    cio_usbdev_aon_se0_d2p, // DIO24
-    cio_usbdev_aon_dp_pullup_d2p, // DIO23
-    cio_usbdev_aon_dn_pullup_d2p, // DIO22
-    cio_usbdev_aon_tx_mode_se_d2p, // DIO21
-    cio_usbdev_aon_suspend_d2p, // DIO20
-    cio_usbdev_aon_d_d2p, // DIO19
-    cio_usbdev_aon_dp_d2p, // DIO18
-    cio_usbdev_aon_dn_d2p, // DIO17
-    1'b0, // DIO16: cio_rbox_aon_ac_present
-    1'b0, // DIO15: cio_rbox_aon_ec_entering_rw
-    1'b0, // DIO14: cio_rbox_aon_key0_in
-    1'b0, // DIO13: cio_rbox_aon_key1_in
-    1'b0, // DIO12: cio_rbox_aon_key2_in
-    1'b0, // DIO11: cio_rbox_aon_pwrb_in
-    cio_rbox_aon_bat_en_d2p, // DIO10
-    cio_rbox_aon_ec_in_rw_d2p, // DIO9
-    cio_rbox_aon_ec_rst_l_d2p, // DIO8
-    cio_rbox_aon_flash_wp_l_d2p, // DIO7
-    cio_rbox_aon_key0_out_d2p, // DIO6
-    cio_rbox_aon_key1_out_d2p, // DIO5
-    cio_rbox_aon_key2_out_d2p, // DIO4
-    cio_rbox_aon_pwrb_out_d2p // DIO3
+    1'b0, // DIO14: cio_spi_device_sck
+    1'b0, // DIO13: cio_spi_device_csb
+    cio_spi_device_s_d2p[3], // DIO12
+    cio_spi_device_s_d2p[2], // DIO11
+    cio_spi_device_s_d2p[1], // DIO10
+    cio_spi_device_s_d2p[0], // DIO9
+    1'b0, // DIO8: cio_usbdev_aon_sense
+    cio_usbdev_aon_se0_d2p, // DIO7
+    cio_usbdev_aon_dp_pullup_d2p, // DIO6
+    cio_usbdev_aon_dn_pullup_d2p, // DIO5
+    cio_usbdev_aon_tx_mode_se_d2p, // DIO4
+    cio_usbdev_aon_suspend_d2p, // DIO3
+    cio_usbdev_aon_d_d2p, // DIO2
+    cio_usbdev_aon_dp_d2p, // DIO1
+    cio_usbdev_aon_dn_d2p // DIO0
   };
 
   assign dio_d2p_en = {
-    1'b0, // DIO30: cio_spi_device_sck
-    1'b0, // DIO29: cio_spi_device_csb
-    cio_spi_device_s_en_d2p, // DIO28
-    1'b0, // DIO27: cio_uart_rx
-    cio_uart_tx_en_d2p, // DIO26
-    1'b0, // DIO25: cio_usbdev_aon_sense
-    cio_usbdev_aon_se0_en_d2p, // DIO24
-    cio_usbdev_aon_dp_pullup_en_d2p, // DIO23
-    cio_usbdev_aon_dn_pullup_en_d2p, // DIO22
-    cio_usbdev_aon_tx_mode_se_en_d2p, // DIO21
-    cio_usbdev_aon_suspend_en_d2p, // DIO20
-    cio_usbdev_aon_d_en_d2p, // DIO19
-    cio_usbdev_aon_dp_en_d2p, // DIO18
-    cio_usbdev_aon_dn_en_d2p, // DIO17
-    1'b0, // DIO16: cio_rbox_aon_ac_present
-    1'b0, // DIO15: cio_rbox_aon_ec_entering_rw
-    1'b0, // DIO14: cio_rbox_aon_key0_in
-    1'b0, // DIO13: cio_rbox_aon_key1_in
-    1'b0, // DIO12: cio_rbox_aon_key2_in
-    1'b0, // DIO11: cio_rbox_aon_pwrb_in
-    cio_rbox_aon_bat_en_en_d2p, // DIO10
-    cio_rbox_aon_ec_in_rw_en_d2p, // DIO9
-    cio_rbox_aon_ec_rst_l_en_d2p, // DIO8
-    cio_rbox_aon_flash_wp_l_en_d2p, // DIO7
-    cio_rbox_aon_key0_out_en_d2p, // DIO6
-    cio_rbox_aon_key1_out_en_d2p, // DIO5
-    cio_rbox_aon_key2_out_en_d2p, // DIO4
-    cio_rbox_aon_pwrb_out_en_d2p // DIO3
+    1'b0, // DIO14: cio_spi_device_sck
+    1'b0, // DIO13: cio_spi_device_csb
+    cio_spi_device_s_en_d2p[3], // DIO12
+    cio_spi_device_s_en_d2p[2], // DIO11
+    cio_spi_device_s_en_d2p[1], // DIO10
+    cio_spi_device_s_en_d2p[0], // DIO9
+    1'b0, // DIO8: cio_usbdev_aon_sense
+    cio_usbdev_aon_se0_en_d2p, // DIO7
+    cio_usbdev_aon_dp_pullup_en_d2p, // DIO6
+    cio_usbdev_aon_dn_pullup_en_d2p, // DIO5
+    cio_usbdev_aon_tx_mode_se_en_d2p, // DIO4
+    cio_usbdev_aon_suspend_en_d2p, // DIO3
+    cio_usbdev_aon_d_en_d2p, // DIO2
+    cio_usbdev_aon_dp_en_d2p, // DIO1
+    cio_usbdev_aon_dn_en_d2p // DIO0
   };
 
-  // Output-only DIOs have no p2d signal
-  assign cio_spi_device_sck_p2d          = dio_p2d[30]; // DIO30
-  assign cio_spi_device_csb_p2d          = dio_p2d[29]; // DIO29
-  assign cio_spi_device_s_p2d            = dio_p2d[28]; // DIO28
-  assign cio_uart_rx_p2d                 = dio_p2d[27]; // DIO27
-  // DIO26: cio_uart_tx
-  assign cio_usbdev_aon_sense_p2d        = dio_p2d[25]; // DIO25
-  // DIO24: cio_usbdev_aon_se0
-  // DIO23: cio_usbdev_aon_dp_pullup
-  // DIO22: cio_usbdev_aon_dn_pullup
-  // DIO21: cio_usbdev_aon_tx_mode_se
-  // DIO20: cio_usbdev_aon_suspend
-  assign cio_usbdev_aon_d_p2d            = dio_p2d[19]; // DIO19
-  assign cio_usbdev_aon_dp_p2d           = dio_p2d[18]; // DIO18
-  assign cio_usbdev_aon_dn_p2d           = dio_p2d[17]; // DIO17
-  assign cio_rbox_aon_ac_present_p2d     = dio_p2d[16]; // DIO16
-  assign cio_rbox_aon_ec_entering_rw_p2d = dio_p2d[15]; // DIO15
-  assign cio_rbox_aon_key0_in_p2d        = dio_p2d[14]; // DIO14
-  assign cio_rbox_aon_key1_in_p2d        = dio_p2d[13]; // DIO13
-  assign cio_rbox_aon_key2_in_p2d        = dio_p2d[12]; // DIO12
-  assign cio_rbox_aon_pwrb_in_p2d        = dio_p2d[11]; // DIO11
-  // DIO10: cio_rbox_aon_bat_en
-  // DIO9: cio_rbox_aon_ec_in_rw
-  // DIO8: cio_rbox_aon_ec_rst_l
-  // DIO7: cio_rbox_aon_flash_wp_l
-  // DIO6: cio_rbox_aon_key0_out
-  // DIO5: cio_rbox_aon_key1_out
-  // DIO4: cio_rbox_aon_key2_out
-  // DIO3: cio_rbox_aon_pwrb_out
+  // Output-only DIOs have no p2d signal 
+  assign cio_spi_device_sck_p2d        = dio_p2d[14]; // DIO14
+  assign cio_spi_device_csb_p2d        = dio_p2d[13]; // DIO13
+  assign cio_spi_device_s_p2d[3]       = dio_p2d[12]; // DIO12
+  assign cio_spi_device_s_p2d[2]       = dio_p2d[11]; // DIO11
+  assign cio_spi_device_s_p2d[1]       = dio_p2d[10]; // DIO10
+  assign cio_spi_device_s_p2d[0]       = dio_p2d[9]; // DIO9
+  assign cio_usbdev_aon_sense_p2d      = dio_p2d[8]; // DIO8
+  // DIO7: cio_usbdev_aon_se0 // DIO7
+  // DIO6: cio_usbdev_aon_dp_pullup // DIO6
+  // DIO5: cio_usbdev_aon_dn_pullup // DIO5
+  // DIO4: cio_usbdev_aon_tx_mode_se // DIO4
+  // DIO3: cio_usbdev_aon_suspend // DIO3
+  assign cio_usbdev_aon_d_p2d          = dio_p2d[2]; // DIO2
+  assign cio_usbdev_aon_dp_p2d         = dio_p2d[1]; // DIO1
+  assign cio_usbdev_aon_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_aon_clk_main, 0)

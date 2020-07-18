@@ -25,13 +25,13 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "31",
+      default: "15",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "47",
       local: "true"
     },
     { name: "AttrDw",
