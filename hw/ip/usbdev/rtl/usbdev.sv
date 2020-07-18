@@ -205,10 +205,6 @@ module usbdev (
     .rready_i  (reg2hw.rxfifo.buffer.re),
     .rdata_o   (rx_rdata_raw),
     .rdepth_o  (hw2reg.usbstat.rx_depth.d)
-    .rvalid_o  (rx_fifo_rvalid),
-    .rready_i  (rx_fifo_re),
-    .rdata_o   (rx_rdata_raw),
-    .rdepth_o  (hw2reg.usbstat.rx_depth.d)
   );
 
   // Return all zero if the FIFO is empty (instead of X)

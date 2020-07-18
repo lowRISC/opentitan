@@ -126,13 +126,13 @@ module kmac
     .clk_i,
     .rst_ni,
     .clr_i      (1'b0),
-    .wvalid     (fifo_wvalid),
-    .wready     (fifo_wready),
-    .wdata      (fifo_wdata ),
-    .rvalid     (fifo_rvalid),
-    .rready     (fifo_rready),
-    .rdata      (fifo_rdata ),
-    .depth      ()
+    .wvalid_i   (fifo_wvalid),
+    .wready_o   (fifo_wready),
+    .wdata_i    (fifo_wdata ),
+    .rvalid_o   (fifo_rvalid),
+    .rready_i   (fifo_rready),
+    .rdata_o    (fifo_rdata ),
+    .depth_o    ()
   );
   // Random Gate Gen ==========================================================
   prim_gate_gen #(
