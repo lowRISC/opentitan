@@ -23,11 +23,9 @@ module padring import padctrl_reg_pkg::*; #(
 ) (
   // pad input
   input wire                  clk_pad_i,
-  input wire                  clk_usb_48mhz_pad_i,
   input wire                  rst_pad_ni,
   // to clocking/reset infrastructure
   output logic                clk_o,
-  output logic                clk_usb_48mhz_o,
   output logic                rst_no,
   // pads
   inout wire   [NMioPads-1:0] mio_pad_io,
@@ -56,7 +54,6 @@ module padring import padctrl_reg_pkg::*; #(
   // (even though oe is hardwired to 0).
   wire clk, clk_usb_48mhz, rst_n;
   assign clk           = clk_pad_i;
-  assign clk_usb_48mhz = clk_usb_48mhz_pad_i;
   assign rst_n         = rst_pad_ni;
 
   prim_pad_wrapper #(
@@ -65,19 +62,6 @@ module padring import padctrl_reg_pkg::*; #(
   ) i_clk_pad (
     .inout_io ( clk   ),
     .in_o     ( clk_o ),
-    .ie_i     ( 1'b1  ),
-    .out_i    ( 1'b0  ),
-    .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  ),
-    .warl_o   (       )
-  );
-
-  prim_pad_wrapper #(
-    .AttrDw  ( AttrDw ),
-    .Variant ( 1      ) // input-only
-  ) i_clk_usb_48mhz_pad (
-    .inout_io ( clk_usb_48mhz   ),
-    .in_o     ( clk_usb_48mhz_o ),
     .ie_i     ( 1'b1  ),
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
