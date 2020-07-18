@@ -554,13 +554,13 @@ module csrng_core import csrng_pkg::*; #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!cs_enable),
-       .wvalid         (sfifo_entr_push),
-       .wready         (sfifo_entr_not_full),
-       .wdata          (sfifo_entr_wdata),
-       .rvalid         (sfifo_entr_not_empty),
-       .rready         (sfifo_entr_pop),
-       .rdata          (sfifo_entr_rdata),
-       .depth          (sfifo_entr_depth)
+       .wvalid_i       (sfifo_entr_push),
+       .wready_o       (sfifo_entr_not_full),
+       .wdata_i        (sfifo_entr_wdata),
+       .rvalid_o       (sfifo_entr_not_empty),
+       .rready_i       (sfifo_entr_pop),
+       .rdata_o        (sfifo_entr_rdata),
+       .depth_o        (sfifo_entr_depth)
        );
 
   assign entropy_src_hw_if_o.entropy_src_rdy = cs_enable && sfifo_entr_not_full;
@@ -600,13 +600,13 @@ module csrng_core import csrng_pkg::*; #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!cs_enable),
-       .wvalid         (sfifo_pentr_push),
-       .wready         (sfifo_pentr_not_full),
-       .wdata          (sfifo_pentr_wdata),
-       .rvalid         (sfifo_pentr_not_empty),
-       .rready         (sfifo_pentr_pop),
-       .rdata          (sfifo_pentr_rdata),
-       .depth          (sfifo_pentr_depth)
+       .wvalid_i       (sfifo_pentr_push),
+       .wready_o       (sfifo_pentr_not_full),
+       .wdata_i        (sfifo_pentr_wdata),
+       .rvalid_o       (sfifo_pentr_not_empty),
+       .rready_i       (sfifo_pentr_pop),
+       .rdata_o        (sfifo_pentr_rdata),
+       .depth_o        (sfifo_pentr_depth)
        );
 
   // allow one extra location because of packer
@@ -901,7 +901,7 @@ module csrng_core import csrng_pkg::*; #(
 
   assign     hw2reg.cs_sum_sts.fifo_depth_sts.de = cs_enable;
   assign     hw2reg.cs_sum_sts.fifo_depth_sts.d  =
-             (fifo_sel == 4'h0) ? {{(24-$clog2(EntrFifoDepth)){1'b0}},sfifo_entr_depth} : 
+             (fifo_sel == 4'h0) ? {{(24-$clog2(EntrFifoDepth)){1'b0}},sfifo_entr_depth} :
              24'b0;
 
 

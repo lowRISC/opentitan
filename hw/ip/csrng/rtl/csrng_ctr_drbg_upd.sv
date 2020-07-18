@@ -213,13 +213,13 @@ module csrng_ctr_drbg_upd #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid   (sfifo_updreq_push),
-    .wready   (sfifo_updreq_not_full),
-    .wdata    (sfifo_updreq_wdata),
-    .rvalid   (sfifo_updreq_not_empty),
-    .rready   (sfifo_updreq_pop),
-    .rdata    (sfifo_updreq_rdata),
-    .depth    ()
+    .wvalid_i (sfifo_updreq_push),
+    .wready_o (sfifo_updreq_not_full),
+    .wdata_i  (sfifo_updreq_wdata),
+    .rvalid_o (sfifo_updreq_not_empty),
+    .rready_i (sfifo_updreq_pop),
+    .rdata_o  (sfifo_updreq_rdata),
+    .depth_o  ()
   );
 
   assign sfifo_updreq_push = sfifo_updreq_not_full && ctr_drbg_upd_req_i;
@@ -306,13 +306,13 @@ module csrng_ctr_drbg_upd #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid   (sfifo_bencreq_push),
-    .wready   (sfifo_bencreq_not_full),
-    .wdata    (sfifo_bencreq_wdata),
-    .rvalid   (sfifo_bencreq_not_empty),
-    .rready   (sfifo_bencreq_pop),
-    .rdata    (sfifo_bencreq_rdata),
-    .depth    ()
+    .wvalid_i (sfifo_bencreq_push),
+    .wready_o (sfifo_bencreq_not_full),
+    .wdata_i  (sfifo_bencreq_wdata),
+    .rvalid_o (sfifo_bencreq_not_empty),
+    .rready_i (sfifo_bencreq_pop),
+    .rdata_o  (sfifo_bencreq_rdata),
+    .depth_o  ()
   );
 
   assign sfifo_bencreq_pop = block_encrypt_req_o && block_encrypt_rdy_i;
@@ -342,20 +342,20 @@ module csrng_ctr_drbg_upd #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid   (sfifo_bencack_push),
-    .wready   (sfifo_bencack_not_full),
-    .wdata    (sfifo_bencack_wdata),
-    .rvalid   (sfifo_bencack_not_empty),
-    .rready   (sfifo_bencack_pop),
-    .rdata    (sfifo_bencack_rdata),
-    .depth    ()
+    .wvalid_i (sfifo_bencack_push),
+    .wready_o (sfifo_bencack_not_full),
+    .wdata_i  (sfifo_bencack_wdata),
+    .rvalid_o (sfifo_bencack_not_empty),
+    .rready_i (sfifo_bencack_pop),
+    .rdata_o  (sfifo_bencack_rdata),
+    .depth_o  ()
   );
 
   assign sfifo_bencack_push = sfifo_bencack_not_full && block_encrypt_ack_i;
   assign sfifo_bencack_wdata = {block_encrypt_v_i,block_encrypt_inst_id_i,block_encrypt_ccmd_i};
   assign block_encrypt_rdy_o = sfifo_bencack_not_full;
 
-  assign {sfifo_bencack_v,sfifo_bencack_inst_id,sfifo_bencack_ccmd} = sfifo_bencack_rdata; 
+  assign {sfifo_bencack_v,sfifo_bencack_inst_id,sfifo_bencack_ccmd} = sfifo_bencack_rdata;
 
   assign sfifo_bencack_err =
          (sfifo_bencack_push && !sfifo_bencack_not_full) ||
@@ -370,13 +370,13 @@ module csrng_ctr_drbg_upd #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid   (sfifo_pdata_push),
-    .wready   (sfifo_pdata_not_full),
-    .wdata    (sfifo_pdata_wdata),
-    .rvalid   (sfifo_pdata_not_empty),
-    .rready   (sfifo_pdata_pop),
-    .rdata    (sfifo_pdata_rdata),
-    .depth    ()
+    .wvalid_i (sfifo_pdata_push),
+    .wready_o (sfifo_pdata_not_full),
+    .wdata_i  (sfifo_pdata_wdata),
+    .rvalid_o (sfifo_pdata_not_empty),
+    .rready_i (sfifo_pdata_pop),
+    .rdata_o  (sfifo_pdata_rdata),
+    .depth_o  ()
   );
 
   assign sfifo_pdata_wdata = sfifo_updreq_pdata;
@@ -459,18 +459,18 @@ module csrng_ctr_drbg_upd #(
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
-    .wvalid   (sfifo_final_push),
-    .wready   (sfifo_final_not_full),
-    .wdata    (sfifo_final_wdata),
-    .rvalid   (sfifo_final_not_empty),
-    .rready   (sfifo_final_pop),
-    .rdata    (sfifo_final_rdata),
-    .depth    ()
+    .wvalid_i (sfifo_final_push),
+    .wready_o (sfifo_final_not_full),
+    .wdata_i  (sfifo_final_wdata),
+    .rvalid_o (sfifo_final_not_empty),
+    .rready_i (sfifo_final_pop),
+    .rdata_o  (sfifo_final_rdata),
+    .depth_o  ()
   );
 
   assign sfifo_final_wdata = {updated_key_and_v,concat_inst_id_q,concat_ccmd_q};
 
-  assign {sfifo_final_key,sfifo_final_v,sfifo_final_inst_id,sfifo_final_ccmd} = sfifo_final_rdata; 
+  assign {sfifo_final_key,sfifo_final_v,sfifo_final_inst_id,sfifo_final_ccmd} = sfifo_final_rdata;
 
   assign sfifo_final_pop = ctr_drbg_upd_rdy_i && sfifo_final_not_empty;
   assign ctr_drbg_upd_ack_o = sfifo_final_pop;
