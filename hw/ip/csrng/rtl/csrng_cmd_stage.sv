@@ -92,13 +92,13 @@ module csrng_cmd_stage #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!cs_enable_i),
-       .wvalid         (sfifo_cmd_push),
-       .wready         (sfifo_cmd_not_full),
-       .wdata          (sfifo_cmd_wdata),
-       .rvalid         (sfifo_cmd_not_empty),
-       .rready         (sfifo_cmd_pop),
-       .rdata          (sfifo_cmd_rdata),
-       .depth          (sfifo_cmd_depth)
+       .wvalid_i       (sfifo_cmd_push),
+       .wready_o       (sfifo_cmd_not_full),
+       .wdata_i        (sfifo_cmd_wdata),
+       .rvalid_o       (sfifo_cmd_not_empty),
+       .rready_i       (sfifo_cmd_pop),
+       .rdata_o        (sfifo_cmd_rdata),
+       .depth_o        (sfifo_cmd_depth)
        );
 
   assign sfifo_cmd_wdata = cmd_stage_bus_i;
@@ -212,13 +212,13 @@ module csrng_cmd_stage #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!cs_enable_i),
-       .wvalid         (sfifo_genbits_push),
-       .wready         (sfifo_genbits_not_full),
-       .wdata          (sfifo_genbits_wdata),
-       .rvalid         (sfifo_genbits_not_empty),
-       .rready         (sfifo_genbits_pop),
-       .rdata          (sfifo_genbits_rdata),
-       .depth          () // sfifo_genbits_depth)
+       .wvalid_i       (sfifo_genbits_push),
+       .wready_o       (sfifo_genbits_not_full),
+       .wdata_i        (sfifo_genbits_wdata),
+       .rvalid_o       (sfifo_genbits_not_empty),
+       .rready_i       (sfifo_genbits_pop),
+       .rdata_o        (sfifo_genbits_rdata),
+       .depth_o        () // sfifo_genbits_depth)
        );
 
   assign sfifo_genbits_wdata = genbits_bus_i;

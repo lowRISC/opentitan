@@ -146,13 +146,13 @@ module csrng_ctr_drbg_cmd #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!ctr_drbg_cmd_enable_i),
-       .wvalid         (sfifo_cmdreq_push),
-       .wready         (sfifo_cmdreq_not_full),
-       .wdata          (sfifo_cmdreq_wdata),
-       .rvalid         (sfifo_cmdreq_not_empty),
-       .rready         (sfifo_cmdreq_pop),
-       .rdata          (sfifo_cmdreq_rdata),
-       .depth          ()
+       .wvalid_i       (sfifo_cmdreq_push),
+       .wready_o       (sfifo_cmdreq_not_full),
+       .wdata_i        (sfifo_cmdreq_wdata),
+       .rvalid_o       (sfifo_cmdreq_not_empty),
+       .rready_i       (sfifo_cmdreq_pop),
+       .rdata_o        (sfifo_cmdreq_rdata),
+       .depth_o        ()
        );
 
   assign sfifo_cmdreq_wdata = {ctr_drbg_cmd_key_i,ctr_drbg_cmd_v_i,ctr_drbg_cmd_rc_i,
@@ -231,13 +231,13 @@ module csrng_ctr_drbg_cmd #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!ctr_drbg_cmd_enable_i),
-       .wvalid         (sfifo_rcstage_push),
-       .wready         (sfifo_rcstage_not_full),
-       .wdata          (sfifo_rcstage_wdata),
-       .rvalid         (sfifo_rcstage_not_empty),
-       .rready         (sfifo_rcstage_pop),
-       .rdata          (sfifo_rcstage_rdata),
-       .depth          ()
+       .wvalid_i       (sfifo_rcstage_push),
+       .wready_o       (sfifo_rcstage_not_full),
+       .wdata_i        (sfifo_rcstage_wdata),
+       .rvalid_o       (sfifo_rcstage_not_empty),
+       .rready_i       (sfifo_rcstage_pop),
+       .rdata_o        (sfifo_rcstage_rdata),
+       .depth_o        ()
        );
 
   assign sfifo_rcstage_push = sfifo_cmdreq_pop;
@@ -262,13 +262,13 @@ module csrng_ctr_drbg_cmd #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!ctr_drbg_cmd_enable_i),
-       .wvalid         (sfifo_keyvrc_push),
-       .wready         (sfifo_keyvrc_not_full),
-       .wdata          (sfifo_keyvrc_wdata),
-       .rvalid         (sfifo_keyvrc_not_empty),
-       .rready         (sfifo_keyvrc_pop),
-       .rdata          (sfifo_keyvrc_rdata),
-       .depth          ()
+       .wvalid_i       (sfifo_keyvrc_push),
+       .wready_o       (sfifo_keyvrc_not_full),
+       .wdata_i        (sfifo_keyvrc_wdata),
+       .rvalid_o       (sfifo_keyvrc_not_empty),
+       .rready_i       (sfifo_keyvrc_pop),
+       .rdata_o        (sfifo_keyvrc_rdata),
+       .depth_o        ()
        );
 
   assign sfifo_keyvrc_push = sfifo_rcstage_pop;

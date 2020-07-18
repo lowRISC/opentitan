@@ -112,13 +112,13 @@ module csrng_block_encrypt import aes_pkg::*; #(
        .clk_i    (clk_i),
        .rst_ni   (rst_ni),
        .clr_i    (!block_encrypt_enable_i),
-       .wvalid   (sfifo_blkenc_push),
-       .wready   (sfifo_blkenc_not_full),
-       .wdata    (sfifo_blkenc_wdata),
-       .rvalid   (sfifo_blkenc_not_empty),
-       .rready   (sfifo_blkenc_pop),
-       .rdata    (sfifo_blkenc_rdata),
-       .depth    ()
+       .wvalid_i (sfifo_blkenc_push),
+       .wready_o (sfifo_blkenc_not_full),
+       .wdata_i  (sfifo_blkenc_wdata),
+       .rvalid_o (sfifo_blkenc_not_empty),
+       .rready_i (sfifo_blkenc_pop),
+       .rdata_o  (sfifo_blkenc_rdata),
+       .depth_o  ()
        );
 
   assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
