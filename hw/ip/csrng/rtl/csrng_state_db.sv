@@ -123,13 +123,13 @@ module csrng_state_db #(
        .clk_i          (clk_i),
        .rst_ni         (rst_ni),
        .clr_i          (!state_db_enable_i),
-       .wvalid         (sfifo_wrreq_push),
-       .wready         (sfifo_wrreq_not_full),
-       .wdata          (sfifo_wrreq_wdata),
-       .rvalid         (sfifo_wrreq_not_empty),
-       .rready         (sfifo_wrreq_pop),
-       .rdata          (sfifo_wrreq_rdata),
-       .depth          ()
+       .wvalid_i       (sfifo_wrreq_push),
+       .wready_o       (sfifo_wrreq_not_full),
+       .wdata_i        (sfifo_wrreq_wdata),
+       .rvalid_o       (sfifo_wrreq_not_empty),
+       .rready_i       (sfifo_wrreq_pop),
+       .rdata_o        (sfifo_wrreq_rdata),
+       .depth_o        ()
        );
 
   assign sfifo_wrreq_wdata = {state_db_wr_key_i,state_db_wr_v_i,state_db_wr_res_ctr_i,
