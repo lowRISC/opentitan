@@ -6,7 +6,6 @@ module top_earlgrey_asic (
   // Clock and Reset
   inout               IO_CLK,
   inout               IO_RST_N,
-  inout               IO_CLK_USB_48MHZ,
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -70,7 +69,7 @@ module top_earlgrey_asic (
   // Padring Instance //
   //////////////////////
 
-  logic clk, clk_usb_48mhz, rst_n;
+  logic clk, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -103,10 +102,8 @@ module top_earlgrey_asic (
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( IO_CLK           ),
-    .clk_usb_48mhz_pad_i ( IO_CLK_USB_48MHZ ),
     .rst_pad_ni          ( IO_RST_N         ),
     .clk_o               ( clk              ),
-    .clk_usb_48mhz_o     ( clk_usb_48mhz    ),
     .rst_no              ( rst_n            ),
     // MIO Pads
     .mio_pad_io          ( { unused_mio, // Note that 31:20 are currently not mapped
