@@ -88,25 +88,25 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "41",
+      default: "48",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "50",
+      default: "59",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "47",
       local: "true"
     },
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "31",
+      default: "15",
       local: "true"
     },
     { name: "NWkupDetect",
@@ -431,7 +431,7 @@
                   regwen:   "REGEN",
                   cname:    "DETECTOR",
                   fields: [
-                    { bits: "4:0",
+                    { bits: "5:0",
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).

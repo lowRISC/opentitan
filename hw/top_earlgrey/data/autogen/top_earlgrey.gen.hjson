@@ -6793,7 +6793,7 @@
   ]
   pinmux:
   {
-    num_mio: 32
+    num_mio: 47
     dio_modules:
     [
       {
@@ -6804,29 +6804,16 @@
         ]
       }
       {
-        name: uart
-        pad:
-        [
-          ChA[0..1]
-        ]
-      }
-      {
         name: usbdev_aon
         pad:
         [
           ChC[0..8]
         ]
       }
-      {
-        name: rbox_aon
-        pad:
-        [
-          ChD[0..13]
-        ]
-      }
     ]
     mio_modules:
     [
+      uart
       uart1
       uart2
       uart3
@@ -6835,6 +6822,7 @@
       i2c1
       i2c2
       pwm_aon
+      rbox_aon
     ]
     nc_modules:
     [
@@ -6893,32 +6881,6 @@
           {
             name: ChB
             index: 5
-          }
-        ]
-      }
-      {
-        name: uart_rx
-        width: 1
-        type: input
-        module_name: uart
-        pad:
-        [
-          {
-            name: ChA
-            index: 0
-          }
-        ]
-      }
-      {
-        name: uart_tx
-        width: 1
-        type: output
-        module_name: uart
-        pad:
-        [
-          {
-            name: ChA
-            index: 1
           }
         ]
       }
@@ -7039,191 +7001,15 @@
           }
         ]
       }
-      {
-        name: rbox_aon_ac_present
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 0
-          }
-        ]
-      }
-      {
-        name: rbox_aon_ec_entering_rw
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 1
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key0_in
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 2
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key1_in
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 3
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key2_in
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 4
-          }
-        ]
-      }
-      {
-        name: rbox_aon_pwrb_in
-        width: 1
-        type: input
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 5
-          }
-        ]
-      }
-      {
-        name: rbox_aon_bat_en
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 6
-          }
-        ]
-      }
-      {
-        name: rbox_aon_ec_in_rw
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 7
-          }
-        ]
-      }
-      {
-        name: rbox_aon_ec_rst_l
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 8
-          }
-        ]
-      }
-      {
-        name: rbox_aon_flash_wp_l
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 9
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key0_out
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 10
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key1_out
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 11
-          }
-        ]
-      }
-      {
-        name: rbox_aon_key2_out
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 12
-          }
-        ]
-      }
-      {
-        name: rbox_aon_pwrb_out
-        width: 1
-        type: output
-        module_name: rbox_aon
-        pad:
-        [
-          {
-            name: ChD
-            index: 13
-          }
-        ]
-      }
     ]
     inputs:
     [
+      {
+        name: uart_rx
+        width: 1
+        type: input
+        module_name: uart
+      }
       {
         name: uart1_rx
         width: 1
@@ -7242,9 +7028,51 @@
         type: input
         module_name: uart3
       }
+      {
+        name: rbox_aon_ac_present
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_ec_entering_rw
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key0_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key1_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key2_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_pwrb_in
+        width: 1
+        type: input
+        module_name: rbox_aon
+      }
     ]
     outputs:
     [
+      {
+        name: uart_tx
+        width: 1
+        type: output
+        module_name: uart
+      }
       {
         name: uart1_tx
         width: 1
@@ -7268,6 +7096,54 @@
         width: 9
         type: output
         module_name: pwm_aon
+      }
+      {
+        name: rbox_aon_bat_en
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_ec_in_rw
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_ec_rst_l
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_flash_wp_l
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key0_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key1_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_key2_out
+        width: 1
+        type: output
+        module_name: rbox_aon
+      }
+      {
+        name: rbox_aon_pwrb_out
+        width: 1
+        type: output
+        module_name: rbox_aon
       }
     ]
     inouts:
