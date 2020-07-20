@@ -7,10 +7,11 @@
   tool_srcs: ["{proj_root}/hw/foundry/syn/{tool}/setup.tcl"
               "{proj_root}/hw/foundry/syn/{tool}/ram-macros-setup.tcl"
               "{proj_root}/hw/syn/tools/{tool}/run-syn.tcl"
-              "{sdc_file}"]
+              "{sdc_path}/{sdc_file}"]
 
   // Environment variables that are needed in the synthesis script
   exports: [{"DUT"       : "{dut}"},
+            {"CONSTRAINT": "{sdc_file}"},
             {"BUILD_DIR" : "{build_dir}"},
             {"SV_FLIST"  : "{sv_flist}"}]
 

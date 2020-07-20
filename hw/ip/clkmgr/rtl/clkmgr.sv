@@ -112,8 +112,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_roots_en_sync (
     .clk_i,
     .rst_ni,
-    .d(async_roots_en),
-    .q(roots_en_d)
+    .d_i(async_roots_en),
+    .q_o(roots_en_d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -156,8 +156,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_clk_fixed_peri_sw_en_sync (
     .clk_i(clk_fixed_i),
     .rst_ni(rst_fixed_ni),
-    .d(reg2hw.clk_enables.clk_fixed_peri_en.q),
-    .q(clk_fixed_peri_sw_en)
+    .d_i(reg2hw.clk_enables.clk_fixed_peri_en.q),
+    .q_o(clk_fixed_peri_sw_en)
   );
 
   prim_clock_gating i_clk_fixed_peri_cg (
@@ -172,8 +172,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_clk_usb_48mhz_peri_sw_en_sync (
     .clk_i(clk_usb_48mhz_i),
     .rst_ni(rst_usb_48mhz_ni),
-    .d(reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
-    .q(clk_usb_48mhz_peri_sw_en)
+    .d_i(reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
+    .q_o(clk_usb_48mhz_peri_sw_en)
   );
 
   prim_clock_gating i_clk_usb_48mhz_peri_cg (
@@ -206,8 +206,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_clk_main_aes_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .q(clk_main_aes_hint)
+    .d_i(reg2hw.clk_hints.clk_main_aes_hint.q),
+    .q_o(clk_main_aes_hint)
   );
 
   prim_clock_gating i_clk_main_aes_cg (
@@ -224,8 +224,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) i_clk_main_hmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .d(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .q(clk_main_hmac_hint)
+    .d_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
+    .q_o(clk_main_hmac_hint)
   );
 
   prim_clock_gating i_clk_main_hmac_cg (

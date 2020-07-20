@@ -19,8 +19,8 @@ module prim_clock_gating_sync (
   ) i_sync (
     .clk_i,
     .rst_ni,
-    .d(async_en_i),
-    .q(en_o)
+    .d_i(async_en_i),
+    .q_o(en_o)
   );
 
   prim_clock_gating i_cg (

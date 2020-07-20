@@ -80,8 +80,8 @@ module prim_fifo_async #(
   prim_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
     .clk_i    (clk_rd_i),
     .rst_ni   (rst_rd_ni),
-    .d        (fifo_wptr_gray),
-    .q        (fifo_wptr_gray_sync));
+    .d_i      (fifo_wptr_gray),
+    .q_o      (fifo_wptr_gray_sync));
 
   assign fifo_wptr_sync_combi = gray2dec(fifo_wptr_gray_sync);
 
@@ -115,8 +115,8 @@ module prim_fifo_async #(
   prim_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (
     .clk_i    (clk_wr_i),
     .rst_ni   (rst_wr_ni),
-    .d        (fifo_rptr_gray),
-    .q        (fifo_rptr_gray_sync));
+    .d_i      (fifo_rptr_gray),
+    .q_o      (fifo_rptr_gray_sync));
 
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni)
     if (!rst_wr_ni) begin

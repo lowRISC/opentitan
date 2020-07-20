@@ -223,8 +223,8 @@ module uart_core (
   ) sync_rx (
     .clk_i,
     .rst_ni,
-    .d(rx),
-    .q(rx_sync)
+    .d_i(rx),
+    .q_o(rx_sync)
   );
 
   // Based on: en.wikipedia.org/wiki/Repetition_code mentions the use of a majority filter

@@ -65,8 +65,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_por_sync (
     .clk_i(clk_main_i),
     .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_int.rst_por_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_por_n)
   );
 
   prim_flop_2sync #(
@@ -75,8 +75,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_por_io_sync (
     .clk_i(clk_io_i),
     .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_int.rst_por_io_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_por_io_n)
   );
 
   prim_flop_2sync #(
@@ -85,8 +85,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_por_io_div2_sync (
     .clk_i(clk_io_div2_i),
     .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_int.rst_por_io_div2_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_por_io_div2_n)
   );
 
   prim_flop_2sync #(
@@ -95,8 +95,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_por_usb_sync (
     .clk_i(clk_usb_i),
     .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_int.rst_por_usb_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_por_usb_n)
   );
 
   ////////////////////////////////////////////////////
@@ -129,8 +129,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_sync (
     .clk_i,
     .rst_ni(resets_o.rst_por_aon_n),
-    .d(cpu_i.ndmreset_req),
-    .q(ndmreset_req_q)
+    .d_i(cpu_i.ndmreset_req),
+    .q_o(ndmreset_req_q)
   );
 
   assign ndm_req_valid = ndmreset_req_q & (pwr_i.reset_cause == pwrmgr_pkg::ResetNone);
@@ -183,8 +183,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_lc (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
-    .d(1'b1),
-    .q(resets_int.rst_lc_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_lc_n)
   );
 
   prim_flop_2sync #(
@@ -193,8 +193,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_sys (
     .clk_i(clk_main_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d(1'b1),
-    .q(resets_int.rst_sys_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_sys_n)
   );
 
   prim_flop_2sync #(
@@ -203,8 +203,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_sys_io (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d(1'b1),
-    .q(resets_int.rst_sys_io_n)
+    .d_i(1'b1),
+    .q_o(resets_int.rst_sys_io_n)
   );
 
   prim_flop_2sync #(
@@ -213,8 +213,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_spi_device (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d(reg2hw.rst_spi_device_n.q),
-    .q(resets_int.rst_spi_device_n)
+    .d_i(reg2hw.rst_spi_device_n.q),
+    .q_o(resets_int.rst_spi_device_n)
   );
 
   prim_flop_2sync #(
@@ -223,8 +223,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) i_usb (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d(reg2hw.rst_usb_n.q),
-    .q(resets_int.rst_usb_n)
+    .d_i(reg2hw.rst_usb_n.q),
+    .q_o(resets_int.rst_usb_n)
   );
 
   ////////////////////////////////////////////////////

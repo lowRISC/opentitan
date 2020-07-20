@@ -236,7 +236,7 @@ ${"end" if loop.last else ""}
     .tl_h_o       (tl_${block.name}_us_d2h),
     .tl_d_o       (tl_${block.name}_ds_h2d),
     .tl_d_i       (tl_${block.name}_ds_d2h),
-    .dev_select   (dev_sel_${block.name})
+    .dev_select_i (dev_sel_${block.name})
   );
   % elif block.node_type.name == "SOCKET_M1":
   tlul_socket_m1 #(

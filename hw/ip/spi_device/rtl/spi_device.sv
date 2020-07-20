@@ -184,8 +184,8 @@ module spi_device #(
   prim_flop_2sync #(.Width(1)) u_sync_csb (
     .clk_i,
     .rst_ni,
-    .d(cio_csb_i),
-    .q(csb_syncd)
+    .d_i(cio_csb_i),
+    .q_o(csb_syncd)
   );
 
   logic rxf_full_q, txf_empty_q;
@@ -200,14 +200,14 @@ module spi_device #(
   prim_flop_2sync #(.Width(1)) u_sync_rxf (
     .clk_i,
     .rst_ni,
-    .d(rxf_full_q),
-    .q(rxf_full_syncd)
+    .d_i(rxf_full_q),
+    .q_o(rxf_full_syncd)
   );
   prim_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
     .clk_i,
     .rst_ni,
-    .d(txf_empty_q),
-    .q(txf_empty_syncd)
+    .d_i(txf_empty_q),
+    .q_o(txf_empty_syncd)
   );
 
   assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
@@ -314,7 +314,7 @@ module spi_device #(
   logic sck_n;
   logic rst_spi_n;
 
-  prim_clock_inverter u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
+  prim_clock_inv u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
@@ -353,9 +353,9 @@ module spi_device #(
 
     // SPI signal
     .csb_i         (cio_csb_i),
-    .sdi           (cio_sdi_i),
-    .sdo           (cio_sdo_o),
-    .sdo_oe        (cio_sdo_en_o)
+    .sdi_i         (cio_sdi_i),
+    .sdo_o         (cio_sdo_o),
+    .sdo_oe_o      (cio_sdo_en_o)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -467,31 +467,31 @@ module spi_device #(
 
   // Arbiter for FIFOs : Connecting between SRAM Ctrls and SRAM interface
   prim_sram_arbiter #(
-    .N       (2),  // RXF, TXF
-    .SramDw (SramDw),
-    .SramAw (SramAw)   // 2kB
+    .N            (2),  // RXF, TXF
+    .SramDw       (SramDw),
+    .SramAw       (SramAw)   // 2kB
   ) u_fwmode_arb (
     .clk_i,
     .rst_ni,
 
-    .req          (fwm_sram_req),
-    .req_addr     (fwm_sram_addr),
-    .req_write    (fwm_sram_write),
-    .req_wdata    (fwm_sram_wdata),
-    .gnt          (fwm_sram_gnt),
+    .req_i        (fwm_sram_req),
+    .req_addr_i   (fwm_sram_addr),
+    .req_write_i  (fwm_sram_write),
+    .req_wdata_i  (fwm_sram_wdata),
+    .gnt_o        (fwm_sram_gnt),
 
-    .rsp_rvalid   (fwm_sram_rvalid),
-    .rsp_rdata    (fwm_sram_rdata),
-    .rsp_error    (fwm_sram_error),
+    .rsp_rvalid_o (fwm_sram_rvalid),
+    .rsp_rdata_o  (fwm_sram_rdata),
+    .rsp_error_o  (fwm_sram_error),
 
-    .sram_req     (mem_b_req),
-    .sram_addr    (mem_b_addr),
-    .sram_write   (mem_b_write),
-    .sram_wdata   (mem_b_wdata),
+    .sram_req_o   (mem_b_req),
+    .sram_addr_o  (mem_b_addr),
+    .sram_write_o (mem_b_write),
+    .sram_wdata_o (mem_b_wdata),
 
-    .sram_rvalid  (mem_b_rvalid),
-    .sram_rdata   (mem_b_rdata),
-    .sram_rerror  (mem_b_rerror)
+    .sram_rvalid_i(mem_b_rvalid),
+    .sram_rdata_i (mem_b_rdata),
+    .sram_rerror_i(mem_b_rerror)
   );
 
   tlul_adapter_sram #(

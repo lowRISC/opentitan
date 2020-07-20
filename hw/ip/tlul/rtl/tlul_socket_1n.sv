@@ -27,9 +27,9 @@
 // have returned.  Need to keep a counter of all outstanding requests and
 // wait until that counter is zero before switching devices.
 //
-// This module will return a request error if the input value of 'dev_select'
+// This module will return a request error if the input value of 'dev_select_i'
 // is not within the range 0..N-1. Thus the instantiator of the socket
-// can indicate error by any illegal value of dev_select. 4'b1111 is
+// can indicate error by any illegal value of dev_select_i. 4'b1111 is
 // recommended for visibility
 //
 // The maximum value of N is 15
@@ -54,7 +54,7 @@ module tlul_socket_1n #(
   output tlul_pkg::tl_d2h_t tl_h_o,
   output tlul_pkg::tl_h2d_t tl_d_o    [N],
   input  tlul_pkg::tl_d2h_t tl_d_i    [N],
-  input  [NWD-1:0]          dev_select
+  input  [NWD-1:0]          dev_select_i
 );
 
   `ASSERT_INIT(maxN, N < 16)
@@ -83,7 +83,7 @@ module tlul_socket_1n #(
     .tl_h_o,
     .tl_d_o     (tl_t_o),
     .tl_d_i     (tl_t_i),
-    .spare_req_i (dev_select),
+    .spare_req_i (dev_select_i),
     .spare_req_o (dev_select_t),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());

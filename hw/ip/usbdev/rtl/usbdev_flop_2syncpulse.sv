@@ -9,8 +9,8 @@ module usbdev_flop_2syncpulse #(
 ) (
   input  logic             clk_i,    // receive clock
   input  logic             rst_ni,
-  input  logic [Width-1:0] d,
-  output logic [Width-1:0] q
+  input  logic [Width-1:0] d_i,
+  output logic [Width-1:0] q_o
 );
 
   // double-flop synchronizer cell
@@ -18,8 +18,8 @@ module usbdev_flop_2syncpulse #(
   prim_flop_2sync #(.Width (Width)) prim_flop_2sync (
     .clk_i,
     .rst_ni,
-    .d,
-    .q (d_sync)
+    .d_i,
+    .q_o(d_sync)
   );
 
   // delay d_sync by 1 cycle
@@ -33,6 +33,6 @@ module usbdev_flop_2syncpulse #(
   end
 
   // rising edge detection
-  assign q = d_sync & ~d_sync_q;
+  assign q_o = d_sync & ~d_sync_q;
 
 endmodule

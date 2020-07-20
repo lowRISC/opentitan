@@ -1,0 +1,61 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  licence:
+    '''
+    Copyright lowRISC contributors.
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+    ''',
+  exclude_paths: [
+    # Exclude anything in vendor directories
+    '*/vendor/*/*',
+
+    ## Hardware Exclusions
+
+    # DV Vendored test vectors
+    'hw/dv/sv/test_vectors',
+    # Vendored CRC model
+    'hw/dv/dpi/usbdpi/usb_crc.c',
+    # Vendored HMAC model
+    'hw/ip/hmac/dv/cryptoc_dpi/*',
+    # Vendored FPGA information
+    'hw/top_earlgrey/data/*.xdc',
+    'util/fpga/bram_load.mmi',
+    # Manually checked, files contain additional copyright header lines
+    'hw/ip/usb_fs_nb_pe/rtl/*',
+    'hw/ip/usbdev/rtl/usbdev_iomux.sv',
+    'hw/ip/usbuart/rtl/usb_serial_*_ep.sv',
+
+    ## Software Exclusions
+
+    # Coremark Vendored Files
+    'sw/device/benchmarks/coremark/top_earlgrey/*',
+    # Tock Vendored Files
+    'sw/device/tock/chips/opentitan_common/src/uart.rs',
+    'sw/device/tock/chips/opentitan_common/src/lib.rs',
+    'sw/device/tock/chips/opentitan_common/src/gpio.rs'
+    'sw/device/tock/chips/earlgrey/src/uart.rs',
+    'sw/device/tock/chips/earlgrey/src/timer.rs',
+    'sw/device/tock/chips/earlgrey/src/plic.rs',
+    'sw/device/tock/chips/earlgrey/src/lib.rs',
+    'sw/device/tock/chips/earlgrey/src/interrupts.rs',
+    'sw/device/tock/chips/earlgrey/src/gpio.rs',
+    'sw/device/tock/chips/earlgrey/src/chip.rs',
+    'sw/device/tock/boards/opentitan/src/main.rs',
+    'sw/device/tock/boards/opentitan/src/io.rs',
+    'sw/device/tock/boards/opentitan/layout.ld',
+    'sw/device/tock/boards/opentitan/build.rs',
+    'sw/device/tock/**/*.lock',
+    'sw/device/tock/boards/opentitan/rust-toolchain',
+
+    ## Other Exclusions
+
+    # Other Licences,
+    'util/wavegen/LICENSE.wavedrom',
+    # Site Assets
+    'site/**/assets/scss/**',
+    'site/landing/static/js/tiny-slider.js',
+  ],
+}

@@ -66,8 +66,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_req_pwrdn_sync (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .d(req_pwrdn_i),
-    .q(slow_req_pwrdn_o)
+    .d_i(req_pwrdn_i),
+    .q_o(slow_req_pwrdn_o)
   );
 
   prim_flop_2sync # (
@@ -75,8 +75,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_ack_pwrup_sync (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .d(ack_pwrup_i),
-    .q(slow_ack_pwrup_o)
+    .d_i(ack_pwrup_i),
+    .q_o(slow_ack_pwrup_o)
   );
 
   prim_pulse_sync i_slow_cdc_sync (
@@ -96,8 +96,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
-    .d      (peri_i),
-    .q      (slow_peri_reqs_o)
+    .d_i    (peri_i),
+    .q_o    (slow_peri_reqs_o)
   );
 
 
@@ -109,8 +109,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_ast_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
-    .d      (ast_i),
-    .q      (slow_ast_q)
+    .d_i    (ast_i),
+    .q_o    (slow_ast_q)
   );
 
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
@@ -163,8 +163,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_req_pwrup_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_req_pwrup_i),
-    .q(req_pwrup_o)
+    .d_i(slow_req_pwrup_i),
+    .q_o(req_pwrup_o)
   );
 
   prim_flop_2sync # (
@@ -172,8 +172,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_ack_pwrdn_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_ack_pwrdn_i),
-    .q(ack_pwrdn_o)
+    .d_i(slow_ack_pwrdn_i),
+    .q_o(ack_pwrdn_o)
   );
 
   prim_flop_2sync # (
@@ -181,8 +181,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_pwrup_chg_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_pwrup_cause_toggle_i),
-    .q(pwrup_cause_toggle_q)
+    .d_i(slow_pwrup_cause_toggle_i),
+    .q_o(pwrup_cause_toggle_q)
   );
 
   prim_pulse_sync i_scdc_sync (
@@ -217,8 +217,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,
-    .d (slow_peri_reqs_masked_i),
-    .q (peri_reqs_o)
+    .d_i(slow_peri_reqs_masked_i),
+    .q_o(peri_reqs_o)
   );
 
 
@@ -240,8 +240,8 @@ endmodule
   ) i_pwrup_sync (
     .clk_i,
     .rst_ni,
-    .d(slow_req_pwrup),
-    .q(req_pwrup)
+    .d_i(slow_req_pwrup),
+    .q_o(req_pwrup)
   );
 
   pwrmgr_cdc_pulse i_cdc_pulse (
@@ -294,7 +294,7 @@ endmodule
   ) i_pok_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
-    .d      (pwr_ast_i),
-    .q      (slow_ast_q)
+    .d_i    (pwr_ast_i),
+    .q_o    (slow_ast_q)
   );
 */

@@ -2,7 +2,7 @@
 title: "USB Device Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/hw_stages.md" >}}) transitions for the [USB Device peripheral.]({{< relref "hw/ip/usbdev/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [USB Device peripheral.]({{< relref "hw/ip/usbdev/doc" >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist

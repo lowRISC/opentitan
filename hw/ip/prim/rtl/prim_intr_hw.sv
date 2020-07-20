@@ -1,6 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Indentifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0
 //
 // Primitive interrupt handler. This assumes the existence of three
 // controller registers: INTR_ENABLE, INTR_STATE, INTR_TEST.

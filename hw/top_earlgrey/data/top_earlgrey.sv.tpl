@@ -555,7 +555,9 @@ w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
 slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 %>
       % for alert in m["alert_list"] if "alert_list" in m else []:
+        % for i in range(alert["width"]):
       // [${alert_idx}]: ${alert["name"]}<% alert_idx += 1 %>
+        % endfor
       % endfor
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),

@@ -57,8 +57,8 @@ module prim_diff_decode #(
     ) i_sync_p (
       .clk_i,
       .rst_ni,
-      .d(diff_pi),
-      .q(diff_pd)
+      .d_i(diff_pi),
+      .q_o(diff_pd)
     );
 
     prim_flop_2sync #(
@@ -67,8 +67,8 @@ module prim_diff_decode #(
     ) i_sync_n (
       .clk_i,
       .rst_ni,
-      .d(diff_ni),
-      .q(diff_nd)
+      .d_i(diff_ni),
+      .q_o(diff_nd)
     );
 
     // detect level transitions

@@ -1,3 +1,7 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
 # Azure Pipelines CI build configuration
 # Documentation at https://aka.ms/yaml
 
@@ -57,8 +61,11 @@ jobs:
     displayName: Display tool versions
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
-      git diff --name-only "$fork_origin" "*.py" \
-        | xargs -r util/lintpy.py --tools flake8 -f
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin" | grep -v /vendor/ | grep -v /lowrisc_misc-linters/ | grep -E '.py$')"
+      if [[ -n "$changed_files" ]]; then
+        set -e
+        xargs util/lintpy.py --tools flake8 -f <<< "$changed_files" | tee lintpy-output
+      fi
     displayName: Run Python lint
     continueOnError: true
   - bash: |
@@ -71,6 +78,7 @@ jobs:
     condition: always()
     displayName: Ensure all generated files are clean and up-to-date
   - bash: |
+      set -e
       util/build_docs.py
       # Upload Doxygen Warnings if Present
       if [[ -f "build/docs-generated/sw/doxygen_warnings.log" ]]; then
@@ -181,6 +189,20 @@ jobs:
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
     displayName: Check if the commit only contains documentation changes
     name: DetermineBuildType
+  - bash: |
+      fork_origin="$(git merge-base --fork-point origin/master)"
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
+      if [[ -n "$changed_files" ]]; then
+        set -o pipefail
+        xargs util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
+        if [[ $? != 0 ]]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Licence header check failed. Please check output of util/licence-checker.py on the noted failures."
+          exit 1
+        fi
+      fi
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Check Licence Headers
 
 - job: sw_build
   displayName: Build Software

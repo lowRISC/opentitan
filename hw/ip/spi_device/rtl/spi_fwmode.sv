@@ -35,9 +35,9 @@ module spi_fwmode (
 
   // SPI Interface: clock is given (ckl_in_i, clk_out_i)
   input        csb_i,
-  input        sdi,
-  output logic sdo,
-  output logic sdo_oe
+  input        sdi_i,
+  output logic sdo_o,
+  output logic sdo_oe_o
 );
 
   import spi_device_pkg::*;
@@ -58,9 +58,9 @@ module spi_fwmode (
   // Serial to Parallel
   always_comb begin
     if (cfg_rxorder_i) begin
-      rx_data_d = {sdi, rx_data_q[BITS-1:1]};
+      rx_data_d = {sdi_i, rx_data_q[BITS-1:1]};
     end else begin
-      rx_data_d = {rx_data_q[BITS-2:0], sdi};
+      rx_data_d = {rx_data_q[BITS-2:0], sdi_i};
     end
   end
 
@@ -121,9 +121,9 @@ module spi_fwmode (
     end
   end
 
-  assign sdo = (cfg_txorder_i) ? ((~first_bit) ? sdo_shift[0] : tx_data_i[0]) :
-                (~first_bit) ? sdo_shift[7] : tx_data_i[7] ;
-  assign sdo_oe = ~csb_i;
+  assign sdo_o = (cfg_txorder_i) ? ((~first_bit) ? sdo_shift[0] : tx_data_i[0]) :
+                  (~first_bit) ? sdo_shift[7] : tx_data_i[7] ;
+  assign sdo_oe_o = ~csb_i;
 
   always_ff @(posedge clk_out_i) begin
     if (cfg_txorder_i) begin
