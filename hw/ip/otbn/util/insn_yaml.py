@@ -802,7 +802,6 @@ class SyntaxHunk:
     @staticmethod
     def from_string(mnemonic: str, optional: bool, raw: str) -> 'SyntaxHunk':
         '''Smart constructor that parses YAML syntax (see InsnSyntax)'''
-        print('from_string({!r}, {!r}, {!r})'.format(mnemonic, optional, raw))
         assert raw
 
         tokens = []
