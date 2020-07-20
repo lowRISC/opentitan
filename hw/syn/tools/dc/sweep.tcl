@@ -8,7 +8,9 @@
 ##  PREPARE FLOW   ##
 #####################
 
-source ../../../foundry/syn/dc/setup.tcl
+# tool setup
+set CONFIG_PATH "../../../foundry/syn/dc/"
+source ${CONFIG_PATH}/setup.tcl
 
 # paths
 set WORKLIB  "WORK"
@@ -30,6 +32,7 @@ set DUT "prim_prince"
 
 lappend search_path "../../../ip/prim/rtl/"
 set SRC {  "../../../ip/prim/rtl/prim_assert.sv" \
+           "../../../ip/prim/rtl/prim_cipher_pkg.sv" \
            "../../../ip/prim/rtl/prim_present.sv" \
            "../../../ip/prim/rtl/prim_prince.sv" \
          }
