@@ -238,6 +238,17 @@ class BitRanges:
         assert bits_taken == self.width
         return ret
 
+    def decode(self, raw: int) -> int:
+        '''Extract the bit fields from the given value'''
+        ret = 0
+        for msb, lsb in self.ranges:
+            width = msb - lsb + 1
+            mask = (1 << width) - 1
+
+            ret <<= width
+            ret |= (raw >> lsb) & mask
+        return ret
+
 
 class BoolLiteral:
     '''Represents a boolean literal, with possible 'x characters
@@ -681,6 +692,15 @@ class OperandType:
         '''
         return None
 
+    def render_val(self, value: int) -> str:
+        '''Render the given value as a string.
+
+        The default implementation prints it as a decimal number. Register
+        operands, for example, will want to print 3 as "x3" and so on.
+
+        '''
+        return str(value)
+
 
 class RegOperandType(OperandType):
     '''A class representing a register operand type'''
@@ -719,6 +739,16 @@ class RegOperandType(OperandType):
                              .format(self.reg_type, as_str))
 
         return idx
+
+    def render_val(self, value: int) -> str:
+        fmt = RegOperandType.TYPE_FMTS.get(self.reg_type)
+        assert fmt is not None
+        _, pfx = fmt
+
+        if pfx is None:
+            return super().render_val(value)
+
+        return '{}{}'.format(pfx, value)
 
 
 class ImmOperandType(OperandType):
@@ -768,6 +798,18 @@ class EnumOperandType(ImmOperandType):
                          'Supported values: {}.'
                          .format(as_str, known_vals))
 
+    def render_val(self, value: int) -> str:
+        # On a bad value, we have to return *something*. Since this is just
+        # going into disassembly, let's be vaguely helpful and return something
+        # that looks clearly bogus.
+        #
+        # Note that if the number of items in the enum is not a power of 2,
+        # this could happen with a bad binary, despite good tools.
+        if value < 0 or value >= len(self.items):
+            return '???'
+
+        return self.items[value]
+
 
 class OptionOperandType(ImmOperandType):
     '''A class representing an option operand type'''
@@ -789,6 +831,11 @@ class OptionOperandType(ImmOperandType):
         raise ValueError('Invalid option value, {!r}. '
                          'If specified, it should have been {!r}.'
                          .format(as_str, self.option))
+
+    def render_val(self, value: int) -> str:
+        # Option types are always 1 bit wide, so the value should be 0 or 1.
+        assert value in [0, 1]
+        return self.option if value else ''
 
 
 def parse_operand_type(fmt: str) -> OperandType:
@@ -953,6 +1000,20 @@ class SyntaxToken:
         # parsing.
         return r'([^ ,+\-]+|[+\-]+)\s*'
 
+    def render_vals(self,
+                    op_vals: Dict[str, int],
+                    operands: Dict[str, Operand]) -> str:
+        '''Return an assembly listing for the given operand fields
+
+        '''
+        if self.is_literal:
+            return self.text
+
+        assert self.text in op_vals
+        assert self.text in operands
+
+        return operands[self.text].op_type.render_val(op_vals[self.text])
+
 
 class SyntaxHunk:
     '''An object representing a hunk of syntax that might be optional'''
@@ -1046,6 +1107,28 @@ class SyntaxHunk:
         # puts a non-capturing group around foo and then applies "?"
         # (one-or-more) to it.
         return '(?:{})?'.format(body) if self.is_optional else body
+
+    def render_vals(self,
+                    op_vals: Dict[str, int],
+                    operands: Dict[str, Operand]) -> str:
+        '''Return an assembly listing for the hunk given operand values
+
+        If this hunk is optional and all its operands are zero, the hunk is
+        omitted (so this function returns the empty string).
+
+        '''
+        if self.is_optional:
+            required = False
+            for op_name in self.op_list:
+                if op_vals[op_name] != 0:
+                    required = True
+                    break
+
+            if not required:
+                return ''
+
+        return ''.join(token.render_vals(op_vals, operands)
+                       for token in self.tokens)
 
 
 class InsnSyntax:
@@ -1184,6 +1267,15 @@ class InsnSyntax:
             op_to_grp[op] = 1 + idx
 
         return (pattern, op_to_grp)
+
+    def render_vals(self,
+                    op_vals: Dict[str, int],
+                    operands: Dict[str, Operand]) -> str:
+        '''Return an assembly listing for the given operand fields'''
+        parts = []
+        for hunk in self.hunks:
+            parts.append(hunk.render_vals(op_vals, operands))
+        return ''.join(parts)
 
 
 class EncodingField:
