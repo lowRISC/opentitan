@@ -8,7 +8,6 @@ import argparse
 import fnmatch
 import logging
 import subprocess
-from itertools import groupby
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -330,6 +329,7 @@ def main():
     parser.add_argument("--config",
                         metavar="config.hjson",
                         type=argparse.FileType('r', encoding='UTF-8'),
+                        required=True,
                         help="HJSON file to read for licence configuration.")
     parser.add_argument("paths",
                         metavar="path",
