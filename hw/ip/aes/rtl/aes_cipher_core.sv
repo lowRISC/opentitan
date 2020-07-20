@@ -6,12 +6,99 @@
 //
 // This module contains the AES cipher core including, state register, full key and decryption key
 // registers as well as key expand module and control unit.
+//
+//
+// Masking
+// -------
+//
+// If the parameter "Masking" is set to one, first-order masking is applied to the entire
+// cipher core including key expand module. For details, see Rivain et al., "Provably secure
+// higher-order masking of AES" available at https://eprint.iacr.org/2010/441.pdf
+//
+//
+// Details on the data formats
+// ---------------------------
+//
+// This implementation uses 4-dimensional SystemVerilog arrays to represent the AES state:
+//
+//   logic [3:0][3:0][7:0] state_q [NumShares];
+//
+// The fourth dimension (unpacked) corresponds to the different shares. The first element holds the
+// (masked) data share whereas the other elements hold the masks (masked implementation only).
+// The three packed dimensions correspond to the 128-bit state matrix per share. This
+// implementation uses the same encoding as the Advanced Encryption Standard (AES) FIPS Publication
+// 197 available at https://www.nist.gov/publications/advanced-encryption-standard-aes (see Section
+// 3.4). An input sequence of 16 bytes (128-bit, left most byte is the first one)
+//
+//   b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15
+//
+// is mapped to the state matrix as
+//
+//   [ b0  b4  b8  b12 ]
+//   [ b1  b5  b9  b13 ]
+//   [ b2  b6  b10 b14 ]
+//   [ b3  b7  b11 b15 ] .
+//
+// This is mapped to three packed dimensions of SystemVerilog array as follows:
+// - The first dimension corresponds to the rows. Thus, state_q[0] gives
+//   - The first row of the state matrix       [ b0   b4  b8  b12 ], or
+//   - A 32-bit packed SystemVerilog array 32h'{ b12, b8, b4, b0  }.
+//
+// - The second dimension corresponds to the columns. To access complete columns, the state matrix
+//   must first be transposed first. Thus state_transposed = aes_pkg::aes_transpose(state_q)
+//   and then state_transposed[1] gives
+//   - The second column of the state matrix   [ b4  b5  b6  b7 ], or
+//   - A 32-bit packed SystemVerilog array 32h'{ b7, b6, b5, b4 }.
+//
+// - The third dimension corresponds to the bytes.
+//
+// Note that the CSRs are little-endian. The input sequence above is provided to 32-bit DATA_IN0 -
+// DATA_IN3 registers as
+//                  MSB            LSB
+// - DATA_IN0 32h'{ b3 , b2 , b1 , b0  }
+// - DATA_IN1 32h'{ b7 , b6 , b4 , b4  }
+// - DATA_IN2 32h'{ b11, b10, b9 , b8  }
+// - DATA_IN3 32h'{ b15, b14, b13, b12 } .
+//
+// The input state can thus be obtained by transposing the content of the DATA_IN0 - DATA_IN3
+// registers.
+//
+// Similarly, the implementation uses a 3-dimensional array to represent the AES keys:
+//
+//   logic     [7:0][31:0] key_full_q [NumShares]
+//
+// The third dimension (unpacked) corresponds to the different shares. The first element holds the
+// (masked) key share whereas the other elements hold the masks (masked implementation only).
+// The two packed dimensions correspond to the 256-bit key per share. This implementation uses
+// the same encoding as the Advanced Encryption Standard (AES) FIPS Publication
+// 197 available at https://www.nist.gov/publications/advanced-encryption-standard-aes .
+//
+// The first packed dimension corresponds to the 8 key words. The second packed dimension
+// corresponds to the 32 bits per key word. A key sequence of 32 bytes (256-bit, left most byte is
+// the first one)
+//
+//   b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 ... ... b28 b29 b30 b31
+//
+// is mapped to the key words and registers (little-endian) as
+//             MSB             LSB
+// - KEY0 32h'{ b3 , b2 , b1 , b0  }
+// - KEY1 32h'{ b7 , b6 , b4 , b4  }
+// - KEY2 32h'{ b11, b10, b9 , b8  }
+// - KEY3 32h'{ b15, b14, b13, b12 }
+// - KEY4 32h'{  .    .    .    .  }
+// - KEY5 32h'{  .    .    .    .  }
+// - KEY6 32h'{  .    .    .    .  }
+// - KEY7 32h'{ b31, b30, b29, b28 } .
 
 `include "prim_assert.sv"
 
-module aes_cipher_core #(
-  parameter bit AES192Enable = 1,
-  parameter     SBoxImpl     = "lut"
+module aes_cipher_core import aes_pkg::*;
+#(
+  parameter bit         AES192Enable = 1,
+  parameter bit         Masking      = 0,
+  parameter sbox_impl_e SBoxImpl     = SBoxImplLut,
+
+  localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
 ) (
   input  logic                 clk_i,
   input  logic                 rst_ni,
@@ -25,8 +112,8 @@ module aes_cipher_core #(
   input  logic                 out_ready_i,
 
   // Control and sync signals
-  input  aes_pkg::ciph_op_e    op_i,
-  input  aes_pkg::key_len_e    key_len_i,
+  input  ciph_op_e             op_i,
+  input  key_len_e             key_len_i,
   input  logic                 crypt_i,
   output logic                 crypt_o,
   input  logic                 dec_key_gen_i,
@@ -40,44 +127,45 @@ module aes_cipher_core #(
   input  logic          [63:0] prng_data_i,
 
   // I/O data & initial key
-  input  logic [3:0][3:0][7:0] state_init_i,
-  input  logic     [7:0][31:0] key_init_i,
-  output logic [3:0][3:0][7:0] state_o
+  input  logic [3:0][3:0][7:0] state_init_i [NumShares],
+  input  logic     [7:0][31:0] key_init_i [NumShares],
+  output logic [3:0][3:0][7:0] state_o [NumShares]
 );
 
-  import aes_pkg::*;
-
   // Signals
-  logic [3:0][3:0][7:0] state_d;
-  logic [3:0][3:0][7:0] state_q;
+  logic [3:0][3:0][7:0] state_d [NumShares];
+  logic [3:0][3:0][7:0] state_q [NumShares];
   logic                 state_we;
   state_sel_e           state_sel;
 
   logic [3:0][3:0][7:0] sub_bytes_out;
-  logic [3:0][3:0][7:0] shift_rows_out;
-  logic [3:0][3:0][7:0] mix_columns_out;
-  logic [3:0][3:0][7:0] add_round_key_in;
-  logic [3:0][3:0][7:0] add_round_key_out;
+  logic [3:0][3:0][7:0] sb_in_mask;
+  logic [3:0][3:0][7:0] sb_out_mask;
+  logic [3:0][3:0][7:0] shift_rows_in [NumShares];
+  logic [3:0][3:0][7:0] shift_rows_out [NumShares];
+  logic [3:0][3:0][7:0] mix_columns_out [NumShares];
+  logic [3:0][3:0][7:0] add_round_key_in [NumShares];
+  logic [3:0][3:0][7:0] add_round_key_out [NumShares];
   add_rk_sel_e          add_round_key_in_sel;
 
-  logic     [7:0][31:0] key_full_d;
-  logic     [7:0][31:0] key_full_q;
+  logic     [7:0][31:0] key_full_d [NumShares];
+  logic     [7:0][31:0] key_full_q [NumShares];
   logic                 key_full_we;
   key_full_sel_e        key_full_sel;
-  logic     [7:0][31:0] key_dec_d;
-  logic     [7:0][31:0] key_dec_q;
+  logic     [7:0][31:0] key_dec_d [NumShares];
+  logic     [7:0][31:0] key_dec_q [NumShares];
   logic                 key_dec_we;
   key_dec_sel_e         key_dec_sel;
-  logic     [7:0][31:0] key_expand_out;
+  logic     [7:0][31:0] key_expand_out [NumShares];
   ciph_op_e             key_expand_op;
   logic                 key_expand_step;
   logic                 key_expand_clear;
   logic           [3:0] key_expand_round;
   key_words_sel_e       key_words_sel;
-  logic     [3:0][31:0] key_words;
-  logic [3:0][3:0][7:0] key_bytes;
-  logic [3:0][3:0][7:0] key_mix_columns_out;
-  logic [3:0][3:0][7:0] round_key;
+  logic     [3:0][31:0] key_words [NumShares];
+  logic [3:0][3:0][7:0] key_bytes [NumShares];
+  logic [3:0][3:0][7:0] key_mix_columns_out [NumShares];
+  logic [3:0][3:0][7:0] round_key [NumShares];
   round_key_sel_e       round_key_sel;
 
   //////////
@@ -89,8 +177,8 @@ module aes_cipher_core #(
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
-      STATE_CLEAR: state_d = {prng_data_i, prng_data_i};
-      default:     state_d = {prng_data_i, prng_data_i};
+      STATE_CLEAR: state_d = '{default: {prng_data_i, prng_data_i}};
+      default:     state_d = '{default: {prng_data_i, prng_data_i}};
     endcase
   end
 
@@ -100,26 +188,52 @@ module aes_cipher_core #(
     end
   end
 
+  // Masking
+  if (!Masking) begin : gen_no_sb_in_mask
+    // The mask is ignored anyway, it can be 0.
+    assign sb_in_mask = '0;
+  end else begin : gen_sb_in_mask
+    // The input mask is the mask share of the state.
+    assign sb_in_mask = state_q[1];
+  end
+
+  // TODO: Use non-constant output masks for SubBytes + remove corresponding comment in aes.sv.
+  // See https://github.com/lowRISC/opentitan/issues/1005
+  assign sb_out_mask = {8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55,
+                        8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55};
+
   // Cipher data path
   aes_sub_bytes #(
     .SBoxImpl ( SBoxImpl )
-  ) aes_sub_bytes (
-    .op_i   ( op_i          ),
-    .data_i ( state_q       ),
-    .data_o ( sub_bytes_out )
+  ) u_aes_sub_bytes (
+    .op_i       ( op_i           ),
+    .data_i     ( state_q[0]     ),
+    .in_mask_i  ( sb_in_mask     ),
+    .out_mask_i ( sb_out_mask    ),
+    .data_o     ( sub_bytes_out  )
   );
 
-  aes_shift_rows aes_shift_rows (
-    .op_i   ( op_i           ),
-    .data_i ( sub_bytes_out  ),
-    .data_o ( shift_rows_out )
-  );
+  for (genvar s = 0; s < NumShares; s++) begin : gen_shares_shift_mix
+    if (s == 0) begin : gen_shift_in_data
+      // The (masked) data share
+      assign shift_rows_in[s] = sub_bytes_out;
+    end else begin : gen_shift_in_mask
+      // The mask share
+      assign shift_rows_in[s] = sb_out_mask;
+    end
 
-  aes_mix_columns aes_mix_columns (
-    .op_i   ( op_i            ),
-    .data_i ( shift_rows_out  ),
-    .data_o ( mix_columns_out )
-  );
+    aes_shift_rows u_aes_shift_rows (
+      .op_i   ( op_i              ),
+      .data_i ( shift_rows_in[s]  ),
+      .data_o ( shift_rows_out[s] )
+    );
+
+    aes_mix_columns u_aes_mix_columns (
+      .op_i   ( op_i               ),
+      .data_i ( shift_rows_out[s]  ),
+      .data_o ( mix_columns_out[s] )
+    );
+  end
 
   always_comb begin : add_round_key_in_mux
     unique case (add_round_key_in_sel)
@@ -130,7 +244,9 @@ module aes_cipher_core #(
     endcase
   end
 
-  assign add_round_key_out = add_round_key_in ^ round_key;
+  for (genvar s = 0; s < NumShares; s++) begin : gen_shares_add_round_key
+    assign add_round_key_out[s] = add_round_key_in[s] ^ round_key[s];
+  end
 
   /////////
   // Key //
@@ -142,8 +258,8 @@ module aes_cipher_core #(
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
-      default:           key_full_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      KEY_FULL_CLEAR:    key_full_d ='{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
+      default:           key_full_d ='{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
     endcase
   end
 
@@ -157,8 +273,8 @@ module aes_cipher_core #(
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
-      default:        key_dec_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      KEY_DEC_CLEAR:  key_dec_d = '{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
+      default:        key_dec_d = '{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
     endcase
   end
 
@@ -171,8 +287,9 @@ module aes_cipher_core #(
   // Key expand data path
   aes_key_expand #(
     .AES192Enable ( AES192Enable ),
+    .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
-  ) aes_key_expand (
+  ) u_aes_key_expand (
     .clk_i     ( clk_i            ),
     .rst_ni    ( rst_ni           ),
     .op_i      ( key_expand_op    ),
@@ -184,24 +301,26 @@ module aes_cipher_core #(
     .key_o     ( key_expand_out   )
   );
 
-  always_comb begin : key_words_mux
-    unique case (key_words_sel)
-      KEY_WORDS_0123: key_words = key_full_q[3:0];
-      KEY_WORDS_2345: key_words = AES192Enable ? key_full_q[5:2] : '0;
-      KEY_WORDS_4567: key_words = key_full_q[7:4];
-      KEY_WORDS_ZERO: key_words = '0;
-      default:        key_words = '0;
-    endcase
+  for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
+    always_comb begin : key_words_mux
+      unique case (key_words_sel)
+        KEY_WORDS_0123: key_words[s] = key_full_q[s][3:0];
+        KEY_WORDS_2345: key_words[s] = AES192Enable ? key_full_q[s][5:2] : '0;
+        KEY_WORDS_4567: key_words[s] = key_full_q[s][7:4];
+        KEY_WORDS_ZERO: key_words[s] = '0;
+        default:        key_words[s] = '0;
+      endcase
+    end
+
+    // Convert words to bytes (every key word contains one column).
+    assign key_bytes[s] = aes_transpose(key_words[s]);
+
+    aes_mix_columns u_aes_key_mix_columns (
+      .op_i   ( CIPH_INV               ),
+      .data_i ( key_bytes[s]           ),
+      .data_o ( key_mix_columns_out[s] )
+    );
   end
-
-  // Convert words to bytes (every key word contains one column)
-  assign key_bytes = aes_transpose(key_words);
-
-  aes_mix_columns aes_key_mix_columns (
-    .op_i   ( CIPH_INV            ),
-    .data_i ( key_bytes           ),
-    .data_o ( key_mix_columns_out )
-  );
 
   always_comb begin : round_key_mux
     unique case (round_key_sel)
@@ -216,7 +335,7 @@ module aes_cipher_core #(
   /////////////
 
   // Control
-  aes_cipher_control aes_cipher_control (
+  aes_cipher_control u_aes_cipher_control (
     .clk_i                  ( clk_i                ),
     .rst_ni                 ( rst_ni               ),
 
@@ -260,6 +379,15 @@ module aes_cipher_core #(
   ////////////////
   // Assertions //
   ////////////////
+
+  // Cipher core masking requires a masked SBox and vice versa.
+  `ASSERT_INIT(AesMaskedCoreAndSBox,
+      (Masking &&
+      (SBoxImpl == SBoxImplCanrightMasked ||
+       SBoxImpl == SBoxImplCanrightMaskedNoreuse)) ||
+      (!Masking &&
+      (SBoxImpl == SBoxImplLut ||
+       SBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
   `ASSERT(AesStateSelValid, state_sel inside {

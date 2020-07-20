@@ -47,7 +47,7 @@ module aes_prng (
     .LfsrType    ( "GAL_XOR"  ),
     .LfsrDw      ( DATA_WIDTH ),
     .StateOutDw  ( DATA_WIDTH )
-  ) aes_prng_lfsr (
+  ) u_aes_prng_lfsr (
     .clk_i     ( clk_i      ),
     .rst_ni    ( rst_ni     ),
     .seed_en_i ( seed_en    ),
