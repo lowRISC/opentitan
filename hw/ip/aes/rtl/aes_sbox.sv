@@ -4,55 +4,58 @@
 //
 // AES SBox
 
-module aes_sbox #(
-  parameter SBoxImpl = "lut"
+module aes_sbox import aes_pkg::*;
+#(
+  parameter sbox_impl_e SBoxImpl = SBoxImplLut
 ) (
-  input  aes_pkg::ciph_op_e op_i,
-  input  logic [7:0]        data_i,
-  output logic [7:0]        data_o
+  input  ciph_op_e   op_i,
+  input  logic [7:0] data_i,
+  input  logic [7:0] in_mask_i,
+  input  logic [7:0] out_mask_i,
+  output logic [7:0] data_o
 );
 
-  if (SBoxImpl == "lut") begin : gen_sbox_lut
-    aes_sbox_lut aes_sbox (
-      .op_i,
-      .data_i,
-      .data_o
-    );
-  end else if (SBoxImpl == "canright") begin : gen_sbox_canright
-    aes_sbox_canright aes_sbox (
-      .op_i,
-      .data_i,
-      .data_o
-    );
-  end else begin : gen_sbox_masked
-    // TODO: Use non-constant masks + remove corresponding comment in aes.sv.
-    // See https://github.com/lowRISC/opentitan/issues/1005
-    logic [7:0] in_data_m, out_data_m;
-    logic [7:0] in_mask, out_mask;
-    assign in_mask  = 8'hAA;
-    assign out_mask = 8'h55;
+  import aes_pkg::*;
+  localparam bit SBoxMasked = (SBoxImpl == SBoxImplCanrightMasked ||
+                               SBoxImpl == SBoxImplCanrightMaskedNoreuse) ? 1'b1 : 1'b0;
 
-    // Mask input data
-    assign in_data_m = data_i ^ in_mask;
-    if (SBoxImpl == "canright_masked_noreuse") begin : gen_sbox_canright_masked_noreuse
-      aes_sbox_canright_masked_noreuse aes_sbox (
+  if (!SBoxMasked) begin : gen_sbox_unmasked
+    // Tie off unused mask inputs.
+    logic [15:0] unused_masks;
+    assign unused_masks = {in_mask_i, out_mask_i};
+
+    if (SBoxImpl == SBoxImplCanright) begin : gen_sbox_canright
+      aes_sbox_canright u_aes_sbox (
         .op_i,
-        .data_i     ( in_data_m  ),
-        .in_mask_i  ( in_mask    ),
-        .out_mask_i ( out_mask   ),
-        .data_o     ( out_data_m )
+        .data_i,
+        .data_o
       );
-    end else if (SBoxImpl == "canright_masked") begin : gen_sbox_canright_masked
-      aes_sbox_canright_masked aes_sbox (
+    end else begin : gen_sbox_lut // SBoxImpl == SBoxImplLut
+      aes_sbox_lut u_aes_sbox (
         .op_i,
-        .data_i     ( in_data_m  ),
-        .in_mask_i  ( in_mask    ),
-        .out_mask_i ( out_mask   ),
-        .data_o     ( out_data_m )
+        .data_i,
+        .data_o
       );
     end
-    // Unmask output data
-    assign data_o = out_data_m ^ out_mask;
+  end else begin : gen_sbox_masked
+
+    if (SBoxImpl == SBoxImplCanrightMaskedNoreuse) begin : gen_sbox_canright_masked_noreuse
+      aes_sbox_canright_masked_noreuse u_aes_sbox (
+        .op_i,
+        .data_i,
+        .in_mask_i,
+        .out_mask_i,
+        .data_o
+      );
+    end else begin : gen_sbox_canright_masked // SBoxImpl == SBoxImplCanrightMasked
+      aes_sbox_canright_masked u_aes_sbox (
+        .op_i,
+        .data_i,
+        .in_mask_i,
+        .out_mask_i,
+        .data_o
+      );
+    end
   end
 
 endmodule

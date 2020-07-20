@@ -6,9 +6,13 @@
 
 `include "prim_assert.sv"
 
-module aes_core #(
-  parameter bit AES192Enable = 1,
-  parameter     SBoxImpl     = "lut"
+module aes_core import aes_pkg::*;
+#(
+  parameter bit     AES192Enable = 1,
+  parameter bit     Masking      = 0,
+  parameter sbox_impl_e SBoxImpl = SBoxImplLut,
+
+  localparam int    NumShares    = Masking ? 2 : 1 // derived parameter
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
@@ -30,7 +34,6 @@ module aes_core #(
 );
 
   import aes_reg_pkg::*;
-  import aes_pkg::*;
 
   // Signals
   logic                 ctrl_re;
@@ -51,13 +54,15 @@ module aes_core #(
   logic [3:0][3:0][7:0] add_state_in;
   add_si_sel_e          add_state_in_sel;
 
-  logic [3:0][3:0][7:0] state_init;
-  logic [3:0][3:0][7:0] state_done;
+  logic [3:0][3:0][7:0] state_init [NumShares];
+  logic [3:0][3:0][7:0] state_done [NumShares];
+  logic [3:0][3:0][7:0] state_out;
 
   logic     [7:0][31:0] key_init;
   logic     [7:0]       key_init_qe;
   logic     [7:0][31:0] key_init_d;
   logic     [7:0][31:0] key_init_q;
+  logic     [7:0][31:0] key_init_cipher [NumShares];
   logic     [7:0]       key_init_we;
   key_init_sel_e        key_init_sel;
 
@@ -165,7 +170,7 @@ module aes_core #(
     unique case (iv_sel)
       IV_INPUT:        iv_d = iv;
       IV_DATA_OUT:     iv_d = data_out_d;
-      IV_DATA_OUT_RAW: iv_d = aes_transpose(state_done);
+      IV_DATA_OUT_RAW: iv_d = aes_transpose(state_out);
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
       IV_CLEAR:        iv_d = {prng_data_i, prng_data_i};
@@ -200,7 +205,7 @@ module aes_core #(
   // Counter //
   /////////////
 
-  aes_ctr aes_ctr (
+  aes_ctr u_aes_ctr (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
 
@@ -225,6 +230,7 @@ module aes_core #(
                      (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
 
+  // Convert input data/IV to state format (every word corresponds to one state column).
   // Mux for state input
   always_comb begin : state_in_mux
     unique case (state_in_sel)
@@ -243,14 +249,40 @@ module aes_core #(
     endcase
   end
 
-  // Convert input data to state format (every input data word contains one state column)
-  assign state_init = state_in ^ add_state_in;
+  if (!Masking) begin : gen_state_init_unmasked
+    assign state_init[0] = state_in ^ add_state_in;
+
+  end else begin : gen_state_init_masked
+    // TODO: Use non-constant input masks + remove corresponding comment in aes.sv.
+    // See https://github.com/lowRISC/opentitan/issues/1005
+    logic [3:0][3:0][7:0] state_mask;
+    assign state_mask = {8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA,
+                         8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA};
+
+    assign state_init[0] = (state_in ^ add_state_in) ^ state_mask; // Masked data share
+    assign state_init[1] = state_mask;                             // Mask share
+  end
+
+  if (!Masking) begin : gen_key_init_unmasked
+    assign key_init_cipher[0] = key_init_q;
+
+  end else begin : gen_key_init_masked
+    // TODO: Use non-constant input masks + remove corresponding comment in aes.sv.
+    // See https://github.com/lowRISC/opentitan/issues/1005
+    logic [7:0][31:0] key_mask;
+    assign key_mask = {32'h0000_1111, 32'h2222_3333, 32'h4444_5555, 32'h6666_7777,
+                       32'h8888_9999, 32'hAAAA_BBBB, 32'hCCCC_DDDD, 32'hEEEE_FFFF};
+
+    assign key_init_cipher[0] = key_init_q ^ key_mask; // Masked key share
+    assign key_init_cipher[1] = key_mask;              // Mask share
+  end
 
   // Cipher core
   aes_cipher_core #(
     .AES192Enable ( AES192Enable ),
+    .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
-  ) aes_cipher_core (
+  ) u_aes_cipher_core (
     .clk_i            ( clk_i                      ),
     .rst_ni           ( rst_ni                     ),
 
@@ -272,9 +304,17 @@ module aes_core #(
     .prng_data_i      ( prng_data_i                ),
 
     .state_init_i     ( state_init                 ),
-    .key_init_i       ( key_init_q                 ),
+    .key_init_i       ( key_init_cipher            ),
     .state_o          ( state_done                 )
   );
+
+  if (!Masking) begin : gen_state_out_unmasked
+    assign state_out = state_done[0];
+  end else begin : gen_state_out_masked
+    // Unmask the cipher core output. This causes SCA leakage and should thus be avoided. This will
+    // be reworked in the future when masking the counter and feedback path through the IV regs.
+    assign state_out = state_done[0] ^ state_done[1];
+  end
 
   // Mux for addition to state output
   always_comb begin : add_state_out_mux
@@ -286,9 +326,8 @@ module aes_core #(
     endcase
   end
 
-  // Convert output state to output data format (every state column corresponds to one output word)
-  assign data_out_d = aes_transpose(state_done ^ add_state_out);
-
+  // Convert output state to output data format (every column corresponds to one output word).
+  assign data_out_d = aes_transpose(state_out ^ add_state_out);
 
   //////////////////////
   // Control Register //
@@ -332,7 +371,7 @@ module aes_core #(
     .DW       ( $bits(ctrl_reg_t) ),
     .SWACCESS ( "WO"              ),
     .RESVAL   ( CTRL_RESET        )
-  ) ctrl_shadowed_reg (
+  ) u_ctrl_reg_shadowed (
     .clk_i       ( clk_i            ),
     .rst_ni      ( rst_ni           ),
     .re          ( ctrl_re          ),
@@ -360,7 +399,7 @@ module aes_core #(
   /////////////
 
   // Control
-  aes_control aes_control (
+  aes_control u_aes_control (
     .clk_i                   ( clk_i                            ),
     .rst_ni                  ( rst_ni                           ),
 

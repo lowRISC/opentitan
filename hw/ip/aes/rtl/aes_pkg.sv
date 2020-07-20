@@ -9,6 +9,15 @@ package aes_pkg;
 parameter int NumAlerts = 1;
 parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
 
+typedef enum integer {
+  SBoxImplLut,                  // Unmasked LUT-based S-Box
+  SBoxImplCanright,             // Unmasked Canright S-Box, see aes_sbox_canright.sv
+  SBoxImplCanrightMasked,       // First-order masked Canright S-Box
+                                // see aes_sbox_canright_masked.sv
+  SBoxImplCanrightMaskedNoreuse // First-order masked Canright S-Box without mask reuse,
+                                // see aes_sbox_canright_masked_noreuse.sv
+} sbox_impl_e;
+
 typedef enum logic {
   AES_ENC = 1'b0,
   AES_DEC = 1'b1

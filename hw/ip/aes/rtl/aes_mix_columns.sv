@@ -20,7 +20,7 @@ module aes_mix_columns (
 
   // Individually mix columns
   for (genvar i = 0; i < 4; i++) begin : gen_mix_column
-    aes_mix_single_column aes_mix_column_i (
+    aes_mix_single_column u_aes_mix_column_i (
       .op_i   ( op_i                 ),
       .data_i ( data_i_transposed[i] ),
       .data_o ( data_o_transposed[i] )

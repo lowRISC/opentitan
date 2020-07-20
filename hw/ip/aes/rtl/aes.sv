@@ -6,12 +6,15 @@
 
 `include "prim_assert.sv"
 
-module aes #(
-  parameter bit AES192Enable = 1,    // Can be 0 (disable), or 1 (enable).
-  parameter     SBoxImpl     = "lut" // Can be "lut" (LUT-based SBox), "canright",
-                                     // "canright_masked_noreuse", or "canright_masked".
-                                     // Note: Currently, constant masks are used, this is
-                                     // of course not secure.
+module aes import aes_pkg::*; #(
+  parameter bit     AES192Enable = 1, // Can be 0 (disable), or 1 (enable).
+  parameter bit     Masking      = 0, // Can be 0 (no masking), or 1 (first-order masking) of the
+                                      // cipher core. Masking requires the use of a masked S-Box,
+                                      // see SBoxImpl parameter. Note: currently, constant masks
+                                      // are used, this is of course not secure.
+  parameter sbox_impl_e SBoxImpl = SBoxImplLut, // See aes_pkg.sv
+
+  localparam int    NumShares    = Masking ? 2 : 1 // derived parameter
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -31,12 +34,11 @@ module aes #(
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [aes_pkg::NumAlerts-1:0] alert_tx_o
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
 );
 
   import aes_reg_pkg::*;
-  import aes_pkg::*;
 
   aes_reg2hw_t reg2hw;
   aes_hw2reg_t hw2reg;
@@ -61,8 +63,9 @@ module aes #(
 
   aes_core #(
     .AES192Enable ( AES192Enable ),
+    .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
-  ) aes_core (
+  ) u_aes_core (
     .clk_i,
     .rst_ni,
 
@@ -78,7 +81,7 @@ module aes #(
     .hw2reg
   );
 
-  aes_prng aes_prng (
+  aes_prng u_aes_prng (
     .clk_i,
     .rst_ni,
 
@@ -100,7 +103,7 @@ module aes #(
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i])
-    ) i_prim_alert_sender (
+    ) u_alert_sender_i (
       .clk_i      ( clk_i         ),
       .rst_ni     ( rst_ni        ),
       .alert_i    ( alert[i]      ),
