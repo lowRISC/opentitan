@@ -9,8 +9,9 @@
     SPDX-License-Identifier: Apache-2.0
     ''',
   exclude_paths: [
-    # Exclude anything in vendor directories
+    # Exclude anything in vendored directories
     '*/vendor/*/*',
+    'util/lowrisc_misc-linters/*',
 
     ## Hardware Exclusions
 

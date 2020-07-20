@@ -25,15 +25,16 @@ static bool uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
   return dif_uart_init(base_addr, &config, uart) == kDifUartConfigOk;
 }
 
+const test_config_t kTestConfig = {
+    .can_clobber_uart = true,
+};
+
 bool test_main(void) {
   mmio_region_t uart_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   if (!uart_initialise(uart_base_addr, &uart0)) {
     return false;
   }
-
-  // Make sure that the test runner reinitialises UART after this test.
-  uart_reconfigure_required = true;
 
   if (dif_uart_loopback_set(&uart0, kDifUartLoopbackSystem, kDifUartEnable) !=
       kDifUartOk) {

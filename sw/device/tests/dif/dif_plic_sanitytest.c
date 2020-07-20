@@ -244,6 +244,10 @@ static bool execute_test(dif_uart_t *uart) {
   return true;
 }
 
+const test_config_t kTestConfig = {
+    .can_clobber_uart = true,
+};
+
 bool test_main(void) {
   // Enable IRQs on Ibex
   irq_global_ctrl(true);
