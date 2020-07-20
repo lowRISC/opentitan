@@ -78,8 +78,8 @@ module top_earlgrey_asic (
     .ConnectDioIn  ( 15'h7F63 ),
     .ConnectDioOut ( 15'h7F63 ),
     // Pad types
-    .MioPadVariant ( '{default: 0} ),
-    .DioPadVariant ( '{default: 0} )
+    .MioPadVariant ( '0 ),
+    .DioPadVariant ( '0 )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( IO_CLK           ),
