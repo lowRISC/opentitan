@@ -5,4 +5,4 @@
 
 set -e
 
-hugo --minify -D server
+hugo -D server
