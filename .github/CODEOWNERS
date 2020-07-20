@@ -61,6 +61,7 @@ formal/             @cindychip
 # License related files
 LICENSE*            @asb
 COPYING*            @asb
+/util/licence-checker.hjson  @asb @lenary
 
 # CI and testing
 /ci/                @mcy @imphil
