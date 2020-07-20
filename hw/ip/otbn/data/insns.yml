@@ -779,8 +779,9 @@ insns:
     synopsis: Jump And Link
     operands: [grd, offset]
     trailing-doc: |
-      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
-      stack. To call a subroutine use `jal x1, <offset>`.
+      The JAL instruction has the same behavior as in RV32I, jumping by the given offset and writing `PC+4` as a link address to the destination register.
+      OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling subroutines.
+      Do so by using `x1` as the link register: `jal x1, <offset>`.
     encoding:
       scheme: J
       mapping:
@@ -793,8 +794,12 @@ insns:
     synopsis: Jump And Link Register
     operands: [grd, grs1, offset]
     trailing-doc: |
-      Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
-      stack. To return from a subroutine, use `jalr x0, x1, 0`.
+      The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
+      OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
+      To return from a subroutine, use `jalr x0, x1, 0`.
+      This pops a link address from the call stack and branches to it.
+      To call a subroutine through a function pointer, use `jalr x1, <grs1>, 0`.
+      This jumps to the address in `<grs1>` and pushes the link address onto the call stack.
     encoding:
       scheme: I
       mapping:
