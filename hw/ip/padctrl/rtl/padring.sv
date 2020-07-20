@@ -18,8 +18,8 @@ module padring import padctrl_reg_pkg::*; #(
   parameter logic [NDioPads-1:0] ConnectDioOut = '1,
 
   // 0: bidir, 1: input, 2: tolerant, 3: open drain
-  parameter int MioPadVariant [NMioPads] = '{default: 0},
-  parameter int DioPadVariant [NDioPads] = '{default: 0}
+  parameter logic [1:0][NDioPads-1:0] MioPadVariant = '0,
+  parameter logic [1:0][NDioPads-1:0] DioPadVariant = '0
 ) (
   // pad input
   input wire                  clk_pad_i,
