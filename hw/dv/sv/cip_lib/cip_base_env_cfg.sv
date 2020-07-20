@@ -11,9 +11,10 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   intr_vif              intr_vif;
   devmode_vif           devmode_vif;
 
-  // only security IP can support devmode. If supported, override it to 1 in initialize()
+  // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
+  // TODO: enable random drive devmode once design supports
   bit                   has_devmode = 1;
-  bit                   en_devmode = 0;
+  bit                   en_devmode = 1;
 
   uint                  num_interrupts;
   string                list_of_alerts[] = {};

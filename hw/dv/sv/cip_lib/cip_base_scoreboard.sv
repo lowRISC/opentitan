@@ -148,8 +148,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     if (!is_tl_access_mapped_addr(item)) begin
       is_tl_unmapped_addr = 1;
-      // if devmode is enabled, d_error won't be set
-      if (cfg.en_devmode == 0 || cfg.devmode_vif.sample()) begin
+      // if devmode is enabled, d_error will be set
+      if (cfg.en_devmode || cfg.devmode_vif.sample()) begin
         is_tl_err = 1;
       end
     end

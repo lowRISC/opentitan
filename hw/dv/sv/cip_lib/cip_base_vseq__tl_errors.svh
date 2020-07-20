@@ -139,9 +139,11 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
-    if (cfg.en_devmode == 1) begin
-      cfg.devmode_vif.drive($urandom_range(0, 1));
-    end
+    // TODO: once devmode is not tied internally in design, randomly drive devmode_vif
+    // if (cfg.en_devmode == 1) begin
+    //  cfg.devmode_vif.drive($urandom_range(0, 1));
+    // end
+
     // use multiple thread to create outstanding access
     fork
       begin: isolation_fork
