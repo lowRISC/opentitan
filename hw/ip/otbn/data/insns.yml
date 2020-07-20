@@ -777,7 +777,8 @@ insns:
   - mnemonic: jal
     rv32i: true
     synopsis: Jump And Link
-    operands: [grd, offset]
+    operands: [offset]
+    syntax: x1, <offset>
     trailing-doc: |
       Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
       stack. To call a subroutine use `jal x1, <offset>`.
@@ -785,13 +786,14 @@ insns:
       scheme: J
       mapping:
         imm: offset
-        rd: grd
+        rd: b00001
         opcode: b11011
 
   - mnemonic: jalr
     rv32i: true
     synopsis: Jump And Link Register
-    operands: [grd, grs1, offset]
+    operands: [offset]
+    syntax: x0, x1, <offset>
     trailing-doc: |
       Unlike in RV32I, the `x1` (return address) GPR is hard-wired to the call
       stack. To return from a subroutine, use `jalr x0, x1, 0`.
@@ -799,9 +801,9 @@ insns:
       scheme: I
       mapping:
         imm: offset
-        rs1: grs1
+        rs1: b00001
         funct3: b000
-        rd: grd
+        rd: b00000
         opcode: b11001
 
   - mnemonic: csrrs
