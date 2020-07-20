@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+'''A wrapper around riscv32-unknown-elf-ld for OTBN
+
+This just adds the OTBN linker script and calls the underlying
+linker.'''
+
+import os
+import subprocess
+import sys
+
+
+def main() -> int:
+    ld_script = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                              '..', 'data', 'otbn.ld'))
+    if not os.path.exists(ld_script):
+        sys.stderr.write('Default linker script ({!r}) does not exist.'
+                         .format(ld_script))
+
+    try:
+        ld_name = 'riscv32-unknown-elf-ld'
+        cmd = [ld_name, '--script={}'.format(ld_script)] + sys.argv[1:]
+        return subprocess.run(cmd).returncode
+    except FileNotFoundError:
+        sys.stderr.write('Unknown command: {!r}. '
+                         '(is it installed and on your PATH?)\n'
+                         .format(ld_name))
+        return 127
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -2,8 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-pyfiles := insn_yaml.py yaml_to_doc.py otbn-as
+pylibs := insn_yaml.py
+pyscripts := yaml_to_doc.py otbn-as otbn-ld
 
-.PHONY: lint
-lint: $(pyfiles)
-	mypy --strict $(pyfiles)
+.PHONY: all
+all: lint
+
+lint-targets := $(addprefix lint-,$(pyscripts))
+.PHONY: lint $(lint-targets)
+lint: $(lint-targets)
+
+$(lint-targets): lint-%:
+	mypy --strict $*
