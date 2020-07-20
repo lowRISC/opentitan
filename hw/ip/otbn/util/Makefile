@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 pylibs := insn_yaml.py
-pyscripts := yaml_to_doc.py otbn-as otbn-ld
+pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 .PHONY: all
 all: lint
