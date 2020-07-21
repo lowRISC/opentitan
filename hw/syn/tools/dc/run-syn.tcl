@@ -22,7 +22,7 @@ set BUILD_DIR $::env(BUILD_DIR)
 # just compile the "core" toplevel at the moment
 # might want to switch to top_earlgrey_asic later on (with pads)
 set DUT $::env(DUT)
-set CONSTRAINT $::env(CONSTRANT)
+set CONSTRAINT $::env(CONSTRAINT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
@@ -85,7 +85,7 @@ define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -r
 change_names -rule fixbackslashes -h
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
-write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
+#write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
 
 #############################
 ##   CLOCK GATING SETUP    ##
