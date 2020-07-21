@@ -18,6 +18,7 @@ filesets:
       - lowrisc:top_earlgrey:rv_plic
       - lowrisc:top_earlgrey:pinmux_reg
       - lowrisc:top_earlgrey:padctrl_reg
+      - lowrisc:top_earlgrey:padring
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:padctrl_component
       - lowrisc:ip:rv_timer

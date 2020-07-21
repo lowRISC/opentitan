@@ -11,8 +11,6 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
     files:
-      - rtl/jtag_mux.sv
-      - rtl/padring.sv
       - rtl/padctrl.sv
     file_type: systemVerilogSource
 
