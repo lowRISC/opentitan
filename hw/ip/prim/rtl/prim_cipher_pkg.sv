@@ -30,15 +30,15 @@ package prim_cipher_pkg;
                                                   4'h9, 4'h8, 4'hD, 4'hF,
                                                   4'h2, 4'h3, 4'h7, 4'hB};
   // nibble permutations
-  parameter logic [15:0][3:0] PRINCE_SHIFT_ROWS64  = '{4'hB, 4'h6, 4'h1, 4'hC,
+  parameter logic [15:0][3:0] PRINCE_SHIFT_ROWS64  = '{4'hF, 4'hA, 4'h5, 4'h0,
+                                                       4'hB, 4'h6, 4'h1, 4'hC,
                                                        4'h7, 4'h2, 4'hD, 4'h8,
-                                                       4'h3, 4'hE, 4'h9, 4'h4,
-                                                       4'hF, 4'hA, 4'h5, 4'h0};
+                                                       4'h3, 4'hE, 4'h9, 4'h4};
 
-  parameter logic [15:0][3:0] PRINCE_SHIFT_ROWS64_INV = '{4'h3, 4'h6, 4'h9, 4'hC,
-                                                          4'hF, 4'h2, 4'h5, 4'h8,
+  parameter logic [15:0][3:0] PRINCE_SHIFT_ROWS64_INV = '{4'hF, 4'h2, 4'h5, 4'h8,
                                                           4'hB, 4'hE, 4'h1, 4'h4,
-                                                          4'h7, 4'hA, 4'hD, 4'h0};
+                                                          4'h7, 4'hA, 4'hD, 4'h0,
+                                                          4'h3, 4'h6, 4'h9, 4'hC};
 
   // these are the round constants
   parameter logic [11:0][63:0] PRINCE_ROUND_CONST = {64'hC0AC29B7C97C50DD,
@@ -58,10 +58,10 @@ package prim_cipher_pkg;
   parameter logic [63:0] PRINCE_ALPHA_CONST = 64'hC0AC29B7C97C50DD;
 
   // masking constants for shift rows function below
-  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST0 = 16'hEDB7;
-  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST1 = 16'h7EDB;
-  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST2 = 16'hB7ED;
-  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST3 = 16'hDB7E;
+  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST0 = 16'h7BDE;
+  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST1 = 16'hBDE7;
+  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST2 = 16'hDE7B;
+  parameter logic [15:0] PRINCE_SHIFT_ROWS_CONST3 = 16'hE7BD;
 
   // nibble shifts
   function automatic logic [31:0] prince_shiftrows_32bit(logic [31:0]      state_in,
@@ -94,15 +94,15 @@ package prim_cipher_pkg;
   function automatic logic [31:0] prince_mult_prime_32bit(logic [31:0] state_in);
     logic [31:0] state_out;
     // M0
-    state_out[0  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
-    state_out[4  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[8  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[12 +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[0  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[4  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[8  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
+    state_out[12 +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
     // M1
-    state_out[16 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[20 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[24 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
-    state_out[28 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[16 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[20 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[24 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[28 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
     return state_out;
   endfunction : prince_mult_prime_32bit
 
@@ -110,25 +110,25 @@ package prim_cipher_pkg;
   function automatic logic [63:0] prince_mult_prime_64bit(logic [63:0] state_in);
     logic [63:0] state_out;
     // M0
-    state_out[0  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
-    state_out[4  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[8  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[12 +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[0  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[4  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[8  +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
+    state_out[12 +: 4] = prince_nibble_red16(state_in[ 0 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
     // M1
-    state_out[16 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[20 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[24 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
-    state_out[28 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[16 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[20 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[24 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[28 +: 4] = prince_nibble_red16(state_in[16 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
     // M1
-    state_out[32 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[36 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[40 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
-    state_out[44 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[32 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
+    state_out[36 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[40 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[44 +: 4] = prince_nibble_red16(state_in[32 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
     // M0
-    state_out[48 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
-    state_out[52 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
-    state_out[56 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
-    state_out[60 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[48 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST3);
+    state_out[52 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST2);
+    state_out[56 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST1);
+    state_out[60 +: 4] = prince_nibble_red16(state_in[48 +: 16] & PRINCE_SHIFT_ROWS_CONST0);
     return state_out;
   endfunction : prince_mult_prime_64bit
 
