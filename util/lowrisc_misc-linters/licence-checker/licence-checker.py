@@ -260,7 +260,8 @@ def check_file_for_licence(licence, results, filepath):
         return
 
     if not isinstance(styles, list):
-        assert isinstance(styles, LineCommentStyle)
+        assert (isinstance(styles, LineCommentStyle) or
+                isinstance(styles, BlockCommentStyle))
         styles = [styles]
 
     problems = []
