@@ -78,9 +78,14 @@ SLASH_SLASH = LineCommentStyle("//")
 HASH = LineCommentStyle("#")
 SLASH_STAR = BlockCommentStyle("/*", "*/")
 
-# (Priortised) Mapping of file name suffixes to CommentStyle object.
-# If the suffix of your file does not match one of these, it will not be
-# checked.
+# (Priortised) Mapping of file name suffixes to comment style. If the suffix of
+# your file does not match one of these, it will not be checked.
+#
+# The value in a pair should be one of:
+#
+#    None:                            Skip this file type
+#    A CommentStyle object:           Use this comment style
+#    A list of CommentStyle objects:  Try each comment style in turn
 #
 # These rules are given in priority order. Tuples of (extensions, style) higher
 # in the list are matched before those later in the list, on purpose.
@@ -109,7 +114,7 @@ COMMENT_CHARS = [
 
     # Software Files
     ([".c", ".c.tpl", ".h", ".h.tpl", ".cc", ".cpp"], SLASH_SLASH),  # C, C++
-    ([".S"], SLASH_SLASH),  # Assembly
+    ([".S"], [SLASH_SLASH, SLASH_STAR]),  # Assembly
     ([".ld", ".ld.tpl"], SLASH_STAR),  # Linker Scripts
     ([".rs"], SLASH_SLASH),  # Rust
 
@@ -244,15 +249,43 @@ def check_paths(config, git_paths):
 
 
 def check_file_for_licence(licence, results, filepath):
-    comment_style = detect_comment_char(filepath.name)
+    styles = detect_comment_char(filepath.name)
 
-    if comment_style is None:
+    if styles is None:
         results.skipped(filepath, "Unknown comment style")
         return
 
     if filepath.stat().st_size == 0:
         results.skipped(filepath, "Empty file")
         return
+
+    if not isinstance(styles, list):
+        assert isinstance(styles, LineCommentStyle)
+        styles = [styles]
+
+    problems = []
+    for style in styles:
+        good, line_num, msg = check_file_with_style(licence, filepath, style)
+        if good:
+            results.passed(filepath, line_num, msg)
+            return
+        else:
+            problems.append((line_num, msg))
+
+    # If we get here, we didn't find a matching licence
+    for line_num, msg in problems:
+        results.failed(filepath, line_num, msg)
+
+
+def check_file_with_style(licence, filepath, comment_style):
+    '''Check the file at filepath, assuming it uses comment_style.
+
+    Returns a tuple (is_good, line_number, msg). is_good is True on success;
+    False on failure. line_number is the position where the licence was found
+    (on success) or where we gave up searching for it (on failure). msg is the
+    associated success or error message.
+
+    '''
 
     def next_line(file, line_no):
         return (next(file).rstrip(), line_no + 1)
@@ -264,8 +297,7 @@ def check_file_for_licence(licence, results, filepath):
         try:
             line, line_no = next_line(f, 0)
         except StopIteration:
-            results.failed(filepath, 1, "Empty file")
-            return
+            return (False, 1, "Empty file")
 
         licence_search_marker = comment_style.search_line(licence.first_word)
 
@@ -273,53 +305,45 @@ def check_file_for_licence(licence, results, filepath):
         # possible different first line.
         if not line.startswith(licence_search_marker):
             if not line.startswith(comment_style.first_line_prefix):
-                results.failed(filepath, line_no,
-                               "File does not start with comment")
-                return
+                return (False, line_no, "File does not start with comment")
 
             try:
                 line, line_no = next_line(f, line_no)
             except StopIteration:
-                results.failed(filepath, line_no,
-                               "Reached end of file before finding licence")
-                return
+                return (False, line_no,
+                        "Reached end of file before finding licence")
 
         # Skip lines that don't seem to be the first line of the licence
         while not line.startswith(licence_search_marker):
             try:
                 line, line_no = next_line(f, line_no)
             except StopIteration:
-                results.failed(filepath, line_no,
-                               "Reached end of file before finding licence")
-                return
+                return (False, line_no,
+                        "Reached end of file before finding licence")
 
             if not line.startswith(comment_style.comment_prefix):
-                results.failed(filepath, line_no,
-                               "First comment ended before licence notice")
-                return
+                return (False, line_no,
+                        "First comment ended before licence notice")
 
-        # We found the marker, so we found the first line of the licence.
-        # The current line is in the first comment, so check the line matches the
+        # We found the marker, so we found the first line of the licence. The
+        # current line is in the first comment, so check the line matches the
         # expected first line:
         licence_assumed_start = line_no
         if line != comment_style.expected_full_line(licence[0]):
-            results.failed(filepath, line_no, "Licence does not match")
-            return
+            return (False, line_no, "Licence does not match")
 
         for (licence_line_no, licence_line) in licence.numbered_lines(skip=1):
             try:
                 line, line_no = next_line(f, line_no)
             except StopIteration:
-                results.failed(filepath, line_no,
-                               "Reached end of file before finding licence")
-                return
+                return (False, line_no,
+                        "Reached end of file before finding licence")
 
             # Check against full expected line.
             if line != comment_style.expected_full_line(licence_line):
-                results.failed(filepath, line_no, "Licence did not match")
-                return
+                return (False, line_no, "Licence did not match")
 
-    results.passed(filepath, licence_assumed_start, "Licence found")
+    return (True, licence_assumed_start, "Licence found")
 
 
 def main():
