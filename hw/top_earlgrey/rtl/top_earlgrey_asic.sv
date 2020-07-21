@@ -99,7 +99,7 @@ module top_earlgrey_asic (
   // tied to 1'bz.
   wire unused_usbdev_se0, unused_usbdev_tx_mode, unused_usbdev_suspend;
   wire unused_usbdev_d, unused_usbdev_aon_sense;
-  wire unused_usbdev_dp_pullup_en, unused_usbdev_dp_pullup_en;
+  wire unused_usbdev_dp_pullup_en, unused_usbdev_dn_pullup_en;
 
   // TODO: hook these up once both the SPI host and device are present
   logic [3:0] unused_spi;
@@ -345,13 +345,8 @@ module top_earlgrey_asic (
   sensor_ctrl_pkg::ast_aux_t base_ast_aux;
   entropy_src_pkg::entropy_src_rng_req_t base_ast_entropy_src;
   entropy_src_pkg::entropy_src_rng_rsp_t ast_base_entropy_src;
-
-  // TODO: Connect to AST Wrapper
-  assign entropy_src_rng_rsp = '0;
-
   logic usb_ref_pulse;
   logic usb_ref_val;
-
 
   ast_wrapper ast_wrapper (
     .clk_ext_i(clk),
