@@ -1,0 +1,234 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "csrng",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  param_list: [
+    { name: "NHwApps",
+      type: "int",
+      default: "3",
+      desc: "Number of CSRNG hardware applications",
+      local: "true"
+    }
+  ],
+  interrupt_list: [
+    { name: "cs_cmd_req_done"
+      desc: "Asserted when a command request is completed."}
+    { name: "cs_fifo_err"
+      desc: "Asserted when a FIFO error occurs."}
+    { name: "cs_hw_inst_exc"
+      desc: "Asserted when a hardware-attached CSRNG instance encounters a command exception"}
+  ],
+  inter_signal_list: [
+    { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
+      type:    "req_rsp",
+      name:    "csrng_cmd",
+      act:     "rsp",
+      width:   "3",
+      package: "csrng_pkg",
+    }
+    { struct:  "entropy_src_hw_if"
+      type:    "req_rsp",
+      name:    "entropy_src_hw_if"
+      act:     "req"
+      width:   1
+      package: "entropy_src_pkg"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "efuse_sw_app_enable"
+      act:     "rcv"
+      width:   1
+      package: ""
+    }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "REGEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: '''
+                  When true, the writeable registers can be modified.
+                  When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
+                  cleared after initial configuration at boot in order to lock in the listed register settings.
+                  '''
+            resval: 1 
+        },
+      ]
+    },
+    { name: "CTRL",
+      desc: "Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "REGEN",
+      fields: [
+        {
+            bits: "0",
+            name: "ENABLE",
+            desc: '''
+                  Setting this bit will enable the CSRNG module. The application interface for software
+                  (register based) will be enabled only if the respective efuse input is enabled. 
+                  '''
+        },
+        {
+            bits: "1",
+            name: "AES_CIPHER_DISABLE",
+            desc: '''
+                  Setting this bit will disable the AES cipher core module. If set, then commands will
+                  bypass the AES cipher core, but still move through the logical flow of CSRNG.
+                  This mode is primarily for debug purposes.
+                  '''
+        },
+        {
+            bits: "19:16",
+            name: "FIFO_DEPTH_STS_SEL",
+            desc: "This field will select which FIFO depth will be read out for diagnostic purposes."
+        },
+      ]
+    },
+    {
+      name: "SUM_STS",
+      desc: "Summary status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "23:0",
+          name: "FIFO_DEPTH_STS",
+          desc: "These bits show the current status of the CRSNG FIFO depths."
+        }
+        { bits: "31",
+          name: "DIAG",
+          desc: "This this an internal generic diagnostic bit."
+        }
+      ]
+    },
+    {
+      name: "CMD_REQ",
+      desc: "Command request register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe: "true",
+      regwen: "REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "CMD_REQ",
+          desc: '''
+                Writing this request with defined CSRNG commands will initiate all
+                possible CSRNG actions. The application interface must wait for the
+                "ack" to return before issuing new commands.
+                '''
+        }
+      ]
+    },
+    {
+      name: "CMD_STS",
+      desc: "Command status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMD_RDY",
+          desc: '''This bit indicates when the command interface is ready to accept commands.
+                '''
+        }
+        { bits: "1",
+          name: "CMD_ACK",
+          desc: '''This bit is set when the command request has completed. This bit must
+                   be cleared before a new request is made.
+                '''
+        }
+        { bits: "4",
+          name: "CMD_STS",
+          desc: '''
+                This one bit field is the status code returned with the application command ack.
+                0b0: Request completed successfully
+                0b1: Request completed with an error
+                '''
+        }
+      ]
+    },
+    {
+      name: "GENBITS_VLD",
+      desc: "Generate bits returned valid register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "GENBITS_VLD",
+          desc: "This bit is set when genbits are available on this application interface."
+        }
+        { bits: "1",
+          name: "GENBITS_FIPS",
+          desc: "This bit is set when genbits are FIPS/CC compliant."
+        }
+      ]
+    },
+    {
+      name: "GENBITS",
+      desc: "Generate bits returned register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          name: "GENBITS",
+          desc: '''
+                Reading this register will get the generated bits that were requested with
+                the generate request. This register must be four times for each request
+                number made. For example, a application command generate request with 
+                a `creq` value of 4 requires this register to be read 16 times to get all
+                of the data out of the FIFO path.
+                '''
+        }
+      ]
+    },
+    {
+      name: "HW_EXC_STS",
+      desc: "Hardware instance exception status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "14:0",
+          name: "HW_EXC_STS",
+          desc: '''
+                Reading this register indicates whether one of the CSRNG HW instances has
+                encountered an exception.  Each bit corresponds to a particular hardware
+                instance, with bit 0 corresponding to instance HW0, bit 1 corresponding
+                to instance HW1, and so forth. (To monitor the status of requests made
+                to the SW instance, check the CMD_STS register).  Uninstantiating the
+                effected hardware instance, usually by a reset of the attached EDN,
+                resets the corresponding status bit.
+                '''
+        }
+        { bits: "16",
+          name: "CMD_ERR",
+          desc: '''
+                Indicates that at least one of the instances encountered an exception
+                due to an illegal command sequence (for example, requesting a generate
+                operation from an uninstantiated instance, or exceeding the
+                allowed seed life).  In this case, one can recover by uninstantiating
+                the instance, and reinstantiating it.
+                '''
+        }
+        { bits: "17",
+          name: "ENTROPY_ERR",
+          desc: '''
+                Indicates that at least one of the affected instances was unable to perform an
+                instantiation or reseed operation due to a failure of the entropy source.
+                Troubleshooting the entropy source may be required.  Once the entropy
+                source has been reinitiated, the effected instances can be reinitialized
+                by uninstantiating and reinstantiating them.
+		'''
+	}
+      ]
+    }
+  ]
+}
