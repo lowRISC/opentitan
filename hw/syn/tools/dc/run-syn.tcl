@@ -84,7 +84,7 @@ check_design                                              > "${REPDIR}/check.rpt
 set_verification_top
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
-write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
+#write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
 
 #############################
 ##   CLOCK GATING SETUP    ##
@@ -138,9 +138,9 @@ report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/ti
 ##   NETLIST   ##
 #################
 
-# change_names -rules verilog -hierarchy
-# define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
-# change_names -rule fixbackslashes -h
+change_names -rules verilog -hierarchy
+define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
+change_names -rule fixbackslashes -h
 write_file -format ddc     -hierarchy -output "${DDCDIR}/mapped.ddc"
 write_file -format verilog -hierarchy -output "${VLOGDIR}/mapped.v"
 
