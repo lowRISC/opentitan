@@ -2414,13 +2414,15 @@
           index: -1
         }
         {
-          struct: io_pok
+          struct: ast_status
           type: uni
           name: io_pok
           act: rcv
-          package: pinmux_pkg
-          default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
+          package: ast_wrapper_pkg
           inst_name: pinmux_aon
+          width: 1
+          default: ""
+          top_signame: pinmux_aon_io_pok
           index: -1
         }
         {
@@ -4260,6 +4262,7 @@
       clkmgr_aon.clk_usb
       clkmgr_aon.clk_aon
       dcd_aon.adc
+      pinmux_aon.io_pok
     ]
   }
   xbar:
@@ -7677,13 +7680,15 @@
         index: -1
       }
       {
-        struct: io_pok
+        struct: ast_status
         type: uni
         name: io_pok
         act: rcv
-        package: pinmux_pkg
-        default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
+        package: ast_wrapper_pkg
         inst_name: pinmux_aon
+        width: 1
+        default: ""
+        top_signame: pinmux_aon_io_pok
         index: -1
       }
       {
@@ -8340,6 +8345,15 @@
         signame: dcd_aon_adc_rsp
         width: 1
         type: req_rsp
+        default: ""
+        direction: in
+      }
+      {
+        package: ast_wrapper_pkg
+        struct: ast_status
+        signame: pinmux_aon_io_pok
+        width: 1
+        type: uni
         default: ""
         direction: in
       }
