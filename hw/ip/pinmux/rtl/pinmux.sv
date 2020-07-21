@@ -18,7 +18,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // Sleep enable, running on clk_i
   input                            sleep_en_i,
   // IO Power OK signal
-  input  io_pok_req_t              io_pok_i,
+  input  ast_wrapper_pkg::ast_status_t io_pok_i,
   // Strap sample request
   input  lc_strap_req_t            lc_pinmux_strap_i,
   output lc_strap_rsp_t            lc_pinmux_strap_o,

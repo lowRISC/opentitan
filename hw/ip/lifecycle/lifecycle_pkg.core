@@ -7,6 +7,8 @@ description: "LifeCycle package"
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:ip:pinmux_component
     files:
       - rtl/lifecycle_pkg.sv
     file_type: systemVerilogSource
