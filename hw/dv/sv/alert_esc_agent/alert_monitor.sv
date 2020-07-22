@@ -39,6 +39,7 @@ class alert_monitor extends alert_esc_base_monitor;
         under_ping_rsp = 1;
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscPingTrans;
+
         fork
           begin : isolation_fork
             fork
@@ -62,6 +63,7 @@ class alert_monitor extends alert_esc_base_monitor;
             disable fork;
           end : isolation_fork
         join
+
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
@@ -80,10 +82,13 @@ class alert_monitor extends alert_esc_base_monitor;
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
+
         // Write alert packet to scb when receiving alert signal
         alert_esc_port.write(req);
+
         // Duplicate req for writing alert packet at the end of alert handshake
         `downcast(req, req.clone())
+
         fork
           begin : isolation_fork
             fork
@@ -106,6 +111,7 @@ class alert_monitor extends alert_esc_base_monitor;
             disable fork;
           end : isolation_fork
         join
+
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
@@ -156,4 +162,5 @@ class alert_monitor extends alert_esc_base_monitor;
       ok_to_end = !cfg.vif.monitor_cb.alert_tx.alert_p && cfg.vif.monitor_cb.alert_tx.alert_n;
     end
   endtask
+
 endclass : alert_monitor

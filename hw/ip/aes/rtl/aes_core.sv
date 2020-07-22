@@ -21,6 +21,9 @@ module aes_core #(
   output logic                     prng_reseed_req_o,
   input  logic                     prng_reseed_ack_i,
 
+  // Alerts
+  output logic                     ctrl_err_o,
+
   // Bus Interface
   input  aes_reg_pkg::aes_reg2hw_t reg2hw,
   output aes_reg_pkg::aes_hw2reg_t hw2reg
@@ -30,15 +33,18 @@ module aes_core #(
   import aes_pkg::*;
 
   // Signals
+  logic                 ctrl_re;
   logic                 ctrl_qe;
   logic                 ctrl_we;
-  aes_op_e              aes_op_d, aes_op_q;
-  aes_mode_e            aes_mode;
-  aes_mode_e            aes_mode_d, aes_mode_q;
+  aes_op_e              aes_op_q;
+  aes_mode_e            mode;
+  aes_mode_e            aes_mode_q;
   ciph_op_e             cipher_op;
   key_len_e             key_len;
-  key_len_e             key_len_d, key_len_q;
+  key_len_e             key_len_q;
   logic                 manual_operation_q;
+  ctrl_reg_t            ctrl_d, ctrl_q;
+  logic                 ctrl_err_update, ctrl_err_storage;
 
   logic [3:0][3:0][7:0] state_in;
   si_sel_e              state_in_sel;
@@ -132,31 +138,6 @@ module aes_core #(
       data_out_re[i]       = reg2hw.data_out[i].re;
     end
   end
-
-  assign aes_op_d = aes_op_e'(reg2hw.ctrl.operation.q);
-
-  assign aes_mode = aes_mode_e'(reg2hw.ctrl.mode.q);
-  always_comb begin : mode_get
-    unique case (aes_mode)
-      AES_ECB: aes_mode_d = AES_ECB;
-      AES_CBC: aes_mode_d = AES_CBC;
-      AES_CTR: aes_mode_d = AES_CTR;
-      default: aes_mode_d = AES_ECB; // unsupported values are mapped to AES_ECB
-    endcase
-  end
-
-  assign key_len = key_len_e'(reg2hw.ctrl.key_len.q);
-  always_comb begin : key_len_get
-    unique case (key_len)
-      AES_128: key_len_d = AES_128;
-      AES_256: key_len_d = AES_256;
-      AES_192: key_len_d = AES192Enable ? AES_192 : AES_128;
-      default: key_len_d = AES_128; // unsupported values are mapped to AES_128
-    endcase
-  end
-
-  assign ctrl_qe = reg2hw.ctrl.operation.qe & reg2hw.ctrl.mode.qe & reg2hw.ctrl.key_len.qe &
-      reg2hw.ctrl.manual_operation.qe;
 
   //////////////////////
   // Key, IV and Data //
@@ -305,6 +286,71 @@ module aes_core #(
   // Convert output state to output data format (every state column corresponds to one output word)
   assign data_out_d = aes_transpose(state_done ^ add_state_out);
 
+
+  //////////////////////
+  // Control Register //
+  //////////////////////
+
+  // Get and resolve values from register interface.
+  assign ctrl_d.operation = aes_op_e'(reg2hw.ctrl_shadowed.operation.q);
+
+  assign mode = aes_mode_e'(reg2hw.ctrl_shadowed.mode.q);
+  always_comb begin : mode_get
+    unique case (mode)
+      AES_ECB: ctrl_d.mode = AES_ECB;
+      AES_CBC: ctrl_d.mode = AES_CBC;
+      AES_CTR: ctrl_d.mode = AES_CTR;
+      default: ctrl_d.mode = AES_NONE; // unsupported values are mapped to AES_NONE
+    endcase
+  end
+
+  assign key_len = key_len_e'(reg2hw.ctrl_shadowed.key_len.q);
+  always_comb begin : key_len_get
+    unique case (key_len)
+      AES_128: ctrl_d.key_len = AES_128;
+      AES_256: ctrl_d.key_len = AES_256;
+      AES_192: ctrl_d.key_len = AES192Enable ? AES_192 : AES_256;
+      default: ctrl_d.key_len = AES_256; // unsupported values are mapped to AES_256
+    endcase
+  end
+
+  assign ctrl_d.manual_operation = reg2hw.ctrl_shadowed.manual_operation.q;
+
+  // Get and forward write enable. Writes are only allowed if the module is idle.
+  assign ctrl_re = reg2hw.ctrl_shadowed.operation.re & reg2hw.ctrl_shadowed.mode.re &
+      reg2hw.ctrl_shadowed.key_len.re & reg2hw.ctrl_shadowed.manual_operation.re;
+  assign ctrl_qe = reg2hw.ctrl_shadowed.operation.qe & reg2hw.ctrl_shadowed.mode.qe &
+      reg2hw.ctrl_shadowed.key_len.qe & reg2hw.ctrl_shadowed.manual_operation.qe;
+  assign ctrl_we = ctrl_qe & hw2reg.status.idle.d;
+
+  // Shadowed register primitve
+  prim_subreg_shadow #(
+    .DW       ( $bits(ctrl_reg_t) ),
+    .SWACCESS ( "WO"              ),
+    .RESVAL   ( CTRL_RESET        )
+  ) ctrl_shadowed_reg (
+    .clk_i       ( clk_i            ),
+    .rst_ni      ( rst_ni           ),
+    .re          ( ctrl_re          ),
+    .we          ( ctrl_we          ),
+    .wd          ( ctrl_d           ),
+    .de          ( 1'b0             ),
+    .d           ( '0               ),
+    .qe          (                  ),
+    .q           ( ctrl_q           ),
+    .qs          (                  ),
+    .err_update  ( ctrl_err_update  ),
+    .err_storage ( ctrl_err_storage )
+  );
+
+  assign ctrl_err_o = ctrl_err_update | ctrl_err_storage;
+
+  // Get shorter references.
+  assign aes_op_q           = ctrl_q.operation;
+  assign aes_mode_q         = ctrl_q.mode;
+  assign key_len_q          = ctrl_q.key_len;
+  assign manual_operation_q = ctrl_q.manual_operation;
+
   /////////////
   // Control //
   /////////////
@@ -318,6 +364,7 @@ module aes_core #(
     .mode_i                  ( aes_mode_q                       ),
     .cipher_op_i             ( cipher_op                        ),
     .manual_operation_i      ( manual_operation_q               ),
+    .ctrl_err_i              ( ctrl_err_storage                 ),
     .start_i                 ( reg2hw.trigger.start.q           ),
     .key_clear_i             ( reg2hw.trigger.key_clear.q       ),
     .iv_clear_i              ( reg2hw.trigger.iv_clear.q        ),
@@ -397,23 +444,6 @@ module aes_core #(
     end
   end
 
-  // Control register
-  assign ctrl_we = ctrl_qe & hw2reg.status.idle.d;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_reg
-    if (!rst_ni) begin
-      aes_op_q           <= AES_ENC;
-      aes_mode_q         <= AES_ECB;
-      key_len_q          <= AES_128;
-      manual_operation_q <= '0;
-    end else if (ctrl_we) begin
-      aes_op_q           <= aes_op_d;
-      aes_mode_q         <= aes_mode_d;
-      key_len_q          <= key_len_d;
-      manual_operation_q <= reg2hw.ctrl.manual_operation.q;
-    end
-  end
-
   /////////////
   // Outputs //
   /////////////
@@ -442,12 +472,12 @@ module aes_core #(
     end
   end
 
-  assign hw2reg.ctrl.mode.d    = {aes_mode_q};
-  assign hw2reg.ctrl.key_len.d = {key_len_q};
+  assign hw2reg.ctrl_shadowed.mode.d    = {aes_mode_q};
+  assign hw2reg.ctrl_shadowed.key_len.d = {key_len_q};
 
   // These fields are actually hro. But software must be able observe the current value (rw).
-  assign hw2reg.ctrl.operation.d        = {aes_op_q};
-  assign hw2reg.ctrl.manual_operation.d = manual_operation_q;
+  assign hw2reg.ctrl_shadowed.operation.d        = {aes_op_q};
+  assign hw2reg.ctrl_shadowed.manual_operation.d = manual_operation_q;
 
   ////////////////
   // Assertions //
@@ -466,7 +496,8 @@ module aes_core #(
   `ASSERT(AesModeValid, aes_mode_q inside {
       AES_ECB,
       AES_CBC,
-      AES_CTR
+      AES_CTR,
+      AES_NONE
       })
   `ASSERT_KNOWN(AesOpKnown, aes_op_q)
   `ASSERT_KNOWN(AesStateInSelKnown, state_in_sel)

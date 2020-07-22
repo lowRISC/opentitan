@@ -14,6 +14,10 @@ class entropy_src_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    if (!uvm_config_db#(virtual pins_if)::get(this, "", "efuse_es_sw_reg_en_vif", cfg.efuse_es_sw_reg_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get efuse_es_sw_reg_en_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

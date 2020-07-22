@@ -6,15 +6,19 @@
 
 package aes_pkg;
 
+parameter int NumAlerts = 1;
+parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
+
 typedef enum logic {
   AES_ENC = 1'b0,
   AES_DEC = 1'b1
 } aes_op_e;
 
-typedef enum logic [2:0] {
-  AES_ECB = 3'b001,
-  AES_CBC = 3'b010,
-  AES_CTR = 3'b100
+typedef enum logic [3:0] {
+  AES_ECB  = 4'b0001,
+  AES_CBC  = 4'b0010,
+  AES_CTR  = 4'b0100,
+  AES_NONE = 4'b1000
 } aes_mode_e;
 
 typedef enum logic {
@@ -97,6 +101,20 @@ typedef enum logic [2:0] {
   ADD_SO_IV,
   ADD_SO_DIP
 } add_so_sel_e;
+
+typedef struct packed {
+  aes_op_e   operation;
+  aes_mode_e mode;
+  key_len_e  key_len;
+  logic      manual_operation;
+} ctrl_reg_t;
+
+parameter ctrl_reg_t CTRL_RESET = '{
+  operation:        AES_ENC,
+  mode:             AES_NONE,
+  key_len:          AES_128,
+  manual_operation: '0
+};
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)

@@ -304,10 +304,14 @@ class Testplan():
             if fmt == "html":
                 desc = mistletoe.markdown(desc)
             table.append([entry.milestone, entry.name, desc, tests])
-        return tabulate(table,
-                        headers="firstrow",
-                        tablefmt=fmt,
-                        colalign=colalign)
+        result = tabulate(table,
+                          headers="firstrow",
+                          tablefmt=fmt,
+                          colalign=colalign)
+        result = result.replace("&lt;", "<")
+        result = result.replace("&gt;", ">")
+        return result
+
 
     def results_table(self, regr_results, map_full_testplan=True, fmt="pipe"):
         '''Print the mapped regression results into a table in the format

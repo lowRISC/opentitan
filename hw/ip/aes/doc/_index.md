@@ -74,7 +74,7 @@ The AES unit automatically starts the encryption/decryption of the next data blo
 The order in which the input registers are written does not matter.
 Every input register must be written at least once for the AES unit to automatically start encryption/decryption.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
 In this case, the AES unit only starts the encryption/decryption once the START bit in {{< regref "TRIGGER" >}} is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
 
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
@@ -85,7 +85,7 @@ It only continues once the previous output data has been read and the correspond
 The order in which the output registers are read does not matter.
 Every output register must be read at least once for the AES unit to continue.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
 
 
@@ -111,9 +111,6 @@ The initialization vector (IV) register and the register to hold the previous in
 
 
 ## Hardware Interfaces
-
-In the current implementation, the AES unit has no security alerts.
-These will eventually be added in future versions.
 
 {{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
 
@@ -167,7 +164,7 @@ For a general introduction into these cipher modes, refer to [Recommendation for
     The IV is ready if -- since the last IV update (either done by the processor or the AES unit itself) -- all IV registers have been written at least once or none of them.
     The AES unit will not automatically start the next encryption/decryption with a partially updated IV._
 
-    By setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`, the AES unit can be operated in manual mode.
+    By setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `1`, the AES unit can be operated in manual mode.
     In manual mode, the AES unit starts encryption/decryption whenever the START bit in {{< regref "TRIGGER" >}} is set to `1`, irrespective of the status of the IV and input data registers.
 
 1. Once the State and Full Key registers have been loaded, the AES cipher core starts the encryption/decryption by adding the first round key to the initial state (all blocks in both data paths are bypassed).
@@ -320,7 +317,7 @@ If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Init
 
 To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
 Note that all registers are little-endian.
-The key length is configured using the KEY_LEN field of {{< regref "CTRL" >}}.
+The key length is configured using the KEY_LEN field of {{< regref "CTRL_SHADOWED" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers.
 Each register must be written at least once.
 The order in which these registers are written does not matter.
@@ -338,7 +335,7 @@ To start the encryption/decryption of a new message, software must wait for the 
 
 For block operation, software must initialize the AES unit as described in the previous section and then:
 
-1. Configure AES unit to operate in normal/automatic mode by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `0`.
+1. Configure AES unit to operate in normal/automatic mode by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `0`.
    This ensures that the AES unit i) automatically starts encryption/decryption when new input data is available and ii) does not overwrite previous output data that has not been read by the processor.
 2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
    Each register must be written at least once.
@@ -364,11 +361,14 @@ Note that interrupts are not provided, the latency of the AES unit is such that 
 The code snippet below shows how to perform block operation.
 
 ```c
-  // Enable autostart, disable overwriting of previous output data
-  REG32(AES_CTRL(0)) =
-      op << AES_CTRL_OPERATION |
-      (key_len & AES_CTRL_KEY_LEN_MASK) << AES_CTRL_KEY_LEN_OFFSET |
-      0x0 << AES_CTRL_MANUAL_OPERATION;
+  // Enable autostart, disable overwriting of previous output data. Note the control register is
+  // shadowed and thus needs to be written twice.
+  uint32_t aes_ctrl_val =
+      op << AES_CTRL_SHADOWED_OPERATION |
+      (key_len & AES_CTRL_SHADOWED_KEY_LEN_MASK) << AES_CTRL_SHADOWED_KEY_LEN_OFFSET |
+      0x0 << AES_CTRL_SHADOWED_MANUAL_OPERATION;
+  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
+  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
   // Write Input Data Block 0 - Note: All registers are little-endian.
   for (int j = 0; j < 4; j++) {
@@ -419,14 +419,16 @@ It is recommended that software discards the padding bits after reading the outp
 ## De-Initialization
 
 After finishing operation, software must:
-1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{< regref "CTRL" >}} to `1`.
+1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
 1. Clear all key registers with pseudo-random data, IV registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, IV_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 The code snippet below shows how to perform this task.
 
 ```c
-  // Disable autostart
-  REG32(AES_CTRL(0)) = 0x1 << AES_CTRL_MANUAL_OPERATION;
+  // Disable autostart. Note the control register is shadowed and thus needs to be written twice.
+  uint32_t aes_ctrl_val = 0x1 << AES_CTRL_SHADOWED_MANUAL_OPERATION;
+  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
+  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
   // Clear all key register, Input Data and Output Data registers
   REG32(AES_TRIGGER(0)) =

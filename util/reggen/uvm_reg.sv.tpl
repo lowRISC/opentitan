@@ -210,6 +210,7 @@ package ${block.name}_ral_pkg;
   reg_offset =  str(reg_width) + "'h" + "%x" % r.offset
   reg_wen = r.regwen
   reg_tags = r.tags
+  reg_shadowed = r.shadowed
 %>\
       ${reg_name} = ${gen_dv.rcname(block, r)}::type_id::create("${reg_name}");
       ${reg_name}.configure(.blk_parent(this));
@@ -219,6 +220,9 @@ package ${block.name}_ral_pkg;
                           .rights("${reg_right}"));
 % if reg_wen:
       ${reg_wen}.add_locked_reg(${reg_name});
+% endif
+% if reg_shadowed:
+      ${reg_name}.set_is_shadowed();
 % endif
 % if reg_tags:
       // create register tags

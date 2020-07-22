@@ -258,6 +258,14 @@ module top_earlgrey #(
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
   clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
+  logic       aes_idle;
+  clkmgr_pkg::clk_hint_status_t       clkmgr_status;
+
+  always_comb begin
+    // TODO: So far just aes is connected
+    clkmgr_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
+    clkmgr_status.idle[0] = aes_idle;
+  end
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -637,6 +645,13 @@ module top_earlgrey #(
   aes u_aes (
       .tl_i (tl_aes_d_h2d),
       .tl_o (tl_aes_d_d2h),
+
+      // [0]: ctrl_err
+      .alert_tx_o  ( alert_tx[0:0] ),
+      .alert_rx_i  ( alert_rx[0:0] ),
+
+      // Inter-module signals
+      .idle_o(aes_idle),
       .clk_i (clkmgr_clocks.clk_main_aes),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -650,9 +665,9 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
 
-      // [0]: msg_push_sha_disabled
-      .alert_tx_o  ( alert_tx[0:0] ),
-      .alert_rx_i  ( alert_rx[0:0] ),
+      // [1]: msg_push_sha_disabled
+      .alert_tx_o  ( alert_tx[1:1] ),
+      .alert_rx_i  ( alert_rx[1:1] ),
       .clk_i (clkmgr_clocks.clk_main_hmac),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
@@ -798,7 +813,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_pwr_clk_req),
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
-      .status_i(clkmgr_pkg::CLK_HINT_STATUS_DEFAULT),
+      .status_i(clkmgr_status),
       .clk_i (clkmgr_clocks.clk_io_powerup),
       .rst_ni (rstmgr_resets.rst_por_io_n),
       .rst_main_ni (rstmgr_resets.rst_por_n),
@@ -886,11 +901,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [1]: imem_uncorrectable
-      // [2]: dmem_uncorrectable
-      // [3]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[3:1] ),
-      .alert_rx_i  ( alert_rx[3:1] ),
+      // [2]: imem_uncorrectable
+      // [3]: dmem_uncorrectable
+      // [4]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[4:2] ),
+      .alert_rx_i  ( alert_rx[4:2] ),
 
       // Inter-module signals
       .idle_o(),
