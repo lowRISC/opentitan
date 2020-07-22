@@ -61,7 +61,8 @@ def amend_ip(top, ip):
 
         # available_input_list , available_output_list, available_inout_list
         if "available_input_list" in ip:
-            ip_module["available_input_list"] = ip["available_input_list"]
+            ip_module["available_input_list"] = deepcopy(
+                ip["available_input_list"])
             for i in ip_module["available_input_list"]:
                 i.pop('desc', None)
                 i["type"] = "input"
@@ -69,7 +70,8 @@ def amend_ip(top, ip):
         else:
             ip_module["available_input_list"] = []
         if "available_output_list" in ip:
-            ip_module["available_output_list"] = ip["available_output_list"]
+            ip_module["available_output_list"] = deepcopy(
+                ip["available_output_list"])
             for i in ip_module["available_output_list"]:
                 i.pop('desc', None)
                 i["type"] = "output"
@@ -77,7 +79,8 @@ def amend_ip(top, ip):
         else:
             ip_module["available_output_list"] = []
         if "available_inout_list" in ip:
-            ip_module["available_inout_list"] = ip["available_inout_list"]
+            ip_module["available_inout_list"] = deepcopy(
+                ip["available_inout_list"])
             for i in ip_module["available_inout_list"]:
                 i.pop('desc', None)
                 i["type"] = "inout"
@@ -87,7 +90,7 @@ def amend_ip(top, ip):
 
         # interrupt_list
         if "interrupt_list" in ip:
-            ip_module["interrupt_list"] = ip["interrupt_list"]
+            ip_module["interrupt_list"] = deepcopy(ip["interrupt_list"])
             for i in ip_module["interrupt_list"]:
                 i.pop('desc', None)
                 i["type"] = "interrupt"
@@ -97,7 +100,7 @@ def amend_ip(top, ip):
 
         # alert_list
         if "alert_list" in ip:
-            ip_module["alert_list"] = ip["alert_list"]
+            ip_module["alert_list"] = deepcopy(ip["alert_list"])
             for i in ip_module["alert_list"]:
                 i.pop('desc', None)
                 i["type"] = "alert"
@@ -113,7 +116,7 @@ def amend_ip(top, ip):
 
         # wkup_list
         if "wakeup_list" in ip:
-            ip_module["wakeup_list"] = ip["wakeup_list"]
+            ip_module["wakeup_list"] = deepcopy(ip["wakeup_list"])
             for i in ip_module["wakeup_list"]:
                 i.pop('desc', None)
         else:
@@ -133,7 +136,7 @@ def amend_ip(top, ip):
 
         # inter-module
         if "inter_signal_list" in ip:
-            ip_module["inter_signal_list"] = ip["inter_signal_list"]
+            ip_module["inter_signal_list"] = deepcopy(ip["inter_signal_list"])
 
             # TODO: validate
 
@@ -591,13 +594,15 @@ def amend_wkup(topcfg: OrderedDict):
         log.info("Adding wakeup from module %s" % m["name"])
         for entry in m["wakeup_list"]:
             log.info("Adding singal %s" % entry["name"])
-            topcfg["wakeups"].append("{module}.{signal}".format(module=m["name"].lower(),
-                                                                signal=entry["name"]))
+            topcfg["wakeups"].append("{module}.{signal}".format(
+                module=m["name"].lower(), signal=entry["name"]))
 
     # add wakeup signals to pwrmgr connections
     # TBD: What's the best way to not hardcode this signal below?
     #      We could make this a top.hjson variable and validate it against pwrmgr hjson
     topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = topcfg["wakeups"]
+    log.info("Intermodule signals: {}".format(
+        topcfg["inter_module"]["connect"]))
 
 
 def amend_pinmux_io(top):

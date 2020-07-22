@@ -329,7 +329,12 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
         x for x in sig_list if x["name"] == s_name and x["inst_name"] == m_name
     ]
 
-    return filtered[0] if len(filtered) == 1 else None
+    if len(filtered) == 1:
+        return filtered[0]
+
+    log.error("Found {num} entry/entries for {m_name}.{s_name}:".format(
+        num=len(filtered), m_name=m_name, s_name=s_name))
+    return None
 
 
 # Validation
