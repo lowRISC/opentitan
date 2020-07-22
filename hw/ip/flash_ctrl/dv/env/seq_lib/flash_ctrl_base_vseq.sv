@@ -113,6 +113,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for prog fifo to not be full.
   virtual task wait_flash_ctrl_prog_fifo_not_full();
+    // TODO: if intr enabled, then check interrupt, else check status.
     bit prog_full;
     `DV_SPINWAIT(
       do begin
@@ -124,6 +125,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for rd fifo to not be empty.
   virtual task wait_flash_ctrl_rd_fifo_not_empty();
+    // TODO: if intr enabled, then check interrupt, else check status.
     bit read_empty;
     `DV_SPINWAIT(
       do begin
@@ -149,12 +151,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Program data into flash, stopping whenever full.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_write(bit [TL_DW-1:0] data[$]);
+  virtual task flash_ctrl_write(bit [TL_DW-1:0] data[$], bit poll_fifo_status);
     foreach (data[i]) begin
       // Check if prog fifo is full. If yes, then wait for space to become available.
-      // TODO: interface is backpressure enabled, so the above check is not needed atm.
-      // TODO: if intr enabled, then check interrupt, else check status.
-      // wait_flash_ctrl_prog_fifo_not_full();
+      // Note that this polling is not needed since the interface is backpressure enabled.
+      if (poll_fifo_status) begin
+        wait_flash_ctrl_prog_fifo_not_full();
+      end
       mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(data[i]));
       `uvm_info(`gfn, $sformatf("flash_ctrl_write: 0x%0h", data[i]), UVM_MEDIUM)
     end
@@ -162,12 +165,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read data from flash, stopping whenever empty.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_read(uint num_words, ref bit [TL_DW-1:0] data[$]);
+  virtual task flash_ctrl_read(uint num_words, ref bit [TL_DW-1:0] data[$], bit poll_fifo_status);
     for (int i = 0; i < num_words; i++) begin
       // Check if rd fifo is empty. If yes, then wait for data to become available.
-      // TODO: interface is backpressure enabled, so the above check is not needed atm.
-      // TODO: if intr enabled, then check interrupt, else check status.
-      // wait_flash_ctrl_rd_fifo_not_empty();
+      // Note that this polling is not needed since the interface is backpressure enabled.
+      if (poll_fifo_status) begin
+        wait_flash_ctrl_rd_fifo_not_empty();
+      end
       mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[i]));
       `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_MEDIUM)
     end
