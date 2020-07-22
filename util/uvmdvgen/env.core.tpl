@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:${name}_env:0.1"
+name: "${vendor}:dv:${name}_env:0.1"
 description: "${name.upper()} DV UVM environment"
 filesets:
   files_dv:
@@ -16,7 +16,7 @@ filesets:
       - lowrisc:dv:dv_lib
 % endif
 % for agent in env_agents:
-      - lowrisc:dv:${agent}_agent
+      - ${vendor}:dv:${agent}_agent
 % endfor
     files:
       - ${name}_env_pkg.sv

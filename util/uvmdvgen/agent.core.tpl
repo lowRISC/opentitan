@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:${name}_agent:0.1"
+name: "${vendor}:dv:${name}_agent:0.1"
 description: "${name.upper()} DV UVM agent"
 filesets:
   files_dv:
