@@ -17,6 +17,7 @@ BOOT_ROM_TARGET="boot_rom/boot_rom_sim_verilator.elf"
 TEST_TARGETS=(
   "examples/hello_usbdev/hello_usbdev_sim_verilator.elf"
   "tests/aes_test_sim_verilator.elf"
+  "tests/crt_test_sim_verilator.elf"
   "tests/dif_plic_sanitytest_sim_verilator.elf"
   "tests/dif_rv_timer_sanitytest_sim_verilator.elf"
   "tests/dif_uart_sanitytest_sim_verilator.elf"
