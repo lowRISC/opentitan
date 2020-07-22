@@ -1,0 +1,33 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// This file is not meant to be used with `dvsim` directly for running tests at
+// the chip level. Instead it has been provided as an example to show how an
+// existing infrastructure with `dvsim` can be reused with very minimal changes
+// to run simulations on a modufied design.
+{
+  // Import the chip_sim_cfg.hjson to run the chip level simulations.
+  import_cfgs: ["{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
+
+  // Override the required keys to customize the simulation flow. For instance,
+  // the FuseSoC core file or the search paths provided to FuseSoC to find the
+  // dependencies can be overridden to customize the design / testbench, while
+  // reusing the rest of the infrastructure.
+  overrides: [
+    // Example 1: override the fusesoc_core to change the top level FuseSoC
+    // target.
+    {
+      name: fusesoc_core
+      value: my:dv:chip_sim:0.1
+    }
+    // Example 2: override the search paths to prioritize the selection of
+    // packages (with the same VLNV). The latter one wins.
+    {
+      name: fusesoc_cores_root_dirs
+      value: ["--cores-root {proj_root}",
+              "--cores-root my-custom-path-1",
+              "--cores-root my-custom-path-2"]
+    }
+  ]
+}
