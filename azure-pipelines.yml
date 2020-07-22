@@ -62,7 +62,7 @@ jobs:
       printenv
     displayName: Display environment information
   - bash: |
-      fork_origin="$(git merge-base --fork-point origin/master)"
+      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin" | grep -v /vendor/ | grep -v /lowrisc_misc-linters/ | grep -E '.py$')"
       if [[ -n "$changed_files" ]]; then
         set -e
@@ -102,7 +102,7 @@ jobs:
       # get reported to GitHub Checks annotations. Upstream bug report:
       # https://developercommunity.visualstudio.com/content/problem/689794/pipelines-logging-command-logissue-does-not-report.html
       #echo "##vso[task.issue type=error;sourcepath=/azure-pipelines.yml;linenumber=45;columnnumber=1;code=100;]Found something that could be a problem."
-      fork_origin="$(git merge-base --fork-point origin/master)"
+      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only "$fork_origin" | grep -v /vendor/ | grep -E '\.(cpp|cc|c|h)$')"
       if [[ -n "$changed_files" ]]; then
         xargs git diff -U0 "$fork_origin" <<< "$changed_files" \
@@ -120,7 +120,7 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Use clang-format to check C/C++ coding style
   - bash: |
-      fork_origin="$(git merge-base --fork-point origin/master)"
+      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
       if [[ -n "$changed_files" ]]; then
         xargs util/fix_include_guard.py --dry-run <<< "$changed_files" | tee fix-include-guard-output
@@ -143,7 +143,7 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint Verilog source files with Verible
   - bash: |
-      commit_range="$(git merge-base --fork-point origin/master)..HEAD"
+      commit_range="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)..HEAD"
       # Notes:
       # * Merge commits are not checked. We always use rebases instead of
       #   merges to keep a linear history, which makes merge commits disappear
@@ -186,7 +186,7 @@ jobs:
         # Conservative way of checking for documentation-only changes.
         # Only relevant for pipelines triggered from pull requests
         echo "Checking for doc-only changes in this pull request"
-        fork_origin="$(git merge-base --fork-point origin/master)"
+        fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
         echo "Using $fork_origin as fork point from the target branch."
         only_doc_changes="$(git diff --name-only "$fork_origin" | grep -v '\.md$' -q; echo $?)"
       fi
@@ -194,7 +194,7 @@ jobs:
     displayName: Check if the commit only contains documentation changes
     name: DetermineBuildType
   - bash: |
-      fork_origin="$(git merge-base --fork-point origin/master)"
+      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
       licence_checker=util/lowrisc_misc-linters/licence-checker/licence-checker.py
       if [[ -n "$changed_files" ]]; then
