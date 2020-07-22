@@ -36,6 +36,7 @@ IPS ?=  ip-aes                 \
         ip-rv_timer            \
         ip-sensor_ctrl         \
         ip-spi_device          \
+        ip-spi_host            \
         ip-uart                \
         ip-usbdev              \
         ip-usb_fs_nb_pe        \

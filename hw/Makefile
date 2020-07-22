@@ -28,6 +28,7 @@ IPS ?= aes           \
        rv_timer      \
        sensor_ctrl   \
        spi_device    \
+       spi_host      \
        trial1        \
        otbn          \
        uart          \
