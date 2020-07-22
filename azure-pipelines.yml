@@ -20,14 +20,14 @@ trigger:
   batch: true
   branches:
     include:
-    - '*'
+    - "*"
   tags:
     include:
     - "*"
 pr:
   branches:
     include:
-    - '*'
+    - "*"
 
 jobs:
 - job: lint
