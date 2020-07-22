@@ -180,12 +180,14 @@ jobs:
     condition: always()
     displayName: Check vendored directories are up-to-date
   - bash: |
+      set -e
       only_doc_changes=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
         # Conservative way of checking for documentation-only changes.
         # Only relevant for pipelines triggered from pull requests
         echo "Checking for doc-only changes in this pull request"
         fork_origin="$(git merge-base --fork-point origin/master)"
+        echo "Using $fork_origin as fork point from the target branch."
         only_doc_changes="$(git diff --name-only "$fork_origin" | grep -v '\.md$' -q; echo $?)"
       fi
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
