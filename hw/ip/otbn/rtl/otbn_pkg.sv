@@ -65,9 +65,15 @@ package otbn_pkg;
     AluOpAnd,
     AluOpNot,
 
-    AluOpEq,
-    AluOpNeq
+    AluOpSra,
+    AluOpSrl,
+    AluOpSll
   } alu_op_e;
+
+  typedef enum logic {
+    ComparisonOpEq,
+    ComparisonOpNeq
+  } comparison_op_e;
 
   // Operand a source selection
   typedef enum logic {
@@ -134,5 +140,11 @@ package otbn_pkg;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_operation_t;
+
+  typedef struct packed {
+    comparison_op_e op;
+    logic [31:0] operand_a;
+    logic [31:0] operand_b;
+  } alu_base_comparison_t;
 
 endpackage
