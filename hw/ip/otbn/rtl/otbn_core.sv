@@ -81,9 +81,10 @@ module otbn_core
   logic [4:0]   rf_base_rd_addr_b;
   logic [31:0]  rf_base_rd_data_b;
 
-  alu_base_operation_t alu_base_operation;
-  logic [31:0]         alu_base_result;
-  logic                alu_base_comparison_result;
+  alu_base_operation_t  alu_base_operation;
+  alu_base_comparison_t alu_base_comparison;
+  logic [31:0]          alu_base_operation_result;
+  logic                 alu_base_comparison_result;
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
   // signals: insn_fetch_resp_valid (together with the undecoded instruction data), and insn_valid
@@ -169,7 +170,8 @@ module otbn_core
 
     // To/from base ALU
     .alu_base_operation_o         (alu_base_operation),
-    .alu_base_result_i            (alu_base_result),
+    .alu_base_comparison_o        (alu_base_comparison),
+    .alu_base_operation_result_i  (alu_base_operation_result),
     .alu_base_comparison_result_i (alu_base_comparison_result)
   );
 
@@ -226,7 +228,8 @@ module otbn_core
     .rst_ni,
 
     .operation_i         (alu_base_operation),
-    .result_o            (alu_base_result),
+    .comparison_i        (alu_base_comparison),
+    .operation_result_o  (alu_base_operation_result),
     .comparison_result_o (alu_base_comparison_result)
   );
 

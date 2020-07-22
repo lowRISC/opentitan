@@ -50,9 +50,10 @@ module otbn_controller
   input  logic [31:0]  rf_base_rd_data_b_i,
 
   // Execution units
-  output alu_base_operation_t alu_base_operation_o,
-  input  logic [31:0]         alu_base_result_i,
-  input  logic                alu_base_comparison_result_i
+  output alu_base_operation_t  alu_base_operation_o,
+  output alu_base_comparison_t alu_base_comparison_o,
+  input  logic [31:0]          alu_base_operation_result_i,
+  input  logic                 alu_base_comparison_result_i
 );
 
   // TODO: Using insn_op_i here is easy, potentially should move to dedicated control signals from
@@ -96,6 +97,11 @@ module otbn_controller
   end
 
   assign alu_base_operation_o.op = insn_dec_ctrl_i.alu_op;
+
+  assign alu_base_comparison_o.operand_a = rf_base_rd_data_a_i;
+  assign alu_base_comparison_o.operand_b = rf_base_rd_data_b_i;
+  // TODO: Choose comparison required for branch
+  assign alu_base_comparison_o.op = ComparisonOpEq;
 
   // Register file write MUX
   // TODO: Switch between CSR and EX writeback.
