@@ -49,6 +49,7 @@ jobs:
       echo "##vso[task.setvariable variable=PATH]/tools/verible/bin:$PATH"
     displayName: Install Verible
   - bash: |
+      set -x
       python3 --version
       yapf --version
       isort --version
@@ -58,7 +59,8 @@ jobs:
       meson --version
       doxygen --version
       echo "PATH=$PATH"
-    displayName: Display tool versions
+      printenv
+    displayName: Display environment information
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/master)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin" | grep -v /vendor/ | grep -v /lowrisc_misc-linters/ | grep -E '.py$')"
