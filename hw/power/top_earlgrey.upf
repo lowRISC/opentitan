@@ -1,0 +1,134 @@
+###############################################
+# supported versions are 1.0 (UPF 1.0) , 2.0 (IEEE 1801-2009), 2.1 (IEEE 1801-2013)
+# not all tools support 2.1 yet
+###############################################
+
+upf_version 2.1
+
+###############################################
+# Attribute: enable_state_propagation_in_add_power_state
+# When set to true, the tool propagates the name of the supply set state
+# (specified in the add_power_state command) to the functional net.
+# After the state name is propagated to the functional net,
+# you can use the net and the supply set state in the create_pst and add_pst_state commands.
+###############################################
+
+set_design_attributes -elements {.} -attribute {enable_state_propagation_in_add_power_state TRUE}
+
+
+################################################
+# Set top design
+################################################
+set_design_top top_earlgrey
+
+################################################
+# Define supply ports and nets
+################################################
+
+create_supply_port VCAON
+create_supply_net  VCAON
+connect_supply_net VCAON -ports VCAON
+
+create_supply_port VCMAIN
+create_supply_net  VCMAIN
+connect_supply_net VCMAIN -ports VCMAIN
+
+create_supply_port VCSS
+create_supply_net  VCSS
+connect_supply_net VCSS -ports VCSS
+
+################################################
+# Define supply sets
+################################################
+
+create_supply_set ss_aon -function {power VCAON} -function {ground VCSS}
+create_supply_set ss_main -function {power VCMAIN} -function {ground VCSS}
+
+################################################
+# Create Power Domains
+################################################
+
+create_power_domain pd_main -supply {primary ss_main} -elements {.}
+
+create_power_domain pd_aon -supply {primary ss_aon} -elements { \
+     u_xbar_aon \
+     u_pwrmgr_aon \
+     u_rstmgr_aon \
+     u_clkmgr_aon \
+     u_rbox_aon \
+     u_pwm_aon \
+     u_pinmux_aon \
+     u_padctrl_aon \
+     u_timer_aon \
+     u_usbdev_aon \
+     u_tl_adapter_ram_ret_aon \
+     u_ram1p_ram_ret_aon
+}
+
+################################################
+# Set port attributes
+################################################
+
+set aon_ports {
+  rst_ni \
+  jtag_tck_i \
+  jtag_tms_i \
+  jtag_trst_ni \
+  jtag_tdi_i \
+  jtag_tdo_o \
+  mio_in_i \
+  mio_out_o \
+  mio_oe_o \
+  dio_in_i \
+  dio_out_o \
+  dio_oe_o \
+  mio_attr_o \
+  dio_attr_o \
+  sensor_ctrl_ast_host \
+  sensor_ctrl_ast_dev \
+  sensor_ctrl_ast_status \
+  sensor_ctrl_ast_alert_req \
+  sensor_ctrl_ast_alert_rsp \
+  sensor_ctrl_ast_aux \
+  pwrmgr_aon_pwr_ast_req \
+  pwrmgr_aon_pwr_ast_rsp \
+  rstmgr_aon_ast \
+  usbdev_aon_usb_ref_pulse \
+  usbdev_aon_usb_ref_val \
+  clkmgr_aon_clk_main \
+  clkmgr_aon_clk_io \
+  clkmgr_aon_clk_usb \
+  clkmgr_aon_clk_aon \
+  scan_rst_ni \
+  scanmode_i
+}
+
+set_port_attributes -ports $aon_ports -driver_supply ss_aon -receiver_supply ss_aon
+
+################################################
+# Connect memory power
+################################################
+# Do nothing for now, see what happens
+
+
+################################################
+# Isolation strategies
+################################################
+set_isolation iso_aon -domain pd_aon \
+   -source ss_main \
+   -sink ss_aon \
+   -isolation_supply_set ss_aon \
+   -clamp_value 0 \
+   -isolation_signal {u_pwrmgr_aon/i_slow_fsm/ast_o.pwr_clamp} \
+   -isolation_sense high     \
+   -name_prefix iso_main_to_aon
+
+################################################
+# Power state table
+################################################
+
+add_power_state -supply ss_main -state {ACTIVE  -supply_expr {power == {FULL_ON 1.1}}}
+add_power_state -supply ss_main -state {LP      -supply_expr {power == OFF     } -simstate CORRUPT }
+
+add_power_state -supply ss_aon  -state {AON     -supply_expr {power == {FULL_ON 1.1}}}
+add_power_state -supply ss_aon  -state {OFF     -supply_expr {power == OFF     } -simstate CORRUPT }
