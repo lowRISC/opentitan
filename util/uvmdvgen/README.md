@@ -22,12 +22,13 @@ Running the tool with `-h` switch provides a brief description of all available
 switches.
 ```console
 $ util/uvmdvgen/uvmdvgen.py -h
-usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hi] [-ha]
+usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hr] [-hi] [-ha]
                    [-ea agt1 agt2 [agt1 agt2 ...]] [-ao [hw/dv/sv]]
-                   [-eo [hw/ip/<ip>/dv]]
+                   [-eo [hw/ip/<ip>]] [-m] [-v VENDOR]
                    [ip/block name]
 
-Command-line tool to autogenerate boilerplate DV testbench code extended from dv_lib / cip_lib
+Command-line tool to autogenerate boilerplate DV testbench code extended from
+dv_lib / cip_lib
 
 positional arguments:
   [ip/block name]       Name of the ip/block for which the UVM TB is being
@@ -35,32 +36,48 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -a, --gen_agent       Generate UVM agent code extended from DV library
-  -s, --has_separate_host_device_driver
+  -a, --gen-agent       Generate UVM agent code extended from DV library
+  -s, --has-separate-host-device-driver
                         IP / block agent creates a separate driver for host
                         and device modes. (ignored if -a switch is not passed)
-  -e, --gen_env         Generate testbench UVM env code
-  -c, --is_cip          Is comportable IP - this will result in code being
+  -e, --gen-env         Generate testbench UVM env code
+  -c, --is-cip          Is comportable IP - this will result in code being
                         extended from CIP library. If switch is not passed,
                         then the code will be extended from DV library
                         instead. (ignored if -e switch is not passed)
-  -hr, --has_ral        Specify whether the DUT has CSRs and thus needs a UVM
-                        RAL model
-  -hi, --has_interrupts
+  -hr, --has-ral        Specify whether the DUT has CSRs and thus needs a UVM
+                        RAL model. This option is required if either --is_cip
+                        or --has_interrupts are enabled.
+  -hi, --has-interrupts
                         CIP has interrupts. Create interrupts interface in tb
-  -ha, --has_alerts     CIP has alerts. Create alerts interface in tb
-  -ea agt1 agt2 [agt1 agt2 ...], --env_agents agt1 agt2 [agt1 agt2 ...]
+  -ha, --has-alerts     CIP has alerts. Create alerts interface in tb
+  -ea agt1 agt2 [agt1 agt2 ...], --env-agents agt1 agt2 [agt1 agt2 ...]
                         Env creates an interface agent specified here. They
                         are assumed to already exist. Note that the list is
                         space-separated, and not comma-separated. (ignored if
                         -e switch is not passed)
-  -ao [hw/dv/sv], --agent_outdir [hw/dv/sv]
+  -ao [hw/dv/sv], --agent-outdir [hw/dv/sv]
                         Path to place the agent code. A directory called
                         <name>_agent is created at this location. (default set
                         to './<name>')
-  -eo [hw/ip/<ip>/dv], --env_outdir [hw/ip/<ip>/dv]
-                        Path to place the env code. 3 directories are created
-                        - env, tb and tests. (default set to './<name>')
+  -eo [hw/ip/<ip>], --env-outdir [hw/ip/<ip>]
+                        Path to place the full tetsbench code. It creates 3
+                        directories - dv, data and doc. The DV plan and the
+                        testplan Hjson files are placed in the doc and data
+                        directories respectively. These are to be merged into
+                        the IP's root directory (with the existing data and
+                        doc directories). Under dv, it creates 3 sub-
+                        directories - env, tb and tests to place all of the
+                        testbench sources. (default set to './<name>')
+  -m, --add-makefile    Tests are now run with dvsim.py tool that requires a
+                        hjson based sim cfg. Setting this option will also
+                        result in the Makefile to be auto-generated (which is
+                        the older way of building and running sims going
+                        through deprecation).
+  -v VENDOR, --vendor VENDOR
+                        Name of the vendor / entity developing the testbench.
+                        This is used to set the VLNV of the FuesSoC core
+                        files.
 ```
 
 ### Generating UVM agent
@@ -288,6 +305,11 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
   This is the initial DV plan document that will describe the entire testbench. This
   is equivalent to the template available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_plan_template.md).
+
+The [VLNV](https://fusesoc.readthedocs.io/en/master/user/overview.html#core-naming-rules)
+name in the generated FuseSoC core files is set using the `--vendor` switch for
+the 'vendor' field. By default, it is set to "lowrisc". It can be overridden
+by supplying the `--vendor <vendor-name>` switch on the command line.
 
 #### Examples
 ```console

@@ -11,7 +11,7 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 
-def gen_agent(name, has_separate_host_device_driver, root_dir):
+def gen_agent(name, has_separate_host_device_driver, root_dir, vendor):
     # set sub name
     agent_dir = root_dir + "/" + name + "_agent"
 
@@ -57,6 +57,7 @@ def gen_agent(name, has_separate_host_device_driver, root_dir):
                 fout.write(
                     tpl.render(name=name,
                                has_separate_host_device_driver=
-                               has_separate_host_device_driver))
+                               has_separate_host_device_driver,
+                               vendor=vendor))
             except:
                 log.error(exceptions.text_error_template().render())

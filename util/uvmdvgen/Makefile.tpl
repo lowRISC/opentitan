@@ -19,7 +19,7 @@ ${'#############################################################################
 DV_DIR          := ${'$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))'}
 export DUT_TOP  := ${name}
 export TB_TOP   := tb
-FUSESOC_CORE    := lowrisc:dv:${name}_sim:0.1
+FUSESOC_CORE    := ${vendor}:dv:${name}_sim:0.1
 COMPILE_KEY     ?= default
 
 # Add coverage exclusion file below

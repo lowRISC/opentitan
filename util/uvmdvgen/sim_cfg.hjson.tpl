@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:${name}_sim:0.1
+  fusesoc_core: ${vendor}:dv:${name}_sim:0.1
 
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/${name}/data/${name}_testplan.hjson"

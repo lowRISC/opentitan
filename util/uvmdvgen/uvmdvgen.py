@@ -11,6 +11,8 @@ import sys
 import gen_agent
 import gen_env
 
+VENDOR_DEFAULT = "lowrisc"
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -24,26 +26,26 @@ def main():
 
     parser.add_argument(
         "-a",
-        "--gen_agent",
+        "--gen-agent",
         action='store_true',
         help="Generate UVM agent code extended from DV library")
 
     parser.add_argument(
         "-s",
-        "--has_separate_host_device_driver",
+        "--has-separate-host-device-driver",
         action='store_true',
         help=
         """IP / block agent creates a separate driver for host and device modes.
                               (ignored if -a switch is not passed)""")
 
     parser.add_argument("-e",
-                        "--gen_env",
+                        "--gen-env",
                         action='store_true',
                         help="Generate testbench UVM env code")
 
     parser.add_argument(
         "-c",
-        "--is_cip",
+        "--is-cip",
         action='store_true',
         help=
         """Is comportable IP - this will result in code being extended from CIP
@@ -53,7 +55,7 @@ def main():
 
     parser.add_argument(
         "-hr",
-        "--has_ral",
+        "--has-ral",
         default=False,
         action='store_true',
         help="""Specify whether the DUT has CSRs and thus needs a UVM RAL model.
@@ -62,21 +64,21 @@ def main():
 
     parser.add_argument(
         "-hi",
-        "--has_interrupts",
+        "--has-interrupts",
         default=False,
         action='store_true',
         help="""CIP has interrupts. Create interrupts interface in tb""")
 
     parser.add_argument(
         "-ha",
-        "--has_alerts",
+        "--has-alerts",
         default=False,
         action='store_true',
         help="""CIP has alerts. Create alerts interface in tb""")
 
     parser.add_argument(
         "-ea",
-        "--env_agents",
+        "--env-agents",
         nargs="+",
         metavar="agt1 agt2",
         help="""Env creates an interface agent specified here. They are
@@ -86,7 +88,7 @@ def main():
 
     parser.add_argument(
         "-ao",
-        "--agent_outdir",
+        "--agent-outdir",
         metavar="[hw/dv/sv]",
         help="""Path to place the agent code. A directory called <name>_agent is
                               created at this location. (default set to './<name>')"""
@@ -94,7 +96,7 @@ def main():
 
     parser.add_argument(
         "-eo",
-        "--env_outdir",
+        "--env-outdir",
         metavar="[hw/ip/<ip>]",
         help=
         """Path to place the full tetsbench code. It creates 3 directories - dv, data and doc.
@@ -115,6 +117,14 @@ def main():
              the older way of building and running sims going through deprecation)."""
     )
 
+    parser.add_argument(
+        "-v",
+        "--vendor",
+        default=VENDOR_DEFAULT,
+        help=
+        """Name of the vendor / entity developing the testbench. This is used to set the VLNV
+        of the FuesSoC core files.""")
+
     args = parser.parse_args()
     if not args.agent_outdir: args.agent_outdir = args.name
     if not args.env_outdir: args.env_outdir = args.name
@@ -128,20 +138,14 @@ def main():
               "--is_cip or --has_interrupts is set.")
 
     if args.gen_agent:
-        gen_agent.gen_agent(args.name, \
-                            args.has_separate_host_device_driver, \
-                            args.agent_outdir)
+        gen_agent.gen_agent(args.name, args.has_separate_host_device_driver,
+                            args.agent_outdir, args.vendor)
 
     if args.gen_env:
         if not args.env_agents: args.env_agents = []
-        gen_env.gen_env(args.name, \
-                        args.is_cip, \
-                        args.has_ral, \
-                        args.has_interrupts, \
-                        args.has_alerts, \
-                        args.env_agents, \
-                        args.env_outdir, \
-                        args.add_makefile)
+        gen_env.gen_env(args.name, args.is_cip, args.has_ral,
+                        args.has_interrupts, args.has_alerts, args.env_agents,
+                        args.env_outdir, args.add_makefile, args.vendor)
 
 
 if __name__ == '__main__':
