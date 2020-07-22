@@ -1,18 +1,12 @@
-###############################################
-# supported versions are 1.0 (UPF 1.0) , 2.0 (IEEE 1801-2009), 2.1 (IEEE 1801-2013)
-# not all tools support 2.1 yet
-###############################################
+
 
 upf_version 2.1
 
 ###############################################
-# Attribute: enable_state_propagation_in_add_power_state
-# When set to true, the tool propagates the name of the supply set state
-# (specified in the add_power_state command) to the functional net.
-# After the state name is propagated to the functional net,
-# you can use the net and the supply set state in the create_pst and add_pst_state commands.
+# Uses old power state semantics
+# The new semantics, while useful, require its own set of
+# work-arounds
 ###############################################
-
 set_design_attributes -elements {.} -attribute {enable_state_propagation_in_add_power_state TRUE}
 
 
@@ -50,7 +44,9 @@ create_supply_set ss_main -function {power VCMAIN} -function {ground VCSS}
 
 create_power_domain pd_main -supply {primary ss_main} -elements {.}
 
+# u_sensor_ctrl being in the always on domain may be temporary.
 create_power_domain pd_aon -supply {primary ss_aon} -elements { \
+     u_sensor_ctrl \
      u_xbar_aon \
      u_pwrmgr_aon \
      u_rstmgr_aon \
@@ -61,6 +57,7 @@ create_power_domain pd_aon -supply {primary ss_aon} -elements { \
      u_padctrl_aon \
      u_timer_aon \
      u_usbdev_aon \
+     u_dcd_aon \
      u_tl_adapter_ram_ret_aon \
      u_ram1p_ram_ret_aon
 }
@@ -75,7 +72,6 @@ set aon_ports {
   jtag_tms_i \
   jtag_trst_ni \
   jtag_tdi_i \
-  jtag_tdo_o \
   mio_in_i \
   mio_out_o \
   mio_oe_o \
@@ -99,21 +95,85 @@ set aon_ports {
   clkmgr_aon_clk_io \
   clkmgr_aon_clk_usb \
   clkmgr_aon_clk_aon \
+  dcd_aon_adc_req \
+  dcd_aon_adc_rsp \
+  pinmux_aon_io_pok \
   scan_rst_ni \
   scanmode_i
 }
 
+# There is no reason for jtag port to be always on since the driver is not always on.
+# If this port is set to always on, it actually creates an issue of where the isolation
+# cell must be inserted.
+# Thus it is left up to the top level to insert isolation if consuming logic needs it to
+# be always on.
+set main_ports {
+  jtag_tdo_o
+}
+
 set_port_attributes -ports $aon_ports -driver_supply ss_aon -receiver_supply ss_aon
+set_port_attributes -ports $main_ports -driver_supply ss_main -receiver_supply ss_main
 
 ################################################
 # Connect memory power
 ################################################
-# Do nothing for now, see what happens
+set all_mems [find_objects . -transitive True -leaf_only -pattern "*u_mem_macro*" ]
+set aon_blocks [list "u_usbdev_aon*" "u_ram1p_ram_ret_aon*"]
+set main_mems {}
+
+# Filter through all memories and find main power domain supplied memories
+foreach mem ${all_mems} {
+    # puts "Looking at ${mem}"
+    set found 0
+    foreach aon ${aon_blocks} {
+        if {[string match $aon $mem] == 1 && $found == 0} {
+            set found 1
+        }
+    }
+
+    if {$found == 0} {
+        # puts "Found main ${mem}"
+        lappend main_mems $mem
+    } else {
+        # puts "Found aon ${mem}"
+        lappend aon_mems $mem
+    }
+}
+
+# Connect main memories
+foreach mem ${main_mems} {
+   # puts "Connecting $mem"
+   connect_supply_net VCMAIN -ports ${mem}/VDD
+   connect_supply_net VCSS   -ports ${mem}/VSS
+}
+
+# Connect aon memories
+foreach mem ${aon_mems} {
+   puts "Connecting $mem"
+   connect_supply_net VCAON  -ports ${mem}/VDD
+   connect_supply_net VCSS   -ports ${mem}/VSS
+}
+
+################################################
+# Connect flash power
+################################################
+# Nothing yet
 
 
 ################################################
 # Isolation strategies
 ################################################
+
+# The tl adapater ram grant wiring is odd, should look to see if there's an option
+# to ensure a constant high there can be pushed by a tie to VCAON instead of isolation cell
+set iso_high_ports { \
+   u_clkmgr_aon/status_i.idle[*] \
+   u_pwrmgr_aon/pwr_otp_i.otp_idle \
+   u_pwrmgr_aon/pwr_otp_i.otp_done \
+   u_pwrmgr_aon/pwr_flash_i \
+   u_tl_adapter_ram_ret_aon/gnt_i
+}
+
 set_isolation iso_aon -domain pd_aon \
    -source ss_main \
    -sink ss_aon \
@@ -121,14 +181,35 @@ set_isolation iso_aon -domain pd_aon \
    -clamp_value 0 \
    -isolation_signal {u_pwrmgr_aon/i_slow_fsm/ast_o.pwr_clamp} \
    -isolation_sense high     \
+   -exclude_elements $iso_high_ports \
    -name_prefix iso_main_to_aon
+
+set_isolation iso_aon_high -domain pd_aon \
+   -source ss_main \
+   -sink ss_aon \
+   -isolation_supply_set ss_aon \
+   -clamp_value 1 \
+   -isolation_signal {u_pwrmgr_aon/i_slow_fsm/ast_o.pwr_clamp} \
+   -isolation_sense high     \
+   -elements $iso_high_ports \
+   -name_prefix iso_main_to_aon_high
 
 ################################################
 # Power state table
+# It does not appear vclp supports the latest s[ec syntax,
+# so even though create_pst/add_pst are legacy commands, they are still used here.
+# Specifically, it seems in logic_expr, vclp does not support checking the on state
+# of a domain even when new semantics are used.
 ################################################
 
-add_power_state -supply ss_main -state {ACTIVE  -supply_expr {power == {FULL_ON 1.1}}}
-add_power_state -supply ss_main -state {LP      -supply_expr {power == OFF     } -simstate CORRUPT }
+add_power_state -supply ss_aon  -state {AON_ON  -supply_expr {power == {FULL_ON 1.1}}}
+add_power_state -supply ss_aon  -state {AON_OFF -supply_expr {power == OFF} -simstate CORRUPT }
+add_power_state -supply ss_aon  -state {GND -supply_expr {ground == {FULL_ON 0.0}}}
 
-add_power_state -supply ss_aon  -state {AON     -supply_expr {power == {FULL_ON 1.1}}}
-add_power_state -supply ss_aon  -state {OFF     -supply_expr {power == OFF     } -simstate CORRUPT }
+add_power_state -supply ss_main -state {MAIN_ON  -supply_expr {power == {FULL_ON 1.1}}}
+add_power_state -supply ss_main -state {MAIN_OFF -supply_expr {power == OFF} -simstate CORRUPT }
+
+create_pst power_table -supplies              { ss_aon.power ss_main.power ss_aon.ground }
+add_pst_state ALL_OFF -pst power_table -state { AON_OFF      MAIN_OFF      GND           }
+add_pst_state ACTIVE  -pst power_table -state { AON_ON       MAIN_ON       GND           }
+add_pst_state LP      -pst power_table -state { AON_ON       MAIN_OFF      GND           }
