@@ -16,6 +16,7 @@ module rstmgr import rstmgr_pkg::*; (
   input clk_main_i,
   input clk_io_i,
   input clk_io_div2_i,
+  input clk_io_div4_i,
   input clk_usb_i,
   input clk_aon_i,
 
@@ -87,6 +88,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(resets_o.rst_por_aon_n),
     .d(1'b1),
     .q(resets_int.rst_por_io_div2_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) i_por_io_div4_sync (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(resets_o.rst_por_aon_n),
+    .d(1'b1),
+    .q(resets_int.rst_por_io_div4_n)
   );
 
   prim_flop_2sync #(
@@ -235,6 +246,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
     .d(1'b1),
     .q(resets_int.rst_sys_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) i_sys_io_div4 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
+    .d(1'b1),
+    .q(resets_int.rst_sys_io_div4_n)
   );
 
   prim_flop_2sync #(
