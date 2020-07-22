@@ -116,6 +116,7 @@ SECTIONS {
      */
     *(.data)
     *(.data.*)
+    . = ALIGN(4);
     _data_end = .;
   } > ram_main
 
@@ -138,6 +139,7 @@ SECTIONS {
     *(.bss)
     *(.bss.*)
     *(COMMON)
+    . = ALIGN(4);
     _bss_end = .;
   } > ram_main
 
