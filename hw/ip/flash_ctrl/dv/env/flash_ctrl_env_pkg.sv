@@ -42,7 +42,7 @@ package flash_ctrl_env_pkg;
   parameter uint FlashMemAddrBankMsbBit   = FlashDataByteWidth + FlashWordLineWidth +
                                             FlashPageWidth + FlashBankWidth - 1;
 
-// types
+  // types
   typedef enum int {
     FlashCtrlIntrProgEmpty  = 0,
     FlashCtrlIntrProgLvl    = 1,

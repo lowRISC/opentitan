@@ -29,6 +29,8 @@ class flash_ctrl_sanity_vseq extends flash_ctrl_rand_ops_vseq;
 
     // Allow banks to be erased.
     cfg.seq_cfg.bank_erase_en_pc = 100;
+
+    cfg.seq_cfg.poll_fifo_status_pc = 0;
   endfunction
 
 endclass : flash_ctrl_sanity_vseq

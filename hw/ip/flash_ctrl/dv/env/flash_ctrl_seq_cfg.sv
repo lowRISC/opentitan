@@ -42,6 +42,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_erase_type_bank_pc = 0;
   uint op_max_words = 512;
 
+  // Poll fifo status before writing to prog_fifo / reading from rd_fifo.
+  uint poll_fifo_status_pc = 30;
+
   `uvm_object_new
 
 endclass
