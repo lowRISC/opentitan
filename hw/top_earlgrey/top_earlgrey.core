@@ -24,6 +24,7 @@ filesets:
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
       - lowrisc:ip:aes
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac

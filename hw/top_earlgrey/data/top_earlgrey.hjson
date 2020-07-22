@@ -41,6 +41,7 @@
     // div:  Ratio between derived clock and source clock
     derived_srcs: [
       { name: "io_div2", aon: "no", div: 2, src: "io", freq: "50000000" }
+      { name: "io_div4", aon: "no", div: 4, src: "io", freq: "25000000" }
     ],
 
     // Clock Group attributes
@@ -104,6 +105,7 @@
     { name: "por",        type: "top",  root: "por_aon", clk: "main"       }
     { name: "por_io",     type: "top",  root: "por_aon", clk: "io"         }
     { name: "por_io_div2",type: "top",  root: "por_aon", clk: "io_div2"    }
+    { name: "por_io_div4",type: "top",  root: "por_aon", clk: "io_div4"    }
     { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
     { name: "lc",         type: "top",  root: "lc",      clk: "main"       }
     { name: "lc_io",      type: "top",  root: "lc",      clk: "io_div2"    }
@@ -111,6 +113,7 @@
     { name: "lc_usb",     type: "top",  root: "lc",      clk: "usb"        }
     { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
     { name: "sys_io",     type: "top",  root: "sys",     clk: "io_div2"    }
+    { name: "sys_io_div4",type: "top",  root: "sys",     clk: "io_div4"    }
     { name: "sys_aon",    type: "top",  root: "sys",     clk: "aon"        }
     { name: "spi_device", type: "top",  root: "sys",     clk: "io_div2",  sw: 1 }
     { name: "usb",        type: "top",  root: "sys",     clk: "usb", sw: 1 }
@@ -175,6 +178,20 @@
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40050000",
     },
+    { name: "spi_host0"
+      type: "spi_host"
+      clock_srcs: {clk_i: "io_div2", clk_spi_i: "io_div2"}
+      clock_group: "peri"
+      reset_connections: {rst_ni: "sys_io", rst_spi_ni: "sys_io"}
+      base_addr: "0x40060000"
+    }
+    { name: "spi_host1"
+      type: "spi_host"
+      clock_srcs: {clk_i: "io_div2", clk_spi_i: "io_div4"}
+      clock_group: "peri"
+      reset_connections: {rst_ni: "sys_io", rst_spi_ni: "sys_io_div4"}
+      base_addr: "0x40070000"
+    }
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock_srcs: {clk_i: "main"},
@@ -303,7 +320,7 @@
     { name: "rstmgr_aon",
       type: "rstmgr",
       clock_srcs: {clk_i: "io_div2", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
-                   clk_io_div2_i: "io_div2"},
+                   clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x40410000",
@@ -313,7 +330,7 @@
       clock_srcs: {clk_i: "io_div2"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
-                          rst_io_div2_ni: "por_io_div2", },
+                          rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
       base_addr: "0x400C0000",
       generated: "true"
     },
@@ -477,6 +494,10 @@
       'csrng.entropy_src_hw_if': ['entropy_src.entropy_src_hw_if'],
       'keymgr.kmac_key': ['kmac.keymgr_key'],
       'keymgr.kmac_data': ['kmac.keymgr_data']
+
+      // Pass-through
+      'spi_device.spi_d2h': ['spi_host0.spi_d2h']
+      'spi_host0.spi_h2d': ['spi_device.spi_h2d']
     }
 
     // top is to connect to top net/struct.
@@ -529,7 +550,7 @@
                      "pwrmgr_aon", "otp_ctrl", "dcd_aon"
                      "uart1", "uart2", "uart3",
                      "i2c0", "i2c1", "i2c2",
-                     "otbn",]
+                     "otbn", "spi_host0", "spi_host1"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -561,6 +582,7 @@
     //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
     dio_modules: [
       { name: "spi_device", pad: ["ChB[0..5]"] },
+      { name: "spi_host0", pad: ["ChB[6..11]"]}
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] },
       { name: "usbdev_aon", pad: ["ChC[0..8]"]}
     ],
@@ -570,7 +592,8 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["uart", "uart1", "uart2", "uart3", "gpio", "i2c0", "i2c1", "i2c2", "pwm_aon", "rbox_aon"]
+    mio_modules: ["uart", "uart1", "uart2", "uart3", "gpio", "i2c0", "i2c1", "i2c2",
+                  "pwm_aon", "rbox_aon", "spi_host1"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
@@ -605,7 +628,7 @@
     attr_default: ["STRONG"],
     pads: [
       { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
-      { name: "ChB" type: "IO_33V", count: 6, attr: ["KEEP", "WEAK"]},
+      { name: "ChB" type: "IO_33V", count: 12, attr: ["KEEP", "WEAK"]}, // SPI interface
       { name: "ChC" type: "IO_33V", count: 4, attr: ["KEEP", "STRONG"]},
       { name: "ChD" type: "IO_33V", count: 14, attr: ["KEEP", "WEAK"]},
     ]
