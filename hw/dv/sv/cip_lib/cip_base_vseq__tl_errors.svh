@@ -21,12 +21,12 @@
   end
 
 virtual task tl_access_unmapped_addr();
-  bit [TL_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
+  bit [BUS_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
   // calculate normalized address outside the loop to improve perf
   foreach (cfg.csr_addrs[i]) normalized_csr_addrs[i] = cfg.csr_addrs[i] - cfg.csr_base_addr;
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
-    bit [TL_AW-1:0] unmapped_addr;
+    bit [BUS_AW-1:0] unmapped_addr;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
         !((unmapped_addr & csr_addr_mask) inside {normalized_csr_addrs});
         foreach (updated_mem_ranges[i]) {
@@ -56,9 +56,9 @@ virtual task tl_write_less_than_csr_width();
   uvm_reg all_csrs[$];
   ral.get_registers(all_csrs);
   foreach (all_csrs[i]) begin
-    dv_base_reg     csr;
-    uint            msb_pos;
-    bit [TL_AW-1:0] addr;
+    dv_base_reg      csr;
+    uint             msb_pos;
+    bit [BUS_AW-1:0] addr;
     `DV_CHECK_FATAL($cast(csr, all_csrs[i]))
     msb_pos = csr.get_msb_pos();
     addr    = csr.get_address();

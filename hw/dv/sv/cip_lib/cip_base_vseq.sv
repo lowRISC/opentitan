@@ -24,8 +24,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // address mask struct
   typedef struct packed {
-    bit [TL_AW-1:0]  addr;
-    bit [TL_DBW-1:0] mask;
+    bit [BUS_AW-1:0]  addr;
+    bit [BUS_DBW-1:0] mask;
   } addr_mask_t;
 
   addr_mask_t mem_exist_addr_q[$];
@@ -33,7 +33,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // mem_ranges without base address
   addr_range_t     updated_mem_ranges[$];
   // mask out bits out of the csr/mem range and LSB 2 bits
-  bit [TL_AW-1:0]  csr_addr_mask;
+  bit [BUS_AW-1:0] csr_addr_mask;
 
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
@@ -57,7 +57,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   task pre_start();
-    csr_utils_pkg::max_outstanding_accesses = 1 << TL_AIW;
+    csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
     extract_common_csrs();
   endtask
@@ -72,21 +72,21 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
-  // tl_access task: does a single TL_W-bit write or read transaction to the specified address
+  // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
   // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
   // reused for mem_read, partial read, and hmac msg fifo write
-  virtual task tl_access(input bit [TL_AW-1:0]  addr,
-                         input bit              write,
-                         inout bit [TL_DW-1:0]  data,
-                         input bit [TL_DBW-1:0] mask = '1,
-                         input bit              check_rsp = 1'b1,
-                         input bit              exp_err_rsp = 1'b0,
-                         input bit [TL_DW-1:0]  exp_data = 0,
-                         input bit              check_exp_data = 1'b0,
-                         input bit [TL_DW-1:0]  compare_mask = '1,
-                         input bit              blocking = csr_utils_pkg::default_csr_blocking,
-                         tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h);
+  virtual task tl_access(input bit [BUS_AW-1:0]  addr,
+                         input bit               write,
+                         inout bit [BUS_DW-1:0]  data,
+                         input bit [BUS_DBW-1:0] mask = '1,
+                         input bit               check_rsp = 1'b1,
+                         input bit               exp_err_rsp = 1'b0,
+                         input bit [BUS_DW-1:0]  exp_data = 0,
+                         input bit               check_exp_data = 1'b0,
+                         input bit [BUS_DW-1:0]  compare_mask = '1,
+                         input bit               blocking = csr_utils_pkg::default_csr_blocking,
+                         tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
     if (blocking) begin
       tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
                     compare_mask, check_exp_data, tl_sequencer_h);
@@ -100,16 +100,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  virtual task tl_access_sub(input bit [TL_AW-1:0]  addr,
-                             input bit              write,
-                             inout bit [TL_DW-1:0]  data,
-                             input bit [TL_DBW-1:0] mask = '1,
-                             input bit              check_rsp = 1'b1,
-                             input bit              exp_err_rsp = 1'b0,
-                             input bit [TL_DW-1:0]  exp_data = 0,
-                             input bit [TL_DW-1:0]  compare_mask = '1,
-                             input bit              check_exp_data = 1'b0,
-                             tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h);
+  virtual task tl_access_sub(input bit [BUS_AW-1:0]  addr,
+                             input bit               write,
+                             inout bit [BUS_DW-1:0]  data,
+                             input bit [BUS_DBW-1:0] mask = '1,
+                             input bit               check_rsp = 1'b1,
+                             input bit               exp_err_rsp = 1'b0,
+                             input bit [BUS_DW-1:0]  exp_data = 0,
+                             input bit [BUS_DW-1:0]  compare_mask = '1,
+                             input bit               check_exp_data = 1'b0,
+                             tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
     `DV_SPINWAIT(
         // thread to read/write tlul
         tl_host_single_seq  tl_seq;
@@ -128,7 +128,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         if (!write) begin
           data = tl_seq.rsp.d_data;
           if (check_exp_data && !cfg.under_reset) begin
-            bit [TL_DW-1:0] masked_data = data & compare_mask;
+            bit [BUS_DW-1:0] masked_data = data & compare_mask;
             exp_data &= compare_mask;
             `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
           end
@@ -146,7 +146,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // are descriptions of some of the args:
 
   // interrupts: bit vector indicating which interrupts to process
-  // suffix: if there are more than TL_DW interrupts, then add suffix 'hi' or 'lo' to the interrupt
+  // suffix: if there are more than BUS_DW interrupts, then add suffix 'hi' or 'lo' to the interrupt
   // TODO add support for suffix
   // csr to configure the right one (ex: intr_enable_hi, intr_enable_lo, etc)
   // indices[$]: registers could be indexed (example, rv_timer) in which case, push as many desired
@@ -205,14 +205,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // task to enable multiple interrupts
   // enable: if set, then selected interrupts are enabled, else disabled
   // see description above for other args
-  virtual task cfg_interrupts(bit [TL_DW-1:0] interrupts,
+  virtual task cfg_interrupts(bit [BUS_DW-1:0] interrupts,
                               bit enable = 1'b1,
                               string suffix = "",
                               int indices[$] = {},
                               uvm_reg_block scope = null);
 
-    uvm_reg         csr;
-    bit [TL_DW-1:0] data;
+    uvm_reg          csr;
+    bit [BUS_DW-1:0] data;
 
     csr = get_interrupt_csr("intr_enable", "", indices, scope);
     data = csr.get_mirrored_value();
@@ -226,16 +226,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // check_set: check if interrupts are set (1) or unset (0)
   // clear: bit vector indicating which interrupt bit to clear
   // see description above for other args
-  virtual task check_interrupts(bit [TL_DW-1:0] interrupts,
+  virtual task check_interrupts(bit [BUS_DW-1:0] interrupts,
                                 bit check_set,
                                 string suffix = "",
                                 int indices[$] = {},
                                 uvm_reg_block scope = null,
-                                bit [TL_DW-1:0] clear = '1);
-    uvm_reg         csr_intr_state, csr_intr_enable;
-    bit [TL_DW-1:0] act_pins;
-    bit [TL_DW-1:0] exp_pins;
-    bit [TL_DW-1:0] exp_intr_state;
+                                bit [BUS_DW-1:0] clear = '1);
+    uvm_reg          csr_intr_state, csr_intr_enable;
+    bit [BUS_DW-1:0] act_pins;
+    bit [BUS_DW-1:0] exp_pins;
+    bit [BUS_DW-1:0] exp_intr_state;
 
     if (cfg.under_reset) return;
 
@@ -275,7 +275,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
-    bit [TL_DW-1:0] exp_intr_state[$];
+    bit [BUS_DW-1:0] exp_intr_state[$];
     int test_index[$];
 
     foreach (intr_test_csrs[i]) begin
@@ -285,13 +285,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
 
     for (int trans = 1; trans <= num_times; trans++) begin
-      bit [TL_DW-1:0] num_used_bits;
-      bit [TL_DW-1:0] intr_enable_val[$];
+      bit [BUS_DW-1:0] num_used_bits;
+      bit [BUS_DW-1:0] intr_enable_val[$];
       `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
       // Random Write to all intr enable registers
       test_index.shuffle();
       foreach (test_index[i]) begin
-        bit [TL_DW-1:0] wr_data;
+        bit [BUS_DW-1:0] wr_data;
         wr_data = $urandom_range(0, ((1 << intr_enable_csrs[test_index[i]].get_n_used_bits()) - 1));
         intr_enable_val.insert(test_index[i], wr_data);
         csr_wr(.csr(intr_enable_csrs[test_index[i]]), .value(wr_data));
@@ -300,7 +300,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // Random write to all interrupt test reg
       test_index.shuffle();
       foreach (test_index[i]) begin
-        bit [TL_DW-1:0] wr_data;
+        bit [BUS_DW-1:0] wr_data;
         wr_data = $urandom_range(0, ((1 << intr_test_csrs[test_index[i]].get_n_used_bits()) - 1));
         // Add wr_data to expected state queue
         exp_intr_state[test_index[i]] |= wr_data;
@@ -310,7 +310,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // Read all intr state
       test_index.shuffle();
       foreach (test_index[i]) begin
-        bit [TL_DW-1:0] dut_intr_state;
+        bit [BUS_DW-1:0] dut_intr_state;
         `uvm_info(`gtn, $sformatf("Verifying %0s", intr_test_csrs[test_index[i]].get_full_name()),
             UVM_LOW)
         csr_rd(.ptr(intr_state_csrs[test_index[i]]), .value(dut_intr_state));
@@ -320,7 +320,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       // check interrupt pins
       if (!cfg.under_reset) begin
         foreach (intr_test_csrs[i]) begin
-          bit [TL_DW-1:0] exp_intr_pin;
+          bit [BUS_DW-1:0] exp_intr_pin;
           exp_intr_pin = exp_intr_state[i] & intr_enable_val[i];
           for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
             bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
@@ -335,7 +335,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       test_index.shuffle();
       foreach (test_index[i]) begin
         if ($urandom_range(0, 1)) begin
-          bit [TL_DW-1:0] wr_data;
+          bit [BUS_DW-1:0] wr_data;
           wr_data = $urandom_range((1 << intr_state_csrs[test_index[i]].get_n_used_bits()) - 1);
           exp_intr_state[test_index[i]] &= (~wr_data);
           csr_wr(.csr(intr_state_csrs[test_index[i]]), .value(wr_data));
@@ -346,7 +346,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // Task to clear register intr status bits
   virtual task clear_all_interrupts();
-    bit [TL_DW-1:0] data;
+    bit [BUS_DW-1:0] data;
     foreach (intr_state_csrs[i]) begin
       csr_rd(.ptr(intr_state_csrs[i]), .value(data));
       if (data != 0) begin
@@ -497,9 +497,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     repeat (num_accesses * num_times) begin
       fork
         begin
-          bit [TL_AW-1:0]  addr;
-          bit [TL_DW-1:0]  data;
-          bit [TL_DBW-1:0] mask;
+          bit [BUS_AW-1:0]  addr;
+          bit [BUS_DW-1:0]  data;
+          bit [BUS_DBW-1:0] mask;
           randcase
             1: begin // write
               dv_base_mem mem;
@@ -587,10 +587,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   // TLUL mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
-  virtual function bit[TL_DBW-1:0] get_rand_contiguous_mask(bit [TL_DBW-1:0] valid_mask = '1);
-    bit [TL_DBW-1:0] mask;
+  virtual function bit[BUS_DBW-1:0] get_rand_contiguous_mask(bit [BUS_DBW-1:0] valid_mask = '1);
+    bit [BUS_DBW-1:0] mask;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask,
-                                       $countones(mask ^ {mask[TL_DBW-2:0], 1'b0}) <= 2;
+                                       $countones(mask ^ {mask[BUS_DBW-2:0], 1'b0}) <= 2;
                                        // for data bits aren't valid (unknown), mask bit should be 0
                                        foreach (valid_mask[i]) {
                                          !valid_mask[i] -> !mask[i];

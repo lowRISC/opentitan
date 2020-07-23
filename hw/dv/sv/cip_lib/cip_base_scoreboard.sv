@@ -121,7 +121,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
   // the format that RAL uses
   virtual function uvm_reg_addr_t get_normalized_addr(uvm_reg_addr_t addr);
-    return ({addr[TL_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1)) + cfg.csr_base_addr;
+    return ({addr[BUS_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1)) + cfg.csr_base_addr;
   endfunction
 
   // check if it's mem addr
