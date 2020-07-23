@@ -7,6 +7,7 @@ description: "Earl Grey toplevel for DV simulations"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:usb_diff_rx
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:ast
     files:
