@@ -511,7 +511,7 @@
                  'rstmgr_aon.ast', 'usbdev_aon.usb_ref_pulse', 'usbdev_aon.usb_ref_val', 'usbdev_aon.usb_rx_enable',
                  'entropy_src.entropy_src_rng',
                  'clkmgr_aon.clk_main', 'clkmgr_aon.clk_io', 'clkmgr_aon.clk_usb', 'clkmgr_aon.clk_aon',
-                 'dcd_aon.adc'],
+                 'dcd_aon.adc', 'pinmux_aon.io_pok'],
   },
 
   debug_mem_base_addr: "0x1A110000",
