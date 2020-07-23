@@ -18,7 +18,7 @@
 // testbench portable.
 interface mem_bkdr_if();
   import uvm_pkg::*;
-  import top_pkg::*;
+  import bus_params_pkg::BUS_AW;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
@@ -57,7 +57,7 @@ interface mem_bkdr_if();
 
   // input addr is assumed to be the byte addressable address into memory starting at 0
   // user assumes the responsibility of masking the upper bits
-  function automatic bit is_addr_valid(input bit [TL_AW-1:0] addr);
+  function automatic bit is_addr_valid(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     init();
     if (addr >= mem_size_bytes) begin
       `uvm_error(path, $sformatf("addr = %0h is out of bounds (size = %0d)", addr, mem_size_bytes))
@@ -67,7 +67,7 @@ interface mem_bkdr_if();
   endfunction
 
   // read a single byte at specified address
-  function automatic logic [7:0] read8(input bit [TL_AW-1:0] addr);
+  function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [63:0] mem_data = `mem_array_path_slice[mem_index];
@@ -106,7 +106,7 @@ interface mem_bkdr_if();
     return 'x;
   endfunction
 
-  function automatic logic [15:0] read16(input bit [TL_AW-1:0] addr);
+  function automatic logic [15:0] read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
@@ -137,7 +137,7 @@ interface mem_bkdr_if();
     return 'x;
   endfunction
 
-  function automatic logic [31:0] read32(input bit [TL_AW-1:0] addr);
+  function automatic logic [31:0] read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
@@ -163,12 +163,12 @@ interface mem_bkdr_if();
     return 'x;
   endfunction
 
-  function automatic logic [63:0] read64(input bit [TL_AW-1:0] addr);
+  function automatic logic [63:0] read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
     return {read32(addr + 4), read32(addr)};
   endfunction
 
-  function automatic void write8(input bit [TL_AW-1:0] addr, input bit [7:0] data);
+  function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr, input bit [7:0] data);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [63:0] rw_data = `mem_array_path_slice[mem_index];
@@ -207,7 +207,8 @@ interface mem_bkdr_if();
     end
   endfunction
 
-  function automatic void write16(input bit [TL_AW-1:0] addr, input bit [15:0] data);
+  function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                  input bit [15:0] data);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
@@ -239,7 +240,8 @@ interface mem_bkdr_if();
     end
   endfunction
 
-  function automatic void write32(input bit [TL_AW-1:0] addr, input bit [31:0] data);
+  function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                  input bit [31:0] data);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
@@ -268,7 +270,8 @@ interface mem_bkdr_if();
     end
   endfunction
 
-  function automatic void write64(input bit [TL_AW-1:0] addr, input bit [63:0] data);
+  function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                  input bit [63:0] data);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
     write32(addr, data[31:0]);
     write32(addr + 4, data[63:32]);
