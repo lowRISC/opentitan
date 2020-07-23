@@ -508,7 +508,7 @@
     // ext is to create port in the top.
     'external': ['sensor_ctrl.ast_host', 'sensor_ctrl.ast_dev', 'sensor_ctrl.ast_status',
                  'sensor_ctrl.ast_alert', 'sensor_ctrl.ast_aux', 'pwrmgr_aon.pwr_ast',
-                 'rstmgr_aon.ast', 'usbdev_aon.usb_ref_pulse', 'usbdev_aon.usb_ref_val',
+                 'rstmgr_aon.ast', 'usbdev_aon.usb_ref_pulse', 'usbdev_aon.usb_ref_val', 'usbdev_aon.usb_rx_enable',
                  'entropy_src.entropy_src_rng',
                  'clkmgr_aon.clk_main', 'clkmgr_aon.clk_io', 'clkmgr_aon.clk_usb', 'clkmgr_aon.clk_aon',
                  'dcd_aon.adc'],
@@ -568,7 +568,6 @@
   // generated list of alerts:
   alert: [
   ]
-
   // TODO: PINMUX
   pinmux: {
 
