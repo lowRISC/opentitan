@@ -53,32 +53,23 @@ void *usbdpi_create(const char *name, int loglevel) {
   assert(cwd_rv != NULL);
 
   int rv;
-  rv = snprintf(ctx->fifo_pathname, PATH_MAX, "%s/%s", cwd, name);
+
+  // Monitor log file
+  rv = snprintf(ctx->mon_pathname, PATH_MAX, "%s/%s.log", cwd, name);
   assert(rv <= PATH_MAX && rv > 0);
-
-  // Delete the file if it still exists (simulation crashed)
-  rv = unlink(ctx->fifo_pathname);
-
-  rv = mkfifo(ctx->fifo_pathname, 0644);  // writes are not supported currently
-  if (rv != 0) {
-    fprintf(stderr, "USB: Unable to create FIFO at %s: %s\n",
-            ctx->fifo_pathname, strerror(errno));
+  ctx->mon_file = fopen(ctx->mon_pathname, "w");
+  if (ctx->mon_file == NULL) {
+    fprintf(stderr, "USB: Unable to open monitor file at %s: %s\n",
+            ctx->mon_pathname, strerror(errno));
     return NULL;
   }
-
-  ctx->fifo_fd = open(ctx->fifo_pathname, O_RDWR);
-  if (ctx->fifo_fd < 0) {
-    fprintf(stderr, "USB: Unable to open FIFO at %s: %s\n", ctx->fifo_pathname,
-            strerror(errno));
-    return NULL;
-  }
-
+  // more useful for tail -f
+  setlinebuf(ctx->mon_file);
   printf(
-      "\n"
-      "USB: FIFO pipe created at %s. Run\n"
-      "$ cat %s\n"
-      "to observe the output.\n",
-      ctx->fifo_pathname, ctx->fifo_pathname);
+      "\nUSB: Monitor output file created at %s. Works well with tail:\n"
+      "$ tail -f %s\n",
+      ctx->mon_pathname, ctx->mon_pathname);
+
   return (void *)ctx;
 }
 
@@ -125,7 +116,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     n = snprintf(obuf, MAX_OBUF, "%4x %8d %s %s %s\n", ctx->frame, ctx->tick,
                  raw_str, (d2p & D2P_PU) ? "PU" : "  ",
                  (ctx->state == ST_GET) ? decode_usb[dp << 1 | dn] : "ZZ ");
-    ssize_t written = write(ctx->fifo_fd, obuf, n);
+    ssize_t written = fwrite(obuf, sizeof(char), (size_t)n, ctx->mon_file);
     assert(written == n);
   }
 }
@@ -635,7 +626,7 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     return ctx->driving;
   }
 
-  monitor_usb(ctx->mon, ctx->fifo_fd, ctx->loglevel, ctx->tick,
+  monitor_usb(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick,
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
 
@@ -809,7 +800,7 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         obuf, MAX_OBUF, "%4x %8d              %s %s\n", ctx->frame, ctx->tick,
         ctx->driving & P2D_SENSE ? "VBUS" : "    ",
         (ctx->state != ST_IDLE) ? decode_usb[(ctx->driving >> 1) & 3] : "ZZ ");
-    ssize_t written = write(ctx->fifo_fd, obuf, n);
+    ssize_t written = fwrite(obuf, sizeof(char), (size_t)n, ctx->mon_file);
     assert(written == n);
   }
   return ctx->driving;
@@ -820,15 +811,6 @@ void usbdpi_close(void *ctx_void) {
   if (!ctx) {
     return;
   }
-  int rv;
-  rv = close(ctx->fifo_fd);
-  if (rv != 0) {
-    printf("USB: Failed to close FIFO: %s\n", strerror(errno));
-  }
-  rv = unlink(ctx->fifo_pathname);
-  if (rv != 0) {
-    printf("USB: Failed to unlink FIFO file at %s: %s\n", ctx->fifo_pathname,
-           strerror(errno));
-  }
+  fclose(ctx->mon_file);
   free(ctx);
 }
