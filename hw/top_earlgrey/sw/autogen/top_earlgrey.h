@@ -10,7 +10,7 @@
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO 47
-#define NUM_DIO 15
+#define NUM_DIO 21
 
 #define PINMUX_GPIO_GPIO_0_IN 0
 #define PINMUX_GPIO_GPIO_1_IN 1
@@ -50,16 +50,20 @@
 #define PINMUX_I2C1_SCL_IN 36
 #define PINMUX_I2C2_SDA_IN 37
 #define PINMUX_I2C2_SCL_IN 38
-#define PINMUX_UART_RX_IN 39
-#define PINMUX_UART1_RX_IN 40
-#define PINMUX_UART2_RX_IN 41
-#define PINMUX_UART3_RX_IN 42
-#define PINMUX_RBOX_AON_AC_PRESENT_IN 43
-#define PINMUX_RBOX_AON_EC_ENTERING_RW_IN 44
-#define PINMUX_RBOX_AON_KEY0_IN_IN 45
-#define PINMUX_RBOX_AON_KEY1_IN_IN 46
-#define PINMUX_RBOX_AON_KEY2_IN_IN 47
-#define PINMUX_RBOX_AON_PWRB_IN_IN 48
+#define PINMUX_SPI_HOST1_S_0_IN 39
+#define PINMUX_SPI_HOST1_S_1_IN 40
+#define PINMUX_SPI_HOST1_S_2_IN 41
+#define PINMUX_SPI_HOST1_S_3_IN 42
+#define PINMUX_UART_RX_IN 44
+#define PINMUX_UART1_RX_IN 45
+#define PINMUX_UART2_RX_IN 46
+#define PINMUX_UART3_RX_IN 47
+#define PINMUX_RBOX_AON_AC_PRESENT_IN 48
+#define PINMUX_RBOX_AON_EC_ENTERING_RW_IN 49
+#define PINMUX_RBOX_AON_KEY0_IN_IN 50
+#define PINMUX_RBOX_AON_KEY1_IN_IN 51
+#define PINMUX_RBOX_AON_KEY2_IN_IN 52
+#define PINMUX_RBOX_AON_PWRB_IN_IN 53
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
@@ -107,27 +111,33 @@
 #define PINMUX_I2C1_SCL_OUT 39
 #define PINMUX_I2C2_SDA_OUT 40
 #define PINMUX_I2C2_SCL_OUT 41
-#define PINMUX_UART_TX_OUT 42
-#define PINMUX_UART1_TX_OUT 43
-#define PINMUX_UART2_TX_OUT 44
-#define PINMUX_UART3_TX_OUT 45
-#define PINMUX_PWM_AON_PWM_0_OUT 46
-#define PINMUX_PWM_AON_PWM_1_OUT 47
-#define PINMUX_PWM_AON_PWM_2_OUT 48
-#define PINMUX_PWM_AON_PWM_3_OUT 49
-#define PINMUX_PWM_AON_PWM_4_OUT 50
-#define PINMUX_PWM_AON_PWM_5_OUT 51
-#define PINMUX_PWM_AON_PWM_6_OUT 52
-#define PINMUX_PWM_AON_PWM_7_OUT 53
-#define PINMUX_PWM_AON_PWM_8_OUT 54
-#define PINMUX_RBOX_AON_BAT_EN_OUT 56
-#define PINMUX_RBOX_AON_EC_IN_RW_OUT 57
-#define PINMUX_RBOX_AON_EC_RST_L_OUT 58
-#define PINMUX_RBOX_AON_FLASH_WP_L_OUT 59
-#define PINMUX_RBOX_AON_KEY0_OUT_OUT 60
-#define PINMUX_RBOX_AON_KEY1_OUT_OUT 61
-#define PINMUX_RBOX_AON_KEY2_OUT_OUT 62
-#define PINMUX_RBOX_AON_PWRB_OUT_OUT 63
+#define PINMUX_SPI_HOST1_S_0_OUT 42
+#define PINMUX_SPI_HOST1_S_1_OUT 43
+#define PINMUX_SPI_HOST1_S_2_OUT 44
+#define PINMUX_SPI_HOST1_S_3_OUT 45
+#define PINMUX_UART_TX_OUT 47
+#define PINMUX_UART1_TX_OUT 48
+#define PINMUX_UART2_TX_OUT 49
+#define PINMUX_UART3_TX_OUT 50
+#define PINMUX_PWM_AON_PWM_0_OUT 51
+#define PINMUX_PWM_AON_PWM_1_OUT 52
+#define PINMUX_PWM_AON_PWM_2_OUT 53
+#define PINMUX_PWM_AON_PWM_3_OUT 54
+#define PINMUX_PWM_AON_PWM_4_OUT 55
+#define PINMUX_PWM_AON_PWM_5_OUT 56
+#define PINMUX_PWM_AON_PWM_6_OUT 57
+#define PINMUX_PWM_AON_PWM_7_OUT 58
+#define PINMUX_PWM_AON_PWM_8_OUT 59
+#define PINMUX_RBOX_AON_BAT_EN_OUT 61
+#define PINMUX_RBOX_AON_EC_IN_RW_OUT 62
+#define PINMUX_RBOX_AON_EC_RST_L_OUT 63
+#define PINMUX_RBOX_AON_FLASH_WP_L_OUT 64
+#define PINMUX_RBOX_AON_KEY0_OUT_OUT 65
+#define PINMUX_RBOX_AON_KEY1_OUT_OUT 66
+#define PINMUX_RBOX_AON_KEY2_OUT_OUT 67
+#define PINMUX_RBOX_AON_PWRB_OUT_OUT 68
+#define PINMUX_SPI_HOST1_SCK_OUT 69
+#define PINMUX_SPI_HOST1_CSB_OUT 70
 
 /**
  * Base address for uart peripheral in top earlgrey.
@@ -176,6 +186,22 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40050000u
+
+/**
+ * Base address for spi_host0 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST0_BASE_ADDR 0x40060000u
+
+/**
+ * Base address for spi_host1 peripheral in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST1_BASE_ADDR 0x40070000u
 
 /**
  * Base address for flash_ctrl peripheral in top earlgrey.
@@ -438,7 +464,9 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralI2c1 = 18, /**< i2c1 */
   kTopEarlgreyPlicPeripheralI2c2 = 19, /**< i2c2 */
   kTopEarlgreyPlicPeripheralOtbn = 20, /**< otbn */
-  kTopEarlgreyPlicPeripheralLast = 20, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralSpiHost0 = 21, /**< spi_host0 */
+  kTopEarlgreyPlicPeripheralSpiHost1 = 22, /**< spi_host1 */
+  kTopEarlgreyPlicPeripheralLast = 22, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -589,7 +617,19 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 138, /**< i2c2_sda_unstable */
   kTopEarlgreyPlicIrqIdOtbnDone = 139, /**< otbn_done */
   kTopEarlgreyPlicIrqIdOtbnErr = 140, /**< otbn_err */
-  kTopEarlgreyPlicIrqIdLast = 140, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdSpiHost0Rxf = 141, /**< spi_host0_rxf */
+  kTopEarlgreyPlicIrqIdSpiHost0Rxlvl = 142, /**< spi_host0_rxlvl */
+  kTopEarlgreyPlicIrqIdSpiHost0Txlvl = 143, /**< spi_host0_txlvl */
+  kTopEarlgreyPlicIrqIdSpiHost0Rxerr = 144, /**< spi_host0_rxerr */
+  kTopEarlgreyPlicIrqIdSpiHost0Rxoverflow = 145, /**< spi_host0_rxoverflow */
+  kTopEarlgreyPlicIrqIdSpiHost0Txunderflow = 146, /**< spi_host0_txunderflow */
+  kTopEarlgreyPlicIrqIdSpiHost1Rxf = 147, /**< spi_host1_rxf */
+  kTopEarlgreyPlicIrqIdSpiHost1Rxlvl = 148, /**< spi_host1_rxlvl */
+  kTopEarlgreyPlicIrqIdSpiHost1Txlvl = 149, /**< spi_host1_txlvl */
+  kTopEarlgreyPlicIrqIdSpiHost1Rxerr = 150, /**< spi_host1_rxerr */
+  kTopEarlgreyPlicIrqIdSpiHost1Rxoverflow = 151, /**< spi_host1_rxoverflow */
+  kTopEarlgreyPlicIrqIdSpiHost1Txunderflow = 152, /**< spi_host1_txunderflow */
+  kTopEarlgreyPlicIrqIdLast = 152, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -599,7 +639,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[141];
+    top_earlgrey_plic_interrupt_for_peripheral[153];
 
 /**
  * PLIC external interrupt target.

@@ -56,6 +56,13 @@
         src: io
         freq: "50000000"
       }
+      {
+        name: io_div4
+        aon: no
+        div: 4
+        src: io
+        freq: "25000000"
+      }
     ]
     groups:
     [
@@ -71,6 +78,7 @@
           clk_main_powerup: main
           clk_io_powerup: io
           clk_usb_powerup: usb
+          clk_io_div4_powerup: io_div4
         }
       }
       {
@@ -122,6 +130,7 @@
         clocks:
         {
           clk_io_div2_peri: io_div2
+          clk_io_div4_peri: io_div4
           clk_io_peri: io
           clk_usb_peri: usb
         }
@@ -179,6 +188,12 @@
       clk: io_div2
     }
     {
+      name: por_io_div4
+      type: top
+      root: por_aon
+      clk: io_div4
+    }
+    {
       name: por_usb
       type: top
       root: por_aon
@@ -219,6 +234,12 @@
       type: top
       root: sys
       clk: io_div2
+    }
+    {
+      name: sys_io_div4
+      type: top
+      root: sys
+      clk: io_div4
     }
     {
       name: sys_aon
@@ -988,6 +1009,10 @@
           type: uni
           act: req
           inst_name: spi_device
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: spi_device_spi_d2h
           index: -1
         }
         {
@@ -997,6 +1022,308 @@
           type: uni
           act: rcv
           inst_name: spi_device
+          width: 1
+          default: ""
+          top_signame: spi_host0_spi_h2d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: spi_host0
+      type: spi_host
+      clock_srcs:
+      {
+        clk_i: io_div2
+        clk_spi_i: io_div2
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+        rst_spi_ni: sys_io
+      }
+      base_addr: 0x40060000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
+        clk_spi_i: clkmgr_aon_clocks.clk_io_div2_peri
+      }
+      size: 0x2000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list:
+      [
+        {
+          name: sck
+          width: 1
+          type: output
+        }
+        {
+          name: csb
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list:
+      [
+        {
+          name: s
+          width: 4
+          type: inout
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: rxf
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rxlvl
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: txlvl
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rxerr
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: rxoverflow
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: txunderflow
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      scan: "true"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          name: spi_d2h
+          struct: spi_d2h
+          package: spi_pkg
+          type: uni
+          act: rcv
+          inst_name: spi_host0
+          width: 1
+          default: ""
+          top_signame: spi_device_spi_d2h
+          index: -1
+        }
+        {
+          name: spi_h2d
+          struct: spi_h2d
+          package: spi_pkg
+          type: uni
+          act: req
+          inst_name: spi_host0
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: spi_host0_spi_h2d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: spi_host1
+      type: spi_host
+      clock_srcs:
+      {
+        clk_i: io_div2
+        clk_spi_i: io_div4
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io
+        rst_spi_ni: sys_io_div4
+      }
+      base_addr: 0x40070000
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
+        clk_spi_i: clkmgr_aon_clocks.clk_io_div4_peri
+      }
+      size: 0x2000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list:
+      [
+        {
+          name: sck
+          width: 1
+          type: output
+        }
+        {
+          name: csb
+          width: 1
+          type: output
+        }
+      ]
+      available_inout_list:
+      [
+        {
+          name: s
+          width: 4
+          type: inout
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: rxf
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: rxlvl
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: txlvl
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: rxerr
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+        {
+          name: rxoverflow
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: interrupt
+        }
+        {
+          name: txunderflow
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      scan: "true"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          name: spi_d2h
+          struct: spi_d2h
+          package: spi_pkg
+          type: uni
+          act: rcv
+          inst_name: spi_host1
+          index: -1
+        }
+        {
+          name: spi_h2d
+          struct: spi_h2d
+          package: spi_pkg
+          type: uni
+          act: req
+          inst_name: spi_host1
           index: -1
         }
       ]
@@ -2729,6 +3056,7 @@
         clk_io_i: io
         clk_usb_i: usb
         clk_io_div2_i: io_div2
+        clk_io_div4_i: io_div4
       }
       clock_group: powerup
       reset_connections:
@@ -2744,6 +3072,7 @@
         clk_io_i: clkmgr_aon_clocks.clk_io_powerup
         clk_usb_i: clkmgr_aon_clocks.clk_usb_powerup
         clk_io_div2_i: clkmgr_aon_clocks.clk_io_div2_powerup
+        clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
       size: 0x1000
       bus_device: tlul
@@ -2832,6 +3161,7 @@
         rst_io_ni: por_io
         rst_usb_ni: por_usb
         rst_io_div2_ni: por_io_div2
+        rst_io_div4_ni: por_io_div4
       }
       base_addr: 0x400C0000
       generated: "true"
@@ -4226,6 +4556,14 @@
       [
         kmac.keymgr_data
       ]
+      spi_device.spi_d2h:
+      [
+        spi_host0.spi_d2h
+      ]
+      spi_host0.spi_h2d:
+      [
+        spi_device.spi_h2d
+      ]
       pwrmgr_aon.wakeups:
       [
         pinmux_aon.aon_wkup_req
@@ -4472,6 +4810,14 @@
             {
               base_addr: 0x40100000
               size_byte: 0x1000
+            }
+            {
+              base_addr: 0x40060000
+              size_byte: 0x2000
+            }
+            {
+              base_addr: 0x40070000
+              size_byte: 0x2000
             }
             {
               base_addr: 0x40080000
@@ -4775,6 +5121,8 @@
           sensor_ctrl
           otp_ctrl
           lifecycle
+          spi_host0
+          spi_host1
         ]
       }
       nodes:
@@ -4920,6 +5268,40 @@
             {
               base_addr: 0x40100000
               size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: spi_host0
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: spi_host
+          addr_range:
+          [
+            {
+              base_addr: 0x40060000
+              size_byte: 0x2000
+            }
+          ]
+          xbar: false
+          pipeline_byp: "true"
+        }
+        {
+          name: spi_host1
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: spi_host
+          addr_range:
+          [
+            {
+              base_addr: 0x40070000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -5288,6 +5670,8 @@
     i2c1
     i2c2
     otbn
+    spi_host0
+    spi_host1
   ]
   interrupt:
   [
@@ -6708,6 +7092,162 @@
       type: interrupt
       module_name: otbn
     }
+    {
+      name: spi_host0_rxf
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_rxlvl
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_txlvl
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_rxerr
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_rxoverflow
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_txunderflow
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host1_rxf
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_rxlvl
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_txlvl
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_rxerr
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_rxoverflow
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_txunderflow
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: spi_host1
+    }
   ]
   alert_module:
   [
@@ -6804,6 +7344,13 @@
         ]
       }
       {
+        name: spi_host0
+        pad:
+        [
+          ChB[6..11]
+        ]
+      }
+      {
         name: usbdev_aon
         pad:
         [
@@ -6823,6 +7370,7 @@
       i2c2
       pwm_aon
       rbox_aon
+      spi_host1
     ]
     nc_modules:
     [
@@ -6881,6 +7429,57 @@
           {
             name: ChB
             index: 5
+          }
+        ]
+      }
+      {
+        name: spi_host0_sck
+        width: 1
+        type: output
+        module_name: spi_host0
+        pad:
+        [
+          {
+            name: ChB
+            index: 6
+          }
+        ]
+      }
+      {
+        name: spi_host0_csb
+        width: 1
+        type: output
+        module_name: spi_host0
+        pad:
+        [
+          {
+            name: ChB
+            index: 7
+          }
+        ]
+      }
+      {
+        name: spi_host0_s
+        width: 4
+        type: inout
+        module_name: spi_host0
+        pad:
+        [
+          {
+            name: ChB
+            index: 8
+          }
+          {
+            name: ChB
+            index: 9
+          }
+          {
+            name: ChB
+            index: 10
+          }
+          {
+            name: ChB
+            index: 11
           }
         ]
       }
@@ -7145,6 +7744,18 @@
         type: output
         module_name: rbox_aon
       }
+      {
+        name: spi_host1_sck
+        width: 1
+        type: output
+        module_name: spi_host1
+      }
+      {
+        name: spi_host1_csb
+        width: 1
+        type: output
+        module_name: spi_host1
+      }
     ]
     inouts:
     [
@@ -7190,6 +7801,12 @@
         type: inout
         module_name: i2c2
       }
+      {
+        name: spi_host1_s
+        width: 4
+        type: inout
+        module_name: spi_host1
+      }
     ]
   }
   padctrl:
@@ -7208,7 +7825,7 @@
       {
         name: ChB
         type: IO_33V
-        count: 6
+        count: 12
         attr:
         [
           KEEP
@@ -7244,6 +7861,7 @@
     por: rstmgr_aon_resets.rst_por_n
     por_io: rstmgr_aon_resets.rst_por_io_n
     por_io_div2: rstmgr_aon_resets.rst_por_io_div2_n
+    por_io_div4: rstmgr_aon_resets.rst_por_io_div4_n
     por_usb: rstmgr_aon_resets.rst_por_usb_n
     lc: rstmgr_aon_resets.rst_lc_n
     lc_io: rstmgr_aon_resets.rst_lc_io_n
@@ -7251,6 +7869,7 @@
     lc_usb: rstmgr_aon_resets.rst_lc_usb_n
     sys: rstmgr_aon_resets.rst_sys_n
     sys_io: rstmgr_aon_resets.rst_sys_io_n
+    sys_io_div4: rstmgr_aon_resets.rst_sys_io_div4_n
     sys_aon: rstmgr_aon_resets.rst_sys_aon_n
     spi_device: rstmgr_aon_resets.rst_spi_device_n
     usb: rstmgr_aon_resets.rst_usb_n
@@ -7270,6 +7889,10 @@
         type: uni
         act: req
         inst_name: spi_device
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: spi_device_spi_d2h
         index: -1
       }
       {
@@ -7279,6 +7902,52 @@
         type: uni
         act: rcv
         inst_name: spi_device
+        width: 1
+        default: ""
+        top_signame: spi_host0_spi_h2d
+        index: -1
+      }
+      {
+        name: spi_d2h
+        struct: spi_d2h
+        package: spi_pkg
+        type: uni
+        act: rcv
+        inst_name: spi_host0
+        width: 1
+        default: ""
+        top_signame: spi_device_spi_d2h
+        index: -1
+      }
+      {
+        name: spi_h2d
+        struct: spi_h2d
+        package: spi_pkg
+        type: uni
+        act: req
+        inst_name: spi_host0
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: spi_host0_spi_h2d
+        index: -1
+      }
+      {
+        name: spi_d2h
+        struct: spi_d2h
+        package: spi_pkg
+        type: uni
+        act: rcv
+        inst_name: spi_host1
+        index: -1
+      }
+      {
+        name: spi_h2d
+        struct: spi_h2d
+        package: spi_pkg
+        type: uni
+        act: req
+        inst_name: spi_host1
         index: -1
       }
       {
@@ -8536,6 +9205,22 @@
         signame: keymgr_kmac_data_rsp
         width: 1
         type: req_rsp
+        default: ""
+      }
+      {
+        package: spi_pkg
+        struct: spi_d2h
+        signame: spi_device_spi_d2h
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: spi_pkg
+        struct: spi_h2d
+        signame: spi_host0_spi_h2d
+        width: 1
+        type: uni
         default: ""
       }
       {

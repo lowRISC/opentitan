@@ -7,7 +7,7 @@
 //
 // Interconnect
 // main
-//   -> s1n_15
+//   -> s1n_17
 //     -> uart
 //     -> uart1
 //     -> uart2
@@ -22,6 +22,8 @@
 //     -> sensor_ctrl
 //     -> otp_ctrl
 //     -> lifecycle
+//     -> spi_host0
+//     -> spi_host1
 
 module xbar_peri (
   input clk_peri_i,
@@ -48,6 +50,10 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_spi_device_i,
   output tlul_pkg::tl_h2d_t tl_rv_timer_o,
   input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
+  output tlul_pkg::tl_h2d_t tl_spi_host0_o,
+  input  tlul_pkg::tl_d2h_t tl_spi_host0_i,
+  output tlul_pkg::tl_h2d_t tl_spi_host1_o,
+  input  tlul_pkg::tl_d2h_t tl_spi_host1_i,
   output tlul_pkg::tl_h2d_t tl_i2c0_o,
   input  tlul_pkg::tl_d2h_t tl_i2c0_i,
   output tlul_pkg::tl_h2d_t tl_i2c1_o,
@@ -72,107 +78,119 @@ module xbar_peri (
   logic unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
-  tl_h2d_t tl_s1n_15_us_h2d ;
-  tl_d2h_t tl_s1n_15_us_d2h ;
+  tl_h2d_t tl_s1n_17_us_h2d ;
+  tl_d2h_t tl_s1n_17_us_d2h ;
 
 
-  tl_h2d_t tl_s1n_15_ds_h2d [14];
-  tl_d2h_t tl_s1n_15_ds_d2h [14];
+  tl_h2d_t tl_s1n_17_ds_h2d [16];
+  tl_d2h_t tl_s1n_17_ds_d2h [16];
 
   // Create steering signal
-  logic [3:0] dev_sel_s1n_15;
+  logic [4:0] dev_sel_s1n_17;
 
 
 
-  assign tl_uart_o = tl_s1n_15_ds_h2d[0];
-  assign tl_s1n_15_ds_d2h[0] = tl_uart_i;
+  assign tl_uart_o = tl_s1n_17_ds_h2d[0];
+  assign tl_s1n_17_ds_d2h[0] = tl_uart_i;
 
-  assign tl_uart1_o = tl_s1n_15_ds_h2d[1];
-  assign tl_s1n_15_ds_d2h[1] = tl_uart1_i;
+  assign tl_uart1_o = tl_s1n_17_ds_h2d[1];
+  assign tl_s1n_17_ds_d2h[1] = tl_uart1_i;
 
-  assign tl_uart2_o = tl_s1n_15_ds_h2d[2];
-  assign tl_s1n_15_ds_d2h[2] = tl_uart2_i;
+  assign tl_uart2_o = tl_s1n_17_ds_h2d[2];
+  assign tl_s1n_17_ds_d2h[2] = tl_uart2_i;
 
-  assign tl_uart3_o = tl_s1n_15_ds_h2d[3];
-  assign tl_s1n_15_ds_d2h[3] = tl_uart3_i;
+  assign tl_uart3_o = tl_s1n_17_ds_h2d[3];
+  assign tl_s1n_17_ds_d2h[3] = tl_uart3_i;
 
-  assign tl_gpio_o = tl_s1n_15_ds_h2d[4];
-  assign tl_s1n_15_ds_d2h[4] = tl_gpio_i;
+  assign tl_gpio_o = tl_s1n_17_ds_h2d[4];
+  assign tl_s1n_17_ds_d2h[4] = tl_gpio_i;
 
-  assign tl_spi_device_o = tl_s1n_15_ds_h2d[5];
-  assign tl_s1n_15_ds_d2h[5] = tl_spi_device_i;
+  assign tl_spi_device_o = tl_s1n_17_ds_h2d[5];
+  assign tl_s1n_17_ds_d2h[5] = tl_spi_device_i;
 
-  assign tl_rv_timer_o = tl_s1n_15_ds_h2d[6];
-  assign tl_s1n_15_ds_d2h[6] = tl_rv_timer_i;
+  assign tl_rv_timer_o = tl_s1n_17_ds_h2d[6];
+  assign tl_s1n_17_ds_d2h[6] = tl_rv_timer_i;
 
-  assign tl_i2c0_o = tl_s1n_15_ds_h2d[7];
-  assign tl_s1n_15_ds_d2h[7] = tl_i2c0_i;
+  assign tl_i2c0_o = tl_s1n_17_ds_h2d[7];
+  assign tl_s1n_17_ds_d2h[7] = tl_i2c0_i;
 
-  assign tl_i2c1_o = tl_s1n_15_ds_h2d[8];
-  assign tl_s1n_15_ds_d2h[8] = tl_i2c1_i;
+  assign tl_i2c1_o = tl_s1n_17_ds_h2d[8];
+  assign tl_s1n_17_ds_d2h[8] = tl_i2c1_i;
 
-  assign tl_i2c2_o = tl_s1n_15_ds_h2d[9];
-  assign tl_s1n_15_ds_d2h[9] = tl_i2c2_i;
+  assign tl_i2c2_o = tl_s1n_17_ds_h2d[9];
+  assign tl_s1n_17_ds_d2h[9] = tl_i2c2_i;
 
-  assign tl_pattgen_o = tl_s1n_15_ds_h2d[10];
-  assign tl_s1n_15_ds_d2h[10] = tl_pattgen_i;
+  assign tl_pattgen_o = tl_s1n_17_ds_h2d[10];
+  assign tl_s1n_17_ds_d2h[10] = tl_pattgen_i;
 
-  assign tl_sensor_ctrl_o = tl_s1n_15_ds_h2d[11];
-  assign tl_s1n_15_ds_d2h[11] = tl_sensor_ctrl_i;
+  assign tl_sensor_ctrl_o = tl_s1n_17_ds_h2d[11];
+  assign tl_s1n_17_ds_d2h[11] = tl_sensor_ctrl_i;
 
-  assign tl_otp_ctrl_o = tl_s1n_15_ds_h2d[12];
-  assign tl_s1n_15_ds_d2h[12] = tl_otp_ctrl_i;
+  assign tl_otp_ctrl_o = tl_s1n_17_ds_h2d[12];
+  assign tl_s1n_17_ds_d2h[12] = tl_otp_ctrl_i;
 
-  assign tl_lifecycle_o = tl_s1n_15_ds_h2d[13];
-  assign tl_s1n_15_ds_d2h[13] = tl_lifecycle_i;
+  assign tl_lifecycle_o = tl_s1n_17_ds_h2d[13];
+  assign tl_s1n_17_ds_d2h[13] = tl_lifecycle_i;
 
-  assign tl_s1n_15_us_h2d = tl_main_i;
-  assign tl_main_o = tl_s1n_15_us_d2h;
+  assign tl_spi_host0_o = tl_s1n_17_ds_h2d[14];
+  assign tl_s1n_17_ds_d2h[14] = tl_spi_host0_i;
+
+  assign tl_spi_host1_o = tl_s1n_17_ds_h2d[15];
+  assign tl_s1n_17_ds_d2h[15] = tl_spi_host1_i;
+
+  assign tl_s1n_17_us_h2d = tl_main_i;
+  assign tl_main_o = tl_s1n_17_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
-    dev_sel_s1n_15 = 4'd14;
-    if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_UART)) == ADDR_SPACE_UART) begin
-      dev_sel_s1n_15 = 4'd0;
+    dev_sel_s1n_17 = 5'd16;
+    if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_UART)) == ADDR_SPACE_UART) begin
+      dev_sel_s1n_17 = 5'd0;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_UART1)) == ADDR_SPACE_UART1) begin
-      dev_sel_s1n_15 = 4'd1;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_UART1)) == ADDR_SPACE_UART1) begin
+      dev_sel_s1n_17 = 5'd1;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_UART2)) == ADDR_SPACE_UART2) begin
-      dev_sel_s1n_15 = 4'd2;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_UART2)) == ADDR_SPACE_UART2) begin
+      dev_sel_s1n_17 = 5'd2;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_UART3)) == ADDR_SPACE_UART3) begin
-      dev_sel_s1n_15 = 4'd3;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_UART3)) == ADDR_SPACE_UART3) begin
+      dev_sel_s1n_17 = 5'd3;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
-      dev_sel_s1n_15 = 4'd4;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
+      dev_sel_s1n_17 = 5'd4;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
-      dev_sel_s1n_15 = 4'd5;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
+      dev_sel_s1n_17 = 5'd5;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
-      dev_sel_s1n_15 = 4'd6;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
+      dev_sel_s1n_17 = 5'd6;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_I2C0)) == ADDR_SPACE_I2C0) begin
-      dev_sel_s1n_15 = 4'd7;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_I2C0)) == ADDR_SPACE_I2C0) begin
+      dev_sel_s1n_17 = 5'd7;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_I2C1)) == ADDR_SPACE_I2C1) begin
-      dev_sel_s1n_15 = 4'd8;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_I2C1)) == ADDR_SPACE_I2C1) begin
+      dev_sel_s1n_17 = 5'd8;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_I2C2)) == ADDR_SPACE_I2C2) begin
-      dev_sel_s1n_15 = 4'd9;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_I2C2)) == ADDR_SPACE_I2C2) begin
+      dev_sel_s1n_17 = 5'd9;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
-      dev_sel_s1n_15 = 4'd10;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
+      dev_sel_s1n_17 = 5'd10;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
-      dev_sel_s1n_15 = 4'd11;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
+      dev_sel_s1n_17 = 5'd11;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
-      dev_sel_s1n_15 = 4'd12;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
+      dev_sel_s1n_17 = 5'd12;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_LIFECYCLE)) == ADDR_SPACE_LIFECYCLE) begin
-      dev_sel_s1n_15 = 4'd13;
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_LIFECYCLE)) == ADDR_SPACE_LIFECYCLE) begin
+      dev_sel_s1n_17 = 5'd13;
+
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_SPI_HOST0)) == ADDR_SPACE_SPI_HOST0) begin
+      dev_sel_s1n_17 = 5'd14;
+
+    end else if ((tl_s1n_17_us_h2d.a_address & ~(ADDR_MASK_SPI_HOST1)) == ADDR_SPACE_SPI_HOST1) begin
+      dev_sel_s1n_17 = 5'd15;
 end
   end
 
@@ -181,17 +199,17 @@ end
   tlul_socket_1n #(
     .HReqDepth (4'h0),
     .HRspDepth (4'h0),
-    .DReqDepth (56'h0),
-    .DRspDepth (56'h0),
-    .N         (14)
-  ) u_s1n_15 (
+    .DReqDepth (64'h0),
+    .DRspDepth (64'h0),
+    .N         (16)
+  ) u_s1n_17 (
     .clk_i        (clk_peri_i),
     .rst_ni       (rst_peri_ni),
-    .tl_h_i       (tl_s1n_15_us_h2d),
-    .tl_h_o       (tl_s1n_15_us_d2h),
-    .tl_d_o       (tl_s1n_15_ds_h2d),
-    .tl_d_i       (tl_s1n_15_ds_d2h),
-    .dev_select   (dev_sel_s1n_15)
+    .tl_h_i       (tl_s1n_17_us_h2d),
+    .tl_h_o       (tl_s1n_17_us_d2h),
+    .tl_d_o       (tl_s1n_17_ds_h2d),
+    .tl_d_i       (tl_s1n_17_ds_d2h),
+    .dev_select   (dev_sel_s1n_17)
   );
 
 endmodule

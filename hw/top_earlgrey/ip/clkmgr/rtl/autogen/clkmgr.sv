@@ -33,6 +33,7 @@ module clkmgr import clkmgr_pkg::*; (
   // Resets for derived clocks
   // clocks are derived locally
   input rst_io_div2_ni,
+  input rst_io_div4_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -74,8 +75,10 @@ module clkmgr import clkmgr_pkg::*; (
   // Divided clocks
   ////////////////////////////////////////////////////
   logic clk_io_div2_i;
+  logic clk_io_div4_i;
 
   assign clk_io_div2_i = clk_io_i;
+  assign clk_io_div4_i = clk_io_i;
 
 
 
@@ -90,6 +93,7 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_main_powerup = clk_main_i;
   assign clocks_o.clk_io_powerup = clk_io_i;
   assign clocks_o.clk_usb_powerup = clk_usb_i;
+  assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
   assign clocks_o.clk_aon_secure = clk_aon_i;
 
   ////////////////////////////////////////////////////
@@ -106,6 +110,8 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_usb_en;
   logic clk_io_div2_root;
   logic clk_io_div2_en;
+  logic clk_io_div4_root;
+  logic clk_io_div4_en;
 
   prim_clock_gating_sync i_main_cg (
     .clk_i(clk_main_i),
@@ -139,13 +145,22 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_io_div2_en),
     .clk_o(clk_io_div2_root)
   );
+  prim_clock_gating_sync i_io_div4_cg (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .test_en_i(dft_i.test_en),
+    .async_en_i(pwr_i.ip_clk_en),
+    .en_o(clk_io_div4_en),
+    .clk_o(clk_io_div4_root)
+  );
 
   // an async OR of all the synchronized enables
   assign async_roots_en =
     clk_main_en |
     clk_io_en |
     clk_usb_en |
-    clk_io_div2_en;
+    clk_io_div2_en |
+    clk_io_div4_en;
 
   // Sync the OR back into clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
@@ -191,6 +206,7 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
 
   logic clk_io_div2_peri_sw_en;
+  logic clk_io_div4_peri_sw_en;
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
@@ -208,6 +224,22 @@ module clkmgr import clkmgr_pkg::*; (
     .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_io_div2_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_io_div4_peri_sw_en_sync (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d(reg2hw.clk_enables.clk_io_div4_peri_en.q),
+    .q(clk_io_div4_peri_sw_en)
+  );
+
+  prim_clock_gating i_clk_io_div4_peri_cg (
+    .clk_i(clk_io_div4_i),
+    .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
+    .test_en_i(dft_i.test_en),
+    .clk_o(clocks_o.clk_io_div4_peri)
   );
 
   prim_flop_2sync #(

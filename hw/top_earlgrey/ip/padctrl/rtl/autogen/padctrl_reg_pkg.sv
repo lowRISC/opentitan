@@ -7,7 +7,7 @@
 package padctrl_reg_pkg;
 
   // Param list
-  parameter int NDioPads = 15;
+  parameter int NDioPads = 21;
   parameter int NMioPads = 47;
   parameter int AttrDw = 10;
 
@@ -38,7 +38,7 @@ package padctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    padctrl_reg2hw_dio_pads_mreg_t [14:0] dio_pads; // [681:517]
+    padctrl_reg2hw_dio_pads_mreg_t [20:0] dio_pads; // [747:517]
     padctrl_reg2hw_mio_pads_mreg_t [46:0] mio_pads; // [516:0]
   } padctrl_reg2hw_t;
 
@@ -46,7 +46,7 @@ package padctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    padctrl_hw2reg_dio_pads_mreg_t [14:0] dio_pads; // [619:470]
+    padctrl_hw2reg_dio_pads_mreg_t [20:0] dio_pads; // [679:470]
     padctrl_hw2reg_mio_pads_mreg_t [46:0] mio_pads; // [469:0]
   } padctrl_hw2reg_t;
 
@@ -57,22 +57,24 @@ package padctrl_reg_pkg;
   parameter logic [6:0] PADCTRL_DIO_PADS2_OFFSET = 7'h c;
   parameter logic [6:0] PADCTRL_DIO_PADS3_OFFSET = 7'h 10;
   parameter logic [6:0] PADCTRL_DIO_PADS4_OFFSET = 7'h 14;
-  parameter logic [6:0] PADCTRL_MIO_PADS0_OFFSET = 7'h 18;
-  parameter logic [6:0] PADCTRL_MIO_PADS1_OFFSET = 7'h 1c;
-  parameter logic [6:0] PADCTRL_MIO_PADS2_OFFSET = 7'h 20;
-  parameter logic [6:0] PADCTRL_MIO_PADS3_OFFSET = 7'h 24;
-  parameter logic [6:0] PADCTRL_MIO_PADS4_OFFSET = 7'h 28;
-  parameter logic [6:0] PADCTRL_MIO_PADS5_OFFSET = 7'h 2c;
-  parameter logic [6:0] PADCTRL_MIO_PADS6_OFFSET = 7'h 30;
-  parameter logic [6:0] PADCTRL_MIO_PADS7_OFFSET = 7'h 34;
-  parameter logic [6:0] PADCTRL_MIO_PADS8_OFFSET = 7'h 38;
-  parameter logic [6:0] PADCTRL_MIO_PADS9_OFFSET = 7'h 3c;
-  parameter logic [6:0] PADCTRL_MIO_PADS10_OFFSET = 7'h 40;
-  parameter logic [6:0] PADCTRL_MIO_PADS11_OFFSET = 7'h 44;
-  parameter logic [6:0] PADCTRL_MIO_PADS12_OFFSET = 7'h 48;
-  parameter logic [6:0] PADCTRL_MIO_PADS13_OFFSET = 7'h 4c;
-  parameter logic [6:0] PADCTRL_MIO_PADS14_OFFSET = 7'h 50;
-  parameter logic [6:0] PADCTRL_MIO_PADS15_OFFSET = 7'h 54;
+  parameter logic [6:0] PADCTRL_DIO_PADS5_OFFSET = 7'h 18;
+  parameter logic [6:0] PADCTRL_DIO_PADS6_OFFSET = 7'h 1c;
+  parameter logic [6:0] PADCTRL_MIO_PADS0_OFFSET = 7'h 20;
+  parameter logic [6:0] PADCTRL_MIO_PADS1_OFFSET = 7'h 24;
+  parameter logic [6:0] PADCTRL_MIO_PADS2_OFFSET = 7'h 28;
+  parameter logic [6:0] PADCTRL_MIO_PADS3_OFFSET = 7'h 2c;
+  parameter logic [6:0] PADCTRL_MIO_PADS4_OFFSET = 7'h 30;
+  parameter logic [6:0] PADCTRL_MIO_PADS5_OFFSET = 7'h 34;
+  parameter logic [6:0] PADCTRL_MIO_PADS6_OFFSET = 7'h 38;
+  parameter logic [6:0] PADCTRL_MIO_PADS7_OFFSET = 7'h 3c;
+  parameter logic [6:0] PADCTRL_MIO_PADS8_OFFSET = 7'h 40;
+  parameter logic [6:0] PADCTRL_MIO_PADS9_OFFSET = 7'h 44;
+  parameter logic [6:0] PADCTRL_MIO_PADS10_OFFSET = 7'h 48;
+  parameter logic [6:0] PADCTRL_MIO_PADS11_OFFSET = 7'h 4c;
+  parameter logic [6:0] PADCTRL_MIO_PADS12_OFFSET = 7'h 50;
+  parameter logic [6:0] PADCTRL_MIO_PADS13_OFFSET = 7'h 54;
+  parameter logic [6:0] PADCTRL_MIO_PADS14_OFFSET = 7'h 58;
+  parameter logic [6:0] PADCTRL_MIO_PADS15_OFFSET = 7'h 5c;
 
 
   // Register Index
@@ -83,6 +85,8 @@ package padctrl_reg_pkg;
     PADCTRL_DIO_PADS2,
     PADCTRL_DIO_PADS3,
     PADCTRL_DIO_PADS4,
+    PADCTRL_DIO_PADS5,
+    PADCTRL_DIO_PADS6,
     PADCTRL_MIO_PADS0,
     PADCTRL_MIO_PADS1,
     PADCTRL_MIO_PADS2,
@@ -102,29 +106,31 @@ package padctrl_reg_pkg;
   } padctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PADCTRL_PERMIT [22] = '{
+  parameter logic [3:0] PADCTRL_PERMIT [24] = '{
     4'b 0001, // index[ 0] PADCTRL_REGEN
     4'b 1111, // index[ 1] PADCTRL_DIO_PADS0
     4'b 1111, // index[ 2] PADCTRL_DIO_PADS1
     4'b 1111, // index[ 3] PADCTRL_DIO_PADS2
     4'b 1111, // index[ 4] PADCTRL_DIO_PADS3
     4'b 1111, // index[ 5] PADCTRL_DIO_PADS4
-    4'b 1111, // index[ 6] PADCTRL_MIO_PADS0
-    4'b 1111, // index[ 7] PADCTRL_MIO_PADS1
-    4'b 1111, // index[ 8] PADCTRL_MIO_PADS2
-    4'b 1111, // index[ 9] PADCTRL_MIO_PADS3
-    4'b 1111, // index[10] PADCTRL_MIO_PADS4
-    4'b 1111, // index[11] PADCTRL_MIO_PADS5
-    4'b 1111, // index[12] PADCTRL_MIO_PADS6
-    4'b 1111, // index[13] PADCTRL_MIO_PADS7
-    4'b 1111, // index[14] PADCTRL_MIO_PADS8
-    4'b 1111, // index[15] PADCTRL_MIO_PADS9
-    4'b 1111, // index[16] PADCTRL_MIO_PADS10
-    4'b 1111, // index[17] PADCTRL_MIO_PADS11
-    4'b 1111, // index[18] PADCTRL_MIO_PADS12
-    4'b 1111, // index[19] PADCTRL_MIO_PADS13
-    4'b 1111, // index[20] PADCTRL_MIO_PADS14
-    4'b 0111  // index[21] PADCTRL_MIO_PADS15
+    4'b 1111, // index[ 6] PADCTRL_DIO_PADS5
+    4'b 1111, // index[ 7] PADCTRL_DIO_PADS6
+    4'b 1111, // index[ 8] PADCTRL_MIO_PADS0
+    4'b 1111, // index[ 9] PADCTRL_MIO_PADS1
+    4'b 1111, // index[10] PADCTRL_MIO_PADS2
+    4'b 1111, // index[11] PADCTRL_MIO_PADS3
+    4'b 1111, // index[12] PADCTRL_MIO_PADS4
+    4'b 1111, // index[13] PADCTRL_MIO_PADS5
+    4'b 1111, // index[14] PADCTRL_MIO_PADS6
+    4'b 1111, // index[15] PADCTRL_MIO_PADS7
+    4'b 1111, // index[16] PADCTRL_MIO_PADS8
+    4'b 1111, // index[17] PADCTRL_MIO_PADS9
+    4'b 1111, // index[18] PADCTRL_MIO_PADS10
+    4'b 1111, // index[19] PADCTRL_MIO_PADS11
+    4'b 1111, // index[20] PADCTRL_MIO_PADS12
+    4'b 1111, // index[21] PADCTRL_MIO_PADS13
+    4'b 1111, // index[22] PADCTRL_MIO_PADS14
+    4'b 0111  // index[23] PADCTRL_MIO_PADS15
   };
 endpackage
 

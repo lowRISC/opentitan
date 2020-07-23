@@ -14,6 +14,8 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_GPIO        = 32'h 40040000;
   localparam logic [31:0] ADDR_SPACE_SPI_DEVICE  = 32'h 40050000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER    = 32'h 40100000;
+  localparam logic [31:0] ADDR_SPACE_SPI_HOST0   = 32'h 40060000;
+  localparam logic [31:0] ADDR_SPACE_SPI_HOST1   = 32'h 40070000;
   localparam logic [31:0] ADDR_SPACE_I2C0        = 32'h 40080000;
   localparam logic [31:0] ADDR_SPACE_I2C1        = 32'h 40090000;
   localparam logic [31:0] ADDR_SPACE_I2C2        = 32'h 400a0000;
@@ -29,6 +31,8 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_GPIO        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE  = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER    = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_SPI_HOST0   = 32'h 00001fff;
+  localparam logic [31:0] ADDR_MASK_SPI_HOST1   = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_I2C0        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_I2C1        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_I2C2        = 32'h 00000fff;
@@ -37,7 +41,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL    = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 14;
+  localparam int N_DEVICE = 16;
 
   typedef enum int {
     TlLifecycle = 0,
@@ -48,12 +52,14 @@ package tl_peri_pkg;
     TlGpio = 5,
     TlSpiDevice = 6,
     TlRvTimer = 7,
-    TlI2C0 = 8,
-    TlI2C1 = 9,
-    TlI2C2 = 10,
-    TlPattgen = 11,
-    TlSensorCtrl = 12,
-    TlOtpCtrl = 13
+    TlSpiHost0 = 8,
+    TlSpiHost1 = 9,
+    TlI2C0 = 10,
+    TlI2C1 = 11,
+    TlI2C2 = 12,
+    TlPattgen = 13,
+    TlSensorCtrl = 14,
+    TlOtpCtrl = 15
   } tl_device_e;
 
   typedef enum int {

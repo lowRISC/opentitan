@@ -40,6 +40,8 @@
       sensor_ctrl
       otp_ctrl
       lifecycle
+      spi_host0
+      spi_host1
     ]
   }
   nodes:
@@ -185,6 +187,40 @@
         {
           base_addr: 0x40100000
           size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: spi_host0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40060000
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      pipeline_byp: "true"
+    }
+    {
+      name: spi_host1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40070000
+          size_byte: 0x2000
         }
       ]
       xbar: false

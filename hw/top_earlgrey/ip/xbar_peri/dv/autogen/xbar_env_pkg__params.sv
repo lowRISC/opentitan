@@ -31,6 +31,12 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
+    '{"spi_host0", '{
+        '{32'h40060000, 32'h40061fff}
+    }},
+    '{"spi_host1", '{
+        '{32'h40070000, 32'h40071fff}
+    }},
     '{"i2c0", '{
         '{32'h40080000, 32'h40080fff}
     }},
@@ -66,5 +72,7 @@ tl_host_t xbar_hosts[$] = '{
         "pattgen",
         "sensor_ctrl",
         "otp_ctrl",
-        "lifecycle"}}
+        "lifecycle",
+        "spi_host0",
+        "spi_host1"}}
 };

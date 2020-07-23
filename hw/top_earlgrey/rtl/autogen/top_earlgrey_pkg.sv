@@ -11,6 +11,8 @@ package top_earlgrey_pkg;
   parameter TOP_EARLGREY_UART3_BASE_ADDR = 32'h40030000;
   parameter TOP_EARLGREY_GPIO_BASE_ADDR = 32'h40040000;
   parameter TOP_EARLGREY_SPI_DEVICE_BASE_ADDR = 32'h40050000;
+  parameter TOP_EARLGREY_SPI_HOST0_BASE_ADDR = 32'h40060000;
+  parameter TOP_EARLGREY_SPI_HOST1_BASE_ADDR = 32'h40070000;
   parameter TOP_EARLGREY_FLASH_CTRL_BASE_ADDR = 32'h41000000;
   parameter TOP_EARLGREY_RV_TIMER_BASE_ADDR = 32'h40100000;
   parameter TOP_EARLGREY_I2C0_BASE_ADDR = 32'h40080000;
@@ -52,14 +54,21 @@ package top_earlgrey_pkg;
     TopEarlgreyDioPinUsbdevAonDpPullup = 6,
     TopEarlgreyDioPinUsbdevAonSe0 = 7,
     TopEarlgreyDioPinUsbdevAonSense = 8,
-    TopEarlgreyDioPinSpiDeviceS0 = 9,
-TopEarlgreyDioPinSpiDeviceS1 = 10,
-TopEarlgreyDioPinSpiDeviceS2 = 11,
-TopEarlgreyDioPinSpiDeviceS3 = 12,
+    TopEarlgreyDioPinSpiHost0S0 = 9,
+TopEarlgreyDioPinSpiHost0S1 = 10,
+TopEarlgreyDioPinSpiHost0S2 = 11,
+TopEarlgreyDioPinSpiHost0S3 = 12,
 
-    TopEarlgreyDioPinSpiDeviceCsb = 13,
-    TopEarlgreyDioPinSpiDeviceSck = 14,
-    TopEarlgreyDioPinCount = 15
+    TopEarlgreyDioPinSpiHost0Csb = 13,
+    TopEarlgreyDioPinSpiHost0Sck = 14,
+    TopEarlgreyDioPinSpiDeviceS0 = 15,
+TopEarlgreyDioPinSpiDeviceS1 = 16,
+TopEarlgreyDioPinSpiDeviceS2 = 17,
+TopEarlgreyDioPinSpiDeviceS3 = 18,
+
+    TopEarlgreyDioPinSpiDeviceCsb = 19,
+    TopEarlgreyDioPinSpiDeviceSck = 20,
+    TopEarlgreyDioPinCount = 21
   } top_earlgrey_dio_pin_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.
