@@ -43,6 +43,7 @@ module top_earlgrey #(
   input  ast_wrapper_pkg::ast_rst_t       rstmgr_aon_ast,
   output logic       usbdev_aon_usb_ref_pulse,
   output logic       usbdev_aon_usb_ref_val,
+  output logic       usbdev_aon_usb_rx_enable,
   output entropy_src_pkg::entropy_src_rng_req_t       entropy_src_entropy_src_rng_req,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       entropy_src_entropy_src_rng_rsp,
   input  logic       clkmgr_aon_clk_main,
@@ -1561,6 +1562,7 @@ module top_earlgrey #(
       // Inter-module signals
       .usb_ref_val_o(usbdev_aon_usb_ref_val),
       .usb_ref_pulse_o(usbdev_aon_usb_ref_pulse),
+      .usb_rx_enable_o(usbdev_aon_usb_rx_enable),
       .clk_i (clkmgr_aon_clocks.clk_io_peri),
       .clk_usb_48mhz_i (clkmgr_aon_clocks.clk_usb_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_n),

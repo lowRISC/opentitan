@@ -3893,6 +3893,18 @@
           top_signame: usbdev_aon_usb_ref_pulse
           index: -1
         }
+        {
+          name: usb_rx_enable
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: usbdev_aon
+          default: ""
+          top_signame: usbdev_aon_usb_rx_enable
+          index: -1
+        }
       ]
     }
     {
@@ -4592,6 +4604,7 @@
       rstmgr_aon.ast
       usbdev_aon.usb_ref_pulse
       usbdev_aon.usb_ref_val
+      usbdev_aon.usb_rx_enable
       entropy_src.entropy_src_rng
       clkmgr_aon.clk_main
       clkmgr_aon.clk_io
@@ -8668,6 +8681,18 @@
         index: -1
       }
       {
+        name: usb_rx_enable
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: usbdev_aon
+        default: ""
+        top_signame: usbdev_aon_usb_rx_enable
+        index: -1
+      }
+      {
         struct: hw_key_req
         type: uni
         name: aes_key
@@ -8935,6 +8960,15 @@
         package: ""
         struct: logic
         signame: usbdev_aon_usb_ref_val
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_aon_usb_rx_enable
         width: 1
         type: uni
         default: ""
