@@ -31,7 +31,7 @@ module otbn_decoder
 
   // Example: ADD
   assign insn_valid_o = insn_fetch_resp_valid_i;
-  assign insn_op_o = InsnOpAdd;
+  assign insn_op_o    = InsnOpAlu;
 
   assign insn_dec_base_o = '{
     d: insn_fetch_resp_data_i[11:7],
@@ -44,6 +44,6 @@ module otbn_decoder
     subset:   InsnSubsetBase,
     op_a_sel: OpASelRegister,
     op_b_sel: OpBSelRegister,
-    alu_op: AluOpAdd
+    alu_op:   AluOpAdd
   };
 endmodule

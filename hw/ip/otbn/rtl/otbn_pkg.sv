@@ -52,7 +52,7 @@ package otbn_pkg;
   // Instructions
   // TODO: Extend and add an explicit type.
   typedef enum {
-    InsnOpAdd,
+    InsnOpAlu,
     InsnOpEcall
   } insn_op_e;
 
