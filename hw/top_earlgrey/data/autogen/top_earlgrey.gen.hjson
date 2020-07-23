@@ -7346,7 +7346,7 @@
   ]
   pinmux:
   {
-    num_mio: 47
+    num_mio: 44
     dio_modules:
     [
       {
