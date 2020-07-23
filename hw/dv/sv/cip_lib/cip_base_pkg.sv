@@ -5,7 +5,7 @@
 package cip_base_pkg;
   // dep packages
   import uvm_pkg::*;
-  import top_pkg::*;
+  import bus_params_pkg::*;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import dv_lib_pkg::*;

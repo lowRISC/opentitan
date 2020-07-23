@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:alert_esc_agent
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:mem_model
+      - lowrisc:opentitan:bus_params_pkg
     files:
       - cip_base_pkg.sv
       - cip_base_env_cfg.sv: {is_include_file: true}
