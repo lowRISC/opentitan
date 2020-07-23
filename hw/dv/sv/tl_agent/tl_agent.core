@@ -11,6 +11,7 @@ filesets:
       - lowrisc:tlul:headers:0.1
       - lowrisc:dv:mem_model
       - lowrisc:dv:dv_lib
+      - lowrisc:opentitan:bus_params_pkg
     files:
       - tl_if.sv
       - tl_agent_pkg.sv

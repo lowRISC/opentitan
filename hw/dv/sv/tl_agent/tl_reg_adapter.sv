@@ -29,18 +29,18 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     if (rw.kind == UVM_READ) begin
       if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_item_loc,
-            a_opcode            == tlul_pkg::Get;
-            a_addr[TL_AW-1:2]   == rw.addr[TL_AW-1:2];
-            $countones(a_mask)  dist {TL_DBW       :/ 1,
-                                      [0:TL_DBW-1] :/ 1};)
+            a_opcode              == tlul_pkg::Get;
+            a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
+            $countones(a_mask)  dist {MaskWidth       :/ 1,
+                                      [0:MaskWidth-1] :/ 1};)
       end else begin // csr field read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_item_loc,
-            a_opcode            == tlul_pkg::Get;
-            a_addr[TL_AW-1:2]   == rw.addr[TL_AW-1:2];
-            a_mask              == rw.byte_en;)
+            a_opcode              == tlul_pkg::Get;
+            a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
+            a_mask                == rw.byte_en;)
       end
     end else begin // randomize CSR partial or full write
-      // Actual width of the CSR may be < TL_DW bits depending on fields and their widths
+      // Actual width of the CSR may be < DataWidth bits depending on fields and their widths
       // In that case, the transaction size in bytes and partial write mask need to be at least as
       // wide as the CSR to be a valid transaction. Otherwise, the DUT can return an error response
       int msb;
@@ -52,7 +52,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
         `DV_CHECK_FATAL($cast(csr, rg))
         msb = csr.get_msb_pos();
       end else if (item.element_kind == UVM_MEM) begin
-        msb = TL_DW - 1;
+        msb = DataWidth - 1;
       end else begin
         `uvm_fatal(`gfn, $sformatf("Unexpected address 0x%0h", rw.addr))
       end
