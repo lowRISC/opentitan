@@ -33,7 +33,7 @@ This class provides the following functions to support verification:
 * `gen_n_used_bits()`: This function returns the actual number of bits used in
   the CSR (sum of all available field widths).
 * `get_msb_pos()`: This function returns the MSB bit position of all available
-  fields. CSR either ends at this bit (bit \`TL_DW - 1) or has reserved / invalid
+  fields. CSR either ends at this bit (`BUS_DW` - 1) or has reserved / invalid
   bits beyond this bit.
 
 #### `dv_base_reg_block`
