@@ -115,20 +115,6 @@ sw_lib_irq_handlers = declare_dependency(
   )
 )
 
-# SPI device library (sw_lib_spi_device)
-sw_lib_spi_device = declare_dependency(
-  link_with: static_library(
-    'spid_ot',
-    sources: [
-      hw_ip_spi_device_reg_h,
-      'spi_device.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
-
 # USB DEV library (sw_lib_usb)
 sw_lib_usb = declare_dependency(
   link_with: static_library(
