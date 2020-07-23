@@ -8,6 +8,7 @@ description: "Flash Package"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:constants:top_pkg
     files:
       - rtl/flash_ctrl_pkg.sv

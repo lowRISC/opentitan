@@ -52,12 +52,11 @@
       default: "'0"
     }
     // IO POK signal from AST
-    { struct:  "io_pok",
+    { struct:  "ast_status",
       type:    "uni",
       name:    "io_pok",
       act:     "rcv",
-      package: "pinmux_pkg",
-      default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
+      package: "ast_wrapper_pkg",
     }
     // Define pwr mgr <-> pinmux signals
     { struct:  "logic",

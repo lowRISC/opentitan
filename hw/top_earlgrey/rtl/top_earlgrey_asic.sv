@@ -454,6 +454,7 @@ module top_earlgrey_asic (
     .sensor_ctrl_ast_aux             ( base_ast_aux         ),
     .entropy_src_entropy_src_rng_req ( base_ast_entropy_src ),
     .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
+    .pinmux_aon_io_pok               ( ast_base_status      ),
 
     // USB signals
     .usbdev_aon_usb_rx_enable,
