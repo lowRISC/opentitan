@@ -285,6 +285,31 @@ module top_earlgrey_asic (
     .dio_attr_i          ( dio_attr         )
   );
 
+  ///////////////////////////////
+  // Differential USB Receiver //
+  ///////////////////////////////
+
+  logic usbdev_aon_usb_rx_enable;
+  logic usb_pullup_p_en;
+  logic usb_pullup_n_en;
+  logic usb_diff_input;
+
+  logic ast_usb_core_pok;
+  logic [31:0] ast_usb_calibration;
+
+  prim_usb_diff_rx #(
+    .CalibW(32)
+  ) i_prim_usb_diff_rx (
+    .input_pi      ( IOC17               ),
+    .input_ni      ( IOC18               ),
+    .input_en_i    ( usbdev_aon_usb_rx_enable        ),
+    .core_pok_i    ( ast_usb_core_pok    ),
+    .pullup_p_en_i ( usb_pullup_p_en     ),
+    .pullup_n_en_i ( usb_pullup_n_en     ),
+    .calibration_i ( ast_usb_calibration ),
+    .input_o       ( usb_diff_input      )
+  );
+
   //////////////////////
   // JTAG Overlay Mux //
   //////////////////////
@@ -318,7 +343,10 @@ module top_earlgrey_asic (
     .TdiIdx         ( padctrl_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS0 ),
     .TdoIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS1 )
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS1 ),
+    .UsbDpPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDpPullup ),
+    .UsbDnPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDnPullup ),
+    .UsbDIdx        ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonD )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),
@@ -334,7 +362,11 @@ module top_earlgrey_asic (
     // To padring side
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
     .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring , mio_in_padring } )
+    .in_padring_i  ( {dio_in_padring , mio_in_padring } ),
+    // USB breakouts
+    .usb_pullup_p_en_o ( usb_pullup_p_en ),
+    .usb_pullup_n_en_o ( usb_pullup_n_en ),
+    .usb_diff_input_i  ( usb_diff_input  )
   );
 
   //////////////////////
@@ -354,6 +386,10 @@ module top_earlgrey_asic (
   entropy_src_pkg::entropy_src_rng_rsp_t ast_base_entropy_src;
   logic usb_ref_pulse;
   logic usb_ref_val;
+
+  // TODO: connect these to AST
+  assign ast_usb_core_pok = 1'b1;
+  assign ast_usb_calibration = '0;
 
   ast_wrapper ast_wrapper (
     .clk_ext_i(clk),
@@ -423,6 +459,9 @@ module top_earlgrey_asic (
     .sensor_ctrl_ast_aux             ( base_ast_aux         ),
     .entropy_src_entropy_src_rng_req ( base_ast_entropy_src ),
     .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
+
+    // USB signals
+    .usbdev_aon_usb_rx_enable,
 
     // DFT signals
     .scan_rst_ni     ( 1'b1          ),
