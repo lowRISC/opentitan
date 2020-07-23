@@ -45,14 +45,14 @@ set PORT_USBDEV_DN 0
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN ast_base_clks.clk_sys
+set MAIN_CLK_PIN top_earlgrey/clkmgr_aon_clk_main
 set MAIN_RST_PIN rst_n
 # 125 MHz
 set MAIN_TCK  8.0
 set_ideal_network ${MAIN_CLK_PIN}
 set_ideal_network ${MAIN_RST_PIN}
 
-create_clock -name MAIN_CLK -period ${MAIN_TCK} [get_pins ${MAIN_CLK_PIN}]
+create_clock -name MAIN_CLK -period ${MAIN_TCK} [get_ports ${MAIN_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 
 # TODO: generated clock
@@ -68,12 +68,12 @@ set OUT_DEL   5.5
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN ast_base_clks.clk_usb
+set USB_CLK_PIN top_earlgrey/clkmgr_aon_clk_usb
 # 50MHz
 set USB_TCK 20.0
 set_ideal_network ${USB_CLK_PIN}
 
-create_clock -name USB_CLK -period ${USB_TCK} [get_pins ${USB_CLK_PIN}]
+create_clock -name USB_CLK -period ${USB_TCK} [get_ports ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
 set IN_DEL    17.0
@@ -95,11 +95,11 @@ set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_USBDEV_DN]]         -clock
 #####################
 # IO clk (24MHz)    #
 #####################
-set IO_CLK_PIN ast_base_clks.clk_io
+set IO_CLK_PIN top_earlgrey/clkmgr_aon_clk_io
 set IO_TCK 40.0
 set_ideal_network ${IO_CLK_PIN}
 
-create_clock -name IO_CLK -period ${IO_TCK} [get_pins ${IO_CLK_PIN}]
+create_clock -name IO_CLK -period ${IO_TCK} [get_ports ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # generated clocks (div2/div4)
@@ -121,11 +121,11 @@ set_output_delay ${OUT_DEL} [get_ports mio_oe_o*]        -clock IO_CLK
 #####################
 # AON clk (300kHz)  #
 #####################
-set AON_CLK_PIN ast_base_clks.clk_aon
+set AON_CLK_PIN top_earlgrey/clkmgr_aon_clk_aon
 set AON_TCK 3333.0
 set_ideal_network ${AON_CLK_PIN}
 
-create_clock -name AON_CLK -perio ${AON_TCK} [get_pins ${AON_CLK_PIN}]
+create_clock -name AON_CLK -perio ${AON_TCK} [get_ports ${AON_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AON_CLK]
 
 # use same IO IN/OUT delay
@@ -157,12 +157,12 @@ set_output_delay ${OUT_DEL} [get_ports IO_DPS2] -clock JTAG_CLK
 #####################
 # SPI clock         #
 #####################
-set SPI_CLK_PIN dio_in_i[$PORT_SPI_DEVICE_SCK]
+set SPI_CLK_PIN dio_in_core[$PORT_SPI_DEVICE_SCK]
 # 62.5MHz
 set SPI_TCK 16.0
 set_ideal_network ${SPI_CLK_PIN}
 
-create_clock -name SPID_CLK  -period ${SPI_TCK} [get_ports ${SPI_CLK_PIN}]
+create_clock -name SPID_CLK  -period ${SPI_TCK} [get_pins ${SPI_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPID_CLK]
 
 ## TODO: Create generated clock for negedge SPID_CLK. Then make them clock group
@@ -170,20 +170,20 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPID_CLK]
 set IN_DEL    6.0
 set OUT_DEL   6.0
 
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_CSB]]   -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S0]]    -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S1]]    -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S2]]    -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S3]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_core[$PORT_SPI_DEVICE_CSB]]   -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_core[$PORT_SPI_DEVICE_S0]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_core[$PORT_SPI_DEVICE_S1]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_core[$PORT_SPI_DEVICE_S2]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_core[$PORT_SPI_DEVICE_S3]]    -clock SPID_CLK
 
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S0]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S0]]  -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S1]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S1]]  -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S2]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S2]]  -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S3]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S3]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_core[$PORT_SPI_DEVICE_S0]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_core[$PORT_SPI_DEVICE_S0]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_core[$PORT_SPI_DEVICE_S1]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_core[$PORT_SPI_DEVICE_S1]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_core[$PORT_SPI_DEVICE_S2]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_core[$PORT_SPI_DEVICE_S2]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_core[$PORT_SPI_DEVICE_S3]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_core[$PORT_SPI_DEVICE_S3]]  -clock SPID_CLK
 
 #####################
 # CDC               #
