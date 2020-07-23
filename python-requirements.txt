@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Local packages
--e util/otbnsim
+-e hw/ip/otbn/util/otbnsim
 
 # Keep sorted.
 flake8
