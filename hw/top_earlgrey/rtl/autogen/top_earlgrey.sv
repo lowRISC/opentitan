@@ -16,9 +16,9 @@ module top_earlgrey #(
   output              jtag_tdo_o,
 
   // Multiplexed I/O
-  input        [46:0] mio_in_i,
-  output logic [46:0] mio_out_o,
-  output logic [46:0] mio_oe_o,
+  input        [43:0] mio_in_i,
+  output logic [43:0] mio_out_o,
+  output logic [43:0] mio_oe_o,
   // Dedicated I/O
   input        [20:0] dio_in_i,
   output logic [20:0] dio_out_o,

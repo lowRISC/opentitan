@@ -334,18 +334,6 @@ module padctrl_reg_top (
   logic [9:0] mio_pads14_attr43_wd;
   logic mio_pads14_attr43_we;
   logic mio_pads14_attr43_re;
-  logic [9:0] mio_pads14_attr44_qs;
-  logic [9:0] mio_pads14_attr44_wd;
-  logic mio_pads14_attr44_we;
-  logic mio_pads14_attr44_re;
-  logic [9:0] mio_pads15_attr45_qs;
-  logic [9:0] mio_pads15_attr45_wd;
-  logic mio_pads15_attr45_we;
-  logic mio_pads15_attr45_re;
-  logic [9:0] mio_pads15_attr46_qs;
-  logic [9:0] mio_pads15_attr46_wd;
-  logic mio_pads15_attr46_we;
-  logic mio_pads15_attr46_re;
 
   // Register instances
   // R[regen]: V(False)
@@ -1484,61 +1472,10 @@ module padctrl_reg_top (
   );
 
 
-  // F[attr44]: 29:20
-  prim_subreg_ext #(
-    .DW    (10)
-  ) u_mio_pads14_attr44 (
-    .re     (mio_pads14_attr44_re),
-    // qualified with register enable
-    .we     (mio_pads14_attr44_we & regen_qs),
-    .wd     (mio_pads14_attr44_wd),
-    .d      (hw2reg.mio_pads[44].d),
-    .qre    (),
-    .qe     (reg2hw.mio_pads[44].qe),
-    .q      (reg2hw.mio_pads[44].q ),
-    .qs     (mio_pads14_attr44_qs)
-  );
-
-
-  // Subregister 45 of Multireg mio_pads
-  // R[mio_pads15]: V(True)
-
-  // F[attr45]: 9:0
-  prim_subreg_ext #(
-    .DW    (10)
-  ) u_mio_pads15_attr45 (
-    .re     (mio_pads15_attr45_re),
-    // qualified with register enable
-    .we     (mio_pads15_attr45_we & regen_qs),
-    .wd     (mio_pads15_attr45_wd),
-    .d      (hw2reg.mio_pads[45].d),
-    .qre    (),
-    .qe     (reg2hw.mio_pads[45].qe),
-    .q      (reg2hw.mio_pads[45].q ),
-    .qs     (mio_pads15_attr45_qs)
-  );
-
-
-  // F[attr46]: 19:10
-  prim_subreg_ext #(
-    .DW    (10)
-  ) u_mio_pads15_attr46 (
-    .re     (mio_pads15_attr46_re),
-    // qualified with register enable
-    .we     (mio_pads15_attr46_we & regen_qs),
-    .wd     (mio_pads15_attr46_wd),
-    .d      (hw2reg.mio_pads[46].d),
-    .qre    (),
-    .qe     (reg2hw.mio_pads[46].qe),
-    .q      (reg2hw.mio_pads[46].q ),
-    .qs     (mio_pads15_attr46_qs)
-  );
 
 
 
-
-
-  logic [23:0] addr_hit;
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PADCTRL_REGEN_OFFSET);
@@ -1564,7 +1501,6 @@ module padctrl_reg_top (
     addr_hit[20] = (reg_addr == PADCTRL_MIO_PADS12_OFFSET);
     addr_hit[21] = (reg_addr == PADCTRL_MIO_PADS13_OFFSET);
     addr_hit[22] = (reg_addr == PADCTRL_MIO_PADS14_OFFSET);
-    addr_hit[23] = (reg_addr == PADCTRL_MIO_PADS15_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1595,7 +1531,6 @@ module padctrl_reg_top (
     if (addr_hit[20] && reg_we && (PADCTRL_PERMIT[20] != (PADCTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[21] && reg_we && (PADCTRL_PERMIT[21] != (PADCTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[22] && reg_we && (PADCTRL_PERMIT[22] != (PADCTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (PADCTRL_PERMIT[23] != (PADCTRL_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign regen_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1861,18 +1796,6 @@ module padctrl_reg_top (
   assign mio_pads14_attr43_wd = reg_wdata[19:10];
   assign mio_pads14_attr43_re = addr_hit[22] && reg_re;
 
-  assign mio_pads14_attr44_we = addr_hit[22] & reg_we & ~wr_err;
-  assign mio_pads14_attr44_wd = reg_wdata[29:20];
-  assign mio_pads14_attr44_re = addr_hit[22] && reg_re;
-
-  assign mio_pads15_attr45_we = addr_hit[23] & reg_we & ~wr_err;
-  assign mio_pads15_attr45_wd = reg_wdata[9:0];
-  assign mio_pads15_attr45_re = addr_hit[23] && reg_re;
-
-  assign mio_pads15_attr46_we = addr_hit[23] & reg_we & ~wr_err;
-  assign mio_pads15_attr46_wd = reg_wdata[19:10];
-  assign mio_pads15_attr46_re = addr_hit[23] && reg_re;
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -2010,12 +1933,6 @@ module padctrl_reg_top (
       addr_hit[22]: begin
         reg_rdata_next[9:0] = mio_pads14_attr42_qs;
         reg_rdata_next[19:10] = mio_pads14_attr43_qs;
-        reg_rdata_next[29:20] = mio_pads14_attr44_qs;
-      end
-
-      addr_hit[23]: begin
-        reg_rdata_next[9:0] = mio_pads15_attr45_qs;
-        reg_rdata_next[19:10] = mio_pads15_attr46_qs;
       end
 
       default: begin
