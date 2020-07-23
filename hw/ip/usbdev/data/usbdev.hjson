@@ -38,6 +38,13 @@
       struct:  "logic",
       width:   "1"
     }
+    { name:    "usb_rx_enable",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
   ]
   param_list: [
     { name:    "NEndpoints",

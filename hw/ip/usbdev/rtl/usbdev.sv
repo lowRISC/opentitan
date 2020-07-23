@@ -47,6 +47,9 @@ module usbdev (
   output logic       usb_ref_val_o,
   output logic       usb_ref_pulse_o,
 
+  // Enable signal for differential input buffer
+  output logic       usb_rx_enable_o,
+
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
   output logic       intr_pkt_sent_o, // Packet sent
@@ -138,6 +141,8 @@ module usbdev (
   logic                  usb_data_toggle_clear_en;
   logic [NEndpoints-1:0] usb_data_toggle_clear;
 
+  // This is only for Bronze
+  assign usb_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q;
 
   /////////////////////////////////
   // USB IO after CDC & muxing   //
