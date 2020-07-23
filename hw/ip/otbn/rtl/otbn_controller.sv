@@ -56,19 +56,40 @@ module otbn_controller
   input  logic                 alu_base_comparison_result_i
 );
 
+
+  logic running_q, running_d;
+
   // TODO: Using insn_op_i here is easy, potentially should move to dedicated control signals from
   // the decoder in the future.
   assign done_o = insn_valid_i && insn_op_i == InsnOpEcall;
 
-  // Next fetch address
-  assign insn_fetch_req_valid_o = 1'b1;
   always_comb begin
+    running_d              = running_q;
+    insn_fetch_req_valid_o = 1'b0;
+    insn_fetch_req_addr_o  = start_addr_i;
+
     if (start_i) begin
-      insn_fetch_req_addr_o = start_addr_i;
-    end else begin
-      insn_fetch_req_addr_o = insn_addr_i + 'd4;
+      running_d = 1'b1;
+      insn_fetch_req_addr_o  = start_addr_i;
+      insn_fetch_req_valid_o = 1'b01;
+    end else if (running_q) begin
+      insn_fetch_req_valid_o = 1'b1;
+      insn_fetch_req_addr_o  = insn_addr_i + 'd4;
+    end
+
+    if (done_o) begin
+      running_d              = 1'b0;
+      insn_fetch_req_valid_o = 1'b0;
     end
     // TODO: Jumps/branches
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      running_q <= 1'b0;
+    end else begin
+      running_q <= running_d;
+    end
   end
 
   assign rf_base_rd_addr_a_o = insn_dec_base_i.a;
