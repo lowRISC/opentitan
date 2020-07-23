@@ -83,6 +83,9 @@ module clkmgr_reg_top (
   logic clk_enables_clk_usb_peri_en_qs;
   logic clk_enables_clk_usb_peri_en_wd;
   logic clk_enables_clk_usb_peri_en_we;
+  logic clk_enables_clk_main_peri_en_qs;
+  logic clk_enables_clk_main_peri_en_wd;
+  logic clk_enables_clk_main_peri_en_we;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
   logic clk_hints_clk_main_aes_hint_we;
@@ -98,9 +101,6 @@ module clkmgr_reg_top (
   logic clk_hints_clk_main_csrng_hint_qs;
   logic clk_hints_clk_main_csrng_hint_wd;
   logic clk_hints_clk_main_csrng_hint_we;
-  logic clk_hints_clk_main_entropy_src_hint_qs;
-  logic clk_hints_clk_main_entropy_src_hint_wd;
-  logic clk_hints_clk_main_entropy_src_hint_we;
   logic clk_hints_clk_main_otbn_hint_qs;
   logic clk_hints_clk_main_otbn_hint_wd;
   logic clk_hints_clk_main_otbn_hint_we;
@@ -109,7 +109,6 @@ module clkmgr_reg_top (
   logic clk_hints_status_clk_main_kmac_val_qs;
   logic clk_hints_status_clk_main_keymgr_val_qs;
   logic clk_hints_status_clk_main_csrng_val_qs;
-  logic clk_hints_status_clk_main_entropy_src_val_qs;
   logic clk_hints_status_clk_main_otbn_val_qs;
 
   // Register instances
@@ -216,6 +215,32 @@ module clkmgr_reg_top (
 
     // to register interface (read)
     .qs     (clk_enables_clk_usb_peri_en_qs)
+  );
+
+
+  //   F[clk_main_peri_en]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_clk_enables_clk_main_peri_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_enables_clk_main_peri_en_we),
+    .wd     (clk_enables_clk_main_peri_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_enables.clk_main_peri_en.q ),
+
+    // to register interface (read)
+    .qs     (clk_enables_clk_main_peri_en_qs)
   );
 
 
@@ -351,33 +376,7 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_main_entropy_src_hint]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_clk_hints_clk_main_entropy_src_hint (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (clk_hints_clk_main_entropy_src_hint_we),
-    .wd     (clk_hints_clk_main_entropy_src_hint_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_entropy_src_hint.q ),
-
-    // to register interface (read)
-    .qs     (clk_hints_clk_main_entropy_src_hint_qs)
-  );
-
-
-  //   F[clk_main_otbn_hint]: 6:6
+  //   F[clk_main_otbn_hint]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -530,32 +529,7 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_main_entropy_src_val]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RO"),
-    .RESVAL  (1'h1)
-  ) u_clk_hints_status_clk_main_entropy_src_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.clk_hints_status.clk_main_entropy_src_val.de),
-    .d      (hw2reg.clk_hints_status.clk_main_entropy_src_val.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (clk_hints_status_clk_main_entropy_src_val_qs)
-  );
-
-
-  //   F[clk_main_otbn_val]: 6:6
+  //   F[clk_main_otbn_val]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -612,6 +586,9 @@ module clkmgr_reg_top (
   assign clk_enables_clk_usb_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
 
+  assign clk_enables_clk_main_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
+  assign clk_enables_clk_main_peri_en_wd = reg_wdata[4];
+
   assign clk_hints_clk_main_aes_hint_we = addr_hit[1] & reg_we & ~wr_err;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -627,12 +604,8 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_csrng_hint_we = addr_hit[1] & reg_we & ~wr_err;
   assign clk_hints_clk_main_csrng_hint_wd = reg_wdata[4];
 
-  assign clk_hints_clk_main_entropy_src_hint_we = addr_hit[1] & reg_we & ~wr_err;
-  assign clk_hints_clk_main_entropy_src_hint_wd = reg_wdata[5];
-
   assign clk_hints_clk_main_otbn_hint_we = addr_hit[1] & reg_we & ~wr_err;
-  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[6];
-
+  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[5];
 
 
 
@@ -649,6 +622,7 @@ module clkmgr_reg_top (
         reg_rdata_next[1] = clk_enables_clk_io_div4_peri_en_qs;
         reg_rdata_next[2] = clk_enables_clk_io_peri_en_qs;
         reg_rdata_next[3] = clk_enables_clk_usb_peri_en_qs;
+        reg_rdata_next[4] = clk_enables_clk_main_peri_en_qs;
       end
 
       addr_hit[1]: begin
@@ -657,8 +631,7 @@ module clkmgr_reg_top (
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
         reg_rdata_next[3] = clk_hints_clk_main_keymgr_hint_qs;
         reg_rdata_next[4] = clk_hints_clk_main_csrng_hint_qs;
-        reg_rdata_next[5] = clk_hints_clk_main_entropy_src_hint_qs;
-        reg_rdata_next[6] = clk_hints_clk_main_otbn_hint_qs;
+        reg_rdata_next[5] = clk_hints_clk_main_otbn_hint_qs;
       end
 
       addr_hit[2]: begin
@@ -667,8 +640,7 @@ module clkmgr_reg_top (
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
         reg_rdata_next[3] = clk_hints_status_clk_main_keymgr_val_qs;
         reg_rdata_next[4] = clk_hints_status_clk_main_csrng_val_qs;
-        reg_rdata_next[5] = clk_hints_status_clk_main_entropy_src_val_qs;
-        reg_rdata_next[6] = clk_hints_status_clk_main_otbn_val_qs;
+        reg_rdata_next[5] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
       default: begin

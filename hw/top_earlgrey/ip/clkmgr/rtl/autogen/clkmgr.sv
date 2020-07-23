@@ -95,6 +95,7 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_usb_powerup = clk_usb_i;
   assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
   assign clocks_o.clk_aon_secure = clk_aon_i;
+  assign clocks_o.clk_aon_peri = clk_aon_i;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -197,7 +198,6 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_io_div2_infra = clk_io_div2_root;
   assign clocks_o.clk_io_div2_secure = clk_io_div2_root;
   assign clocks_o.clk_main_secure = clk_main_root;
-  assign clocks_o.clk_usb_secure = clk_usb_root;
   assign clocks_o.clk_io_div2_timers = clk_io_div2_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
@@ -209,6 +209,7 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_div4_peri_sw_en;
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
+  logic clk_main_peri_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
@@ -274,6 +275,22 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_usb_peri)
   );
 
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_main_peri_sw_en_sync (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_main_ni),
+    .d(reg2hw.clk_enables.clk_main_peri_en.q),
+    .q(clk_main_peri_sw_en)
+  );
+
+  prim_clock_gating i_clk_main_peri_cg (
+    .clk_i(clk_main_i),
+    .en_i(clk_main_peri_sw_en & clk_main_en),
+    .test_en_i(dft_i.test_en),
+    .clk_o(clocks_o.clk_main_peri)
+  );
+
 
   ////////////////////////////////////////////////////
   // Software hint group
@@ -291,8 +308,6 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_main_keymgr_en;
   logic clk_main_csrng_hint;
   logic clk_main_csrng_en;
-  logic clk_main_entropy_src_hint;
-  logic clk_main_entropy_src_en;
   logic clk_main_otbn_hint;
   logic clk_main_otbn_en;
 
@@ -386,25 +401,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_csrng)
   );
 
-  assign clk_main_entropy_src_en = clk_main_entropy_src_hint | ~status_i.idle[5];
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) i_clk_main_entropy_src_hint_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_main_ni),
-    .d(reg2hw.clk_hints.clk_main_entropy_src_hint.q),
-    .q(clk_main_entropy_src_hint)
-  );
-
-  prim_clock_gating i_clk_main_entropy_src_cg (
-    .clk_i(clk_main_i),
-    .en_i(clk_main_entropy_src_en & clk_main_en),
-    .test_en_i(dft_i.test_en),
-    .clk_o(clocks_o.clk_main_entropy_src)
-  );
-
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~status_i.idle[6];
+  assign clk_main_otbn_en = clk_main_otbn_hint | ~status_i.idle[5];
 
   prim_flop_2sync #(
     .Width(1)
@@ -434,8 +431,6 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.clk_main_keymgr_val.d = clk_main_keymgr_en;
   assign hw2reg.clk_hints_status.clk_main_csrng_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_csrng_val.d = clk_main_csrng_en;
-  assign hw2reg.clk_hints_status.clk_main_entropy_src_val.de = 1'b1;
-  assign hw2reg.clk_hints_status.clk_main_entropy_src_val.d = clk_main_entropy_src_en;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
 

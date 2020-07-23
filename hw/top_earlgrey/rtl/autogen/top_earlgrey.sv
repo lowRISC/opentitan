@@ -37,7 +37,6 @@ module top_earlgrey #(
   input  ast_wrapper_pkg::ast_status_t       sensor_ctrl_ast_status,
   input  ast_wrapper_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req,
   output ast_wrapper_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp,
-  output sensor_ctrl_pkg::ast_aux_t       sensor_ctrl_ast_aux,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_aon_pwr_ast_req,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_aon_pwr_ast_rsp,
   input  ast_wrapper_pkg::ast_rst_t       rstmgr_aon_ast,
@@ -50,11 +49,12 @@ module top_earlgrey #(
   input  logic       clkmgr_aon_clk_io,
   input  logic       clkmgr_aon_clk_usb,
   input  logic       clkmgr_aon_clk_aon,
+  input  ast_wrapper_pkg::ast_status_t       pinmux_aon_io_pok,
   output ast_wrapper_pkg::adc_ast_req_t       dcd_aon_adc_req,
   input  ast_wrapper_pkg::adc_ast_rsp_t       dcd_aon_adc_rsp,
-  input  ast_wrapper_pkg::ast_status_t       pinmux_aon_io_pok,
   input               scan_rst_ni, // reset used for test mode
-  input               scanmode_i   // 1 for Scan
+  input               scanmode_i,  // 1 for Scan
+  output ast_wrapper_pkg::ast_func_clks_rsts aux_o
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -323,6 +323,20 @@ module top_earlgrey #(
   // entropy_src
   // otbn
 
+  // hard-wired ast clock / reset connections, these should be templated
+  // directly through clkmgr and rstmgr in the future
+  assign aux_o.clk_ast_adc      = clkmgr_aon_clocks.clk_aon_peri;
+  assign aux_o.clk_ast_rng      = clkmgr_aon_clocks.clk_main_peri;
+  assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
+  assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
+  assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
+  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div2_secure;
+  assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
+  assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
+  assign aux_o.rst_ast_es_n     = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_alert_n  = rstmgr_aon_resets.rst_lc_n;
+  assign aux_o.rst_ast_tlul_n   = rstmgr_aon_resets.rst_lc_io_n;
 
   logic [152:0]  intr_vector;
   // Interrupt source list
@@ -1157,18 +1171,11 @@ module top_earlgrey #(
       // Inter-module signals
       .ast_host_o(sensor_ctrl_ast_host),
       .ast_dev_i(sensor_ctrl_ast_dev),
-      .ast_aux_o(sensor_ctrl_ast_aux),
       .ast_alert_i(sensor_ctrl_ast_alert_req),
       .ast_alert_o(sensor_ctrl_ast_alert_rsp),
       .ast_status_i(sensor_ctrl_ast_status),
       .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
-      .clk_sys_i (clkmgr_aon_clocks.clk_main_secure),
-      .clk_usb_i (clkmgr_aon_clocks.clk_usb_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_io_n),
-      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n),
-      .rst_sys_ni (rstmgr_aon_resets.rst_lc_n),
-      .rst_usb_ni (rstmgr_aon_resets.rst_lc_usb_n)
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
   );
 
   otp_ctrl u_otp_ctrl (
@@ -1458,8 +1465,8 @@ module top_earlgrey #(
       .cio_key2_out_en_o       (cio_rbox_aon_key2_out_en_d2p),
       .cio_pwrb_out_o          (cio_rbox_aon_pwrb_out_d2p),
       .cio_pwrb_out_en_o       (cio_rbox_aon_pwrb_out_en_d2p),
-      .clk_i (clkmgr_aon_clocks.clk_io_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
   dcd u_dcd_aon (
@@ -1472,9 +1479,9 @@ module top_earlgrey #(
       // Inter-module signals
       .adc_o(dcd_aon_adc_req),
       .adc_i(dcd_aon_adc_rsp),
-      .clk_i (clkmgr_aon_clocks.clk_io_powerup),
-      .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_peri),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
   pwm u_pwm_aon (
@@ -1484,7 +1491,7 @@ module top_earlgrey #(
       // Output
       .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
       .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
@@ -1494,7 +1501,7 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_0_0_o (intr_timer_aon_timer_expired_0_0),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
+      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
@@ -1645,7 +1652,7 @@ module top_earlgrey #(
       .entropy_src_rng_o(entropy_src_entropy_src_rng_req),
       .entropy_src_rng_i(entropy_src_entropy_src_rng_rsp),
       .efuse_es_sw_reg_en_i('0),
-      .clk_i (clkmgr_aon_clocks.clk_main_entropy_src),
+      .clk_i (clkmgr_aon_clocks.clk_main_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_n)
   );
 
