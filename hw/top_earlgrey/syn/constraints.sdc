@@ -186,8 +186,8 @@ set_false_path -from dio_in_i[$PORT_UART_RX] -to dio_out_o[$PORT_UART_TX]
 #####################
 
 # attach load and drivers to IOs to get a more realistic estimate
-set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin X [all_inputs]
-set_load [load_of ${LOAD_LIB}/${LOAD_CELL}/A] [all_outputs]
+set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin ${DRIVING_CELL_PIN} [all_inputs]
+set_load [load_of ${LOAD_CELL_LIB}/${LOAD_CELL}/${LOAD_CELL_PIN}] [all_outputs]
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report

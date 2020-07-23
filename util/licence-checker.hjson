@@ -58,5 +58,8 @@
     # Site Assets
     'site/**/assets/scss/**',
     'site/landing/static/js/tiny-slider.js',
+
+    # Code taken from Chromium, so covered by the BSD licence
+    'hw/ip/otbn/code-snippets/modexp.S',
   ],
 }
