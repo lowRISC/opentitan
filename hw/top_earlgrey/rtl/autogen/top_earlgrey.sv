@@ -52,6 +52,7 @@ module top_earlgrey #(
   input  logic       clkmgr_aon_clk_aon,
   output ast_wrapper_pkg::adc_ast_req_t       dcd_aon_adc_req,
   input  ast_wrapper_pkg::adc_ast_rsp_t       dcd_aon_adc_rsp,
+  input  ast_wrapper_pkg::ast_status_t       pinmux_aon_io_pok,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -1296,7 +1297,7 @@ module top_earlgrey #(
       .lc_pinmux_strap_i(lifecycle_strap_sample_req),
       .lc_pinmux_strap_o(lifecycle_strap_sample_rsp),
       .dft_strap_test_o(),
-      .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
+      .io_pok_i(pinmux_aon_io_pok),
       .sleep_en_i(1'b0),
       .aon_wkup_req_o(pwrmgr_aon_wakeups),
 

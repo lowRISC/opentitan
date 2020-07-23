@@ -1,4 +1,9 @@
-
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Simple top_earlgrey upf for bronze
+# This should be moved to top_earlgrey/data later
 
 upf_version 2.1
 
@@ -142,14 +147,14 @@ foreach mem ${all_mems} {
 
 # Connect main memories
 foreach mem ${main_mems} {
-   # puts "Connecting $mem"
+   puts "\[MAIN\] Connecting $mem"
    connect_supply_net VCMAIN -ports ${mem}/VDD
    connect_supply_net VCSS   -ports ${mem}/VSS
 }
 
 # Connect aon memories
 foreach mem ${aon_mems} {
-   puts "Connecting $mem"
+   puts "\[AON\] Connecting $mem"
    connect_supply_net VCAON  -ports ${mem}/VDD
    connect_supply_net VCSS   -ports ${mem}/VSS
 }
@@ -196,7 +201,7 @@ set_isolation iso_aon_high -domain pd_aon \
 
 ################################################
 # Power state table
-# It does not appear vclp supports the latest s[ec syntax,
+# It does not appear vclp supports the latest syntax,
 # so even though create_pst/add_pst are legacy commands, they are still used here.
 # Specifically, it seems in logic_expr, vclp does not support checking the on state
 # of a domain even when new semantics are used.
