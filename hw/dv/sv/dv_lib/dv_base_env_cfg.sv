@@ -4,35 +4,36 @@
 
 class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
-  bit                   is_active    = 1;
-  bit                   en_scb       = 1; // can be changed at run-time
-  bit                   en_scb_tl_err_chk = 1;
-  bit                   en_scb_mem_chk    = 1;
-  bit                   en_cov       = 1;
-  bit                   has_ral      = 1;
-  bit                   under_reset  = 0;
+  bit is_active         = 1;
+  bit en_scb            = 1; // can be changed at run-time
+  bit en_scb_tl_err_chk = 1;
+  bit en_scb_mem_chk    = 1;
+  bit en_cov            = 1;
+  bit has_ral           = 1;
+  bit under_reset       = 0;
 
   // bit to configure all uvcs with zero delays to create high bw test
-  rand bit              zero_delays;
-
-  // reg model & q of valid csr addresses
-  RAL_T                 ral;
-  dv_base_reg_block     ral_models[$];
-  bit [TL_AW-1:0]       csr_addrs[$];
-  addr_range_t          mem_ranges[$];
-
-  // ral base address and size
-  bit [TL_AW-1:0]       csr_base_addr;     // base address where csr map begins
-  bit [TL_AW:0]         csr_addr_map_size; // csr addr region allocated to the ip, max: 1 << TL_AW
-
-  // clk_rst_if & freq
-  virtual clk_rst_if    clk_rst_vif;
-  rand clk_freq_mhz_e   clk_freq_mhz;
+  rand bit zero_delays;
 
   // set zero_delays 40% of the time
   constraint zero_delays_c {
     zero_delays dist {1'b0 := 6, 1'b1 := 4};
   }
+
+  // reg model & q of valid csr addresses
+  RAL_T                             ral;
+  dv_base_reg_block                 ral_models[$];
+  bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[$];
+  addr_range_t                      mem_ranges[$];
+
+  // ral base address and size
+  bit [bus_params_pkg::BUS_AW-1:0]  csr_base_addr;     // base address where csr map begins
+  bit [bus_params_pkg::BUS_AW:0]    csr_addr_map_size; // csr addr region allocated to the ip,
+                                                       // max: 1 << bus_params_pkg::BUS_AW
+
+  // clk_rst_if & freq
+  virtual clk_rst_if  clk_rst_vif;
+  rand clk_freq_mhz_e clk_freq_mhz;
 
   `uvm_object_param_utils_begin(dv_base_env_cfg #(RAL_T))
     `uvm_field_int   (is_active,                    UVM_DEFAULT)
@@ -46,7 +47,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   `uvm_object_new
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
     initialize_csr_addr_map_size();
     `DV_CHECK_NE_FATAL(csr_addr_map_size, 0, "csr_addr_map_size can't be 0")
     // use locally randomized csr base address, unless provided as arg to this function
