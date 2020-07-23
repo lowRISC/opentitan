@@ -4,6 +4,7 @@
 #
 # Simple top_earlgrey upf for bronze
 # This should be moved to top_earlgrey/data later
+# TODO: Should probably define a seprate tcl library that holds all the custom functions.
 
 upf_version 2.1
 
@@ -119,6 +120,38 @@ set main_ports {
   entropy_src_entropy_src_rng_rsp
 }
 
+# get all ports and make sure every single one has a power attribute defined
+set all_defined_ports [concat $aon_ports $main_ports]
+set all_ports [find_objects . -object_type port -pattern "*"]
+
+# Check to see if any port is missing a power definition
+set missing_port 0
+foreach port ${all_ports} {
+    # This checks we match the form port_name.blah
+    #                               port_name[*][*]...
+    #                               port_name
+    # and only compares the port_name portion
+    if {[regexp {(^[a-zA-Z0-9_]*)([\.\[\]a-zA-Z0-9_]*)$} $port match g1 g2]} {
+        # puts "\[Port-Debug\] search for $g1"
+        if {[lsearch $all_defined_ports $g1] == -1} {
+            puts "\[Port-Error\] $port power not defined"
+            set missing_port 1
+        } else {
+            # puts "\[Port-Debug\] $port power defined"
+        }
+    } else {
+        puts "\[Port-Error\] $port does not match regexp for search. \
+        This is NOT a user error, please contact developer or debug yourself :)."
+        Force tool to halt from syntax error, because exit doesn't work for some reason
+    }
+}
+
+# Terminate here since something is missing
+if {$missing_port == 1} {
+    puts "\[Port-Error\] Not all port power defined.  Look for \[Port-Error\]"
+    Force tool to halt from syntax error, because exit doesn't work for some reason
+}
+
 set_port_attributes -ports $aon_ports -driver_supply ss_aon -receiver_supply ss_aon
 set_port_attributes -ports $main_ports -driver_supply ss_main -receiver_supply ss_main
 
@@ -150,7 +183,7 @@ foreach mem ${all_mems} {
 
 # Connect main memories
 foreach mem ${main_mems} {
-   puts "\[MAIN\] Connecting $mem"
+   # puts "\[MAIN\] Connecting $mem"
    connect_supply_net VCMAIN -ports ${mem}/VDD
    connect_supply_net VCSS   -ports ${mem}/VSS
 }
