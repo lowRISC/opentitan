@@ -8,12 +8,9 @@
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/print.h"
-#include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/pinmux.h"
-#include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 

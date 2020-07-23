@@ -9,9 +9,9 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
@@ -62,12 +62,15 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   return gpio_state;
 }
 
-void demo_spi_to_log_echo(void) {
+void demo_spi_to_log_echo(const dif_spi_device_t *spi) {
   uint32_t spi_buf[8];
-  size_t spi_len = spid_read_nb(spi_buf, sizeof(spi_buf));
+  size_t spi_len;
+  CHECK(dif_spi_device_recv(spi, spi_buf, sizeof(spi_buf), &spi_len) ==
+        kDifSpiDeviceResultOk);
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
-    spid_send(&echo_word, sizeof(echo_word));
+    CHECK(dif_spi_device_send(spi, &echo_word, sizeof(uint32_t),
+                              /*bytes_sent=*/NULL) == kDifSpiDeviceResultOk);
     LOG_INFO("SPI: %z", spi_len, spi_buf);
   }
 }
