@@ -543,7 +543,8 @@ module spi_host #(
 
   // SRAM Wrapper
   prim_ram_2p_adv #(
-    .Depth (68),
+    // Note: this was 68, but the SRAM compiler requires the depth to be a multiple of 16.
+    .Depth (80),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask (1),
     .CfgW  (8),
