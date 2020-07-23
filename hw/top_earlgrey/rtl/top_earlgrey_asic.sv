@@ -291,9 +291,11 @@ module top_earlgrey_asic (
 
   logic ast_usb_core_pok;
   logic [31:0] ast_usb_calibration;
+  logic [ast_wrapper_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
+  assign ast_usb_core_pok = ast_base_rst.aon_pok;
 
   prim_usb_diff_rx #(
-    .CalibW(32)
+    .CalibW(ast_wrapper_pkg::UsbCalibWidth)
   ) i_prim_usb_diff_rx (
     .input_pi      ( USB_P                    ),
     .input_ni      ( USB_N                    ),
@@ -301,7 +303,7 @@ module top_earlgrey_asic (
     .core_pok_i    ( ast_usb_core_pok         ),
     .pullup_p_en_i ( usb_pullup_p_en          ),
     .pullup_n_en_i ( usb_pullup_n_en          ),
-    .calibration_i ( ast_usb_calibration      ),
+    .calibration_i ( usb_io_pu_cal            ),
     .input_o       ( usb_diff_input           )
   );
 
@@ -382,10 +384,6 @@ module top_earlgrey_asic (
   logic usb_ref_pulse;
   logic usb_ref_val;
 
-  // TODO: connect these to AST
-  assign ast_usb_core_pok = 1'b1;
-  assign ast_usb_calibration = '0;
-
   ast_wrapper ast_wrapper (
     .clk_ext_i(clk),
     .por_ni(rst_n),
@@ -404,7 +402,9 @@ module top_earlgrey_asic (
     .es_o(ast_base_entropy_src),
     .alert_i(base_ast_alerts),
     .alert_o(ast_base_alerts),
-    .status_o(ast_base_status)
+    .status_o(ast_base_status),
+    .usb_io_pu_cal_o(usb_io_pu_cal),
+    .scan_reset_ni(1'b1)
   );
 
 
