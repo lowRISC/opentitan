@@ -31,7 +31,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
   input usb_ref_val_i,
 
   // synchronization clocks / rests
-  input sensor_ctrl_pkg::ast_aux_t aux_i,
+  input ast_func_clks_rsts aux_i,
 
   // adc
   // The adc package definition should eventually be moved to the adc module
@@ -48,7 +48,13 @@ module ast_wrapper import ast_wrapper_pkg::*;
   output ast_alert_req_t alert_o,
 
   // assorted ast status
-  output ast_status_t status_o
+  output ast_status_t status_o,
+
+  // dft related
+  input scan_reset_ni,
+
+  // usb io calibration
+  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o
 );
 
 
@@ -64,17 +70,22 @@ module ast_wrapper import ast_wrapper_pkg::*;
   ast #(
     .EntropyStreams(EntropyStreams),
     .AdcChannels(AdcChannels),
-    .AdcDataWidth(AdcDataWidth)
+    .AdcDataWidth(AdcDataWidth),
+    .UsbCalibWidth(UsbCalibWidth)
   ) i_ast (
     // ast interface and sync clocks / rests
-    .clk_ast_io_i(aux_i.clk_ast_io),
-    .clk_ast_sys_i(aux_i.clk_ast_sys),
+    .clk_ast_adc_i(aux_i.clk_ast_adc),
+    .clk_ast_rng_i(aux_i.clk_ast_rng),
     .clk_ast_usb_i(aux_i.clk_ast_usb),
-    .clk_ast_aon_i(aux_i.clk_ast_aon),
-    .rst_ast_io_ni(aux_i.rst_ast_io_n),
-    .rst_ast_sys_ni(aux_i.rst_ast_sys_n),
+    .clk_ast_es_i(aux_i.clk_ast_es),
+    .clk_ast_alert_i(aux_i.clk_ast_alert),
+    .clk_ast_tlul_i(aux_i.clk_ast_tlul),
+    .rst_ast_adc_ni(aux_i.rst_ast_adc_n),
+    .rst_ast_rng_ni(aux_i.rst_ast_rng_n),
     .rst_ast_usb_ni(aux_i.rst_ast_usb_n),
-    .rst_ast_aon_ni(aux_i.rst_ast_aon_n),
+    .rst_ast_es_ni(aux_i.rst_ast_es_n),
+    .rst_ast_alert_ni(aux_i.rst_ast_alert_n),
+    .rst_ast_tlul_ni(aux_i.rst_ast_tlul_n),
 
     // tlul if
     .tl_i(bus_i),
@@ -84,8 +95,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .por_ni,
     .vcaon_pok_o(rst_o.aon_pok),
     .vcmain_pok_o(pwr_o.main_pok),
-    .vio1_pok_o(status_o.io_pok[0]),
-    .vio2_pok_o(status_o.io_pok[1]),
+    .vioa_pok_o(status_o.io_pok[0]),
+    .viob_pok_o(status_o.io_pok[1]),
     .main_pd_ni(pwr_i.main_pd_n),
     .main_iso_en_i(pwr_i.pwr_clamp),
 
@@ -93,8 +104,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .vcc_supp_i(1'b1),                        // VCC Supply Test
     .vcmain_supp_i(1'b1),                     // MAIN Supply Test
     .vcaon_supp_i(1'b1),                      // AON Supply Test
-    .vio1_supp_i(1'b1),                       // IO Rails Supply Test
-    .vio2_supp_i(1'b1),                       // IO Rails Supply Test
+    .vioa_supp_i(1'b1),                       // IO Rails Supply Test
+    .viob_supp_i(1'b1),                       // IO Rails Supply Test
 
     // output clocks and associated controls
     .clk_src_sys_o(clks_o.clk_sys),
@@ -178,7 +189,10 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .padmux2ast_i('0),  // IO_2_DFT Input Signals
 
     // usb IO calib
-    .usb_io_pu_cal_o() // USB IO Pull-up Calibration Setting
+    .usb_io_pu_cal_o, // USB IO Pull-up Calibration Setting
+
+    // dft related
+    .scan_reset_ni
     );
 
 

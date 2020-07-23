@@ -18,15 +18,19 @@ module ast #(
   // Power and IO pin connections
   // TBD
 
-  // ast bus interface and sync clocks / rests
-  input clk_ast_io_i,                         // Buffered AST IO Clock
-  input clk_ast_sys_i,                        // Buffered AST SYS Clock
-  input clk_ast_usb_i,                        // Buffered AST USB Clock
-  input clk_ast_aon_i,                        // Buffered AST AON Clock
-  input rst_ast_io_ni,                        // Buffered AST IO Reset
-  input rst_ast_sys_ni,                       // Buffered AST SYS Reset
-  input rst_ast_usb_ni,                       // Buffered AST USB Reset
-  input rst_ast_aon_ni,                       // Buffered AST AON Reset
+  // Function specific clocks and resets
+  input clk_ast_adc_i,
+  input clk_ast_rng_i,
+  input clk_ast_usb_i,
+  input clk_ast_es_i,
+  input clk_ast_alert_i,
+  input clk_ast_tlul_i,
+  input rst_ast_adc_ni,
+  input rst_ast_rng_ni,
+  input rst_ast_usb_ni,
+  input rst_ast_es_ni,
+  input rst_ast_alert_ni,
+  input rst_ast_tlul_ni,
 
   // tlul if
   input  tlul_pkg::tl_h2d_t tl_i,             // TLUL H2D
@@ -36,8 +40,8 @@ module ast #(
   input por_ni,                               // Power ON Reset
   output logic vcmain_pok_o,                  // MAIN Power OK
   output logic vcaon_pok_o,                   // AON Power OK
-  output logic vio1_pok_o,                    // IO Rail Power OK
-  output logic vio2_pok_o,                    // IO Rail Power OK
+  output logic vioa_pok_o,                    // IO Rail Power OK
+  output logic viob_pok_o,                    // IO Rail Power OK
   input main_pd_ni,                           // MAIN Power Down
   input main_iso_en_i,                        // MAIN Isolation Enable
 
@@ -45,8 +49,8 @@ module ast #(
   input vcc_supp_i,                           // VCC Supply Test
   input vcmain_supp_i,                        // MAIN Supply Test
   input vcaon_supp_i,                         // AON Supply Test
-  input vio1_supp_i,                          // IO Rails Supply Test
-  input vio2_supp_i,                          // IO Rails Supply Test
+  input vioa_supp_i,                          // IO Rails Supply Test
+  input viob_supp_i,                          // IO Rails Supply Test
 
   // output clocks and associated controls
   output logic clk_src_sys_o,                 // SYS Source Clock
@@ -132,7 +136,10 @@ module ast #(
   input [Pad2AstInWidth-1:0] padmux2ast_i,          // IO_2_DFT Input Signals
 
   // usb IO calib
-  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o  // USB IO Pull-up Calibration Setting
+  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o, // USB IO Pull-up Calibration Setting
+
+  // dft related
+  input scan_reset_ni
 );
 
   /////////////////////////////////
@@ -151,8 +158,8 @@ module ast #(
 
   // blind assumption that these power up at the same time
   // The model should be changed to detect VIO inputs
-  assign vio1_pok_o = 1'b1;
-  assign vio2_pok_o = 1'b1;
+  assign vioa_pok_o = 1'b1;
+  assign viob_pok_o = 1'b1;
 
   // main power domain power up
   always_ff @(posedge clk_ast_ext_i or negedge por_ni) begin
@@ -219,8 +226,8 @@ module ast #(
   logic [NumAlerts-1:0] alert_trig;
 
   // this is the clock / reset that sensor control operates
-  always_ff @(posedge clk_ast_io_i or negedge rst_ast_io_ni) begin
-    if (!rst_ast_io_ni) begin
+  always_ff @(posedge clk_ast_alert_i or negedge rst_ast_alert_ni) begin
+    if (!rst_ast_alert_ni) begin
       alert_q <= '0;
     end else begin
       for (int unsigned i=0; i < NumAlerts; i++) begin
@@ -281,5 +288,16 @@ module ast #(
       d_error  : '0,
       a_ready  : 1'b1
   };
+
+  // other tie-offs
+  assign entropy_req_o = 1'b0;
+  assign flash_power_down_h_o = 1'b0;
+  assign flash_power_ready_h_o = 1'b1;
+  assign ast2padmux_o = '0;
+  assign usb_io_pu_cal_o = '0;
+
+  // Currently unused signals
+  tlul_pkg::tl_h2d_t unused_tl_i;
+  assign unused_tl_i = tl_i;
 
 endmodule // ast
