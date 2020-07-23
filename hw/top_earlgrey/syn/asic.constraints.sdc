@@ -15,10 +15,19 @@ puts "Applying constraints for top level"
 #####################
 # DIO pin mapping   #
 #####################
-set PORT_SPI_DEVICE_SCK 14
-set PORT_SPI_DEVICE_CSB 13
-set PORT_SPI_DEVICE_MOSI 12
-set PORT_SPI_DEVICE_MISO 11
+set PORT_SPI_DEVICE_SCK 20
+set PORT_SPI_DEVICE_CSB 19
+set PORT_SPI_DEVICE_S3 18
+set PORT_SPI_DEVICE_S2 17
+set PORT_SPI_DEVICE_S1 16
+set PORT_SPI_DEVICE_S0 15
+
+set PORT_SPI_HOST0_SCK 14
+set PORT_SPI_HOST0_CSB 13
+set PORT_SPI_HOST0_S3 12
+set PORT_SPI_HOST0_S2 11
+set PORT_SPI_HOST0_S1 10
+set PORT_SPI_HOST0_S0 9
 
 set PORT_UART_RX 10
 set PORT_UART_TX 9
@@ -93,7 +102,12 @@ set_ideal_network ${IO_CLK_PIN}
 create_clock -name IO_CLK -period ${IO_TCK} [get_pins ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
-# TODO: generated clock
+# generated clocks (div2/div4)
+create_generated_clock -name IO_DIV2_CLK -divide_by 2 [get_clocks IO_CLK] \
+    -source [get_pins top_earlgrey/u_clkmgr_aon/clk_io_div2_root]
+create_generated_clock -name IO_DIV4_CLK -divide_by 4 [get_clocks IO_CLK] \
+    -source [get_pins top_earlgrey/u_clkmgr_aon/clk_io_div4_root]
+
 # TODO: clock gating setup/hold
 
 set IN_DEL  20.0
@@ -103,13 +117,6 @@ set_input_delay ${IN_DEL} [get_ports mio_in_i*]          -clock IO_CLK
 
 set_output_delay ${OUT_DEL} [get_ports mio_out_o*]       -clock IO_CLK
 set_output_delay ${OUT_DEL} [get_ports mio_oe_o*]        -clock IO_CLK
-
-# UART RX
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_UART_RX]]      -clock IO_CLK
-
-# UART TX
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_UART_TX]]    -clock IO_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_UART_TX]]     -clock IO_CLK
 
 #####################
 # AON clk (300kHz)  #
@@ -163,23 +170,34 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPID_CLK]
 set IN_DEL    6.0
 set OUT_DEL   6.0
 
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_CSB]]     -clock SPID_CLK
-set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_MOSI]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_CSB]]   -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S0]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S1]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S2]]    -clock SPID_CLK
+set_input_delay ${IN_DEL} [get_ports dio_in_i[$PORT_SPI_DEVICE_S3]]    -clock SPID_CLK
 
-set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_MISO]] -clock SPID_CLK
-set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_MISO]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S0]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S0]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S1]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S1]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S2]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S2]]  -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_out_o[$PORT_SPI_DEVICE_S3]] -clock SPID_CLK
+set_output_delay ${OUT_DEL} [get_ports dio_oe_o[$PORT_SPI_DEVICE_S3]]  -clock SPID_CLK
 
 #####################
 # CDC               #
 #####################
 
 # this may need some refinement (and max delay / skew needs to be constrained)
-set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK] \
-                                     -group [get_clocks JTAG_CLK] \
-                                     -group [get_clocks USB_CLK ] \
-                                     -group [get_clocks SPID_CLK] \
-                                     -group [get_clocks IO_CLK  ] \
-                                     -group [get_clocks AON_CLK ]
+set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK   ] \
+                                     -group [get_clocks JTAG_CLK   ] \
+                                     -group [get_clocks USB_CLK    ] \
+                                     -group [get_clocks SPID_CLK   ] \
+                                     -group [get_clocks IO_CLK     ] \
+                                     -group [get_clocks IO_DIV2_CLK] \
+                                     -group [get_clocks IO_DIV4_CLK] \
+                                     -group [get_clocks AON_CLK    ]
 
 # UART loopback path can be considered to be a false path
 #set_false_path -from top_earlgrey/dio_in_i[$PORT_UART_RX] -to top_earlgrey/dio_out_o[$PORT_UART_TX]
