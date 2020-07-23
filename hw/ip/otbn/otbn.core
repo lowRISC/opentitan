@@ -47,6 +47,15 @@ filesets:
       - dv/model/otbn_core_model.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/otbn.vlt
+    file_type: vlt
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -55,6 +64,7 @@ parameters:
 targets:
   default: &default_target
     filesets:
+      - tool_verilator ? (files_verilator_waiver)
       - files_rtl_pkg
       - files_rtl_core
       - files_rtl_top

@@ -116,6 +116,8 @@ module otbn_core
     .insn_fetch_resp_data_o  (insn_fetch_resp_data)
   );
 
+  assign imem_wdata_o = '0;
+
   // Instruction decoder
   otbn_decoder u_otbn_decoder (
     // The decoder is combinatorial; clk and rst are only used for assertions.

@@ -36,6 +36,11 @@ module otbn_lsu
 
 );
 
+  // tie-off to 0 to prevent warnings until implementation is done
   assign dmem_req_o = 1'b0;
+  assign dmem_write_o = 1'b0;
+  assign dmem_addr_o = '0;
+  assign dmem_wdata_o = '0;
+  assign dmem_wmask_o = '0;
 
 endmodule

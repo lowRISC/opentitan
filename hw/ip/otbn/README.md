@@ -13,11 +13,37 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ## Develop OTBN
 
-### Build the RTL implementation
+### Run the standalone simulation
 
-To build the RTL implementation of OTBN in a simulation, run `fusesoc` without
-passing the `OTBN_MODEL` flag. For example, the Verilator simulation can be
-compiled as follows.
+*Note that OTBN is still in the early development stages so this simulation will
+do very little currently*
+
+A standalone environment to run OTBN alone in verilator is included. It is built
+with `fusesoc`:
+
+```sh
+fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
+```
+
+It includes functionality to set the initial DMem and IMem contents with a .vmem
+or .elf file. The start address is hard coded to 0. Modify the `ImemStartAddr`
+parameter in `./dv/verilator/otbn_top_sim.sv` to change this. The simulation is
+run as follows:
+
+```sh
+./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim -t \
+  --meminit=imem,imem_contents.vmem --meminit=dmem,dmem_contents.vmem
+```
+
+This will initialise the IMem with `imem_contents.vmem` and the DMem with
+`dmem_contents.vmem`. The `-t` argument enables tracing. The simulation
+automatically halts on an `ecall` instruction.
+
+### Build the RTL implementation in OT earlgrey simulation
+
+To build the RTL implementation of OTBN in an earlgrey simulation, run `fusesoc`
+without passing the `OTBN_MODEL` flag. For example, the Verilator simulation can
+be compiled as follows.
 
 ```sh
 fusesoc --cores-root=. run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator

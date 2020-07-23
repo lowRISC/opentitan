@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_IMEM_SIZE' generates 22 bits*"
+lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_DMEM_SIZE' generates 22 bits*"
+lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
