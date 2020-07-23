@@ -49,6 +49,22 @@ package otbn_pkg;
     InsnSubsetBignum = 1'b1 // Big Number (BN/Wide) Instruction Subset
   } insn_subset_e;
 
+  // Opcodes (field [6:0] in the instruction), matching the RISC-V specification for the base
+  // instruction subset.
+  typedef enum logic [6:0] {
+    InsnOpcodeBaseLoad     = 7'h03,
+    InsnOpcodeBaseMemMisc  = 7'h0f,
+    InsnOpcodeBaseOpImm    = 7'h13,
+    InsnOpcodeBaseAuipc    = 7'h17,
+    InsnOpcodeBaseStore    = 7'h23,
+    InsnOpcodeBaseOp       = 7'h33,
+    InsnOpcodeBaseLui      = 7'h37,
+    InsnOpcodeBaseBranch   = 7'h63,
+    InsnOpcodeBaseJalr     = 7'h67,
+    InsnOpcodeBaseJal      = 7'h6f,
+    InsnOpcodeBaseSystem   = 7'h73
+  } insn_opcode_e;
+
   // Instructions
   // TODO: Extend and add an explicit type.
   typedef enum {
@@ -65,6 +81,9 @@ package otbn_pkg;
     AluOpAnd,
     AluOpNot,
 
+    AluOpEq,
+    AluOpNe,
+
     AluOpSra,
     AluOpSrl,
     AluOpSll
@@ -76,9 +95,11 @@ package otbn_pkg;
   } comparison_op_e;
 
   // Operand a source selection
-  typedef enum logic {
-    OpASelRegister  = 1'b0,
-    OpASelImmediate = 1'b1
+  typedef enum logic [1:0] {
+    OpASelRegister  = 'd0,
+    OpASelImmediate = 'd1,
+    OpASelFwd = 'd2,
+    OpASelCurrPc = 'd3
   } op_a_sel_e;
 
   // Operand b source selection
@@ -86,6 +107,26 @@ package otbn_pkg;
     OpBSelRegister  = 1'b0,
     OpBSelImmediate = 1'b1
   } op_b_sel_e;
+
+
+  // Immediate a selection
+  typedef enum logic {
+    ImmAZero
+  } imm_a_sel_e;
+
+  // Immediate b selection
+  typedef enum logic [2:0] {
+    ImmBI,
+    ImmBS,
+    ImmBB,
+    ImmBU,
+    ImmBJ
+  } imm_b_sel_e;
+
+  // Regfile write data selection
+  typedef enum logic {
+    RfWdSelEx
+  } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
   parameter int CsrNumWidth = 12;
@@ -101,7 +142,6 @@ package otbn_pkg;
     CsrMod7  = 12'h7D7,
     CsrRnd   = 12'hFC0
   } csr_e;
-
 
   // Wide Special Purpose Registers (WSRs)
   parameter int NWsr = 3; // Number of WSRs
@@ -133,6 +173,9 @@ package otbn_pkg;
     op_a_sel_e    op_a_sel;
     op_b_sel_e    op_b_sel;
     alu_op_e      alu_op;
+    logic         rf_we;
+    rf_wd_sel_e   rf_wdata_sel;
+    logic         ecall_insn;
   } insn_dec_ctrl_t;
 
   typedef struct packed {
