@@ -32,7 +32,6 @@ module otbn_controller
   // Fetched/decoded instruction
   input  logic                     insn_valid_i,
   input  logic [ImemAddrWidth-1:0] insn_addr_i,
-  input  insn_op_e                 insn_op_i,
 
   // Decoded instruction data, matching the "Decoding" section of the specification.
   input insn_dec_base_t       insn_dec_base_i,
@@ -59,9 +58,7 @@ module otbn_controller
 
   logic running_q, running_d;
 
-  // TODO: Using insn_op_i here is easy, potentially should move to dedicated control signals from
-  // the decoder in the future.
-  assign done_o = insn_valid_i && insn_op_i == InsnOpEcall;
+  assign done_o = insn_valid_i && insn_dec_ctrl_i.ecall_insn;
 
   always_comb begin
     running_d              = running_q;
@@ -125,9 +122,9 @@ module otbn_controller
   assign alu_base_comparison_o.op = ComparisonOpEq;
 
   // Register file write MUX
-  // TODO: Switch between CSR and EX writeback.
-  assign rf_base_wr_en_o = 1'b0;
-  assign rf_base_wr_addr_o = '0;
-  assign rf_base_wr_data_o = '0;
+  // TODO: Switch between CSR/ALU/LSU writeback.
+  assign rf_base_wr_en_o   = insn_dec_ctrl_i.rf_we;
+  assign rf_base_wr_addr_o = insn_dec_base_i.d;
+  assign rf_base_wr_data_o = alu_base_operation_result_i;
 
 endmodule
