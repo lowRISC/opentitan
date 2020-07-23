@@ -376,7 +376,7 @@ module top_earlgrey_asic (
   ast_wrapper_pkg::ast_clks_t ast_base_clks;
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-  sensor_ctrl_pkg::ast_aux_t base_ast_aux;
+  ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
   entropy_src_pkg::entropy_src_rng_req_t base_ast_entropy_src;
   entropy_src_pkg::entropy_src_rng_rsp_t ast_base_entropy_src;
   logic usb_ref_pulse;
@@ -441,6 +441,7 @@ module top_earlgrey_asic (
     .dio_attr_o      ( dio_attr      ),
 
     // AST connections
+    .aux_o                           ( base_ast_aux         ),
     .sensor_ctrl_ast_host            ( base_ast_bus         ),
     .sensor_ctrl_ast_dev             ( ast_base_bus         ),
     .sensor_ctrl_ast_status          ( ast_base_status      ),
@@ -451,7 +452,6 @@ module top_earlgrey_asic (
     .rstmgr_aon_ast                  ( ast_base_rst         ),
     .usbdev_aon_usb_ref_pulse        ( usb_ref_pulse        ),
     .usbdev_aon_usb_ref_val          ( usb_ref_val          ),
-    .sensor_ctrl_ast_aux             ( base_ast_aux         ),
     .entropy_src_entropy_src_rng_req ( base_ast_entropy_src ),
     .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
     .pinmux_aon_io_pok               ( ast_base_status      ),

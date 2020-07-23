@@ -10,12 +10,6 @@ module sensor_ctrl import sensor_ctrl_pkg::*; (
   // Primary module clocks
   input clk_i,
   input rst_ni,
-  input clk_aon_i,
-  input clk_sys_i,
-  input clk_usb_i,
-  input rst_aon_ni,
-  input rst_sys_ni,
-  input rst_usb_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -24,9 +18,6 @@ module sensor_ctrl import sensor_ctrl_pkg::*; (
   // Bus Interface to AST
   output tlul_pkg::tl_h2d_t ast_host_o,
   input tlul_pkg::tl_d2h_t ast_dev_i,
-
-  // auxillary information to AST
-  output ast_aux_t ast_aux_o,
 
   // Interface from AST
   input ast_wrapper_pkg::ast_alert_req_t ast_alert_i,
@@ -128,19 +119,5 @@ module sensor_ctrl import sensor_ctrl_pkg::*; (
 
   // alert trigger for test
   assign ast_alert_o.alerts_trig = reg2hw.alert_trig;
-
-  ///////////////////////////
-  // Feedthrough clocks and resets to ast
-  ///////////////////////////
-
-  assign ast_aux_o.clk_ast_sys     = clk_sys_i;
-  assign ast_aux_o.clk_ast_usb     = clk_usb_i;
-  assign ast_aux_o.clk_ast_io      = clk_i;
-  assign ast_aux_o.clk_ast_aon     = clk_aon_i;
-  assign ast_aux_o.rst_ast_sys_n   = rst_sys_ni;
-  assign ast_aux_o.rst_ast_usb_n   = rst_usb_ni;
-  assign ast_aux_o.rst_ast_io_n    = rst_ni;
-  assign ast_aux_o.rst_ast_aon_n   = rst_aon_ni;
-
 
 endmodule // sensor_ctrl

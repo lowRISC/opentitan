@@ -71,7 +71,8 @@ module top_${top["name"]} #(
   % endfor
 % endif
   input               scan_rst_ni, // reset used for test mode
-  input               scanmode_i   // 1 for Scan
+  input               scanmode_i,  // 1 for Scan
+  output ast_wrapper_pkg::ast_func_clks_rsts aux_o
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -159,6 +160,20 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
+  // hard-wired ast clock / reset connections, these should be templated
+  // directly through clkmgr and rstmgr in the future
+  assign aux_o.clk_ast_adc      = clkmgr_aon_clocks.clk_aon_peri;
+  assign aux_o.clk_ast_rng      = clkmgr_aon_clocks.clk_main_peri;
+  assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
+  assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
+  assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
+  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div2_secure;
+  assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
+  assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
+  assign aux_o.rst_ast_es_n     = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_alert_n  = rstmgr_aon_resets.rst_lc_n;
+  assign aux_o.rst_ast_tlul_n   = rstmgr_aon_resets.rst_lc_io_n;
 
 <%
   # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
