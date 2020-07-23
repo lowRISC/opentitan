@@ -8,24 +8,26 @@ module top_earlgrey_asic (
   // will then be muxed in via another port.
   inout               IO_CLK,
   inout               IO_RST_N,
-  // Bank A
-  inout               IOA0,  // SPI Host Data 0
-  inout               IOA1,  // SPI Host Data 1
-  inout               IOA2,  // SPI Host Data 2
-  inout               IOA3,  // SPI Host Data 3
-  inout               IOA4,  // SPI Host CS_L
-  inout               IOA5,  // SPI Host CLK
-  inout               IOA6,  // SPI Device S0
-  inout               IOA7,  // SPI Device S1
-  inout               IOA8,  // SPI Device CS_L
-  inout               IOA9,  // SPI Device CLK
-  inout               IOA10, // MIO 0
-  inout               IOA11, // MIO 1
-  inout               IOA12, // MIO 2
-  inout               IOA13, // MIO 3
-  inout               IOA14, // MIO 4
-  inout               IOA15, // MIO 5
-  // Bank B
+  // Bank A (VIOA domain)
+  inout               SPI_HOST_D0,
+  inout               SPI_HOST_D1,
+  inout               SPI_HOST_D2,
+  inout               SPI_HOST_D3,
+  inout               SPI_HOST_CLK,
+  inout               SPI_HOST_CS_L,
+  inout               SPI_DEV_D0,
+  inout               SPI_DEV_D1,
+  inout               SPI_DEV_D2,
+  inout               SPI_DEV_D3,
+  inout               SPI_DEV_CLK,
+  inout               SPI_DEV_CS_L,
+  inout               IOA0,  // MIO 0
+  inout               IOA1,  // MIO 1
+  inout               IOA2,  // MIO 2
+  inout               IOA3,  // MIO 3
+  inout               IOA4,  // MIO 4
+  inout               IOA5,  // MIO 5
+  // Bank B (VIOB domain)
   inout               IOB0,  // MIO 6
   inout               IOB1,  // MIO 7
   inout               IOB2,  // MIO 8
@@ -38,7 +40,7 @@ module top_earlgrey_asic (
   inout               IOB9,  // MIO 15
   inout               IOB10, // MIO 16
   inout               IOB11, // MIO 17
-  // Bank C
+  // Bank C (VCC domain)
   inout               IOC0,  // MIO 18
   inout               IOC1,  // MIO 19
   inout               IOC2,  // MIO 20
@@ -51,28 +53,28 @@ module top_earlgrey_asic (
   inout               IOC9,  // MIO 27
   inout               IOC10, // MIO 28
   inout               IOC11, // MIO 29
-  inout               IOC12, // MIO 30
-  inout               IOC13, // MIO 31
-  inout               IOC14, // MIO 32
-  inout               IOC15, // CC1
-  inout               IOC16, // CC2
-  inout               IOC17, // USB_P
-  inout               IOC18, // USB_N
-  // Bank R
-  inout               IOR0,  // EcRstL
-  inout               IOR1,  // PwrBI
-  inout               IOR2,  // EcEnteringRw
-  inout               IOR3,  // AcPresent
-  inout               IOR4,  // FlashWpL
-  inout               IOR5,  // PwrBO
-  inout               IOR6,  // EcInRw
-  inout               IOR7,  // BatEn
-  inout               IOR8,  // Key0I (volup, column out from EC in laptop)
-  inout               IOR9,  // Key1I (voldown, row input from keyboard matrix in laptop)
-  inout               IOR10, // Key2I (tbd, row input from keyboard matrix in laptop)
-  inout               IOR11, // Key0O (passthrough from Key0I)
-  inout               IOR12, // Key1O (passthrough from Key1I)
-  inout               IOR13  // Key2O (passthrough from Key2I)
+  // Bank R (VCC domain)
+  inout               IOR0,  // MIO 30
+  inout               IOR1,  // MIO 31
+  inout               IOR2,  // MIO 32
+  inout               IOR3,  // MIO 33
+  inout               IOR4,  // MIO 34
+  inout               IOR5,  // MIO 35
+  inout               IOR6,  // MIO 36
+  inout               IOR7,  // MIO 37
+  inout               IOR8,  // MIO 38
+  inout               IOR9,  // MIO 39
+  inout               IOR10, // MIO 40
+  inout               IOR11, // MIO 41
+  inout               IOR12, // MIO 42
+  inout               IOR13, // MIO 43
+  // DCD (VCC domain)
+  inout               CC1,
+  inout               CC2,
+  // USB (VCC domain)
+  inout               USB_P,
+  inout               USB_N
+
 );
 
   import top_earlgrey_pkg::*;
@@ -102,88 +104,86 @@ module top_earlgrey_asic (
   wire unused_usbdev_dp_pullup_en, unused_usbdev_dn_pullup_en;
   wire unused_spi_device_s2, unused_spi_device_s3;
 
-  // TODO: hook these up once both the SPI host and device are present
-  logic [3:0] unused_spi;
-  assign unused_spi = {IOA9, IOA8, IOA7, IOA6};
-  assign {IOA9, IOA8, IOA7, IOA6} = '0;
-
   padring #(
     // All MIOs are connected
-    .ConnectMioIn  ( 47'h7FFF_FFFF_FFFF ),
-    .ConnectMioOut ( 47'h7FFF_FFFF_FFFF ),
+    .ConnectMioIn  ( 44'hFFF_FFFF_FFFF ),
+    .ConnectMioOut ( 44'hFFF_FFFF_FFFF ),
     // Tied off DIOs:
     // 2-8 (USB)
     .ConnectDioIn  ( 15'h7E03 ),
     .ConnectDioOut ( 15'h7E03 ),
     // MIO pad types
     .MioPadVariant ( { // RBox
-                       2'd0, // IOR13   -- bidir
-                       2'd0, // IOR12   -- bidir
-                       2'd0, // IOR11   -- bidir
-                       2'd0, // IOR10   -- bidir
-                       2'd0, // IOR9    -- bidir
-                       2'd0, // IOR8    -- bidir
-                       2'd3, // IOR7    -- open drain
-                       2'd3, // IOR6    -- open drain
-                       2'd3, // IOR5    -- open drain
-                       2'd3, // IOR4    -- open drain
-                       2'd3, // IOR3    -- open drain
+                       2'd3, // IOR13   -- open drain
+                       2'd3, // IOR12   -- open drain
+                       2'd3, // IOR11   -- open drain
+                       2'd3, // IOR10   -- open drain
+                       2'd3, // IOR9    -- open drain
+                       2'd3, // IOR8    -- open drain
+                       2'd0, // IOR7    -- bidir
+                       2'd0, // IOR6    -- bidir
+                       2'd0, // IOR5    -- bidir
+                       2'd0, // IOR4    -- bidir
+                       2'd0, // IOR3    -- bidir
                        2'd0, // IOR2    -- bidir
-                       2'd3, // IOR1    -- open drain
-                       2'd3, // IOR0    -- open drain
+                       2'd0, // IOR1    -- bidir
+                       2'd0, // IOR0    -- bidir
                        // Bank C
-                       2'd0, // IOC14   -- bidir
-                       2'd0, // IOC13   -- bidir
-                       2'd0, // IOC12   -- bidir
-                       2'd0, // IOC11   -- bidir
-                       2'd0, // IOC10   -- bidir
+                       2'd3, // IOC11   -- open drain
+                       2'd3, // IOC10   -- open drain
                        2'd3, // IOC9    -- open drain
-                       2'd0, // IOC8    -- bidir
-                       2'd3, // IOC7    -- open drain
-                       2'd3, // IOC6    -- open drain
-                       2'd3, // IOC5    -- open drain
+                       2'd3, // IOC8    -- open drain
+                       2'd0, // IOC7    -- bidir
+                       2'd0, // IOC6    -- bidir
+                       2'd0, // IOC5    -- bidir
                        2'd0, // IOC4    -- bidir
                        2'd0, // IOC3    -- bidir
                        2'd0, // IOC2    -- bidir
                        2'd0, // IOC1    -- bidir
                        2'd0, // IOC0    -- bidir
                        // Bank B
-                       2'd0, // IOB11   -- bidir
-                       2'd0, // IOB10   -- bidir
-                       2'd0, // IOB9    -- bidir
-                       2'd0, // IOB8    -- bidir
-                       2'd3, // IOB7    -- open drain
-                       2'd3, // IOB6    -- open drain
-                       2'd3, // IOB5    -- open drain
-                       2'd3, // IOB4    -- open drain
+                       2'd3, // IOB11   -- open drain
+                       2'd3, // IOB10   -- open drain
+                       2'd3, // IOB9    -- open drain
+                       2'd3, // IOB8    -- open drain
+                       2'd0, // IOB7    -- birid
+                       2'd0, // IOB6    -- birid
+                       2'd0, // IOB5    -- birid
+                       2'd0, // IOB4    -- birid
                        2'd0, // IOB3    -- bidir
                        2'd0, // IOB2    -- bidir
                        2'd0, // IOB1    -- bidir
                        2'd0, // IOB0    -- bidir
                        // Bank A
-                       2'd0, // IOA15   -- bidir
-                       2'd0, // IOA14   -- bidir
-                       2'd0, // IOA13   -- bidir
-                       2'd0, // IOA12   -- bidir
-                       2'd3, // IOA11   -- open drain
-                       2'd3  // IOA10   -- open drain
+                       2'd3, // IOA5    -- open drain
+                       2'd3, // IOA4    -- open drain
+                       2'd0, // IOA3    -- bidir
+                       2'd0, // IOA2    -- bidir
+                       2'd0, // IOA1    -- bidir
+                       2'd0  // IOA0    -- bidir
                       } ),
     // DIO pad types
-    .DioPadVariant ( { 2'd0, // IOA4     -- bidir
-                       2'd0, // IOA5     -- bidir
-                       2'd0, // IOA3     -- bidir
-                       2'd0, // IOA2     -- bidir
-                       2'd0, // IOA1     -- bidir
-                       2'd0, // IOA0     -- bidir
-                       2'd0, // unused
-                       2'd0, // unused
-                       2'd0, // IOC15    -- bidir
-                       2'd0, // IOC16    -- bidir
-                       2'd0, // unused
-                       2'd0, // unused
-                       2'd0, // unused
-                       2'd2, // USB_P   -- tolerant
-                       2'd2  // USB_N   -- tolerant
+    .DioPadVariant (  { 2'd1, // SPI_DEV_CLK    -- input only
+                        2'd1, // SPI_DEV_CS_L   -- input only
+                        2'd0, // SPI_DEV_D3     -- bidir
+                        2'd0, // SPI_DEV_D2     -- bidir
+                        2'd0, // SPI_DEV_D1     -- bidir
+                        2'd0, // SPI_DEV_D0     -- bidir
+                        2'd0, // SPI_HOST_CLK   -- bidir
+                        2'd0, // SPI_HOST_CS_L  -- bidir
+                        2'd0, // SPI_HOST_D3    -- bidir
+                        2'd0, // SPI_HOST_D2    -- bidir
+                        2'd0, // SPI_HOST_D1    -- bidir
+                        2'd0, // SPI_HOST_D0    -- bidir
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd2, // USB_P          -- tolerant
+                        2'd2  // USB_N          -- tolerant
                       } )
   ) padring (
     // Clk / Rst
@@ -191,29 +191,26 @@ module top_earlgrey_asic (
     .rst_pad_ni          ( IO_RST_N         ),
     .clk_o               ( clk              ),
     .rst_no              ( rst_n            ),
-    .cc1_i               ( IOC15            ),
-    .cc2_i               ( IOC16            ),
+    .cc1_i               ( CC1              ),
+    .cc2_i               ( CC2              ),
     // "special"
     // MIO Pads
     .mio_pad_io          ( { // RBox
-                             IOR13, // MIO 46
-                             IOR12, // MIO 45
-                             IOR11, // MIO 44
-                             IOR10, // MIO 43
-                             IOR9,  // MIO 42
-                             IOR8,  // MIO 41
-                             IOR7,  // MIO 40
-                             IOR6,  // MIO 39
-                             IOR5,  // MIO 38
-                             IOR4,  // MIO 37
-                             IOR3,  // MIO 36
-                             IOR2,  // MIO 35
-                             IOR1,  // MIO 34
-                             IOR0,  // MIO 33
+                             IOR13, // MIO 43
+                             IOR12, // MIO 42
+                             IOR11, // MIO 41
+                             IOR10, // MIO 40
+                             IOR9,  // MIO 39
+                             IOR8,  // MIO 38
+                             IOR7,  // MIO 37
+                             IOR6,  // MIO 36
+                             IOR5,  // MIO 35
+                             IOR4,  // MIO 34
+                             IOR3,  // MIO 33
+                             IOR2,  // MIO 32
+                             IOR1,  // MIO 31
+                             IOR0,  // MIO 30
                              // Bank C
-                             IOC14, // MIO 32
-                             IOC13, // MIO 31
-                             IOC12, // MIO 30
                              IOC11, // MIO 29
                              IOC10, // MIO 28
                              IOC9,  // MIO 27
@@ -240,37 +237,35 @@ module top_earlgrey_asic (
                              IOB1,  // MIO 7
                              IOB0,  // MIO 6
                              // Bank A
-                             IOA15, // MIO 5
-                             IOA14, // MIO 4
-                             IOA13, // MIO 3
-                             IOA12, // MIO 2
-                             IOA11, // MIO 1
-                             IOA10  // MIO 0
+                             IOA5,  // MIO 5
+                             IOA4,  // MIO 4
+                             IOA3,  // MIO 3
+                             IOA2,  // MIO 2
+                             IOA1,  // MIO 1
+                             IOA0   // MIO 0
                             } ),
     // DIO Pads
-    // TODO: the SPI mapping is not correct since the SPI host is missing, and we still need
-    // to free up 2 pads to squeeze in a 4x SPI device.
-    .dio_pad_io          ( { IOA9,  // cio_spi_device_sck_p2d
-                             IOA8,  // cio_spi_device_csb_p2d
-                             unused_spi_device_s3, // cio_spi_device_s_p2d[3]
-                             unused_spi_device_s2, // cio_spi_device_s_p2d[2]
-                             IOA7,  // cio_spi_device_s_p2d[1]
-                             IOA6,  // cio_spi_device_s_p2d[0]
-                             IOA5,  // cio_spi_host0_sck_p2d
-                             IOA4,  // cio_spi_host0_csb_p2d
-                             IOA3,  // cio_spi_host0_s_p2d[3]
-                             IOA2,  // cio_spi_host0_s_p2d[2]
-                             IOA1,  // cio_spi_host0_s_p2d[1]
-                             IOA0,  // cio_spi_host0_s_p2d[0]
-                             unused_usbdev_aon_sense, //usbdev_aon_sense
-                             unused_usbdev_se0, // usbdev_se0
-                             unused_usbdev_dp_pullup_en,  // USB dp pullup
-                             unused_usbdev_dn_pullup_en,  // USB dn pullup
-                             unused_usbdev_tx_mode, // usbdev_tx_mode
-                             unused_usbdev_suspend, // usbdev_suspend
-                             unused_usbdev_d,       // usbdev_d
-                             IOC17,  // USB_P
-                             IOC18   // USB_N
+    .dio_pad_io          ( { SPI_DEV_CLK,                 // cio_spi_device_sck_p2d
+                             SPI_DEV_CS_L,                // cio_spi_device_csb_p2d
+                             SPI_DEV_D3,                  // cio_spi_device_s_p2d[3]
+                             SPI_DEV_D2,                  // cio_spi_device_s_p2d[2]
+                             SPI_DEV_D1,                  // cio_spi_device_s_p2d[1]
+                             SPI_DEV_D0,                  // cio_spi_device_s_p2d[0]
+                             SPI_HOST_CLK,                // cio_spi_host0_sck_p2d
+                             SPI_HOST_CS_L,               // cio_spi_host0_csb_p2d
+                             SPI_HOST_D3,                 // cio_spi_host0_s_p2d[3]
+                             SPI_HOST_D2,                 // cio_spi_host0_s_p2d[2]
+                             SPI_HOST_D1,                 // cio_spi_host0_s_p2d[1]
+                             SPI_HOST_D0,                 // cio_spi_host0_s_p2d[0]
+                             unused_usbdev_aon_sense,     // cio_usbdev_aon_sense_p2d
+                             unused_usbdev_se0,           // cio_usbdev_aon_se0
+                             unused_usbdev_dp_pullup_en,  // cio_usbdev_aon_dp_pullup
+                             unused_usbdev_dn_pullup_en,  // cio_usbdev_aon_dn_pullup
+                             unused_usbdev_tx_mode,       // cio_usbdev_aon_tx_mode_se
+                             unused_usbdev_suspend,       // cio_usbdev_aon_suspend
+                             unused_usbdev_d,             // cio_usbdev_aon_d_p2d
+                             USB_P,                       // cio_usbdev_aon_dp_p2d
+                             USB_N                        // cio_usbdev_aon_dn_p2d
                            } ),
     // Muxed IOs
     .mio_in_o            ( mio_in_padring   ),
@@ -300,14 +295,14 @@ module top_earlgrey_asic (
   prim_usb_diff_rx #(
     .CalibW(32)
   ) i_prim_usb_diff_rx (
-    .input_pi      ( IOC17               ),
-    .input_ni      ( IOC18               ),
-    .input_en_i    ( usbdev_aon_usb_rx_enable        ),
-    .core_pok_i    ( ast_usb_core_pok    ),
-    .pullup_p_en_i ( usb_pullup_p_en     ),
-    .pullup_n_en_i ( usb_pullup_n_en     ),
-    .calibration_i ( ast_usb_calibration ),
-    .input_o       ( usb_diff_input      )
+    .input_pi      ( USB_P                    ),
+    .input_ni      ( USB_N                    ),
+    .input_en_i    ( usbdev_aon_usb_rx_enable ),
+    .core_pok_i    ( ast_usb_core_pok         ),
+    .pullup_p_en_i ( usb_pullup_p_en          ),
+    .pullup_n_en_i ( usb_pullup_n_en          ),
+    .calibration_i ( ast_usb_calibration      ),
+    .input_o       ( usb_diff_input           )
   );
 
   //////////////////////
