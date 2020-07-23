@@ -1,8 +1,8 @@
-# Google Confidential
-
-# Technology setup script for TSMC40ULPEF WLM-based synthesis flow
-# See also https://docs.google.com/document/d/1I9R066xZKUuqZxcXhFYtmZW2EC8MBUrTYFDsNT6cNIE
-# for more info on the Earlgrey chip specifications.
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Simple tcl script to setup power lint flow
 
 ########################
 ##   LIBRARY PATHS    ##
