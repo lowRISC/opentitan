@@ -15,8 +15,8 @@ module top_earlgrey_asic (
   inout               IOA3,  // SPI Host Data 3
   inout               IOA4,  // SPI Host CS_L
   inout               IOA5,  // SPI Host CLK
-  inout               IOA6,  // SPI Device HIDO
-  inout               IOA7,  // SPI Device HODI
+  inout               IOA6,  // SPI Device S0
+  inout               IOA7,  // SPI Device S1
   inout               IOA8,  // SPI Device CS_L
   inout               IOA9,  // SPI Device CLK
   inout               IOA10, // MIO 0
@@ -100,6 +100,7 @@ module top_earlgrey_asic (
   wire unused_usbdev_se0, unused_usbdev_tx_mode, unused_usbdev_suspend;
   wire unused_usbdev_d, unused_usbdev_aon_sense;
   wire unused_usbdev_dp_pullup_en, unused_usbdev_dn_pullup_en;
+  wire unused_spi_device_s2, unused_spi_device_s3;
 
   // TODO: hook these up once both the SPI host and device are present
   logic [3:0] unused_spi;
@@ -249,12 +250,18 @@ module top_earlgrey_asic (
     // DIO Pads
     // TODO: the SPI mapping is not correct since the SPI host is missing, and we still need
     // to free up 2 pads to squeeze in a 4x SPI device.
-    .dio_pad_io          ( { IOA5, // cio_spi_device_sck_p2d
-                             IOA4, // cio_spi_device_csb_p2d
-                             IOA3, // cio_spi_device_s_p2d[3]
-                             IOA2, // cio_spi_device_s_p2d[2]
-                             IOA1, // cio_spi_device_s_p2d[1]
-                             IOA0, // cio_spi_device_s_p2d[0]
+    .dio_pad_io          ( { IOA9,  // cio_spi_device_sck_p2d
+                             IOA8,  // cio_spi_device_csb_p2d
+                             unused_spi_device_s3, // cio_spi_device_s_p2d[3]
+                             unused_spi_device_s2, // cio_spi_device_s_p2d[2]
+                             IOA7,  // cio_spi_device_s_p2d[1]
+                             IOA6,  // cio_spi_device_s_p2d[0]
+                             IOA5,  // cio_spi_host0_sck_p2d
+                             IOA4,  // cio_spi_host0_csb_p2d
+                             IOA3,  // cio_spi_host0_s_p2d[3]
+                             IOA2,  // cio_spi_host0_s_p2d[2]
+                             IOA1,  // cio_spi_host0_s_p2d[1]
+                             IOA0,  // cio_spi_host0_s_p2d[0]
                              unused_usbdev_aon_sense, //usbdev_aon_sense
                              unused_usbdev_se0, // usbdev_se0
                              unused_usbdev_dp_pullup_en,  // USB dp pullup
