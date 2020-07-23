@@ -8,7 +8,7 @@ description: "Interface to backdoor read/write memory for DV"
 filesets:
   files_dv:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:opentitan:bus_params_pkg
       - lowrisc:dv:dv_utils
     files:
       - mem_bkdr_if.sv
