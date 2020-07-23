@@ -6,7 +6,7 @@
 package tl_agent_pkg;
   // dep packages
   import uvm_pkg::*;
-  import top_pkg::*;
+  import bus_params_pkg::*;
   import tlul_pkg::*;
   import mem_model_pkg::*;
   import dv_lib_pkg::*;
@@ -16,12 +16,12 @@ package tl_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  parameter int AddrWidth   = top_pkg::TL_AW;
-  parameter int DataWidth   = top_pkg::TL_DW;
-  parameter int SizeWidth   = top_pkg::TL_SZW;
-  parameter int MaskWidth   = top_pkg::TL_DBW;
-  parameter int SourceWidth = top_pkg::TL_AIW;
-  parameter int DUserWidth  = top_pkg::TL_DUW;
+  parameter int AddrWidth   = bus_params_pkg::BUS_AW;
+  parameter int DataWidth   = bus_params_pkg::BUS_DW;
+  parameter int SizeWidth   = bus_params_pkg::BUS_SZW;
+  parameter int MaskWidth   = bus_params_pkg::BUS_DBW;
+  parameter int SourceWidth = bus_params_pkg::BUS_AIW;
+  parameter int DUserWidth  = bus_params_pkg::BUS_DUW;
   parameter int OpcodeWidth = 3;
 
   typedef class tl_seq_item;
