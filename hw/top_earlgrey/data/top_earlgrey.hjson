@@ -575,7 +575,7 @@
     //  All the input/outputs from IPs are muxed in pinmux, and it has # of I/O
     //  talks to the outside of top_earlgrey.
     //  This field will be replaced to the length of PAD if padctrl is defined
-    num_mio: 47
+    num_mio: 44
 
     // Dedicated IO modules. The in/out ports of the modules below are connected
     //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
