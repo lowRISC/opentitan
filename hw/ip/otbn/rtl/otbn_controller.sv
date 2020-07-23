@@ -127,5 +127,7 @@ module otbn_controller
   // Register file write MUX
   // TODO: Switch between CSR and EX writeback.
   assign rf_base_wr_en_o = 1'b0;
+  assign rf_base_wr_addr_o = '0;
+  assign rf_base_wr_data_o = '0;
 
 endmodule
