@@ -9,6 +9,7 @@
 #define TOOL_INCISIVE 0
 
 #include <limits.h>
+#include <stdio.h>
 #include <svdpi.h>
 
 // How many bits in our frame (1ms on real hardware)
@@ -90,9 +91,9 @@ extern "C" {
 #endif
 
 struct usbdpi_ctx {
-  int fifo_fd;
   int loglevel;
-  char fifo_pathname[PATH_MAX];
+  FILE *mon_file;
+  char mon_pathname[PATH_MAX];
   void *mon;
   int lastrxpid;
   int tick;
@@ -123,8 +124,8 @@ uint32_t CRC5(uint32_t dwInput, int iBitcnt);
 uint32_t CRC16(uint8_t *data, int bytes);
 
 void *monitor_usb_init(void);
-void monitor_usb(void *mon, int fifo_fd, int log, int tick, int hdrive, int p2d,
-                 int d2p, int *lastpid);
+void monitor_usb(void *mon, FILE *mon_file, int log, int tick, int hdrive,
+                 int p2d, int d2p, int *lastpid);
 
 #ifdef __cplusplus
 }
