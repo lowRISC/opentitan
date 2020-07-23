@@ -90,12 +90,12 @@ set aon_ports {
   sensor_ctrl_ast_status \
   sensor_ctrl_ast_alert_req \
   sensor_ctrl_ast_alert_rsp \
-  sensor_ctrl_ast_aux \
   pwrmgr_aon_pwr_ast_req \
   pwrmgr_aon_pwr_ast_rsp \
   rstmgr_aon_ast \
   usbdev_aon_usb_ref_pulse \
   usbdev_aon_usb_ref_val \
+  usbdev_aon_usb_rx_enable \
   clkmgr_aon_clk_main \
   clkmgr_aon_clk_io \
   clkmgr_aon_clk_usb \
@@ -104,7 +104,8 @@ set aon_ports {
   dcd_aon_adc_rsp \
   pinmux_aon_io_pok \
   scan_rst_ni \
-  scanmode_i
+  scanmode_i \
+  aux_o
 }
 
 # There is no reason for jtag port to be always on since the driver is not always on.
@@ -113,7 +114,9 @@ set aon_ports {
 # Thus it is left up to the top level to insert isolation if consuming logic needs it to
 # be always on.
 set main_ports {
-  jtag_tdo_o
+  jtag_tdo_o \
+  entropy_src_entropy_src_rng_req \
+  entropy_src_entropy_src_rng_rsp
 }
 
 set_port_attributes -ports $aon_ports -driver_supply ss_aon -receiver_supply ss_aon
