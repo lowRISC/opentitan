@@ -67,8 +67,8 @@ module otbn_core
 
   // The currently executed instruction.
   logic                     insn_valid;
+  logic                     insn_illegal;
   logic [ImemAddrWidth-1:0] insn_addr;
-  insn_op_e                 insn_op;
   insn_dec_base_t           insn_dec_base;
 
   insn_dec_ctrl_t insn_dec_ctrl;
@@ -130,7 +130,7 @@ module otbn_core
 
     // Decoded instruction
     .insn_valid_o    (insn_valid),
-    .insn_op_o       (insn_op),
+    .insn_illegal_o  (insn_illegal),
     .insn_dec_base_o (insn_dec_base),
     .insn_dec_ctrl_o (insn_dec_ctrl)
   );
@@ -155,7 +155,6 @@ module otbn_core
     // The current instruction
     .insn_valid_i (insn_valid),
     .insn_addr_i  (insn_addr),
-    .insn_op_i    (insn_op),
 
     // Decoded instruction from decoder
     .insn_dec_base_i (insn_dec_base),

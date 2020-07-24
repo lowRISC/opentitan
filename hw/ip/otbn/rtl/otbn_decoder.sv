@@ -20,7 +20,7 @@ module otbn_decoder
 
   // Decoded instruction
   output logic                 insn_valid_o,
-  output insn_op_e             insn_op_o,
+  output logic                 insn_illegal_o,
 
   // Decoded instruction data, matching the "Decoding" section of the specification.
   output insn_dec_base_t       insn_dec_base_o,
@@ -99,10 +99,8 @@ module otbn_decoder
     endcase
   end
 
-  assign insn_valid_o = ~illegal_insn;
-
-  // TODO: Completely remove?
-  assign insn_op_o = InsnOpAlu;
+  assign insn_valid_o   = insn_fetch_resp_valid_i & ~illegal_insn;
+  assign insn_illegal_o = insn_fetch_resp_valid_i & illegal_insn;
 
   assign insn_dec_base_o = '{
     a: insn_rs1,

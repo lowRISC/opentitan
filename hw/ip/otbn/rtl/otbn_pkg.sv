@@ -65,13 +65,7 @@ package otbn_pkg;
     InsnOpcodeBaseSystem   = 7'h73
   } insn_opcode_e;
 
-  // Instructions
-  // TODO: Extend and add an explicit type.
-  typedef enum {
-    InsnOpAlu,
-    InsnOpEcall
-  } insn_op_e;
-
+  // ALU Operations
   typedef enum logic [3:0] {
     AluOpAdd,
     AluOpSub,
@@ -80,9 +74,6 @@ package otbn_pkg;
     AluOpOr,
     AluOpAnd,
     AluOpNot,
-
-    AluOpEq,
-    AluOpNe,
 
     AluOpSra,
     AluOpSrl,
