@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:dv:common_ifs
       - lowrisc:prim:assert:0.1
-      - lowrisc:constants:top_pkg
+      - lowrisc:opentitan:bus_params_pkg
     files:
       - dv_utils_pkg.sv
       - dv_macros.svh: {is_include_file: true}

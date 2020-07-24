@@ -5,7 +5,7 @@
 package dv_utils_pkg;
   // dep packages
   import uvm_pkg::*;
-  import top_pkg::*;
+  import bus_params_pkg::*;
 
   // macro includes
   `include "dv_macros.svh"
@@ -109,14 +109,16 @@ package dv_utils_pkg;
 
   // get masked data based on provided byte mask; if csr reg handle is provided (optional) then
   // masked bytes from csr's mirrored value are returned, else masked bytes are 0's
-  function automatic bit [TL_DW-1:0] get_masked_data(bit [TL_DW-1:0]  data,
-                                                     bit [TL_DBW-1:0] mask,
-                                                     uvm_reg          csr = null);
-    bit [TL_DW-1:0] csr_data;
+  function automatic bit [bus_params_pkg::BUS_DW-1:0]
+      get_masked_data(bit [bus_params_pkg::BUS_DW-1:0] data,
+                      bit [bus_params_pkg::BUS_DBW-1:0] mask,
+                      uvm_reg csr = null);
+    bit [bus_params_pkg::BUS_DW-1:0] csr_data;
     csr_data = (csr != null) ? csr.get_mirrored_value() : '0;
     get_masked_data = data;
-    foreach (mask[i])
+    foreach (mask[i]) begin
       if (~mask[i]) get_masked_data[i * 8 +: 8] = csr_data[i * 8 +: 8];
+    end
   endfunction
 
   // get absolute value of the input. Usage: absolute(val) or absolute(a - b)
