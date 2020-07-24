@@ -4,7 +4,6 @@
 """This contains a class which is used to help generate `top_{name}.h` and
 `top_{name}.h`.
 """
-
 from collections import OrderedDict
 
 from mako.template import Template
@@ -137,6 +136,19 @@ class TopGenC(object):
 
         self._init_plic_targets()
         self._init_plic_mapping()
+        self._init_alert_mapping()
+
+    def modules(self):
+        return [(m["name"],
+                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
+                              m["base_addr"], m["size"]))
+                for m in self.top["module"]]
+
+    def memories(self):
+        return [(m["name"],
+                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
+                              m["base_addr"], m["size"]))
+                for m in self.top["memory"]]
 
     def _init_plic_targets(self):
         enum = CEnum(self._top_name + Name(["plic", "target"]))
@@ -153,10 +165,11 @@ class TopGenC(object):
         """We eventually want to generate a mapping from interrupt id to the
         source peripheral.
 
-        In order to do so, we generate two enums, and store the generated names
-        in a dictionary that represents the mapping.
+        In order to do so, we generate two enums (one for interrupts, one for
+        sources), and store the generated names in a dictionary that represents
+        the mapping.
 
-        Plic Interrupt ID 0 corresponds to no interrupt, and so no peripheral,
+        PLIC Interrupt ID 0 corresponds to no interrupt, and so no peripheral,
         so we encode that in the enum as "unknown".
 
         The interrupts have to be added in order, with "none" first, to ensure
@@ -211,14 +224,55 @@ class TopGenC(object):
         self.plic_interrupts = interrupts
         self.plic_mapping = plic_mapping
 
-    def modules(self):
-        return [(m["name"],
-                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
-                              m["base_addr"], m["size"]))
-                for m in self.top["module"]]
+    def _init_alert_mapping(self):
+        """We eventually want to generate a mapping from alert id to the source
+        peripheral.
 
-    def memories(self):
-        return [(m["name"],
-                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
-                              m["base_addr"], m["size"]))
-                for m in self.top["memory"]]
+        In order to do so, we generate two enums (one for alerts, one for
+        sources), and store the generated names in a dictionary that represents
+        the mapping.
+
+        Alert Handler has no concept of "no alert", unlike the PLIC.
+
+        The alerts have to be added in order, to ensure that they get the
+        correct mapping to their alert id, which is used for addressing the
+        right registers and bits.
+        """
+        sources = CEnum(self._top_name + Name(["alert", "peripheral"]))
+        alerts = CEnum(self._top_name + Name(["alert", "id"]))
+        alert_mapping = CArrayMapping(
+            self._top_name + Name(["alert", "for", "peripheral"]),
+            sources.name)
+
+        # When we generate the `alerts` enum, the only info we have about the
+        # source is the module name. We'll use `source_name_map` to map a short
+        # module name to the full name object used for the enum constant.
+        source_name_map = {}
+
+        for name in self.top["alert_module"]:
+            source_name = sources.add_constant(Name.from_snake_case(name),
+                                               docstring=name)
+            source_name_map[name] = source_name
+
+        sources.add_last_constant("Final Alert peripheral")
+
+        for alert in self.top["alert"]:
+            if "width" in alert and int(alert["width"]) != 1:
+                for i in range(int(alert["width"])):
+                    name = Name.from_snake_case(
+                        alert["name"]) + Name([str(i)])
+                    irq_id = alerts.add_constant(name, docstring="{} {}".format(
+                                                         alert["name"], i))
+                    source_name = source_name_map[alert["module_name"]]
+                    alert_mapping.add_entry(irq_id, source_name)
+            else:
+                name = Name.from_snake_case(alert["name"])
+                alert_id = alerts.add_constant(name, docstring=alert["name"])
+                source_name = source_name_map[alert["module_name"]]
+                alert_mapping.add_entry(alert_id, source_name)
+
+        alerts.add_last_constant("The Last Valid Alert ID.")
+
+        self.alert_sources = sources
+        self.alert_alerts = alerts
+        self.alert_mapping = alert_mapping

@@ -116,6 +116,30 @@ ${helper.plic_mapping.render_declaration()}
  */
 ${helper.plic_targets.render()}
 
+/**
+ * Alert Handler Source Peripheral.
+ *
+ * Enumeration used to determine which peripheral asserted the corresponding
+ * alert.
+ */
+${helper.alert_sources.render()}
+
+/**
+ * Alert Handler Alert Source.
+ *
+ * Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
+ * the same peripheral are guaranteed to be consecutive.
+ */
+${helper.alert_alerts.render()}
+
+/**
+ * Alert Handler Alert Source to Peripheral Map
+ *
+ * This array is a mapping from `${helper.alert_alerts.name.as_c_type()}` to
+ * `${helper.alert_sources.name.as_c_type()}`.
+ */
+${helper.alert_mapping.render_declaration()}
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

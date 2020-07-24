@@ -96,3 +96,26 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdOtbnErr] = kTopEarlgreyPlicPeripheralOtbn,
 };
 
+
+/**
+ * Alert Handler Alert Source to Peripheral Map
+ *
+ * This array is a mapping from `top_earlgrey_alert_id_t` to
+ * `top_earlgrey_alert_peripheral_t`.
+ */
+const top_earlgrey_alert_peripheral_t
+    top_earlgrey_alert_for_peripheral[12] = {
+  [kTopEarlgreyAlertIdAesCtrlErr] = kTopEarlgreyAlertPeripheralAes,
+  [kTopEarlgreyAlertIdHmacMsgPushShaDisabled] = kTopEarlgreyAlertPeripheralHmac,
+  [kTopEarlgreyAlertIdOtbnImemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdOtbnDmemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdOtbnRegUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts0] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts1] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts2] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts3] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts4] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts5] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts6] = kTopEarlgreyAlertPeripheralSensorCtrl,
+};
+
