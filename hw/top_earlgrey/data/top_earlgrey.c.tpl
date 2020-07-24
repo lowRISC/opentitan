@@ -11,3 +11,11 @@
  * `${helper.plic_sources.name.as_c_type()}`.
  */
 ${helper.plic_mapping.render_definition()}
+
+/**
+ * Alert Handler Alert Source to Peripheral Map
+ *
+ * This array is a mapping from `${helper.alert_alerts.name.as_c_type()}` to
+ * `${helper.alert_sources.name.as_c_type()}`.
+ */
+${helper.alert_mapping.render_definition()}
