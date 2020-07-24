@@ -7,7 +7,7 @@
 import itertools
 import re
 from typing import (Callable, Dict, List, Optional,
-                    Sequence, Set, Tuple, TypeVar, Union)
+                    Sequence, Set, Tuple, TypeVar, Union, cast)
 
 import yaml
 
@@ -998,7 +998,7 @@ class SyntaxToken:
         #
         # then we need to use something more serious than just regexes for
         # parsing.
-        return r'([^ ,+\-]+|[+\-]+)\s*'
+        return r'(-?[^ ,+\-]+|[+\-]+)\s*'
 
     def render_vals(self,
                     op_vals: Dict[str, int],
@@ -1479,7 +1479,8 @@ class Insn:
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
                          'syntax', 'doc', 'note', 'trailing-doc',
-                         'decode', 'operation', 'encoding', 'glued-ops'])
+                         'decode', 'operation', 'encoding', 'glued-ops',
+                         'literal-pseudo-op', 'python-pseudo-op'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -1537,6 +1538,33 @@ class Insn:
         if encoding_yml is not None:
             self.encoding = Encoding(encoding_yml, encoding_schemes,
                                      self.name_to_operand, self.mnemonic)
+
+        self.python_pseudo_op = check_bool(yd.get('python-pseudo-op', False),
+                                           'python-pseudo-op flag for ' + what)
+        if self.python_pseudo_op and self.encoding is not None:
+            raise ValueError('{} specifies an encoding and also sets '
+                             'python-pseudo-op.'.format(what))
+
+        lpo = yd.get('literal-pseudo-op')
+        if lpo is None:
+            self.literal_pseudo_op = None
+        else:
+            lpo_lst = check_list(lpo, 'literal-pseudo-op flag for ' + what)
+            for idx, item in enumerate(lpo_lst):
+                if not isinstance(item, str):
+                    raise ValueError('Item {} of literal-pseudo-op list for '
+                                     '{} is {!r}, which is not a string.'
+                                     .format(idx, what, item))
+            self.literal_pseudo_op = cast(Optional[List[str]], lpo_lst)
+
+            if self.python_pseudo_op:
+                raise ValueError('{} specifies both python-pseudo-op and '
+                                 'literal-pseudo-op.'
+                                 .format(what))
+            if self.encoding is not None:
+                raise ValueError('{} specifies both an encoding and '
+                                 'literal-pseudo-op.'
+                                 .format(what))
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:

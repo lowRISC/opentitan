@@ -24,7 +24,8 @@ import sys
 import tempfile
 from typing import Dict, List, Optional, Set, TextIO, Tuple
 
-from insn_yaml import BitRanges, Encoding, Insn, InsnsFile, Operand, load_file
+from insn_yaml import (BitRanges, Encoding, Insn, InsnsFile, Operand,
+                       RegOperandType, load_file)
 
 
 class RVFmt:
@@ -424,6 +425,83 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     return (positionals, others, flags)
 
 
+def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+    '''Expand the li pseudo-op'''
+    if set(op_to_expr.keys()) != {'grd', 'imm'}:
+        raise RuntimeError('When expanding LI, got wrong op_to_expr keys '
+                           '({}). This is a mismatch between expand_li in '
+                           'otbn-as and the operands for LI in insns.yml.'
+                           .format(list(op_to_expr.keys())))
+
+    grd = op_to_expr['grd']
+    imm = op_to_expr['imm']
+    if grd is None:
+        raise RuntimeError('When expanding LI, got <grd> = None. Is the '
+                           '<grd> operand wrongly marked as optional in '
+                           'insns.yml?')
+    if imm is None:
+        raise RuntimeError('When expanding LI, got <imm> = None. Is the '
+                           '<imm> operand wrongly marked as optional in '
+                           'insns.yml?')
+
+    try:
+        gpr_type = RegOperandType('gpr', True)
+        grd_int = gpr_type.read_index(grd)
+    except ValueError as err:
+        raise RuntimeError('{}: When parsing LI instruction, <grd> '
+                           'operand is wrong: {}'
+                           .format(where, err))
+
+    grd_txt = gpr_type.render_val(grd_int)
+
+    try:
+        imm_int = int(imm, 0)
+    except ValueError:
+        raise RuntimeError('{}: Cannot parse {!r}, the immediate for an LI '
+                           'instruction, as an integer.'
+                           .format(where, imm))
+
+    # imm_int had better be representable as an i32.
+    if imm_int < -(1 << 32) or 1 << 32 <= imm_int:
+        raise RuntimeError('{}: The immediate for an LI instruction is {}, '
+                           'which does not fit in a signed 32-bit integer.'
+                           .format(where, imm))
+
+    # If imm_int is representable as an i12, we can just generate an addi
+    if -(1 << 12) <= imm_int < (1 << 12):
+        return ['addi {}, x0, {}'.format(grd_txt, imm_int)]
+
+    imm_uint = imm_int if imm_int > 0 else (1 << 32) + imm_int
+    assert imm_uint >= 0
+    assert (imm_uint >> 32) == 0
+
+    # Otherwise, we'll have to start with LUI. Extract the 12-bit constant as a
+    # signed integer.
+    mask_12 = (1 << 12) - 1
+    imm_12 = mask_12 & imm_uint
+    if imm_12 >> 11:
+        imm_12 = imm_12 - (1 << 12)
+
+    if imm_12 == 0:
+        # We can just generate an LUI here
+        return ['lui {}, {:#x}'.format(grd_txt, imm_uint >> 12)]
+
+    if imm_12 > 0:
+        # LUI; ADDI with a positive constant
+        return ['lui {}, {:#x}'.format(grd_txt, imm_uint >> 12),
+                'addi {}, {}, {:#x}'.format(grd_txt, grd_txt, imm_12)]
+
+    # LUI; ADDI with a negative constant. Add 1 to the upper immediate to
+    # subtract from it.
+    return ['lui {}, {:#x}'.format(grd_txt, 1 + (imm_uint >> 12)),
+            'addi {}, {}, {}'.format(grd_txt, grd_txt, imm_12)]
+
+
+_PSEUDO_OP_ASSEMBLERS = {
+    'li': expand_li
+}
+
+
 class Transformer:
     '''A simple parser/transformer for OTBN input files
 
@@ -618,6 +696,28 @@ class Transformer:
                  op_to_expr: Dict[str, Optional[str]]) -> None:
         '''Build and write out a line for this instruction'''
         assert self.key_sym is not None
+
+        expansion = None
+
+        # If this instruction is a pseudo-operation with a literal expansion,
+        # dump that literal expansion.
+        if insn.literal_pseudo_op is not None:
+            expansion = insn.literal_pseudo_op
+
+        # If this instruction has a special-case in the assembler, use it. We
+        # checked when loading our instruction definitions that if the
+        # instruction claims to have a special-case assembler, it really does.
+        if insn.python_pseudo_op:
+            where = '{}:{}'.format(self.in_path, self.line_number)
+            expansion = _PSEUDO_OP_ASSEMBLERS[insn.mnemonic](where, op_to_expr)
+
+        if expansion is not None:
+            for idx, entry in enumerate(expansion):
+                self.out_handle.write('{} # {}{}'
+                                      .format(entry,
+                                              self.key_sym,
+                                              ''.join(self.acc)))
+            return
 
         # If this instruction comes from the rv32i instruction set, we can just
         # pass it straight through.
@@ -1026,6 +1126,17 @@ def main() -> int:
         if insn.glued_ops:
             glued_insns_dec_len.append(insn)
     glued_insns_dec_len.sort(key=lambda insn: len(insn.mnemonic), reverse=True)
+
+    # Check that any instruction that claims to have a Python pseudo-op
+    # assembler really does.
+    for insn in insns_file.insns:
+        if insn.python_pseudo_op:
+            if insn.mnemonic not in _PSEUDO_OP_ASSEMBLERS:
+                sys.stderr.write("Instruction {!r} has python-pseudo-op true, "
+                                 "but otbn-as doesn't have a custom assembler "
+                                 "for it.\n"
+                                 .format(insn.mnemonic))
+                return 1
 
     # Try to match up OTBN instruction encodings with .insn schemes (as stored
     # in RISCV_FORMATS).
