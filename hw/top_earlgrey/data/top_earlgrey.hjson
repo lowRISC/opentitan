@@ -109,6 +109,7 @@
     { name: "por_usb",    type: "top",  root: "por_aon", clk: "usb"        }
     { name: "lc",         type: "top",  root: "lc",      clk: "main"       }
     { name: "lc_io",      type: "top",  root: "lc",      clk: "io_div2"    }
+    { name: "lc_io_div4", type: "top",  root: "lc",      clk: "io_div4"    }
     { name: "lc_aon",     type: "top",  root: "lc",      clk: "aon"        }
     { name: "lc_usb",     type: "top",  root: "lc",      clk: "usb"        }
     { name: "sys",        type: "top",  root: "sys",     clk: "main"       }
@@ -133,63 +134,63 @@
       // clock connections defines the port to top level clock connection
       // the ip.hjson will declare the clock port names
       // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       // reset connections defines the port to top level reset connection
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
 
       base_addr: "0x40000000",
     },
     { name: "uart1",
       type: "uart",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40010000"
     }
     { name: "uart2",
       type: "uart",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40020000"
     }
     { name: "uart3",
       type: "uart",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40030000"
     }
     { name: "gpio",
       type: "gpio",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40040000",
     }
 
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40050000",
     },
     { name: "spi_host0"
       type: "spi_host"
-      clock_srcs: {clk_i: "io_div2", clk_spi_i: "io_div2"}
+      clock_srcs: {clk_i: "io_div4", clk_spi_i: "io_div2"}
       clock_group: "peri"
-      reset_connections: {rst_ni: "sys_io", rst_spi_ni: "sys_io"}
+      reset_connections: {rst_ni: "sys_io_div4", rst_spi_ni: "sys_io"}
       base_addr: "0x40060000"
     }
     { name: "spi_host1"
       type: "spi_host"
-      clock_srcs: {clk_i: "io_div2", clk_spi_i: "io_div4"}
+      clock_srcs: {clk_i: "io_div4", clk_spi_i: "io_div4"}
       clock_group: "peri"
-      reset_connections: {rst_ni: "sys_io", rst_spi_ni: "sys_io_div4"}
+      reset_connections: {rst_ni: "sys_io_div4", rst_spi_ni: "sys_io_div4"}
       base_addr: "0x40070000"
     }
     { name: "flash_ctrl",
@@ -201,52 +202,52 @@
     },
     { name: "rv_timer",
       type: "rv_timer",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40100000",
     },
     { name: "i2c0",
      type: "i2c",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40080000"
     },
     { name: "i2c1",
       type: "i2c",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40090000"
     },
     { name: "i2c2",
       type: "i2c",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x400A0000"
     },
     { name: "sensor_ctrl",
       type: "sensor_ctrl",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40110000",
     },
     { name: "otp_ctrl",
       type: "otp_ctrl",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40130000",
     },
     {
       name: "lifecycle"
       type: "lifecycle"
-      clock_srcs: {clk_i: "io_div2"}
+      clock_srcs: {clk_i: "io_div4"}
       clock_group: "secure"
-      reset_connections: {rst_ni: "lc_io"}
+      reset_connections: {rst_ni: "lc_io_div4"}
       base_addr: "0x40140000"
     }
     { name: "aes",
@@ -281,18 +282,18 @@
     { name: "pinmux_aon",
       type: "pinmux",
       clock: "main",
-      clock_srcs: {clk_i: "io_div2", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys_io", rst_aon_ni: "sys_aon"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       base_addr: "0x40460000",
       generated: "true"
     },
     { name: "padctrl_aon",
       type: "padctrl",
       clock: "main",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40470000",
       generated: "true"
     },
@@ -311,15 +312,15 @@
     }
     { name: "pwrmgr_aon",
       type: "pwrmgr",
-      clock_srcs: {clk_i: "io_div2", clk_slow_i: "aon"},
+      clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io", rst_slow_ni: "por_aon"},
+      reset_connections: {rst_ni: "por_io_div4", rst_slow_ni: "por_aon"},
       base_addr: "0x40400000",
       generated: "true"         // Indicate this module is generated in the topgen
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
-      clock_srcs: {clk_i: "io_div2", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
@@ -327,9 +328,9 @@
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
+      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
                           rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
       base_addr: "0x400C0000",
       generated: "true"
@@ -357,16 +358,16 @@
     }
     { name: "pwm_aon"
       type: "pwm"
-      clock_srcs: {clk_i: "io_div2"}
+      clock_srcs: {clk_i: "io_div4"}
       clock_group: "peri"
-      reset_connections: {rst_ni: "sys_io"}
+      reset_connections: {rst_ni: "sys_io_div4"}
       base_addr: "0x40450000"
     }
     { name: "timer_aon",
       type: "rv_timer",
-      clock_srcs: {clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40480000",
     },
     // dummy module to capture the alert handler escalation signals
@@ -531,19 +532,19 @@
   // Assume xbar.hjson is located in the same directory of top.hjson
   xbar: [
     { name: "main",
-      clock_srcs: {clk_main_i: "main", clk_fixed_i: "io_div2"},
+      clock_srcs: {clk_main_i: "main", clk_fixed_i: "io_div4"},
       clock_group: "infra",
       reset: "sys",
       reset_connections: {rst_main_ni: "sys", rst_fixed_ni: "sys_io"}
     },
     { name: "peri",
-      clock_srcs: {clk_peri_i: "io_div2"},
+      clock_srcs: {clk_peri_i: "io_div4"},
       clock_group: "infra",
       reset: "sys_io",
       reset_connections: {rst_peri_ni: "sys_io"},
     }
     { name: "aon",
-      clock_srcs: {clk_aon_i: "io_div2"},
+      clock_srcs: {clk_aon_i: "io_div4"},
       clock_group: "infra",
       reset: "sys_io",
       reset_connections: {rst_aon_ni: "sys_io"},

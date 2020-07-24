@@ -167,7 +167,7 @@ module top_${top["name"]} #(
   assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
   assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
   assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
-  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div2_secure;
+  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div4_secure;
   assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
   assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
   assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
