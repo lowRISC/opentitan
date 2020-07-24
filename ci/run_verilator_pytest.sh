@@ -22,6 +22,7 @@ TEST_TARGETS=(
   "tests/dif_uart_sanitytest_sim_verilator.elf"
   "tests/flash_ctrl_test_sim_verilator.elf"
   "tests/sha256_test_sim_verilator.elf"
+  "tests/usbdev_test_sim_verilator.elf"
 )
 
 FAIL_TARGETS=()

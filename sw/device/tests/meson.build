@@ -49,10 +49,22 @@ sha256_test_lib = declare_dependency(
   ),
 )
 
+usbdev_test_lib = declare_dependency(
+  link_with: static_library(
+    'usbdev_test_lib',
+    sources: ['usbdev_test.c'],
+    dependencies: [
+      sw_lib_usb,
+      sw_lib_base_log,
+    ],
+  ),
+)
+
 sw_tests += {
   'aes_test': aes_test_lib,
   'flash_ctrl_test': flash_ctrl_test_lib,
   'sha256_test': sha256_test_lib,
+  'usbdev_test': usbdev_test_lib,
 }
 
 foreach sw_test_name, sw_test_lib : sw_tests
