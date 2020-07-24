@@ -529,9 +529,9 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
       ctx->data[1] = 0x82;
       ctx->data[2] = 0 | CRC5(0x82, 11) << 3;
       ctx->data[3] = USB_PID_DATA0;
-      ctx->data[4] = 0x48;
-      ctx->data[5] = 0x69;
-      ctx->data[6] = 0x21;
+      ctx->data[4] = 0x48;  // "H"
+      ctx->data[5] = 0x69;  // "i"
+      ctx->data[6] = 0x21;  // "!"
       add_crc16(ctx->data, ctx->datastart, 7);
       // ctx->data[7] = 0xE0; // pre-computed CRC16
       // ctx->data[8] = 0x61;
