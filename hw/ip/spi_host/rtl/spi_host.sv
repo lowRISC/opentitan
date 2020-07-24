@@ -208,7 +208,7 @@ module spi_host #(
   prim_flop_2sync #(.Width(1)) u_sync_csb (
     .clk_i,
     .rst_ni,
-    .d(cio_csb_i),
+    .d(cio_csb_o),
     .q(csb_syncd)
   );
 
@@ -338,11 +338,11 @@ module spi_host #(
   logic sck_n;
   logic rst_spi_n;
 
-  prim_clock_inv u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
-  assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
-  assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
+  prim_clock_inv u_clk_spi (.clk_i(clk_spi_i), .clk_no(sck_n), .scanmode_i);
+  assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : clk_spi_i   ;
+  assign clk_spi_out = (cpha ^ cpol) ? clk_spi_i    : sck_n   ;
 
-  assign rst_spi_n = (scanmode_i) ? rst_ni : rst_ni & ~cio_csb_i;
+  assign rst_spi_n = rst_ni;
 
   assign rst_txfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_txfifo_reg;
   assign rst_rxfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_rxfifo_reg;
@@ -376,7 +376,7 @@ module spi_host #(
     .tx_underflow_o (txf_underflow),
 
     // SPI signal
-    .csb_i         (cio_csb_i),
+    .csb_i         (rst_spi_n),
     .mosi          (mosi_i),
     .miso          (miso_o),
     .miso_oe       (miso_en_o)
