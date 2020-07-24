@@ -330,7 +330,7 @@ module top_earlgrey #(
   assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
   assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
   assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
-  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div2_secure;
+  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div4_secure;
   assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
   assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
   assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
@@ -852,8 +852,8 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart_rx_break_err),
       .intr_rx_timeout_o    (intr_uart_rx_timeout),
       .intr_rx_parity_err_o (intr_uart_rx_parity_err),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   uart u_uart1 (
@@ -876,8 +876,8 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart1_rx_break_err),
       .intr_rx_timeout_o    (intr_uart1_rx_timeout),
       .intr_rx_parity_err_o (intr_uart1_rx_parity_err),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   uart u_uart2 (
@@ -900,8 +900,8 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart2_rx_break_err),
       .intr_rx_timeout_o    (intr_uart2_rx_timeout),
       .intr_rx_parity_err_o (intr_uart2_rx_parity_err),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   uart u_uart3 (
@@ -924,8 +924,8 @@ module top_earlgrey #(
       .intr_rx_break_err_o  (intr_uart3_rx_break_err),
       .intr_rx_timeout_o    (intr_uart3_rx_timeout),
       .intr_rx_parity_err_o (intr_uart3_rx_parity_err),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   gpio u_gpio (
@@ -941,8 +941,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   spi_device u_spi_device (
@@ -970,7 +970,7 @@ module top_earlgrey #(
       .spi_d2h_o(spi_device_spi_d2h),
       .spi_h2d_i(spi_host0_spi_h2d),
       .scanmode_i   (scanmode_i),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_device_n)
   );
 
@@ -1001,9 +1001,9 @@ module top_earlgrey #(
       .spi_d2h_i(spi_device_spi_d2h),
       .spi_h2d_o(spi_host0_spi_h2d),
       .scanmode_i   (scanmode_i),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .clk_spi_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n),
       .rst_spi_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
 
@@ -1034,9 +1034,9 @@ module top_earlgrey #(
       .spi_d2h_i(spi_pkg::SPI_D2H_DEFAULT),
       .spi_h2d_o(),
       .scanmode_i   (scanmode_i),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .clk_spi_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n),
       .rst_spi_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
@@ -1066,8 +1066,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_0_0_o (intr_rv_timer_timer_expired_0_0),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_timers),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   i2c u_i2c0 (
@@ -1094,8 +1094,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c0_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c0_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c0_sda_unstable),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   i2c u_i2c1 (
@@ -1122,8 +1122,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c1_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c1_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c1_sda_unstable),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   i2c u_i2c2 (
@@ -1150,8 +1150,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c2_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c2_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c2_sda_unstable),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   sensor_ctrl u_sensor_ctrl (
@@ -1174,8 +1174,8 @@ module top_earlgrey #(
       .ast_alert_i(sensor_ctrl_ast_alert_req),
       .ast_alert_o(sensor_ctrl_ast_alert_rsp),
       .ast_status_i(sensor_ctrl_ast_status),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n)
   );
 
   otp_ctrl u_otp_ctrl (
@@ -1205,8 +1205,8 @@ module top_earlgrey #(
       .otp_ram_main_key_o(otp_ctrl_otp_ram_main_key),
       .otp_ram_ret_aon_key_o(otp_ctrl_otp_ram_ret_aon_key),
       .otp_otbn_ram_key_o(otp_ctrl_otp_otbn_ram_key),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n)
   );
 
   lifecycle u_lifecycle (
@@ -1227,8 +1227,8 @@ module top_earlgrey #(
       .keymgr_o(),
       .strap_sample_o(lifecycle_strap_sample_req),
       .strap_sample_i(lifecycle_strap_sample_rsp),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_lc_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n)
   );
 
   aes u_aes (
@@ -1323,9 +1323,9 @@ module top_earlgrey #(
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n),
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n)
   );
 
@@ -1335,8 +1335,8 @@ module top_earlgrey #(
 
       .mio_attr_o,
       .dio_attr_o,
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   alert_handler u_alert_handler (
@@ -1384,9 +1384,9 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
       .wakeups_i(pwrmgr_aon_wakeups),
       .rstreqs_i('0),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_slow_i (clkmgr_aon_clocks.clk_aon_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n),
+      .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n),
       .rst_slow_ni (rstmgr_aon_resets.rst_por_aon_n)
   );
 
@@ -1403,7 +1403,7 @@ module top_earlgrey #(
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
       .scanmode_i   (scanmode_i),
       .scan_rst_ni  (scan_rst_ni),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_aon_clocks.clk_main_powerup),
       .clk_io_i (clkmgr_aon_clocks.clk_io_powerup),
@@ -1427,8 +1427,8 @@ module top_earlgrey #(
       .pwr_o(pwrmgr_aon_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
       .status_i(clkmgr_aon_status),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_powerup),
-      .rst_ni (rstmgr_aon_resets.rst_por_io_n),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
+      .rst_ni (rstmgr_aon_resets.rst_por_io_div4_n),
       .rst_main_ni (rstmgr_aon_resets.rst_por_n),
       .rst_io_ni (rstmgr_aon_resets.rst_por_io_n),
       .rst_usb_ni (rstmgr_aon_resets.rst_por_usb_n),
@@ -1491,8 +1491,8 @@ module top_earlgrey #(
       // Output
       .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
       .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   rv_timer u_timer_aon (
@@ -1501,8 +1501,8 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_timer_expired_0_0_o (intr_timer_aon_timer_expired_0_0),
-      .clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n)
   );
 
   nmi_gen u_nmi_gen (
@@ -1806,7 +1806,7 @@ module top_earlgrey #(
   // TL-UL Crossbar
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
-    .clk_fixed_i (clkmgr_aon_clocks.clk_io_div2_infra),
+    .clk_fixed_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_main_ni (rstmgr_aon_resets.rst_sys_n),
     .rst_fixed_ni (rstmgr_aon_resets.rst_sys_io_n),
     .tl_corei_i         (tl_corei_h_h2d),
@@ -1853,7 +1853,7 @@ module top_earlgrey #(
     .scanmode_i
   );
   xbar_peri u_xbar_peri (
-    .clk_peri_i (clkmgr_aon_clocks.clk_io_div2_infra),
+    .clk_peri_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_peri_ni (rstmgr_aon_resets.rst_sys_io_n),
     .tl_main_i        (tl_main_peri_h2d),
     .tl_main_o        (tl_main_peri_d2h),
@@ -1893,7 +1893,7 @@ module top_earlgrey #(
     .scanmode_i
   );
   xbar_aon u_xbar_aon (
-    .clk_aon_i (clkmgr_aon_clocks.clk_io_div2_infra),
+    .clk_aon_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_aon_ni (rstmgr_aon_resets.rst_sys_io_n),
     .tl_main_i        (tl_main_aon_h2d),
     .tl_main_o        (tl_main_aon_d2h),
