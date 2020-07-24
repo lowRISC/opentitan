@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:systems:ast_pkg
+      - lowrisc:prim:clock_buf
     files:
       - rtl/ast.sv
       - rtl/ast_wrapper.sv

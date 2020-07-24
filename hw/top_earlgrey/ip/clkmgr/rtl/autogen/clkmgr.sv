@@ -77,8 +77,14 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
-  assign clk_io_div2_i = clk_io_i;
-  assign clk_io_div4_i = clk_io_i;
+  prim_clock_buf i_prim_clock_buf_io_div2 (
+    .clk_i(clk_io_i),
+    .clk_o(clk_io_div2_i)
+  );
+  prim_clock_buf i_prim_clock_buf_io_div4 (
+    .clk_i(clk_io_i),
+    .clk_o(clk_io_div4_i)
+  );
 
 
 

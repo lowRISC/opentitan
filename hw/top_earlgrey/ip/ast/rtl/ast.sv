@@ -184,10 +184,23 @@ module ast #(
   //
   // For now, as a giant hack, this module temporarily routes the input clock back out for the
   // system to use.  This is NOT how it is meant to work, the clocks should be generated here.
-  assign clk_src_sys_o  = clk_ast_ext_i;
-  assign clk_src_usb_o  = clk_ast_ext_i;
-  assign clk_src_io_o   = clk_ast_ext_i;
-  assign clk_src_aon_o  = clk_ast_ext_i;
+  prim_clock_buf i_prim_clock_buf_sys (
+    .clk_i(clk_ast_ext_i),
+    .clk_o(clk_src_sys_o)
+  );
+  prim_clock_buf i_prim_clock_buf_usb (
+    .clk_i(clk_ast_ext_i),
+    .clk_o(clk_src_usb_o)
+  );
+  prim_clock_buf i_prim_clock_buf_io (
+    .clk_i(clk_ast_ext_i),
+    .clk_o(clk_src_io_o)
+  );
+  prim_clock_buf i_prim_clock_buf_aon (
+    .clk_i(clk_ast_ext_i),
+    .clk_o(clk_src_aon_o)
+  );
+
   assign clk_src_aon_val_o = 1'b1;
 
   always_ff @(posedge clk_ast_ext_i or negedge por_ni) begin

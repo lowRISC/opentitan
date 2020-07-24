@@ -76,7 +76,10 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in div_srcs:
-  assign clk_${src['name']}_i = clk_${src['src']}_i;
+  prim_clock_buf i_prim_clock_buf_${src['name']} (
+    .clk_i(clk_${src['src']}_i),
+    .clk_o(clk_${src['name']}_i)
+  );
 % endfor
 
 
