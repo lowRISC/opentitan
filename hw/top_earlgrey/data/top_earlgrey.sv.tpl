@@ -160,21 +160,6 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
-  // hard-wired ast clock / reset connections, these should be templated
-  // directly through clkmgr and rstmgr in the future
-  assign aux_o.clk_ast_adc      = clkmgr_aon_clocks.clk_aon_peri;
-  assign aux_o.clk_ast_rng      = clkmgr_aon_clocks.clk_main_peri;
-  assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
-  assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
-  assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
-  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div4_secure;
-  assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
-  assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
-  assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
-  assign aux_o.rst_ast_es_n     = rstmgr_aon_resets.rst_sys_n;
-  assign aux_o.rst_ast_alert_n  = rstmgr_aon_resets.rst_lc_n;
-  assign aux_o.rst_ast_tlul_n   = rstmgr_aon_resets.rst_lc_io_n;
-
 <%
   # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
   # So, total number of interrupts are the number of entries in the list + 1
@@ -231,6 +216,21 @@ module top_${top["name"]} #(
     clkmgr_aon_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
     clkmgr_aon_status.idle[0] = aes_idle;
   end
+
+  // hard-wired ast clock / reset connections, these should be templated
+  // directly through clkmgr and rstmgr in the future
+  assign aux_o.clk_ast_adc      = clkmgr_aon_clocks.clk_aon_peri;
+  assign aux_o.clk_ast_rng      = clkmgr_aon_clocks.clk_main_peri;
+  assign aux_o.clk_ast_usb      = clkmgr_aon_clocks.clk_usb_peri;
+  assign aux_o.clk_ast_es       = clkmgr_aon_clocks.clk_main_csrng;
+  assign aux_o.clk_ast_alert    = clkmgr_aon_clocks.clk_main_secure;
+  assign aux_o.clk_ast_tlul     = clkmgr_aon_clocks.clk_io_div4_secure;
+  assign aux_o.rst_ast_adc_n    = rstmgr_aon_resets.rst_sys_io_n;
+  assign aux_o.rst_ast_rng_n    = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_usb_n    = rstmgr_aon_resets.rst_usb_n;
+  assign aux_o.rst_ast_es_n     = rstmgr_aon_resets.rst_sys_n;
+  assign aux_o.rst_ast_alert_n  = rstmgr_aon_resets.rst_lc_n;
+  assign aux_o.rst_ast_tlul_n   = rstmgr_aon_resets.rst_lc_io_n;
 
 ## TODO: Inter-module signal Temporary connection
   assign csrng_csrng_cmd_req = '0;
