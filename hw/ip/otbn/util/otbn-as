@@ -665,9 +665,11 @@ class Transformer:
         # Search from pos for */
         idx = line.find('*/', pos)
 
-        # If there is no such index, return EOL (and leave self.in_comment set)
+        # If there is no such index, return EOL (and leave self.in_comment
+        # set). Don't eat the \n at the end of the line: that will be added by
+        # take_line.
         if idx == -1:
-            self.acc.append(line[pos:])
+            self.acc.append(line[pos:-1])
             return len(line) - 1
 
         # Otherwise, update pos to just after it and then eat any trailing
@@ -881,6 +883,7 @@ class Transformer:
 
             pos = self._continue_block_comment(line, pos)
             if self.in_comment:
+                self.acc.append('\n')
                 return
 
         # Finish up any nested string
