@@ -458,7 +458,7 @@ extern "C" {
 
 
 /**
- * PLIC Interrupt source peripheral enumeration.
+ * PLIC Interrupt Source Peripheral.
  *
  * Enumeration used to determine which peripheral asserted the corresponding
  * interrupt.
@@ -479,9 +479,9 @@ typedef enum top_earlgrey_plic_peripheral {
 } top_earlgrey_plic_peripheral_t;
 
 /**
- * PLIC Interrupt Ids Enumeration
+ * PLIC Interrupt Source.
  *
- * Enumeration of all PLIC interrupt source IDs. The IRQ IDs belonging to
+ * Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
  * the same peripheral are guaranteed to be consecutive.
  */
 typedef enum top_earlgrey_plic_irq_id {
@@ -571,7 +571,7 @@ typedef enum top_earlgrey_plic_irq_id {
 } top_earlgrey_plic_irq_id_t;
 
 /**
- * PLIC Interrupt Id to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map
  *
  * This array is a mapping from `top_earlgrey_plic_irq_id_t` to
  * `top_earlgrey_plic_peripheral_t`.
@@ -580,10 +580,10 @@ extern const top_earlgrey_plic_peripheral_t
     top_earlgrey_plic_interrupt_for_peripheral[82];
 
 /**
- * PLIC external interrupt target.
+ * PLIC Interrupt Target.
  *
  * Enumeration used to determine which set of IE, CC, threshold registers to
- * access dependent on the target.
+ * access for a given interrupt target.
  */
 typedef enum top_earlgrey_plic_target {
   kTopEarlgreyPlicTargetIbex0 = 0, /**< Ibex Core 0 */

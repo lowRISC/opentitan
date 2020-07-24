@@ -84,91 +84,37 @@ extern "C" {
 
 % endfor
 
-<%!
-
-from collections import OrderedDict
-
-def camelcase(str):
-    """Turns a string from 'snake_case' to 'CamelCase'."""
-    return "".join([part.capitalize() for part in str.split("_")])
-
-periperhal_enum_prefix = "kTopEarlgreyPlicPeripheral"
-def peripheral_enum_name(module_name):
-    """Generate name for a peripheral"""
-    return periperhal_enum_prefix + camelcase(module_name)
-
-interrupt_id_enum_prefix = "kTopEarlgreyPlicIrqId"
-def interrupt_id_enum_name(intr_name, intr_num=None):
-    """Generate name for an interrupt id (intr_name is prefixed with the module
-    name)"""
-    if intr_num is not None:
-        return interrupt_id_enum_prefix + camelcase(intr_name) + str(intr_num)
-    else:
-        return interrupt_id_enum_prefix + camelcase(intr_name)
-
-%>\
-## This dictionary will be used in the C implementation to generate
-## `top_${top["name"]}_plic_interrupt_for_peripheral`.
-<% c_gen_info["interrupt_id_map"] = OrderedDict() %>\
 /**
- * PLIC Interrupt source peripheral enumeration.
+ * PLIC Interrupt Source Peripheral.
  *
  * Enumeration used to determine which peripheral asserted the corresponding
  * interrupt.
  */
-typedef enum top_${top["name"]}_plic_peripheral {
-  ${peripheral_enum_name("unknown")} = 0, /**< Unknown Peripheral */
-<% enum_id = 1 %>\
-% for mod_name in top["interrupt_module"]:
-  ${peripheral_enum_name(mod_name)} = ${enum_id}, /**< ${mod_name} */
-<% enum_id += 1 %>\
-% endfor
-  ${peripheral_enum_name("last")} = ${enum_id - 1}, /**< \internal Final PLIC peripheral */
-} top_${top["name"]}_plic_peripheral_t;
+${helper.plic_sources.render()}
 
 /**
- * PLIC Interrupt Ids Enumeration
+ * PLIC Interrupt Source.
  *
- * Enumeration of all PLIC interrupt source IDs. The IRQ IDs belonging to
+ * Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
  * the same peripheral are guaranteed to be consecutive.
  */
-typedef enum top_${top["name"]}_plic_irq_id {
-  ${interrupt_id_enum_name("none")} = 0, /**< No Interrupt */
-<% c_gen_info["interrupt_id_map"][interrupt_id_enum_name("none")] = peripheral_enum_name("unknown") %>\
-<% enum_id = 1 %>\
-% for intr in top["interrupt"]:
-    % if "width" in intr and int(intr["width"]) != 1:
-        % for i in range(int(intr["width"])):
-  ${interrupt_id_enum_name(intr["name"], i)} = ${enum_id}, /**< ${intr["name"]} ${i} */
-<% c_gen_info["interrupt_id_map"][interrupt_id_enum_name(intr["name"], i)] = peripheral_enum_name(intr["module_name"]) %>\
-<% enum_id += 1 %>\
-        % endfor
-    % else:
-  ${interrupt_id_enum_name(intr["name"])} = ${enum_id}, /**< ${intr["name"]} */
-<% c_gen_info["interrupt_id_map"][interrupt_id_enum_name(intr["name"])] = peripheral_enum_name(intr["module_name"]) %>\
-<% enum_id += 1 %>\
-    % endif
-% endfor
-  ${interrupt_id_enum_name("last")} = ${enum_id - 1}, /**< \internal The Last Valid Interrupt ID. */
-} top_${top["name"]}_plic_irq_id_t;
+${helper.plic_interrupts.render()}
 
 /**
- * PLIC Interrupt Id to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map
  *
- * This array is a mapping from `top_${top["name"]}_plic_irq_id_t` to
- * `top_${top["name"]}_plic_peripheral_t`.
+ * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
+ * `${helper.plic_sources.name.as_c_type()}`.
  */
-extern const top_${top["name"]}_plic_peripheral_t
-    top_${top["name"]}_plic_interrupt_for_peripheral[${len(c_gen_info["interrupt_id_map"])}];
+${helper.plic_mapping.render_declaration()}
 
 /**
- * PLIC external interrupt target.
+ * PLIC Interrupt Target.
  *
  * Enumeration used to determine which set of IE, CC, threshold registers to
- * access dependent on the target.
+ * access for a given interrupt target.
  */
-<% plic_targets = helper.plic_targets() %>\
-${plic_targets.render()}
+${helper.plic_targets.render()}
 
 // Header Extern Guard
 #ifdef __cplusplus
