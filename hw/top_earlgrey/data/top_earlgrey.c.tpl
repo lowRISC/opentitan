@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "${c_gen_info["header_path"]}"
+#include "${helper.header_path}"
 
 /**
  * PLIC Interrupt Source to Peripheral Map

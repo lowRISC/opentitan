@@ -132,6 +132,9 @@ class TopGenC(object):
         self.top = top_info
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
 
+        # The .c file needs the .h file's relative path, store it here
+        self.header_path = None
+
         self._init_plic_targets()
         self._init_plic_mapping()
 
