@@ -50,37 +50,37 @@ extern "C" {
   % endif
 % endfor
 
-% for m in top["module"]:
+% for name, region in helper.modules():
 /**
- * Peripheral base address for ${m["name"]} in top ${top["name"]}.
+ * Peripheral base address for ${name} in top ${top["name"]}.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}u
+#define ${region.base_addr_name().as_c_define()} ${region.base_addr}u
 
 /**
- * Peripheral size for ${m["name"]} in top ${top["name"]}.
+ * Peripheral size for ${name} in top ${top["name"]}.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR and
- * `TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR + TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES`.
+ * address between #${region.base_addr_name().as_c_define()} and
+ * `${region.base_addr_name().as_c_define()} + ${region.size_bytes_name().as_c_define()}`.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}u
+#define ${region.size_bytes_name().as_c_define()} ${region.size_bytes}u
 
 % endfor
 
-% for m in top["memory"]:
+% for name, region in helper.memories():
 /**
- * Memory base address for ${m["name"]} in top ${top["name"]}.
+ * Memory base address for ${name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}u
+#define ${region.base_addr_name().as_c_define()} ${region.base_addr}u
 
 /**
- * Memory size for ${m["name"]} in top ${top["name"]}.
+ * Memory size for ${name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}u
+#define ${region.size_bytes_name().as_c_define()} ${region.size_bytes}u
 
 % endfor
 
