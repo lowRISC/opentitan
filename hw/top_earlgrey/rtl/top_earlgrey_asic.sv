@@ -185,7 +185,7 @@ module top_earlgrey_asic (
                         2'd2, // USB_P          -- tolerant
                         2'd2  // USB_N          -- tolerant
                       } )
-  ) padring (
+  ) u_padring (
     // Clk / Rst
     .clk_pad_i           ( IO_CLK           ),
     .rst_pad_ni          ( IO_RST_N         ),
@@ -327,20 +327,16 @@ module top_earlgrey_asic (
   // Parameterizeable JTAG overlay mux.
   // Unaffected indices are just passed through.
   jtag_mux #(
-    .NumIOs         (                   NumIOs       ),
-    .TieOffValues   (                   TieOffValues ),
-    .JtagEnIdx      (                             30 ), // MIO 30
-    .JtagEnPolarity (                              1 ),
-    .TckIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
-    .TrstIdx        (                             9  ), // MIO 9
-    .SrstIdx        (                             10 ), // MIO 10
-    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS0 ),
-    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceS1 ),
+    .NumIOs         ( NumIOs       ),
+    .TieOffValues   ( TieOffValues ),
+    .JtagEnIdx      (           25 ), // IOC7 -- MIO 25
+    .JtagEnPolarity (            1 ),
+    .TckIdx         (           33 ), // IOR3 -- MIO 33
+    .TmsIdx         (           30 ), // IOR0 -- MIO 30
+    .TrstIdx        (           34 ), // IOR4 -- MIO 34
+    .SrstIdx        (           35 ), // IOR5 -- MIO 35
+    .TdiIdx         (           32 ), // IOR2 -- MIO 32
+    .TdoIdx         (           31 ), // IOR1 -- MIO 31
     .UsbDpPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDpPullup ),
     .UsbDnPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDnPullup ),
     .UsbDIdx        ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonD )
