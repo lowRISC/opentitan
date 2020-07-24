@@ -167,14 +167,8 @@ extern const top_${top["name"]}_plic_peripheral_t
  * Enumeration used to determine which set of IE, CC, threshold registers to
  * access dependent on the target.
  */
-typedef enum top_${top["name"]}_plic_target {
-<% enum_id = 0 %>\
-% for core_id in range(int(top["num_cores"])):
-  kTopEarlgreyPlicTargetIbex${core_id} = ${enum_id}, /**< Ibex Core ${core_id} */
-<% enum_id += 1 %>\
-% endfor
-  kTopEarlgreyPlicTargetLast = ${enum_id - 1}, /**< \internal Final PLIC target */
-} top_${top["name"]}_plic_target_t;
+<% plic_targets = helper.plic_targets() %>\
+${plic_targets.render()}
 
 // Header Extern Guard
 #ifdef __cplusplus
