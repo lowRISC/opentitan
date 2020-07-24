@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-pylibs := insn_yaml.py
+pylibs := insn_yaml.py mem_layout.py
 pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 .PHONY: all
@@ -13,7 +13,7 @@ lint-targets := $(addprefix lint-,$(pyscripts))
 lint: $(lint-targets)
 
 $(lint-targets): lint-%:
-	mypy --strict $*
+	mypy --strict $* $(pylibs)
 
 
 asm-snippets := $(notdir $(wildcard ../code-snippets/*.S))

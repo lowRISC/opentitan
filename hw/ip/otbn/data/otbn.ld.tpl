@@ -6,19 +6,18 @@
   OTBN has a pure Harvard architecture, with instruction and data
   memory both starting at address 0.
 
-  We give each 1MiB of space: too much for the eventual chip - let's
-  come back to this once we know how much space we'll have or (harder)
-  auto-generate it from the address map.
+  This linker script template is interpolated by otbn-ld after it gets
+  the LMAs and memory sizes from otbn.hjson.
 
 */
 MEMORY
 {
-    imem (x)  : ORIGIN = 0, LENGTH = 1M
-    dmem (rw) : ORIGIN = 0, LENGTH = 1M
+    imem (x)  : ORIGIN = 0, LENGTH = ${imem_length}
+    dmem (rw) : ORIGIN = 0, LENGTH = ${dmem_length}
 
     /* LMA addresses (for VMAs in imem/dmem, respectively) */
-    imem_load (rw) : ORIGIN = 1M, LENGTH = 1M
-    dmem_load (rw) : ORIGIN = 1M, LENGTH = 1M
+    imem_load (rw) : ORIGIN = ${imem_lma}, LENGTH = ${imem_length}
+    dmem_load (rw) : ORIGIN = ${dmem_lma}, LENGTH = ${dmem_length}
 }
 
 SECTIONS

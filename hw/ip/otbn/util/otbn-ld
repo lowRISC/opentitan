@@ -11,24 +11,58 @@ linker.'''
 import os
 import subprocess
 import sys
+import tempfile
+
+from mako.template import Template  # type: ignore
+from mako import exceptions  # type: ignore
+
+import mem_layout
+
+
+def interpolate_linker_script(in_path: str, out_path: str) -> None:
+    mems = mem_layout.get_memory_layout()
+
+    try:
+        template = Template(filename=in_path)
+        rendered = template.render(imem_lma = mems['IMEM'][0],
+                                   imem_length = mems['IMEM'][1],
+                                   dmem_lma = mems['DMEM'][0],
+                                   dmem_length = mems['DMEM'][1])
+    except OSError as err:
+        raise RuntimeError(str(err)) from None
+    except:  # noqa: 722
+        raise RuntimeError(exceptions.text_error_template().render()) from None
+
+    try:
+        with open(out_path, 'w') as out_file:
+            out_file.write(rendered)
+    except FileNotFoundError:
+        raise RuntimeError('Failed to open output file at {!r}.'
+                           .format(out_path)) from None
 
 
 def main() -> int:
-    ld_script = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', 'data', 'otbn.ld'))
-    if not os.path.exists(ld_script):
-        sys.stderr.write('Default linker script ({!r}) does not exist.'
-                         .format(ld_script))
+    ld_in = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                          '..', 'data', 'otbn.ld.tpl'))
 
-    try:
-        ld_name = 'riscv32-unknown-elf-ld'
-        cmd = [ld_name, '--script={}'.format(ld_script)] + sys.argv[1:]
-        return subprocess.run(cmd).returncode
-    except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}. '
-                         '(is it installed and on your PATH?)\n'
-                         .format(ld_name))
-        return 127
+    with tempfile.TemporaryDirectory(prefix='otbn-ld-') as tmpdir:
+        ld_out = os.path.join(tmpdir, 'otbn.ld')
+        try:
+            interpolate_linker_script(ld_in, ld_out)
+        except RuntimeError as err:
+            sys.stderr.write('Failed to interpolate linker script: {}\n'
+                             .format(err))
+            return 1
+
+        try:
+            ld_name = 'riscv32-unknown-elf-ld'
+            cmd = [ld_name, '--script={}'.format(ld_out)] + sys.argv[1:]
+            return subprocess.run(cmd).returncode
+        except FileNotFoundError:
+            sys.stderr.write('Unknown command: {!r}. '
+                             '(is it installed and on your PATH?)\n'
+                             .format(ld_name))
+            return 127
 
 
 if __name__ == '__main__':
