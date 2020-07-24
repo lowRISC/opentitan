@@ -94,12 +94,12 @@ module clkmgr import clkmgr_pkg::*; (
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_io_div2_powerup = clk_io_div2_i;
+  assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
   assign clocks_o.clk_aon_powerup = clk_aon_i;
   assign clocks_o.clk_main_powerup = clk_main_i;
   assign clocks_o.clk_io_powerup = clk_io_i;
   assign clocks_o.clk_usb_powerup = clk_usb_i;
-  assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
+  assign clocks_o.clk_io_div2_powerup = clk_io_div2_i;
   assign clocks_o.clk_aon_secure = clk_aon_i;
   assign clocks_o.clk_aon_peri = clk_aon_i;
 
@@ -201,37 +201,21 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
   assign clocks_o.clk_main_infra = clk_main_root;
   assign clocks_o.clk_io_infra = clk_io_root;
-  assign clocks_o.clk_io_div2_infra = clk_io_div2_root;
-  assign clocks_o.clk_io_div2_secure = clk_io_div2_root;
+  assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+  assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
   assign clocks_o.clk_main_secure = clk_main_root;
-  assign clocks_o.clk_io_div2_timers = clk_io_div2_root;
+  assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
   ////////////////////////////////////////////////////
   // Software direct control group
   ////////////////////////////////////////////////////
 
-  logic clk_io_div2_peri_sw_en;
   logic clk_io_div4_peri_sw_en;
+  logic clk_io_div2_peri_sw_en;
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
   logic clk_main_peri_sw_en;
-
-  prim_flop_2sync #(
-    .Width(1)
-  ) i_clk_io_div2_peri_sw_en_sync (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_io_div2_ni),
-    .d(reg2hw.clk_enables.clk_io_div2_peri_en.q),
-    .q(clk_io_div2_peri_sw_en)
-  );
-
-  prim_clock_gating i_clk_io_div2_peri_cg (
-    .clk_i(clk_io_div2_i),
-    .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
-    .test_en_i(dft_i.test_en),
-    .clk_o(clocks_o.clk_io_div2_peri)
-  );
 
   prim_flop_2sync #(
     .Width(1)
@@ -247,6 +231,22 @@ module clkmgr import clkmgr_pkg::*; (
     .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_io_div4_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) i_clk_io_div2_peri_sw_en_sync (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .d(reg2hw.clk_enables.clk_io_div2_peri_en.q),
+    .q(clk_io_div2_peri_sw_en)
+  );
+
+  prim_clock_gating i_clk_io_div2_peri_cg (
+    .clk_i(clk_io_div2_i),
+    .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
+    .test_en_i(dft_i.test_en),
+    .clk_o(clocks_o.clk_io_div2_peri)
   );
 
   prim_flop_2sync #(
