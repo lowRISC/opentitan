@@ -84,9 +84,6 @@ bool test_main(void) {
         "This test is not expected to run on platforms other than the "
         "Verilator simulation. It needs the USB DPI model.");
 
-  uart_init(kUartBaudrate);
-  base_set_stdout(uart_stdout);
-
   LOG_INFO("Running USBDEV test");
 
   // Call `usbdev_init` here so that DPI will not start until the
