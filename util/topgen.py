@@ -1030,9 +1030,9 @@ def main():
         render_template('top_%s_pkg.sv', 'rtl/autogen')
 
         # C Header + C File + Clang-format file
-        # The C file needs some information from when the header is generated,
-        # so we keep this in a dictionary here.
-        c_gen_info = {}
+
+        # The C file needs some complex information, so we initialize this
+        # object to store it.
         c_helper = TopGenC(completecfg)
 
         # 'clang-format' -> 'sw/autogen/.clang-format'
@@ -1045,15 +1045,14 @@ def main():
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
         cheader_path = render_template('top_%s.h',
                                        'sw/autogen',
-                                       c_gen_info=c_gen_info,
                                        helper=c_helper).resolve()
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
-        c_gen_info["header_path"] = str(rel_header_path)
+        c_helper.header_path = str(rel_header_path)
 
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
-        render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info, helper=c_helper)
+        render_template('top_%s.c', 'sw/autogen', helper=c_helper)
 
         # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
