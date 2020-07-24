@@ -20,7 +20,14 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   rand flash_op_t flash_op;
 
   constraint flash_op_c {
+    solve flash_op.op before flash_op.erase_type;
+    solve flash_op.op before flash_op.num_words;
+
     flash_op.addr inside {[0:FlashSizeBytes-1]};
+
+    if (!cfg.seq_cfg.op_allow_invalid) {
+      flash_op.op != flash_ctrl_pkg::FlashOpInvalid;
+    }
 
     (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
         flash_op.erase_type dist {
@@ -217,7 +224,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op_data)
 
         `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %0d/%0d: %p",
-                                  j, num_flash_ops_per_cfg, flash_op), UVM_MEDIUM)
+                                  j, num_flash_ops_per_cfg, flash_op), UVM_LOW)
 
         // Bkdr initialize the flash mem based on op.
         flash_ctrl_prep_mem(flash_op);
