@@ -22,6 +22,7 @@ from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
 from topgen import intermodule as im
+from topgen.c import TopGenC
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -1032,6 +1033,7 @@ def main():
         # The C file needs some information from when the header is generated,
         # so we keep this in a dictionary here.
         c_gen_info = {}
+        c_helper = TopGenC(completecfg)
 
         # 'clang-format' -> 'sw/autogen/.clang-format'
         cformat_tplpath = tpl_path / 'clang-format'
@@ -1043,14 +1045,15 @@ def main():
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
         cheader_path = render_template('top_%s.h',
                                        'sw/autogen',
-                                       c_gen_info=c_gen_info).resolve()
+                                       c_gen_info=c_gen_info,
+                                       helper=c_helper).resolve()
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
         c_gen_info["header_path"] = str(rel_header_path)
 
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
-        render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
+        render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info, helper=c_helper)
 
         # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
