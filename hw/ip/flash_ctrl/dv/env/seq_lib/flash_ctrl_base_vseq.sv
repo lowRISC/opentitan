@@ -268,34 +268,33 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Ensure that the flash page / bank has indeed been erased.
   virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op);
     flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
-    bit [TL_AW-1:0]         start_addr;
+    bit [TL_AW-1:0]         erase_check_addr;
     uint                    num_words;
 
     case (flash_op.erase_type)
       flash_ctrl_pkg::FlashErasePage: begin
-        start_addr = addr_attrs.page_start_addr;
+        erase_check_addr = addr_attrs.page_start_addr;
         num_words = FlashNumBusWordsPerPage;
       end
       flash_ctrl_pkg::FlashEraseBank: begin
         // TODO: check if bank erase was supported
-        start_addr = addr_attrs.bank_start_addr;
+        erase_check_addr = addr_attrs.bank_start_addr;
         num_words = FlashNumBusWordsPerBank;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
       end
     endcase
-    `uvm_info(`gfn, $sformatf("{%s}: start_addr = 0x%0h, num_words = %0d",
-                              addr_attrs.sprint(), start_addr, num_words), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: addr = 0x%0h, num_words = %0d",
+                              erase_check_addr, num_words), UVM_MEDIUM)
 
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
-      addr_attrs.incr(TL_DBW);
-      data = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(
-          addr_attrs.bank_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: {%s} = 0x%0h",
-                                addr_attrs.sprint(), data), UVM_MEDIUM)
+      data = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
+      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: bank: %0d, addr: 0x%0h, data: 0x%0h",
+                                addr_attrs.bank, erase_check_addr, data), UVM_MEDIUM)
       `DV_CHECK_CASE_EQ(data, '1)
+      erase_check_addr += TL_DBW;
     end
   endfunction
 

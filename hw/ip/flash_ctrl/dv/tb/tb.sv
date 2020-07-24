@@ -34,21 +34,24 @@ module tb;
 
   // dut
   flash_ctrl_wrapper dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
+    .clk_i              (clk      ),
+    .rst_ni             (rst_n    ),
 
-    .flash_ctrl_tl_i      (tl_if.h2d  ),
-    .flash_ctrl_tl_o      (tl_if.d2h  ),
+    .flash_ctrl_tl_i    (tl_if.h2d),
+    .flash_ctrl_tl_o    (tl_if.d2h),
 
-    .eflash_tl_i          (eflash_tl_if.h2d),
-    .eflash_tl_o          (eflash_tl_if.d2h),
+    .eflash_tl_i        (eflash_tl_if.h2d),
+    .eflash_tl_o        (eflash_tl_if.d2h),
 
-    .intr_prog_empty_o (intr_prog_empty ),
-    .intr_prog_lvl_o   (intr_prog_lvl   ),
-    .intr_rd_full_o    (intr_rd_full    ),
-    .intr_rd_lvl_o     (intr_rd_lvl     ),
-    .intr_op_done_o    (intr_op_done    ),
-    .intr_op_error_o   (intr_op_error   )
+    // TODO: create and hook this up to an interface.
+    .otp_i              (flash_ctrl_pkg::OTP_FLASH_DEFAULT),
+
+    .intr_prog_empty_o  (intr_prog_empty),
+    .intr_prog_lvl_o    (intr_prog_lvl  ),
+    .intr_rd_full_o     (intr_rd_full   ),
+    .intr_rd_lvl_o      (intr_rd_lvl    ),
+    .intr_op_done_o     (intr_op_done   ),
+    .intr_op_error_o    (intr_op_error  )
   );
 
   // bind mem_bkdr_if

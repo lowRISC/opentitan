@@ -14,6 +14,9 @@ module flash_ctrl_wrapper (
   input        tlul_pkg::tl_h2d_t eflash_tl_i,
   output       tlul_pkg::tl_d2h_t eflash_tl_o,
 
+  // OTP interface
+  input        flash_ctrl_pkg::otp_flash_t otp_i,
+
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
   output logic intr_prog_lvl_o,   // Program fifo is empty
@@ -42,6 +45,7 @@ module flash_ctrl_wrapper (
     // Inter-module signals
     .flash_o  (flash_ctrl_flash_req),
     .flash_i  (flash_ctrl_flash_rsp),
+    .otp_i    (otp_i),
 
     .clk_i    (clk_i),
     .rst_ni   (rst_ni)
