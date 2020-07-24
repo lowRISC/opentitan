@@ -7,6 +7,7 @@
 
 import argparse
 import sys
+from typing import List
 
 from insn_yaml import (BoolLiteral, Encoding, Insn, InsnsFile, Operand,
                        load_file)
@@ -134,6 +135,18 @@ def render_encoding(mnemonic: str, encoding: Encoding) -> str:
     return ''.join(parts)
 
 
+def render_literal_pseudo_op(rewrite: List[str]) -> str:
+    '''Generate documentation with expansion of a pseudo op'''
+    parts = []
+    parts.append('This instruction is a pseudo-operation and expands to the '
+                 'following instruction sequence:\n```\n')
+    for line in rewrite:
+        parts.append(line)
+        parts.append('\n')
+    parts.append('```\n\n')
+    return ''.join(parts)
+
+
 def render_insn(insn: Insn, heading_level: int) -> str:
     '''Generate the documentation for an instruction
 
@@ -192,6 +205,10 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     # Show encoding if we have one
     if insn.encoding is not None:
         parts.append(render_encoding(insn.mnemonic, insn.encoding))
+
+    # If this is a pseudo-op with a literal translation, show it
+    if insn.literal_pseudo_op is not None:
+        parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
 
     # Show decode pseudo-code if given
     if insn.decode is not None:

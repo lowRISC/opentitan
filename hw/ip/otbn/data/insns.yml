@@ -436,6 +436,17 @@ encoding-schemes:
 #                assembly syntax, or deviations from the usual meaning of the
 #                instruction. (optional)
 #
+#  literal-pseudo-op: This instruction is a pseudo-operation that expands into
+#                     a list of underlying RISC-V operations, given as a list.
+#                     Optional. Can't be specified with encoding or
+#                     python-pseudo-op.
+#
+#  python-pseudo-op: A boolean. If true then this instruction is a
+#                    pseudo-operation but is complicated to describe. The
+#                    assembler has some hardcoded logic to deal with it.
+#                    Optional, default false. Can't be true if encoding or
+#                    literal-pseudo-op is specified.
+#
 # The operands field should be a list, corresponding to the operands in the
 # order they will appear in the syntax. Each operand is either a string (the
 # operand name) or a dictionary. In the latter case, it has the following
@@ -909,6 +920,32 @@ insns:
       mapping:
         bodysize: bodysize
         iterations: iterations
+
+  - mnemonic: nop
+    synopsis: No Operation
+    rv32i: true
+    operands: []
+    doc: A pseudo-operation that has no effect.
+    literal-pseudo-op:
+      - addi x0, x0, 0
+
+  - mnemonic: li
+    synopsis: Load Immediate
+    rv32i: true
+    operands: [grd, imm]
+    doc: |
+      Load a 32b immediate value into a GPR. This uses ADDI and LUI, expanding
+      to one or two instructions, depending on the immediate (small immediates
+      or immediates with all lower bits zero can be loaded with just ADDI or
+      LUI, respectively; general immediates need a LUI followed by an ADDI).
+    python-pseudo-op: true
+
+  - mnemonic: ret
+    synopsis: Return from subroutine
+    rv32i: true
+    operands: []
+    literal-pseudo-op:
+      - JALR x0, x1, 0
 
   - mnemonic: bn.add
     group: bignum
