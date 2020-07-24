@@ -75,7 +75,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } min;
+    } min_v;
     struct packed {
       logic        q;
       logic        qe;
@@ -87,7 +87,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } max;
+    } max_v;
   } dcd_reg2hw_adc_chn0_filter_ctl_mreg_t;
 
   typedef struct packed {
@@ -98,7 +98,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } min;
+    } min_v;
     struct packed {
       logic        q;
       logic        qe;
@@ -110,7 +110,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } max;
+    } max_v;
   } dcd_reg2hw_adc_chn1_filter_ctl_mreg_t;
 
   typedef struct packed {
@@ -327,7 +327,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } min;
+    } min_v;
     struct packed {
       logic        d;
       logic        de;
@@ -339,7 +339,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } max;
+    } max_v;
   } dcd_hw2reg_adc_chn0_filter_ctl_mreg_t;
 
   typedef struct packed {
@@ -350,7 +350,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } min;
+    } min_v;
     struct packed {
       logic        d;
       logic        de;
@@ -362,7 +362,7 @@ package dcd_reg_pkg;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } max;
+    } max_v;
   } dcd_hw2reg_adc_chn1_filter_ctl_mreg_t;
 
   typedef struct packed {

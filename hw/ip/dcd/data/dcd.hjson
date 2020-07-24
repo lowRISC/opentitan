@@ -140,7 +140,7 @@
 	    desc: "2-bit extension; RO 0",
 	  }
           { bits: "11:2",
-	    name: "min",
+	    name: "min_v",
 	    desc: "10-bit for chn0 filter min value ",
 	  }
           { bits: "12",
@@ -152,7 +152,7 @@
 	    desc: "2-bit extension; RO 0",
 	  }
           { bits: "27:18",
-	    name: "max",
+	    name: "max_v",
 	    desc: "10-bit for chn0 filter max value ",
 	  }
         ],
@@ -180,7 +180,7 @@
 	    desc: "2-bit extension; RO 0",
 	  }
           { bits: "11:2",
-	    name: "min",
+	    name: "min_v",
 	    desc: "10-bit for chn0 filter min value ",
 	  }
           { bits: "12",
@@ -192,7 +192,7 @@
 	    desc: "2-bit extension; RO 0",
 	  }
           { bits: "27:18",
-	    name: "max",
+	    name: "max_v",
 	    desc: "10-bit for chn0 filter max value ",
 	  }
         ],

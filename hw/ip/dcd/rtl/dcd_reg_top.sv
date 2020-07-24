@@ -106,243 +106,243 @@ module dcd_reg_top (
   logic [1:0] adc_chn0_filter_ctl0_min_ext0_qs;
   logic [1:0] adc_chn0_filter_ctl0_min_ext0_wd;
   logic adc_chn0_filter_ctl0_min_ext0_we;
-  logic [9:0] adc_chn0_filter_ctl0_min0_qs;
-  logic [9:0] adc_chn0_filter_ctl0_min0_wd;
-  logic adc_chn0_filter_ctl0_min0_we;
+  logic [9:0] adc_chn0_filter_ctl0_min_v0_qs;
+  logic [9:0] adc_chn0_filter_ctl0_min_v0_wd;
+  logic adc_chn0_filter_ctl0_min_v0_we;
   logic adc_chn0_filter_ctl0_cond0_qs;
   logic adc_chn0_filter_ctl0_cond0_wd;
   logic adc_chn0_filter_ctl0_cond0_we;
   logic [1:0] adc_chn0_filter_ctl0_max_ext0_qs;
   logic [1:0] adc_chn0_filter_ctl0_max_ext0_wd;
   logic adc_chn0_filter_ctl0_max_ext0_we;
-  logic [9:0] adc_chn0_filter_ctl0_max0_qs;
-  logic [9:0] adc_chn0_filter_ctl0_max0_wd;
-  logic adc_chn0_filter_ctl0_max0_we;
+  logic [9:0] adc_chn0_filter_ctl0_max_v0_qs;
+  logic [9:0] adc_chn0_filter_ctl0_max_v0_wd;
+  logic adc_chn0_filter_ctl0_max_v0_we;
   logic [1:0] adc_chn0_filter_ctl1_min_ext1_qs;
   logic [1:0] adc_chn0_filter_ctl1_min_ext1_wd;
   logic adc_chn0_filter_ctl1_min_ext1_we;
-  logic [9:0] adc_chn0_filter_ctl1_min1_qs;
-  logic [9:0] adc_chn0_filter_ctl1_min1_wd;
-  logic adc_chn0_filter_ctl1_min1_we;
+  logic [9:0] adc_chn0_filter_ctl1_min_v1_qs;
+  logic [9:0] adc_chn0_filter_ctl1_min_v1_wd;
+  logic adc_chn0_filter_ctl1_min_v1_we;
   logic adc_chn0_filter_ctl1_cond1_qs;
   logic adc_chn0_filter_ctl1_cond1_wd;
   logic adc_chn0_filter_ctl1_cond1_we;
   logic [1:0] adc_chn0_filter_ctl1_max_ext1_qs;
   logic [1:0] adc_chn0_filter_ctl1_max_ext1_wd;
   logic adc_chn0_filter_ctl1_max_ext1_we;
-  logic [9:0] adc_chn0_filter_ctl1_max1_qs;
-  logic [9:0] adc_chn0_filter_ctl1_max1_wd;
-  logic adc_chn0_filter_ctl1_max1_we;
+  logic [9:0] adc_chn0_filter_ctl1_max_v1_qs;
+  logic [9:0] adc_chn0_filter_ctl1_max_v1_wd;
+  logic adc_chn0_filter_ctl1_max_v1_we;
   logic [1:0] adc_chn0_filter_ctl2_min_ext2_qs;
   logic [1:0] adc_chn0_filter_ctl2_min_ext2_wd;
   logic adc_chn0_filter_ctl2_min_ext2_we;
-  logic [9:0] adc_chn0_filter_ctl2_min2_qs;
-  logic [9:0] adc_chn0_filter_ctl2_min2_wd;
-  logic adc_chn0_filter_ctl2_min2_we;
+  logic [9:0] adc_chn0_filter_ctl2_min_v2_qs;
+  logic [9:0] adc_chn0_filter_ctl2_min_v2_wd;
+  logic adc_chn0_filter_ctl2_min_v2_we;
   logic adc_chn0_filter_ctl2_cond2_qs;
   logic adc_chn0_filter_ctl2_cond2_wd;
   logic adc_chn0_filter_ctl2_cond2_we;
   logic [1:0] adc_chn0_filter_ctl2_max_ext2_qs;
   logic [1:0] adc_chn0_filter_ctl2_max_ext2_wd;
   logic adc_chn0_filter_ctl2_max_ext2_we;
-  logic [9:0] adc_chn0_filter_ctl2_max2_qs;
-  logic [9:0] adc_chn0_filter_ctl2_max2_wd;
-  logic adc_chn0_filter_ctl2_max2_we;
+  logic [9:0] adc_chn0_filter_ctl2_max_v2_qs;
+  logic [9:0] adc_chn0_filter_ctl2_max_v2_wd;
+  logic adc_chn0_filter_ctl2_max_v2_we;
   logic [1:0] adc_chn0_filter_ctl3_min_ext3_qs;
   logic [1:0] adc_chn0_filter_ctl3_min_ext3_wd;
   logic adc_chn0_filter_ctl3_min_ext3_we;
-  logic [9:0] adc_chn0_filter_ctl3_min3_qs;
-  logic [9:0] adc_chn0_filter_ctl3_min3_wd;
-  logic adc_chn0_filter_ctl3_min3_we;
+  logic [9:0] adc_chn0_filter_ctl3_min_v3_qs;
+  logic [9:0] adc_chn0_filter_ctl3_min_v3_wd;
+  logic adc_chn0_filter_ctl3_min_v3_we;
   logic adc_chn0_filter_ctl3_cond3_qs;
   logic adc_chn0_filter_ctl3_cond3_wd;
   logic adc_chn0_filter_ctl3_cond3_we;
   logic [1:0] adc_chn0_filter_ctl3_max_ext3_qs;
   logic [1:0] adc_chn0_filter_ctl3_max_ext3_wd;
   logic adc_chn0_filter_ctl3_max_ext3_we;
-  logic [9:0] adc_chn0_filter_ctl3_max3_qs;
-  logic [9:0] adc_chn0_filter_ctl3_max3_wd;
-  logic adc_chn0_filter_ctl3_max3_we;
+  logic [9:0] adc_chn0_filter_ctl3_max_v3_qs;
+  logic [9:0] adc_chn0_filter_ctl3_max_v3_wd;
+  logic adc_chn0_filter_ctl3_max_v3_we;
   logic [1:0] adc_chn0_filter_ctl4_min_ext4_qs;
   logic [1:0] adc_chn0_filter_ctl4_min_ext4_wd;
   logic adc_chn0_filter_ctl4_min_ext4_we;
-  logic [9:0] adc_chn0_filter_ctl4_min4_qs;
-  logic [9:0] adc_chn0_filter_ctl4_min4_wd;
-  logic adc_chn0_filter_ctl4_min4_we;
+  logic [9:0] adc_chn0_filter_ctl4_min_v4_qs;
+  logic [9:0] adc_chn0_filter_ctl4_min_v4_wd;
+  logic adc_chn0_filter_ctl4_min_v4_we;
   logic adc_chn0_filter_ctl4_cond4_qs;
   logic adc_chn0_filter_ctl4_cond4_wd;
   logic adc_chn0_filter_ctl4_cond4_we;
   logic [1:0] adc_chn0_filter_ctl4_max_ext4_qs;
   logic [1:0] adc_chn0_filter_ctl4_max_ext4_wd;
   logic adc_chn0_filter_ctl4_max_ext4_we;
-  logic [9:0] adc_chn0_filter_ctl4_max4_qs;
-  logic [9:0] adc_chn0_filter_ctl4_max4_wd;
-  logic adc_chn0_filter_ctl4_max4_we;
+  logic [9:0] adc_chn0_filter_ctl4_max_v4_qs;
+  logic [9:0] adc_chn0_filter_ctl4_max_v4_wd;
+  logic adc_chn0_filter_ctl4_max_v4_we;
   logic [1:0] adc_chn0_filter_ctl5_min_ext5_qs;
   logic [1:0] adc_chn0_filter_ctl5_min_ext5_wd;
   logic adc_chn0_filter_ctl5_min_ext5_we;
-  logic [9:0] adc_chn0_filter_ctl5_min5_qs;
-  logic [9:0] adc_chn0_filter_ctl5_min5_wd;
-  logic adc_chn0_filter_ctl5_min5_we;
+  logic [9:0] adc_chn0_filter_ctl5_min_v5_qs;
+  logic [9:0] adc_chn0_filter_ctl5_min_v5_wd;
+  logic adc_chn0_filter_ctl5_min_v5_we;
   logic adc_chn0_filter_ctl5_cond5_qs;
   logic adc_chn0_filter_ctl5_cond5_wd;
   logic adc_chn0_filter_ctl5_cond5_we;
   logic [1:0] adc_chn0_filter_ctl5_max_ext5_qs;
   logic [1:0] adc_chn0_filter_ctl5_max_ext5_wd;
   logic adc_chn0_filter_ctl5_max_ext5_we;
-  logic [9:0] adc_chn0_filter_ctl5_max5_qs;
-  logic [9:0] adc_chn0_filter_ctl5_max5_wd;
-  logic adc_chn0_filter_ctl5_max5_we;
+  logic [9:0] adc_chn0_filter_ctl5_max_v5_qs;
+  logic [9:0] adc_chn0_filter_ctl5_max_v5_wd;
+  logic adc_chn0_filter_ctl5_max_v5_we;
   logic [1:0] adc_chn0_filter_ctl6_min_ext6_qs;
   logic [1:0] adc_chn0_filter_ctl6_min_ext6_wd;
   logic adc_chn0_filter_ctl6_min_ext6_we;
-  logic [9:0] adc_chn0_filter_ctl6_min6_qs;
-  logic [9:0] adc_chn0_filter_ctl6_min6_wd;
-  logic adc_chn0_filter_ctl6_min6_we;
+  logic [9:0] adc_chn0_filter_ctl6_min_v6_qs;
+  logic [9:0] adc_chn0_filter_ctl6_min_v6_wd;
+  logic adc_chn0_filter_ctl6_min_v6_we;
   logic adc_chn0_filter_ctl6_cond6_qs;
   logic adc_chn0_filter_ctl6_cond6_wd;
   logic adc_chn0_filter_ctl6_cond6_we;
   logic [1:0] adc_chn0_filter_ctl6_max_ext6_qs;
   logic [1:0] adc_chn0_filter_ctl6_max_ext6_wd;
   logic adc_chn0_filter_ctl6_max_ext6_we;
-  logic [9:0] adc_chn0_filter_ctl6_max6_qs;
-  logic [9:0] adc_chn0_filter_ctl6_max6_wd;
-  logic adc_chn0_filter_ctl6_max6_we;
+  logic [9:0] adc_chn0_filter_ctl6_max_v6_qs;
+  logic [9:0] adc_chn0_filter_ctl6_max_v6_wd;
+  logic adc_chn0_filter_ctl6_max_v6_we;
   logic [1:0] adc_chn0_filter_ctl7_min_ext7_qs;
   logic [1:0] adc_chn0_filter_ctl7_min_ext7_wd;
   logic adc_chn0_filter_ctl7_min_ext7_we;
-  logic [9:0] adc_chn0_filter_ctl7_min7_qs;
-  logic [9:0] adc_chn0_filter_ctl7_min7_wd;
-  logic adc_chn0_filter_ctl7_min7_we;
+  logic [9:0] adc_chn0_filter_ctl7_min_v7_qs;
+  logic [9:0] adc_chn0_filter_ctl7_min_v7_wd;
+  logic adc_chn0_filter_ctl7_min_v7_we;
   logic adc_chn0_filter_ctl7_cond7_qs;
   logic adc_chn0_filter_ctl7_cond7_wd;
   logic adc_chn0_filter_ctl7_cond7_we;
   logic [1:0] adc_chn0_filter_ctl7_max_ext7_qs;
   logic [1:0] adc_chn0_filter_ctl7_max_ext7_wd;
   logic adc_chn0_filter_ctl7_max_ext7_we;
-  logic [9:0] adc_chn0_filter_ctl7_max7_qs;
-  logic [9:0] adc_chn0_filter_ctl7_max7_wd;
-  logic adc_chn0_filter_ctl7_max7_we;
+  logic [9:0] adc_chn0_filter_ctl7_max_v7_qs;
+  logic [9:0] adc_chn0_filter_ctl7_max_v7_wd;
+  logic adc_chn0_filter_ctl7_max_v7_we;
   logic [1:0] adc_chn1_filter_ctl0_min_ext0_qs;
   logic [1:0] adc_chn1_filter_ctl0_min_ext0_wd;
   logic adc_chn1_filter_ctl0_min_ext0_we;
-  logic [9:0] adc_chn1_filter_ctl0_min0_qs;
-  logic [9:0] adc_chn1_filter_ctl0_min0_wd;
-  logic adc_chn1_filter_ctl0_min0_we;
+  logic [9:0] adc_chn1_filter_ctl0_min_v0_qs;
+  logic [9:0] adc_chn1_filter_ctl0_min_v0_wd;
+  logic adc_chn1_filter_ctl0_min_v0_we;
   logic adc_chn1_filter_ctl0_cond0_qs;
   logic adc_chn1_filter_ctl0_cond0_wd;
   logic adc_chn1_filter_ctl0_cond0_we;
   logic [1:0] adc_chn1_filter_ctl0_max_ext0_qs;
   logic [1:0] adc_chn1_filter_ctl0_max_ext0_wd;
   logic adc_chn1_filter_ctl0_max_ext0_we;
-  logic [9:0] adc_chn1_filter_ctl0_max0_qs;
-  logic [9:0] adc_chn1_filter_ctl0_max0_wd;
-  logic adc_chn1_filter_ctl0_max0_we;
+  logic [9:0] adc_chn1_filter_ctl0_max_v0_qs;
+  logic [9:0] adc_chn1_filter_ctl0_max_v0_wd;
+  logic adc_chn1_filter_ctl0_max_v0_we;
   logic [1:0] adc_chn1_filter_ctl1_min_ext1_qs;
   logic [1:0] adc_chn1_filter_ctl1_min_ext1_wd;
   logic adc_chn1_filter_ctl1_min_ext1_we;
-  logic [9:0] adc_chn1_filter_ctl1_min1_qs;
-  logic [9:0] adc_chn1_filter_ctl1_min1_wd;
-  logic adc_chn1_filter_ctl1_min1_we;
+  logic [9:0] adc_chn1_filter_ctl1_min_v1_qs;
+  logic [9:0] adc_chn1_filter_ctl1_min_v1_wd;
+  logic adc_chn1_filter_ctl1_min_v1_we;
   logic adc_chn1_filter_ctl1_cond1_qs;
   logic adc_chn1_filter_ctl1_cond1_wd;
   logic adc_chn1_filter_ctl1_cond1_we;
   logic [1:0] adc_chn1_filter_ctl1_max_ext1_qs;
   logic [1:0] adc_chn1_filter_ctl1_max_ext1_wd;
   logic adc_chn1_filter_ctl1_max_ext1_we;
-  logic [9:0] adc_chn1_filter_ctl1_max1_qs;
-  logic [9:0] adc_chn1_filter_ctl1_max1_wd;
-  logic adc_chn1_filter_ctl1_max1_we;
+  logic [9:0] adc_chn1_filter_ctl1_max_v1_qs;
+  logic [9:0] adc_chn1_filter_ctl1_max_v1_wd;
+  logic adc_chn1_filter_ctl1_max_v1_we;
   logic [1:0] adc_chn1_filter_ctl2_min_ext2_qs;
   logic [1:0] adc_chn1_filter_ctl2_min_ext2_wd;
   logic adc_chn1_filter_ctl2_min_ext2_we;
-  logic [9:0] adc_chn1_filter_ctl2_min2_qs;
-  logic [9:0] adc_chn1_filter_ctl2_min2_wd;
-  logic adc_chn1_filter_ctl2_min2_we;
+  logic [9:0] adc_chn1_filter_ctl2_min_v2_qs;
+  logic [9:0] adc_chn1_filter_ctl2_min_v2_wd;
+  logic adc_chn1_filter_ctl2_min_v2_we;
   logic adc_chn1_filter_ctl2_cond2_qs;
   logic adc_chn1_filter_ctl2_cond2_wd;
   logic adc_chn1_filter_ctl2_cond2_we;
   logic [1:0] adc_chn1_filter_ctl2_max_ext2_qs;
   logic [1:0] adc_chn1_filter_ctl2_max_ext2_wd;
   logic adc_chn1_filter_ctl2_max_ext2_we;
-  logic [9:0] adc_chn1_filter_ctl2_max2_qs;
-  logic [9:0] adc_chn1_filter_ctl2_max2_wd;
-  logic adc_chn1_filter_ctl2_max2_we;
+  logic [9:0] adc_chn1_filter_ctl2_max_v2_qs;
+  logic [9:0] adc_chn1_filter_ctl2_max_v2_wd;
+  logic adc_chn1_filter_ctl2_max_v2_we;
   logic [1:0] adc_chn1_filter_ctl3_min_ext3_qs;
   logic [1:0] adc_chn1_filter_ctl3_min_ext3_wd;
   logic adc_chn1_filter_ctl3_min_ext3_we;
-  logic [9:0] adc_chn1_filter_ctl3_min3_qs;
-  logic [9:0] adc_chn1_filter_ctl3_min3_wd;
-  logic adc_chn1_filter_ctl3_min3_we;
+  logic [9:0] adc_chn1_filter_ctl3_min_v3_qs;
+  logic [9:0] adc_chn1_filter_ctl3_min_v3_wd;
+  logic adc_chn1_filter_ctl3_min_v3_we;
   logic adc_chn1_filter_ctl3_cond3_qs;
   logic adc_chn1_filter_ctl3_cond3_wd;
   logic adc_chn1_filter_ctl3_cond3_we;
   logic [1:0] adc_chn1_filter_ctl3_max_ext3_qs;
   logic [1:0] adc_chn1_filter_ctl3_max_ext3_wd;
   logic adc_chn1_filter_ctl3_max_ext3_we;
-  logic [9:0] adc_chn1_filter_ctl3_max3_qs;
-  logic [9:0] adc_chn1_filter_ctl3_max3_wd;
-  logic adc_chn1_filter_ctl3_max3_we;
+  logic [9:0] adc_chn1_filter_ctl3_max_v3_qs;
+  logic [9:0] adc_chn1_filter_ctl3_max_v3_wd;
+  logic adc_chn1_filter_ctl3_max_v3_we;
   logic [1:0] adc_chn1_filter_ctl4_min_ext4_qs;
   logic [1:0] adc_chn1_filter_ctl4_min_ext4_wd;
   logic adc_chn1_filter_ctl4_min_ext4_we;
-  logic [9:0] adc_chn1_filter_ctl4_min4_qs;
-  logic [9:0] adc_chn1_filter_ctl4_min4_wd;
-  logic adc_chn1_filter_ctl4_min4_we;
+  logic [9:0] adc_chn1_filter_ctl4_min_v4_qs;
+  logic [9:0] adc_chn1_filter_ctl4_min_v4_wd;
+  logic adc_chn1_filter_ctl4_min_v4_we;
   logic adc_chn1_filter_ctl4_cond4_qs;
   logic adc_chn1_filter_ctl4_cond4_wd;
   logic adc_chn1_filter_ctl4_cond4_we;
   logic [1:0] adc_chn1_filter_ctl4_max_ext4_qs;
   logic [1:0] adc_chn1_filter_ctl4_max_ext4_wd;
   logic adc_chn1_filter_ctl4_max_ext4_we;
-  logic [9:0] adc_chn1_filter_ctl4_max4_qs;
-  logic [9:0] adc_chn1_filter_ctl4_max4_wd;
-  logic adc_chn1_filter_ctl4_max4_we;
+  logic [9:0] adc_chn1_filter_ctl4_max_v4_qs;
+  logic [9:0] adc_chn1_filter_ctl4_max_v4_wd;
+  logic adc_chn1_filter_ctl4_max_v4_we;
   logic [1:0] adc_chn1_filter_ctl5_min_ext5_qs;
   logic [1:0] adc_chn1_filter_ctl5_min_ext5_wd;
   logic adc_chn1_filter_ctl5_min_ext5_we;
-  logic [9:0] adc_chn1_filter_ctl5_min5_qs;
-  logic [9:0] adc_chn1_filter_ctl5_min5_wd;
-  logic adc_chn1_filter_ctl5_min5_we;
+  logic [9:0] adc_chn1_filter_ctl5_min_v5_qs;
+  logic [9:0] adc_chn1_filter_ctl5_min_v5_wd;
+  logic adc_chn1_filter_ctl5_min_v5_we;
   logic adc_chn1_filter_ctl5_cond5_qs;
   logic adc_chn1_filter_ctl5_cond5_wd;
   logic adc_chn1_filter_ctl5_cond5_we;
   logic [1:0] adc_chn1_filter_ctl5_max_ext5_qs;
   logic [1:0] adc_chn1_filter_ctl5_max_ext5_wd;
   logic adc_chn1_filter_ctl5_max_ext5_we;
-  logic [9:0] adc_chn1_filter_ctl5_max5_qs;
-  logic [9:0] adc_chn1_filter_ctl5_max5_wd;
-  logic adc_chn1_filter_ctl5_max5_we;
+  logic [9:0] adc_chn1_filter_ctl5_max_v5_qs;
+  logic [9:0] adc_chn1_filter_ctl5_max_v5_wd;
+  logic adc_chn1_filter_ctl5_max_v5_we;
   logic [1:0] adc_chn1_filter_ctl6_min_ext6_qs;
   logic [1:0] adc_chn1_filter_ctl6_min_ext6_wd;
   logic adc_chn1_filter_ctl6_min_ext6_we;
-  logic [9:0] adc_chn1_filter_ctl6_min6_qs;
-  logic [9:0] adc_chn1_filter_ctl6_min6_wd;
-  logic adc_chn1_filter_ctl6_min6_we;
+  logic [9:0] adc_chn1_filter_ctl6_min_v6_qs;
+  logic [9:0] adc_chn1_filter_ctl6_min_v6_wd;
+  logic adc_chn1_filter_ctl6_min_v6_we;
   logic adc_chn1_filter_ctl6_cond6_qs;
   logic adc_chn1_filter_ctl6_cond6_wd;
   logic adc_chn1_filter_ctl6_cond6_we;
   logic [1:0] adc_chn1_filter_ctl6_max_ext6_qs;
   logic [1:0] adc_chn1_filter_ctl6_max_ext6_wd;
   logic adc_chn1_filter_ctl6_max_ext6_we;
-  logic [9:0] adc_chn1_filter_ctl6_max6_qs;
-  logic [9:0] adc_chn1_filter_ctl6_max6_wd;
-  logic adc_chn1_filter_ctl6_max6_we;
+  logic [9:0] adc_chn1_filter_ctl6_max_v6_qs;
+  logic [9:0] adc_chn1_filter_ctl6_max_v6_wd;
+  logic adc_chn1_filter_ctl6_max_v6_we;
   logic [1:0] adc_chn1_filter_ctl7_min_ext7_qs;
   logic [1:0] adc_chn1_filter_ctl7_min_ext7_wd;
   logic adc_chn1_filter_ctl7_min_ext7_we;
-  logic [9:0] adc_chn1_filter_ctl7_min7_qs;
-  logic [9:0] adc_chn1_filter_ctl7_min7_wd;
-  logic adc_chn1_filter_ctl7_min7_we;
+  logic [9:0] adc_chn1_filter_ctl7_min_v7_qs;
+  logic [9:0] adc_chn1_filter_ctl7_min_v7_wd;
+  logic adc_chn1_filter_ctl7_min_v7_we;
   logic adc_chn1_filter_ctl7_cond7_qs;
   logic adc_chn1_filter_ctl7_cond7_wd;
   logic adc_chn1_filter_ctl7_cond7_we;
   logic [1:0] adc_chn1_filter_ctl7_max_ext7_qs;
   logic [1:0] adc_chn1_filter_ctl7_max_ext7_wd;
   logic adc_chn1_filter_ctl7_max_ext7_we;
-  logic [9:0] adc_chn1_filter_ctl7_max7_qs;
-  logic [9:0] adc_chn1_filter_ctl7_max7_wd;
-  logic adc_chn1_filter_ctl7_max7_we;
+  logic [9:0] adc_chn1_filter_ctl7_max_v7_qs;
+  logic [9:0] adc_chn1_filter_ctl7_max_v7_wd;
+  logic adc_chn1_filter_ctl7_max_v7_we;
   logic [1:0] adc_chn_val0_adc_chn_value_ext0_qs;
   logic [1:0] adc_chn_val0_adc_chn_value_ext0_wd;
   logic adc_chn_val0_adc_chn_value_ext0_we;
@@ -780,29 +780,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min0]: 11:2
+  // F[min_v0]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl0_min0 (
+  ) u_adc_chn0_filter_ctl0_min_v0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl0_min0_we),
-    .wd     (adc_chn0_filter_ctl0_min0_wd),
+    .we     (adc_chn0_filter_ctl0_min_v0_we),
+    .wd     (adc_chn0_filter_ctl0_min_v0_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[0].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[0].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[0].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[0].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[0].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[0].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[0].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[0].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl0_min0_qs)
+    .qs     (adc_chn0_filter_ctl0_min_v0_qs)
   );
 
 
@@ -858,29 +858,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max0]: 27:18
+  // F[max_v0]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl0_max0 (
+  ) u_adc_chn0_filter_ctl0_max_v0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl0_max0_we),
-    .wd     (adc_chn0_filter_ctl0_max0_wd),
+    .we     (adc_chn0_filter_ctl0_max_v0_we),
+    .wd     (adc_chn0_filter_ctl0_max_v0_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[0].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[0].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[0].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[0].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[0].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[0].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[0].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[0].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl0_max0_qs)
+    .qs     (adc_chn0_filter_ctl0_max_v0_qs)
   );
 
 
@@ -913,29 +913,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min1]: 11:2
+  // F[min_v1]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl1_min1 (
+  ) u_adc_chn0_filter_ctl1_min_v1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl1_min1_we),
-    .wd     (adc_chn0_filter_ctl1_min1_wd),
+    .we     (adc_chn0_filter_ctl1_min_v1_we),
+    .wd     (adc_chn0_filter_ctl1_min_v1_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[1].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[1].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[1].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[1].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[1].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[1].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[1].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[1].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl1_min1_qs)
+    .qs     (adc_chn0_filter_ctl1_min_v1_qs)
   );
 
 
@@ -991,29 +991,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max1]: 27:18
+  // F[max_v1]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl1_max1 (
+  ) u_adc_chn0_filter_ctl1_max_v1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl1_max1_we),
-    .wd     (adc_chn0_filter_ctl1_max1_wd),
+    .we     (adc_chn0_filter_ctl1_max_v1_we),
+    .wd     (adc_chn0_filter_ctl1_max_v1_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[1].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[1].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[1].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[1].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[1].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[1].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[1].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[1].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl1_max1_qs)
+    .qs     (adc_chn0_filter_ctl1_max_v1_qs)
   );
 
 
@@ -1046,29 +1046,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min2]: 11:2
+  // F[min_v2]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl2_min2 (
+  ) u_adc_chn0_filter_ctl2_min_v2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl2_min2_we),
-    .wd     (adc_chn0_filter_ctl2_min2_wd),
+    .we     (adc_chn0_filter_ctl2_min_v2_we),
+    .wd     (adc_chn0_filter_ctl2_min_v2_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[2].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[2].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[2].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[2].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[2].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[2].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[2].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[2].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl2_min2_qs)
+    .qs     (adc_chn0_filter_ctl2_min_v2_qs)
   );
 
 
@@ -1124,29 +1124,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max2]: 27:18
+  // F[max_v2]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl2_max2 (
+  ) u_adc_chn0_filter_ctl2_max_v2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl2_max2_we),
-    .wd     (adc_chn0_filter_ctl2_max2_wd),
+    .we     (adc_chn0_filter_ctl2_max_v2_we),
+    .wd     (adc_chn0_filter_ctl2_max_v2_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[2].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[2].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[2].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[2].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[2].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[2].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[2].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[2].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl2_max2_qs)
+    .qs     (adc_chn0_filter_ctl2_max_v2_qs)
   );
 
 
@@ -1179,29 +1179,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min3]: 11:2
+  // F[min_v3]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl3_min3 (
+  ) u_adc_chn0_filter_ctl3_min_v3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl3_min3_we),
-    .wd     (adc_chn0_filter_ctl3_min3_wd),
+    .we     (adc_chn0_filter_ctl3_min_v3_we),
+    .wd     (adc_chn0_filter_ctl3_min_v3_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[3].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[3].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[3].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[3].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[3].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[3].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[3].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[3].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl3_min3_qs)
+    .qs     (adc_chn0_filter_ctl3_min_v3_qs)
   );
 
 
@@ -1257,29 +1257,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max3]: 27:18
+  // F[max_v3]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl3_max3 (
+  ) u_adc_chn0_filter_ctl3_max_v3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl3_max3_we),
-    .wd     (adc_chn0_filter_ctl3_max3_wd),
+    .we     (adc_chn0_filter_ctl3_max_v3_we),
+    .wd     (adc_chn0_filter_ctl3_max_v3_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[3].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[3].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[3].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[3].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[3].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[3].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[3].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[3].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl3_max3_qs)
+    .qs     (adc_chn0_filter_ctl3_max_v3_qs)
   );
 
 
@@ -1312,29 +1312,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min4]: 11:2
+  // F[min_v4]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl4_min4 (
+  ) u_adc_chn0_filter_ctl4_min_v4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl4_min4_we),
-    .wd     (adc_chn0_filter_ctl4_min4_wd),
+    .we     (adc_chn0_filter_ctl4_min_v4_we),
+    .wd     (adc_chn0_filter_ctl4_min_v4_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[4].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[4].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[4].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[4].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[4].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[4].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[4].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[4].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl4_min4_qs)
+    .qs     (adc_chn0_filter_ctl4_min_v4_qs)
   );
 
 
@@ -1390,29 +1390,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max4]: 27:18
+  // F[max_v4]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl4_max4 (
+  ) u_adc_chn0_filter_ctl4_max_v4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl4_max4_we),
-    .wd     (adc_chn0_filter_ctl4_max4_wd),
+    .we     (adc_chn0_filter_ctl4_max_v4_we),
+    .wd     (adc_chn0_filter_ctl4_max_v4_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[4].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[4].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[4].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[4].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[4].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[4].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[4].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[4].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl4_max4_qs)
+    .qs     (adc_chn0_filter_ctl4_max_v4_qs)
   );
 
 
@@ -1445,29 +1445,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min5]: 11:2
+  // F[min_v5]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl5_min5 (
+  ) u_adc_chn0_filter_ctl5_min_v5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl5_min5_we),
-    .wd     (adc_chn0_filter_ctl5_min5_wd),
+    .we     (adc_chn0_filter_ctl5_min_v5_we),
+    .wd     (adc_chn0_filter_ctl5_min_v5_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[5].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[5].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[5].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[5].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[5].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[5].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[5].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[5].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl5_min5_qs)
+    .qs     (adc_chn0_filter_ctl5_min_v5_qs)
   );
 
 
@@ -1523,29 +1523,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max5]: 27:18
+  // F[max_v5]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl5_max5 (
+  ) u_adc_chn0_filter_ctl5_max_v5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl5_max5_we),
-    .wd     (adc_chn0_filter_ctl5_max5_wd),
+    .we     (adc_chn0_filter_ctl5_max_v5_we),
+    .wd     (adc_chn0_filter_ctl5_max_v5_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[5].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[5].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[5].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[5].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[5].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[5].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[5].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[5].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl5_max5_qs)
+    .qs     (adc_chn0_filter_ctl5_max_v5_qs)
   );
 
 
@@ -1578,29 +1578,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min6]: 11:2
+  // F[min_v6]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl6_min6 (
+  ) u_adc_chn0_filter_ctl6_min_v6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl6_min6_we),
-    .wd     (adc_chn0_filter_ctl6_min6_wd),
+    .we     (adc_chn0_filter_ctl6_min_v6_we),
+    .wd     (adc_chn0_filter_ctl6_min_v6_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[6].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[6].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[6].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[6].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[6].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[6].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[6].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[6].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl6_min6_qs)
+    .qs     (adc_chn0_filter_ctl6_min_v6_qs)
   );
 
 
@@ -1656,29 +1656,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max6]: 27:18
+  // F[max_v6]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl6_max6 (
+  ) u_adc_chn0_filter_ctl6_max_v6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl6_max6_we),
-    .wd     (adc_chn0_filter_ctl6_max6_wd),
+    .we     (adc_chn0_filter_ctl6_max_v6_we),
+    .wd     (adc_chn0_filter_ctl6_max_v6_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[6].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[6].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[6].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[6].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[6].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[6].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[6].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[6].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl6_max6_qs)
+    .qs     (adc_chn0_filter_ctl6_max_v6_qs)
   );
 
 
@@ -1711,29 +1711,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min7]: 11:2
+  // F[min_v7]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl7_min7 (
+  ) u_adc_chn0_filter_ctl7_min_v7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl7_min7_we),
-    .wd     (adc_chn0_filter_ctl7_min7_wd),
+    .we     (adc_chn0_filter_ctl7_min_v7_we),
+    .wd     (adc_chn0_filter_ctl7_min_v7_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[7].min.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[7].min.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[7].min_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[7].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[7].min.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[7].min.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[7].min_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[7].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl7_min7_qs)
+    .qs     (adc_chn0_filter_ctl7_min_v7_qs)
   );
 
 
@@ -1789,29 +1789,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max7]: 27:18
+  // F[max_v7]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn0_filter_ctl7_max7 (
+  ) u_adc_chn0_filter_ctl7_max_v7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn0_filter_ctl7_max7_we),
-    .wd     (adc_chn0_filter_ctl7_max7_wd),
+    .we     (adc_chn0_filter_ctl7_max_v7_we),
+    .wd     (adc_chn0_filter_ctl7_max_v7_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn0_filter_ctl[7].max.de),
-    .d      (hw2reg.adc_chn0_filter_ctl[7].max.d ),
+    .de     (hw2reg.adc_chn0_filter_ctl[7].max_v.de),
+    .d      (hw2reg.adc_chn0_filter_ctl[7].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn0_filter_ctl[7].max.qe),
-    .q      (reg2hw.adc_chn0_filter_ctl[7].max.q ),
+    .qe     (reg2hw.adc_chn0_filter_ctl[7].max_v.qe),
+    .q      (reg2hw.adc_chn0_filter_ctl[7].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn0_filter_ctl7_max7_qs)
+    .qs     (adc_chn0_filter_ctl7_max_v7_qs)
   );
 
 
@@ -1846,29 +1846,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min0]: 11:2
+  // F[min_v0]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl0_min0 (
+  ) u_adc_chn1_filter_ctl0_min_v0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl0_min0_we),
-    .wd     (adc_chn1_filter_ctl0_min0_wd),
+    .we     (adc_chn1_filter_ctl0_min_v0_we),
+    .wd     (adc_chn1_filter_ctl0_min_v0_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[0].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[0].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[0].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[0].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[0].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[0].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[0].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[0].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl0_min0_qs)
+    .qs     (adc_chn1_filter_ctl0_min_v0_qs)
   );
 
 
@@ -1924,29 +1924,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max0]: 27:18
+  // F[max_v0]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl0_max0 (
+  ) u_adc_chn1_filter_ctl0_max_v0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl0_max0_we),
-    .wd     (adc_chn1_filter_ctl0_max0_wd),
+    .we     (adc_chn1_filter_ctl0_max_v0_we),
+    .wd     (adc_chn1_filter_ctl0_max_v0_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[0].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[0].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[0].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[0].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[0].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[0].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[0].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[0].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl0_max0_qs)
+    .qs     (adc_chn1_filter_ctl0_max_v0_qs)
   );
 
 
@@ -1979,29 +1979,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min1]: 11:2
+  // F[min_v1]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl1_min1 (
+  ) u_adc_chn1_filter_ctl1_min_v1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl1_min1_we),
-    .wd     (adc_chn1_filter_ctl1_min1_wd),
+    .we     (adc_chn1_filter_ctl1_min_v1_we),
+    .wd     (adc_chn1_filter_ctl1_min_v1_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[1].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[1].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[1].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[1].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[1].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[1].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[1].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[1].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl1_min1_qs)
+    .qs     (adc_chn1_filter_ctl1_min_v1_qs)
   );
 
 
@@ -2057,29 +2057,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max1]: 27:18
+  // F[max_v1]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl1_max1 (
+  ) u_adc_chn1_filter_ctl1_max_v1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl1_max1_we),
-    .wd     (adc_chn1_filter_ctl1_max1_wd),
+    .we     (adc_chn1_filter_ctl1_max_v1_we),
+    .wd     (adc_chn1_filter_ctl1_max_v1_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[1].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[1].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[1].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[1].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[1].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[1].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[1].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[1].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl1_max1_qs)
+    .qs     (adc_chn1_filter_ctl1_max_v1_qs)
   );
 
 
@@ -2112,29 +2112,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min2]: 11:2
+  // F[min_v2]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl2_min2 (
+  ) u_adc_chn1_filter_ctl2_min_v2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl2_min2_we),
-    .wd     (adc_chn1_filter_ctl2_min2_wd),
+    .we     (adc_chn1_filter_ctl2_min_v2_we),
+    .wd     (adc_chn1_filter_ctl2_min_v2_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[2].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[2].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[2].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[2].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[2].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[2].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[2].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[2].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl2_min2_qs)
+    .qs     (adc_chn1_filter_ctl2_min_v2_qs)
   );
 
 
@@ -2190,29 +2190,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max2]: 27:18
+  // F[max_v2]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl2_max2 (
+  ) u_adc_chn1_filter_ctl2_max_v2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl2_max2_we),
-    .wd     (adc_chn1_filter_ctl2_max2_wd),
+    .we     (adc_chn1_filter_ctl2_max_v2_we),
+    .wd     (adc_chn1_filter_ctl2_max_v2_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[2].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[2].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[2].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[2].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[2].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[2].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[2].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[2].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl2_max2_qs)
+    .qs     (adc_chn1_filter_ctl2_max_v2_qs)
   );
 
 
@@ -2245,29 +2245,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min3]: 11:2
+  // F[min_v3]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl3_min3 (
+  ) u_adc_chn1_filter_ctl3_min_v3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl3_min3_we),
-    .wd     (adc_chn1_filter_ctl3_min3_wd),
+    .we     (adc_chn1_filter_ctl3_min_v3_we),
+    .wd     (adc_chn1_filter_ctl3_min_v3_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[3].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[3].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[3].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[3].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[3].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[3].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[3].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[3].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl3_min3_qs)
+    .qs     (adc_chn1_filter_ctl3_min_v3_qs)
   );
 
 
@@ -2323,29 +2323,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max3]: 27:18
+  // F[max_v3]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl3_max3 (
+  ) u_adc_chn1_filter_ctl3_max_v3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl3_max3_we),
-    .wd     (adc_chn1_filter_ctl3_max3_wd),
+    .we     (adc_chn1_filter_ctl3_max_v3_we),
+    .wd     (adc_chn1_filter_ctl3_max_v3_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[3].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[3].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[3].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[3].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[3].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[3].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[3].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[3].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl3_max3_qs)
+    .qs     (adc_chn1_filter_ctl3_max_v3_qs)
   );
 
 
@@ -2378,29 +2378,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min4]: 11:2
+  // F[min_v4]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl4_min4 (
+  ) u_adc_chn1_filter_ctl4_min_v4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl4_min4_we),
-    .wd     (adc_chn1_filter_ctl4_min4_wd),
+    .we     (adc_chn1_filter_ctl4_min_v4_we),
+    .wd     (adc_chn1_filter_ctl4_min_v4_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[4].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[4].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[4].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[4].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[4].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[4].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[4].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[4].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl4_min4_qs)
+    .qs     (adc_chn1_filter_ctl4_min_v4_qs)
   );
 
 
@@ -2456,29 +2456,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max4]: 27:18
+  // F[max_v4]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl4_max4 (
+  ) u_adc_chn1_filter_ctl4_max_v4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl4_max4_we),
-    .wd     (adc_chn1_filter_ctl4_max4_wd),
+    .we     (adc_chn1_filter_ctl4_max_v4_we),
+    .wd     (adc_chn1_filter_ctl4_max_v4_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[4].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[4].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[4].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[4].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[4].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[4].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[4].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[4].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl4_max4_qs)
+    .qs     (adc_chn1_filter_ctl4_max_v4_qs)
   );
 
 
@@ -2511,29 +2511,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min5]: 11:2
+  // F[min_v5]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl5_min5 (
+  ) u_adc_chn1_filter_ctl5_min_v5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl5_min5_we),
-    .wd     (adc_chn1_filter_ctl5_min5_wd),
+    .we     (adc_chn1_filter_ctl5_min_v5_we),
+    .wd     (adc_chn1_filter_ctl5_min_v5_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[5].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[5].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[5].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[5].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[5].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[5].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[5].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[5].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl5_min5_qs)
+    .qs     (adc_chn1_filter_ctl5_min_v5_qs)
   );
 
 
@@ -2589,29 +2589,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max5]: 27:18
+  // F[max_v5]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl5_max5 (
+  ) u_adc_chn1_filter_ctl5_max_v5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl5_max5_we),
-    .wd     (adc_chn1_filter_ctl5_max5_wd),
+    .we     (adc_chn1_filter_ctl5_max_v5_we),
+    .wd     (adc_chn1_filter_ctl5_max_v5_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[5].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[5].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[5].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[5].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[5].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[5].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[5].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[5].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl5_max5_qs)
+    .qs     (adc_chn1_filter_ctl5_max_v5_qs)
   );
 
 
@@ -2644,29 +2644,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min6]: 11:2
+  // F[min_v6]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl6_min6 (
+  ) u_adc_chn1_filter_ctl6_min_v6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl6_min6_we),
-    .wd     (adc_chn1_filter_ctl6_min6_wd),
+    .we     (adc_chn1_filter_ctl6_min_v6_we),
+    .wd     (adc_chn1_filter_ctl6_min_v6_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[6].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[6].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[6].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[6].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[6].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[6].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[6].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[6].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl6_min6_qs)
+    .qs     (adc_chn1_filter_ctl6_min_v6_qs)
   );
 
 
@@ -2722,29 +2722,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max6]: 27:18
+  // F[max_v6]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl6_max6 (
+  ) u_adc_chn1_filter_ctl6_max_v6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl6_max6_we),
-    .wd     (adc_chn1_filter_ctl6_max6_wd),
+    .we     (adc_chn1_filter_ctl6_max_v6_we),
+    .wd     (adc_chn1_filter_ctl6_max_v6_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[6].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[6].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[6].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[6].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[6].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[6].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[6].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[6].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl6_max6_qs)
+    .qs     (adc_chn1_filter_ctl6_max_v6_qs)
   );
 
 
@@ -2777,29 +2777,29 @@ module dcd_reg_top (
   );
 
 
-  // F[min7]: 11:2
+  // F[min_v7]: 11:2
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl7_min7 (
+  ) u_adc_chn1_filter_ctl7_min_v7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl7_min7_we),
-    .wd     (adc_chn1_filter_ctl7_min7_wd),
+    .we     (adc_chn1_filter_ctl7_min_v7_we),
+    .wd     (adc_chn1_filter_ctl7_min_v7_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[7].min.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[7].min.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[7].min_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[7].min_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[7].min.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[7].min.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[7].min_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[7].min_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl7_min7_qs)
+    .qs     (adc_chn1_filter_ctl7_min_v7_qs)
   );
 
 
@@ -2855,29 +2855,29 @@ module dcd_reg_top (
   );
 
 
-  // F[max7]: 27:18
+  // F[max_v7]: 27:18
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_adc_chn1_filter_ctl7_max7 (
+  ) u_adc_chn1_filter_ctl7_max_v7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (adc_chn1_filter_ctl7_max7_we),
-    .wd     (adc_chn1_filter_ctl7_max7_wd),
+    .we     (adc_chn1_filter_ctl7_max_v7_we),
+    .wd     (adc_chn1_filter_ctl7_max_v7_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_chn1_filter_ctl[7].max.de),
-    .d      (hw2reg.adc_chn1_filter_ctl[7].max.d ),
+    .de     (hw2reg.adc_chn1_filter_ctl[7].max_v.de),
+    .d      (hw2reg.adc_chn1_filter_ctl[7].max_v.d ),
 
     // to internal hardware
-    .qe     (reg2hw.adc_chn1_filter_ctl[7].max.qe),
-    .q      (reg2hw.adc_chn1_filter_ctl[7].max.q ),
+    .qe     (reg2hw.adc_chn1_filter_ctl[7].max_v.qe),
+    .q      (reg2hw.adc_chn1_filter_ctl[7].max_v.q ),
 
     // to register interface (read)
-    .qs     (adc_chn1_filter_ctl7_max7_qs)
+    .qs     (adc_chn1_filter_ctl7_max_v7_qs)
   );
 
 
@@ -4048,8 +4048,8 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl0_min_ext0_we = addr_hit[8] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl0_min_ext0_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl0_min0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl0_min0_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl0_min_v0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl0_min_v0_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl0_cond0_we = addr_hit[8] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl0_cond0_wd = reg_wdata[12];
@@ -4057,14 +4057,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl0_max_ext0_we = addr_hit[8] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl0_max_ext0_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl0_max0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl0_max0_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl0_max_v0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl0_max_v0_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl1_min_ext1_we = addr_hit[9] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl1_min_ext1_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl1_min1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl1_min1_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl1_min_v1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl1_min_v1_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl1_cond1_we = addr_hit[9] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl1_cond1_wd = reg_wdata[12];
@@ -4072,14 +4072,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl1_max_ext1_we = addr_hit[9] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl1_max_ext1_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl1_max1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl1_max1_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl1_max_v1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl1_max_v1_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl2_min_ext2_we = addr_hit[10] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl2_min_ext2_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl2_min2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl2_min2_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl2_min_v2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl2_min_v2_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl2_cond2_we = addr_hit[10] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl2_cond2_wd = reg_wdata[12];
@@ -4087,14 +4087,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl2_max_ext2_we = addr_hit[10] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl2_max_ext2_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl2_max2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl2_max2_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl2_max_v2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl2_max_v2_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl3_min_ext3_we = addr_hit[11] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl3_min_ext3_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl3_min3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl3_min3_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl3_min_v3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl3_min_v3_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl3_cond3_we = addr_hit[11] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl3_cond3_wd = reg_wdata[12];
@@ -4102,14 +4102,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl3_max_ext3_we = addr_hit[11] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl3_max_ext3_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl3_max3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl3_max3_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl3_max_v3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl3_max_v3_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl4_min_ext4_we = addr_hit[12] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl4_min_ext4_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl4_min4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl4_min4_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl4_min_v4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl4_min_v4_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl4_cond4_we = addr_hit[12] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl4_cond4_wd = reg_wdata[12];
@@ -4117,14 +4117,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl4_max_ext4_we = addr_hit[12] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl4_max_ext4_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl4_max4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl4_max4_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl4_max_v4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl4_max_v4_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl5_min_ext5_we = addr_hit[13] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl5_min_ext5_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl5_min5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl5_min5_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl5_min_v5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl5_min_v5_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl5_cond5_we = addr_hit[13] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl5_cond5_wd = reg_wdata[12];
@@ -4132,14 +4132,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl5_max_ext5_we = addr_hit[13] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl5_max_ext5_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl5_max5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl5_max5_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl5_max_v5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl5_max_v5_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl6_min_ext6_we = addr_hit[14] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl6_min_ext6_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl6_min6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl6_min6_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl6_min_v6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl6_min_v6_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl6_cond6_we = addr_hit[14] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl6_cond6_wd = reg_wdata[12];
@@ -4147,14 +4147,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl6_max_ext6_we = addr_hit[14] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl6_max_ext6_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl6_max6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl6_max6_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl6_max_v6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl6_max_v6_wd = reg_wdata[27:18];
 
   assign adc_chn0_filter_ctl7_min_ext7_we = addr_hit[15] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl7_min_ext7_wd = reg_wdata[1:0];
 
-  assign adc_chn0_filter_ctl7_min7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl7_min7_wd = reg_wdata[11:2];
+  assign adc_chn0_filter_ctl7_min_v7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl7_min_v7_wd = reg_wdata[11:2];
 
   assign adc_chn0_filter_ctl7_cond7_we = addr_hit[15] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl7_cond7_wd = reg_wdata[12];
@@ -4162,14 +4162,14 @@ module dcd_reg_top (
   assign adc_chn0_filter_ctl7_max_ext7_we = addr_hit[15] & reg_we & ~wr_err;
   assign adc_chn0_filter_ctl7_max_ext7_wd = reg_wdata[17:16];
 
-  assign adc_chn0_filter_ctl7_max7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign adc_chn0_filter_ctl7_max7_wd = reg_wdata[27:18];
+  assign adc_chn0_filter_ctl7_max_v7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign adc_chn0_filter_ctl7_max_v7_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl0_min_ext0_we = addr_hit[16] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl0_min_ext0_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl0_min0_we = addr_hit[16] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl0_min0_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl0_min_v0_we = addr_hit[16] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl0_min_v0_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl0_cond0_we = addr_hit[16] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl0_cond0_wd = reg_wdata[12];
@@ -4177,14 +4177,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl0_max_ext0_we = addr_hit[16] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl0_max_ext0_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl0_max0_we = addr_hit[16] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl0_max0_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl0_max_v0_we = addr_hit[16] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl0_max_v0_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl1_min_ext1_we = addr_hit[17] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl1_min_ext1_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl1_min1_we = addr_hit[17] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl1_min1_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl1_min_v1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl1_min_v1_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl1_cond1_we = addr_hit[17] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl1_cond1_wd = reg_wdata[12];
@@ -4192,14 +4192,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl1_max_ext1_we = addr_hit[17] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl1_max_ext1_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl1_max1_we = addr_hit[17] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl1_max1_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl1_max_v1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl1_max_v1_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl2_min_ext2_we = addr_hit[18] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl2_min_ext2_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl2_min2_we = addr_hit[18] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl2_min2_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl2_min_v2_we = addr_hit[18] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl2_min_v2_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl2_cond2_we = addr_hit[18] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl2_cond2_wd = reg_wdata[12];
@@ -4207,14 +4207,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl2_max_ext2_we = addr_hit[18] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl2_max_ext2_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl2_max2_we = addr_hit[18] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl2_max2_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl2_max_v2_we = addr_hit[18] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl2_max_v2_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl3_min_ext3_we = addr_hit[19] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl3_min_ext3_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl3_min3_we = addr_hit[19] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl3_min3_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl3_min_v3_we = addr_hit[19] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl3_min_v3_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl3_cond3_we = addr_hit[19] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl3_cond3_wd = reg_wdata[12];
@@ -4222,14 +4222,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl3_max_ext3_we = addr_hit[19] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl3_max_ext3_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl3_max3_we = addr_hit[19] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl3_max3_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl3_max_v3_we = addr_hit[19] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl3_max_v3_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl4_min_ext4_we = addr_hit[20] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl4_min_ext4_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl4_min4_we = addr_hit[20] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl4_min4_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl4_min_v4_we = addr_hit[20] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl4_min_v4_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl4_cond4_we = addr_hit[20] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl4_cond4_wd = reg_wdata[12];
@@ -4237,14 +4237,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl4_max_ext4_we = addr_hit[20] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl4_max_ext4_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl4_max4_we = addr_hit[20] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl4_max4_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl4_max_v4_we = addr_hit[20] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl4_max_v4_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl5_min_ext5_we = addr_hit[21] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl5_min_ext5_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl5_min5_we = addr_hit[21] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl5_min5_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl5_min_v5_we = addr_hit[21] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl5_min_v5_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl5_cond5_we = addr_hit[21] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl5_cond5_wd = reg_wdata[12];
@@ -4252,14 +4252,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl5_max_ext5_we = addr_hit[21] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl5_max_ext5_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl5_max5_we = addr_hit[21] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl5_max5_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl5_max_v5_we = addr_hit[21] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl5_max_v5_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl6_min_ext6_we = addr_hit[22] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl6_min_ext6_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl6_min6_we = addr_hit[22] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl6_min6_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl6_min_v6_we = addr_hit[22] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl6_min_v6_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl6_cond6_we = addr_hit[22] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl6_cond6_wd = reg_wdata[12];
@@ -4267,14 +4267,14 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl6_max_ext6_we = addr_hit[22] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl6_max_ext6_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl6_max6_we = addr_hit[22] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl6_max6_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl6_max_v6_we = addr_hit[22] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl6_max_v6_wd = reg_wdata[27:18];
 
   assign adc_chn1_filter_ctl7_min_ext7_we = addr_hit[23] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl7_min_ext7_wd = reg_wdata[1:0];
 
-  assign adc_chn1_filter_ctl7_min7_we = addr_hit[23] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl7_min7_wd = reg_wdata[11:2];
+  assign adc_chn1_filter_ctl7_min_v7_we = addr_hit[23] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl7_min_v7_wd = reg_wdata[11:2];
 
   assign adc_chn1_filter_ctl7_cond7_we = addr_hit[23] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl7_cond7_wd = reg_wdata[12];
@@ -4282,8 +4282,8 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl7_max_ext7_we = addr_hit[23] & reg_we & ~wr_err;
   assign adc_chn1_filter_ctl7_max_ext7_wd = reg_wdata[17:16];
 
-  assign adc_chn1_filter_ctl7_max7_we = addr_hit[23] & reg_we & ~wr_err;
-  assign adc_chn1_filter_ctl7_max7_wd = reg_wdata[27:18];
+  assign adc_chn1_filter_ctl7_max_v7_we = addr_hit[23] & reg_we & ~wr_err;
+  assign adc_chn1_filter_ctl7_max_v7_wd = reg_wdata[27:18];
 
   assign adc_chn_val0_adc_chn_value_ext0_we = addr_hit[24] & reg_we & ~wr_err;
   assign adc_chn_val0_adc_chn_value_ext0_wd = reg_wdata[1:0];
@@ -4446,130 +4446,130 @@ module dcd_reg_top (
 
       addr_hit[8]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl0_min_ext0_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl0_min0_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl0_min_v0_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl0_cond0_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl0_max_ext0_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl0_max0_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl0_max_v0_qs;
       end
 
       addr_hit[9]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl1_min_ext1_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl1_min1_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl1_min_v1_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl1_cond1_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl1_max_ext1_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl1_max1_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl1_max_v1_qs;
       end
 
       addr_hit[10]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl2_min_ext2_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl2_min2_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl2_min_v2_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl2_cond2_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl2_max_ext2_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl2_max2_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl2_max_v2_qs;
       end
 
       addr_hit[11]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl3_min_ext3_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl3_min3_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl3_min_v3_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl3_cond3_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl3_max_ext3_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl3_max3_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl3_max_v3_qs;
       end
 
       addr_hit[12]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl4_min_ext4_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl4_min4_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl4_min_v4_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl4_cond4_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl4_max_ext4_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl4_max4_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl4_max_v4_qs;
       end
 
       addr_hit[13]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl5_min_ext5_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl5_min5_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl5_min_v5_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl5_cond5_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl5_max_ext5_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl5_max5_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl5_max_v5_qs;
       end
 
       addr_hit[14]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl6_min_ext6_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl6_min6_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl6_min_v6_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl6_cond6_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl6_max_ext6_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl6_max6_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl6_max_v6_qs;
       end
 
       addr_hit[15]: begin
         reg_rdata_next[1:0] = adc_chn0_filter_ctl7_min_ext7_qs;
-        reg_rdata_next[11:2] = adc_chn0_filter_ctl7_min7_qs;
+        reg_rdata_next[11:2] = adc_chn0_filter_ctl7_min_v7_qs;
         reg_rdata_next[12] = adc_chn0_filter_ctl7_cond7_qs;
         reg_rdata_next[17:16] = adc_chn0_filter_ctl7_max_ext7_qs;
-        reg_rdata_next[27:18] = adc_chn0_filter_ctl7_max7_qs;
+        reg_rdata_next[27:18] = adc_chn0_filter_ctl7_max_v7_qs;
       end
 
       addr_hit[16]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl0_min_ext0_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl0_min0_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl0_min_v0_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl0_cond0_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl0_max_ext0_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl0_max0_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl0_max_v0_qs;
       end
 
       addr_hit[17]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl1_min_ext1_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl1_min1_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl1_min_v1_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl1_cond1_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl1_max_ext1_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl1_max1_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl1_max_v1_qs;
       end
 
       addr_hit[18]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl2_min_ext2_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl2_min2_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl2_min_v2_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl2_cond2_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl2_max_ext2_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl2_max2_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl2_max_v2_qs;
       end
 
       addr_hit[19]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl3_min_ext3_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl3_min3_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl3_min_v3_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl3_cond3_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl3_max_ext3_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl3_max3_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl3_max_v3_qs;
       end
 
       addr_hit[20]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl4_min_ext4_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl4_min4_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl4_min_v4_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl4_cond4_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl4_max_ext4_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl4_max4_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl4_max_v4_qs;
       end
 
       addr_hit[21]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl5_min_ext5_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl5_min5_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl5_min_v5_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl5_cond5_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl5_max_ext5_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl5_max5_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl5_max_v5_qs;
       end
 
       addr_hit[22]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl6_min_ext6_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl6_min6_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl6_min_v6_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl6_cond6_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl6_max_ext6_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl6_max6_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl6_max_v6_qs;
       end
 
       addr_hit[23]: begin
         reg_rdata_next[1:0] = adc_chn1_filter_ctl7_min_ext7_qs;
-        reg_rdata_next[11:2] = adc_chn1_filter_ctl7_min7_qs;
+        reg_rdata_next[11:2] = adc_chn1_filter_ctl7_min_v7_qs;
         reg_rdata_next[12] = adc_chn1_filter_ctl7_cond7_qs;
         reg_rdata_next[17:16] = adc_chn1_filter_ctl7_max_ext7_qs;
-        reg_rdata_next[27:18] = adc_chn1_filter_ctl7_max7_qs;
+        reg_rdata_next[27:18] = adc_chn1_filter_ctl7_max_v7_qs;
       end
 
       addr_hit[24]: begin
