@@ -16,7 +16,7 @@ puts "Applying constraints for top level"
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_sys/*/u_size_only_buf/X
+set MAIN_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_sys/*/u_size_only_buf/${DRIVING_CELL_PIN}
 set MAIN_RST_PIN IO_RST_N
 # target is 100MHz, overconstrain to 125 MHz (+25%)
 set MAIN_TCK  8.0
@@ -29,7 +29,7 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_usb/*/u_size_only_buf/X
+set USB_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_usb/*/u_size_only_buf/${DRIVING_CELL_PIN}
 # 50MHz
 set USB_TCK 20.0
 set_ideal_network [get_pins ${USB_CLK_PIN}]
@@ -52,7 +52,7 @@ set_output_delay ${USB_OUT_DEL} [get_ports USB_N] -clock USB_CLK
 #####################
 # IO clk            #
 #####################
-set IO_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_io/*/u_size_only_buf/X
+set IO_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_io/*/u_size_only_buf/${DRIVING_CELL_PIN}
 set IO_TCK 8.3333
 # target is 96MHz, overconstrain to 120 MHz (+25%)
 set_ideal_network [get_pins ${IO_CLK_PIN}]
@@ -62,12 +62,12 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # generated clocks (div2/div4)
 create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div2/*/u_size_only_buf/A] \
-    [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div2/*/u_size_only_buf/X]
+    -source [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div2/*/u_size_only_buf/${LOAD_CELL_PIN}] \
+    [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div2/*/u_size_only_buf/${DRIVING_CELL_PIN}]
 
 create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div4/*/u_size_only_buf/A] \
-    [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div4/*/u_size_only_buf/X]
+    -source [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div4/*/u_size_only_buf/${LOAD_CELL_PIN}] \
+    [get_pins top_earlgrey/u_clkmgr_aon/i_prim_clock_buf_io_div4/*/u_size_only_buf/${DRIVING_CELL_PIN}]
 
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
@@ -107,7 +107,7 @@ set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOR*] -clock IO_DIV4_CLK
 #####################
 # AON clk (300kHz)  #
 #####################
-set AON_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_aon/*/u_size_only_buf/X
+set AON_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_aon/*/u_size_only_buf/${DRIVING_CELL_PIN}
 set AON_TCK 3333.0
 set_ideal_network [get_pins ${AON_CLK_PIN}]
 
@@ -194,10 +194,10 @@ set SPI_HODI_PASS_MAX_DELAY [expr ${TPAD_I} + ${THODI} + ${TPAD_O}]
 set SPI_HIDO_PASS_MAX_DELAY ${SPI_HODI_PASS_MAX_DELAY}
 
 # TODO: These are strawman constraints and need to be refined.
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D0] -to [get_ports SPI_HOST_D0]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D1] -to [get_ports SPI_HOST_D1]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D2] -to [get_ports SPI_HOST_D2]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D3] -to [get_ports SPI_HOST_D3]
+set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D0]   -to [get_ports SPI_HOST_D0]
+set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D1]   -to [get_ports SPI_HOST_D1]
+set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D2]   -to [get_ports SPI_HOST_D2]
+set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D3]   -to [get_ports SPI_HOST_D3]
 set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_CS_L] -to [get_ports SPI_HOST_CS_L]
 
 set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D0] -to [get_ports SPI_DEV_D0]
@@ -220,7 +220,7 @@ set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK     ] \
                                      -group [get_clocks AON_CLK      ]
 
 # UART loopback path can be considered to be a false path
-set_false_path -through [get_ports top_earlgrey/u_uart*/cio_rx_i] -through [get_ports top_earlgrey/u_uart*/cio_tx_o]
+set_false_path -through [get_pins top_earlgrey/u_uart*/cio_rx_i] -through [get_pins top_earlgrey/u_uart*/cio_tx_o]
 
 # break all timing paths through bidirectional IO buffers (i.e., from output and oe to input buffer output)
 set_false_path -through [get_pins *padring/*pad/*/oe_i] -through [get_pins *padring/*pad/*/in_o]
@@ -228,6 +228,9 @@ set_false_path -through [get_pins *padring/*pad/*/out_i] -through [get_pins *pad
 
 # break path through jtag mux
 set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
+
+# pass through is not fully supported yet by SPI host
+set_false_path -through [get_pins top_earlgrey/u_spi_host1/u_sck_passthrough/gen_*/u_size_only_mux2/${DRIVING_CELL_PIN}]
 
 #####################
 # I/O drive/load    #
