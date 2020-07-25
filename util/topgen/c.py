@@ -137,6 +137,7 @@ class TopGenC(object):
         self._init_plic_targets()
         self._init_plic_mapping()
         self._init_alert_mapping()
+        self._init_pinmux_mapping()
 
     def modules(self):
         return [(m["name"],
@@ -276,3 +277,82 @@ class TopGenC(object):
         self.alert_sources = sources
         self.alert_alerts = alerts
         self.alert_mapping = alert_mapping
+
+    def _init_pinmux_mapping(self):
+        """Generate C enums for addressing pinmux registers and in/out selects.
+
+        Inputs are connected in order: inouts, then inputs
+        Outputs are connected in order: inouts, then outputs
+
+        Inputs:
+        - Peripheral chooses register field (pinmux_peripheral_in)
+        - Insel chooses MIO input (pinmux_insel)
+
+        Outputs:
+        - MIO chooses register field (pinmux_mio_out)
+        - Outsel chooses peripheral output (pinmux_outsel)
+
+        Insel and outsel have some special values which are captured here too.
+        """
+        pinmux_info = self.top["pinmux"]
+
+        # Peripheral Inputs
+        peripheral_in = CEnum(self._top_name +
+                              Name(["pinmux", "peripheral", "in"]))
+        for signal in pinmux_info["inouts"] + pinmux_info["inputs"]:
+            if "width" in signal and int(signal["width"]) != 1:
+                for i in range(int(signal["width"])):
+                    name = Name.from_snake_case(
+                        signal["name"]) + Name([str(i)])
+                    peripheral_in.add_constant(name,
+                                               docstring="{} {}".format(
+                                                   signal["name"], i))
+            else:
+                peripheral_in.add_constant(Name.from_snake_case(
+                    signal["name"]),
+                                           docstring=signal["name"])
+        peripheral_in.add_last_constant("Last valid peripheral input")
+
+        # Pinmux Input Selects
+        insel = CEnum(self._top_name + Name(["pinmux", "insel"]))
+        insel.add_constant(Name(["constant", "zero"]),
+                           docstring="Tie constantly to zero")
+        insel.add_constant(Name(["constant", "one"]),
+                           docstring="Tie constantly to one")
+        for i in range(int(pinmux_info["num_mio"])):
+            insel.add_constant(Name(["mio", str(i)]),
+                               docstring="MIO Pad {}".format(i))
+        insel.add_last_constant("Last valid insel value")
+
+        # MIO Outputs
+        mio_out = CEnum(self._top_name + Name(["pinmux", "mio", "out"]))
+        for i in range(int(pinmux_info["num_mio"])):
+            mio_out.add_constant(Name([str(i)]),
+                                 docstring="MIO Pad {}".format(i))
+        mio_out.add_last_constant("Last valid mio output")
+
+        # Pinmux Output Selects
+        outsel = CEnum(self._top_name + Name(["pinmux", "outsel"]))
+        outsel.add_constant(Name(["constant", "zero"]),
+                            docstring="Tie constantly to zero")
+        outsel.add_constant(Name(["constant", "one"]),
+                            docstring="Tie constantly to one")
+        outsel.add_constant(Name(["constant", "high", "z"]),
+                            docstring="Tie constantly to high-Z")
+        for signal in pinmux_info["inouts"] + pinmux_info["outputs"]:
+            if "width" in signal and int(signal["width"]) != 1:
+                for i in range(int(signal["width"])):
+                    name = Name.from_snake_case(
+                        signal["name"]) + Name([str(i)])
+                    outsel.add_constant(name,
+                                        docstring="{} {}".format(
+                                            signal["name"], i))
+            else:
+                outsel.add_constant(Name.from_snake_case(signal["name"]),
+                                    docstring=signal["name"])
+        outsel.add_last_constant("Last valid outsel value")
+
+        self.pinmux_peripheral_in = peripheral_in
+        self.pinmux_insel = insel
+        self.pinmux_mio_out = mio_out
+        self.pinmux_outsel = outsel
