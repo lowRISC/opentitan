@@ -337,9 +337,12 @@ module top_earlgrey_asic (
     .SrstIdx        (           35 ), // IOR5 -- MIO 35
     .TdiIdx         (           32 ), // IOR2 -- MIO 32
     .TdoIdx         (           31 ), // IOR1 -- MIO 31
-    .UsbDpPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDpPullup ),
-    .UsbDnPuIdx     ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDnPullup ),
-    .UsbDIdx        ( top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonD )
+    .UsbDpPuIdx     ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDpPullup ),
+    .UsbDnPuIdx     ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonDnPullup ),
+    .UsbDIdx        ( padctrl_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevAonD )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),

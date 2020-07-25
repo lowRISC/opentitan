@@ -22,7 +22,6 @@ module jtag_mux #(
   // Indices for USB breakout (this is a Bronze workaround)
   parameter int UsbDpPuIdx     = 0,
   parameter int UsbDnPuIdx     = 0,
-  parameter int UsbDieIdx      = 0,
   parameter int UsbDIdx        = 0
 ) (
   // To JTAG inside core
@@ -44,7 +43,6 @@ module jtag_mux #(
   input  logic [NumIOs-1:0] in_padring_i,
 
   // USB breakouts for bronze
-  output logic usb_input_en_o,
   output logic usb_pullup_p_en_o,
   output logic usb_pullup_n_en_o,
   input  logic usb_diff_input_i
@@ -89,7 +87,6 @@ module jtag_mux #(
   end
 
   // Other USB output taps for Bronze
-  assign usb_input_en_o    = out_core_i[UsbDieIdx]  & oe_core_i[UsbDieIdx];
   assign usb_pullup_p_en_o = out_core_i[UsbDpPuIdx] & oe_core_i[UsbDpPuIdx];
   assign usb_pullup_n_en_o = out_core_i[UsbDnPuIdx] & oe_core_i[UsbDnPuIdx];
 
