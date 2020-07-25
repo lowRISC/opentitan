@@ -112,12 +112,14 @@ module aes_control (
   // Signals
   logic       key_init_clear;
   logic       key_init_new;
-  logic       dec_key_gen;
+  logic       key_init_load;
+  logic       key_init_arm;
   logic       key_init_ready;
 
   logic [7:0] iv_qe;
   logic       iv_clear;
   logic       iv_load;
+  logic       iv_arm;
   logic       iv_ready;
 
   logic [3:0] data_in_new_d, data_in_new_q;
@@ -193,7 +195,6 @@ module aes_control (
     // IV registers
     iv_sel_o    = IV_INPUT;
     iv_we_o     = 8'h00;
-    iv_load     = 1'b0;
 
     // Pseudo-random number generator control
     prng_data_req_o   = 1'b0;
@@ -214,14 +215,17 @@ module aes_control (
     stall_we_o = 1'b0;
 
     // Key, data I/O register control
-    dec_key_gen   = 1'b0;
     data_in_load  = 1'b0;
     data_in_we_o  = 1'b0;
     data_out_we_o = 1'b0;
 
-    // Edge detector control
+    // Register status tracker control
     key_init_clear = 1'b0;
+    key_init_load  = 1'b0;
+    key_init_arm   = 1'b0;
     iv_clear       = 1'b0;
+    iv_load        = 1'b0;
+    iv_arm         = 1'b0;
 
     // FSM
     aes_ctrl_ns = aes_ctrl_cs;
@@ -282,10 +286,11 @@ module aes_control (
       end
 
       LOAD: begin
-        // Clear key_init_new, iv_new, data_in_new
-        dec_key_gen  =  cipher_dec_key_gen_i;
-        iv_load      = ~cipher_dec_key_gen_i;
-        data_in_load = ~cipher_dec_key_gen_i;
+        // Signal that we have used the current key, IV, data input to register status tracking.
+        key_init_load =  cipher_dec_key_gen_i; // This key is no longer "new", but still clean.
+        key_init_arm  = ~cipher_dec_key_gen_i; // The key is still "new", prevent partial updates.
+        iv_load       = ~cipher_dec_key_gen_i & (doing_cbc_enc | doing_cbc_dec | doing_ctr);
+        data_in_load  = ~cipher_dec_key_gen_i;
 
         // Trigger counter increment.
         ctr_incr_o   = doing_ctr ? 1'b1 : 1'b0;
@@ -363,6 +368,9 @@ module aes_control (
           // We are ready once the output data registers can be written.
           cipher_out_ready_o = finish;
           if (finish & cipher_out_valid_i) begin
+            // Arm the IV status tracker. In the next cycle, the IV registers can be written again
+            // by software. We need to make sure software does not partially update the IV.
+            iv_arm        = (doing_cbc_enc || doing_cbc_dec || doing_ctr) ? 1'b1 : 1'b0;
             data_out_we_o = 1'b1;
             aes_ctrl_ns   = IDLE;
           end
@@ -432,8 +440,9 @@ module aes_control (
     .clk_i   ( clk_i          ),
     .rst_ni  ( rst_ni         ),
     .we_i    ( key_init_we_o  ),
-    .use_i   ( dec_key_gen    ),
+    .use_i   ( key_init_load  ),
     .clear_i ( key_init_clear ),
+    .arm_i   ( key_init_arm   ),
     .new_o   ( key_init_new   ),
     .clean_o ( key_init_ready )
   );
@@ -450,6 +459,7 @@ module aes_control (
     .we_i    ( iv_we_o  ),
     .use_i   ( iv_load  ),
     .clear_i ( iv_clear ),
+    .arm_i   ( iv_arm   ),
     .new_o   ( iv_ready ),
     .clean_o (          )
   );

@@ -15,24 +15,32 @@ module aes_reg_status #(
   input  logic [Width-1:0] we_i,
   input  logic             use_i,
   input  logic             clear_i,
+  input  logic             arm_i,
   output logic             new_o,
   output logic             clean_o
 );
 
   logic [Width-1:0] we_d, we_q;
+  logic             armed_d, armed_q;
   logic             all_written;
   logic             none_written;
   logic             new_d, new_q;
   logic             clean_d, clean_q;
 
-  // Collect write operations. Upon clear or use, we start over.
-  assign we_d = (clear_i || use_i) ? '0 : (we_q | we_i);
+  // Collect write operations. Upon clear or use, we start over. If armed, the next write will
+  // restart the tracking.
+  assign we_d    = (clear_i || use_i) ? '0   :
+                   (armed_q && |we_i) ? we_i : (we_q | we_i);
+  assign armed_d = (clear_i || use_i) ? 1'b0 :
+                   (armed_q && |we_i) ? 1'b0 : armed_q | arm_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_ops
     if (!rst_ni) begin
-      we_q <= '0;
+      we_q    <= '0;
+      armed_q <= 1'b0;
     end else begin
-      we_q <= we_d;
+      we_q    <= we_d;
+      armed_q <= armed_d;
     end
   end
 
