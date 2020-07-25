@@ -26,10 +26,8 @@ report module
 //-------------------------------------------------------------------------
 // compare
 //-------------------------------------------------------------------------
+set mapping method -name_effort low
 set system mode lec
-
-set mapping method -nets -mem -unreach -noname
-map key points
 report unmapped points
 
 add compare point -all
