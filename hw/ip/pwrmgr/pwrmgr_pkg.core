@@ -10,7 +10,7 @@ description: "Power manager package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
+      - lowrisc:ip:pwrmgr_reg
     files:
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource

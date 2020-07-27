@@ -2,20 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr_component:0.1"
-description: "Power manager comopnents"
+name: "lowrisc:systems:pwrmgr_reg:0.1"
+description: "Auto-generated pwrmgr register sources for top_earlgrey"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:tlul:headers
     files:
-      - rtl/pwrmgr.sv
-      - rtl/pwrmgr_cdc.sv
-      - rtl/pwrmgr_slow_fsm.sv
-      - rtl/pwrmgr_fsm.sv
-      - rtl/pwrmgr_wake_info.sv
+      - rtl/autogen/pwrmgr_reg_pkg.sv
+      - rtl/autogen/pwrmgr_reg_top.sv
     file_type: systemVerilogSource
 
 targets:
