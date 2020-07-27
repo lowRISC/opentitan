@@ -36,7 +36,7 @@ module padctrl_assert_fpv (
     prim_generic_pad_wrapper #(
       .AttrDw   ( padctrl_reg_pkg::AttrDw ),
       .WarlOnly ( 1'b1                    )
-    ) i_prim_generic_pad_wrapper (
+    ) dut (
       .inout_io (                   ),
       .in_o     (                   ),
       .ie_i     ( 1'b0              ),

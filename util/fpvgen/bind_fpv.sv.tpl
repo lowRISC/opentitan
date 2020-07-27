@@ -35,8 +35,10 @@ module ${dut.name}_bind_fpv;
   bind ${dut.name} ${dut.name}_csr_assert_fpv i_${dut.name}_csr_assert_fpv (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_i),
-    .d2h  (tl_o)
+    .h2d    (tl_i),
+    .d2h    (tl_o),
+    .reg2hw (reg2hw),
+    .hw2reg (hw2reg)
   );
 % endif
 
