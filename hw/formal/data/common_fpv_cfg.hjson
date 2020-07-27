@@ -17,8 +17,10 @@
   sv_flist_gen_cmd:  fusesoc
 
   // TODO: switch the tool to formal once the corresponding edalize backend is avaiable
+
   sv_flist_gen_opts: ["--cores-root {proj_root}",
                       "run",
+                      "--flag=fileset_{design_level}",
                       "--tool=icarus",
                       "--target=formal",
                       "--build-root={build_dir}",
@@ -38,4 +40,3 @@
                 "--reppath={build_dir}/results.hjson",
                 "--cov={cov}"]
 }
-

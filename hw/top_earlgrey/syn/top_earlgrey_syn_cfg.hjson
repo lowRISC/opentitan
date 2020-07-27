@@ -15,5 +15,13 @@
   sdc_path: "{proj_root}/hw/top_earlgrey/syn"
   sdc_file: "constraints.sdc"
 
+  // Overrides
+  overrides: [
+    {
+      name: design_level
+      value: "top"
+    }
+  ]
+
   // TODO: add support for loading the constraints here
  }

@@ -6,6 +6,7 @@
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
   sv_flist_gen_opts:  ["{fusesoc_cores_root_dirs}",
                        "run",
+                       "--flag=fileset_{design_level}",
                        "--target=sim",
                        "--build-root={build_dir}",
                        "--setup {fusesoc_core}"]
