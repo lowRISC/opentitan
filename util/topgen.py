@@ -974,9 +974,13 @@ def main():
         # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
 
-        # Fix the C header guard, which will have the wrong name
+        # 'top_earlgrey_memory.h.tpl' -> 'sw/autogen/top_earlgrey_memory.h'
+        memory_cheader_path = render_template('top_%s_memory.h', 'sw/autogen')
+
+        # Fix the C header guards, which will have the wrong name
         subprocess.run(["util/fix_include_guard.py",
-                        str(cheader_path)],
+                        str(cheader_path),
+                        str(memory_cheader_path)],
                        universal_newlines=True,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL,
