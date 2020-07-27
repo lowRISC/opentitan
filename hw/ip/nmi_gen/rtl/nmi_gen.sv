@@ -10,7 +10,7 @@ module nmi_gen
   import prim_esc_pkg::*;
 #(
   // leave constant
-  localparam int unsigned N_ESC_SEV = 4
+  localparam int unsigned N_ESC_SEV = 3
 ) (
   input                           clk_i,
   input                           rst_ni,
@@ -21,7 +21,6 @@ module nmi_gen
   output logic                    intr_esc0_o,
   output logic                    intr_esc1_o,
   output logic                    intr_esc2_o,
-  output logic                    intr_esc3_o,
   // Escalation outputs
   input  esc_tx_t [N_ESC_SEV-1:0] esc_tx_i,
   output esc_rx_t [N_ESC_SEV-1:0] esc_rx_o
@@ -86,19 +85,6 @@ module nmi_gen
     .hw2reg_intr_state_de_o ( hw2reg.intr_state.esc2.de  ),
     .hw2reg_intr_state_d_o  ( hw2reg.intr_state.esc2.d   ),
     .intr_o                 ( intr_esc2_o                )
-  );
-
-  prim_intr_hw #(
-    .Width(1)
-  ) i_intr_esc3 (
-    .event_intr_i           ( esc_en[3]                  ),
-    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.esc3.q  ),
-    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.esc3.q    ),
-    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.esc3.qe   ),
-    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.esc3.q   ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.esc3.de  ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.esc3.d   ),
-    .intr_o                 ( intr_esc3_o                )
   );
 
   /////////////////////////////////////////
