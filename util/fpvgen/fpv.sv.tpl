@@ -39,9 +39,9 @@ module ${dut.name}_fpv (
 % for k, param in enumerate(params):
   <% comma = "" if (k == len(params)-1) else "," %>  .${param.name}(${param.name})${comma}
 % endfor
-  ) i_${dut.name} (
+  ) dut (
 % else:
-  ${dut.name} i_${dut.name} (
+  ${dut.name} dut (
 %endif
   % for k, port in enumerate(dut.ports):
 <% comma = "" if (k == len(dut.ports)-1) else "," %>    .${port.name}${comma}

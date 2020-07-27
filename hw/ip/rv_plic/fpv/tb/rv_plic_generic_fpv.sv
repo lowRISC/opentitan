@@ -22,7 +22,7 @@ module rv_plic_generic_fpv import rv_plic_reg_pkg::*; #(
   // several instances with different NumSrc and NumTarget configs here
   // (in a similar way as this has been done in prim_lfsr_fpv)
   // for (genvar k = 0; k < NumInstances; k++) begin : geNumInstances
-  rv_plic i_rv_plic (
+  rv_plic dut (
     .clk_i      ,
     .rst_ni     ,
     .tl_i       (tl_i[0]),

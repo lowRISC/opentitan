@@ -20,7 +20,7 @@ module pinmux_fpv (
   input [$clog2(pinmux_reg_pkg::NMioPads)-1:0]     mio_sel_i
 );
 
-  pinmux i_pinmux (
+  pinmux dut (
     .clk_i              ,
     .rst_ni             ,
     .tl_i               ,
