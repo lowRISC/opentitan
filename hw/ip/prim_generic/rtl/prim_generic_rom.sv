@@ -25,7 +25,7 @@ module prim_generic_rom #(
     end
   end
 
-  `include "prim_util_memload.sv"
+  `include "prim_util_memload.svh"
 
   ////////////////
   // ASSERTIONS //

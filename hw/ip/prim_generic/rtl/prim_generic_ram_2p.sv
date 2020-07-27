@@ -86,6 +86,6 @@ module prim_generic_ram_2p #(
     end
   end
 
-  `include "prim_util_memload.sv"
+  `include "prim_util_memload.svh"
 
 endmodule
