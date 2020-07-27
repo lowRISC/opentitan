@@ -21,8 +21,8 @@ This document outlines the basic structure of the RFC process, with the expectat
 * The RFC authors may solicit early feedback while preparing an RFC, possibly before sharing publicly.
    * If requested, the TC could help to nominate a small group to shepherd the RFC.
 * If the RFC potentially contains information that could be certification-sensitive (guidance to be shared), send a note to security@opentitan.org first for feedback.
-* The RFC is shared publicly by filing a GitHub issue and tagging with the `Type:RFC` label.
-* Once the author is happy that the RFC is complete, they submit it to the Technical Committee for review by adding the label `For TC Review`.
+* The RFC is shared publicly by filing a GitHub issue and tagging with the `RFC:Proposal` label.
+* Once the author is happy that the RFC is complete, they submit it to the Technical Committee for review by adding the Github label `TC Review`.
 * The Technical Committee will consider active RFCs in each meeting (those that have been marked ready for at least a week).
   If an RFC saw large changes in the week it has been "ready" the TC may postpone judgement in order to allow more comment.
   They will decide whether to:
@@ -31,6 +31,8 @@ This document outlines the basic structure of the RFC process, with the expectat
    * **Reject**: Decided against the proposal at this time
    * **Postpone**: The proposal seemed to have the right level of detail and form, but the project won't be making a decision on it at this time (e.g. refers to work that is scheduled too far in the future).
    * **Request revision**: The TC feel they could make an accept/reject decision if certain changes were made (e.g. fleshing out a description of alternate approaches, considering changes to the approach etc).
+   * **Abstain with comment**: The TC feel that the issue does not require TC arbitration.
+     The TC may leave comment suggesting the next action for the RFC, perhaps indicating where the issue should be resolved, such as in one of the other committees.
 
 RFCs should be created at least for any major new piece of code (e.g. IP block), or cross-cutting changes that need careful consideration.
 Generally speaking, an RFC should be created when there is demand for one (especially when that request comes from a Committer).
