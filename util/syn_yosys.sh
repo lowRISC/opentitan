@@ -49,10 +49,6 @@ printf "\nSV2V ERRORS:\n"
 # drive strengths are not supported by Yosys
 sed -i.bak -e "s/VERILATOR/SYNTHESIS/" prim_generic_pad_wrapper.sv
 
-# prim_util_memload.sv is only meant to be included within a module
-mv prim_util_memload.sv{,h}
-sed -i.bak -e "s/prim_util_memload\.sv/prim_util_memload.svh/" *.sv
-
 rm *.sv.bak
 
 sv2v -DSYNTHESIS *.sv +RTS -N4 > combined.v
