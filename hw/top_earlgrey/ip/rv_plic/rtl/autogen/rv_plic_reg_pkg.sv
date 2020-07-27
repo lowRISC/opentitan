@@ -9,6 +9,7 @@ package rv_plic_reg_pkg;
   // Param list
   parameter int NumSrc = 83;
   parameter int NumTarget = 1;
+  parameter int PrioWidth = 2;
 
   ////////////////////////////
   // Typedefs for registers //
