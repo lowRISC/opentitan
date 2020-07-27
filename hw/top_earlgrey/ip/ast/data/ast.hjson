@@ -1,0 +1,55 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "ast",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "",
+  regwidth: "32",
+  registers: [
+    { name: "RWTYPE0",
+      desc: "RW type with one field",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0",
+          desc: "field description"
+          resval: "12345678",
+        }
+      ]
+    },
+    { name: "RWTYPE1",
+      desc: '''
+          RW type
+          with long
+          description
+          and multiple fields
+          '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "FIELD0",
+          desc: "field 0",
+          resval: "1",
+        }
+        { bits: "1",
+          name: "FIELD1",
+          desc: "field 1",
+          resval: "0",
+        }
+        { bits: "4",
+          name: "FIELD4",
+          desc: "field 4",
+          resval: "1",
+        }
+        { bits: "15:8",
+          name: "FIELD15_8",
+          desc: "field [15:8]",
+          resval: "100",
+        }
+      ]
+    },
+  ],
+}
