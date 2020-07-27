@@ -488,6 +488,22 @@ def StoreWlenWordToMemory(byteaddr: integer, storedata: Bits(WLEN)):
   This section will be written as we move on in the design and implementation process.
 </div>
 
+## Memories
+
+The OTBN processor core has access to two dedicated memories:
+an instruction memory (IMEM), and a data memory (DMEM).
+Each memory is 4 kiB in size.
+
+The memory layout follows the Harvard architecture.
+Both memories are byte-addressed, with addresses starting at 0.
+
+The instruction memory (IMEM) is 32b wide and provides the instruction stream to the OTBN processor;
+it cannot be read or written from user code through load or store instructions.
+
+The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
+When accessed from the base instruction subset through the `LW` or `SW` instructions, accesses must read or write 32b-aligned 32b words.
+When accessed from the big number instruction subset through the `BN.LID` or `BN.SID` instructions, accesses must read or write 256b-aligned 256b words.
+
 ## Operation
 
 <div class="bd-callout bd-callout-warning">
