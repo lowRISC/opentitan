@@ -17,8 +17,10 @@ First the simulation needs to built itself.
 
 ```console
 $ cd $REPO_TOP
-$ fusesoc --cores-root . run --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
+$ fusesoc --cores-root . run --flag=fileset_top --target=sim --setup --build lowrisc:systems:top_earlgrey_verilator
 ```
+The fsel_top flag used above is specific to the OpenTitan project to select the correct fileset.
+
 
 Then we need to build software to run on the simulated system.
 There are 3 memory types: ROM, RAM and Flash.

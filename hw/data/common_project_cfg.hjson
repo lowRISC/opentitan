@@ -33,4 +33,7 @@
       BRANCH=`git rev-parse --abbrev-ref HEAD`;                                                                  \
       echo "Revision: [\`$COMMIT_SHORT\`](https://github.com/lowrisc/opentitan/tree/$COMMIT_LONG) on \`$BRANCH\`";
       '''
+
+  // The current design level
+  design_level:  "ip"
 }

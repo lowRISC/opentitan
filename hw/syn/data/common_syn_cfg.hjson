@@ -24,6 +24,7 @@
   // TODO: switch the tool to dc once the corresponding edalize backend is available
   sv_flist_gen_opts:  ["--cores-root {proj_root}",
                        "run"
+                       "--flag=fileset_{design_level}",
                        "--target={flow}",
                        "--tool icarus",
                        "--build-root={build_dir}",

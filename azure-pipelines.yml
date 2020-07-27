@@ -341,7 +341,7 @@ jobs:
 
       export PATH="$VERILATOR_PATH/bin:$PATH"
       fusesoc --cores-root=. \
-        run --target=sim --setup --build \
+        run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_verilator
 
@@ -450,7 +450,7 @@ jobs:
 
       . /opt/xilinx/Vivado/2018.3/settings64.sh
       fusesoc --cores-root=. \
-        run --target=synth --setup --build \
+        run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_nexysvideo \
         --BootRomInitFile="$BOOTROM_VMEM"

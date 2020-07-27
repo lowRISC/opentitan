@@ -145,11 +145,23 @@
                   fusesoc_core: lowrisc:systems:top_earlgrey
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              {    name: top_earlgrey_asic
                   fusesoc_core: lowrisc:systems:top_earlgrey_asic
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey_asic/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              // these two currently cause compilation issues in AscentLint
              //{    name: top_earlgrey_nexysvideo
@@ -163,4 +175,5 @@
              //     rel_path: "hw/top_earlgrey_verilator/lint/{tool}"
              //},
             ]
+
 }

@@ -44,6 +44,10 @@
       name: vcs_cov_hier
       value: "-cm_hier {tool_srcs_dir}/chip_cover.cfg"
     }
+    {
+      name: design_level
+      value: "top"
+    }
   ]
 
   // Set the vcs_cov_assert_hier to supply the chip specific assertion coverage hierarchies.
