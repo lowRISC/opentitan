@@ -220,8 +220,9 @@ module top_${top["name"]} #(
     .irq_software_i       (msip),
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
-    .irq_fast_i           (15'b0),// PLIC handles all peripheral interrupts
-    .irq_nm_i             (1'b0),// TODO - add and connect alert responder
+    // escalation input from alert handler (NMI)
+    .esc_tx_i             (esc_tx[0]),
+    .esc_rx_o             (esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
     // CPU control signals
@@ -580,8 +581,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endif
     % if m["type"] == "nmi_gen":
       // escalation signal inputs
-      .esc_rx_o    ( esc_rx   ),
-      .esc_tx_i    ( esc_tx   ),
+      .esc_rx_o    ( esc_rx[3:1] ),
+      .esc_tx_i    ( esc_tx[3:1] ),
     % endif
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),

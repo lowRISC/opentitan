@@ -24,11 +24,6 @@
             Escalation interrupt 2
             ''',
     },
-    { name: "esc3",
-      desc: '''
-            Escalation interrupt 3
-            ''',
-    },
   ],
   registers: [
   ],

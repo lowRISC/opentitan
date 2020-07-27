@@ -48,8 +48,10 @@ module rv_core_ibex #(
   input  logic        irq_software_i,
   input  logic        irq_timer_i,
   input  logic        irq_external_i,
-  input  logic [14:0] irq_fast_i,
-  input  logic        irq_nm_i,
+
+  // Escalation input for NMI
+  input  prim_esc_pkg::esc_tx_t esc_tx_i,
+  output prim_esc_pkg::esc_rx_t esc_rx_o,
 
   // Debug Interface
   input  logic        debug_req_i,
@@ -118,6 +120,17 @@ module rv_core_ibex #(
   logic [31:0] rvfi_mem_wdata;
 `endif
 
+  // Escalation receiver that converts differential
+  // protocol into single ended signal.
+  logic irq_nm;
+  prim_esc_receiver i_prim_esc_receiver (
+    .clk_i,
+    .rst_ni,
+    .esc_en_o ( irq_nm   ),
+    .esc_rx_o,
+    .esc_tx_i
+  );
+
   ibex_core #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -164,8 +177,8 @@ module rv_core_ibex #(
     .irq_software_i,
     .irq_timer_i,
     .irq_external_i,
-    .irq_fast_i,
-    .irq_nm_i,
+    .irq_fast_i     ( '0           ),
+    .irq_nm_i       ( irq_nm       ),
 
     .debug_req_i,
 

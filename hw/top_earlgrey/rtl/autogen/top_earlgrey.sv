@@ -314,7 +314,9 @@ module top_earlgrey #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     .irq_fast_i           (15'b0),// PLIC handles all peripheral interrupts
-    .irq_nm_i             (1'b0),// TODO - add and connect alert responder
+    // escalation input from alert handler (NMI)
+    .esc_tx_i             (esc_tx[0]),
+    .esc_rx_o             (esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
     // CPU control signals
@@ -854,8 +856,8 @@ module top_earlgrey #(
       .tl_i(nmi_gen_tl_req),
       .tl_o(nmi_gen_tl_rsp),
       // escalation signal inputs
-      .esc_rx_o    ( esc_rx   ),
-      .esc_tx_i    ( esc_tx   ),
+      .esc_rx_o    ( esc_rx[3:1] ),
+      .esc_tx_i    ( esc_tx[3:1] ),
       .clk_i (clkmgr_clocks.clk_main_secure),
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
