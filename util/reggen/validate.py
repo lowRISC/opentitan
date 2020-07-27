@@ -1097,6 +1097,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
             genreg = {}
             if shadowed is True:
                 genreg['name'] = mrname[:idx] + str(rnum) + mrname[idx:]
+            elif mrname[-1].isnumeric() and mcount > 1:
+                genreg['name'] = mrname + "_" + str(rnum)
             else:
                 genreg['name'] = mrname + str(rnum)
             genreg['desc'] = mreg['desc']

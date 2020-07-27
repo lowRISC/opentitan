@@ -31,9 +31,9 @@ class InitTest : public PlicTest {
  protected:
   void ExpectInitReset() {
     // Interupt enable multireg.
-    EXPECT_WRITE32(RV_PLIC_IE00_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE01_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE02_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
 
     // Level/edge multireg.
     EXPECT_WRITE32(RV_PLIC_LE0_REG_OFFSET, 0);
@@ -108,13 +108,13 @@ class IrqEnableSetTest : public IrqTests {
 
   std::vector<Register> registers_{
       {
-          RV_PLIC_IE00_REG_OFFSET, RV_PLIC_IE00_E31,
+          RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E31,
       },
       {
-          RV_PLIC_IE01_REG_OFFSET, RV_PLIC_IE01_E63,
+          RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E63,
       },
       {
-          RV_PLIC_IE02_REG_OFFSET, RV_PLIC_IE02_E82,
+          RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E82,
       },
   };
 };
