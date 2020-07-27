@@ -27,6 +27,12 @@
       default: "${target}",
       local: "true",
     },
+    { name: "PrioWidth",
+      desc: "Width of priority signals",
+      type: "int",
+      default: "${(prio).bit_length()}",
+      local: "true",
+    },
   ],
   regwidth: "32",
   registers: [

@@ -20,7 +20,7 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/autogen/rv_plic.hjson
+      spec: ../data/autogen/rv_plic.hjson
       depend: lowrisc:top_earlgrey:rv_plic
 
 targets:
