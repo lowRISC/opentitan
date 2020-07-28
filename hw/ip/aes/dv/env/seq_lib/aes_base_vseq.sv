@@ -45,8 +45,8 @@ class aes_base_vseq extends cip_base_vseq #(
 
     // initialize control register
     aes_ctrl[0]    = 0;        // set to encryption
-    aes_ctrl[4:1]  = aes_pkg::AES_ECB;   // 4'b0001
-    aes_ctrl[7:5]  = aes_pkg::AES_128;   // set to 128b key
+    aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 4'b0001
+    aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
     csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1));
     csr_wr(.csr(ral.trigger), .value(aes_trigger));
   endtask
@@ -58,7 +58,7 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // set_operation
 
 
-  virtual task set_mode(bit [3:0] mode);
+  virtual task set_mode(bit [5:0] mode);
     ral.ctrl_shadowed.mode.set(mode);
     csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
   endtask

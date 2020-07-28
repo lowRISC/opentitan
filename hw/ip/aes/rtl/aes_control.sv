@@ -135,7 +135,10 @@ module aes_control (
   logic       cfg_valid;
   logic       start, finish;
   logic       cipher_crypt;
+  logic       cipher_out_done;
   logic       doing_cbc_enc, doing_cbc_dec;
+  logic       doing_cfb_enc, doing_cfb_dec;
+  logic       doing_ofb;
   logic       doing_ctr;
   logic       ctrl_we_q;
   logic       clear_in_out_status;
@@ -156,6 +159,8 @@ module aes_control (
       ( manual_operation_i ? start_i                                                 :
        (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
        (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
+       (mode_i == AES_CFB) ? (key_init_ready & data_in_new & iv_ready)               :
+       (mode_i == AES_OFB) ? (key_init_ready & data_in_new & iv_ready)               :
        (mode_i == AES_CTR) ? (key_init_ready & data_in_new & iv_ready & ctr_ready_i) : 1'b0);
 
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
@@ -167,6 +172,9 @@ module aes_control (
   assign cipher_crypt  = cipher_crypt_o | cipher_crypt_i;
   assign doing_cbc_enc = cipher_crypt & (mode_i == AES_CBC) & (op_i == AES_ENC);
   assign doing_cbc_dec = cipher_crypt & (mode_i == AES_CBC) & (op_i == AES_DEC);
+  assign doing_cfb_enc = cipher_crypt & (mode_i == AES_CFB) & (op_i == AES_ENC);
+  assign doing_cfb_dec = cipher_crypt & (mode_i == AES_CFB) & (op_i == AES_DEC);
+  assign doing_ofb     = cipher_crypt & (mode_i == AES_OFB);
   assign doing_ctr     = cipher_crypt & (mode_i == AES_CTR);
 
   // FSM
@@ -187,6 +195,7 @@ module aes_control (
     // Cipher core control
     cipher_in_valid_o       = 1'b0;
     cipher_out_ready_o      = 1'b0;
+    cipher_out_done         = 1'b0;
     cipher_crypt_o          = 1'b0;
     cipher_dec_key_gen_o    = 1'b0;
     cipher_key_clear_o      = 1'b0;
@@ -279,15 +288,27 @@ module aes_control (
 
           // Previous input data register control
           data_in_prev_sel_o = doing_cbc_dec ? DIP_DATA_IN :
+                               doing_cfb_enc ? DIP_DATA_IN :
+                               doing_cfb_dec ? DIP_DATA_IN :
+                               doing_ofb     ? DIP_DATA_IN :
                                doing_ctr     ? DIP_DATA_IN : DIP_CLEAR;
           data_in_prev_we_o  = doing_cbc_dec ? 1'b1 :
+                               doing_cfb_enc ? 1'b1 :
+                               doing_cfb_dec ? 1'b1 :
+                               doing_ofb     ? 1'b1 :
                                doing_ctr     ? 1'b1 : 1'b0;
 
           // State input mux control
-          state_in_sel_o     = doing_ctr     ? SI_ZERO : SI_DATA;
+          state_in_sel_o     = doing_cfb_enc ? SI_ZERO :
+                               doing_cfb_dec ? SI_ZERO :
+                               doing_ofb     ? SI_ZERO :
+                               doing_ctr     ? SI_ZERO : SI_DATA;
 
           // State input additon mux control
           add_state_in_sel_o = doing_cbc_enc ? ADD_SI_IV :
+                               doing_cfb_enc ? ADD_SI_IV :
+                               doing_cfb_dec ? ADD_SI_IV :
+                               doing_ofb     ? ADD_SI_IV :
                                doing_ctr     ? ADD_SI_IV : ADD_SI_ZERO;
 
           // We have work for the cipher core, perform handshake.
@@ -305,7 +326,9 @@ module aes_control (
         // Signal that we have used the current key, IV, data input to register status tracking.
         key_init_load =  cipher_dec_key_gen_i; // This key is no longer "new", but still clean.
         key_init_arm  = ~cipher_dec_key_gen_i; // The key is still "new", prevent partial updates.
-        iv_load       = ~cipher_dec_key_gen_i & (doing_cbc_enc | doing_cbc_dec | doing_ctr);
+        iv_load       = ~cipher_dec_key_gen_i & (doing_cbc_enc | doing_cbc_dec |
+                                                 doing_cfb_dec | doing_cfb_dec |
+                                                 doing_ofb | doing_ctr);
         data_in_load  = ~cipher_dec_key_gen_i;
 
         // Trigger counter increment.
@@ -364,29 +387,48 @@ module aes_control (
             aes_ctrl_ns = IDLE;
           end
         end else begin
+          // Handshake signals: We are ready once the output data registers can be written.
+          cipher_out_ready_o = finish;
+          cipher_out_done    = finish & cipher_out_valid_i;
+
           // Signal if the cipher core is stalled (because previous output has not yet been read).
           stall_o    = ~finish & cipher_out_valid_i;
           stall_we_o = 1'b1;
 
           // State out addition mux control
           add_state_out_sel_o = doing_cbc_dec ? ADD_SO_IV  :
+                                doing_cfb_enc ? ADD_SO_DIP :
+                                doing_cfb_dec ? ADD_SO_DIP :
+                                doing_ofb     ? ADD_SO_DIP :
                                 doing_ctr     ? ADD_SO_DIP : ADD_SO_ZERO;
 
           // IV control
-          // - CBC: IV registers can only be updated when cipher finishes
-          // - CTR: IV registers are updated by counter during cipher operation
-          iv_sel_o =  doing_cbc_enc                   ? IV_DATA_OUT     :
-                      doing_cbc_dec                   ? IV_DATA_IN_PREV :
-                      doing_ctr                       ? IV_CTR          : IV_INPUT;
-          iv_we_o  = (doing_cbc_enc || doing_cbc_dec) ? {8{finish & cipher_out_valid_i}} :
-                      doing_ctr                       ? ctr_we_i                         : 8'h00;
+          // - CBC/CFB/OFB: IV registers are only updated when cipher finishes.
+          // - CTR: IV registers are updated by counter during cipher operation.
+          iv_sel_o = doing_cbc_enc  ? IV_DATA_OUT     :
+                     doing_cbc_dec  ? IV_DATA_IN_PREV :
+                     doing_cfb_enc  ? IV_DATA_OUT     :
+                     doing_cfb_dec  ? IV_DATA_IN_PREV :
+                     doing_ofb      ? IV_DATA_OUT_RAW :
+                     doing_ctr      ? IV_CTR          : IV_INPUT;
+          iv_we_o  = doing_cbc_enc ||
+                     doing_cbc_dec ||
+                     doing_cfb_enc ||
+                     doing_cfb_dec ||
+                     doing_ofb     ? {8{cipher_out_done}} :
+                     doing_ctr     ? ctr_we_i             : 8'h00;
 
-          // We are ready once the output data registers can be written.
-          cipher_out_ready_o = finish;
-          if (finish & cipher_out_valid_i) begin
-            // Arm the IV status tracker. In the next cycle, the IV registers can be written again
-            // by software. We need to make sure software does not partially update the IV.
-            iv_arm        = (doing_cbc_enc || doing_cbc_dec || doing_ctr) ? 1'b1 : 1'b0;
+          // Arm the IV status tracker: After finishing, the IV registers can be written again
+          // by software. We need to make sure software does not partially update the IV.
+          iv_arm = doing_cbc_enc ||
+                   doing_cbc_dec ||
+                   doing_cfb_enc ||
+                   doing_cfb_dec ||
+                   doing_ofb     ||
+                   doing_ctr     ? cipher_out_done : 1'b0;
+
+          // Proceed upon successful handshake.
+          if (cipher_out_done) begin
             data_out_we_o = 1'b1;
             aes_ctrl_ns   = IDLE;
           end
@@ -558,6 +600,8 @@ module aes_control (
   `ASSERT(AesModeValid, mode_i inside {
       AES_ECB,
       AES_CBC,
+      AES_CFB,
+      AES_OFB,
       AES_CTR,
       AES_NONE
       })

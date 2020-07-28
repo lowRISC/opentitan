@@ -15,7 +15,7 @@ extern "C" {
 // is undetermined).
 #define impl_mask 0x1
 #define op_mask 0x1
-#define mode_mask 0xF
+#define mode_mask 0x3F
 #define key_len_mask 0x7
 #define rcon_mask 0xFF
 #define round_mask 0xF
@@ -25,8 +25,9 @@ extern "C" {
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
  * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
- * @param  mode_i    Cipher mode: 4'b0001 = ECB, 4'b0010 = CBC, 4'b0100 = CTR,
- *                   4'b1000 = NONE
+ * @param  mode_i    Cipher mode: 6'b00_0001 = ECB, 6'00_b0010 = CBC,
+ *                                6'b00_0100 = CFB, 6'b00_1000 = OFB,
+ *                                6'b01_0000 = CTR, 6'b10_0000 = NONE
  * @param  iv_i      Initialization vector: 2D matrix (3D packed array in SV)
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key, 1D array of words (2D packed array in SV)
@@ -44,8 +45,9 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
  *
  * @param  impl_i    Select reference impl.: 0 = C model, 1 = OpenSSL/BoringSSL
  * @param  op_i      Operation: 0 = encrypt, 1 = decrypt
- * @param  mode_i    Cipher mode: 4'b0001 = ECB, 4'b0010 = CBC, 4'b0100 = CTR,
- *                   4'b1000 = NONE
+ * @param  mode_i    Cipher mode: 6'b00_0001 = ECB, 6'00_b0010 = CBC,
+ *                                6'b00_0100 = CFB, 6'b00_1000 = OFB,
+ *                                6'b01_0000 = CTR, 6'b10_0000 = NONE
  * @param  iv_i      Initialization vector: 1D array of words (2D packed array
  *                   in SV)
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b

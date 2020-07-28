@@ -73,6 +73,16 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
           ref_out[i] = data_out[i] ^ iv[i];
         }
       }
+    } else if (mode == kCryptoAesCfb || mode == kCryptoAesOfb) {
+      // data_in = iv
+      for (int i = 0; i < 16; ++i) {
+        data_in[i] = iv[i];
+      }
+      aes_encrypt_block(data_in, key, key_len, data_out);
+      // ref_out = data_out XOR ref_in
+      for (int i = 0; i < 16; ++i) {
+        ref_out[i] = data_out[i] ^ ref_in[i];
+      }
     } else if (mode == kCryptoAesCtr) {
       // data_in = counter value
       for (int i = 0; i < 16; ++i) {

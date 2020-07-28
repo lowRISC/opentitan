@@ -165,6 +165,7 @@ module aes_core #(
     unique case (iv_sel)
       IV_INPUT:        iv_d = iv;
       IV_DATA_OUT:     iv_d = data_out_d;
+      IV_DATA_OUT_RAW: iv_d = aes_transpose(state_done);
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
       IV_CLEAR:        iv_d = {prng_data_i, prng_data_i};
@@ -220,6 +221,8 @@ module aes_core #(
                      (aes_mode_q == AES_ECB && aes_op_q == AES_DEC) ? CIPH_INV :
                      (aes_mode_q == AES_CBC && aes_op_q == AES_ENC) ? CIPH_FWD :
                      (aes_mode_q == AES_CBC && aes_op_q == AES_DEC) ? CIPH_INV :
+                     (aes_mode_q == AES_CFB)                        ? CIPH_FWD :
+                     (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
 
   // Mux for state input
@@ -299,6 +302,8 @@ module aes_core #(
     unique case (mode)
       AES_ECB: ctrl_d.mode = AES_ECB;
       AES_CBC: ctrl_d.mode = AES_CBC;
+      AES_CFB: ctrl_d.mode = AES_CFB;
+      AES_OFB: ctrl_d.mode = AES_OFB;
       AES_CTR: ctrl_d.mode = AES_CTR;
       default: ctrl_d.mode = AES_NONE; // unsupported values are mapped to AES_NONE
     endcase
@@ -489,6 +494,7 @@ module aes_core #(
   `ASSERT(AesIvSelValid, iv_sel inside {
       IV_INPUT,
       IV_DATA_OUT,
+      IV_DATA_OUT_RAW,
       IV_DATA_IN_PREV,
       IV_CTR,
       IV_CLEAR
@@ -497,6 +503,8 @@ module aes_core #(
   `ASSERT(AesModeValid, aes_mode_q inside {
       AES_ECB,
       AES_CBC,
+      AES_CFB,
+      AES_OFB,
       AES_CTR,
       AES_NONE
       })

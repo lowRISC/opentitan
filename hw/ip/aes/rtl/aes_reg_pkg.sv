@@ -41,7 +41,7 @@ package aes_reg_pkg;
       logic        re;
     } operation;
     struct packed {
-      logic [3:0]  q;
+      logic [5:0]  q;
       logic        qe;
       logic        re;
     } mode;
@@ -101,7 +101,7 @@ package aes_reg_pkg;
       logic        d;
     } operation;
     struct packed {
-      logic [3:0]  d;
+      logic [5:0]  d;
     } mode;
     struct packed {
       logic [2:0]  d;
@@ -162,11 +162,11 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_key_mreg_t [7:0] key; // [678:415]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [414:283]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [282:151]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [150:19]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [18:6]
+    aes_reg2hw_key_mreg_t [7:0] key; // [680:417]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [416:285]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [284:153]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [152:21]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [20:6]
     aes_reg2hw_trigger_reg_t trigger; // [5:0]
   } aes_reg2hw_t;
 
@@ -174,11 +174,11 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_mreg_t [7:0] key; // [672:417]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [416:289]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [288:157]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [156:29]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [28:16]
+    aes_hw2reg_key_mreg_t [7:0] key; // [674:419]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [418:291]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [290:159]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [158:31]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [30:16]
     aes_hw2reg_trigger_reg_t trigger; // [15:10]
     aes_hw2reg_status_reg_t status; // [9:10]
   } aes_hw2reg_t;

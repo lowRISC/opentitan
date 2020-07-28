@@ -152,6 +152,16 @@ class aes_seq_item extends uvm_sequence_item;
                    key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
         return (&key_vld && &iv_vld);
       end
+      AES_CFB: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
+        return (&key_vld && &iv_vld);
+      end
+      AES_OFB: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
+                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
+        return (&key_vld && &iv_vld);
+      end
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
                    key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)

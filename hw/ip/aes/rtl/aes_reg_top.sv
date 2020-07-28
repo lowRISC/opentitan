@@ -115,8 +115,8 @@ module aes_reg_top (
   logic ctrl_shadowed_operation_wd;
   logic ctrl_shadowed_operation_we;
   logic ctrl_shadowed_operation_re;
-  logic [3:0] ctrl_shadowed_mode_qs;
-  logic [3:0] ctrl_shadowed_mode_wd;
+  logic [5:0] ctrl_shadowed_mode_qs;
+  logic [5:0] ctrl_shadowed_mode_wd;
   logic ctrl_shadowed_mode_we;
   logic ctrl_shadowed_mode_re;
   logic [2:0] ctrl_shadowed_key_len_qs;
@@ -530,9 +530,9 @@ module aes_reg_top (
   );
 
 
-  //   F[mode]: 4:1
+  //   F[mode]: 6:1
   prim_subreg_ext #(
-    .DW    (4)
+    .DW    (6)
   ) u_ctrl_shadowed_mode (
     .re     (ctrl_shadowed_mode_re),
     .we     (ctrl_shadowed_mode_we),
@@ -545,7 +545,7 @@ module aes_reg_top (
   );
 
 
-  //   F[key_len]: 7:5
+  //   F[key_len]: 9:7
   prim_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_key_len (
@@ -560,7 +560,7 @@ module aes_reg_top (
   );
 
 
-  //   F[manual_operation]: 8:8
+  //   F[manual_operation]: 10:10
   prim_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
@@ -950,15 +950,15 @@ module aes_reg_top (
   assign ctrl_shadowed_operation_re = addr_hit[20] && reg_re;
 
   assign ctrl_shadowed_mode_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_shadowed_mode_wd = reg_wdata[4:1];
+  assign ctrl_shadowed_mode_wd = reg_wdata[6:1];
   assign ctrl_shadowed_mode_re = addr_hit[20] && reg_re;
 
   assign ctrl_shadowed_key_len_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_shadowed_key_len_wd = reg_wdata[7:5];
+  assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
   assign ctrl_shadowed_key_len_re = addr_hit[20] && reg_re;
 
   assign ctrl_shadowed_manual_operation_we = addr_hit[20] & reg_we & ~wr_err;
-  assign ctrl_shadowed_manual_operation_wd = reg_wdata[8];
+  assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
   assign ctrl_shadowed_manual_operation_re = addr_hit[20] && reg_re;
 
   assign trigger_start_we = addr_hit[21] & reg_we & ~wr_err;
@@ -1069,9 +1069,9 @@ module aes_reg_top (
 
       addr_hit[20]: begin
         reg_rdata_next[0] = ctrl_shadowed_operation_qs;
-        reg_rdata_next[4:1] = ctrl_shadowed_mode_qs;
-        reg_rdata_next[7:5] = ctrl_shadowed_key_len_qs;
-        reg_rdata_next[8] = ctrl_shadowed_manual_operation_qs;
+        reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
+        reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
+        reg_rdata_next[10] = ctrl_shadowed_manual_operation_qs;
       end
 
       addr_hit[21]: begin

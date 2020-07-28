@@ -89,16 +89,18 @@ class aes_scoreboard extends cip_base_scoreboard #(
       case (1)
         // add individual case item for each csr
         (!uvm_re_match("ctrl_shadowed", csr_name)): begin
-          input_item.manual_op = item.a_data[8];
-          input_item.key_len   = item.a_data[7:5];
+          input_item.manual_op = item.a_data[10];
+          input_item.key_len   = item.a_data[9:7];
           `downcast(input_item.operation, item.a_data[0]);
           input_item.valid = 1'b1;
-          case (item.a_data[4:1])
-            4'b0001:  input_item.mode = AES_ECB;
-            4'b0010:  input_item.mode = AES_CBC;
-            4'b0100:  input_item.mode = AES_CTR;
-            4'b1000:  input_item.mode = AES_NONE;
-            default:  input_item.mode = AES_ECB;
+          case (item.a_data[6:1])
+            6'b00_0001:  input_item.mode = AES_ECB;
+            6'b00_0010:  input_item.mode = AES_CBC;
+            6'b00_0100:  input_item.mode = AES_CFB;
+            6'b00_1000:  input_item.mode = AES_OFB;
+            6'b01_0000:  input_item.mode = AES_CTR;
+            6'b10_0000:  input_item.mode = AES_NONE;
+            default:     input_item.mode = AES_ECB;
           endcase // case item.a_data[4:1]
         end
 
@@ -201,6 +203,50 @@ class aes_scoreboard extends cip_base_scoreboard #(
             end
           end
   
+          AES_CFB: begin
+            if(aes_from_rst) begin
+              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
+              if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
+                //clone and add to ref and rec data fifo
+                ok_to_fwd    = 1;
+                aes_from_rst = 0;
+                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
+              end
+            end else begin
+              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
+                                input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+
+              if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
+                //clone and add to ref and rec data fifo
+                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
+                ok_to_fwd = 1;
+              end
+            end
+          end
+
+          AES_OFB: begin
+            if(aes_from_rst) begin
+              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
+              if(input_item.data_in_valid() && input_item.key_clean(0) && input_item.iv_clean(0)) begin
+                //clone and add to ref and rec data fifo
+                ok_to_fwd    = 1;
+                aes_from_rst = 0;
+                `uvm_info(`gfn, $sformatf("\n\t ----| First ITEM created  OK to clone"), UVM_HIGH)
+              end
+            end else begin
+              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
+                                input_item.data_in_valid(), input_item.key_clean(1) ), UVM_HIGH)
+
+              if(input_item.data_in_valid() && input_item.key_clean(1) && input_item.iv_clean(1)) begin
+                //clone and add to ref and rec data fifo
+                `uvm_info(`gfn, $sformatf("\n\t ----| OK to clone"), UVM_HIGH)
+                ok_to_fwd = 1;
+              end
+            end
+          end
+
           AES_CTR: begin
             if(aes_from_rst) begin
               // verify that all 4 data_in and all 8 key and all 4 IV have been updated
@@ -359,7 +405,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       msg_fifo.get(msg);
 
       `uvm_info(`gfn, $sformatf("\n\t ----| GOT item "), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %03b, IV %h, key_len %03b, key %h ",
+      `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key %h ",
                                 cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, msg.aes_keylen, msg.aes_key)
                 , UVM_HIGH)
 
