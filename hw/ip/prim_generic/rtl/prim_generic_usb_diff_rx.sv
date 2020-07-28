@@ -20,7 +20,7 @@ module prim_generic_usb_diff_rx #(
   output logic       input_o        // output of differential input buffer
 );
 
-  assign input_o = (input_en_i) ? pullup_p_en_i & ~pullup_n_en_i : 1'b0;
+  assign input_o = (input_en_i) ? input_pi & ~input_ni : 1'b0;
 
   logic unused_pullup_p_en, unused_pullup_n_en;
   logic [CalibW-1:0] unused_calibration;
