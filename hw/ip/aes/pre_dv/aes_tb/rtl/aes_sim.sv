@@ -52,14 +52,14 @@ module aes_sim #(
   // Make internal signals directly accessible
   // control
   logic        op            /*verilator public_flat*/;
-  logic  [2:0] mode          /*verilator public_flat*/;
+  logic  [4:0] mode          /*verilator public_flat*/;
   logic        cipher_op     /*verilator public_flat*/;
   logic        key_expand_op /*verilator public_flat*/;
   logic  [2:0] key_len       /*verilator public_flat*/;
   logic  [3:0] round         /*verilator public_flat*/;
 
   assign op            = {aes.aes_core.aes_op_q};
-  assign mode          = {aes.aes_core.aes_mode_q[2:0]};
+  assign mode          = {aes.aes_core.aes_mode_q[4:0]};
   assign cipher_op     = {aes.aes_core.aes_cipher_core.op_i};
   assign key_expand_op = {aes.aes_core.aes_cipher_core.aes_key_expand.op_i};
   assign key_len       = {aes.aes_core.aes_cipher_core.key_len_i};

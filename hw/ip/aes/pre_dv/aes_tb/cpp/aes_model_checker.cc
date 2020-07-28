@@ -314,7 +314,9 @@ void AESModelChecker::UpdateModel() {
         CopyBlock(state_model_.add_round_key_out, state_model_.state_d);
         if (state_model_.round == state_model_.num_rounds - 1) {
           CopyBlock(state_model_.data_out, state_model_.state_d);
-          if (state_model_.mode == kCryptoAesCtr) {
+          if (state_model_.mode == kCryptoAesCtr ||
+              state_model_.mode == kCryptoAesCfb ||
+              state_model_.mode == kCryptoAesOfb) {
             // add the actual data input
             aes_add_round_key(state_model_.data_out, state_model_.data_in);
           }

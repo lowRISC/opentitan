@@ -161,7 +161,7 @@ int aes_tlul_sequence_modes_gen_all() {
   unsigned *plain_text;
   unsigned *cipher_text;
 
-  int num_groups = 18;
+  int num_groups = 30;
 
   // Allocate memory
   num_transactions_max =
@@ -186,163 +186,271 @@ int aes_tlul_sequence_modes_gen_all() {
       op = 0;
       mode = kCryptoAesEcb;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ecb_128;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesCipherTextEcb128;
     } else if (i == 1) {
       // ECB - 128 - decode
       op = 1;
       mode = kCryptoAesEcb;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ecb_128;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesCipherTextEcb128;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     } else if (i == 2) {
       // ECB - 192 - encode
       op = 0;
       mode = kCryptoAesEcb;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ecb_192;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesCipherTextEcb192;
     } else if (i == 3) {
       // ECB - 192 - decode
       op = 1;
       mode = kCryptoAesEcb;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ecb_192;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesCipherTextEcb192;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     } else if (i == 4) {
       // ECB - 256 - encode
       op = 0;
       mode = kCryptoAesEcb;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ecb_256;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesCipherTextEcb256;
     } else if (i == 5) {
       // ECB - 256 - decode
       op = 1;
       mode = kCryptoAesEcb;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ecb_256;
-      iv = (unsigned *)&aes_modes_iv_ecb;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesCipherTextEcb256;
+      iv = (unsigned *)&kAesModesIvEcb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     } else if (i == 6) {
       // CBC - 128 - encode
       op = 0;
       mode = kCryptoAesCbc;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_128;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesCipherTextCbc128;
     } else if (i == 7) {
       // CBC - 128 - decode
       op = 1;
       mode = kCryptoAesCbc;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_128;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesCipherTextCbc128;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     } else if (i == 8) {
       // CBC - 192 - encode
       op = 0;
       mode = kCryptoAesCbc;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_192;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesCipherTextCbc192;
     } else if (i == 9) {
       // CBC - 192 - decode
       op = 1;
       mode = kCryptoAesCbc;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_192;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesCipherTextCbc192;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     } else if (i == 10) {
       // CBC - 256 - encode
       op = 0;
       mode = kCryptoAesCbc;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_cbc_256;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesCipherTextCbc256;
     } else if (i == 11) {
       // CBC - 256 - decode
       op = 1;
       mode = kCryptoAesCbc;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_cipher_text_cbc_256;
-      iv = (unsigned *)&aes_modes_iv_cbc;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
-    } else if (i == 12) {
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesCipherTextCbc256;
+      iv = (unsigned *)&kAesModesIvCbc;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    }  else if (i == 12) {
+      // CFB - 128 - encode
+      op = 0;
+      mode = kCryptoAesCfb;
+      key_len = 16;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextCfb128;
+    } else if (i == 13) {
+      // CFB - 128 - decode
+      op = 1;
+      mode = kCryptoAesCfb;
+      key_len = 16;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesCipherTextCfb128;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 14) {
+      // CFB - 192 - encode
+      op = 0;
+      mode = kCryptoAesCfb;
+      key_len = 24;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextCfb192;
+    } else if (i == 15) {
+      // CFB - 192 - decode
+      op = 1;
+      mode = kCryptoAesCfb;
+      key_len = 24;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesCipherTextCfb192;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 16) {
+      // CFB - 256 - encode
+      op = 0;
+      mode = kCryptoAesCfb;
+      key_len = 32;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextCfb256;
+    } else if (i == 17) {
+      // CFB - 256 - decode
+      op = 1;
+      mode = kCryptoAesCfb;
+      key_len = 32;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesCipherTextCfb256;
+      iv = (unsigned *)&kAesModesIvCfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    }  else if (i == 18) {
+      // OFB - 128 - encode
+      op = 0;
+      mode = kCryptoAesOfb;
+      key_len = 16;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextOfb128;
+    } else if (i == 19) {
+      // OFB - 128 - decode
+      op = 1;
+      mode = kCryptoAesOfb;
+      key_len = 16;
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesCipherTextOfb128;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 20) {
+      // OFB - 192 - encode
+      op = 0;
+      mode = kCryptoAesOfb;
+      key_len = 24;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextOfb192;
+    } else if (i == 21) {
+      // OFB - 192 - decode
+      op = 1;
+      mode = kCryptoAesOfb;
+      key_len = 24;
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesCipherTextOfb192;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 22) {
+      // OFB - 256 - encode
+      op = 0;
+      mode = kCryptoAesOfb;
+      key_len = 32;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesCipherTextOfb256;
+    } else if (i == 23) {
+      // OFB - 256 - decode
+      op = 1;
+      mode = kCryptoAesOfb;
+      key_len = 32;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesCipherTextOfb256;
+      iv = (unsigned *)&kAesModesIvOfb;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 24) {
       // CTR - 128 - encode
       op = 0;
       mode = kCryptoAesCtr;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_128;
-    } else if (i == 13) {
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesCipherTextCtr128;
+    } else if (i == 25) {
       // CTR - 128 - decode
       op = 1;
       mode = kCryptoAesCtr;
       key_len = 16;
-      key = (unsigned *)&aes_modes_key_128;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_128;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
-    } else if (i == 14) {
+      key = (unsigned *)&kAesModesKey128;
+      plain_text = (unsigned *)&kAesModesCipherTextCtr128;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 26) {
       // CTR - 192 - encode
       op = 0;
       mode = kCryptoAesCtr;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_192;
-    } else if (i == 15) {
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesCipherTextCtr192;
+    } else if (i == 27) {
       // CTR - 192 - decode
       op = 1;
       mode = kCryptoAesCtr;
       key_len = 24;
-      key = (unsigned *)&aes_modes_key_192;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_192;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
-    } else if (i == 16) {
+      key = (unsigned *)&kAesModesKey192;
+      plain_text = (unsigned *)&kAesModesCipherTextCtr192;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesPlainText;
+    } else if (i == 28) {
       // CTR - 256 - encode
       op = 0;
       mode = kCryptoAesCtr;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_plain_text;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_cipher_text_ctr_256;
-    } else if (i == 17) {
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesPlainText;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesCipherTextCtr256;
+    } else if (i == 29) {
       // CTR - 256 - decode
       op = 1;
       mode = kCryptoAesCtr;
       key_len = 32;
-      key = (unsigned *)&aes_modes_key_256;
-      plain_text = (unsigned *)&aes_modes_cipher_text_ctr_256;
-      iv = (unsigned *)&aes_modes_iv_ctr;
-      cipher_text = (unsigned *)&aes_modes_plain_text;
+      key = (unsigned *)&kAesModesKey256;
+      plain_text = (unsigned *)&kAesModesCipherTextCtr256;
+      iv = (unsigned *)&kAesModesIvCtr;
+      cipher_text = (unsigned *)&kAesModesPlainText;
     }
 
     aes_tlul_sequence_modes_gen(&i_transaction, &i_exp_resp, op, mode, key_len,
