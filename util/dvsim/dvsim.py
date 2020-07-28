@@ -146,10 +146,11 @@ def make_config(args, proj_root):
     # the tool by reading the config file. At the moment, this forces a
     # simulation target (TODO?)
     factories = {
-        'ascentlint': LintCfg.LintCfg,
-        'veriblelint': LintCfg.LintCfg,
-        'dc': SynCfg.SynCfg,
-        'jaspergold': FpvCfg.FpvCfg
+        'ascentlint'  : LintCfg.LintCfg,
+        'veriblelint' : LintCfg.LintCfg,
+        'verilator'   : LintCfg.LintCfg,
+        'dc'          : SynCfg.SynCfg,
+        'jaspergold'  : FpvCfg.FpvCfg
     }
 
     factory = factories.get(args.tool, SimCfg.SimCfg)
@@ -218,7 +219,7 @@ def parse_args():
                               "optional for running simulations (where it can "
                               "be set in an .hjson file), but is required for "
                               "other flows. Possible tools include: vcs, "
-                              "xcelium, ascentlint, verible, dc."))
+                              "xcelium, ascentlint, veriblelint, verilator, dc."))
 
     parser.add_argument("--list", "-l",
                         nargs="*",
