@@ -27,6 +27,22 @@ static const EVP_CIPHER *crypto_get_EVP_cipher(int key_len,
     } else {  // key_len = 16
       cipher = EVP_aes_128_cbc();
     }
+  } else if (mode == kCryptoAesCfb) {
+    if (key_len == 32) {
+      cipher = EVP_aes_256_cfb128();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_cfb128();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_cfb128();
+    }
+  } else if (mode == kCryptoAesOfb) {
+    if (key_len == 32) {
+      cipher = EVP_aes_256_ofb();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_ofb();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_ofb();
+    }
   } else if (mode == kCryptoAesCtr) {
     if (key_len == 32) {
       cipher = EVP_aes_256_ctr();

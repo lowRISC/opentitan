@@ -22,7 +22,7 @@ This is not a specification of the final implementation.
   - 16kB ROM for secure boot code storage
 - Security peripherals
   - Flash controller
-  - AES-ECB module
+  - AES module with support for ECB, CBC, CFB, OFB and CTR modes of operation
   - SHA-256/HMAC module
   - Basic alert responder
   - (coming soon) emulated TRNG entropy source
@@ -301,12 +301,8 @@ is the primary
 [symmetric encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm)
 and decryption mechanism used in OpenTitan protocols.
 AES runs with key sizes of 128b, 192b, or 256b.
-The module can select encryption or decryption of data that arrives in 16 byte quantities to be encrypted or decrypted independently of other data
-("[ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB)").
-Other modes (say
-[CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR),
-[CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC),
-etc) can be implemented in software on top of the results of ECB, though future versions of this AES IP will likely add such overlayed modes in hardware to improve performance and increase security (risk of secret exposure).
+The module can select encryption or decryption of data that arrives in 16 byte quantities to be encrypted or decrypted using different block cipher modes of operation.
+It supports [ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB), [CBC mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC), [CFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB), [OFB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#OFB) and [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR).
 For this version, all data transfer is processor-available, i.e. key and data material is passed into the module via register writes.
 Future versions might have provisions for private transfer of key and data material to reduce exposure from potentially untrusted processor activity.
 This version does not attempt to add any side-channel or fault-injection resistance into the design.

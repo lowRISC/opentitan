@@ -129,28 +129,28 @@ int main(int argc, char *argv[]) {
   /////////
   // ECB //
   /////////
-  iv = aes_modes_iv_ecb;
+  iv = kAesModesIvEcb;
   mode = kCryptoAesEcb;
 
   for (int i = 0; i < 3; ++i) {
     if (i == 0) {
       printf("ECB AES-128\n");
       key_len = 16;
-      key = aes_modes_key_128;
-      cipher_text = aes_modes_cipher_text_ecb_128;
+      key = kAesModesKey128;
+      cipher_text = kAesModesCipherTextEcb128;
     } else if (i == 1) {
       printf("ECB AES-192\n");
       key_len = 24;
-      key = aes_modes_key_192;
-      cipher_text = aes_modes_cipher_text_ecb_192;
+      key = kAesModesKey192;
+      cipher_text = kAesModesCipherTextEcb192;
     } else {  // i==2
       printf("ECB AES-256\n");
       key_len = 32;
-      key = aes_modes_key_256;
-      cipher_text = aes_modes_cipher_text_ecb_256;
+      key = kAesModesKey256;
+      cipher_text = kAesModesCipherTextEcb256;
     }
 
-    if (crypto_compare(cipher_text, iv, aes_modes_plain_text, len, key, key_len,
+    if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
                        mode)) {
       return 1;
     }
@@ -159,28 +159,89 @@ int main(int argc, char *argv[]) {
   /////////
   // CBC //
   /////////
-  iv = aes_modes_iv_cbc;
+  iv = kAesModesIvCbc;
   mode = kCryptoAesCbc;
 
   for (int i = 0; i < 3; ++i) {
     if (i == 0) {
       printf("CBC AES-128\n");
       key_len = 16;
-      key = aes_modes_key_128;
-      cipher_text = aes_modes_cipher_text_cbc_128;
+      key = kAesModesKey128;
+      cipher_text = kAesModesCipherTextCbc128;
     } else if (i == 1) {
       printf("CBC AES-192\n");
       key_len = 24;
-      key = aes_modes_key_192;
-      cipher_text = aes_modes_cipher_text_cbc_192;
+      key = kAesModesKey192;
+      cipher_text = kAesModesCipherTextCbc192;
     } else {  // i==2
       printf("CBC AES-256\n");
       key_len = 32;
-      key = aes_modes_key_256;
-      cipher_text = aes_modes_cipher_text_cbc_256;
+      key = kAesModesKey256;
+      cipher_text = kAesModesCipherTextCbc256;
     }
 
-    if (crypto_compare(cipher_text, iv, aes_modes_plain_text, len, key, key_len,
+    if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
+                       mode)) {
+      return 1;
+    }
+  }
+
+  /////////
+  // CFB //
+  /////////
+  // CFB-128 to be precise.
+  iv = kAesModesIvCfb;
+  mode = kCryptoAesCfb;
+
+  for (int i = 0; i < 3; ++i) {
+    if (i == 0) {
+      printf("CFB AES-128\n");
+      key_len = 16;
+      key = kAesModesKey128;
+      cipher_text = kAesModesCipherTextCfb128;
+    } else if (i == 1) {
+      printf("CFB AES-192\n");
+      key_len = 24;
+      key = kAesModesKey192;
+      cipher_text = kAesModesCipherTextCfb192;
+    } else {  // i==2
+      printf("CFB AES-256\n");
+      key_len = 32;
+      key = kAesModesKey256;
+      cipher_text = kAesModesCipherTextCfb256;
+    }
+
+    if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
+                       mode)) {
+      return 1;
+    }
+  }
+
+  /////////
+  // OFB //
+  /////////
+  iv = kAesModesIvOfb;
+  mode = kCryptoAesOfb;
+
+  for (int i = 0; i < 3; ++i) {
+    if (i == 0) {
+      printf("OFB AES-128\n");
+      key_len = 16;
+      key = kAesModesKey128;
+      cipher_text = kAesModesCipherTextOfb128;
+    } else if (i == 1) {
+      printf("OFB AES-192\n");
+      key_len = 24;
+      key = kAesModesKey192;
+      cipher_text = kAesModesCipherTextOfb192;
+    } else {  // i==2
+      printf("OFB AES-256\n");
+      key_len = 32;
+      key = kAesModesKey256;
+      cipher_text = kAesModesCipherTextOfb256;
+    }
+
+    if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
                        mode)) {
       return 1;
     }
@@ -189,28 +250,28 @@ int main(int argc, char *argv[]) {
   /////////
   // CTR //
   /////////
-  iv = aes_modes_iv_ctr;
+  iv = kAesModesIvCtr;
   mode = kCryptoAesCtr;
 
   for (int i = 0; i < 3; ++i) {
     if (i == 0) {
       printf("CTR AES-128\n");
       key_len = 16;
-      key = aes_modes_key_128;
-      cipher_text = aes_modes_cipher_text_ctr_128;
+      key = kAesModesKey128;
+      cipher_text = kAesModesCipherTextCtr128;
     } else if (i == 1) {
       printf("CTR AES-192\n");
       key_len = 24;
-      key = aes_modes_key_192;
-      cipher_text = aes_modes_cipher_text_ctr_192;
+      key = kAesModesKey192;
+      cipher_text = kAesModesCipherTextCtr192;
     } else {  // i==2
       printf("CTR AES-256\n");
       key_len = 32;
-      key = aes_modes_key_256;
-      cipher_text = aes_modes_cipher_text_ctr_256;
+      key = kAesModesKey256;
+      cipher_text = kAesModesCipherTextCtr256;
     }
 
-    if (crypto_compare(cipher_text, iv, aes_modes_plain_text, len, key, key_len,
+    if (crypto_compare(cipher_text, iv, kAesModesPlainText, len, key, key_len,
                        mode)) {
       return 1;
     }

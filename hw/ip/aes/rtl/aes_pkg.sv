@@ -14,11 +14,13 @@ typedef enum logic {
   AES_DEC = 1'b1
 } aes_op_e;
 
-typedef enum logic [3:0] {
-  AES_ECB  = 4'b0001,
-  AES_CBC  = 4'b0010,
-  AES_CTR  = 4'b0100,
-  AES_NONE = 4'b1000
+typedef enum logic [5:0] {
+  AES_ECB  = 6'b00_0001,
+  AES_CBC  = 6'b00_0010,
+  AES_CFB  = 6'b00_0100,
+  AES_OFB  = 6'b00_1000,
+  AES_CTR  = 6'b01_0000,
+  AES_NONE = 6'b10_0000
 } aes_mode_e;
 
 typedef enum logic {
@@ -67,6 +69,7 @@ typedef enum logic {
 typedef enum logic [2:0] {
   IV_INPUT,
   IV_DATA_OUT,
+  IV_DATA_OUT_RAW,
   IV_DATA_IN_PREV,
   IV_CTR,
   IV_CLEAR

@@ -167,42 +167,54 @@
           Select encryption(0) or decryption(1) operation of AES unit.
         '''
       }
-      { bits: "4:1",
+      { bits: "6:1",
         name: "MODE",
-        resval: "0x8",
+        resval: "0x20",
         hwaccess: "hrw",
         desc:  '''
-          4-bit one-hot field to select AES block cipher mode.
-          Invalid input values, i.e., values with multiple bits set and value 4'b0000, are mapped to AES_NONE (4'b1000).
+          6-bit one-hot field to select AES block cipher mode.
+          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
         '''
         enum: [
           { value: "1",
             name: "AES_ECB",
             desc: '''
-              4'b0001: Electronic Codebook (ECB) mode.
+              6'b00_0001: Electronic Codebook (ECB) mode.
             '''
           },
           { value: "2",
             name: "AES_CBC",
             desc: '''
-              4'b0010: Cipher Block Chaining (CBC) mode.
+              6'b00_0010: Cipher Block Chaining (CBC) mode.
             '''
           },
           { value: "4",
-            name: "AES_CTR",
+            name: "AES_CFB",
             desc: '''
-              4'b0100: Counter (CTR) mode.
+              6'b00_0100: Cipher Feedback (CFB) mode.
             '''
           },
           { value: "8",
+            name: "AES_OFB",
+            desc: '''
+              6'b00_1000: Output Feedback (OFB) mode.
+            '''
+          },
+          { value: "16",
+            name: "AES_CTR",
+            desc: '''
+              6'b01_0000: Counter (CTR) mode.
+            '''
+          },
+          { value: "32",
             name: "AES_NONE",
             desc: '''
-              4'b1000: Invalid input values, i.e., value with multiple bits set and value 4'b0000, are mapped to AES_NONE.
+              6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE.
             '''
           }
         ]
       }
-      { bits: "7:5",
+      { bits: "9:7",
         name: "KEY_LEN",
         resval: "1",
         hwaccess: "hrw",
@@ -233,7 +245,7 @@
           }
         ]
       }
-      { bits: "8",
+      { bits: "10",
         name: "MANUAL_OPERATION",
         desc:  '''
           Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).

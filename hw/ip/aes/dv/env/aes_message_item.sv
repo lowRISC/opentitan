@@ -25,10 +25,12 @@ class aes_message_item extends uvm_sequence_item;
 
   // Mode distribution //
   // chance of selection ecb_mode
-  // ecb_mode /(ecb_mode + cbc_mode + ctr_mode)
-  // with the defaults 10/30 = 1/3 (33%)
+  // ecb_mode /(ecb_mode + cbc_mode + cfb_mode + ofb_mode + ctr_mode)
+  // with the defaults 10/50 = 1/5 (20%)
   int    ecb_weight          = 10;
   int    cbc_weight          = 10;
+  int    cfb_weight          = 10;
+  int    ofb_weight          = 10;
   int    ctr_weight          = 10;
   // KEYLEN weights
   int    key_128b_weight     = 10;
@@ -80,7 +82,11 @@ class aes_message_item extends uvm_sequence_item;
     }
   }
 
-  constraint c_mode { aes_mode dist  { AES_ECB := ecb_weight, AES_CBC:= cbc_weight, AES_CTR := ctr_weight };}
+  constraint c_mode { aes_mode dist  { AES_ECB := ecb_weight,
+                                       AES_CBC := cbc_weight,
+                                       AES_CFB := cfb_weight,
+                                       AES_OFB := ofb_weight,
+                                       AES_CTR := ctr_weight };}
 
   constraint c_has_config_error {
     if(errors_en && config_err)
@@ -146,6 +152,8 @@ class aes_message_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t ----| MODE Distribution:     \t " ) };
     str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight) };
     str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight) };
+    str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight) };
+    str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight) };
     str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) };
     str = {str,  $sformatf("\n\t ----| Key Len Distribution   :\t " ) };
     str = {str,  $sformatf("\n\t ----| 128 Weight: %d         \t ", key_128b_weight) };
@@ -171,6 +179,8 @@ class aes_message_item extends uvm_sequence_item;
     has_config_error = rhs_.has_config_error;
     ecb_weight       = rhs_.ecb_weight;
     cbc_weight       = rhs_.cbc_weight;
+    cfb_weight       = rhs_.cfb_weight;
+    ofb_weight       = rhs_.ofb_weight;
     ctr_weight       = rhs_.ctr_weight;
     key_128b_weight  = rhs_.key_128b_weight;
     key_192b_weight  = rhs_.key_192b_weight;
