@@ -34,35 +34,62 @@
  * full when `top == USBDEV_NUM_BUFFERS - 1` and empty when `top == -1`.
  */
 typedef struct dif_usbdev_buffer_pool {
-  uint8_t entries[USBDEV_NUM_BUFFERS];
+  uint8_t buffers[USBDEV_NUM_BUFFERS];
   int8_t top;
 } dif_usbdev_buffer_pool_t;
 
 /**
- * State of a read buffer operation.
- *
- * This struct is used to track the state of a read buffer operation internally.
- * Thus, clients can freely choose their buffer sizes and easily process
- * packets that are larger than their buffers by simply calling
- * `dif_usbdev_rx_packet_read_bytes` repeatedly until they read the entire
- * payload of each packet.
- *
- * See also: `dif_usbdev_rx_packet_get_info`, `dif_usbdev_rx_packet_read_bytes`.
+ * Buffer types.
  */
-typedef struct dif_usbdev_read_buffer_op_state {
+typedef enum dif_usbdev_buffer_type {
   /**
-   * Buffer to read from.
+   * For reading payloads of incoming packets.
    */
-  uint8_t buffer_entry;
+  kDifUsbdevBufferTypeRead,
   /**
-   * Number of remaining bytes.
+   * For writing payloads of outgoing packets.
    */
-  size_t remaining_bytes;
+  kDifUsbdevBufferTypeWrite,
   /**
-   * Offset to start reading from.
+   * Clients must not use a buffer after it is handed over to hardware or
+   * returned to the free buffer pool. This type exists to protect against such
+   * cases.
    */
-  size_t offset;
-} dif_usbdev_read_buffer_op_state_t;
+  kDifUsbdevBufferTypeStale,
+} dif_usbdev_buffer_type_t;
+
+/**
+ * A USB device buffer.
+ *
+ * This struct represents a USB device buffer that has been provided to a client
+ * in response to a buffer request. Clients should treat instances of this
+ * struct as opaque objects and should pass them to the appropriate functions of
+ * this library to read and write payloads of incoming and outgoing packets,
+ * respectively.
+ *
+ * See also: `dif_usbdev_recv`, `dif_usbdev_buffer_read`,
+ * `dif_usbdev_buffer_request`, `dif_usbdev_buffer_write`,
+ * `dif_usbdev_send`, `dif_usbdev_buffer_return`.
+ */
+typedef struct dif_usbdev_buffer {
+  /**
+   * Hardware buffer id.
+   */
+  uint8_t id;
+  /**
+   * Byte offset for the next read or write operation.
+   */
+  uint8_t offset;
+  /**
+   * For read buffers: remaining number of bytes to read.
+   * For write buffers: remaining number of bytes that can be written.
+   */
+  uint8_t remaining_bytes;
+  /**
+   * Type of this buffer.
+   */
+  dif_usbdev_buffer_type_t type;
+} dif_usbdev_buffer_t;
 
 /**
  * Internal state of a USB device.
@@ -75,8 +102,6 @@ typedef struct dif_usbdev_read_buffer_op_state {
 typedef struct dif_usbdev {
   mmio_region_t base_addr;
   dif_usbdev_buffer_pool_t buffer_pool;
-  dif_usbdev_read_buffer_op_state_t read_buffer_op_state;
-  uint16_t active_buffer_ops;
 } dif_usbdev_t;
 
 /**
@@ -264,9 +289,9 @@ typedef struct dif_usbdev_rx_packet_info {
    */
   uint8_t endpoint;
   /**
-   * Length of the packet in bytes.
+   * Payload length in bytes.
    */
-  uint8_t len;
+  uint8_t length;
   /**
    * Indicates if the packet is a SETUP packet.
    */
@@ -274,36 +299,32 @@ typedef struct dif_usbdev_rx_packet_info {
 } dif_usbdev_rx_packet_info_t;
 
 /**
- * Return codes for `dif_usbdev_rx_packet_get_info`.
+ * Return codes for `dif_usbdev_recv`.
  */
-typedef enum dif_usbdev_rx_packet_get_info_result {
+typedef enum dif_usbdev_recv_result {
   /**
    * Indicates that the call succeeded.
    */
-  kDifUsbdevRxPacketGetInfoResultOK = kDifUsbdevOK,
+  kDifUsbdevRecvResultOK = kDifUsbdevOK,
   /**
    * Indicates that a non-specific error occurred and the hardware is in an
    * invalid or irrecoverable state.
    */
-  kDifUsbdevRxPacketGetInfoResultError = kDifUsbdevError,
+  kDifUsbdevRecvResultError = kDifUsbdevError,
   /**
    * Indicates that the caller supplied invalid arguments but the call did not
    * cause any side-effects and the hardware is in a valid and recoverable
    * state.
    */
-  kDifUsbdevRxPacketGetInfoResultBadArg = kDifUsbdevBadArg,
-  /**
-   * Indicates that there is already a read buffer operation in progress.
-   */
-  kDifUsbdevRxPacketGetInfoResultBusy,
+  kDifUsbdevRecvResultBadArg = kDifUsbdevBadArg,
   /**
    * Indicates that RX FIFO is empty.
    */
-  kDifUsbdevRxPacketGetInfoResultNoPackets,
-} dif_usbdev_rx_packet_get_info_result_t;
+  kDifUsbdevRecvResultNoNewPacket,
+} dif_usbdev_recv_result_t;
 
 /**
- * Get information about the packet at the front of RX FIFO.
+ * Get the packet at the front of RX FIFO.
  *
  * The USB device has a small FIFO (RX FIFO) that stores received packets until
  * the software has a chance to process them. It is the responsibility of the
@@ -315,276 +336,273 @@ typedef enum dif_usbdev_rx_packet_get_info_result {
  * packets as soon as possible.
  *
  * Reading received packets involves two main steps:
- * - Calling this function, i.e. `dif_usbdev_rx_packet_get_info`, and
- * - Calling `dif_usbdev_rx_packet_read_bytes` until the entire packet payload
- * is read or calling `dif_usbdev_rx_packet_discard_bytes`.
+ * - Calling this function, i.e. `dif_usbdev_recv`, and
+ * - Calling `dif_usbdev_buffer_read` until the entire packet payload
+ * is read.
  *
  * In order to read an incoming packet, clients should first call this function
- * to get information about the packet. In addition to populating a
- * `dif_usbdev_rx_packet_info_t` struct, this also starts an internal read
- * buffer operation. The state of this operation, i.e. the buffer to read from,
- * number of bytes remaining and the offset to start reading from, is tracked by
- * this library, therefore clients do not need to perform any additional state
- * tracking. Then, clients should call `dif_usbdev_rx_packet_read_bytes` one or
- * more times (depending on the sizes of their internal buffers) until the
- * entire packet payload is read. Once the entire packet is read, the read
- * buffer operation ends and the buffer that holds the packet payload is
- * returned to the free buffer pool. If the clients want to ignore the payload
- * of a packet, e.g. for an unsupported or a zero-length packet, they can call
- * `dif_usbdev_rx_packet_discard_bytes` to immediately return the buffer that
- * holds the packet payload to the free buffer pool and end the read buffer
- * operation.
+ * to get information about the packet and the buffer that holds the packet
+ * payload. Then, clients should call `dif_usbdev_buffer_read` with this buffer
+ * one or more times (depending on the sizes of their internal buffers) until
+ * the entire packet payload is read. Once the entire payload is read, the
+ * buffer is returned to the free buffer pool. If the clients want to ignore the
+ * payload of a packet, e.g. for an unsupported or a zero-length packet, they
+ * can call `dif_usbdev_buffer_return` to immediately return the buffer to the
+ * free buffer pool.
  *
  * @param usbdev A USB device.
- * @param[out] packet Information for current incoming packet.
+ * @param[out] packet_info Packet information.
+ * @param[out] buffer Buffer that holds the packet payload.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_usbdev_rx_packet_get_info_result_t dif_usbdev_rx_packet_get_info(
-    dif_usbdev_t *usbdev, dif_usbdev_rx_packet_info_t *packet);
+dif_usbdev_recv_result_t dif_usbdev_recv(
+    dif_usbdev_t *usbdev, dif_usbdev_rx_packet_info_t *packet_info,
+    dif_usbdev_buffer_t *buffer);
 
 /**
- * Return codes for `dif_usbdev_rx_packet_read_bytes`.
+ * Return codes for `dif_usbdev_buffer_read`.
  */
-typedef enum dif_usbdev_rx_packet_read_bytes_result {
+typedef enum dif_usbdev_buffer_read_result {
   /**
    * Indicates that the call succeeded and the entire packet payload is read.
    */
-  kDifUsbdevRxPacketReadBytesResultOK = kDifUsbdevOK,
+  kDifUsbdevBufferReadResultOK,
   /**
    * Indicates that a non-specific error occurred and the hardware is in an
    * invalid or irrecoverable state.
    */
-  kDifUsbdevRxPacketReadBytesResultError = kDifUsbdevError,
+  kDifUsbdevBufferReadResultError,
   /**
    * Indicates that the caller supplied invalid arguments but the call did not
    * cause any side-effects and the hardware is in a valid and recoverable
    * state.
    */
-  kDifUsbdevRxPacketReadBytesResultBadArg = kDifUsbdevBadArg,
+  kDifUsbdevBufferReadResultBadArg,
   /**
    * Indicates that the call was successful but there are remaining bytes to be
    * read.
    */
-  kDifUsbdevRxPacketReadBytesResultContinue,
-  /**
-   * Indicates that there is no active read buffer operation.
-   */
-  kDifUsbdevRxPacketReadBytesResultNotReading,
-} dif_usbdev_rx_packet_read_bytes_result_t;
+  kDifUsbdevBufferReadResultContinue,
+} dif_usbdev_buffer_read_result_t;
 
 /**
- * Read the payload of the last received packet.
+ * Read incoming packet payload.
  *
- * The clients should call this function to read the payload of the last
- * received packet after calling `dif_usbdev_rx_packet_get_info`. This function
- * copies the smaller of `dst_len` and remaining number of bytes to `dst`. The
- * active read buffer operation ends and the buffer that holds the packet
- * payload is returned to the free buffer pool when the entire packet payload is
- * read.
+ * Clients should call this function with a buffer provided by `dif_usbdev_recv`
+ * to read the payload of an incoming packet. This function copies the smaller
+ * of `dst_len` and remaining number of bytes in the buffer to `dst`. The buffer
+ * that holds the packet payload is returned to the free buffer pool when the
+ * entire packet payload is read.
  *
- * See also: `dif_usbdev_rx_packet_get_info`.
+ * See also: `dif_usbdev_recv`.
  *
  * @param usbdev A USB device.
- * @param[out] dst Buffer to read bytes into.
- * @param dst_len Length of `dst`, in bytes.
- * @param[out] bytes_written Number of bytes written into `dst`.
+ * @param buffer A buffer provided by `dif_usbdev_recv`.
+ * @param[out] dst Destination buffer.
+ * @param dst_len Length of the destination buffer.
+ * @param[out] bytes_written Number of bytes written to destination buffer.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_usbdev_rx_packet_read_bytes_result_t dif_usbdev_rx_packet_read_bytes(
-    dif_usbdev_t *usbdev, uint8_t *dst, size_t dst_len, size_t *bytes_written);
+dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
+    dif_usbdev_t *usbev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
+    size_t dst_len, size_t *bytes_written);
 
 /**
- * Return codes for `dif_usbdev_rx_packet_discard_bytes`.
+ * Return a buffer to the free buffer pool.
+ *
+ * This function immediately returns the given buffer to the free buffer pool.
+ * Since `dif_usbdev_buffer_read` and `dif_usbdev_get_tx_status` return the
+ * buffers that they work on to the free buffer pool automatically, this
+ * function should only be called to discard the payload of a received
+ * packet or a packet that was being prepared for transmission before it is
+ * queued for transmission from an endpoint.
+ *
+ * See also: `dif_usbdev_recv`, `dif_usbdev_buffer_request`.
+ *
+ * @param usbdev A USB device.
+ * @param buffer A buffer provided by `dif_usbdev_recv` or
+ *               `dif_usbdev_buffer_request`.
+ * @return The result of the operation.
  */
-typedef enum dif_usbdev_rx_packet_discard_bytes_result {
+DIF_WARN_UNUSED_RESULT
+dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
+                                             dif_usbdev_buffer_t *buffer);
+
+/**
+ * Return codes for `dif_usbdev_buffer_request`.
+ */
+typedef enum dif_usbdev_buffer_request_result {
   /**
    * Indicates that the call succeeded.
    */
-  kDifUsbdevRxPacketDiscardBytesResultOK = kDifUsbdevOK,
+  kDifUsbdevBufferRequestResultOK = kDifUsbdevOK,
   /**
    * Indicates that a non-specific error occurred and the hardware is in an
    * invalid or irrecoverable state.
    */
-  kDifUsbdevRxPacketDiscardBytesResultError = kDifUsbdevError,
+  kDifUsbdevBufferRequestResultError = kDifUsbdevError,
   /**
    * Indicates that the caller supplied invalid arguments but the call did not
    * cause any side-effects and the hardware is in a valid and recoverable
    * state.
    */
-  kDifUsbdevRxPacketDiscardBytesResultBadArg = kDifUsbdevBadArg,
-  /**
-   * Indicates that there is no active read buffer operation.
-   */
-  kDifUsbdevRxPacketDiscardBytesResultNotReading,
-} dif_usbdev_rx_packet_discard_bytes_result_t;
-
-/**
- * Discard the payload of the last received packet.
- *
- * The clients should call this function to discard the payload of the last
- * received packet after calling `dif_usbdev_rx_packet_get_info`. This function
- * immediately ends the active read buffer operation and returns the buffer
- * that holds the packet payload to the free buffer pool.
- *
- * See also: `dif_usbdev_rx_packet_get_info`.
- *
- * @param usbdev A USB device.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_usbdev_rx_packet_discard_bytes_result_t dif_usbdev_rx_packet_discard_bytes(
-    dif_usbdev_t *usbdev);
-
-/**
- * Return codes for `dif_usbdev_tx_packet_write_bytes`.
- */
-typedef enum dif_usbdev_tx_packet_write_bytes_result {
-  /**
-   * Indicates that the call succeeded.
-   */
-  kDifUsbdevTxPacketWriteBytesResultOK = kDifUsbdevOK,
-  /**
-   * Indicates that a non-specific error occurred and the hardware is in an
-   * invalid or irrecoverable state.
-   */
-  kDifUsbdevTxPacketWriteBytesResultError = kDifUsbdevError,
-  /**
-   * Indicates that the caller supplied invalid arguments but the call did not
-   * cause any side-effects and the hardware is in a valid and recoverable
-   * state.
-   */
-  kDifUsbdevTxPacketWriteBytesResultBadArg = kDifUsbdevBadArg,
+  kDifUsbdevBufferRequestResultBadArg = kDifUsbdevBadArg,
   /**
    * Indicates that there are no free buffers.
    */
-  kDifUsbdevTxPacketWriteBytesResultNoBuffers,
+  kDifUsbdevBufferRequestResultNoBuffers,
+} dif_usbdev_buffer_request_result_t;
+
+/**
+ * Request a buffer for outgoing packet payload.
+ *
+ * Clients should call this function to request a buffer to write the payload of
+ * an outgoing packet. Sending a packet from a particular endpoint to the host
+ * involves four main steps:
+ * - Calling this function, i.e. `dif_usbdev_buffer_request`,
+ * - Calling `dif_usbdev_buffer_write`,
+ * - Calling `dif_usbdev_send`, and
+ * - Calling `dif_usbdev_get_tx_status`.
+ *
+ * In order to send a packet, clients should first call this function to obtain
+ * a buffer for the packet payload. Clients should then call
+ * `dif_usbdev_buffer_write` (one or more times depending on the sizes of their
+ * internal buffers) to write the packet payload to this buffer. After writing
+ * the packet payload, clients should call `dif_usbdev_send` to mark the packet
+ * as ready for transmission from a particular endpoint. Then, clients should
+ * call `dif_usbdev_get_tx_status` to check the status of the transmission.
+ * `dif_usbdev_get_tx_status` returns the buffer that holds the packet payload
+ * to the free buffer pool once the packet is either successfully transmitted or
+ * canceled due to an incoming SETUP packet or a link reset. If the packet
+ * should no longer be sent, clients can call `dif_usbdev_buffer_return` to
+ * return the buffer to the free buffer pool as long as `dif_usbdev_send` is not
+ * called yet.
+ *
+ * See also: `dif_usbdev_buffer_write`, `dif_usbdev_send`,
+ * `dif_usbdev_get_tx_status`, `dif_usbdev_buffer_return`.
+ *
+ * @param usbdev A USB device.
+ * @param[out] buffer A buffer for writing outgoing packet payload.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer);
+
+typedef enum dif_usbdev_buffer_write_result {
+  /**
+   * Indicates that the call succeeded.
+   */
+  kDifUsbdevBufferWriteResultOK = kDifUsbdevOK,
+  /**
+   * Indicates that a non-specific error occurred and the hardware is in an
+   * invalid or irrecoverable state.
+   */
+  kDifUsbdevBufferWriteResultError = kDifUsbdevError,
+  /**
+   * Indicates that the caller supplied invalid arguments but the call did not
+   * cause any side-effects and the hardware is in a valid and recoverable
+   * state.
+   */
+  kDifUsbdevBufferWriteResultBadArg = kDifUsbdevBadArg,
   /**
    * Indicates that the requested write exceeds the device buffer size.
    */
-  kDifUsbdevTxPacketWriteBytesResultBufferFull,
-  /**
-   * Indicates that the endpoint already has a packet pending transmission.
-   */
-  kDifUsbdevTxPacketWriteBytesResultBusy,
-} dif_usbdev_tx_packet_write_bytes_result_t;
+  kDifUsbdevBufferWriteResultFull,
+} dif_usbdev_buffer_write_result_t;
 
 /**
- * Write outgoing packet payload for an endpoint.
+ * Write outgoing packet payload.
  *
- * The USB device has 12 endpoints, each of which can be used to send packets to
- * the host. Since a packet is not actually transmitted to the host until the
- * host sends an IN token, clients must write the packet payload to a device
- * buffer and mark it as ready for transmission from a particular endpoint. Note
- * that this can be done in parallel for multiple endpoints. A packet queued for
- * transmission from a particular endpoint is transmitted once the host sends an
- * IN token for that endpoint.
+ * Clients should call this function with a buffer provided by
+ * `dif_usbdev_buffer_request` to write the payload of an outgoing packet. This
+ * function copies the smaller of `src_len` and remaining number of bytes in the
+ * buffer to the buffer. Clients should then call `dif_usbdev_send` to queue the
+ * packet for transmission from a particular endpoint.
  *
- * After a packet is queued for transmission, clients should periodically check
- * its status. While the USB device handles transmission errors automatically by
- * retrying transmission, transmission of a packet may be canceled if the
- * endpoint receives a SETUP packet or the link is reset before the queued
- * packet is transmitted. In these cases, clients should handle the SETUP packet
- * or the link reset first and then optionally send the same packet again.
- *
- * Sending a packet from a particular endpoint to the host involves three main
- * steps:
- * - Calling this function, i.e. `dif_usbdev_tx_packet_write_bytes`,
- * - Calling `dif_usbdev_tx_packet_send`, and
- * - Calling `dif_usbdev_tx_packet_get_status`.
- *
- * In order to send a packet, clients should first call this function (one or
- * more times depending on the sizes of their internal buffers) to write the
- * packet payload to a device buffer. Calling this function also starts an
- * internal write buffer operation similar to `dif_usbdev_rx_packet_get_info`.
- * After writing the packet payload, clients should call
- * `dif_usbdev_tx_packet_send` to mark the packet as ready for transmission,
- * which also ends the active write buffer operation. Then, clients should
- * periodically call `dif_usbdev_tx_packet_get_status` to check the status of
- * the packet. `dif_usbdev_tx_packet_get_status` returns the buffer that holds
- * the packet payload to the free buffer pool once the packet is either
- * successfully transmitted or canceled due to an incoming SETUP packet.
+ * See also: `dif_usbdev_buffer_request`, `dif_usbdev_send`,
+ * `dif_usbdev_get_tx_status`, `dif_usbdev_buffer_return`.
  *
  * @param usbdev A USB device.
- * @param endpoint An endpoint.
+ * @param buffer A buffer provided by `dif_usbdev_buffer_request`.
  * @param src Source buffer.
  * @param src_len Length of the source buffer.
  * @param[out] bytes_written Number of bytes written to the USB device buffer.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_usbdev_tx_packet_write_bytes_result_t dif_usbdev_tx_packet_write_bytes(
-    dif_usbdev_t *usbdev, uint8_t endpoint, uint8_t *src, size_t src_len,
-    size_t *bytes_written);
+dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *src,
+    size_t src_len, size_t *bytes_written);
 
 /**
- * Return codes for `dif_usbdev_tx_packet_send`.
- */
-typedef enum dif_usbdev_tx_packet_send_result {
-  /**
-   * Indicates that the call succeeded.
-   */
-  kDifUsbdevTxPacketSendResultOK = kDifUsbdevOK,
-  /**
-   * Indicates that a non-specific error occurred and the hardware is in an
-   * invalid or irrecoverable state.
-   */
-  kDifUsbdevTxPacketSendResultError = kDifUsbdevError,
-  /**
-   * Indicates that the caller supplied invalid arguments but the call did not
-   * cause any side-effects and the hardware is in a valid and recoverable
-   * state.
-   */
-  kDifUsbdevTxPacketSendResultBadArg = kDifUsbdevBadArg,
-  /**
-   * Indicates that the endpoint does not have a packet to be sent.
-   */
-  kDifUsbdevTxPacketSendResultNotWriting,
-} dif_usbdev_tx_packet_send_result_t;
-
-/**
- * Mark the packet buffered for the given endpoint as ready for transmission.
+ * Mark a packet ready for transmission from an endpoint.
  *
- * See also: `dif_usbdev_tx_packet_write_bytes`.
+ * The USB device has 12 endpoints, each of which can be used to send packets to
+ * the host. Since a packet is not actually transmitted to the host until the
+ * host sends an IN token, clients must write the packet payload to a device
+ * buffer and mark it as ready for transmission from a particular endpoint. A
+ * packet queued for transmission from a particular endpoint is transmitted once
+ * the host sends an IN token for that endpoint.
+ *
+ * After a packet is queued for transmission, clients should check its status by
+ * calling `dif_usbdev_get_tx_status`. While the USB device handles transmission
+ * errors automatically by retrying transmission, transmission of a packet may
+ * be canceled if the endpoint receives a SETUP packet or the link is reset
+ * before the queued packet is transmitted. In these cases, clients should
+ * handle the SETUP packet or the link reset first and then optionally send the
+ * same packet again. Clients must also make sure that the given endpoint does
+ * not already have a packet pending for transmission before calling this
+ * function.
+ *
+ * See also: `dif_usbdev_buffer_request`, `dif_usbdev_buffer_write`,
+ * `dif_usbdev_get_tx_status`, `dif_usbdev_buffer_return`.
  *
  * @param usbdev A USB device.
  * @param endpoint An endpoint.
+ * @param buffer A buffer provided by `dif_usbdev_buffer_request`.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_usbdev_tx_packet_send_result_t dif_usbdev_tx_packet_send(
-    dif_usbdev_t *usbdev, uint8_t endpoint);
+dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
+                                    dif_usbdev_buffer_t *buffer);
 
 /**
  * Status of an outgoing packet.
  */
-typedef enum dif_usbdev_tx_packet_status {
+typedef enum dif_usbdev_tx_status {
   /**
    *  There is no packet for the given endpoint.
    */
-  kDifUsbdevTxPacketStatusNoPacket,
-  /**
-   * There is an active write buffer operation and the packet is not marked as
-   * ready for transmission yet.
-   */
-  kDifUsbdevTxPacketStatusStillWriting,
+  kDifUsbdevTxStatusNoPacket,
   /**
    * Packet is pending transmission.
    */
-  kDifUsbdevTxPacketStatusPending,
+  kDifUsbdevTxStatusPending,
   /**
    * Packet was sent successfully.
    */
-  kDifUsbdevTxPacketStatusSent,
+  kDifUsbdevTxStatusSent,
   /**
    * Transmission was canceled due to an incoming SETUP packet.
    */
-  kDifUsbdevTxPacketStatusCancelled,
-} dif_usbdev_tx_packet_status_t;
+  kDifUsbdevTxStatusCancelled,
+} dif_usbdev_tx_status_t;
 
 /**
  * Get the status of a packet that has been queued to be sent from an endpoint.
+ *
+ * While the USB device handles transmission errors automatically by retrying
+ * transmission, transmission of a packet may be canceled if the endpoint
+ * receives a SETUP packet or the link is reset before the queued packet is
+ * transmitted. In these cases, clients should handle the SETUP packet or the
+ * link reset first and then optionally send the same packet again.
+ *
+ * This function returns the buffer that holds the packet payload to the free
+ * buffer pool once the packet is either successfully transmitted or canceled
+ * due to an incoming SETUP packet or a link reset.
  *
  * @param usbdev A USB device.
  * @param endpoint An endpoint.
@@ -592,9 +610,9 @@ typedef enum dif_usbdev_tx_packet_status {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
-    dif_usbdev_t *usbdev, uint8_t endpoint,
-    dif_usbdev_tx_packet_status_t *status);
+dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
+                                             uint8_t endpoint,
+                                             dif_usbdev_tx_status_t *status);
 
 /**
  * Set the address of a USB device.
@@ -703,7 +721,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
 /**
  * Get the depth of the RX FIFO.
  *
- * See also: `dif_usbdev_rx_packet_get_info`.
+ * See also: `dif_usbdev_recv`.
  *
  * @param usbdev A USB device.
  * @param[out] depth Depth of the RX FIFO.
@@ -716,7 +734,7 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
 /**
  * Check if the RX FIFO is empty.
  *
- * See also: `dif_usbdev_rx_packet_get_info`.
+ * See also: `dif_usbdev_recv`.
  *
  * @param usbdev A USB device.
  * @param[out] is_empty State of the RX FIFO. `true` if empty, `false`
@@ -868,7 +886,7 @@ dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
  * Restore interrupt configuration.
  *
  * @param usbdev A USB device.
- * @param[out] new_config New interrupt configuration.
+ * @param new_config New interrupt configuration.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
