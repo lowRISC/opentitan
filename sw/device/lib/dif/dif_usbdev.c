@@ -16,15 +16,9 @@ _Static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_NENDPOINTS,
                "Mismatch in number of endpoints");
 
 /**
- * Max packet size is equal to the size of buffer entries.
+ * Max packet size is equal to the size of device buffers.
  */
 #define USBDEV_BUFFER_ENTRY_SIZE_BYTES USBDEV_MAX_PACKET_SIZE
-
-/**
- * Bit index for the state of read buffer operation in
- * dif_usbdev_t.active_buffer_ops`. See the definition of `buffer_op_init`.
- */
-#define USBDEV_READ_BUFFER_OP_BIT_INDEX 15
 
 /**
  * Constants used to indicate that a buffer pool is full or empty.
@@ -90,7 +84,7 @@ static const uint8_t kIrqEnumToBitIndex[] = {
 /**
  * Checks if a buffer pool is full.
  *
- * A buffer pool is full if it contains `USBDEV_NUM_BUFFERS` entries.
+ * A buffer pool is full if it contains `USBDEV_NUM_BUFFERS` buffers.
  *
  * @param pool A buffer pool.
  * @return `true` if the buffer pool if full, `false` otherwise.
@@ -112,51 +106,52 @@ static bool buffer_pool_is_empty(dif_usbdev_buffer_pool_t *pool) {
 }
 
 /**
- * Checks if a buffer entry is valid.
+ * Checks if a buffer id is valid.
  *
- * An entry is valid if it is less than `USBDEV_NUM_BUFFERS`.
+ * A buffer id is valid if it is less than `USBDEV_NUM_BUFFERS`.
  *
- * @param entry A buffer entry.
- * @return `true` if the entry is valid, `false` otherwise.
+ * @param buffer_id A buffer id.
+ * @return `true` if `buffer_id` is valid, `false` otherwise.
  */
 DIF_WARN_UNUSED_RESULT
-static bool buffer_pool_is_valid_entry(uint8_t entry) {
-  return entry < USBDEV_NUM_BUFFERS;
+static bool buffer_pool_is_valid_buffer_id(uint8_t buffer_id) {
+  return buffer_id < USBDEV_NUM_BUFFERS;
 }
 
 /**
- * Adds a buffer entry to a buffer pool.
+ * Adds a buffer to a buffer pool.
  *
  * @param pool A buffer pool.
- * @param entry A buffer entry.
+ * @param buffer_id A buffer id.
  * @return `true` if the operation was successful, `false` otherwise.
  */
 DIF_WARN_UNUSED_RESULT
-static bool buffer_pool_add(dif_usbdev_buffer_pool_t *pool, uint8_t entry) {
-  if (buffer_pool_is_full(pool) || !buffer_pool_is_valid_entry(entry)) {
+static bool buffer_pool_add(dif_usbdev_buffer_pool_t *pool, uint8_t buffer_id) {
+  if (buffer_pool_is_full(pool) || !buffer_pool_is_valid_buffer_id(buffer_id)) {
     return false;
   }
 
   ++pool->top;
-  pool->entries[pool->top] = entry;
+  pool->buffers[pool->top] = buffer_id;
 
   return true;
 }
 
 /**
- * Removes a buffer entry from a buffer pool.
+ * Removes a buffer from a buffer pool.
  *
  * @param pool A buffer pool.
- * @param entry A buffer entry.
+ * @param buffer_id A buffer id.
  * @return `true` if the operation was successful, `false` otherwise.
  */
 DIF_WARN_UNUSED_RESULT
-static bool buffer_pool_remove(dif_usbdev_buffer_pool_t *pool, uint8_t *entry) {
-  if (buffer_pool_is_empty(pool) || entry == NULL) {
+static bool buffer_pool_remove(dif_usbdev_buffer_pool_t *pool,
+                               uint8_t *buffer_id) {
+  if (buffer_pool_is_empty(pool) || buffer_id == NULL) {
     return false;
   }
 
-  *entry = pool->entries[pool->top];
+  *buffer_id = pool->buffers[pool->top];
   --pool->top;
 
   return true;
@@ -166,7 +161,7 @@ static bool buffer_pool_remove(dif_usbdev_buffer_pool_t *pool, uint8_t *entry) {
  * Initializes the buffer pool.
  *
  * At the end of this operation, the buffer pool contains `USBDEV_NUM_BUFFERS`
- * buffer entries.
+ * buffers.
  *
  * @param pool A buffer pool.
  * @return `true` if the operation was successful, `false` otherwise.
@@ -176,7 +171,7 @@ static bool buffer_pool_init(dif_usbdev_buffer_pool_t *pool) {
   // Start with an empty pool
   pool->top = -1;
 
-  // Add all entries
+  // Add all buffers
   for (uint8_t i = 0; i < USBDEV_NUM_BUFFERS; ++i) {
     if (!buffer_pool_add(pool, i)) {
       return false;
@@ -184,117 +179,6 @@ static bool buffer_pool_init(dif_usbdev_buffer_pool_t *pool) {
   }
 
   return true;
-}
-
-/**
- * Static functions for managing read and write buffer operations.
- */
-
-/**
- * Initializes the `active_buffer_ops` field of a `dif_usbdev_t`.
- *
- * In `dif_usbdev_t.active_buffer_ops`:
- * - Bits 0..11: True if writing bytes of an outgoing packet for endpoint N
- * (0..11).
- * - Bits 12..14: Unused.
- * - Bit 15: True if reading bytes of an incoming packet.
- */
-static void buffer_op_init(dif_usbdev_t *usbdev) {
-  usbdev->active_buffer_ops = 0;
-}
-
-/**
- * Mark the start of a buffer write operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- */
-static void buffer_op_start_write(dif_usbdev_t *usbdev, uint8_t endpoint) {
-  usbdev->active_buffer_ops = bitfield_field32_write(
-      usbdev->active_buffer_ops,
-      (bitfield_field32_t){
-          .mask = 1, .index = kEndpointHwInfos[endpoint].bit_index,
-      },
-      1);
-}
-
-/**
- * Mark the end of a buffer write operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- */
-static void buffer_op_stop_write(dif_usbdev_t *usbdev, uint8_t endpoint) {
-  usbdev->active_buffer_ops = bitfield_field32_write(
-      usbdev->active_buffer_ops,
-      (bitfield_field32_t){
-          .mask = 1, .index = kEndpointHwInfos[endpoint].bit_index,
-      },
-      0);
-}
-
-/**
- * Check if there is an active buffer write operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- * @return `true` if there is an active buffer write operation for the endpoint,
- * `false` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-static bool buffer_op_is_writing(dif_usbdev_t *usbdev, uint8_t endpoint) {
-  return bitfield_field32_read(
-             usbdev->active_buffer_ops,
-             (bitfield_field32_t){
-                 .mask = 1, .index = kEndpointHwInfos[endpoint].bit_index,
-             }) > 0;
-}
-
-/**
- * Mark the start of a buffer read operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- */
-static void buffer_op_start_read(dif_usbdev_t *usbdev) {
-  usbdev->active_buffer_ops = bitfield_field32_write(
-      usbdev->active_buffer_ops,
-      (bitfield_field32_t){
-          .mask = 1, .index = USBDEV_READ_BUFFER_OP_BIT_INDEX,
-      },
-      1);
-}
-
-/**
- * Mark the end of a buffer read operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- */
-static void buffer_op_stop_read(dif_usbdev_t *usbdev) {
-  usbdev->active_buffer_ops = bitfield_field32_write(
-      usbdev->active_buffer_ops,
-      (bitfield_field32_t){
-          .mask = 1, .index = USBDEV_READ_BUFFER_OP_BIT_INDEX,
-      },
-      0);
-}
-
-/**
- * Check if there is an active buffer read operation for an endpoint.
- *
- * @param usbdev A USB device.
- * @param endpoint An endpoint.
- * @return `true` if there is an active buffer read operation for the endpoint,
- * `false` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-static bool buffer_op_is_reading(dif_usbdev_t *usbdev) {
-  return bitfield_field32_read(
-             usbdev->active_buffer_ops,
-             (bitfield_field32_t){
-                 .mask = 1, .index = USBDEV_READ_BUFFER_OP_BIT_INDEX,
-             }) > 0;
 }
 
 /**
@@ -362,13 +246,13 @@ static dif_usbdev_result_t endpoint_functionality_enable(
 }
 
 /**
- * Returns the address that corresponds to the given buffer entry and offset
- * into that entry.
+ * Returns the address that corresponds to the given buffer and offset
+ * into that buffer.
  */
 DIF_WARN_UNUSED_RESULT
-static uint32_t get_buffer_addr(uint8_t buffer_entry, size_t offset) {
+static uint32_t get_buffer_addr(uint8_t buffer_id, size_t offset) {
   return USBDEV_BUFFER_REG_OFFSET +
-         (buffer_entry * USBDEV_BUFFER_ENTRY_SIZE_BYTES) + offset;
+         (buffer_id * USBDEV_BUFFER_ENTRY_SIZE_BYTES) + offset;
 }
 
 /**
@@ -396,9 +280,6 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
   if (!buffer_pool_init(&usbdev->buffer_pool)) {
     return kDifUsbdevError;
   }
-
-  // No active buffer operation
-  buffer_op_init(usbdev);
 
   // Determine the value of the PHY_CONFIG register.
   uint32_t phy_config_val = 0;
@@ -465,12 +346,12 @@ dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev) {
     return kDifUsbdevBadArg;
   }
 
-  // Remove entries from the pool and write them to the AV FIFO until it is full
+  // Remove buffers from the pool and write them to the AV FIFO until it is full
   while (!mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
                                 USBDEV_USBSTAT_AV_FULL) &&
          !buffer_pool_is_empty(&usbdev->buffer_pool)) {
-    uint8_t buffer_entry;
-    if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_entry)) {
+    uint8_t buffer_id;
+    if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_id)) {
       return kDifUsbdevError;
     }
     mmio_region_write_only_set_field32(
@@ -479,7 +360,7 @@ dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev) {
             .mask = USBDEV_AVBUFFER_BUFFER_MASK,
             .index = USBDEV_AVBUFFER_BUFFER_OFFSET,
         },
-        buffer_entry);
+        buffer_id);
   }
 
   return kDifUsbdevOK;
@@ -539,274 +420,222 @@ dif_usbdev_result_t dif_usbdev_interface_enable(dif_usbdev_t *usbdev,
   return kDifUsbdevOK;
 }
 
-dif_usbdev_rx_packet_get_info_result_t dif_usbdev_rx_packet_get_info(
-    dif_usbdev_t *usbdev, dif_usbdev_rx_packet_info_t *packet) {
-  if (usbdev == NULL || packet == NULL) {
-    return kDifUsbdevRxPacketGetInfoResultBadArg;
-  }
-
-  // Check if there is already a read buffer operation in progress
-  if (buffer_op_is_reading(usbdev)) {
-    return kDifUsbdevRxPacketGetInfoResultBusy;
+dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
+                                         dif_usbdev_rx_packet_info_t *info,
+                                         dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || info == NULL || buffer == NULL) {
+    return kDifUsbdevRecvResultBadArg;
   }
 
   // Check if the RX FIFO is empty
   if (mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
                             USBDEV_USBSTAT_RX_EMPTY)) {
-    return kDifUsbdevRxPacketGetInfoResultNoPackets;
+    return kDifUsbdevRecvResultNoNewPacket;
   }
 
   // Read fifo entry
   const uint32_t fifo_entry =
       mmio_region_read32(usbdev->base_addr, USBDEV_RXFIFO_REG_OFFSET);
-  // Fill packet info
-  packet->endpoint = bitfield_field32_read(
-      fifo_entry,
-      (bitfield_field32_t){
-          .mask = USBDEV_RXFIFO_EP_MASK, .index = USBDEV_RXFIFO_EP_OFFSET,
-      });
-  packet->is_setup = bitfield_field32_read(
-      fifo_entry, (bitfield_field32_t){
-                      .mask = 1, .index = USBDEV_RXFIFO_SETUP,
-                  });
-  packet->len = bitfield_field32_read(
-      fifo_entry,
-      (bitfield_field32_t){
-          .mask = USBDEV_RXFIFO_SIZE_MASK, .index = USBDEV_RXFIFO_SIZE_OFFSET,
-      });
-  // Get the buffer entry that holds the payload
-  uint8_t buffer_entry = bitfield_field32_read(
-      fifo_entry, (bitfield_field32_t){
-                      .mask = USBDEV_RXFIFO_BUFFER_MASK,
-                      .index = USBDEV_RXFIFO_BUFFER_OFFSET,
-                  });
-  // Start a read buffer operation
-  buffer_op_start_read(usbdev);
-  usbdev->read_buffer_op_state = (dif_usbdev_read_buffer_op_state_t){
-      .buffer_entry = buffer_entry, .remaining_bytes = packet->len, .offset = 0,
+  // Init packet info
+  *info = (dif_usbdev_rx_packet_info_t){
+      .endpoint = bitfield_field32_read(
+          fifo_entry,
+          (bitfield_field32_t){
+              .mask = USBDEV_RXFIFO_EP_MASK, .index = USBDEV_RXFIFO_EP_OFFSET,
+          }),
+      .is_setup =
+          bitfield_field32_read(fifo_entry,
+                                (bitfield_field32_t){
+                                    .mask = 1, .index = USBDEV_RXFIFO_SETUP,
+                                }),
+      .length = bitfield_field32_read(fifo_entry,
+                                      (bitfield_field32_t){
+                                          .mask = USBDEV_RXFIFO_SIZE_MASK,
+                                          .index = USBDEV_RXFIFO_SIZE_OFFSET,
+                                      }),
+  };
+  // Init buffer struct
+  *buffer = (dif_usbdev_buffer_t){
+      .id = bitfield_field32_read(fifo_entry,
+                                  (bitfield_field32_t){
+                                      .mask = USBDEV_RXFIFO_BUFFER_MASK,
+                                      .index = USBDEV_RXFIFO_BUFFER_OFFSET,
+                                  }),
+      .offset = 0,
+      .remaining_bytes = info->length,
+      .type = kDifUsbdevBufferTypeRead,
   };
 
-  return kDifUsbdevRxPacketGetInfoResultOK;
+  return kDifUsbdevRecvResultOK;
 }
 
-dif_usbdev_rx_packet_read_bytes_result_t dif_usbdev_rx_packet_read_bytes(
-    dif_usbdev_t *usbdev, uint8_t *dst, size_t dst_len, size_t *bytes_written) {
-  if (usbdev == NULL || dst == NULL) {
-    return kDifUsbdevRxPacketReadBytesResultBadArg;
+dif_usbdev_buffer_request_result_t dif_usbdev_buffer_request(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || buffer == NULL) {
+    return kDifUsbdevBufferRequestResultBadArg;
   }
 
-  // Make sure that a read buffer operation is in progress
-  if (!buffer_op_is_reading(usbdev)) {
-    return kDifUsbdevRxPacketReadBytesResultNotReading;
+  if (buffer_pool_is_empty(&usbdev->buffer_pool)) {
+    return kDifUsbdevBufferRequestResultNoBuffers;
   }
-  // bytes_to_copy is the minimum of remaining bytes and `dst_len`
-  size_t bytes_to_copy = usbdev->read_buffer_op_state.remaining_bytes;
+
+  uint8_t buffer_id;
+  if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_id)) {
+    return kDifUsbdevBufferRequestResultError;
+  }
+
+  *buffer = (dif_usbdev_buffer_t){
+      .id = buffer_id,
+      .offset = 0,
+      .remaining_bytes = USBDEV_BUFFER_ENTRY_SIZE_BYTES,
+      .type = kDifUsbdevBufferTypeWrite,
+  };
+
+  return kDifUsbdevBufferRequestResultOK;
+}
+
+dif_usbdev_result_t dif_usbdev_buffer_return(dif_usbdev_t *usbdev,
+                                             dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || buffer == NULL) {
+    return kDifUsbdevBadArg;
+  }
+
+  switch (buffer->type) {
+    case kDifUsbdevBufferTypeRead:
+    case kDifUsbdevBufferTypeWrite:
+      // Return the buffer to the free buffer pool
+      if (!buffer_pool_add(&usbdev->buffer_pool, buffer->id)) {
+        return kDifUsbdevError;
+      }
+      // Mark the buffer as stale
+      buffer->type = kDifUsbdevBufferTypeStale;
+      return kDifUsbdevOK;
+    default:
+      return kDifUsbdevBadArg;
+  }
+}
+
+dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
+    size_t dst_len, size_t *bytes_written) {
+  if (usbdev == NULL || buffer == NULL ||
+      buffer->type != kDifUsbdevBufferTypeRead || dst == NULL) {
+    return kDifUsbdevBufferReadResultBadArg;
+  }
+
+  // bytes_to_copy is the minimum of remaining_bytes and dst_len
+  size_t bytes_to_copy = buffer->remaining_bytes;
   if (bytes_to_copy > dst_len) {
     bytes_to_copy = dst_len;
   }
-  // Copy payload to buffer
-  const uint32_t buffer_addr =
-      get_buffer_addr(usbdev->read_buffer_op_state.buffer_entry,
-                      usbdev->read_buffer_op_state.offset);
+  // Copy from buffer to dst
+  const uint32_t buffer_addr = get_buffer_addr(buffer->id, buffer->offset);
   mmio_region_memcpy_from_mmio32(usbdev->base_addr, buffer_addr, dst,
                                  bytes_to_copy);
-  // Update current buffer operation
-  usbdev->read_buffer_op_state.offset += bytes_to_copy;
-  usbdev->read_buffer_op_state.remaining_bytes -= bytes_to_copy;
-  // Check if the entire payload is read
-  dif_usbdev_rx_packet_read_bytes_result_t res =
-      kDifUsbdevRxPacketReadBytesResultContinue;
-  if (usbdev->read_buffer_op_state.remaining_bytes == 0) {
-    res = kDifUsbdevRxPacketReadBytesResultOK;
-    // Finish read buffer operation
-    buffer_op_stop_read(usbdev);
-    // Return the buffer to the free buffer pool
-    if (!buffer_pool_add(&usbdev->buffer_pool,
-                         usbdev->read_buffer_op_state.buffer_entry)) {
-      return kDifUsbdevRxPacketReadBytesResultError;
-    }
-  }
+  // Update buffer state
+  buffer->offset += bytes_to_copy;
+  buffer->remaining_bytes -= bytes_to_copy;
 
   if (bytes_written != NULL) {
     *bytes_written = bytes_to_copy;
   }
 
-  return res;
-}
-
-dif_usbdev_rx_packet_discard_bytes_result_t dif_usbdev_rx_packet_discard_bytes(
-    dif_usbdev_t *usbdev) {
-  if (usbdev == NULL) {
-    return kDifUsbdevRxPacketDiscardBytesResultBadArg;
+  // Check if there are any remaining bytes
+  if (buffer->remaining_bytes > 0) {
+    return kDifUsbdevBufferReadResultContinue;
   }
 
-  // Make sure that a read buffer operation is in progress
-  if (!buffer_op_is_reading(usbdev)) {
-    return kDifUsbdevRxPacketDiscardBytesResultNotReading;
-  }
-  // Finish read buffer operation
-  buffer_op_stop_read(usbdev);
   // Return the buffer to the free buffer pool
-  if (!buffer_pool_add(&usbdev->buffer_pool,
-                       usbdev->read_buffer_op_state.buffer_entry)) {
-    return kDifUsbdevRxPacketDiscardBytesResultError;
+  if (!buffer_pool_add(&usbdev->buffer_pool, buffer->id)) {
+    return kDifUsbdevBufferReadResultError;
   }
-
-  return kDifUsbdevRxPacketDiscardBytesResultOK;
+  // Mark the buffer as stale
+  buffer->type = kDifUsbdevBufferTypeStale;
+  return kDifUsbdevBufferReadResultOK;
 }
 
-dif_usbdev_tx_packet_write_bytes_result_t dif_usbdev_tx_packet_write_bytes(
-    dif_usbdev_t *usbdev, uint8_t endpoint, uint8_t *src, size_t src_len,
-    size_t *bytes_written) {
-  if (usbdev == NULL || (src_len > 0 && src == NULL) ||
-      !is_valid_endpoint(endpoint)) {
-    return kDifUsbdevTxPacketWriteBytesResultBadArg;
+dif_usbdev_buffer_write_result_t dif_usbdev_buffer_write(
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *src,
+    size_t src_len, size_t *bytes_written) {
+  if (usbdev == NULL || buffer == NULL ||
+      buffer->type != kDifUsbdevBufferTypeWrite || src == NULL) {
+    return kDifUsbdevBufferWriteResultBadArg;
   }
 
-  // Get tx packet status for the endpoint.
-  dif_usbdev_tx_packet_status_t in_packet_status;
-  if (dif_usbdev_tx_packet_get_status(usbdev, endpoint, &in_packet_status) !=
-      kDifUsbdevOK) {
-    return kDifUsbdevTxPacketWriteBytesResultError;
+  // bytes_to_copy is the minimum of remaining_bytes and src_len.
+  size_t bytes_to_copy = buffer->remaining_bytes;
+  if (bytes_to_copy > src_len) {
+    bytes_to_copy = src_len;
+  }
+
+  // Write bytes to the buffer
+  uint32_t buffer_addr = get_buffer_addr(buffer->id, buffer->offset);
+  mmio_region_memcpy_to_mmio32(usbdev->base_addr, buffer_addr, src,
+                               bytes_to_copy);
+
+  buffer->offset += bytes_to_copy;
+  buffer->remaining_bytes -= bytes_to_copy;
+
+  if (bytes_written) {
+    *bytes_written = bytes_to_copy;
+  }
+
+  if (buffer->remaining_bytes == 0 && bytes_to_copy < src_len) {
+    return kDifUsbdevBufferWriteResultFull;
+  }
+
+  return kDifUsbdevBufferWriteResultOK;
+}
+
+dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
+                                    dif_usbdev_buffer_t *buffer) {
+  if (usbdev == NULL || !is_valid_endpoint(endpoint) || buffer == NULL ||
+      buffer->type != kDifUsbdevBufferTypeWrite) {
+    return kDifUsbdevBadArg;
   }
 
   // Get the configin register offset of the endpoint.
   const uint32_t config_in_reg_offset =
       kEndpointHwInfos[endpoint].config_in_reg_offset;
 
-  uint32_t config_in_val;
-  uint8_t buffer_entry;
-  uint8_t buffer_len;
-  switch (in_packet_status) {
-    case kDifUsbdevTxPacketStatusNoPacket: {
-      // There is no packet for the endpoint
-      // Allocate a new buffer entry
-      if (buffer_pool_is_empty(&usbdev->buffer_pool)) {
-        return kDifUsbdevTxPacketWriteBytesResultNoBuffers;
-      }
-      if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_entry)) {
-        return kDifUsbdevTxPacketWriteBytesResultError;
-      }
-      buffer_len = 0;
-      // Start buffer write operation
-      buffer_op_start_write(usbdev, endpoint);
-      // Update USBDEV_CONFIGIN_X register.
-      // Note: Using mask and offset values for the USBDEV_CONFIGIN_0 register
-      // for all endpoints because all USBDEV_CONFIGIN_X registers have the same
-      // layout.
-      uint32_t config_in_val =
-          mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
-      config_in_val =
-          bitfield_field32_write(config_in_val,
-                                 (bitfield_field32_t){
-                                     .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
-                                     .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
-                                 },
-                                 buffer_entry);
-      config_in_val =
-          bitfield_field32_write(config_in_val,
-                                 (bitfield_field32_t){
-                                     .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
-                                     .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
-                                 },
-                                 buffer_len);
-      mmio_region_write32(usbdev->base_addr, config_in_reg_offset,
-                          config_in_val);
-      break;
-    }
-    case kDifUsbdevTxPacketStatusStillWriting: {
-      // Use existing buffer entry
-      config_in_val =
-          mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
-      buffer_entry = bitfield_field32_read(
-          config_in_val, (bitfield_field32_t){
-                             .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
-                             .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
-                         });
-      buffer_len = bitfield_field32_read(
-          config_in_val, (bitfield_field32_t){
-                             .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
-                             .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
-                         });
-      break;
-    }
-    case kDifUsbdevTxPacketStatusPending:
-    case kDifUsbdevTxPacketStatusSent:
-    case kDifUsbdevTxPacketStatusCancelled:
-      // Endpoint already has a packet pending transmission or the status of the
-      // last transmission is not read yet.
-      return kDifUsbdevTxPacketWriteBytesResultBusy;
-    default:
-      return kDifUsbdevTxPacketWriteBytesResultError;
-  }
+  // Configure USBDEV_CONFIGINX register.
+  // Note: Using mask and offset values for the USBDEV_CONFIGIN0 register
+  // for all endpoints because all USBDEV_CONFIGINX registers have the same
+  // layout.
+  uint32_t config_in_val =
+      mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
+  config_in_val =
+      bitfield_field32_write(config_in_val,
+                             (bitfield_field32_t){
+                                 .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
+                                 .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
+                             },
+                             buffer->id);
+  config_in_val =
+      bitfield_field32_write(config_in_val,
+                             (bitfield_field32_t){
+                                 .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
+                                 .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
+                             },
+                             buffer->offset);
+  mmio_region_write32(usbdev->base_addr, config_in_reg_offset, config_in_val);
 
-  size_t remaining_buffer_space = USBDEV_BUFFER_ENTRY_SIZE_BYTES - buffer_len;
-  // `bytes_to_copy` is the minimum of `src_len` and `remaining_buffer_space`.
-  size_t bytes_to_copy = src_len;
-  if (bytes_to_copy > remaining_buffer_space) {
-    bytes_to_copy = remaining_buffer_space;
-  }
-
-  // Write bytes to the buffer
-  const uint32_t buffer_addr = get_buffer_addr(buffer_entry, buffer_len);
-  mmio_region_memcpy_to_mmio32(usbdev->base_addr, buffer_addr, src,
-                               bytes_to_copy);
-
-  buffer_len += bytes_to_copy;
-  remaining_buffer_space -= bytes_to_copy;
-
-  // Update buffer length in the USBDEV_CONFIGIN_X register.
-  mmio_region_nonatomic_set_field32(
-      usbdev->base_addr, config_in_reg_offset,
-      (bitfield_field32_t){
-          .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
-          .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
-      },
-      buffer_len);
-
-  if (bytes_written) {
-    *bytes_written = bytes_to_copy;
-  }
-
-  if (remaining_buffer_space == 0 && bytes_to_copy < src_len) {
-    return kDifUsbdevTxPacketWriteBytesResultBufferFull;
-  }
-
-  return kDifUsbdevTxPacketWriteBytesResultOK;
-}
-
-dif_usbdev_tx_packet_send_result_t dif_usbdev_tx_packet_send(
-    dif_usbdev_t *usbdev, uint8_t endpoint) {
-  if (usbdev == NULL || !is_valid_endpoint(endpoint)) {
-    return kDifUsbdevTxPacketSendResultBadArg;
-  }
-
-  // Make sure that there is an active write operation for the endpoint
-  if (!buffer_op_is_writing(usbdev, endpoint)) {
-    return kDifUsbdevTxPacketSendResultNotWriting;
-  }
-
-  // Stop writing to buffer for this endpoint
-  buffer_op_stop_write(usbdev, endpoint);
   // Mark the packet as ready for transmission
-  mmio_region_nonatomic_set_bit32(
-      usbdev->base_addr, kEndpointHwInfos[endpoint].config_in_reg_offset,
-      USBDEV_CONFIGIN_0_RDY_0);
+  mmio_region_nonatomic_set_bit32(usbdev->base_addr, config_in_reg_offset,
+                                  USBDEV_CONFIGIN_0_RDY_0);
 
-  return kDifUsbdevTxPacketSendResultOK;
+  // Mark the buffer as stale. It will be returned to the free buffer pool
+  // in dif_usbdev_get_tx_status once transmission is complete.
+  buffer->type = kDifUsbdevBufferTypeStale;
+
+  return kDifUsbdevOK;
 }
 
-dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
-    dif_usbdev_t *usbdev, uint8_t endpoint,
-    dif_usbdev_tx_packet_status_t *status) {
+dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
+                                             uint8_t endpoint,
+                                             dif_usbdev_tx_status_t *status) {
   if (usbdev == NULL || status == NULL || !is_valid_endpoint(endpoint)) {
     return kDifUsbdevBadArg;
-  }
-
-  // Make sure that there is no active write buffer operation for the endpoint
-  if (buffer_op_is_writing(usbdev, endpoint)) {
-    *status = kDifUsbdevTxPacketStatusStillWriting;
-    return kDifUsbdevOK;
   }
 
   // Get the configin register offset and bit index of the endpoint
@@ -831,7 +660,7 @@ dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
                                 .mask = 1, .index = USBDEV_CONFIGIN_0_RDY_0,
                             })) {
     // Packet is marked as ready to be sent and pending transmission
-    *status = kDifUsbdevTxPacketStatusPending;
+    *status = kDifUsbdevTxStatusPending;
   } else if (mmio_region_get_bit32(usbdev->base_addr, USBDEV_IN_SENT_REG_OFFSET,
                                    endpoint_bit_index)) {
     // Packet was sent successfully
@@ -842,13 +671,13 @@ dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
     if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
       return kDifUsbdevError;
     }
-    *status = kDifUsbdevTxPacketStatusSent;
+    *status = kDifUsbdevTxStatusSent;
   } else if (bitfield_field32_read(
                  config_in_val,
                  (bitfield_field32_t){
                      .mask = 1, .index = USBDEV_CONFIGIN_0_PEND_0,
                  })) {
-    // Canceled due to an IN SETUP packet
+    // Canceled due to an IN SETUP packet or link reset
     // Clear pending bit (rw1c)
     mmio_region_write_only_set_bit32(usbdev->base_addr, config_in_reg_offset,
                                      USBDEV_CONFIGIN_0_PEND_0);
@@ -856,10 +685,10 @@ dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
     if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
       return kDifUsbdevError;
     }
-    *status = kDifUsbdevTxPacketStatusCancelled;
+    *status = kDifUsbdevTxStatusCancelled;
   } else {
     // No packet has been queued for this endpoint
-    *status = kDifUsbdevTxPacketStatusNoPacket;
+    *status = kDifUsbdevTxStatusNoPacket;
   }
 
   return kDifUsbdevOK;
