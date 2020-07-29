@@ -269,7 +269,9 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
   if (!is_valid_toggle(config->differential_rx) ||
       !is_valid_toggle(config->differential_tx) ||
       !is_valid_toggle(config->single_bit_eop) ||
-      !is_valid_power_sense_override(config->power_sense_override)) {
+      !is_valid_power_sense_override(config->power_sense_override) ||
+      !is_valid_toggle(config->pin_flip) ||
+      !is_valid_toggle(config->clock_sync_signals)) {
     return kDifUsbdevBadArg;
   }
 
@@ -330,6 +332,24 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
         phy_config_val,
         (bitfield_field32_t){
             .mask = 1, .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN,
+        },
+        1);
+  }
+
+  if (config->pin_flip == kDifUsbdevToggleEnable) {
+    phy_config_val = bitfield_field32_write(
+        phy_config_val,
+        (bitfield_field32_t){
+            .mask = 1, .index = USBDEV_PHY_CONFIG_PINFLIP,
+        },
+        1);
+  }
+
+  if (config->clock_sync_signals == kDifUsbdevToggleDisable) {
+    phy_config_val = bitfield_field32_write(
+        phy_config_val,
+        (bitfield_field32_t){
+            .mask = 1, .index = USBDEV_PHY_CONFIG_USB_REF_DISABLE,
         },
         1);
   }

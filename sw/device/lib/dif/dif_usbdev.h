@@ -146,6 +146,14 @@ typedef struct dif_usbdev_config {
    * Override USB power sense.
    */
   dif_usbdev_power_sense_override_t power_sense_override;
+  /**
+   * Flip the D+/D- pins.
+   */
+  dif_usbdev_toggle_t pin_flip;
+  /**
+   * Reference signal generation for clock synchronization.
+   */
+  dif_usbdev_toggle_t clock_sync_signals;
 } dif_usbdev_config_t;
 
 /**
