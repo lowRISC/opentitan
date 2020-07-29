@@ -40,13 +40,13 @@ void boot(void) {
   // Chip-specific startup functionality
   // **Open Q:** Proprietary Software Strategy.
   // - Clocks
-  // - AST / Entropy. **Open Q:** Is this needed for SRAM Scrambling?
+  // - AST / Entropy.
   // - Flash
   // - Fuses
   chip_specific_startup();
 
   // Manufacturing boot-strapping intervention.
-  // **Open Q:** How does the mask rom deal with chip recovery?
+  // **Open Q:** How does the Mask ROM deal with chip recovery?
   // **Open Q:** Pin Strapping Configuration.
   manufacturing_boot_strap();
 
@@ -106,7 +106,7 @@ void boot(void) {
     //   the current ROM_EXT.
     root_key_identity = derive_and_lock_creator_root_key_inputs(measurements);
 
-    // **Open Q:** Does mask rom just lock down key manager inputs, and let the
+    // **Open Q:** Does Mask ROM just lock down key manager inputs, and let the
     //             ROM_EXT load the key?
     load_root_key(root_key_identity);
 
@@ -117,10 +117,7 @@ void boot(void) {
 
     // PMP Region for ROM_EXT (2.c.v)
     // **Open Q:** Integration with Secure Boot Hardware
-    // **Open Q:** Do we need to lock down Mask ROM at final jump? How sensitive
-    //             is the mask rom itself? We may end up with a jump routine
-    //             just past a page boundary, as SRAM is non-executable.
-    //             Alternatively, we may only lock some regions of the mask rom.
+    // **Open Q:** Do we need to prevent access to Mask ROM after final jump?
     pmp_unlock_rom_ext();
 
     // Transfer Execution to ROM_EXT (2.c.vi)
@@ -203,11 +200,9 @@ setting up the stack and `gp` (`gp` may be used for referencing some data).
 // Will actually be written in assembly
 crt_init() {
   // - Load `.data` initial image into SRAM.
-  // - Zero `.bss` section
-  //   **Open Q:** Is this required? We'll have zeroed all of SRAM already.
-  // - Zero stack
-  //   **Open Q:** Is this required? We'll have zeroed all of SRAM already.
-  // - Load `sp`, `gp`
+  // - Zero `.bss` section.
+  // - Zero stack.
+  // - Load `sp`, `gp`.
   //   **Open Q:** These are used by exception and interrupt handlers if written
   //   in C. Should they be initialized as early as possible? We can turn off
   //   the use of `gp` fairly easily, `sp` is an ABI issue.
@@ -219,21 +214,16 @@ crt_init() {
 This is where, depending on lifecycle state, new flash images may be loaded onto
 the device (usually during manufacturing).
 
-**Open Q:** How do we need to harden this?
-  (Yes if we don't validate the image before executing).
-
-**Open Q:** Do we want hardware support for hardening this?
+**Open Q:** Do we want hardware hardening for this?
   There are suggestions around having the hardware return `nop` when reading
   this memory if we're not in the correct lifecycle state.
 
 ```c
 manufacturing_boot_strap() {
-  // 1. Reads lifecycle state to establish whether bootstrapping is allowed and
-  //    what kind
-  // 2. Loads flash image if allowed.
-  // 3. Directly execute flash image
-  //    **Open Q:** Should we reset before we execute the flash image (to reuse
-  //    the rom_ext_manifest checking functionality).
+  // 1. Read lifecycle state to establish whether bootstrapping is allowed.
+  // 2. Determine what kind of bootstrapping is being requested.
+  // 3. Load ROM_EXT image into flash if allowed.
+  // 4. Reboot device (causing loaded ROM_EXT to be verified then executed).
 }
 ```
 
@@ -245,15 +235,14 @@ read_boot_policy() {
   // - initilized flash_ctrl DIF (for accessing flash info page)
   // Returns:
   // - boot policy struct
-  //   Open Qs: What boot policies do we allow?
+  //   **Open Q:** What boot policies do we allow?
   //   - Active ROM_EXT selector (there are only two ROM_EXT slots) (2.b, 2.c.i)
   //   - What to do if digest doesn't match (2.c.ii)
   //   - What to do if signature doesn't verify (2.c.iii)
   //   - What to do if system measurements are not right (2.c.iv)
-  //   - What to do if final jump does not succeed  (2.c.vi)
 
   // 1. Uses dif_flash_ctrl to issue read of boot info page.
-  // 2. pull this into a struct to return.
+  // 2. Pull this into a struct to return.
 }
 ```
 
@@ -265,7 +254,7 @@ peripheral_lockdown() {
   // - ROM_EXT manifest
   // - Handles for Peripheral DIFs
 
-  // When and How do we lock down peripheral configuration?
+  // **Open Q:** When and How do we lock down peripheral configuration?
   // - We configure based on ROM_EXT manifest (signed)
   // - Only locks down these peripherals if info is provided.
 
@@ -273,7 +262,7 @@ peripheral_lockdown() {
   // - Alert Manager
   // - Pinmux / Padctrl
   // - Entropy Configuration
-  // - anything else?
+  // - Anything Else?
 
   // This is explicitly a separate step from locking the key manager inputs. In
   // particular, this depends on the ROM_EXT's choices, whereas the key manager
