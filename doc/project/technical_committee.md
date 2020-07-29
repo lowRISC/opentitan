@@ -15,6 +15,7 @@ Expectations of Technical Committee members include the following:
 * Put aside sufficient time on a week-by-week basis to active proposals and give feedback.
 * Act in the best interests of the OpenTitan project.
 * Collaborate to deliver on the responsibilities of the Technical Committee (see above).
+* Proactively seek to identify contributors who should be nominated for committer status.
 
 ## Membership
 The OpenTitan Technical Committee membership is:
