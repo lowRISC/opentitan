@@ -72,10 +72,10 @@ module padctrl import padctrl_reg_pkg::*; (
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
     logic [AttrDw-1:0] warl_mask;
 
-    prim_generic_pad_wrapper #(
+    prim_pad_wrapper #(
       .AttrDw   ( AttrDw        ),
       .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
-    ) i_prim_generic_pad_wrapper (
+    ) i_prim_pad_wrapper (
       .inout_io (               ),
       .in_o     (               ),
       .ie_i     ( 1'b0          ),
@@ -92,10 +92,10 @@ module padctrl import padctrl_reg_pkg::*; (
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
     logic [AttrDw-1:0] warl_mask;
 
-    prim_generic_pad_wrapper #(
+    prim_pad_wrapper #(
       .AttrDw   ( AttrDw        ),
       .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
-    ) i_prim_generic_pad_wrapper (
+    ) i_prim_pad_wrapper (
       .inout_io (               ),
       .in_o     (               ),
       .ie_i     ( 1'b0          ),
