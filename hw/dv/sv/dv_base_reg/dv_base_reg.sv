@@ -64,6 +64,10 @@ class dv_base_reg extends uvm_reg;
     return (locked_regs.size() > 0);
   endfunction
 
+  function bit is_staged();
+     return shadow_wr_staged;
+  endfunction
+
   // if enable register is set to 1, the locked registers will be set to RO access
   // once enable register is reset to 0, the locked registers will be set back to original access
   function void set_locked_regs_access(string access = "original_access");
@@ -84,12 +88,16 @@ class dv_base_reg extends uvm_reg;
     is_shadowed = 1;
   endfunction
 
+  function uvm_reg_data_t get_staged_shadow_val();
+    return staged_shadow_val;
+  endfunction
+
   function void set_en_shadow_wr(bit val);
     // do not update en_shadow_wr if shadow register write is in process
     if ((en_shadow_wr ^ val) && shadow_wr_staged) begin
       `uvm_info(`gfn,
-          $sformatf("unable to %s en_shadow_wr because register already completed first write",
-          val ? "set" : "clear"), UVM_LOW)
+          $sformatf("unable to %0s en_shadow_wr because register already completed first write",
+          val ? "set" : "clear"), UVM_HIGH)
       return;
     end
     en_shadow_wr = val;
@@ -141,6 +149,11 @@ class dv_base_reg extends uvm_reg;
         default:`uvm_fatal(`gfn, $sformatf("enable register invalid access %s", field_access))
       endcase
     end
+  endtask
+
+  // shadow register read will clear its phase tracker
+  virtual task post_read(uvm_reg_item rw);
+    if (is_shadowed) shadow_wr_staged = 0;
   endtask
 
   virtual function void set_is_ext_reg(bit is_ext);
