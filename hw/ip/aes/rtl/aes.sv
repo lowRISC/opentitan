@@ -15,10 +15,11 @@ module aes import aes_pkg::*; #(
                                                          // Note: currently, constant masks are
                                                          // used, this is of course not secure.
   parameter sbox_impl_e  SBoxImpl                   = SBoxImplLut, // See aes_pkg.sv
-  parameter int unsigned NumDelayCyclesStartTrigger = 0 // Manual start trigger delay, useful for
-                                                        // SCA measurements. A value of e.g. 40
-                                                        // allows the processor to go into sleep
-                                                        // before AES starts operation.
+  parameter int unsigned NumDelayCyclesStartTrigger = 0, // Manual start trigger delay, useful for
+                                                         // SCA measurements. A value of e.g. 40
+                                                         // allows the processor to go into sleep
+                                                         // before AES starts operation.
+  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}}
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -74,13 +75,14 @@ module aes import aes_pkg::*; #(
     .clk_i,
     .rst_ni,
 
-    .prng_data_req_o   ( prng_data_req   ),
-    .prng_data_ack_i   ( prng_data_ack   ),
-    .prng_data_i       ( prng_data       ),
-    .prng_reseed_req_o ( prng_reseed_req ),
-    .prng_reseed_ack_i ( prng_reseed_ack ),
+    .prng_data_req_o    ( prng_data_req   ),
+    .prng_data_ack_i    ( prng_data_ack   ),
+    .prng_data_i        ( prng_data       ),
+    .prng_reseed_req_o  ( prng_reseed_req ),
+    .prng_reseed_ack_i  ( prng_reseed_ack ),
 
-    .ctrl_err_o        ( alert[0]        ),
+    .ctrl_err_update_o  ( alert[0]        ),
+    .ctrl_err_storage_o ( alert[1]        ),
 
     .reg2hw,
     .hw2reg

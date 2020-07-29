@@ -159,6 +159,7 @@ module aes_reg_top (
   logic status_stall_qs;
   logic status_output_valid_qs;
   logic status_input_ready_qs;
+  logic status_ctrl_err_storage_qs;
 
   // Register instances
 
@@ -975,6 +976,31 @@ module aes_reg_top (
   );
 
 
+  //   F[ctrl_err_storage]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_status_ctrl_err_storage (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.ctrl_err_storage.de),
+    .d      (hw2reg.status.ctrl_err_storage.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (status_ctrl_err_storage_qs)
+  );
+
+
 
 
   logic [30:0] addr_hit;
@@ -1169,6 +1195,7 @@ module aes_reg_top (
 
 
 
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1306,6 +1333,7 @@ module aes_reg_top (
         reg_rdata_next[1] = status_stall_qs;
         reg_rdata_next[2] = status_output_valid_qs;
         reg_rdata_next[3] = status_input_ready_qs;
+        reg_rdata_next[4] = status_ctrl_err_storage_qs;
       end
 
       default: begin

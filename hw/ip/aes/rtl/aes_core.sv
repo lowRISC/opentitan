@@ -27,7 +27,8 @@ module aes_core import aes_pkg::*;
   input  logic                     prng_reseed_ack_i,
 
   // Alerts
-  output logic                     ctrl_err_o,
+  output logic                     ctrl_err_update_o,
+  output logic                     ctrl_err_storage_o,
 
   // Bus Interface
   input  aes_reg_pkg::aes_reg2hw_t reg2hw,
@@ -48,7 +49,6 @@ module aes_core import aes_pkg::*;
   key_len_e             key_len_q;
   logic                 manual_operation_q;
   ctrl_reg_t            ctrl_d, ctrl_q;
-  logic                 ctrl_err_update, ctrl_err_storage;
 
   logic [3:0][3:0][7:0] state_in;
   si_sel_e              state_in_sel;
@@ -376,21 +376,23 @@ module aes_core import aes_pkg::*;
     .SWACCESS ( "WO"              ),
     .RESVAL   ( CTRL_RESET        )
   ) u_ctrl_reg_shadowed (
-    .clk_i       ( clk_i            ),
-    .rst_ni      ( rst_ni           ),
-    .re          ( ctrl_re          ),
-    .we          ( ctrl_we          ),
-    .wd          ( ctrl_d           ),
-    .de          ( 1'b0             ),
-    .d           ( '0               ),
-    .qe          (                  ),
-    .q           ( ctrl_q           ),
-    .qs          (                  ),
-    .err_update  ( ctrl_err_update  ),
-    .err_storage ( ctrl_err_storage )
+    .clk_i       ( clk_i              ),
+    .rst_ni      ( rst_ni             ),
+    .re          ( ctrl_re            ),
+    .we          ( ctrl_we            ),
+    .wd          ( ctrl_d             ),
+    .de          ( 1'b0               ),
+    .d           ( '0                 ),
+    .qe          (                    ),
+    .q           ( ctrl_q             ),
+    .qs          (                    ),
+    .err_update  ( ctrl_err_update_o  ),
+    .err_storage ( ctrl_err_storage_o )
   );
 
-  assign ctrl_err_o = ctrl_err_update | ctrl_err_storage;
+  // Make sure the storage error is observable via status register.
+  assign hw2reg.status.ctrl_err_storage.d  = ctrl_err_storage_o;
+  assign hw2reg.status.ctrl_err_storage.de = ctrl_err_storage_o;
 
   // Get shorter references.
   assign aes_op_q           = ctrl_q.operation;
@@ -411,7 +413,7 @@ module aes_core import aes_pkg::*;
 
     .ctrl_qe_i               ( ctrl_qe                          ),
     .ctrl_we_o               ( ctrl_we                          ),
-    .ctrl_err_i              ( ctrl_err_storage                 ),
+    .ctrl_err_storage_i      ( ctrl_err_storage_o               ),
     .op_i                    ( aes_op_q                         ),
     .mode_i                  ( aes_mode_q                       ),
     .cipher_op_i             ( cipher_op                        ),

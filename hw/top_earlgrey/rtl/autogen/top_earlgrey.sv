@@ -656,9 +656,10 @@ module top_earlgrey #(
 
   aes u_aes (
 
-      // [0]: ctrl_err
-      .alert_tx_o  ( alert_tx[0:0] ),
-      .alert_rx_i  ( alert_rx[0:0] ),
+      // [0]: ctrl_err_update
+      // [1]: ctrl_err_storage
+      .alert_tx_o  ( alert_tx[1:0] ),
+      .alert_rx_i  ( alert_rx[1:0] ),
 
       // Inter-module signals
       .idle_o(aes_idle),
@@ -675,9 +676,9 @@ module top_earlgrey #(
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
 
-      // [1]: msg_push_sha_disabled
-      .alert_tx_o  ( alert_tx[1:1] ),
-      .alert_rx_i  ( alert_rx[1:1] ),
+      // [2]: msg_push_sha_disabled
+      .alert_tx_o  ( alert_tx[2:2] ),
+      .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
       .tl_i(hmac_tl_req),
@@ -916,15 +917,15 @@ module top_earlgrey #(
 
   sensor_ctrl u_sensor_ctrl (
 
-      // [2]: ast_alerts
       // [3]: ast_alerts
       // [4]: ast_alerts
       // [5]: ast_alerts
       // [6]: ast_alerts
       // [7]: ast_alerts
       // [8]: ast_alerts
-      .alert_tx_o  ( alert_tx[8:2] ),
-      .alert_rx_i  ( alert_rx[8:2] ),
+      // [9]: ast_alerts
+      .alert_tx_o  ( alert_tx[9:3] ),
+      .alert_rx_i  ( alert_rx[9:3] ),
 
       // Inter-module signals
       .ast_alert_i(sensor_ctrl_ast_alert_req_i),
@@ -942,11 +943,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [9]: imem_uncorrectable
-      // [10]: dmem_uncorrectable
-      // [11]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[11:9] ),
-      .alert_rx_i  ( alert_rx[11:9] ),
+      // [10]: imem_uncorrectable
+      // [11]: dmem_uncorrectable
+      // [12]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[12:10] ),
+      .alert_rx_i  ( alert_rx[12:10] ),
 
       // Inter-module signals
       .idle_o(),
