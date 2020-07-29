@@ -8,11 +8,12 @@
 
 module aes_core import aes_pkg::*;
 #(
-  parameter bit     AES192Enable = 1,
-  parameter bit     Masking      = 0,
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut,
+  parameter bit          AES192Enable               = 1,
+  parameter bit          Masking                    = 0,
+  parameter sbox_impl_e  SBoxImpl                   = SBoxImplLut,
+  parameter int unsigned NumDelayCyclesStartTrigger = 0,
 
-  localparam int    NumShares    = Masking ? 2 : 1 // derived parameter
+  localparam int         NumShares                  = Masking ? 2 : 1 // derived parameter
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
@@ -399,7 +400,9 @@ module aes_core import aes_pkg::*;
   /////////////
 
   // Control
-  aes_control u_aes_control (
+  aes_control #(
+    .NumDelayCyclesStartTrigger ( NumDelayCyclesStartTrigger )
+  ) u_aes_control (
     .clk_i                   ( clk_i                            ),
     .rst_ni                  ( rst_ni                           ),
 

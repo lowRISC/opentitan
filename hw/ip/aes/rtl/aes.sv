@@ -7,12 +7,18 @@
 `include "prim_assert.sv"
 
 module aes import aes_pkg::*; #(
-  parameter bit     AES192Enable = 1, // Can be 0 (disable), or 1 (enable).
-  parameter bit     Masking      = 0, // Can be 0 (no masking), or 1 (first-order masking) of the
-                                      // cipher core. Masking requires the use of a masked S-Box,
-                                      // see SBoxImpl parameter. Note: currently, constant masks
-                                      // are used, this is of course not secure.
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut // See aes_pkg.sv
+  parameter bit          AES192Enable               = 1, // Can be 0 (disable), or 1 (enable).
+  parameter bit          Masking                    = 0, // Can be 0 (no masking), or
+                                                         // 1 (first-order masking) of the cipher
+                                                         // core. Masking requires the use of a
+                                                         // masked S-Box, see SBoxImpl parameter.
+                                                         // Note: currently, constant masks are
+                                                         // used, this is of course not secure.
+  parameter sbox_impl_e  SBoxImpl                   = SBoxImplLut, // See aes_pkg.sv
+  parameter int unsigned NumDelayCyclesStartTrigger = 0 // Manual start trigger delay, useful for
+                                                        // SCA measurements. A value of e.g. 40
+                                                        // allows the processor to go into sleep
+                                                        // before AES starts operation.
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -60,9 +66,10 @@ module aes import aes_pkg::*; #(
   );
 
   aes_core #(
-    .AES192Enable ( AES192Enable ),
-    .Masking      ( Masking      ),
-    .SBoxImpl     ( SBoxImpl     )
+    .AES192Enable               ( AES192Enable               ),
+    .Masking                    ( Masking                    ),
+    .SBoxImpl                   ( SBoxImpl                   ),
+    .NumDelayCyclesStartTrigger ( NumDelayCyclesStartTrigger )
   ) u_aes_core (
     .clk_i,
     .rst_ni,

@@ -8,7 +8,10 @@
 
 `include "prim_assert.sv"
 
-module aes_control (
+module aes_control
+#(
+  parameter int unsigned NumDelayCyclesStartTrigger = 0
+) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
 
@@ -132,6 +135,7 @@ module aes_control (
   logic       data_out_read;
   logic       output_valid_q;
 
+  logic       start_trigger;
   logic       cfg_valid;
   logic       start, finish;
   logic       cipher_crypt;
@@ -142,6 +146,28 @@ module aes_control (
   logic       doing_ctr;
   logic       ctrl_we_q;
   logic       clear_in_out_status;
+
+  if (NumDelayCyclesStartTrigger > 0) begin : gen_start_delay
+    // Delay the manual start trigger input for SCA measurements.
+    localparam int unsigned WidthCounter = $clog2(NumDelayCyclesStartTrigger+1);
+    logic [WidthCounter-1:0] count_d, count_q;
+
+    // Clear counter when input goes low. Keep value if the specified delay is reached.
+    assign count_d = !start_i       ? '0      :
+                      start_trigger ? count_q : count_q + 1'b1;
+    assign start_trigger = (count_q == NumDelayCyclesStartTrigger[WidthCounter-1:0]) ? 1'b1 : 1'b0;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        count_q <= '0;
+      end else begin
+        count_q <= count_d;
+      end
+    end
+  end else begin : gen_no_start_delay
+    // Directly forward the manual start trigger input.
+    assign start_trigger = start_i;
+  end
 
   // Software updates IV in chunks of 32 bits, the counter updates 16 bits at a time.
   // Convert word write enable to internal half-word write enable.
@@ -156,7 +182,7 @@ module aes_control (
   // data available. If the IV (and counter) is needed, we only start if also the IV (and counter)
   // is ready.
   assign start = cfg_valid &
-      ( manual_operation_i ? start_i                                                 :
+      ( manual_operation_i ? start_trigger                                           :
        (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
        (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
        (mode_i == AES_CFB) ? (key_init_ready & data_in_new & iv_ready)               :
