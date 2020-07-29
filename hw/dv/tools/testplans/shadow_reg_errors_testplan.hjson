@@ -1,0 +1,31 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  entries: [
+    {
+      // this testplan should be imported by all IPs containing shadowed CSRs
+      name: shadow_reg_errors
+      desc: '''
+            Verify shadow registers' update and storage errors.
+            - Issue reset at random to clear all the internal stored values and phases trackers
+              in shadow registers.
+            - Select all the shadow registers and a random amount of the rest of the non-excluded
+              registers. Shuffle and write random values to the selected registers.
+              For shadow registers, the second write is not enabled.
+              There is a 50% possibility that the shadow register's write value is identical to its
+              previous write value.
+              If shadow register's second write value does not match the first write value,
+              ensure that the update error alert is triggered.
+            - Randomly inject storage errors by modifying the shadow register's staged or committed
+              values via backdoor method. Ensure that the storage error alert is triggered.
+            - Randomly decide to read all the non-excluded registers or fields. Then check the read
+              values against predicted values.
+              A read on a shadow register will clear its phase tracker.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V1
+      tests: ["{name}_shadow_reg_errors"]
+    }
+  ]
+}
