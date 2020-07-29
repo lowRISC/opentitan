@@ -26,7 +26,7 @@ generate:
       ip_hjson: ../data/alert_handler.hjson
 
 targets:
-  sim:
+  sim: &sim_target
     toplevel: tb
     filesets:
       - files_rtl
@@ -34,3 +34,15 @@ targets:
     generate:
       - ral
     default_tool: vcs
+
+  lint:
+    <<: *sim_target
+    default_tool: verilator
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

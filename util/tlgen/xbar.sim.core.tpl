@@ -20,8 +20,21 @@ filesets:
 
 
 targets:
-  sim:
+  sim: &sim_target
     toplevel: xbar_tb_top
     filesets:
       - files_dv
     default_tool: vcs
+
+  lint:
+    <<: *sim_target
+    default_tool: verilator
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
