@@ -1,0 +1,90 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the primary cfg hjson for DV linting. It imports ALL individual lint
+  // cfgs of the IPs DV environments and the full chip DV environment for top_earlgrey.
+  // This enables to run them all as a regression in one shot.
+  name: top_earlgrey_dv_batch
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/data/{tool}.hjson"]
+
+  // Different dashboard output path for each tool
+  rel_path: "hw/top_earlgrey/dv/lint/{tool}"
+
+  use_cfgs: [{    name: aes
+                  fusesoc_core: lowrisc:dv:aes_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/aes/dv/lint/{tool}"
+             },
+             {    name: alert_handler
+                  fusesoc_core: lowrisc:dv:alert_handler_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/ip/alert_handler/dv/lint/{tool}"
+             },
+             {    name: entropy_src
+                  fusesoc_core: lowrisc:dv:entropy_src_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/entropy_src/dv/lint/{tool}"
+             },
+             {    name: flash_ctrl
+                  fusesoc_core: lowrisc:dv:flash_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/flash_ctrl/dv/lint/{tool}"
+             },
+             {    name: gpio
+                  fusesoc_core: lowrisc:dv:gpio_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/gpio/dv/lint/{tool}"
+             },
+             {    name: hmac
+                  fusesoc_core: lowrisc:dv:hmac_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/hmac/dv/lint/{tool}"
+             },
+             {    name: i2c
+                  fusesoc_core: lowrisc:dv:i2c_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/i2c/dv/lint/{tool}"
+             },
+             {    name: rv_timer
+                  fusesoc_core: lowrisc:dv:rv_timer_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rv_timer/dv/lint/{tool}"
+             },
+             {    name: spi_device
+                  fusesoc_core: lowrisc:dv:spi_device_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/spi_device/dv/lint/{tool}"
+             },
+             {    name: uart
+                  fusesoc_core: lowrisc:dv:uart_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/uart/dv/lint/{tool}"
+             },
+             {    name: usbdev
+                  fusesoc_core: lowrisc:dv:usbdev_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/usbdev/dv/lint/{tool}"
+             },
+             {    name: xbar_main
+                  fusesoc_core: lowrisc:dv:xbar_main_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/ip/xbar_main/dv/lint/{tool}"
+             },
+             {    name: xbar_peri
+                  fusesoc_core: lowrisc:dv:xbar_peri_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/ip/xbar_peri/dv/lint/{tool}"
+             },
+             {    name: chip
+                  fusesoc_core: lowrisc:dv:chip_sim
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/dv/lint/{tool}"
+             },
+            ]
+}
