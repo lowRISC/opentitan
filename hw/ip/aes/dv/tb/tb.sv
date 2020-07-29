@@ -18,6 +18,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx;
   assign alert_rx[0] = 4'b0101;
+  assign alert_rx[1] = 4'b0101;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));

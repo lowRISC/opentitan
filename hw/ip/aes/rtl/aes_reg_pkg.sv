@@ -164,6 +164,10 @@ package aes_reg_pkg;
       logic        d;
       logic        de;
     } input_ready;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_err_storage;
   } aes_hw2reg_status_reg_t;
 
 
@@ -184,14 +188,14 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [930:675]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [674:419]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [418:291]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [290:159]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [158:31]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [30:16]
-    aes_hw2reg_trigger_reg_t trigger; // [15:10]
-    aes_hw2reg_status_reg_t status; // [9:10]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [932:677]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [676:421]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [420:293]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [292:161]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [160:33]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [32:18]
+    aes_hw2reg_trigger_reg_t trigger; // [17:12]
+    aes_hw2reg_status_reg_t status; // [11:12]
   } aes_hw2reg_t;
 
   // Register Address

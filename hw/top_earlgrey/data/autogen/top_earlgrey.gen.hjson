@@ -798,7 +798,13 @@
       alert_list:
       [
         {
-          name: ctrl_err
+          name: ctrl_err_update
+          width: 1
+          type: alert
+          async: 0
+        }
+        {
+          name: ctrl_err_storage
           width: 1
           type: alert
           async: 0
@@ -4106,7 +4112,14 @@
   alert:
   [
     {
-      name: aes_ctrl_err
+      name: aes_ctrl_err_update
+      width: 1
+      type: alert
+      async: 0
+      module_name: aes
+    }
+    {
+      name: aes_ctrl_err_storage
       width: 1
       type: alert
       async: 0

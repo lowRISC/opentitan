@@ -6,8 +6,7 @@
 
 package aes_pkg;
 
-parameter int NumAlerts = 1;
-parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
+parameter int NumAlerts = 2;
 
 typedef enum integer {
   SBoxImplLut,                  // Unmasked LUT-based S-Box

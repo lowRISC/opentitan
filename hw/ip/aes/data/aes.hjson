@@ -39,8 +39,19 @@
     }
   ],
   alert_list: [
-    { name: "ctrl_err",
-      desc: "This alert is triggered upon detecting an error in the Control Register",
+    { name: "ctrl_err_update",
+      desc: '''
+        This minor alert is triggered upon detecting an update error in the Control Register.
+        The AES unit recovers from such a condition automatically.
+        No further action needs to be taken but this should be monitored by the system.
+      '''
+    }
+    { name: "ctrl_err_storage",
+      desc: '''
+        This major alert is triggered upon detecting a storage error in the Control Register.
+        It is fatal.
+        The AES unit cannot recover from such an error and needs to be reset.
+      '''
     }
   ],
   regwidth: "32",
@@ -358,7 +369,7 @@
     # Tag info (CSR test exclusions):
     #  Updated by the HW.
     #  Updates based on writes to other regs.
-    #  -> Exclude all fields from init and write-read checks.
+    #  -> Exclude all fields (except CTRL_STORAGE_ERROR) from init and write-read checks.
     #  Upon reset, internal operations are triggered that temporarily change the IDLE field.
     #  -> Exclude IDLE field from init and write-read checks (also in reset test).
     fields: [
@@ -398,6 +409,14 @@
           module (0).
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      }
+      { bits: "4",
+        name: "CTRL_ERR_STORAGE",
+        resval: "0",
+        desc:  '''
+          No storage error detected in the Control Register (0).
+          A storage error has been detected in the Control Register and the AES unit needs to be reset (1).
+        '''
       }
     ]
   },
