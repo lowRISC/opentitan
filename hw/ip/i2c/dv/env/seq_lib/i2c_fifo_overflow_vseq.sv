@@ -50,7 +50,7 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
             // since fmt_fifo can be drained thus decreasing cnt_fmt_overflow counter
             `DV_CHECK_GT(cnt_fmt_overflow, 0)
             `DV_CHECK_LE(cnt_fmt_overflow, num_data_ovf)
-            `uvm_info(`gfn, $sformatf("\nRun %0d, cnt_fmt_overflow %0d",
+            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_overflow %0d",
                 i, cnt_fmt_overflow), UVM_DEBUG)
           end
 
@@ -64,7 +64,7 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
             csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
             check_rx_overflow = 1'b0;
             `DV_CHECK_EQ(cnt_rx_overflow, 1)
-            `uvm_info(`gfn, $sformatf("\nRun %0d, cnt_rx_overflow %d",
+            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_rx_overflow %d",
                 i, cnt_rx_overflow), UVM_DEBUG)
           end
         end

@@ -58,7 +58,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
             `DV_CHECK_GT(cnt_fmt_watermark, 0)
             `DV_CHECK_LE(cnt_fmt_watermark, 2)
-            `uvm_info(`gfn, $sformatf("\nRun %0d, cnt_fmt_watermark %0d",
+            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d",
                 i, cnt_fmt_watermark), UVM_DEBUG)
           end
 
