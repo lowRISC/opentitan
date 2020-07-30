@@ -608,7 +608,12 @@ class SimCfg(FlowCfg):
                     # Link the dashboard page using "cov_report_page" value.
                     if hasattr(self, "cov_report_page"):
                         results_str += "\n### [Coverage Dashboard]"
-                        results_str += "({})\n\n".format(self.cov_report_page)
+                        if self.args.publish:
+                            cov_report_page_path = "cov_report"
+                        else:
+                            cov_report_page_path = self.cov_report_dir
+                        cov_report_page_path += "/" + self.cov_report_page
+                        results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
@@ -670,7 +675,7 @@ class SimCfg(FlowCfg):
             log.info("Publishing coverage results to %s",
                      results_server_dir_url)
             cmd = (self.results_server_cmd + " -m cp -R " +
-                   self.cov_report_deploy.cov_report_dir + " " + self.results_server_dir)
+                   self.cov_report_dir + " " + self.results_server_dir)
             try:
                 cmd_output = subprocess.run(args=cmd,
                                             shell=True,

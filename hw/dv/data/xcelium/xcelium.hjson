@@ -82,7 +82,7 @@
                      "-licqueue",
                      "-exec {tool_srcs_dir}/cov_report.tcl"]
   cov_report_txt:   "{cov_report_dir}/cov_report.txt"
-  cov_report_page:  "{cov_report_dir}/index.html"
+  cov_report_page:  "index.html"
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.
