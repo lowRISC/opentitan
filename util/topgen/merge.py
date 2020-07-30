@@ -450,7 +450,7 @@ def amend_clocks(top: OrderedDict):
     for src in clks_attr['srcs']:
         if 'derived' not in src:
             src['derived'] = "no"
-            src['params'] = {}
+            src['params'] = OrderedDict()
 
     # Default assignments
     for group in clks_attr['groups']:
@@ -518,7 +518,7 @@ def amend_clocks(top: OrderedDict):
 def amend_resets(top):
     """Add a path variable to reset declaration
     """
-    reset_paths = {}
+    reset_paths = OrderedDict()
 
     for reset in top["resets"]:
 

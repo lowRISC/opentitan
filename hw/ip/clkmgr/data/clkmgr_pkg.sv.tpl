@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
+from collections import OrderedDict
+
 clks_attr = cfg['clocks']
 grps = clks_attr['groups']
 num_hints = len(hint_clks)
@@ -19,7 +21,15 @@ package clkmgr_pkg;
   };
 
   typedef struct packed {
-% for clk in {**ft_clks, **hint_clks, **rg_clks, **sw_clks}:
+<%
+# Merge Clock Dicts together
+all_clocks = OrderedDict()
+all_clocks.update(ft_clks)
+all_clocks.update(hint_clks)
+all_clocks.update(rg_clks)
+all_clocks.update(sw_clks)
+%>\
+% for clk in all_clocks:
   logic ${clk};
 % endfor
 
