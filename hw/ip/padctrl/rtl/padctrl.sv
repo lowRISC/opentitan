@@ -72,18 +72,19 @@ module padctrl import padctrl_reg_pkg::*; (
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
     logic [AttrDw-1:0] warl_mask;
 
-    prim_pad_wrapper #(
-      .AttrDw   ( AttrDw        ),
-      .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
-    ) i_prim_pad_wrapper (
-      .inout_io (               ),
-      .in_o     (               ),
-      .ie_i     ( 1'b0          ),
-      .out_i    ( 1'b0          ),
-      .oe_i     ( 1'b0          ),
-      .attr_i   ( '0            ),
-      .warl_o   ( warl_mask     )
-    );
+    //prim_pad_wrapper #(
+    //  .AttrDw   ( AttrDw        ),
+    //  .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
+    //) i_prim_pad_wrapper (
+    //  .inout_io (               ),
+    //  .in_o     (               ),
+    //  .ie_i     ( 1'b0          ),
+    //  .out_i    ( 1'b0          ),
+    //  .oe_i     ( 1'b0          ),
+    //  .attr_i   ( '0            ),
+    //  .warl_o   ( warl_mask     )
+    //);
+    assign warl_mask = '1;
 
     assign dio_attr_o[k]        = dio_attr_q[k] & warl_mask;
     assign hw2reg.dio_pads[k].d = dio_attr_q[k] & warl_mask;
@@ -92,18 +93,19 @@ module padctrl import padctrl_reg_pkg::*; (
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
     logic [AttrDw-1:0] warl_mask;
 
-    prim_pad_wrapper #(
-      .AttrDw   ( AttrDw        ),
-      .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
-    ) i_prim_pad_wrapper (
-      .inout_io (               ),
-      .in_o     (               ),
-      .ie_i     ( 1'b0          ),
-      .out_i    ( 1'b0          ),
-      .oe_i     ( 1'b0          ),
-      .attr_i   ( '0            ),
-      .warl_o   ( warl_mask     )
-    );
+    //prim_pad_wrapper #(
+    //  .AttrDw   ( AttrDw        ),
+    //  .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
+    //) i_prim_pad_wrapper (
+    //  .inout_io (               ),
+    //  .in_o     (               ),
+    //  .ie_i     ( 1'b0          ),
+    //  .out_i    ( 1'b0          ),
+    //  .oe_i     ( 1'b0          ),
+    //  .attr_i   ( '0            ),
+    //  .warl_o   ( warl_mask     )
+    //);
+    assign warl_mask = '1;
 
     assign mio_attr_o[k]        = mio_attr_q[k] & warl_mask;
     assign hw2reg.mio_pads[k].d = mio_attr_q[k] & warl_mask;
