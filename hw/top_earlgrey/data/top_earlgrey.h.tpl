@@ -86,6 +86,8 @@ extern "C" {
 
 <%!
 
+from collections import OrderedDict
+
 def camelcase(str):
     """Turns a string from 'snake_case' to 'CamelCase'."""
     return "".join([part.capitalize() for part in str.split("_")])
@@ -107,7 +109,7 @@ def interrupt_id_enum_name(intr_name, intr_num=None):
 %>\
 ## This dictionary will be used in the C implementation to generate
 ## `top_${top["name"]}_plic_interrupt_for_peripheral`.
-<% c_gen_info["interrupt_id_map"] = {} %>\
+<% c_gen_info["interrupt_id_map"] = OrderedDict() %>\
 /**
  * PLIC Interrupt source peripheral enumeration.
  *

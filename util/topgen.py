@@ -498,36 +498,36 @@ def generate_clkmgr(top, cfg_path, out_path):
     # This includes two groups of clocks
     # Clocks fed from the always-on source
     # Clocks fed to the powerup group
-    ft_clks = {
-        clk: src
+    ft_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if src_aon_attr[src] or grp['name'] == 'powerup'
-    }
+    ])
 
     # root-gate clocks
-    rg_clks = {
-        clk: src
+    rg_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and
         not src_aon_attr[src]
-    }
+    ])
 
     # direct sw control clocks
-    sw_clks = {
-        clk: src
+    sw_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'yes' and not src_aon_attr[src]
-    }
+    ])
 
     # sw hint clocks
-    hint_clks = {
-        clk: src
+    hint_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
-    }
+    ])
 
-    out = StringIO()
     for idx, tpl in enumerate(tpls):
+        out = ""
         with tpl.open(mode='r', encoding='UTF-8') as fin:
             tpl = Template(fin.read())
             try:
