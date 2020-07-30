@@ -64,7 +64,7 @@
   cov_report_opts:  [
                     ]
   cov_report_txt:   "{cov_report_dir}/dashboard.txt"
-  cov_report_page:  "{cov_report_dir}/dashboard.html"
+  cov_report_page:  "dashboard.html"
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.
