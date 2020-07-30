@@ -63,30 +63,20 @@ def generate_xbars(top, out_path):
             log.error("Elaboration failed." + repr(xbar))
 
         try:
-            out_rtl, out_pkg, out_core = tlgen.generate(
-                xbar, "top_" + top["name"])
+            results = tlgen.generate(xbar, "top_" + top["name"])
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
 
-        rtl_path = out_path / 'ip/xbar_{}/rtl/autogen'.format(obj["name"])
-        rtl_path.mkdir(parents=True, exist_ok=True)
+        ip_path = out_path / 'ip/xbar_{}'.format(obj["name"])
+
+        for filename, filecontent in results:
+            filepath = ip_path / filename
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            with filepath.open(mode='w', encoding='UTF-8') as fout:
+                fout.write(filecontent)
+
         dv_path = out_path / 'ip/xbar_{}/dv/autogen'.format(obj["name"])
         dv_path.mkdir(parents=True, exist_ok=True)
-
-        rtl_filename = "xbar_%s.sv" % (xbar.name)
-        rtl_filepath = rtl_path / rtl_filename
-        with rtl_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_rtl)
-
-        pkg_filename = "tl_%s_pkg.sv" % (xbar.name)
-        pkg_filepath = rtl_path / pkg_filename
-        with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_pkg)
-
-        core_filename = "xbar_%s.core" % (xbar.name)
-        core_filepath = rtl_path / core_filename
-        with core_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_core)
 
         # generate testbench for xbar
         tlgen.generate_tb(xbar, dv_path, "top_" + top["name"])
@@ -602,7 +592,8 @@ def generate_pwrmgr(top, out_path):
 
     if n_wkups < 1:
         n_wkups = 1
-        log.warning("The design has no wakeup sources. Low power not supported")
+        log.warning(
+            "The design has no wakeup sources. Low power not supported")
 
     # Define target path
     rtl_path = out_path / 'ip/pwrmgr/rtl/autogen'
