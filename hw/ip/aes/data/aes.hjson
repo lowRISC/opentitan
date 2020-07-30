@@ -151,6 +151,9 @@
       AES unit is non-idle, writes to this register are ignored.
       This register is shadowed, meaning two subsequent write operations are required to change its content.
       If the two write operations try to set a different value, a ctrl_err alert is triggered.
+      Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
+      A write to the Control Register is considered the start of a new message.
+      Hence, software needs to provide new key, IV and input data afterwards.
     '''
     swaccess: "rw",
     hwaccess: "hrw",
@@ -236,6 +239,7 @@
           Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
           In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
           This is the most efficient mode to operate in.
+          Note that the corresponding status tracking is automatically cleared upon a write to the Control Register.
           In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
           This mode is useful if software needs full control over the AES unit.
         '''

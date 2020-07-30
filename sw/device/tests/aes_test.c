@@ -41,11 +41,10 @@ bool test_main(void) {
       .mode = kAesEcb, .key_len = kAes256, .manual_operation = false,
   };
 
-  aes_key_put(key_32_1, aes_cfg.key_len);
-
   // Encode
   aes_cfg.operation = kAesEnc;
   aes_init(aes_cfg);
+  aes_key_put(key_32_1, aes_cfg.key_len);
   aes_data_put_wait(plain_text_1);
   aes_data_get_wait(buffer);
 
@@ -59,6 +58,7 @@ bool test_main(void) {
   // Decode
   aes_cfg.operation = kAesDec;
   aes_init(aes_cfg);
+  aes_key_put(key_32_1, aes_cfg.key_len);
   aes_data_put_wait(buffer);
   aes_data_get_wait(buffer);
 

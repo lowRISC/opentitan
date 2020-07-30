@@ -321,7 +321,6 @@ module aes_core #(
       reg2hw.ctrl_shadowed.key_len.re & reg2hw.ctrl_shadowed.manual_operation.re;
   assign ctrl_qe = reg2hw.ctrl_shadowed.operation.qe & reg2hw.ctrl_shadowed.mode.qe &
       reg2hw.ctrl_shadowed.key_len.qe & reg2hw.ctrl_shadowed.manual_operation.qe;
-  assign ctrl_we = ctrl_qe & hw2reg.status.idle.d;
 
   // Shadowed register primitve
   prim_subreg_shadow #(
@@ -360,11 +359,13 @@ module aes_core #(
     .clk_i                   ( clk_i                            ),
     .rst_ni                  ( rst_ni                           ),
 
+    .ctrl_qe_i               ( ctrl_qe                          ),
+    .ctrl_we_o               ( ctrl_we                          ),
+    .ctrl_err_i              ( ctrl_err_storage                 ),
     .op_i                    ( aes_op_q                         ),
     .mode_i                  ( aes_mode_q                       ),
     .cipher_op_i             ( cipher_op                        ),
     .manual_operation_i      ( manual_operation_q               ),
-    .ctrl_err_i              ( ctrl_err_storage                 ),
     .start_i                 ( reg2hw.trigger.start.q           ),
     .key_clear_i             ( reg2hw.trigger.key_clear.q       ),
     .iv_clear_i              ( reg2hw.trigger.iv_clear.q        ),
