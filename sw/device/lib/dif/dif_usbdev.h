@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/usbdev/doc/">USB Device</a> Device Interface Functions
+ */
+
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_warn_unused_result.h"
 #include <stddef.h>

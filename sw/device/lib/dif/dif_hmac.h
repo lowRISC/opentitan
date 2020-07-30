@@ -5,6 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_HMAC_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_HMAC_H_
 
+/**
+ * @file
+ * @brief <a href="/hw/ip/hmac/doc/">HMAC</a> Device Interface Functions
+ */
+
 #include "sw/device/lib/base/mmio.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -12,19 +17,30 @@
 /**
  * HMAC interrupt configuration.
  *
- * Enumeration used to enable, disable, test and query the UART interrupts.
+ * Enumeration used to enable, disable, test and query the HMAC interrupts.
  * Please see the comportability specification for more information:
  * https://docs.opentitan.org/doc/rm/comportability_specification/
  */
 typedef enum dif_hmac_interrupt {
-  //! HMAC is done.
-  /*! Associated with the `hmac.INTR_STATE.hmac_done` hardware interrupt. */
+  /**
+   * HMAC is done.
+   *
+   * Associated with the `hmac.INTR_STATE.hmac_done` hardware interrupt.
+   */
   kDifHmacInterruptHmacDone = 0,
-  //! FIFO empty.
-  /*! Associated with the `hmac.INTR_STATE.fifo_empty` hardware interrupt. */
+
+  /**
+   * FIFO empty.
+   *
+   * Associated with the `hmac.INTR_STATE.fifo_empty` hardware interrupt.
+   */
   kDifHmacInterruptFifoEmpty,
-  //! HMAC error occurred.
-  /*! Associated with the `hmac.INTR_STATE.hmac_err` hardware interrupt. */
+
+  /**
+   * HMAC error occurred.
+   *
+   * Associated with the `hmac.INTR_STATE.hmac_err` hardware interrupt.
+   */
   kDifHmacInterruptHmacErr,
 } dif_hmac_interrupt_t;
 
@@ -34,9 +50,9 @@ typedef enum dif_hmac_interrupt {
  * Enumeration used to enable/disable bits, flags, ...
  */
 typedef enum dif_hmac_enable {
-  //! Enable interrupt.
+  /** Enable interrupt. */
   kDifHmacEnable = 0,
-  //! Disable interrupt.
+  /** Disable interrupt. */
   kDifHmacDisable,
 } dif_hmac_enable_t;
 
@@ -44,9 +60,9 @@ typedef enum dif_hmac_enable {
  * Supported HMAC modes of operation.
  */
 typedef enum dif_hmac_mode {
-  //! The HMAC mode.
+  /** The HMAC mode. */
   kDifHmacModeHmac = 0,
-  //! The SHA256-only mode.
+  /** The SHA256-only mode. */
   kDifHmacModeSha256,
 } dif_hmac_mode_t;
 
@@ -54,9 +70,9 @@ typedef enum dif_hmac_mode {
  * Supported byte endienness options.
  */
 typedef enum dif_hmac_endianness {
-  //! Big endian byte ordering.
+  /** Big endian byte ordering. */
   kDifHmacEndiannessBig = 0,
-  //! Little endian byte ordering.
+  /** Little endian byte ordering. */
   kDifHmacEndiannessLittle,
 } dif_hmac_endianness_t;
 
@@ -64,11 +80,11 @@ typedef enum dif_hmac_endianness {
  * Error codes for HMAC functions that may exhibit generic failures.
  */
 typedef enum dif_hmac_result {
-  //! No error occurred.
+  /** No error occurred. */
   kDifHmacOk = 0,
-  //! An unknown error occurred.
+  /** An unknown error occurred. */
   kDifHmacError,
-  //! An invalid argument was provided.
+  /** An invalid argument was provided. */
   kDifHmacBadArg,
 } dif_hmac_result_t;
 
@@ -76,19 +92,20 @@ typedef enum dif_hmac_result {
  * Error codes for HMAC FIFO operations that may fail.
  */
 typedef enum dif_hmac_fifo_result {
-  //! No error occurred.
+  /** No error occurred. */
   kDifHmacFifoOk = 0,
-  //! An unknown error occurred.
+  /** An unknown error occurred. */
   kDifHmacFifoError,
-  //! An invalid argument was provided.
+  /** An invalid argument was provided. */
   kDifHmacFifoBadArg,
-  //! The FIFO filled up before the buffer was fully consumed.
-  /*!
-    Retryable. This error indicates that FIFO has filled up and will empty over
-    time. A function that returns this error may be retried at any time, or the
-    caller may choose to do so when the `kDifHmacInterruptFifoEmpty` interrupt
-    is raised, provided this interrupt has been enabled via the interrupt API.
-  */
+  /**
+   * The FIFO filled up before the buffer was fully consumed.
+   *
+   * Retryable. This error indicates that FIFO has filled up and will empty over
+   * time. A function that returns this error may be retried at any time, or the
+   * caller may choose to do so when the `kDifHmacInterruptFifoEmpty` interrupt
+   * is raised, provided this interrupt has been enabled via the interrupt API.
+   */
   kDifHmacFifoFull,
 } dif_hmac_fifo_result_t;
 
@@ -96,22 +113,23 @@ typedef enum dif_hmac_fifo_result {
  * Error codes for reading the HMAC digest.
  */
 typedef enum dif_hmac_digest_result {
-  //! No error occurred.
+  /** No error occurred. */
   kDifHmacDigestOk = 0,
-  //! An unknown error occurred.
+  /** An unknown error occurred. */
   kDifHmacDigestError,
-  //! An invalid argument was provided.
+  /** An invalid argument was provided. */
   kDifHmacDigestBadArg,
-  //! The HMAC operation is still in progress.
-  /*!
-    Retryable. This error indicates HMAC is still processing and will finish in
-    time. A function that returns this error may be retried at any time, or the
-    caller may choose to do so when the `kDifHmacInterruptHmacDone` interrupt
-    is raised, provided this interrupt has been enabled via the interrupt API.
-
-    Any function that returns this error is guaranteed to have not produced any
-    side effects.
-  */
+  /**
+   * The HMAC operation is still in progress.
+   *
+   * Retryable. This error indicates HMAC is still processing and will finish in
+   * time. A function that returns this error may be retried at any time, or the
+   *  caller may choose to do so when the `kDifHmacInterruptHmacDone` interrupt
+   *  is raised, provided this interrupt has been enabled via the interrupt API.
+   *
+   *  Any function that returns this error is guaranteed to have not produced
+   *  any side effects.
+   */
   kDifHmacDigestProcessing,
 } dif_hmac_digest_result_t;
 
@@ -119,11 +137,11 @@ typedef enum dif_hmac_digest_result {
  * Configuration for initializing the HMAC device.
  */
 typedef struct dif_hmac_config {
-  //! The base address for registers in the HMAC IP
+  /** The base address for registers in the HMAC IP. */
   mmio_region_t base_addr;
-  //! Byte endianness for writes to the FIFO
+  /** Byte endianness for writes to the FIFO. */
   dif_hmac_endianness_t message_endianness;
-  //! Byte endianness for reads from the digest.
+  /** Byte endianness for reads from the digest. */
   dif_hmac_endianness_t digest_endianness;
 } dif_hmac_config_t;
 
