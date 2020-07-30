@@ -138,7 +138,9 @@ The following description explains how the AES unit operates, i.e., how the oper
 Phrases in italics apply to peculiarities of different block cipher modes.
 For a general introduction into these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
-1. The initial key and configuration is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
+1. The configuration and initial key is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
+   The processor must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
+   Then follows the initial key.
    Each key register must be written at least once.
    The order in which the registers are written does not matter.
 1. _The processor provides the initialization vector (IV) or initial counter value to the four IV registers via TL-UL bus interface in CBC or CTR mode, respectively.
