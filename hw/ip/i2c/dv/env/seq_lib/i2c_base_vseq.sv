@@ -139,7 +139,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     i2c_device_seq m_dev_seq;
 
     m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
-    `uvm_info(`gfn, "start i2c_device sequence", UVM_DEBUG)
+    `uvm_info(`gfn, "\nstart i2c_device sequence", UVM_DEBUG)
     fork
       m_dev_seq.start(p_sequencer.i2c_sequencer_h);
     join_none
@@ -148,7 +148,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task host_init();
     bit [TL_DW-1: 0] intr_state;
 
-    `uvm_info(`gfn, "initialize i2c host registers", UVM_DEBUG)
+    `uvm_info(`gfn, "\ninitialize i2c host registers", UVM_DEBUG)
     ral.ctrl.enablehost.set(1'b1);
     csr_update(ral.ctrl);
 
