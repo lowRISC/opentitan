@@ -156,7 +156,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                tx_rptr_exp, tx_mem.read(tx_rptr_exp[SRAM_MSB:0])), UVM_MEDIUM)
       tx_rptr_exp = get_sram_new_ptr(.ptr(tx_rptr_exp),
                                      .increment(SRAM_WORD_SIZE),
-                                     .sram_size_bytes(`get_tx_allocated_sram_size_bytes));
+                                     .sram_size_bytes(`GET_TX_ALLOCATED_SRAM_SIZE_BYTES));
       filled_bytes -= SRAM_WORD_SIZE;
     end
   endfunction
@@ -198,7 +198,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                 rx_wptr_exp, data), UVM_MEDIUM)
       rx_wptr_exp = get_sram_new_ptr(.ptr(rx_wptr_exp),
                                      .increment(SRAM_WORD_SIZE),
-                                     .sram_size_bytes(`get_rx_allocated_sram_size_bytes));
+                                     .sram_size_bytes(`GET_RX_ALLOCATED_SRAM_SIZE_BYTES));
       space_bytes -= SRAM_WORD_SIZE;
     end
   endfunction
@@ -207,7 +207,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     uint tx_wptr      = ral.txf_ptr.wptr.get_mirrored_value();
     uint filled_bytes = get_sram_filled_bytes(tx_wptr,
                                               tx_rptr_exp,
-                                              `get_tx_allocated_sram_size_bytes,
+                                              `GET_TX_ALLOCATED_SRAM_SIZE_BYTES,
                                               {`gfn, "::get_tx_sram_filled_bytes"});
     return filled_bytes;
   endfunction
@@ -216,7 +216,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     uint rx_rptr     = ral.rxf_ptr.rptr.get_mirrored_value();
     uint space_bytes = get_sram_space_bytes(rx_wptr_exp,
                                             rx_rptr,
-                                            `get_rx_allocated_sram_size_bytes,
+                                            `GET_RX_ALLOCATED_SRAM_SIZE_BYTES,
                                             {`gfn, "::get_rx_sram_space_bytes"});
     return space_bytes;
   endfunction

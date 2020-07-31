@@ -213,7 +213,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // write spi device data to send when incoming host traffic arrives
   virtual task write_device_words_to_send(bit [31:0] device_data[$]);
     bit [TL_DW-1:0] tx_wptr;
-    uint tx_sram_size_bytes = `get_tx_allocated_sram_size_bytes;
+    uint tx_sram_size_bytes = `GET_TX_ALLOCATED_SRAM_SIZE_BYTES;
 
     // write data to tx base address + curr tx wptr
     tx_wptr = ral.txf_ptr.wptr.get_mirrored_value();
@@ -243,7 +243,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // read spi host data received from the host
   virtual task read_host_words_rcvd(uint num_words, ref bit [31:0] host_data[$]);
     bit [TL_DW-1:0] rx_rptr;
-    uint rx_sram_size_bytes = `get_rx_allocated_sram_size_bytes;
+    uint rx_sram_size_bytes = `GET_RX_ALLOCATED_SRAM_SIZE_BYTES;
 
     // read data from rx base address + curr rptr
     rx_rptr = ral.rxf_ptr.rptr.get_mirrored_value();
@@ -273,7 +273,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   virtual task read_tx_avail_bytes(sram_avail_type_e avail_type, ref uint avail_bytes);
     bit [TL_DW-1:0] rptr;
     bit [TL_DW-1:0] wptr;
-    uint            sram_size_bytes = `get_tx_allocated_sram_size_bytes;
+    uint            sram_size_bytes = `GET_TX_ALLOCATED_SRAM_SIZE_BYTES;
 
     csr_rd(.ptr(ral.txf_ptr.rptr), .value(rptr));
     wptr = ral.txf_ptr.wptr.get_mirrored_value();
@@ -298,7 +298,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   virtual task read_rx_avail_bytes(sram_avail_type_e avail_type, ref uint avail_bytes);
     bit [TL_DW-1:0] rptr;
     bit [TL_DW-1:0] wptr;
-    uint            sram_size_bytes = `get_rx_allocated_sram_size_bytes;
+    uint            sram_size_bytes = `GET_RX_ALLOCATED_SRAM_SIZE_BYTES;
 
     csr_rd(.ptr(ral.rxf_ptr.wptr), .value(wptr));
     rptr = ral.rxf_ptr.rptr.get_mirrored_value();
