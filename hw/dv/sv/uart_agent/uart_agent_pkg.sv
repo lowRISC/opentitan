@@ -45,6 +45,7 @@ package uart_agent_pkg;
       BaudRate230400: return 4340.278;
       BaudRate1Mbps : return 953.674;
       BaudRate2Mbps : return 476.837;
+      default: `uvm_fatal("uart_agent_pkg", {"Unsupported baud_rate: ", baud_rate.name})
     endcase
   endfunction
 
