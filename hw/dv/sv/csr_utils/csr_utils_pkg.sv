@@ -27,7 +27,7 @@ package csr_utils_pkg;
     uvm_reg_field   field;
     uvm_reg_data_t  mask;
     uint            shift;
-  } csr_field_s;
+  } csr_field_t;
 
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
@@ -119,11 +119,11 @@ package csr_utils_pkg;
   endfunction : get_reg_fld_mirror_value
 
   // This function attempts to cast a given uvm_object ptr into uvm_reg or uvm_reg_field. If cast
-  // is successful on either, then set the appropriate csr_field_s return values.
-  function automatic csr_field_s decode_csr_or_field(input uvm_object ptr);
+  // is successful on either, then set the appropriate csr_field_t return values.
+  function automatic csr_field_t decode_csr_or_field(input uvm_object ptr);
     uvm_reg       csr;
     uvm_reg_field fld;
-    csr_field_s   result;
+    csr_field_t   result;
     string        msg_id = {csr_utils_pkg::msg_id, "::decode_csr_or_field"};
 
     if ($cast(csr, ptr)) begin
@@ -367,7 +367,7 @@ package csr_utils_pkg;
                             input  uvm_reg_map    map = null);
     fork
       begin : isolation_fork
-        csr_field_s   csr_or_fld;
+        csr_field_t   csr_or_fld;
         uvm_status_e  status;
         string        msg_id = {csr_utils_pkg::msg_id, "::csr_rd"};
 
@@ -404,7 +404,7 @@ package csr_utils_pkg;
                           output uvm_reg_data_t value,
                           input uvm_check_e     check = UVM_CHECK);
     string      msg_id = {csr_utils_pkg::msg_id, "::csr_peek"};
-    csr_field_s csr_or_fld = decode_csr_or_field(ptr);
+    csr_field_t csr_or_fld = decode_csr_or_field(ptr);
     uvm_reg     csr = csr_or_fld.csr;
 
     if (csr.has_hdl_path()) begin
@@ -444,7 +444,7 @@ package csr_utils_pkg;
       begin : isolation_fork
         fork
           begin
-            csr_field_s     csr_or_fld;
+            csr_field_t     csr_or_fld;
             uvm_status_e    status;
             uvm_reg_data_t  obs;
             uvm_reg_data_t  exp;
@@ -498,7 +498,7 @@ package csr_utils_pkg;
                               input uvm_verbosity   verbosity = UVM_HIGH);
     fork
       begin : isolation_fork
-        csr_field_s     csr_or_fld;
+        csr_field_t     csr_or_fld;
         uvm_reg_data_t  read_data;
         string          msg_id = {csr_utils_pkg::msg_id, "::csr_spinwait"};
 
@@ -643,7 +643,7 @@ package csr_utils_pkg;
     get_mask_excl_fields = '1;
     foreach (flds[i]) begin
       if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
-        csr_field_s fld_params = decode_csr_or_field(flds[i]);
+        csr_field_t fld_params = decode_csr_or_field(flds[i]);
         `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
                                   flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
         get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
