@@ -188,7 +188,7 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
 %>\
   // assertions for register: ${reg_name}
     % if regwen:
-<% reg_wen = "dut.u_reg." + regwen + "_qs" %>\
+<% reg_wen = "u_reg." + regwen + "_qs" %>\
     % else:
 <% reg_wen = "1" %>\
     % endif
