@@ -1,0 +1,11 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:fpv:csr_assert_gen"
+description: "Generator for CSR assertion check module used in FPV and DV testbenches."
+generators:
+  csr_assert_gen:
+    interpreter: python3
+    command: csr_assert_gen.py
