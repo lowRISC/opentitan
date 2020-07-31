@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rv_timer:0.1
-    files:
-      - tb/rv_timer_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:rv_timer_test
+      - lowrisc:dv:rv_timer_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
