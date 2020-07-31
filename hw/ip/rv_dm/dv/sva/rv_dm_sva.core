@@ -2,25 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rv_dm_sim:0.1"
-description: "RV_DM DV sim target"
+name: "lowrisc:dv:rv_dm_sva:0.1"
+description: "RV_DM assertion modules and bind file."
 filesets:
-  files_rtl:
-    depend:
-      - lowrisc:ip:rv_dm:0.1
-
   files_dv:
     depend:
-      - lowrisc:dv:rv_dm_test
-      - lowrisc:dv:rv_dm_sva
+      - lowrisc:tlul:headers
     files:
-      - tb/tb.sv
+      - rv_dm_bind.sv
     file_type: systemVerilogSource
 
 targets:
-  sim:
-    toplevel: tb
+  default:
     filesets:
-      - files_rtl
       - files_dv
-    default_tool: vcs
