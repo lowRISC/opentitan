@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:aes:0.6
-    files:
-      - tb/aes_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:aes_test
+      - lowrisc:dv:aes_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
