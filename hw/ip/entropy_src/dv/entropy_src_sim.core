@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:entropy_src:0.1
-    files:
-      - tb/entropy_src_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:entropy_src_test
+      - lowrisc:dv:entropy_src_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
