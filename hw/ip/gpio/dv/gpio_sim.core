@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:gpio:0.1
-    files:
-      - tb/gpio_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:gpio_test
+      - lowrisc:dv:gpio_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
