@@ -7,14 +7,12 @@ description: "UART DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:uart:0.1
-    files:
-      - tb/uart_bind.sv
-    file_type: systemVerilogSource
+      - lowrisc:ip:uart
 
   files_dv:
     depend:
       - lowrisc:dv:uart_test
+      - lowrisc:dv:uart_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
