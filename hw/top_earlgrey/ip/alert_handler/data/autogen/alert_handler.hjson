@@ -4,7 +4,7 @@
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_earlgrey/doc/top_earlgrey.hjson --alert-handler-only -o hw/top_earlgrey/
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --alert-handler-only -o hw/top_earlgrey/
 
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -212,7 +212,10 @@
       hwaccess: "hrw",
       fields: [
         { bits: "0", name: "A", desc: "Cause bit " }
-      ]
+      ],
+      tags: [// the value of this register is determined by triggering different kinds of alerts
+             // cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
 # local alerts
@@ -382,7 +385,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// this value of this register is determined by how many alerts have been triggered
+             // could not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_ACCUM_THRESH",
       desc:     '''
@@ -494,7 +500,10 @@
           is set to false (either by SW or by HW via the !!CLASSA_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// the value of this register is determined by counting how many cycles the escalation
+             // phase has lasted. This can not be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_STATE",
       desc:     '''
@@ -515,7 +524,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// the current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSB_CTRL",
@@ -626,7 +638,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// this value of this register is determined by how many alerts have been triggered
+             // could not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_ACCUM_THRESH",
       desc:     '''
@@ -738,7 +753,10 @@
           is set to false (either by SW or by HW via the !!CLASSB_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// the value of this register is determined by counting how many cycles the escalation
+             // phase has lasted. This can not be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_STATE",
       desc:     '''
@@ -759,7 +777,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// the current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSC_CTRL",
@@ -870,7 +891,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// this value of this register is determined by how many alerts have been triggered
+             // could not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_ACCUM_THRESH",
       desc:     '''
@@ -982,7 +1006,10 @@
           is set to false (either by SW or by HW via the !!CLASSC_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// the value of this register is determined by counting how many cycles the escalation
+             // phase has lasted. This can not be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_STATE",
       desc:     '''
@@ -1003,7 +1030,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// the current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSD_CTRL",
@@ -1114,7 +1144,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// this value of this register is determined by how many alerts have been triggered
+             // could not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_ACCUM_THRESH",
       desc:     '''
@@ -1226,7 +1259,10 @@
           is set to false (either by SW or by HW via the !!CLASSD_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// the value of this register is determined by counting how many cycles the escalation
+             // phase has lasted. This can not be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_STATE",
       desc:     '''
@@ -1247,7 +1283,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// the current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
   ],
 }
