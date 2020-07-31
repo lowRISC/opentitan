@@ -68,9 +68,9 @@ module alert_handler
 
   logic [N_LOC_ALERT-1:0] loc_alert_trig;
 
-  logic [NAlerts-1:0]   alert_ping_en;
+  logic [NAlerts-1:0]   alert_ping_req;
   logic [NAlerts-1:0]   alert_ping_ok;
-  logic [N_ESC_SEV-1:0] esc_ping_en;
+  logic [N_ESC_SEV-1:0] esc_ping_req;
   logic [N_ESC_SEV-1:0] esc_ping_ok;
 
   alert_handler_ping_timer i_ping_timer (
@@ -85,8 +85,8 @@ module alert_handler
     // this determines the range of the randomly generated
     // wait period between ping. maximum mask width is PING_CNT_DW.
     .wait_cyc_mask_i    ( PING_CNT_DW'(24'hFFFFFF)     ),
-    .alert_ping_en_o    ( alert_ping_en                ),
-    .esc_ping_en_o      ( esc_ping_en                  ),
+    .alert_ping_req_o   ( alert_ping_req               ),
+    .esc_ping_req_o     ( esc_ping_req                 ),
     .alert_ping_ok_i    ( alert_ping_ok                ),
     .esc_ping_ok_i      ( esc_ping_ok                  ),
     .alert_ping_fail_o  ( loc_alert_trig[0]            ),
@@ -107,7 +107,7 @@ module alert_handler
     ) i_alert_receiver (
       .clk_i                              ,
       .rst_ni                             ,
-      .ping_en_i    ( alert_ping_en[k]   ),
+      .ping_req_i   ( alert_ping_req[k]   ),
       .ping_ok_o    ( alert_ping_ok[k]   ),
       .integ_fail_o ( alert_integfail[k] ),
       .alert_o      ( alert_trig[k]      ),
@@ -139,7 +139,7 @@ module alert_handler
   ////////////////////////////////////
 
   logic [N_CLASSES-1:0] class_accum_trig;
-  logic [N_CLASSES-1:0][N_ESC_SEV-1:0] class_esc_sig_en;
+  logic [N_CLASSES-1:0][N_ESC_SEV-1:0] class_esc_sig_req;
 
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classes
     alert_handler_accu i_accu (
@@ -169,7 +169,7 @@ module alert_handler
       .esc_trig_o       ( hw2reg_wrap.class_esc_trig[k]    ),
       .esc_cnt_o        ( hw2reg_wrap.class_esc_cnt[k]     ),
       .esc_state_o      ( hw2reg_wrap.class_esc_state[k]   ),
-      .esc_sig_en_o     ( class_esc_sig_en[k]              )
+      .esc_sig_req_o    ( class_esc_sig_req[k]             )
     );
   end
 
@@ -177,24 +177,24 @@ module alert_handler
   // Escalation Senders //
   ////////////////////////
 
-  logic [N_ESC_SEV-1:0] esc_sig_en;
+  logic [N_ESC_SEV-1:0] esc_sig_req;
   logic [N_ESC_SEV-1:0] esc_integfail;
-  logic [N_ESC_SEV-1:0][N_CLASSES-1:0] esc_sig_en_trsp;
+  logic [N_ESC_SEV-1:0][N_CLASSES-1:0] esc_sig_req_trsp;
 
   for (genvar k = 0; k < N_ESC_SEV; k++) begin : gen_esc_sev
     for (genvar j = 0; j < N_CLASSES; j++) begin : gen_transp
-      assign esc_sig_en_trsp[k][j] = class_esc_sig_en[j][k];
+      assign esc_sig_req_trsp[k][j] = class_esc_sig_req[j][k];
     end
 
-    assign esc_sig_en[k] = |esc_sig_en_trsp[k];
+    assign esc_sig_req[k] = |esc_sig_req_trsp[k];
 
     prim_esc_sender i_esc_sender (
       .clk_i,
       .rst_ni,
-      .ping_en_i    ( esc_ping_en[k]   ),
+      .ping_req_i   ( esc_ping_req[k]  ),
       .ping_ok_o    ( esc_ping_ok[k]   ),
       .integ_fail_o ( esc_integfail[k] ),
-      .esc_en_i     ( esc_sig_en[k]    ),
+      .esc_req_i    ( esc_sig_req[k]   ),
       .esc_rx_i     ( esc_rx_i[k]      ),
       .esc_tx_o     ( esc_tx_o[k]      )
     );

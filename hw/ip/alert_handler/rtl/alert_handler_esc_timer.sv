@@ -33,7 +33,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
                [EscCntDw-1:0]  phase_cyc_i,    // cycle counts of individual phases
   output logic                 esc_trig_o,     // asserted if escalation triggers
   output logic [EscCntDw-1:0]  esc_cnt_o,      // current timeout / escalation count
-  output logic [N_ESC_SEV-1:0] esc_sig_en_o,   // escalation signal outputs
+  output logic [N_ESC_SEV-1:0] esc_sig_req_o,  // escalation signal outputs
   // current state output
   // 000: idle, 001: irq timeout counting 100: phase0, 101: phase1, 110: phase2, 111: phase3
   output cstate_e              esc_state_o
@@ -191,7 +191,7 @@ module alert_handler_esc_timer import alert_pkg::*; (
     // generate configuration mask for escalation enable signals
     assign esc_map_oh[k] = N_ESC_SEV'(esc_en_i[k]) << esc_map_i[k];
     // mask reduce current phase state vector
-    assign esc_sig_en_o[k] = |(esc_map_oh[k] & phase_oh);
+    assign esc_sig_req_o[k] = |(esc_map_oh[k] & phase_oh);
   end
 
   ///////////////
