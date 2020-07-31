@@ -13,12 +13,12 @@ filesets:
       - lowrisc:ip:flash_ctrl:0.1
     files:
       - tb/flash_ctrl_wrapper.sv
-      - tb/flash_ctrl_bind.sv
     file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:flash_ctrl_test
+      - lowrisc:dv:flash_ctrl_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
