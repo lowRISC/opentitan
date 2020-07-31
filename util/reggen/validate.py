@@ -6,6 +6,7 @@ Register JSON validation
 """
 
 import logging as log
+from collections import OrderedDict
 
 from reggen.field_enums import SwWrAccess, SwRdAccess, SwAccess, HwAccess
 
@@ -29,11 +30,8 @@ def checking_dict(pairs):
 def check_count(top, mreg, err_prefix):
     '''Checking mreg count if it is in param list
     '''
-    if "param_list" not in top:
-        top["param_list"] = []
-        name_list = []
-    else:
-        name_list = [z["name"] for z in top["param_list"]]
+    top.setdefault('param_list', [])
+    name_list = [z["name"] for z in top["param_list"]]
 
     try:
         index = name_list.index(mreg["count"])
@@ -139,15 +137,12 @@ def check_lp(obj, x, err_prefix):
         error += check_keys(y, lp_required, lp_optional, {},
                             err_prefix + ' element ' + x)
         # TODO: Check if PascalCase or ALL_CAPS
-        if "type" not in y:
-            y["type"] = "int"
+        y.setdefault('type', 'int')
 
-        if "local" in y:
-            local, ierr = check_bool(y["local"], err_prefix + " local")
-            if ierr:
-                error += 1
-                y["local"] = "true"
-        else:
+        y.setdefault('local', 'true')
+        local, ierr = check_bool(y["local"], err_prefix + " local")
+        if ierr:
+            error += 1
             y["local"] = "true"
 
         if "default" in y:
@@ -637,7 +632,7 @@ def resolve_value(entry, param_list):
         val = param['default']
         if param['local'] != "true":
             log.warning(
-                "It is recommended to define {} as localparam," +
+                "It is recommended to define {} as localparam,"
                 " since it should not be changed in the design".format(entry))
 
     return int(val), err
@@ -959,20 +954,20 @@ def validate_reg_defaults(reg, rname):
             log.warning(
                 rname +
                 ": no \"_shadowed/_SHADOWED\" suffix for register declared as shadowed. "
-                + "Changing it to false.")
+                "Changing it to false.")
             reg['shadowed'] = "false"
         elif shadowed is False and rname.lower().endswith('_shadowed'):
             log.warning(
                 rname +
                 ": shadowed must be true for registers with \"_shadowed/_SHADOWED\" suffix. "
-                + "Changing it to true.")
+                "Changing it to true.")
             reg['shadowed'] = "true"
     else:
         if rname.lower().endswith('_shadowed'):
             log.warning(
                 rname +
-                ": shadowed not provided but must be true for registers with \"_shadowed/_SHADOWED\" suffix. "
-                + "Setting it to true.")
+                ": shadowed not provided but must be true for registers with "
+                "\"_shadowed/_SHADOWED\" suffix. Setting it to true.")
             reg['shadowed'] = "true"
         else:
             reg['shadowed'] = "false"
@@ -1471,8 +1466,7 @@ def validate(regs, **kwargs):
 
     component = regs['name']
 
-    if 'param_list' not in regs:
-        regs['param_list'] = []
+    regs.setdefault('param_list', [])
 
     error = check_keys(regs, top_required, top_optional, top_added, component)
     if (error > 0):
@@ -1619,4 +1613,25 @@ def validate(regs, **kwargs):
     if (error > 0):
         log.error("Register description had " + str(error) + " error" +
                   "s" if error > 1 else "")
+
+    regs.setdefault('inter_signal_list', [])
+    regs.setdefault('bus_device', '')
+    regs.setdefault('bus_host', '')
+
+    if regs["bus_device"] == "tlul":
+        # Add to inter_module_signal
+        port_name = "tl" if regs["bus_host"] in ["none", ""] else "tl_d"
+
+        regs["inter_signal_list"].append(
+            OrderedDict([('struct', 'tl'), ('package', 'tlul_pkg'),
+                         ('type', 'req_rsp'), ('act', 'rsp'),
+                         ('name', port_name)]))
+
+    if regs['bus_host'] == "tlul":
+        port_name = "tl" if regs["bus_host"] in ["none", ""] else "tl_h"
+
+        regs["inter_signal_list"].append(
+            OrderedDict([('struct', 'tl'), ('package', 'tlul_pkg'),
+                         ('type', 'req_rsp'), ('act', 'req'),
+                         ('name', port_name)]))
     return error
