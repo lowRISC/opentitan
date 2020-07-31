@@ -168,7 +168,7 @@ def generate_alert_handler(top, out_path):
 
     hjson_gen_path = doc_path / "alert_handler.hjson"
     gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/doc/top_{topname}.hjson --alert-handler-only "
+        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --alert-handler-only "
         "-o hw/top_{topname}/\n\n".format(topname=topname))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
