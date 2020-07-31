@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:hmac:0.1
-    files:
-      - tb/hmac_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:hmac_test
+      - lowrisc:dv:hmac_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
