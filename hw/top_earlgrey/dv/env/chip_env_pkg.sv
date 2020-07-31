@@ -23,7 +23,7 @@ package chip_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
-  parameter NUM_GPIOS = 16;
+  parameter uint NUM_GPIOS = 16;
 
   // SW constants
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR = 32'h1000fffc;
