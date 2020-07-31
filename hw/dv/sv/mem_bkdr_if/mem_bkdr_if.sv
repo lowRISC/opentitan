@@ -26,8 +26,8 @@ interface mem_bkdr_if();
   // TODO: need to publicize this info - user needs to set the below macro correctly when swapping
   // out srams with vendor library models. Also, need to address the scenario where not all ram
   // instances are replaced with vendor library models.
-`ifndef mem_array_path_slice
-  `define mem_array_path_slice gen_generic.u_impl_generic.mem
+`ifndef MEM_ARR_PATH_SLICE
+  `define MEM_ARR_PATH_SLICE gen_generic.u_impl_generic.mem
 `endif
 
   // derive memory specifics such as depth, width, addr_msb mem size etc.
@@ -41,8 +41,8 @@ interface mem_bkdr_if();
 
   function automatic void init();
     if (!initialized) begin
-      mem_depth = $size(`mem_array_path_slice);
-      mem_width = $bits(`mem_array_path_slice) / mem_depth;
+      mem_depth = $size(`MEM_ARR_PATH_SLICE);
+      mem_width = $bits(`MEM_ARR_PATH_SLICE) / mem_depth;
       mem_bytes_per_index = mem_width / 8;
       mem_size_bytes = mem_depth * mem_bytes_per_index;
       mem_addr_lsb = $clog2(mem_bytes_per_index);
@@ -51,6 +51,7 @@ interface mem_bkdr_if();
       `uvm_info(path, $sformatf("mem_bytes_per_index = %0d", mem_bytes_per_index), UVM_HIGH)
       `uvm_info(path, $sformatf("mem_size_bytes = %0d", mem_size_bytes), UVM_HIGH)
       `uvm_info(path, $sformatf("mem_addr_lsb = %0d", mem_addr_lsb), UVM_HIGH)
+      `DV_CHECK_LE_FATAL(mem_bytes_per_index, 8, "mem data width > 8 bytes is not supported", path)
       initialized = 1'b1;
     end
   endfunction
@@ -70,7 +71,7 @@ interface mem_bkdr_if();
   function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `mem_array_path_slice[mem_index];
+      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return mem_data[7:0];
@@ -79,6 +80,7 @@ interface mem_bkdr_if();
           case (addr[0])
             1'b0:  return mem_data[7:0];
             1'b1:  return mem_data[15:8];
+            default: ;
           endcase
         end
         4: begin
@@ -87,6 +89,7 @@ interface mem_bkdr_if();
             2'b01:  return mem_data[15:8];
             2'b10:  return mem_data[23:16];
             2'b11:  return mem_data[31:24];
+            default: ;
           endcase
         end
         8: begin
@@ -99,8 +102,10 @@ interface mem_bkdr_if();
             3'b101:  return mem_data[47:40];
             3'b110:  return mem_data[55:48];
             3'b111:  return mem_data[63:56];
+            default: ;
           endcase
         end
+        default: ;
       endcase
     end
     return 'x;
@@ -110,7 +115,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `mem_array_path_slice[mem_index];
+      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return {read8(addr + 1), mem_data[7:0]};
@@ -122,6 +127,7 @@ interface mem_bkdr_if();
           case (addr[1])
             1'b0:  return mem_data[15:0];
             1'b1:  return mem_data[31:16];
+            default: ;
           endcase
         end
         8: begin
@@ -130,8 +136,10 @@ interface mem_bkdr_if();
             2'b01:  return mem_data[31:16];
             2'b10:  return mem_data[47:32];
             2'b11:  return mem_data[63:48];
+            default: ;
           endcase
         end
+        default: ;
       endcase
     end
     return 'x;
@@ -141,7 +149,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `mem_array_path_slice[mem_index];
+      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return {read16(addr + 2), read8(addr + 1), mem_data[7:0]};
@@ -156,8 +164,10 @@ interface mem_bkdr_if();
           case (addr[2])
             1'b0:  return mem_data[31:0];
             1'b1:  return mem_data[63:32];
+            default: ;
           endcase
         end
+        default: ;
       endcase
     end
     return 'x;
@@ -171,7 +181,7 @@ interface mem_bkdr_if();
   function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr, input bit [7:0] data);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] rw_data = `mem_array_path_slice[mem_index];
+      bit [63:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           rw_data[7:0] = data;
@@ -180,6 +190,7 @@ interface mem_bkdr_if();
           case (addr[0])
             1'b0:  rw_data[7:0] = data;
             1'b1:  rw_data[15:8] = data;
+            default: ;
           endcase
         end
         4: begin
@@ -188,6 +199,7 @@ interface mem_bkdr_if();
             2'b01:  rw_data[15:8] = data;
             2'b10:  rw_data[23:16] = data;
             2'b11:  rw_data[31:24] = data;
+            default: ;
           endcase
         end
         8: begin
@@ -200,10 +212,12 @@ interface mem_bkdr_if();
             3'b101: rw_data[47:40] = data;
             3'b110: rw_data[55:48] = data;
             3'b111: rw_data[63:56] = data;
+            default: ;
           endcase
         end
+        default: ;
       endcase
-      `mem_array_path_slice[mem_index] = rw_data;
+      `MEM_ARR_PATH_SLICE[mem_index] = rw_data;
     end
   endfunction
 
@@ -212,7 +226,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] rw_data = `mem_array_path_slice[mem_index];
+      bit [63:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           rw_data[7:0] = data[7:0];
@@ -225,6 +239,7 @@ interface mem_bkdr_if();
           case (addr[1])
             1'b0: rw_data[15:0] = data;
             1'b1: rw_data[31:16] = data;
+            default: ;
           endcase
         end
         8: begin
@@ -233,10 +248,12 @@ interface mem_bkdr_if();
             2'b01:  rw_data[32:16] = data;
             2'b10:  rw_data[47:32] = data;
             2'b11:  rw_data[63:48] = data;
+            default: ;
           endcase
         end
+        default: ;
       endcase
-      `mem_array_path_slice[mem_index] = rw_data;
+      `MEM_ARR_PATH_SLICE[mem_index] = rw_data;
     end
   endfunction
 
@@ -245,7 +262,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] rw_data = `mem_array_path_slice[mem_index];
+      bit [63:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           rw_data[7:0] = data[7:0];
@@ -263,10 +280,12 @@ interface mem_bkdr_if();
           case (addr[2])
             1'b0:  rw_data[31:0] = data;
             1'b1:  rw_data[63:32] = data;
+            default: ;
           endcase
         end
+        default: ;
       endcase
-      `mem_array_path_slice[mem_index] = rw_data;
+      `MEM_ARR_PATH_SLICE[mem_index] = rw_data;
     end
   endfunction
 
@@ -295,7 +314,7 @@ interface mem_bkdr_if();
     check_file(file, 1'b0);
     init();
     `uvm_info(path, $sformatf("Reading mem contents from file:\n%0s", file), UVM_LOW)
-    $readmemh(file, `mem_array_path_slice);
+    $readmemh(file, `MEM_ARR_PATH_SLICE);
   endfunction
 
   // save mem contents to file
@@ -303,14 +322,14 @@ interface mem_bkdr_if();
     check_file(file, 1'b1);
     init();
     `uvm_info(path, $sformatf("Writing mem contents to file:\n%0s", file), UVM_LOW)
-    $writememh(file, `mem_array_path_slice, 0, mem_depth - 1);
+    $writememh(file, `MEM_ARR_PATH_SLICE, 0, mem_depth - 1);
   endfunction
 
   // print mem
   function automatic void print_mem();
     init();
     for (int i = 0; i < mem_depth; i++) begin
-      `uvm_info(path, $sformatf("mem[%0d] = 0x%0h", i, `mem_array_path_slice[i]), UVM_NONE)
+      `uvm_info(path, $sformatf("mem[%0d] = 0x%0h", i, `MEM_ARR_PATH_SLICE[i]), UVM_NONE)
     end
   endfunction
 
@@ -318,27 +337,27 @@ interface mem_bkdr_if();
   function automatic void clear_mem();
     init();
     `uvm_info(path, "Clear memory", UVM_LOW)
-    `mem_array_path_slice = '{default:'0};
+    `MEM_ARR_PATH_SLICE = '{default:'0};
   endfunction // clr_mem
 
   function automatic void set_mem();
     init();
     `uvm_info(path, "Set memory", UVM_LOW)
-    `mem_array_path_slice = '{default:'1};
+    `MEM_ARR_PATH_SLICE = '{default:'1};
   endfunction
 
   // randomize the memory
   function automatic void randomize_mem();
     init();
     `uvm_info(path, "Randomizing mem contents", UVM_LOW)
-    foreach (`mem_array_path_slice[i]) `mem_array_path_slice[i] = {$urandom, $urandom};
+    foreach (`MEM_ARR_PATH_SLICE[i]) `MEM_ARR_PATH_SLICE[i] = {$urandom, $urandom};
   endfunction
 
   // invalidate the memory.
   function automatic void invalidate_mem();
     init();
     `uvm_info(path, "Invalidating (Xs) mem contents", UVM_LOW)
-    `mem_array_path_slice = '{default:'X};
+    `MEM_ARR_PATH_SLICE = '{default:'X};
   endfunction
 
 endinterface
