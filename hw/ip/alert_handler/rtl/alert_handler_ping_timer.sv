@@ -36,8 +36,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   input        [NAlerts-1:0]     alert_en_i,         // determines which alerts to ping
   input        [PING_CNT_DW-1:0] ping_timeout_cyc_i, // timeout in cycles
   input        [PING_CNT_DW-1:0] wait_cyc_mask_i,    // wait cycles mask
-  output logic [NAlerts-1:0]     alert_ping_en_o,    // enable to alert receivers
-  output logic [N_ESC_SEV-1:0]   esc_ping_en_o,      // enable to esc senders
+  output logic [NAlerts-1:0]     alert_ping_req_o,   // request to alert receivers
+  output logic [N_ESC_SEV-1:0]   esc_ping_req_o,     // enable to esc senders
   input        [NAlerts-1:0]     alert_ping_ok_i,    // response from alert receivers
   input        [N_ESC_SEV-1:0]   esc_ping_ok_i,      // response from esc senders
   output logic                   alert_ping_fail_o,  // any of the alert receivers failed
@@ -137,8 +137,8 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
   // generate ping enable vector
   assign ping_sel        = NModsToPing'(ping_en) << id_to_ping;
-  assign alert_ping_en_o = ping_sel[NAlerts-1:0];
-  assign esc_ping_en_o   = ping_sel[NModsToPing-1:NAlerts];
+  assign alert_ping_req_o = ping_sel[NAlerts-1:0];
+  assign esc_ping_req_o   = ping_sel[NModsToPing-1:NAlerts];
 
   // mask out response
   assign ping_ok             = |({esc_ping_ok_i, alert_ping_ok_i} & ping_sel);
