@@ -38,7 +38,7 @@ module tb;
     .tl_o                 (tl_if.d2h  ),
 
     .efuse_es_sw_reg_en_i (efuse_es_sw_reg_en),
-  
+
     .entropy_src_hw_if_o  (),
     .entropy_src_hw_if_i  (),
 
