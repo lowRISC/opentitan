@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:usbdev:0.1
-    files:
-      - tb/usbdev_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:usbdev_test
+      - lowrisc:dv:usbdev_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
