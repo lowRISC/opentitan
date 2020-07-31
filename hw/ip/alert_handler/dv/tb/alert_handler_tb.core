@@ -9,7 +9,6 @@ filesets:
     depend:
       - lowrisc:dv:alert_handler_test:0.1
     files:
-      - alert_handler_bind.sv
       - tb.sv
     file_type: systemVerilogSource
 

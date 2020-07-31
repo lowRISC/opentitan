@@ -13,7 +13,8 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:alert_handler_tb:0.1
+      - lowrisc:dv:alert_handler_tb
+      - lowrisc:top_earlgrey:alert_handler_sva
     files:
       - alert_handler_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
