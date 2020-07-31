@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module core_ibex_bind;
+module rv_core_ibex_bind;
 
   bind rv_core_ibex tlul_assert #(
     .EndpointType("Host")

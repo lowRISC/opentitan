@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rv_core_ibex_sva:0.1"
+description: "RV_CORE_IBEX assertion modules and bind file."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:tlul:headers
+    files:
+      - rv_core_ibex_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
