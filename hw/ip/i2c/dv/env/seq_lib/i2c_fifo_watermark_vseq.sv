@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test the watermark interrupt of fmt_fifo and rx_fifo
+// TODO: Weicai's comments in PR #3128: consider constraining rx_fifo_access_dly
+// to test watermark irq
 class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_fifo_watermark_vseq)
 
@@ -101,8 +103,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   task process_fmt_watermark_intr();
     bit fmt_watermark;
 
-    csr_rd(.ptr(ral.intr_state.fmt_watermark), .value(fmt_watermark));
-    if (fmt_watermark) begin
+    @(posedge cfg.clk_rst_vif.clk);
+    if (cfg.intr_vif.pins[FmtWatermark]) begin
       clear_interrupt(FmtWatermark);
       cnt_fmt_watermark++;
     end
@@ -111,8 +113,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   task process_rx_watermark_intr();
     bit rx_watermark;
 
-    csr_rd(.ptr(ral.intr_state.rx_watermark), .value(rx_watermark));
-    if (rx_watermark) begin
+    @(posedge cfg.clk_rst_vif.clk);
+    if (cfg.intr_vif.pins[RxWatermark]) begin
       clear_interrupt(RxWatermark);
       cnt_rx_watermark++;
     end

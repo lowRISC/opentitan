@@ -7,53 +7,75 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   `uvm_object_new
 
-  uint total_rd_bytes;
+  int total_rd_bytes;
+  bit complete_program_fmt_fifo;
 
   virtual task host_send_trans(int num_trans, tran_type_e trans_type = ReadWrite);
-    bit last_tran;
+    bit last_tran, chained_read;
 
     fmt_item = new("fmt_item");
     total_rd_bytes = 0;
-    for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
-      // re-programming timing registers for the first transaction
-      // or when the previous transaction is completed
-      if (fmt_item.stop || cur_tran == 1) begin
-        under_program_regs = 1'b1;
-        `DV_CHECK_RANDOMIZE_FATAL(this)
-        // if trans_type is provided, then rw_bit is overridden
-        // otherwise, rw_bit is randomized
-        rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
-                 ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
-        get_timing_values();
-        program_registers();
-        under_program_regs = 1'b0;
-      end
 
-      // program address for folowing transaction types
-      if ((cur_tran == 1'b1) ||                       // first read transaction
-          (!fmt_item.read)   ||                       // write transactions
-          (fmt_item.read && !fmt_item.rcont)) begin   // non-chained read transactions
-        host_program_target_address();
-      end
+    fork
+      begin
+        complete_program_fmt_fifo = 1'b0;
+        for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
+          // re-programming timing registers for the first transaction
+          // or when the previous transaction is completed
+          if (fmt_item.stop || cur_tran == 1) begin
+            `DV_CHECK_RANDOMIZE_FATAL(this)
+            // if trans_type is provided, then rw_bit is overridden
+            // otherwise, rw_bit is randomized
+            rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                     ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
+            get_timing_values();
+            program_registers();
+          end
 
-      last_tran = (cur_tran == num_trans);
-      `uvm_info(`gfn, $sformatf("\nstart sending %s transaction %0d/%0d",
-          (rw_bit) ? "READ" : "WRITE", cur_tran, num_trans), UVM_DEBUG)
-      if (rw_bit) host_read_trans(last_tran);
-      else        host_write_trans(last_tran);
+          // if trans_type is provided, then rw_bit is overridden
+          // otherwise, rw_bit is randomized
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
+          rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                   ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
 
-      `uvm_info(`gfn, $sformatf("\nfinish sending %s transaction, %0s at the end,  %0d/%0d, ",
-          (rw_bit) ? "read" : "write",
-          (fmt_item.stop) ? "stop" : "rstart", cur_tran, num_trans), UVM_DEBUG)
-      // check a completed transaction is programmed to the host/dut (stop bit must be issued)
-      // and check if the host/dut is in idle before allow re-programming the timing registers
-      if (fmt_item.stop) begin
-        check_host_idle();
+          // program address for folowing transaction types
+          chained_read = fmt_item.read && fmt_item.rcont;
+          if ((cur_tran == 1'b1) ||    // first read transaction
+              (!fmt_item.read)   ||    // write transactions
+              (!chained_read)) begin   // non-chained read transactions
+            program_address_to_target();
+          end
+
+          last_tran = (cur_tran == num_trans);
+          `uvm_info(`gfn, $sformatf("\nstart sending %s transaction %0d/%0d",
+              (rw_bit) ? "READ" : "WRITE", cur_tran, num_trans), UVM_DEBUG)
+          if (chained_read) begin
+            // keep programming chained read transaction
+            program_control_read_to_target(last_tran);
+          end else begin
+            if (rw_bit) program_control_read_to_target(last_tran);
+            else        program_write_data_to_target(last_tran);
+          end
+
+          `uvm_info(`gfn, $sformatf("\nfinish sending %s transaction, %0s at the end,  %0d/%0d, ",
+              (rw_bit) ? "read" : "write",
+              (fmt_item.stop) ? "stop" : "rstart", cur_tran, num_trans), UVM_DEBUG)
+
+          // check a completed transaction is programmed to the host/dut (stop bit must be issued)
+          // and check if the host/dut is in idle before allow re-programming the timing registers
+          if (fmt_item.stop) begin
+            check_host_idle();
+          end
+        end
+        complete_program_fmt_fifo = 1'b1;
       end
-    end
+      begin
+        read_data_from_target();
+      end
+    join
   endtask : host_send_trans
 
-  virtual task host_program_target_address();
+  virtual task program_address_to_target();
     `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
       start == 1'b1;
       stop  == 1'b0;
@@ -65,73 +87,75 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end else begin // Addr10BitMode
       fmt_item.fbyte = (rw_bit) ? {addr[9:0], BusOpRead} : {addr[9:0], BusOpWrite};
     end
-    program_format_flag(fmt_item, "host_program_target_address");
-  endtask : host_program_target_address
+    program_format_flag(fmt_item, "program_address_to_target");
+  endtask : program_address_to_target
 
-  virtual task host_read_trans(bit last_tran);
-    bit rx_sanity, rx_full, rx_overflow, rx_watermark, start_read;
-
+  virtual task program_control_read_to_target(bit last_tran);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_rd_bytes)
-    fork
-      begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
-          fbyte == num_rd_bytes;
-          start == 1'b0;
-          read  == 1'b1;
-          // for the last write byte of last tran., stop flag must be set to issue stop bit (stimulus end)
-          // otherwise, stop can be randomly set/unset to issue stop/rstart bit respectively
-          // rcont is derived from stop and read to issue chained/non-chained reads
-          stop  == (last_tran) ? 1'b1 : stop;
-        )
-        `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
-        if (num_rd_bytes == 0) begin
-          `uvm_info(`gfn, "\nread transaction length is 256 byte", UVM_DEBUG)
-        end
-
-        // accumulate number of read byte
-        total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
-        if (fmt_item.rcont) begin
-          `uvm_info(`gfn, "\ntransaction READ is chained with next READ transaction", UVM_DEBUG)
-        end else begin
-          `uvm_info(`gfn, $sformatf("\ntransaction READ ended %0s", (fmt_item.stop) ?
-              "with STOP, next transaction should begin with START" :
-              "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
-        end
-        program_format_flag(fmt_item, "program number of bytes to read");
+    begin
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(fmt_item,
+        fbyte == num_rd_bytes;
+        start == 1'b0;
+        read  == 1'b1;
+        // for the last write byte of last tran., stop flag must be set to issue stop bit (stimulus end)
+        // otherwise, stop can be randomly set/unset to issue stop/rstart bit respectively
+        // rcont is derived from stop and read to issue chained/non-chained reads
+        stop  == (last_tran) ? 1'b1 : stop;
+      )
+      `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
+      if (num_rd_bytes == 0) begin
+        `uvm_info(`gfn, "\nread transaction length is 256 byte", UVM_DEBUG)
       end
-      begin
-        // if not a chained read, read out data sent over rx_fifo
-        rx_overflow = 1'b0;
-        rx_watermark = 1'b0;
-        // decrement total_rd_bytes since one data is must be dropped in fifo_overflow test
-        if (cfg.en_rx_overflow) total_rd_bytes--;
-        while (!fmt_item.rcont && total_rd_bytes > 0) begin
-          csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
-          rx_sanity      = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
-          rx_watermark  |= cfg.en_rx_watermark && rx_full;
-          rx_overflow   |= cfg.en_rx_overflow && cfg.intr_vif.pins[RxOverflow];
 
-          start_read = rx_sanity    | // sanity test: read rx_fifo asap when there are valid data
-                       rx_watermark | // watermark test: read rx_fifo when rx_watermark is triggered
-                       rx_overflow;   // overflow test: read rx_fifo when rx_overflow is triggered
+      // accumulate number of read byte
+      total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
+      // decrement total_rd_bytes since one data is must be dropped in fifo_overflow test
+      if (cfg.en_rx_overflow) total_rd_bytes--;
 
-          while (start_read && total_rd_bytes > 0) begin
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
-            // constraint rx_fifo access delay to a high value that ensures rx_overflow is triggered
-            if (!rx_watermark && !rx_overflow && !rx_sanity) begin
-              rx_fifo_access_dly = (I2C_RX_FIFO_DEPTH + 5) * get_byte_latency();
-            end
-            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
-            cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
-            csr_rd(.ptr(ral.rdata), .value(rd_data));
-            total_rd_bytes--;
-          end
+      if (fmt_item.rcont) begin
+        `uvm_info(`gfn, "\ntransaction READ is chained with next READ transaction", UVM_DEBUG)
+      end else begin
+        `uvm_info(`gfn, $sformatf("\ntransaction READ ended %0s", (fmt_item.stop) ?
+            "with STOP, next transaction should begin with START" :
+            "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
+      end
+      program_format_flag(fmt_item, "program number of bytes to read");
+    end
+  endtask : program_control_read_to_target
+
+  virtual task read_data_from_target();
+    bit rx_sanity, rx_full, rx_overflow, rx_watermark, rx_empty, start_read;
+
+    // if not a chained read, read out data sent over rx_fifo
+    rx_overflow  = 1'b0;
+    rx_watermark = 1'b0;
+    while (!complete_program_fmt_fifo || total_rd_bytes > 0) begin
+      rx_sanity      = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
+      rx_overflow   |= (cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
+      if (cfg.en_rx_watermark) begin
+        // TODO: Weicai's comments in PR #3128: consider constraining
+        // rx_fifo_access_dly to test watermark irq (require revise watermark_vseq)
+        csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
+        rx_watermark  |= (cfg.en_rx_watermark & rx_full);
+      end else begin
+        cfg.clk_rst_vif.wait_clks(1);
+      end
+      start_read = rx_sanity    | // read rx_fifo if there is valid data
+                   rx_watermark | // read rx_fifo after full (ensure intr rx_watermark asserted)
+                   rx_overflow;   // read rx_fifo after overflow (ensure intr_rx_overflow asserted)
+      if (start_read) begin
+        csr_rd(.ptr(ral.status.rxempty), .value(rx_empty));
+        if (!rx_empty) begin
+          csr_rd(.ptr(ral.rdata), .value(rd_data));
+          total_rd_bytes--;
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
+          cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
         end
       end
-    join
-  endtask : host_read_trans
+    end
+  endtask : read_data_from_target
 
-  virtual task host_write_trans(bit last_tran);
+  virtual task program_write_data_to_target(bit last_tran);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
     if (num_wr_bytes == 256) begin
@@ -146,7 +170,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           start == 1'b0;
           read  == 1'b0;
         )
-        fmt_item.fbyte = wr_data[i];
+        fmt_item.fbyte = wr_data[i-1];
       end while (!fmt_item.nakok && !fmt_item.rcont && !fmt_item.fbyte);
 
       // last write byte of last  tran., stop flag must be set to issue stop bit
@@ -157,9 +181,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
       end
-      program_format_flag(fmt_item, "host_write_trans");
+      program_format_flag(fmt_item, "program_write_data_to_target");
     end
-  endtask : host_write_trans
+  endtask : program_write_data_to_target
 
   // read interrupts and randomly clear interrupts if set
   virtual task process_interrupts();

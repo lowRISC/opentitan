@@ -13,20 +13,19 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
   local uint cnt_rx_overflow;
 
   // send more one data than rx_fifo depth to trigger rx_overflow
-  constraint num_rd_bytes_c {
-    num_rd_bytes == I2C_RX_FIFO_DEPTH + 1;
-  }
+  constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH + 1; }
 
   virtual task body();
     bit check_fmt_overflow;
     bit check_rx_overflow;
     bit rxempty = 1'b0;
+
     device_init();
     host_init();
 
     // config fmt_overflow and rx_overflow tests
     cfg.en_fmt_overflow = 1'b1;
-    cfg.en_rx_overflow = 1'b1;
+    cfg.en_rx_overflow  = 1'b1;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     for (int i = 0; i < num_trans; i++) begin
@@ -81,8 +80,8 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
   task process_fmt_overflow_intr();
     bit fmt_overflow;
 
-    csr_rd(.ptr(ral.intr_state.fmt_overflow), .value(fmt_overflow));
-    if (fmt_overflow) begin
+    @(posedge cfg.clk_rst_vif.clk);
+    if (cfg.intr_vif.pins[FmtOverflow]) begin
       clear_interrupt(FmtOverflow);
       cnt_fmt_overflow++;
     end
@@ -91,8 +90,8 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
   task process_rx_overflow_intr();
     bit rx_overflow;
 
-    csr_rd(.ptr(ral.intr_state.rx_overflow), .value(rx_overflow));
-    if (rx_overflow) begin
+    @(posedge cfg.clk_rst_vif.clk);
+    if (cfg.intr_vif.pins[RxOverflow]) begin
       clear_interrupt(RxOverflow);
       cnt_rx_overflow++;
     end

@@ -125,6 +125,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                 if (cfg.intr_vif.pins[FmtOverflow]) begin
                   // fmt_fifo is overflow, capture dropped data
                   exp_wr_item.fmt_ovf_data_q.push_back(fbyte);
+                  wait(!cfg.intr_vif.pins[FmtOverflow]);
                 end else begin
                   // fmt_fifo is underflow then collect data, otherwise drop data
                   exp_wr_item.data_q.push_back(fbyte);
@@ -159,10 +160,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                   if (cfg.en_rx_overflow) exp_rd_item.num_data--;
                   // if not a chained read (stop is issued)
                   if (exp_rd_item.stop) begin
-                    `uvm_info(`gfn, $sformatf("\n\nscoreboard, exp_rd_item\n\%s",
+                    `uvm_info(`gfn, $sformatf("\nscoreboard, exp_rd_item\n\%s",
                         exp_rd_item.sprint()), UVM_DEBUG)
                     `downcast(tmp_rd_item, exp_rd_item.clone());
                     rd_pending_q.push_back(tmp_rd_item);
+                    `uvm_info(`gfn, $sformatf("\nrd_pending_q.push_back"), UVM_DEBUG)
                     exp_rd_item.start = 0;
                     exp_rd_item.clear_data();
                   end
@@ -177,7 +179,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       if (host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
         exp_wr_q.push_back(sb_exp_wr_item);
         num_exp_tran++;
-        `uvm_info(`gfn, $sformatf("\n\nscoreboard, exp_wr_item\n\%s",
+        `uvm_info(`gfn, $sformatf("\nscoreboard, exp_wr_item\n\%s",
             sb_exp_wr_item.sprint()), UVM_DEBUG)
       end
     end
@@ -194,12 +196,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         "rdata": begin
           if (host_init) begin
             if (rdata_cnt == 0) begin
-              `DV_CHECK_GE_FATAL(rd_pending_q.size(), 0)
+              // TODO: Weicai's comment in PR #3128: better not having any time consuming
+              // function here as it may block the other csr predict value update.
+              wait(rd_pending_q.size() > 0);
               rd_pending_item = rd_pending_q.pop_front();
             end
             rd_pending_item.data_q.push_back(ral.rdata.get_mirrored_value());
             rdata_cnt++;
-            `uvm_info(`gfn, $sformatf("\n\nscoreboard, rd_pending_item\n\%s",
+            `uvm_info(`gfn, $sformatf("\nscoreboard, rd_pending_item\n\%s",
                 rd_pending_item.sprint()), UVM_DEBUG)
             // get a complete read
             if (rdata_cnt == rd_pending_item.num_data) begin
@@ -207,7 +211,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
               exp_rd_q.push_back(sb_exp_rd_item);
               num_exp_tran++;
-              `uvm_info(`gfn, $sformatf("\n\nscoreboard exp_rd_item\n\%s",
+              `uvm_info(`gfn, $sformatf("\nscoreboard exp_rd_item\n\%s",
                   sb_exp_rd_item.sprint()), UVM_DEBUG)
               rdata_cnt = 0;
             end
@@ -231,16 +235,16 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         exp_trn = exp_rd_q.pop_front();
       end
 
-      // when rx_fifo is overflow, dut_trn containts data which is dropped from exp_trn
-      if (cfg.en_rx_overflow) begin
+      // when rx_fifo is overflow, drop the last byte from dut_trn
+      if (cfg.en_rx_overflow && dut_trn.bus_op == BusOpRead) begin
         dut_trn.data_q.pop_back();
         dut_trn.num_data--;
       end
 
       if (!dut_trn.compare(exp_trn)) begin
-          if (!check_overflow_data_fmt_fifo(exp_trn, dut_trn)) begin  // fmt_overflow transaction
+          if (!check_overflow_data_fmt_fifo(exp_trn, dut_trn)) begin  // see description below
             `uvm_error(`gfn, $sformatf("\ndirection %s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
-              (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()))
+                (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()))
           end
       end else begin
         `uvm_info(`gfn, $sformatf("\ndirection %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
@@ -249,8 +253,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end
   endtask : compare_trans
 
+  // this function check overflowed data occured in fmt_fifo does not exist
+  // in write transactions sent over busses
   function bit check_overflow_data_fmt_fifo(i2c_item exp_trn, i2c_item dut_trn);
-    // check overflow data is not captured
     if (exp_trn.fmt_ovf_data_q.size() > 0) begin
       bit [7:0] unique_q[$] = dut_trn.data_q.find with
                               ( item inside {exp_trn.fmt_ovf_data_q} );
@@ -278,7 +283,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     super.report_phase(phase);
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_DEBUG)
     if (cfg.en_scb) begin
-      str = {$sformatf("\n\n*** SCOREBOARD CHECK\n")};
+      str = {$sformatf("\n*** SCOREBOARD CHECK\n")};
       str = {str, $sformatf("    - total checked trans   %0d\n", num_exp_tran)};
       `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
     end
