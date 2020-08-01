@@ -12,7 +12,6 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   // class property
   bit                         do_interrupt = 1'b1;
-  bit                         under_program_regs = 1'b0;
   bit                         program_incorrect_regs = 1'b0;
 
   local timing_cfg_t          timing_cfg;
@@ -74,9 +73,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
   constraint num_wr_bytes_c {
     num_wr_bytes dist {
-      1       :/ 1,
-      [2:4]   :/ 1,
-      [5:8]   :/ 1,
+      1       :/ 2,
+      [2:4]   :/ 2,
+      [5:8]   :/ 2,
       [9:31]  :/ 1,
       32      :/ 1
     };
@@ -84,9 +83,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   constraint num_rd_bytes_c {
     num_rd_bytes < 256;
     num_rd_bytes dist {
-      1       :/ 1,
-      [2:4]   :/ 1,
-      [5:8]   :/ 1,
+      1       :/ 2,
+      [2:4]   :/ 2,
+      [5:8]   :/ 2,
       [9:16]  :/ 1,
       [17:31] :/ 1,
       32      :/ 1
@@ -233,11 +232,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
-  function automatic int get_byte_latency();
-    return 8*(timing_cfg.tClockLow + timing_cfg.tSetupBit +
-              timing_cfg.tClockPulse + timing_cfg.tHoldBit);
-  endfunction : get_byte_latency
-
   virtual task program_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
     bit fmtfull;
 
@@ -258,6 +252,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     wait(!cfg.intr_vif.pins[FmtOverflow]);
     // program fmt_fifo
     csr_update(.csr(ral.fdata));
+
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
     print_format_flag(item, msg, en_print);
@@ -282,5 +277,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     if (en_print) `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
   endtask : print_format_flag
+
+  //TODO: reserved for future purpose
+  function automatic int get_byte_latency();
+    return 8*(timing_cfg.tClockLow + timing_cfg.tSetupBit +
+              timing_cfg.tClockPulse + timing_cfg.tHoldBit);
+  endfunction : get_byte_latency
 
 endclass : i2c_base_vseq
