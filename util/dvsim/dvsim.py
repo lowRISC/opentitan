@@ -214,7 +214,6 @@ def parse_args():
                         help="Print version and exit")
 
     parser.add_argument("--tool", "-t",
-                        default="",
                         help=("Explicitly set the tool to use. This is "
                               "optional for running simulations (where it can "
                               "be set in an .hjson file), but is required for "
