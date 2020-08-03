@@ -12,13 +12,20 @@ filesets:
       # from a particular top-level config
       - lowrisc:ip:padctrl
       - lowrisc:prim:prim_pkg
+      - lowrisc:fpv:csr_assert_gen
     files:
       - tb/padctrl_fpv.sv
       - tb/padctrl_bind_fpv.sv
       - vip/padctrl_assert_fpv.sv
       - vip/padring_assert_fpv.sv
-      - vip/padctrl_csr_assert_fpv.sv
     file_type: systemVerilogSource
+
+generate:
+  csr_assert_gen:
+    generator: csr_assert_gen
+    parameters:
+      spec: ../data/padctrl.hjson
+      depend: lowrisc:ip:padctrl_reg
 
 targets:
   default: &default_target
@@ -27,7 +34,9 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: padctrl_formal
+    generate:
+      - csr_assert_gen
+    toplevel: padctrl_fpv
 
   formal:
     <<: *default_target

@@ -17,7 +17,7 @@ from mako import exceptions
 from mako.template import Template
 
 import tlgen
-from reggen import gen_dv, gen_fpv, gen_rtl, validate
+from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
 
@@ -260,7 +260,6 @@ def generate_plic(top, out_path):
                             object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
-    gen_fpv.gen_fpv(hjson_obj, str(fpv_path))
 
     # Generate RV_PLIC Top Module
     with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
