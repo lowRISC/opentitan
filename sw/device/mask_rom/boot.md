@@ -1,10 +1,30 @@
 # Pseudo-code for Mask ROM Secure Boot Process
 
+*   [Secure Boot Process](#secure-boot-process)
+*   [Modules](#modules)
+    +   [Boot Policy](#boot-policy)
+        -   [Read Boot Policy](#read-boot-policy)
+    +   [ROM_EXT Manifest](#rom-ext-manifest)
+    +   [Bootstrap](#bootstrap)
+        -   [Manufacturing boot-strapping intervention](#manufacturing-boot-strapping-intervention)
+    +   [Keys and Signature](#keys-and-signature)
+    +   [Chip-specific Startup](#chip-specific-startup)
+    +   [Lockdown](#lockdown)
+        -   [Locking Down Peripherals](#locking-down-peripherals)
+    +   [Hardened Jump](#hardened-jump)
+    +   [System State](#system-state)
+        -   [Cleaning Device State](#cleaning-device-state)
+    +   [CRT (C Runtime)](#crt--c-runtime-)
+        -   [CRT Initialization](#crt-initialization)
+*   [Interface Data](#interface-data)
+    +   [Key Management Data](#key-management-data)
+    +   [Boot Policy Structure](#boot-policy-structure)
+    +   [ROM_EXT Manifest Structure](#rom-ext-manifest-structure)
+
 This file should be read in conjunction with the secure boot specification.
 References to that document are included.
 
-Sub-procedures and data structures are documented below the main `boot`
-function.
+## Secure Boot Process
 
 1. Power on (entirely in hardware)
 
