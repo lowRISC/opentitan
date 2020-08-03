@@ -91,46 +91,6 @@ module top_${top["name"]} #(
   import top_pkg::*;
   import tl_main_pkg::*;
 
-  tl_h2d_t  tl_corei_h_h2d;
-  tl_d2h_t  tl_corei_h_d2h;
-
-  tl_h2d_t  tl_cored_h_h2d;
-  tl_d2h_t  tl_cored_h_d2h;
-
-  tl_h2d_t  tl_dm_sba_h_h2d;
-  tl_d2h_t  tl_dm_sba_h_d2h;
-
-  tl_h2d_t  tl_debug_mem_d_h2d;
-  tl_d2h_t  tl_debug_mem_d_d2h;
-
-## TL-UL device port declaration
-% for m in top["module"]:
-%     if not m["bus_device"] in ["none", ""]:
-  tl_h2d_t  tl_${m["name"]}_d_h2d;
-  tl_d2h_t  tl_${m["name"]}_d_d2h;
-%     endif
-%     if not m["bus_host"] in ["none", ""]:
-  tl_h2d_t  tl_${m["name"]}_h_h2d;
-  tl_d2h_t  tl_${m["name"]}_h_d2h;
-%     endif
-% endfor
-
-% for m in top["memory"]:
-  tl_h2d_t tl_${m["name"]}_d_h2d;
-  tl_d2h_t tl_${m["name"]}_d_d2h;
-% endfor
-
-## Xbar connection
-% for xbar in top["xbar"]:
-<%
-  xbar_devices = [x for x in xbar["nodes"] if x["type"] == "device" and x["xbar"]]
-%>\
-  % for node in xbar_devices:
-  tl_h2d_t tl_${xbar["name"]}_${node["name"]}_h2d;
-  tl_d2h_t tl_${xbar["name"]}_${node["name"]}_d2h;
-  % endfor
-% endfor
-
   // Signals
   logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
   logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p;
@@ -252,10 +212,10 @@ module top_${top["name"]} #(
     .hart_id_i            (32'b0),
     .boot_addr_i          (ADDR_SPACE_ROM),
     // TL-UL buses
-    .tl_i_o               (tl_corei_h_h2d),
-    .tl_i_i               (tl_corei_h_d2h),
-    .tl_d_o               (tl_cored_h_h2d),
-    .tl_d_i               (tl_cored_h_d2h),
+    .tl_i_o               (main_tl_corei_req),
+    .tl_i_i               (main_tl_corei_rsp),
+    .tl_d_o               (main_tl_cored_req),
+    .tl_d_i               (main_tl_cored_rsp),
     // interrupts
     .irq_software_i       (msip),
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
@@ -285,12 +245,12 @@ module top_${top["name"]} #(
     .unavailable_i (1'b0),
 
     // bus device with debug memory (for execution-based debug)
-    .tl_d_i        (tl_debug_mem_d_h2d),
-    .tl_d_o        (tl_debug_mem_d_d2h),
+    .tl_d_i        (main_tl_debug_mem_req),
+    .tl_d_o        (main_tl_debug_mem_rsp),
 
     // bus host (for system bus accesses, SBA)
-    .tl_h_o        (tl_dm_sba_h_h2d),
-    .tl_h_i        (tl_dm_sba_h_d2h),
+    .tl_h_o        (main_tl_dm_sba_req),
+    .tl_h_i        (main_tl_dm_sba_rsp),
 
     //JTAG
     .tck_i            (jtag_tck_i),
@@ -339,8 +299,8 @@ module top_${top["name"]} #(
     % for key in resets:
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
-    .tl_i     (tl_${m["name"]}_d_h2d),
-    .tl_o     (tl_${m["name"]}_d_d2h),
+    .tl_i     (${m["name"]}_tl_req),
+    .tl_o     (${m["name"]}_tl_rsp),
 
     .req_o    (${m["name"]}_req),
     .gnt_i    (1'b1), // Always grant as only one requester exists
@@ -405,8 +365,8 @@ module top_${top["name"]} #(
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
 
-    .tl_i     (tl_${m["name"]}_d_h2d),
-    .tl_o     (tl_${m["name"]}_d_d2h),
+    .tl_i     (${m["name"]}_tl_req),
+    .tl_o     (${m["name"]}_tl_rsp),
 
     .req_o    (${m["name"]}_req),
     .gnt_i    (1'b1), // Always grant as only one requester exists
@@ -460,8 +420,8 @@ module top_${top["name"]} #(
     .${key}   (${top["reset_paths"][resets[key]]}),
     % endfor
 
-    .tl_i       (tl_${m["name"]}_d_h2d),
-    .tl_o       (tl_${m["name"]}_d_d2h),
+    .tl_i     (${m["name"]}_tl_req),
+    .tl_o     (${m["name"]}_tl_rsp),
 
     .req_o    (flash_host_req),
     .gnt_i    (flash_host_req_rdy),
@@ -525,15 +485,6 @@ else:
   % else:
   ${m["type"]} u_${m["name"]} (
   % endif
-    % if not "bus_host" in m or m["bus_host"] in ["none", ""]:
-      .tl_i (tl_${m["name"]}_d_h2d),
-      .tl_o (tl_${m["name"]}_d_d2h),
-    % else:
-      .tl_d_i (tl_${m["name"]}_d_h2d),
-      .tl_d_o (tl_${m["name"]}_d_d2h),
-      .tl_h_o (tl_${m["name"]}_h_h2d),
-      .tl_h_i (tl_${m["name"]}_h_d2h),
-    % endif
     % for p_in in m["available_input_list"] + m["available_inout_list"]:
       % if loop.first:
 
@@ -667,24 +618,14 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   % for k, v in xbar["reset_connections"].items():
     .${k} (${top["reset_paths"][v]}),
   % endfor
-  % for node in xbar["nodes"]:
-    % if node["xbar"]:
-      % if node["type"] == "device":
-    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${xbar["name"]}_${node["name"]}_h2d),
-    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${xbar["name"]}_${node["name"]}_d2h),
-      % elif node["type"] == "host":
-    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_${xbar["name"]}_h2d),
-    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_${xbar["name"]}_d2h),
-      % endif
-    % else:
-      % if node["type"] == "device":
-    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_d_h2d),
-    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_d_d2h),
-      % elif node["type"] == "host":
-    .tl_${(node["name"]+"_i").ljust(name_len+2)} (tl_${node["name"]}_h_h2d),
-    .tl_${(node["name"]+"_o").ljust(name_len+2)} (tl_${node["name"]}_h_d2h),
-      % endif
-    % endif
+
+  ## Inter-module signal
+  % for sig in xbar["inter_signal_list"]:
+<% assert sig["type"] == "req_rsp" %>\
+    // port: ${sig['name']}
+    .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
+    .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
+
   % endfor
 
     .scanmode_i

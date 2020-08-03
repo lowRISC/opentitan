@@ -8,7 +8,6 @@ from functools import partial
 from collections import OrderedDict
 
 from topgen import lib
-from .intermodule import elab_intermodule
 
 
 def amend_ip(top, ip):
@@ -746,9 +745,6 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
 
     # Combine the wakeups
     amend_wkup(gencfg)
-
-    # Inter-module signals
-    elab_intermodule(gencfg)
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)

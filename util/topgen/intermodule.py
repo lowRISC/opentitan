@@ -58,6 +58,17 @@ def intersignal_format(req: Dict) -> str:
     return result
 
 
+def get_suffixes(ims: OrderedDict) -> (str, str):
+    """Get suffixes of the struct.
+
+    TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.
+    """
+    if ims["package"] == "tlul_pkg" and ims["struct"] == "tl":
+        return ("_h2d", "_d2h")
+
+    return ("_req", "_rsp")
+
+
 def elab_intermodule(topcfg: OrderedDict):
     """Check the connection of inter-module and categorize them
 
@@ -73,7 +84,7 @@ def elab_intermodule(topcfg: OrderedDict):
         topcfg["inter_signal"] = OrderedDict()
 
     # Gather the inter_signal_list
-    instances = topcfg["module"] + topcfg["memory"]
+    instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"]
 
     intermodule_instances = [x for x in instances if "inter_signal_list" in x]
 
@@ -144,17 +155,18 @@ def elab_intermodule(topcfg: OrderedDict):
 
         # Add to definition
         if req_struct["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(req_struct)
             # Add two definitions
             definitions.append(
                 OrderedDict([('package', package),
-                             ('struct', req_struct["struct"] + "_req"),
+                             ('struct', req_struct["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
                              ('default', req_struct["default"])]))
             definitions.append(
                 OrderedDict([('package', package),
-                             ('struct', req_struct["struct"] + "_rsp"),
+                             ('struct', req_struct["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
@@ -218,16 +230,17 @@ def elab_intermodule(topcfg: OrderedDict):
             sig["index"] = -1
 
         if sig["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(sig)
             # Add two definitions
             definitions.append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_req"),
+                             ('struct', sig["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_rsp"),
+                             ('struct', sig["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
@@ -258,9 +271,10 @@ def elab_intermodule(topcfg: OrderedDict):
         # TODO: Handle the suffix `_i`, `_o` correctly.
         # For now, external doesn't create _i, _o
         if sig["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(sig)
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_req"),
+                             ('struct', sig["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
@@ -268,7 +282,7 @@ def elab_intermodule(topcfg: OrderedDict):
                               'out' if sig['act'] == "req" else 'in')]))
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_rsp"),
+                             ('struct', sig["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
@@ -628,12 +642,18 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
+            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+                return "{package}::{struct}_D2H_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_RSP_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rsp" and suffix == "req":
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
+            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+                return "{package}::{struct}_H2D_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":

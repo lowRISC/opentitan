@@ -11,6 +11,7 @@ import sys
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
+from copy import deepcopy
 
 import hjson
 from mako import exceptions
@@ -20,6 +21,7 @@ import tlgen
 from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
+from topgen.intermodule import elab_intermodule
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -80,6 +82,21 @@ def generate_xbars(top, out_path):
 
         # generate testbench for xbar
         tlgen.generate_tb(xbar, dv_path, "top_" + top["name"])
+
+        # Read back the comportable IP and amend to Xbar
+        xbar_ipfile = ip_path / ("data/autogen/xbar_%s.hjson" % obj["name"])
+        with xbar_ipfile.open() as fxbar:
+            xbar_ipobj = hjson.load(fxbar,
+                                    use_decimal=True,
+                                    object_pairs_hook=OrderedDict)
+
+            # Deepcopy of the inter_signal_list.
+            # As of writing the code, it is not expected to write-back the
+            # read xbar objects into files. Still, as `inter_signal_list` is
+            # modified in the `elab_intermodule()` stage, it is better to keep
+            # the original content.
+            obj["inter_signal_list"] = deepcopy(
+                xbar_ipobj["inter_signal_list"])
 
 
 def generate_alert_handler(top, out_path):
@@ -837,20 +854,22 @@ def main():
 
         completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
+        if args.top_ral:
+            generate_top_ral(completecfg, ip_objs, out_path)
+
+    if args.hjson_only:
+        hjson_dir = Path(args.topcfg).parent
         genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
                                      completecfg["name"])
         gencmd = (
             "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
             "-o hw/top_{topname}/\n".format(topname=topname))
 
-        if args.top_ral:
-            generate_top_ral(completecfg, ip_objs, out_path)
-        else:
-            genhjson_path.write_text(genhdr + gencmd +
-                                     hjson.dumps(completecfg, for_json=True))
+        genhjson_path.write_text(genhdr + gencmd +
+                                 hjson.dumps(completecfg, for_json=True))
 
-    if args.hjson_only:
-        log.info("hjson is generated. Exiting...")
+        log.info("hjson is generated. "
+                 "Content is absent of inter-module signal. Exiting...")
         sys.exit()
 
     if args.no_gen_hjson:
@@ -887,7 +906,22 @@ def main():
     if not args.no_xbar or args.xbar_only:
         generate_xbars(completecfg, out_path)
 
+    # All IPs are generated. Connect phase now
+    elab_intermodule(completecfg)
+
     top_name = completecfg["name"]
+
+    # Generate top.gen.hjson right before rendering
+    if not args.no_gen_hjson:
+        hjson_dir = Path(args.topcfg).parent
+        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
+                                     completecfg["name"])
+        gencmd = (
+            "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
+            "-o hw/top_{topname}/\n".format(topname=topname))
+
+        genhjson_path.write_text(genhdr + gencmd +
+                                 hjson.dumps(completecfg, for_json=True))
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
@@ -951,7 +985,7 @@ def main():
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL,
                        check=True,
-                       cwd=str(SRCTREE_TOP))
+                       cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar TB
         tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv"]
