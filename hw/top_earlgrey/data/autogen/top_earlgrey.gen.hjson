@@ -2305,6 +2305,10 @@
       [
         clkmgr.pwr
       ]
+      pwrmgr.wakeups:
+      [
+        pinmux.aon_wkup_req
+      ]
       rom.tl:
       [
         main.tl_rom
@@ -2392,10 +2396,6 @@
       ram_ret.tl:
       [
         peri.tl_ram_ret
-      ]
-      pwrmgr.wakeups:
-      [
-        pinmux.aon_wkup_req
       ]
     }
     top:
@@ -5366,6 +5366,14 @@
         default: ""
       }
       {
+        package: ""
+        struct: logic
+        signame: pwrmgr_wakeups
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
         package: tlul_pkg
         struct: tl_h2d
         signame: rom_tl_req
@@ -5715,14 +5723,6 @@
         signame: ram_ret_tl_rsp
         width: 1
         type: req_rsp
-        default: ""
-      }
-      {
-        package: ""
-        struct: logic
-        signame: pwrmgr_wakeups
-        width: 1
-        type: uni
         default: ""
       }
       {

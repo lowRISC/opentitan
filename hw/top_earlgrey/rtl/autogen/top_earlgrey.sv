@@ -194,6 +194,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  logic       pwrmgr_wakeups;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_main_tl_req;
@@ -238,7 +239,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       clkmgr_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_ret_tl_req;
   tlul_pkg::tl_d2h_t       ram_ret_tl_rsp;
-  logic       pwrmgr_wakeups;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
