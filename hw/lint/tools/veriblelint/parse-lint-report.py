@@ -5,6 +5,7 @@
 r"""Parses lint report and dump filtered messages in hjson format.
 """
 import argparse
+import logging as log
 import re
 import sys
 from pathlib import Path
@@ -51,6 +52,7 @@ def get_results(resdir):
                  r"^(?!ERROR: Failed to run .* Lint failed)ERROR: .*"),
                 ("errors", r"^Error: .*"),
                 ("errors", r"^E .*"),
+                ("errors", r"^F .*"),
                 # TODO(https://github.com/olofk/edalize/issues/90):
                 # this is a workaround until we actually have native Edalize
                 # support for JasperGold and "formal" targets
@@ -117,12 +119,13 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    nr_errors = len(results["errors"]) + len(results["lint_errors"])
-    nr_warnings = len(results["warnings"]) + len(results["lint_warnings"])
-    print("Lint not successful, got %d warnings and %d errors." %
-          (nr_warnings, nr_errors))
-    if nr_errors > 0 or nr_warnings > 0:
+    n_errors = len(results["errors"]) + len(results["lint_errors"])
+    n_warnings = len(results["warnings"]) + len(results["lint_warnings"])
+    if n_errors > 0 or n_warnings > 0:
+        log.info("Found %d lint errors and %d lint warnings", n_errors, n_warnings)
         sys.exit(1)
+
+    log.info("Lint logfile parsed succesfully")
     sys.exit(0)
 
 
