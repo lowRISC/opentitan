@@ -38,7 +38,9 @@ def parse_lint_log(str_buffer):
         # and we decided not to report it in the dashboard.
         ("errors",
          r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*"),
-        ("errors", r"^Error: .*"),
+        ("errors",
+        # This is a redundant Verilator error that we ignore for the same reason as above.
+         r"^(?!%Error: Exiting due to .* warning.*)%Error: .*"),
         # TODO(https://github.com/olofk/edalize/issues/90):
         # this is a workaround until we actually have native Edalize
         # support for JasperGold and "formal" targets
@@ -48,7 +50,7 @@ def parse_lint_log(str_buffer):
          # remove once this has been fixed in Edalize or in the corefile.
          r"^(?!WARNING: Unknown item symbiyosis in section Target)WARNING: .*"
          ),
-        ("warnings", r"^Warning: .* "),
+        ("warnings", r"^%Warning: .* "),
         ("lint_errors", r"^%Error-.*"),
         ("lint_warnings", r"^%Warning-.*"),
     }
