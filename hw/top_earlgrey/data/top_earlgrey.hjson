@@ -358,33 +358,6 @@
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
 
-      // TODO: Temporary XBAR connection
-      //  main xbar
-      //   TODO: corei, cored, dm_sba, debug_mem
-      'rom.tl': ['main.tl_rom'],
-      'ram_main.tl': ['main.tl_ram_main'],
-      'eflash.tl': ['main.tl_eflash'],
-      'main.tl_peri': ['peri.tl_main'],
-      'flash_ctrl.tl': ['main.tl_flash_ctrl'],
-      'hmac.tl': ['main.tl_hmac'],
-      'aes.tl': ['main.tl_aes'],
-      'rv_plic.tl': ['main.tl_rv_plic'],
-      'pinmux.tl': ['main.tl_pinmux'],
-      'padctrl.tl': ['main.tl_padctrl'],
-      'alert_handler.tl': ['main.tl_alert_handler'],
-      'nmi_gen.tl': ['main.tl_nmi_gen'],
-      'otbn.tl': ['main.tl_otbn'],
-
-      //  peri xbar
-      'uart.tl': ['peri.tl_uart'],
-      'gpio.tl': ['peri.tl_gpio'],
-      'spi_device.tl': ['peri.tl_spi_device'],
-      'rv_timer.tl': ['peri.tl_rv_timer'],
-      'usbdev.tl': ['peri.tl_usbdev'],
-      'pwrmgr.tl': ['peri.tl_pwrmgr'],
-      'rstmgr.tl': ['peri.tl_rstmgr'],
-      'clkmgr.tl': ['peri.tl_clkmgr'],
-      'ram_ret.tl': ['peri.tl_ram_ret'],
     }
 
     // top is to connect to top net/struct.
