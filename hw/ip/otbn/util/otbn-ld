@@ -42,8 +42,8 @@ def interpolate_linker_script(in_path: str, out_path: str) -> None:
 
 
 def main() -> int:
-    ld_in = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                          '..', 'data', 'otbn.ld.tpl'))
+    ld_in = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                         '..', 'data', 'otbn.ld.tpl'))
 
     with tempfile.TemporaryDirectory(prefix='otbn-ld-') as tmpdir:
         ld_out = os.path.join(tmpdir, 'otbn.ld')
