@@ -137,11 +137,21 @@ jobs:
         --tool=veriblelint
       if [ $? != 0 ]; then
         echo -n "##vso[task.logissue type=error]"
-        echo "Verilog style lint with Verible failed. Run 'util/dvsim/dvsim.py -t veriblelint hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson' to check and fix all errors."
+        echo "Verilog style lint of RTL sources with Verible failed. Run 'util/dvsim/dvsim.py -t veriblelint hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson' to check and fix all errors."
         exit 1
       fi
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Style-Lint Verilog source files with Verible
+    displayName: Style-Lint RTL Verilog source files with Verible
+  - bash: |
+      util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson \
+        --tool=veriblelint
+      if [ $? != 0 ]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Verilog style lint of DV sources with Verible failed. Run 'util/dvsim/dvsim.py -t veriblelint hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson' to check and fix all errors."
+        exit 1
+      fi
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Style-Lint DV Verilog source files with Verible
   - bash: |
       commit_range="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)..HEAD"
       # Notes:
