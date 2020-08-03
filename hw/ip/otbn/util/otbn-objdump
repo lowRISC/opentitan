@@ -11,7 +11,7 @@ import subprocess
 import sys
 from typing import Dict, List, Optional, Tuple
 
-from insn_yaml import Encoding, Insn, InsnsFile, load_file
+from shared.insn_yaml import Encoding, Insn, InsnsFile, load_file
 
 
 def snoop_disasm_flags(argv: List[str]) -> bool:

@@ -30,7 +30,7 @@ import hjson  # type: ignore
 _OLD_SYS_PATH = sys.path
 try:
     _UTIL_PATH = os.path.join(os.path.dirname(__file__),
-                              '..', '..', '..', '..', 'util')
+                              '..', '..', '..', '..', '..', 'util')
     sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
     from reggen.validate import checking_dict, validate   # type: ignore
 finally:
@@ -118,7 +118,7 @@ def get_memory_layout() -> Dict[str, Tuple[int, int]]:
 
     '''
     hjson_path = os.path.join(os.path.dirname(__file__),
-                              '..', 'data', 'otbn.hjson')
+                              '..', '..', 'data', 'otbn.hjson')
     reg_byte_width, registers = load_registers(hjson_path)
     windows = extract_windows(reg_byte_width, registers)
 

@@ -16,11 +16,11 @@ import tempfile
 from mako.template import Template  # type: ignore
 from mako import exceptions  # type: ignore
 
-import mem_layout
+from shared.mem_layout import get_memory_layout
 
 
 def interpolate_linker_script(in_path: str, out_path: str) -> None:
-    mems = mem_layout.get_memory_layout()
+    mems = get_memory_layout()
 
     try:
         template = Template(filename=in_path)
