@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-pylibs := insn_yaml.py mem_layout.py
+pylibs := shared/insn_yaml.py shared/mem_layout.py
 pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 .PHONY: all
