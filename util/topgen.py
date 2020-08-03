@@ -21,7 +21,7 @@ import tlgen
 from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
-from topgen.intermodule import elab_intermodule
+from topgen import intermodule as im
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -866,7 +866,11 @@ def main():
         generate_xbars(completecfg, out_path)
 
     # All IPs are generated. Connect phase now
-    elab_intermodule(completecfg)
+    # Find {memory, module} <-> {xbar} connections first.
+    im.autoconnect(completecfg)
+
+    # Generic Inter-module connection
+    im.elab_intermodule(completecfg)
 
     top_name = completecfg["name"]
 

@@ -69,6 +69,117 @@ def get_suffixes(ims: OrderedDict) -> (str, str):
     return ("_req", "_rsp")
 
 
+def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
+                               rsp_m: str, rsp_s: str):
+    """Add if doesn't exist the connection
+
+    Add a connection into obj['inter_module']['connect'] dictionary if doesn't exist.
+
+    Parameters:
+        obj:   Top dictionary object
+        req_m: Requester module name
+        req_s: Requester signal name
+        rsp_m: Responder module name
+        rsp_s: Responder signal name
+
+    Returns:
+        No return type for this function
+    """
+    req_key = "{}.{}".format(req_m, req_s)
+    rsp_key = "{}.{}".format(rsp_m, rsp_s)
+
+    connect = obj["inter_module"]["connect"]
+    if req_key in connect:
+        # check if rsp has data
+        if rsp_key in connect[req_key]:
+            return
+        req_key.append(rsp_key)
+        return
+
+    # req_key is not in connect:
+    # check if rsp_key
+    if rsp_key in connect:
+        # check if rsp has data
+        if req_key in connect[rsp_key]:
+            return
+        rsp_key.append(req_key)
+        return
+
+    # Add new key and connect
+    connect[req_key] = [rsp_key]
+
+
+def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
+    ports = [x for x in xbar["nodes"] if x["type"] in ["host", "device"]]
+    for port in ports:
+        if port["xbar"]:
+            if port["type"] == "host":
+                # Skip as device will add connection
+                continue
+
+            # Device port adds signal
+            add_intermodule_connection(obj=topcfg,
+                                       req_m=xbar["name"],
+                                       req_s="tl_%s" % port["name"],
+                                       rsp_m=port["name"],
+                                       rsp_s="tl_%s" % xbar["name"])
+            continue  # xbar port case
+
+        # check if name exists in ["module", "memory"]
+        ips = [
+            x for x in topcfg["module"] + topcfg["memory"]
+            if x["name"] == port["name"]
+        ]
+
+        assert len(ips) <= 1
+
+        if len(ips) == 0:
+            # if not in module, memory, should be existed in top or ext field
+            module_key = "{}.tl_{}".format(xbar["name"], port["name"])
+            if module_key not in topcfg["inter_module"]["top"] + topcfg[
+                    "inter_module"]["external"]:
+                log.error("Inter-module key {} cannot be found in module, "
+                          "memory, top, or external lists.".format(module_key))
+            continue
+
+        ip = ips[0]
+
+        # get the port name
+        def get_signame(ip: OrderedDict, package: str, struct: str,
+                        act: str) -> OrderedDict:
+            ims = [
+                x for x in ip["inter_signal_list"]
+                if (x['package'] == package if 'package' in x else False) and
+                x['struct'] == struct and x['act'] == act
+            ]
+            return ims
+
+        if port["type"] == "device":
+            ims = get_signame(ip, "tlul_pkg", "tl", "rsp")
+        else:  # host type
+            ims = get_signame(ip, "tlul_pkg", "tl", "req")
+
+        assert len(ims) == 1
+        sig_name = ims[0]["name"]
+
+        add_intermodule_connection(obj=topcfg,
+                                   req_m=port["name"],
+                                   req_s=sig_name,
+                                   rsp_m=xbar["name"],
+                                   rsp_s="tl_%s" % port["name"])
+        continue  # len() == 1
+
+
+def autoconnect(topcfg: OrderedDict):
+    """Matching the connection based on the naming rule
+    between {memory, module} <-> Xbar.
+    """
+
+    # Add xbar connection to the modules, memories
+    for xbar in topcfg["xbar"]:
+        autoconnect_xbar(topcfg, xbar)
+
+
 def elab_intermodule(topcfg: OrderedDict):
     """Check the connection of inter-module and categorize them
 
