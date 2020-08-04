@@ -15,6 +15,10 @@
   sdc_path: "{proj_root}/hw/top_earlgrey/syn"
   sdc_file: "asic.constraints.sdc"
 
+  // Technology specific timing constraints for this module
+  foundry_sdc_path: "{proj_root}/hw/foundry/top_earlgrey/syn"
+  foundry_sdc_file: "foundry.constraints.sdc"
+
   area_depth: 2
   // TODO: add support for loading the constraints here
  }
