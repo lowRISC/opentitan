@@ -697,13 +697,6 @@ def main():
         action='store_true',
         help="If defined, topgen doesn't generate the interrup controller RTLs."
     )
-    parser.add_argument(
-        '--no-gen-hjson',
-        action='store_true',
-        help='''If defined, the tool assumes topcfg as a generated hjson.
-             So it bypasses the validation step and doesn't read ip and
-             xbar configurations
-             ''')
 
     # Generator options: 'only' series. cannot combined with 'no' series
     parser.add_argument(
@@ -722,10 +715,6 @@ def main():
         '--alert-handler-only',
         action='store_true',
         help="If defined, the tool generates alert handler hjson only")
-    parser.add_argument(
-        '--hjson-only',
-        action='store_true',
-        help="If defined, the tool generates complete Hjson only")
     # Generator options: generate dv ral model
     parser.add_argument(
         '--top_ral',
@@ -738,11 +727,7 @@ def main():
 
     # check combinations
     if args.top_ral:
-        args.hjson_only = True
         args.no_top = True
-
-    if args.hjson_only:
-        args.no_gen_hjson = False
 
     if (args.no_top or args.no_xbar or
             args.no_plic) and (args.top_only or args.xbar_only or
@@ -751,7 +736,7 @@ def main():
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
-    if not (args.hjson_only or args.plic_only or args.alert_handler_only or
+    if not (args.top_ral or args.plic_only or args.alert_handler_only or
             args.tpl):
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
@@ -774,113 +759,87 @@ def main():
     out_path = Path(outdir)
     cfg_path = Path(args.topcfg).parents[1]
 
-    if not args.no_gen_hjson or args.hjson_only:
-        # load top configuration
-        try:
-            with open(args.topcfg, 'r') as ftop:
-                topcfg = hjson.load(ftop,
-                                    use_decimal=True,
-                                    object_pairs_hook=OrderedDict)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    # load top configuration
+    try:
+        with open(args.topcfg, 'r') as ftop:
+            topcfg = hjson.load(ftop,
+                                use_decimal=True,
+                                object_pairs_hook=OrderedDict)
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
 
-        # Create filtered list
-        filter_list = [
-            module['type'] for module in topcfg['module']
-            if 'generated' in module and module['generated'] == 'true'
-        ]
-        log.info("Filtered list is {}".format(filter_list))
+    # Create filtered list
+    filter_list = [
+        module['type'] for module in topcfg['module']
+        if 'generated' in module and module['generated'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(filter_list))
 
-        topname = topcfg["name"]
+    topname = topcfg["name"]
 
-        # Sweep the IP directory and gather the config files
-        ip_dir = Path(__file__).parents[1] / 'hw/ip'
-        ips = search_ips(ip_dir)
+    # Sweep the IP directory and gather the config files
+    ip_dir = Path(__file__).parents[1] / 'hw/ip'
+    ips = search_ips(ip_dir)
 
-        # exclude filtered IPs (to use top_${topname} one) and
-        ips = [x for x in ips if not x.parents[1].name in filter_list]
+    # exclude filtered IPs (to use top_${topname} one) and
+    ips = [x for x in ips if not x.parents[1].name in filter_list]
 
-        # Hack alert
-        # Generate clkmgr.hjson here so that it can be included below
-        # Unlike other generated hjsons, clkmgr thankfully does not require
-        # ip.hjson information.  All the information is embedded within
-        # the top hjson file
-        amend_clocks(topcfg)
-        generate_clkmgr(topcfg, cfg_path, out_path)
+    # Hack alert
+    # Generate clkmgr.hjson here so that it can be included below
+    # Unlike other generated hjsons, clkmgr thankfully does not require
+    # ip.hjson information.  All the information is embedded within
+    # the top hjson file
+    amend_clocks(topcfg)
+    generate_clkmgr(topcfg, cfg_path, out_path)
 
-        # It may require two passes to check if the module is needed.
-        # TODO: first run of topgen will fail due to the absent of rv_plic.
-        # It needs to run up to amend_interrupt in merge_top function
-        # then creates rv_plic.hjson then run xbar generation.
-        hjson_dir = Path(args.topcfg).parent
+    # It may require two passes to check if the module is needed.
+    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # It needs to run up to amend_interrupt in merge_top function
+    # then creates rv_plic.hjson then run xbar generation.
+    hjson_dir = Path(args.topcfg).parent
 
-        for ip in filter_list:
-            log.info("Appending {}".format(ip))
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-            ips.append(ip_hjson)
+    for ip in filter_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+            ip, ip)
+        ips.append(ip_hjson)
 
-        # load Hjson and pass validate from reggen
-        try:
-            ip_objs = []
-            for x in ips:
-                # Skip if it is not in the module list
-                if x.stem not in [ip["type"] for ip in topcfg["module"]]:
-                    log.info(
-                        "Skip module %s as it isn't in the top module list" %
-                        x.stem)
-                    continue
+    # load Hjson and pass validate from reggen
+    try:
+        ip_objs = []
+        for x in ips:
+            # Skip if it is not in the module list
+            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+                log.info("Skip module %s as it isn't in the top module list" %
+                         x.stem)
+                continue
 
-                obj = hjson.load(x.open('r'),
-                                 use_decimal=True,
-                                 object_pairs_hook=OrderedDict)
-                if validate.validate(obj) != 0:
-                    log.info("Parsing IP %s configuration failed. Skip" % x)
-                    continue
-                ip_objs.append(obj)
+            obj = hjson.load(x.open('r'),
+                             use_decimal=True,
+                             object_pairs_hook=OrderedDict)
+            if validate.validate(obj) != 0:
+                log.info("Parsing IP %s configuration failed. Skip" % x)
+                continue
+            ip_objs.append(obj)
 
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
 
-        # Read the crossbars under the top directory
-        xbar_objs = get_hjsonobj_xbars(hjson_dir)
+    # Read the crossbars under the top directory
+    xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
-        log.info("Detected crossbars: %s" %
-                 (", ".join([x["name"] for x in xbar_objs])))
+    log.info("Detected crossbars: %s" %
+             (", ".join([x["name"] for x in xbar_objs])))
 
-        topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
-        if error != 0:
-            raise SystemExit("Error occured while validating top.hjson")
+    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    if error != 0:
+        raise SystemExit("Error occured while validating top.hjson")
 
-        completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
-        if args.top_ral:
-            generate_top_ral(completecfg, ip_objs, out_path)
-
-    if args.hjson_only:
-        hjson_dir = Path(args.topcfg).parent
-        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                     completecfg["name"])
-        gencmd = (
-            "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
-            "-o hw/top_{topname}/\n".format(topname=topname))
-
-        genhjson_path.write_text(genhdr + gencmd +
-                                 hjson.dumps(completecfg, for_json=True))
-
-        log.info("hjson is generated. "
-                 "Content is absent of inter-module signal. Exiting...")
+    if args.top_ral:
+        generate_top_ral(completecfg, ip_objs, out_path)
         sys.exit()
-
-    if args.no_gen_hjson:
-        # load top.complete configuration
-        try:
-            with open(args.topcfg, 'r') as ftop:
-                completecfg = hjson.load(ftop,
-                                         use_decimal=True,
-                                         object_pairs_hook=OrderedDict)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
 
     # Generate PLIC
     if not args.no_plic and \
@@ -912,16 +871,15 @@ def main():
     top_name = completecfg["name"]
 
     # Generate top.gen.hjson right before rendering
-    if not args.no_gen_hjson:
-        hjson_dir = Path(args.topcfg).parent
-        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                     completecfg["name"])
-        gencmd = (
-            "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
-            "-o hw/top_{topname}/\n".format(topname=topname))
+    hjson_dir = Path(args.topcfg).parent
+    genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
+                                 completecfg["name"])
+    gencmd = (
+        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
+        "-o hw/top_{topname}/\n".format(topname=topname))
 
-        genhjson_path.write_text(genhdr + gencmd +
-                                 hjson.dumps(completecfg, for_json=True))
+    genhjson_path.write_text(genhdr + gencmd +
+                             hjson.dumps(completecfg, for_json=True))
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)

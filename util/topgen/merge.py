@@ -174,17 +174,17 @@ def xbar_addhost(top, xbar, host):
         log.warning(
             "host %s doesn't exist in the node list. Using default values" %
             host)
-        obj = {
-            "name": host,
-            "clock": xbar['clock'],
-            "reset": xbar['reset'],
-            "type": "host",
-            "inst_type": "",
+        obj = OrderedDict([
+            ("name", host),
+            ("clock", xbar['clock']),
+            ("reset", xbar['reset']),
+            ("type", "host"),
+            ("inst_type", ""),
             # The default matches RTL default
             # pipeline_byp is don't care if pipeline is false
-            "pipeline": "true",
-            "pipeline_byp": "true"
-        }
+            ("pipeline", "true"),
+            ("pipeline_byp", "true")
+        ])
         xbar["nodes"].append(obj)
         return
 
