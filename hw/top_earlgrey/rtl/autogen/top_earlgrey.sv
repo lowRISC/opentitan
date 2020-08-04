@@ -15,6 +15,13 @@ module top_earlgrey #(
   input               jtag_tdi_i,
   output              jtag_tdo_o,
 
+  // AST flash
+  input ast_wrapper_pkg::ast_eflash_t ast_eflash_i,
+
+  // Flash ports
+  inout [3:0]         flash_test_mode_ai,
+  inout               flash_test_voltage_hi,
+
   // Multiplexed I/O
   input        [43:0] mio_in_i,
   output logic [43:0] mio_out_o,
@@ -175,9 +182,9 @@ module top_earlgrey #(
   tl_d2h_t tl_main_aon_d2h;
 
   // Signals
-  logic [51:0] mio_p2d;
-  logic [64:0] mio_d2p;
-  logic [64:0] mio_d2p_en;
+  logic [55:0] mio_p2d;
+  logic [68:0] mio_d2p;
+  logic [68:0] mio_d2p_en;
   logic [20:0] dio_p2d;
   logic [20:0] dio_d2p;
   logic [20:0] dio_d2p_en;
@@ -224,6 +231,18 @@ module top_earlgrey #(
   logic [3:0]  cio_spi_host1_s_d2p;
   logic [3:0]  cio_spi_host1_s_en_d2p;
   // flash_ctrl
+  logic        cio_flash_ctrl_tck_p2d;
+  logic        cio_flash_ctrl_tdi_p2d;
+  logic        cio_flash_ctrl_tms_p2d;
+  logic        cio_flash_ctrl_tdo_p2d;
+  logic        cio_flash_ctrl_tck_d2p;
+  logic        cio_flash_ctrl_tck_en_d2p;
+  logic        cio_flash_ctrl_tdi_d2p;
+  logic        cio_flash_ctrl_tdi_en_d2p;
+  logic        cio_flash_ctrl_tms_d2p;
+  logic        cio_flash_ctrl_tms_en_d2p;
+  logic        cio_flash_ctrl_tdo_d2p;
+  logic        cio_flash_ctrl_tdo_en_d2p;
   // rv_timer
   // i2c0
   logic        cio_i2c0_sda_p2d;
@@ -827,7 +846,12 @@ module top_earlgrey #(
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (flash_ctrl_flash_req),
-    .flash_ctrl_o    (flash_ctrl_flash_rsp)
+    .flash_ctrl_o    (flash_ctrl_flash_rsp),
+    .scanmode_i,
+    .scan_reset_ni   (scan_rst_ni),
+    .ast_eflash_i,
+    .flash_test_mode_ai,
+    .flash_test_voltage_hi
   );
 
 
@@ -1043,6 +1067,22 @@ module top_earlgrey #(
   flash_ctrl u_flash_ctrl (
       .tl_i (tl_flash_ctrl_d_h2d),
       .tl_o (tl_flash_ctrl_d_d2h),
+
+      // Input
+      .cio_tck_i    (cio_flash_ctrl_tck_p2d),
+      .cio_tdi_i    (cio_flash_ctrl_tdi_p2d),
+      .cio_tms_i    (cio_flash_ctrl_tms_p2d),
+      .cio_tdo_i    (cio_flash_ctrl_tdo_p2d),
+
+      // Output
+      .cio_tck_o    (cio_flash_ctrl_tck_d2p),
+      .cio_tck_en_o (cio_flash_ctrl_tck_en_d2p),
+      .cio_tdi_o    (cio_flash_ctrl_tdi_d2p),
+      .cio_tdi_en_o (cio_flash_ctrl_tdi_en_d2p),
+      .cio_tms_o    (cio_flash_ctrl_tms_d2p),
+      .cio_tms_en_o (cio_flash_ctrl_tms_en_d2p),
+      .cio_tdo_o    (cio_flash_ctrl_tdo_d2p),
+      .cio_tdo_en_o (cio_flash_ctrl_tdo_en_d2p),
 
       // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
@@ -1933,6 +1973,10 @@ module top_earlgrey #(
     cio_i2c2_sda_d2p,
     cio_i2c2_scl_d2p,
     cio_spi_host1_s_d2p,
+    cio_flash_ctrl_tck_d2p,
+    cio_flash_ctrl_tdi_d2p,
+    cio_flash_ctrl_tms_d2p,
+    cio_flash_ctrl_tdo_d2p,
     cio_uart_tx_d2p,
     cio_uart1_tx_d2p,
     cio_uart2_tx_d2p,
@@ -1958,6 +2002,10 @@ module top_earlgrey #(
     cio_i2c2_sda_en_d2p,
     cio_i2c2_scl_en_d2p,
     cio_spi_host1_s_en_d2p,
+    cio_flash_ctrl_tck_en_d2p,
+    cio_flash_ctrl_tdi_en_d2p,
+    cio_flash_ctrl_tms_en_d2p,
+    cio_flash_ctrl_tdo_en_d2p,
     cio_uart_tx_en_d2p,
     cio_uart1_tx_en_d2p,
     cio_uart2_tx_en_d2p,
@@ -1983,6 +2031,10 @@ module top_earlgrey #(
     cio_i2c2_sda_p2d,
     cio_i2c2_scl_p2d,
     cio_spi_host1_s_p2d,
+    cio_flash_ctrl_tck_p2d,
+    cio_flash_ctrl_tdi_p2d,
+    cio_flash_ctrl_tms_p2d,
+    cio_flash_ctrl_tdo_p2d,
     cio_uart_rx_p2d,
     cio_uart1_rx_p2d,
     cio_uart2_rx_p2d,
