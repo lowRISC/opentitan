@@ -8,7 +8,7 @@
 
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
+  tool_srcs:  ["{dv_root}/tools/vcs/*"]
 
   build_opts: ["-sverilog -full64 -licqueue -kdb -ntb_opts uvm-1.2",
                "-timescale=1ns/1ps",

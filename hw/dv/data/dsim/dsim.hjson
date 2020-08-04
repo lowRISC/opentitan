@@ -38,7 +38,7 @@
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
   // TODO, there is no dsim tool file, point to vcs for now to avoid error from script
-  tool_srcs:  ["{proj_root}/hw/dv/tools/vcs/*"]
+  tool_srcs:  ["{dv_root}/tools/vcs/*"]
 
   // TODO: refactor coverage configuration for DSim.
 
