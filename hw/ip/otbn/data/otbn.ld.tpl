@@ -25,6 +25,11 @@ SECTIONS
     .text ORIGIN(imem) : ALIGN(4)
     {
         *(.text*)
+
+        /* Align section end. Shouldn't really matter, but might make binary
+           blobs a bit easier to work with. */
+        . = ALIGN(4);
+
     } >imem AT>imem_load
 
     .data ORIGIN(dmem) : ALIGN(32)
@@ -32,5 +37,9 @@ SECTIONS
         *(.data*)
         . = ALIGN(32);
         *(.bss*)
+
+        /* Align section end (see note in .text section) */
+        . = ALIGN(4);
+
     } >dmem AT>dmem_load
 }
