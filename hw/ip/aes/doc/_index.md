@@ -322,12 +322,13 @@ This section discusses how software can interface with the AES unit.
 Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
 If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}} and initialization vector (IV) registers {{< regref "IV0" >}} - {{< regref "IV3" >}} are ignored.
 
-To initialize the AES unit, software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
+To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
+Then software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL_SHADOWED" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers.
 Each register must be written at least once.
-The order in which these registers are written does not matter.
+The order in which the key registers are written does not matter.
 Anything can be written to the unused key registers, however, random data is preferred.
 For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
 
@@ -340,15 +341,19 @@ To start the encryption/decryption of a new message, software must wait for the 
 
 ## Block Operation
 
-For block operation, software must initialize the AES unit as described in the previous section and then:
+For block operation, software must initialize the AES unit as described in the previous section.
+In particular, the AES unit must be configured to run in normal/automatic mode.
+This is indicated by the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} reading as `0`.
+It ensures that the AES unit:
+1. Automatically starts encryption/decryption when new input data is available.
+1. Does not overwrite previous output data that has not yet been read by the processor.
 
-1. Configure AES unit to operate in normal/automatic mode by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `0`.
-   This ensures that the AES unit i) automatically starts encryption/decryption when new input data is available and ii) does not overwrite previous output data that has not been read by the processor.
-2. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+Then, software must:
+1. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
    Each register must be written at least once.
    The order in which these registers are written does not matter.
-3. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
-4. Write Input Data Block `1` to the Input Data registers.
+1. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
+1. Write Input Data Block `1` to the Input Data registers.
 
 Then for every Data Block `I=0,..,N-3`, software must:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
@@ -359,7 +364,7 @@ Then for every Data Block `I=0,..,N-3`, software must:
 3. Write Input Data Block `I+2` into the Input Data register.
    There is no need to explicitly check INPUT_READY as in the same cycle OUTPUT_VALID becomes `1`, the current input is loaded in (meaning INPUT_READY becomes `1` one cycle later).
 
-Once all blocks have been input the final data blocks `I=N-2,N-1` must be read out
+Once all blocks have been input, the final data blocks `I=N-2,N-1` must be read out:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
 2. Read Output Data Block `I` from the Output Data register.
 
@@ -377,7 +382,17 @@ The code snippet below shows how to perform block operation.
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
-  // Write Input Data Block 0 - Note: All registers are little-endian.
+  // Write key - Note: All registers are little-endian.
+  for (int j = 0; j < 8; j++) {
+    REG32(AES_KEY0(0) + j * 4) = key[j];
+  }
+
+  // Write IV.
+  for (int j = 0; j < 4; j++) {
+    REG32(AES_IV0(0) + j * 4) = iv[j];
+  }
+
+  // Write Input Data Block 0.
   for (int j = 0; j < 4; j++) {
     REG32(AES_DATA_IN0(0) + j * 4) = input_data[j];
   }
