@@ -6,7 +6,7 @@
  * Ibex RISC-V core
  *
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
- * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
+ * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL). Not an OTBN change.
  */
 module rv_core_ibex #(
   parameter bit          PMPEnable                = 1'b0,
