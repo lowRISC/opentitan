@@ -218,24 +218,31 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+      logic        de;
     } rd_full;
     struct packed {
       logic        d;
+      logic        de;
     } rd_empty;
     struct packed {
       logic        d;
+      logic        de;
     } prog_full;
     struct packed {
       logic        d;
+      logic        de;
     } prog_empty;
     struct packed {
       logic        d;
+      logic        de;
     } init_wip;
     struct packed {
       logic [8:0]  d;
+      logic        de;
     } error_page;
     struct packed {
       logic        d;
+      logic        de;
     } error_bank;
   } flash_ctrl_hw2reg_status_reg_t;
 
@@ -262,11 +269,11 @@ package flash_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [33:28]
-    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [27:28]
-    flash_ctrl_hw2reg_control_reg_t control; // [27:11]
-    flash_ctrl_hw2reg_op_status_reg_t op_status; // [10:11]
-    flash_ctrl_hw2reg_status_reg_t status; // [10:11]
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [40:35]
+    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [34:35]
+    flash_ctrl_hw2reg_control_reg_t control; // [34:18]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [17:18]
+    flash_ctrl_hw2reg_status_reg_t status; // [17:18]
   } flash_ctrl_hw2reg_t;
 
   // Register Address

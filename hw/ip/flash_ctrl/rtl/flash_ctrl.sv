@@ -58,16 +58,16 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // FIFO Connections
+  logic                 prog_fifo_wvalid;
   logic                 prog_fifo_wready;
   logic                 prog_fifo_rvalid;
-  logic                 prog_fifo_req;
-  logic                 prog_fifo_wen;
   logic                 prog_fifo_ren;
   logic [BusWidth-1:0]  prog_fifo_wdata;
   logic [BusWidth-1:0]  prog_fifo_rdata;
   logic [FifoDepthW-1:0] prog_fifo_depth;
   logic                 rd_fifo_wready;
   logic                 rd_fifo_rvalid;
+  logic                 rd_fifo_rready;
   logic                 rd_fifo_wen;
   logic                 rd_fifo_ren;
   logic [BusWidth-1:0]  rd_fifo_wdata;
@@ -91,7 +91,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [EraseBitWidth-1:0] erase_flash_type;
 
   // Done / Error signaling from ctrl modules
-  logic [2:0] ctrl_done, ctrl_err;
+  logic prog_done, rd_done, erase_done;
+  logic prog_err, rd_err, erase_err;
 
   // Flash Memory Protection Connections
   logic [BusAddrW-1:0] flash_addr;
@@ -101,23 +102,116 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [BusWidth-1:0] flash_prog_data;
   logic flash_prog_last;
   logic [BusWidth-1:0] flash_rd_data;
-  logic init_busy;
+  logic flash_phy_busy;
   logic rd_op;
   logic prog_op;
   logic erase_op;
   logic [AllPagesW-1:0] err_page;
   logic [BankW-1:0] err_bank;
 
-  assign rd_op = reg2hw.control.op.q == FlashOpRead;
-  assign prog_op = reg2hw.control.op.q == FlashOpProgram;
-  assign erase_op = reg2hw.control.op.q == FlashOpErase;
+  // Flash control arbitration connections
+  flash_ctrl_reg2hw_control_reg_t hw_ctrl;
+  flash_ctrl_reg2hw_control_reg_t muxed_ctrl;
+  logic [31:0] muxed_addr;
+  logic op_start;
+  logic [11:0] op_num_words;
+  logic [BusAddrW-1:0] op_addr;
+  flash_op_e op_type;
+  flash_part_e op_part;
+  logic [EraseBitWidth-1:0] op_erase_type;
+  logic sw_ctrl_done;
+  logic sw_ctrl_err;
+  logic ctrl_init_busy;
+  logic sw_sel;
+  logic fifo_clr;
+
+  // software tlul to flash control aribration
+  logic sw_rvalid;
+  logic adapter_rvalid;
+  logic sw_wvalid;
+  logic sw_wen;
+  logic sw_wready;
+
+
+  // hardwire off for now until lifecycle / keymanager module introduced
+  assign ctrl_init_busy = 1'b0;
+  assign hw_ctrl = '0;
+
+  // flash control arbitration between softawre / harware interfaces
+  flash_ctrl_arb u_ctrl_arb (
+    .clk_i,
+    .rst_ni,
+
+    // software interface to rd_ctrl / erase_ctrl
+    .sw_ctrl_i(reg2hw.control),
+    .sw_addr_i(reg2hw.addr.q),
+    .sw_ack_o(sw_ctrl_done),
+    .sw_err_o(sw_ctrl_err),
+
+    // software interface to rd_fifo
+    .sw_rvalid_o(sw_rvalid),
+    .sw_rready_i(adapter_rvalid),
+
+    // software interface to prog_fifo
+    .sw_wvalid_i(sw_wvalid & sw_wen),
+    .sw_wready_o(sw_wready),
+
+    // hardware interface to rd_ctrl / erase_ctrl
+    .hw_req_i('0),
+    .hw_ctrl_i(hw_ctrl),
+    .hw_addr_i('0),
+    .hw_ack_o(),
+    .hw_err_o(),
+
+    // hardware interface to rd_fifo
+    .hw_rvalid_o(),
+    .hw_rready_i(1'b1),
+
+    // hardware interface does not talk to prog_fifo
+
+    // muxed interface to rd_ctrl / erase_ctrl
+    .muxed_ctrl_o(muxed_ctrl),
+    .muxed_addr_o(muxed_addr),
+    .prog_ack_i(prog_done),
+    .prog_err_i(prog_err),
+    .rd_ack_i(rd_done),
+    .rd_err_i(rd_err),
+    .erase_ack_i(erase_done),
+    .erase_err_i(erase_err),
+
+    // muxed interface to rd_fifo
+    .rd_fifo_rvalid_i(rd_fifo_rvalid),
+    .rd_fifo_rready_o(rd_fifo_rready),
+
+    // muxed interface to prog_fifo
+    .prog_fifo_wvalid_o(prog_fifo_wvalid),
+    .prog_fifo_wready_i(prog_fifo_wready),
+
+    // flash phy initilization ongoing
+    .flash_phy_busy_i(flash_phy_busy),
+
+    // clear fifos
+    .fifo_clr_o(fifo_clr),
+
+    // indication that sw has been selected
+    .sw_sel_o(sw_sel)
+  );
+
+  assign op_start      = muxed_ctrl.start.q;
+  assign op_num_words  = muxed_ctrl.num.q;
+  assign op_erase_type = muxed_ctrl.erase_sel.q;
+  assign op_addr       = muxed_addr[BusByteWidth +: BusAddrW];
+  assign op_type       = flash_op_e'(muxed_ctrl.op.q);
+  assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
+  assign rd_op         = op_type == FlashOpRead;
+  assign prog_op       = op_type == FlashOpProgram;
+  assign erase_op      = op_type == FlashOpErase;
 
   // Program FIFO
   // Since the program and read FIFOs are never used at the same time, it should really be one
   // FIFO with muxed inputs and outputs.  This should be addressed once the flash integration
   // strategy has been identified
-
-  assign prog_op_valid = reg2hw.control.start.q & prog_op;
+  assign prog_op_valid = op_start & prog_op;
 
   tlul_adapter_sram #(
     .SramAw(1),         //address unused
@@ -129,9 +223,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rst_ni,
     .tl_i       (tl_fifo_h2d[0]),
     .tl_o       (tl_fifo_d2h[0]),
-    .req_o      (prog_fifo_req),
-    .gnt_i      (prog_fifo_wready),
-    .we_o       (prog_fifo_wen),
+    .req_o      (sw_wvalid),
+    .gnt_i      (sw_wready),
+    .we_o       (sw_wen),
     .addr_o     (),
     .wmask_o    (),
     .wdata_o    (prog_fifo_wdata),
@@ -146,8 +240,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   ) u_prog_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (reg2hw.fifo_rst.q),
-    .wvalid_i(prog_fifo_req & prog_fifo_wen & prog_op_valid),
+    .clr_i   (reg2hw.fifo_rst.q | fifo_clr),
+    .wvalid_i(prog_fifo_wvalid & prog_op_valid),
     .wready_o(prog_fifo_wready),
     .wdata_i (prog_fifo_wdata),
     .depth_o (prog_fifo_depth),
@@ -166,10 +260,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // Software Interface
     .op_start_i     (prog_op_valid),
-    .op_num_words_i (reg2hw.control.num.q),
-    .op_done_o      (ctrl_done[0]),
-    .op_err_o       (ctrl_err[0]),
-    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
+    .op_num_words_i (op_num_words),
+    .op_done_o      (prog_done),
+    .op_err_o       (prog_err),
+    .op_addr_i      (op_addr),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -187,15 +281,17 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Read FIFO
-  logic adapter_rvalid;
+
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       adapter_rvalid <= 1'b0;
     end else begin
-      adapter_rvalid <= rd_fifo_ren && rd_fifo_rvalid;
+      adapter_rvalid <= rd_fifo_ren && sw_rvalid;
     end
   end
 
+  // tlul adapter represents software's access interface to flash
   tlul_adapter_sram #(
     .SramAw(1),         //address unused
     .SramDw(BusWidth),
@@ -223,15 +319,13 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   ) u_rd_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (reg2hw.fifo_rst.q),
+    .clr_i   (reg2hw.fifo_rst.q | fifo_clr),
     .wvalid_i(rd_fifo_wen),
     .wready_o(rd_fifo_wready),
     .wdata_i (rd_fifo_wdata),
     .depth_o (rd_fifo_depth),
     .rvalid_o(rd_fifo_rvalid),
-    //adapter_rvalid is used here because adapter_sram does not accept data the same cycle.
-    //It expects an sram like interface where data arrives during the next cycle
-    .rready_i(adapter_rvalid),
+    .rready_i(rd_fifo_rready),
     .rdata_o (rd_fifo_rdata)
   );
 
@@ -243,12 +337,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .clk_i,
     .rst_ni,
 
-    // Software Interface
-    .op_start_i     (reg2hw.control.start.q & rd_op),
-    .op_num_words_i (reg2hw.control.num.q),
-    .op_done_o      (ctrl_done[1]),
-    .op_err_o       (ctrl_err[1]),
-    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
+    // To arbiter Interface
+    .op_start_i     (op_start & rd_op),
+    .op_num_words_i (op_num_words),
+    .op_done_o      (rd_done),
+    .op_err_o       (rd_err),
+    .op_addr_i      (op_addr),
 
     // FIFO Interface
     .data_rdy_i     (rd_fifo_wready),
@@ -272,11 +366,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .EraseBitWidth(EraseBitWidth)
   ) u_flash_erase_ctrl (
     // Software Interface
-    .op_start_i     (reg2hw.control.start.q & erase_op),
-    .op_type_i      (reg2hw.control.erase_sel.q),
-    .op_done_o      (ctrl_done[2]),
-    .op_err_o       (ctrl_err[2]),
-    .op_addr_i      (reg2hw.addr.q[BusByteWidth +: BusAddrW]),
+    .op_start_i     (op_start & erase_op),
+    .op_type_i      (op_erase_type),
+    .op_done_o      (erase_done),
+    .op_err_o       (erase_err),
+    .op_addr_i      (op_addr),
 
     // Flash Macro Interface
     .flash_req_o    (erase_flash_req),
@@ -288,7 +382,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   // Final muxing to flash macro module
   always_comb begin
-    unique case (reg2hw.control.op.q)
+    unique case (op_type)
       FlashOpRead: begin
         flash_req = rd_flash_req;
         flash_addr = rd_flash_addr;
@@ -305,12 +399,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
         flash_req = 1'b0;
         flash_addr  = '0;
       end
-    endcase // unique case (flash_op_e'(reg2hw.control.op.q))
+    endcase // unique case (op_type)
   end
 
   // extra region is the default region
   flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs;
-
   assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
 
   //default region
@@ -324,8 +417,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // however info partitions default to inaccessible
   assign region_cfgs[MpRegions].partition.q = FlashPartData;
 
+  // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
-  assign flash_part_sel = flash_part_e'(reg2hw.control.partition_sel.q);
+  assign flash_part_sel = op_part;
 
   // Flash memory protection
   // Memory protection is page based and thus should use phy addressing
@@ -371,20 +465,32 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
 
-  assign hw2reg.op_status.done.d = 1'b1;
-  assign hw2reg.op_status.done.de = |ctrl_done;
-  assign hw2reg.op_status.err.d = 1'b1;
-  assign hw2reg.op_status.err.de = |ctrl_err;
-  assign hw2reg.status.rd_full.d = ~rd_fifo_wready;
-  assign hw2reg.status.rd_empty.d = ~rd_fifo_rvalid;
-  assign hw2reg.status.prog_full.d = ~prog_fifo_wready;
-  assign hw2reg.status.prog_empty.d = ~prog_fifo_rvalid;
-  assign hw2reg.status.init_wip.d = init_busy;
-  assign hw2reg.status.error_page.d = err_page;
-  assign hw2reg.status.error_bank.d = err_bank;
-  assign hw2reg.control.start.d = 1'b0;
-  assign hw2reg.control.start.de = |ctrl_done;
-  assign hw2reg.ctrl_regwen.d = !reg2hw.control.start.q;
+  // software interface feedback
+  // most values (other than flash_phy_busy) should only update when software operations
+  // are actually selected
+  assign hw2reg.op_status.done.d     = 1'b1;
+  assign hw2reg.op_status.done.de    = sw_ctrl_done;
+  assign hw2reg.op_status.err.d      = 1'b1;
+  assign hw2reg.op_status.err.de     = sw_ctrl_err;
+  assign hw2reg.status.rd_full.d     = ~rd_fifo_wready;
+  assign hw2reg.status.rd_full.de    = sw_sel;
+  assign hw2reg.status.rd_empty.d    = ~rd_fifo_rvalid;
+  assign hw2reg.status.rd_empty.de   = sw_sel;
+  assign hw2reg.status.prog_full.d   = ~prog_fifo_wready;
+  assign hw2reg.status.prog_full.de  = sw_sel;
+  assign hw2reg.status.prog_empty.d  = ~prog_fifo_rvalid;
+  assign hw2reg.status.prog_empty.de = sw_sel;
+  assign hw2reg.status.init_wip.d    = flash_phy_busy | ctrl_init_busy;
+  assign hw2reg.status.init_wip.de   = 1'b1;
+  assign hw2reg.status.error_page.d  = err_page;
+  assign hw2reg.status.error_page.de = sw_sel;
+  assign hw2reg.status.error_bank.d  = err_bank;
+  assign hw2reg.status.error_bank.de = sw_sel;
+  assign hw2reg.control.start.d      = 1'b0;
+  assign hw2reg.control.start.de     = sw_ctrl_done;
+  // if software operation selected, based on transaction start
+  // if software operation not selected, software is free to change contents
+  assign hw2reg.ctrl_regwen.d        = sw_sel ? !op_start : 1'b1;
 
   // Flash Interface
   assign flash_o.addr = flash_addr;
@@ -395,7 +501,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.addr_key = otp_i.addr_key;
   assign flash_o.data_key = otp_i.data_key;
   assign flash_rd_data = flash_i.rd_data;
-  assign init_busy = flash_i.init_busy;
+  assign flash_phy_busy = flash_i.init_busy;
 
   // Interrupts
   // Generate edge triggered signals for sources that are level
@@ -412,7 +518,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       intr_src_q <= 4'h8; //prog_fifo is empty by default
-    end else begin
+    end else if (sw_sel) begin
       intr_src_q <= intr_src;
     end
   end
@@ -449,12 +555,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
 
   assign hw2reg.intr_state.op_done.d  = 1'b1;
-  assign hw2reg.intr_state.op_done.de = |ctrl_done  |
+  assign hw2reg.intr_state.op_done.de = sw_ctrl_done  |
                                         (reg2hw.intr_test.op_done.qe  &
                                         reg2hw.intr_test.op_done.q);
 
   assign hw2reg.intr_state.op_error.d  = 1'b1;
-  assign hw2reg.intr_state.op_error.de = |ctrl_err  |
+  assign hw2reg.intr_state.op_error.de = sw_ctrl_err  |
                                         (reg2hw.intr_test.op_error.qe  &
                                         reg2hw.intr_test.op_error.q);
 
@@ -467,8 +573,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
 
   // Unused signals
-  assign unused_byte_sel = reg2hw.addr.q[BusByteWidth-1:0];
-  assign unused_higher_addr_bits = reg2hw.addr.q[31:BusAddrW];
+  assign unused_byte_sel = muxed_addr[BusByteWidth-1:0];
+  assign unused_higher_addr_bits = muxed_addr[31:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
 

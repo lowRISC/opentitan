@@ -388,19 +388,12 @@ module flash_ctrl_reg_top (
   logic op_status_err_wd;
   logic op_status_err_we;
   logic status_rd_full_qs;
-  logic status_rd_full_re;
   logic status_rd_empty_qs;
-  logic status_rd_empty_re;
   logic status_prog_full_qs;
-  logic status_prog_full_re;
   logic status_prog_empty_qs;
-  logic status_prog_empty_re;
   logic status_init_wip_qs;
-  logic status_init_wip_re;
   logic [8:0] status_error_page_qs;
-  logic status_error_page_re;
   logic status_error_bank_qs;
-  logic status_error_bank_re;
   logic [31:0] scratch_qs;
   logic [31:0] scratch_wd;
   logic scratch_we;
@@ -2752,109 +2745,179 @@ module flash_ctrl_reg_top (
   );
 
 
-  // R[status]: V(True)
+  // R[status]: V(False)
 
   //   F[rd_full]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_rd_full (
-    .re     (status_rd_full_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rd_full.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.rd_full.de),
+    .d      (hw2reg.status.rd_full.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_rd_full_qs)
   );
 
 
   //   F[rd_empty]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
   ) u_status_rd_empty (
-    .re     (status_rd_empty_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rd_empty.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.rd_empty.de),
+    .d      (hw2reg.status.rd_empty.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_rd_empty_qs)
   );
 
 
   //   F[prog_full]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_prog_full (
-    .re     (status_prog_full_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.prog_full.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.prog_full.de),
+    .d      (hw2reg.status.prog_full.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_prog_full_qs)
   );
 
 
   //   F[prog_empty]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
   ) u_status_prog_empty (
-    .re     (status_prog_empty_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.prog_empty.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.prog_empty.de),
+    .d      (hw2reg.status.prog_empty.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_prog_empty_qs)
   );
 
 
   //   F[init_wip]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_init_wip (
-    .re     (status_init_wip_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.init_wip.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.init_wip.de),
+    .d      (hw2reg.status.init_wip.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_init_wip_qs)
   );
 
 
   //   F[error_page]: 16:8
-  prim_subreg_ext #(
-    .DW    (9)
+  prim_subreg #(
+    .DW      (9),
+    .SWACCESS("RO"),
+    .RESVAL  (9'h0)
   ) u_status_error_page (
-    .re     (status_error_page_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.error_page.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.error_page.de),
+    .d      (hw2reg.status.error_page.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_error_page_qs)
   );
 
 
   //   F[error_bank]: 17:17
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_error_bank (
-    .re     (status_error_bank_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.error_bank.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.error_bank.de),
+    .d      (hw2reg.status.error_bank.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_error_bank_qs)
   );
 
@@ -3301,19 +3364,12 @@ module flash_ctrl_reg_top (
   assign op_status_err_we = addr_hit[19] & reg_we & ~wr_err;
   assign op_status_err_wd = reg_wdata[1];
 
-  assign status_rd_full_re = addr_hit[20] && reg_re;
 
-  assign status_rd_empty_re = addr_hit[20] && reg_re;
 
-  assign status_prog_full_re = addr_hit[20] && reg_re;
 
-  assign status_prog_empty_re = addr_hit[20] && reg_re;
 
-  assign status_init_wip_re = addr_hit[20] && reg_re;
 
-  assign status_error_page_re = addr_hit[20] && reg_re;
 
-  assign status_error_bank_re = addr_hit[20] && reg_re;
 
   assign scratch_we = addr_hit[21] & reg_we & ~wr_err;
   assign scratch_wd = reg_wdata[31:0];
