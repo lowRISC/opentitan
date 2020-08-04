@@ -110,8 +110,8 @@ module top_earlgrey_asic (
     .ConnectMioOut ( 44'hFFF_FFFF_FFFF ),
     // Tied off DIOs:
     // 2-8 (USB)
-    .ConnectDioIn  ( 15'h7E03 ),
-    .ConnectDioOut ( 15'h7E03 ),
+    .ConnectDioIn  ( 21'h1FFE03 ),
+    .ConnectDioOut ( 21'h1FFE03 ),
     // MIO pad types
     .MioPadVariant ( { // RBox
                        2'd3, // IOR13   -- open drain
