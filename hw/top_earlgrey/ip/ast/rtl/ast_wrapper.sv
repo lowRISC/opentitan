@@ -54,7 +54,10 @@ module ast_wrapper import ast_wrapper_pkg::*;
   input scan_reset_ni,
 
   // usb io calibration
-  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o
+  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,
+
+  // IO connection to flash
+  output ast_eflash_t ast_eflash_o
 );
 
 
@@ -178,8 +181,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .ot_alert_trig_i(alert_i.alerts_trig[0]),
 
     // flash interface
-    .flash_power_down_h_o(),
-    .flash_power_ready_h_o(),
+    .flash_power_down_h_o(ast_eflash_o.flash_power_down_h),
+    .flash_power_ready_h_o(ast_eflash_o.flash_power_ready_h),
 
     // analog debug signals
     .ast2pad_a_io(),
