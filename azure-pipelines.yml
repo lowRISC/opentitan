@@ -192,16 +192,38 @@ jobs:
   - bash: |
       set -e
       only_doc_changes=0
+      has_otbn_changes=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
-        # Conservative way of checking for documentation-only changes.
+        # Conservative way of checking for documentation-only and OTBN changes.
         # Only relevant for pipelines triggered from pull requests
-        echo "Checking for doc-only changes in this pull request"
         fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
         echo "Using $fork_origin as fork point from the target branch."
+
+        echo "Checking for doc-only changes in this pull request"
         only_doc_changes="$(git diff --name-only "$fork_origin" | grep -v '\.md$' -q; echo $?)"
+
+        if [[ $only_doc_changes -eq 1 ]]; then
+          echo "PR is only doc changes"
+        else
+          echo "PR contains non doc changes"
+        fi
+
+        echo "Checking if any OTBN changes are in this pull request"
+        # Check if any changes were made to OTBN
+        has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep 'hw/ip/otbn/' -q; echo $?)"
+
+        if [[ $has_otbn_changes -eq 1 ]]; then
+          echo "PR contains OTBN changes"
+        else
+          echo "PR doesn't contain OTBN changes"
+        fi
+      else
+        # For non PR pipeline runs always run OTBN related CI
+        has_otbn_changes=1
       fi
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
-    displayName: Check if the commit only contains documentation changes
+      echo "##vso[task.setvariable variable=hasOTBNChanges;isOutput=true]${has_otbn_changes}"
+    displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
@@ -358,6 +380,52 @@ jobs:
       - rv32im
       - rv32imc
       - rv32Zicsr
+
+- job: otbn_standalone_tests
+  displayName: Run OTBN Smoke Test
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
+  pool: Default
+  timeoutInMinutes: 5
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      sudo util/get-toolchain.py \
+        --target-dir="$TOOLCHAIN_PATH" \
+        --release-version="$TOOLCHAIN_VERSION" \
+        --update
+    displayName: Install toolchain
+  - bash: |
+      set -e
+      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
+        echo "Building verilator (no cached build found)"
+
+        mkdir -p build/verilator
+        cd build/verilator
+        curl -Ls -o verilator.tgz \
+          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
+        tar -xf verilator.tgz
+
+        cd "verilator-$(VERILATOR_VERSION)"
+        ./configure --prefix="$(VERILATOR_PATH)"
+        make -j$(nproc)
+        mkdir -p "$VERILATOR_PATH"
+        make install
+      else
+        echo "Re-using cached verilator build"
+      fi
+    displayName: Build and install Verilator
+  - bash: |
+      export PATH="$VERILATOR_PATH/bin:$PATH"
+      python3 --version
+      fusesoc --version
+      verilator --version
+    displayName: Display environment
+  - bash: |
+      export PATH="/opt/buildcache/riscv/bin:$VERILATOR_PATH/bin:$PATH"
+      ./hw/ip/otbn/dv/smoke/run_smoke.sh
+    displayName: OTBN Smoke Test
 
 - job: top_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
