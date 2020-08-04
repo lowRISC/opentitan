@@ -80,9 +80,6 @@ module nmi_gen_reg_top (
   logic intr_state_esc2_qs;
   logic intr_state_esc2_wd;
   logic intr_state_esc2_we;
-  logic intr_state_esc3_qs;
-  logic intr_state_esc3_wd;
-  logic intr_state_esc3_we;
   logic intr_enable_esc0_qs;
   logic intr_enable_esc0_wd;
   logic intr_enable_esc0_we;
@@ -92,17 +89,12 @@ module nmi_gen_reg_top (
   logic intr_enable_esc2_qs;
   logic intr_enable_esc2_wd;
   logic intr_enable_esc2_we;
-  logic intr_enable_esc3_qs;
-  logic intr_enable_esc3_wd;
-  logic intr_enable_esc3_we;
   logic intr_test_esc0_wd;
   logic intr_test_esc0_we;
   logic intr_test_esc1_wd;
   logic intr_test_esc1_we;
   logic intr_test_esc2_wd;
   logic intr_test_esc2_we;
-  logic intr_test_esc3_wd;
-  logic intr_test_esc3_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -182,32 +174,6 @@ module nmi_gen_reg_top (
 
     // to register interface (read)
     .qs     (intr_state_esc2_qs)
-  );
-
-
-  //   F[esc3]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_intr_state_esc3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_state_esc3_we),
-    .wd     (intr_state_esc3_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state.esc3.de),
-    .d      (hw2reg.intr_state.esc3.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.esc3.q ),
-
-    // to register interface (read)
-    .qs     (intr_state_esc3_qs)
   );
 
 
@@ -291,32 +257,6 @@ module nmi_gen_reg_top (
   );
 
 
-  //   F[esc3]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_intr_enable_esc3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_enable_esc3_we),
-    .wd     (intr_enable_esc3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.esc3.q ),
-
-    // to register interface (read)
-    .qs     (intr_enable_esc3_qs)
-  );
-
-
   // R[intr_test]: V(True)
 
   //   F[esc0]: 0:0
@@ -364,21 +304,6 @@ module nmi_gen_reg_top (
   );
 
 
-  //   F[esc3]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test_esc3 (
-    .re     (1'b0),
-    .we     (intr_test_esc3_we),
-    .wd     (intr_test_esc3_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.esc3.qe),
-    .q      (reg2hw.intr_test.esc3.q ),
-    .qs     ()
-  );
-
-
 
 
   logic [2:0] addr_hit;
@@ -408,9 +333,6 @@ module nmi_gen_reg_top (
   assign intr_state_esc2_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_esc2_wd = reg_wdata[2];
 
-  assign intr_state_esc3_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_esc3_wd = reg_wdata[3];
-
   assign intr_enable_esc0_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_esc0_wd = reg_wdata[0];
 
@@ -419,9 +341,6 @@ module nmi_gen_reg_top (
 
   assign intr_enable_esc2_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_esc2_wd = reg_wdata[2];
-
-  assign intr_enable_esc3_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_esc3_wd = reg_wdata[3];
 
   assign intr_test_esc0_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_esc0_wd = reg_wdata[0];
@@ -432,9 +351,6 @@ module nmi_gen_reg_top (
   assign intr_test_esc2_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_esc2_wd = reg_wdata[2];
 
-  assign intr_test_esc3_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_esc3_wd = reg_wdata[3];
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -443,21 +359,18 @@ module nmi_gen_reg_top (
         reg_rdata_next[0] = intr_state_esc0_qs;
         reg_rdata_next[1] = intr_state_esc1_qs;
         reg_rdata_next[2] = intr_state_esc2_qs;
-        reg_rdata_next[3] = intr_state_esc3_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_esc0_qs;
         reg_rdata_next[1] = intr_enable_esc1_qs;
         reg_rdata_next[2] = intr_enable_esc2_qs;
-        reg_rdata_next[3] = intr_enable_esc3_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
-        reg_rdata_next[3] = '0;
       end
 
       default: begin

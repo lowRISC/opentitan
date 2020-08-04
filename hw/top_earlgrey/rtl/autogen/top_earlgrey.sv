@@ -123,7 +123,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [82:0]  intr_vector;
+  logic [81:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -158,7 +158,6 @@ module top_earlgrey #(
   logic intr_nmi_gen_esc0;
   logic intr_nmi_gen_esc1;
   logic intr_nmi_gen_esc2;
-  logic intr_nmi_gen_esc3;
   logic intr_usbdev_pkt_received;
   logic intr_usbdev_pkt_sent;
   logic intr_usbdev_disconnected;
@@ -313,7 +312,6 @@ module top_earlgrey #(
     .irq_software_i       (msip),
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
-    .irq_fast_i           (15'b0),// PLIC handles all peripheral interrupts
     // escalation input from alert handler (NMI)
     .esc_tx_i             (esc_tx[0]),
     .esc_rx_o             (esc_rx[0]),
@@ -850,7 +848,6 @@ module top_earlgrey #(
       .intr_esc0_o (intr_nmi_gen_esc0),
       .intr_esc1_o (intr_nmi_gen_esc1),
       .intr_esc2_o (intr_nmi_gen_esc2),
-      .intr_esc3_o (intr_nmi_gen_esc3),
 
       // Inter-module signals
       .tl_i(nmi_gen_tl_req),
@@ -980,7 +977,6 @@ module top_earlgrey #(
       intr_usbdev_disconnected,
       intr_usbdev_pkt_sent,
       intr_usbdev_pkt_received,
-      intr_nmi_gen_esc3,
       intr_nmi_gen_esc2,
       intr_nmi_gen_esc1,
       intr_nmi_gen_esc0,
