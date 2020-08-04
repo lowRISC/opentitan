@@ -254,4 +254,10 @@ set_size_only -all_instances [get_cells -h *u_size_only*] true
 # do not touch pad cells
 set_dont_touch [get_cells -h *u_pad_macro*]
 
+###########################
+# Technology speciifc SDC #
+###########################
+
+source foundry.constraints.sdc
+
 puts "Done applying constraints for top level"
