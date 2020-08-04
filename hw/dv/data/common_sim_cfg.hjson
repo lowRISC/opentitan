@@ -6,13 +6,16 @@
   doc_server:       docs.opentitan.org
   results_server:   reports.opentitan.org
 
+  // Where to find DV code
+  dv_root:          "{proj_root}/hw/dv"
+
   flow:             sim
-  flow_makefile:    "{proj_root}/hw/dv/data/sim.mk"
+  flow_makefile:    "{dv_root}/data/sim.mk"
 
   import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
-                     "{proj_root}/hw/dv/data/common_modes.hjson",
-                     "{proj_root}/hw/dv/data/fusesoc.hjson",
-                     "{proj_root}/hw/dv/data/{tool}/{tool}.hjson"]
+                     "{dv_root}/data/common_modes.hjson",
+                     "{dv_root}/data/fusesoc.hjson",
+                     "{dv_root}/data/{tool}/{tool}.hjson"]
 
   // Default directory structure for the output
   build_dir:          "{scratch_path}/{build_mode}"
@@ -133,7 +136,7 @@
   // Add waves.tcl to the set of sources to be copied over to
   // {tool_srcs_dir}. This can be sourced by the tool-specific TCL
   // script to set up wave dumping.
-  tool_srcs:  ["{proj_root}/hw/dv/tools/waves.tcl"],
+  tool_srcs:  ["{dv_root}/tools/waves.tcl"],
 
   // Project defaults for VCS
   vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"

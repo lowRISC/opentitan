@@ -7,7 +7,7 @@
 
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{proj_root}/hw/dv/tools/xcelium/*"]
+  tool_srcs:  ["{dv_root}/tools/xcelium/*"]
 
   build_opts: ["-elaborate -64bit -access +r -sv",
                "-licqueue",
