@@ -152,8 +152,6 @@ module padring import padctrl_reg_pkg::*; #(
         .attr_i   ( mio_attr_i[k] ),
         .warl_o   (               )
       );
-
-      assign mio_in_o[k]  = 1'b0;
     end else if (ConnectMioIn[k]) begin : gen_mio_input
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
@@ -174,7 +172,6 @@ module padring import padctrl_reg_pkg::*; #(
     end else begin : gen_mio_tie_off
       logic unused_out, unused_oe, unused_pad;
       logic [AttrDw-1:0] unused_attr;
-      assign mio_pad_io[k] = 1'b0;
       assign unused_pad   = mio_pad_io[k];
       assign unused_out   = mio_out_i[k];
       assign unused_oe    = mio_oe_i[k];
@@ -214,8 +211,6 @@ module padring import padctrl_reg_pkg::*; #(
         .attr_i   ( dio_attr_i[k] ),
         .warl_o   (               )
       );
-
-      assign dio_in_o[k]  = 1'b0;
     end else if (ConnectDioIn[k]) begin : gen_dio_input
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
@@ -236,7 +231,6 @@ module padring import padctrl_reg_pkg::*; #(
     end else begin : gen_dio_tie_off
       logic unused_out, unused_oe, unused_pad;
       logic [AttrDw-1:0] unused_attr;
-      assign dio_pad_io[k] = 1'b0;
       assign unused_pad   = dio_pad_io[k];
       assign unused_out   = dio_out_i[k];
       assign unused_oe    = dio_oe_i[k];
