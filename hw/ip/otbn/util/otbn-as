@@ -1089,7 +1089,13 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
 
     '''
     assembler_name = 'riscv32-unknown-elf-as'
-    cmd = [assembler_name] + other_args + inputs
+
+    # Don't ask the linker to do relaxation because, in some cases, this might
+    # generate a GP-relative load. OTBN doesn't treat x3 (gp) specially, so
+    # this won't work.
+    default_args = ['-mno-relax']
+
+    cmd = [assembler_name] + default_args + other_args + inputs
     try:
         return subprocess.run(cmd).returncode
     except FileNotFoundError:
