@@ -28,7 +28,17 @@ module prim_generic_flash #(
   input [DataWidth-1:0]              prog_data_i,
   output logic                       ack_o,
   output logic [DataWidth-1:0]       rd_data_o,
-  output logic                       init_busy_o
+  output logic                       init_busy_o,
+  input                              tck_i,
+  input                              tdi_i,
+  input                              tms_i,
+  output logic                       tdo_o,
+  input                              scanmode_i,
+  input                              scan_reset_ni,
+  input                              flash_power_ready_hi,
+  input                              flash_power_down_hi,
+  inout [3:0]                        flash_test_mode_ai,
+  inout                              flash_test_voltage_hi
 );
 
   // Emulated flash macro values
@@ -314,5 +324,8 @@ module prim_generic_flash #(
   );
 
   assign rd_data_o = held_part == flash_ctrl_pkg::FlashPartData ? rd_data_main : rd_data_info;
+
+  // hard-wire assignment for now
+  assign tdo_o = 1'b0;
 
 endmodule // prim_generic_flash

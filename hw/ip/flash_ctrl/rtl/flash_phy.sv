@@ -19,7 +19,12 @@ module flash_phy import flash_ctrl_pkg::*; (
   output logic host_req_done_o,
   output logic [BusWidth-1:0] host_rdata_o,
   input flash_req_t flash_ctrl_i,
-  output flash_rsp_t flash_ctrl_o
+  output flash_rsp_t flash_ctrl_o,
+  input        scanmode_i,
+  input        scan_reset_ni,
+  input ast_wrapper_pkg::ast_eflash_t ast_eflash_i,
+  inout [3:0]  flash_test_mode_ai,
+  inout        flash_test_voltage_hi
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
@@ -96,6 +101,11 @@ module flash_phy import flash_ctrl_pkg::*; (
     .rdata_o (rsp_bank_sel)
   );
 
+  logic [NumBanks-1:0] flash_tdo;
+
+  // TBD: Hack at the moment until flash testing strategy is clear
+  assign flash_ctrl_o.tdo = |flash_tdo;
+
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
 
     // pop if the response came from the appropriate fifo
@@ -156,7 +166,17 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_done_o(prog_done[bank]),
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
-      .init_busy_o(init_busy[bank])
+      .init_busy_o(init_busy[bank]),
+      .tck_i(flash_ctrl_i.tck),
+      .tdi_i(flash_ctrl_i.tdi),
+      .tms_i(flash_ctrl_i.tms),
+      .tdo_o(flash_tdo[bank]),
+      .scanmode_i,
+      .scan_reset_ni,
+      .flash_power_ready_hi(ast_eflash_i.flash_power_ready_h),
+      .flash_power_down_hi(ast_eflash_i.flash_power_down_h),
+      .flash_test_mode_ai,
+      .flash_test_voltage_hi
     );
   end
 
