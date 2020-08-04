@@ -44,14 +44,19 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   addr_msb = block.addr_width - 1
   mask = block.addr_width
 %>\
+
+  // normalized address only take the [${addr_msb}:2] address from the TLUL a_address
+  bit [${addr_msb} : 0] normalized_addr;
+  assign normalized_addr = h2d.a_address >> 2;
+
   // declare common read and write sequences
   sequence device_wr_S(logic [${addr_msb}:0] addr);
-    h2d.a_address == addr && h2d.a_opcode inside {PutFullData, PutPartialData} &&
+    normalized_addr == (addr >> 2) && h2d.a_opcode inside {PutFullData, PutPartialData} &&
         h2d.a_valid && h2d.d_ready && !d2h.d_valid;
   endsequence
 
   sequence device_rd_S(logic [${addr_msb}:0] addr);
-    h2d.a_address == addr && h2d.a_opcode inside {Get} && h2d.a_valid && h2d.d_ready &&
+    normalized_addr == (addr >> 2) && h2d.a_opcode inside {Get} && h2d.a_valid && h2d.d_ready &&
         !d2h.d_valid;
   endsequence
 
@@ -79,18 +84,20 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
         (d2h.d_error || ($past(act_data) << lsb) == exp_data || !regen);
   endproperty
 
+  // W1C register, if write 1 external data will be cleared to 0;
+  // if write 0, internal data won't change
   property w1c_P(bit [${addr_msb}:0] addr, bit [DWidth-1:0] act_data, bit regen,
                 bit [DWidth-1:0] mask, int lsb);
     logic [DWidth-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask & '0) ##1
+    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] d2h.d_valid && d2h.d_source == id) |->
-        (d2h.d_error || (act_data << lsb) == exp_data || !regen);
+        (d2h.d_error || ((act_data << lsb) & exp_data) == 0 || !regen);
   endproperty
 
   property w1c_ext_P(bit [${addr_msb}:0] addr, bit [DWidth-1:0] act_data, bit regen,
                     bit [DWidth-1:0] mask, int lsb);
     logic [DWidth-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask & '0) ##1
+    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] (d2h.d_valid && d2h.d_source == id)) |->
         (d2h.d_error || ($past(act_data) << lsb) == exp_data || !regen);
   endproperty
@@ -110,14 +117,6 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
         (d2h.d_error || (d2h.d_data & mask) >> lsb == exp_data);
   endproperty
 
-  // read a WO register, always return 0
-  property r_wo_P(bit [${addr_msb}:0] addr);
-    logic [DWidth-1:0] id;
-    (device_rd_S(addr), id = h2d.a_source) ##1
-        first_match(##[0:$] (d2h.d_valid && d2h.d_source == id)) |->
-        (d2h.d_error || d2h.d_data == 0);
-  endproperty
-
   // TODO: currently not used, will use once support regwen reg
   property wr_regen_stable_P(bit regen, bit [DWidth-1:0] exp_data);
     (!regen && $stable(regen)) |-> $stable(exp_data);
@@ -127,6 +126,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
 <%
   has_q = r.get_n_bits(["q"]) > 0
   has_d = r.get_n_bits(["d"]) > 0
+  has_de = r.get_n_bits(["de"]) > 0
 %>\
   % if not r.get_field_flat(0).shadowed:
   % if r.is_multi_reg():
@@ -184,7 +184,6 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
   reg_msb = reg_flat.width - 1
   regwen = reg_flat.regwen
   reg_wr_mask = 0
-  hw_access = reg_flat.fields[0].hwaccess
 %>\
   // assertions for register: ${reg_name}
     % if regwen:
@@ -203,6 +202,7 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
       reg_wr_mask |= field_wr_mask
       reg_wr_mask_h = format(reg_wr_mask, 'x')
       lsb = f.lsb
+      sw_rdaccess = f.swrdaccess.name
 %>\
       % if not r.ishomog:
   // this is a non-homog multi-reg
@@ -240,12 +240,16 @@ ${gen_asserts_by_category(reg_name, reg_name, reg_flat.hwext, reg_wr_mask_h)}\
 <% reg_w_path = "reg2hw." + assert_path + ".q" %>\
 ${gen_wr_asserts(assert_name, is_ext, reg_w_path, wr_mask)}\
     % if not has_d:
-${gen_rd_asserts(assert_name, is_ext, reg_w_path, "ffffffff")}\
+${gen_rd_asserts(assert_name, is_ext, reg_w_path, wr_mask)}\
     % endif
   % endif
   % if has_d:
+    % if has_de and has_q:
+<% reg_r_path = "hw2reg." + assert_path + ".de ? hw2reg." + assert_path + ".d :reg2hw." + assert_path + ".q" %>\
+    % else:
 <% reg_r_path = "hw2reg." + assert_path + ".d" %>\
-${gen_rd_asserts(assert_name, is_ext, reg_r_path, "ffffffff")}\
+    % endif
+${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   % endif
 </%def>\
 <%def name="gen_multi_reg_asserts_by_category(assert_name, multi_reg_name, mreg_msb, mreg_lsb, is_ext, wr_mask)">\
@@ -267,13 +271,12 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   % else:
 <% wr_property = "P" %>\
   % endif
-  % if r.is_multi_reg() and not r.ishomog:
+  % if not r.ishomog:
 <% shift_index = lsb %>\
   % else:
 <% shift_index = 0 %>\
   % endif
   % if field_access == "W1C":
-  //`ASSERT(${name}_w0c_A, w0c_P(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}))
   `ASSERT(${name}_w1c_A, w1c_${wr_property}(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}))
   % elif field_access in {"RW", "WO", "W0C"}:
   `ASSERT(${name}_wr_A, wr_${wr_property}(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}))
@@ -285,19 +288,15 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   % else:
 <% rd_property = "rd_P" %>\
   % endif
-  % if r.is_multi_reg() and not r.ishomog:
+  % if not r.ishomog:
 <% shift_index = lsb %>\
   % else:
 <% shift_index = 0 %>\
   % endif
-  % if field_access == "W0C":
+  % if sw_rdaccess == "NONE" and field_access == "W1C":
+  `ASSERT(${name}_rd_A, ${rd_property}(${reg_offset}, 0, 'h${mask}, ${shift_index}))
+  % elif field_access in {"RW", "W0C", "W1C"}:
   `ASSERT(${name}_rd_A, ${rd_property}(${reg_offset}, ${reg_r_path}, 'h${mask}, ${shift_index}))
-  % elif field_access == "W1C":
-  `ASSERT(${name}_rd_A, ${rd_property}(${reg_offset}, ${reg_r_path}, 'h${mask}, ${shift_index}))
-  % elif field_access in {"RW", "RO"}:
-  `ASSERT(${name}_rd_A, ${rd_property}(${reg_offset}, ${reg_r_path}, 'h${mask}, ${shift_index}))
-  % elif field_access == "WO":
-  `ASSERT(${name}_rd_A, r_wo_P(${reg_offset}))
   % endif
 </%def>\
 <%def name="declare_fpv_var(name, width)">\
