@@ -5,12 +5,13 @@ CAPI=2:
 name: "lowrisc:ip:pwrmgr_pkg:0.1"
 description: "Power manager package"
 
-# pwrmgr pkg does not actually depend on ip:tlul
-# but it's used as "serialization" point for the ip/top level split
+# THIS IS A HUGE BRONZE-ONLY HACK!!!
+# THIS ENSURES WE GET THE RIGHT DEPENDENCIES, but IP LEVEL completely breaks
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:top_earlgrey:pwrmgr_only_reg
     files:
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource

@@ -5,12 +5,16 @@ CAPI=2:
 name: "lowrisc:ip:pinmux_component:0.1"
 description: "Pin Multiplexer component without the CSRs"
 
+
+# HUGE HACK FOR TOP_EARLGREY BRONZE
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:systems:ast_pkg
+      - lowrisc:top_earlgrey:pinmux_reg
     files:
       - rtl/pinmux_pkg.sv
       - rtl/pinmux_wkup.sv

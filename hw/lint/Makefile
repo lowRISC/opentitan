@@ -69,7 +69,7 @@ lint: clean
 $(ips_lint):
 	rm -rf build
 	mkdir -p ${REPORT_DIR}
-	-fusesoc --cores-root ${CORE_ROOT} run --target=lint --tool=ascentlint lowrisc:$(subst -,:,$(patsubst %_lint,%,$@))
+	-fusesoc --cores-root ${CORE_ROOT} --cores-root ${TECH_LIB_PATH} run --target=lint --tool=ascentlint lowrisc:$(subst -,:,$(patsubst %_lint,%,$@))
 	cp build/lowrisc_*$(subst -,_,$(patsubst %_lint,%,$@))*/lint-ascentlint/ascentlint.log ${REPORT_DIR}/$(patsubst %_lint,%,$@).log
 	cp build/lowrisc_*$(subst -,_,$(patsubst %_lint,%,$@))*/lint-ascentlint/ascentlint.rpt ${REPORT_DIR}/$(patsubst %_lint,%,$@).rpt
 
