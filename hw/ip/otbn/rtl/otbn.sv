@@ -5,7 +5,7 @@
 `include "prim_assert.sv"
 
 /**
- * OpenTitan Big Number Accelerator (OTBN)
+ * OpenTitan Big Number Accelerator (OTBN) with a change
  */
 module otbn
   import prim_alert_pkg::*;
