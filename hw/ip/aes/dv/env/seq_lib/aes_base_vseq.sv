@@ -45,7 +45,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
     // initialize control register
     aes_ctrl[0]    = 0;        // set to encryption
-    aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 4'b0001
+    aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
     csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1));
     csr_wr(.csr(ral.trigger), .value(aes_trigger));

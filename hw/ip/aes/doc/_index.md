@@ -166,7 +166,7 @@ For a general introduction into these cipher modes, refer to [Recommendation for
 
        _Note, if the ECB/CBC decryption is performed, the Full Key register is loaded with the value stored in the Decryption Key register._
 
-    _Note, for the AES unit to automatically start in CBC, CBF, OFB or CTR mode, also the IV must be ready.
+    _Note, for the AES unit to automatically start in CBC, CFB, OFB or CTR mode, also the IV must be ready.
     The IV is ready if -- since the last IV update (either done by the processor or the AES unit itself) -- all IV registers have been written at least once or none of them.
     The AES unit will not automatically start the next encryption/decryption with a partially updated IV._
 
