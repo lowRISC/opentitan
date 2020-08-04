@@ -6,7 +6,7 @@ import logging as log
 import re
 from collections import OrderedDict
 from enum import Enum
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from reggen.validate import check_int
 from topgen import lib
@@ -223,22 +223,19 @@ def elab_intermodule(topcfg: OrderedDict):
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_req"),
                              ('signame', sig_name + "_req"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + "_rsp"),
                              ('signame', sig_name + "_rsp"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
         else:  # if sig["type"] == "uni":
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
 
     if "external" not in topcfg["inter_module"]:
@@ -388,6 +385,49 @@ def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
         obj["default"] = ""
 
     return error
+
+
+def find_otherside_modules(topcfg: OrderedDict, m,
+                           s) -> List[Tuple[str, str, str]]:
+    """Find far-end port based on given module and signal name
+    """
+    signame = "{}.{}".format(m, s)
+    for req, rsps in topcfg["inter_module"]["connect"].items():
+        if req.startswith(signame):
+            # return rsps after splitting module instance name and the port
+            result = []
+            for rsp in rsps:
+                rsp_m, rsp_s, rsp_i = filter_index(rsp)
+                result.append(('connect', rsp_m, rsp_s))
+            return result
+
+        for rsp in rsps:
+            if signame == rsp:
+                req_m, req_s, req_i = filter_index(req)
+                return [('connect', req_m, req_s)]
+
+    # If reaches here, no matching results in 'connect'
+    # so search 'top' or 'external'
+
+    # todo: something here
+    # check special cases
+    pairs = {
+        ('main', 'tl_corei'): ('rv_core_ibex', 'tl_i'),
+        ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
+        ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
+        ('main', 'tl_debug_mem'): ('dm_top', 'tl_d')
+    }
+    for sig in topcfg["inter_signal"]["signals"]:
+        pairs[(sig['inst_name'], sig['name'])] = ('', sig['top_signame'])
+
+    pair = pairs.get((m, s))
+    if pair is not None:
+        return [('top', pair[0], pair[1])]
+
+    # if reaches here, it means either the format is wrong, or floating port.
+    log.error("`find_otherside_modules()`: "
+              "No such signal {}.{} exists.".format(m, s))
+    return []
 
 
 def check_intermodule(topcfg: Dict, prefix: str) -> int:
