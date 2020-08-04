@@ -36,7 +36,8 @@
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
                 // xbar tests
-                "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"]
+                //"{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"
+                ]
 
   // Override the default vcs_cov_hier flag to supply chip specific coverage hierarchies.
   overrides: [

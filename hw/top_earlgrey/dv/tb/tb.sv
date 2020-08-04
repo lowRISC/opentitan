@@ -223,6 +223,6 @@ module tb;
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
-  `include "../autogen/tb__xbar_connect.sv"
+  //`include "../autogen/tb__xbar_connect.sv"
 
 endmodule
