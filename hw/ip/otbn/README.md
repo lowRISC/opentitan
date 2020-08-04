@@ -15,7 +15,7 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ### Build OTBN software
 
-*Note the toolchain is still under active development, full OTBN ISA support
+*Note the toolchain is still under active development. Full OTBN ISA support
 isn't complete*
 
 An assembler, linker and disassembler for OTBN can be found in
@@ -27,7 +27,7 @@ toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-deve
 assembly files using the toolchain:
 
 ```sh
-./hw/ip/otbn/util/build.sh prog.S prog_bin/prog
+hw/ip/otbn/util/build.sh prog.S prog_bin/prog
 ```
 
 Will assemble and link `prog.S` and produce various outputs using
@@ -48,23 +48,38 @@ fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
 It includes functionality to set the initial DMem and IMem contents. The start
 address is hard coded to 0. Modify the `ImemStartAddr` parameter in
 `./dv/verilator/otbn_top_sim.sv` to change this. Combined with the build script
-described above a single assembly file can be built and run on the simulation as
+described above, a single assembly file can be built and run on the simulation as
 follows:
 
 ```sh
-# Build ./example_dir/prog.S
-./hw/ip/otbn/util/build.sh ./example_dir/prog.S ./example_dir/prog_bin
+# Create directory for build outputs
+mkdir otbn_build
+# Build smoke test
+hw/ip/otbn/util/build.sh ./hw/ip/otbn/dv/smoke/smoke_test.S ./otbn_build/smoke
 
 # Run the resulting binary on the OTBN standalone simulation
 ./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim -t \
-  --meminit=imem,./example_dir/prog_bin_imem.elf \
-  --meminit=dmem,./example_dir/prog_bin_dmem.elf
+  --meminit=imem,./otbn_build/smoke_imem.elf \
+  --meminit=dmem,./otbn_build/smoke_dmem.elf
 ```
 
-This will initialise the IMem with `./example_dir/prog_bin_imem.elf` and the
-DMem with `./example_dir/prog_bin_dmem.elf`. The `-t` argument enables tracing.
-The simulation automatically halts on an `ecall` instruction and prints the
-final register values.
+This will initialise the IMem with `./otbn_build/smoke_imem.elf` and the DMem
+with `./otbn_build/smoke_dmem.elf`. The `-t` argument enables tracing.  The
+simulation automatically halts on an `ecall` instruction and prints the final
+register values.
+
+### Run the smoke test
+
+A smoke test which exercises some functionality of OTBN can be found, together
+with its expected outputs (in the form of final register values), in
+`./hw/ip/otbn/dv/smoke`. The test can be run using a script.
+
+```sh
+hw/ip/otbn/dv/smoke/run_smoke.sh
+```
+
+This will build the standalone simulation, build the smoke test binary, run it
+and check the results are as expected.
 
 ### Build the RTL implementation in OT earlgrey simulation
 
