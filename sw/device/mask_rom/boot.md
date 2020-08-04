@@ -1,9 +1,10 @@
 # Pseudo-code for Mask ROM Secure Boot Process
 
-This file should be read in conjunction with secure boot specification.
+This file should be read in conjunction with the secure boot specification.
 References to that document are included.
 
-Sub-procedures are documented below the main `boot` function.
+Sub-procedures and data structures are documented below the main `boot`
+function.
 
 1. Power on (entirely in hardware)
 
@@ -51,7 +52,6 @@ void boot(void) {
   manufacturing_boot_strap();
 
   // Read Boot Policy for ROM_EXTs from flash (2.b)
-  // **Open Q:** How is this protected beyond being stored in flash?
   boot_policy = read_boot_policy();
 
   // Determine which ROM_EXT slot is prioritised (2.b, 2.c.i)
@@ -73,11 +73,13 @@ void boot(void) {
     // Verify ROM_EXT Image Signature (2.c.iii)
     // **Open Q:** Integration with Secure Boot Hardware, OTBN
     // **Open Q:** Key Selection method/mechanism.
-    verified = verify_rom_ext_signature_start(pub_key_selector(...),
-                                              current_rom_ext_manifest);
+    verified = verify_rom_ext_signature(pub_key_selector(...),
+                                        current_rom_ext_manifest);
     if (!verified) {
-      // Signature Failure (check policy)
-      if (try_next_on_signature_failed(boot_policy))
+      // Manifest Failure (check Boot Policy)
+      // **Open Q:** Does this need different logic to the check after
+      //   `check_rom_ext_manifest`?
+      if (try_next_on_manifest_failed(boot_policy))
         continue
       else
         break
@@ -96,7 +98,7 @@ void boot(void) {
 
     // System State Measurements (2.c.iv)
     measurements = perform_system_state_measurements();
-    if (!boot_allowed(boot_policy, measurements)) {
+    if (!boot_allowed_with_state(measurements)) {
       // Lifecycle failure (no policy check)
       break
     }
@@ -112,7 +114,7 @@ void boot(void) {
 
     // Lock down Peripherals based on descriptors in ROM_EXT manifest.
     // - This does not cover key-related lockdown, which is done in
-    //   `derive_creator_root_key`.
+    //   `derive_and_lock_creator_root_key_inputs`.
     peripheral_lockdown(current_rom_ext_manifest);
 
     // PMP Region for ROM_EXT (2.c.v)
@@ -140,7 +142,9 @@ void boot(void) {
 
    Not covered by this document. Refer to Secure Boot document instead.
 
-## Cleaning Device State
+## Subroutines
+
+### Cleaning Device State
 
 Part of this process is done before we can execute any C code. In particular, we
 have to clear all registers and all of the main RAM before we setup the CRT
@@ -189,7 +193,7 @@ clean_device_state_part_2() {
 }
 ```
 
-## CRT (C Runtime)
+### CRT (C Runtime)
 
 We cannot execute any C code until we have set up the CRT.
 
@@ -209,7 +213,7 @@ crt_init() {
 }
 ```
 
-## Manufacturing boot-strapping intervention
+### Manufacturing boot-strapping intervention
 
 This is where, depending on lifecycle state, new flash images may be loaded onto
 the device (usually during manufacturing).
@@ -227,26 +231,21 @@ manufacturing_boot_strap() {
 }
 ```
 
-## Boot Info Policy
+### Read Boot Policy
 
 ```c
 read_boot_policy() {
   // Parameters:
   // - initilized flash_ctrl DIF (for accessing flash info page)
   // Returns:
-  // - boot policy struct
-  //   **Open Q:** What boot policies do we allow?
-  //   - Active ROM_EXT selector (there are only two ROM_EXT slots) (2.b, 2.c.i)
-  //   - What to do if digest doesn't match (2.c.ii)
-  //   - What to do if signature doesn't verify (2.c.iii)
-  //   - What to do if system measurements are not right (2.c.iv)
+  // - Boot Policy Structure (see below)
 
   // 1. Uses dif_flash_ctrl to issue read of boot info page.
   // 2. Pull this into a struct to return.
 }
 ```
 
-## Lock Down Peripherals
+### Lock Down Peripherals
 
 ```c
 peripheral_lockdown() {
@@ -269,3 +268,106 @@ peripheral_lockdown() {
   // inputs getting locked is not something the ROM_EXT can choose.
 }
 ```
+
+## Info Structures
+
+There are two main info structures used by the Mask ROM:
+
+*   The Boot Policy structure, used to choose a ROM_EXT to boot.
+*   The ROM_EXT manifest, used to contain information about a specific ROM_EXT.
+
+In order to keep the Mask ROM simple, a particular Mask ROM version will only
+support one version each of the following structures. This means they must be
+carefully designed to be extensible if the other systems accessing them may
+require additional data in these formats.
+
+### Boot Policy Structure
+
+Accessed by:
+
+*   Mask ROM (to choose ROM_EXT, and during bootstrapping to bless new ROM_EXT).
+*   ROM_EXT (during firmware update).
+
+Needs to contain:
+
+*   Identifier (so we know we're reading the right thing)
+
+    This also acts like a version number, because the Mask ROM code that parses
+    the boot policy can never be updated. Conversely, any changes to this
+    structure require new Mask ROM parsing code, which should be denoted with a
+    new identifier.
+
+*   Which ROM_EXT slot should be chosen first (2.b, 2.c.i).
+*   What to do if ROM_EXT does not validate (2.c.ii, 2.c.iii):
+    *   Try Alternate ROM_EXT; or
+    *   Fail to Boot
+*   What to do if ROM_EXT validates successfully, just before jumping to ROM_EXT:
+    *   Do nothing; or
+    *   Set current ROM_EXT as Primary if not already.
+*   Checksum (of everything else).
+
+Stored in: Flash (Info Partition)
+
+Extensibility: None. This info only controls the actions of the Mask ROM. You
+cannot add functionality to the Mask ROM of a given chip, so there's no way to
+add other information to this structure.
+
+### ROM_EXT Manifest Structure
+
+Accessed by:
+
+*   Mask ROM (to validate ROM_EXT)
+*   BL0 Kernel (during firmware update).
+
+Needs to contain:
+
+*   Unsigned Area:
+    *   Identifier (so we know we're reading the right thing)
+        This also acts as a ROM_EXT manifest version (ie, the version of the
+        layout of the header).
+
+    *   Signature
+*   Signed Area:
+    *   Image Length
+    *   Entry Point
+        **Open Q:** Is this fixed or programmable? Field not needed if fixed.
+
+    *   ROM_EXT PMP Region Information
+        **Open Q:** Is this fixed or programmable? Field not needed if fixed.
+
+    *   Software Binding Properties:
+        *   ROM_EXT Version
+            This is the version of the image contained in the ROM_EXT.
+
+        *   Usage Constraints
+        *   Peripheral Lockdown Information
+    *   Read-only Extension Area:
+        *   Several words for ROM_EXT/BL0 use only.
+            (Interpretation governed by ROM_EXT/BL0 Version).
+            **Open Q:** Does this satisfy the previous usecases?
+
+            This is likely to be a fixed number of `(pointer, checksum)` pairs,
+            where the pointer points to a structure somewhere within the ROM_EXT
+            image. This should help us avoid running out of space, while also
+            ensuring these structures do not become corrupted (note the image
+            and the read-only extension area are also signed). This approach
+            does allow the pointed-to structure to be variable-length, as it is
+            down to the ROM_EXT/BL0 to interpret the data and validate the
+            checksum.
+
+            For a given ROM_EXT manifest version, the number of these slots
+            cannot be changed, but different manifest versions can add to the
+            number of slots. Each slot in a manifest version should only be
+            allocated for a single use, and once allocated should not be
+            re-allocated.
+
+    *   ROM_EXT Code Image.
+
+Stored in: Flash
+
+Extensibility:
+*   Mask ROM: None
+*   ROM_EXT/BL0:
+    *   Uses the "Extension Area" for additional read-only data if required.
+        This is not interpreted by the Mask ROM, but may be used by ROM_EXT or
+        BL0 if required.
