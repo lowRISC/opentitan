@@ -13,8 +13,28 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ## Develop OTBN
 
-### Run the standalone simulation
+### Build OTBN software
 
+*Note the toolchain is still under active development, full OTBN ISA support
+isn't complete*
+
+An assembler, linker and disassembler for OTBN can be found in
+`hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
+so one must be available (see the OpenTitan documentation on [obtaining a
+toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-development).
+
+`hw/ip/otbn/util/build.sh` provides a simple script to build a single OTBN
+assembly files using the toolchain:
+
+```sh
+./hw/ip/otbn/util/build.sh prog.S prog_bin/prog
+```
+
+Will assemble and link `prog.S` and produce various outputs using
+`prog_bin/prog` as a prefix for all output filenames. Run
+`./hw/ip/otbn/util/build.sh` without arguments for more information.
+
+### Run the standalone simulation
 *Note that OTBN is still in the early development stages so this simulation does
 not support the full ISA*
 
@@ -27,17 +47,24 @@ fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
 
 It includes functionality to set the initial DMem and IMem contents. The start
 address is hard coded to 0. Modify the `ImemStartAddr` parameter in
-`./dv/verilator/otbn_top_sim.sv` to change this. The simulation is run as
+`./dv/verilator/otbn_top_sim.sv` to change this. Combined with the build script
+described above a single assembly file can be built and run on the simulation as
 follows:
 
 ```sh
+# Build ./example_dir/prog.S
+./hw/ip/otbn/util/build.sh ./example_dir/prog.S ./example_dir/prog_bin
+
+# Run the resulting binary on the OTBN standalone simulation
 ./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim -t \
-  --meminit=imem,imem_contents.vmem --meminit=dmem,dmem_contents.vmem
+  --meminit=imem,./example_dir/prog_bin_imem.elf \
+  --meminit=dmem,./example_dir/prog_bin_dmem.elf
 ```
 
-This will initialise the IMem with `imem_contents.vmem` and the DMem with
-`dmem_contents.vmem`. The `-t` argument enables tracing. The simulation
-automatically halts on an `ecall` instruction.
+This will initialise the IMem with `./example_dir/prog_bin_imem.elf` and the
+DMem with `./example_dir/prog_bin_dmem.elf`. The `-t` argument enables tracing.
+The simulation automatically halts on an `ecall` instruction and prints the
+final register values.
 
 ### Build the RTL implementation in OT earlgrey simulation
 
