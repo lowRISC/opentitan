@@ -42,6 +42,13 @@ module top_${top["name"]} #(
   input               jtag_tdi_i,
   output              jtag_tdo_o,
 
+  // AST flash
+  input ast_wrapper_pkg::ast_eflash_t ast_eflash_i,
+
+  // Flash ports
+  inout [3:0]         flash_test_mode_ai,
+  inout               flash_test_voltage_hi,
+
 % if num_mio != 0:
   // Multiplexed I/O
   input        ${lib.bitarray(num_mio, max_sigwidth)} mio_in_i,
@@ -512,7 +519,12 @@ module top_${top["name"]} #(
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
-    .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp)
+    .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp),
+    .scanmode_i,
+    .scan_reset_ni   (scan_rst_ni),
+    .ast_eflash_i,
+    .flash_test_mode_ai,
+    .flash_test_voltage_hi
   );
 
   % else:

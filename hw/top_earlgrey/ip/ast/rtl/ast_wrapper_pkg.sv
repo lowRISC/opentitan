@@ -73,4 +73,9 @@ package ast_wrapper_pkg;
     alerts_n: {NumAlerts{1'b1}}
   };
 
+  typedef struct packed {
+    logic flash_power_down_h;
+    logic flash_power_ready_h;
+  } ast_eflash_t;
+
 endpackage // ast_wrapper_pkg
