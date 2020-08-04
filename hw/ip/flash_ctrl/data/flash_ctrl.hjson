@@ -431,7 +431,6 @@
       desc: "Flash Controller Status",
       swaccess: "ro",
       hwaccess: "hwo",
-      hwext: "true",
       fields: [
         { bits: "0",    name: "rd_full",    desc: "Flash read FIFO full, software must consume data"},
         { bits: "1",    name: "rd_empty",   desc: "Flash read FIFO empty", resval: "1"},

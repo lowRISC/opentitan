@@ -12,7 +12,7 @@ package flash_ctrl_pkg;
   parameter int NumBanks        = top_pkg::FLASH_BANKS;
   parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  // Info pages per bank
   parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; // Data pages per bank
-  parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of bus words per page
+  parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
@@ -20,6 +20,7 @@ package flash_ctrl_pkg;
   // flash phy parameters
   parameter int DataByteWidth   = $clog2(DataWidth / 8);
   parameter int BankW           = $clog2(NumBanks);
+  parameter int InfoPageW       = $clog2(InfosPerBank);
   parameter int PageW           = $clog2(PagesPerBank);
   parameter int WordW           = $clog2(WordsPerPage);
   parameter int AddrW           = BankW + PageW + WordW; // all flash range
@@ -39,6 +40,18 @@ package flash_ctrl_pkg;
   // fifo parameters
   parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
+  // flash life cycle / key manager management constants
+  // One page for creator seeds
+  // One page for owner seeds
+  parameter int NumSeeds = 2;
+  parameter int CreatorInfoPage = 2;
+  parameter int OwnerInfoPage = 2;
+  parameter logic [NumSeeds-1:0][InfoPageW-1:0] SeedInfoPageSel =
+    {
+      CreatorInfoPage,
+      OwnerInfoPage
+    };
+
   // Flash Operations Supported
   typedef enum logic [1:0] {
     FlashOpRead     = 2'h0,
@@ -54,6 +67,13 @@ package flash_ctrl_pkg;
   } flash_erase_e;
 
   parameter int EraseBitWidth = $bits(flash_erase_e);
+
+  // Flash function select
+  typedef enum logic [1:0] {
+    NoneSel,
+    SwSel,
+    HwSel
+  } flash_sel_e;
 
   // Flash tlul to fifo direction
   typedef enum logic  {
