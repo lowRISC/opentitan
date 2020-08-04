@@ -1695,18 +1695,6 @@
           ]
           type: interrupt
         }
-        {
-          name: esc3
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
       ]
       alert_list: []
       wakeup_list: []
@@ -3719,19 +3707,6 @@
         4
         1
         2
-      ]
-      type: interrupt
-      module_name: nmi_gen
-    }
-    {
-      name: nmi_gen_esc3
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
       ]
       type: interrupt
       module_name: nmi_gen
