@@ -81,6 +81,9 @@ package flash_ctrl_pkg;
     logic                 scramble_en;
     logic [127:0]         addr_key;
     logic [127:0]         data_key;
+    logic                 tck;
+    logic                 tdi;
+    logic                 tms;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -96,7 +99,10 @@ package flash_ctrl_pkg;
     prog_last: '0,
     scramble_en: '0,
     addr_key:  128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key:  128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+    data_key:  128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
+    tck:       1'b0,
+    tdi:       1'b0,
+    tms:       1'b0
   };
 
   // memory to flash controller
@@ -106,6 +112,7 @@ package flash_ctrl_pkg;
     logic                erase_done;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
+    logic                tdo;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -114,7 +121,8 @@ package flash_ctrl_pkg;
     prog_done:  1'b0,
     erase_done: 1'b0,
     rd_data:    '0,
-    init_busy:  1'b0
+    init_busy:  1'b0,
+    tdo:        1'b0
   };
 
 

@@ -16,6 +16,20 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        tlul_pkg::tl_h2d_t tl_i,
   output       tlul_pkg::tl_d2h_t tl_o,
 
+  // Flash jtag I/O pins
+  input        cio_tck_i,
+  output logic cio_tck_o,
+  output logic cio_tck_en_o,
+  input        cio_tdi_i,
+  output logic cio_tdi_o,
+  output logic cio_tdi_en_o,
+  input        cio_tms_i,
+  output logic cio_tms_o,
+  output logic cio_tms_en_o,
+  input        cio_tdo_i,
+  output logic cio_tdo_o,
+  output logic cio_tdo_en_o,
+
   // Flash Interface
   input        flash_rsp_t flash_i,
   output       flash_req_t flash_o,
@@ -458,22 +472,34 @@ module flash_ctrl import flash_ctrl_pkg::*; (
                                         (reg2hw.intr_test.op_error.qe  &
                                         reg2hw.intr_test.op_error.q);
 
+  // IO connections
+  assign flash_o.tck  = cio_tck_i;
+  assign flash_o.tdi  = cio_tdi_i;
+  assign flash_o.tms  = cio_tms_i;
+  assign cio_tdo_o    = flash_i.tdo;
+  assign cio_tdo_en_o = 1'b1;
 
+  // unused
+  assign cio_tck_o = 1'b0;
+  assign cio_tck_en_o = 1'b0;
+  assign cio_tdi_o = 1'b0;
+  assign cio_tdi_en_o = 1'b0;
+  assign cio_tms_o = 1'b0;
+  assign cio_tms_en_o = 1'b0;
+  logic unused_tdo;
+  assign unused_tdo = cio_tdo_i;
 
   // Unused bits
   logic [BusByteWidth-1:0] unused_byte_sel;
   logic [31-BusAddrW:0] unused_higher_addr_bits;
   logic [31:0] unused_scratch;
 
-
   // Unused signals
   assign unused_byte_sel = reg2hw.addr.q[BusByteWidth-1:0];
   assign unused_higher_addr_bits = reg2hw.addr.q[31:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
-
   // Assertions
-
   `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid     )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready     )
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,

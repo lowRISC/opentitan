@@ -4,6 +4,24 @@
 { name: "FLASH_CTRL",
   clock_primary: "clk_i",
   bus_device: "tlul",
+  available_inout_list: [
+    { name: "tck",
+      width: 1,
+      desc: "Flash jtag interface"
+    }
+    { name: "tdi",
+      width: 1,
+      desc: "Flash jtag interface"
+    }
+    { name: "tms",
+      width: 1,
+      desc: "Flash jtag interface"
+    }
+    { name: "tdo",
+      width: 1,
+      desc: "Flash jtag interface"
+    }
+  ],
   interrupt_list: [
     { name: "prog_empty", desc: "Program FIFO empty" },
     { name: "prog_lvl",   desc: "Program FIFO drained to level" },
@@ -12,7 +30,6 @@
     { name: "op_done",    desc: "Operation complete" },
     { name: "op_error",   desc: "Operation failed with error" },
   ],
-
   // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
     { struct:  "flash",          // flash_req_t, flash_rsp_t

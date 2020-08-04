@@ -35,7 +35,17 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       prog_done_o,
   output logic                       erase_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
-  output logic                       init_busy_o
+  output logic                       init_busy_o,
+  input                              tck_i,
+  input                              tdi_i,
+  input                              tms_i,
+  output logic                       tdo_o,
+  input                              scanmode_i,
+  input                              scan_reset_ni,
+  input                              flash_power_ready_hi,
+  input                              flash_power_down_hi,
+  inout [3:0]                        flash_test_mode_ai,
+  inout                              flash_test_voltage_hi
 );
 
 
@@ -341,8 +351,18 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .prog_data_i(prog_data),
     .ack_o(ack),
     .rd_data_o(flash_rdata),
-    .init_busy_o // TBD this needs to be looked at later. What init do we need to do,
-                 // and where does it make the most sense?
+    .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
+                  // and where does it make the most sense?
+    .tck_i,
+    .tdi_i,
+    .tms_i,
+    .tdo_o,
+    .scanmode_i,
+    .scan_reset_ni,
+    .flash_power_ready_hi,
+    .flash_power_down_hi,
+    .flash_test_mode_ai,
+    .flash_test_voltage_hi
   );
 
   /////////////////////////////////
