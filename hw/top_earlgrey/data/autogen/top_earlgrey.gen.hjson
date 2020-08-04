@@ -1356,7 +1356,29 @@
       bus_host: none
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
+      available_inout_list:
+      [
+        {
+          name: tck
+          width: 1
+          type: inout
+        }
+        {
+          name: tdi
+          width: 1
+          type: inout
+        }
+        {
+          name: tms
+          width: 1
+          type: inout
+        }
+        {
+          name: tdo
+          width: 1
+          type: inout
+        }
+      ]
       interrupt_list:
       [
         {
@@ -7371,6 +7393,7 @@
       pwm_aon
       rbox_aon
       spi_host1
+      flash_ctrl
     ]
     nc_modules:
     [
@@ -7806,6 +7829,30 @@
         width: 4
         type: inout
         module_name: spi_host1
+      }
+      {
+        name: flash_ctrl_tck
+        width: 1
+        type: inout
+        module_name: flash_ctrl
+      }
+      {
+        name: flash_ctrl_tdi
+        width: 1
+        type: inout
+        module_name: flash_ctrl
+      }
+      {
+        name: flash_ctrl_tms
+        width: 1
+        type: inout
+        module_name: flash_ctrl
+      }
+      {
+        name: flash_ctrl_tdo
+        width: 1
+        type: inout
+        module_name: flash_ctrl
       }
     ]
   }
