@@ -22,15 +22,15 @@ MEMORY
 
 SECTIONS
 {
-    .text ALIGN(4) :
+    .text ORIGIN(imem) : ALIGN(4)
     {
         *(.text*)
-    } >imem AT >imem_load
+    } >imem AT>imem_load
 
-    .data ALIGN(32) :
+    .data ORIGIN(dmem) : ALIGN(32)
     {
         *(.data*)
         . = ALIGN(32);
         *(.bss*)
-    } >dmem AT >dmem_load
+    } >dmem AT>dmem_load
 }
