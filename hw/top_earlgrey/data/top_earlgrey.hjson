@@ -119,6 +119,8 @@
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here
+  // generated: A module is templated and generated as part of topgen
+  // top_only: A module is not templated but is specific to 'top_*' instead of 'ip'
   module: [
     { name: "uart",     // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
@@ -261,6 +263,14 @@
       reset_connections: {rst_ni: "sys_io", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40150000",
     },
+    { name: "sensor_ctrl",
+      type: "sensor_ctrl",
+      clock_srcs: {clk_i: "io"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys_io"},
+      base_addr: "0x40170000",
+      top_only: "true"
+    },
     { name: "otbn",
       type: "otbn",
       clock_srcs: {clk_i: "main"},
@@ -357,7 +367,6 @@
       'flash_ctrl.flash': ['eflash.flash_ctrl']
       'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
-
     }
 
     // top is to connect to top net/struct.
@@ -377,6 +386,12 @@
         'clkmgr.clk_io': 'clk_io',
         'clkmgr.clk_usb': 'clk_usb',
         'clkmgr.clk_aon': 'clk_aon'
+        'rstmgr.ast': '',
+        'pwrmgr.pwr_ast': '',
+        'sensor_ctrl.ast_alert': '',
+        'sensor_ctrl.ast_status': '',
+        'usbdev.usb_ref_val': '',
+        'usbdev.usb_ref_pulse': '',
     },
   },
 
@@ -420,7 +435,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "hmac", "otbn" ]
+  alert_module: [ "aes", "hmac", "otbn", "sensor_ctrl" ]
 
   // generated list of alerts:
   alert: [
