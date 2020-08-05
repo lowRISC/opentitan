@@ -18,7 +18,7 @@
 
   // TODO: switch the tool to formal once the corresponding edalize backend is avaiable
 
-  sv_flist_gen_opts: ["--cores-root {proj_root}",
+  sv_flist_gen_opts: ["--cores-root {proj_root}/hw",
                       "run",
                       "--flag=fileset_{design_level}",
                       "--tool=icarus",
