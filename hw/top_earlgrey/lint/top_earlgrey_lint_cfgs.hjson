@@ -56,6 +56,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/nmi_gen/lint/{tool}"
              },
+             {    name: otbn
+                  fusesoc_core: lowrisc:ip:otbn
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otbn/lint/{tool}"
+             },
              {    name: padctrl
                   fusesoc_core: lowrisc:ip:padctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
