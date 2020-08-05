@@ -408,6 +408,7 @@ module top_earlgrey_asic (
     .status_o(ast_base_status),
     .usb_io_pu_cal_o(usb_io_pu_cal),
     .ast_eflash_o(ast_base_eflash),
+    .scanmode_i(1'b0),
     .scan_reset_ni(1'b1)
   );
 

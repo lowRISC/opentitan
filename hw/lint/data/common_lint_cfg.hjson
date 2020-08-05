@@ -19,6 +19,7 @@
   // We rely on fusesoc to run lint for us
   build_cmd:  "fusesoc"
   build_opts: ["--cores-root {proj_root}",
+               "--cores-root {TECH_LIB_PATH}/flash",
                "run",
                "--target={flow}",
                "--tool={tool}",

@@ -139,6 +139,7 @@ module ast #(
   output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o, // USB IO Pull-up Calibration Setting
 
   // dft related
+  input scan_mode_i,
   input scan_reset_ni
 );
 
