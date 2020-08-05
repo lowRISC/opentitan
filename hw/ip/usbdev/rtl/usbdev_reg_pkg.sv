@@ -457,18 +457,18 @@ package usbdev_reg_pkg;
   parameter logic [11:0] USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
   parameter logic [11:0] USBDEV_IN_SENT_OFFSET = 12'h 24;
   parameter logic [11:0] USBDEV_STALL_OFFSET = 12'h 28;
-  parameter logic [11:0] USBDEV_CONFIGIN0_OFFSET = 12'h 2c;
-  parameter logic [11:0] USBDEV_CONFIGIN1_OFFSET = 12'h 30;
-  parameter logic [11:0] USBDEV_CONFIGIN2_OFFSET = 12'h 34;
-  parameter logic [11:0] USBDEV_CONFIGIN3_OFFSET = 12'h 38;
-  parameter logic [11:0] USBDEV_CONFIGIN4_OFFSET = 12'h 3c;
-  parameter logic [11:0] USBDEV_CONFIGIN5_OFFSET = 12'h 40;
-  parameter logic [11:0] USBDEV_CONFIGIN6_OFFSET = 12'h 44;
-  parameter logic [11:0] USBDEV_CONFIGIN7_OFFSET = 12'h 48;
-  parameter logic [11:0] USBDEV_CONFIGIN8_OFFSET = 12'h 4c;
-  parameter logic [11:0] USBDEV_CONFIGIN9_OFFSET = 12'h 50;
-  parameter logic [11:0] USBDEV_CONFIGIN10_OFFSET = 12'h 54;
-  parameter logic [11:0] USBDEV_CONFIGIN11_OFFSET = 12'h 58;
+  parameter logic [11:0] USBDEV_CONFIGIN_0_OFFSET = 12'h 2c;
+  parameter logic [11:0] USBDEV_CONFIGIN_1_OFFSET = 12'h 30;
+  parameter logic [11:0] USBDEV_CONFIGIN_2_OFFSET = 12'h 34;
+  parameter logic [11:0] USBDEV_CONFIGIN_3_OFFSET = 12'h 38;
+  parameter logic [11:0] USBDEV_CONFIGIN_4_OFFSET = 12'h 3c;
+  parameter logic [11:0] USBDEV_CONFIGIN_5_OFFSET = 12'h 40;
+  parameter logic [11:0] USBDEV_CONFIGIN_6_OFFSET = 12'h 44;
+  parameter logic [11:0] USBDEV_CONFIGIN_7_OFFSET = 12'h 48;
+  parameter logic [11:0] USBDEV_CONFIGIN_8_OFFSET = 12'h 4c;
+  parameter logic [11:0] USBDEV_CONFIGIN_9_OFFSET = 12'h 50;
+  parameter logic [11:0] USBDEV_CONFIGIN_10_OFFSET = 12'h 54;
+  parameter logic [11:0] USBDEV_CONFIGIN_11_OFFSET = 12'h 58;
   parameter logic [11:0] USBDEV_ISO_OFFSET = 12'h 5c;
   parameter logic [11:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 60;
   parameter logic [11:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 64;
@@ -490,18 +490,18 @@ package usbdev_reg_pkg;
     USBDEV_RXENABLE_OUT,
     USBDEV_IN_SENT,
     USBDEV_STALL,
-    USBDEV_CONFIGIN0,
-    USBDEV_CONFIGIN1,
-    USBDEV_CONFIGIN2,
-    USBDEV_CONFIGIN3,
-    USBDEV_CONFIGIN4,
-    USBDEV_CONFIGIN5,
-    USBDEV_CONFIGIN6,
-    USBDEV_CONFIGIN7,
-    USBDEV_CONFIGIN8,
-    USBDEV_CONFIGIN9,
-    USBDEV_CONFIGIN10,
-    USBDEV_CONFIGIN11,
+    USBDEV_CONFIGIN_0,
+    USBDEV_CONFIGIN_1,
+    USBDEV_CONFIGIN_2,
+    USBDEV_CONFIGIN_3,
+    USBDEV_CONFIGIN_4,
+    USBDEV_CONFIGIN_5,
+    USBDEV_CONFIGIN_6,
+    USBDEV_CONFIGIN_7,
+    USBDEV_CONFIGIN_8,
+    USBDEV_CONFIGIN_9,
+    USBDEV_CONFIGIN_10,
+    USBDEV_CONFIGIN_11,
     USBDEV_ISO,
     USBDEV_DATA_TOGGLE_CLEAR,
     USBDEV_PHY_CONFIG
@@ -520,18 +520,18 @@ package usbdev_reg_pkg;
     4'b 0011, // index[ 8] USBDEV_RXENABLE_OUT
     4'b 0011, // index[ 9] USBDEV_IN_SENT
     4'b 0011, // index[10] USBDEV_STALL
-    4'b 1111, // index[11] USBDEV_CONFIGIN0
-    4'b 1111, // index[12] USBDEV_CONFIGIN1
-    4'b 1111, // index[13] USBDEV_CONFIGIN2
-    4'b 1111, // index[14] USBDEV_CONFIGIN3
-    4'b 1111, // index[15] USBDEV_CONFIGIN4
-    4'b 1111, // index[16] USBDEV_CONFIGIN5
-    4'b 1111, // index[17] USBDEV_CONFIGIN6
-    4'b 1111, // index[18] USBDEV_CONFIGIN7
-    4'b 1111, // index[19] USBDEV_CONFIGIN8
-    4'b 1111, // index[20] USBDEV_CONFIGIN9
-    4'b 1111, // index[21] USBDEV_CONFIGIN10
-    4'b 1111, // index[22] USBDEV_CONFIGIN11
+    4'b 1111, // index[11] USBDEV_CONFIGIN_0
+    4'b 1111, // index[12] USBDEV_CONFIGIN_1
+    4'b 1111, // index[13] USBDEV_CONFIGIN_2
+    4'b 1111, // index[14] USBDEV_CONFIGIN_3
+    4'b 1111, // index[15] USBDEV_CONFIGIN_4
+    4'b 1111, // index[16] USBDEV_CONFIGIN_5
+    4'b 1111, // index[17] USBDEV_CONFIGIN_6
+    4'b 1111, // index[18] USBDEV_CONFIGIN_7
+    4'b 1111, // index[19] USBDEV_CONFIGIN_8
+    4'b 1111, // index[20] USBDEV_CONFIGIN_9
+    4'b 1111, // index[21] USBDEV_CONFIGIN_10
+    4'b 1111, // index[22] USBDEV_CONFIGIN_11
     4'b 0011, // index[23] USBDEV_ISO
     4'b 0011, // index[24] USBDEV_DATA_TOGGLE_CLEAR
     4'b 0001  // index[25] USBDEV_PHY_CONFIG

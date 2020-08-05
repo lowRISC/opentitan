@@ -31,14 +31,14 @@ class InitTest : public PlicTest {
  protected:
   void ExpectInitReset() {
     // Interupt enable multireg.
-    EXPECT_WRITE32(RV_PLIC_IE00_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE01_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE02_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
 
     // Level/edge multireg.
-    EXPECT_WRITE32(RV_PLIC_LE0_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE1_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_LE2_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_LE_0_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_LE_1_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_LE_2_REG_OFFSET, 0);
 
     // Priority registers.
     for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
@@ -108,13 +108,13 @@ class IrqEnableSetTest : public IrqTests {
 
   std::vector<Register> registers_{
       {
-          RV_PLIC_IE00_REG_OFFSET, RV_PLIC_IE00_E31,
+          RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E_31,
       },
       {
-          RV_PLIC_IE01_REG_OFFSET, RV_PLIC_IE01_E63,
+          RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E_63,
       },
       {
-          RV_PLIC_IE02_REG_OFFSET, RV_PLIC_IE02_E82,
+          RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_82,
       },
   };
 };
@@ -156,13 +156,13 @@ class IrqTriggerTypeSetTest : public IrqTests {
 
   std::vector<Register> registers_{
       {
-          RV_PLIC_LE0_REG_OFFSET, RV_PLIC_LE0_LE31,
+          RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31,
       },
       {
-          RV_PLIC_LE1_REG_OFFSET, RV_PLIC_LE1_LE63,
+          RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63,
       },
       {
-          RV_PLIC_LE2_REG_OFFSET, RV_PLIC_LE2_LE82,
+          RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_82,
       },
   };
 };
@@ -257,13 +257,13 @@ class IrqPendingStatusGetTest : public IrqTests {
 
   std::vector<Register> registers_{
       {
-          RV_PLIC_IP0_REG_OFFSET, RV_PLIC_IP0_P31,
+          RV_PLIC_IP_0_REG_OFFSET, RV_PLIC_IP_0_P_31,
       },
       {
-          RV_PLIC_IP1_REG_OFFSET, RV_PLIC_IP1_P63,
+          RV_PLIC_IP_1_REG_OFFSET, RV_PLIC_IP_1_P_63,
       },
       {
-          RV_PLIC_IP2_REG_OFFSET, RV_PLIC_IP2_P82,
+          RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_82,
       },
   };
 };

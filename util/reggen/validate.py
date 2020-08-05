@@ -1091,9 +1091,9 @@ def validate_multi(mreg, offset, addrsep, width, top):
         if bpos == 0:
             genreg = {}
             if shadowed is True:
-                genreg['name'] = mrname[:idx] + str(rnum) + mrname[idx:]
+                genreg['name'] = mrname[:idx] + "_" + str(rnum) + mrname[idx:]
             else:
-                genreg['name'] = mrname + str(rnum)
+                genreg['name'] = mrname + "_" + str(rnum)
             genreg['desc'] = mreg['desc']
             genreg['hwext'] = mreg['hwext']
             genreg['hwqe'] = mreg['hwqe']
@@ -1136,7 +1136,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
             # found a spot
             for fn in mreg['fields']:
                 newf = fn.copy()
-                newf['name'] += str(inum)
+                newf['name'] += "_" + str(inum)
                 if bpos != 0:
                     newf['bits'] = bitfield_add(newf['bits'], bpos)
                     newf['desc'] = 'for ' + cname + str(inum)

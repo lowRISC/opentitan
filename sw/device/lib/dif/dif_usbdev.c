@@ -46,9 +46,9 @@ typedef struct endpoint_hw_info {
  * Note: This uses the bit indices of `USBDEV_IN_SENT` register for the sake
  * of conciseness because other endpoint registers use the same layout.
  */
-#define ENDPOINT_HW_INFO_ENTRY(N)                                 \
-  [N] = {.config_in_reg_offset = USBDEV_CONFIGIN##N##_REG_OFFSET, \
-         .bit_index = USBDEV_IN_SENT_SENT##N}
+#define ENDPOINT_HW_INFO_ENTRY(N)                                  \
+  [N] = {.config_in_reg_offset = USBDEV_CONFIGIN_##N##_REG_OFFSET, \
+         .bit_index = USBDEV_IN_SENT_SENT_##N}
 
 static const endpoint_hw_info_t kEndpointHwInfos[USBDEV_NUM_ENDPOINTS] = {
     ENDPOINT_HW_INFO_ENTRY(0),  ENDPOINT_HW_INFO_ENTRY(1),
@@ -690,24 +690,24 @@ dif_usbdev_tx_packet_write_bytes_result_t dif_usbdev_tx_packet_write_bytes(
       buffer_len = 0;
       // Start buffer write operation
       buffer_op_start_write(usbdev, endpoint);
-      // Update USBDEV_CONFIGINX register.
-      // Note: Using mask and offset values for the USBDEV_CONFIGIN0 register
-      // for all endpoints because all USBDEV_CONFIGINX registers have the same
+      // Update USBDEV_CONFIGIN_X register.
+      // Note: Using mask and offset values for the USBDEV_CONFIGIN_0 register
+      // for all endpoints because all USBDEV_CONFIGIN_X registers have the same
       // layout.
       uint32_t config_in_val =
           mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
       config_in_val =
           bitfield_field32_write(config_in_val,
                                  (bitfield_field32_t){
-                                     .mask = USBDEV_CONFIGIN0_BUFFER0_MASK,
-                                     .index = USBDEV_CONFIGIN0_BUFFER0_OFFSET,
+                                     .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
+                                     .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
                                  },
                                  buffer_entry);
       config_in_val =
           bitfield_field32_write(config_in_val,
                                  (bitfield_field32_t){
-                                     .mask = USBDEV_CONFIGIN0_SIZE0_MASK,
-                                     .index = USBDEV_CONFIGIN0_SIZE0_OFFSET,
+                                     .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
+                                     .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
                                  },
                                  buffer_len);
       mmio_region_write32(usbdev->base_addr, config_in_reg_offset,
@@ -720,13 +720,13 @@ dif_usbdev_tx_packet_write_bytes_result_t dif_usbdev_tx_packet_write_bytes(
           mmio_region_read32(usbdev->base_addr, config_in_reg_offset);
       buffer_entry = bitfield_field32_read(
           config_in_val, (bitfield_field32_t){
-                             .mask = USBDEV_CONFIGIN0_BUFFER0_MASK,
-                             .index = USBDEV_CONFIGIN0_BUFFER0_OFFSET,
+                             .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
+                             .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
                          });
       buffer_len = bitfield_field32_read(
           config_in_val, (bitfield_field32_t){
-                             .mask = USBDEV_CONFIGIN0_SIZE0_MASK,
-                             .index = USBDEV_CONFIGIN0_SIZE0_OFFSET,
+                             .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
+                             .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
                          });
       break;
     }
@@ -755,13 +755,14 @@ dif_usbdev_tx_packet_write_bytes_result_t dif_usbdev_tx_packet_write_bytes(
   buffer_len += bytes_to_copy;
   remaining_buffer_space -= bytes_to_copy;
 
-  // Update buffer length in the USBDEV_CONFIGINX register.
-  mmio_region_nonatomic_set_field32(usbdev->base_addr, config_in_reg_offset,
-                                    (bitfield_field32_t){
-                                        .mask = USBDEV_CONFIGIN0_SIZE0_MASK,
-                                        .index = USBDEV_CONFIGIN0_SIZE0_OFFSET,
-                                    },
-                                    buffer_len);
+  // Update buffer length in the USBDEV_CONFIGIN_X register.
+  mmio_region_nonatomic_set_field32(
+      usbdev->base_addr, config_in_reg_offset,
+      (bitfield_field32_t){
+          .mask = USBDEV_CONFIGIN_0_SIZE_0_MASK,
+          .index = USBDEV_CONFIGIN_0_SIZE_0_OFFSET,
+      },
+      buffer_len);
 
   if (bytes_written) {
     *bytes_written = bytes_to_copy;
@@ -790,7 +791,7 @@ dif_usbdev_tx_packet_send_result_t dif_usbdev_tx_packet_send(
   // Mark the packet as ready for transmission
   mmio_region_nonatomic_set_bit32(
       usbdev->base_addr, kEndpointHwInfos[endpoint].config_in_reg_offset,
-      USBDEV_CONFIGIN0_RDY0);
+      USBDEV_CONFIGIN_0_RDY_0);
 
   return kDifUsbdevTxPacketSendResultOK;
 }
@@ -820,14 +821,14 @@ dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
   // Buffer used by this endpoint
   uint8_t buffer = bitfield_field32_read(
       config_in_val, (bitfield_field32_t){
-                         .mask = USBDEV_CONFIGIN0_BUFFER0_MASK,
-                         .index = USBDEV_CONFIGIN0_BUFFER0_OFFSET,
+                         .mask = USBDEV_CONFIGIN_0_BUFFER_0_MASK,
+                         .index = USBDEV_CONFIGIN_0_BUFFER_0_OFFSET,
                      });
 
   // Check the status of the packet
   if (bitfield_field32_read(config_in_val,
                             (bitfield_field32_t){
-                                .mask = 1, .index = USBDEV_CONFIGIN0_RDY0,
+                                .mask = 1, .index = USBDEV_CONFIGIN_0_RDY_0,
                             })) {
     // Packet is marked as ready to be sent and pending transmission
     *status = kDifUsbdevTxPacketStatusPending;
@@ -843,13 +844,14 @@ dif_usbdev_result_t dif_usbdev_tx_packet_get_status(
     }
     *status = kDifUsbdevTxPacketStatusSent;
   } else if (bitfield_field32_read(
-                 config_in_val, (bitfield_field32_t){
-                                    .mask = 1, .index = USBDEV_CONFIGIN0_PEND0,
-                                })) {
+                 config_in_val,
+                 (bitfield_field32_t){
+                     .mask = 1, .index = USBDEV_CONFIGIN_0_PEND_0,
+                 })) {
     // Canceled due to an IN SETUP packet
     // Clear pending bit (rw1c)
     mmio_region_write_only_set_bit32(usbdev->base_addr, config_in_reg_offset,
-                                     USBDEV_CONFIGIN0_PEND0);
+                                     USBDEV_CONFIGIN_0_PEND_0);
     // Return the buffer back to the free buffer pool
     if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
       return kDifUsbdevError;

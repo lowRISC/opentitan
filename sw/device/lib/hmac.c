@@ -18,7 +18,7 @@ void hmac_init(hmac_cfg_t hmac_cfg) {
                        1 << hmac_cfg.mode |
                        hmac_cfg.digest_endian_swap << HMAC_CFG_DIGEST_SWAP;
   for (int i = 0; i < 8; i++) {
-    REG32(HMAC_KEY0(0) + i * sizeof(uint32_t)) = hmac_cfg.keys[i];
+    REG32(HMAC_KEY_0(0) + i * sizeof(uint32_t)) = hmac_cfg.keys[i];
   }
   REG32(HMAC_CMD(0)) = 1 << HMAC_CMD_HASH_START;
 };
@@ -72,6 +72,6 @@ void hmac_done(uint32_t *digest) {
   REG32(HMAC_INTR_STATE(0)) = 1 << HMAC_INTR_STATE_HMAC_DONE;
 
   for (uint32_t i = 0; i < 8; i++) {
-    *digest++ = REG32(HMAC_DIGEST0(0) + i * sizeof(uintptr_t));
+    *digest++ = REG32(HMAC_DIGEST_0(0) + i * sizeof(uintptr_t));
   }
 }

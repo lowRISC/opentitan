@@ -35,14 +35,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.en0, data, region_cfg.en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.rd_en0, data, region_cfg.read_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.prog_en0, data, region_cfg.program_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.erase_en0, data, region_cfg.erase_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.base0, data, region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.size0, data, region_cfg.num_pages) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.partition0, data, region_cfg.partition);
-    csr = ral.get_reg_by_name($sformatf("mp_region_cfg%0d", index));
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.en_0, data, region_cfg.en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.rd_en_0, data, region_cfg.read_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.prog_en_0, data, region_cfg.program_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.erase_en_0, data, region_cfg.erase_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.partition_0, data, region_cfg.partition);
+    csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
     csr_wr(.csr(csr), .value(data));
   endtask
 

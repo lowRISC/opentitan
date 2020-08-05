@@ -104,9 +104,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
           endcase // case item.a_data[4:1]
         end
 
-        (!uvm_re_match("key*", csr_name)): begin
+        (!uvm_re_match("key_*", csr_name)): begin
           for (int i = 0; i < 8; i++) begin
-            string keyname = $sformatf("key%0d", i);
+            string keyname = $sformatf("key_%0d", i);
             if (keyname == csr_name) begin
                input_item.key[i]      = item.a_data;
                input_item.key_vld[i]  = 1'b1;
@@ -114,9 +114,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
         end
 
-        (!uvm_re_match("data_in*", csr_name)): begin
+        (!uvm_re_match("data_in_*", csr_name)): begin
           for (int i = 0; i < 4; i++) begin
-            string keyname = $sformatf("data_in%0d", i);
+            string keyname = $sformatf("data_in_%0d", i);
             if (keyname == csr_name) begin
               input_item.data_in[i]      = item.a_data;
               input_item.data_in_vld[i]  = 1'b1;
@@ -124,9 +124,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
           end
         end
 
-       (!uvm_re_match("iv*", csr_name)): begin
+       (!uvm_re_match("iv_*", csr_name)): begin
           for (int i = 0; i < 4; i++) begin
-            string keyname = $sformatf("iv%0d", i);
+            string keyname = $sformatf("iv_%0d", i);
             if (keyname == csr_name) begin
               input_item.iv[i]      = item.a_data;
               input_item.iv_vld[i]  = 1'b1;
@@ -327,19 +327,19 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 , UVM_MEDIUM)
 
       case (csr.get_name())
-        "data_out0": begin
+        "data_out_0": begin
           output_item.data_out[0]     = item.d_data;
           output_item.data_out_vld[0] = 1;
         end
-        "data_out1": begin
+        "data_out_1": begin
           output_item.data_out[1]     = item.d_data;
           output_item.data_out_vld[1] = 1;
         end
-        "data_out2": begin
+        "data_out_2": begin
           output_item.data_out[2]     = item.d_data;
           output_item.data_out_vld[2] = 1;
         end
-        "data_out3": begin
+        "data_out_3": begin
           output_item.data_out[3]     = item.d_data;
           output_item.data_out_vld[3] = 1;
         end

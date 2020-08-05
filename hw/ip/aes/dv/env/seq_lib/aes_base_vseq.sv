@@ -81,50 +81,49 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task write_key(bit  [7:0][31:0] key);
-    csr_wr(.csr(ral.key0), .value(key[0]));
-    csr_wr(.csr(ral.key1), .value(key[1]));
-    csr_wr(.csr(ral.key2), .value(key[2]));
-    csr_wr(.csr(ral.key3), .value(key[3]));
-    csr_wr(.csr(ral.key4), .value(key[4]));
-    csr_wr(.csr(ral.key5), .value(key[5]));
-    csr_wr(.csr(ral.key6), .value(key[6]));
-    csr_wr(.csr(ral.key7), .value(key[7]));
+    csr_wr(.csr(ral.key_0), .value(key[0]));
+    csr_wr(.csr(ral.key_1), .value(key[1]));
+    csr_wr(.csr(ral.key_2), .value(key[2]));
+    csr_wr(.csr(ral.key_3), .value(key[3]));
+    csr_wr(.csr(ral.key_4), .value(key[4]));
+    csr_wr(.csr(ral.key_5), .value(key[5]));
+    csr_wr(.csr(ral.key_6), .value(key[6]));
+    csr_wr(.csr(ral.key_7), .value(key[7]));
   endtask // write_key
 
 
   virtual task write_iv(bit  [3:0][31:0] iv);
-    csr_wr(.csr(ral.iv0), .value(iv[0]));
-    csr_wr(.csr(ral.iv1), .value(iv[1]));
-    csr_wr(.csr(ral.iv2), .value(iv[2]));
-    csr_wr(.csr(ral.iv3), .value(iv[3]));
+    csr_wr(.csr(ral.iv_0), .value(iv[0]));
+    csr_wr(.csr(ral.iv_1), .value(iv[1]));
+    csr_wr(.csr(ral.iv_2), .value(iv[2]));
+    csr_wr(.csr(ral.iv_3), .value(iv[3]));
   endtask
 
 
   virtual task add_data(ref bit [3:0] [31:0] data);
-    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in0: %h ", data[0][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in1: %h ", data[1][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in2: %h ", data[2][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_in3: %h ", data[3][31:0]), UVM_MEDIUM)
-    csr_wr(.csr(ral.data_in0), .value(data[0][31:0]) );
-    csr_wr(.csr(ral.data_in1), .value(data[1][31:0]) );
-    csr_wr(.csr(ral.data_in2), .value(data[2][31:0]) );
-    csr_wr(.csr(ral.data_in3), .value(data[3][31:0]) );
-  endtask // add_data
-
+    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data),  UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_0: %h ", data[0][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3][31:0]), UVM_MEDIUM)
+    csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]) );
+    csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]) );
+    csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]) );
+    csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]) );
+  endtask
 
   virtual task read_data(ref bit [3:0] [31:0] cypher_txt);
-    csr_rd(.ptr(ral.data_out0), .value(cypher_txt[0][31:0]));
-    csr_rd(.ptr(ral.data_out1), .value(cypher_txt[1][31:0]));
-    csr_rd(.ptr(ral.data_out2), .value(cypher_txt[2][31:0]));
-    csr_rd(.ptr(ral.data_out3), .value(cypher_txt[3][31:0]));
+    csr_rd(.ptr(ral.data_out_0), .value(cypher_txt[0][31:0]));
+    csr_rd(.ptr(ral.data_out_1), .value(cypher_txt[1][31:0]));
+    csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2][31:0]));
+    csr_rd(.ptr(ral.data_out_3), .value(cypher_txt[3][31:0]));
 
-    `uvm_info(`gfn, $sformatf("\n\t ----| READ OUPUT DATA"), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", cypher_txt),  UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_out3: %h ", cypher_txt[3][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", cypher_txt),   UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_MEDIUM)
   endtask
 
 
@@ -202,9 +201,9 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task write_interleaved_data_key_iv( bit [7:0] [31:0] key, [3:0] [31:0] iv, [3:0] [31:0] data );
     string txt="";
-    string interleave_queue[] = '{ "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7",
-                                   "data_in0", "data_in1", "data_in2", "data_in3",
-                                   "iv0", "iv1", "iv2", "iv3" };
+    string interleave_queue[] = '{ "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7",
+                                   "data_in_0", "data_in_1", "data_in_2", "data_in_3",
+                                   "iv_0", "iv_1", "iv_2", "iv_3" };
 
     interleave_queue.shuffle();
 
@@ -212,24 +211,24 @@ class aes_base_vseq extends cip_base_vseq #(
      txt = {txt, $sformatf("----|\n \t %s", interleave_queue[i]) };
 
      case (interleave_queue[i])
-       "key0": csr_wr(.csr(ral.key0), .value(key[0]));
-       "key1": csr_wr(.csr(ral.key1), .value(key[1]));
-       "key2": csr_wr(.csr(ral.key2), .value(key[2]));
-       "key3": csr_wr(.csr(ral.key3), .value(key[3]));
-       "key4": csr_wr(.csr(ral.key4), .value(key[4]));
-       "key5": csr_wr(.csr(ral.key5), .value(key[5]));
-       "key6": csr_wr(.csr(ral.key6), .value(key[6]));
-       "key7": csr_wr(.csr(ral.key7), .value(key[7]));
+       "key_0": csr_wr(.csr(ral.key_0), .value(key[0]));
+       "key_1": csr_wr(.csr(ral.key_1), .value(key[1]));
+       "key_2": csr_wr(.csr(ral.key_2), .value(key[2]));
+       "key_3": csr_wr(.csr(ral.key_3), .value(key[3]));
+       "key_4": csr_wr(.csr(ral.key_4), .value(key[4]));
+       "key_5": csr_wr(.csr(ral.key_5), .value(key[5]));
+       "key_6": csr_wr(.csr(ral.key_6), .value(key[6]));
+       "key_7": csr_wr(.csr(ral.key_7), .value(key[7]));
 
-       "iv0": csr_wr(.csr(ral.iv0), .value(iv[0]));
-       "iv1": csr_wr(.csr(ral.iv1), .value(iv[1]));
-       "iv2": csr_wr(.csr(ral.iv2), .value(iv[2]));
-       "iv3": csr_wr(.csr(ral.iv3), .value(iv[3]));
+       "iv_0": csr_wr(.csr(ral.iv_0), .value(iv[0]));
+       "iv_1": csr_wr(.csr(ral.iv_1), .value(iv[1]));
+       "iv_2": csr_wr(.csr(ral.iv_2), .value(iv[2]));
+       "iv_3": csr_wr(.csr(ral.iv_3), .value(iv[3]));
 
-       "data_in0": csr_wr(.csr(ral.data_in0), .value(data[0][31:0]) );
-       "data_in1": csr_wr(.csr(ral.data_in1), .value(data[1][31:0]) );
-       "data_in2": csr_wr(.csr(ral.data_in2), .value(data[2][31:0]) );
-       "data_in3": csr_wr(.csr(ral.data_in3), .value(data[3][31:0]) );
+       "data_in_0": csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]) );
+       "data_in_1": csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]) );
+       "data_in_2": csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]) );
+       "data_in_3": csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]) );
      endcase // case interleave_queue[i]
    end
     `uvm_info(`gfn, $sformatf("\n\t ----| Configuring the DUT in the following order:  %s",txt), UVM_MEDIUM)
