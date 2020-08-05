@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for aes
+waive -rules COMBO_READ_WRITE -location {aes_key_expand.sv} -regexp {'regular\[[0-9]+\]\[2:1|4:2|6:5\]' is read from within the same combinational process block} \
+      -comment "regular[*] is assigned in a for loop, regular[*][1|2|5] depends on regular[*][0|1|4]"
