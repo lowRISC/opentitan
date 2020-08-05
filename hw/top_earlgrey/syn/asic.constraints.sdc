@@ -37,8 +37,8 @@ set_ideal_network [get_pins ${USB_CLK_PIN}]
 create_clock -name USB_CLK -period ${USB_TCK} [get_pins ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set USB_IN_DEL_FRACTION 0.7
-set USB_OUT_DEL_FRACTION 0.7
+set USB_IN_DEL_FRACTION 0.55
+set USB_OUT_DEL_FRACTION 0.55
 set USB_IN_DEL    [expr ${USB_IN_DEL_FRACTION} * ${USB_TCK}]
 set USB_OUT_DEL   [expr ${USB_OUT_DEL_FRACTION} * ${USB_TCK}]
 
@@ -255,3 +255,11 @@ set_size_only -all_instances [get_cells -h *u_size_only*] true
 set_dont_touch [get_cells -h *u_pad_macro*]
 
 puts "Done applying constraints for top level"
+
+##########################################
+# Case analysis for quasi-static signals #
+##########################################
+
+# assume a value of 0 for the pad attribute at index [9]
+set_case_analysis 0 [get_pins u_padring/i_*_pad/attr_i[9]]
+set_case_analysis 0 [get_pins u_padring/gen_*_gen_*_i_*_pad/attr_i[9]]
