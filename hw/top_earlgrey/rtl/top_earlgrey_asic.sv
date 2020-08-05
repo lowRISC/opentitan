@@ -192,15 +192,67 @@ module top_earlgrey_asic (
   );
 
   //////////////////////
+  // AST              //
+  //////////////////////
+  tlul_pkg::tl_h2d_t base_ast_bus;
+  tlul_pkg::tl_d2h_t ast_base_bus;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_alert_rsp_t base_ast_alerts;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
+  ast_wrapper_pkg::ast_clks_t ast_base_clks;
+  ast_wrapper_pkg::ast_eflash_t ast_base_eflash;
+  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  //ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
+  logic usb_ref_pulse;
+  logic usb_ref_val;
+
+  ast_wrapper ast_wrapper (
+    .clk_ext_i(clk),
+    .por_ni(rst_n),
+    .bus_i(base_ast_bus),
+    .bus_o(ast_base_bus),
+    .pwr_i(base_ast_pwr),
+    .pwr_o(ast_base_pwr),
+    .rst_o(ast_base_rst),
+    .clks_o(ast_base_clks),
+    .usb_ref_pulse_i(usb_ref_pulse),
+    .usb_ref_val_i(usb_ref_val),
+    .aux_i('0), // need a hardwired solution until rstmgr/clkmgr update
+    .adc_i('0),
+    .adc_o(),
+    .es_i('0), // not in top_earlgrey
+    .es_o(),   // not in top_earlgrey
+    .alert_i(base_ast_alerts),
+    .alert_o(ast_base_alerts),
+    .status_o(ast_base_status),
+    .usb_io_pu_cal_o(),
+    .ast_eflash_o(), // need to wait for flash integration update
+    .scanmode_i(1'b0),
+    .scan_reset_ni(1'b1)
+  );
+
+
+  //////////////////////
   // Top-level design //
   //////////////////////
 
   top_earlgrey top_earlgrey (
     .rst_ni          ( rst_n         ),
+    // ast connections
     .clk_main_i      ( clk           ),
     .clk_io_i        ( clk           ),
     .clk_usb_i       ( clk_usb_48mhz ),
     .clk_aon_i       ( clk           ),
+    .rstmgr_ast_i                ( ast_base_rst          ),
+    .pwrmgr_pwr_ast_req_o        ( base_ast_pwr          ),
+    .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr          ),
+    .sensor_ctrl_ast_alert_req_i ( ast_base_alerts       ),
+    .sensor_ctrl_ast_alert_rsp_o ( base_ast_alerts       ),
+    .sensor_ctrl_ast_status_i    ( ast_base_status       ),
+    .usbdev_usb_ref_val_o        ( usb_ref_pulse         ),
+    .usbdev_usb_ref_pulse_o      ( usb_ref_val           ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

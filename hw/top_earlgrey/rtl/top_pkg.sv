@@ -18,5 +18,10 @@ localparam int FLASH_WORDS_PER_PAGE=128;
 localparam int FLASH_BYTES_PER_WORD=TL_DBW;
 localparam int FLASH_INFO_PER_BANK=4;
 localparam int FLASH_DATA_WIDTH=64;
+localparam int NUM_AST_ALERTS=7;
+localparam int NUM_IO_RAILS=2;
+localparam int ENTROPY_STREAM=4;
+localparam int ADC_CHANNELS=2;
+localparam int ADC_DATAW=10;
 
 endpackage
