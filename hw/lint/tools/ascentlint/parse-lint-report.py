@@ -44,6 +44,7 @@ def get_results(resdir):
             full_file = f.read()
             err_warn_patterns = [("errors", r"^FlexNet Licensing error.*"),
                                  ("errors", r"^Error: .*"),
+                                 ("errors", r"^ERROR.*"),
                                  ("errors", r"^  ERR .*"),
                                  ("warnings", r"^Warning: .*"),
                                  ("warnings", r"^  WARN .*")]
