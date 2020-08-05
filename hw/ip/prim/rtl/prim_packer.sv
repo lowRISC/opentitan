@@ -27,25 +27,27 @@ module prim_packer #(
   output logic            flush_done_o
 );
 
-  localparam int Width = InW + OutW;
-  localparam int PtrW = $clog2(Width+1);
+  localparam int Width = InW + OutW; // storage width
+  localparam int ConcatW = Width + InW; // Input concatenated width
+  localparam int PtrW = $clog2(ConcatW+1);
   localparam int MaxW = (InW > OutW) ? InW : OutW;
   localparam int IdxW = $clog2(InW) + ~|$clog2(InW);
 
   logic valid_next, ready_next;
-  logic [MaxW-1:0]  stored_data, stored_mask;
-  logic [Width-1:0] concat_data, concat_mask;
-  logic [Width-1:0] shiftl_data, shiftl_mask;
+  logic [Width-1:0]   stored_data, stored_mask;
+  logic [ConcatW-1:0] concat_data, concat_mask;
+  logic [ConcatW-1:0] shiftl_data, shiftl_mask;
 
-  logic [PtrW-1:0]        pos, pos_next; // Current write position
+  logic [PtrW-1:0]          pos, pos_next; // Current write position
   logic [IdxW-1:0]          lod_idx;       // result of Leading One Detector
   logic [$clog2(InW+1)-1:0] inmask_ones;   // Counting Ones for mask_i
 
   logic ack_in, ack_out;
 
-  logic flush_ready; // flush_i is pulse, so only when the output is ready flush_ready assets
+  logic flush_valid; // flush data out request
+  logic flush_done;
 
-  // Computing next position
+  // Computing next position ==================================================
   always_comb begin
     // counting mask_i ones
     inmask_ones = '0;
@@ -54,20 +56,31 @@ module prim_packer #(
     end
   end
 
-  assign pos_next = (valid_i) ? pos + PtrW'(inmask_ones) : pos;  // pos always stays (% OutW)
+  logic [PtrW-1:0] pos_with_input;
+
+  always_comb begin
+    pos_next = pos;
+    pos_with_input = pos + PtrW'(inmask_ones);
+
+    unique case ({ack_in, ack_out})
+      2'b00: pos_next = pos;
+      2'b01: pos_next = (pos <= OutW) ? '0 : pos - OutW;
+      2'b10: pos_next = pos_with_input;
+      2'b11: pos_next = (pos_with_input <= OutW) ? '0 : pos_with_input - OutW;
+      default: pos_next = pos;
+    endcase
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       pos <= '0;
-    end else if (flush_ready) begin
+    end else if (flush_done) begin
       pos <= '0;
-    end else if (ack_out) begin
-      `ASSERT_I(pos_next_gte_outw_p, pos_next >= OutW)
-      pos <= pos_next - OutW;
-    end else if (ack_in) begin
+    end else begin
       pos <= pos_next;
     end
   end
+  //---------------------------------------------------------------------------
 
   // Leading one detector for mask_i
   always_comb begin
@@ -82,21 +95,44 @@ module prim_packer #(
   assign ack_in  = valid_i & ready_o;
   assign ack_out = valid_o & ready_i;
 
-  // Data process
+  // Data process =============================================================
+  //  shiftl : Input data shifted into the current stored position
   assign shiftl_data = (valid_i) ? Width'(data_i >> lod_idx) << pos : '0;
   assign shiftl_mask = (valid_i) ? Width'(mask_i >> lod_idx) << pos : '0;
-  assign concat_data = {{(Width-MaxW){1'b0}}, stored_data & stored_mask} |
+
+  // concat : Merging stored and shiftl
+  assign concat_data = {{(InW){1'b0}}, stored_data & stored_mask} |
                        (shiftl_data & shiftl_mask);
-  assign concat_mask = {{(Width-MaxW){1'b0}}, stored_mask} | shiftl_mask;
+  assign concat_mask = {{(InW){1'b0}}, stored_mask} | shiftl_mask;
 
-  logic [MaxW-1:0] stored_data_next, stored_mask_next;
+  logic [Width-1:0] stored_data_next, stored_mask_next;
 
-  if (InW >= OutW) begin : gen_stored_in
-    assign stored_data_next = concat_data[OutW+:InW];
-    assign stored_mask_next = concat_mask[OutW+:InW];
-  end else begin : gen_stored_out
-    assign stored_data_next = {{(OutW-InW){1'b0}}, concat_data[OutW+:InW]};
-    assign stored_mask_next = {{(OutW-InW){1'b0}}, concat_mask[OutW+:InW]};
+  always_comb begin
+    unique case ({ack_in, ack_out})
+      2'b 00: begin
+        stored_data_next = stored_data;
+        stored_mask_next = stored_mask;
+      end
+      2'b 01: begin
+        // ack_out : shift the amount of OutW
+        stored_data_next = {{OutW{1'b0}}, stored_data[Width-1:OutW]};
+        stored_mask_next = {{OutW{1'b0}}, stored_mask[Width-1:OutW]};
+      end
+      2'b 10: begin
+        // ack_in : Store concat data
+        stored_data_next = concat_data[0+:Width];
+        stored_mask_next = concat_mask[0+:Width];
+      end
+      2'b 11: begin
+        // both : shift the concat_data
+        stored_data_next = concat_data[ConcatW-1:OutW];
+        stored_mask_next = concat_mask[ConcatW-1:OutW];
+      end
+      default: begin
+        stored_data_next = stored_data;
+        stored_mask_next = stored_mask;
+      end
+    endcase
   end
 
   // Store the data temporary if it doesn't exceed OutW
@@ -104,24 +140,20 @@ module prim_packer #(
     if (!rst_ni) begin
       stored_data <= '0;
       stored_mask <= '0;
-    end else if (flush_ready) begin
+    end else if (flush_done) begin
       stored_data <= '0;
       stored_mask <= '0;
-    end else if (ack_out) begin
+    end else begin
       stored_data <= stored_data_next;
       stored_mask <= stored_mask_next;
-    end else if (ack_in) begin
-      // When the requested size is smaller than OutW or output isn't ready
-      // Assume when output isn't ready, the module  holds the input request
-      stored_data <= concat_data[MaxW-1:0];
-      stored_mask <= concat_mask[MaxW-1:0];
     end
   end
+  //---------------------------------------------------------------------------
 
-  // flush_ready handling
+  // flush handling
   typedef enum logic {
     FlushIdle,
-    FlushWait
+    FlushSend
   } flush_st_e;
   flush_st_e flush_st, flush_st_next;
 
@@ -136,63 +168,62 @@ module prim_packer #(
   always_comb begin
     flush_st_next = FlushIdle;
 
-    flush_ready = 1'b0;
+    flush_valid = 1'b0;
+    flush_done  = 1'b0;
 
     unique case (flush_st)
       FlushIdle: begin
-        if (flush_i && !ready_i) begin
-          // Wait until hold released
-          flush_st_next = FlushWait;
-
-          flush_ready = 1'b0;
-        end else if (flush_i && ready_i) begin
-          // Can write right away!
-          flush_st_next = FlushIdle;
-
-          flush_ready = 1'b1;
+        if (flush_i) begin
+          flush_st_next = FlushSend;
         end else begin
           flush_st_next = FlushIdle;
         end
       end
 
-      FlushWait: begin
-        // TODO: Add timeout and force flush
-        if (ready_i) begin
-          // Ready to write
+      FlushSend: begin
+        if (pos == '0) begin
           flush_st_next = FlushIdle;
 
-          flush_ready = 1'b1;
+          flush_valid = 1'b 0;
+          flush_done  = 1'b 1;
         end else begin
-          // Wait ...
-          flush_st_next = FlushWait;
+          flush_st_next = FlushSend;
 
-          flush_ready = 1'b0;
+          flush_valid = 1'b 1;
+          flush_done  = 1'b 0;
         end
       end
-
       default: begin
         flush_st_next = FlushIdle;
 
-        flush_ready = 1'b0;
+        flush_valid = 1'b 0;
+        flush_done  = 1'b 0;
       end
     endcase
   end
 
-  assign flush_done_o = flush_ready;
+  assign flush_done_o = flush_done;
 
-  assign valid_next = (pos_next >= OutW) ? 1'b 1 : flush_ready & (pos != '0);
-  assign ready_next = ack_out ? 1'b1 : pos_next <= MaxW; // New `we` needs to be hold.
+
+  // Output signals ===========================================================
+  assign valid_next = (pos >= OutW) ? 1'b 1 : flush_valid;
+
+  // storage space is InW + OutW. So technically, ready_o can be asserted even
+  // if `pos` is greater than OutW. But in order to do that, the logic should
+  // use `inmask_ones` value whether pos+inmask_ones is less than (InW+OutW)
+  // with `valid_i`. It creates a path from `valid_i` --> `ready_o`.
+  // It may create a timing loop in some modules that use `ready_o` to
+  // `valid_i` (which is not a good practice though)
+  assign ready_next = pos <= OutW;
 
   // Output request
   assign valid_o = valid_next;
-  assign data_o  = concat_data[OutW-1:0];
-  assign mask_o  = concat_mask[OutW-1:0];
+  assign data_o  = stored_data[OutW-1:0];
+  assign mask_o  = stored_mask[OutW-1:0];
 
   // ready_o
   assign ready_o = ready_next;
-
-  // TODO: Implement Pipelined logic
-  //       Need to change pos logic, mask&data calculation logic too
+  //---------------------------------------------------------------------------
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
@@ -215,7 +246,7 @@ module prim_packer #(
 
   // While in flush state, new request shouldn't come
   `ASSUME(ValidIDeassertedOnFlush_M,
-          flush_st == FlushWait |-> $stable(valid_i))
+          flush_st == FlushSend |-> $stable(valid_i))
 
   // If not acked, input port keeps asserting valid and data
   `ASSUME(DataIStable_M,
@@ -231,9 +262,9 @@ module prim_packer #(
   `ASSERT(ValidOPairedWidthReadyI_A,
           valid_o && !ready_i |=> valid_o)
 
-  // If input mask + stored data is greater than output width, valid should be asserted
-  `ASSERT(ValidOAssertedForInputGTEOutW_A,
-          valid_i && (($countones(mask_i) + $countones(stored_mask)) >= OutW) |-> valid_o)
+  // If stored data is greater than the output width, valid should be asserted
+  `ASSERT(ValidOAssertedForStoredDataGTEOutW_A,
+          ($countones(stored_mask) >= OutW) |-> valid_o)
 
   // If output port doesn't accept the data, the data should be stable
   `ASSERT(DataOStableWhenPending_A,
@@ -241,17 +272,15 @@ module prim_packer #(
           && !$past(ready_i) |-> $stable(data_o))
 
   // If input data & stored data are greater than OutW, remained should be stored
-  // TODO: Find out how the FPV time can be reduced.
-  //`ASSERT(ExcessiveDataStored_A,
-  //        ack_in && (($countones(mask_i) + $countones(stored_mask)) > OutW) |=>
-  //          (($past(data_i) &  $past(mask_i)) >>
-  //          ($past(lod_idx)+OutW-$countones($past(stored_mask))))
-  //          == stored_data,
-  //        clk_i, !rst_ni)
-  `ASSERT(ExcessiveMaskStored_A,
-          ack_in && (($countones(mask_i) + $countones(stored_mask)) > OutW) |=>
-          ($past(mask_i) >>
-          ($past(lod_idx)+OutW-$countones($past(stored_mask))))
-            == stored_mask)
+  `ASSERT(ExcessiveDataStored_A,
+          ack_in && ack_out && (($countones(mask_i) + $countones(stored_mask)) > OutW)
+          |=> (($past(data_i) &  $past(mask_i)) >>
+               ($past(lod_idx)+OutW-$countones($past(stored_mask))))
+               == stored_data)
 
+  `ASSERT(ExcessiveMaskStored_A,
+          ack_in && ack_out && (($countones(mask_i) + $countones(stored_mask)) > OutW)
+          |=> ($past(mask_i) >>
+               ($past(lod_idx)+OutW-$countones($past(stored_mask))))
+              == stored_mask)
 endmodule
