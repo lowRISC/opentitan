@@ -140,7 +140,8 @@ def generate_alert_handler(top, out_path):
     else:
         async_on = ""
         for alert in top['alert']:
-            async_on = str(alert['async']) + async_on
+            for k in range(alert['width']):
+                async_on = str(alert['async']) + async_on
         async_on = ("%d'b" % n_alerts) + async_on
 
     log.info("alert handler parameterization:")
@@ -625,6 +626,24 @@ def generate_pwrmgr(top, out_path):
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
+def generate_top_only(top_only_list, out_path):
+    log.info("Generating top only modules")
+
+    for ip in top_only_list:
+        rtl_path = out_path / "ip/{}/rtl".format(ip)
+        hjson_path = out_path / "ip/{}/data/{}.hjson".format(ip, ip)
+        log.info("Generating top modules {}, hjson: {}, output: {}".format(
+            ip, hjson_path, rtl_path))
+
+        # Generate reg files
+        with open(str(hjson_path), 'r') as out:
+            hjson_obj = hjson.load(out,
+                                   use_decimal=True,
+                                   object_pairs_hook=OrderedDict)
+            validate.validate(hjson_obj)
+            gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+
 def generate_top_ral(top, ip_objs, out_path):
     # construct top ral block
     top_block = gen_rtl.Block()
@@ -759,7 +778,6 @@ def main():
     out_path = Path(outdir)
     cfg_path = Path(args.topcfg).parents[1]
 
-    # load top configuration
     try:
         with open(args.topcfg, 'r') as ftop:
             topcfg = hjson.load(ftop,
@@ -768,12 +786,21 @@ def main():
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
-    # Create filtered list
-    filter_list = [
+    # Create generated list
+    # These modules are generated through topgen
+    generated_list = [
         module['type'] for module in topcfg['module']
         if 'generated' in module and module['generated'] == 'true'
     ]
-    log.info("Filtered list is {}".format(filter_list))
+    log.info("Filtered list is {}".format(generated_list))
+
+    # These modules are NOT generated but belong to a specific top
+    # and therefore not part of "hw/ip"
+    top_only_list = [
+        module['type'] for module in topcfg['module']
+        if 'top_only' in module and module['top_only'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(top_only_list))
 
     topname = topcfg["name"]
 
@@ -782,7 +809,8 @@ def main():
     ips = search_ips(ip_dir)
 
     # exclude filtered IPs (to use top_${topname} one) and
-    ips = [x for x in ips if not x.parents[1].name in filter_list]
+    exclude_list = generated_list + top_only_list
+    ips = [x for x in ips if not x.parents[1].name in exclude_list]
 
     # Hack alert
     # Generate clkmgr.hjson here so that it can be included below
@@ -798,9 +826,15 @@ def main():
     # then creates rv_plic.hjson then run xbar generation.
     hjson_dir = Path(args.topcfg).parent
 
-    for ip in filter_list:
+    for ip in generated_list:
         log.info("Appending {}".format(ip))
         ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+            ip, ip)
+        ips.append(ip_hjson)
+
+    for ip in top_only_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(
             ip, ip)
         ips.append(ip_hjson)
 
@@ -860,6 +894,10 @@ def main():
 
     # Generate Pwrmgr
     generate_pwrmgr(completecfg, out_path)
+
+    # Generate top only modules
+    # These modules are not templated, but are not in hw/ip
+    generate_top_only(top_only_list, out_path)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
