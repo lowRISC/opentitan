@@ -318,6 +318,6 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // end
 
   // running on slow AON clock
-  `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, !rst_aon_ni, clk_aon_i)
+  `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)
 
 endmodule : pinmux
