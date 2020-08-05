@@ -44,7 +44,10 @@ module prim_dom_and_2share #(
 
   logic [DW-1:0] t0_d, t0_q, t1_d, t1_q;
   logic [DW-1:0] t_a0b1, t_a1b0, t_a0b0, t_a1b1;
-  //synopsys keep_signal_name "t_a0b1 t_a1b0 t_a0b0 t_a1b1"
+  //synopsys keep_signal_name t_a0b1
+  //synopsys keep_signal_name t_a1b0
+  //synopsys keep_signal_name t_a0b0
+  //synopsys keep_signal_name t_a1b1
 
   // Preserve the logic sequence for XOR not to preceed the AND
   assign t_a0b1 = a0_i & b1_i;

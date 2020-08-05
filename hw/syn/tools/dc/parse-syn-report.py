@@ -55,7 +55,7 @@ def _match_fp_number(full_file, patterns):
     return (nums, errs)
 
 
-def _extract_messages(full_file, results, key):
+def _extract_messages(full_file, results, key, args):
     """
     This extracts error and warning messages from the sting buffer full_file.
     """
@@ -71,7 +71,7 @@ def _extract_messages(full_file, results, key):
     return results
 
 
-def _extract_gate_equiv(full_file, results, key):
+def _extract_gate_equiv(full_file, results, key, args):
     """
     This reads out the unit gate-equivalent.
     """
@@ -93,7 +93,7 @@ def _rel_err(val, ref):
         return abs(val - ref) / ref
 
 
-def _extract_area(full_file, results, key):
+def _extract_area(full_file, results, key, args):
     """
     This extracts detailed area information from the report.
     Area will be reported in gate equivalents.
@@ -114,6 +114,16 @@ def _extract_area(full_file, results, key):
 
     # aggregate one level of sub-modules
     pattern = r"^([\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+
+    if args.depth == 2:
+        pattern = r"^args.dut/([\.0-9A-Za-z_\[\]]+){1}" + \
+                  r"(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+    elif args.depth > 2:
+        results['messages']['flow_warnings'] += [
+            "Warning: unsupported hierarchy depth="
+            "%d specified, defaulting to depth=1" % args.depth
+            ]
+
     for k in range(5):
         pattern += r"\s+(" + FP_NUMBER + r")"
     matches = re.findall(pattern, full_file, flags=re.MULTILINE)
@@ -167,7 +177,7 @@ def _extract_area(full_file, results, key):
     return results
 
 
-def _extract_clocks(full_file, results, key):
+def _extract_clocks(full_file, results, key, args):
     """
     Parse out the clocks and their period
     """
@@ -191,7 +201,7 @@ def _extract_clocks(full_file, results, key):
     return results
 
 
-def _extract_timing(full_file, results, key):
+def _extract_timing(full_file, results, key, args):
     """
     This extracts the TNS and WNS for all defined clocks.
     """
@@ -241,7 +251,7 @@ def _match_units(full_file, patterns, key, results):
     return results
 
 
-def _extract_units(full_file, results, key):
+def _extract_units(full_file, results, key, args):
     """
     Get the SI units configuration of this run
     """
@@ -285,7 +295,7 @@ def _extract_units(full_file, results, key):
     return results
 
 
-def _extract_power(full_file, results, key):
+def _extract_power(full_file, results, key, args):
     """
     This extracts power estimates for the top module from the report.
     """
@@ -309,20 +319,20 @@ def _extract_power(full_file, results, key):
     return results
 
 
-def _parse_file(path, name, results, handler, key):
+def _parse_file(path, name, results, handler, key, args):
     """
     Attempts to open and aprse a given report file with the handler provided.
     """
     try:
         with Path(path).joinpath(name).open() as f:
             full_file = f.read()
-            results = handler(full_file, results, key)
+            results = handler(full_file, results, key, args)
     except IOError as err:
         results["messages"]["flow_errors"] += ["IOError: %s" % err]
     return results
 
 
-def get_results(logpath, reppath, dut):
+def get_results(args):
     """
     Parse report and corresponding logfiles and extract error, warning
     and info messages for each IP present in the result folder
@@ -371,34 +381,35 @@ def get_results(logpath, reppath, dut):
         }
     }
 
-    results["top"] = dut
+    results["top"] = args.dut
 
     # flow messages
-    results = _parse_file(logpath, 'synthesis.log', results, _extract_messages,
-                          "flow")
+    results = _parse_file(args.logpath, 'synthesis.log', results, _extract_messages,
+                          "flow", args)
 
     # messages
     for rep_type in ["analyze", "elab", "compile"]:
-        results = _parse_file(reppath, '%s.rpt' % rep_type, results,
-                              _extract_messages, rep_type)
+        results = _parse_file(args.reppath, '%s.rpt' % rep_type, results,
+                              _extract_messages, rep_type, args)
 
     # get gate equivalents
-    results = _parse_file(reppath, 'gate_equiv.rpt', results,
-                          _extract_gate_equiv, "area")
+    results = _parse_file(args.reppath, 'gate_equiv.rpt', results,
+                          _extract_gate_equiv, "area", args)
     # area
-    results = _parse_file(reppath, 'area.rpt', results, _extract_area, "area")
+    results = _parse_file(args.reppath, 'area.rpt', results, _extract_area,
+                          "area", args)
     # clocks. this complements the timing report later below
-    results = _parse_file(reppath, 'clocks.rpt', results, _extract_clocks,
-                          "timing")
+    results = _parse_file(args.reppath, 'clocks.rpt', results, _extract_clocks,
+                          "timing", args)
     # timing
-    results = _parse_file(reppath, 'timing.rpt', results, _extract_timing,
-                          "timing")
+    results = _parse_file(args.reppath, 'timing.rpt', results, _extract_timing,
+                          "timing", args)
     # power
-    results = _parse_file(reppath, 'power.rpt', results, _extract_power,
-                          "power")
+    results = _parse_file(args.reppath, 'power.rpt', results, _extract_power,
+                          "power", args)
     # units
-    results = _parse_file(reppath, 'power.rpt', results, _extract_units,
-                          "units")
+    results = _parse_file(args.reppath, 'power.rpt', results, _extract_units,
+                          "units", args)
 
     return results
 
@@ -511,8 +522,13 @@ def main():
                         help="""Output directory for the 'results.hjson' file.
                         Defaults to './'""")
 
+    parser.add_argument('--depth',
+                        type=int,
+                        default=1,
+                        help="""Area Report with hierarchical depth""")
+
     args = parser.parse_args()
-    results = get_results(args.logpath, args.reppath, args.dut)
+    results = get_results(args)
 
     with Path(args.outdir).joinpath("results.hjson").open("w") as results_file:
         hjson.dump(results,
