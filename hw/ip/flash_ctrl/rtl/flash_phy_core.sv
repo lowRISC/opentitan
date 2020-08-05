@@ -320,6 +320,12 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // Actual connection to flash phy
   ////////////////////////
 
+  wire [3:0] flash_test_mode_a;
+  wire flash_test_voltage_h;
+
+  assign flash_test_mode_a = '0;
+  assign flash_test_voltage_h = '0;
+
   // The actual flash macro wrapper
   // The size of a page is fixed.  However, depending on the sizing of the word,
   // the number of words within a page will change.
@@ -341,8 +347,18 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .prog_data_i(prog_data),
     .ack_o(ack),
     .rd_data_o(flash_rdata),
-    .init_busy_o // TBD this needs to be looked at later. What init do we need to do,
-                 // and where does it make the most sense?
+    .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
+                  // and where does it make the most sense?
+    .tck_i('0),
+    .tdi_i('0),
+    .tms_i('0),
+    .tdo_o(),
+    .scanmode_i('0),
+    .scan_reset_ni('0),
+    .flash_power_ready_hi('0),
+    .flash_power_down_hi('0),
+    .flash_test_mode_ai(flash_test_mode_a),
+    .flash_test_voltage_hi(flash_test_voltage_h)
   );
 
   /////////////////////////////////

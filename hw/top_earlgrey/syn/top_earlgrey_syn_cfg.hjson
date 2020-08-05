@@ -11,10 +11,6 @@
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/data/common_syn_cfg.hjson"]
 
-  // Timing constraints for this module
-  sdc_path: "{proj_root}/hw/top_earlgrey/syn"
-  sdc_file: "constraints.sdc"
-
   // Overrides
   overrides: [
     {
@@ -23,5 +19,14 @@
     }
   ]
 
-  // TODO: add support for loading the constraints here
+  // Timing constraints for this module
+  sdc_path: "{proj_root}/hw/top_earlgrey/syn"
+  sdc_file: "constraints.sdc"
+
+  // Technology specific timing constraints for this module
+  foundry_sdc_path: "{proj_root}/hw/foundry/top_earlgrey/syn"
+  foundry_sdc_file: "foundry.constraints.sdc"
+
+  // Configuration for result parser script
+  area_depth: 1
  }
