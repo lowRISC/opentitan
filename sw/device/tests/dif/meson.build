@@ -78,7 +78,7 @@ test('dif_gpio_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
@@ -94,7 +94,23 @@ test('dif_rv_timer_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_otbn_unittest', executable(
+  'dif_otbn_unittest',
+  sources: [
+    'dif_otbn_unittest.cc',
+    meson.source_root() / 'sw/device/lib/dif/dif_otbn.c',
+    hw_ip_otbn_reg_h,
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
