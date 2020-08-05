@@ -104,10 +104,12 @@
           desc: '''
             The error cause if an error occurred.
 
-            TODO: Define error codes.
-
             Software should read this register before clearing the err
             interrupt to avoid race conditions.
+
+            Possible values:
+
+            - 0x0 (ErrCodeNoError): No error occurred.
           '''
         }
       ]
