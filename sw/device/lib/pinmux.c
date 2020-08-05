@@ -30,14 +30,14 @@ static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
 
 void pinmux_init(void) {
   // input: assign MIO0..MIO31 to GPIO0..GPIO31
-  init_pinmux_reg(PINMUX_PERIPH_INSEL0(0), PINMUX_PERIPH_INSEL0_IN1_OFFSET,
-                  32 / PINMUX_PERIPH_INSEL0_IN1_OFFSET,
-                  PINMUX_PERIPH_INSEL0_IN0_MASK,
+  init_pinmux_reg(PINMUX_PERIPH_INSEL_0(0), PINMUX_PERIPH_INSEL_0_IN_1_OFFSET,
+                  32 / PINMUX_PERIPH_INSEL_0_IN_1_OFFSET,
+                  PINMUX_PERIPH_INSEL_0_IN_0_MASK,
                   PINMUX_PERIPH_INSEL_IDX_OFFSET);
 
   // output: assign GPIO0..GPIO31 to MIO0..MIO31
-  init_pinmux_reg(PINMUX_MIO_OUTSEL0(0), PINMUX_MIO_OUTSEL0_OUT1_OFFSET,
-                  32 / PINMUX_MIO_OUTSEL0_OUT1_OFFSET,
-                  PINMUX_MIO_OUTSEL0_OUT0_MASK,
+  init_pinmux_reg(PINMUX_MIO_OUTSEL_0(0), PINMUX_MIO_OUTSEL_0_OUT_1_OFFSET,
+                  32 / PINMUX_MIO_OUTSEL_0_OUT_1_OFFSET,
+                  PINMUX_MIO_OUTSEL_0_OUT_0_MASK,
                   PINMUX_PERIPH_OUTSEL_IDX_OFFSET);
 }

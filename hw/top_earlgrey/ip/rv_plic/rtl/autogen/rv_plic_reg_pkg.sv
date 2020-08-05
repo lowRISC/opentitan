@@ -482,12 +482,12 @@ package rv_plic_reg_pkg;
   } rv_plic_hw2reg_t;
 
   // Register Address
-  parameter logic [9:0] RV_PLIC_IP0_OFFSET = 10'h 0;
-  parameter logic [9:0] RV_PLIC_IP1_OFFSET = 10'h 4;
-  parameter logic [9:0] RV_PLIC_IP2_OFFSET = 10'h 8;
-  parameter logic [9:0] RV_PLIC_LE0_OFFSET = 10'h c;
-  parameter logic [9:0] RV_PLIC_LE1_OFFSET = 10'h 10;
-  parameter logic [9:0] RV_PLIC_LE2_OFFSET = 10'h 14;
+  parameter logic [9:0] RV_PLIC_IP_0_OFFSET = 10'h 0;
+  parameter logic [9:0] RV_PLIC_IP_1_OFFSET = 10'h 4;
+  parameter logic [9:0] RV_PLIC_IP_2_OFFSET = 10'h 8;
+  parameter logic [9:0] RV_PLIC_LE_0_OFFSET = 10'h c;
+  parameter logic [9:0] RV_PLIC_LE_1_OFFSET = 10'h 10;
+  parameter logic [9:0] RV_PLIC_LE_2_OFFSET = 10'h 14;
   parameter logic [9:0] RV_PLIC_PRIO0_OFFSET = 10'h 18;
   parameter logic [9:0] RV_PLIC_PRIO1_OFFSET = 10'h 1c;
   parameter logic [9:0] RV_PLIC_PRIO2_OFFSET = 10'h 20;
@@ -571,9 +571,9 @@ package rv_plic_reg_pkg;
   parameter logic [9:0] RV_PLIC_PRIO80_OFFSET = 10'h 158;
   parameter logic [9:0] RV_PLIC_PRIO81_OFFSET = 10'h 15c;
   parameter logic [9:0] RV_PLIC_PRIO82_OFFSET = 10'h 160;
-  parameter logic [9:0] RV_PLIC_IE00_OFFSET = 10'h 200;
-  parameter logic [9:0] RV_PLIC_IE01_OFFSET = 10'h 204;
-  parameter logic [9:0] RV_PLIC_IE02_OFFSET = 10'h 208;
+  parameter logic [9:0] RV_PLIC_IE0_0_OFFSET = 10'h 200;
+  parameter logic [9:0] RV_PLIC_IE0_1_OFFSET = 10'h 204;
+  parameter logic [9:0] RV_PLIC_IE0_2_OFFSET = 10'h 208;
   parameter logic [9:0] RV_PLIC_THRESHOLD0_OFFSET = 10'h 20c;
   parameter logic [9:0] RV_PLIC_CC0_OFFSET = 10'h 210;
   parameter logic [9:0] RV_PLIC_MSIP0_OFFSET = 10'h 214;
@@ -581,12 +581,12 @@ package rv_plic_reg_pkg;
 
   // Register Index
   typedef enum int {
-    RV_PLIC_IP0,
-    RV_PLIC_IP1,
-    RV_PLIC_IP2,
-    RV_PLIC_LE0,
-    RV_PLIC_LE1,
-    RV_PLIC_LE2,
+    RV_PLIC_IP_0,
+    RV_PLIC_IP_1,
+    RV_PLIC_IP_2,
+    RV_PLIC_LE_0,
+    RV_PLIC_LE_1,
+    RV_PLIC_LE_2,
     RV_PLIC_PRIO0,
     RV_PLIC_PRIO1,
     RV_PLIC_PRIO2,
@@ -670,9 +670,9 @@ package rv_plic_reg_pkg;
     RV_PLIC_PRIO80,
     RV_PLIC_PRIO81,
     RV_PLIC_PRIO82,
-    RV_PLIC_IE00,
-    RV_PLIC_IE01,
-    RV_PLIC_IE02,
+    RV_PLIC_IE0_0,
+    RV_PLIC_IE0_1,
+    RV_PLIC_IE0_2,
     RV_PLIC_THRESHOLD0,
     RV_PLIC_CC0,
     RV_PLIC_MSIP0
@@ -680,12 +680,12 @@ package rv_plic_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] RV_PLIC_PERMIT [95] = '{
-    4'b 1111, // index[ 0] RV_PLIC_IP0
-    4'b 1111, // index[ 1] RV_PLIC_IP1
-    4'b 0111, // index[ 2] RV_PLIC_IP2
-    4'b 1111, // index[ 3] RV_PLIC_LE0
-    4'b 1111, // index[ 4] RV_PLIC_LE1
-    4'b 0111, // index[ 5] RV_PLIC_LE2
+    4'b 1111, // index[ 0] RV_PLIC_IP_0
+    4'b 1111, // index[ 1] RV_PLIC_IP_1
+    4'b 0111, // index[ 2] RV_PLIC_IP_2
+    4'b 1111, // index[ 3] RV_PLIC_LE_0
+    4'b 1111, // index[ 4] RV_PLIC_LE_1
+    4'b 0111, // index[ 5] RV_PLIC_LE_2
     4'b 0001, // index[ 6] RV_PLIC_PRIO0
     4'b 0001, // index[ 7] RV_PLIC_PRIO1
     4'b 0001, // index[ 8] RV_PLIC_PRIO2
@@ -769,9 +769,9 @@ package rv_plic_reg_pkg;
     4'b 0001, // index[86] RV_PLIC_PRIO80
     4'b 0001, // index[87] RV_PLIC_PRIO81
     4'b 0001, // index[88] RV_PLIC_PRIO82
-    4'b 1111, // index[89] RV_PLIC_IE00
-    4'b 1111, // index[90] RV_PLIC_IE01
-    4'b 0111, // index[91] RV_PLIC_IE02
+    4'b 1111, // index[89] RV_PLIC_IE0_0
+    4'b 1111, // index[90] RV_PLIC_IE0_1
+    4'b 0111, // index[91] RV_PLIC_IE0_2
     4'b 0001, // index[92] RV_PLIC_THRESHOLD0
     4'b 0001, // index[93] RV_PLIC_CC0
     4'b 0001  // index[94] RV_PLIC_MSIP0

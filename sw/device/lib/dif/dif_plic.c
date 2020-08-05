@@ -53,13 +53,13 @@ typedef struct plic_target_reg_offset {
 // target, so there should be `RV_PLIC_PARAM_NUMTARGET` entries in this array.
 // The `i`th entry should contain the offsets of the `i`th target specific
 // registers:
-// - `RV_PLIC_IE<i>0_REG_OFFSET` (the first IE reg for target `i`).
+// - `RV_PLIC_IE<i>_0_REG_OFFSET` (the first IE reg for target `i`).
 // - `RV_PLIC_CC<i>_REG_OFFSET`
 // - `RV_PLIC_THRESHOLD<i>_REG_OFFSET`
 static const plic_target_reg_offset_t plic_target_reg_offsets[] = {
         [0] =
             {
-                .ie = RV_PLIC_IE00_REG_OFFSET,
+                .ie = RV_PLIC_IE0_0_REG_OFFSET,
                 .cc = RV_PLIC_CC0_REG_OFFSET,
                 .threshold = RV_PLIC_THRESHOLD0_REG_OFFSET,
             },
@@ -70,7 +70,7 @@ _Static_assert(
     "There should be an entry in plic_target_reg_offsets for every target");
 
 /**
- * Get an IE, IP or LE register offset (IE00, IE01, ...) from an IRQ source ID.
+ * Get an IE, IP or LE register offset (IE0_0, IE01, ...) from an IRQ source ID.
  *
  * With more than 32 IRQ sources, there is a multiple of these registers to
  * accommodate all the bits (1 bit per IRQ source). This function calculates
@@ -110,7 +110,7 @@ static void plic_irq_enable_reg_info(dif_plic_irq_id_t irq,
 static void plic_irq_trigger_type_reg_info(dif_plic_irq_id_t irq,
                                            plic_reg_info_t *reg_info) {
   ptrdiff_t offset = plic_offset_from_reg0(irq);
-  reg_info->offset = RV_PLIC_LE0_REG_OFFSET + offset;
+  reg_info->offset = RV_PLIC_LE_0_REG_OFFSET + offset;
   reg_info->bit_index = plic_reg_bit_index_from_irq_id(irq);
 }
 
@@ -120,7 +120,7 @@ static void plic_irq_trigger_type_reg_info(dif_plic_irq_id_t irq,
 static void plic_irq_pending_reg_info(dif_plic_irq_id_t irq,
                                       plic_reg_info_t *reg_info) {
   ptrdiff_t offset = plic_offset_from_reg0(irq);
-  reg_info->offset = RV_PLIC_IP0_REG_OFFSET + offset;
+  reg_info->offset = RV_PLIC_IP_0_REG_OFFSET + offset;
   reg_info->bit_index = plic_reg_bit_index_from_irq_id(irq);
 }
 
@@ -146,13 +146,13 @@ static ptrdiff_t plic_priority_reg_offset(dif_plic_irq_id_t irq) {
 static void plic_reset(const dif_plic_t *plic) {
   // Clear all of the Interrupt Enable registers.
   for (int i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
-    ptrdiff_t offset = RV_PLIC_IE00_REG_OFFSET + (i * sizeof(uint32_t));
+    ptrdiff_t offset = RV_PLIC_IE0_0_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 
   // Clear all of the Level/Edge registers.
   for (int i = 0; i < RV_PLIC_LE_MULTIREG_COUNT; ++i) {
-    ptrdiff_t offset = RV_PLIC_LE0_REG_OFFSET + (i * sizeof(uint32_t));
+    ptrdiff_t offset = RV_PLIC_LE_0_REG_OFFSET + (i * sizeof(uint32_t));
     mmio_region_write32(plic->base_addr, offset, 0);
   }
 

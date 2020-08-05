@@ -195,174 +195,174 @@ module flash_ctrl_reg_top (
   logic region_cfg_regwen_qs;
   logic region_cfg_regwen_wd;
   logic region_cfg_regwen_we;
-  logic mp_region_cfg0_en0_qs;
-  logic mp_region_cfg0_en0_wd;
-  logic mp_region_cfg0_en0_we;
-  logic mp_region_cfg0_rd_en0_qs;
-  logic mp_region_cfg0_rd_en0_wd;
-  logic mp_region_cfg0_rd_en0_we;
-  logic mp_region_cfg0_prog_en0_qs;
-  logic mp_region_cfg0_prog_en0_wd;
-  logic mp_region_cfg0_prog_en0_we;
-  logic mp_region_cfg0_erase_en0_qs;
-  logic mp_region_cfg0_erase_en0_wd;
-  logic mp_region_cfg0_erase_en0_we;
-  logic [8:0] mp_region_cfg0_base0_qs;
-  logic [8:0] mp_region_cfg0_base0_wd;
-  logic mp_region_cfg0_base0_we;
-  logic [9:0] mp_region_cfg0_size0_qs;
-  logic [9:0] mp_region_cfg0_size0_wd;
-  logic mp_region_cfg0_size0_we;
-  logic mp_region_cfg0_partition0_qs;
-  logic mp_region_cfg0_partition0_wd;
-  logic mp_region_cfg0_partition0_we;
-  logic mp_region_cfg1_en1_qs;
-  logic mp_region_cfg1_en1_wd;
-  logic mp_region_cfg1_en1_we;
-  logic mp_region_cfg1_rd_en1_qs;
-  logic mp_region_cfg1_rd_en1_wd;
-  logic mp_region_cfg1_rd_en1_we;
-  logic mp_region_cfg1_prog_en1_qs;
-  logic mp_region_cfg1_prog_en1_wd;
-  logic mp_region_cfg1_prog_en1_we;
-  logic mp_region_cfg1_erase_en1_qs;
-  logic mp_region_cfg1_erase_en1_wd;
-  logic mp_region_cfg1_erase_en1_we;
-  logic [8:0] mp_region_cfg1_base1_qs;
-  logic [8:0] mp_region_cfg1_base1_wd;
-  logic mp_region_cfg1_base1_we;
-  logic [9:0] mp_region_cfg1_size1_qs;
-  logic [9:0] mp_region_cfg1_size1_wd;
-  logic mp_region_cfg1_size1_we;
-  logic mp_region_cfg1_partition1_qs;
-  logic mp_region_cfg1_partition1_wd;
-  logic mp_region_cfg1_partition1_we;
-  logic mp_region_cfg2_en2_qs;
-  logic mp_region_cfg2_en2_wd;
-  logic mp_region_cfg2_en2_we;
-  logic mp_region_cfg2_rd_en2_qs;
-  logic mp_region_cfg2_rd_en2_wd;
-  logic mp_region_cfg2_rd_en2_we;
-  logic mp_region_cfg2_prog_en2_qs;
-  logic mp_region_cfg2_prog_en2_wd;
-  logic mp_region_cfg2_prog_en2_we;
-  logic mp_region_cfg2_erase_en2_qs;
-  logic mp_region_cfg2_erase_en2_wd;
-  logic mp_region_cfg2_erase_en2_we;
-  logic [8:0] mp_region_cfg2_base2_qs;
-  logic [8:0] mp_region_cfg2_base2_wd;
-  logic mp_region_cfg2_base2_we;
-  logic [9:0] mp_region_cfg2_size2_qs;
-  logic [9:0] mp_region_cfg2_size2_wd;
-  logic mp_region_cfg2_size2_we;
-  logic mp_region_cfg2_partition2_qs;
-  logic mp_region_cfg2_partition2_wd;
-  logic mp_region_cfg2_partition2_we;
-  logic mp_region_cfg3_en3_qs;
-  logic mp_region_cfg3_en3_wd;
-  logic mp_region_cfg3_en3_we;
-  logic mp_region_cfg3_rd_en3_qs;
-  logic mp_region_cfg3_rd_en3_wd;
-  logic mp_region_cfg3_rd_en3_we;
-  logic mp_region_cfg3_prog_en3_qs;
-  logic mp_region_cfg3_prog_en3_wd;
-  logic mp_region_cfg3_prog_en3_we;
-  logic mp_region_cfg3_erase_en3_qs;
-  logic mp_region_cfg3_erase_en3_wd;
-  logic mp_region_cfg3_erase_en3_we;
-  logic [8:0] mp_region_cfg3_base3_qs;
-  logic [8:0] mp_region_cfg3_base3_wd;
-  logic mp_region_cfg3_base3_we;
-  logic [9:0] mp_region_cfg3_size3_qs;
-  logic [9:0] mp_region_cfg3_size3_wd;
-  logic mp_region_cfg3_size3_we;
-  logic mp_region_cfg3_partition3_qs;
-  logic mp_region_cfg3_partition3_wd;
-  logic mp_region_cfg3_partition3_we;
-  logic mp_region_cfg4_en4_qs;
-  logic mp_region_cfg4_en4_wd;
-  logic mp_region_cfg4_en4_we;
-  logic mp_region_cfg4_rd_en4_qs;
-  logic mp_region_cfg4_rd_en4_wd;
-  logic mp_region_cfg4_rd_en4_we;
-  logic mp_region_cfg4_prog_en4_qs;
-  logic mp_region_cfg4_prog_en4_wd;
-  logic mp_region_cfg4_prog_en4_we;
-  logic mp_region_cfg4_erase_en4_qs;
-  logic mp_region_cfg4_erase_en4_wd;
-  logic mp_region_cfg4_erase_en4_we;
-  logic [8:0] mp_region_cfg4_base4_qs;
-  logic [8:0] mp_region_cfg4_base4_wd;
-  logic mp_region_cfg4_base4_we;
-  logic [9:0] mp_region_cfg4_size4_qs;
-  logic [9:0] mp_region_cfg4_size4_wd;
-  logic mp_region_cfg4_size4_we;
-  logic mp_region_cfg4_partition4_qs;
-  logic mp_region_cfg4_partition4_wd;
-  logic mp_region_cfg4_partition4_we;
-  logic mp_region_cfg5_en5_qs;
-  logic mp_region_cfg5_en5_wd;
-  logic mp_region_cfg5_en5_we;
-  logic mp_region_cfg5_rd_en5_qs;
-  logic mp_region_cfg5_rd_en5_wd;
-  logic mp_region_cfg5_rd_en5_we;
-  logic mp_region_cfg5_prog_en5_qs;
-  logic mp_region_cfg5_prog_en5_wd;
-  logic mp_region_cfg5_prog_en5_we;
-  logic mp_region_cfg5_erase_en5_qs;
-  logic mp_region_cfg5_erase_en5_wd;
-  logic mp_region_cfg5_erase_en5_we;
-  logic [8:0] mp_region_cfg5_base5_qs;
-  logic [8:0] mp_region_cfg5_base5_wd;
-  logic mp_region_cfg5_base5_we;
-  logic [9:0] mp_region_cfg5_size5_qs;
-  logic [9:0] mp_region_cfg5_size5_wd;
-  logic mp_region_cfg5_size5_we;
-  logic mp_region_cfg5_partition5_qs;
-  logic mp_region_cfg5_partition5_wd;
-  logic mp_region_cfg5_partition5_we;
-  logic mp_region_cfg6_en6_qs;
-  logic mp_region_cfg6_en6_wd;
-  logic mp_region_cfg6_en6_we;
-  logic mp_region_cfg6_rd_en6_qs;
-  logic mp_region_cfg6_rd_en6_wd;
-  logic mp_region_cfg6_rd_en6_we;
-  logic mp_region_cfg6_prog_en6_qs;
-  logic mp_region_cfg6_prog_en6_wd;
-  logic mp_region_cfg6_prog_en6_we;
-  logic mp_region_cfg6_erase_en6_qs;
-  logic mp_region_cfg6_erase_en6_wd;
-  logic mp_region_cfg6_erase_en6_we;
-  logic [8:0] mp_region_cfg6_base6_qs;
-  logic [8:0] mp_region_cfg6_base6_wd;
-  logic mp_region_cfg6_base6_we;
-  logic [9:0] mp_region_cfg6_size6_qs;
-  logic [9:0] mp_region_cfg6_size6_wd;
-  logic mp_region_cfg6_size6_we;
-  logic mp_region_cfg6_partition6_qs;
-  logic mp_region_cfg6_partition6_wd;
-  logic mp_region_cfg6_partition6_we;
-  logic mp_region_cfg7_en7_qs;
-  logic mp_region_cfg7_en7_wd;
-  logic mp_region_cfg7_en7_we;
-  logic mp_region_cfg7_rd_en7_qs;
-  logic mp_region_cfg7_rd_en7_wd;
-  logic mp_region_cfg7_rd_en7_we;
-  logic mp_region_cfg7_prog_en7_qs;
-  logic mp_region_cfg7_prog_en7_wd;
-  logic mp_region_cfg7_prog_en7_we;
-  logic mp_region_cfg7_erase_en7_qs;
-  logic mp_region_cfg7_erase_en7_wd;
-  logic mp_region_cfg7_erase_en7_we;
-  logic [8:0] mp_region_cfg7_base7_qs;
-  logic [8:0] mp_region_cfg7_base7_wd;
-  logic mp_region_cfg7_base7_we;
-  logic [9:0] mp_region_cfg7_size7_qs;
-  logic [9:0] mp_region_cfg7_size7_wd;
-  logic mp_region_cfg7_size7_we;
-  logic mp_region_cfg7_partition7_qs;
-  logic mp_region_cfg7_partition7_wd;
-  logic mp_region_cfg7_partition7_we;
+  logic mp_region_cfg_0_en_0_qs;
+  logic mp_region_cfg_0_en_0_wd;
+  logic mp_region_cfg_0_en_0_we;
+  logic mp_region_cfg_0_rd_en_0_qs;
+  logic mp_region_cfg_0_rd_en_0_wd;
+  logic mp_region_cfg_0_rd_en_0_we;
+  logic mp_region_cfg_0_prog_en_0_qs;
+  logic mp_region_cfg_0_prog_en_0_wd;
+  logic mp_region_cfg_0_prog_en_0_we;
+  logic mp_region_cfg_0_erase_en_0_qs;
+  logic mp_region_cfg_0_erase_en_0_wd;
+  logic mp_region_cfg_0_erase_en_0_we;
+  logic [8:0] mp_region_cfg_0_base_0_qs;
+  logic [8:0] mp_region_cfg_0_base_0_wd;
+  logic mp_region_cfg_0_base_0_we;
+  logic [9:0] mp_region_cfg_0_size_0_qs;
+  logic [9:0] mp_region_cfg_0_size_0_wd;
+  logic mp_region_cfg_0_size_0_we;
+  logic mp_region_cfg_0_partition_0_qs;
+  logic mp_region_cfg_0_partition_0_wd;
+  logic mp_region_cfg_0_partition_0_we;
+  logic mp_region_cfg_1_en_1_qs;
+  logic mp_region_cfg_1_en_1_wd;
+  logic mp_region_cfg_1_en_1_we;
+  logic mp_region_cfg_1_rd_en_1_qs;
+  logic mp_region_cfg_1_rd_en_1_wd;
+  logic mp_region_cfg_1_rd_en_1_we;
+  logic mp_region_cfg_1_prog_en_1_qs;
+  logic mp_region_cfg_1_prog_en_1_wd;
+  logic mp_region_cfg_1_prog_en_1_we;
+  logic mp_region_cfg_1_erase_en_1_qs;
+  logic mp_region_cfg_1_erase_en_1_wd;
+  logic mp_region_cfg_1_erase_en_1_we;
+  logic [8:0] mp_region_cfg_1_base_1_qs;
+  logic [8:0] mp_region_cfg_1_base_1_wd;
+  logic mp_region_cfg_1_base_1_we;
+  logic [9:0] mp_region_cfg_1_size_1_qs;
+  logic [9:0] mp_region_cfg_1_size_1_wd;
+  logic mp_region_cfg_1_size_1_we;
+  logic mp_region_cfg_1_partition_1_qs;
+  logic mp_region_cfg_1_partition_1_wd;
+  logic mp_region_cfg_1_partition_1_we;
+  logic mp_region_cfg_2_en_2_qs;
+  logic mp_region_cfg_2_en_2_wd;
+  logic mp_region_cfg_2_en_2_we;
+  logic mp_region_cfg_2_rd_en_2_qs;
+  logic mp_region_cfg_2_rd_en_2_wd;
+  logic mp_region_cfg_2_rd_en_2_we;
+  logic mp_region_cfg_2_prog_en_2_qs;
+  logic mp_region_cfg_2_prog_en_2_wd;
+  logic mp_region_cfg_2_prog_en_2_we;
+  logic mp_region_cfg_2_erase_en_2_qs;
+  logic mp_region_cfg_2_erase_en_2_wd;
+  logic mp_region_cfg_2_erase_en_2_we;
+  logic [8:0] mp_region_cfg_2_base_2_qs;
+  logic [8:0] mp_region_cfg_2_base_2_wd;
+  logic mp_region_cfg_2_base_2_we;
+  logic [9:0] mp_region_cfg_2_size_2_qs;
+  logic [9:0] mp_region_cfg_2_size_2_wd;
+  logic mp_region_cfg_2_size_2_we;
+  logic mp_region_cfg_2_partition_2_qs;
+  logic mp_region_cfg_2_partition_2_wd;
+  logic mp_region_cfg_2_partition_2_we;
+  logic mp_region_cfg_3_en_3_qs;
+  logic mp_region_cfg_3_en_3_wd;
+  logic mp_region_cfg_3_en_3_we;
+  logic mp_region_cfg_3_rd_en_3_qs;
+  logic mp_region_cfg_3_rd_en_3_wd;
+  logic mp_region_cfg_3_rd_en_3_we;
+  logic mp_region_cfg_3_prog_en_3_qs;
+  logic mp_region_cfg_3_prog_en_3_wd;
+  logic mp_region_cfg_3_prog_en_3_we;
+  logic mp_region_cfg_3_erase_en_3_qs;
+  logic mp_region_cfg_3_erase_en_3_wd;
+  logic mp_region_cfg_3_erase_en_3_we;
+  logic [8:0] mp_region_cfg_3_base_3_qs;
+  logic [8:0] mp_region_cfg_3_base_3_wd;
+  logic mp_region_cfg_3_base_3_we;
+  logic [9:0] mp_region_cfg_3_size_3_qs;
+  logic [9:0] mp_region_cfg_3_size_3_wd;
+  logic mp_region_cfg_3_size_3_we;
+  logic mp_region_cfg_3_partition_3_qs;
+  logic mp_region_cfg_3_partition_3_wd;
+  logic mp_region_cfg_3_partition_3_we;
+  logic mp_region_cfg_4_en_4_qs;
+  logic mp_region_cfg_4_en_4_wd;
+  logic mp_region_cfg_4_en_4_we;
+  logic mp_region_cfg_4_rd_en_4_qs;
+  logic mp_region_cfg_4_rd_en_4_wd;
+  logic mp_region_cfg_4_rd_en_4_we;
+  logic mp_region_cfg_4_prog_en_4_qs;
+  logic mp_region_cfg_4_prog_en_4_wd;
+  logic mp_region_cfg_4_prog_en_4_we;
+  logic mp_region_cfg_4_erase_en_4_qs;
+  logic mp_region_cfg_4_erase_en_4_wd;
+  logic mp_region_cfg_4_erase_en_4_we;
+  logic [8:0] mp_region_cfg_4_base_4_qs;
+  logic [8:0] mp_region_cfg_4_base_4_wd;
+  logic mp_region_cfg_4_base_4_we;
+  logic [9:0] mp_region_cfg_4_size_4_qs;
+  logic [9:0] mp_region_cfg_4_size_4_wd;
+  logic mp_region_cfg_4_size_4_we;
+  logic mp_region_cfg_4_partition_4_qs;
+  logic mp_region_cfg_4_partition_4_wd;
+  logic mp_region_cfg_4_partition_4_we;
+  logic mp_region_cfg_5_en_5_qs;
+  logic mp_region_cfg_5_en_5_wd;
+  logic mp_region_cfg_5_en_5_we;
+  logic mp_region_cfg_5_rd_en_5_qs;
+  logic mp_region_cfg_5_rd_en_5_wd;
+  logic mp_region_cfg_5_rd_en_5_we;
+  logic mp_region_cfg_5_prog_en_5_qs;
+  logic mp_region_cfg_5_prog_en_5_wd;
+  logic mp_region_cfg_5_prog_en_5_we;
+  logic mp_region_cfg_5_erase_en_5_qs;
+  logic mp_region_cfg_5_erase_en_5_wd;
+  logic mp_region_cfg_5_erase_en_5_we;
+  logic [8:0] mp_region_cfg_5_base_5_qs;
+  logic [8:0] mp_region_cfg_5_base_5_wd;
+  logic mp_region_cfg_5_base_5_we;
+  logic [9:0] mp_region_cfg_5_size_5_qs;
+  logic [9:0] mp_region_cfg_5_size_5_wd;
+  logic mp_region_cfg_5_size_5_we;
+  logic mp_region_cfg_5_partition_5_qs;
+  logic mp_region_cfg_5_partition_5_wd;
+  logic mp_region_cfg_5_partition_5_we;
+  logic mp_region_cfg_6_en_6_qs;
+  logic mp_region_cfg_6_en_6_wd;
+  logic mp_region_cfg_6_en_6_we;
+  logic mp_region_cfg_6_rd_en_6_qs;
+  logic mp_region_cfg_6_rd_en_6_wd;
+  logic mp_region_cfg_6_rd_en_6_we;
+  logic mp_region_cfg_6_prog_en_6_qs;
+  logic mp_region_cfg_6_prog_en_6_wd;
+  logic mp_region_cfg_6_prog_en_6_we;
+  logic mp_region_cfg_6_erase_en_6_qs;
+  logic mp_region_cfg_6_erase_en_6_wd;
+  logic mp_region_cfg_6_erase_en_6_we;
+  logic [8:0] mp_region_cfg_6_base_6_qs;
+  logic [8:0] mp_region_cfg_6_base_6_wd;
+  logic mp_region_cfg_6_base_6_we;
+  logic [9:0] mp_region_cfg_6_size_6_qs;
+  logic [9:0] mp_region_cfg_6_size_6_wd;
+  logic mp_region_cfg_6_size_6_we;
+  logic mp_region_cfg_6_partition_6_qs;
+  logic mp_region_cfg_6_partition_6_wd;
+  logic mp_region_cfg_6_partition_6_we;
+  logic mp_region_cfg_7_en_7_qs;
+  logic mp_region_cfg_7_en_7_wd;
+  logic mp_region_cfg_7_en_7_we;
+  logic mp_region_cfg_7_rd_en_7_qs;
+  logic mp_region_cfg_7_rd_en_7_wd;
+  logic mp_region_cfg_7_rd_en_7_we;
+  logic mp_region_cfg_7_prog_en_7_qs;
+  logic mp_region_cfg_7_prog_en_7_wd;
+  logic mp_region_cfg_7_prog_en_7_we;
+  logic mp_region_cfg_7_erase_en_7_qs;
+  logic mp_region_cfg_7_erase_en_7_wd;
+  logic mp_region_cfg_7_erase_en_7_we;
+  logic [8:0] mp_region_cfg_7_base_7_qs;
+  logic [8:0] mp_region_cfg_7_base_7_wd;
+  logic mp_region_cfg_7_base_7_we;
+  logic [9:0] mp_region_cfg_7_size_7_qs;
+  logic [9:0] mp_region_cfg_7_size_7_wd;
+  logic mp_region_cfg_7_size_7_we;
+  logic mp_region_cfg_7_partition_7_qs;
+  logic mp_region_cfg_7_partition_7_wd;
+  logic mp_region_cfg_7_partition_7_we;
   logic default_region_rd_en_qs;
   logic default_region_rd_en_wd;
   logic default_region_rd_en_we;
@@ -375,12 +375,12 @@ module flash_ctrl_reg_top (
   logic bank_cfg_regwen_qs;
   logic bank_cfg_regwen_wd;
   logic bank_cfg_regwen_we;
-  logic mp_bank_cfg_erase_en0_qs;
-  logic mp_bank_cfg_erase_en0_wd;
-  logic mp_bank_cfg_erase_en0_we;
-  logic mp_bank_cfg_erase_en1_qs;
-  logic mp_bank_cfg_erase_en1_wd;
-  logic mp_bank_cfg_erase_en1_we;
+  logic mp_bank_cfg_erase_en_0_qs;
+  logic mp_bank_cfg_erase_en_0_wd;
+  logic mp_bank_cfg_erase_en_0_we;
+  logic mp_bank_cfg_erase_en_1_qs;
+  logic mp_bank_cfg_erase_en_1_wd;
+  logic mp_bank_cfg_erase_en_1_we;
   logic op_status_done_qs;
   logic op_status_done_wd;
   logic op_status_done_we;
@@ -1054,20 +1054,20 @@ module flash_ctrl_reg_top (
 
 
   // Subregister 0 of Multireg mp_region_cfg
-  // R[mp_region_cfg0]: V(False)
+  // R[mp_region_cfg_0]: V(False)
 
-  // F[en0]: 0:0
+  // F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg0_en0 (
+  ) u_mp_region_cfg_0_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_en0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_en0_wd),
+    .we     (mp_region_cfg_0_en_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1078,22 +1078,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_en0_qs)
+    .qs     (mp_region_cfg_0_en_0_qs)
   );
 
 
-  // F[rd_en0]: 1:1
+  // F[rd_en_0]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg0_rd_en0 (
+  ) u_mp_region_cfg_0_rd_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_rd_en0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_rd_en0_wd),
+    .we     (mp_region_cfg_0_rd_en_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1104,22 +1104,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_rd_en0_qs)
+    .qs     (mp_region_cfg_0_rd_en_0_qs)
   );
 
 
-  // F[prog_en0]: 2:2
+  // F[prog_en_0]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg0_prog_en0 (
+  ) u_mp_region_cfg_0_prog_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_prog_en0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_prog_en0_wd),
+    .we     (mp_region_cfg_0_prog_en_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1130,22 +1130,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_prog_en0_qs)
+    .qs     (mp_region_cfg_0_prog_en_0_qs)
   );
 
 
-  // F[erase_en0]: 3:3
+  // F[erase_en_0]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg0_erase_en0 (
+  ) u_mp_region_cfg_0_erase_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_erase_en0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_erase_en0_wd),
+    .we     (mp_region_cfg_0_erase_en_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1156,22 +1156,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_erase_en0_qs)
+    .qs     (mp_region_cfg_0_erase_en_0_qs)
   );
 
 
-  // F[base0]: 12:4
+  // F[base_0]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg0_base0 (
+  ) u_mp_region_cfg_0_base_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_base0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_base0_wd),
+    .we     (mp_region_cfg_0_base_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_base_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1182,22 +1182,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_base0_qs)
+    .qs     (mp_region_cfg_0_base_0_qs)
   );
 
 
-  // F[size0]: 25:16
+  // F[size_0]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg0_size0 (
+  ) u_mp_region_cfg_0_size_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_size0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_size0_wd),
+    .we     (mp_region_cfg_0_size_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_size_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1208,22 +1208,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_size0_qs)
+    .qs     (mp_region_cfg_0_size_0_qs)
   );
 
 
-  // F[partition0]: 28:28
+  // F[partition_0]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg0_partition0 (
+  ) u_mp_region_cfg_0_partition_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg0_partition0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg0_partition0_wd),
+    .we     (mp_region_cfg_0_partition_0_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_0_partition_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1234,25 +1234,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[0].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg0_partition0_qs)
+    .qs     (mp_region_cfg_0_partition_0_qs)
   );
 
 
   // Subregister 1 of Multireg mp_region_cfg
-  // R[mp_region_cfg1]: V(False)
+  // R[mp_region_cfg_1]: V(False)
 
-  // F[en1]: 0:0
+  // F[en_1]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg1_en1 (
+  ) u_mp_region_cfg_1_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_en1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_en1_wd),
+    .we     (mp_region_cfg_1_en_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1263,22 +1263,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_en1_qs)
+    .qs     (mp_region_cfg_1_en_1_qs)
   );
 
 
-  // F[rd_en1]: 1:1
+  // F[rd_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg1_rd_en1 (
+  ) u_mp_region_cfg_1_rd_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_rd_en1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_rd_en1_wd),
+    .we     (mp_region_cfg_1_rd_en_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1289,22 +1289,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_rd_en1_qs)
+    .qs     (mp_region_cfg_1_rd_en_1_qs)
   );
 
 
-  // F[prog_en1]: 2:2
+  // F[prog_en_1]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg1_prog_en1 (
+  ) u_mp_region_cfg_1_prog_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_prog_en1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_prog_en1_wd),
+    .we     (mp_region_cfg_1_prog_en_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1315,22 +1315,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_prog_en1_qs)
+    .qs     (mp_region_cfg_1_prog_en_1_qs)
   );
 
 
-  // F[erase_en1]: 3:3
+  // F[erase_en_1]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg1_erase_en1 (
+  ) u_mp_region_cfg_1_erase_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_erase_en1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_erase_en1_wd),
+    .we     (mp_region_cfg_1_erase_en_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1341,22 +1341,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_erase_en1_qs)
+    .qs     (mp_region_cfg_1_erase_en_1_qs)
   );
 
 
-  // F[base1]: 12:4
+  // F[base_1]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg1_base1 (
+  ) u_mp_region_cfg_1_base_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_base1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_base1_wd),
+    .we     (mp_region_cfg_1_base_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_base_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1367,22 +1367,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_base1_qs)
+    .qs     (mp_region_cfg_1_base_1_qs)
   );
 
 
-  // F[size1]: 25:16
+  // F[size_1]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg1_size1 (
+  ) u_mp_region_cfg_1_size_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_size1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_size1_wd),
+    .we     (mp_region_cfg_1_size_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_size_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1393,22 +1393,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_size1_qs)
+    .qs     (mp_region_cfg_1_size_1_qs)
   );
 
 
-  // F[partition1]: 28:28
+  // F[partition_1]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg1_partition1 (
+  ) u_mp_region_cfg_1_partition_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg1_partition1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg1_partition1_wd),
+    .we     (mp_region_cfg_1_partition_1_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_1_partition_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1419,25 +1419,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[1].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg1_partition1_qs)
+    .qs     (mp_region_cfg_1_partition_1_qs)
   );
 
 
   // Subregister 2 of Multireg mp_region_cfg
-  // R[mp_region_cfg2]: V(False)
+  // R[mp_region_cfg_2]: V(False)
 
-  // F[en2]: 0:0
+  // F[en_2]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg2_en2 (
+  ) u_mp_region_cfg_2_en_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_en2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_en2_wd),
+    .we     (mp_region_cfg_2_en_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1448,22 +1448,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_en2_qs)
+    .qs     (mp_region_cfg_2_en_2_qs)
   );
 
 
-  // F[rd_en2]: 1:1
+  // F[rd_en_2]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg2_rd_en2 (
+  ) u_mp_region_cfg_2_rd_en_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_rd_en2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_rd_en2_wd),
+    .we     (mp_region_cfg_2_rd_en_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1474,22 +1474,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_rd_en2_qs)
+    .qs     (mp_region_cfg_2_rd_en_2_qs)
   );
 
 
-  // F[prog_en2]: 2:2
+  // F[prog_en_2]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg2_prog_en2 (
+  ) u_mp_region_cfg_2_prog_en_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_prog_en2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_prog_en2_wd),
+    .we     (mp_region_cfg_2_prog_en_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1500,22 +1500,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_prog_en2_qs)
+    .qs     (mp_region_cfg_2_prog_en_2_qs)
   );
 
 
-  // F[erase_en2]: 3:3
+  // F[erase_en_2]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg2_erase_en2 (
+  ) u_mp_region_cfg_2_erase_en_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_erase_en2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_erase_en2_wd),
+    .we     (mp_region_cfg_2_erase_en_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1526,22 +1526,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_erase_en2_qs)
+    .qs     (mp_region_cfg_2_erase_en_2_qs)
   );
 
 
-  // F[base2]: 12:4
+  // F[base_2]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg2_base2 (
+  ) u_mp_region_cfg_2_base_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_base2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_base2_wd),
+    .we     (mp_region_cfg_2_base_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_base_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1552,22 +1552,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_base2_qs)
+    .qs     (mp_region_cfg_2_base_2_qs)
   );
 
 
-  // F[size2]: 25:16
+  // F[size_2]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg2_size2 (
+  ) u_mp_region_cfg_2_size_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_size2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_size2_wd),
+    .we     (mp_region_cfg_2_size_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_size_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1578,22 +1578,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_size2_qs)
+    .qs     (mp_region_cfg_2_size_2_qs)
   );
 
 
-  // F[partition2]: 28:28
+  // F[partition_2]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg2_partition2 (
+  ) u_mp_region_cfg_2_partition_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg2_partition2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg2_partition2_wd),
+    .we     (mp_region_cfg_2_partition_2_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_2_partition_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1604,25 +1604,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[2].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg2_partition2_qs)
+    .qs     (mp_region_cfg_2_partition_2_qs)
   );
 
 
   // Subregister 3 of Multireg mp_region_cfg
-  // R[mp_region_cfg3]: V(False)
+  // R[mp_region_cfg_3]: V(False)
 
-  // F[en3]: 0:0
+  // F[en_3]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg3_en3 (
+  ) u_mp_region_cfg_3_en_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_en3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_en3_wd),
+    .we     (mp_region_cfg_3_en_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1633,22 +1633,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_en3_qs)
+    .qs     (mp_region_cfg_3_en_3_qs)
   );
 
 
-  // F[rd_en3]: 1:1
+  // F[rd_en_3]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg3_rd_en3 (
+  ) u_mp_region_cfg_3_rd_en_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_rd_en3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_rd_en3_wd),
+    .we     (mp_region_cfg_3_rd_en_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1659,22 +1659,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_rd_en3_qs)
+    .qs     (mp_region_cfg_3_rd_en_3_qs)
   );
 
 
-  // F[prog_en3]: 2:2
+  // F[prog_en_3]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg3_prog_en3 (
+  ) u_mp_region_cfg_3_prog_en_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_prog_en3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_prog_en3_wd),
+    .we     (mp_region_cfg_3_prog_en_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1685,22 +1685,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_prog_en3_qs)
+    .qs     (mp_region_cfg_3_prog_en_3_qs)
   );
 
 
-  // F[erase_en3]: 3:3
+  // F[erase_en_3]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg3_erase_en3 (
+  ) u_mp_region_cfg_3_erase_en_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_erase_en3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_erase_en3_wd),
+    .we     (mp_region_cfg_3_erase_en_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1711,22 +1711,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_erase_en3_qs)
+    .qs     (mp_region_cfg_3_erase_en_3_qs)
   );
 
 
-  // F[base3]: 12:4
+  // F[base_3]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg3_base3 (
+  ) u_mp_region_cfg_3_base_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_base3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_base3_wd),
+    .we     (mp_region_cfg_3_base_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_base_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1737,22 +1737,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_base3_qs)
+    .qs     (mp_region_cfg_3_base_3_qs)
   );
 
 
-  // F[size3]: 25:16
+  // F[size_3]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg3_size3 (
+  ) u_mp_region_cfg_3_size_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_size3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_size3_wd),
+    .we     (mp_region_cfg_3_size_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_size_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1763,22 +1763,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_size3_qs)
+    .qs     (mp_region_cfg_3_size_3_qs)
   );
 
 
-  // F[partition3]: 28:28
+  // F[partition_3]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg3_partition3 (
+  ) u_mp_region_cfg_3_partition_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg3_partition3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg3_partition3_wd),
+    .we     (mp_region_cfg_3_partition_3_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_3_partition_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1789,25 +1789,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[3].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg3_partition3_qs)
+    .qs     (mp_region_cfg_3_partition_3_qs)
   );
 
 
   // Subregister 4 of Multireg mp_region_cfg
-  // R[mp_region_cfg4]: V(False)
+  // R[mp_region_cfg_4]: V(False)
 
-  // F[en4]: 0:0
+  // F[en_4]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg4_en4 (
+  ) u_mp_region_cfg_4_en_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_en4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_en4_wd),
+    .we     (mp_region_cfg_4_en_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1818,22 +1818,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_en4_qs)
+    .qs     (mp_region_cfg_4_en_4_qs)
   );
 
 
-  // F[rd_en4]: 1:1
+  // F[rd_en_4]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg4_rd_en4 (
+  ) u_mp_region_cfg_4_rd_en_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_rd_en4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_rd_en4_wd),
+    .we     (mp_region_cfg_4_rd_en_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1844,22 +1844,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_rd_en4_qs)
+    .qs     (mp_region_cfg_4_rd_en_4_qs)
   );
 
 
-  // F[prog_en4]: 2:2
+  // F[prog_en_4]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg4_prog_en4 (
+  ) u_mp_region_cfg_4_prog_en_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_prog_en4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_prog_en4_wd),
+    .we     (mp_region_cfg_4_prog_en_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1870,22 +1870,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_prog_en4_qs)
+    .qs     (mp_region_cfg_4_prog_en_4_qs)
   );
 
 
-  // F[erase_en4]: 3:3
+  // F[erase_en_4]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg4_erase_en4 (
+  ) u_mp_region_cfg_4_erase_en_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_erase_en4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_erase_en4_wd),
+    .we     (mp_region_cfg_4_erase_en_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1896,22 +1896,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_erase_en4_qs)
+    .qs     (mp_region_cfg_4_erase_en_4_qs)
   );
 
 
-  // F[base4]: 12:4
+  // F[base_4]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg4_base4 (
+  ) u_mp_region_cfg_4_base_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_base4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_base4_wd),
+    .we     (mp_region_cfg_4_base_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_base_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1922,22 +1922,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_base4_qs)
+    .qs     (mp_region_cfg_4_base_4_qs)
   );
 
 
-  // F[size4]: 25:16
+  // F[size_4]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg4_size4 (
+  ) u_mp_region_cfg_4_size_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_size4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_size4_wd),
+    .we     (mp_region_cfg_4_size_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_size_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1948,22 +1948,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_size4_qs)
+    .qs     (mp_region_cfg_4_size_4_qs)
   );
 
 
-  // F[partition4]: 28:28
+  // F[partition_4]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg4_partition4 (
+  ) u_mp_region_cfg_4_partition_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg4_partition4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg4_partition4_wd),
+    .we     (mp_region_cfg_4_partition_4_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_4_partition_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1974,25 +1974,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[4].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg4_partition4_qs)
+    .qs     (mp_region_cfg_4_partition_4_qs)
   );
 
 
   // Subregister 5 of Multireg mp_region_cfg
-  // R[mp_region_cfg5]: V(False)
+  // R[mp_region_cfg_5]: V(False)
 
-  // F[en5]: 0:0
+  // F[en_5]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg5_en5 (
+  ) u_mp_region_cfg_5_en_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_en5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_en5_wd),
+    .we     (mp_region_cfg_5_en_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2003,22 +2003,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_en5_qs)
+    .qs     (mp_region_cfg_5_en_5_qs)
   );
 
 
-  // F[rd_en5]: 1:1
+  // F[rd_en_5]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg5_rd_en5 (
+  ) u_mp_region_cfg_5_rd_en_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_rd_en5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_rd_en5_wd),
+    .we     (mp_region_cfg_5_rd_en_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2029,22 +2029,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_rd_en5_qs)
+    .qs     (mp_region_cfg_5_rd_en_5_qs)
   );
 
 
-  // F[prog_en5]: 2:2
+  // F[prog_en_5]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg5_prog_en5 (
+  ) u_mp_region_cfg_5_prog_en_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_prog_en5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_prog_en5_wd),
+    .we     (mp_region_cfg_5_prog_en_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2055,22 +2055,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_prog_en5_qs)
+    .qs     (mp_region_cfg_5_prog_en_5_qs)
   );
 
 
-  // F[erase_en5]: 3:3
+  // F[erase_en_5]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg5_erase_en5 (
+  ) u_mp_region_cfg_5_erase_en_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_erase_en5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_erase_en5_wd),
+    .we     (mp_region_cfg_5_erase_en_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2081,22 +2081,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_erase_en5_qs)
+    .qs     (mp_region_cfg_5_erase_en_5_qs)
   );
 
 
-  // F[base5]: 12:4
+  // F[base_5]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg5_base5 (
+  ) u_mp_region_cfg_5_base_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_base5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_base5_wd),
+    .we     (mp_region_cfg_5_base_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_base_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2107,22 +2107,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_base5_qs)
+    .qs     (mp_region_cfg_5_base_5_qs)
   );
 
 
-  // F[size5]: 25:16
+  // F[size_5]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg5_size5 (
+  ) u_mp_region_cfg_5_size_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_size5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_size5_wd),
+    .we     (mp_region_cfg_5_size_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_size_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2133,22 +2133,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_size5_qs)
+    .qs     (mp_region_cfg_5_size_5_qs)
   );
 
 
-  // F[partition5]: 28:28
+  // F[partition_5]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg5_partition5 (
+  ) u_mp_region_cfg_5_partition_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg5_partition5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg5_partition5_wd),
+    .we     (mp_region_cfg_5_partition_5_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_5_partition_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2159,25 +2159,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[5].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg5_partition5_qs)
+    .qs     (mp_region_cfg_5_partition_5_qs)
   );
 
 
   // Subregister 6 of Multireg mp_region_cfg
-  // R[mp_region_cfg6]: V(False)
+  // R[mp_region_cfg_6]: V(False)
 
-  // F[en6]: 0:0
+  // F[en_6]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg6_en6 (
+  ) u_mp_region_cfg_6_en_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_en6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_en6_wd),
+    .we     (mp_region_cfg_6_en_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2188,22 +2188,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_en6_qs)
+    .qs     (mp_region_cfg_6_en_6_qs)
   );
 
 
-  // F[rd_en6]: 1:1
+  // F[rd_en_6]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg6_rd_en6 (
+  ) u_mp_region_cfg_6_rd_en_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_rd_en6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_rd_en6_wd),
+    .we     (mp_region_cfg_6_rd_en_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2214,22 +2214,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_rd_en6_qs)
+    .qs     (mp_region_cfg_6_rd_en_6_qs)
   );
 
 
-  // F[prog_en6]: 2:2
+  // F[prog_en_6]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg6_prog_en6 (
+  ) u_mp_region_cfg_6_prog_en_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_prog_en6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_prog_en6_wd),
+    .we     (mp_region_cfg_6_prog_en_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2240,22 +2240,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_prog_en6_qs)
+    .qs     (mp_region_cfg_6_prog_en_6_qs)
   );
 
 
-  // F[erase_en6]: 3:3
+  // F[erase_en_6]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg6_erase_en6 (
+  ) u_mp_region_cfg_6_erase_en_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_erase_en6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_erase_en6_wd),
+    .we     (mp_region_cfg_6_erase_en_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2266,22 +2266,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_erase_en6_qs)
+    .qs     (mp_region_cfg_6_erase_en_6_qs)
   );
 
 
-  // F[base6]: 12:4
+  // F[base_6]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg6_base6 (
+  ) u_mp_region_cfg_6_base_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_base6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_base6_wd),
+    .we     (mp_region_cfg_6_base_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_base_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2292,22 +2292,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_base6_qs)
+    .qs     (mp_region_cfg_6_base_6_qs)
   );
 
 
-  // F[size6]: 25:16
+  // F[size_6]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg6_size6 (
+  ) u_mp_region_cfg_6_size_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_size6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_size6_wd),
+    .we     (mp_region_cfg_6_size_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_size_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2318,22 +2318,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_size6_qs)
+    .qs     (mp_region_cfg_6_size_6_qs)
   );
 
 
-  // F[partition6]: 28:28
+  // F[partition_6]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg6_partition6 (
+  ) u_mp_region_cfg_6_partition_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg6_partition6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg6_partition6_wd),
+    .we     (mp_region_cfg_6_partition_6_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_6_partition_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2344,25 +2344,25 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[6].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg6_partition6_qs)
+    .qs     (mp_region_cfg_6_partition_6_qs)
   );
 
 
   // Subregister 7 of Multireg mp_region_cfg
-  // R[mp_region_cfg7]: V(False)
+  // R[mp_region_cfg_7]: V(False)
 
-  // F[en7]: 0:0
+  // F[en_7]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg7_en7 (
+  ) u_mp_region_cfg_7_en_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_en7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_en7_wd),
+    .we     (mp_region_cfg_7_en_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2373,22 +2373,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_en7_qs)
+    .qs     (mp_region_cfg_7_en_7_qs)
   );
 
 
-  // F[rd_en7]: 1:1
+  // F[rd_en_7]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg7_rd_en7 (
+  ) u_mp_region_cfg_7_rd_en_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_rd_en7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_rd_en7_wd),
+    .we     (mp_region_cfg_7_rd_en_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2399,22 +2399,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].rd_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_rd_en7_qs)
+    .qs     (mp_region_cfg_7_rd_en_7_qs)
   );
 
 
-  // F[prog_en7]: 2:2
+  // F[prog_en_7]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg7_prog_en7 (
+  ) u_mp_region_cfg_7_prog_en_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_prog_en7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_prog_en7_wd),
+    .we     (mp_region_cfg_7_prog_en_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2425,22 +2425,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].prog_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_prog_en7_qs)
+    .qs     (mp_region_cfg_7_prog_en_7_qs)
   );
 
 
-  // F[erase_en7]: 3:3
+  // F[erase_en_7]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg7_erase_en7 (
+  ) u_mp_region_cfg_7_erase_en_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_erase_en7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_erase_en7_wd),
+    .we     (mp_region_cfg_7_erase_en_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2451,22 +2451,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].erase_en.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_erase_en7_qs)
+    .qs     (mp_region_cfg_7_erase_en_7_qs)
   );
 
 
-  // F[base7]: 12:4
+  // F[base_7]: 12:4
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
-  ) u_mp_region_cfg7_base7 (
+  ) u_mp_region_cfg_7_base_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_base7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_base7_wd),
+    .we     (mp_region_cfg_7_base_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_base_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2477,22 +2477,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].base.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_base7_qs)
+    .qs     (mp_region_cfg_7_base_7_qs)
   );
 
 
-  // F[size7]: 25:16
+  // F[size_7]: 25:16
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
-  ) u_mp_region_cfg7_size7 (
+  ) u_mp_region_cfg_7_size_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_size7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_size7_wd),
+    .we     (mp_region_cfg_7_size_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_size_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2503,22 +2503,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].size.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_size7_qs)
+    .qs     (mp_region_cfg_7_size_7_qs)
   );
 
 
-  // F[partition7]: 28:28
+  // F[partition_7]: 28:28
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_region_cfg7_partition7 (
+  ) u_mp_region_cfg_7_partition_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg7_partition7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg7_partition7_wd),
+    .we     (mp_region_cfg_7_partition_7_we & region_cfg_regwen_qs),
+    .wd     (mp_region_cfg_7_partition_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2529,7 +2529,7 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_region_cfg[7].partition.q ),
 
     // to register interface (read)
-    .qs     (mp_region_cfg7_partition7_qs)
+    .qs     (mp_region_cfg_7_partition_7_qs)
   );
 
 
@@ -2645,18 +2645,18 @@ module flash_ctrl_reg_top (
   // Subregister 0 of Multireg mp_bank_cfg
   // R[mp_bank_cfg]: V(False)
 
-  // F[erase_en0]: 0:0
+  // F[erase_en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_bank_cfg_erase_en0 (
+  ) u_mp_bank_cfg_erase_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_bank_cfg_erase_en0_we & bank_cfg_regwen_qs),
-    .wd     (mp_bank_cfg_erase_en0_wd),
+    .we     (mp_bank_cfg_erase_en_0_we & bank_cfg_regwen_qs),
+    .wd     (mp_bank_cfg_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2667,22 +2667,22 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_bank_cfg[0].q ),
 
     // to register interface (read)
-    .qs     (mp_bank_cfg_erase_en0_qs)
+    .qs     (mp_bank_cfg_erase_en_0_qs)
   );
 
 
-  // F[erase_en1]: 1:1
+  // F[erase_en_1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_mp_bank_cfg_erase_en1 (
+  ) u_mp_bank_cfg_erase_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_bank_cfg_erase_en1_we & bank_cfg_regwen_qs),
-    .wd     (mp_bank_cfg_erase_en1_wd),
+    .we     (mp_bank_cfg_erase_en_1_we & bank_cfg_regwen_qs),
+    .wd     (mp_bank_cfg_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2693,7 +2693,7 @@ module flash_ctrl_reg_top (
     .q      (reg2hw.mp_bank_cfg[1].q ),
 
     // to register interface (read)
-    .qs     (mp_bank_cfg_erase_en1_qs)
+    .qs     (mp_bank_cfg_erase_en_1_qs)
   );
 
 
@@ -2980,14 +2980,14 @@ module flash_ctrl_reg_top (
     addr_hit[ 5] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
     addr_hit[ 6] = (reg_addr == FLASH_CTRL_SCRAMBLE_EN_OFFSET);
     addr_hit[ 7] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == FLASH_CTRL_MP_REGION_CFG0_OFFSET);
-    addr_hit[ 9] = (reg_addr == FLASH_CTRL_MP_REGION_CFG1_OFFSET);
-    addr_hit[10] = (reg_addr == FLASH_CTRL_MP_REGION_CFG2_OFFSET);
-    addr_hit[11] = (reg_addr == FLASH_CTRL_MP_REGION_CFG3_OFFSET);
-    addr_hit[12] = (reg_addr == FLASH_CTRL_MP_REGION_CFG4_OFFSET);
-    addr_hit[13] = (reg_addr == FLASH_CTRL_MP_REGION_CFG5_OFFSET);
-    addr_hit[14] = (reg_addr == FLASH_CTRL_MP_REGION_CFG6_OFFSET);
-    addr_hit[15] = (reg_addr == FLASH_CTRL_MP_REGION_CFG7_OFFSET);
+    addr_hit[ 8] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
+    addr_hit[ 9] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
+    addr_hit[10] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
+    addr_hit[11] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
+    addr_hit[12] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
+    addr_hit[13] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
+    addr_hit[14] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
+    addr_hit[15] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
     addr_hit[16] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
     addr_hit[17] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
     addr_hit[18] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_OFFSET);
@@ -3109,173 +3109,173 @@ module flash_ctrl_reg_top (
   assign region_cfg_regwen_we = addr_hit[7] & reg_we & ~wr_err;
   assign region_cfg_regwen_wd = reg_wdata[0];
 
-  assign mp_region_cfg0_en0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_en0_wd = reg_wdata[0];
+  assign mp_region_cfg_0_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign mp_region_cfg0_rd_en0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_rd_en0_wd = reg_wdata[1];
+  assign mp_region_cfg_0_rd_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign mp_region_cfg0_prog_en0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_prog_en0_wd = reg_wdata[2];
+  assign mp_region_cfg_0_prog_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign mp_region_cfg0_erase_en0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_erase_en0_wd = reg_wdata[3];
+  assign mp_region_cfg_0_erase_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign mp_region_cfg0_base0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_base0_wd = reg_wdata[12:4];
+  assign mp_region_cfg_0_base_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_base_0_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg0_size0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_size0_wd = reg_wdata[25:16];
+  assign mp_region_cfg_0_size_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_size_0_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg0_partition0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg0_partition0_wd = reg_wdata[28];
+  assign mp_region_cfg_0_partition_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_partition_0_wd = reg_wdata[28];
 
-  assign mp_region_cfg1_en1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_en1_wd = reg_wdata[0];
+  assign mp_region_cfg_1_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign mp_region_cfg1_rd_en1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_rd_en1_wd = reg_wdata[1];
+  assign mp_region_cfg_1_rd_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign mp_region_cfg1_prog_en1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_prog_en1_wd = reg_wdata[2];
+  assign mp_region_cfg_1_prog_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign mp_region_cfg1_erase_en1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_erase_en1_wd = reg_wdata[3];
+  assign mp_region_cfg_1_erase_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign mp_region_cfg1_base1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_base1_wd = reg_wdata[12:4];
+  assign mp_region_cfg_1_base_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_base_1_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg1_size1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_size1_wd = reg_wdata[25:16];
+  assign mp_region_cfg_1_size_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_size_1_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg1_partition1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg1_partition1_wd = reg_wdata[28];
+  assign mp_region_cfg_1_partition_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_partition_1_wd = reg_wdata[28];
 
-  assign mp_region_cfg2_en2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_en2_wd = reg_wdata[0];
+  assign mp_region_cfg_2_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_en_2_wd = reg_wdata[0];
 
-  assign mp_region_cfg2_rd_en2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_rd_en2_wd = reg_wdata[1];
+  assign mp_region_cfg_2_rd_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_rd_en_2_wd = reg_wdata[1];
 
-  assign mp_region_cfg2_prog_en2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_prog_en2_wd = reg_wdata[2];
+  assign mp_region_cfg_2_prog_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_prog_en_2_wd = reg_wdata[2];
 
-  assign mp_region_cfg2_erase_en2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_erase_en2_wd = reg_wdata[3];
+  assign mp_region_cfg_2_erase_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_erase_en_2_wd = reg_wdata[3];
 
-  assign mp_region_cfg2_base2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_base2_wd = reg_wdata[12:4];
+  assign mp_region_cfg_2_base_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_base_2_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg2_size2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_size2_wd = reg_wdata[25:16];
+  assign mp_region_cfg_2_size_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_size_2_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg2_partition2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg2_partition2_wd = reg_wdata[28];
+  assign mp_region_cfg_2_partition_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_partition_2_wd = reg_wdata[28];
 
-  assign mp_region_cfg3_en3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_en3_wd = reg_wdata[0];
+  assign mp_region_cfg_3_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_en_3_wd = reg_wdata[0];
 
-  assign mp_region_cfg3_rd_en3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_rd_en3_wd = reg_wdata[1];
+  assign mp_region_cfg_3_rd_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_rd_en_3_wd = reg_wdata[1];
 
-  assign mp_region_cfg3_prog_en3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_prog_en3_wd = reg_wdata[2];
+  assign mp_region_cfg_3_prog_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_prog_en_3_wd = reg_wdata[2];
 
-  assign mp_region_cfg3_erase_en3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_erase_en3_wd = reg_wdata[3];
+  assign mp_region_cfg_3_erase_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_erase_en_3_wd = reg_wdata[3];
 
-  assign mp_region_cfg3_base3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_base3_wd = reg_wdata[12:4];
+  assign mp_region_cfg_3_base_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_base_3_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg3_size3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_size3_wd = reg_wdata[25:16];
+  assign mp_region_cfg_3_size_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_size_3_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg3_partition3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg3_partition3_wd = reg_wdata[28];
+  assign mp_region_cfg_3_partition_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_partition_3_wd = reg_wdata[28];
 
-  assign mp_region_cfg4_en4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_en4_wd = reg_wdata[0];
+  assign mp_region_cfg_4_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_en_4_wd = reg_wdata[0];
 
-  assign mp_region_cfg4_rd_en4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_rd_en4_wd = reg_wdata[1];
+  assign mp_region_cfg_4_rd_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_rd_en_4_wd = reg_wdata[1];
 
-  assign mp_region_cfg4_prog_en4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_prog_en4_wd = reg_wdata[2];
+  assign mp_region_cfg_4_prog_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_prog_en_4_wd = reg_wdata[2];
 
-  assign mp_region_cfg4_erase_en4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_erase_en4_wd = reg_wdata[3];
+  assign mp_region_cfg_4_erase_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_erase_en_4_wd = reg_wdata[3];
 
-  assign mp_region_cfg4_base4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_base4_wd = reg_wdata[12:4];
+  assign mp_region_cfg_4_base_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_base_4_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg4_size4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_size4_wd = reg_wdata[25:16];
+  assign mp_region_cfg_4_size_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_size_4_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg4_partition4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg4_partition4_wd = reg_wdata[28];
+  assign mp_region_cfg_4_partition_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_partition_4_wd = reg_wdata[28];
 
-  assign mp_region_cfg5_en5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_en5_wd = reg_wdata[0];
+  assign mp_region_cfg_5_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_en_5_wd = reg_wdata[0];
 
-  assign mp_region_cfg5_rd_en5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_rd_en5_wd = reg_wdata[1];
+  assign mp_region_cfg_5_rd_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_rd_en_5_wd = reg_wdata[1];
 
-  assign mp_region_cfg5_prog_en5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_prog_en5_wd = reg_wdata[2];
+  assign mp_region_cfg_5_prog_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_prog_en_5_wd = reg_wdata[2];
 
-  assign mp_region_cfg5_erase_en5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_erase_en5_wd = reg_wdata[3];
+  assign mp_region_cfg_5_erase_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_erase_en_5_wd = reg_wdata[3];
 
-  assign mp_region_cfg5_base5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_base5_wd = reg_wdata[12:4];
+  assign mp_region_cfg_5_base_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_base_5_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg5_size5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_size5_wd = reg_wdata[25:16];
+  assign mp_region_cfg_5_size_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_size_5_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg5_partition5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg5_partition5_wd = reg_wdata[28];
+  assign mp_region_cfg_5_partition_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_partition_5_wd = reg_wdata[28];
 
-  assign mp_region_cfg6_en6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_en6_wd = reg_wdata[0];
+  assign mp_region_cfg_6_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_en_6_wd = reg_wdata[0];
 
-  assign mp_region_cfg6_rd_en6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_rd_en6_wd = reg_wdata[1];
+  assign mp_region_cfg_6_rd_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_rd_en_6_wd = reg_wdata[1];
 
-  assign mp_region_cfg6_prog_en6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_prog_en6_wd = reg_wdata[2];
+  assign mp_region_cfg_6_prog_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_prog_en_6_wd = reg_wdata[2];
 
-  assign mp_region_cfg6_erase_en6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_erase_en6_wd = reg_wdata[3];
+  assign mp_region_cfg_6_erase_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_erase_en_6_wd = reg_wdata[3];
 
-  assign mp_region_cfg6_base6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_base6_wd = reg_wdata[12:4];
+  assign mp_region_cfg_6_base_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_base_6_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg6_size6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_size6_wd = reg_wdata[25:16];
+  assign mp_region_cfg_6_size_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_size_6_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg6_partition6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg6_partition6_wd = reg_wdata[28];
+  assign mp_region_cfg_6_partition_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_partition_6_wd = reg_wdata[28];
 
-  assign mp_region_cfg7_en7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_en7_wd = reg_wdata[0];
+  assign mp_region_cfg_7_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_en_7_wd = reg_wdata[0];
 
-  assign mp_region_cfg7_rd_en7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_rd_en7_wd = reg_wdata[1];
+  assign mp_region_cfg_7_rd_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_rd_en_7_wd = reg_wdata[1];
 
-  assign mp_region_cfg7_prog_en7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_prog_en7_wd = reg_wdata[2];
+  assign mp_region_cfg_7_prog_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_prog_en_7_wd = reg_wdata[2];
 
-  assign mp_region_cfg7_erase_en7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_erase_en7_wd = reg_wdata[3];
+  assign mp_region_cfg_7_erase_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_erase_en_7_wd = reg_wdata[3];
 
-  assign mp_region_cfg7_base7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_base7_wd = reg_wdata[12:4];
+  assign mp_region_cfg_7_base_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_base_7_wd = reg_wdata[12:4];
 
-  assign mp_region_cfg7_size7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_size7_wd = reg_wdata[25:16];
+  assign mp_region_cfg_7_size_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_size_7_wd = reg_wdata[25:16];
 
-  assign mp_region_cfg7_partition7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg7_partition7_wd = reg_wdata[28];
+  assign mp_region_cfg_7_partition_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_partition_7_wd = reg_wdata[28];
 
   assign default_region_rd_en_we = addr_hit[16] & reg_we & ~wr_err;
   assign default_region_rd_en_wd = reg_wdata[0];
@@ -3289,11 +3289,11 @@ module flash_ctrl_reg_top (
   assign bank_cfg_regwen_we = addr_hit[17] & reg_we & ~wr_err;
   assign bank_cfg_regwen_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en0_we = addr_hit[18] & reg_we & ~wr_err;
-  assign mp_bank_cfg_erase_en0_wd = reg_wdata[0];
+  assign mp_bank_cfg_erase_en_0_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_0_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en1_we = addr_hit[18] & reg_we & ~wr_err;
-  assign mp_bank_cfg_erase_en1_wd = reg_wdata[1];
+  assign mp_bank_cfg_erase_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_1_wd = reg_wdata[1];
 
   assign op_status_done_we = addr_hit[19] & reg_we & ~wr_err;
   assign op_status_done_wd = reg_wdata[0];
@@ -3383,83 +3383,83 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = mp_region_cfg0_en0_qs;
-        reg_rdata_next[1] = mp_region_cfg0_rd_en0_qs;
-        reg_rdata_next[2] = mp_region_cfg0_prog_en0_qs;
-        reg_rdata_next[3] = mp_region_cfg0_erase_en0_qs;
-        reg_rdata_next[12:4] = mp_region_cfg0_base0_qs;
-        reg_rdata_next[25:16] = mp_region_cfg0_size0_qs;
-        reg_rdata_next[28] = mp_region_cfg0_partition0_qs;
+        reg_rdata_next[0] = mp_region_cfg_0_en_0_qs;
+        reg_rdata_next[1] = mp_region_cfg_0_rd_en_0_qs;
+        reg_rdata_next[2] = mp_region_cfg_0_prog_en_0_qs;
+        reg_rdata_next[3] = mp_region_cfg_0_erase_en_0_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_0_base_0_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_0_size_0_qs;
+        reg_rdata_next[28] = mp_region_cfg_0_partition_0_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[0] = mp_region_cfg1_en1_qs;
-        reg_rdata_next[1] = mp_region_cfg1_rd_en1_qs;
-        reg_rdata_next[2] = mp_region_cfg1_prog_en1_qs;
-        reg_rdata_next[3] = mp_region_cfg1_erase_en1_qs;
-        reg_rdata_next[12:4] = mp_region_cfg1_base1_qs;
-        reg_rdata_next[25:16] = mp_region_cfg1_size1_qs;
-        reg_rdata_next[28] = mp_region_cfg1_partition1_qs;
+        reg_rdata_next[0] = mp_region_cfg_1_en_1_qs;
+        reg_rdata_next[1] = mp_region_cfg_1_rd_en_1_qs;
+        reg_rdata_next[2] = mp_region_cfg_1_prog_en_1_qs;
+        reg_rdata_next[3] = mp_region_cfg_1_erase_en_1_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_1_base_1_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_1_size_1_qs;
+        reg_rdata_next[28] = mp_region_cfg_1_partition_1_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[0] = mp_region_cfg2_en2_qs;
-        reg_rdata_next[1] = mp_region_cfg2_rd_en2_qs;
-        reg_rdata_next[2] = mp_region_cfg2_prog_en2_qs;
-        reg_rdata_next[3] = mp_region_cfg2_erase_en2_qs;
-        reg_rdata_next[12:4] = mp_region_cfg2_base2_qs;
-        reg_rdata_next[25:16] = mp_region_cfg2_size2_qs;
-        reg_rdata_next[28] = mp_region_cfg2_partition2_qs;
+        reg_rdata_next[0] = mp_region_cfg_2_en_2_qs;
+        reg_rdata_next[1] = mp_region_cfg_2_rd_en_2_qs;
+        reg_rdata_next[2] = mp_region_cfg_2_prog_en_2_qs;
+        reg_rdata_next[3] = mp_region_cfg_2_erase_en_2_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_2_base_2_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_2_size_2_qs;
+        reg_rdata_next[28] = mp_region_cfg_2_partition_2_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[0] = mp_region_cfg3_en3_qs;
-        reg_rdata_next[1] = mp_region_cfg3_rd_en3_qs;
-        reg_rdata_next[2] = mp_region_cfg3_prog_en3_qs;
-        reg_rdata_next[3] = mp_region_cfg3_erase_en3_qs;
-        reg_rdata_next[12:4] = mp_region_cfg3_base3_qs;
-        reg_rdata_next[25:16] = mp_region_cfg3_size3_qs;
-        reg_rdata_next[28] = mp_region_cfg3_partition3_qs;
+        reg_rdata_next[0] = mp_region_cfg_3_en_3_qs;
+        reg_rdata_next[1] = mp_region_cfg_3_rd_en_3_qs;
+        reg_rdata_next[2] = mp_region_cfg_3_prog_en_3_qs;
+        reg_rdata_next[3] = mp_region_cfg_3_erase_en_3_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_3_base_3_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_3_size_3_qs;
+        reg_rdata_next[28] = mp_region_cfg_3_partition_3_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[0] = mp_region_cfg4_en4_qs;
-        reg_rdata_next[1] = mp_region_cfg4_rd_en4_qs;
-        reg_rdata_next[2] = mp_region_cfg4_prog_en4_qs;
-        reg_rdata_next[3] = mp_region_cfg4_erase_en4_qs;
-        reg_rdata_next[12:4] = mp_region_cfg4_base4_qs;
-        reg_rdata_next[25:16] = mp_region_cfg4_size4_qs;
-        reg_rdata_next[28] = mp_region_cfg4_partition4_qs;
+        reg_rdata_next[0] = mp_region_cfg_4_en_4_qs;
+        reg_rdata_next[1] = mp_region_cfg_4_rd_en_4_qs;
+        reg_rdata_next[2] = mp_region_cfg_4_prog_en_4_qs;
+        reg_rdata_next[3] = mp_region_cfg_4_erase_en_4_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_4_base_4_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_4_size_4_qs;
+        reg_rdata_next[28] = mp_region_cfg_4_partition_4_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[0] = mp_region_cfg5_en5_qs;
-        reg_rdata_next[1] = mp_region_cfg5_rd_en5_qs;
-        reg_rdata_next[2] = mp_region_cfg5_prog_en5_qs;
-        reg_rdata_next[3] = mp_region_cfg5_erase_en5_qs;
-        reg_rdata_next[12:4] = mp_region_cfg5_base5_qs;
-        reg_rdata_next[25:16] = mp_region_cfg5_size5_qs;
-        reg_rdata_next[28] = mp_region_cfg5_partition5_qs;
+        reg_rdata_next[0] = mp_region_cfg_5_en_5_qs;
+        reg_rdata_next[1] = mp_region_cfg_5_rd_en_5_qs;
+        reg_rdata_next[2] = mp_region_cfg_5_prog_en_5_qs;
+        reg_rdata_next[3] = mp_region_cfg_5_erase_en_5_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_5_base_5_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_5_size_5_qs;
+        reg_rdata_next[28] = mp_region_cfg_5_partition_5_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[0] = mp_region_cfg6_en6_qs;
-        reg_rdata_next[1] = mp_region_cfg6_rd_en6_qs;
-        reg_rdata_next[2] = mp_region_cfg6_prog_en6_qs;
-        reg_rdata_next[3] = mp_region_cfg6_erase_en6_qs;
-        reg_rdata_next[12:4] = mp_region_cfg6_base6_qs;
-        reg_rdata_next[25:16] = mp_region_cfg6_size6_qs;
-        reg_rdata_next[28] = mp_region_cfg6_partition6_qs;
+        reg_rdata_next[0] = mp_region_cfg_6_en_6_qs;
+        reg_rdata_next[1] = mp_region_cfg_6_rd_en_6_qs;
+        reg_rdata_next[2] = mp_region_cfg_6_prog_en_6_qs;
+        reg_rdata_next[3] = mp_region_cfg_6_erase_en_6_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_6_base_6_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_6_size_6_qs;
+        reg_rdata_next[28] = mp_region_cfg_6_partition_6_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[0] = mp_region_cfg7_en7_qs;
-        reg_rdata_next[1] = mp_region_cfg7_rd_en7_qs;
-        reg_rdata_next[2] = mp_region_cfg7_prog_en7_qs;
-        reg_rdata_next[3] = mp_region_cfg7_erase_en7_qs;
-        reg_rdata_next[12:4] = mp_region_cfg7_base7_qs;
-        reg_rdata_next[25:16] = mp_region_cfg7_size7_qs;
-        reg_rdata_next[28] = mp_region_cfg7_partition7_qs;
+        reg_rdata_next[0] = mp_region_cfg_7_en_7_qs;
+        reg_rdata_next[1] = mp_region_cfg_7_rd_en_7_qs;
+        reg_rdata_next[2] = mp_region_cfg_7_prog_en_7_qs;
+        reg_rdata_next[3] = mp_region_cfg_7_erase_en_7_qs;
+        reg_rdata_next[12:4] = mp_region_cfg_7_base_7_qs;
+        reg_rdata_next[25:16] = mp_region_cfg_7_size_7_qs;
+        reg_rdata_next[28] = mp_region_cfg_7_partition_7_qs;
       end
 
       addr_hit[16]: begin
@@ -3473,8 +3473,8 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[0] = mp_bank_cfg_erase_en0_qs;
-        reg_rdata_next[1] = mp_bank_cfg_erase_en1_qs;
+        reg_rdata_next[0] = mp_bank_cfg_erase_en_0_qs;
+        reg_rdata_next[1] = mp_bank_cfg_erase_en_1_qs;
       end
 
       addr_hit[19]: begin

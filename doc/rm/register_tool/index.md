@@ -158,10 +158,10 @@ For example debug access to a 64 entry 12-bit wide FIFO could use a window:
 The tool can generate registers that follow a base pattern, for example when there are configuration fields for multiple instances.
 The base pattern defines the bits (which need not be contiguous) used for the first instance and the tool uses this to pack the required number of instances into one or more registers.
 
-For example a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determing the interrupt severity.
+For example a fancy GPIO interrupt configuration may have 4 bits per GPIO to allow generation on rising and falling edge and a two bit enum to determine the interrupt severity.
 In this case the multireg can be used to build the multiple registers needed.
 The description below shows the fields given for GPIO0 and requests generation of 32 instances.
-If the registers are 32 bits wide then the tool will pack the four bit instances into four registers `INT_CTRL0`, `INT_CTRL1`, `INT_CTRL2` and `INT_CTRL3`.
+If the registers are 32 bits wide then the tool will pack the four bit instances into four registers `INT_CTRL_0`, `INT_CTRL_1`, `INT_CTRL_2` and `INT_CTRL_3`.
 
 ```hjson
     { multireg: {

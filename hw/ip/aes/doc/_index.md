@@ -320,19 +320,19 @@ This section discusses how software can interface with the AES unit.
 ## Initialization
 
 Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
-If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}} and initialization vector (IV) registers {{< regref "IV0" >}} - {{< regref "IV3" >}} are ignored.
+If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY_0" >}} - {{< regref "KEY_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
-Then software must write the initial key to the Initial Key registers {{< regref "KEY0" >}} - {{< regref "KEY7" >}}.
+Then software must write the initial key to the Initial Key registers {{< regref "KEY_0" >}} - {{< regref "KEY_7" >}}.
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL_SHADOWED" >}}.
 Independent of the selected key length, software must always write all 8 32-bit registers.
 Each register must be written at least once.
 The order in which the key registers are written does not matter.
 Anything can be written to the unused key registers, however, random data is preferred.
-For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY0" >}} - {{< regref "KEY3" >}} and {{< regref "KEY0" >}} - {{< regref "KEY5" >}}, respectively.
+For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY_0" >}} - {{< regref "KEY_3" >}} and {{< regref "KEY_0" >}} - {{< regref "KEY_5" >}}, respectively.
 
-If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers {{< regref "IV0" >}} - {{< regref "IV3" >}}.
+If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}}.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 Each IV register must be written at least once.
 The order in which these registers are written does not matter.
@@ -349,7 +349,7 @@ It ensures that the AES unit:
 1. Does not overwrite previous output data that has not yet been read by the processor.
 
 Then, software must:
-1. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}}.
+1. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN_0" >}} - {{< regref "DATA_IN_3" >}}.
    Each register must be written at least once.
    The order in which these registers are written does not matter.
 1. Wait for the INPUT_READY bit in {{< regref "STATUS" >}} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
@@ -358,7 +358,7 @@ Then, software must:
 Then for every Data Block `I=0,..,N-3`, software must:
 1. Wait for the OUTPUT_VALID bit in {{< regref "STATUS" >}} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
    The AES unit then directly starts processing the previously input block `I+1`
-2. Read Output Data Block `I` from the Output Data registers {{< regref "DATA_OUT0" >}} - {{< regref "DATA_OUT3" >}}.
+2. Read Output Data Block `I` from the Output Data registers {{< regref "DATA_OUT_0" >}} - {{< regref "DATA_OUT_3" >}}.
    Each register must be read at least once.
    The order in which these registers are read does not matter.
 3. Write Input Data Block `I+2` into the Input Data register.
@@ -384,17 +384,17 @@ The code snippet below shows how to perform block operation.
 
   // Write key - Note: All registers are little-endian.
   for (int j = 0; j < 8; j++) {
-    REG32(AES_KEY0(0) + j * 4) = key[j];
+    REG32(AES_KEY_0(0) + j * 4) = key[j];
   }
 
   // Write IV.
   for (int j = 0; j < 4; j++) {
-    REG32(AES_IV0(0) + j * 4) = iv[j];
+    REG32(AES_IV_0(0) + j * 4) = iv[j];
   }
 
   // Write Input Data Block 0.
   for (int j = 0; j < 4; j++) {
-    REG32(AES_DATA_IN0(0) + j * 4) = input_data[j];
+    REG32(AES_DATA_IN_0(0) + j * 4) = input_data[j];
   }
 
   // Wait for INPUT_READY bit
@@ -403,7 +403,7 @@ The code snippet below shows how to perform block operation.
 
   // Write Input Data Block 1
   for (int j = 0; j < 4; j++) {
-    REG32(AES_DATA_IN0(0) + j * 4) = input_data[j + 4];
+    REG32(AES_DATA_IN_0(0) + j * 4) = input_data[j + 4];
   }
 
   // For Data Block I=0,...,N-1
@@ -415,13 +415,13 @@ The code snippet below shows how to perform block operation.
 
     // Read Output Data Block I
     for (int j = 0; j < 4; j++) {
-      output_data[j + i * 4] = REG32(AES_DATA_OUT0(0) + j * 4);
+      output_data[j + i * 4] = REG32(AES_DATA_OUT_0(0) + j * 4);
     }
 
     // Write Input Data Block I+2 - For I=0,...,N-3 only.
     if (i < N - 2) {
       for (int j = 0; j < 4; j++) {
-        REG32(AES_DATA_IN0(0) + j * 4) = input_data[j + 4 * (i + 2)];
+        REG32(AES_DATA_IN_0(0) + j * 4) = input_data[j + 4 * (i + 2)];
       }
     }
   }
@@ -431,7 +431,7 @@ The code snippet below shows how to perform block operation.
 
 ## Padding
 
-For the AES unit to automatically start encryption/decryption of the next data block, software is required to always update all four Input Data registers {{< regref "DATA_IN0" >}} - {{< regref "DATA_IN3" >}} and read all four Output Data registers {{< regref "DATA_OUT0" >}} - {{< regref "DATA_OUT3" >}}.
+For the AES unit to automatically start encryption/decryption of the next data block, software is required to always update all four Input Data registers {{< regref "DATA_IN_0" >}} - {{< regref "DATA_IN_3" >}} and read all four Output Data registers {{< regref "DATA_OUT_0" >}} - {{< regref "DATA_OUT_3" >}}.
 This is also true if the AES unit is operated in OFB or CTR mode, i.e., if the plaintext/ciphertext not necessarily needs to be a multiple of the block size (for more details refer to Appendix A of [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 
 In the case that the plaintext/ciphertext is not a multiple of the block size and the AES unit is operated in OFB or CTR mode, software can employ any form of padding for the input data of the last message block as the padding bits do not have an effect on the actual message bits.

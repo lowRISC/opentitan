@@ -149,14 +149,14 @@ module otp_ctrl_reg_top (
   logic [1:0] direct_access_size_qs;
   logic [1:0] direct_access_size_wd;
   logic direct_access_size_we;
-  logic [31:0] direct_access_wdata0_qs;
-  logic [31:0] direct_access_wdata0_wd;
-  logic direct_access_wdata0_we;
-  logic [31:0] direct_access_wdata1_qs;
-  logic [31:0] direct_access_wdata1_wd;
-  logic direct_access_wdata1_we;
-  logic [31:0] direct_access_rdata0_qs;
-  logic [31:0] direct_access_rdata1_qs;
+  logic [31:0] direct_access_wdata_0_qs;
+  logic [31:0] direct_access_wdata_0_wd;
+  logic direct_access_wdata_0_we;
+  logic [31:0] direct_access_wdata_1_qs;
+  logic [31:0] direct_access_wdata_1_wd;
+  logic direct_access_wdata_1_we;
+  logic [31:0] direct_access_rdata_0_qs;
+  logic [31:0] direct_access_rdata_1_qs;
   logic secret_integrity_digest_calc_wd;
   logic secret_integrity_digest_calc_we;
   logic hw_cfg_integrity_digest_calc_wd;
@@ -169,12 +169,12 @@ module otp_ctrl_reg_top (
   logic hw_cfg_integrity_digest_re;
   logic [31:0] sw_cfg_integrity_digest_qs;
   logic sw_cfg_integrity_digest_re;
-  logic [7:0] lc_state0_lc_state0_qs;
-  logic [7:0] lc_state0_lc_state1_qs;
-  logic [7:0] lc_state0_lc_state2_qs;
-  logic [7:0] lc_state0_lc_state3_qs;
-  logic [7:0] lc_state1_lc_state4_qs;
-  logic [7:0] lc_state1_lc_state5_qs;
+  logic [7:0] lc_state_0_lc_state_0_qs;
+  logic [7:0] lc_state_0_lc_state_1_qs;
+  logic [7:0] lc_state_0_lc_state_2_qs;
+  logic [7:0] lc_state_0_lc_state_3_qs;
+  logic [7:0] lc_state_1_lc_state_4_qs;
+  logic [7:0] lc_state_1_lc_state_5_qs;
   logic [7:0] id_state_qs;
   logic [7:0] test_xxx_cnt_test_state_cnt_qs;
   logic [7:0] test_xxx_cnt_test_unlock_cnt_qs;
@@ -185,12 +185,12 @@ module otp_ctrl_reg_top (
   logic hw_cfg_lock_test_tokens_lock_re;
   logic [4:0] hw_cfg_lock_xxx_token_lock_qs;
   logic hw_cfg_lock_xxx_token_lock_re;
-  logic [31:0] hw_cfg0_qs;
-  logic [31:0] hw_cfg1_qs;
-  logic [31:0] hw_cfg2_qs;
-  logic [31:0] hw_cfg3_qs;
-  logic [31:0] hw_cfg4_qs;
-  logic [31:0] hw_cfg5_qs;
+  logic [31:0] hw_cfg_0_qs;
+  logic [31:0] hw_cfg_1_qs;
+  logic [31:0] hw_cfg_2_qs;
+  logic [31:0] hw_cfg_3_qs;
+  logic [31:0] hw_cfg_4_qs;
+  logic [31:0] hw_cfg_5_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -473,19 +473,19 @@ module otp_ctrl_reg_top (
 
 
   // Subregister 0 of Multireg direct_access_wdata
-  // R[direct_access_wdata0]: V(False)
+  // R[direct_access_wdata_0]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
-  ) u_direct_access_wdata0 (
+  ) u_direct_access_wdata_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (direct_access_wdata0_we),
-    .wd     (direct_access_wdata0_wd),
+    .we     (direct_access_wdata_0_we),
+    .wd     (direct_access_wdata_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -496,23 +496,23 @@ module otp_ctrl_reg_top (
     .q      (reg2hw.direct_access_wdata[0].q ),
 
     // to register interface (read)
-    .qs     (direct_access_wdata0_qs)
+    .qs     (direct_access_wdata_0_qs)
   );
 
   // Subregister 1 of Multireg direct_access_wdata
-  // R[direct_access_wdata1]: V(False)
+  // R[direct_access_wdata_1]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
-  ) u_direct_access_wdata1 (
+  ) u_direct_access_wdata_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (direct_access_wdata1_we),
-    .wd     (direct_access_wdata1_wd),
+    .we     (direct_access_wdata_1_we),
+    .wd     (direct_access_wdata_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -523,19 +523,19 @@ module otp_ctrl_reg_top (
     .q      (reg2hw.direct_access_wdata[1].q ),
 
     // to register interface (read)
-    .qs     (direct_access_wdata1_qs)
+    .qs     (direct_access_wdata_1_qs)
   );
 
 
 
   // Subregister 0 of Multireg direct_access_rdata
-  // R[direct_access_rdata0]: V(False)
+  // R[direct_access_rdata_0]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_direct_access_rdata0 (
+  ) u_direct_access_rdata_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -551,17 +551,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (direct_access_rdata0_qs)
+    .qs     (direct_access_rdata_0_qs)
   );
 
   // Subregister 1 of Multireg direct_access_rdata
-  // R[direct_access_rdata1]: V(False)
+  // R[direct_access_rdata_1]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_direct_access_rdata1 (
+  ) u_direct_access_rdata_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -577,7 +577,7 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (direct_access_rdata1_qs)
+    .qs     (direct_access_rdata_1_qs)
   );
 
 
@@ -709,14 +709,14 @@ module otp_ctrl_reg_top (
 
 
   // Subregister 0 of Multireg lc_state
-  // R[lc_state0]: V(False)
+  // R[lc_state_0]: V(False)
 
-  // F[lc_state0]: 7:0
+  // F[lc_state_0]: 7:0
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state0_lc_state0 (
+  ) u_lc_state_0_lc_state_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -732,16 +732,16 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state0_lc_state0_qs)
+    .qs     (lc_state_0_lc_state_0_qs)
   );
 
 
-  // F[lc_state1]: 15:8
+  // F[lc_state_1]: 15:8
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state0_lc_state1 (
+  ) u_lc_state_0_lc_state_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -757,16 +757,16 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state0_lc_state1_qs)
+    .qs     (lc_state_0_lc_state_1_qs)
   );
 
 
-  // F[lc_state2]: 23:16
+  // F[lc_state_2]: 23:16
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state0_lc_state2 (
+  ) u_lc_state_0_lc_state_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -782,16 +782,16 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state0_lc_state2_qs)
+    .qs     (lc_state_0_lc_state_2_qs)
   );
 
 
-  // F[lc_state3]: 31:24
+  // F[lc_state_3]: 31:24
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state0_lc_state3 (
+  ) u_lc_state_0_lc_state_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -807,19 +807,19 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state0_lc_state3_qs)
+    .qs     (lc_state_0_lc_state_3_qs)
   );
 
 
   // Subregister 4 of Multireg lc_state
-  // R[lc_state1]: V(False)
+  // R[lc_state_1]: V(False)
 
-  // F[lc_state4]: 7:0
+  // F[lc_state_4]: 7:0
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state1_lc_state4 (
+  ) u_lc_state_1_lc_state_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -835,16 +835,16 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state1_lc_state4_qs)
+    .qs     (lc_state_1_lc_state_4_qs)
   );
 
 
-  // F[lc_state5]: 15:8
+  // F[lc_state_5]: 15:8
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_lc_state1_lc_state5 (
+  ) u_lc_state_1_lc_state_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -860,7 +860,7 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (lc_state1_lc_state5_qs)
+    .qs     (lc_state_1_lc_state_5_qs)
   );
 
 
@@ -1053,13 +1053,13 @@ module otp_ctrl_reg_top (
 
 
   // Subregister 0 of Multireg hw_cfg
-  // R[hw_cfg0]: V(False)
+  // R[hw_cfg_0]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg0 (
+  ) u_hw_cfg_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1075,17 +1075,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg0_qs)
+    .qs     (hw_cfg_0_qs)
   );
 
   // Subregister 1 of Multireg hw_cfg
-  // R[hw_cfg1]: V(False)
+  // R[hw_cfg_1]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg1 (
+  ) u_hw_cfg_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1101,17 +1101,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg1_qs)
+    .qs     (hw_cfg_1_qs)
   );
 
   // Subregister 2 of Multireg hw_cfg
-  // R[hw_cfg2]: V(False)
+  // R[hw_cfg_2]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg2 (
+  ) u_hw_cfg_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1127,17 +1127,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg2_qs)
+    .qs     (hw_cfg_2_qs)
   );
 
   // Subregister 3 of Multireg hw_cfg
-  // R[hw_cfg3]: V(False)
+  // R[hw_cfg_3]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg3 (
+  ) u_hw_cfg_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1153,17 +1153,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg3_qs)
+    .qs     (hw_cfg_3_qs)
   );
 
   // Subregister 4 of Multireg hw_cfg
-  // R[hw_cfg4]: V(False)
+  // R[hw_cfg_4]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg4 (
+  ) u_hw_cfg_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1179,17 +1179,17 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg4_qs)
+    .qs     (hw_cfg_4_qs)
   );
 
   // Subregister 5 of Multireg hw_cfg
-  // R[hw_cfg5]: V(False)
+  // R[hw_cfg_5]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
-  ) u_hw_cfg5 (
+  ) u_hw_cfg_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1205,7 +1205,7 @@ module otp_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (hw_cfg5_qs)
+    .qs     (hw_cfg_5_qs)
   );
 
 
@@ -1222,28 +1222,28 @@ module otp_ctrl_reg_top (
     addr_hit[ 5] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET);
     addr_hit[ 6] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET);
     addr_hit[ 7] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_SIZE_OFFSET);
-    addr_hit[ 8] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA0_OFFSET);
-    addr_hit[ 9] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA1_OFFSET);
-    addr_hit[10] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA0_OFFSET);
-    addr_hit[11] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA1_OFFSET);
+    addr_hit[ 8] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET);
+    addr_hit[ 9] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
+    addr_hit[10] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
+    addr_hit[11] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
     addr_hit[12] = (reg_addr == OTP_CTRL_SECRET_INTEGRITY_DIGEST_CALC_OFFSET);
     addr_hit[13] = (reg_addr == OTP_CTRL_HW_CFG_INTEGRITY_DIGEST_CALC_OFFSET);
     addr_hit[14] = (reg_addr == OTP_CTRL_SW_CFG_INTEGRITY_DIGEST_CALC_OFFSET);
     addr_hit[15] = (reg_addr == OTP_CTRL_SECRET_INTEGRITY_DIGEST_OFFSET);
     addr_hit[16] = (reg_addr == OTP_CTRL_HW_CFG_INTEGRITY_DIGEST_OFFSET);
     addr_hit[17] = (reg_addr == OTP_CTRL_SW_CFG_INTEGRITY_DIGEST_OFFSET);
-    addr_hit[18] = (reg_addr == OTP_CTRL_LC_STATE0_OFFSET);
-    addr_hit[19] = (reg_addr == OTP_CTRL_LC_STATE1_OFFSET);
+    addr_hit[18] = (reg_addr == OTP_CTRL_LC_STATE_0_OFFSET);
+    addr_hit[19] = (reg_addr == OTP_CTRL_LC_STATE_1_OFFSET);
     addr_hit[20] = (reg_addr == OTP_CTRL_ID_STATE_OFFSET);
     addr_hit[21] = (reg_addr == OTP_CTRL_TEST_XXX_CNT_OFFSET);
     addr_hit[22] = (reg_addr == OTP_CTRL_TRANSITION_CNT_OFFSET);
     addr_hit[23] = (reg_addr == OTP_CTRL_HW_CFG_LOCK_OFFSET);
-    addr_hit[24] = (reg_addr == OTP_CTRL_HW_CFG0_OFFSET);
-    addr_hit[25] = (reg_addr == OTP_CTRL_HW_CFG1_OFFSET);
-    addr_hit[26] = (reg_addr == OTP_CTRL_HW_CFG2_OFFSET);
-    addr_hit[27] = (reg_addr == OTP_CTRL_HW_CFG3_OFFSET);
-    addr_hit[28] = (reg_addr == OTP_CTRL_HW_CFG4_OFFSET);
-    addr_hit[29] = (reg_addr == OTP_CTRL_HW_CFG5_OFFSET);
+    addr_hit[24] = (reg_addr == OTP_CTRL_HW_CFG_0_OFFSET);
+    addr_hit[25] = (reg_addr == OTP_CTRL_HW_CFG_1_OFFSET);
+    addr_hit[26] = (reg_addr == OTP_CTRL_HW_CFG_2_OFFSET);
+    addr_hit[27] = (reg_addr == OTP_CTRL_HW_CFG_3_OFFSET);
+    addr_hit[28] = (reg_addr == OTP_CTRL_HW_CFG_4_OFFSET);
+    addr_hit[29] = (reg_addr == OTP_CTRL_HW_CFG_5_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1315,11 +1315,11 @@ module otp_ctrl_reg_top (
   assign direct_access_size_we = addr_hit[7] & reg_we & ~wr_err;
   assign direct_access_size_wd = reg_wdata[1:0];
 
-  assign direct_access_wdata0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign direct_access_wdata0_wd = reg_wdata[31:0];
+  assign direct_access_wdata_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign direct_access_wdata_0_wd = reg_wdata[31:0];
 
-  assign direct_access_wdata1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign direct_access_wdata1_wd = reg_wdata[31:0];
+  assign direct_access_wdata_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign direct_access_wdata_1_wd = reg_wdata[31:0];
 
 
 
@@ -1401,19 +1401,19 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[31:0] = direct_access_wdata0_qs;
+        reg_rdata_next[31:0] = direct_access_wdata_0_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[31:0] = direct_access_wdata1_qs;
+        reg_rdata_next[31:0] = direct_access_wdata_1_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[31:0] = direct_access_rdata0_qs;
+        reg_rdata_next[31:0] = direct_access_rdata_0_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[31:0] = direct_access_rdata1_qs;
+        reg_rdata_next[31:0] = direct_access_rdata_1_qs;
       end
 
       addr_hit[12]: begin
@@ -1441,15 +1441,15 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[7:0] = lc_state0_lc_state0_qs;
-        reg_rdata_next[15:8] = lc_state0_lc_state1_qs;
-        reg_rdata_next[23:16] = lc_state0_lc_state2_qs;
-        reg_rdata_next[31:24] = lc_state0_lc_state3_qs;
+        reg_rdata_next[7:0] = lc_state_0_lc_state_0_qs;
+        reg_rdata_next[15:8] = lc_state_0_lc_state_1_qs;
+        reg_rdata_next[23:16] = lc_state_0_lc_state_2_qs;
+        reg_rdata_next[31:24] = lc_state_0_lc_state_3_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[7:0] = lc_state1_lc_state4_qs;
-        reg_rdata_next[15:8] = lc_state1_lc_state5_qs;
+        reg_rdata_next[7:0] = lc_state_1_lc_state_4_qs;
+        reg_rdata_next[15:8] = lc_state_1_lc_state_5_qs;
       end
 
       addr_hit[20]: begin
@@ -1473,27 +1473,27 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = hw_cfg0_qs;
+        reg_rdata_next[31:0] = hw_cfg_0_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = hw_cfg1_qs;
+        reg_rdata_next[31:0] = hw_cfg_1_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = hw_cfg2_qs;
+        reg_rdata_next[31:0] = hw_cfg_2_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = hw_cfg3_qs;
+        reg_rdata_next[31:0] = hw_cfg_3_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = hw_cfg4_qs;
+        reg_rdata_next[31:0] = hw_cfg_4_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = hw_cfg5_qs;
+        reg_rdata_next[31:0] = hw_cfg_5_qs;
       end
 
       default: begin

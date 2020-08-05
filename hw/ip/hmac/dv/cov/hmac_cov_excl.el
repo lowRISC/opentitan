@@ -50,35 +50,35 @@ INSTANCE: tb.dut.u_reg.u_wipe_secret
 ANNOTATION: "[UNR] qe is a constant, the coverage tool did not recognize it"
 Block 3 "0" "assign qe = we;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key0
+INSTANCE: tb.dut.u_reg.u_key_0
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key1
+INSTANCE: tb.dut.u_reg.u_key_1
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key2
+INSTANCE: tb.dut.u_reg.u_key_2
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key3
+INSTANCE: tb.dut.u_reg.u_key_3
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key4
+INSTANCE: tb.dut.u_reg.u_key_4
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key5
+INSTANCE: tb.dut.u_reg.u_key_5
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key6
+INSTANCE: tb.dut.u_reg.u_key_6
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "1352181506 3803838024"
-INSTANCE: tb.dut.u_reg.u_key7
+INSTANCE: tb.dut.u_reg.u_key_7
 ANNOTATION: "[UNR] qs is a constant, the coverage tool did not recognize it"
 Block 1 "0" "assign qs = d;"
 CHECKSUM: "2768112785 1107844223"

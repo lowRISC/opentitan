@@ -5,12 +5,15 @@
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
 
-# helper funtion that strips trailing number from name
+# helper funtion that strips trailing _number (used as multireg suffix) from name
 # TODO: this is a workaround, should solve this in validate.py
 def _get_basename(name):
     for (k, c) in enumerate(name[::-1]):
         if not str.isdigit(c):
-            return name[0:len(name) - k]
+            if c == "_":
+                return name[0:len(name) - (k+1)]
+            else:
+                break;
     return ""
 
 
