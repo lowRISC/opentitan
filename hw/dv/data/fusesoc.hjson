@@ -10,7 +10,7 @@
                        "--target=sim",
                        "--build-root={build_dir}",
                        "--setup {fusesoc_core}"]
-  fusesoc_cores_root_dirs: ["--cores-root {proj_root}"]
+  fusesoc_cores_root_dirs: ["--cores-root {proj_root}/hw"]
   sv_flist_gen_dir:   "{build_dir}/sim-vcs"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
 }
