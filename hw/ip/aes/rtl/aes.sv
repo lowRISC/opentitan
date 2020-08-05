@@ -12,9 +12,7 @@ module aes import aes_pkg::*; #(
                                       // cipher core. Masking requires the use of a masked S-Box,
                                       // see SBoxImpl parameter. Note: currently, constant masks
                                       // are used, this is of course not secure.
-  parameter sbox_impl_e SBoxImpl = SBoxImplLut, // See aes_pkg.sv
-
-  localparam int    NumShares    = Masking ? 2 : 1 // derived parameter
+  parameter sbox_impl_e SBoxImpl = SBoxImplLut // See aes_pkg.sv
 ) (
   input                     clk_i,
   input                     rst_ni,

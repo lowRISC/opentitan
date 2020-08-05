@@ -327,7 +327,7 @@ module aes_control (
         key_init_load =  cipher_dec_key_gen_i; // This key is no longer "new", but still clean.
         key_init_arm  = ~cipher_dec_key_gen_i; // The key is still "new", prevent partial updates.
         iv_load       = ~cipher_dec_key_gen_i & (doing_cbc_enc | doing_cbc_dec |
-                                                 doing_cfb_dec | doing_cfb_dec |
+                                                 doing_cfb_enc | doing_cfb_dec |
                                                  doing_ofb | doing_ctr);
         data_in_load  = ~cipher_dec_key_gen_i;
 

@@ -168,6 +168,8 @@ module aes_cipher_core import aes_pkg::*;
   logic [3:0][3:0][7:0] round_key [NumShares];
   round_key_sel_e       round_key_sel;
 
+  logic         [255:0] prng_data_256;
+
   //////////
   // Data //
   //////////
@@ -251,6 +253,7 @@ module aes_cipher_core import aes_pkg::*;
   /////////
   // Key //
   /////////
+  assign prng_data_256 = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
 
   // Full Key registers
   always_comb begin : key_full_mux
@@ -258,8 +261,8 @@ module aes_cipher_core import aes_pkg::*;
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d ='{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
-      default:           key_full_d ='{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
+      KEY_FULL_CLEAR:    key_full_d ='{default: prng_data_256};
+      default:           key_full_d ='{default: prng_data_256};
     endcase
   end
 
@@ -273,8 +276,8 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = '{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
-      default:        key_dec_d = '{default: {prng_data_i, prng_data_i, prng_data_i, prng_data_i}};
+      KEY_DEC_CLEAR:  key_dec_d = '{default: prng_data_256};
+      default:        key_dec_d = '{default: prng_data_256};
     endcase
   end
 
