@@ -1,11 +1,14 @@
 package ast_wrapper_pkg;
 
-  parameter int NumAlerts      = top_pkg::NUM_AST_ALERTS;
-  parameter int NumIoRails     = top_pkg::NUM_IO_RAILS;
-  parameter int EntropyStreams = top_pkg::ENTROPY_STREAM;
-  parameter int AdcChannels    = top_pkg::ADC_CHANNELS;
-  parameter int AdcDataWidth   = top_pkg::ADC_DATAW;
-  parameter int UsbCalibWidth  = 16;
+  parameter int NumAlerts       = top_pkg::NUM_AST_ALERTS;
+  parameter int NumIoRails      = top_pkg::NUM_IO_RAILS;
+  parameter int EntropyStreams  = top_pkg::ENTROPY_STREAM;
+  parameter int AdcChannels     = top_pkg::ADC_CHANNELS;
+  parameter int AdcDataWidth    = top_pkg::ADC_DATAW;
+  parameter int EntropyInWidth  = 1;
+  parameter int Ast2PadOutWidth = 16;
+  parameter int Pad2AstInWidth  = 16;
+  parameter int UsbCalibWidth   = 16;
 
   // The following structs should eventually be relocted to other modules
   typedef struct packed {
