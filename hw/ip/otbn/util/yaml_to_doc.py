@@ -9,8 +9,10 @@ import argparse
 import sys
 from typing import List
 
-from shared.insn_yaml import (BoolLiteral, Encoding, Insn, InsnsFile, Operand,
-                              load_file)
+from shared.bool_literal import BoolLiteral
+from shared.encoding import Encoding
+from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.operand import Operand
 
 
 def render_operand_row(operand: Operand) -> str:

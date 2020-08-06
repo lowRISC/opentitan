@@ -14,7 +14,7 @@ lint-build-dir := $(build-dir)/lint
 $(build-dir) $(cs-build-dir) $(lint-build-dir):
 	mkdir -p $@
 
-pylibs := shared/insn_yaml.py shared/mem_layout.py
+pylibs := $(wildcard shared/*.py)
 pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
