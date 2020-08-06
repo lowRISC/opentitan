@@ -127,3 +127,19 @@ sw_lib_dif_otbn = declare_dependency(
     ],
   )
 )
+
+# Reset Manager DIF library (dif_rstmgr)
+sw_lib_dif_rstmgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_rstmgr',
+    sources: [
+      hw_ip_rstmgr_reg_h,
+      'dif_rstmgr.c'
+    ],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_mmio,
+    ],
+  )
+)
+
