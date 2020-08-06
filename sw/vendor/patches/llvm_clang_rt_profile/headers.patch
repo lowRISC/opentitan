@@ -1,0 +1,164 @@
+diff -u a/compiler-rt/lib/profile/InstrProfiling.c b/compiler-rt/lib/profile/InstrProfiling.c
+--- a/compiler-rt/lib/profile/InstrProfiling.c	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfiling.c	2020-08-06 00:22:17.754626763 -0400
+@@ -10,15 +10,12 @@
+ // with freestanding compilation. See `darwin_add_builtin_libraries`.
+ 
+ #include <limits.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
++#include "sw/device/lib/base/memory.h"
+ 
+ #define INSTR_PROF_VALUE_PROF_DATA
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ 
+ COMPILER_RT_VISIBILITY uint64_t __llvm_profile_get_magic(void) {
+   return sizeof(void *) == sizeof(uint64_t) ? (INSTR_PROF_RAW_MAGIC_64)
+diff -u a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/InstrProfiling.h
+--- a/compiler-rt/lib/profile/InstrProfiling.h	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfiling.h	2020-08-06 00:19:28.636061120 -0400
+@@ -10,32 +10,31 @@
+ #define PROFILE_INSTRPROFILING_H_
+ 
+ #include "InstrProfilingPort.h"
+-#include <stdio.h>
+ 
+ #define INSTR_PROF_VISIBILITY COMPILER_RT_VISIBILITY
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ 
+ enum ValueKind {
+ #define VALUE_PROF_KIND(Enumerator, Value, Descr) Enumerator = Value,
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ };
+ 
+ typedef void *IntPtrT;
+ typedef struct COMPILER_RT_ALIGNAS(INSTR_PROF_DATA_ALIGNMENT)
+     __llvm_profile_data {
+ #define INSTR_PROF_DATA(Type, LLVMType, Name, Initializer) Type Name;
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ } __llvm_profile_data;
+ 
+ typedef struct __llvm_profile_header {
+ #define INSTR_PROF_RAW_HEADER(Type, Name, Initializer) Type Name;
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ } __llvm_profile_header;
+ 
+ typedef struct ValueProfNode * PtrToNodeT;
+ typedef struct ValueProfNode {
+ #define INSTR_PROF_VALUE_NODE(Type, LLVMType, Name, Initializer) Type Name;
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ } ValueProfNode;
+ 
+ /*!
+@@ -129,7 +128,7 @@
+  */
+ void INSTR_PROF_VALUE_PROF_FUNC(
+ #define VALUE_PROF_FUNC_PARAM(ArgType, ArgName, ArgLLVMType) ArgType ArgName
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+     );
+ 
+ void __llvm_profile_instrument_target_value(uint64_t TargetValue, void *Data,
+@@ -219,7 +218,7 @@
+  * program initialization time. Support for transferring the mmap'd profile
+  * counts to a new file has not been implemented.
+  */
+-void __llvm_profile_set_file_object(FILE *File, int EnableMerge);
++//void __llvm_profile_set_file_object(FILE *File, int EnableMerge);
+ 
+ /*! \brief Register to write instrumentation data to file at exit. */
+ int __llvm_profile_register_write_file_atexit(void);
+diff -u a/compiler-rt/lib/profile/InstrProfilingMerge.c b/compiler-rt/lib/profile/InstrProfilingMerge.c
+--- a/compiler-rt/lib/profile/InstrProfilingMerge.c	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfilingMerge.c	2020-08-06 00:21:59.282783616 -0400
+@@ -11,10 +11,9 @@
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
+-#include "InstrProfilingUtil.h"
+ 
+ #define INSTR_PROF_VALUE_PROF_DATA
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ 
+ COMPILER_RT_VISIBILITY
+ void (*VPMergeHook)(ValueProfData *, __llvm_profile_data *);
+diff -u a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
+--- a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c	2020-08-05 23:34:11.419098000 -0400
+@@ -10,8 +10,7 @@
+     !(defined(__sun__) && defined(__svr4__)) && !defined(__NetBSD__) &&        \
+     !defined(_WIN32)
+ 
+-#include <stdlib.h>
+-#include <stdio.h>
++#include <stddef.h>
+ 
+ #include "InstrProfiling.h"
+ 
+diff -u a/compiler-rt/lib/profile/InstrProfilingPort.h b/compiler-rt/lib/profile/InstrProfilingPort.h
+--- a/compiler-rt/lib/profile/InstrProfilingPort.h	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfilingPort.h	2020-08-05 23:34:11.419098000 -0400
+@@ -80,7 +80,6 @@
+   (DomType *)__sync_fetch_and_add((long *)&PtrVar, sizeof(DomType) * PtrIncr)
+ #endif
+ #else /* COMPILER_RT_HAS_ATOMICS != 1 */
+-#include "InstrProfilingUtil.h"
+ #define COMPILER_RT_BOOL_CMPXCHG(Ptr, OldV, NewV)                              \
+   lprofBoolCmpXchg((void **)Ptr, OldV, NewV)
+ #define COMPILER_RT_PTR_FETCH_ADD(DomType, PtrVar, PtrIncr)                    \
+@@ -109,7 +108,6 @@
+   return S.dwPageSize;
+ }
+ #else /* defined(_WIN32) */
+-#include <unistd.h>
+ #endif /* defined(_WIN32) */
+ 
+ #define PROF_ERR(Format, ...)                                                  \
+@@ -136,7 +134,6 @@
+ 
+ #else /* defined(__FreeBSD__) */
+ 
+-#include <inttypes.h>
+ #include <stdint.h>
+ 
+ #endif /* defined(__FreeBSD__) && defined(__i386__) */
+diff -u a/compiler-rt/lib/profile/InstrProfilingWriter.c b/compiler-rt/lib/profile/InstrProfilingWriter.c
+--- a/compiler-rt/lib/profile/InstrProfilingWriter.c	2020-08-01 01:11:24.939629121 -0400
++++ b/compiler-rt/lib/profile/InstrProfilingWriter.c	2020-08-06 00:21:38.318961386 -0400
+@@ -13,14 +13,14 @@
+ /* For _alloca */
+ #include <malloc.h>
+ #endif
+-#include <string.h>
++#include "sw/device/lib/base/memory.h"
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
+ #include "InstrProfilingPort.h"
+ 
+ #define INSTR_PROF_VALUE_PROF_DATA
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ 
+ COMPILER_RT_VISIBILITY void (*FreeHook)(void *) = NULL;
+ static ProfBufferIO TheBufferIO;
+@@ -281,7 +281,7 @@
+ 
+ /* Initialize header structure.  */
+ #define INSTR_PROF_RAW_HEADER(Type, Name, Init) Header.Name = Init;
+-#include "profile/InstrProfData.inc"
++#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
+ 
+   /* Write the data. */
+   ProfDataIOVec IOVec[] = {
