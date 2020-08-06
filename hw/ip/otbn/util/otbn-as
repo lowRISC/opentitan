@@ -24,8 +24,10 @@ import sys
 import tempfile
 from typing import Dict, List, Optional, Set, TextIO, Tuple
 
-from shared.insn_yaml import (BitRanges, Encoding, Insn, InsnsFile, Operand,
-                              RegOperandType, load_file)
+from shared.bit_ranges import BitRanges
+from shared.encoding import Encoding
+from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.operand import RegOperandType, Operand
 
 
 class RVFmt:
