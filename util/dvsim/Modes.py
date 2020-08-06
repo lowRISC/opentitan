@@ -84,7 +84,7 @@ class Modes():
             self_attr_val = getattr(self, attr)
             mode_attr_val = getattr(mode, attr)
 
-            if type(self_attr_val) is list:
+            if type(self_attr_val) is list and type(mode_attr_val) is list:
                 self_attr_val.extend(mode_attr_val)
                 setattr(self, attr, self_attr_val)
 
@@ -422,7 +422,7 @@ class Regressions(Modes):
         self.type = ""
         if not hasattr(self, "mname"):
             self.mname = "regression"
-        self.tests = []
+        self.tests = None
         self.reseed = None
         self.test_names = []
         self.excl_tests = []  # TODO: add support for this
@@ -520,7 +520,7 @@ class Regressions(Modes):
                 regression_obj.run_opts.extend(run_mode_obj.run_opts)
 
             # Unpack tests
-            if regression_obj.tests == []:
+            if regression_obj.tests is None:
                 log.log(VERBOSE,
                         "Unpacking all tests in scope for regression \"%s\"",
                         regression_obj.name)
