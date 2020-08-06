@@ -12,6 +12,7 @@ import yaml
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
+from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
 from .yaml_parse_helpers import (check_keys, check_str, check_bool,
@@ -51,7 +52,7 @@ class Insn:
                         ['group', 'rv32i', 'synopsis',
                          'syntax', 'doc', 'note', 'trailing-doc',
                          'decode', 'operation', 'encoding', 'glued-ops',
-                         'literal-pseudo-op', 'python-pseudo-op'])
+                         'literal-pseudo-op', 'python-pseudo-op', 'lsu'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -136,6 +137,19 @@ class Insn:
                 raise ValueError('{} specifies both an encoding and '
                                  'literal-pseudo-op.'
                                  .format(what))
+
+        lsu_yaml = yd.get('lsu', None)
+        if lsu_yaml is None:
+            self.lsu = None
+        else:
+            self.lsu = LSUDesc.from_yaml(lsu_yaml,
+                                         'lsu field for {}'.format(what))
+            for idx, op_name in enumerate(self.lsu.target):
+                if op_name not in self.name_to_operand:
+                    raise ValueError('element {} of the target for the lsu '
+                                     'field for {} is {!r}, which is not a '
+                                     'operand name of the instruction.'
+                                     .format(idx, what, op_name))
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:

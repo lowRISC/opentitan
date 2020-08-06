@@ -447,6 +447,9 @@ encoding-schemes:
 #                    Optional, default false. Can't be true if encoding or
 #                    literal-pseudo-op is specified.
 #
+#  lsu:       An optional dictionary. If set, this is an LSU operation,
+#             described by the fields of the dictionary (defined below).
+#
 # The operands field should be a list, corresponding to the operands in the
 # order they will appear in the syntax. Each operand is either a string (the
 # operand name) or a dictionary. In the latter case, it has the following
@@ -498,6 +501,21 @@ encoding-schemes:
 #  wsr         WSR name
 #  imm, imm<n> Signed immediate (width <n> if specified)
 #  offset      Signed immediate (unspecified width)
+#
+# If specified, the lsu field for an instruction should be a dictionary with
+# the following fields:
+#
+#  type:    A string. "mem-load", "mem-store", "csr" or "wsr"
+#
+#  target:  A string or list of strings, which should be operand names. If a
+#           single string, this means that the named operand contains the
+#           target address. If the operand is an immediate, it is the target
+#           address. If the operand is a register, the value it contains is the
+#           target address. For a list of strings, the associated values are
+#           summed.
+#
+#  bytes:   An integer giving the width of the operation in bytes. This is
+#           required if type is mem-* and cannot be used otherwise.
 
 insns:
   - mnemonic: add
@@ -748,6 +766,10 @@ insns:
       Load a 32b word from address `<offset> + <grs1>` in data memory, writing the result to `<grd>`.
       Unaligned loads are not supported.
       Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    lsu:
+      type: mem-load
+      target: [offset, grs1]
+      bytes: 4
 
   - mnemonic: sw
     rv32i: true
@@ -766,6 +788,10 @@ insns:
       Store a 32b word in `<grs2>` to address `<offset> + <grs1>` in data memory.
       Unaligned stores are not supported.
       Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    lsu:
+      type: mem-store
+      target: [offset, grs1]
+      bytes: 4
 
   - mnemonic: beq
     rv32i: true
@@ -840,6 +866,9 @@ insns:
         funct3: b010
         rd: grd
         opcode: b11100
+    lsu:
+      type: csr
+      target: [csr]
 
   - mnemonic: csrrw
     rv32i: true
@@ -853,6 +882,9 @@ insns:
         funct3: b001
         rd: grd
         opcode: b11100
+    lsu:
+      type: csr
+      target: [csr]
 
   - mnemonic: ecall
     rv32i: true
@@ -1744,6 +1776,10 @@ insns:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grd_inc:
           GPR[rd] = GPR[rd] + 1
+    lsu:
+      type: mem-load
+      target: [offset, grs1]
+      bytes: 32
     encoding:
       scheme: bnxid
       mapping:
@@ -1811,6 +1847,10 @@ insns:
           GPR[rs1] = GPR[rs1] + (WLEN / 8)
       if grs2_inc:
           GPR[rs2] = GPR[rs2] + 1
+    lsu:
+      type: mem-store
+      target: [offset, grs1]
+      bytes: 32
     encoding:
       scheme: bnxid
       mapping:
@@ -1891,6 +1931,9 @@ insns:
         wcsr: wsr
         wrs: wrs
         wrd: wrd
+    lsu:
+      type: wsr
+      target: [wsr]
 
   - mnemonic: bn.wsrrw
     group: bignum
@@ -1903,3 +1946,6 @@ insns:
         wcsr: wsr
         wrs: wrs
         wrd: wrd
+    lsu:
+      type: wsr
+      target: [wsr]

@@ -85,7 +85,19 @@ def check_bool(obj: object, what: str) -> bool:
 
     '''
     if obj is not True and obj is not False:
-        raise ValueError('{} is of type {}, not a string.'
+        raise ValueError('{} is of type {}, not a bool.'
+                         .format(what, type(obj).__name__))
+    return obj
+
+
+def check_int(obj: object, what: str) -> int:
+    '''Check that the given object is an integer
+
+    If not, raise a ValueError; the what argument names the object.
+
+    '''
+    if not isinstance(obj, int):
+        raise ValueError('{} is of type {}, not an integer.'
                          .format(what, type(obj).__name__))
     return obj
 
