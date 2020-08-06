@@ -57,7 +57,6 @@ SECTIONS {
    */
   .vectors _boot_address : ALIGN(4) {
     KEEP(*(.vectors))
-    *(.vectors)
   } > rom
 
   /**
@@ -65,7 +64,6 @@ SECTIONS {
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-    *(.crt)
   } > rom
 
   /**
