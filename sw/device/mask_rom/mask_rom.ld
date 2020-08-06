@@ -52,7 +52,6 @@ SECTIONS {
    */
   .vectors _mask_rom_boot_address : ALIGN(256) {
     KEEP(*(.vectors))
-    *(.vectors)
   } > rom
 
   /**
@@ -63,7 +62,6 @@ SECTIONS {
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-    *(.crt)
   } > rom
 
   /**
@@ -159,7 +157,6 @@ SECTIONS {
    */
   .chip_info _chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
-    *(.chip_info)
   } > rom
 
   /**

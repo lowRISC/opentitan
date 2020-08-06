@@ -53,7 +53,6 @@ SECTIONS {
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-    *(.crt)
   } > eflash
 
   /**
