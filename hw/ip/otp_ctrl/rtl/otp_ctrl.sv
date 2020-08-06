@@ -139,7 +139,7 @@ module otp_ctrl
   // OTP Macro //
   ///////////////
 
-  localparam int OtpWidth     = 8;
+  localparam int OtpWidth     = 16;
   localparam int OtpDepth     = 1024;
   localparam int OtpAddrWidth = $clog2(OtpDepth);
   localparam int OtpErrWidth  = 8;
@@ -276,7 +276,7 @@ module otp_ctrl
      hw2reg.direct_access_rdata[1].d} = otp_scrambler_out ^ {gate_gen_out, gate_gen_out};
     hw2reg.direct_access_rdata[0].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
     hw2reg.direct_access_rdata[1].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
-    hw2reg.lc_state[0]               = otp_rdata ^ {8{otp_rvalid}};
+    hw2reg.lc_state[OtpWidth/8-1:0]  = otp_rdata ^ {OtpWidth{otp_rvalid}};
   end
 
   // Dummy registers for flash key

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module prim_generic_otp #(
-  parameter  int Width     = 8,
+  parameter  int Width     = 16,
   parameter  int Depth     = 1024,
   parameter  int ErrWidth  = 8,
   localparam int AddrWidth = $clog2(Depth)
