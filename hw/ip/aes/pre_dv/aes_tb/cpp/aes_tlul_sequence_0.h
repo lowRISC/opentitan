@@ -10,7 +10,7 @@
 
 // Example 0 - encrypt/decrypt all key lenghts
 
-static const int num_transactions_max = 1 + 3*(21 + 8) + 7 + 2 + 6;
+static const int num_transactions_max = 1 + 3*(21 + 8) + 7 + 4 + 6;
 static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     // AES-128
@@ -167,8 +167,11 @@ static const TLI tl_i_transactions[num_transactions_max] = {
      0, true},  // ctrl - encrypt, 256-bit
     {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
 
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},   // wait for busy
     {true, 0, 0, 2, 0, AES_KEY0, 0xF, 0x55555555, 0,
      true},  // try to overwrite key0
+    {true, 0, 0, 2, 0, AES_CONFIG, 0xF, 0xFFFFFFFF, 0,
+     true},  // try to overwrite ctrl
     {true, 0, 0, 2, 0, AES_CONFIG, 0xF, 0xFFFFFFFF, 0,
      true},  // try to overwrite ctrl
 
@@ -188,7 +191,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_DATA_OUT0 + 0xC, 0xF, 0x0, 0, true},
 };
 
-static const int num_responses_max = 1 + 18 + 18 + 1 + 5;
+static const int num_responses_max = 1 + 18 + 18 + 1 + 1 + 5;
 static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
     {0x1, 0x1},  // status shows idle
 
@@ -228,6 +231,8 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
     {0x0, 0x0},  // don't care
     {0x0, 0x0},  // don't care
     {0x4, 0x0},  // status shows output valid no longer valid
+
+    {0x1, 0x0},  // status shows busy
 
     {0x4, 0x4},  // status shows output valid
     {0xFFFFFFFF, 0x3A612130},
