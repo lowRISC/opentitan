@@ -57,6 +57,7 @@ sw_lib_testing_test_main = declare_dependency(
       sw_lib_uart,
       sw_lib_base_log,
       sw_lib_testing_test_status,
+      sw_lib_testing_test_coverage,
     ],
   )
 )
