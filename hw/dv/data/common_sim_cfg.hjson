@@ -112,23 +112,21 @@
   regressions: [
     {
       name: sanity
+      tests: []
       reseed: 1
     }
 
     {
       name: all
-      tests: []
     }
 
     {
       name: all_once
       reseed: 1
-      tests: []
     }
 
     {
       name: nightly
-      tests: []
       en_sim_modes: ["cov"]
     }
   ]
