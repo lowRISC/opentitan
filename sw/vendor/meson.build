@@ -48,3 +48,20 @@ sw_vendor_gtest = declare_dependency(
   dependencies: thread_dep,
 )
 # End googletest and googlemock build definitions
+
+# libclang_rt.profile build definitions
+sw_vendor_llvm_clang_rt_dir = 'llvm_clang_rt_profile' / 'compiler-rt'
+sw_vendor_llvm_clang_rt_profile_dir = sw_vendor_llvm_clang_rt_dir / 'lib' / 'profile'
+sw_vendor_llvm_clang_rt_inc_dir = include_directories(
+  sw_vendor_llvm_clang_rt_dir / 'include',
+)
+sw_vendor_llvm_clang_rt_sources = [
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingBiasVar.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingBuffer.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfiling.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingInternal.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingMerge.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingPlatformOther.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingVersionVar.c'),
+  files(sw_vendor_llvm_clang_rt_profile_dir / 'InstrProfilingWriter.c'),
+]
