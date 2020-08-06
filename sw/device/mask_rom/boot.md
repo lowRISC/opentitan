@@ -220,15 +220,18 @@ read_boot_policy() {
 
 This manages reading and parsing ROM_EXT manifests.
 
+The manifest format is defined in [ROM_EXT Manifest Format](../rom_exts/manifest)
+
 DIFs Needed:
 
-*   Flash Controller
+*   None. This is read out of flash using ibex loads/stores.
 
 Milestone Expectations:
 
-*   *v0.5:* Chosen Manifest, Reading Manifest,
-    Tooling to assemble ROM_EXT image with Manifest,
-    Tooling to ensure ROM_EXT is loaded at boot.
+*   *v0.5:* Initial Manifest Format, Initial Parser, Simple Tooling for
+    assembling ROM_EXT Slot A images.
+*   *v0.7:* Tooling to ensure ROM_EXT is loaded at boot. Tooling for assembling
+    Slot B images.
 *   v0.9: Nothing more (Bootstrap should work in v0.9).
 
 ### Bootstrap
