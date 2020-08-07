@@ -295,7 +295,6 @@ module top_earlgrey_asic (
   logic ast_usb_core_pok;
   logic [31:0] ast_usb_calibration;
   logic [ast_wrapper_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
-  assign ast_usb_core_pok = ast_base_rst.aon_pok;
 
   prim_usb_diff_rx #(
     .CalibW(ast_wrapper_pkg::UsbCalibWidth)
@@ -412,6 +411,7 @@ module top_earlgrey_asic (
     .scan_reset_ni(1'b1)
   );
 
+  assign ast_usb_core_pok = ast_base_rst.aon_pok;
 
   //////////////////////
   // Top-level design //
