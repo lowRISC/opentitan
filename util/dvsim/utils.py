@@ -161,8 +161,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
             # We need to now substitute {p_xyz_q}, so that the final value of
             # var is 'baz'.
             if not (ignored_wildcards_found or no_substitutions_found):
-                var =  subst_wildcards(var, mdict, ignored_wildcards,
-                                       ignore_error)
+                var = subst_wildcards(var, mdict, ignored_wildcards,
+                                      ignore_error)
     return var
 
 
@@ -289,7 +289,9 @@ def htmc_color_pc_cells(text):
 
     patterns = fp_patterns + '|' + na_list_patterns
     indicators = "%|%u|G|B|E|W|EN|WN"
-    match = re.findall(r"(<td.*>\s*(" + patterns + r")\s+(" + indicators + r")\s*</td>)", text)
+    match = re.findall(
+        r"(<td.*>\s*(" + patterns + r")\s+(" + indicators + r")\s*</td>)",
+        text)
     if len(match) > 0:
         subst_list = {}
         fp_nums = []
@@ -310,8 +312,9 @@ def htmc_color_pc_cells(text):
                 try:
                     fp = float(fp_num)
                 except ValueError:
-                    log.error("Percentage item \"%s\" in cell \"%s\" is not an "
-                              "integer or a floating point number", fp_num, cell)
+                    log.error(
+                        "Percentage item \"%s\" in cell \"%s\" is not an "
+                        "integer or a floating point number", fp_num, cell)
                     continue
                 # Percentage, colored.
                 if indicator == "%":
@@ -390,8 +393,9 @@ def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
             if k <= max_msg_count or max_msg_count < 0:
                 md_results += msg + "\n\n"
             else:
-                md_results += "Note: %d more messages have been suppressed (max_msg_count = %d) \n\n" % (
-                    len(msg_list) - max_msg_count, max_msg_count)
+                md_results += "Note: %d more messages have been suppressed " % (
+                    len(msg_list) - max_msg_count)
+                md_results += "(max_msg_count = %d) \n\n" % (max_msg_count)
                 break
         md_results += "```\n"
     return md_results
