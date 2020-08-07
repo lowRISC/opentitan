@@ -3,12 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
+ * Flash header.
+ *
+ * Contains the address of the entry point.
+ */
+  .section .flash_header, "a", @progbits
+  .4byte _start
+
+/**
  * Flash executable runtime initialization code.
  */
 
   // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated space in ROM by the linker.
-  .section .crt, "ax"
+  .section .crt, "ax", @progbits
 
   .extern main
   .extern crt_interrupt_vector
