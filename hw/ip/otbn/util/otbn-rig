@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+'''Wrapper script to run the OTBN random instruction generator'''
+
+import argparse
+import json
+import os
+import random
+import sys
+
+from shared.insn_yaml import load_file
+
+# Ensure that the OTBN utils directory is on sys.path. This means that RIG code
+# can import modules like "shared.foo" and get the OTBN shared code.
+sys.path.append(os.path.dirname(__file__))
+
+from rig.rig import gen_program  # noqa: E402
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', '-o',
+                        required=True,
+                        help='Path for JSON output of generated snippets')
+    parser.add_argument('--asm-output',
+                        help='Optional path for generated program')
+    parser.add_argument('--seed', type=int, default=0,
+                        help='Random seed. Defaults to 0.')
+    parser.add_argument('--size', type=int, default=100,
+                        help=('Max number of instructions in stream. '
+                              'Defaults to 100.'))
+    parser.add_argument('--start-addr', type=int, default=0,
+                        help='Reset address. Defaults to 0.')
+
+    args = parser.parse_args()
+    random.seed(args.seed)
+
+    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                              '..', 'data', 'insns.yml'))
+    try:
+        insns_file = load_file(insns_yml)
+    except RuntimeError as err:
+        sys.stderr.write('{}\n'.format(err))
+        return 1
+
+    # Run the generator
+    snippets, program = gen_program(args.start_addr, args.size, insns_file)
+
+    # Write out the snippets to a JSON file
+    ser_snippets = [snippet.to_json() for snippet in snippets]
+    try:
+        with open(args.output, 'w') as out_file:
+            out_file.write(json.dumps(ser_snippets))
+    except OSError as err:
+        sys.stderr.write('Failed to open json output file {!r}: {}.'
+                         .format(args.output, err))
+        return 1
+
+    # If assembly output was requested, dump that here.
+    if args.asm_output is not None:
+        try:
+            with open(args.asm_output, 'w') as out_file:
+                program.dump_asm(out_file)
+        except OSError as err:
+            sys.stderr.write('Failed to open assembly output file {!r}: {}.'
+                             .format(args.asm_output, err))
+            return 1
+
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
