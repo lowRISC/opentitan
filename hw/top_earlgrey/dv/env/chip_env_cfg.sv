@@ -21,6 +21,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual pins_if#(1) srst_n_vif;
   virtual pins_if#(1) jtag_spi_n_vif;
   virtual pins_if#(1) bootstrap_vif;
+  virtual pins_if#(1) rst_n_mon_vif;
 
   // sw logger related
   string sw_types[]         = '{"rom", "sw"};

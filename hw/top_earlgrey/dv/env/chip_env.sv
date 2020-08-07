@@ -43,6 +43,11 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get bootstrap_vif from uvm_config_db")
     end
 
+    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "rst_n_mon_vif",
+        cfg.rst_n_mon_vif)) begin
+      `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
+    end
+
     foreach (cfg.mem_bkdr_vifs[mem]) begin
       if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", $sformatf("mem_bkdr_vifs[%0s]", mem.name),
                                              cfg.mem_bkdr_vifs[mem])) begin
