@@ -211,10 +211,10 @@ module top_earlgrey_nexysvideo #(
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni          ( rst_n         ),
-    .clkmgr_clk_main ( clk           ),
-    .clkmgr_clk_io   ( clk           ),
-    .clkmgr_clk_usb  ( clk_usb_48mhz ),
-    .clkmgr_clk_aon  ( clk           ),
+    .clk_main_i      ( clk           ),
+    .clk_io_i        ( clk           ),
+    .clk_usb_i       ( clk_usb_48mhz ),
+    .clk_aon_i       ( clk           ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

@@ -33,10 +33,10 @@ module top_earlgrey #(
 
 
   // Inter-module Signal External type
-  input  logic       clkmgr_clk_main,
-  input  logic       clkmgr_clk_io,
-  input  logic       clkmgr_clk_usb,
-  input  logic       clkmgr_clk_aon,
+  input  logic       clk_main_i,
+  input  logic       clk_io_i,
+  input  logic       clk_usb_i,
+  input  logic       clk_aon_i,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -813,10 +813,10 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_clocks),
-      .clk_main_i(clkmgr_clk_main),
-      .clk_io_i(clkmgr_clk_io),
-      .clk_usb_i(clkmgr_clk_usb),
-      .clk_aon_i(clkmgr_clk_aon),
+      .clk_main_i(clk_main_i),
+      .clk_io_i(clk_io_i),
+      .clk_usb_i(clk_usb_i),
+      .clk_aon_i(clk_aon_i),
       .pwr_i(pwrmgr_pwr_clk_req),
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
@@ -1173,6 +1173,6 @@ module top_earlgrey #(
   assign cio_usbdev_dn_p2d         = dio_p2d[0]; // DIO0
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clkmgr_clk_main, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
 endmodule

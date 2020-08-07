@@ -1544,7 +1544,8 @@
           inst_name: clkmgr
           width: 1
           default: ""
-          top_signame: clkmgr_clk_main
+          external: true
+          top_signame: clk_main
           index: -1
         }
         {
@@ -1556,7 +1557,8 @@
           inst_name: clkmgr
           width: 1
           default: ""
-          top_signame: clkmgr_clk_io
+          external: true
+          top_signame: clk_io
           index: -1
         }
         {
@@ -1568,7 +1570,8 @@
           inst_name: clkmgr
           width: 1
           default: ""
-          top_signame: clkmgr_clk_usb
+          external: true
+          top_signame: clk_usb
           index: -1
         }
         {
@@ -1580,7 +1583,8 @@
           inst_name: clkmgr
           width: 1
           default: ""
-          top_signame: clkmgr_clk_aon
+          external: true
+          top_signame: clk_aon
           index: -1
         }
         {
@@ -2412,12 +2416,12 @@
       main.tl_debug_mem
     ]
     external:
-    [
-      clkmgr.clk_main
-      clkmgr.clk_io
-      clkmgr.clk_usb
-      clkmgr.clk_aon
-    ]
+    {
+      clkmgr.clk_main: clk_main
+      clkmgr.clk_io: clk_io
+      clkmgr.clk_usb: clk_usb
+      clkmgr.clk_aon: clk_aon
+    }
   }
   xbar:
   [
@@ -4742,7 +4746,8 @@
         inst_name: clkmgr
         width: 1
         default: ""
-        top_signame: clkmgr_clk_main
+        external: true
+        top_signame: clk_main
         index: -1
       }
       {
@@ -4754,7 +4759,8 @@
         inst_name: clkmgr
         width: 1
         default: ""
-        top_signame: clkmgr_clk_io
+        external: true
+        top_signame: clk_io
         index: -1
       }
       {
@@ -4766,7 +4772,8 @@
         inst_name: clkmgr
         width: 1
         default: ""
-        top_signame: clkmgr_clk_usb
+        external: true
+        top_signame: clk_usb
         index: -1
       }
       {
@@ -4778,7 +4785,8 @@
         inst_name: clkmgr
         width: 1
         default: ""
-        top_signame: clkmgr_clk_aon
+        external: true
+        top_signame: clk_aon
         index: -1
       }
       {
@@ -5281,7 +5289,7 @@
       {
         package: ""
         struct: logic
-        signame: clkmgr_clk_main
+        signame: clk_main_i
         width: 1
         type: uni
         default: ""
@@ -5290,7 +5298,7 @@
       {
         package: ""
         struct: logic
-        signame: clkmgr_clk_io
+        signame: clk_io_i
         width: 1
         type: uni
         default: ""
@@ -5299,7 +5307,7 @@
       {
         package: ""
         struct: logic
-        signame: clkmgr_clk_usb
+        signame: clk_usb_i
         width: 1
         type: uni
         default: ""
@@ -5308,7 +5316,7 @@
       {
         package: ""
         struct: logic
-        signame: clkmgr_clk_aon
+        signame: clk_aon_i
         width: 1
         type: uni
         default: ""
