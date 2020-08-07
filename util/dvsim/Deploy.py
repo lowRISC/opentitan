@@ -129,8 +129,14 @@ class Deploy():
                 sys.exit(1)
 
         # Recursively search and replace wildcards
-        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
-                                                      self.__dict__)
+        # First pass: search within self dict. We ignore errors since some
+        # substitions may be available in the second pass.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.__dict__, [], True)
+
+        # Second pass: search in sim_cfg dict, this time not ignoring errors.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.sim_cfg.__dict__, [], False)
 
         # Set identifier.
         self.identifier = self.sim_cfg.name + ":" + self.name
@@ -785,10 +791,19 @@ class CovMerge(Deploy):
         for bld in self.sim_cfg.builds:
             self.cov_db_dirs += bld.cov_db_dir + " "
 
-        # Recursively search and replace wildcards, ignoring cov_db_dirs for now.
+        # Recursively search and replace wildcards, ignoring cov_db_dirs.
         # We need to resolve it later based on cov_db_dirs value set below.
+
+        # First pass: search within self dict. We ignore errors since some
+        # substitions may be available in the second pass.
         self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"])
+            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"],
+            ignore_error=True)
+
+        # Second pass: search in sim_cfg dict, this time not ignoring errors.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.sim_cfg.__dict__,
+            ignored_wildcards=["cov_db_dirs"], ignore_error=False)
 
         # Prune previous merged cov directories.
         prev_cov_db_dirs = self.odir_limiter(odir=self.cov_merge_db_dir)
