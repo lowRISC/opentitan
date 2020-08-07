@@ -44,6 +44,11 @@ module tb;
 
   bit stub_cpu;
 
+  // internal clocks and resets
+  // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
+  wire cpu_clk = `CLKMGR_HIER.clocks_o.clk_proc_main;
+  wire cpu_rst_n = `CPU_HIER.rst_ni;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
@@ -51,8 +56,9 @@ module tb;
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
   pins_if #(1) bootstrap_if(.pins(bootstrap));
+  pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
   spi_if spi_if(.rst_n);
-  tl_if cpu_d_tl_if(.clk, .rst_n);
+  tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
   uart_if uart_if();
   jtag_if jtag_if();
 
@@ -167,7 +173,8 @@ module tb;
 
   initial begin
     // Set clk_rst_vifs
-    // drive clk and rst_n from clk_if
+    // drive rst_n from clk_if
+    // clk_rst_if references internal clock created by ast
     clk_rst_if.set_active();
     usb_clk_rst_if.set_active(.drive_clk_val(1'b1), .drive_rst_n_val(1'b0));
     // clk_rst_if will be gotten by env and env.scoreboard (for xbar)
@@ -188,6 +195,8 @@ module tb;
         null, "*.env", "jtag_spi_n_vif", jtag_spi_n_if);
     uvm_config_db#(virtual pins_if #(1))::set(
         null, "*.env", "bootstrap_vif", bootstrap_if);
+    uvm_config_db#(virtual pins_if #(1))::set(
+        null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
 
     // Backdoors
     uvm_config_db#(virtual mem_bkdr_if)::set(
