@@ -108,9 +108,12 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
     else:
         match = re.findall(r"{([A-Za-z0-9\_]+)}", var)
         if len(match) > 0:
-            subst_list = {}
+            ignored_wildcards_found = False
+            no_substitutions_found = True
             for item in match:
-                if item not in ignored_wildcards:
+                if item in ignored_wildcards:
+                    ignored_wildcards_found = True
+                else:
                     log.debug("Found wildcard \"%s\" in \"%s\"", item, var)
                     found = subst(item, mdict)
                     if found is not None:
@@ -132,19 +135,34 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
 
                         elif type(found) is bool:
                             found = int(found)
-                        subst_list[item] = found
+                        var = var.replace("{" + item + "}", str(found))
+                        no_substitutions_found = False
                     else:
                         # Check if the wildcard exists as an environment variable
                         env_var = os.environ.get(item)
                         if env_var is not None:
-                            subst_list[item] = env_var
+                            var = var.replace("{" + item + "}", str(env_var))
+                            no_substitutions_found = False
                         elif not ignore_error:
                             log.error(
                                 "Substitution for the wildcard \"%s\" not found",
                                 item)
                             sys.exit(1)
-            for item in subst_list:
-                var = var.replace("{" + item + "}", str(subst_list[item]))
+
+            # If items were found for substitution, but if they were a part
+            # of ignored_wildcards list or if substitutions for them were not
+            # found, then, we return. If all substitutions were made, then check
+            # for second level of indirection:
+            #
+            # For example: lets say we supply the dict:
+            # {var: '{{foo}_xyz{bar}}', foo: p, bar: q, p_xyz_q: baz}
+            #
+            # Then after the substitutions above: {var: '{p_xyz_q}', ...}
+            # We need to now substitute {p_xyz_q}, so that the final value of
+            # var is 'baz'.
+            if not (ignored_wildcards_found or no_substitutions_found):
+                var =  subst_wildcards(var, mdict, ignored_wildcards,
+                                       ignore_error)
     return var
 
 
