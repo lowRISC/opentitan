@@ -448,9 +448,10 @@ class Regressions(Modes):
 
             # Check for name conflicts with tests before merging
             if new_regression.name in Tests.item_names:
-                log.error("Test names and regression names are required to be unique. "
-                          "The regression \"%s\" bears the same name with an existing test. ",
-                          new_regression.name)
+                log.error(
+                    "Test names and regression names are required to be unique. "
+                    "The regression \"%s\" bears the same name with an existing test. ",
+                    new_regression.name)
                 sys.exit(1)
 
             for regression in regressions_objs:
@@ -492,9 +493,11 @@ class Regressions(Modes):
                 # Throw an error and exit.
                 for sim_mode_obj_sub in sim_mode_obj.en_build_modes:
                     if sim_mode_obj_sub in regression_obj.en_sim_modes:
-                        log.error("Regression \"%s\" enables sim_modes \"%s\" and \"%s\". "
-                                  "The former is already a sub_mode of the latter.",
-                                  regression_obj.name, sim_mode_obj_sub, sim_mode_obj.name)
+                        log.error(
+                            "Regression \"%s\" enables sim_modes \"%s\" and \"%s\". "
+                            "The former is already a sub_mode of the latter.",
+                            regression_obj.name, sim_mode_obj_sub,
+                            sim_mode_obj.name)
                         sys.exit(1)
 
                 # Check if sim_mode_obj is also passed on the command line, in
