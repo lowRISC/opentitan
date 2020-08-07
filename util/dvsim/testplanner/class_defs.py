@@ -312,7 +312,6 @@ class Testplan():
         result = result.replace("&gt;", ">")
         return result
 
-
     def results_table(self, regr_results, map_full_testplan=True, fmt="pipe"):
         '''Print the mapped regression results into a table in the format
         specified by the 'fmt' arg.

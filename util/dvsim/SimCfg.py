@@ -17,7 +17,7 @@ from tabulate import tabulate
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, RunTest, Deploy
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
-from testplanner import testplan_utils
+from testplanner import testplan_utils, class_defs
 from utils import VERBOSE, find_and_substitute_wildcards
 
 
@@ -290,6 +290,9 @@ class SimCfg(FlowCfg):
             self.testplan = testplan_utils.parse_testplan(self.testplan)
             # Extract tests in each milestone and add them as regression target.
             self.regressions.extend(self.testplan.get_milestone_regressions())
+        else:
+            # Create a dummy testplan with no entries.
+            self.testplan = class_defs.Testplan(name=self.name)
 
         # Create regressions
         self.regressions = Regressions.create_regressions(self.regressions,
@@ -578,21 +581,24 @@ class SimCfg(FlowCfg):
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
 
-        # Add path to testplan.
-        if hasattr(self, "testplan_doc_path"):
-            testplan = "https://" + self.doc_server + '/' + self.testplan_doc_path
-        else:
-            testplan = "https://" + self.doc_server + '/' + self.rel_path
-            testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+        # Add path to testplan, only if it has entries (i.e., its not dummy).
+        if self.testplan.entries:
+            if hasattr(self, "testplan_doc_path"):
+                testplan = "https://{}/{}".format(self.doc_server,
+                                                  self.testplan_doc_path)
+            else:
+                testplan = "https://{}/{}".format(self.doc_server,
+                                                  self.rel_path)
+                testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
 
-        results_str += "### [Testplan](" + testplan + ")\n"
+            results_str += "### [Testplan](" + testplan + ")\n"
+
         results_str += "### Simulator: " + self.tool.upper() + "\n\n"
 
         if regr_results == []:
             results_str += "No results to display.\n"
 
         else:
-            # TODO: check if testplan is not null?
             # Map regr results to the testplan entries.
             results_str += self.testplan.results_table(
                 regr_results=regr_results,
