@@ -77,19 +77,60 @@ class Modes():
         if not mode.name == self.name and not is_sub_mode:
             return False
 
-        # only merge the lists; if strs are different, then throw an error
-        attrs = self.__dict__.keys()
-        for attr in attrs:
-            # merge lists together
-            self_attr_val = getattr(self, attr)
-            mode_attr_val = getattr(mode, attr)
+        # Merge attributes in self with attributes in mode arg, since they are
+        # the same mode but set in separate files, or a sub-mode.
+        for attr, self_attr_val in self.__dict__.items():
+            mode_attr_val = getattr(mode, attr, None)
 
-            if type(self_attr_val) is list and type(mode_attr_val) is list:
+            # If sub-mode, skip the name fields - they could differ.
+            if is_sub_mode and attr in ['name', 'mname']:
+                continue
+
+            # If mode's value is None, then nothing to do here.
+            if mode_attr_val is None:
+                continue
+
+            # If self value is None, then replace with mode's value.
+            if self_attr_val is None:
+                setattr(self, attr, mode_attr_val)
+                continue
+
+            # If they are equal, then nothing to do here.
+            if self_attr_val == mode_attr_val:
+                continue
+
+            # Extend if they are both lists.
+            if isinstance(self_attr_val, list):
+                assert isinstance(mode_attr_val, list)
                 self_attr_val.extend(mode_attr_val)
-                setattr(self, attr, self_attr_val)
+                continue
 
-            elif not is_sub_mode or attr not in ["name", "mname"]:
-                self.check_conflict(mode.name, attr, mode_attr_val)
+            # If the current val is default, replace with new.
+            scalar_types = {str: "", int: -1}
+            default_val = scalar_types.get(type(self_attr_val))
+
+            if type(self_attr_val) in scalar_types.keys(
+            ) and self_attr_val == default_val:
+                setattr(self, attr, mode_attr_val)
+                continue
+
+            # Check if their types are compatible.
+            if type(self_attr_val) != type(mode_attr_val):
+                log.error(
+                    "Mode %s cannot be merged into %s due to a conflict "
+                    "(type mismatch): %s: {%s(%s), %s(%s)}", name, self.name,
+                    attr, str(self_attr_val), str(type(self_attr_val)),
+                    str(mode_attr_val), str(type(mode_attr_val)))
+                sys.exit(1)
+
+            # Check if they are different non-default values.
+            if self_attr_val != default_val and mode_attr_val != default_val:
+                log.error(
+                    "Mode %s cannot be merged into %s due to a conflict "
+                    "(unable to pick one from different values): "
+                    "%s: {%s, %s}", name, self.name, attr, str(self_attr_val),
+                    str(mode_attr_val))
+                sys.exit(1)
 
         # Check newly appended sub_modes, remove 'self' and duplicates
         sub_modes = self.get_sub_modes()
@@ -101,30 +142,6 @@ class Modes():
                     new_sub_modes.append(sub_mode)
             self.set_sub_modes(new_sub_modes)
         return True
-
-    def check_conflict(self, name, attr, mode_attr_val):
-        self_attr_val = getattr(self, attr)
-        if self_attr_val == mode_attr_val:
-            return
-
-        if mode_attr_val is None:
-            # No override here
-            return
-
-        default_val = None
-        if type(self_attr_val) is int:
-            default_val = -1
-        elif type(self_attr_val) is str:
-            default_val = ""
-
-        if self_attr_val != default_val and mode_attr_val != default_val:
-            log.error(
-                "mode %s cannot be merged into %s due to conflicting %s {%s, %s}",
-                name, self.name, attr, str(self_attr_val), str(mode_attr_val))
-            sys.exit(1)
-        elif self_attr_val == default_val:
-            self_attr_val = mode_attr_val
-            setattr(self, attr, self_attr_val)
 
     @staticmethod
     def create_modes(ModeType, mdicts):
@@ -422,9 +439,18 @@ class Regressions(Modes):
         self.type = ""
         if not hasattr(self, "mname"):
             self.mname = "regression"
+
+        # The `tests` member is typically a list, but it defaults to None.
+        # There are 3 possible cases after all the HJson files are parsed, when
+        # this particular regression is supplied to be run:
+        #
+        # 1. `tests` == None:   This is treated as "run ALL available tests".
+        # 2. `tests` == []:     No available tests to run
+        # 3. `len(tests)` > 0:  The provided set of tests are run.
         self.tests = None
-        self.reseed = None
         self.test_names = []
+
+        self.reseed = None
         self.excl_tests = []  # TODO: add support for this
         self.en_sim_modes = []
         self.en_run_modes = []
@@ -523,6 +549,8 @@ class Regressions(Modes):
                 regression_obj.run_opts.extend(run_mode_obj.run_opts)
 
             # Unpack tests
+            # If `tests` member resolves to None, then we add ALL available
+            # tests for running the regression.
             if regression_obj.tests is None:
                 log.log(VERBOSE,
                         "Unpacking all tests in scope for regression \"%s\"",
