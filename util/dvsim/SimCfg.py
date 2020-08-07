@@ -5,19 +5,18 @@ r"""
 Class describing simulation configuration object
 """
 
+import logging as log
 import os
 import shutil
 import subprocess
 import sys
 from collections import OrderedDict
 
-import logging as log
-from tabulate import tabulate
-
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, RunTest, Deploy
+from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, Deploy, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
-from testplanner import testplan_utils, class_defs
+from tabulate import tabulate
+from testplanner import class_defs, testplan_utils
 from utils import VERBOSE, find_and_substitute_wildcards
 
 
@@ -62,8 +61,7 @@ def resolve_dump_format(tool, dump):
         # they know what they're doing.
         if fmts is not None and dump not in fmts:
             log.error('Chosen tool ({}) does not support wave '
-                      'dumping format {!r}.'
-                      .format(tool, dump))
+                      'dumping format {!r}.'.format(tool, dump))
             sys.exit(1)
 
         return dump
@@ -204,8 +202,9 @@ class SimCfg(FlowCfg):
             # file. That's ok if this is a primary config (where the
             # sub-configurations can choose tools themselves), but not otherwise.
             if self.tool is None:
-                log.error('Config file does not specify a default tool, '
-                          'and there was no --tool argument on the command line.')
+                log.error(
+                    'Config file does not specify a default tool, '
+                    'and there was no --tool argument on the command line.')
                 sys.exit(1)
 
             # Print info:
@@ -295,8 +294,8 @@ class SimCfg(FlowCfg):
             self.testplan = class_defs.Testplan(name=self.name)
 
         # Create regressions
-        self.regressions = Regressions.create_regressions(self.regressions,
-                                                          self, self.tests)
+        self.regressions = Regressions.create_regressions(
+            self.regressions, self, self.tests)
 
     def _print_list(self):
         for list_item in self.list_items:
@@ -433,9 +432,7 @@ class SimCfg(FlowCfg):
         tagged = []
         for test in self.run_list:
             for idx in range(test.reseed):
-                tagged.append((idx,
-                               test,
-                               RunTest(idx, test, self)))
+                tagged.append((idx, test, RunTest(idx, test, self)))
 
         # Stably sort the tagged list by the 1st coordinate
         tagged.sort(key=lambda x: x[0])
@@ -465,8 +462,7 @@ class SimCfg(FlowCfg):
 
         self.builds = builds
         self.runs = ([]
-                     if self.build_only
-                     else self._expand_run_list(build_map))
+                     if self.build_only else self._expand_run_list(build_map))
         if self.run_only is True:
             self.deploy = self.runs
         else:
