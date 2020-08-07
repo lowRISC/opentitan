@@ -73,6 +73,20 @@ module top_earlgrey_verilator (
   assign cio_uart_tx_en_d2p = dio_oe[9];
   assign cio_spi_device_sdo_en_d2p = dio_oe[11];
 
+  // dummy ast connections
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
+
+  assign ast_base_pwr.slow_clk_val = 2'b10;
+  assign ast_base_pwr.core_clk_val = 2'b10;
+  assign ast_base_pwr.io_clk_val   = 2'b10;
+  assign ast_base_pwr.main_pok     = 1'b1;
+
+  assign ast_base_alerts.alerts_p  = '0;
+  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
+  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+
   // Top-level design
   top_earlgrey top_earlgrey (
     .rst_ni                     (rst_ni),
@@ -80,6 +94,14 @@ module top_earlgrey_verilator (
     .clk_io_i                   (clk_i),
     .clk_usb_i                  (clk_i),
     .clk_aon_i                  (clk_i),
+    .rstmgr_ast_i                 (1'b1),
+    .pwrmgr_pwr_ast_req_o         (),
+    .pwrmgr_pwr_ast_rsp_i         (ast_base_pwr),
+    .sensor_ctrl_ast_alert_req_i  (ast_base_alerts),
+    .sensor_ctrl_ast_alert_rsp_o  (),
+    .sensor_ctrl_ast_status_i     (ast_base_status),
+    .usbdev_usb_ref_val_o         (),
+    .usbdev_usb_ref_pulse_o       (),
 
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),
