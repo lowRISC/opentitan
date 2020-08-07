@@ -38,11 +38,7 @@ SECTIONS {
    * signature, but for now it's just the entry point at offset zero.
    */
   .flash_header ORIGIN(eflash) : ALIGN(4) {
-    /**
-     * NOTE:ld scripts do not provide a mechanism to refer to ENTRY,
-     * so we just harcode the _start symbol.
-     */
-    LONG(_start)
+    KEEP(*(.flash_header))
   } > eflash
 
   /**
