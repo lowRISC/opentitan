@@ -22,6 +22,8 @@ An assembler, linker and disassembler for OTBN can be found in
 `hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
 so one must be available (see the OpenTitan documentation on [obtaining a
 toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-development).
+For more details about the toolchain, see the [user
+guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
 
 `hw/ip/otbn/util/build.sh` provides a simple script to build a single OTBN
 assembly files using the toolchain:
