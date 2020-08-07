@@ -52,7 +52,8 @@ class Insn:
                         ['group', 'rv32i', 'synopsis',
                          'syntax', 'doc', 'note', 'trailing-doc',
                          'decode', 'operation', 'encoding', 'glued-ops',
-                         'literal-pseudo-op', 'python-pseudo-op', 'lsu'])
+                         'literal-pseudo-op', 'python-pseudo-op', 'lsu',
+                         'straight-line'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -151,6 +152,8 @@ class Insn:
                                      'field for {} is {!r}, which is not a '
                                      'operand name of the instruction.'
                                      .format(idx, what, op_name))
+
+        self.straight_line = yd.get('straight-line', True)
 
     def _update_widths_from_encoding(self, encoding: Encoding) -> None:
         '''Update operand widths from encoding'''

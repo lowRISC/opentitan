@@ -450,6 +450,9 @@ encoding-schemes:
 #  lsu:       An optional dictionary. If set, this is an LSU operation,
 #             described by the fields of the dictionary (defined below).
 #
+#  straight-line: A boolean. If true, this instruction has no effect on control
+#                 flow. Optional, default true.
+#
 # The operands field should be a list, corresponding to the operands in the
 # order they will appear in the syntax. Each operand is either a string (the
 # operand name) or a dictionary. In the latter case, it has the following
@@ -797,6 +800,7 @@ insns:
     rv32i: true
     synopsis: Branch Equal
     operands: [grs1, grs2, offset]
+    straight-line: false
     encoding:
       scheme: B
       mapping:
@@ -810,6 +814,7 @@ insns:
     rv32i: true
     synopsis: Branch Not Equal
     operands: [grs1, grs2, offset]
+    straight-line: false
     encoding:
       scheme: B
       mapping:
@@ -823,6 +828,7 @@ insns:
     rv32i: true
     synopsis: Jump And Link
     operands: [grd, offset]
+    straight-line: false
     trailing-doc: |
       The JAL instruction has the same behavior as in RV32I, jumping by the given offset and writing `PC+4` as a link address to the destination register.
       OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling subroutines.
@@ -838,6 +844,7 @@ insns:
     rv32i: true
     synopsis: Jump And Link Register
     operands: [grd, grs1, offset]
+    straight-line: false
     trailing-doc: |
       The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
       OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
@@ -890,6 +897,7 @@ insns:
     rv32i: true
     synopsis: Environment Call
     operands: []
+    straight-line: false
     doc: |
       Triggers the `done` interrupt to indicate the completion of the
       operation.
@@ -911,6 +919,7 @@ insns:
         name: bodysize
         type: uimm
         doc: Number of instructions in the loop body
+    straight-line: false
     note: &loop-note |
       The LOOP and LOOPI instructions are under-specified, and improvements
       to them are being discussed. See
@@ -933,6 +942,7 @@ insns:
         type: uimm
         doc: Number of iterations
       - *bodysize-operand
+    straight-line: false
     note: *loop-note
     doc: |
       Repeat a sequence of code multiple times. The `<iterations>`
@@ -969,6 +979,7 @@ insns:
     synopsis: Return from subroutine
     rv32i: true
     operands: []
+    straight-line: false
     literal-pseudo-op:
       - JALR x0, x1, 0
 

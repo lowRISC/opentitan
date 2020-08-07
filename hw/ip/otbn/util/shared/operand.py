@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from .yaml_parse_helpers import check_keys, check_str, get_optional_str
 
 
@@ -69,7 +69,7 @@ class RegOperandType(OperandType):
         super().__init__(width)
 
         self.reg_type = reg_type
-        self.is_dest = is_dest
+        self._is_dest = is_dest
 
     def syntax_determines_value(self) -> bool:
         return True
@@ -100,6 +100,14 @@ class RegOperandType(OperandType):
             return super().render_val(value)
 
         return '{}{}'.format(pfx, value)
+
+    def is_src(self) -> bool:
+        '''True if this operand is considered a source'''
+        return self.reg_type in ['csr', 'wsr'] or not self._is_dest
+
+    def is_dest(self) -> bool:
+        '''True if this operand is considered a destination'''
+        return self._is_dest or self.reg_type in ['csr', 'wsr']
 
 
 class ImmOperandType(OperandType):
@@ -134,6 +142,47 @@ class ImmOperandType(OperandType):
                 assert value < 0
 
         return str(value)
+
+    def get_range(self) -> Optional[Tuple[int, int]]:
+        '''Return the range of values representable by this operand
+
+        Returns None if the operand has no width. Subclasses might override
+        this.
+
+        '''
+        if self.width is None:
+            return None
+
+        if self.signed:
+            lo = -((1 << self.width) // 2)
+            hi = max(-(lo + 1), 0)
+        else:
+            lo = 0
+            hi = (1 << self.width) - 1
+
+        return (lo, hi)
+
+    def encode_val(self, value: int) -> int:
+        '''Encode this value as 2's complement if necessary.
+
+        The result is always non-negative. The value should be representable by
+        this operand (width and sign).
+
+        '''
+        assert self.width is not None
+
+        if self.signed:
+            rng = self.get_range()
+            assert rng is not None
+            lo, hi = rng
+            assert lo <= value <= hi
+            encoded = (1 << self.width) + value if value < 0 else value
+        else:
+            assert value >= 0
+            encoded = value
+
+        assert (encoded >> self.width) == 0
+        return encoded
 
 
 class EnumOperandType(ImmOperandType):
@@ -178,6 +227,9 @@ class EnumOperandType(ImmOperandType):
 
         return self.items[value]
 
+    def get_range(self) -> Optional[Tuple[int, int]]:
+        return (0, len(self.items) - 1)
+
 
 class OptionOperandType(ImmOperandType):
     '''A class representing an option operand type'''
@@ -204,6 +256,9 @@ class OptionOperandType(ImmOperandType):
         # Option types are always 1 bit wide, so the value should be 0 or 1.
         assert value in [0, 1]
         return self.option if value else ''
+
+    def get_range(self) -> Optional[Tuple[int, int]]:
+        return (0, 1)
 
 
 def parse_operand_type(fmt: str) -> OperandType:
