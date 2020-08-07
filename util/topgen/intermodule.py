@@ -136,8 +136,8 @@ def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
         if len(ips) == 0:
             # if not in module, memory, should be existed in top or ext field
             module_key = "{}.tl_{}".format(xbar["name"], port["name"])
-            if module_key not in topcfg["inter_module"]["top"] + topcfg[
-                    "inter_module"]["external"]:
+            if module_key not in topcfg["inter_module"]["top"] + list(
+                    topcfg["inter_module"]["external"].keys()):
                 log.error("Inter-module key {} cannot be found in module, "
                           "memory, top, or external lists.".format(module_key))
             continue
@@ -362,31 +362,35 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
 
-    if "external" not in topcfg["inter_module"]:
-        topcfg["inter_module"]["external"] = []
-        topcfg["inter_signal"]["external"] = []
+    topcfg["inter_module"].setdefault('external', [])
+    topcfg["inter_signal"].setdefault('external', [])
 
-    if "external" not in topcfg["inter_signal"]:
-        topcfg["inter_signal"]["external"] = []
-
-    for s in topcfg["inter_module"]["external"]:
+    for s, port in topcfg["inter_module"]["external"].items():
         sig_m, sig_s, sig_i = filter_index(s)
         assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
-        sig_name = intersignal_format(sig)
+
+        # To make netname `_o` or `_i`
+        sig['external'] = True
+
+        sig_name = port if port != "" else intersignal_format(sig)
         sig["top_signame"] = sig_name
+
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
-        # TODO: Handle the suffix `_i`, `_o` correctly.
-        # For now, external doesn't create _i, _o
         if sig["type"] == "req_rsp":
             req_suffix, rsp_suffix = get_suffixes(sig)
+            if sig["act"] == "req":
+                req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
+            else:
+                req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
+
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + req_suffix),
-                             ('signame', sig_name + "_req"),
+                             ('signame', sig_name + "_req" + req_sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
@@ -394,15 +398,20 @@ def elab_intermodule(topcfg: OrderedDict):
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + rsp_suffix),
-                             ('signame', sig_name + "_rsp"),
+                             ('signame', sig_name + "_rsp" + rsp_sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
                               'in' if sig['act'] == "req" else 'out')]))
         else:  # uni
+            if sig["act"] == "req":
+                sigsuffix = "_o"
+            else:
+                sigsuffix = "_i"
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"]), ('signame', sig_name),
+                             ('struct', sig["struct"]),
+                             ('signame', sig_name + sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
@@ -708,8 +717,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 .format(req_struct["width"], rsps_width))
             error += 1
 
-    for item in topcfg["inter_module"]["top"] + topcfg["inter_module"][
-            "external"]:
+    for item in topcfg["inter_module"]["top"] + list(
+            topcfg["inter_module"]["external"].keys()):
         sig_m, sig_s, sig_i = filter_index(item)
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))
@@ -737,6 +746,8 @@ def im_defname(obj: OrderedDict) -> str:
 
 def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     """return top signal name with index
+
+    It also adds suffix for external signal
     """
 
     # sanity check and add missing fields
@@ -785,6 +796,20 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     assert suffix in ["", "req", "rsp"]
 
     suffix_s = "_{suffix}".format(suffix=suffix) if suffix != "" else suffix
+
+    # External signal handling
+    if "external" in obj and obj["external"]:
+        pairs = {
+            # act , suffix: additional suffix
+            ("req", "req"): "_o",
+            ("req", "rsp"): "_i",
+            ("rsp", "req"): "_i",
+            ("rsp", "rsp"): "_o",
+            ("req", ""): "_o",
+            ("rcv", ""): "_i"
+        }
+        suffix_s += pairs[(obj['act'], suffix)]
+
     return "{top_signame}{suffix}{index}".format(
         top_signame=obj["top_signame"],
         suffix=suffix_s,

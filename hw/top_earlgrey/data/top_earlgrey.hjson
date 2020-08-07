@@ -372,7 +372,12 @@
     ],
 
     // ext is to create port in the top.
-    'external': ['clkmgr.clk_main', 'clkmgr.clk_io', 'clkmgr.clk_usb', 'clkmgr.clk_aon'],
+    'external': {
+        'clkmgr.clk_main': 'clk_main',
+        'clkmgr.clk_io': 'clk_io',
+        'clkmgr.clk_usb': 'clk_usb',
+        'clkmgr.clk_aon': 'clk_aon'
+    },
   },
 
   debug_mem_base_addr: "0x1A110000",
