@@ -2,6 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
   run_modes: [
     {
       name: csr_tests_mode
@@ -14,6 +20,7 @@
     {
       // this hjson should be imported by all IPs containing shadowed CSRs
       name: "{name}_shadow_reg_errors"
+      build_mode: "cover_reg_top"
       run_opts: ["+run_shadow_reg_errors"]
       en_run_modes: ["csr_tests_mode"]
     }
