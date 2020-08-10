@@ -425,9 +425,6 @@ class SimCfg(FlowCfg):
         test is added to the CompileSim item that it depends on (signifying
         that the test should be built once the build on which it depends is
         done).
-
-        cfg is a SimCfg object, passed to the RunTest constructor.
-
         '''
         tagged = []
         for test in self.run_list:
@@ -453,20 +450,38 @@ class SimCfg(FlowCfg):
         # Create the build and run list first
         self._create_build_and_run_list()
 
-        builds = []
+        self.builds = []
         build_map = {}
-        for build in self.build_list:
-            item = CompileSim(build, self)
-            builds.append(item)
-            build_map[build] = item
+        for build_mode_obj in self.build_list:
+            new_build = CompileSim(build_mode_obj, self)
 
-        self.builds = builds
+            # It is possible for tests to supply different build modes, but
+            # those builds may differ only under specific circumstances, such
+            # as coverage being enabled. If coverage is not enabled, then they
+            # may be completely identical. In that case, we can save compute
+            # resources by removing the extra duplicated builds. We discard the
+            # new_build if it is equivalent to an existing one.
+            is_unique = True
+            for build in self.builds:
+                if build.is_equivalent_job(new_build):
+                    new_build = build
+                    is_unique = False
+                    break
+
+            if is_unique:
+                self.builds.append(new_build)
+            build_map[build_mode_obj] = new_build
+
+        # Update all tests to use the updated (uniquified) build modes.
+        for test in self.run_list:
+            if test.build_mode.name != build_map[test.build_mode].name:
+                test.build_mode = Modes.find_mode(
+                    build_map[test.build_mode].name, self.build_modes)
+
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
-        if self.run_only is True:
-            self.deploy = self.runs
-        else:
-            self.deploy = builds
+
+        self.deploy = self.runs if self.run_only else self.builds
 
         # Create cov_merge and cov_report objects
         if self.cov:
