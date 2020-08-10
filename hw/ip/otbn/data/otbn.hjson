@@ -109,7 +109,8 @@
 
             Possible values:
 
-            - 0x0 (ErrCodeNoError): No error occurred.
+            - 0x0 (ErrCodeNoError):     No error occurred.
+            - 0x1 (ErrCodeBadDataAddr): Load or store to invalid address
           '''
         }
       ]

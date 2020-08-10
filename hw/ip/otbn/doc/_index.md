@@ -480,6 +480,9 @@ def StoreWlenWordToMemory(byteaddr: integer, storedata: Bits(WLEN)):
   To be filled in as we create the implementation.
 </div>
 
+By design, OTBN is a simple processor and has essentially no error handling support.
+When anything goes wrong (an out-of-bounds memory operation, an invalid instruction encoding, etc.), OTBN will stop fetching instructions, and set the `ERR_CODE` register and the `err` bit of the `INTR_STATE` register.
+
 # Programmers Guide
 
 <div class="bd-callout bd-callout-warning">

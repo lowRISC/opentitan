@@ -744,9 +744,10 @@ insns:
         funct3: b010
         rd: grd
         opcode: b00000
-    trailing-doc: |
-      Unaligned accesses are not supported.
-      Any unaligned access will result in an error.
+    doc: |
+      Load a 32b word from address `<offset> + <grs1>` in data memory, writing the result to `<grd>`.
+      Unaligned loads are not supported.
+      Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
 
   - mnemonic: sw
     rv32i: true
@@ -761,9 +762,10 @@ insns:
         rs1: grs1
         funct3: b010
         opcode: b01000
-    trailing-doc: |
-      Unaligned accesses are not supported.
-      Any unaligned access will result in an error.
+    doc: |
+      Store a 32b word in `<grs2>` to address `<offset> + <grs1>` in data memory.
+      Unaligned stores are not supported.
+      Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
 
   - mnemonic: beq
     rv32i: true
@@ -1720,10 +1722,8 @@ insns:
       - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
       - If `grd_inc` is set, the value in `grd` is incremented by the value 1.
 
-      Only aligned (to WLEN sized regions) accesses are supported.
-      Any unaligned access will result in an error.
-
-      TODO: how to handle overflows?
+      The memory address must be aligned to WLEN bytes.
+      Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
     decode: |
       rd = UInt(grd)
       rs1 = UInt(grs1)
@@ -1732,10 +1732,9 @@ insns:
       mem_addr = GPR[rs1] + offset
       wdr_dest = GPR[rd]
 
-      if grs1_inc and grd_inc:
-          raise Unsupported() # prevented in encoding
-      if mem_addr % (WLEN / 8):
-          raise Unaligned()
+      assert not (grs1_inc and grd_inc)  # prevented in encoding
+      if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
+          raise BadDataAddr()
 
       mem_index = mem_addr // (WLEN / 8)
 
@@ -1790,8 +1789,8 @@ insns:
       - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
       - If `grs2_inc` is set, the value in `grs2` is incremented by the value 1.
 
-      Only aligned (to WLEN sized regions) accesses are supported.
-      Any unaligned access will result in an error.
+      The memory address must be aligned to WLEN bytes.
+      Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
     decode: |
       rs1 = UInt(grs1)
       rs2 = UInt(grs2)
@@ -1800,10 +1799,9 @@ insns:
       mem_addr = GPR[rs1] + offset
       wdr_src = GPR[rs2]
 
-      if grs1_inc and grs2_inc:
-          raise Unsupported() # prevented in encoding
-      if mem_addr % (WLEN / 8):
-          raise Unaligned()
+      assert not (grs1_inc and grd_inc)  # prevented in encoding
+      if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
+          raise BadDataAddr()
 
       mem_index = mem_addr // (WLEN / 8)
 

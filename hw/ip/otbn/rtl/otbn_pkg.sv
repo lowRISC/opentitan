@@ -39,7 +39,8 @@ package otbn_pkg;
 
   // Error codes
   typedef enum logic [31:0] {
-    ErrCodeNoError = 32'h 0000_0000
+    ErrCodeNoError     = 32'h 0000_0000,
+    ErrCodeBadDataAddr = 32'h 0000_0001
   } err_code_e;
 
   // Constants =====================================================================================
