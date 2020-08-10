@@ -19,6 +19,8 @@ class alert_sender_driver extends alert_esc_base_driver;
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
+      void'(alert_atomic.try_get(1));
+      alert_atomic.put(1);
       reset_alert();
       @(posedge cfg.vif.rst_n);
       under_reset = 0;
@@ -59,8 +61,6 @@ class alert_sender_driver extends alert_esc_base_driver;
             end
           join_any
           disable fork;
-          void'(alert_atomic.try_get(1));
-          alert_atomic.put(1);
         end
       join
 
@@ -87,20 +87,19 @@ class alert_sender_driver extends alert_esc_base_driver;
           fork
             begin
               wait_ping();
+              alert_atomic.get(1);
               if (!req.timeout) begin
-                alert_atomic.get(1);
                 drive_alert_pins(req);
-                alert_atomic.put(1);
+              end else begin
+                repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
               end
-              else repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+              alert_atomic.put(1);
             end
             begin
               wait(under_reset);
             end
           join_any
           disable fork;
-          void'(alert_atomic.try_get(1));
-          alert_atomic.put(1);
         end
       join
 
