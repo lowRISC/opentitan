@@ -3,16 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+import re
+import sys
+from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from collections import OrderedDict
-import hjson
-import sys
 
-import re
+import hjson
 
 # Ignore flake8 warning as the function is used in the template
-from .intermodule import im_defname, im_netname, im_portname  # noqa : F401
+# disable isort formating, as conflicting with flake8
+from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
+from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
 
 
 def is_ipcfg(ip: Path) -> bool:  # return bool
