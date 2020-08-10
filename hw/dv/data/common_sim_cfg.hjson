@@ -100,6 +100,9 @@
                  "+rbar2u=2",
                  "+rbar3u=3"]
     }
+    {
+      name: cover_reg_top
+    }
   ]
 
   // Regressions are tests that can be grouped together and run in one shot
@@ -137,10 +140,18 @@
   tool_srcs:  ["{dv_root}/tools/waves.tcl"],
 
   // Project defaults for VCS
-  vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"
+  vcs_cov_hier: "{{build_mode}_vcs_cov_hier}"
   vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
 
+  // Build-specific coverage cfg files for VCS.
+  default_vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover.cfg"
+  cover_reg_top_vcs_cov_hier: "-cm_hier {tool_srcs_dir}/cover_reg_top.cfg"
+
   // Project defaults for Xcelium
-  // xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover.ccf"
-  // xcelium_cov_refine_file: ["{tool_srcs_dir}/common_cov.vRefine"]
+  // xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
+  // xcelium_cov_refine_files: ["{tool_srcs_dir}/common_cov.vRefine"]
+
+  // Build-specific coverage cfg files for Xcelium.
+  // default_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover.ccf"
+  // default_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover_reg_top.ccf"
 }

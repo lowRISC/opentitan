@@ -37,6 +37,11 @@
     }
   ]
 
+  // TODO: each build_mode needs to supply {build_mode}_vcs_cov_hier, else the
+  // build breaks.
+  prim_lfsr_dw_8_vcs_cov_hier: ""
+  prim_lfsr_dw_24_vcs_cov_hier: ""
+
   // List of test specifications.
   tests: [
     {
