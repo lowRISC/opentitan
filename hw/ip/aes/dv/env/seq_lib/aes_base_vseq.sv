@@ -80,15 +80,25 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  virtual task write_key(bit  [7:0][31:0] key);
-    csr_wr(.csr(ral.key_0), .value(key[0]));
-    csr_wr(.csr(ral.key_1), .value(key[1]));
-    csr_wr(.csr(ral.key_2), .value(key[2]));
-    csr_wr(.csr(ral.key_3), .value(key[3]));
-    csr_wr(.csr(ral.key_4), .value(key[4]));
-    csr_wr(.csr(ral.key_5), .value(key[5]));
-    csr_wr(.csr(ral.key_6), .value(key[6]));
-    csr_wr(.csr(ral.key_7), .value(key[7]));
+  virtual task write_key(bit [7:0][31:0] key [2]);
+    // Share 0 (the masked key share = key ^ mask)
+    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]));
+    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]));
+    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]));
+    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]));
+    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]));
+    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]));
+    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]));
+    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]));
+    // Share 1 (the mask share)
+    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]));
+    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]));
+    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]));
+    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]));
+    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]));
+    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]));
+    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]));
+    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]));
   endtask // write_key
 
 
@@ -199,9 +209,12 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // generate_data_stream
 
 
-  virtual task write_interleaved_data_key_iv( bit [7:0] [31:0] key, [3:0] [31:0] iv, [3:0] [31:0] data );
+  virtual task write_interleaved_data_key_iv( bit [7:0] [31:0] key [2], [3:0] [31:0] iv, [3:0] [31:0] data );
     string txt="";
-    string interleave_queue[] = '{ "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7",
+    string interleave_queue[] = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
+                                   "key_share0_4", "key_share0_5", "key_share0_6", "key_share0_7",
+                                   "key_share1_0", "key_share1_1", "key_share1_2", "key_share1_3",
+                                   "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
                                    "data_in_0", "data_in_1", "data_in_2", "data_in_3",
                                    "iv_0", "iv_1", "iv_2", "iv_3" };
 
@@ -211,14 +224,23 @@ class aes_base_vseq extends cip_base_vseq #(
      txt = {txt, $sformatf("----|\n \t %s", interleave_queue[i]) };
 
      case (interleave_queue[i])
-       "key_0": csr_wr(.csr(ral.key_0), .value(key[0]));
-       "key_1": csr_wr(.csr(ral.key_1), .value(key[1]));
-       "key_2": csr_wr(.csr(ral.key_2), .value(key[2]));
-       "key_3": csr_wr(.csr(ral.key_3), .value(key[3]));
-       "key_4": csr_wr(.csr(ral.key_4), .value(key[4]));
-       "key_5": csr_wr(.csr(ral.key_5), .value(key[5]));
-       "key_6": csr_wr(.csr(ral.key_6), .value(key[6]));
-       "key_7": csr_wr(.csr(ral.key_7), .value(key[7]));
+       "key_share0_0": csr_wr(.csr(ral.key_share0_0), .value(key[0][0]));
+       "key_share0_1": csr_wr(.csr(ral.key_share0_1), .value(key[0][1]));
+       "key_share0_2": csr_wr(.csr(ral.key_share0_2), .value(key[0][2]));
+       "key_share0_3": csr_wr(.csr(ral.key_share0_3), .value(key[0][3]));
+       "key_share0_4": csr_wr(.csr(ral.key_share0_4), .value(key[0][4]));
+       "key_share0_5": csr_wr(.csr(ral.key_share0_5), .value(key[0][5]));
+       "key_share0_6": csr_wr(.csr(ral.key_share0_6), .value(key[0][6]));
+       "key_share0_7": csr_wr(.csr(ral.key_share0_7), .value(key[0][7]));
+
+       "key_share1_0": csr_wr(.csr(ral.key_share1_0), .value(key[1][0]));
+       "key_share1_1": csr_wr(.csr(ral.key_share1_1), .value(key[1][1]));
+       "key_share1_2": csr_wr(.csr(ral.key_share1_2), .value(key[1][2]));
+       "key_share1_3": csr_wr(.csr(ral.key_share1_3), .value(key[1][3]));
+       "key_share1_4": csr_wr(.csr(ral.key_share1_4), .value(key[1][4]));
+       "key_share1_5": csr_wr(.csr(ral.key_share1_5), .value(key[1][5]));
+       "key_share1_6": csr_wr(.csr(ral.key_share1_6), .value(key[1][6]));
+       "key_share1_7": csr_wr(.csr(ral.key_share1_7), .value(key[1][7]));
 
        "iv_0": csr_wr(.csr(ral.iv_0), .value(iv[0]));
        "iv_1": csr_wr(.csr(ral.iv_1), .value(iv[1]));

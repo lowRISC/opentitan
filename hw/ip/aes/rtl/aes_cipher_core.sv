@@ -13,7 +13,7 @@
 //
 // If the parameter "Masking" is set to one, first-order masking is applied to the entire
 // cipher core including key expand module. For details, see Rivain et al., "Provably secure
-// higher-order masking of AES" available at https://eprint.iacr.org/2010/441.pdf
+// higher-order masking of AES" available at https://eprint.iacr.org/2010/441.pdf .
 //
 //
 // Details on the data formats
@@ -45,22 +45,22 @@
 //   - A 32-bit packed SystemVerilog array 32h'{ b12, b8, b4, b0  }.
 //
 // - The second dimension corresponds to the columns. To access complete columns, the state matrix
-//   must first be transposed first. Thus state_transposed = aes_pkg::aes_transpose(state_q)
-//   and then state_transposed[1] gives
+//   must be transposed first. Thus state_transposed = aes_pkg::aes_transpose(state_q) and then
+//   state_transposed[1] gives
 //   - The second column of the state matrix   [ b4  b5  b6  b7 ], or
 //   - A 32-bit packed SystemVerilog array 32h'{ b7, b6, b5, b4 }.
 //
 // - The third dimension corresponds to the bytes.
 //
-// Note that the CSRs are little-endian. The input sequence above is provided to 32-bit DATA_IN0 -
-// DATA_IN3 registers as
-//                  MSB            LSB
-// - DATA_IN0 32h'{ b3 , b2 , b1 , b0  }
-// - DATA_IN1 32h'{ b7 , b6 , b4 , b4  }
-// - DATA_IN2 32h'{ b11, b10, b9 , b8  }
-// - DATA_IN3 32h'{ b15, b14, b13, b12 } .
+// Note that the CSRs are little-endian. The input sequence above is provided to 32-bit DATA_IN_0 -
+// DATA_IN_3 registers as
+//                   MSB            LSB
+// - DATA_IN_0 32h'{ b3 , b2 , b1 , b0  }
+// - DATA_IN_1 32h'{ b7 , b6 , b4 , b4  }
+// - DATA_IN_2 32h'{ b11, b10, b9 , b8  }
+// - DATA_IN_3 32h'{ b15, b14, b13, b12 } .
 //
-// The input state can thus be obtained by transposing the content of the DATA_IN0 - DATA_IN3
+// The input state can thus be obtained by transposing the content of the DATA_IN_0 - DATA_IN_3
 // registers.
 //
 // Similarly, the implementation uses a 3-dimensional array to represent the AES keys:
@@ -80,15 +80,15 @@
 //   b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 b10 b11 b12 b13 b14 b15 ... ... b28 b29 b30 b31
 //
 // is mapped to the key words and registers (little-endian) as
-//             MSB             LSB
-// - KEY0 32h'{ b3 , b2 , b1 , b0  }
-// - KEY1 32h'{ b7 , b6 , b4 , b4  }
-// - KEY2 32h'{ b11, b10, b9 , b8  }
-// - KEY3 32h'{ b15, b14, b13, b12 }
-// - KEY4 32h'{  .    .    .    .  }
-// - KEY5 32h'{  .    .    .    .  }
-// - KEY6 32h'{  .    .    .    .  }
-// - KEY7 32h'{ b31, b30, b29, b28 } .
+//                      MSB            LSB
+// - KEY_SHARE0_0 32h'{ b3 , b2 , b1 , b0  }
+// - KEY_SHARE0_1 32h'{ b7 , b6 , b4 , b4  }
+// - KEY_SHARE0_2 32h'{ b11, b10, b9 , b8  }
+// - KEY_SHARE0_3 32h'{ b15, b14, b13, b12 }
+// - KEY_SHARE0_4 32h'{  .    .    .    .  }
+// - KEY_SHARE0_5 32h'{  .    .    .    .  }
+// - KEY_SHARE0_6 32h'{  .    .    .    .  }
+// - KEY_SHARE0_7 32h'{ b31, b30, b29, b28 } .
 
 `include "prim_assert.sv"
 

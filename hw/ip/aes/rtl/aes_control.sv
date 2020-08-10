@@ -31,7 +31,7 @@ module aes_control
   input  logic                    prng_reseed_i,
 
   // I/O register read/write enables
-  input  logic [7:0]              key_init_qe_i,
+  input  logic [7:0]              key_init_qe_i [2],
   input  logic [3:0]              iv_qe_i,
   input  logic [3:0]              data_in_qe_i,
   input  logic [3:0]              data_out_re_i,
@@ -68,7 +68,7 @@ module aes_control
 
   // Initial key registers
   output aes_pkg::key_init_sel_e  key_init_sel_o,
-  output logic [7:0]              key_init_we_o,
+  output logic [7:0]              key_init_we_o [2],
 
   // IV registers
   output aes_pkg::iv_sel_e        iv_sel_o,
@@ -229,7 +229,7 @@ module aes_control
 
     // Initial key registers
     key_init_sel_o = KEY_INIT_INPUT;
-    key_init_we_o  = 8'h00;
+    key_init_we_o  = '{8'h00, 8'h00};
 
     // IV registers
     iv_sel_o = IV_INPUT;
@@ -486,7 +486,7 @@ module aes_control
 
             if (cipher_key_clear_i) begin
               key_init_sel_o      = KEY_INIT_CLEAR;
-              key_init_we_o       = 8'hFF;
+              key_init_we_o       = '{8'hFF, 8'hFF};
               key_clear_we_o      = 1'b1;
               key_init_clear      = 1'b1;
             end
@@ -521,14 +521,14 @@ module aes_control
   aes_reg_status #(
     .Width ( $bits(key_init_we_o) )
   ) u_reg_status_key_init (
-    .clk_i   ( clk_i          ),
-    .rst_ni  ( rst_ni         ),
-    .we_i    ( key_init_we_o  ),
-    .use_i   ( key_init_load  ),
-    .clear_i ( key_init_clear ),
-    .arm_i   ( key_init_arm   ),
-    .new_o   ( key_init_new   ),
-    .clean_o ( key_init_ready )
+    .clk_i   ( clk_i                                ),
+    .rst_ni  ( rst_ni                               ),
+    .we_i    ( {key_init_we_o[1], key_init_we_o[0]} ),
+    .use_i   ( key_init_load                        ),
+    .clear_i ( key_init_clear                       ),
+    .arm_i   ( key_init_arm                         ),
+    .new_o   ( key_init_new                         ),
+    .clean_o ( key_init_ready                       )
   );
 
   // We only use clean and unused IVs. Either software/counter has updated
