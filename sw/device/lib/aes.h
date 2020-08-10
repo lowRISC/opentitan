@@ -61,10 +61,12 @@ void aes_init(aes_cfg_t aes_cfg);
 /**
  * Pass initial encryption key to AES unit.
  *
- * @param key     pointer to key.
- * @param key_len key length, given as a enum value.
+ * @param key_share0 pointer to key share 0.
+ * @param key_share1 pointer to key share 1.
+ * @param key_len    key length, given as a enum value.
  */
-void aes_key_put(const void *key, aes_key_len_t key_len);
+void aes_key_put(const void *key_share0, const void *key_share1,
+                 aes_key_len_t key_len);
 
 /**
  * Wait for AES unit to be ready for new input data and then

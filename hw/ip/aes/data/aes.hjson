@@ -48,23 +48,46 @@
 ##############################################################################
 # initial key registers
     { multireg: {
-      name: "KEY",
+      name: "KEY_SHARE0",
       desc: '''
-        Initial Key Registers.
+        Initial Key Registers Share 0.
+        The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
         Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
-        All key registers must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+        All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
         The order in which the registers are updated does not matter.
         Can only be updated when the AES unit is idle.
         If the AES unit is non-idle, writes to these registers are ignored.
       '''
       count: "NumRegsKey",
-      cname: "KEY",
+      cname: "KEY_SHARE0",
       swaccess: "wo",
       hwaccess: "hrw",
       hwext:    "true",
       hwqe:     "true",
       fields: [
-        { bits: "31:0", name: "key", desc: "Initial Key" }
+        { bits: "31:0", name: "key_share0", desc: "Initial Key Share 0" }
+      ],
+      }
+    },
+    { multireg: {
+      name: "KEY_SHARE1",
+      desc: '''
+        Initial Key Registers Share 1.
+        The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+        Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+        All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+        The order in which the registers are updated does not matter.
+        Can only be updated when the AES unit is idle.
+        If the AES unit is non-idle, writes to these registers are ignored.
+      '''
+      count: "NumRegsKey",
+      cname: "KEY_SHARE1",
+      swaccess: "wo",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0", name: "key_share1", desc: "Initial Key Share 1" }
       ],
       }
     },

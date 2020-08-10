@@ -320,17 +320,21 @@ This section discusses how software can interface with the AES unit.
 ## Initialization
 
 Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
-If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY_0" >}} - {{< regref "KEY_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
+If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
-Then software must write the initial key to the Initial Key registers {{< regref "KEY_0" >}} - {{< regref "KEY_7" >}}.
+Then software must write the initial key to the Initial Key registers {< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
+The key is provided in two shares:
+The first share is written to {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_7" >}} and the second share is written to {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
+The actual initial key used for encryption corresponds to the value obtained by XORing {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_7" >}} with {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
 Note that all registers are little-endian.
 The key length is configured using the KEY_LEN field of {{< regref "CTRL_SHADOWED" >}}.
-Independent of the selected key length, software must always write all 8 32-bit registers.
+Independent of the selected key length, software must always write all 8 32-bit registers of both shares.
 Each register must be written at least once.
 The order in which the key registers are written does not matter.
-Anything can be written to the unused key registers, however, random data is preferred.
-For AES-128 and AES-192, the actual initial key used for encryption is formed by using the {{< regref "KEY_0" >}} - {{< regref "KEY_3" >}} and {{< regref "KEY_0" >}} - {{< regref "KEY_5" >}}, respectively.
+Anything can be written to the unused key registers of both shares, however, random data is preferred.
+For AES-128 ,the actual initial key used for encryption is formed by XORing {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_3" >}} with {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_3" >}}.
+For AES-192, the actual initial key used for encryption is formed by XORing {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_5" >}} with {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_5" >}}.
 
 If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}}.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
@@ -384,7 +388,8 @@ The code snippet below shows how to perform block operation.
 
   // Write key - Note: All registers are little-endian.
   for (int j = 0; j < 8; j++) {
-    REG32(AES_KEY_0(0) + j * 4) = key[j];
+    REG32(AES_KEY_SHARE0_0(0) + j * 4) = key_share0[j];
+    REG32(AES_KEY_SHARE1_0(0) + j * 4) = key_share1[j];
   }
 
   // Write IV.

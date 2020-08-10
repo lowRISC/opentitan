@@ -104,12 +104,22 @@ class aes_scoreboard extends cip_base_scoreboard #(
           endcase // case item.a_data[4:1]
         end
 
-        (!uvm_re_match("key_*", csr_name)): begin
+        (!uvm_re_match("key_share0*", csr_name)): begin
           for (int i = 0; i < 8; i++) begin
-            string keyname = $sformatf("key_%0d", i);
+            string keyname = $sformatf("key_share0_%0d", i);
             if (keyname == csr_name) begin
-               input_item.key[i]      = item.a_data;
-               input_item.key_vld[i]  = 1'b1;
+               input_item.key[0][i]     = item.a_data;
+               input_item.key_vld[0][i] = 1'b1;
+            end
+          end
+        end
+
+        (!uvm_re_match("key_share1*", csr_name)): begin
+          for (int i = 0; i < 8; i++) begin
+            string keyname = $sformatf("key_share1_%0d", i);
+            if (keyname == csr_name) begin
+               input_item.key[1][i]     = item.a_data;
+               input_item.key_vld[1][i] = 1'b1;
             end
           end
         end
@@ -143,9 +153,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
         // clear key
         if (item.a_data[1]) begin
           if(cfg.clear_reg_w_rand) begin
-            input_item.key = {8{$urandom()}};
+            input_item.key = '{default: {8{$urandom()}}};
           end else begin
-            input_item.key = '0;
+            input_item.key = '{default: '0};
           end
         end
         // clear IV
@@ -431,14 +441,16 @@ class aes_scoreboard extends cip_base_scoreboard #(
       aes_message_item msg;
 
       msg_fifo.get(msg);
-      `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key %h ",
-                                cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, msg.aes_keylen, msg.aes_key)
+      `uvm_info(`gfn, $sformatf("model %b, operation: %b, mode %06b, IV %h, key_len %03b, key share0 %h, key share1 %h ",
+                                cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv, msg.aes_keylen,
+                                msg.aes_key[0], msg.aes_key[1])
                 , UVM_MEDIUM)
 
       msg.alloc_predicted_msg();
       //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
       c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
-                            msg.aes_keylen, msg.aes_key, msg.input_msg, msg.predicted_msg);
+                              msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
+                              msg.input_msg, msg.predicted_msg);
 
       `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string() )
                 , UVM_MEDIUM)

@@ -41,7 +41,7 @@ class aes_message_item extends uvm_sequence_item;
 
   // predefined values for fixed mode
   bit [3:0] [31:0]    fixed_data       = 128'hDEADBEEFEEDDBBAABAADBEEFDEAFBEAD;
-  bit [7:0] [31:0]    fixed_key        = 256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF;
+  bit [7:0] [31:0]    fixed_key [2]    = '{256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF, 256'h0};
   bit [2:0]           fixed_keylen     = 3'b001;
   bit                 fixed_operation  = 1'b0;
   bit [3:0] [31:0]    fixed_iv         = 128'h00000000000000000000000000000000;
@@ -73,7 +73,7 @@ class aes_message_item extends uvm_sequence_item;
   // aes key length                                            //
   rand bit [2:0]       aes_keylen;
   // 256 bit key (8x32 bit)                                    //
-  rand bit [7:0][31:0] aes_key;
+  rand bit [7:0][31:0] aes_key [2];
   // 256 bit initialization vector (8x32 bit)                  //
   rand bit [3:0][31:0] aes_iv;
   // configuration error                                       //
@@ -116,7 +116,8 @@ class aes_message_item extends uvm_sequence_item;
 
   constraint c_key {
     if (fixed_key_en) {
-      aes_key == fixed_key
+      aes_key[0] == fixed_key[0],
+      aes_key[1] == fixed_key[1]
     };
   }
 
@@ -200,9 +201,13 @@ class aes_message_item extends uvm_sequence_item;
 
     str = {str,  $sformatf("\n\t ----| Key Length:   \t \t %03b                             |----\t ",
                            aes_keylen) };
-    str = {str,  $sformatf("\n\t ----| Key:        \t \t ") };
+    str = {str,  $sformatf("\n\t ----| Key Share 0: \t \t ") };
     for(int i=0; i <8; i++) begin
-      str = {str, $sformatf("%h ",aes_key[i])};
+      str = {str, $sformatf("%h ",aes_key[0][i])};
+    end
+    str = {str,  $sformatf("\n\t ----| Key Share 1: \t \t ") };
+    for(int i=0; i <8; i++) begin
+      str = {str, $sformatf("%h ",aes_key[1][i])};
     end
     str = {str,  $sformatf("\n\t ----| Key Mask:  \t  \t %0b                               |----\t ",
                            keymask) };

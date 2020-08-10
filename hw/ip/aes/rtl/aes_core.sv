@@ -59,12 +59,12 @@ module aes_core import aes_pkg::*;
   logic [3:0][3:0][7:0] state_done [NumShares];
   logic [3:0][3:0][7:0] state_out;
 
-  logic     [7:0][31:0] key_init;
-  logic     [7:0]       key_init_qe;
-  logic     [7:0][31:0] key_init_d;
-  logic     [7:0][31:0] key_init_q;
+  logic     [7:0][31:0] key_init [2];
+  logic     [7:0]       key_init_qe [2];
+  logic     [7:0][31:0] key_init_d [2];
+  logic     [7:0][31:0] key_init_q [2];
   logic     [7:0][31:0] key_init_cipher [NumShares];
-  logic     [7:0]       key_init_we;
+  logic     [7:0]       key_init_we [2];
   key_init_sel_e        key_init_sel;
 
   logic     [3:0][31:0] iv;
@@ -109,6 +109,8 @@ module aes_core import aes_pkg::*;
   logic                 cipher_data_out_clear;
   logic                 cipher_data_out_clear_busy;
 
+  logic         [255:0] prng_data_256;
+
   // Unused signals
   logic     [3:0][31:0] unused_data_out_q;
 
@@ -118,8 +120,10 @@ module aes_core import aes_pkg::*;
 
   always_comb begin : key_init_get
     for (int i=0; i<8; i++) begin
-      key_init[i]    = reg2hw.key[i].q;
-      key_init_qe[i] = reg2hw.key[i].qe;
+      key_init[0][i]    = reg2hw.key_share0[i].q;
+      key_init_qe[0][i] = reg2hw.key_share0[i].qe;
+      key_init[1][i]    = reg2hw.key_share1[i].q;
+      key_init_qe[1][i] = reg2hw.key_share1[i].qe;
     end
   end
 
@@ -148,20 +152,23 @@ module aes_core import aes_pkg::*;
   //////////////////////
   // Key, IV and Data //
   //////////////////////
+  assign prng_data_256 = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
 
   // Initial Key registers
   always_comb begin : key_init_mux
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
-      KEY_INIT_CLEAR: key_init_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
-      default:        key_init_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
+      KEY_INIT_CLEAR: key_init_d = '{default: prng_data_256};
+      default:        key_init_d = '{default: prng_data_256};
     endcase
   end
 
   always_ff @(posedge clk_i) begin : key_init_reg
-    for (int i=0; i<8; i++) begin
-      if (key_init_we[i]) begin
-        key_init_q[i] <= key_init_d[i];
+    for (int s=0; s<2; s++) begin
+      for (int i=0; i<8; i++) begin
+        if (key_init_we[s][i]) begin
+          key_init_q[s][i] <= key_init_d[s][i];
+        end
       end
     end
   end
@@ -265,17 +272,13 @@ module aes_core import aes_pkg::*;
   end
 
   if (!Masking) begin : gen_key_init_unmasked
-    assign key_init_cipher[0] = key_init_q;
+    // Combine the two key shares for the unmasked cipher core. This causes SCA leakage of the key
+    // and thus should be avoided.
+    assign key_init_cipher[0] = key_init_q[0] ^ key_init_q[1];
 
   end else begin : gen_key_init_masked
-    // TODO: Use non-constant input masks + remove corresponding comment in aes.sv.
-    // See https://github.com/lowRISC/opentitan/issues/1005
-    logic [7:0][31:0] key_mask;
-    assign key_mask = {32'h0000_1111, 32'h2222_3333, 32'h4444_5555, 32'h6666_7777,
-                       32'h8888_9999, 32'hAAAA_BBBB, 32'hCCCC_DDDD, 32'hEEEE_FFFF};
-
-    assign key_init_cipher[0] = key_init_q ^ key_mask; // Masked key share
-    assign key_init_cipher[1] = key_mask;              // Mask share
+    // Forward the masked key share and the mask share to the masked cipher core.
+    assign key_init_cipher    = key_init_q;
   end
 
   // Cipher core
@@ -504,7 +507,8 @@ module aes_core import aes_pkg::*;
 
   always_comb begin : key_reg_put
     for (int i=0; i<8; i++) begin
-      hw2reg.key[i].d  = key_init_q[i];
+      hw2reg.key_share0[i].d = key_init_q[0][i];
+      hw2reg.key_share1[i].d = key_init_q[1][i];
     end
   end
 
