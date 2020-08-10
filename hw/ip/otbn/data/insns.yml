@@ -877,17 +877,9 @@ insns:
       https://github.com/lowRISC/opentitan/issues/2496 for up-to-date
       information.
     doc: |
-      Repeat a sequence of code multiple times. The number of iterations is a
-      GPR value. The length of the loop is given as immediate.
-    trailing-doc: |
-      Alternative assembly notation: The size of the loop body is given by the
-      number of instructions in the parentheses.
-
-      ```
-      LOOP <grs> (
-        # loop body
-      )
-      ```
+      Repeat a sequence of code multiple times. The number of iterations is
+      read from `<grs>`, treated as an unsigned value. The number of
+      instructions in the loop is given in the `<bodysize>` immediate.
     encoding:
       scheme: loop
       mapping:
@@ -903,18 +895,9 @@ insns:
       - *bodysize-operand
     note: *loop-note
     doc: |
-      Repeat a sequence of code multiple times. The number of iterations is
-      given as an immediate, as is the length of the loop. The number of
-      iterations must be larger than zero.
-    trailing-doc: |
-      Alternative assembly notation. The size of the loop body is given by the
-      number of instructions in the parentheses.
-
-      ```
-      LOOPI <iterations> (
-        # loop body
-      )
-      ```
+      Repeat a sequence of code multiple times. The `<iterations>` immediate
+      operand gives the number of iterations and the `<bodysize>` immediate
+      operand gives the number of instructions in the body.
     encoding:
       scheme: loopi
       mapping:
