@@ -473,8 +473,11 @@ encoding-schemes:
 #
 #  wsr:       The name of a WSR. Syntax "wsr" (always considered a destination)
 #
-#  immediate: An immediate operand. Syntax "imm<n>" where n is the number of
-#             bits or just imm for an unspecified width.
+#  simm:      A signed immediate operand. Syntax "simm<n>" where n is the
+#             number of bits or just simm for an unspecified width.
+#
+#  uimm:      An unsigned immediate operand. Syntax "uimm<n>" where n is the
+#             number of bits or just uimm for an unspecified width.
 #
 #  enum:      An immediate with weird syntax. The syntax is "enum(a,b,c,d)"
 #             where a..d are the different possible syntaxes that can be used.
@@ -493,8 +496,8 @@ encoding-schemes:
 #  wrs, wrs<n> WDR source
 #  csr         CSR name
 #  wsr         WSR name
-#  imm, imm<n> Immediate
-#  offset      Immediate (unspecified width)
+#  imm, imm<n> Signed immediate (width <n> if specified)
+#  offset      Signed immediate (unspecified width)
 
 insns:
   - mnemonic: add
@@ -527,7 +530,10 @@ insns:
   - mnemonic: lui
     rv32i: true
     synopsis: Load Upper Immediate
-    operands: [grd, imm]
+    operands:
+      - grd
+      - name: imm
+        type: uimm
     encoding:
       scheme: U
       mapping:
@@ -571,7 +577,7 @@ insns:
       - grs1
       - &shamt-operand
         name: shamt
-        type: imm
+        type: uimm
     encoding:
       scheme: Is
       mapping:
@@ -869,7 +875,7 @@ insns:
         doc: Name of the GPR containing the number of iterations
       - &bodysize-operand
         name: bodysize
-        type: imm
+        type: uimm
         doc: Number of instructions in the loop body
     note: &loop-note |
       The LOOP and LOOPI instructions are under-specified, and improvements
@@ -890,14 +896,15 @@ insns:
     synopsis: Loop Immediate
     operands:
       - name: iterations
-        type: imm
+        type: uimm
         doc: Number of iterations
       - *bodysize-operand
     note: *loop-note
     doc: |
-      Repeat a sequence of code multiple times. The `<iterations>` immediate
-      operand gives the number of iterations and the `<bodysize>` immediate
-      operand gives the number of instructions in the body.
+      Repeat a sequence of code multiple times. The `<iterations>`
+      unsigned immediate operand gives the number of iterations and
+      the `<bodysize>` unsigned immediate operand gives the number of
+      instructions in the body.
     encoding:
       scheme: loopi
       mapping:
@@ -917,10 +924,11 @@ insns:
     rv32i: true
     operands: [grd, imm]
     doc: |
-      Load a 32b immediate value into a GPR. This uses ADDI and LUI, expanding
-      to one or two instructions, depending on the immediate (small immediates
-      or immediates with all lower bits zero can be loaded with just ADDI or
-      LUI, respectively; general immediates need a LUI followed by an ADDI).
+      Load a 32b signed immediate value into a GPR. This uses ADDI and LUI,
+      expanding to one or two instructions, depending on the immediate (small
+      non-negative immediates or immediates with all lower bits zero can be
+      loaded with just ADDI or LUI, respectively; general immediates need a LUI
+      followed by an ADDI).
     python-pseudo-op: true
 
   - mnemonic: ret
@@ -947,18 +955,18 @@ insns:
           The direction of an optional shift applied to `<wrs2>`.
       - &bn-shift-bytes-operand
         name: shift_bytes
-        type: imm5
+        type: uimm5
         doc: |
           Number of bytes by which to shift `<wrs2>`. Defaults to 0.
       - &bn-flag-group-operand
         name: flag_group
-        type: imm1
+        type: uimm1
         doc: Flag group to use. Defaults to 0.
     syntax: &bn-add-syntax |
       <wrd>, <wrs1>, <wrs2>[<shift_type> <shift_bytes>B][, FG<flag_group>]
     doc: |
       Adds two WDR values, writes the result to the destination WDR and updates
-      flags. The content of the second source WDR can be shifted by an
+      flags. The content of the second source WDR can be shifted by an unsigned
       immediate before it is consumed by the operation.
     decode: |
       d = UInt(wrd)
@@ -993,7 +1001,7 @@ insns:
     doc: |
       Adds two WDR values and the Carry flag value, writes the result to the
       destination WDR, and updates the flags. The content of the second source
-      WDR can be shifted by an immediate before it is consumed by the
+      WDR can be shifted by an unsigned immediate before it is consumed by the
       operation.
     decode: |
       d = UInt(wrd)
@@ -1029,13 +1037,14 @@ insns:
       - name: wrs
         doc: Name of the source WDR
       - name: imm
+        type: uimm
         doc: Immediate value
       - *bn-flag-group-operand
     syntax: |
       <wrd>, <wrs>, <imm> [, FG<flag_group>]
     doc: |
-      Adds a zero-extended immediate to the value of a WDR, writes the result
-      to the destination WDR, and updates the flags.
+      Adds a zero-extended unsigned immediate to the value of a WDR, writes the
+      result to the destination WDR, and updates the flags.
     decode: |
       d = UInt(wrd)
       a = UInt(wrs1)
@@ -1100,7 +1109,7 @@ insns:
         doc: First source WDR
       - &mulqacc-wrs1-qwsel
         name: wrs1_qwsel
-        type: imm2
+        type: uimm2
         doc: |
           Quarter-word select for `<wrs1>`.
 
@@ -1114,7 +1123,7 @@ insns:
         doc: Second source WDR
       - &mulqacc-wrs2-qwsel
         name: wrs2_qwsel
-        type: imm2
+        type: uimm2
         doc: |
           Quarter-word select for `<wrs2>`.
 
@@ -1125,9 +1134,10 @@ insns:
           - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
       - &mulqacc-acc-shift-imm
         name: acc_shift_imm
-        type: imm2
+        type: uimm2
         doc: |
-          How many quarter-words (`WLEN/4` bits) to shift the `WLEN/2`-bit multiply result before accumulating.
+          The number of quarter-words (`WLEN/4` bits) to shift the `WLEN/2`-bit
+          multiply result before accumulating.
     syntax: |
       [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
     glued-ops: true
@@ -1289,7 +1299,7 @@ insns:
     syntax: *bn-add-syntax
     doc: |
       Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
-      The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+      The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
     decode: &bn-sub-decode |
       d = UInt(wrd)
       a = UInt(wrs1)
@@ -1322,7 +1332,7 @@ insns:
     syntax: *bn-add-syntax
     doc: |
       Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
-      The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+      The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
     decode: *bn-sub-decode
     operation: |
       b_shifted = ShiftReg(b, st, sb)
@@ -1350,11 +1360,13 @@ insns:
       - name: wrs
         doc: Name of the source WDR
       - name: imm
+        type: uimm
         doc: Immediate value
       - *bn-flag-group-operand
     syntax: <wrd>, <wrs>, <imm> [, FG<flag_group>]
     doc: |
-      Subtracts a zero-extended immediate from the value of a WDR, writes the result to the destination WDR, and updates the flags.
+      Subtracts a zero-extended unsigned immediate from the value of a WDR,
+      writes the result to the destination WDR, and updates the flags.
     decode: |
       d = UInt(wrd)
       a = UInt(wrs1)
@@ -1546,6 +1558,7 @@ insns:
       - name: wrs2
         doc: Name of the second source WDR
       - name: imm
+        type: uimm
         doc: |
           Number of bits to shift the second source register by. Valid range: 0..(WLEN-1).
     syntax: |

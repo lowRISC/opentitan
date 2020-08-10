@@ -45,7 +45,8 @@ class OperandType:
     def render_val(self, value: int) -> str:
         '''Render the given value as a string.
 
-        The default implementation prints it as a decimal number. Register
+        value should be a non-negative integer extracted from an encoding. The
+        default implementation prints it as a decimal number. Register
         operands, for example, will want to print 3 as "x3" and so on.
 
         '''
@@ -103,6 +104,10 @@ class RegOperandType(OperandType):
 
 class ImmOperandType(OperandType):
     '''A class representing an immediate operand type'''
+    def __init__(self, width: Optional[int], signed: bool) -> None:
+        super().__init__(width)
+        self.signed = signed
+
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
         if self.width is None:
@@ -117,12 +122,25 @@ class ImmOperandType(OperandType):
         except ValueError:
             return None
 
+    def render_val(self, value: int) -> str:
+        # If this immediate is signed and we have a valid width, we need to
+        # convert the value to a 2's-complement signed number. (There's not
+        # much we can do if we don't know our width!)
+        if self.signed and self.width is not None:
+            assert (value >> self.width) == 0
+            assert self.width >= 1
+            if value >> (self.width - 1):
+                value -= 1 << self.width
+                assert value < 0
+
+        return str(value)
+
 
 class EnumOperandType(ImmOperandType):
     '''A class representing an enum operand type'''
     def __init__(self, items: List[str]):
         assert items
-        super().__init__(int.bit_length(len(items) - 1))
+        super().__init__(int.bit_length(len(items) - 1), False)
         self.items = items
 
     def markdown_doc(self) -> Optional[str]:
@@ -164,7 +182,7 @@ class EnumOperandType(ImmOperandType):
 class OptionOperandType(ImmOperandType):
     '''A class representing an option operand type'''
     def __init__(self, option: str):
-        super().__init__(1)
+        super().__init__(1, False)
         self.option = option
 
     def markdown_doc(self) -> Optional[str]:
@@ -205,11 +223,13 @@ def parse_operand_type(fmt: str) -> OperandType:
         return RegOperandType('wsr', True)
 
     # Immediates
-    if fmt == 'imm':
-        return ImmOperandType(None)
-    m = re.match(r'imm([1-9][0-9]*)$', fmt)
-    if m:
-        return ImmOperandType(int(m.group(1)))
+    for base, signed in [('simm', True), ('uimm', False)]:
+        if fmt == base:
+            return ImmOperandType(None, signed)
+        m = re.match(base + r'([1-9][0-9]*)$', fmt)
+        if m:
+            return ImmOperandType(int(m.group(1)), signed)
+
     m = re.match(r'enum\(([^\)]+)\)$', fmt)
     if m:
         return EnumOperandType([item.strip()
@@ -233,9 +253,9 @@ def infer_operand_type(name: str) -> OperandType:
     if re.match(r'wrs[0-9]*$', name):
         return parse_operand_type('wrs')
     if re.match(r'imm[0-9]*$', name):
-        return parse_operand_type('imm')
+        return parse_operand_type('simm')
     if name == 'offset':
-        return parse_operand_type('imm')
+        return parse_operand_type('simm')
 
     raise ValueError("Operand name {!r} doesn't imply an operand type: "
                      "you'll have to set the type explicitly."
