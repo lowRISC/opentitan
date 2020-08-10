@@ -299,61 +299,115 @@ Once the regression tool is developed, it will provide a way to enable these cap
 
 ## Coverage Collection
 
-Collecting, analyzing and reporting coverage with waivers is another requirement to assert 'verification complete'.
+Collecting, analyzing, and reporting coverage with waivers is a requirement to assert 'verification complete'.
 Any gaps in our measured coverage need to be understood and either waived (no need to cover) or closed by additional testing.
 The end goal is to achieve 100% coverage across all applicable coverage metrics.
-This process known as "coverage closure", is done in close collaboration with the designer(s).
+This process is known as "coverage closure", and is done in close collaboration with the designer(s).
 Coverage collected from all tests run as a part of the regression is merged into a database for analysis.
-Our primary tool of choice for our coverage closure needs is Synopsys' VCS & Verdi.
-However, the use of other tools / simulators are welcome.
+Our primary tool of choice for our coverage closure needs is Synopsys VCS & Verdi.
+However, the use of other simulators is welcome.
+
+**Why do we need coverage?**
+
+The common answer is to flush out bugs in the design.
+This is not accurate enough.
+Making sure there are no bugs in a design, while it is important it is not sufficient.
+One must also make sure the design works as intended.
+That is, it must provide all the functionality specified in the design specification.
+So a more precise answer for why we need coverage is to flush out flaws in the design.
+These flaws can be either design bugs or deficiencies in the design with respect to the specification.
+
+Another reason for why we need coverage is to answer the seemingly simple but important question:
+**When are we done testing?**
+Do we need 1, 10, or 100 tests and should they run 10, 100, or 1000 regressions?
+Only coverage can answer this question for you.
+
 There are two key types of coverage metrics: code coverage and functional coverage.
 Both are important and are covered in more detail below.
-
-For the purpose of this topic, we define 'pre-verified sub-modules' as IPs within the DUT that have already been (or are planned to be) verified to complete sign-off within their own testbenches.
+For this topic, we define 'pre-verified sub-modules' as IPs within the DUT that have already been (or are planned to be) verified to complete sign-off within individual test benches.
 
 ### Code Coverage
 
 Commercial simulators typically provide a way to extract coverage statistics from our regressions.
-Tools automatically analyze the design to extract key structures such as lines, branches, FSMs, conditions and IO toggle and provide them as different metrics to measure coverage against (to what extent is our stimulus through constrained random tests covering these structures).
+Tools automatically analyze the design to extract key structures such as lines, branches, FSMs, conditions, and IO toggle and provide them as different metrics to measure coverage against (to what extent is our stimulus through constrained random tests covering these structures).
 These metrics are explained briefly below:
 
-*  **Line Coverage**: This metric measures which lines of SystemVerilog RTL code were executed during the course of the simulation.
+* **Line Coverage**: This metric measures which lines of SystemVerilog RTL code were executed during the simulation.
   This is probably the most intuitive metric to use.
-  Note that "assign" statements are always listed as covered using this metric.
-*  **Toggle Coverage**: This metric measures every logic bit to see if it transitions from 1 &rarr; 0 and 0 &rarr; 1.
+  Note that `assign` statements are always listed as covered using this metric.
+* **Toggle Coverage**: This metric measures every logic bit to see if it transitions from 1 &rarr; 0 and 0 &rarr; 1.
   It is very difficult, and not particularly useful to achieve 100% toggle coverage across a design.
   Instead, we focus on closing toggle coverage only on the IO ports of the DUT and IO ports of pre-verified IPs within the DUT.
-*  **FSM state Coverage**: This metric measures which finite state machine states were executed during the course of a simulation.
-*  **FSM transition Coverage**: This metric measures which arcs were simulated for each finite state machine in the design.
-*  **Conditional Coverage**: This metric tracks all combinations of conditional expressions simulated.
-*  **Branch Coverage**: This metric is similar to line coverage, but not quite the same.
+* **FSM state Coverage**: This metric measures which finite state machine states were executed during a simulation.
+* **FSM transition Coverage**: This metric measures which arcs were simulated for each finite state machine in the design.
+* **Conditional Coverage**: This metric tracks all combinations of conditional expressions simulated.
+* **Branch Coverage**: This metric is similar to line coverage, but not quite the same.
   It tracks the flow of simulation (e.g. if/else blocks) as well as conditional expressions.
   Note that un-hit FSM state/transition coverage almost always shows up as un-hit branch coverage as well.
 
+Code coverage is sometimes referred to as implicit coverage as it is generated based on the code and takes no additional effort to implement.
+
 ### Functional Coverage
 
-Unlike code coverage, functional coverage requires the designer and/or DV engineer to write additional cover points and cover groups.
-These are more complex constructs that capture whether signals (that reflect the current state of the design) have met a set of values, or a sequence of values that are interesting / corner cases.
-These constructs also allow us to capture whether multiple scenarios have occurred simultaneously through crosses, which is something the code coverage alone cannot provide.
-They provide us the ability to gauge to what extent is our stimulus through constrained random tests covering the test intent, for all tests in the testplan.
-
-These constructs are typically encapsulated in a class and are sometimes referred to as 'functional coverage model'.
-They are sampled in 'reactive' components of the testbench, such as monitors and / or the scoreboards.
+Unlike code coverage, functional coverage requires the designer and/or DV engineer to write additional cover points and covergroups.
+For this reason functional coverage is sometimes referred to as explicit coverage.
+Cover points and covergroups are more complex constructs that capture whether signals (that reflect the current state of the design) have met an interesting set or a sequence of values (often called corner cases)
+These constructs also allow us to capture whether multiple scenarios have occurred simultaneously through crosses.
+This is also often referred to as cross coverage.
+These constructs are typically encapsulated in a class and are sometimes referred to as the 'functional coverage model'.
+They are sampled in 'reactive' components of the testbench, such as monitors and/or the scoreboards.
 They can also be embedded within the RTL to sample interesting scenarios through DV stimulus.
 
 Here are the metrics used with a brief explanation:
 
-*  **Assert Coverage**: This metric measures which assertions, cover properties and sequences have been exercised in the course of the simulation.
-  Note, an assertion precondition counts as a cover point.
-*  **Covergroup Coverage**: This metric (sometimes called "Testbench Coverage") measures covergroups during simulation.
-  These are usually coded in the testbench to check that the desired stimulus was generated properly, but can also be embedded in the RTL.
+* **Covergroup Coverage**: Observes values on buses, registers and so on.
+  This can verify that a specific value or range of values was seen on a bus and that no illegal values were seen.
+  Simulators can be set to throw an error if an illegal value is seen.
+  One use of a covergroup is to define something called cross coverage.
+  This asserts that several coverage points are hit at once. For example, we might want to see a FIFO's full and write enable signals be asserted at the same time.
+  This is called a coverage cross.
+* **Cover Property coverage**:
+   * **Assertion coverage using SVA**
+   * **procedural code**
 
-Code coverage can reach 100% but it may not be sufficient to indicate whether all interesting combinations of scenarios were exercised (such as boundary conditions, concurrent scenarios and different CSR fields holding specific combinations of values resulting in the DUT being exercised in interesting ways).
-Hence, developing a detailed functional coverage model in conjunction with constrained random test sequences is key to high quality DV effort.
+Most often property coverage is implemented using SystemVerilog Assertions (SVA).
+This observes events or series of events.
+As an example think of the TL UL register bus used in OpenTitan.
+A cover property cover point could be the handshaking between valid and ready.
+SVA also allows the design engineer to add cover for procedures and variables not visible on output pins.
+Note, an assertion precondition counts as a cover point.
 
-Functional coverage can also reach 100% while the code coverage may not.
-This would indicate that the testplan is either incomplete or there are undocumented or unreachable features in the design.
-As such they can be addressed accordingly through either updating the design specification and augmenting the testplan / written tests, or by optimizing the design to remove unreachable logic if possible.
+
+#### Do we need both types of coverage
+
+Reaching a 100% code coverage does not tell you the whole story.
+Think of the simple example of an AND gate with inputs A, B, and output O.
+To get to 100% code coverage only two different input combinations are needed: 00 and 11, these two will produce all possible outcomes of O.
+
+![single AND gate](dv_method_single_gate.svg)
+
+
+The coverage will indicate that all code was exercised.
+But we do not know that our design works as intended.
+All we know is that A, B, and O have been observed to take on both logic 0 and 1.
+We could not say for certain that the design was in fact an AND gate: it could just as easily be an OR gate.
+So we need functional coverage to tell us this.
+The first thing functional coverage will tell us is if we observed all possible values on the inputs.
+And by adding a cross between the inputs and the output it will tell us which gate we are looking at.
+
+
+Reaching 100% functional coverage is not enough either.
+Remember functional coverage requires the designer to manually add coverage point into the design.
+Going back to our AND gate, let us say we take two of these and OR the outputs of the two.
+
+![multi gate](dv_method_multi_gate.svg)
+
+
+If we only add the cover points from our original example, these will still exercise the new output of our system and therefore result in reaching 100% functional coverage, but half of the design was not exercised.
+This is called a coverage hole and code coverage would have indicated that a part of the code was never exercised.
+
+While functional coverage will tell you if your design is working correctly, code coverage will highlight if your testplan is incomplete, or if there are any uncovered/unreachable features in the design.
+Coverage holes can be addressed accordingly through either updating the design specification and argumenting the testplan / written tests, or by optimizing the design to remove unreachable logic if possible.
 There may be features that cannot be tested and cannot be removed from the design either.
 These would have to be analyzed and excluded from the coverage collection as a waiver.
 This is an exercise the DV and the designer typically perform together.
