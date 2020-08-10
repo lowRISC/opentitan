@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Set, TextIO, Tuple
 from shared.bit_ranges import BitRanges
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_file
-from shared.operand import RegOperandType, Operand
+from shared.operand import ImmOperandType, RegOperandType, Operand
 
 
 class RVFmt:
@@ -54,7 +54,8 @@ class RVFmt:
 
         f<n>:    An n-bit literal value.
         r:       A 5-bit register name.
-        i<n>:    An n-bit (signed) immediate
+        i<n>:    An n-bit signed immediate
+        u<n>:    An n-bit unsigned immediate
 
     The syntax should be a list of NAMEs. When an immediate in the encoding is
     split into multiple fields, they can be recombined here with a pipe symbol.
@@ -80,7 +81,7 @@ class RVFmt:
         for field in bitfields:
             name, fmt_width = field.split(':')
             fmt = fmt_width[0]
-            assert fmt in ['f', 'r', 'i']
+            assert fmt in ['f', 'r', 'i', 'u']
             width = 5 if fmt == 'r' else int(fmt_width[1:])
 
             assert name not in name_to_triple
@@ -148,7 +149,7 @@ class RVFmt:
 
 def rv_render(fmt: str, num: int) -> str:
     '''Render a number as expected by a RISC-V .insn field'''
-    if fmt in ['f', 'i']:
+    if fmt in ['f', 'i', 'u']:
         return '{:#x}'.format(num)
 
     assert fmt == 'r'
@@ -203,9 +204,17 @@ RISCV_FORMATS = [
           ['imm12:i1', 'imm105:i6', 'rs2:r', 'rs1:r', 'func3:f3',
            'imm41:i4', 'imm11:i1', 'opcode:f7'],
           ['opcode', 'func3', 'rs2', 'rs1', 'imm12|imm11|imm105|imm41<<1']),
+
+    # The "U" format is used for LUI. The immediate operand gives imm[31:12]
+    # for some imm. Confusingly, the spec implies that this is a signed
+    # immediate, probably because it *is* sign-extended for the 64-bit
+    # architecture. For a 32-bit architecture, the top bit is the sign, so
+    # there is no sign extension to be done. The binutils assembler rejects
+    # things like "lui x1, -1", treating the immediate as unsigned.
     RVFmt('u',
-          ['simm20:i20', 'rd:r', 'opcode:f7'],
-          ['opcode', 'rd', 'simm20']),
+          ['imm20:u20', 'rd:r', 'opcode:f7'],
+          ['opcode', 'rd', 'imm20']),
+
     RVFmt('j',
           ['i20:i1', 'i101:i10', 'i11:i1', 'i1912:i8', 'rd:r', 'opcode:f7'],
           ['opcode', 'rd', 'i20|i1912|i11|i101<<1'])
@@ -242,9 +251,16 @@ def find_rv_encoding(enc: Encoding,
         if not isinstance(field.value, str):
             continue
 
-        operand = name_to_operand[field.value]
-        if operand.op_type.syntax_determines_value():
+        op_type = name_to_operand[field.value].op_type
+        if op_type.syntax_determines_value():
             continue
+
+        # We only support immediate operands (ImmOperandType) below here,
+        # because we need to extract the "signed" field. If this instruction
+        # uses some weird new operand type whose syntax doesn't determine its
+        # value, we'll have to give up.
+        if not isinstance(op_type, ImmOperandType):
+            return None
 
         assert field.value not in full_ops
         full_ops.add(field.value)
@@ -263,8 +279,15 @@ def find_rv_encoding(enc: Encoding,
         if match_fmt is None:
             return None
 
-        # These "difficult" operands can only be encoded in immediate fields.
-        if match_fmt != 'i':
+        # These "difficult" operands can only be encoded in immediate fields of
+        # the correct sign.
+        if match_fmt == 'i':
+            if not op_type.signed:
+                return None
+        elif match_fmt == 'u':
+            if op_type.signed:
+                return None
+        else:
             return None
 
         rv_field_to_op[rv_name] = field.value
