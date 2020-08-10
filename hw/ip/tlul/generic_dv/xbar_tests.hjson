@@ -164,8 +164,7 @@
   regressions: [
     {
       name: sanity
-      // tests: ["xbar_{name}_sanity"]
-      tests: []
+      tests: ["xbar_{name}_sanity"]
     }
   ]
 }
