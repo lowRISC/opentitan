@@ -9,7 +9,7 @@ class dv_base_reg extends uvm_reg;
   local bit is_ext_reg;
 
   local dv_base_reg    locked_regs[$];
-  local uvm_reg_data_t staged_shadow_val;
+  local uvm_reg_data_t staged_shadow_val, committed_val, shadowed_val;
   local bit            is_shadowed;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
@@ -111,6 +111,10 @@ class dv_base_reg extends uvm_reg;
     return shadow_update_err;
   endfunction
 
+  function bit get_shadow_storage_err();
+    return (~shadowed_val != committed_val);
+  endfunction
+
   virtual function void clear_shadow_update_err();
     shadow_update_err = 0;
   endfunction
@@ -136,6 +140,8 @@ class dv_base_reg extends uvm_reg;
           shadow_update_err = 1;
           return;
         end
+        committed_val = staged_shadow_val;
+        shadowed_val = ~committed_val;
       end
     end
     if (is_enable_reg()) begin
@@ -196,6 +202,18 @@ class dv_base_reg extends uvm_reg;
     end
     super.do_predict(rw, kind, be);
   endfunction
+
+  virtual task poke (output uvm_status_e     status,
+                     input  uvm_reg_data_t   value,
+                     input string            kind = "BkdrRegPathRtl",
+                     input uvm_sequence_base parent = null,
+                     input uvm_object        extension = null,
+                     input string            fname = "",
+                     input int               lineno = 0);
+    if (kind == "BkdrRegPathRtlShadow") committed_val = value;
+    else if (kind == "BkdrRegPathRtlCommitted") shadowed_val = value;
+    super.poke(status, value, kind, parent, extension, fname, lineno);
+  endtask
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);

@@ -316,15 +316,16 @@ package csr_utils_pkg;
   endtask
 
   // backdoor write csr
-  task automatic csr_poke(input uvm_reg        csr,
-                          input uvm_reg_data_t value,
-                          input uvm_check_e    check = UVM_CHECK,
-                          input bit            predict = 0);
+  task automatic csr_poke(input uvm_reg         csr,
+                          input uvm_reg_data_t  value,
+                          input uvm_check_e     check = UVM_CHECK,
+                          input bit             predict = 0,
+                          input bkdr_reg_path_e kind = BkdrRegPathRtl);
     uvm_status_e  status;
     string        msg_id = {csr_utils_pkg::msg_id, "::csr_poke"};
     uvm_reg_data_t old_mirrored_val = csr.get_mirrored_value();
 
-    csr.poke(.status(status), .value(value));
+    csr.poke(.status(status), .value(value), .kind(kind.name));
     if (check == UVM_CHECK && status != UVM_IS_OK) begin
       string str;
       uvm_hdl_path_concat paths[$];
@@ -334,7 +335,7 @@ package csr_utils_pkg;
                                    csr.get_full_name(), str))
     end
     // poke always updates predict value, if predict == 0, revert back to old mirrored value
-    if (!predict) begin
+    if (!predict || kind == BkdrRegPathRtlShadow) begin
       void'(csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT)));
     end
   endtask
@@ -404,15 +405,16 @@ package csr_utils_pkg;
   // uvm_reg::peek() returns a 2-state value, directly get data from hdl path
   task automatic csr_peek(input uvm_object      ptr,
                           output uvm_reg_data_t value,
-                          input uvm_check_e     check = UVM_CHECK);
+                          input uvm_check_e     check = UVM_CHECK,
+                          input bkdr_reg_path_e kind = BkdrRegPathRtl);
     string      msg_id = {csr_utils_pkg::msg_id, "::csr_peek"};
     csr_field_t csr_or_fld = decode_csr_or_field(ptr);
     uvm_reg     csr = csr_or_fld.csr;
 
-    if (csr.has_hdl_path()) begin
+    if (csr.has_hdl_path(kind.name)) begin
       uvm_hdl_path_concat paths[$];
 
-      csr.get_full_hdl_path(paths);
+      csr.get_full_hdl_path(paths, kind.name);
       foreach (paths[0].slices[i]) begin
         uvm_reg_data_t field_val;
         if (uvm_hdl_read(paths[0].slices[i].path, field_val)) begin
@@ -423,7 +425,8 @@ package csr_utils_pkg;
         end
       end
     end else begin
-      `uvm_fatal(msg_id, $sformatf("No backdoor defined for %0s", csr.get_full_name()))
+      `uvm_fatal(msg_id, $sformatf("No backdoor defined for %0s path's %0s",
+                                   csr.get_full_name(), kind.name))
     end
 
     // if it's field, only return field value

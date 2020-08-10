@@ -485,6 +485,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
+  // callback for individual modules to override
+  // can be used to update storage error status register
+  virtual function void shadow_reg_storage_err_post_write();
+  endfunction
+
   virtual task run_shadow_reg_errors(int num_times);
     csr_excl_item csr_excl = add_and_return_csr_excl("csr_excl");
     dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$], test_csrs[$];
@@ -527,6 +532,30 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             // `uvm_info(`gfn, $sformatf("%0s update error alert triggered",
             //                           test_csrs[i].get_name()), UVM_LOW)
           end
+
+          // randomly backdoor write a shadow_reg to create storage error
+          if ($urandom_range(1, 10) == 10) begin
+            int             index = $urandom_range(0, shadowed_csrs.size() - 1);
+            int             addr_index = $urandom_range(0, shadowed_csrs[index].get_msb_pos());
+            uvm_reg_data_t  rand_val, origin_val;
+            bkdr_reg_path_e kind;
+
+            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
+                kind, kind inside {BkdrRegPathRtlCommitted, BkdrRegPathRtlShadow};)
+            csr_peek(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind));
+            rand_val = ($urandom_range(0, 1)) ? $urandom() : origin_val;
+            rand_val[addr_index] = ~rand_val[addr_index];
+
+            csr_poke(.csr(shadowed_csrs[index]), .value(rand_val), .kind(kind), .predict(1));
+            `uvm_info(`gfn, $sformatf("backdoor write %0s with value %0h", kind.name, rand_val),
+                      UVM_HIGH);
+            if (shadowed_csrs[index].get_shadow_storage_err()) begin
+              shadow_reg_storage_err_post_write();
+              // TODO: temp wait a clk cycle, will delete once the real alert check impelemented
+              cfg.clk_rst_vif.wait_clks(1);
+            end
+            csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
+          end
         end
 
         // random read to check if the register values are equal to the predicted values,
@@ -551,7 +580,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               bit compare;
               test_csrs[i].get_fields(test_fields);
               test_fields.shuffle();
-              compare = !csr_excl.is_excl(test_fields[0], CsrExclWriteCheck, CsrRwTest);
+              compare = !csr_excl.is_excl(test_fields[0], CsrExclCheck, CsrRwTest);
               csr_rd_check(.ptr(test_fields[0]), .blocking(0), .compare(compare),
                            .compare_vs_ral(1'b1));
             end

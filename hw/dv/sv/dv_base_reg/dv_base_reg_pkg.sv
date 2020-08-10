@@ -37,6 +37,15 @@ package dv_base_reg_pkg;
     CsrAllTests       = 4'hf  // all tests
   } csr_test_type_e;
 
+  typedef enum bit[2:0] {
+    BkdrRegPathRtl,          // backdoor path for reg's val in RTL
+    BkdrRegPathRtlCommitted, // backdoor path for shadow reg's committed val in RTL
+    BkdrRegPathRtlShadow,    // backdoor path for shadow reg's shadow val in RTL
+    BkdrRegPathGls,          // backdoor path for reg's val in GLS
+    BkdrRegPathGlsCommitted, // backdoor path for shadow reg's committed val in GLS
+    BkdrRegPathGlsShdow      // backdoor path for shadow reg's shadow val in GLS
+  } bkdr_reg_path_e;
+
   // package sources
   // base ral
   `include "csr_excl_item.sv"
