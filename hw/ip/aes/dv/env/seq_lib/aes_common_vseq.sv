@@ -14,8 +14,12 @@ class aes_common_vseq extends aes_base_vseq;
   virtual task pre_start();
     do_aes_init = 1'b0;
     super.pre_start();
-    cfg.en_scb = 0;    
+    cfg.en_scb = 0;
   endtask
+
+  virtual function void shadow_reg_storage_err_post_write();
+    ral.status.ctrl_err_storage.predict(1);
+  endfunction
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);

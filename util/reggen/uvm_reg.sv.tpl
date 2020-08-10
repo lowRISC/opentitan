@@ -43,6 +43,7 @@ package ${block.name}_ral_pkg;
   reg_width = block.width
   reg_name = r.name
   is_ext = 0
+  reg_shadowed = r.shadowed
 %>\
   // Class: ${gen_dv.rcname(block, r)}
   class ${gen_dv.rcname(block, r)} extends dv_base_reg;
@@ -98,9 +99,13 @@ package ${block.name}_ral_pkg;
       ${f.name}.set_original_access("${field_access}");
   % if f.hwaccess == HwAccess.NONE and f.swrdaccess == SwRdAccess.RD and f.swwraccess == SwWrAccess.NONE:
       // constant reg
-      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${f.lsb}, ${field_size});
+      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
   % else:
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if r.hwext else ""}", ${f.lsb}, ${field_size});
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if r.hwext else ""}", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+  % endif
+  % if reg_shadowed and not r.hwext:
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.committed_reg.q", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.shadow_reg.q", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
   % endif
   % if field_tags:
       // create field tags
@@ -108,13 +113,27 @@ package ${block.name}_ral_pkg;
 <%
   tag = field_tag.split(":")
 %>\
-    % if tag[0] == "excl":
+      % if tag[0] == "excl":
       csr_excl.add_excl(${f.name}.get_full_name(), ${tag[2]}, ${tag[1]});
       % endif
     % endfor
   % endif
 % endfor
-
+% if reg_shadowed and r.hwext:
+<% shadowed_reg_path = "" %>\
+  % for r_tag in r.tags:
+<% tag = r_tag.split(":") %>\
+    % if tag[0] == "shadowed_reg_path":
+<% shadowed_reg_path = tag[1] %>\
+    % endif
+  % endfor
+  % if shadowed_reg_path == "":
+    print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
+  % else:
+      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q", 0, (${f.lsb} + ${field_size}), 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q", 0, (${f.lsb} + ${field_size}), 0, "BkdrRegPathRtlShadow");
+  % endif
+% endif
 % if is_ext:
       set_is_ext_reg(1);
 % endif
@@ -193,13 +212,16 @@ package ${block.name}_ral_pkg;
       ${b.name} = ${gen_dv.bcname(b)}::type_id::create("${b.name}");
       ${b.name}.configure(.parent(this));
       ${b.name}.build(.base_addr(base_addr + ${gen_dv.sv_base_addr(b)}), .csr_excl(csr_excl));
-      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}");
+      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}", "BkdrRegPathRtl");
+      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}", "BkdrRegPathRtlCommitted");
+      ${b.name}.set_hdl_path_root("tb.dut.top_earlgrey.u_${b.name}", "BkdrRegPathRtlShadow");
       default_map.add_submap(.child_map(${b.name}.default_map),
                              .offset(base_addr + ${gen_dv.sv_base_addr(b)}));
 % endfor
 % if regs_flat:
-      set_hdl_path_root("tb.dut");
-
+      set_hdl_path_root("tb.dut", "BkdrRegPathRtl");
+      set_hdl_path_root("tb.dut", "BkdrRegPathRtlCommitted");
+      set_hdl_path_root("tb.dut", "BkdrRegPathRtlShadow");
       // create registers
 % endif
 % for r in regs_flat:
