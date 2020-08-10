@@ -143,3 +143,17 @@ sw_lib_dif_rstmgr = declare_dependency(
   )
 )
 
+# Alert handler library
+sw_lib_dif_alert_handler = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_alert_handler',
+    sources: [
+      hw_ip_alert_handler_reg_h,
+      'dif_alert_handler.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
