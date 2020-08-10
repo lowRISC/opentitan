@@ -7,5 +7,5 @@
 __TOOL_REQUIREMENTS__ = {
     'verilator': '4.028',
     'edalize': '0.2.0',
-    'verible': '0.0-469-gb458ff6',
+    'verible': '0.0-520-g650c6cc',
 }
