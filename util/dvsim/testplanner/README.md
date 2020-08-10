@@ -7,7 +7,7 @@ format into a data structure that can be used for:
 * Expanding the testplan inline within the DV plan as a table
 * Annotating the regression results with testplan entries for a document driven DV execution
 
-Please see [DV methodology]({{< relref "doc/ug/dv_methodology.md#documentation" >}})
+Please see [DV methodology]({{< relref "doc/ug/dv_methodology/index.md#documentation" >}})
 for more details on the rationale and motivation for writing and maintaining testplans
 in a machine-parsable format (`Hjson`).
 This document will focus on the anatomy of a Hjson testplan, list of features supported
