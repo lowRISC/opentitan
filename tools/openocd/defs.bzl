@@ -162,21 +162,11 @@ def _openocd_execution_wrapper_impl(ctx):
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
-{openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit {flash_offset}"
+$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit {flash_offset}"
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
 
-    #
-    runfiles_path = "$0.runfiles/"
-
-    # Each runfile under the runfiles path resides under a directory with
-    # with the same name as its workspace.
-    data_file_root = runfiles_path + ctx.workspace_name + "/"
-
-    openocd_path = runfiles_path + "openocd"
-
     script_content = script_template.format(
-        openocd = openocd_path,
         interface_config_string = interface_config_string,
         chip_config_string = chip_config_string,
         flash_offset = ctx.attr.flash_offset,
