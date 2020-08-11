@@ -67,15 +67,28 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       true};
   i_trx++;
 
-  // write key
+  // write key share 0
   for (int i = 0; i < key_len / 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_KEY0 + 4 * i), 0xF, key[i], 0, true};
+        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE00 + 4 * i), 0xF, key[i], 0, true};
     i_trx++;
   }
   for (int i = key_len / 4; i < 8; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0,          0, 2,   0, (unsigned)(AES_KEY0 + 4 * i),
+        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE00 + 4 * i),
+        0xF,  0xFFFFFFFF, 0, true};
+    i_trx++;
+  }
+
+  // write key share 1
+  for (int i = 0; i < key_len / 4; ++i) {
+    tl_i_transactions[i_trx] = {
+        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE10 + 4 * i), 0xF, 0, 0, true};
+    i_trx++;
+  }
+  for (int i = key_len / 4; i < 8; ++i) {
+    tl_i_transactions[i_trx] = {
+        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE10 + 4 * i),
         0xF,  0xFFFFFFFF, 0, true};
     i_trx++;
   }
@@ -165,7 +178,7 @@ int aes_tlul_sequence_modes_gen_all() {
 
   // Allocate memory
   num_transactions_max =
-      (1 + 10 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
+      (1 + 18 + 4 + 16 + 2 + 20 + 3 * TEST_STALL) * num_groups;
   num_responses_max = (2 + 20 + 3 * TEST_STALL) * num_groups;
   tl_i_transactions = (TLI *)malloc(num_transactions_max * sizeof(TLI));
   if (tl_i_transactions == NULL) {

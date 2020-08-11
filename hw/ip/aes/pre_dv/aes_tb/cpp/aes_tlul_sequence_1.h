@@ -10,7 +10,7 @@
 
 // Example 1 - encrypt/decrypt all key lenghts
 
-static const int num_transactions_max = 1 + 3*(21 + 8) + 6;
+static const int num_transactions_max = 1 + 3 * (21 + 8 + 8) + 6;
 static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     // AES-128
@@ -22,14 +22,23 @@ static const TLI tl_i_transactions[num_transactions_max] = {
      (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x1 << AES_CTRL_KEY_LEN_OFFSET) | (kCryptoAesEcb << 1) | 0x1,
      0, true},  // ctrl - decrypt, 128-bit
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x00, 0xF, 0x03020100, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x04, 0xF, 0x07060504, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x08, 0xF, 0x0B0A0908, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x10, 0xF, 0x13121110, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x14, 0xF, 0x17161514, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x18, 0xF, 0x1B1A1918, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x00, 0xF, 0x03020100, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x04, 0xF, 0x07060504, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x08, 0xF, 0x0B0A0908, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x10, 0xF, 0x13121110, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x14, 0xF, 0x17161514, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x18, 0xF, 0x1B1A1918, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x00, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x04, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x08, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x0C, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x10, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x14, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x18, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x1c, 0xF, 0x0, 0, true},
 
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x0, 0xF, 0x33221100, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x4, 0xF, 0x77665544, 0, true},
@@ -68,14 +77,23 @@ static const TLI tl_i_transactions[num_transactions_max] = {
      (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x2 << AES_CTRL_KEY_LEN_OFFSET) | (kCryptoAesEcb << 1) | 0x1,
      0, true},  // ctrl - decrypt, 192-bit
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x00, 0xF, 0x03020100, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x04, 0xF, 0x07060504, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x08, 0xF, 0x0B0A0908, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x10, 0xF, 0x13121110, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x14, 0xF, 0x17161514, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x18, 0xF, 0x1B1A1918, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x00, 0xF, 0x03020100, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x04, 0xF, 0x07060504, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x08, 0xF, 0x0B0A0908, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x10, 0xF, 0x13121110, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x14, 0xF, 0x17161514, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x18, 0xF, 0x1B1A1918, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x00, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x04, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x08, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x0C, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x10, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x14, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x18, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x1c, 0xF, 0x0, 0, true},
 
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x0, 0xF, 0x33221100, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x4, 0xF, 0x77665544, 0, true},
@@ -114,14 +132,23 @@ static const TLI tl_i_transactions[num_transactions_max] = {
      (0x0 << AES_CTRL_MANUAL_OPERATION_OFFSET) |
          (0x4 << AES_CTRL_KEY_LEN_OFFSET) | (kCryptoAesEcb << 1) | 0x1,
      0, true},  // ctrl - decrypt, 256-bit
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x00, 0xF, 0x03020100, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x04, 0xF, 0x07060504, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x08, 0xF, 0x0B0A0908, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x10, 0xF, 0x13121110, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x14, 0xF, 0x17161514, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x18, 0xF, 0x1B1A1918, 0, true},
-    {true, 0, 0, 2, 0, AES_KEY0 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x00, 0xF, 0x03020100, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x04, 0xF, 0x07060504, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x08, 0xF, 0x0B0A0908, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x0C, 0xF, 0x0F0E0D0C, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x10, 0xF, 0x13121110, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x14, 0xF, 0x17161514, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x18, 0xF, 0x1B1A1918, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE00 + 0x1c, 0xF, 0x1F1E1D1C, 0, true},
+
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x00, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x04, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x08, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x0C, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x10, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x14, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x18, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_KEY_SHARE10 + 0x1c, 0xF, 0x0, 0, true},
 
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x0, 0xF, 0x33221100, 0, true},
     {true, 0, 0, 2, 0, AES_DATA_IN0 + 0x4, 0xF, 0x77665544, 0, true},
