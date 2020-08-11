@@ -29,3 +29,17 @@ def bazel_embedded_deps():
                 "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
             ],
         )
+    if not native.existing_rule("com_github_wjwwood_serial"):
+        http_archive(
+            name = "com_github_wjwwood_serial",
+            sha256 = "9f8e80d3f3776862468bafaa0773e3d281f4f980dcbdfc72ddb0e9f619a6544f",
+            strip_prefix = "serial-abba176643a7a141bc6d3d81ce8f304363830af6",
+            urls = ["https://github.com/silvergasp/serial/archive/abba176643a7a141bc6d3d81ce8f304363830af6.zip"],
+        )
+    if not native.existing_rule("com_github_jarro_cxxopts"):
+        http_archive(
+            name = "com_github_jarro_cxxopts",
+            sha256 = "fbee4be13a388dd4164865d707a7062a3051a8c83c4f30c56ef9616bdf202210",
+            strip_prefix = "cxxopts-5e323d648e50b43fd430fb324c632dafd73f7add",
+            urls = ["https://github.com/silvergasp/cxxopts/archive/5e323d648e50b43fd430fb324c632dafd73f7add.zip"],
+        )
