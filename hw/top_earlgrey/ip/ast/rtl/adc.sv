@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: adc
 // *Module Description:  Analog/Digital Converter
 //
@@ -43,26 +43,25 @@ assign rst_pd_adc_n = rst_adc_ni && ~adc_pd_i;
 
 always_ff @( posedge clk_adc_i, negedge rst_pd_adc_n ) begin
    if (!rst_pd_adc_n ) begin
-      cnv_cnt     <= 8'h00; 
-      cnv_chnsel  <= {AdcChannels{1'b0}};  
+      cnv_cnt     <= 8'h00;
+      cnv_chnsel  <= {AdcChannels{1'b0}};
       adc_d_o     <= {AdcDataWidth{1'b0}};
       adc_d_val_o <= 1'b0;
    end
    else if ( !chn_selected ) begin
-      cnv_cnt     <= 8'h00; 
-      cnv_chnsel  <= {AdcChannels{1'b0}};  
+      cnv_cnt     <= 8'h00;
+      cnv_chnsel  <= {AdcChannels{1'b0}};
       adc_d_val_o <= 1'b0;
    end
    else if ( cnv_cnt != ConvertCount ) begin
       cnv_chnsel  <= adc_chnsel_i[AdcChannels-1:0];
       cnv_cnt     <= cnv_cnt + 1'b1;
       adc_d_val_o <= 1'b0;
-   end 
+   end
    else begin
       adc_d_o     <= (cnv_chnsel == 2'b00) ? adc_d_o :
                      (cnv_chnsel == 2'b01) ? adc_a_chn0 :
-                     (cnv_chnsel == 2'b10) ? adc_a_chn1 :
-	                                     {AdcDataWidth{1'bx}};
+                     (cnv_chnsel == 2'b10) ? adc_a_chn1 : {AdcDataWidth{1'bx}};
       adc_d_val_o <= 1'b1;
    end
 end

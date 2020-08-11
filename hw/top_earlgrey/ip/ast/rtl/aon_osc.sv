@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: aon_osc
 // *Module Description: AON Clock Oscilator
 //
@@ -22,7 +22,11 @@ module aon_osc #(
 
 // synopsys translate_off
 
-localparam time AON_CLK_PERIOD = 5000ns; // 5000ns (200Khz)
+// localparam real AON_CLK_PERIOD = 5000; // 5000ns (200Khz)
+// TBD
+// This is a temporary work-around until the design fully supports
+// async clocks as part of a different PR.
+localparam real AON_CLK_PERIOD = 20;
 
 logic init_start, clk;
 
@@ -44,7 +48,7 @@ always_ff @( init_start, posedge aon_en_i, negedge aon_en_i ) begin
        aon_clk_en_o <= 1'b0;
     else if ( !init_start && aon_en_i )
        aon_clk_en_o <= #(AON_EN_RDLY) aon_en_i;
-    else if ( !init_start && !aon_en_i )                  
+    else if ( !init_start && !aon_en_i )
        aon_clk_en_o <= #(AON_EN_FDLY) aon_en_i;
 end
 

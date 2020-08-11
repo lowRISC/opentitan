@@ -28,7 +28,7 @@ filesets:
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
-      
+
     file_type: systemVerilogSource
 
 
@@ -55,4 +55,3 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps]
     toplevel: ast
-  

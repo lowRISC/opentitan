@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: main_rglt
 // *Module Description: Main Regulator
 //
@@ -31,12 +31,11 @@ logic mr_vcc_dly, mr_pd_dly;
 logic init_start;
 
 initial begin
-   init_start = 1'b1; #1; 
+   init_start = 1'b1; #1;
    init_start = 1'b0;
 end
 
-always_ff @( init_start,
-	     posedge vcc_pok_i, negedge vcc_pok_i ) begin
+always_ff @( init_start, posedge vcc_pok_i, negedge vcc_pok_i ) begin
     if ( init_start )
        mr_vcc_dly <= 1'b0;
     else if ( !init_start && vcc_pok_i )
@@ -45,9 +44,8 @@ always_ff @( init_start,
        mr_vcc_dly <= #(MRVCC_FDLY) vcc_pok_i;
 end
 
-always_ff @( init_start,
-	     posedge main_pd_ni, negedge main_pd_ni ) begin
-    if ( init_start )        
+always_ff @( init_start, posedge main_pd_ni, negedge main_pd_ni ) begin
+    if ( init_start )
        mr_pd_dly <= 1'b1;
     else if ( !init_start && main_pd_ni && vcc_pok_i )
        mr_pd_dly <= #(MRPD_RDLY) main_pd_ni && vcc_pok_i;

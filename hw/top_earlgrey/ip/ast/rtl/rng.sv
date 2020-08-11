@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: rng
 // *Module Description:  Random (bit/s) Generator
 //
@@ -39,7 +39,7 @@ always_ff @( posedge clk, negedge rst_ni ) begin
    else            clk_en <= rng_clk_en;
 end
 
-assign rng_clk = clk_en ? ~clk : 1'b0; 
+assign rng_clk = clk_en ? ~clk : 1'b0;
 
 
 ///////////////////////////////////////
@@ -90,7 +90,7 @@ always_ff @( posedge clk_i, negedge rst_ni ) begin
    end
    else begin
       rng_ok_r <= rng_rdy;
-      rng_ok_o <= rng_ok_r;  
+      rng_ok_o <= rng_ok_r;
    end
 end
 
