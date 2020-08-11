@@ -102,6 +102,9 @@ targets:
     <<: *default_target
     default_tool: verilator
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
       verilator:
         mode: lint-only
         verilator_options:

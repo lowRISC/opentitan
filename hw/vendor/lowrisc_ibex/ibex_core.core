@@ -126,6 +126,9 @@ targets:
     default_tool: verilator
     toplevel: ibex_core
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
       verilator:
         mode: lint-only
         verilator_options:
