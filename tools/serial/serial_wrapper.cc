@@ -42,10 +42,12 @@ int main(int argc, const char** argv) {
       std::string buffer;
       serial_out.readline(buffer);
       std::cout << buffer << "\n";
-      if (buffer.find(success_on_string)) {
+      if (buffer.find(success_on_string) != std::string::npos &&
+          !success_on_string.empty()) {
         exit(0);
       }
-      if (buffer.find(fail_on_string)) {
+      if (buffer.find(fail_on_string) != std::string::npos &&
+          !fail_on_string.empty()) {
         exit(2);
       }
     } catch (serial::PortNotOpenedException e) {
