@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: io_osc
 // *Module Description: IO Clock Oscilator
 //
@@ -28,7 +28,7 @@ logic init_start, clk;
 initial begin
    clk = 1'b0;
    $display("\nIO Clock Period: %0dps", IO_CLK_PERIOD);
-   // init_start = 1'b0; #1; 
+   // init_start = 1'b0; #1;
    init_start = 1'b1; #1;
    init_start = 1'b0;
 end
@@ -44,7 +44,7 @@ always_ff @( init_start, posedge io_en_i, negedge io_en_i ) begin
        io_clk_en_o <= 1'b0;
     else if ( !init_start && io_en_i )
        io_clk_en_o <= #(IO_EN_RDLY) io_en_i;
-    else if ( !init_start && !io_en_i )                  
+    else if ( !init_start && !io_en_i )
        io_clk_en_o <= #(IO_EN_FDLY) io_en_i;
 end
 // synopsys translate_on

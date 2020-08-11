@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: entropy
 // *Module Description:  Entropy
 //
@@ -27,7 +27,7 @@ module entropy #(
 
 
 ///////////////////////////////////
-// Entropy & Jitter 
+// Entropy & Jitter
 ///////////////////////////////////
 
 // Entropy Enable
@@ -54,7 +54,7 @@ assign rst_es_n = scan_mode_i ? rst_ast_es_ni : sync2_rst_es_n;
 // Entropy Rate
 logic [(1<<EntropyRateWidth)-1:0] rate_cnt;
 logic [32-1:0] entropy_rate;
-logic read_entropy; 
+logic read_entropy;
 
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
    if ( !rst_es_n )          rate_cnt <= {(1<<EntropyRateWidth){1'b0}};
@@ -68,11 +68,11 @@ assign read_entropy = (rate_cnt == entropy_rate[(1 << EntropyRateWidth)-1:0]);
 // FIFO RDP/WRP/Level
 logic [6-1:0] fifo_cnt;            // For 32 1-bit FIFO
 logic [5-1:0] fifo_rdp, fifo_wrp;  // FIFO read pointer & write pointer
-logic [32-1:0] fifo_data;          // 32 1-bi FIFOt 
+logic [32-1:0] fifo_data;          // 32 1-bi FIFOt
 logic inc_fifo_cnt, dec_fifo_cnt;
 
 assign inc_fifo_cnt = (fifo_cnt < 6'h20) && entropy_ack_i;
-assign dec_fifo_cnt = (fifo_cnt != 6'h00) && read_entropy; 
+assign dec_fifo_cnt = (fifo_cnt != 6'h00) && read_entropy;
 
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
    if ( !rst_es_n ) begin
@@ -80,27 +80,27 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
       fifo_rdp <= 5'h00;
       fifo_wrp <= 5'h00;
    end
-   else if ( inc_fifo_cnt && dec_fifo_cnt ) begin  
+   else if ( inc_fifo_cnt && dec_fifo_cnt ) begin
       fifo_rdp <= fifo_rdp + 1'b1;
       fifo_wrp <= fifo_wrp + 1'b1;
    end
-   else if ( inc_fifo_cnt ) begin  
-      fifo_cnt <= fifo_cnt + 1'b1; 
+   else if ( inc_fifo_cnt ) begin
+      fifo_cnt <= fifo_cnt + 1'b1;
       fifo_wrp <= fifo_wrp + 1'b1;
    end
-   else if ( dec_fifo_cnt ) begin  
-      fifo_cnt <= fifo_cnt - 1'b1; 
+   else if ( dec_fifo_cnt ) begin
+      fifo_cnt <= fifo_cnt - 1'b1;
       fifo_rdp <= fifo_rdp + 1'b1;
    end
 end
 
 // Request
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
-   if ( !rst_es_n )               
+   if ( !rst_es_n )
       entropy_req_o <= 1'b0;
-   else if ( fifo_cnt < 6'h10 )   
+   else if ( fifo_cnt < 6'h10 )
       entropy_req_o <= 1'b1;  // Half
-   else if ( (fifo_cnt == 6'h1f) && inc_fifo_cnt && ~dec_fifo_cnt )  
+   else if ( (fifo_cnt == 6'h1f) && inc_fifo_cnt && ~dec_fifo_cnt )
       entropy_req_o <= 1'b0;  // Full
 end
 
@@ -143,7 +143,7 @@ assign lfsr_data_in = sync2_lfsr_data_in;
 
 // Jitter
 // random 0-2000ps (upto +20% of SYS clock)
-// jitter = sys_jen ? $urandom_range(2000, 0) : 0; 
+// jitter = sys_jen ? $urandom_range(2000, 0) : 0;
 
 
 endmodule  // of entropy

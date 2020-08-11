@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: usb_clk
 // *Module Description: USB Clock
 //
@@ -16,7 +16,7 @@ module usb_clk #(
    parameter time USB_VAL_RDLY = 50ms,
    parameter time USB_VAL_FDLY = 80ns,
 // synopsys translate_on
-   parameter UsbCalibWidth = 16
+   parameter int UsbCalibWidth = 16
 ) (
    input rst_ni,                             // AST USB Reset
    input clk_src_usb_en_i,                   // USB Source Clock Enable
@@ -31,7 +31,7 @@ logic clk, usb_en, clk_en;
 // Behavioral Model
 
 // Clock Oscilator
-usb_osc #( 
+usb_osc #(
 // synopsys translate_off
 /*P*/ .USB_EN_RDLY ( USB_EN_RDLY ),
 /*P*/ .USB_EN_FDLY ( USB_EN_FDLY ),
@@ -52,7 +52,7 @@ always_ff @( posedge clk, negedge rst_ni ) begin
 end
 
 // Clock & Valid
-assign clk_src_usb_o = clk_en ? ~clk : 1'b0; 
+assign clk_src_usb_o = clk_en ? ~clk : 1'b0;
 assign clk_src_usb_val_o = clk_en;
 
 

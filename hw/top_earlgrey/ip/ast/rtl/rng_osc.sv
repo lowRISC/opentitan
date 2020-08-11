@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: rng_osc
 // *Module Description: RNG Clock Oscilator
 //
@@ -44,7 +44,7 @@ always_ff @( init_start, posedge en_i, negedge en_i ) begin
        clk_en_o <= 1'b0;
     else if ( !init_start && en_i )
        clk_en_o <= #(EN_RDLY) en_i;
-    else if ( !init_start && !en_i )                  
+    else if ( !init_start && !en_i )
        clk_en_o <= #(EN_FDLY) en_i;
 end
 // synopsys translate_on

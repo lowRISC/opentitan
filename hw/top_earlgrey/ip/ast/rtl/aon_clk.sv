@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: aon_clk
 // *Module Description: Always ON Clock
 //
@@ -23,7 +23,7 @@ module aon_clk #(
 logic clk, clk_en, aon_en;
 
 // Behavioral Model
-aon_osc #( 
+aon_osc #(
 // synopsys translate_off
 /*P*/ .AON_EN_RDLY ( AON_EN_RDLY ),
 /*P*/ .AON_EN_FDLY ( AON_EN_FDLY )
@@ -40,7 +40,7 @@ always_ff @( posedge clk, negedge rst_ni ) begin
 end
 
 // Clock & Valid
-assign clk_src_aon_o = clk_en ? ~clk : 1'b0; 
+assign clk_src_aon_o = clk_en ? ~clk : 1'b0;
 assign clk_src_aon_val_o = clk_en;
 
 

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: sys_clk
 // *Module Description: System Clock
 //
@@ -19,7 +19,7 @@ module sys_clk #(
 ) (
    input clk_src_sys_en_i,                       // System Source Clock Enable
    input clk_src_sys_jen_i,                      // System Source Clock Jitter Enable
-   input rst_ni,                                 // SYS Reset 
+   input rst_ni,                                 // SYS Reset
    output logic clk_src_sys_o,                   // System Source Clock
    output logic clk_src_sys_val_o                // System Source Clock Valid
 );
@@ -29,7 +29,7 @@ logic clk, sys_en, clk_en;
 // Behavioral Model
 
 // Clock Oscilator
-sys_osc #( 
+sys_osc #(
 // synopsys translate_off
 /*P*/ .SYS_EN_RDLY ( SYS_EN_RDLY ),
 /*P*/ .SYS_EN_FDLY ( SYS_EN_FDLY ),
@@ -49,7 +49,7 @@ always_ff @( posedge clk, negedge rst_ni ) begin
 end
 
 // Clock & Valid
-assign clk_src_sys_o = clk_en ? ~clk : 1'b0; 
+assign clk_src_sys_o = clk_en ? ~clk : 1'b0;
 assign clk_src_sys_val_o = clk_en;
 
 

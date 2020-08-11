@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
+//
 // *Name: io_clk
 // *Module Description: IO Clock
 //
@@ -26,7 +26,7 @@ logic clk, io_en, clk_en;
 // Behavioral Model
 
 // Clock Oscilator
-io_osc #( 
+io_osc #(
 // synopsys translate_off
 /*P*/ .IO_EN_RDLY ( IO_EN_RDLY ),
 /*P*/ .IO_EN_FDLY ( IO_EN_FDLY )
@@ -43,7 +43,7 @@ always_ff @( posedge clk, negedge rst_ni ) begin
 end
 
 // Clock & Valid
-assign clk_src_io_o = clk_en ? ~clk : 1'b0; 
+assign clk_src_io_o = clk_en ? ~clk : 1'b0;
 assign clk_src_io_val_o = clk_en;
 
 
