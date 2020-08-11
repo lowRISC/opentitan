@@ -2,6 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
 // This module is the overall reset manager wrapper
 // TODO: This module is only a draft implementation that covers most of the rstmgr
 // functoinality but is incomplete
@@ -45,13 +51,15 @@ module rstmgr import rstmgr_pkg::*; (
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
+  logic rst_por_aon_n;
   rstmgr_por u_rst_por_aon (
     .clk_i(clk_aon_i),
     .rst_ni,
-    .pok_i(ast_i.vcc_pok & ast_i.aon_pok),
-    .rst_no(resets_o.rst_por_aon_n)
+    .pok_i(ast_i.aon_pok),
+    .rst_no(rst_por_aon_n)
   );
 
+  assign resets_o.rst_por_aon_n = rst_por_aon_n;
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -83,8 +91,8 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_sync (
     .clk_i,
     .rst_ni(resets_o.rst_por_io_div2_n),
-    .d(cpu_i.ndmreset_req),
-    .q(ndmreset_req_q)
+    .d_i(cpu_i.ndmreset_req),
+    .q_o(ndmreset_req_q)
   );
 
   assign ndm_req_valid = ndmreset_req_q & (pwr_i.reset_cause == pwrmgr_pkg::ResetNone);
@@ -99,6 +107,9 @@ module rstmgr import rstmgr_pkg::*; (
   // the second.  This ensures that if upstream resets for any reason, the associated downstream
   // reset will also reset.
 
+  logic [PowerDomains-1:0] rst_lc_src_n;
+  logic [PowerDomains-1:0] rst_sys_src_n;
+
   // lc reset sources
   rstmgr_ctrl #(
     .PowerDomains(PowerDomains)
@@ -107,7 +118,7 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(resets_o.rst_por_io_div2_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
-    .rst_no(resets_o.rst_lc_src_n)
+    .rst_no(rst_lc_src_n)
   );
 
   // sys reset sources
@@ -117,12 +128,12 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i,
     .rst_ni(resets_o.rst_por_io_div2_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
-    .rst_parent_ni(resets_o.rst_lc_src_n),
-    .rst_no(resets_o.rst_sys_src_n)
+    .rst_parent_ni(rst_lc_src_n),
+    .rst_no(rst_sys_src_n)
   );
 
-  assign pwr_o.rst_lc_src_n = resets_o.rst_lc_src_n;
-  assign pwr_o.rst_sys_src_n = resets_o.rst_sys_src_n;
+  assign pwr_o.rst_lc_src_n = rst_lc_src_n;
+  assign pwr_o.rst_sys_src_n = rst_sys_src_n;
 
   ////////////////////////////////////////////////////
   // leaf reset in the system                       //
@@ -134,9 +145,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_por (
     .clk_i(clk_main_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_o.rst_por_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_n)
   );
 
   prim_flop_2sync #(
@@ -144,9 +155,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_por_io (
     .clk_i(clk_io_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_o.rst_por_io_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_io_n)
   );
 
   prim_flop_2sync #(
@@ -154,9 +165,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_por_io_div2 (
     .clk_i(clk_io_div2_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_o.rst_por_io_div2_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_io_div2_n)
   );
 
   prim_flop_2sync #(
@@ -164,9 +175,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_por_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d(1'b1),
-    .q(resets_o.rst_por_usb_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_usb_n)
   );
 
   prim_flop_2sync #(
@@ -174,9 +185,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_lc (
     .clk_i(clk_io_div2_i),
-    .rst_ni(resets_o.rst_lc_src_n[0]),
-    .d(1'b1),
-    .q(resets_o.rst_lc_n)
+    .rst_ni(rst_lc_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_lc_n)
   );
 
   prim_flop_2sync #(
@@ -184,9 +195,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_sys (
     .clk_i(clk_main_i),
-    .rst_ni(resets_o.rst_sys_src_n[0]),
-    .d(1'b1),
-    .q(resets_o.rst_sys_n)
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_n)
   );
 
   prim_flop_2sync #(
@@ -194,9 +205,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_sys_io (
     .clk_i(clk_io_div2_i),
-    .rst_ni(resets_o.rst_sys_src_n[0]),
-    .d(1'b1),
-    .q(resets_o.rst_sys_io_n)
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_io_n)
   );
 
   prim_flop_2sync #(
@@ -204,9 +215,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_sys_aon (
     .clk_i(clk_aon_i),
-    .rst_ni(resets_o.rst_sys_src_n[0]),
-    .d(1'b1),
-    .q(resets_o.rst_sys_aon_n)
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_aon_n)
   );
 
   prim_flop_2sync #(
@@ -214,9 +225,9 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_spi_device (
     .clk_i(clk_io_div2_i),
-    .rst_ni(resets_o.rst_sys_src_n[0]),
-    .d(reg2hw.rst_spi_device_n.q),
-    .q(resets_o.rst_spi_device_n)
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(reg2hw.rst_spi_device_n.q),
+    .q_o(resets_o.rst_spi_device_n)
   );
 
   prim_flop_2sync #(
@@ -224,102 +235,11 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(resets_o.rst_sys_src_n[0]),
-    .d(reg2hw.rst_usb_n.q),
-    .q(resets_o.rst_usb_n)
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(reg2hw.rst_usb_n.q),
+    .q_o(resets_o.rst_usb_n)
   );
 
-
-//  // POR usage for the clkmgr
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_por_sync (
-//    .clk_i(clk_main_i),
-//    .rst_ni(resets_o.rst_por_aon_n),
-//    .d(1'b1),
-//    .q(resets_o.rst_por_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_por_io_sync (
-//    .clk_i(clk_io_i),
-//    .rst_ni(resets_o.rst_por_aon_n),
-//    .d(1'b1),
-//    .q(resets_o.rst_por_io_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_por_io_div2_sync (
-//    .clk_i(clk_io_div2_i),
-//    .rst_ni(resets_o.rst_por_aon_n),
-//    .d(1'b1),
-//    .q(resets_o.rst_por_io_div2_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_por_usb_sync (
-//    .clk_i(clk_usb_i),
-//    .rst_ni(resets_o.rst_por_aon_n),
-//    .d(1'b1),
-//    .q(resets_o.rst_por_usb_n)
-//  );
-
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_lc (
-//    .clk_i(clk_io_div2_i),
-//    .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
-//    .d(1'b1),
-//    .q(resets_o.rst_lc_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_sys (
-//    .clk_i(clk_main_i),
-//    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-//    .d(1'b1),
-//    .q(resets_o.rst_sys_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_sys_io (
-//    .clk_i(clk_io_div2_i),
-//    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-//    .d(1'b1),
-//    .q(resets_o.rst_sys_io_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_spi_device (
-//    .clk_i(clk_io_div2_i),
-//    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-//    .d(reg2hw.rst_spi_device_n.q),
-//    .q(resets_o.rst_spi_device_n)
-//  );
-//
-//  prim_flop_2sync #(
-//    .Width(1),
-//    .ResetValue('0)
-//  ) i_usb (
-//    .clk_i(clk_usb_i),
-//    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-//    .d(reg2hw.rst_usb_n.q),
-//    .q(resets_o.rst_usb_n)
-//  );
 
   ////////////////////////////////////////////////////
   // Reset info construction                        //
@@ -342,7 +262,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Reasons(ResetReasons)
   ) i_info (
     .clk_i,
-    .rst_ni(resets_o.rst_por_aon_n),
+    .rst_ni(rst_por_aon_n),
     .rst_cpu_ni(cpu_i.rst_cpu_n),
     .rst_req_i(rst_reqs),
     .wr_i(reg2hw.reset_info.qe),

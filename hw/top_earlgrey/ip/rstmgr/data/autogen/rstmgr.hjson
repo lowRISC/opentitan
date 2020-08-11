@@ -1,6 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
 
 
@@ -163,82 +169,5 @@
     },
   ]
 
-
-
-//    { name: "SPI_DEVICE_REGEN",
-//      desc: '''
-//            Register write enable for spi_device reset.
-//            ''',
-//      swaccess: "rw1c",
-//      hwaccess: "none",
-//      fields: [
-//        {
-//            bits:   "0",
-//            desc: ''' When 1, rst_spi_device_n is software programmable.
-//            '''
-//            resval: 1,
-//        },
-//      ]
-//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-//             "excl:CsrAllTests:CsrExclWrite"]
-//    },
-//
-//    { name: "USB_REGEN",
-//      desc: '''
-//            Register write enable for usb reset.
-//            ''',
-//      swaccess: "rw1c",
-//      hwaccess: "none",
-//      fields: [
-//        {
-//            bits:   "0",
-//            desc: ''' When 1, rst_usb_n is software programmable.
-//            '''
-//            resval: 1,
-//        },
-//      ]
-//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-//             "excl:CsrAllTests:CsrExclWrite"]
-//    },
-//
-//    { name: "RST_SPI_DEVICE_N",
-//      regwen:  "SPI_DEVICE_REGEN",
-//      desc: '''
-//            Software reset control for spi device
-//            ''',
-//      swaccess: "rw",
-//      hwaccess: "hro",
-//      fields: [
-//        {
-//            bits:   "0",
-//            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
-//            programmed when spi_device_regen is 1.
-//            '''
-//            resval: 1,
-//        },
-//      ]
-//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-//             "excl:CsrAllTests:CsrExclWrite"]
-//    },
-//
-//    { name: "RST_USB_N",
-//      regwen:  "USB_REGEN",
-//      desc: '''
-//            Software reset control for usb
-//            ''',
-//      swaccess: "rw",
-//      hwaccess: "hro",
-//      fields: [
-//        {
-//            bits:   "0",
-//            desc: ''' When set to 0, usb is held in reset. This bit can only be
-//            programmed when usb_regen is 1.
-//            '''
-//            resval: 1,
-//        },
-//      ]
-//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-//             "excl:CsrAllTests:CsrExclWrite"]
-//    }
 
 }
