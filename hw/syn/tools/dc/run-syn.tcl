@@ -83,9 +83,10 @@ set_verification_top
 change_names -rules verilog -hierarchy
 define_name_rules fixbackslashes -allowed "A-Za-z0-9_" -first_restricted "\\" -remove_chars
 change_names -rule fixbackslashes -h
+# do not allow tri nets to be written out as part of the verilog netlist
+set_app_var verilogout_no_tri true
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
-#write_file -format verilog -hierarchy -output "${DDCDIR}/elab.v"
 
 #############################
 ##   CLOCK GATING SETUP    ##
