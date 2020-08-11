@@ -111,6 +111,9 @@ targets:
     default_tool: verilator
     toplevel: ibex_core_tracing
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
       verilator:
         mode: lint-only
         verilator_options:
