@@ -532,6 +532,8 @@ def amend_resets(top):
                 reset["name"])
         elif reset["type"] == "ext":
             reset_paths[reset["name"]] = "rst_ni"
+        elif reset["type"] == "int":
+            log.info("{} used as internal reset".format(reset["name"]))
         else:
             log.error("{} type is invalid".format(reset["type"]))
 
