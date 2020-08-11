@@ -144,73 +144,105 @@
   [
     {
       name: rst_ni
+      gen: 0
       type: ext
     }
     {
       name: por_aon
+      gen: 0
       type: top
       root: rst_ni
       clk: aon
     }
     {
+      name: lc_src
+      gen: 0
+      type: int
+      root: por
+      clk: io_div2
+    }
+    {
+      name: sys_src
+      gen: 0
+      type: int
+      root: por
+      clk: io_div2
+    }
+    {
       name: por
+      gen: 1
       type: top
       root: por_aon
       clk: main
     }
     {
       name: por_io
+      gen: 1
       type: top
       root: por_aon
       clk: io
     }
     {
       name: por_io_div2
+      gen: 1
       type: top
       root: por_aon
       clk: io_div2
     }
     {
       name: por_usb
+      gen: 1
       type: top
       root: por_aon
       clk: usb
     }
     {
       name: lc
+      gen: 1
       type: top
-      root: lc
-      clk: io
+      domain: "0"
+      root: lc_src
+      clk: io_div2
     }
     {
       name: sys
+      gen: 1
       type: top
-      root: sys
+      domain: "0"
+      root: sys_src
       clk: main
     }
     {
       name: sys_io
+      gen: 1
       type: top
-      root: sys
+      domain: "0"
+      root: sys_src
       clk: io_div2
     }
     {
       name: sys_aon
+      gen: 1
       type: top
-      root: sys
-      clk: io_div2
+      domain: "0"
+      root: sys_src
+      clk: aon
     }
     {
       name: spi_device
+      gen: 1
       type: top
-      root: sys
+      domain: "0"
+      root: sys_src
       clk: io_div2
       sw: 1
     }
     {
       name: usb
+      gen: 1
       type: top
-      root: sys
+      domain: "0"
+      root: sys_src
       clk: usb
       sw: 1
     }
@@ -1426,8 +1458,8 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
-      scan: "true"
-      scan_reset: "true"
+      scan: "false"
+      scan_reset: "false"
       inter_signal_list:
       [
         {

@@ -810,8 +810,6 @@ module top_earlgrey #(
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),
-      .scanmode_i   (scanmode_i),
-      .scan_rst_ni  (scan_rst_ni),
       .clk_i (clkmgr_clocks.clk_io_powerup),
       .clk_aon_i (clkmgr_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_clocks.clk_main_powerup),
