@@ -59,6 +59,9 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
       verilator:
         mode: lint-only
         verilator_options:
