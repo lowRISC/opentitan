@@ -33,6 +33,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"ram_ret", '{
         '{32'h18000000, 32'h18000fff}
+    }},
+    '{"sensor_ctrl", '{
+        '{32'h40170000, 32'h40170fff}
 }}};
 
   // List of Xbar hosts
@@ -46,5 +49,6 @@ tl_host_t xbar_hosts[$] = '{
         "pwrmgr",
         "rstmgr",
         "clkmgr",
-        "ram_ret"}}
+        "ram_ret",
+        "sensor_ctrl"}}
 };
