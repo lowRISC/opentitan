@@ -70,12 +70,12 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   // write key share 0
   for (int i = 0; i < key_len / 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE00 + 4 * i), 0xF, key[i], 0, true};
+        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE0_0 + 4 * i), 0xF, key[i], 0, true};
     i_trx++;
   }
   for (int i = key_len / 4; i < 8; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE00 + 4 * i),
+        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE0_0 + 4 * i),
         0xF,  0xFFFFFFFF, 0, true};
     i_trx++;
   }
@@ -83,12 +83,12 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   // write key share 1
   for (int i = 0; i < key_len / 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE10 + 4 * i), 0xF, 0, 0, true};
+        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE1_0 + 4 * i), 0xF, 0, 0, true};
     i_trx++;
   }
   for (int i = key_len / 4; i < 8; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE10 + 4 * i),
+        true, 0,          0, 2,   0, (unsigned)(AES_KEY_SHARE1_0 + 4 * i),
         0xF,  0xFFFFFFFF, 0, true};
     i_trx++;
   }
@@ -96,7 +96,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   // write iv
   for (int i = 0; i < 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_IV0 + 4 * i), 0xF, iv[i], 0, true};
+        true, 0, 0, 2, 0, (unsigned)(AES_IV_0 + 4 * i), 0xF, iv[i], 0, true};
     i_trx++;
   }
 
@@ -104,7 +104,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
     // write input data
     for (int i = 0; i < 4; ++i) {
       tl_i_transactions[i_trx] = {
-          true,          0, 0,   2, 0, (unsigned)(AES_DATA_IN0 + 4 * i), 0xF,
+          true,          0, 0,   2, 0, (unsigned)(AES_DATA_IN_0 + 4 * i), 0xF,
           plain_text[i], 0, true};
       i_trx++;
     }
@@ -124,7 +124,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       // write input data
       for (int i = 0; i < 4; ++i) {
         tl_i_transactions[i_trx] = {
-            true,          0, 0,   2, 0, (unsigned)(AES_DATA_IN0 + 4 * i), 0xF,
+            true,          0, 0,   2, 0, (unsigned)(AES_DATA_IN_0 + 4 * i), 0xF,
             plain_text[i], 0, true};
         i_trx++;
       }
@@ -151,7 +151,7 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
     // read output data
     for (int i = 0; i < 4; ++i) {
       tl_i_transactions[i_trx] = {
-          true, 4, 0, 2, 0, (unsigned)(AES_DATA_OUT0 + 4 * i), 0xF, 0, 0, true};
+          true, 4, 0, 2, 0, (unsigned)(AES_DATA_OUT_0 + 4 * i), 0xF, 0, 0, true};
       tl_o_exp_resp[i_resp] = {0xFFFFFFFF, cipher_text[i]};
       i_trx++;
       i_resp++;
