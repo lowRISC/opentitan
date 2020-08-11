@@ -213,12 +213,11 @@ directly to parse the Hjson testplan and insert a HTML table within the DV
 plan document. This is done by invoking:
 
 ```console
-Example 1:
-$ util/docgen.py -c ../hw/ip/uart/doc/uart_dv_plan.md -o /tmp/uart_dv_plan.html
-
-Example 2:
-$ util/docgen.py -c testplanner/examples/foo_dv_plan.md -o /tmp/foo_dv_plan.html
+$ ./util/build_docs.py
 ```
+The output for each testplan will be saved into `build/docs-generated`.
+For example the path to the GPIO IP testplan is `build/docs-generated/hw/ip/gpio/data/gpio_testplan.hjson.testplan`.
+
 See following snippet of code for the APIs in use:
 ```python
 from testplanner import class_defs, testplan_utils

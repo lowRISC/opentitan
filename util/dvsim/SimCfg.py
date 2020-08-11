@@ -5,19 +5,75 @@ r"""
 Class describing simulation configuration object
 """
 
+import logging as log
 import os
+import shutil
 import subprocess
 import sys
 from collections import OrderedDict
 
-import logging as log
-from tabulate import tabulate
-
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, RunTest, Deploy
+from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, Deploy, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
-from testplanner import testplan_utils
+from tabulate import tabulate
+from testplanner import class_defs, testplan_utils
 from utils import VERBOSE, find_and_substitute_wildcards
+
+
+def pick_dump_format(fmts):
+    '''Choose a supported wave dumping format
+
+    fmts is a list of formats that the chosen tool supports. Return the first
+    that we think is possible (e.g. not fsdb if Verdi is not installed).
+
+    '''
+    assert fmts
+    fmt = fmts[0]
+    if fmt == 'fsdb' and not shutil.which('verdi'):
+        return pick_dump_format(fmts[1:])
+
+    return fmt
+
+
+def resolve_dump_format(tool, dump):
+    '''Decide on the correct dumping format
+
+    This is called after reading the config file. tool is the chosen tool,
+    which will always have been resolved by this point. waves is a boolean
+    which determines whether waves should be dumped at all (from the --waves
+    argument). dump is the dumping format chosen on the command line or None.
+
+    '''
+    assert tool is not None
+
+    SUPPORTED_DUMP_FMTS = {
+        'vcs': ['fsdb', 'vpd'],
+        'xcelium': ['fsdb', 'shm', 'vpd']
+    }
+
+    # Look up which dumping formats the tool supports
+    fmts = SUPPORTED_DUMP_FMTS.get(tool)
+
+    if dump is not None:
+        # If the user has specified their preferred dumping format, use it. As
+        # a sanity check, error out if the chosen tool doesn't support the
+        # format, but only if we know about the tool. If not, we'll just assume
+        # they know what they're doing.
+        if fmts is not None and dump not in fmts:
+            log.error('Chosen tool ({}) does not support wave '
+                      'dumping format {!r}.'.format(tool, dump))
+            sys.exit(1)
+
+        return dump
+
+    # If the user hasn't specified a dumping format, but has asked for waves,
+    # we need to decide on a format for them. If fmts is None, we don't know
+    # about this tool. Maybe it's a new simulator, in which case, default to
+    # VPD and hope for the best.
+    if not fmts:
+        return 'vpd'
+
+    return pick_dump_format(fmts)
 
 
 class SimCfg(FlowCfg):
@@ -32,8 +88,7 @@ class SimCfg(FlowCfg):
         self.tool = args.tool
         self.build_opts = []
         self.build_opts.extend(args.build_opts)
-        self.en_build_modes = []
-        self.en_build_modes.extend(args.build_modes)
+        self.en_build_modes = args.build_modes.copy()
         self.run_opts = []
         self.run_opts.extend(args.run_opts)
         self.en_run_modes = []
@@ -44,11 +99,10 @@ class SimCfg(FlowCfg):
         self.reseed_ovrd = args.reseed
         self.reseed_multiplier = args.reseed_multiplier
         self.waves = args.waves
-        self.dump = args.dump
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.cov_merge_previous = args.cov_merge_previous
-        self.profile = args.profile
+        self.profile = args.profile or '(cfg uses profile without --profile)'
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
         self.verbosity = "{" + args.verbosity + "}"
@@ -65,7 +119,7 @@ class SimCfg(FlowCfg):
             self.en_build_modes.append("waves")
         if self.cov is True:
             self.en_build_modes.append("cov")
-        if self.profile != 'none':
+        if args.profile is not None:
             self.en_build_modes.append("profile")
         if self.xprop_off is not True:
             self.en_build_modes.append("xprop")
@@ -95,7 +149,6 @@ class SimCfg(FlowCfg):
         self.flist_gen_opts = []
         self.flist_file = ""
         self.run_cmd = ""
-        self.dump_file = ""
 
         # Generated data structures
         self.links = {}
@@ -105,13 +158,18 @@ class SimCfg(FlowCfg):
         self.cov_report_deploy = None
         self.results_summary = OrderedDict()
 
-        # If is_master_cfg is set, then each cfg will have its own cov_deploy.
+        # If is_primary_cfg is set, then each cfg will have its own cov_deploy.
         # Maintain an array of those in cov_deploys.
         self.cov_deploys = []
 
         # Parse the cfg_file file tree
-        self.parse_flow_cfg(flow_cfg_file)
-        self._post_parse_flow_cfg()
+        self._parse_flow_cfg(flow_cfg_file)
+
+        # Choose a dump format now. Note that this has to happen after parsing
+        # the configuration format because our choice might depend on the
+        # chosen tool.
+        self.dump_fmt = (resolve_dump_format(self.tool, args.dump)
+                         if self.waves else 'none')
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -129,16 +187,26 @@ class SimCfg(FlowCfg):
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
                                                       ignored_wildcards,
-                                                      self.is_master_cfg)
+                                                      self.is_primary_cfg)
 
         # Set the title for simulation results.
         self.results_title = self.name.upper() + " Simulation Results"
 
-        # Stuff below only pertains to individual cfg (not master cfg)
+        # Stuff below only pertains to individual cfg (not primary cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
         # TODO: find a better way to support select_cfgs
-        if not self.is_master_cfg and (not self.select_cfgs or
-                                       self.name in self.select_cfgs):
+        if not self.is_primary_cfg and (not self.select_cfgs or
+                                        self.name in self.select_cfgs):
+            # If self.tool is None at this point, there was no --tool argument on
+            # the command line, and there is no default tool set in the config
+            # file. That's ok if this is a primary config (where the
+            # sub-configurations can choose tools themselves), but not otherwise.
+            if self.tool is None:
+                log.error(
+                    'Config file does not specify a default tool, '
+                    'and there was no --tool argument on the command line.')
+                sys.exit(1)
+
             # Print info:
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
@@ -152,12 +220,12 @@ class SimCfg(FlowCfg):
 
             # Use the default build mode for tests that do not specify it
             if not hasattr(self, "build_mode"):
-                setattr(self, "build_mode", "default")
+                self.build_mode = 'default'
 
             self._process_exports()
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-            # tests and regressions, only if not a master cfg obj
+            # tests and regressions, only if not a primary cfg obj
             self._create_objects()
 
         # Post init checks
@@ -186,16 +254,12 @@ class SimCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        build_modes = Modes.create_modes(BuildModes,
-                                         getattr(self, "build_modes"))
-        setattr(self, "build_modes", build_modes)
-
-        run_modes = Modes.create_modes(RunModes, getattr(self, "run_modes"))
-        setattr(self, "run_modes", run_modes)
+        self.build_modes = Modes.create_modes(BuildModes, self.build_modes)
+        self.run_modes = Modes.create_modes(RunModes, self.run_modes)
 
         # Walk through build modes enabled on the CLI and append the opts
         for en_build_mode in self.en_build_modes:
-            build_mode_obj = Modes.find_mode(en_build_mode, build_modes)
+            build_mode_obj = Modes.find_mode(en_build_mode, self.build_modes)
             if build_mode_obj is not None:
                 self.build_opts.extend(build_mode_obj.build_opts)
                 self.run_opts.extend(build_mode_obj.run_opts)
@@ -207,7 +271,7 @@ class SimCfg(FlowCfg):
 
         # Walk through run modes enabled on the CLI and append the opts
         for en_run_mode in self.en_run_modes:
-            run_mode_obj = Modes.find_mode(en_run_mode, run_modes)
+            run_mode_obj = Modes.find_mode(en_run_mode, self.run_modes)
             if run_mode_obj is not None:
                 self.run_opts.extend(run_mode_obj.run_opts)
             else:
@@ -217,8 +281,7 @@ class SimCfg(FlowCfg):
                 sys.exit(1)
 
         # Create tests from given list of items
-        tests = Tests.create_tests(getattr(self, "tests"), self)
-        setattr(self, "tests", tests)
+        self.tests = Tests.create_tests(self.tests, self)
 
         # Regressions
         # Parse testplan if provided.
@@ -226,11 +289,13 @@ class SimCfg(FlowCfg):
             self.testplan = testplan_utils.parse_testplan(self.testplan)
             # Extract tests in each milestone and add them as regression target.
             self.regressions.extend(self.testplan.get_milestone_regressions())
+        else:
+            # Create a dummy testplan with no entries.
+            self.testplan = class_defs.Testplan(name=self.name)
 
         # Create regressions
-        regressions = Regressions.create_regressions(
-            getattr(self, "regressions"), self, tests)
-        setattr(self, "regressions", regressions)
+        self.regressions = Regressions.create_regressions(
+            self.regressions, self, self.tests)
 
     def _print_list(self):
         for list_item in self.list_items:
@@ -316,7 +381,7 @@ class SimCfg(FlowCfg):
         build_list_names = []
         for test in self.run_list:
             # Override reseed if available.
-            if self.reseed_ovrd != -1:
+            if self.reseed_ovrd is not None:
                 test.reseed = self.reseed_ovrd
 
             # Apply reseed multiplier if set on the command line.
@@ -346,6 +411,41 @@ class SimCfg(FlowCfg):
                       create_link_dirs_cmd)
             sys.exit(1)
 
+    def _expand_run_list(self, build_map):
+        '''Generate a list of tests to be run
+
+        For each test in tests, we add it test.reseed times. The ordering is
+        interleaved so that we run through all of the tests as soon as
+        possible. If there are multiple tests and they have different reseed
+        values, they are "fully interleaved" at the start (so if there are
+        tests A, B with reseed values of 5 and 2, respectively, then the list
+        will be ABABAAA).
+
+        build_map is a dictionary from build name to a CompileSim object. Each
+        test is added to the CompileSim item that it depends on (signifying
+        that the test should be built once the build on which it depends is
+        done).
+
+        cfg is a SimCfg object, passed to the RunTest constructor.
+
+        '''
+        tagged = []
+        for test in self.run_list:
+            for idx in range(test.reseed):
+                tagged.append((idx, test, RunTest(idx, test, self)))
+
+        # Stably sort the tagged list by the 1st coordinate
+        tagged.sort(key=lambda x: x[0])
+
+        # Now iterate over it again, adding tests to build_map (in the
+        # interleaved order) and collecting up the RunTest objects.
+        runs = []
+        for _, test, run in tagged:
+            build_map[test.build_mode].sub.append(run)
+            runs.append(run)
+
+        return runs
+
     def _create_deploy_objects(self):
         '''Create deploy objects from the build and run lists.
         '''
@@ -360,18 +460,11 @@ class SimCfg(FlowCfg):
             builds.append(item)
             build_map[build] = item
 
-        runs = []
-        for test in self.run_list:
-            for num in range(test.reseed):
-                item = RunTest(num, test, self)
-                if self.build_only is False:
-                    build_map[test.build_mode].sub.append(item)
-                runs.append(item)
-
         self.builds = builds
-        self.runs = runs
+        self.runs = ([]
+                     if self.build_only else self._expand_run_list(build_map))
         if self.run_only is True:
-            self.deploy = runs
+            self.deploy = self.runs
         else:
             self.deploy = builds
 
@@ -481,23 +574,27 @@ class SimCfg(FlowCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
 
-        # Add path to testplan.
-        if hasattr(self, "testplan_doc_path"):
-            testplan = "https://" + self.doc_server + '/' + getattr(
-                self, "testplan_doc_path")
-        else:
-            testplan = "https://" + self.doc_server + '/' + self.rel_path
-            testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
+        # Add path to testplan, only if it has entries (i.e., its not dummy).
+        if self.testplan.entries:
+            if hasattr(self, "testplan_doc_path"):
+                testplan = "https://{}/{}".format(self.doc_server,
+                                                  self.testplan_doc_path)
+            else:
+                testplan = "https://{}/{}".format(self.doc_server,
+                                                  self.rel_path)
+                testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
 
-        results_str += "### [Testplan](" + testplan + ")\n"
+            results_str += "### [Testplan](" + testplan + ")\n"
+
         results_str += "### Simulator: " + self.tool.upper() + "\n\n"
 
         if regr_results == []:
             results_str += "No results to display.\n"
 
         else:
-            # TODO: check if testplan is not null?
             # Map regr results to the testplan entries.
             results_str += self.testplan.results_table(
                 regr_results=regr_results,
@@ -512,8 +609,12 @@ class SimCfg(FlowCfg):
                     # Link the dashboard page using "cov_report_page" value.
                     if hasattr(self, "cov_report_page"):
                         results_str += "\n### [Coverage Dashboard]"
-                        results_str += "({})\n\n".format(
-                            getattr(self, "cov_report_page"))
+                        if self.args.publish:
+                            cov_report_page_path = "cov_report"
+                        else:
+                            cov_report_page_path = self.cov_report_dir
+                        cov_report_page_path += "/" + self.cov_report_page
+                        results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
                     self.results_summary[
                         "Coverage"] = self.cov_report_deploy.cov_total
@@ -555,6 +656,8 @@ class SimCfg(FlowCfg):
             table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            self.results_summary_md += "### " + self.revision_string + "\n"
         self.results_summary_md += tabulate(table,
                                             headers="firstrow",
                                             tablefmt="pipe",
@@ -573,7 +676,7 @@ class SimCfg(FlowCfg):
             log.info("Publishing coverage results to %s",
                      results_server_dir_url)
             cmd = (self.results_server_cmd + " -m cp -R " +
-                   self.cov_report_deploy.cov_report_dir + " " + self.results_server_dir)
+                   self.cov_report_dir + " " + self.results_server_dir)
             try:
                 cmd_output = subprocess.run(args=cmd,
                                             shell=True,

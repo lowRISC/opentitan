@@ -129,8 +129,14 @@ class Deploy():
                 sys.exit(1)
 
         # Recursively search and replace wildcards
-        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
-                                                      self.__dict__)
+        # First pass: search within self dict. We ignore errors since some
+        # substitions may be available in the second pass.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.__dict__, [], True)
+
+        # Second pass: search in sim_cfg dict, this time not ignoring errors.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.sim_cfg.__dict__, [], False)
 
         # Set identifier.
         self.identifier = self.sim_cfg.name + ":" + self.name
@@ -174,13 +180,16 @@ class Deploy():
                 self.odir_limiter(odir=self.odir)
             os.system("mkdir -p " + self.odir)
             # Dump all env variables for ease of debug.
-            with open(self.odir + "/env_vars", "w", encoding="UTF-8") as f:
+            with open(self.odir + "/env_vars",
+                      "w",
+                      encoding="UTF-8",
+                      errors="surrogateescape") as f:
                 for var in sorted(self.exports.keys()):
                     f.write("{}={}\n".format(var, self.exports[var]))
                 f.close()
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
-            f = open(self.log, "w", encoding="UTF-8")
+            f = open(self.log, "w", encoding="UTF-8", errors="surrogateescape")
             f.write("[Executing]:\n{}\n\n".format(self.cmd))
             f.flush()
             self.process = subprocess.Popen(args,
@@ -254,8 +263,9 @@ class Deploy():
     def set_status(self):
         self.status = 'P'
         if self.dry_run is False:
+            seen_fail_pattern = False
             for fail_pattern in self.fail_patterns:
-                # Return error messege with the following 4 lines.
+                # Return error message with the following 4 lines.
                 grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
                 (status, rslt) = subprocess.getstatusoutput(grep_cmd)
                 if rslt:
@@ -263,12 +273,13 @@ class Deploy():
                     self.fail_msg += msg
                     log.log(VERBOSE, msg)
                     self.status = 'F'
+                    seen_fail_pattern = True
                     break
 
             # If fail patterns were not encountered, but the job returned with non-zero exit code
             # for whatever reason, then show the last 10 lines of the log as the failure message,
             # which might help with the debug.
-            if self.process.returncode != 0 and not self.fail_msg:
+            if self.process.returncode != 0 and not seen_fail_pattern:
                 msg = "Last 10 lines of the log:<br>\n"
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
@@ -780,10 +791,19 @@ class CovMerge(Deploy):
         for bld in self.sim_cfg.builds:
             self.cov_db_dirs += bld.cov_db_dir + " "
 
-        # Recursively search and replace wildcards, ignoring cov_db_dirs for now.
+        # Recursively search and replace wildcards, ignoring cov_db_dirs.
         # We need to resolve it later based on cov_db_dirs value set below.
+
+        # First pass: search within self dict. We ignore errors since some
+        # substitions may be available in the second pass.
         self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"])
+            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"],
+            ignore_error=True)
+
+        # Second pass: search in sim_cfg dict, this time not ignoring errors.
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.sim_cfg.__dict__,
+            ignored_wildcards=["cov_db_dirs"], ignore_error=False)
 
         # Prune previous merged cov directories.
         prev_cov_db_dirs = self.odir_limiter(odir=self.cov_merge_db_dir)

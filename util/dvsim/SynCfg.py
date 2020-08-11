@@ -35,7 +35,10 @@ class SynCfg(OneShotCfg):
         log.info("Create summary of synthesis results")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
-        results_str += "### " + self.timestamp_long + "\n\n"
+        results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
+        results_str += "\n"
 
         self.results_summary_md = results_str + "\nNot supported yet.\n"
 
@@ -116,7 +119,7 @@ class SynCfg(OneShotCfg):
         #     }
         # }
         #
-        # note that if this is a master config, the results will
+        # note that if this is a primary config, the results will
         # be generated using the _gen_results_summary function
         # '''
 
@@ -142,6 +145,8 @@ class SynCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
+        if self.revision_string:
+            results_str += "### " + self.revision_string + "\n"
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 
         # TODO: extend this to support multiple build modes
@@ -155,7 +160,7 @@ class SynCfg(OneShotCfg):
             log.info("looking for result data file at %s", result_data)
 
             try:
-                with open(result_data, "r") as results_file:
+                with result_data.open() as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
             except IOError as err:
                 log.warning("%s", err)
@@ -354,22 +359,35 @@ class SynCfg(OneShotCfg):
                              ("Compile Warnings", "compile_warnings"),
                              ("Compile Errors", "compile_errors")]
 
-            has_msg = False
+            # Synthesis fails if any warning or error message has occurred
+            self.errors_seen = False
+            fail_msgs = ""
             for _, key in hdr_key_pairs:
                 if key in self.result['messages']:
-                    has_msg = True
-                    break
+                    if self.result['messages'].get(key):
+                        self.errors_seen = True
+                        break
 
-            if has_msg and not self.args.publish:
-                results_str += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
+            if self.errors_seen:
+                fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
                 for hdr, key in hdr_key_pairs:
                     msgs = self.result['messages'].get(key)
-                    results_str += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
+                    fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
+
+            # the email and published reports will default to self.results_md if they are
+            # empty. in case they need to be sanitized, override them and do not append
+            # detailed messages.
+            if self.sanitize_email_results:
+                self.email_results_md = results_str
+            if self.sanitize_publish_results:
+                self.publish_results_md = results_str
+
+            # locally generated result always contains all details
+            self.results_md = results_str + fail_msgs
 
             # TODO: add support for pie / bar charts for area splits and
             # QoR history
 
-        self.results_md = results_str
         # Write results to the scratch area
         self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
         log.info("Detailed results are available at %s", self.results_file)

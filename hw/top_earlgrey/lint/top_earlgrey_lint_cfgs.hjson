@@ -14,132 +14,132 @@
                      "{proj_root}/hw/lint/data/{tool}.hjson"]
 
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/lint/{tool}"
+  rel_path: "hw/top_earlgrey/lint/{tool}/v1-bronze"
 
   use_cfgs: [{    name: aes
                   fusesoc_core: lowrisc:ip:aes
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/aes/lint/{tool}"
+                  rel_path: "hw/ip/aes/lint/{tool}/v1-bronze"
              },
              {    name: alert_handler
                   fusesoc_core: lowrisc:ip:alert_handler
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/alert_handler/lint/{tool}"
+                  rel_path: "hw/ip/alert_handler/lint/{tool}/v1-bronze"
              },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/flash_ctrl/lint/{tool}"
+                  rel_path: "hw/ip/flash_ctrl/lint/{tool}/v1-bronze"
              },
              {    name: gpio
                   fusesoc_core: lowrisc:ip:gpio
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/gpio/lint/{tool}"
+                  rel_path: "hw/ip/gpio/lint/{tool}/v1-bronze"
              },
              {    name: hmac
                   fusesoc_core: lowrisc:ip:hmac
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/hmac/lint/{tool}"
+                  rel_path: "hw/ip/hmac/lint/{tool}/v1-bronze"
              },
              {    name: i2c
                   fusesoc_core: lowrisc:ip:i2c
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/i2c/lint/{tool}"
+                  rel_path: "hw/ip/i2c/lint/{tool}/v1-bronze"
              },
              {    name: nmi_gen
                   fusesoc_core: lowrisc:ip:nmi_gen
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/nmi_gen/lint/{tool}"
+                  rel_path: "hw/ip/nmi_gen/lint/{tool}/v1-bronze"
              },
              {    name: padctrl
                   fusesoc_core: lowrisc:ip:padctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/padctrl/lint/{tool}"
+                  rel_path: "hw/ip/padctrl/lint/{tool}/v1-bronze"
              },
              {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pinmux/lint/{tool}"
+                  rel_path: "hw/ip/pinmux/lint/{tool}/v1-bronze"
              },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:ip:rv_core_ibex
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_core_ibex/lint/{tool}"
+                  rel_path: "hw/ip/rv_core_ibex/lint/{tool}/v1-bronze"
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_dm/lint/{tool}"
+                  rel_path: "hw/ip/rv_dm/lint/{tool}/v1-bronze"
              },
              {    name: rv_plic_example
                   fusesoc_core: lowrisc:ip:rv_plic_example
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_plic_example/lint/{tool}"
+                  rel_path: "hw/ip/rv_plic_example/lint/{tool}/v1-bronze"
              },
              {    name: rv_timer
                   fusesoc_core: lowrisc:ip:rv_timer
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_timer/lint/{tool}"
+                  rel_path: "hw/ip/rv_timer/lint/{tool}/v1-bronze"
              },
              {    name: spi_device
                   fusesoc_core: lowrisc:ip:spi_device
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/spi_device/lint/{tool}"
+                  rel_path: "hw/ip/spi_device/lint/{tool}/v1-bronze"
              },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/uart/lint/{tool}"
+                  rel_path: "hw/ip/uart/lint/{tool}/v1-bronze"
              },
              {    name: usbdev
                   fusesoc_core: lowrisc:ip:usbdev
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usbdev/lint/{tool}"
+                  rel_path: "hw/ip/usbdev/lint/{tool}/v1-bronze"
              },
              {    name: usb_fs_nb_pe
                   fusesoc_core: lowrisc:ip:usb_fs_nb_pe
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usb_fs_nb_pe/lint/{tool}"
+                  rel_path: "hw/ip/usb_fs_nb_pe/lint/{tool}/v1-bronze"
              },
              {    name: usbuart
                   fusesoc_core: lowrisc:ip:usbuart
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usbuart/lint/{tool}"
+                  rel_path: "hw/ip/usbuart/lint/{tool}/v1-bronze"
              },
              {    name: socket_1n
                   fusesoc_core: lowrisc:tlul:socket_1n
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/tlul/socket_1n/lint/{tool}"
+                  rel_path: "hw/ip/tlul/socket_1n/lint/{tool}/v1-bronze"
              },
              {    name: socket_m1
                   fusesoc_core: lowrisc:tlul:socket_m1
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/tlul/socket_m1/lint/{tool}"
+                  rel_path: "hw/ip/tlul/socket_m1/lint/{tool}/v1-bronze"
              },
              {    name: adapter_reg
                   fusesoc_core: lowrisc:tlul:adapter_reg
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/tlul/adapter_reg/lint/{tool}"
+                  rel_path: "hw/ip/tlul/adapter_reg/lint/{tool}/v1-bronze"
              },
              {    name: adapter_sram
                   fusesoc_core: lowrisc:tlul:adapter_sram
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
+                  rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}/v1-bronze"
              },
              {    name: sram2tlul
                   fusesoc_core: lowrisc:tlul:sram2tlul
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/tlul/sram2tlul/lint/{tool}"
+                  rel_path: "hw/ip/tlul/sram2tlul/lint/{tool}/v1-bronze"
              },
              {    name: top_earlgrey
                   fusesoc_core: lowrisc:systems:top_earlgrey
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/lint/{tool}/v1-bronze"
              },
              {    name: top_earlgrey_asic
                   fusesoc_core: lowrisc:systems:top_earlgrey_asic
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey_asic/lint/{tool}"
+                  rel_path: "hw/top_earlgrey_asic/lint/{tool}/v1-bronze"
              },
              // these two currently cause compilation issues in AscentLint
              //{    name: top_earlgrey_nexysvideo

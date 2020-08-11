@@ -23,6 +23,8 @@ class OneShotCfg(FlowCfg):
     def __init__(self, flow_cfg_file, proj_root, args):
         super().__init__(flow_cfg_file, proj_root, args)
 
+        assert args.tool is not None
+
         # Options set from command line
         self.tool = args.tool
         self.verbose = args.verbose
@@ -72,10 +74,9 @@ class OneShotCfg(FlowCfg):
         self.links = {}
         self.build_list = []
         self.deploy = []
-
+        self.cov = args.cov
         # Parse the cfg_file file tree
-        self.parse_flow_cfg(flow_cfg_file)
-        self._post_parse_flow_cfg()
+        self._parse_flow_cfg(flow_cfg_file)
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -91,8 +92,8 @@ class OneShotCfg(FlowCfg):
                                                       self.__dict__,
                                                       ignored_wildcards)
 
-        # Stuff below only pertains to individual cfg (not master cfg).
-        if not self.is_master_cfg:
+        # Stuff below only pertains to individual cfg (not primary cfg).
+        if not self.is_primary_cfg:
             # Print info
             log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
 
@@ -111,7 +112,7 @@ class OneShotCfg(FlowCfg):
             self._process_exports()
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
-            # tests and regressions, only if not a master cfg obj
+            # tests and regressions, only if not a primary cfg obj
             self._create_objects()
 
         # Post init checks

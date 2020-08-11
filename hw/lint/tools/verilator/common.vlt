@@ -4,3 +4,12 @@
 //
 // common waiver rules for verilator
 
+`verilator_config
+
+// Do not warn about unconnected pins in module instantiations, e.g.
+// `.optional_output ()`.
+lint_off -rule PINCONNECTEMPTY
+
+// This warning gives wrong results with blackboxed embedded modules, see
+// https://github.com/verilator/verilator/issues/2430
+lint_off -rule DECLFILENAME -file "*" -match "Filename '*' does not match NOTFOUNDMODULE name:*"

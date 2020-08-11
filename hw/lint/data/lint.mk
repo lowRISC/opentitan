@@ -29,10 +29,6 @@ compile_result: post_compile
 	@echo "[make]: compile_result"
 	${report_cmd} ${report_opts}
 
-clean:
-	echo "[make]: clean"
-	rm -rf ${scratch_root}/${dut}/*
-
 .PHONY: build \
 	run \
 	pre_compile \
