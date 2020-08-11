@@ -87,3 +87,44 @@ http_archive(
     strip_prefix = "cxxopts-5e323d648e50b43fd430fb324c632dafd73f7add",
     urls = ["https://github.com/silvergasp/cxxopts/archive/5e323d648e50b43fd430fb324c632dafd73f7add.zip"],
 )
+
+# Change master to the git tag you want.
+http_archive(
+    name = "com_grail_bazel_toolchain",
+    sha256 = "14610f3b6a7b41600bec9168461101fe7b63f095c8724d965a64e51f49a980d5",
+    strip_prefix = "bazel-toolchain-5d6406ee54b3aa04139f30769b4e94538a80bc52",
+    urls = ["https://github.com/grailbio/bazel-toolchain/archive/5d6406ee54b3aa04139f30769b4e94538a80bc52.zip"],
+)
+
+load("@com_grail_bazel_toolchain//toolchain:deps.bzl", "bazel_toolchain_dependencies")
+
+bazel_toolchain_dependencies()
+
+# This sysroot is used by github.com/vsco/bazel-toolchains.
+http_archive(
+    name = "org_chromium_sysroot_linux_x64",
+    build_file_content = """
+filegroup(
+  name = "sysroot",
+  srcs = glob(["*/**"]),
+  visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "84656a6df544ecef62169cfe3ab6e41bb4346a62d3ba2a045dc5a0a2ecea94a3",
+    urls = ["https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/2202c161310ffde63729f29d27fe7bb24a0bc540/debian_stretch_amd64_sysroot.tar.xz"],
+)
+
+load("@com_grail_bazel_toolchain//toolchain:rules.bzl", "llvm_toolchain")
+
+llvm_toolchain(
+    name = "llvm_toolchain",
+    llvm_version = "9.0.0",
+    sysroot = {
+        "linux": "@org_chromium_sysroot_linux_x64//:sysroot",
+    },
+)
+
+load("@llvm_toolchain//:toolchains.bzl", "llvm_register_toolchains")
+
+llvm_register_toolchains()
+
