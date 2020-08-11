@@ -26,6 +26,16 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/alert_handler/lint/{tool}/v1-bronze"
              },
+             {    name: csrng
+                  fusesoc_core: lowrisc:ip:csrng
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/csrng/lint/{tool}/v1-bronze"
+             },
+             {    name: entropy_src
+                  fusesoc_core: lowrisc:ip:entropy_src
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/entropy_src/lint/{tool}/v1-bronze"
+             },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
@@ -51,10 +61,20 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/nmi_gen/lint/{tool}/v1-bronze"
              },
+             {    name: otbn
+                  fusesoc_core: lowrisc:ip:otbn
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otbn/lint/{tool}/v1-bronze"
+             },
              {    name: padctrl
                   fusesoc_core: lowrisc:ip:padctrl
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/padctrl/lint/{tool}/v1-bronze"
+             },
+             {    name: pattgen
+                  fusesoc_core: lowrisc:ip:pattgen
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/pattgen/lint/{tool}/v1-bronze"
              },
              {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
@@ -145,12 +165,12 @@
              //{    name: top_earlgrey_nexysvideo
              //     fusesoc_core: lowrisc:systems:top_earlgrey_nexysvideo
              //     import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_earlgrey_nexysvideo/lint/{tool}"
+             //     rel_path: "hw/top_earlgrey_nexysvideo/lint/{tool}/v1-bronze"
              //},
              //{    name: top_earlgrey_verilator
              //     fusesoc_core: lowrisc:systems:top_earlgrey_verilator
              //     import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_earlgrey_verilator/lint/{tool}"
+             //     rel_path: "hw/top_earlgrey_verilator/lint/{tool}/v1-bronze"
              //},
             ]
 }
