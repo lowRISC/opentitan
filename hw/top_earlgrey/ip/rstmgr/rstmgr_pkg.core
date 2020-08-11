@@ -2,13 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:top:rstmgr_pkg:0.1"
+name: "lowrisc:systems:rstmgr_pkg:0.1"
 description: "Top level Reset Manager Package"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:pwrmgr_only_reg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rstmgr_reg
     files:
