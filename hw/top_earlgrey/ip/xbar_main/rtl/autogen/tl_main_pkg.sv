@@ -6,51 +6,41 @@
 
 package tl_main_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_ROM           = 32'h 00008000;
-  localparam logic [31:0] ADDR_SPACE_DEBUG_MEM     = 32'h 1a110000;
-  localparam logic [31:0] ADDR_SPACE_RAM_MAIN      = 32'h 10000000;
-  localparam logic [31:0] ADDR_SPACE_EFLASH        = 32'h 20000000;
-  localparam logic [5:0][31:0] ADDR_SPACE_PERI          = {
-    32'h 18000000,
-    32'h 40000000,
-    32'h 40080000,
-    32'h 400a0000,
-    32'h 40150000,
-    32'h 40170000
+  localparam logic [31:0] ADDR_SPACE_ROM = 32'h00008000;
+  localparam logic [31:0] ADDR_SPACE_DEBUG_MEM = 32'h1a110000;
+  localparam logic [31:0] ADDR_SPACE_RAM_MAIN = 32'h10000000;
+  localparam logic [31:0] ADDR_SPACE_EFLASH = 32'h20000000;
+  localparam logic [5:0][31:0] ADDR_SPACE_PERI = {
+    32'h18000000, 32'h40000000, 32'h40080000, 32'h400a0000, 32'h40150000, 32'h40170000
   };
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL    = 32'h 40030000;
-  localparam logic [31:0] ADDR_SPACE_HMAC          = 32'h 40120000;
-  localparam logic [31:0] ADDR_SPACE_AES           = 32'h 40110000;
-  localparam logic [31:0] ADDR_SPACE_RV_PLIC       = 32'h 40090000;
-  localparam logic [31:0] ADDR_SPACE_PINMUX        = 32'h 40070000;
-  localparam logic [31:0] ADDR_SPACE_PADCTRL       = 32'h 40160000;
-  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40130000;
-  localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40140000;
-  localparam logic [31:0] ADDR_SPACE_OTBN          = 32'h 50000000;
+  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL = 32'h40030000;
+  localparam logic [31:0] ADDR_SPACE_HMAC = 32'h40120000;
+  localparam logic [31:0] ADDR_SPACE_AES = 32'h40110000;
+  localparam logic [31:0] ADDR_SPACE_RV_PLIC = 32'h40090000;
+  localparam logic [31:0] ADDR_SPACE_PINMUX = 32'h40070000;
+  localparam logic [31:0] ADDR_SPACE_PADCTRL = 32'h40160000;
+  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h40130000;
+  localparam logic [31:0] ADDR_SPACE_NMI_GEN = 32'h40140000;
+  localparam logic [31:0] ADDR_SPACE_OTBN = 32'h50000000;
 
-  localparam logic [31:0] ADDR_MASK_ROM           = 32'h 00003fff;
-  localparam logic [31:0] ADDR_MASK_DEBUG_MEM     = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0000ffff;
-  localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 0007ffff;
-  localparam logic [5:0][31:0] ADDR_MASK_PERI          = {
-    32'h 00000fff,
-    32'h 00020fff,
-    32'h 00000fff,
-    32'h 00020fff,
-    32'h 00000fff,
-    32'h 00000fff
+  localparam logic [31:0] ADDR_MASK_ROM = 32'h00003fff;
+  localparam logic [31:0] ADDR_MASK_DEBUG_MEM = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_RAM_MAIN = 32'h0000ffff;
+  localparam logic [31:0] ADDR_MASK_EFLASH = 32'h0007ffff;
+  localparam logic [5:0][31:0] ADDR_MASK_PERI = {
+    32'h00000fff, 32'h00020fff, 32'h00000fff, 32'h00020fff, 32'h00000fff, 32'h00000fff
   };
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL    = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_HMAC          = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_AES           = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RV_PLIC       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_PINMUX        = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_PADCTRL       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_ALERT_HANDLER = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_NMI_GEN       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_OTBN          = 32'h 003fffff;
+  localparam logic [31:0] ADDR_MASK_FLASH_CTRL = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_HMAC = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_AES = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_RV_PLIC = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_PINMUX = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_PADCTRL = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_ALERT_HANDLER = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_NMI_GEN = 32'h00000fff;
+  localparam logic [31:0] ADDR_MASK_OTBN = 32'h003fffff;
 
-  localparam int N_HOST   = 3;
+  localparam int N_HOST = 3;
   localparam int N_DEVICE = 14;
 
   typedef enum int {

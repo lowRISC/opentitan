@@ -6,19 +6,19 @@
 //   Varies on the process
 
 module prim_generic_clock_inv #(
-  parameter bit HasScanMode = 1'b1
+    parameter bit HasScanMode = 1'b1
 ) (
-  input        clk_i,
-  input        scanmode_i,
-  output logic clk_no      // Inverted
+    input        clk_i,
+    input        scanmode_i,
+    output logic clk_no  // Inverted
 );
 
   if (HasScanMode) begin : gen_scan
     prim_clock_mux2 i_dft_tck_mux (
-      .clk0_i ( ~clk_i     ),
-      .clk1_i ( clk_i      ), // bypass the inverted clock for testing
-      .sel_i  ( scanmode_i ),
-      .clk_o  ( clk_no     )
+        .clk0_i(~clk_i),
+        .clk1_i(clk_i),  // bypass the inverted clock for testing
+        .sel_i (scanmode_i),
+        .clk_o (clk_no)
     );
   end else begin : gen_noscan
     logic unused_scanmode;

@@ -5,21 +5,11 @@
 module rv_core_ibex_bind;
 
   bind rv_core_ibex tlul_assert #(
-    .EndpointType("Host")
-  ) tlul_assert_host_instr (
-    .clk_i,
-    .rst_ni,
-    .h2d  (tl_i_o),
-    .d2h  (tl_i_i)
-  );
+      .EndpointType("Host")
+  ) tlul_assert_host_instr (.clk_i, .rst_ni, .h2d(tl_i_o), .d2h(tl_i_i));
 
   bind rv_core_ibex tlul_assert #(
-    .EndpointType("Host")
-  ) tlul_assert_host_data (
-    .clk_i,
-    .rst_ni,
-    .h2d  (tl_d_o),
-    .d2h  (tl_d_i)
-  );
+      .EndpointType("Host")
+  ) tlul_assert_host_data (.clk_i, .rst_ni, .h2d(tl_d_o), .d2h(tl_d_i));
 
 endmodule

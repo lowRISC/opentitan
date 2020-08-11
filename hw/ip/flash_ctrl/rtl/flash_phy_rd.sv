@@ -26,38 +26,40 @@
 // also be kicked off. When the galois multiply stage AND read stage completes, the
 // de-scramble is then kicked off.
 
-module flash_phy_rd import flash_phy_pkg::*; (
-  input clk_i,
-  input rst_ni,
+module flash_phy_rd
+import flash_phy_pkg::*;
+(
+    input clk_i,
+    input rst_ni,
 
-  // interface with arbitration unit
-  input req_i,
-  input descramble_i,
-  input prog_i,
-  input pg_erase_i,
-  input bk_erase_i,
-  input [BusBankAddrW-1:0] addr_i,
-  input flash_ctrl_pkg::flash_part_e part_i,
-  output logic rdy_o,
-  output logic data_valid_o,
-  output logic [BusWidth-1:0] data_o,
-  output logic idle_o, // the entire read pipeline is idle
+    // interface with arbitration unit
+    input req_i,
+    input descramble_i,
+    input prog_i,
+    input pg_erase_i,
+    input bk_erase_i,
+    input [BusBankAddrW-1:0] addr_i,
+    input flash_ctrl_pkg::flash_part_e part_i,
+    output logic rdy_o,
+    output logic data_valid_o,
+    output logic [BusWidth-1:0] data_o,
+    output logic idle_o,  // the entire read pipeline is idle
 
-  // interface with scramble unit
-  output logic calc_req_o,
-  output logic descramble_req_o,
-  output logic [BankAddrW-1:0] calc_addr_o,
-  output logic [DataWidth-1:0] scrambled_data_o,
-  input calc_ack_i,
-  input descramble_ack_i,
-  input [DataWidth-1:0] mask_i,
-  input [DataWidth-1:0] descrambled_data_i,
+    // interface with scramble unit
+    output logic                 calc_req_o,
+    output logic                 descramble_req_o,
+    output logic [BankAddrW-1:0] calc_addr_o,
+    output logic [DataWidth-1:0] scrambled_data_o,
+    input                        calc_ack_i,
+    input                        descramble_ack_i,
+    input        [DataWidth-1:0] mask_i,
+    input        [DataWidth-1:0] descrambled_data_i,
 
-  // interface to actual flash primitive
-  output logic req_o,
-  input ack_i,
-  input [DataWidth-1:0] data_i
-  );
+    // interface to actual flash primitive
+    output logic                 req_o,
+    input                        ack_i,
+    input        [DataWidth-1:0] data_i
+);
 
   /////////////////////////////////
   // Read buffers
@@ -77,7 +79,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // This updates the buffer that was allocated when a new transaction was initiated.
   logic [NumBuf-1:0] update;
 
-  rd_buf_t read_buf [NumBuf];
+  rd_buf_t read_buf[NumBuf];
   logic [NumBuf-1:0] buf_invalid;
   logic [NumBuf-1:0] buf_valid;
   logic [NumBuf-1:0] buf_wip;
@@ -101,51 +103,49 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // flash word address
   logic [BankAddrW-1:0] flash_word_addr;
-  assign flash_word_addr = addr_i[BusBankAddrW-1:LsbAddrBit];
+  assign flash_word_addr = addr_i[BusBankAddrW - 1:LsbAddrBit];
 
-  for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_states
-    assign buf_valid[i]   = read_buf[i].attr == Valid;
-    assign buf_wip[i]     = read_buf[i].attr == Wip;
+  for (genvar i = 0; i < NumBuf; i++) begin : gen_buf_states
+    assign buf_valid[i] = read_buf[i].attr == Valid;
+    assign buf_wip[i] = read_buf[i].attr == Wip;
     assign buf_invalid[i] = read_buf[i].attr == Invalid;
   end
 
   assign buf_invalid_alloc[0] = buf_invalid[0];
-  for (genvar i = 1; i < NumBuf; i++) begin: gen_inv_alloc_bufs
-    assign buf_invalid_alloc[i] = buf_invalid[i] & ~|buf_invalid_alloc[i-1:0];
+  for (genvar i = 1; i < NumBuf; i++) begin : gen_inv_alloc_bufs
+    assign buf_invalid_alloc[i] = buf_invalid[i] & ~|buf_invalid_alloc[i - 1:0];
   end
 
   // a prim arbiter is used to somewhat fairly select among the valid buffers
-  logic [1:0] dummy_data [NumBuf];
-  for (genvar i = 0; i < NumBuf; i++) begin: gen_dummy
+  logic [1:0] dummy_data[NumBuf];
+  for (genvar i = 0; i < NumBuf; i++) begin : gen_dummy
     assign dummy_data[i] = '0;
   end
 
   prim_arbiter_tree #(
-    .N(NumBuf),
-    // disable request stability assertion
-    .EnReqStabA(0),
-    .DW(2)
+      .N(NumBuf),
+      // disable request stability assertion
+      .EnReqStabA(0),
+      .DW(2)
   ) i_valid_random (
-    .clk_i,
-    .rst_ni,
-    .req_i(buf_valid),
-    .data_i(dummy_data),
-    .gnt_o(buf_valid_alloc),
-    .idx_o(),
-    .valid_o(),
-    .data_o(),
-    .ready_i(req_o)
+      .clk_i,
+      .rst_ni,
+      .req_i  (buf_valid),
+      .data_i (dummy_data),
+      .gnt_o  (buf_valid_alloc),
+      .idx_o  (),
+      .valid_o(),
+      .data_o (),
+      .ready_i(req_o)
   );
 
   // which buffer to allocate upon a new transaction
   assign buf_alloc = |buf_invalid_alloc ? buf_invalid_alloc : buf_valid_alloc;
 
   // do not attempt to generate match unless the transaction is relevant
-  for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
-    assign buf_match[i] = req_i &
-                          (buf_valid[i] | buf_wip[i]) &
-                          (read_buf[i].addr == flash_word_addr) &
-                          (read_buf[i].part == part_i);
+  for (genvar i = 0; i < NumBuf; i++) begin : gen_buf_match
+    assign buf_match[i] = req_i & (buf_valid[i] | buf_wip[i]) & (read_buf[i].addr == flash_word_addr
+        ) & (read_buf[i].part == part_i);
 
     // A data hazard should never happen to a wip buffer because it implies
     // that a read is in progress, so a hazard operation cannot start.
@@ -157,42 +157,39 @@ module flash_phy_rd import flash_phy_pkg::*; (
     logic word_addr_match;
     logic page_addr_match;
 
-    assign part_match      = read_buf[i].part == part_i;
-    assign word_addr_match = (read_buf[i].addr == flash_word_addr) &
-                             part_match;
+    assign part_match = read_buf[i].part == part_i;
+    assign word_addr_match = (read_buf[i].addr == flash_word_addr) & part_match;
 
     // the read buffer address in on flash word boundary
     // while the incoming address in on the bus word boundary
     assign page_addr_match = (read_buf[i].addr[WordW +: PageW] == addr_i[BusWordW +: PageW]) &
-                             part_match;
+        part_match;
 
-    assign data_hazard[i] = buf_valid[i] &
-                            (bk_erase_i |
-                            (prog_i & word_addr_match) |
-                            (pg_erase_i & page_addr_match));
+    assign data_hazard[i] =
+        buf_valid[i] & (bk_erase_i | (prog_i & word_addr_match) | (pg_erase_i & page_addr_match));
 
   end
 
   assign no_match = ~|buf_match;
 
   // if new request does not match anything, allocate
-  assign alloc = no_match ? {NumBuf{req_i}} &  buf_alloc : '0;
+  assign alloc = no_match ? {NumBuf{req_i}} & buf_alloc : '0;
 
   // read buffers
   // allocate sets state to Wip
   // update sets state to valid
   // wipe sets state to invalid - this comes from prog
-  for (genvar i = 0; i < NumBuf; i++) begin: gen_bufs
+  for (genvar i = 0; i < NumBuf; i++) begin : gen_bufs
     flash_phy_rd_buffers u_rd_buf (
-      .clk_i,
-      .rst_ni,
-      .alloc_i(rdy_o & alloc[i]),
-      .update_i(update[i]),
-      .wipe_i(data_hazard[i]),
-      .addr_i(flash_word_addr),
-      .part_i(part_i),
-      .data_i(muxed_data),
-      .out_o(read_buf[i])
+        .clk_i,
+        .rst_ni,
+        .alloc_i (rdy_o & alloc[i]),
+        .update_i(update[i]),
+        .wipe_i  (data_hazard[i]),
+        .addr_i  (flash_word_addr),
+        .part_i  (part_i),
+        .data_i  (muxed_data),
+        .out_o   (read_buf[i])
     );
   end
 
@@ -242,20 +239,20 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // response order FIFO
   prim_fifo_sync #(
-    .Width  (RspOrderFifoWidth),
-    .Pass   (0),
-    .Depth  (RspOrderDepth)
+      .Width(RspOrderFifoWidth),
+      .Pass(0),
+      .Depth(RspOrderDepth)
   ) i_rsp_order_fifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(req_i && rdy_o),
-    .wready_o(rsp_fifo_rdy),
-    .wdata_i (rsp_fifo_wdata),
-    .depth_o (),
-    .rvalid_o(rsp_fifo_vld),
-    .rready_i(data_valid_o), // pop when a match has been found
-    .rdata_o (rsp_fifo_rdata)
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(req_i && rdy_o),
+      .wready_o(rsp_fifo_rdy),
+      .wdata_i (rsp_fifo_wdata),
+      .depth_o (),
+      .rvalid_o(rsp_fifo_vld),
+      .rready_i(data_valid_o),  // pop when a match has been found
+      .rdata_o (rsp_fifo_rdata)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -267,7 +264,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       // read only becomes busy if a buffer is allocated and read
       rd_busy <= 1'b1;
       alloc_q <= alloc;
-      rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
+      rd_attrs.addr <= addr_i[BusBankAddrW - 1:LsbAddrBit];
       rd_attrs.descramble <= descramble_i;
     end else if (rd_done) begin
       rd_busy <= 1'b0;
@@ -281,7 +278,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // if no buffers matched, accept only if read state is idle and there is space
   // if buffer is matched, accept as long as there is space in the rsp fifo
   assign rdy_o = no_match ? rd_stage_idle & rsp_fifo_rdy & scramble_stage_rdy :
-                            rsp_fifo_rdy & scramble_stage_rdy;
+      rsp_fifo_rdy & scramble_stage_rdy;
 
   // issue a transaction to flash
   assign req_o = req_i & rdy_o & no_match;
@@ -309,13 +306,13 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // 2. Immediately consumed when descrambling not required
   // 3. In both cases, when data has not already been forwarded
   assign fifo_data_ready = hint_descram ? descramble_req_o & descramble_ack_i & ~hint_forward :
-                                          fifo_data_valid & !hint_forward;
+      fifo_data_valid & !hint_forward;
 
   // data is forwarded whenever it does not require descrambling or if it has been erased
   // but forwarding is only possible if there are no entries in the FIFO to ensure the current
   // read cannot run ahead of the descramble.
-  assign forward = rd_done & !fifo_data_valid &
-                   ((data_i == {DataWidth{1'b1}}) | !rd_attrs.descramble);
+  assign
+      forward = rd_done & !fifo_data_valid & ((data_i == {DataWidth{1'b1}}) | !rd_attrs.descramble);
 
   // storage for read outputs
   // This storage element can be fully merged with the fifo below if the time it takes
@@ -332,38 +329,38 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // the user would need to correctly setup constraints on either flash / gf_mult
   // timing change.
   prim_fifo_sync #(
-    .Width   (DataWidth + 2 + NumBuf),
-    .Pass    (0),
-    .Depth   (2)
+      .Width(DataWidth + 2 + NumBuf),
+      .Pass(0),
+      .Depth(2)
   ) u_rd_storage (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(rd_done),
-    .wready_o(data_fifo_rdy),
-    .wdata_i ({alloc_q, rd_attrs.descramble,forward,data_i}),
-    .depth_o (),
-    .rvalid_o(fifo_data_valid),
-    .rready_i(fifo_data_ready | hint_forward),
-    .rdata_o ({alloc_q2, hint_descram,hint_forward,fifo_data})
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(rd_done),
+      .wready_o(data_fifo_rdy),
+      .wdata_i ({alloc_q, rd_attrs.descramble, forward, data_i}),
+      .depth_o (),
+      .rvalid_o(fifo_data_valid),
+      .rready_i(fifo_data_ready | hint_forward),
+      .rdata_o ({alloc_q2, hint_descram, hint_forward, fifo_data})
   );
 
   // storage for mask calculations
   prim_fifo_sync #(
-    .Width   (DataWidth),
-    .Pass    (0),
-    .Depth   (2)
+      .Width(DataWidth),
+      .Pass(0),
+      .Depth(2)
   ) u_mask_storage (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(calc_req_o & calc_ack_i),
-    .wready_o(mask_fifo_rdy),
-    .wdata_i (mask_i),
-    .depth_o (),
-    .rvalid_o(mask_valid),
-    .rready_i(fifo_data_ready | hint_forward),
-    .rdata_o (mask)
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(calc_req_o & calc_ack_i),
+      .wready_o(mask_fifo_rdy),
+      .wdata_i (mask_i),
+      .depth_o (),
+      .rvalid_o(mask_valid),
+      .rready_i(fifo_data_ready | hint_forward),
+      .rdata_o (mask)
   );
 
   // generate the mask calculation request
@@ -410,14 +407,13 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // When de-scrambling however, the contents of alloc_q may have already updated to the next read,
   // so a different pointer is used.
   // assign update = data_valid ? alloc_q : '0;
-  assign update = forward         ? alloc_q  :
-                  fifo_data_ready ? alloc_q2 : '0;
+  assign update = forward ? alloc_q : fifo_data_ready ? alloc_q2 : '0;
 
   // match in flash response when allocated buffer is the same as top of response fifo
   assign flash_rsp_match = rsp_fifo_vld & data_valid & (rsp_fifo_rdata.buf_sel == update);
 
   // match in buf response when there is a valid buffer that is the same as top of response fifo
-  for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_rsp_match
+  for (genvar i = 0; i < NumBuf; i++) begin : gen_buf_rsp_match
     assign buf_rsp_match[i] = rsp_fifo_vld & (rsp_fifo_rdata.buf_sel[i] & buf_valid[i]);
   end
 
@@ -467,7 +463,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   `ASSERT(OneHotUpdate_A, $onehot0(update))
 
   // alloc and update should be mutually exclusive for a buffer
-  `ASSERT(ExclusiveOps_A, (alloc & update) == 0 )
+  `ASSERT(ExclusiveOps_A, (alloc & update) == 0)
 
   // valid and wip are mutually exclusive
   `ASSERT(ExclusiveState_A, (buf_valid & buf_wip) == 0)
@@ -476,7 +472,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   `ASSERT(ExclusiveProgHazard_A, (data_hazard & buf_wip) == 0)
 
   // unless the pipeline is idle, we should not have non-read trasnactions
-  `ASSERT(IdleCheck_A, !idle_o |-> {prog_i,pg_erase_i,bk_erase_i} == '0)
+  `ASSERT(IdleCheck_A, !idle_o |-> {prog_i, pg_erase_i, bk_erase_i} == '0)
 
 
-endmodule // flash_phy_core
+endmodule  // flash_phy_core

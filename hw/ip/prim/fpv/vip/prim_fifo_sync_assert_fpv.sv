@@ -8,24 +8,24 @@
 `include "prim_assert.sv"
 
 module prim_fifo_sync_assert_fpv #(
-  // can be desabled for deeper FIFOs
-  parameter bit EnableDataCheck = 1'b1,
-  parameter int unsigned Width = 16,
-  parameter bit Pass = 1'b1,
-  parameter int unsigned Depth = 4,
-  localparam int unsigned DepthWNorm = $clog2(Depth+1),
-  localparam int unsigned DepthW = (DepthWNorm == 0) ? 1 : DepthWNorm
+    // can be desabled for deeper FIFOs
+    parameter bit EnableDataCheck = 1'b1,
+    parameter int unsigned Width = 16,
+    parameter bit Pass = 1'b1,
+    parameter int unsigned Depth = 4,
+    localparam int unsigned DepthWNorm = $clog2 (Depth + 1),
+    localparam int unsigned DepthW = (DepthWNorm == 0) ? 1 : DepthWNorm
 ) (
-  input  clk_i,
-  input  rst_ni,
-  input  clr_i,
-  input  wvalid_i,
-  input  wready_o,
-  input [Width-1:0] wdata_i,
-  input  rvalid_o,
-  input  rready_i,
-  input [Width-1:0] rdata_o,
-  input [DepthW-1:0] depth_o
+    input              clk_i,
+    input              rst_ni,
+    input              clr_i,
+    input              wvalid_i,
+    input              wready_o,
+    input [ Width-1:0] wdata_i,
+    input              rvalid_o,
+    input              rready_i,
+    input [ Width-1:0] rdata_o,
+    input [DepthW-1:0] depth_o
 );
 
   /////////////////
@@ -40,15 +40,15 @@ module prim_fifo_sync_assert_fpv #(
   // Data and Depth Value Check //
   ////////////////////////////////
 
-   if (EnableDataCheck && Depth > 0) begin : gen_data_check
+  if (EnableDataCheck && Depth > 0) begin : gen_data_check
 
     logic [DepthW+2:0] ref_depth;
-    logic [Width-1:0]  ref_rdata;
+    logic [Width-1:0] ref_rdata;
 
     // no pointers needed in this case
     if (Depth == 1) begin : gen_no_ptrs
 
-      logic [Width-1:0]  fifo;
+      logic [Width-1:0] fifo;
       logic [DepthW+2:0] wptr, rptr;
 
       // this only models the data flow, since the control logic is tested below
@@ -77,28 +77,28 @@ module prim_fifo_sync_assert_fpv #(
         assign ref_rdata = fifo;
       end
 
-    // general case
+      // general case
     end else begin : gen_ptrs
 
-      logic [Width-1:0]  fifo [Depth];
+      logic [Width-1:0] fifo[Depth];
       logic [DepthW+2:0] wptr, rptr;
 
       // implements (++val) mod Depth
       function automatic logic [DepthW+2:0] modinc(logic [DepthW+2:0] val, int modval);
-        if (val == Depth-1) return 0;
-        else                return val + 1;
+        if (val == Depth - 1) return 0;
+        else return val + 1;
       endfunction
 
       // this only models the data flow, since the control logic is tested below
       always_ff @(posedge clk_i or negedge rst_ni) begin : p_fifo_model
         if (!rst_ni) begin
-          wptr      <= 0;
-          rptr      <= 0;
+          wptr <= 0;
+          rptr <= 0;
           ref_depth <= 0;
         end else begin
           if (clr_i) begin
-            wptr      <= 0;
-            rptr      <= 0;
+            wptr <= 0;
+            rptr <= 0;
             ref_depth <= 0;
           end else begin
             if (wvalid_i && wready_o && rvalid_o && rready_i) begin
@@ -142,16 +142,17 @@ module prim_fifo_sync_assert_fpv #(
   `ASSERT(CheckClrDepth_A, clr_i |=> depth_o == 0)
   // check write on full
   `ASSERT(WriteFull_A, depth_o == Depth && wvalid_i && !rready_i |=> depth_o == $past(depth_o),
-      clk_i, !rst_ni || clr_i)
+          clk_i, !rst_ni || clr_i)
   // read empty
-  `ASSERT(ReadEmpty_A, depth_o == 0 && rready_i && !wvalid_i |=> depth_o == 0,
-      clk_i, !rst_ni || clr_i)
+  `ASSERT(ReadEmpty_A, depth_o == 0 && rready_i && !wvalid_i |=> depth_o == 0, clk_i,
+          !rst_ni || clr_i)
 
   // this is unreachable in depth 1 no-pass through mode
   if (Depth == 1 && Pass) begin : gen_d1_passthru
     // check simultaneous write and read
-    `ASSERT(WriteAndRead_A, wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o),
-        clk_i, !rst_ni || clr_i)
+    `ASSERT(WriteAndRead_A,
+            wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o), clk_i,
+            !rst_ni || clr_i)
   end
 
   if (Depth == 0) begin : gen_depth0
@@ -173,11 +174,13 @@ module prim_fifo_sync_assert_fpv #(
     // check rvalid
     `ASSERT(Rvalid_A, depth_o > 0 |-> rvalid_o)
     // check write only
-    `ASSERT(WriteOnly_A, wvalid_i && wready_o && !rready_i && depth_o < Depth |=>
-        depth_o == $past(depth_o) + 1, clk_i, !rst_ni || clr_i)
+    `ASSERT(WriteOnly_A,
+            wvalid_i && wready_o && !rready_i && depth_o < Depth |=> depth_o == $past(depth_o) + 1,
+            clk_i, !rst_ni || clr_i)
     // check read only
-    `ASSERT(ReadOnly_A, !wvalid_i && rready_i && rvalid_o && depth_o > 0 |=>
-      depth_o == $past(depth_o) - 1, clk_i, !rst_ni || clr_i)
+    `ASSERT(ReadOnly_A,
+            !wvalid_i && rready_i && rvalid_o && depth_o > 0 |=> depth_o == $past(depth_o) - 1,
+            clk_i, !rst_ni || clr_i)
   end
 
   if (Pass) begin : gen_pass_fwd

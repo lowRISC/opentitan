@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_timer_reg_block));
+class rv_timer_env_cfg extends cip_base_env_cfg#(
+    .RAL_T(rv_timer_reg_block)
+);
   `uvm_object_utils(rv_timer_env_cfg)
   `uvm_object_new
 

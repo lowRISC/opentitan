@@ -20,9 +20,11 @@ class uart_noise_filter_vseq extends uart_tx_rx_vseq;
       // need large number to check if the glitch has no impact to uart
       repeat ($urandom_range(1, 10_000)) begin
         cfg.m_uart_agent_cfg.vif.drive_uart_rx_glitch(
-            .max_glitch_ps(core_clk_period_ps), // 1 core clk
-            // need 3 core clk cycles to push out the glitch before next drive
-            .stable_ps_after_glitch(core_clk_period_ps * 3));
+        .max_glitch_ps(core_clk_period_ps)
+        ,  // 1 core clk
+        // need 3 core clk cycles to push out the glitch before next drive
+        .stable_ps_after_glitch(core_clk_period_ps * 3)
+        );
       end
       csr_rd_check(.ptr(ral.status.rxidle), .compare_value(1));
     end

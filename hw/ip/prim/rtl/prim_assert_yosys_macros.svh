@@ -5,12 +5,12 @@
 // Macro bodies included by prim_assert.sv for formal verification with Yosys. See prim_assert.sv
 // for documentation for each of the macros.
 
-`define ASSERT_I(__name, __prop)    \
+`define ASSERT_I(__name, __prop) \
   always_comb begin : __name        \
     assert (__prop);                \
   end
 
-`define ASSERT_INIT(__name, __prop)    \
+`define ASSERT_INIT(__name, __prop) \
   initial begin : __name               \
     assert (__prop);                   \
   end
@@ -41,7 +41,7 @@
     if (! (__rst !== '0)) __name: assume (__prop);                                       \
   end
 
-`define ASSUME_I(__name, __prop)              \
+`define ASSUME_I(__name, __prop) \
   always_comb begin : __name                  \
     assume (__prop);                          \
   end

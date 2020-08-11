@@ -16,71 +16,77 @@
 *
 */
 module dm_sba #(
-  parameter int unsigned BusWidth = 32
+    parameter int unsigned BusWidth = 32
 ) (
-  input  logic                   clk_i,       // Clock
-  input  logic                   rst_ni,
-  input  logic                   dmactive_i,  // synchronous reset active low
+    input logic clk_i,  // Clock
+    input logic rst_ni,
+    input logic dmactive_i,  // synchronous reset active low
 
-  output logic                   master_req_o,
-  output logic [BusWidth-1:0]    master_add_o,
-  output logic                   master_we_o,
-  output logic [BusWidth-1:0]    master_wdata_o,
-  output logic [BusWidth/8-1:0]  master_be_o,
-  input  logic                   master_gnt_i,
-  input  logic                   master_r_valid_i,
-  input  logic [BusWidth-1:0]    master_r_rdata_i,
+    output logic                  master_req_o,
+    output logic [  BusWidth-1:0] master_add_o,
+    output logic                  master_we_o,
+    output logic [  BusWidth-1:0] master_wdata_o,
+    output logic [BusWidth/8-1:0] master_be_o,
+    input  logic                  master_gnt_i,
+    input  logic                  master_r_valid_i,
+    input  logic [  BusWidth-1:0] master_r_rdata_i,
 
-  input  logic [BusWidth-1:0]    sbaddress_i,
-  input  logic                   sbaddress_write_valid_i,
-  // control signals in
-  input  logic                   sbreadonaddr_i,
-  output logic [BusWidth-1:0]    sbaddress_o,
-  input  logic                   sbautoincrement_i,
-  input  logic [2:0]             sbaccess_i,
-  // data in
-  input  logic                   sbreadondata_i,
-  input  logic [BusWidth-1:0]    sbdata_i,
-  input  logic                   sbdata_read_valid_i,
-  input  logic                   sbdata_write_valid_i,
-  // read data out
-  output logic [BusWidth-1:0]    sbdata_o,
-  output logic                   sbdata_valid_o,
-  // control signals
-  output logic                   sbbusy_o,
-  output logic                   sberror_valid_o, // bus error occurred
-  output logic [2:0]             sberror_o // bus error occurred
+    input  logic [BusWidth-1:0] sbaddress_i,
+    input  logic                sbaddress_write_valid_i,
+    // control signals in
+    input  logic                sbreadonaddr_i,
+    output logic [BusWidth-1:0] sbaddress_o,
+    input  logic                sbautoincrement_i,
+    input  logic [         2:0] sbaccess_i,
+    // data in
+    input  logic                sbreadondata_i,
+    input  logic [BusWidth-1:0] sbdata_i,
+    input  logic                sbdata_read_valid_i,
+    input  logic                sbdata_write_valid_i,
+    // read data out
+    output logic [BusWidth-1:0] sbdata_o,
+    output logic                sbdata_valid_o,
+    // control signals
+    output logic                sbbusy_o,
+    output logic                sberror_valid_o,  // bus error occurred
+    output logic [         2:0] sberror_o  // bus error occurred
 );
 
-  typedef enum logic [2:0] { Idle, Read, Write, WaitRead, WaitWrite } state_e;
+  typedef enum logic [2:0] {
+    Idle,
+    Read,
+    Write,
+    WaitRead,
+    WaitWrite
+  } state_e;
   state_e state_d, state_q;
 
-  logic [BusWidth-1:0]           address;
-  logic                          req;
-  logic                          gnt;
-  logic                          we;
-  logic [BusWidth/8-1:0]         be;
+  logic [BusWidth-1:0] address;
+  logic req;
+  logic gnt;
+  logic we;
+  logic [BusWidth/8-1:0] be;
   logic [$clog2(BusWidth/8)-1:0] be_idx;
 
   assign sbbusy_o = logic'(state_q != Idle);
 
   always_comb begin : p_fsm
-    req     = 1'b0;
+    req = 1'b0;
     address = sbaddress_i;
-    we      = 1'b0;
-    be      = '0;
-    be_idx  = sbaddress_i[$clog2(BusWidth/8)-1:0];
+    we = 1'b0;
+    be = '0;
+    be_idx = sbaddress_i[$clog2(BusWidth / 8) - 1:0];
 
-    sberror_o       = '0;
+    sberror_o = '0;
     sberror_valid_o = 1'b0;
-    sbaddress_o     = sbaddress_i;
+    sbaddress_o = sbaddress_i;
 
     state_d = state_q;
 
     unique case (state_q)
       Idle: begin
         // debugger requested a read
-        if (sbaddress_write_valid_i && sbreadonaddr_i)  state_d = Read;
+        if (sbaddress_write_valid_i && sbreadonaddr_i) state_d = Read;
         // debugger requested a write
         if (sbdata_write_valid_i) state_d = Write;
         // perform another read
@@ -94,7 +100,7 @@ module dm_sba #(
 
       Write: begin
         req = 1'b1;
-        we  = 1'b1;
+        we = 1'b1;
         // generate byte enable mask
         unique case (sbaccess_i)
           3'b000: begin
@@ -105,7 +111,7 @@ module dm_sba #(
           end
           3'b010: begin
             if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'h0}) +: 4] = '1;
-            else                    be = '1;
+            else be = '1;
           end
           3'b011: be = '1;
           default: ;
@@ -129,15 +135,15 @@ module dm_sba #(
         end
       end
 
-      default: state_d = Idle; // catch parasitic state
+      default: state_d = Idle;  // catch parasitic state
     endcase
 
     // handle error case
     if (sbaccess_i > 3 && state_q != Idle) begin
-      req             = 1'b0;
-      state_d         = Idle;
+      req = 1'b0;
+      state_d = Idle;
       sberror_valid_o = 1'b1;
-      sberror_o       = 3'd3;
+      sberror_o = 3'd3;
     end
     // further error handling should go here ...
   end
@@ -150,23 +156,24 @@ module dm_sba #(
     end
   end
 
-  assign master_req_o    = req;
-  assign master_add_o    = address[BusWidth-1:0];
-  assign master_we_o     = we;
-  assign master_wdata_o  = sbdata_i[BusWidth-1:0];
-  assign master_be_o     = be[BusWidth/8-1:0];
-  assign gnt             = master_gnt_i;
-  assign sbdata_valid_o  = master_r_valid_i;
-  assign sbdata_o        = master_r_rdata_i[BusWidth-1:0];
+  assign master_req_o = req;
+  assign master_add_o = address[BusWidth - 1:0];
+  assign master_we_o = we;
+  assign master_wdata_o = sbdata_i[BusWidth - 1:0];
+  assign master_be_o = be[BusWidth / 8 - 1:0];
+  assign gnt = master_gnt_i;
+  assign sbdata_valid_o = master_r_valid_i;
+  assign sbdata_o = master_r_rdata_i[BusWidth - 1:0];
 
 
   //pragma translate_off
-  `ifndef VERILATOR
-    // maybe bump severity to $error if not handled at runtime
-    dm_sba_access_size: assert property(@(posedge clk_i) disable iff (dmactive_i !== 1'b0)
-        (state_d != Idle) |-> (sbaccess_i < 4))
-            else $warning ("accesses > 8 byte not supported at the moment");
-  `endif
+`ifndef VERILATOR
+  // maybe bump severity to $error if not handled at runtime
+  dm_sba_access_size :
+  assert property (
+      @(posedge clk_i) disable iff (dmactive_i !== 1'b0) (state_d != Idle) |-> (sbaccess_i < 4))
+  else $warning("accesses > 8 byte not supported at the moment");
+`endif
   //pragma translate_on
 
 endmodule : dm_sba

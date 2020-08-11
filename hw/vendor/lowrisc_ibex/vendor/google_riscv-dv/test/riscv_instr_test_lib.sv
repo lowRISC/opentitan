@@ -24,8 +24,7 @@ class riscv_rand_instr_test extends riscv_instr_base_test;
     cfg.instr_cnt = 10000;
     cfg.num_of_sub_program = 5;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
-    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s",
-                    cfg.sprint()), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s", cfg.sprint()), UVM_LOW)
   endfunction
 
   virtual function void apply_directed_instr();
@@ -50,8 +49,7 @@ class riscv_ml_test extends riscv_instr_base_test;
     cfg.addr_translaction_rnd_order_c.constraint_mode(0);
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     cfg.addr_translaction_rnd_order_c.constraint_mode(1);
-    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s",
-                    cfg.sprint()), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s", cfg.sprint()), UVM_LOW)
   endfunction
 
 endclass

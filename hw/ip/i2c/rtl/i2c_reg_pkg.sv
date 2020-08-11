@@ -10,320 +10,226 @@ package i2c_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } fmt_watermark;
-    struct packed {
-      logic        q;
-    } rx_watermark;
-    struct packed {
-      logic        q;
-    } fmt_overflow;
-    struct packed {
-      logic        q;
-    } rx_overflow;
-    struct packed {
-      logic        q;
-    } nak;
-    struct packed {
-      logic        q;
-    } scl_interference;
-    struct packed {
-      logic        q;
-    } sda_interference;
-    struct packed {
-      logic        q;
-    } stretch_timeout;
-    struct packed {
-      logic        q;
-    } sda_unstable;
-    struct packed {
-      logic        q;
-    } trans_complete;
+    struct packed {logic q;} fmt_watermark;
+    struct packed {logic q;} rx_watermark;
+    struct packed {logic q;} fmt_overflow;
+    struct packed {logic q;} rx_overflow;
+    struct packed {logic q;} nak;
+    struct packed {logic q;} scl_interference;
+    struct packed {logic q;} sda_interference;
+    struct packed {logic q;} stretch_timeout;
+    struct packed {logic q;} sda_unstable;
+    struct packed {logic q;} trans_complete;
   } i2c_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } fmt_watermark;
-    struct packed {
-      logic        q;
-    } rx_watermark;
-    struct packed {
-      logic        q;
-    } fmt_overflow;
-    struct packed {
-      logic        q;
-    } rx_overflow;
-    struct packed {
-      logic        q;
-    } nak;
-    struct packed {
-      logic        q;
-    } scl_interference;
-    struct packed {
-      logic        q;
-    } sda_interference;
-    struct packed {
-      logic        q;
-    } stretch_timeout;
-    struct packed {
-      logic        q;
-    } sda_unstable;
-    struct packed {
-      logic        q;
-    } trans_complete;
+    struct packed {logic q;} fmt_watermark;
+    struct packed {logic q;} rx_watermark;
+    struct packed {logic q;} fmt_overflow;
+    struct packed {logic q;} rx_overflow;
+    struct packed {logic q;} nak;
+    struct packed {logic q;} scl_interference;
+    struct packed {logic q;} sda_interference;
+    struct packed {logic q;} stretch_timeout;
+    struct packed {logic q;} sda_unstable;
+    struct packed {logic q;} trans_complete;
   } i2c_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } fmt_watermark;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } rx_watermark;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } fmt_overflow;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } rx_overflow;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } nak;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } scl_interference;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } sda_interference;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } stretch_timeout;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } sda_unstable;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } trans_complete;
   } i2c_reg2hw_intr_test_reg_t;
 
-  typedef struct packed {
-    logic        q;
-  } i2c_reg2hw_ctrl_reg_t;
+  typedef struct packed {logic q;} i2c_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
-    logic [7:0]  q;
-    logic        re;
+    logic [7:0] q;
+    logic re;
   } i2c_reg2hw_rdata_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-      logic        qe;
+      logic [7:0] q;
+      logic qe;
     } fbyte;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } start;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } stop;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } read;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } rcont;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } nakok;
   } i2c_reg2hw_fdata_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } rxrst;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } fmtrst;
     struct packed {
-      logic [2:0]  q;
-      logic        qe;
+      logic [2:0] q;
+      logic qe;
     } rxilvl;
     struct packed {
-      logic [1:0]  q;
-      logic        qe;
+      logic [1:0] q;
+      logic qe;
     } fmtilvl;
   } i2c_reg2hw_fifo_ctrl_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } txovrden;
-    struct packed {
-      logic        q;
-    } sclval;
-    struct packed {
-      logic        q;
-    } sdaval;
+    struct packed {logic q;} txovrden;
+    struct packed {logic q;} sclval;
+    struct packed {logic q;} sdaval;
   } i2c_reg2hw_ovrd_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] q;
-    } thigh;
-    struct packed {
-      logic [15:0] q;
-    } tlow;
+    struct packed {logic [15:0] q;} thigh;
+    struct packed {logic [15:0] q;} tlow;
   } i2c_reg2hw_timing0_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] q;
-    } t_r;
-    struct packed {
-      logic [15:0] q;
-    } t_f;
+    struct packed {logic [15:0] q;} t_r;
+    struct packed {logic [15:0] q;} t_f;
   } i2c_reg2hw_timing1_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] q;
-    } tsu_sta;
-    struct packed {
-      logic [15:0] q;
-    } thd_sta;
+    struct packed {logic [15:0] q;} tsu_sta;
+    struct packed {logic [15:0] q;} thd_sta;
   } i2c_reg2hw_timing2_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] q;
-    } tsu_dat;
-    struct packed {
-      logic [15:0] q;
-    } thd_dat;
+    struct packed {logic [15:0] q;} tsu_dat;
+    struct packed {logic [15:0] q;} thd_dat;
   } i2c_reg2hw_timing3_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] q;
-    } tsu_sto;
-    struct packed {
-      logic [15:0] q;
-    } t_buf;
+    struct packed {logic [15:0] q;} tsu_sto;
+    struct packed {logic [15:0] q;} t_buf;
   } i2c_reg2hw_timing4_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [30:0] q;
-    } val;
-    struct packed {
-      logic        q;
-    } en;
+    struct packed {logic [30:0] q;} val;
+    struct packed {logic q;} en;
   } i2c_reg2hw_timeout_ctrl_reg_t;
 
 
   typedef struct packed {
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } fmt_watermark;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } rx_watermark;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } fmt_overflow;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } rx_overflow;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } nak;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } scl_interference;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } sda_interference;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } stretch_timeout;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } sda_unstable;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } trans_complete;
   } i2c_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-    } fmtfull;
-    struct packed {
-      logic        d;
-    } rxfull;
-    struct packed {
-      logic        d;
-    } fmtempty;
-    struct packed {
-      logic        d;
-    } hostidle;
-    struct packed {
-      logic        d;
-    } targetidle;
-    struct packed {
-      logic        d;
-    } rxempty;
+    struct packed {logic d;} fmtfull;
+    struct packed {logic d;} rxfull;
+    struct packed {logic d;} fmtempty;
+    struct packed {logic d;} hostidle;
+    struct packed {logic d;} targetidle;
+    struct packed {logic d;} rxempty;
   } i2c_hw2reg_status_reg_t;
 
-  typedef struct packed {
-    logic [7:0]  d;
-  } i2c_hw2reg_rdata_reg_t;
+  typedef struct packed {logic [7:0] d;} i2c_hw2reg_rdata_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [5:0]  d;
-    } fmtlvl;
-    struct packed {
-      logic [5:0]  d;
-    } rxlvl;
+    struct packed {logic [5:0] d;} fmtlvl;
+    struct packed {logic [5:0] d;} rxlvl;
   } i2c_hw2reg_fifo_status_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [15:0] d;
-    } scl_rx;
-    struct packed {
-      logic [15:0] d;
-    } sda_rx;
+    struct packed {logic [15:0] d;} scl_rx;
+    struct packed {logic [15:0] d;} sda_rx;
   } i2c_hw2reg_val_reg_t;
 
 
@@ -331,51 +237,51 @@ package i2c_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [274:265]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [264:255]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [254:235]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [234:234]
-    i2c_reg2hw_rdata_reg_t rdata; // [233:225]
-    i2c_reg2hw_fdata_reg_t fdata; // [224:206]
-    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [205:195]
-    i2c_reg2hw_ovrd_reg_t ovrd; // [194:192]
-    i2c_reg2hw_timing0_reg_t timing0; // [191:160]
-    i2c_reg2hw_timing1_reg_t timing1; // [159:128]
-    i2c_reg2hw_timing2_reg_t timing2; // [127:96]
-    i2c_reg2hw_timing3_reg_t timing3; // [95:64]
-    i2c_reg2hw_timing4_reg_t timing4; // [63:32]
-    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [31:0]
+    i2c_reg2hw_intr_state_reg_t intr_state;  // [274:265]
+    i2c_reg2hw_intr_enable_reg_t intr_enable;  // [264:255]
+    i2c_reg2hw_intr_test_reg_t intr_test;  // [254:235]
+    i2c_reg2hw_ctrl_reg_t ctrl;  // [234:234]
+    i2c_reg2hw_rdata_reg_t rdata;  // [233:225]
+    i2c_reg2hw_fdata_reg_t fdata;  // [224:206]
+    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl;  // [205:195]
+    i2c_reg2hw_ovrd_reg_t ovrd;  // [194:192]
+    i2c_reg2hw_timing0_reg_t timing0;  // [191:160]
+    i2c_reg2hw_timing1_reg_t timing1;  // [159:128]
+    i2c_reg2hw_timing2_reg_t timing2;  // [127:96]
+    i2c_reg2hw_timing3_reg_t timing3;  // [95:64]
+    i2c_reg2hw_timing4_reg_t timing4;  // [63:32]
+    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl;  // [31:0]
   } i2c_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [77:68]
-    i2c_hw2reg_status_reg_t status; // [67:68]
-    i2c_hw2reg_rdata_reg_t rdata; // [67:59]
-    i2c_hw2reg_fifo_status_reg_t fifo_status; // [58:59]
-    i2c_hw2reg_val_reg_t val; // [58:59]
+    i2c_hw2reg_intr_state_reg_t intr_state;  // [77:68]
+    i2c_hw2reg_status_reg_t status;  // [67:68]
+    i2c_hw2reg_rdata_reg_t rdata;  // [67:59]
+    i2c_hw2reg_fifo_status_reg_t fifo_status;  // [58:59]
+    i2c_hw2reg_val_reg_t val;  // [58:59]
   } i2c_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] I2C_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [6:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [6:0] I2C_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [6:0] I2C_CTRL_OFFSET = 7'h c;
-  parameter logic [6:0] I2C_STATUS_OFFSET = 7'h 10;
-  parameter logic [6:0] I2C_RDATA_OFFSET = 7'h 14;
-  parameter logic [6:0] I2C_FDATA_OFFSET = 7'h 18;
-  parameter logic [6:0] I2C_FIFO_CTRL_OFFSET = 7'h 1c;
-  parameter logic [6:0] I2C_FIFO_STATUS_OFFSET = 7'h 20;
-  parameter logic [6:0] I2C_OVRD_OFFSET = 7'h 24;
-  parameter logic [6:0] I2C_VAL_OFFSET = 7'h 28;
-  parameter logic [6:0] I2C_TIMING0_OFFSET = 7'h 2c;
-  parameter logic [6:0] I2C_TIMING1_OFFSET = 7'h 30;
-  parameter logic [6:0] I2C_TIMING2_OFFSET = 7'h 34;
-  parameter logic [6:0] I2C_TIMING3_OFFSET = 7'h 38;
-  parameter logic [6:0] I2C_TIMING4_OFFSET = 7'h 3c;
-  parameter logic [6:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h 40;
+  parameter logic [6:0] I2C_INTR_STATE_OFFSET = 7'h0;
+  parameter logic [6:0] I2C_INTR_ENABLE_OFFSET = 7'h4;
+  parameter logic [6:0] I2C_INTR_TEST_OFFSET = 7'h8;
+  parameter logic [6:0] I2C_CTRL_OFFSET = 7'hc;
+  parameter logic [6:0] I2C_STATUS_OFFSET = 7'h10;
+  parameter logic [6:0] I2C_RDATA_OFFSET = 7'h14;
+  parameter logic [6:0] I2C_FDATA_OFFSET = 7'h18;
+  parameter logic [6:0] I2C_FIFO_CTRL_OFFSET = 7'h1c;
+  parameter logic [6:0] I2C_FIFO_STATUS_OFFSET = 7'h20;
+  parameter logic [6:0] I2C_OVRD_OFFSET = 7'h24;
+  parameter logic [6:0] I2C_VAL_OFFSET = 7'h28;
+  parameter logic [6:0] I2C_TIMING0_OFFSET = 7'h2c;
+  parameter logic [6:0] I2C_TIMING1_OFFSET = 7'h30;
+  parameter logic [6:0] I2C_TIMING2_OFFSET = 7'h34;
+  parameter logic [6:0] I2C_TIMING3_OFFSET = 7'h38;
+  parameter logic [6:0] I2C_TIMING4_OFFSET = 7'h3c;
+  parameter logic [6:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h40;
 
 
   // Register Index
@@ -400,24 +306,23 @@ package i2c_reg_pkg;
   } i2c_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] I2C_PERMIT [17] = '{
-    4'b 0011, // index[ 0] I2C_INTR_STATE
-    4'b 0011, // index[ 1] I2C_INTR_ENABLE
-    4'b 0011, // index[ 2] I2C_INTR_TEST
-    4'b 0001, // index[ 3] I2C_CTRL
-    4'b 0001, // index[ 4] I2C_STATUS
-    4'b 0001, // index[ 5] I2C_RDATA
-    4'b 0011, // index[ 6] I2C_FDATA
-    4'b 0001, // index[ 7] I2C_FIFO_CTRL
-    4'b 0111, // index[ 8] I2C_FIFO_STATUS
-    4'b 0001, // index[ 9] I2C_OVRD
-    4'b 1111, // index[10] I2C_VAL
-    4'b 1111, // index[11] I2C_TIMING0
-    4'b 1111, // index[12] I2C_TIMING1
-    4'b 1111, // index[13] I2C_TIMING2
-    4'b 1111, // index[14] I2C_TIMING3
-    4'b 1111, // index[15] I2C_TIMING4
-    4'b 1111  // index[16] I2C_TIMEOUT_CTRL
+  parameter logic [3:0] I2C_PERMIT[17] = '{4'b0011,  // index[ 0] I2C_INTR_STATE
+  4'b0011,  // index[ 1] I2C_INTR_ENABLE
+  4'b0011,  // index[ 2] I2C_INTR_TEST
+  4'b0001,  // index[ 3] I2C_CTRL
+  4'b0001,  // index[ 4] I2C_STATUS
+  4'b0001,  // index[ 5] I2C_RDATA
+  4'b0011,  // index[ 6] I2C_FDATA
+  4'b0001,  // index[ 7] I2C_FIFO_CTRL
+  4'b0111,  // index[ 8] I2C_FIFO_STATUS
+  4'b0001,  // index[ 9] I2C_OVRD
+  4'b1111,  // index[10] I2C_VAL
+  4'b1111,  // index[11] I2C_TIMING0
+  4'b1111,  // index[12] I2C_TIMING1
+  4'b1111,  // index[13] I2C_TIMING2
+  4'b1111,  // index[14] I2C_TIMING3
+  4'b1111,  // index[15] I2C_TIMING4
+  4'b1111  // index[16] I2C_TIMEOUT_CTRL
   };
 endpackage
 

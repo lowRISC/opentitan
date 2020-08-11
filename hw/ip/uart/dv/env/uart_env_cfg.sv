@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class uart_env_cfg extends cip_base_env_cfg #(.RAL_T(uart_reg_block));
+class uart_env_cfg extends cip_base_env_cfg#(
+    .RAL_T(uart_reg_block)
+);
 
   // ext component cfgs
-  rand uart_agent_cfg   m_uart_agent_cfg;
+  rand uart_agent_cfg m_uart_agent_cfg;
   // during break error, DUT will trigger additional frame/parity errors, which mon doesn't catch
   // disable parity/frame check in this period
-  bit  disable_scb_rx_parity_check;
-  bit  disable_scb_rx_frame_check;
+  bit disable_scb_rx_parity_check;
+  bit disable_scb_rx_frame_check;
 
   `uvm_object_utils_begin(uart_env_cfg)
     `uvm_field_object(m_uart_agent_cfg, UVM_DEFAULT)

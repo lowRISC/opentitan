@@ -24,15 +24,15 @@
 class riscv_program extends uvm_object;
 
   // ID of the current program
-  rand program_id_t  program_id;
+  rand program_id_t program_id;
   // The level of current program in the call stack tree
-  rand int unsigned  call_stack_level;
+  rand int unsigned call_stack_level;
   // The list of all sub-programs of the current program
-  rand program_id_t  sub_program_id[];
+  rand program_id_t sub_program_id[];
 
   constraint legal_c {
-    unique{sub_program_id};
-    foreach(sub_program_id[i]) {
+    unique {sub_program_id};
+    foreach (sub_program_id[i]) {
       // Cannot call itself, recursive function call is not supported
       sub_program_id[i] != program_id;
     }
@@ -40,14 +40,13 @@ class riscv_program extends uvm_object;
 
   `uvm_object_utils(riscv_program)
 
-  function new (string name = "");
+  function new(string name = "");
     super.new(name);
   endfunction
 
   function string convert2string();
     string str = $sformatf("PID[%0d] Lv[%0d] :", program_id, call_stack_level);
-    foreach(sub_program_id[i])
-      str = $sformatf("%0s %0d", str, sub_program_id[i]);
+    foreach (sub_program_id[i]) str = $sformatf("%0s %0d", str, sub_program_id[i]);
     return str;
   endfunction
 
@@ -59,18 +58,17 @@ endclass
 // The call stack is generated as a tree structure to avoid dead call loop.
 // Level 0:                     P0
 //                           /  |  \
-// Level 1:                 P1  P2  P3
-//                          |     \/  \
-// Level 2:                 P4    P5   P6
-//                                 |
-// Level 3:                        P7
-//
-// Rules: A program can only call the program in the next level.
-//        A program can be called many times by other upper level programs.
-//        A program can call the same lower level programs multiple times.
-//-----------------------------------------------------------------------------------------
-
-class riscv_callstack_gen extends uvm_object;
+    // Level 1:                 P1  P2  P3
+    //                          |     \/  \
+    // Level 2:                 P4    P5   P6
+    //                                 |
+    // Level 3:                        P7
+    //
+    // Rules: A program can only call the program in the next level.
+    //        A program can be called many times by other upper level programs.
+    //        A program can call the same lower level programs multiple times.
+    //-----------------------------------------------------------------------------------------
+    class riscv_callstack_gen extends uvm_object;
 
   // Number of programs in the call stack
   int program_cnt = 10;
@@ -80,20 +78,20 @@ class riscv_callstack_gen extends uvm_object;
   int max_stack_level = 50;
 `ifdef DSIM
   // Call stack level of each program
-  bit[10:0] stack_level[];
+  bit [10:0] stack_level[];
 `else
   // Call stack level of each program
-  rand bit[10:0] stack_level[];
+  rand bit [10:0] stack_level[];
 
   constraint program_stack_level_c {
     // The stack level is assigned in ascending order to avoid call loop
     stack_level.size() == program_cnt;
     stack_level[0] == 0;
-    foreach(stack_level[i]) {
-      if(i > 0) {
-        stack_level[i] inside {[1:program_cnt-1]};
-        stack_level[i] >= stack_level[i-1];
-        stack_level[i] <= stack_level[i-1]+1;
+    foreach (stack_level[i]) {
+      if (i > 0) {
+        stack_level[i] inside {[1 : program_cnt - 1]};
+        stack_level[i] >= stack_level[i - 1];
+        stack_level[i] <= stack_level[i - 1] + 1;
         stack_level[i] <= max_stack_level;
       }
     }
@@ -103,7 +101,7 @@ class riscv_callstack_gen extends uvm_object;
 
   `uvm_object_utils(riscv_callstack_gen)
 
-  function new (string name = "");
+  function new(string name = "");
     super.new(name);
   endfunction
 
@@ -111,7 +109,7 @@ class riscv_callstack_gen extends uvm_object;
   function void init(int program_cnt);
     this.program_cnt = program_cnt;
     program_h = new[program_cnt];
-    foreach(program_h[i])
+    foreach (program_h[i])
       program_h[i] = riscv_program::type_id::create($sformatf("program_%0d", i));
   endfunction
 
@@ -121,44 +119,43 @@ class riscv_callstack_gen extends uvm_object;
   // Solving a complex call stack with SV constraint could take considerable time for the solver.
   function void post_randomize();
     int last_level;
-    `ifdef DSIM
-      stack_level = new[program_cnt];
-      foreach (stack_level[i]) begin
-        if (i > 0) begin
-          stack_level[i] = stack_level[i-1] + $urandom_range(0,1);
-        end
+`ifdef DSIM
+    stack_level = new[program_cnt];
+    foreach (stack_level[i]) begin
+      if (i > 0) begin
+        stack_level[i] = stack_level[i - 1] + $urandom_range(0, 1);
       end
-    `endif
-    last_level = stack_level[program_cnt-1];
-    foreach(program_h[i]) begin
+    end
+`endif
+    last_level = stack_level[program_cnt - 1];
+    foreach (program_h[i]) begin
       program_h[i].program_id = i;
       program_h[i].call_stack_level = stack_level[i];
     end
     // Top-down generate the entire call stack.
     // A program can only call the programs in the next level.
-    for(int i = 0; i < last_level; i ++) begin
+    for (int i = 0; i < last_level; i++) begin
       int total_sub_program_cnt;
       int program_list[$];
       int next_program_list[$];
       int sub_program_id_pool[];
       int sub_program_cnt[];
       int idx;
-      for (int j=0; j<program_cnt; j++) begin
+      for (int j = 0; j < program_cnt; j++) begin
         if (stack_level[j] == i) begin
           program_list.push_back(j);
         end
-        if (stack_level[j] == i+1) begin
+        if (stack_level[j] == i + 1) begin
           next_program_list.push_back(j);
         end
       end
       // Randmly duplicate some sub programs in the pool to create a case that
       // one sub program is called by multiple caller. Also it's possible to call
       // the same sub program in one program multiple times.
-      total_sub_program_cnt = $urandom_range(next_program_list.size(),
-                                             next_program_list.size() + 1);
+      total_sub_program_cnt =
+          $urandom_range(next_program_list.size(), next_program_list.size() + 1);
       sub_program_id_pool = new[total_sub_program_cnt];
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(sub_program_id_pool,
-        foreach(sub_program_id_pool[j]) {
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(sub_program_id_pool, foreach(sub_program_id_pool[j]) {
           if(j < next_program_list.size()) {
             sub_program_id_pool[j] == next_program_list[j];
           } else {
@@ -167,20 +164,24 @@ class riscv_callstack_gen extends uvm_object;
         })
       sub_program_id_pool.shuffle();
       sub_program_cnt = new[program_list.size()];
-      `uvm_info(get_full_name(), $sformatf("%0d programs @Lv%0d-> %0d programs at next level",
-                program_list.size(), i, sub_program_id_pool.size()), UVM_LOW)
+      `uvm_info(get_full_name(),
+                $sformatf("%0d programs @Lv%0d-> %0d programs at next level", program_list.size(),
+                          i, sub_program_id_pool.size()),
+                UVM_LOW)
       // Distribute the programs of the next level among the programs of current level
       // Make sure all program has a caller so that no program is obsolete.
       foreach (sub_program_id_pool[j]) begin
-        int caller_id = $urandom_range(0, sub_program_cnt.size()-1);
+        int caller_id = $urandom_range(0, sub_program_cnt.size() - 1);
         sub_program_cnt[caller_id]++;
       end
-      foreach(program_list[j]) begin
+      foreach (program_list[j]) begin
         int id = program_list[j];
         program_h[id].sub_program_id = new[sub_program_cnt[j]];
-        `uvm_info(get_full_name(), $sformatf("%0d sub programs are assigned to program[%0d]",
-                  sub_program_cnt[j], id), UVM_LOW)
-        foreach(program_h[id].sub_program_id[k]) begin
+        `uvm_info(get_full_name(),
+                  $sformatf("%0d sub programs are assigned to program[%0d]", sub_program_cnt[j],
+                            id),
+                  UVM_LOW)
+        foreach (program_h[id].sub_program_id[k]) begin
           program_h[id].sub_program_id[k] = sub_program_id_pool[idx];
           idx++;
         end
@@ -189,10 +190,9 @@ class riscv_callstack_gen extends uvm_object;
   endfunction
 
   function void print_call_stack(program_id_t i, string str);
-    if(program_h[i].sub_program_id.size() == 0)
-      `uvm_info(get_full_name(), str, UVM_LOW)
+    if (program_h[i].sub_program_id.size() == 0) `uvm_info(get_full_name(), str, UVM_LOW)
     else begin
-      foreach(program_h[i].sub_program_id[j]) begin
+      foreach (program_h[i].sub_program_id[j]) begin
         print_call_stack(program_h[i].sub_program_id[j],
                          $sformatf("%0s -> %0d", str, program_h[i].sub_program_id[j]));
       end

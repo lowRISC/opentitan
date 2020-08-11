@@ -7,36 +7,36 @@
 `include "prim_assert.sv"
 
 module entropy_src_reg_top (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
-  // To HW
-  output entropy_src_reg_pkg::entropy_src_reg2hw_t reg2hw, // Write
-  input  entropy_src_reg_pkg::entropy_src_hw2reg_t hw2reg, // Read
+    // Below Regster interface can be changed
+    input  tlul_pkg::tl_h2d_t                        tl_i,
+    output tlul_pkg::tl_d2h_t                        tl_o,
+    // To HW
+    output entropy_src_reg_pkg::entropy_src_reg2hw_t reg2hw,  // Write
+    input  entropy_src_reg_pkg::entropy_src_hw2reg_t hw2reg,  // Read
 
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+    // Config
+    input devmode_i  // If 1, explicit error return for unmapped register access
 );
 
-  import entropy_src_reg_pkg::* ;
+  import entropy_src_reg_pkg::*;
 
   localparam int AW = 6;
   localparam int DW = 32;
-  localparam int DBW = DW/8;                    // Byte Width
+  localparam int DBW = DW / 8;  // Byte Width
 
   // register signals
-  logic           reg_we;
-  logic           reg_re;
-  logic [AW-1:0]  reg_addr;
-  logic [DW-1:0]  reg_wdata;
+  logic reg_we;
+  logic reg_re;
+  logic [AW-1:0] reg_addr;
+  logic [DW-1:0] reg_wdata;
   logic [DBW-1:0] reg_be;
-  logic [DW-1:0]  reg_rdata;
-  logic           reg_error;
+  logic [DW-1:0] reg_rdata;
+  logic reg_error;
 
-  logic          addrmiss, wr_err;
+  logic addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -44,29 +44,29 @@ module entropy_src_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o = tl_reg_d2h;
 
   tlul_adapter_reg #(
-    .RegAw(AW),
-    .RegDw(DW)
+      .RegAw(AW),
+      .RegDw(DW)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i (tl_reg_h2d),
-    .tl_o (tl_reg_d2h),
+      .tl_i(tl_reg_h2d),
+      .tl_o(tl_reg_d2h),
 
-    .we_o    (reg_we),
-    .re_o    (reg_re),
-    .addr_o  (reg_addr),
-    .wdata_o (reg_wdata),
-    .be_o    (reg_be),
-    .rdata_i (reg_rdata),
-    .error_i (reg_error)
+      .we_o   (reg_we),
+      .re_o   (reg_re),
+      .addr_o (reg_addr),
+      .wdata_o(reg_wdata),
+      .be_o   (reg_be),
+      .rdata_i(reg_rdata),
+      .error_i(reg_error)
   );
 
-  assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_rdata = reg_rdata_next;
+  assign reg_error = (devmode_i & addrmiss) | wr_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -163,105 +163,105 @@ module entropy_src_reg_top (
 
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_es_entropy_valid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_es_entropy_valid_we),
-    .wd     (intr_state_es_entropy_valid_wd),
+      // from register interface
+      .we(intr_state_es_entropy_valid_we),
+      .wd(intr_state_es_entropy_valid_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.es_entropy_valid.de),
-    .d      (hw2reg.intr_state.es_entropy_valid.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.es_entropy_valid.de),
+      .d (hw2reg.intr_state.es_entropy_valid.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.es_entropy_valid.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.es_entropy_valid.q),
 
-    // to register interface (read)
-    .qs     (intr_state_es_entropy_valid_qs)
+      // to register interface (read)
+      .qs(intr_state_es_entropy_valid_qs)
   );
 
 
   //   F[es_rct_failed]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_es_rct_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_es_rct_failed_we),
-    .wd     (intr_state_es_rct_failed_wd),
+      // from register interface
+      .we(intr_state_es_rct_failed_we),
+      .wd(intr_state_es_rct_failed_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.es_rct_failed.de),
-    .d      (hw2reg.intr_state.es_rct_failed.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.es_rct_failed.de),
+      .d (hw2reg.intr_state.es_rct_failed.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.es_rct_failed.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.es_rct_failed.q),
 
-    // to register interface (read)
-    .qs     (intr_state_es_rct_failed_qs)
+      // to register interface (read)
+      .qs(intr_state_es_rct_failed_qs)
   );
 
 
   //   F[es_apt_failed]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_es_apt_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_es_apt_failed_we),
-    .wd     (intr_state_es_apt_failed_wd),
+      // from register interface
+      .we(intr_state_es_apt_failed_we),
+      .wd(intr_state_es_apt_failed_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.es_apt_failed.de),
-    .d      (hw2reg.intr_state.es_apt_failed.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.es_apt_failed.de),
+      .d (hw2reg.intr_state.es_apt_failed.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.es_apt_failed.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.es_apt_failed.q),
 
-    // to register interface (read)
-    .qs     (intr_state_es_apt_failed_qs)
+      // to register interface (read)
+      .qs(intr_state_es_apt_failed_qs)
   );
 
 
   //   F[es_fifo_err]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_es_fifo_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_es_fifo_err_we),
-    .wd     (intr_state_es_fifo_err_wd),
+      // from register interface
+      .we(intr_state_es_fifo_err_we),
+      .wd(intr_state_es_fifo_err_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.es_fifo_err.de),
-    .d      (hw2reg.intr_state.es_fifo_err.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.es_fifo_err.de),
+      .d (hw2reg.intr_state.es_fifo_err.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.es_fifo_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.es_fifo_err.q),
 
-    // to register interface (read)
-    .qs     (intr_state_es_fifo_err_qs)
+      // to register interface (read)
+      .qs(intr_state_es_fifo_err_qs)
   );
 
 
@@ -269,105 +269,105 @@ module entropy_src_reg_top (
 
   //   F[es_entropy_valid]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_es_entropy_valid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_es_entropy_valid_we),
-    .wd     (intr_enable_es_entropy_valid_wd),
+      // from register interface
+      .we(intr_enable_es_entropy_valid_we),
+      .wd(intr_enable_es_entropy_valid_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.es_entropy_valid.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.es_entropy_valid.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_es_entropy_valid_qs)
+      // to register interface (read)
+      .qs(intr_enable_es_entropy_valid_qs)
   );
 
 
   //   F[es_rct_failed]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_es_rct_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_es_rct_failed_we),
-    .wd     (intr_enable_es_rct_failed_wd),
+      // from register interface
+      .we(intr_enable_es_rct_failed_we),
+      .wd(intr_enable_es_rct_failed_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.es_rct_failed.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.es_rct_failed.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_es_rct_failed_qs)
+      // to register interface (read)
+      .qs(intr_enable_es_rct_failed_qs)
   );
 
 
   //   F[es_apt_failed]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_es_apt_failed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_es_apt_failed_we),
-    .wd     (intr_enable_es_apt_failed_wd),
+      // from register interface
+      .we(intr_enable_es_apt_failed_we),
+      .wd(intr_enable_es_apt_failed_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.es_apt_failed.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.es_apt_failed.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_es_apt_failed_qs)
+      // to register interface (read)
+      .qs(intr_enable_es_apt_failed_qs)
   );
 
 
   //   F[es_fifo_err]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_es_fifo_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_es_fifo_err_we),
-    .wd     (intr_enable_es_fifo_err_wd),
+      // from register interface
+      .we(intr_enable_es_fifo_err_we),
+      .wd(intr_enable_es_fifo_err_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.es_fifo_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.es_fifo_err.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_es_fifo_err_qs)
+      // to register interface (read)
+      .qs(intr_enable_es_fifo_err_qs)
   );
 
 
@@ -375,88 +375,88 @@ module entropy_src_reg_top (
 
   //   F[es_entropy_valid]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_es_entropy_valid (
-    .re     (1'b0),
-    .we     (intr_test_es_entropy_valid_we),
-    .wd     (intr_test_es_entropy_valid_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.es_entropy_valid.qe),
-    .q      (reg2hw.intr_test.es_entropy_valid.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_es_entropy_valid_we),
+      .wd (intr_test_es_entropy_valid_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.es_entropy_valid.qe),
+      .q  (reg2hw.intr_test.es_entropy_valid.q),
+      .qs ()
   );
 
 
   //   F[es_rct_failed]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_es_rct_failed (
-    .re     (1'b0),
-    .we     (intr_test_es_rct_failed_we),
-    .wd     (intr_test_es_rct_failed_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.es_rct_failed.qe),
-    .q      (reg2hw.intr_test.es_rct_failed.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_es_rct_failed_we),
+      .wd (intr_test_es_rct_failed_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.es_rct_failed.qe),
+      .q  (reg2hw.intr_test.es_rct_failed.q),
+      .qs ()
   );
 
 
   //   F[es_apt_failed]: 2:2
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_es_apt_failed (
-    .re     (1'b0),
-    .we     (intr_test_es_apt_failed_we),
-    .wd     (intr_test_es_apt_failed_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.es_apt_failed.qe),
-    .q      (reg2hw.intr_test.es_apt_failed.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_es_apt_failed_we),
+      .wd (intr_test_es_apt_failed_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.es_apt_failed.qe),
+      .q  (reg2hw.intr_test.es_apt_failed.q),
+      .qs ()
   );
 
 
   //   F[es_fifo_err]: 3:3
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_es_fifo_err (
-    .re     (1'b0),
-    .we     (intr_test_es_fifo_err_we),
-    .wd     (intr_test_es_fifo_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.es_fifo_err.qe),
-    .q      (reg2hw.intr_test.es_fifo_err.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_es_fifo_err_we),
+      .wd (intr_test_es_fifo_err_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.es_fifo_err.qe),
+      .q  (reg2hw.intr_test.es_fifo_err.q),
+      .qs ()
   );
 
 
   // R[es_regen]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_es_regen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (es_regen_we),
-    .wd     (es_regen_wd),
+      // from register interface
+      .we(es_regen_we),
+      .wd(es_regen_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_regen.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_regen.q),
 
-    // to register interface (read)
-    .qs     (es_regen_qs)
+      // to register interface (read)
+      .qs(es_regen_qs)
   );
 
 
@@ -481,184 +481,184 @@ module entropy_src_reg_top (
 
   //   F[enable]: 1:0
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_es_conf_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_enable_we & es_regen_qs),
-    .wd     (es_conf_enable_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_enable_we & es_regen_qs),
+      .wd(es_conf_enable_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.enable.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.enable.q),
 
-    // to register interface (read)
-    .qs     (es_conf_enable_qs)
+      // to register interface (read)
+      .qs(es_conf_enable_qs)
   );
 
 
   //   F[rng_src_en]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_es_conf_rng_src_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_rng_src_en_we & es_regen_qs),
-    .wd     (es_conf_rng_src_en_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_rng_src_en_we & es_regen_qs),
+      .wd(es_conf_rng_src_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.rng_src_en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.rng_src_en.q),
 
-    // to register interface (read)
-    .qs     (es_conf_rng_src_en_qs)
+      // to register interface (read)
+      .qs(es_conf_rng_src_en_qs)
   );
 
 
   //   F[rct_en]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_es_conf_rct_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_rct_en_we & es_regen_qs),
-    .wd     (es_conf_rct_en_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_rct_en_we & es_regen_qs),
+      .wd(es_conf_rct_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.rct_en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.rct_en.q),
 
-    // to register interface (read)
-    .qs     (es_conf_rct_en_qs)
+      // to register interface (read)
+      .qs(es_conf_rct_en_qs)
   );
 
 
   //   F[apt_en]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_es_conf_apt_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_apt_en_we & es_regen_qs),
-    .wd     (es_conf_apt_en_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_apt_en_we & es_regen_qs),
+      .wd(es_conf_apt_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.apt_en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.apt_en.q),
 
-    // to register interface (read)
-    .qs     (es_conf_apt_en_qs)
+      // to register interface (read)
+      .qs(es_conf_apt_en_qs)
   );
 
 
   //   F[rng_bit_en]: 8:8
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_es_conf_rng_bit_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_rng_bit_en_we & es_regen_qs),
-    .wd     (es_conf_rng_bit_en_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_rng_bit_en_we & es_regen_qs),
+      .wd(es_conf_rng_bit_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.rng_bit_en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.rng_bit_en.q),
 
-    // to register interface (read)
-    .qs     (es_conf_rng_bit_en_qs)
+      // to register interface (read)
+      .qs(es_conf_rng_bit_en_qs)
   );
 
 
   //   F[rng_bit_sel]: 10:9
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_es_conf_rng_bit_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_conf_rng_bit_sel_we & es_regen_qs),
-    .wd     (es_conf_rng_bit_sel_wd),
+      // from register interface (qualified with register enable)
+      .we(es_conf_rng_bit_sel_we & es_regen_qs),
+      .wd(es_conf_rng_bit_sel_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_conf.rng_bit_sel.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_conf.rng_bit_sel.q),
 
-    // to register interface (read)
-    .qs     (es_conf_rng_bit_sel_qs)
+      // to register interface (read)
+      .qs(es_conf_rng_bit_sel_qs)
   );
 
 
   // R[es_rct_health]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'hb)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'hb)
   ) u_es_rct_health (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_rct_health_we & es_regen_qs),
-    .wd     (es_rct_health_wd),
+      // from register interface (qualified with register enable)
+      .we(es_rct_health_we & es_regen_qs),
+      .wd(es_rct_health_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_rct_health.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_rct_health.q),
 
-    // to register interface (read)
-    .qs     (es_rct_health_qs)
+      // to register interface (read)
+      .qs(es_rct_health_qs)
   );
 
 
@@ -666,69 +666,69 @@ module entropy_src_reg_top (
 
   //   F[apt_max]: 15:0
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h298)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h298)
   ) u_es_apt_health_apt_max (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_apt_health_apt_max_we & es_regen_qs),
-    .wd     (es_apt_health_apt_max_wd),
+      // from register interface (qualified with register enable)
+      .we(es_apt_health_apt_max_we & es_regen_qs),
+      .wd(es_apt_health_apt_max_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_apt_health.apt_max.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_apt_health.apt_max.q),
 
-    // to register interface (read)
-    .qs     (es_apt_health_apt_max_qs)
+      // to register interface (read)
+      .qs(es_apt_health_apt_max_qs)
   );
 
 
   //   F[apt_win]: 31:16
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h400)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h400)
   ) u_es_apt_health_apt_win (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_apt_health_apt_win_we & es_regen_qs),
-    .wd     (es_apt_health_apt_win_wd),
+      // from register interface (qualified with register enable)
+      .we(es_apt_health_apt_win_we & es_regen_qs),
+      .wd(es_apt_health_apt_win_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_apt_health.apt_win.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_apt_health.apt_win.q),
 
-    // to register interface (read)
-    .qs     (es_apt_health_apt_win_qs)
+      // to register interface (read)
+      .qs(es_apt_health_apt_win_qs)
   );
 
 
   // R[es_entropy]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+      .DW(32)
   ) u_es_entropy (
-    .re     (es_entropy_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_entropy.d),
-    .qre    (reg2hw.es_entropy.re),
-    .qe     (),
-    .q      (reg2hw.es_entropy.q ),
-    .qs     (es_entropy_qs)
+      .re (es_entropy_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_entropy.d),
+      .qre(reg2hw.es_entropy.re),
+      .qe (),
+      .q  (reg2hw.es_entropy.q),
+      .qs (es_entropy_qs)
   );
 
 
@@ -736,158 +736,158 @@ module entropy_src_reg_top (
 
   //   F[dig_src_depth]: 2:0
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_es_fifo_status_dig_src_depth (
-    .re     (es_fifo_status_dig_src_depth_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_fifo_status.dig_src_depth.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (es_fifo_status_dig_src_depth_qs)
+      .re (es_fifo_status_dig_src_depth_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_fifo_status.dig_src_depth.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (es_fifo_status_dig_src_depth_qs)
   );
 
 
   //   F[hwif_depth]: 6:4
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_es_fifo_status_hwif_depth (
-    .re     (es_fifo_status_hwif_depth_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_fifo_status.hwif_depth.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (es_fifo_status_hwif_depth_qs)
+      .re (es_fifo_status_hwif_depth_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_fifo_status.hwif_depth.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (es_fifo_status_hwif_depth_qs)
   );
 
 
   //   F[es_depth]: 16:12
   prim_subreg_ext #(
-    .DW    (5)
+      .DW(5)
   ) u_es_fifo_status_es_depth (
-    .re     (es_fifo_status_es_depth_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_fifo_status.es_depth.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (es_fifo_status_es_depth_qs)
+      .re (es_fifo_status_es_depth_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_fifo_status.es_depth.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (es_fifo_status_es_depth_qs)
   );
 
 
   //   F[diag]: 31:31
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_es_fifo_status_diag (
-    .re     (es_fifo_status_diag_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_fifo_status.diag.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (es_fifo_status_diag_qs)
+      .re (es_fifo_status_diag_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_fifo_status.diag.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (es_fifo_status_diag_qs)
   );
 
 
   // R[es_fdepthst]: V(True)
 
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_es_fdepthst (
-    .re     (es_fdepthst_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.es_fdepthst.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (es_fdepthst_qs)
+      .re (es_fdepthst_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.es_fdepthst.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (es_fdepthst_qs)
   );
 
 
   // R[es_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (3),
-    .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+      .DW(3),
+      .SWACCESS("RW"),
+      .RESVAL(3'h0)
   ) u_es_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (es_thresh_we),
-    .wd     (es_thresh_wd),
+      // from register interface
+      .we(es_thresh_we),
+      .wd(es_thresh_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_thresh.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_thresh.q),
 
-    // to register interface (read)
-    .qs     (es_thresh_qs)
+      // to register interface (read)
+      .qs(es_thresh_qs)
   );
 
 
   // R[es_rate]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h4)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h4)
   ) u_es_rate (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (es_rate_we),
-    .wd     (es_rate_wd),
+      // from register interface
+      .we(es_rate_we),
+      .wd(es_rate_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_rate.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_rate.q),
 
-    // to register interface (read)
-    .qs     (es_rate_qs)
+      // to register interface (read)
+      .qs(es_rate_qs)
   );
 
 
   // R[es_seed]: V(False)
 
   prim_subreg #(
-    .DW      (4),
-    .SWACCESS("RW"),
-    .RESVAL  (4'hb)
+      .DW(4),
+      .SWACCESS("RW"),
+      .RESVAL(4'hb)
   ) u_es_seed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (es_seed_we & es_regen_qs),
-    .wd     (es_seed_wd),
+      // from register interface (qualified with register enable)
+      .we(es_seed_we & es_regen_qs),
+      .wd(es_seed_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.es_seed.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.es_seed.q),
 
-    // to register interface (read)
-    .qs     (es_seed_qs)
+      // to register interface (read)
+      .qs(es_seed_qs)
   );
 
 
@@ -896,41 +896,55 @@ module entropy_src_reg_top (
   logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == ENTROPY_SRC_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == ENTROPY_SRC_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == ENTROPY_SRC_ES_REGEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == ENTROPY_SRC_ES_REV_OFFSET);
-    addr_hit[ 5] = (reg_addr == ENTROPY_SRC_ES_CONF_OFFSET);
-    addr_hit[ 6] = (reg_addr == ENTROPY_SRC_ES_RCT_HEALTH_OFFSET);
-    addr_hit[ 7] = (reg_addr == ENTROPY_SRC_ES_APT_HEALTH_OFFSET);
-    addr_hit[ 8] = (reg_addr == ENTROPY_SRC_ES_ENTROPY_OFFSET);
-    addr_hit[ 9] = (reg_addr == ENTROPY_SRC_ES_FIFO_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
+    addr_hit[1] = (reg_addr == ENTROPY_SRC_INTR_ENABLE_OFFSET);
+    addr_hit[2] = (reg_addr == ENTROPY_SRC_INTR_TEST_OFFSET);
+    addr_hit[3] = (reg_addr == ENTROPY_SRC_ES_REGEN_OFFSET);
+    addr_hit[4] = (reg_addr == ENTROPY_SRC_ES_REV_OFFSET);
+    addr_hit[5] = (reg_addr == ENTROPY_SRC_ES_CONF_OFFSET);
+    addr_hit[6] = (reg_addr == ENTROPY_SRC_ES_RCT_HEALTH_OFFSET);
+    addr_hit[7] = (reg_addr == ENTROPY_SRC_ES_APT_HEALTH_OFFSET);
+    addr_hit[8] = (reg_addr == ENTROPY_SRC_ES_ENTROPY_OFFSET);
+    addr_hit[9] = (reg_addr == ENTROPY_SRC_ES_FIFO_STATUS_OFFSET);
     addr_hit[10] = (reg_addr == ENTROPY_SRC_ES_FDEPTHST_OFFSET);
     addr_hit[11] = (reg_addr == ENTROPY_SRC_ES_THRESH_OFFSET);
     addr_hit[12] = (reg_addr == ENTROPY_SRC_ES_RATE_OFFSET);
     addr_hit[13] = (reg_addr == ENTROPY_SRC_ES_SEED_OFFSET);
   end
 
-  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0;
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (ENTROPY_SRC_PERMIT[ 0] != (ENTROPY_SRC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (ENTROPY_SRC_PERMIT[ 1] != (ENTROPY_SRC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (ENTROPY_SRC_PERMIT[ 2] != (ENTROPY_SRC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (ENTROPY_SRC_PERMIT[ 3] != (ENTROPY_SRC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (ENTROPY_SRC_PERMIT[ 4] != (ENTROPY_SRC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (ENTROPY_SRC_PERMIT[ 5] != (ENTROPY_SRC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (ENTROPY_SRC_PERMIT[ 6] != (ENTROPY_SRC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (ENTROPY_SRC_PERMIT[ 7] != (ENTROPY_SRC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (ENTROPY_SRC_PERMIT[ 8] != (ENTROPY_SRC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (ENTROPY_SRC_PERMIT[ 9] != (ENTROPY_SRC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (ENTROPY_SRC_PERMIT[10] != (ENTROPY_SRC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (ENTROPY_SRC_PERMIT[11] != (ENTROPY_SRC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (ENTROPY_SRC_PERMIT[12] != (ENTROPY_SRC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (ENTROPY_SRC_PERMIT[13] != (ENTROPY_SRC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[0] && reg_we && (ENTROPY_SRC_PERMIT[0] != (ENTROPY_SRC_PERMIT[0] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[1] && reg_we && (ENTROPY_SRC_PERMIT[1] != (ENTROPY_SRC_PERMIT[1] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[2] && reg_we && (ENTROPY_SRC_PERMIT[2] != (ENTROPY_SRC_PERMIT[2] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[3] && reg_we && (ENTROPY_SRC_PERMIT[3] != (ENTROPY_SRC_PERMIT[3] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[4] && reg_we && (ENTROPY_SRC_PERMIT[4] != (ENTROPY_SRC_PERMIT[4] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[5] && reg_we && (ENTROPY_SRC_PERMIT[5] != (ENTROPY_SRC_PERMIT[5] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[6] && reg_we && (ENTROPY_SRC_PERMIT[6] != (ENTROPY_SRC_PERMIT[6] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[7] && reg_we && (ENTROPY_SRC_PERMIT[7] != (ENTROPY_SRC_PERMIT[7] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[8] && reg_we && (ENTROPY_SRC_PERMIT[8] != (ENTROPY_SRC_PERMIT[8] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[9] && reg_we && (ENTROPY_SRC_PERMIT[9] != (ENTROPY_SRC_PERMIT[9] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[10] && reg_we && (ENTROPY_SRC_PERMIT[10] != (ENTROPY_SRC_PERMIT[10] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[11] && reg_we && (ENTROPY_SRC_PERMIT[11] != (ENTROPY_SRC_PERMIT[11] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[12] && reg_we && (ENTROPY_SRC_PERMIT[12] != (ENTROPY_SRC_PERMIT[12] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[13] && reg_we && (ENTROPY_SRC_PERMIT[13] != (ENTROPY_SRC_PERMIT[13] & reg_be)))
+      wr_err = 1'b1;
   end
 
   assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & ~wr_err;

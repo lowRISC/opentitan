@@ -2,33 +2,33 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg),
-                                             .RAL_T               (hmac_reg_block),
-                                             .COV_T               (hmac_env_cov),
-                                             .VIRTUAL_SEQUENCER_T (hmac_virtual_sequencer));
+class hmac_base_vseq extends cip_base_vseq#(
+    .CFG_T(hmac_env_cfg),
+    .RAL_T(hmac_reg_block),
+    .COV_T(hmac_env_cov),
+    .VIRTUAL_SEQUENCER_T(hmac_virtual_sequencer)
+);
   `uvm_object_utils(hmac_base_vseq)
   `uvm_object_new
 
-  bit do_hmac_init     = 1'b1;
+  bit do_hmac_init = 1'b1;
   bit do_back_pressure = 1'b0;
-  bit do_burst_wr      = 1'b0;
-  rand bit [TL_AW-1:0]  wr_addr;
+  bit do_burst_wr = 1'b0;
+  rand bit [TL_AW-1:0] wr_addr;
   rand bit [TL_DBW-1:0] wr_mask;
   rand bit wr_config_during_hash, wr_key_during_hash;
 
-  constraint wr_addr_c {
-    wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
-  }
+  constraint wr_addr_c {wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};}
 
   constraint wr_mask_c {
     $countones(wr_mask) dist {
-        TL_DBW       :/ 1,
-        [1:TL_DBW-1] :/ 1
+      TL_DBW :/ 1,
+      [1 : TL_DBW - 1] :/ 1
     };
   }
 
   constraint wr_mask_contiguous_c {
-    $countones(wr_mask ^ {wr_mask[TL_DBW-2:0], 1'b0}) <= 2; // mask must have continues ones
+    $countones(wr_mask ^ {wr_mask[TL_DBW - 2:0], 1'b0}) <= 2;  // mask must have continues ones
   }
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -41,13 +41,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     // TODO: nothing extra to do yet
   endtask
 
-  virtual task hmac_init(bit sha_en = 1'b1,
-                         bit hmac_en = 1'b1,
-                         bit endian_swap = 1'b1,
-                         bit digest_swap = 1'b1,
-                         bit intr_fifo_empty_en = 1'b1,
-                         bit intr_hmac_done_en = 1'b1,
-                         bit intr_hmac_err_en  = 1'b1);
+  virtual task hmac_init(bit sha_en = 1'b1, bit hmac_en = 1'b1, bit endian_swap = 1'b1,
+                         bit digest_swap = 1'b1, bit intr_fifo_empty_en = 1'b1,
+                         bit intr_hmac_done_en = 1'b1, bit intr_hmac_err_en = 1'b1);
     bit [TL_DW-1:0] interrupts;
     // enable sha, hmac data paths and writing to msg_fifo
     ral.cfg.sha_en.set(sha_en);
@@ -57,8 +53,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_update(.csr(ral.cfg));
 
     // enable interrupts
-    interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) |
-                 (intr_fifo_empty_en << HmacMsgFifoEmpty);
+    interrupts = (intr_hmac_err_en << HmacErr) | (intr_hmac_done_en << HmacDone) | (
+        intr_fifo_empty_en << HmacMsgFifoEmpty);
     cfg_interrupts(.interrupts(interrupts), .enable(1'b1));
   endtask
 
@@ -85,14 +81,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task write_discard_key();
     bit [TL_DW-1:0] rand_key_value = $urandom();
     randcase
-      1:  csr_wr(ral.key_0, rand_key_value);
-      1:  csr_wr(ral.key_1, rand_key_value);
-      1:  csr_wr(ral.key_2, rand_key_value);
-      1:  csr_wr(ral.key_3, rand_key_value);
-      1:  csr_wr(ral.key_4, rand_key_value);
-      1:  csr_wr(ral.key_5, rand_key_value);
-      1:  csr_wr(ral.key_6, rand_key_value);
-      1:  csr_wr(ral.key_7, rand_key_value);
+      1: csr_wr(ral.key_0, rand_key_value);
+      1: csr_wr(ral.key_1, rand_key_value);
+      1: csr_wr(ral.key_2, rand_key_value);
+      1: csr_wr(ral.key_3, rand_key_value);
+      1: csr_wr(ral.key_4, rand_key_value);
+      1: csr_wr(ral.key_5, rand_key_value);
+      1: csr_wr(ral.key_6, rand_key_value);
+      1: csr_wr(ral.key_7, rand_key_value);
     endcase
   endtask
 
@@ -118,7 +114,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_rd_digest(digest);
   endtask
 
-    // read digest value and output read value
+  // read digest value and output read value
   virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[8]);
     csr_rd(.ptr(ral.digest_0), .value(digest[0]));
     csr_rd(.ptr(ral.digest_1), .value(digest[1]));
@@ -169,10 +165,16 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
         else word_unpack[3 - i] = $urandom();
       end
       word = {>>byte{word_unpack}};
-      `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                wr_addr, wr_mask, word), UVM_HIGH)
-      tl_access(.addr(wr_addr + cfg.csr_base_addr), .write(1'b1), .data(word), .mask(wr_mask),
-                .blocking(non_blocking));
+      `uvm_info(`gfn,
+                $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h", wr_addr, wr_mask, word),
+                UVM_HIGH)
+      tl_access(
+      .addr(wr_addr + cfg.csr_base_addr),
+      .write(1'b1),
+      .data(word),
+      .mask(wr_mask),
+      .blocking(non_blocking)
+      );
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) begin
@@ -192,35 +194,44 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // read fifo_depth reg and burst write a chunk of words
   virtual task burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
-    bit [7:0]       msg_q[$] = msg;
-    bit [7:0]       word_unpack[4];
+    bit [7:0] msg_q[$] = msg;
+    bit [7:0] word_unpack[4];
     bit [TL_DW-1:0] word;
     while (msg_q.size() > 0) begin
       // wait until HMAC has enough space to burst write
-      csr_spinwait(.ptr(ral.status.fifo_depth),
-                   .exp_data(HMAC_MSG_FIFO_DEPTH - burst_wr_length),
-                   .compare_op(CompareOpLe));
+      csr_spinwait(
+      .ptr(ral.status.fifo_depth),
+      .exp_data(HMAC_MSG_FIFO_DEPTH - burst_wr_length),
+      .compare_op(CompareOpLe)
+      );
       if (msg_q.size() >= burst_wr_length * 4) begin
         repeat (burst_wr_length) begin
           for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
           word = {>>byte{word_unpack}};
-          `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                    wr_addr, wr_mask, word), UVM_HIGH)
+          `uvm_info(`gfn,
+                    $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h", wr_addr, wr_mask,
+                              word),
+                    UVM_HIGH)
           `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {wr_mask == '1;})
-          tl_access(.addr(wr_addr + cfg.csr_base_addr), .write(1'b1), .data(word), .mask(wr_mask),
-                    .blocking($urandom_range(0, 1)));
+          tl_access(
+          .addr(wr_addr + cfg.csr_base_addr),
+          .write(1'b1),
+          .data(word),
+          .mask(wr_mask),
+          .blocking($urandom_range(0, 1))
+          );
         end
         if (ral.cfg.sha_en.get_mirrored_value()) begin
           //clear_intr_fifo_full();
         end else begin
           check_error_code();
         end
-      end else begin // remaining msg is smaller than the burst_wr_length
+      end else begin  // remaining msg is smaller than the burst_wr_length
         wr_msg(msg_q);
         break;
       end
-    csr_utils_pkg::wait_no_outstanding_access();
-    if ($urandom_range(0, 1)) rd_msg_length();
+      csr_utils_pkg::wait_no_outstanding_access();
+      if ($urandom_range(0, 1)) rd_msg_length();
     end
   endtask
 

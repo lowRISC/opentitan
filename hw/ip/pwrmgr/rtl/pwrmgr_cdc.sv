@@ -7,50 +7,52 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
+module pwrmgr_cdc
+import pwrmgr_pkg::*;
+import pwrmgr_reg_pkg::*;
 (
-  // Clocks and resets
-  input clk_slow_i,
-  input clk_i,
-  input rst_slow_ni,
-  input rst_ni,
+    // Clocks and resets
+    input clk_slow_i,
+    input clk_i,
+    input rst_slow_ni,
+    input rst_ni,
 
-  // slow domain signals,
-  input slow_req_pwrup_i,
-  input slow_ack_pwrdn_i,
-  input slow_pwrup_cause_toggle_i,
-  input pwrup_cause_e slow_pwrup_cause_i,
-  output logic [NumWkups-1:0] slow_wakeup_en_o,
-  output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
-  output logic slow_main_pd_no,
-  output logic slow_io_clk_en_o,
-  output logic slow_core_clk_en_o,
-  output logic slow_req_pwrdn_o,
-  output logic slow_ack_pwrup_o,
-  output pwr_ast_rsp_t slow_ast_o,
-  output pwr_peri_t slow_peri_reqs_o,
-  input pwr_peri_t slow_peri_reqs_masked_i,
+    // slow domain signals,
+    input                                                              slow_req_pwrup_i,
+    input                                                              slow_ack_pwrdn_i,
+    input                                                              slow_pwrup_cause_toggle_i,
+    input  pwrup_cause_e                                               slow_pwrup_cause_i,
+    output logic                                        [NumWkups-1:0] slow_wakeup_en_o,
+    output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t                slow_reset_en_o,
+    output logic                                                       slow_main_pd_no,
+    output logic                                                       slow_io_clk_en_o,
+    output logic                                                       slow_core_clk_en_o,
+    output logic                                                       slow_req_pwrdn_o,
+    output logic                                                       slow_ack_pwrup_o,
+    output pwr_ast_rsp_t                                               slow_ast_o,
+    output pwr_peri_t                                                  slow_peri_reqs_o,
+    input  pwr_peri_t                                                  slow_peri_reqs_masked_i,
 
-  // fast domain signals
-  input req_pwrdn_i,
-  input ack_pwrup_i,
-  input cfg_cdc_sync_i,
-  input [NumWkups-1:0] wakeup_en_i,
-  input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
-  input main_pd_ni,
-  input io_clk_en_i,
-  input core_clk_en_i,
-  output logic ack_pwrdn_o,
-  output logic req_pwrup_o,
-  output pwrup_cause_e pwrup_cause_o,
-  output pwr_peri_t peri_reqs_o,
-  output logic cdc_sync_done_o,
+    // fast domain signals
+    input                                                              req_pwrdn_i,
+    input                                                              ack_pwrup_i,
+    input                                                              cfg_cdc_sync_i,
+    input                                               [NumWkups-1:0] wakeup_en_i,
+    input  pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t                reset_en_i,
+    input                                                              main_pd_ni,
+    input                                                              io_clk_en_i,
+    input                                                              core_clk_en_i,
+    output logic                                                       ack_pwrdn_o,
+    output logic                                                       req_pwrup_o,
+    output pwrup_cause_e                                               pwrup_cause_o,
+    output pwr_peri_t                                                  peri_reqs_o,
+    output logic                                                       cdc_sync_done_o,
 
-  // peripheral inputs, mixed domains
-  input pwr_peri_t peri_i,
+    // peripheral inputs, mixed domains
+    input pwr_peri_t peri_i,
 
-  // AST inputs, unknown domain
-  input pwr_ast_rsp_t ast_i
+    // AST inputs, unknown domain
+    input pwr_ast_rsp_t ast_i
 
 );
 
@@ -61,56 +63,56 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic slow_cdc_sync;
   pwr_ast_rsp_t slow_ast_q, slow_ast_q2;
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_req_pwrdn_sync (
-    .clk_i(clk_slow_i),
-    .rst_ni(rst_slow_ni),
-    .d_i(req_pwrdn_i),
-    .q_o(slow_req_pwrdn_o)
+      .clk_i (clk_slow_i),
+      .rst_ni(rst_slow_ni),
+      .d_i   (req_pwrdn_i),
+      .q_o   (slow_req_pwrdn_o)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_ack_pwrup_sync (
-    .clk_i(clk_slow_i),
-    .rst_ni(rst_slow_ni),
-    .d_i(ack_pwrup_i),
-    .q_o(slow_ack_pwrup_o)
+      .clk_i (clk_slow_i),
+      .rst_ni(rst_slow_ni),
+      .d_i   (ack_pwrup_i),
+      .q_o   (slow_ack_pwrup_o)
   );
 
   prim_pulse_sync i_slow_cdc_sync (
-    .clk_src_i(clk_i),
-    .rst_src_ni(rst_ni),
-    .src_pulse_i(cfg_cdc_sync_i),
-    .clk_dst_i(clk_slow_i),
-    .rst_dst_ni(rst_slow_ni),
-    .dst_pulse_o(slow_cdc_sync)
+      .clk_src_i  (clk_i),
+      .rst_src_ni (rst_ni),
+      .src_pulse_i(cfg_cdc_sync_i),
+      .clk_dst_i  (clk_slow_i),
+      .rst_dst_ni (rst_slow_ni),
+      .dst_pulse_o(slow_cdc_sync)
   );
 
   // Even though this is multi-bit, the bits are individual request lines.
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
-  prim_flop_2sync # (
-    .Width(HwRstReqs + NumWkups)
+  prim_flop_2sync #(
+      .Width(HwRstReqs + NumWkups)
   ) i_slow_ext_req_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d_i    (peri_i),
-    .q_o    (slow_peri_reqs_o)
+      .clk_i (clk_slow_i),
+      .rst_ni(rst_slow_ni),
+      .d_i   (peri_i),
+      .q_o   (slow_peri_reqs_o)
   );
 
 
   // Some of the AST signals are multi-bits themselves (such as clk_val)
   // thus they need to be delayed one more stage to check for stability
-  prim_flop_2sync # (
-    .Width($bits(pwr_ast_rsp_t)),
-    .ResetValue(PWR_AST_RSP_SYNC_DEFAULT)
+  prim_flop_2sync #(
+      .Width($bits(pwr_ast_rsp_t)),
+      .ResetValue(PWR_AST_RSP_SYNC_DEFAULT)
   ) i_ast_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d_i    (ast_i),
-    .q_o    (slow_ast_q)
+      .clk_i (clk_slow_i),
+      .rst_ni(rst_slow_ni),
+      .d_i   (ast_i),
+      .q_o   (slow_ast_q)
   );
 
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
@@ -158,40 +160,40 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic pwrup_cause_toggle_q, pwrup_cause_toggle_q2;
   logic pwrup_cause_chg;
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_req_pwrup_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_req_pwrup_i),
-    .q_o(req_pwrup_o)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_req_pwrup_i),
+      .q_o(req_pwrup_o)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_ack_pwrdn_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_ack_pwrdn_i),
-    .q_o(ack_pwrdn_o)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_ack_pwrdn_i),
+      .q_o(ack_pwrdn_o)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_pwrup_chg_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_pwrup_cause_toggle_i),
-    .q_o(pwrup_cause_toggle_q)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_pwrup_cause_toggle_i),
+      .q_o(pwrup_cause_toggle_q)
   );
 
   prim_pulse_sync i_scdc_sync (
-    .clk_src_i(clk_slow_i),
-    .rst_src_ni(rst_slow_ni),
-    .src_pulse_i(slow_cdc_sync),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .dst_pulse_o(cdc_sync_done_o)
+      .clk_src_i  (clk_slow_i),
+      .rst_src_ni (rst_slow_ni),
+      .src_pulse_i(slow_cdc_sync),
+      .clk_dst_i  (clk_i),
+      .rst_dst_ni (rst_ni),
+      .dst_pulse_o(cdc_sync_done_o)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -212,13 +214,13 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     end
   end
 
-  prim_flop_2sync # (
-    .Width(HwRstReqs + NumWkups)
+  prim_flop_2sync #(
+      .Width(HwRstReqs + NumWkups)
   ) i_ext_req_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_peri_reqs_masked_i),
-    .q_o(peri_reqs_o)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_peri_reqs_masked_i),
+      .q_o(peri_reqs_o)
   );
 
 

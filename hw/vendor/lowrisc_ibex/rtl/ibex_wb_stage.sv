@@ -14,58 +14,58 @@
 `include "prim_assert.sv"
 
 module ibex_wb_stage #(
-  parameter bit WritebackStage = 1'b0
+    parameter bit WritebackStage = 1'b0
 ) (
-  input  logic                     clk_i,
-  input  logic                     rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  input  logic                     en_wb_i,
-  input  ibex_pkg::wb_instr_type_e instr_type_wb_i,
-  input  logic [31:0]              pc_id_i,
+    input logic                            en_wb_i,
+    input ibex_pkg::wb_instr_type_e        instr_type_wb_i,
+    input logic                     [31:0] pc_id_i,
 
-  output logic                     ready_wb_o,
-  output logic                     rf_write_wb_o,
-  output logic                     outstanding_load_wb_o,
-  output logic                     outstanding_store_wb_o,
-  output logic [31:0]              pc_wb_o,
+    output logic        ready_wb_o,
+    output logic        rf_write_wb_o,
+    output logic        outstanding_load_wb_o,
+    output logic        outstanding_store_wb_o,
+    output logic [31:0] pc_wb_o,
 
-  input  logic [4:0]               rf_waddr_id_i,
-  input  logic [31:0]              rf_wdata_id_i,
-  input  logic                     rf_we_id_i,
+    input logic [ 4:0] rf_waddr_id_i,
+    input logic [31:0] rf_wdata_id_i,
+    input logic        rf_we_id_i,
 
-  input  logic [31:0]              rf_wdata_lsu_i,
-  input  logic                     rf_we_lsu_i,
+    input logic [31:0] rf_wdata_lsu_i,
+    input logic        rf_we_lsu_i,
 
-  output logic [31:0]              rf_wdata_fwd_wb_o,
+    output logic [31:0] rf_wdata_fwd_wb_o,
 
-  output logic [4:0]               rf_waddr_wb_o,
-  output logic [31:0]              rf_wdata_wb_o,
-  output logic                     rf_we_wb_o,
+    output logic [ 4:0] rf_waddr_wb_o,
+    output logic [31:0] rf_wdata_wb_o,
+    output logic        rf_we_wb_o,
 
-  input logic                      lsu_resp_valid_i,
+    input logic lsu_resp_valid_i,
 
-  output logic                     instr_done_wb_o
+    output logic instr_done_wb_o
 );
 
   import ibex_pkg::*;
 
   // 0 == RF write from ID
   // 1 == RF write from LSU
-  logic [31:0] rf_wdata_wb_mux    [2];
-  logic [1:0]  rf_wdata_wb_mux_we;
+  logic [31:0] rf_wdata_wb_mux[2];
+  logic [1:0] rf_wdata_wb_mux_we;
 
-  if(WritebackStage) begin : g_writeback_stage
-    logic [31:0]    rf_wdata_wb_q;
-    logic           rf_we_wb_q;
-    logic [4:0]     rf_waddr_wb_q;
+  if (WritebackStage) begin : g_writeback_stage
+    logic [31:0] rf_wdata_wb_q;
+    logic rf_we_wb_q;
+    logic [4:0] rf_waddr_wb_q;
 
-    logic           wb_done;
+    logic wb_done;
 
-    logic           wb_valid_q;
-    logic [31:0]    wb_pc_q;
+    logic wb_valid_q;
+    logic [31:0] wb_pc_q;
     wb_instr_type_e wb_instr_type_q;
 
-    logic           wb_valid_d;
+    logic wb_valid_d;
 
     // Stage becomes valid if an instruction enters for ID/EX and valid is cleared when instruction
     // is done
@@ -77,7 +77,7 @@ module ibex_wb_stage #(
     assign wb_done = (wb_instr_type_q == WB_INSTR_OTHER) | lsu_resp_valid_i;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-      if(~rst_ni) begin
+      if (~rst_ni) begin
         wb_valid_q <= 1'b0;
       end else begin
         wb_valid_q <= wb_valid_d;
@@ -85,17 +85,17 @@ module ibex_wb_stage #(
     end
 
     always_ff @(posedge clk_i) begin
-      if(en_wb_i) begin
-        rf_we_wb_q      <= rf_we_id_i;
-        rf_waddr_wb_q   <= rf_waddr_id_i;
-        rf_wdata_wb_q   <= rf_wdata_id_i;
+      if (en_wb_i) begin
+        rf_we_wb_q <= rf_we_id_i;
+        rf_waddr_wb_q <= rf_waddr_id_i;
+        rf_wdata_wb_q <= rf_wdata_id_i;
         wb_instr_type_q <= instr_type_wb_i;
-        wb_pc_q         <= pc_id_i;
+        wb_pc_q <= pc_id_i;
       end
     end
 
-    assign rf_waddr_wb_o         = rf_waddr_wb_q;
-    assign rf_wdata_wb_mux[0]    = rf_wdata_wb_q;
+    assign rf_waddr_wb_o = rf_waddr_wb_q;
+    assign rf_wdata_wb_mux[0] = rf_wdata_wb_q;
     assign rf_wdata_wb_mux_we[0] = rf_we_wb_q & wb_valid_q;
 
     assign ready_wb_o = ~wb_valid_q | wb_done;
@@ -104,7 +104,7 @@ module ibex_wb_stage #(
     // is awaiting load data. This is used for determining RF read hazards in ID/EX
     assign rf_write_wb_o = wb_valid_q & (rf_we_wb_q | (wb_instr_type_q == WB_INSTR_LOAD));
 
-    assign outstanding_load_wb_o  = wb_valid_q & (wb_instr_type_q == WB_INSTR_LOAD);
+    assign outstanding_load_wb_o = wb_valid_q & (wb_instr_type_q == WB_INSTR_LOAD);
     assign outstanding_store_wb_o = wb_valid_q & (wb_instr_type_q == WB_INSTR_STORE);
 
     assign pc_wb_o = wb_pc_q;
@@ -117,45 +117,45 @@ module ibex_wb_stage #(
     assign rf_wdata_fwd_wb_o = rf_wdata_wb_q;
   end else begin : g_bypass_wb
     // without writeback stage just pass through register write signals
-    assign rf_waddr_wb_o         = rf_waddr_id_i;
-    assign rf_wdata_wb_mux[0]    = rf_wdata_id_i;
+    assign rf_waddr_wb_o = rf_waddr_id_i;
+    assign rf_wdata_wb_mux[0] = rf_wdata_id_i;
     assign rf_wdata_wb_mux_we[0] = rf_we_id_i;
 
     // ready needs to be constant 1 without writeback stage (otherwise ID/EX stage will stall)
-    assign ready_wb_o    = 1'b1;
+    assign ready_wb_o = 1'b1;
 
     // Unused Writeback stage only IO & wiring
     // Assign inputs and internal wiring to unused signals to satisfy lint checks
     // Tie-off outputs to constant values
-    logic           unused_clk;
-    logic           unused_rst;
-    logic           unused_en_wb;
+    logic unused_clk;
+    logic unused_rst;
+    logic unused_en_wb;
     wb_instr_type_e unused_instr_type_wb;
-    logic [31:0]    unused_pc_id;
-    logic           unused_lsu_resp_valid;
+    logic [31:0] unused_pc_id;
+    logic unused_lsu_resp_valid;
 
-    assign unused_clk            = clk_i;
-    assign unused_rst            = rst_ni;
-    assign unused_en_wb          = en_wb_i;
-    assign unused_instr_type_wb  = instr_type_wb_i;
-    assign unused_pc_id          = pc_id_i;
+    assign unused_clk = clk_i;
+    assign unused_rst = rst_ni;
+    assign unused_en_wb = en_wb_i;
+    assign unused_instr_type_wb = instr_type_wb_i;
+    assign unused_pc_id = pc_id_i;
     assign unused_lsu_resp_valid = lsu_resp_valid_i;
 
-    assign outstanding_load_wb_o  = 1'b0;
+    assign outstanding_load_wb_o = 1'b0;
     assign outstanding_store_wb_o = 1'b0;
-    assign pc_wb_o                = '0;
-    assign rf_write_wb_o          = 1'b0;
-    assign rf_wdata_fwd_wb_o      = 32'b0;
-    assign instr_done_wb_o        = 1'b0;
+    assign pc_wb_o = '0;
+    assign rf_write_wb_o = 1'b0;
+    assign rf_wdata_fwd_wb_o = 32'b0;
+    assign instr_done_wb_o = 1'b0;
   end
 
-  assign rf_wdata_wb_mux[1]    = rf_wdata_lsu_i;
+  assign rf_wdata_wb_mux[1] = rf_wdata_lsu_i;
   assign rf_wdata_wb_mux_we[1] = rf_we_lsu_i;
 
   // RF write data can come from ID results (all RF writes that aren't because of loads will come
   // from here) or the LSU (RF writes for load data)
   assign rf_wdata_wb_o = rf_wdata_wb_mux_we[0] ? rf_wdata_wb_mux[0] : rf_wdata_wb_mux[1];
-  assign rf_we_wb_o    = |rf_wdata_wb_mux_we;
+  assign rf_we_wb_o = |rf_wdata_wb_mux_we;
 
   `ASSERT(RFWriteFromOneSourceOnly, $onehot0(rf_wdata_wb_mux_we))
 endmodule

@@ -6,9 +6,7 @@ class hmac_common_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_common_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[1:3]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 3]};}
 
   virtual task pre_start();
     do_hmac_init = 1'b0;

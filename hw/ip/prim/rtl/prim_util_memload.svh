@@ -17,58 +17,62 @@
  */
 
 `ifdef VERILATOR
-  // Task for loading 'mem' with SystemVerilog system task $readmemh()
-  export "DPI-C" task simutil_verilator_memload;
+// Task for loading 'mem' with SystemVerilog system task $readmemh()
+export "DPI-C"
+task simutil_verilator_memload
+;
 
-  task simutil_verilator_memload;
-    input string file;
-    $readmemh(file, mem);
-  endtask
+task simutil_verilator_memload;
+  input string file;
+  $readmemh(file, mem);
+endtask
 
-  // Function for setting a specific element in |mem|
-  // Returns 1 (true) for success, 0 (false) for errors.
-  export "DPI-C" function simutil_verilator_set_mem;
+// Function for setting a specific element in |mem|
+// Returns 1 (true) for success, 0 (false) for errors.
+export "DPI-C"
+function simutil_verilator_set_mem
+;
 
-  function int simutil_verilator_set_mem(input int         index,
-                                         input bit [255:0] val);
+function int simutil_verilator_set_mem(input int index, input bit [255:0] val);
 
-    // Function will only work for memories <= 256 bits
-    if (Width > 256) begin
-      return 0;
-    end
+  // Function will only work for memories <= 256 bits
+  if (Width > 256) begin
+    return 0;
+  end
 
-    if (index >= Depth) begin
-      return 0;
-    end
+  if (index >= Depth) begin
+    return 0;
+  end
 
-    mem[index] = val[Width-1:0];
-    return 1;
-  endfunction
+  mem[index] = val[Width - 1:0];
+  return 1;
+endfunction
 
-  // Function for getting a specific element in |mem|
-  export "DPI-C" function simutil_verilator_get_mem;
+// Function for getting a specific element in |mem|
+export "DPI-C"
+function simutil_verilator_get_mem
+;
 
-  function int simutil_verilator_get_mem(input int          index,
-                                         output bit [255:0] val);
+function int simutil_verilator_get_mem(input int index, output bit [255:0] val);
 
-    // Function will only work for memories <= 256 bits
-    if (Width > 256) begin
-      return 0;
-    end
+  // Function will only work for memories <= 256 bits
+  if (Width > 256) begin
+    return 0;
+  end
 
-    if (index >= Depth) begin
-      return 0;
-    end
+  if (index >= Depth) begin
+    return 0;
+  end
 
-    val = 0;
-    val[Width-1:0] = mem[index];
-    return 1;
-  endfunction
+  val = 0;
+  val[Width - 1:0] = mem[index];
+  return 1;
+endfunction
 `endif
 
 initial begin
   if (MemInitFile != "") begin : gen_meminit
-      $display("Initializing memory %m from file '%s'.", MemInitFile);
-      $readmemh(MemInitFile, mem);
+    $display("Initializing memory %m from file '%s'.", MemInitFile);
+    $readmemh(MemInitFile, mem);
   end
 end

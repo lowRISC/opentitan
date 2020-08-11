@@ -7,47 +7,49 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; (
-  input clk_i,
-  input rst_ni,
+module pwrmgr_fsm
+import pwrmgr_pkg::*;
+(
+    input clk_i,
+    input rst_ni,
 
-  // interface with slow_fsm
-  input req_pwrup_i,
-  input pwrup_cause_e pwrup_cause_i,
-  output logic ack_pwrup_o,
-  output logic req_pwrdn_o,
-  input ack_pwrdn_i,
-  input low_power_entry_i,
-  input main_pd_ni,
-  input reset_req_i,
+    // interface with slow_fsm
+    input                req_pwrup_i,
+    input  pwrup_cause_e pwrup_cause_i,
+    output logic         ack_pwrup_o,
+    output logic         req_pwrdn_o,
+    input                ack_pwrdn_i,
+    input                low_power_entry_i,
+    input                main_pd_ni,
+    input                reset_req_i,
 
-  // consumed in pwrmgr
-  output logic wkup_o,        // generate wake interrupt
-  output logic wkup_record_o, // enable wakeup recording
-  output logic fall_through_o,
-  output logic abort_o,
-  output logic clr_hint_o,
-  output logic clr_cfg_lock_o,
+    // consumed in pwrmgr
+    output logic wkup_o,  // generate wake interrupt
+    output logic wkup_record_o,  // enable wakeup recording
+    output logic fall_through_o,
+    output logic abort_o,
+    output logic clr_hint_o,
+    output logic clr_cfg_lock_o,
 
-  // rstmgr
-  output pwr_rst_req_t pwr_rst_o,
-  input pwr_rst_rsp_t pwr_rst_i,
+    // rstmgr
+    output pwr_rst_req_t pwr_rst_o,
+    input  pwr_rst_rsp_t pwr_rst_i,
 
-  // clkmgr
-  output logic ips_clk_en_o,
+    // clkmgr
+    output logic ips_clk_en_o,
 
-  // otp
-  output logic otp_init_o,
-  input otp_done_i,
-  input otp_idle_i,
+    // otp
+    output logic otp_init_o,
+    input        otp_done_i,
+    input        otp_idle_i,
 
-  // lc
-  output logic lc_init_o,
-  input lc_done_i,
-  input lc_idle_i,
+    // lc
+    output logic lc_init_o,
+    input        lc_done_i,
+    input        lc_idle_i,
 
-  // flash
-  input flash_idle_i
+    // flash
+    input flash_idle_i
 );
 
   // state enum
@@ -96,17 +98,16 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   logic otp_init;
   logic lc_init;
 
-  assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
-                              pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
+  assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains - 1:1] == '0 &
+      pwr_rst_i.rst_sys_src_n[PowerDomains - 1:1] == '0;
 
-  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
-                             pwr_rst_i.rst_sys_src_n == '0;
+  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 & pwr_rst_i.rst_sys_src_n == '0;
 
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
-                       reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
+      reset_cause_q == HwReq ? all_rsts_asserted : 1'b0;
 
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -150,7 +151,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     rst_sys_req_d = rst_sys_req_q;
     reset_cause_d = reset_cause_q;
 
-    unique case(state_q)
+    unique case (state_q)
 
       StLowPower: begin
         if (req_pwrup_i || reset_ongoing_q) begin
@@ -161,7 +162,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StEnableClocks: begin
         ip_clk_en_d = 1'b1;
 
-        if (1'b1) begin // TODO, add a feedback signal to check clocks are enabled
+        if (1'b1) begin  // TODO, add a feedback signal to check clocks are enabled
           state_d = StReleaseLcRst;
         end
       end
@@ -169,7 +170,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
 
-        if (&pwr_rst_i.rst_lc_src_n) begin // once all resets are released
+        if (&pwr_rst_i.rst_lc_src_n) begin  // once all resets are released
           state_d = StOtpInit;
         end
       end
@@ -218,7 +219,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StDisClks: begin
         ip_clk_en_d = 1'b0;
 
-        if (1'b1) begin // TODO, add something to check that clocks are disabled
+        if (1'b1) begin  // TODO, add something to check that clocks are disabled
           state_d = reset_req_i ? StNvmShutDown : StFallThrough;
           wkup_record_o = !reset_req_i;
         end
@@ -301,8 +302,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         ip_clk_en_d = 1'b0;
       end
 
-    endcase // unique case (state_q)
-  end // always_comb
+    endcase  // unique case (state_q)
+  end  // always_comb
 
   assign ack_pwrup_o = ack_pwrup_q;
   assign req_pwrdn_o = req_pwrdn_q;

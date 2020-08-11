@@ -6,7 +6,7 @@
 // See prim_assert.sv for documentation for each of the macros.
 
 // ASSERT_RPT is available to change the reporting mechanism when an assert fails
-`define ASSERT_RPT(__name)                                                  \
+`define ASSERT_RPT(__name) \
 `ifdef UVM                                                                  \
   assert_rpt_pkg::assert_rpt($sformatf("[%m] %s (%s:%0d)",                  \
                              __name, `__FILE__, `__LINE__));                \
@@ -14,13 +14,13 @@
   $error("[ASSERT FAILED] [%m] %s (%s:%0d)", __name, `__FILE__, `__LINE__); \
 `endif
 
-`define ASSERT_I(__name, __prop)           \
+`define ASSERT_I(__name, __prop) \
   __name: assert (__prop)                  \
     else begin                             \
       `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
     end
 
-`define ASSERT_INIT(__name, __prop)          \
+`define ASSERT_INIT(__name, __prop) \
   initial begin                              \
     __name: assert (__prop)                  \
       else begin                             \
@@ -28,7 +28,7 @@
       end                                    \
   end
 
-`define ASSERT_FINAL(__name, __prop)                                         \
+`define ASSERT_FINAL(__name, __prop) \
   final begin                                                                \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
       else begin                                                             \
@@ -60,7 +60,7 @@
       `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
     end
 
-`define ASSUME_I(__name, __prop)           \
+`define ASSUME_I(__name, __prop) \
   __name: assume (__prop)                  \
     else begin                             \
       `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \

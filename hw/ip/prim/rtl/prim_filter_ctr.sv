@@ -12,16 +12,18 @@
 //   new input must be opposite value from stored value for
 //   #Cycles before switching to new value.
 
-module prim_filter_ctr #(parameter int unsigned Cycles = 4) (
-  input  clk_i,
-  input  rst_ni,
-  input  enable_i,
-  input  filter_i,
-  output filter_o
+module prim_filter_ctr #(
+    parameter int unsigned Cycles = 4
+) (
+    input  clk_i,
+    input  rst_ni,
+    input  enable_i,
+    input  filter_i,
+    output filter_o
 );
 
   localparam int unsigned CTR_WIDTH = $clog2(Cycles);
-  localparam logic [CTR_WIDTH-1:0] CYCLESM1 = (CTR_WIDTH)'(Cycles-1);
+  localparam logic [CTR_WIDTH-1:0] CYCLESM1 = (CTR_WIDTH)'(Cycles - 1);
 
   logic [CTR_WIDTH-1:0] diff_ctr_q, diff_ctr_d;
   logic filter_q, stored_value_q, update_stored_value;
@@ -51,10 +53,9 @@ module prim_filter_ctr #(parameter int unsigned Cycles = 4) (
   end
 
   // always look for differences, even if not filter enabled
-  assign diff_ctr_d =
-             (filter_i != filter_q)           ? '0       : // restart
-                     (diff_ctr_q == CYCLESM1) ? CYCLESM1 : // saturate
-                         (diff_ctr_q + 1'b1);              // count up
+  assign diff_ctr_d = (filter_i != filter_q) ? '0 :  // restart
+  (diff_ctr_q == CYCLESM1) ? CYCLESM1 :  // saturate
+  (diff_ctr_q + 1'b1);  // count up
   assign update_stored_value = (diff_ctr_d == CYCLESM1);
 
   assign filter_o = enable_i ? stored_value_q : filter_i;

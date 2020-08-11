@@ -5,10 +5,10 @@
 // Common Library: Clock Gating cell
 
 module prim_generic_clock_gating (
-  input        clk_i,
-  input        en_i,
-  input        test_en_i,
-  output logic clk_o
+    input        clk_i,
+    input        en_i,
+    input        test_en_i,
+    output logic clk_o
 );
 
   // Assume en_i synchronized, if not put synchronizer prior to en_i

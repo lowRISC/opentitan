@@ -20,24 +20,24 @@ package uart_env_pkg;
 
   // local types
   // csr and mem total size for IP
-  parameter uint UART_ADDR_MAP_SIZE   = 64;
+  parameter uint UART_ADDR_MAP_SIZE = 64;
   parameter uint UART_FIFO_DEPTH = 32;
 
   typedef enum int {
     TxWatermark = 0,
     RxWatermark = 1,
-    TxEmpty     = 2,
-    RxOverflow  = 3,
-    RxFrameErr  = 4,
-    RxBreakErr  = 5,
-    RxTimeout   = 6,
+    TxEmpty = 2,
+    RxOverflow = 3,
+    RxFrameErr = 4,
+    RxBreakErr = 5,
+    RxTimeout = 6,
     RxParityErr = 7,
     NumUartIntr = 8
   } uart_intr_e;
 
   // get the number of bytes that triggers watermark interrupt
   function automatic int get_watermark_bytes_by_level(int lvl, uart_dir_e dir);
-    case(lvl)
+    case (lvl)
       0: return dir == UartTx ? 2 : 1;
       1: return 4;
       2: return 8;
@@ -52,7 +52,7 @@ package uart_env_pkg;
 
   // get the number of bytes that triggers break interrupt
   function automatic int get_break_bytes_by_level(int lvl);
-    case(lvl)
+    case (lvl)
       0: return 2;
       1: return 4;
       2: return 8;
@@ -74,10 +74,9 @@ package uart_env_pkg;
     int nco;
     nco = `CALC_NCO(baud_rate, clk_freq_mhz);
     if (nco >= (2 ** max_bits)) begin
-      `uvm_fatal("uart_agent_pkg::get_nco", $sformatf(
-                 "nco (%0d) can't bigger than (2 ** 16) - 1, it's only 16 bits \
-                 baud_rate = %0d, clk_freq_mhz = %0d",
-                 nco, baud_rate, clk_freq_mhz))
+      `uvm_fatal("uart_agent_pkg::get_nco",
+                 $sformatf("nco (%0d) can't bigger than (2 ** 16) - 1, it's only 16 bits \
+                 baud_rate = %0d, clk_freq_mhz = %0d", nco, baud_rate, clk_freq_mhz))
     end
     return nco;
   endfunction

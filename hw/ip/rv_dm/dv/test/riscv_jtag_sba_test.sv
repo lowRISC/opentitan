@@ -6,10 +6,10 @@ class riscv_jtag_sba_test extends uvm_test;
 
   `uvm_component_utils(riscv_jtag_sba_test)
 
-  dm_env             env;
+  dm_env env;
   rjtag_dmi_sequence seq;
 
-  function new(string name = "riscv_jtag_sba_test", uvm_component parent=null);
+  function new(string name = "riscv_jtag_sba_test", uvm_component parent = null);
     super.new(name, parent);
   endfunction : new
 

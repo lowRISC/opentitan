@@ -11,17 +11,18 @@ class alert_handler_ping_rsp_fail_vseq extends alert_handler_entropy_vseq;
 
   // always enable clr_en to hit the case when escalation ping interrupted by real esc sig
   constraint clr_and_lock_en_c {
-    clr_en      == '1;
+    clr_en == '1;
     lock_bit_en == 0;
   }
 
   constraint sig_int_c {
     esc_int_err == '1;
-    esc_standalone_int_err dist {0 :/ 9, [1:'b1111] :/ 1};
+    esc_standalone_int_err dist {
+      0 :/ 9,
+      [1 : 'b1111] :/ 1
+    };
     alert_ping_timeout == '1;
   }
 
-  constraint ping_timeout_cyc_c {
-    ping_timeout_cyc inside {[0:100]};
-  }
+  constraint ping_timeout_cyc_c {ping_timeout_cyc inside {[0 : 100]};}
 endclass : alert_handler_ping_rsp_fail_vseq

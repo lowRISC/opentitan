@@ -9,14 +9,10 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
   `uvm_object_utils(uart_rx_oversample_vseq)
   uint num_bits;
 
-  constraint en_rx_c {
-    en_rx == 1;
-  }
+  constraint en_rx_c {en_rx == 1;}
 
   // lower the freq so that there is enough time to read rx oversmapled value and check
-  constraint baud_rate_extra_c {
-    baud_rate <= BaudRate115200;
-  }
+  constraint baud_rate_extra_c {baud_rate <= BaudRate115200;}
 
   `uvm_object_new
 
@@ -51,7 +47,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     bit [TL_DW-1:0] pattern;
     `uvm_info(`gfn, "finding oversample clk center", UVM_HIGH)
     randcase
-      1: pattern = (1 << num_bits) - 1; // all 1s
+      1: pattern = (1 << num_bits) - 1;  // all 1s
       1: pattern = 0;
     endcase
     // drive constant value and find all 1s/0s pattern
@@ -62,7 +58,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     cfg.m_uart_agent_cfg.vif.uart_rx = pattern[0];
     csr_spinwait(.ptr(ral.val.rx), .exp_data(pattern));
     // move 0.4 clk into the clk center, as previous reg read consume some cycles
-    #(get_oversampled_baud_clk_period_ns() *1ns * 0.4);
+    #(get_oversampled_baud_clk_period_ns() * 1ns * 0.4);
   endtask
 
   // drive N bits on RX pin based on oversampled clk, then check the reg value
@@ -70,14 +66,13 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     bit [TL_DW-1:0] data;
     `uvm_info(`gfn, "Start drive rx oversampled value", UVM_HIGH)
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data,
-                                       data <= ((1 << num_bits) - 1);)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, data <= ((1 << num_bits) - 1);)
     // Most recent bit is bit 0
     for (int i = num_bits - 1; i >= 0; i--) begin
       cfg.m_uart_agent_cfg.vif.uart_rx = data[i];
       #(get_oversampled_baud_clk_period_ns() * 1ns);
     end
-    cfg.m_uart_agent_cfg.vif.uart_rx = 1; // back to default value
+    cfg.m_uart_agent_cfg.vif.uart_rx = 1;  // back to default value
     csr_rd_check(.ptr(ral.val.rx), .compare_value(data), .blocking(0));
   endtask
 

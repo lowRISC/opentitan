@@ -21,8 +21,9 @@ class uart_rx_start_bit_filter_vseq extends uart_sanity_vseq;
       // after 0.5 clk, design will sample 1 and should drop this start bit
       // need stable period > 0.5, use 0.8 clk to have enough margin
       cfg.m_uart_agent_cfg.vif.drive_uart_rx_glitch(
-          .max_glitch_ps(uart_clk_period_ps * 0.4),
-          .stable_ps_after_glitch(uart_clk_period_ps * 0.8));
+      .max_glitch_ps(uart_clk_period_ps * 0.4),
+      .stable_ps_after_glitch(uart_clk_period_ps * 0.8)
+      );
     end
     cfg.m_uart_agent_cfg.en_rx_monitor = 1;
     csr_rd_check(.ptr(ral.status.rxidle), .compare_value(1));

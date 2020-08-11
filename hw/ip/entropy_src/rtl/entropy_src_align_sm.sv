@@ -6,45 +6,45 @@
 //
 
 module entropy_src_align_sm (
-  input                  clk_i,
-  input                  rst_ni,
+    input clk_i,
+    input rst_ni,
 
-   // ins req interface
-  input logic            es_enable_i,
-  input logic            es_health_fail_i,
-  input logic            upstr_fifo_vld_i,
-  input logic            dwstr_fifo_not_full_i,
-  output logic           dwstr_fifo_push_o,
-  output logic           es_load_byte0_o,
-  output logic           es_load_byte1_o,
-  output logic           es_load_byte2_o,
-  output logic           es_load_byte3_o,
-  input logic            other_dwstr_fifo_empty_i,
-  output logic           dwstr_fifo_swap_o,
-  output logic           dwstr_fifo_clr_o
+    // ins req interface
+    input  logic es_enable_i,
+    input  logic es_health_fail_i,
+    input  logic upstr_fifo_vld_i,
+    input  logic dwstr_fifo_not_full_i,
+    output logic dwstr_fifo_push_o,
+    output logic es_load_byte0_o,
+    output logic es_load_byte1_o,
+    output logic es_load_byte2_o,
+    output logic es_load_byte3_o,
+    input  logic other_dwstr_fifo_empty_i,
+    output logic dwstr_fifo_swap_o,
+    output logic dwstr_fifo_clr_o
 );
 
 
   typedef enum logic [3:0] {
-                            IDLE  = 4'h0,
-                            BYTE0 = 4'h1,
-                            BYTE1 = 4'h2,
-                            BYTE2 = 4'h3,
-                            BYTE3 = 4'h4,
-                            PUSH  = 4'h5,
-                            FCHK  = 4'h6,
-                            SWAP  = 4'h7,
-                            BAIL  = 4'h8
-                            } state_e;
+    IDLE = 4'h0,
+    BYTE0 = 4'h1,
+    BYTE1 = 4'h2,
+    BYTE2 = 4'h3,
+    BYTE3 = 4'h4,
+    PUSH = 4'h5,
+    FCHK = 4'h6,
+    SWAP = 4'h7,
+    BAIL = 4'h8
+  } state_e;
 
   state_e state_q, state_d;
 
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      state_q    <= IDLE;
+      state_q <= IDLE;
     end else begin
-      state_q    <= state_d;
+      state_q <= state_d;
     end
 
 
@@ -58,7 +58,7 @@ module entropy_src_align_sm (
     dwstr_fifo_clr_o = 1'b0;
     dwstr_fifo_swap_o = 1'b0;
     unique case (state_q)
-//    case (state_q)
+      //    case (state_q)
       IDLE: begin
         if (es_enable_i) begin
           state_d = BYTE0;

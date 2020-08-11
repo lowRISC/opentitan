@@ -2,18 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(flash_ctrl_env_cfg),
-    .RAL_T(flash_ctrl_reg_block),
-    .COV_T(flash_ctrl_env_cov)
-  );
+class flash_ctrl_scoreboard extends cip_base_scoreboard#(
+    .CFG_T(flash_ctrl_env_cfg), .RAL_T(flash_ctrl_reg_block), .COV_T(flash_ctrl_env_cov)
+);
   `uvm_component_utils(flash_ctrl_scoreboard)
 
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(tl_seq_item)  eflash_tl_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)  eflash_tl_d_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) eflash_tl_a_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) eflash_tl_d_chan_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -58,14 +56,14 @@ class flash_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    bit do_read_check = 1'b1;
+    bit write = item.is_write();
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read = (!write && channel == AddrChannel);
+    bit addr_phase_write = (write && channel == AddrChannel);
+    bit data_phase_read = (!write && channel == DataChannel);
+    bit data_phase_write = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin

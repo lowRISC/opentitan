@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class entropy_src_base_test extends cip_base_test #(
-    .CFG_T(entropy_src_env_cfg),
-    .ENV_T(entropy_src_env)
-  );
+class entropy_src_base_test extends cip_base_test#(
+    .CFG_T(entropy_src_env_cfg), .ENV_T(entropy_src_env)
+);
 
   `uvm_component_utils(entropy_src_base_test)
   `uvm_component_new
 
-   virtual function void build_phase(uvm_phase phase);
-     super.build_phase(phase);
-   endfunction // build_phase
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+  endfunction  // build_phase
 
   // the base class dv_base_test creates the following instances:
   // entropy_src_env_cfg: cfg

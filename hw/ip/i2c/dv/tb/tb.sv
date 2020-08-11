@@ -35,38 +35,44 @@ module tb;
   wire cio_sda_en_o;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk_i), .rst_n(rst_ni));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
+  clk_rst_if clk_rst_if (
+      .clk  (clk_i),
+      .rst_n(rst_ni)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  pins_if #(1) devmode_if (devmode);
 
-  tl_if tl_if(.clk(clk_i), .rst_n(rst_ni));
-  i2c_if i2c_if();
+  tl_if tl_if (
+      .clk  (clk_i),
+      .rst_n(rst_ni)
+  );
+  i2c_if i2c_if ();
 
   // dut
   i2c dut (
-    .clk_i                   (clk_i      ),
-    .rst_ni                  (rst_ni     ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    .tl_i                    (tl_if.h2d  ),
-    .tl_o                    (tl_if.d2h  ),
+      .tl_i(tl_if.h2d),
+      .tl_o(tl_if.d2h),
 
-    .cio_scl_i               (cio_scl_i             ),
-    .cio_scl_o               (cio_scl_o             ),
-    .cio_scl_en_o            (cio_scl_en_o          ),
-    .cio_sda_i               (cio_sda_i             ),
-    .cio_sda_o               (cio_sda_o             ),
-    .cio_sda_en_o            (cio_sda_en_o          ),
+      .cio_scl_i   (cio_scl_i),
+      .cio_scl_o   (cio_scl_o),
+      .cio_scl_en_o(cio_scl_en_o),
+      .cio_sda_i   (cio_sda_i),
+      .cio_sda_o   (cio_sda_o),
+      .cio_sda_en_o(cio_sda_en_o),
 
-    .intr_fmt_watermark_o    (intr_fmt_watermark    ),
-    .intr_rx_watermark_o     (intr_rx_watermark     ),
-    .intr_fmt_overflow_o     (intr_fmt_overflow     ),
-    .intr_rx_overflow_o      (intr_rx_overflow      ),
-    .intr_nak_o              (intr_nak              ),
-    .intr_scl_interference_o (intr_scl_interference ),
-    .intr_sda_interference_o (intr_sda_interference ),
-    .intr_stretch_timeout_o  (intr_stretch_timeout  ),
-    .intr_sda_unstable_o     (intr_sda_unstable     ),
-    .intr_trans_complete_o   (intr_trans_complete   )
+      .intr_fmt_watermark_o   (intr_fmt_watermark),
+      .intr_rx_watermark_o    (intr_rx_watermark),
+      .intr_fmt_overflow_o    (intr_fmt_overflow),
+      .intr_rx_overflow_o     (intr_rx_overflow),
+      .intr_nak_o             (intr_nak),
+      .intr_scl_interference_o(intr_scl_interference),
+      .intr_sda_interference_o(intr_sda_interference),
+      .intr_stretch_timeout_o (intr_stretch_timeout),
+      .intr_sda_unstable_o    (intr_sda_unstable),
+      .intr_trans_complete_o  (intr_trans_complete)
   );
 
   // virtual open drain
@@ -76,20 +82,20 @@ module tb;
   assign cio_sda_i = i2c_if.sda_o;
 
   // host -> device if
-  assign i2c_if.clk_i  = clk_i;
+  assign i2c_if.clk_i = clk_i;
   assign i2c_if.rst_ni = rst_ni;
 
   // interrupt
-  assign interrupts[FmtWatermark]   = intr_fmt_watermark;
-  assign interrupts[RxWatermark]    = intr_rx_watermark;
-  assign interrupts[FmtOverflow]    = intr_fmt_overflow;
-  assign interrupts[RxOverflow]     = intr_rx_overflow;
-  assign interrupts[Nak]            = intr_nak;
-  assign interrupts[SclInference]   = intr_scl_interference;
-  assign interrupts[SdaInference]   = intr_sda_interference;
+  assign interrupts[FmtWatermark] = intr_fmt_watermark;
+  assign interrupts[RxWatermark] = intr_rx_watermark;
+  assign interrupts[FmtOverflow] = intr_fmt_overflow;
+  assign interrupts[RxOverflow] = intr_rx_overflow;
+  assign interrupts[Nak] = intr_nak;
+  assign interrupts[SclInference] = intr_scl_interference;
+  assign interrupts[SdaInference] = intr_sda_interference;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;
-  assign interrupts[SdaUnstable]    = intr_sda_unstable;
-  assign interrupts[TransComplete]  = intr_trans_complete;
+  assign interrupts[SdaUnstable] = intr_sda_unstable;
+  assign interrupts[TransComplete] = intr_trans_complete;
 
   initial begin
     // drive clk and rst_n from clk_if

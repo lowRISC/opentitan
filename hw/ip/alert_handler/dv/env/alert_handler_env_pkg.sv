@@ -23,18 +23,18 @@ package alert_handler_env_pkg;
   `include "alert_handler_env_pkg__params.sv"
 
   // parameters
-  parameter uint NUM_ESCS                    = 4;
+  parameter uint NUM_ESCS = 4;
   parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
-  parameter uint NUM_MAX_ESC_SEV             = 8;
-  parameter uint NUM_ESC_SIGNALS             = 4;
-  parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
-  parameter uint NUM_ESC_PHASES              = 4;
+  parameter uint NUM_MAX_ESC_SEV = 8;
+  parameter uint NUM_ESC_SIGNALS = 4;
+  parameter uint NUM_ALERT_HANDLER_CLASSES = 4;
+  parameter uint NUM_ESC_PHASES = 4;
   parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
-  parameter uint MIN_CYCLE_PER_PHASE         = 2;
-  parameter uint NUM_LOCAL_ALERT             = 4;
+  parameter uint MIN_CYCLE_PER_PHASE = 2;
+  parameter uint NUM_LOCAL_ALERT = 4;
   // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
   // extra cycle to the calculated cnt, or even combine two signals into one.
-  parameter uint IGNORE_CNT_CHECK_NS         = 100_000_000;
+  parameter uint IGNORE_CNT_CHECK_NS = 100_000_000;
   // types
   typedef enum {
     EscPhase0,
@@ -57,13 +57,13 @@ package alert_handler_env_pkg;
   } alert_class_ctrl_e;
 
   typedef enum {
-    EscStateIdle     = 'b000,
-    EscStateTimeout  = 'b001,
+    EscStateIdle = 'b000,
+    EscStateTimeout = 'b001,
     EscStateTerminal = 'b011,
-    EscStatePhase0   = 'b100,
-    EscStatePhase1   = 'b101,
-    EscStatePhase2   = 'b110,
-    EscStatePhase3   = 'b111
+    EscStatePhase0 = 'b100,
+    EscStatePhase1 = 'b101,
+    EscStatePhase2 = 'b110,
+    EscStatePhase3 = 'b111
   } esc_state_e;
 
   typedef enum {

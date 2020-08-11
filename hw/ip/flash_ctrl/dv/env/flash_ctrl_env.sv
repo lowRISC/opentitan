@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_env extends cip_base_env #(
-    .CFG_T              (flash_ctrl_env_cfg),
-    .COV_T              (flash_ctrl_env_cov),
+class flash_ctrl_env extends cip_base_env#(
+    .CFG_T(flash_ctrl_env_cfg),
+    .COV_T(flash_ctrl_env_cov),
     .VIRTUAL_SEQUENCER_T(flash_ctrl_virtual_sequencer),
-    .SCOREBOARD_T       (flash_ctrl_scoreboard)
-  );
+    .SCOREBOARD_T(flash_ctrl_scoreboard)
+);
   `uvm_component_utils(flash_ctrl_env)
 
-  tl_agent        m_eflash_tl_agent;
-  tl_reg_adapter  m_eflash_tl_reg_adapter;
+  tl_agent m_eflash_tl_agent;
+  tl_reg_adapter m_eflash_tl_reg_adapter;
 
   `uvm_component_new
 
@@ -34,8 +34,8 @@ class flash_ctrl_env extends cip_base_env #(
       for (int i = 0; i < part.num(); i++, part = part.next()) begin
         foreach (cfg.mem_bkdr_vifs[, bank]) begin
           string vif_name = $sformatf("mem_bkdr_vifs[%0s][%0d]", part.name(), bank);
-          if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", vif_name,
-                                                 cfg.mem_bkdr_vifs[part][bank])) begin
+          if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", vif_name, cfg.mem_bkdr_vifs[part][bank])
+              ) begin
             `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", vif_name))
           end
         end
@@ -45,17 +45,16 @@ class flash_ctrl_env extends cip_base_env #(
     // create components
     m_eflash_tl_agent = tl_agent::type_id::create("m_eflash_tl_agent", this);
     m_eflash_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_eflash_tl_reg_adapter");
-    uvm_config_db#(tl_agent_cfg)::set(
-        this, "m_eflash_tl_agent*", "cfg", cfg.m_eflash_tl_agent_cfg);
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_eflash_tl_agent*", "cfg", cfg.m_eflash_tl_agent_cfg);
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_eflash_tl_agent.monitor.a_chan_port.connect(
-          scoreboard.eflash_tl_a_chan_fifo.analysis_export);
-      m_eflash_tl_agent.monitor.d_chan_port.connect(
-          scoreboard.eflash_tl_d_chan_fifo.analysis_export);
+      m_eflash_tl_agent.monitor.a_chan_port.connect(scoreboard.eflash_tl_a_chan_fifo.analysis_export
+          );
+      m_eflash_tl_agent.monitor.d_chan_port.connect(scoreboard.eflash_tl_d_chan_fifo.analysis_export
+          );
     end
     if (cfg.is_active) begin
       virtual_sequencer.eflash_tl_sequencer_h = m_eflash_tl_agent.sequencer;

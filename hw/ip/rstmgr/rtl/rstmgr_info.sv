@@ -8,15 +8,15 @@
 `include "prim_assert.sv"
 
 module rstmgr_info #(
-  parameter int Reasons = 4
+    parameter int Reasons = 4
 ) (
-  input clk_i,
-  input rst_ni,
-  input rst_cpu_ni,
-  input [Reasons-1:0] rst_req_i,
-  input wr_i,
-  input [Reasons:0] data_i,              // inclusive of POR
-  output logic [Reasons:0] rst_reasons_o // inclusive of POR
+    input                      clk_i,
+    input                      rst_ni,
+    input                      rst_cpu_ni,
+    input        [Reasons-1:0] rst_req_i,
+    input                      wr_i,
+    input        [  Reasons:0] data_i,  // inclusive of POR
+    output logic [  Reasons:0] rst_reasons_o  // inclusive of POR
 );
 
   logic [Reasons-1:0] reasons;
@@ -25,13 +25,13 @@ module rstmgr_info #(
   logic rst_cpu_nq;
 
   prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
+      .Width(1),
+      .ResetValue('0)
   ) u_cpu_reset_synced (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(rst_cpu_ni),
-    .q_o(rst_cpu_nq)
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (rst_cpu_ni),
+      .q_o   (rst_cpu_nq)
   );
 
   // first reset is a flag that blocks reset recording until first de-assertion
@@ -58,4 +58,4 @@ module rstmgr_info #(
 
   assign rst_reasons_o = {reasons, por};
 
-endmodule // rstmgr_info
+endmodule  // rstmgr_info

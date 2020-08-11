@@ -5,8 +5,8 @@
 class chip_sw_gpio_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_gpio_vseq)
 
-    bit [NUM_GPIOS-1:0] gpios_mask = {chip_env_pkg::NUM_GPIOS{1'b1}};
-    uint                timeout_ns = 2_000_000;
+  bit [NUM_GPIOS-1:0] gpios_mask = {chip_env_pkg::NUM_GPIOS{1'b1}};
+  uint timeout_ns = 2_000_000;
 
   `uvm_object_new
 
@@ -33,43 +33,31 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
     for (int i = 0; i < NUM_GPIOS; i++) begin
       logic [NUM_GPIOS-1:0] exp_gpios = 1 << i;
       `DV_SPINWAIT(wait(cfg.gpio_vif.pins === exp_gpios);,
-                   $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                   timeout_ns,
-                  `gfn)
+                   $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios), timeout_ns, `gfn)
     end
 
     // Wait and check all 0s.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === ~gpios_mask);,
-                 $sformatf("Timed out waiting for GPIOs == %0h", ~gpios_mask),
-                 timeout_ns,
-                `gfn)
+                 $sformatf("Timed out waiting for GPIOs == %0h", ~gpios_mask), timeout_ns, `gfn)
 
     // Wait and check all 1s.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === gpios_mask);,
-                 $sformatf("Timed out waiting for GPIOs == %0h", gpios_mask),
-                 timeout_ns,
-                `gfn)
+                 $sformatf("Timed out waiting for GPIOs == %0h", gpios_mask), timeout_ns, `gfn)
 
     // Check for W0 pattern on the GPIO output pins.
     for (int i = 0; i < NUM_GPIOS; i++) begin
       logic [NUM_GPIOS-1:0] exp_gpios = ~(1 << i);
       `DV_SPINWAIT(wait(cfg.gpio_vif.pins === gpios_mask);,
-                   $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                   timeout_ns,
-                  `gfn)
+                   $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios), timeout_ns, `gfn)
     end
 
     // Wait and check all 1s.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === gpios_mask);,
-                 $sformatf("Timed out waiting for GPIOs == %0h", gpios_mask),
-                 timeout_ns,
-                `gfn)
+                 $sformatf("Timed out waiting for GPIOs == %0h", gpios_mask), timeout_ns, `gfn)
 
     // Wait and check all 0s.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === ~gpios_mask);,
-                 $sformatf("Timed out waiting for GPIOs == %0h", ~gpios_mask),
-                 timeout_ns,
-                `gfn)
+                 $sformatf("Timed out waiting for GPIOs == %0h", ~gpios_mask), timeout_ns, `gfn)
   endtask
 
   virtual task gpio_input_test();
@@ -79,9 +67,8 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
 
     // Wait and check all zs - this indicates it is safe to drive GPIOs as inputs.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === {NUM_GPIOS{1'bz}});,
-                 $sformatf("Timed out waiting for GPIOs == %0h", {NUM_GPIOS{1'bz}}),
-                 timeout_ns,
-                `gfn)
+                 $sformatf("Timed out waiting for GPIOs == %0h", {NUM_GPIOS{1'bz}}), timeout_ns,
+                 `gfn)
 
     // Enable GPIO in input mode.
     cfg.gpio_vif.drive_en(gpios_mask);

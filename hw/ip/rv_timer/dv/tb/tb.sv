@@ -20,20 +20,26 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
 
   // dut
   rv_timer dut (
-    .clk_i                 (clk        ),
-    .rst_ni                (rst_n      ),
+      .clk_i (clk),
+      .rst_ni(rst_n),
 
-    .tl_i                  (tl_if.h2d  ),
-    .tl_o                  (tl_if.d2h  ),
+      .tl_i(tl_if.h2d),
+      .tl_o(tl_if.d2h),
 
-    .intr_timer_expired_0_0_o(intr_timer_expired[0][0] )
+      .intr_timer_expired_0_0_o(intr_timer_expired[0][0])
   );
 
   assign interrupts[0] = intr_timer_expired[0][0];

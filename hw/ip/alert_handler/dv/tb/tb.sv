@@ -16,31 +16,46 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
+  wire [NUM_MAX_ESC_SEV-1:0] esc_en;
   wire entropy;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) entropy_if(entropy);
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
-  alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
-  alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  pins_if #(1) entropy_if (entropy);
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  alert_esc_if esc_device_if[NUM_ESCS] (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  alert_esc_if alert_host_if[NUM_ALERTS] (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  alert_esc_probe_if probe_if[NUM_ESCS] (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
 
   // dut signals
-  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
+  prim_alert_pkg::alert_rx_t[NUM_ALERTS - 1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t[NUM_ALERTS - 1:0] alert_tx;
 
-  prim_esc_pkg::esc_rx_t [NUM_ESCS-1:0] esc_rx;
-  prim_esc_pkg::esc_tx_t [NUM_ESCS-1:0] esc_tx;
+  prim_esc_pkg::esc_rx_t[NUM_ESCS - 1:0] esc_rx;
+  prim_esc_pkg::esc_tx_t[NUM_ESCS - 1:0] esc_tx;
 
   for (genvar k = 0; k < NUM_ALERTS; k++) begin : gen_alert_if
     assign alert_tx[k].alert_p = alert_host_if[k].alert_tx.alert_p;
     assign alert_tx[k].alert_n = alert_host_if[k].alert_tx.alert_n;
-    assign alert_host_if[k].alert_rx.ack_p  = alert_rx[k].ack_p;
-    assign alert_host_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
+    assign alert_host_if[k].alert_rx.ack_p = alert_rx[k].ack_p;
+    assign alert_host_if[k].alert_rx.ack_n = alert_rx[k].ack_n;
     assign alert_host_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
     assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
     initial begin
@@ -59,26 +74,26 @@ module tb;
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
                                                 "vif", esc_device_if[k]);
-      uvm_config_db#(virtual alert_esc_probe_if)::set(null,
-          $sformatf("*.env.esc_device_agent[%0d]", k), "probe_vif", probe_if[k]);
+      uvm_config_db#(virtual alert_esc_probe_if)::set(
+          null, $sformatf("*.env.esc_device_agent[%0d]", k), "probe_vif", probe_if[k]);
     end
   end
   // main dut
   alert_handler dut (
-    .clk_i                ( clk           ),
-    .rst_ni               ( rst_n         ),
-    .tl_i                 ( tl_if.h2d     ),
-    .tl_o                 ( tl_if.d2h     ),
-    .intr_classa_o        ( interrupts[0] ),
-    .intr_classb_o        ( interrupts[1] ),
-    .intr_classc_o        ( interrupts[2] ),
-    .intr_classd_o        ( interrupts[3] ),
-    .crashdump_o          (               ),
-    .entropy_i            ( entropy       ),
-    .alert_rx_o           ( alert_rx      ),
-    .alert_tx_i           ( alert_tx      ),
-    .esc_rx_i             ( esc_rx        ),
-    .esc_tx_o             ( esc_tx        )
+      .clk_i        (clk),
+      .rst_ni       (rst_n),
+      .tl_i         (tl_if.h2d),
+      .tl_o         (tl_if.d2h),
+      .intr_classa_o(interrupts[0]),
+      .intr_classb_o(interrupts[1]),
+      .intr_classc_o(interrupts[2]),
+      .intr_classd_o(interrupts[3]),
+      .crashdump_o  (),
+      .entropy_i    (entropy),
+      .alert_rx_o   (alert_rx),
+      .alert_tx_i   (alert_tx),
+      .esc_rx_i     (esc_rx),
+      .esc_tx_o     (esc_tx)
   );
 
   initial begin

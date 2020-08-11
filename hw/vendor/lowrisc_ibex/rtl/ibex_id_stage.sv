@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `ifdef RISCV_FORMAL
-  `define RVFI
+`define RVFI
 `endif
 
 /**
@@ -17,203 +17,203 @@
 `include "prim_assert.sv"
 
 module ibex_id_stage #(
-    parameter bit               RV32E           = 0,
-    parameter bit               RV32M           = 1,
-    parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
-    parameter bit               DataIndTiming   = 1'b0,
-    parameter bit               BranchTargetALU = 0,
-    parameter bit               SpecBranch      = 0,
-    parameter bit               WritebackStage  = 0
+    parameter bit RV32E = 0,
+    parameter bit RV32M = 1,
+    parameter ibex_pkg::rv32b_e RV32B = ibex_pkg::RV32BNone,
+    parameter bit DataIndTiming = 1'b0,
+    parameter bit BranchTargetALU = 0,
+    parameter bit SpecBranch = 0,
+    parameter bit WritebackStage = 0
 ) (
-    input  logic                      clk_i,
-    input  logic                      rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-    output logic                      ctrl_busy_o,
-    output logic                      illegal_insn_o,
+    output logic ctrl_busy_o,
+    output logic illegal_insn_o,
 
     // Interface to IF stage
-    input  logic                      instr_valid_i,
-    input  logic [31:0]               instr_rdata_i,         // from IF-ID pipeline registers
-    input  logic [31:0]               instr_rdata_alu_i,     // from IF-ID pipeline registers
-    input  logic [15:0]               instr_rdata_c_i,       // from IF-ID pipeline registers
-    input  logic                      instr_is_compressed_i,
-    output logic                      instr_req_o,
-    output logic                      instr_first_cycle_id_o,
-    output logic                      instr_valid_clear_o,   // kill instr in IF-ID reg
-    output logic                      id_in_ready_o,         // ID stage is ready for next instr
-    output logic                      icache_inval_o,
+    input  logic        instr_valid_i,
+    input  logic [31:0] instr_rdata_i,  // from IF-ID pipeline registers
+    input  logic [31:0] instr_rdata_alu_i,  // from IF-ID pipeline registers
+    input  logic [15:0] instr_rdata_c_i,  // from IF-ID pipeline registers
+    input  logic        instr_is_compressed_i,
+    output logic        instr_req_o,
+    output logic        instr_first_cycle_id_o,
+    output logic        instr_valid_clear_o,  // kill instr in IF-ID reg
+    output logic        id_in_ready_o,  // ID stage is ready for next instr
+    output logic        icache_inval_o,
 
     // Jumps and branches
-    input  logic                      branch_decision_i,
+    input logic branch_decision_i,
 
     // IF and ID stage signals
-    output logic                      pc_set_o,
-    output logic                      pc_set_spec_o,
-    output ibex_pkg::pc_sel_e         pc_mux_o,
-    output ibex_pkg::exc_pc_sel_e     exc_pc_mux_o,
-    output ibex_pkg::exc_cause_e      exc_cause_o,
+    output logic                  pc_set_o,
+    output logic                  pc_set_spec_o,
+    output ibex_pkg::pc_sel_e     pc_mux_o,
+    output ibex_pkg::exc_pc_sel_e exc_pc_mux_o,
+    output ibex_pkg::exc_cause_e  exc_cause_o,
 
-    input  logic                      illegal_c_insn_i,
-    input  logic                      instr_fetch_err_i,
-    input  logic                      instr_fetch_err_plus2_i,
+    input logic illegal_c_insn_i,
+    input logic instr_fetch_err_i,
+    input logic instr_fetch_err_plus2_i,
 
-    input  logic [31:0]               pc_id_i,
+    input logic [31:0] pc_id_i,
 
     // Stalls
-    input  logic                      ex_valid_i,       // EX stage has valid output
-    input  logic                      lsu_resp_valid_i, // LSU has valid output, or is done
+    input  logic                     ex_valid_i,  // EX stage has valid output
+    input  logic                     lsu_resp_valid_i,  // LSU has valid output, or is done
     // ALU
-    output ibex_pkg::alu_op_e         alu_operator_ex_o,
-    output logic [31:0]               alu_operand_a_ex_o,
-    output logic [31:0]               alu_operand_b_ex_o,
+    output ibex_pkg::alu_op_e        alu_operator_ex_o,
+    output logic              [31:0] alu_operand_a_ex_o,
+    output logic              [31:0] alu_operand_b_ex_o,
 
     // Multicycle Operation Stage Register
-    input  logic [1:0]                imd_val_we_ex_i,
-    input  logic [33:0]               imd_val_d_ex_i[2],
-    output logic [33:0]               imd_val_q_ex_o[2],
+    input  logic [ 1:0] imd_val_we_ex_i,
+    input  logic [33:0] imd_val_d_ex_i [2],
+    output logic [33:0] imd_val_q_ex_o [2],
 
     // Branch target ALU
-    output logic [31:0]               bt_a_operand_o,
-    output logic [31:0]               bt_b_operand_o,
+    output logic [31:0] bt_a_operand_o,
+    output logic [31:0] bt_b_operand_o,
 
     // MUL, DIV
-    output logic                      mult_en_ex_o,
-    output logic                      div_en_ex_o,
-    output logic                      mult_sel_ex_o,
-    output logic                      div_sel_ex_o,
-    output ibex_pkg::md_op_e          multdiv_operator_ex_o,
-    output logic  [1:0]               multdiv_signed_mode_ex_o,
-    output logic [31:0]               multdiv_operand_a_ex_o,
-    output logic [31:0]               multdiv_operand_b_ex_o,
-    output logic                      multdiv_ready_id_o,
+    output logic                    mult_en_ex_o,
+    output logic                    div_en_ex_o,
+    output logic                    mult_sel_ex_o,
+    output logic                    div_sel_ex_o,
+    output ibex_pkg::md_op_e        multdiv_operator_ex_o,
+    output logic             [ 1:0] multdiv_signed_mode_ex_o,
+    output logic             [31:0] multdiv_operand_a_ex_o,
+    output logic             [31:0] multdiv_operand_b_ex_o,
+    output logic                    multdiv_ready_id_o,
 
     // CSR
-    output logic                      csr_access_o,
-    output ibex_pkg::csr_op_e         csr_op_o,
-    output logic                      csr_op_en_o,
-    output logic                      csr_save_if_o,
-    output logic                      csr_save_id_o,
-    output logic                      csr_save_wb_o,
-    output logic                      csr_restore_mret_id_o,
-    output logic                      csr_restore_dret_id_o,
-    output logic                      csr_save_cause_o,
-    output logic [31:0]               csr_mtval_o,
-    input  ibex_pkg::priv_lvl_e       priv_mode_i,
-    input  logic                      csr_mstatus_tw_i,
-    input  logic                      illegal_csr_insn_i,
-    input  logic                      data_ind_timing_i,
+    output logic                       csr_access_o,
+    output ibex_pkg::csr_op_e          csr_op_o,
+    output logic                       csr_op_en_o,
+    output logic                       csr_save_if_o,
+    output logic                       csr_save_id_o,
+    output logic                       csr_save_wb_o,
+    output logic                       csr_restore_mret_id_o,
+    output logic                       csr_restore_dret_id_o,
+    output logic                       csr_save_cause_o,
+    output logic                [31:0] csr_mtval_o,
+    input  ibex_pkg::priv_lvl_e        priv_mode_i,
+    input  logic                       csr_mstatus_tw_i,
+    input  logic                       illegal_csr_insn_i,
+    input  logic                       data_ind_timing_i,
 
     // Interface to load store unit
-    output logic                      lsu_req_o,
-    output logic                      lsu_we_o,
-    output logic [1:0]                lsu_type_o,
-    output logic                      lsu_sign_ext_o,
-    output logic [31:0]               lsu_wdata_o,
+    output logic        lsu_req_o,
+    output logic        lsu_we_o,
+    output logic [ 1:0] lsu_type_o,
+    output logic        lsu_sign_ext_o,
+    output logic [31:0] lsu_wdata_o,
 
-    input  logic                      lsu_req_done_i, // Data req to LSU is complete and
-                                                      // instruction can move to writeback
-                                                      // (only relevant where writeback stage is
-                                                      // present)
+    input logic lsu_req_done_i,  // Data req to LSU is complete and
+    // instruction can move to writeback
+    // (only relevant where writeback stage is
+    // present)
 
-    input  logic                      lsu_addr_incr_req_i,
-    input  logic [31:0]               lsu_addr_last_i,
+    input logic        lsu_addr_incr_req_i,
+    input logic [31:0] lsu_addr_last_i,
 
     // Interrupt signals
-    input  logic                      csr_mstatus_mie_i,
-    input  logic                      irq_pending_i,
-    input  ibex_pkg::irqs_t           irqs_i,
-    input  logic                      irq_nm_i,
-    output logic                      nmi_mode_o,
+    input  logic            csr_mstatus_mie_i,
+    input  logic            irq_pending_i,
+    input  ibex_pkg::irqs_t irqs_i,
+    input  logic            irq_nm_i,
+    output logic            nmi_mode_o,
 
-    input  logic                      lsu_load_err_i,
-    input  logic                      lsu_store_err_i,
+    input logic lsu_load_err_i,
+    input logic lsu_store_err_i,
 
     // Debug Signal
-    output logic                      debug_mode_o,
-    output ibex_pkg::dbg_cause_e      debug_cause_o,
-    output logic                      debug_csr_save_o,
-    input  logic                      debug_req_i,
-    input  logic                      debug_single_step_i,
-    input  logic                      debug_ebreakm_i,
-    input  logic                      debug_ebreaku_i,
-    input  logic                      trigger_match_i,
+    output logic                 debug_mode_o,
+    output ibex_pkg::dbg_cause_e debug_cause_o,
+    output logic                 debug_csr_save_o,
+    input  logic                 debug_req_i,
+    input  logic                 debug_single_step_i,
+    input  logic                 debug_ebreakm_i,
+    input  logic                 debug_ebreaku_i,
+    input  logic                 trigger_match_i,
 
     // Write back signal
-    input  logic [31:0]               result_ex_i,
-    input  logic [31:0]               csr_rdata_i,
+    input logic [31:0] result_ex_i,
+    input logic [31:0] csr_rdata_i,
 
     // Register file read
-    output logic [4:0]                rf_raddr_a_o,
-    input  logic [31:0]               rf_rdata_a_i,
-    output logic [4:0]                rf_raddr_b_o,
-    input  logic [31:0]               rf_rdata_b_i,
+    output logic [4:0] rf_raddr_a_o,
+    input logic [31:0] rf_rdata_a_i,
+    output logic [4:0] rf_raddr_b_o,
+    input logic [31:0] rf_rdata_b_i,
 `ifdef RVFI
-    output logic                      rf_ren_a_o,
-    output logic                      rf_ren_b_o,
+    output logic rf_ren_a_o,
+    output logic rf_ren_b_o,
 `endif
 
     // Register file write (via writeback)
-    output logic [4:0]                rf_waddr_id_o,
-    output logic [31:0]               rf_wdata_id_o,
-    output logic                      rf_we_id_o,
+    output logic [ 4:0] rf_waddr_id_o,
+    output logic [31:0] rf_wdata_id_o,
+    output logic        rf_we_id_o,
 
     // Register write information from writeback (for resolving data hazards)
-    input  logic [4:0]                rf_waddr_wb_i,
-    input  logic [31:0]               rf_wdata_fwd_wb_i,
-    input  logic                      rf_write_wb_i,
+    input logic [ 4:0] rf_waddr_wb_i,
+    input logic [31:0] rf_wdata_fwd_wb_i,
+    input logic        rf_write_wb_i,
 
-    output  logic                     en_wb_o,
-    output  ibex_pkg::wb_instr_type_e instr_type_wb_o,
-    input logic                       ready_wb_i,
-    input logic                       outstanding_load_wb_i,
-    input logic                       outstanding_store_wb_i,
+    output logic                     en_wb_o,
+    output ibex_pkg::wb_instr_type_e instr_type_wb_o,
+    input  logic                     ready_wb_i,
+    input  logic                     outstanding_load_wb_i,
+    input  logic                     outstanding_store_wb_i,
 
     // Performance Counters
-    output logic                      perf_jump_o,    // executing a jump instr
-    output logic                      perf_branch_o,  // executing a branch instr
-    output logic                      perf_tbranch_o, // executing a taken branch instr
-    output logic                      perf_dside_wait_o, // instruction in ID/EX is awaiting memory
-                                                         // access to finish before proceeding
-    output logic                      perf_mul_wait_o,
-    output logic                      perf_div_wait_o,
-    output logic                      instr_id_done_o,
-    output logic                      instr_id_done_compressed_o
+    output logic perf_jump_o,  // executing a jump instr
+    output logic perf_branch_o,  // executing a branch instr
+    output logic perf_tbranch_o,  // executing a taken branch instr
+    output logic perf_dside_wait_o,  // instruction in ID/EX is awaiting memory
+    // access to finish before proceeding
+    output logic perf_mul_wait_o,
+    output logic perf_div_wait_o,
+    output logic instr_id_done_o,
+    output logic instr_id_done_compressed_o
 );
 
   import ibex_pkg::*;
 
   // Decoder/Controller, ID stage internal signals
-  logic        illegal_insn_dec;
-  logic        ebrk_insn;
-  logic        mret_insn_dec;
-  logic        dret_insn_dec;
-  logic        ecall_insn_dec;
-  logic        wfi_insn_dec;
+  logic illegal_insn_dec;
+  logic ebrk_insn;
+  logic mret_insn_dec;
+  logic dret_insn_dec;
+  logic ecall_insn_dec;
+  logic wfi_insn_dec;
 
-  logic        wb_exception;
+  logic wb_exception;
 
-  logic        branch_in_dec;
-  logic        branch_spec, branch_set_spec;
-  logic        branch_set, branch_set_d;
-  logic        branch_taken;
-  logic        jump_in_dec;
-  logic        jump_set_dec;
-  logic        jump_set;
+  logic branch_in_dec;
+  logic branch_spec, branch_set_spec;
+  logic branch_set, branch_set_d;
+  logic branch_taken;
+  logic jump_in_dec;
+  logic jump_set_dec;
+  logic jump_set;
 
-  logic        instr_first_cycle;
-  logic        instr_executing;
-  logic        instr_done;
-  logic        controller_run;
-  logic        stall_ld_hz;
-  logic        stall_mem;
-  logic        lsu_req_in_id;
-  logic        stall_multdiv;
-  logic        stall_branch;
-  logic        stall_jump;
-  logic        stall_id;
-  logic        stall_wb;
-  logic        flush_id;
-  logic        multicycle_done;
+  logic instr_first_cycle;
+  logic instr_executing;
+  logic instr_done;
+  logic controller_run;
+  logic stall_ld_hz;
+  logic stall_mem;
+  logic lsu_req_in_id;
+  logic stall_multdiv;
+  logic stall_branch;
+  logic stall_jump;
+  logic stall_id;
+  logic stall_wb;
+  logic flush_id;
+  logic multicycle_done;
 
   // Immediate decoding and sign extension
   logic [31:0] imm_i_type;
@@ -223,14 +223,14 @@ module ibex_id_stage #(
   logic [31:0] imm_j_type;
   logic [31:0] zimm_rs1_type;
 
-  logic [31:0] imm_a;       // contains the immediate for operand b
-  logic [31:0] imm_b;       // contains the immediate for operand b
+  logic [31:0] imm_a;  // contains the immediate for operand b
+  logic [31:0] imm_b;  // contains the immediate for operand b
 
   // Register file interface
 
-  rf_wd_sel_e  rf_wdata_sel;
-  logic        rf_we_dec, rf_we_raw;
-  logic        rf_ren_a, rf_ren_b;
+  rf_wd_sel_e rf_wdata_sel;
+  logic rf_we_dec, rf_we_raw;
+  logic rf_ren_a, rf_ren_b;
 
 `ifdef RVFI
   assign rf_ren_a_o = rf_ren_a;
@@ -241,36 +241,36 @@ module ibex_id_stage #(
   logic [31:0] rf_rdata_b_fwd;
 
   // ALU Control
-  alu_op_e     alu_operator;
-  op_a_sel_e   alu_op_a_mux_sel, alu_op_a_mux_sel_dec;
-  op_b_sel_e   alu_op_b_mux_sel, alu_op_b_mux_sel_dec;
-  logic        alu_multicycle_dec;
-  logic        stall_alu;
+  alu_op_e alu_operator;
+  op_a_sel_e alu_op_a_mux_sel, alu_op_a_mux_sel_dec;
+  op_b_sel_e alu_op_b_mux_sel, alu_op_b_mux_sel_dec;
+  logic alu_multicycle_dec;
+  logic stall_alu;
 
   logic [33:0] imd_val_q[2];
 
-  op_a_sel_e   bt_a_mux_sel;
-  imm_b_sel_e  bt_b_mux_sel;
+  op_a_sel_e bt_a_mux_sel;
+  imm_b_sel_e bt_b_mux_sel;
 
-  imm_a_sel_e  imm_a_mux_sel;
-  imm_b_sel_e  imm_b_mux_sel, imm_b_mux_sel_dec;
+  imm_a_sel_e imm_a_mux_sel;
+  imm_b_sel_e imm_b_mux_sel, imm_b_mux_sel_dec;
 
   // Multiplier Control
-  logic        mult_en_id, mult_en_dec; // use integer multiplier
-  logic        div_en_id, div_en_dec;   // use integer division or reminder
-  logic        multdiv_en_dec;
-  md_op_e      multdiv_operator;
-  logic [1:0]  multdiv_signed_mode;
+  logic mult_en_id, mult_en_dec;  // use integer multiplier
+  logic div_en_id, div_en_dec;  // use integer division or reminder
+  logic multdiv_en_dec;
+  md_op_e multdiv_operator;
+  logic [1:0] multdiv_signed_mode;
 
   // Data Memory Control
-  logic        lsu_we;
-  logic [1:0]  lsu_type;
-  logic        lsu_sign_ext;
-  logic        lsu_req, lsu_req_dec;
-  logic        data_req_allowed;
+  logic lsu_we;
+  logic [1:0] lsu_type;
+  logic lsu_sign_ext;
+  logic lsu_req, lsu_req_dec;
+  logic data_req_allowed;
 
   // CSR control
-  logic        csr_pipe_flush;
+  logic csr_pipe_flush;
 
   logic [31:0] alu_operand_a;
   logic [31:0] alu_operand_b;
@@ -280,9 +280,9 @@ module ibex_id_stage #(
   /////////////
 
   // Misaligned loads/stores result in two aligned loads/stores, compute second address
-  assign alu_op_a_mux_sel = lsu_addr_incr_req_i ? OP_A_FWD        : alu_op_a_mux_sel_dec;
-  assign alu_op_b_mux_sel = lsu_addr_incr_req_i ? OP_B_IMM        : alu_op_b_mux_sel_dec;
-  assign imm_b_mux_sel    = lsu_addr_incr_req_i ? IMM_B_INCR_ADDR : imm_b_mux_sel_dec;
+  assign alu_op_a_mux_sel = lsu_addr_incr_req_i ? OP_A_FWD : alu_op_a_mux_sel_dec;
+  assign alu_op_b_mux_sel = lsu_addr_incr_req_i ? OP_B_IMM : alu_op_b_mux_sel_dec;
+  assign imm_b_mux_sel = lsu_addr_incr_req_i ? IMM_B_INCR_ADDR : imm_b_mux_sel_dec;
 
   ///////////////////
   // Operand MUXES //
@@ -294,11 +294,11 @@ module ibex_id_stage #(
   // Main ALU MUX for Operand A
   always_comb begin : alu_operand_a_mux
     unique case (alu_op_a_mux_sel)
-      OP_A_REG_A:  alu_operand_a = rf_rdata_a_fwd;
-      OP_A_FWD:    alu_operand_a = lsu_addr_last_i;
+      OP_A_REG_A: alu_operand_a = rf_rdata_a_fwd;
+      OP_A_FWD: alu_operand_a = lsu_addr_last_i;
       OP_A_CURRPC: alu_operand_a = pc_id_i;
-      OP_A_IMM:    alu_operand_a = imm_a;
-      default:     alu_operand_a = pc_id_i;
+      OP_A_IMM: alu_operand_a = imm_a;
+      default: alu_operand_a = pc_id_i;
     endcase
   end
 
@@ -306,70 +306,62 @@ module ibex_id_stage #(
     // Branch target ALU operand A mux
     always_comb begin : bt_operand_a_mux
       unique case (bt_a_mux_sel)
-        OP_A_REG_A:  bt_a_operand_o = rf_rdata_a_fwd;
+        OP_A_REG_A: bt_a_operand_o = rf_rdata_a_fwd;
         OP_A_CURRPC: bt_a_operand_o = pc_id_i;
-        default:     bt_a_operand_o = pc_id_i;
+        default: bt_a_operand_o = pc_id_i;
       endcase
     end
 
     // Branch target ALU operand B mux
     always_comb begin : bt_immediate_b_mux
       unique case (bt_b_mux_sel)
-        IMM_B_I:         bt_b_operand_o = imm_i_type;
-        IMM_B_B:         bt_b_operand_o = imm_b_type;
-        IMM_B_J:         bt_b_operand_o = imm_j_type;
-        IMM_B_INCR_PC:   bt_b_operand_o = instr_is_compressed_i ? 32'h2 : 32'h4;
-        default:         bt_b_operand_o = instr_is_compressed_i ? 32'h2 : 32'h4;
+        IMM_B_I: bt_b_operand_o = imm_i_type;
+        IMM_B_B: bt_b_operand_o = imm_b_type;
+        IMM_B_J: bt_b_operand_o = imm_j_type;
+        IMM_B_INCR_PC: bt_b_operand_o = instr_is_compressed_i ? 32'h2 : 32'h4;
+        default: bt_b_operand_o = instr_is_compressed_i ? 32'h2 : 32'h4;
       endcase
     end
 
     // Reduced main ALU immediate MUX for Operand B
     always_comb begin : immediate_b_mux
       unique case (imm_b_mux_sel)
-        IMM_B_I:         imm_b = imm_i_type;
-        IMM_B_S:         imm_b = imm_s_type;
-        IMM_B_U:         imm_b = imm_u_type;
-        IMM_B_INCR_PC:   imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
+        IMM_B_I: imm_b = imm_i_type;
+        IMM_B_S: imm_b = imm_s_type;
+        IMM_B_U: imm_b = imm_u_type;
+        IMM_B_INCR_PC: imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
         IMM_B_INCR_ADDR: imm_b = 32'h4;
-        default:         imm_b = 32'h4;
+        default: imm_b = 32'h4;
       endcase
     end
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
-        IMM_B_I,
-        IMM_B_S,
-        IMM_B_U,
-        IMM_B_INCR_PC,
-        IMM_B_INCR_ADDR})
+    `ASSERT(IbexImmBMuxSelValid,
+            instr_valid_i |->
+                imm_b_mux_sel inside {IMM_B_I, IMM_B_S, IMM_B_U, IMM_B_INCR_PC, IMM_B_INCR_ADDR})
   end else begin : g_nobtalu
-    op_a_sel_e  unused_a_mux_sel;
+    op_a_sel_e unused_a_mux_sel;
     imm_b_sel_e unused_b_mux_sel;
 
     assign unused_a_mux_sel = bt_a_mux_sel;
     assign unused_b_mux_sel = bt_b_mux_sel;
-    assign bt_a_operand_o   = '0;
-    assign bt_b_operand_o   = '0;
+    assign bt_a_operand_o = '0;
+    assign bt_b_operand_o = '0;
 
     // Full main ALU immediate MUX for Operand B
     always_comb begin : immediate_b_mux
       unique case (imm_b_mux_sel)
-        IMM_B_I:         imm_b = imm_i_type;
-        IMM_B_S:         imm_b = imm_s_type;
-        IMM_B_B:         imm_b = imm_b_type;
-        IMM_B_U:         imm_b = imm_u_type;
-        IMM_B_J:         imm_b = imm_j_type;
-        IMM_B_INCR_PC:   imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
+        IMM_B_I: imm_b = imm_i_type;
+        IMM_B_S: imm_b = imm_s_type;
+        IMM_B_B: imm_b = imm_b_type;
+        IMM_B_U: imm_b = imm_u_type;
+        IMM_B_J: imm_b = imm_j_type;
+        IMM_B_INCR_PC: imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
         IMM_B_INCR_ADDR: imm_b = 32'h4;
-        default:         imm_b = 32'h4;
+        default: imm_b = 32'h4;
       endcase
     end
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
-        IMM_B_I,
-        IMM_B_S,
-        IMM_B_B,
-        IMM_B_U,
-        IMM_B_J,
-        IMM_B_INCR_PC,
-        IMM_B_INCR_ADDR})
+    `ASSERT(IbexImmBMuxSelValid,
+            instr_valid_i |-> imm_b_mux_sel inside {IMM_B_I, IMM_B_S, IMM_B_B, IMM_B_U, IMM_B_J,
+                                                    IMM_B_INCR_PC, IMM_B_INCR_ADDR})
   end
 
   // ALU MUX for Operand B
@@ -379,7 +371,7 @@ module ibex_id_stage #(
   // Multicycle Operation Stage Register //
   /////////////////////////////////////////
 
-  for (genvar i=0; i<2; i++) begin : gen_intermediate_val_reg
+  for (genvar i = 0; i < 2; i++) begin : gen_intermediate_val_reg
     always_ff @(posedge clk_i or negedge rst_ni) begin : intermediate_val_reg
       if (!rst_ni) begin
         imd_val_q[i] <= '0;
@@ -401,10 +393,11 @@ module ibex_id_stage #(
   // Register file write data mux
   always_comb begin : rf_wdata_id_mux
     unique case (rf_wdata_sel)
-      RF_WD_EX:  rf_wdata_id_o = result_ex_i;
+      RF_WD_EX: rf_wdata_id_o = result_ex_i;
       RF_WD_CSR: rf_wdata_id_o = csr_rdata_i;
-      default:   rf_wdata_id_o = result_ex_i;
-    endcase;
+      default: rf_wdata_id_o = result_ex_i;
+    endcase
+    ;
   end
 
   /////////////
@@ -412,81 +405,81 @@ module ibex_id_stage #(
   /////////////
 
   ibex_decoder #(
-      .RV32E           ( RV32E           ),
-      .RV32M           ( RV32M           ),
-      .RV32B           ( RV32B           ),
-      .BranchTargetALU ( BranchTargetALU )
+      .RV32E(RV32E),
+      .RV32M(RV32M),
+      .RV32B(RV32B),
+      .BranchTargetALU(BranchTargetALU)
   ) decoder_i (
-      .clk_i                           ( clk_i                ),
-      .rst_ni                          ( rst_ni               ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
       // controller
-      .illegal_insn_o                  ( illegal_insn_dec     ),
-      .ebrk_insn_o                     ( ebrk_insn            ),
-      .mret_insn_o                     ( mret_insn_dec        ),
-      .dret_insn_o                     ( dret_insn_dec        ),
-      .ecall_insn_o                    ( ecall_insn_dec       ),
-      .wfi_insn_o                      ( wfi_insn_dec         ),
-      .jump_set_o                      ( jump_set_dec         ),
-      .branch_taken_i                  ( branch_taken         ),
-      .icache_inval_o                  ( icache_inval_o       ),
+      .illegal_insn_o(illegal_insn_dec),
+      .ebrk_insn_o   (ebrk_insn),
+      .mret_insn_o   (mret_insn_dec),
+      .dret_insn_o   (dret_insn_dec),
+      .ecall_insn_o  (ecall_insn_dec),
+      .wfi_insn_o    (wfi_insn_dec),
+      .jump_set_o    (jump_set_dec),
+      .branch_taken_i(branch_taken),
+      .icache_inval_o(icache_inval_o),
 
       // from IF-ID pipeline register
-      .instr_first_cycle_i             ( instr_first_cycle    ),
-      .instr_rdata_i                   ( instr_rdata_i        ),
-      .instr_rdata_alu_i               ( instr_rdata_alu_i    ),
-      .illegal_c_insn_i                ( illegal_c_insn_i     ),
+      .instr_first_cycle_i(instr_first_cycle),
+      .instr_rdata_i      (instr_rdata_i),
+      .instr_rdata_alu_i  (instr_rdata_alu_i),
+      .illegal_c_insn_i   (illegal_c_insn_i),
 
       // immediates
-      .imm_a_mux_sel_o                 ( imm_a_mux_sel        ),
-      .imm_b_mux_sel_o                 ( imm_b_mux_sel_dec    ),
-      .bt_a_mux_sel_o                  ( bt_a_mux_sel         ),
-      .bt_b_mux_sel_o                  ( bt_b_mux_sel         ),
+      .imm_a_mux_sel_o(imm_a_mux_sel),
+      .imm_b_mux_sel_o(imm_b_mux_sel_dec),
+      .bt_a_mux_sel_o (bt_a_mux_sel),
+      .bt_b_mux_sel_o (bt_b_mux_sel),
 
-      .imm_i_type_o                    ( imm_i_type           ),
-      .imm_s_type_o                    ( imm_s_type           ),
-      .imm_b_type_o                    ( imm_b_type           ),
-      .imm_u_type_o                    ( imm_u_type           ),
-      .imm_j_type_o                    ( imm_j_type           ),
-      .zimm_rs1_type_o                 ( zimm_rs1_type        ),
+      .imm_i_type_o   (imm_i_type),
+      .imm_s_type_o   (imm_s_type),
+      .imm_b_type_o   (imm_b_type),
+      .imm_u_type_o   (imm_u_type),
+      .imm_j_type_o   (imm_j_type),
+      .zimm_rs1_type_o(zimm_rs1_type),
 
       // register file
-      .rf_wdata_sel_o                  ( rf_wdata_sel         ),
-      .rf_we_o                         ( rf_we_dec            ),
+      .rf_wdata_sel_o(rf_wdata_sel),
+      .rf_we_o       (rf_we_dec),
 
-      .rf_raddr_a_o                    ( rf_raddr_a_o         ),
-      .rf_raddr_b_o                    ( rf_raddr_b_o         ),
-      .rf_waddr_o                      ( rf_waddr_id_o        ),
-      .rf_ren_a_o                      ( rf_ren_a             ),
-      .rf_ren_b_o                      ( rf_ren_b             ),
+      .rf_raddr_a_o(rf_raddr_a_o),
+      .rf_raddr_b_o(rf_raddr_b_o),
+      .rf_waddr_o  (rf_waddr_id_o),
+      .rf_ren_a_o  (rf_ren_a),
+      .rf_ren_b_o  (rf_ren_b),
 
       // ALU
-      .alu_operator_o                  ( alu_operator         ),
-      .alu_op_a_mux_sel_o              ( alu_op_a_mux_sel_dec ),
-      .alu_op_b_mux_sel_o              ( alu_op_b_mux_sel_dec ),
-      .alu_multicycle_o                ( alu_multicycle_dec   ),
+      .alu_operator_o    (alu_operator),
+      .alu_op_a_mux_sel_o(alu_op_a_mux_sel_dec),
+      .alu_op_b_mux_sel_o(alu_op_b_mux_sel_dec),
+      .alu_multicycle_o  (alu_multicycle_dec),
 
       // MULT & DIV
-      .mult_en_o                       ( mult_en_dec          ),
-      .div_en_o                        ( div_en_dec           ),
-      .mult_sel_o                      ( mult_sel_ex_o        ),
-      .div_sel_o                       ( div_sel_ex_o         ),
-      .multdiv_operator_o              ( multdiv_operator     ),
-      .multdiv_signed_mode_o           ( multdiv_signed_mode  ),
+      .mult_en_o            (mult_en_dec),
+      .div_en_o             (div_en_dec),
+      .mult_sel_o           (mult_sel_ex_o),
+      .div_sel_o            (div_sel_ex_o),
+      .multdiv_operator_o   (multdiv_operator),
+      .multdiv_signed_mode_o(multdiv_signed_mode),
 
       // CSRs
-      .csr_access_o                    ( csr_access_o         ),
-      .csr_op_o                        ( csr_op_o             ),
+      .csr_access_o(csr_access_o),
+      .csr_op_o    (csr_op_o),
 
       // LSU
-      .data_req_o                      ( lsu_req_dec          ),
-      .data_we_o                       ( lsu_we               ),
-      .data_type_o                     ( lsu_type             ),
-      .data_sign_extension_o           ( lsu_sign_ext         ),
+      .data_req_o           (lsu_req_dec),
+      .data_we_o            (lsu_we),
+      .data_type_o          (lsu_type),
+      .data_sign_extension_o(lsu_sign_ext),
 
       // jump/branches
-      .jump_in_dec_o                   ( jump_in_dec          ),
-      .branch_in_dec_o                 ( branch_in_dec        )
+      .jump_in_dec_o  (jump_in_dec),
+      .branch_in_dec_o(branch_in_dec)
   );
 
   /////////////////////////////////
@@ -501,14 +494,13 @@ module ibex_id_stage #(
     //   see any pending IRQs and consequently does not start to handle interrupts.
     // - When modifying debug CSRs - TODO: Check if this is really needed
     if (csr_op_en_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS   ||
+      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS ||
           csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE) begin
         csr_pipe_flush = 1'b1;
       end
     end else if (csr_op_en_o == 1'b1 && csr_op_o != CSR_OP_READ) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_DCSR      ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DPC       ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH0 ||
+      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_DCSR || csr_num_e'(instr_rdata_i[31:20]) ==
+          CSR_DPC || csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH0 ||
           csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH1) begin
         csr_pipe_flush = 1'b1;
       end
@@ -522,123 +514,123 @@ module ibex_id_stage #(
   assign illegal_insn_o = instr_valid_i & (illegal_insn_dec | illegal_csr_insn_i);
 
   ibex_controller #(
-    .WritebackStage ( WritebackStage )
+      .WritebackStage(WritebackStage)
   ) controller_i (
-      .clk_i                          ( clk_i                   ),
-      .rst_ni                         ( rst_ni                  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-      .ctrl_busy_o                    ( ctrl_busy_o             ),
+      .ctrl_busy_o(ctrl_busy_o),
 
       // decoder related signals
-      .illegal_insn_i                 ( illegal_insn_o          ),
-      .ecall_insn_i                   ( ecall_insn_dec          ),
-      .mret_insn_i                    ( mret_insn_dec           ),
-      .dret_insn_i                    ( dret_insn_dec           ),
-      .wfi_insn_i                     ( wfi_insn_dec            ),
-      .ebrk_insn_i                    ( ebrk_insn               ),
-      .csr_pipe_flush_i               ( csr_pipe_flush          ),
+      .illegal_insn_i  (illegal_insn_o),
+      .ecall_insn_i    (ecall_insn_dec),
+      .mret_insn_i     (mret_insn_dec),
+      .dret_insn_i     (dret_insn_dec),
+      .wfi_insn_i      (wfi_insn_dec),
+      .ebrk_insn_i     (ebrk_insn),
+      .csr_pipe_flush_i(csr_pipe_flush),
 
       // from IF-ID pipeline
-      .instr_valid_i                  ( instr_valid_i           ),
-      .instr_i                        ( instr_rdata_i           ),
-      .instr_compressed_i             ( instr_rdata_c_i         ),
-      .instr_is_compressed_i          ( instr_is_compressed_i   ),
-      .instr_fetch_err_i              ( instr_fetch_err_i       ),
-      .instr_fetch_err_plus2_i        ( instr_fetch_err_plus2_i ),
-      .pc_id_i                        ( pc_id_i                 ),
+      .instr_valid_i          (instr_valid_i),
+      .instr_i                (instr_rdata_i),
+      .instr_compressed_i     (instr_rdata_c_i),
+      .instr_is_compressed_i  (instr_is_compressed_i),
+      .instr_fetch_err_i      (instr_fetch_err_i),
+      .instr_fetch_err_plus2_i(instr_fetch_err_plus2_i),
+      .pc_id_i                (pc_id_i),
 
       // to IF-ID pipeline
-      .instr_valid_clear_o            ( instr_valid_clear_o     ),
-      .id_in_ready_o                  ( id_in_ready_o           ),
-      .controller_run_o               ( controller_run          ),
+      .instr_valid_clear_o(instr_valid_clear_o),
+      .id_in_ready_o      (id_in_ready_o),
+      .controller_run_o   (controller_run),
 
       // to prefetcher
-      .instr_req_o                    ( instr_req_o             ),
-      .pc_set_o                       ( pc_set_o                ),
-      .pc_set_spec_o                  ( pc_set_spec_o           ),
-      .pc_mux_o                       ( pc_mux_o                ),
-      .exc_pc_mux_o                   ( exc_pc_mux_o            ),
-      .exc_cause_o                    ( exc_cause_o             ),
+      .instr_req_o  (instr_req_o),
+      .pc_set_o     (pc_set_o),
+      .pc_set_spec_o(pc_set_spec_o),
+      .pc_mux_o     (pc_mux_o),
+      .exc_pc_mux_o (exc_pc_mux_o),
+      .exc_cause_o  (exc_cause_o),
 
       // LSU
-      .lsu_addr_last_i                ( lsu_addr_last_i         ),
-      .load_err_i                     ( lsu_load_err_i          ),
-      .store_err_i                    ( lsu_store_err_i         ),
-      .wb_exception_o                 ( wb_exception            ),
+      .lsu_addr_last_i(lsu_addr_last_i),
+      .load_err_i     (lsu_load_err_i),
+      .store_err_i    (lsu_store_err_i),
+      .wb_exception_o (wb_exception),
 
       // jump/branch control
-      .branch_set_i                   ( branch_set              ),
-      .branch_set_spec_i              ( branch_set_spec         ),
-      .jump_set_i                     ( jump_set                ),
+      .branch_set_i     (branch_set),
+      .branch_set_spec_i(branch_set_spec),
+      .jump_set_i       (jump_set),
 
       // interrupt signals
-      .csr_mstatus_mie_i              ( csr_mstatus_mie_i       ),
-      .irq_pending_i                  ( irq_pending_i           ),
-      .irqs_i                         ( irqs_i                  ),
-      .irq_nm_i                       ( irq_nm_i                ),
-      .nmi_mode_o                     ( nmi_mode_o              ),
+      .csr_mstatus_mie_i(csr_mstatus_mie_i),
+      .irq_pending_i    (irq_pending_i),
+      .irqs_i           (irqs_i),
+      .irq_nm_i         (irq_nm_i),
+      .nmi_mode_o       (nmi_mode_o),
 
       // CSR Controller Signals
-      .csr_save_if_o                  ( csr_save_if_o           ),
-      .csr_save_id_o                  ( csr_save_id_o           ),
-      .csr_save_wb_o                  ( csr_save_wb_o           ),
-      .csr_restore_mret_id_o          ( csr_restore_mret_id_o   ),
-      .csr_restore_dret_id_o          ( csr_restore_dret_id_o   ),
-      .csr_save_cause_o               ( csr_save_cause_o        ),
-      .csr_mtval_o                    ( csr_mtval_o             ),
-      .priv_mode_i                    ( priv_mode_i             ),
-      .csr_mstatus_tw_i               ( csr_mstatus_tw_i        ),
+      .csr_save_if_o        (csr_save_if_o),
+      .csr_save_id_o        (csr_save_id_o),
+      .csr_save_wb_o        (csr_save_wb_o),
+      .csr_restore_mret_id_o(csr_restore_mret_id_o),
+      .csr_restore_dret_id_o(csr_restore_dret_id_o),
+      .csr_save_cause_o     (csr_save_cause_o),
+      .csr_mtval_o          (csr_mtval_o),
+      .priv_mode_i          (priv_mode_i),
+      .csr_mstatus_tw_i     (csr_mstatus_tw_i),
 
       // Debug Signal
-      .debug_mode_o                   ( debug_mode_o            ),
-      .debug_cause_o                  ( debug_cause_o           ),
-      .debug_csr_save_o               ( debug_csr_save_o        ),
-      .debug_req_i                    ( debug_req_i             ),
-      .debug_single_step_i            ( debug_single_step_i     ),
-      .debug_ebreakm_i                ( debug_ebreakm_i         ),
-      .debug_ebreaku_i                ( debug_ebreaku_i         ),
-      .trigger_match_i                ( trigger_match_i         ),
+      .debug_mode_o       (debug_mode_o),
+      .debug_cause_o      (debug_cause_o),
+      .debug_csr_save_o   (debug_csr_save_o),
+      .debug_req_i        (debug_req_i),
+      .debug_single_step_i(debug_single_step_i),
+      .debug_ebreakm_i    (debug_ebreakm_i),
+      .debug_ebreaku_i    (debug_ebreaku_i),
+      .trigger_match_i    (trigger_match_i),
 
       // stall signals
-      .lsu_req_in_id_i                ( lsu_req_in_id           ),
-      .stall_id_i                     ( stall_id                ),
-      .stall_wb_i                     ( stall_wb                ),
-      .flush_id_o                     ( flush_id                ),
-      .ready_wb_i                     ( ready_wb_i              ),
+      .lsu_req_in_id_i(lsu_req_in_id),
+      .stall_id_i     (stall_id),
+      .stall_wb_i     (stall_wb),
+      .flush_id_o     (flush_id),
+      .ready_wb_i     (ready_wb_i),
 
       // Performance Counters
-      .perf_jump_o                    ( perf_jump_o             ),
-      .perf_tbranch_o                 ( perf_tbranch_o          )
+      .perf_jump_o   (perf_jump_o),
+      .perf_tbranch_o(perf_tbranch_o)
   );
 
-  assign multdiv_en_dec   = mult_en_dec | div_en_dec;
+  assign multdiv_en_dec = mult_en_dec | div_en_dec;
 
-  assign lsu_req         = instr_executing ? data_req_allowed & lsu_req_dec  : 1'b0;
-  assign mult_en_id      = instr_executing ? mult_en_dec                     : 1'b0;
-  assign div_en_id       = instr_executing ? div_en_dec                      : 1'b0;
+  assign lsu_req = instr_executing ? data_req_allowed & lsu_req_dec : 1'b0;
+  assign mult_en_id = instr_executing ? mult_en_dec : 1'b0;
+  assign div_en_id = instr_executing ? div_en_dec : 1'b0;
 
-  assign lsu_req_o               = lsu_req;
-  assign lsu_we_o                = lsu_we;
-  assign lsu_type_o              = lsu_type;
-  assign lsu_sign_ext_o          = lsu_sign_ext;
-  assign lsu_wdata_o             = rf_rdata_b_fwd;
+  assign lsu_req_o = lsu_req;
+  assign lsu_we_o = lsu_we;
+  assign lsu_type_o = lsu_type;
+  assign lsu_sign_ext_o = lsu_sign_ext;
+  assign lsu_wdata_o = rf_rdata_b_fwd;
   // csr_op_en_o is set when CSR access should actually happen.
   // csv_access_o is set when CSR access instruction is present and is used to compute whether a CSR
   // access is illegal. A combinational loop would be created if csr_op_en_o was used along (as
   // asserting it for an illegal csr access would result in a flush that would need to deassert it).
-  assign csr_op_en_o             = csr_access_o & instr_executing & instr_id_done_o;
+  assign csr_op_en_o = csr_access_o & instr_executing & instr_id_done_o;
 
-  assign alu_operator_ex_o           = alu_operator;
-  assign alu_operand_a_ex_o          = alu_operand_a;
-  assign alu_operand_b_ex_o          = alu_operand_b;
+  assign alu_operator_ex_o = alu_operator;
+  assign alu_operand_a_ex_o = alu_operand_a;
+  assign alu_operand_b_ex_o = alu_operand_b;
 
-  assign mult_en_ex_o                = mult_en_id;
-  assign div_en_ex_o                 = div_en_id;
+  assign mult_en_ex_o = mult_en_id;
+  assign div_en_ex_o = div_en_id;
 
-  assign multdiv_operator_ex_o       = multdiv_operator;
-  assign multdiv_signed_mode_ex_o    = multdiv_signed_mode;
-  assign multdiv_operand_a_ex_o      = rf_rdata_a_fwd;
-  assign multdiv_operand_b_ex_o      = rf_rdata_b_fwd;
+  assign multdiv_operator_ex_o = multdiv_operator;
+  assign multdiv_signed_mode_ex_o = multdiv_signed_mode;
+  assign multdiv_operand_a_ex_o = rf_rdata_a_fwd;
+  assign multdiv_operand_b_ex_o = rf_rdata_b_fwd;
 
   ////////////////////////
   // Branch set control //
@@ -647,7 +639,7 @@ module ibex_id_stage #(
   if (BranchTargetALU && !DataIndTiming) begin : g_branch_set_direct
     // Branch set fed straight to controller with branch target ALU
     // (condition pass/fail used same cycle as generated instruction request)
-    assign branch_set      = branch_set_d;
+    assign branch_set = branch_set_d;
     assign branch_set_spec = branch_spec;
   end else begin : g_branch_set_flop
     // Branch set flopped without branch target ALU, or in fixed time execution mode
@@ -665,7 +657,7 @@ module ibex_id_stage #(
     // Branches always take two cycles in fixed time execution mode, with or without the branch
     // target ALU (to avoid a path from the branch decision into the branch target ALU operand
     // muxing).
-    assign branch_set      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    assign branch_set = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
     // Use the speculative branch signal when BTALU is enabled
     assign branch_set_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_q;
   end
@@ -702,14 +694,17 @@ module ibex_id_stage #(
   // ID-EX FSM //
   ///////////////
 
-  typedef enum logic { FIRST_CYCLE, MULTI_CYCLE } id_fsm_e;
+  typedef enum logic {
+    FIRST_CYCLE,
+    MULTI_CYCLE
+  } id_fsm_e;
   id_fsm_e id_fsm_q, id_fsm_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : id_pipeline_reg
     if (!rst_ni) begin
-      id_fsm_q            <= FIRST_CYCLE;
+      id_fsm_q <= FIRST_CYCLE;
     end else begin
-      id_fsm_q            <= id_fsm_d;
+      id_fsm_q <= id_fsm_d;
     end
   end
 
@@ -719,16 +714,16 @@ module ibex_id_stage #(
   // (this is controlled by instr_executing).
 
   always_comb begin
-    id_fsm_d                = id_fsm_q;
-    rf_we_raw               = rf_we_dec;
-    stall_multdiv           = 1'b0;
-    stall_jump              = 1'b0;
-    stall_branch            = 1'b0;
-    stall_alu               = 1'b0;
-    branch_set_d            = 1'b0;
-    branch_spec             = 1'b0;
-    jump_set                = 1'b0;
-    perf_branch_o           = 1'b0;
+    id_fsm_d = id_fsm_q;
+    rf_we_raw = rf_we_dec;
+    stall_multdiv = 1'b0;
+    stall_jump = 1'b0;
+    stall_branch = 1'b0;
+    stall_alu = 1'b0;
+    branch_set_d = 1'b0;
+    branch_spec = 1'b0;
+    jump_set = 1'b0;
+    perf_branch_o = 1'b0;
 
     if (instr_executing) begin
       unique case (id_fsm_q)
@@ -737,10 +732,10 @@ module ibex_id_stage #(
             lsu_req_dec: begin
               if (!WritebackStage) begin
                 // LSU operation
-                id_fsm_d    = MULTI_CYCLE;
+                id_fsm_d = MULTI_CYCLE;
               end else begin
-                if(~lsu_req_done_i) begin
-                  id_fsm_d  = MULTI_CYCLE;
+                if (~lsu_req_done_i) begin
+                  id_fsm_d = MULTI_CYCLE;
                 end
               end
             end
@@ -749,8 +744,8 @@ module ibex_id_stage #(
               if (~ex_valid_i) begin
                 // When single-cycle multiply is configured mul can finish in the first cycle so
                 // only enter MULTI_CYCLE state if a result isn't immediately available
-                id_fsm_d      = MULTI_CYCLE;
-                rf_we_raw     = 1'b0;
+                id_fsm_d = MULTI_CYCLE;
+                rf_we_raw = 1'b0;
                 stall_multdiv = 1'b1;
               end
             end
@@ -758,48 +753,48 @@ module ibex_id_stage #(
               // cond branch operation
               // All branches take two cycles in fixed time execution mode, regardless of branch
               // condition.
-              id_fsm_d      = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
-                                  MULTI_CYCLE : FIRST_CYCLE;
-              stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
-              branch_set_d  = branch_decision_i | data_ind_timing_i;
+              id_fsm_d = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
+                  MULTI_CYCLE : FIRST_CYCLE;
+              stall_branch = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
+              branch_set_d = branch_decision_i | data_ind_timing_i;
               // Speculative branch (excludes branch_decision_i)
-              branch_spec   = SpecBranch ? 1'b1 : branch_decision_i;
+              branch_spec = SpecBranch ? 1'b1 : branch_decision_i;
               perf_branch_o = 1'b1;
             end
             jump_in_dec: begin
               // uncond branch operation
               // BTALU means jumps only need one cycle
-              id_fsm_d      = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
-              stall_jump    = ~BranchTargetALU;
-              jump_set      = jump_set_dec;
+              id_fsm_d = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
+              stall_jump = ~BranchTargetALU;
+              jump_set = jump_set_dec;
             end
             alu_multicycle_dec: begin
-              stall_alu     = 1'b1;
-              id_fsm_d      = MULTI_CYCLE;
-              rf_we_raw     = 1'b0;
+              stall_alu = 1'b1;
+              id_fsm_d = MULTI_CYCLE;
+              rf_we_raw = 1'b0;
             end
             default: begin
-              id_fsm_d      = FIRST_CYCLE;
+              id_fsm_d = FIRST_CYCLE;
             end
           endcase
         end
 
         MULTI_CYCLE: begin
-          if(multdiv_en_dec) begin
-            rf_we_raw       = rf_we_dec & ex_valid_i;
+          if (multdiv_en_dec) begin
+            rf_we_raw = rf_we_dec & ex_valid_i;
           end
 
           if (multicycle_done & ready_wb_i) begin
-            id_fsm_d        = FIRST_CYCLE;
+            id_fsm_d = FIRST_CYCLE;
           end else begin
-            stall_multdiv   = multdiv_en_dec;
-            stall_branch    = branch_in_dec;
-            stall_jump      = jump_in_dec;
+            stall_multdiv = multdiv_en_dec;
+            stall_branch = branch_in_dec;
+            stall_jump = jump_in_dec;
           end
         end
 
         default: begin
-          id_fsm_d          = FIRST_CYCLE;
+          id_fsm_d = FIRST_CYCLE;
         end
       endcase
     end
@@ -811,14 +806,13 @@ module ibex_id_stage #(
   `ASSERT(StallIDIfMulticycle, (id_fsm_q == FIRST_CYCLE) & (id_fsm_d == MULTI_CYCLE) |-> stall_id)
 
   // Stall ID/EX stage for reason that relates to instruction in ID/EX
-  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch |
-                      stall_alu;
+  assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch | stall_alu;
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
 
   // Signal instruction in ID is in it's first cycle. It can remain in its
   // first cycle if it is stalled.
-  assign instr_first_cycle      = instr_valid_i & (id_fsm_q == FIRST_CYCLE);
+  assign instr_first_cycle = instr_valid_i & (id_fsm_q == FIRST_CYCLE);
   // Used by RVFI to know when to capture register read data
   // Used by ALU to access RS3 if ternary instruction.
   assign instr_first_cycle_id_o = instr_first_cycle;
@@ -838,8 +832,8 @@ module ibex_id_stage #(
     assign multicycle_done = lsu_req_dec ? ~stall_mem : ex_valid_i;
 
     // Is a memory access ongoing that isn't finishing this cycle
-    assign outstanding_memory_access = (outstanding_load_wb_i | outstanding_store_wb_i) &
-                                       ~lsu_resp_valid_i;
+    assign outstanding_memory_access =
+        (outstanding_load_wb_i | outstanding_store_wb_i) & ~lsu_resp_valid_i;
 
     // Can start a new memory access if any previous one has finished or is finishing
     assign data_req_allowed = ~outstanding_memory_access;
@@ -852,9 +846,7 @@ module ibex_id_stage #(
     //   response to an IRQ or debug request or whilst the core is sleeping or resetting/fetching
     //   first instruction in which case any valid instruction in ID/EX should be ignored.
     // - There was an error on instruction fetch
-    assign instr_kill = instr_fetch_err_i |
-                        wb_exception      |
-                        ~controller_run;
+    assign instr_kill = instr_fetch_err_i | wb_exception | ~controller_run;
 
     // With writeback stage instructions must be prevented from executing if there is:
     // - A load hazard
@@ -864,26 +856,23 @@ module ibex_id_stage #(
     // - A load/store error
     //   This will cause a precise exception for the instruction in WB so ID/EX instruction must not
     //   execute
-    assign instr_executing = instr_valid_i              &
-                             ~instr_kill                &
-                             ~stall_ld_hz               &
-                             ~outstanding_memory_access;
+    assign
+        instr_executing = instr_valid_i & ~instr_kill & ~stall_ld_hz & ~outstanding_memory_access;
 
     `ASSERT(IbexStallIfValidInstrNotExecuting,
-      instr_valid_i & ~instr_kill & ~instr_executing |-> stall_id)
+            instr_valid_i & ~instr_kill & ~instr_executing |-> stall_id)
 
     // Stall for reasons related to memory:
     // * There is an outstanding memory access that won't resolve this cycle (need to wait to allow
     //   precise exceptions)
     // * There is a load/store request not being granted or which is unaligned and waiting to issue
     //   a second request (needs to stay in ID for the address calculation)
-    assign stall_mem = instr_valid_i &
-                       (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
+    assign
+        stall_mem = instr_valid_i & (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i));
 
     // If we stall a load in ID for any reason, it must not make an LSU request
     // (otherwide we might issue two requests for the same instruction)
-    `ASSERT(IbexStallMemNoRequest,
-      instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
+    `ASSERT(IbexStallMemNoRequest, instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
 
     // Indicate to the controller that an lsu req is in ID stage - we cannot handle interrupts or
     // debug requests until the load/store completes
@@ -905,9 +894,8 @@ module ibex_id_stage #(
 
     assign stall_ld_hz = outstanding_load_wb_i & (rf_rd_a_hz | rf_rd_b_hz);
 
-    assign instr_type_wb_o = ~lsu_req_dec ? WB_INSTR_OTHER :
-                              lsu_we      ? WB_INSTR_STORE :
-                                            WB_INSTR_LOAD;
+    assign
+        instr_type_wb_o = ~lsu_req_dec ? WB_INSTR_OTHER : lsu_we ? WB_INSTR_STORE : WB_INSTR_LOAD;
 
     assign en_wb_o = instr_done;
 
@@ -916,8 +904,8 @@ module ibex_id_stage #(
     // Stall ID/EX as instruction in ID/EX cannot proceed to writeback yet
     assign stall_wb = en_wb_o & ~ready_wb_i;
 
-    assign perf_dside_wait_o = instr_valid_i & ~instr_kill &
-                               (outstanding_memory_access | stall_ld_hz);
+    assign
+        perf_dside_wait_o = instr_valid_i & ~instr_kill & (outstanding_memory_access | stall_ld_hz);
   end else begin : gen_no_stall_mem
 
     assign multicycle_done = lsu_req_dec ? lsu_resp_valid_i : ex_valid_i;
@@ -929,14 +917,14 @@ module ibex_id_stage #(
     assign stall_mem = instr_valid_i & (lsu_req_dec & (~lsu_resp_valid_i | instr_first_cycle));
 
     // No load hazards without Writeback Stage
-    assign stall_ld_hz   = 1'b0;
+    assign stall_ld_hz = 1'b0;
     assign lsu_req_in_id = 1'b0;
 
     // Without writeback stage any valid instruction that hasn't seen an error will execute
     assign instr_executing = instr_valid_i & ~instr_fetch_err_i & controller_run;
 
     `ASSERT(IbexStallIfValidInstrNotExecuting,
-      instr_valid_i & ~instr_fetch_err_i & ~instr_executing & controller_run |-> stall_id)
+            instr_valid_i & ~instr_fetch_err_i & ~instr_executing & controller_run |-> stall_id)
 
     // No data forwarding without writeback stage so always take source register data direct from
     // register file
@@ -956,22 +944,22 @@ module ibex_id_stage #(
     logic unused_rf_ren_a, unused_rf_ren_b;
     logic [31:0] unused_rf_wdata_fwd_wb;
 
-    assign unused_data_req_done_ex     = lsu_req_done_i;
-    assign unused_rf_waddr_wb          = rf_waddr_wb_i;
-    assign unused_rf_write_wb          = rf_write_wb_i;
-    assign unused_outstanding_load_wb  = outstanding_load_wb_i;
+    assign unused_data_req_done_ex = lsu_req_done_i;
+    assign unused_rf_waddr_wb = rf_waddr_wb_i;
+    assign unused_rf_write_wb = rf_write_wb_i;
+    assign unused_outstanding_load_wb = outstanding_load_wb_i;
     assign unused_outstanding_store_wb = outstanding_store_wb_i;
-    assign unused_wb_exception         = wb_exception;
-    assign unused_rf_ren_a             = rf_ren_a;
-    assign unused_rf_ren_b             = rf_ren_b;
-    assign unused_rf_wdata_fwd_wb      = rf_wdata_fwd_wb_i;
+    assign unused_wb_exception = wb_exception;
+    assign unused_rf_ren_a = rf_ren_a;
+    assign unused_rf_ren_b = rf_ren_b;
+    assign unused_rf_wdata_fwd_wb = rf_wdata_fwd_wb_i;
 
     assign instr_type_wb_o = WB_INSTR_OTHER;
-    assign stall_wb        = 1'b0;
+    assign stall_wb = 1'b0;
 
     assign perf_dside_wait_o = instr_executing & lsu_req_dec & ~lsu_resp_valid_i;
 
-    assign en_wb_o         = 1'b0;
+    assign en_wb_o = 1'b0;
     assign instr_id_done_o = instr_done;
   end
 
@@ -986,49 +974,39 @@ module ibex_id_stage #(
 
   // Selectors must be known/valid.
   `ASSERT_KNOWN_IF(IbexAluOpMuxSelKnown, alu_op_a_mux_sel, instr_valid_i)
-  `ASSERT(IbexAluAOpMuxSelValid, instr_valid_i |-> alu_op_a_mux_sel inside {
-      OP_A_REG_A,
-      OP_A_FWD,
-      OP_A_CURRPC,
-      OP_A_IMM})
+  `ASSERT(IbexAluAOpMuxSelValid,
+          instr_valid_i |-> alu_op_a_mux_sel inside {OP_A_REG_A, OP_A_FWD, OP_A_CURRPC, OP_A_IMM})
   `ASSERT_KNOWN_IF(IbexBTAluAOpMuxSelKnown, bt_a_mux_sel, instr_valid_i)
-  `ASSERT(IbexBTAluAOpMuxSelValid, instr_valid_i |-> bt_a_mux_sel inside {
-      OP_A_REG_A,
-      OP_A_CURRPC})
+  `ASSERT(IbexBTAluAOpMuxSelValid, instr_valid_i |-> bt_a_mux_sel inside {OP_A_REG_A, OP_A_CURRPC})
   `ASSERT_KNOWN_IF(IbexBTAluBOpMuxSelKnown, bt_b_mux_sel, instr_valid_i)
-  `ASSERT(IbexBTAluBOpMuxSelValid, instr_valid_i |-> bt_b_mux_sel inside {
-      IMM_B_I,
-      IMM_B_B,
-      IMM_B_J,
-      IMM_B_INCR_PC})
-  `ASSERT(IbexRegfileWdataSelValid, instr_valid_i |-> rf_wdata_sel inside {
-      RF_WD_EX,
-      RF_WD_CSR})
+  `ASSERT(IbexBTAluBOpMuxSelValid,
+          instr_valid_i |-> bt_b_mux_sel inside {IMM_B_I, IMM_B_B, IMM_B_J, IMM_B_INCR_PC})
+  `ASSERT(IbexRegfileWdataSelValid, instr_valid_i |-> rf_wdata_sel inside {RF_WD_EX, RF_WD_CSR})
   `ASSERT_KNOWN(IbexWbStateKnown, id_fsm_q)
 
   // Branch decision must be valid when jumping.
   `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i,
-      instr_valid_i && !(illegal_csr_insn_i || instr_fetch_err_i))
+                   instr_valid_i && !(illegal_csr_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,
-      instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
+                   instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT_KNOWN_IF(IbexIdInstrALUKnown, instr_rdata_alu_i,
-      instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
+                   instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
 
   // Multicycle enable signals must be unique.
-  `ASSERT(IbexMulticycleEnableUnique,
-      $onehot0({lsu_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
+  `ASSERT(IbexMulticycleEnableUnique, $onehot0({
+          lsu_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
 
   // Duplicated instruction flops must match
   // === as DV environment can produce instructions with Xs in, so must use precise match that
   // includes Xs
   `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
 
-  `ifdef CHECK_MISALIGNED
+`ifdef CHECK_MISALIGNED
   `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
-  `endif
+`endif
 
 endmodule

@@ -26,13 +26,11 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
     }
   }
 
-  constraint num_trans_c {
-    num_trans inside {[1:4]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 4]};}
 
   function void pre_randomize();
     super.pre_randomize();
-    max_clks_until_expiry = 1_000_000; // Redefining max clock to avoid timeout
+    max_clks_until_expiry = 1_000_000;  // Redefining max clock to avoid timeout
   endfunction
 
   task body();
@@ -43,9 +41,9 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
       csr_wr(.csr(ral.ctrl), .value(ral.ctrl.get_reset()));
 
       for (int hart = 0; hart < NUM_HARTS; hart++) begin
-        for (int timer = 0; timer < NUM_TIMERS; timer++) begin
-          int    num_clks;
-          uint   read_data;
+        for (int timer = 0; timer < NUM_TIMERS; timer ++) begin
+          int num_clks;
+          uint read_data;
           bit timer_at_min_max_val;
 
           `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -64,8 +62,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
               // subtract one prescale value i.e.(prescale+1) +
               // 8 (clks to update timer and compare val) + 2 (read timer val)
               num_clks -= (prescale[hart] + 1) + 8 + 2;
-            end
-            else begin
+            end else begin
               num_clks = $urandom_range((num_clks / 10), (num_clks / 2));
             end
             status_read_for_clks(.hart(hart), .clks(num_clks));
@@ -76,8 +73,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
               if ($urandom_range(0, 1)) begin
                 `uvm_info(`gfn, "Updating timer step value", UVM_LOW)
                 step[hart] = $urandom_range(1, max_step);
-              end
-              else begin
+              end else begin
                 `uvm_info(`gfn, "Updating timer prescale value", UVM_LOW)
                 prescale[hart] = $urandom_range(0, max_prescale);
               end
@@ -95,19 +91,17 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
             // ((1 << 64)-1) - (max_step_value*300) = 'hFFFFFFFFFFFED52B
             // min_timer_val is calculated using max random value subtracted from
             // timer_val with below randomiztion which is (max_step_value*300) = 'h12AD4
-            if ((compare_val[hart][timer] >= 64'hFFFFFFFFFFFED52B) |
-                (timer_val[hart] <= 64'h12AD4)) begin
+            if ((compare_val[hart][timer] >= 64'hFFFFFFFFFFFED52B) | (timer_val[hart] <= 64'h12AD4)
+                ) begin
               timer_at_min_max_val = 1'b1;
               break;
-            end
-            else begin
+            end else begin
               uint64 mtime_diff;
               `uvm_info(`gfn, "Updating timer and compare reg", UVM_LOW)
               mtime_diff = compare_val[hart][timer] - timer_val[hart];
               if (upd_cfg_in_end | $urandom_range(0, 1)) begin
                 compare_val[hart][timer] += step[hart] * $urandom_range(30, 300);
-              end
-              else begin
+              end else begin
                 compare_val[hart][timer] -= mtime_diff / ($urandom_range(4, 20));
               end
               set_compare_val(.hart(hart), .timer(timer), .val(compare_val[hart][timer]));
@@ -115,8 +109,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_sanity_vseq;
               mtime_diff = compare_val[hart][timer] - timer_val[hart];
               if (!upd_cfg_in_end | $urandom_range(0, 1)) begin
                 timer_val[hart] += mtime_diff / ($urandom_range(4, 20));
-              end
-              else begin
+              end else begin
                 timer_val[hart] -= step[hart] * $urandom_range(30, 300);
               end
               set_timer_val(.hart(hart), .val(timer_val[hart]));

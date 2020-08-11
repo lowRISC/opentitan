@@ -13,10 +13,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rx_watermark;
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
-  constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
+  constraint fmt_fifo_access_dly_c {fmt_fifo_access_dly == 0;}
 
   // fast read data from rd_fifo to quickly finish simulation (increasing sim. performance)
-  constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
+  constraint rx_fifo_access_dly_c {rx_fifo_access_dly == 0;}
 
   // write transaction length is more than fmt_fifo depth to cross fmtilvl
   constraint num_wr_bytes_c {
@@ -24,7 +24,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     num_wr_bytes == I2C_FMT_FIFO_DEPTH + num_data_ovf;
   }
   // read transaction length is equal to rx_fifo depth to cross rxilvl
-  constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
+  constraint num_rd_bytes_c {num_rd_bytes == I2C_RX_FIFO_DEPTH;}
 
   virtual task body();
     bit check_fmt_watermark, check_rx_watermark;
@@ -38,9 +38,9 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     for (int i = 0; i < num_trans; i++) begin
       check_fmt_watermark = 1'b1;
-      check_rx_watermark  = 1'b1;
-      cnt_fmt_watermark   = 0;
-      cnt_rx_watermark    = 0;
+      check_rx_watermark = 1'b1;
+      cnt_fmt_watermark = 0;
+      cnt_rx_watermark = 0;
 
       fork
         begin
@@ -58,8 +58,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
             `DV_CHECK_GT(cnt_fmt_watermark, 0)
             `DV_CHECK_LE(cnt_fmt_watermark, 2)
-            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d",
-                i, cnt_fmt_watermark), UVM_DEBUG)
+            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d", i, cnt_fmt_watermark),
+                      UVM_DEBUG)
           end
 
           //*** verify rx_watermark irq:
@@ -72,10 +72,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
             host_send_trans(.num_trans(1), .trans_type(ReadOnly));
             csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
-            check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
+            check_rx_watermark = 1'b0;  // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
-            if ( rxilvl <= 4) begin
+            if (rxilvl <= 4) begin
               `DV_CHECK_EQ(cnt_rx_watermark, 1)
             end else begin
               `DV_CHECK_EQ(cnt_rx_watermark, 0)

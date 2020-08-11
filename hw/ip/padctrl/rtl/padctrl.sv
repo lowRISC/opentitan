@@ -9,15 +9,17 @@
 
 `include "prim_assert.sv"
 
-module padctrl import padctrl_reg_pkg::*; (
-  input                                  clk_i,
-  input                                  rst_ni,
-  // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t              tl_i,
-  output tlul_pkg::tl_d2h_t              tl_o,
-  // pad attributes to chip level instance
-  output logic[NMioPads-1:0][AttrDw-1:0] mio_attr_o,
-  output logic[NDioPads-1:0][AttrDw-1:0] dio_attr_o
+module padctrl
+import padctrl_reg_pkg::*;
+(
+    input                                                clk_i,
+    input                                                rst_ni,
+    // Bus Interface (device)
+    input  tlul_pkg::tl_h2d_t                            tl_i,
+    output tlul_pkg::tl_d2h_t                            tl_o,
+    // pad attributes to chip level instance
+    output logic              [NMioPads-1:0][AttrDw-1:0] mio_attr_o,
+    output logic              [NDioPads-1:0][AttrDw-1:0] dio_attr_o
 );
 
   /////////////
@@ -28,13 +30,13 @@ module padctrl import padctrl_reg_pkg::*; (
   padctrl_hw2reg_t hw2reg;
 
   padctrl_reg_top u_reg (
-    .clk_i  ,
-    .rst_ni ,
-    .tl_i   ,
-    .tl_o   ,
-    .reg2hw ,
-    .hw2reg ,
-    .devmode_i(1'b1)
+      .clk_i,
+      .rst_ni,
+      .tl_i,
+      .tl_o,
+      .reg2hw,
+      .hw2reg,
+      .devmode_i(1'b1)
   );
 
   ////////////////
@@ -73,19 +75,19 @@ module padctrl import padctrl_reg_pkg::*; (
     logic [AttrDw-1:0] warl_mask;
 
     prim_generic_pad_wrapper #(
-      .AttrDw   ( AttrDw        ),
-      .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
+        .AttrDw(AttrDw),
+        .WarlOnly(1'b1)  // this prevents instantiation of pad logic
     ) i_prim_generic_pad_wrapper (
-      .inout_io (               ),
-      .in_o     (               ),
-      .ie_i     ( 1'b0          ),
-      .out_i    ( 1'b0          ),
-      .oe_i     ( 1'b0          ),
-      .attr_i   ( '0            ),
-      .warl_o   ( warl_mask     )
+        .inout_io(),
+        .in_o    (),
+        .ie_i    (1'b0),
+        .out_i   (1'b0),
+        .oe_i    (1'b0),
+        .attr_i  ('0),
+        .warl_o  (warl_mask)
     );
 
-    assign dio_attr_o[k]        = dio_attr_q[k] & warl_mask;
+    assign dio_attr_o[k] = dio_attr_q[k] & warl_mask;
     assign hw2reg.dio_pads[k].d = dio_attr_q[k] & warl_mask;
   end
 
@@ -93,19 +95,19 @@ module padctrl import padctrl_reg_pkg::*; (
     logic [AttrDw-1:0] warl_mask;
 
     prim_generic_pad_wrapper #(
-      .AttrDw   ( AttrDw        ),
-      .WarlOnly ( 1'b1          ) // this prevents instantiation of pad logic
+        .AttrDw(AttrDw),
+        .WarlOnly(1'b1)  // this prevents instantiation of pad logic
     ) i_prim_generic_pad_wrapper (
-      .inout_io (               ),
-      .in_o     (               ),
-      .ie_i     ( 1'b0          ),
-      .out_i    ( 1'b0          ),
-      .oe_i     ( 1'b0          ),
-      .attr_i   ( '0            ),
-      .warl_o   ( warl_mask     )
+        .inout_io(),
+        .in_o    (),
+        .ie_i    (1'b0),
+        .out_i   (1'b0),
+        .oe_i    (1'b0),
+        .attr_i  ('0),
+        .warl_o  (warl_mask)
     );
 
-    assign mio_attr_o[k]        = mio_attr_q[k] & warl_mask;
+    assign mio_attr_o[k] = mio_attr_q[k] & warl_mask;
     assign hw2reg.mio_pads[k].d = mio_attr_q[k] & warl_mask;
   end
 

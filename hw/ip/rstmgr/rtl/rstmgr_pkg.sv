@@ -5,14 +5,14 @@
 package rstmgr_pkg;
 
   // global constants
-  parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
+  parameter int ALWAYS_ON_SEL = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
 
   // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  localparam int PowerDomains    = pwrmgr_pkg::PowerDomains;
+  localparam int PowerDomains = pwrmgr_pkg::PowerDomains;
   localparam int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
 
   // calculated domains
-  localparam int OffDomains = PowerDomains-1;
+  localparam int OffDomains = PowerDomains - 1;
 
   // low power exit + external reasons + ndm_reset_req
   localparam int ResetReasons = 1 + ExtResetReasons + 1;
@@ -24,10 +24,7 @@ package rstmgr_pkg;
   } rstmgr_ast_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
-  parameter rstmgr_ast_t RSTMGR_AST_DEFAULT = '{
-    vcc_pok: 1'b1,
-    alw_pok: 1'b1
-  };
+  parameter rstmgr_ast_t RSTMGR_AST_DEFAULT = '{vcc_pok: 1'b1, alw_pok: 1'b1};
 
   // resets generated and broadcast
   // This should be templatized and generated
@@ -51,20 +48,13 @@ package rstmgr_pkg;
   } rstmgr_cpu_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
-  parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{
-    rst_cpu_n: 1'b1,
-    ndmreset_req: '0
-  };
+  parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{rst_cpu_n: 1'b1, ndmreset_req: '0};
 
   // peripherals reset requests
-  typedef struct packed {
-    logic [ExtResetReasons-1:0] rst_reqs;
-  } rstmgr_peri_t;
+  typedef struct packed {logic [ExtResetReasons-1:0] rst_reqs;} rstmgr_peri_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
-  parameter rstmgr_peri_t RSTMGR_PERI_DEFAULT = '{
-    rst_reqs: '0
-  };
+  parameter rstmgr_peri_t RSTMGR_PERI_DEFAULT = '{rst_reqs: '0};
 
 
-endpackage // rstmgr_pkg
+endpackage  // rstmgr_pkg

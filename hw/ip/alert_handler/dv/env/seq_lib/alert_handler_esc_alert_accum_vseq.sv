@@ -10,20 +10,14 @@ class alert_handler_esc_alert_accum_vseq extends alert_handler_sanity_vseq;
 
   `uvm_object_new
 
-  constraint disable_clr_esc_c {
-    do_clr_esc == 0;
-  }
+  constraint disable_clr_esc_c {do_clr_esc == 0;}
 
   constraint enable_alert_accum_esc_only_c {
-    do_esc_intr_timeout == 0; // disable interrupt timeout triggered escalation
+    do_esc_intr_timeout == 0;  // disable interrupt timeout triggered escalation
   }
 
-  constraint num_trans_c {
-    num_trans inside {[1:100]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 100]};}
 
-  constraint esc_accum_thresh_c {
-    foreach (accum_thresh[i]) {accum_thresh[i] inside {[0:100]};}
-  }
+  constraint esc_accum_thresh_c {foreach (accum_thresh[i]) {accum_thresh[i] inside {[0 : 100]};}}
 
 endclass : alert_handler_esc_alert_accum_vseq

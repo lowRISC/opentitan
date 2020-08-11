@@ -18,23 +18,23 @@
 `include "prim_assert.sv"
 
 module prim_diff_decode #(
-  // enables additional synchronization logic
-  parameter bit AsyncOn = 1'b0
+    // enables additional synchronization logic
+    parameter bit AsyncOn = 1'b0
 ) (
-  input        clk_i,
-  input        rst_ni,
-  // input diff pair
-  input        diff_pi,
-  input        diff_ni,
-  // logical level and
-  // detected edges
-  output logic level_o,
-  output logic rise_o,
-  output logic fall_o,
-  // either rise or fall
-  output logic event_o,
-  //signal integrity issue detected
-  output logic sigint_o
+    input        clk_i,
+    input        rst_ni,
+    // input diff pair
+    input        diff_pi,
+    input        diff_ni,
+    // logical level and
+    // detected edges
+    output logic level_o,
+    output logic rise_o,
+    output logic fall_o,
+    // either rise or fall
+    output logic event_o,
+    //signal integrity issue detected
+    output logic sigint_o
 );
 
   logic level_d, level_q;
@@ -44,7 +44,11 @@ module prim_diff_decode #(
   ///////////////////////////////////////////////////////////////
   if (AsyncOn) begin : gen_async
 
-    typedef enum logic [1:0] {IsStd, IsSkewed, SigInt} state_e;
+    typedef enum logic [1:0] {
+      IsStd,
+      IsSkewed,
+      SigInt
+    } state_e;
     state_e state_d, state_q;
     logic diff_p_edge, diff_n_edge, diff_check_ok, level;
 
@@ -52,37 +56,37 @@ module prim_diff_decode #(
     logic diff_pq, diff_nq, diff_pd, diff_nd;
 
     prim_flop_2sync #(
-      .Width(1),
-      .ResetValue('0)
+        .Width(1),
+        .ResetValue('0)
     ) i_sync_p (
-      .clk_i,
-      .rst_ni,
-      .d_i(diff_pi),
-      .q_o(diff_pd)
+        .clk_i,
+        .rst_ni,
+        .d_i(diff_pi),
+        .q_o(diff_pd)
     );
 
     prim_flop_2sync #(
-      .Width(1),
-      .ResetValue(1'b1)
+        .Width(1),
+        .ResetValue(1'b1)
     ) i_sync_n (
-      .clk_i,
-      .rst_ni,
-      .d_i(diff_ni),
-      .q_o(diff_nd)
+        .clk_i,
+        .rst_ni,
+        .d_i(diff_ni),
+        .q_o(diff_nd)
     );
 
     // detect level transitions
-    assign diff_p_edge   = diff_pq ^ diff_pd;
-    assign diff_n_edge   = diff_nq ^ diff_nd;
+    assign diff_p_edge = diff_pq ^ diff_pd;
+    assign diff_n_edge = diff_nq ^ diff_nd;
 
     // detect sigint issue
     assign diff_check_ok = diff_pd ^ diff_nd;
 
     // this is the current logical level
-    assign level         = diff_pd;
+    assign level = diff_pd;
 
     // outputs
-    assign level_o  = level_d;
+    assign level_o = level_d;
     assign event_o = rise_o | fall_o;
 
     // sigint detection is a bit more involved in async case since
@@ -106,10 +110,10 @@ module prim_diff_decode #(
 
     always_comb begin : p_diff_fsm
       // default
-      state_d  = state_q;
-      level_d  = level_q;
-      rise_o   = 1'b0;
-      fall_o   = 1'b0;
+      state_d = state_q;
+      level_d = level_q;
+      rise_o = 1'b0;
+      fall_o = 1'b0;
       sigint_o = 1'b0;
 
       unique case (state_q)
@@ -140,9 +144,9 @@ module prim_diff_decode #(
             state_d = IsStd;
             level_d = level;
             if (level) rise_o = 1'b1;
-            else       fall_o = 1'b1;
+            else fall_o = 1'b1;
           end else begin
-            state_d  = SigInt;
+            state_d = SigInt;
             sigint_o = 1'b1;
           end
         end
@@ -151,31 +155,31 @@ module prim_diff_decode #(
         SigInt: begin
           sigint_o = 1'b1;
           if (diff_check_ok) begin
-            state_d  = IsStd;
+            state_d = IsStd;
             sigint_o = 1'b0;
           end
         end
-        default : ;
+        default: ;
       endcase
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_sync_reg
       if (!rst_ni) begin
-        state_q  <= IsStd;
-        diff_pq  <= 1'b0;
-        diff_nq  <= 1'b1;
-        level_q  <= 1'b0;
+        state_q <= IsStd;
+        diff_pq <= 1'b0;
+        diff_nq <= 1'b1;
+        level_q <= 1'b0;
       end else begin
-        state_q  <= state_d;
-        diff_pq  <= diff_pd;
-        diff_nq  <= diff_nd;
-        level_q  <= level_d;
+        state_q <= state_d;
+        diff_pq <= diff_pd;
+        diff_nq <= diff_nd;
+        level_q <= level_d;
       end
     end
 
-  //////////////////////////////////////////////////////////
-  // fully synchronous case, no skew present in this case //
-  //////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////
+    // fully synchronous case, no skew present in this case //
+    //////////////////////////////////////////////////////////
   end else begin : gen_no_async
     logic diff_pq, diff_pd;
 
@@ -189,17 +193,17 @@ module prim_diff_decode #(
     assign level_d = level_o;
 
     // detect level transitions
-    assign rise_o  = (~diff_pq &  diff_pi) & ~sigint_o;
-    assign fall_o  = ( diff_pq & ~diff_pi) & ~sigint_o;
+    assign rise_o = (~diff_pq & diff_pi) & ~sigint_o;
+    assign fall_o = (diff_pq & ~diff_pi) & ~sigint_o;
     assign event_o = rise_o | fall_o;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_edge_reg
       if (!rst_ni) begin
-        diff_pq  <= 1'b0;
-        level_q  <= 1'b0;
+        diff_pq <= 1'b0;
+        level_q <= 1'b0;
       end else begin
-        diff_pq  <= diff_pd;
-        level_q  <= level_d;
+        diff_pq <= diff_pd;
+        level_q <= level_d;
       end
     end
   end
@@ -214,44 +218,44 @@ module prim_diff_decode #(
   `ASSERT(SigintLevelCheck_A, ##1 sigint_o |-> $stable(level_o))
   // sigint -> no additional events asserted at output
   `ASSERT(SigintEventCheck_A, sigint_o |-> !event_o)
-  `ASSERT(SigintRiseCheck_A,  sigint_o |-> !rise_o)
-  `ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o)
+  `ASSERT(SigintRiseCheck_A, sigint_o |-> !rise_o)
+  `ASSERT(SigintFallCheck_A, sigint_o |-> !fall_o)
 
   if (AsyncOn) begin : gen_async_assert
     // assertions for asynchronous case
     // correctly detect sigint issue (only one transition cycle of permissible due to skew)
-    `ASSERT(SigintCheck0_A, diff_pi == diff_ni [*2] |-> ##[1:2] sigint_o)
+    `ASSERT(SigintCheck0_A, diff_pi == diff_ni [* 2] |-> ##[1:2] sigint_o)
     // the synchronizer adds 2 cycles of latency
-    `ASSERT(SigintCheck1_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $rose(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $fell(diff_ni) |->
-        ##2 rise_o)
-    `ASSERT(SigintCheck2_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $fell(diff_pi) && $stable(diff_ni) ##1 $stable(diff_pi) && $rose(diff_ni) |->
-        ##2 fall_o)
-    `ASSERT(SigintCheck3_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $rose(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $fell(diff_pi) |->
-        ##2 fall_o)
-    `ASSERT(SigintCheck4_A, ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1
-        $fell(diff_ni) && $stable(diff_pi) ##1 $stable(diff_ni) && $rose(diff_pi) |->
-        ##2 rise_o)
+    `ASSERT(SigintCheck1_A,
+            ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1 $rose(diff_pi) &&
+                $stable(diff_ni) ##1 $stable(diff_pi) && $fell(diff_ni) |-> ##2 rise_o)
+    `ASSERT(SigintCheck2_A,
+            ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1 $fell(diff_pi) &&
+                $stable(diff_ni) ##1 $stable(diff_pi) && $rose(diff_ni) |-> ##2 fall_o)
+    `ASSERT(SigintCheck3_A,
+            ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1 $rose(diff_ni) &&
+                $stable(diff_pi) ##1 $stable(diff_ni) && $fell(diff_pi) |-> ##2 fall_o)
+    `ASSERT(SigintCheck4_A,
+            ##1 (diff_pi ^ diff_ni) && $stable(diff_pi) && $stable(diff_ni) ##1 $fell(diff_ni) &&
+                $stable(diff_pi) ##1 $stable(diff_ni) && $rose(diff_pi) |-> ##2 rise_o)
     // correctly detect edges
-    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)     && (diff_pi ^ diff_ni) |->
-        ##[2:3] rise_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)     && (diff_pi ^ diff_ni) |->
-        ##[2:3] fall_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(EventCheck_A, ##1 $changed(diff_pi)  && (diff_pi ^ diff_ni) |->
-        ##[2:3] event_o, clk_i, !rst_ni || sigint_o)
+    `ASSERT(RiseCheck_A, ##1 $rose(diff_pi) && (diff_pi ^ diff_ni) |-> ##[2:3] rise_o, clk_i,
+            !rst_ni || sigint_o)
+    `ASSERT(FallCheck_A, ##1 $fell(diff_pi) && (diff_pi ^ diff_ni) |-> ##[2:3] fall_o, clk_i,
+            !rst_ni || sigint_o)
+    `ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> ##[2:3] event_o, clk_i,
+            !rst_ni || sigint_o)
     // correctly detect level
-    `ASSERT(LevelCheck0_A, !sigint_o && (diff_pi ^ diff_ni) [*3] |=> $past(diff_pi, 2) == level_o,
-        clk_i, !rst_ni || sigint_o)
+    `ASSERT(LevelCheck0_A, !sigint_o && (diff_pi ^ diff_ni) [* 3] |=> $past(diff_pi, 2) == level_o,
+            clk_i, !rst_ni || sigint_o)
 
   end else begin : gen_sync_assert
     // assertions for synchronous case
     // correctly detect sigint issue
     `ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o)
     // correctly detect edges
-    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o)
-    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o)
+    `ASSERT(RiseCheck_A, ##1 $rose(diff_pi) && (diff_pi ^ diff_ni) |-> rise_o)
+    `ASSERT(FallCheck_A, ##1 $fell(diff_pi) && (diff_pi ^ diff_ni) |-> fall_o)
     `ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o)
     // correctly detect level
     `ASSERT(LevelCheck_A, (diff_pi ^ diff_ni) |-> diff_pi == level_o)

@@ -43,7 +43,7 @@ class riscv_custom_instr extends riscv_instr;
     */
     comment = {get_instr_name(), " ", comment};
     if (comment != "") begin
-      asm_str = {asm_str, " #",comment};
+      asm_str = {asm_str, " #", comment};
     end
     return asm_str.tolower();
   endfunction : convert2asm

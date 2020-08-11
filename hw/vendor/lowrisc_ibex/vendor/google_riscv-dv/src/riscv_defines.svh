@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-`define add_instr(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define add_instr(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   constraint riscv_``instr_group``_``instr_n``_c { \
     if (instr_name == ``instr_n) { \
         format     == ``instr_format; \
@@ -24,7 +24,7 @@
     } \
   }
 
-`define add_pseudo_instr(instr_n, instr_format, instr_category, instr_group)  \
+`define add_pseudo_instr(instr_n, instr_format, instr_category, instr_group) \
   constraint riscv_``instr_group``_``instr_n``_c { \
     if (pseudo_instr_name  == ``instr_n) { \
         format             == ``instr_format; \
@@ -48,7 +48,7 @@
     endfunction \
   endclass
 
- `define VA_INSTR_BODY(instr_n, instr_format, instr_category, instr_group, vav, imm_tp = IMM) \
+`define VA_INSTR_BODY(instr_n, instr_format, instr_category, instr_group, vav, imm_tp = IMM) \
     static bit valid = riscv_instr::register(instr_n);  \
     `uvm_object_utils(riscv_``instr_n``_instr)  \
     function new(string name = "");  \
@@ -65,42 +65,43 @@
   endclass
 
 // Regular integer instruction
-`define DEFINE_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // Floating point instruction
-`define DEFINE_FP_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_FP_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_floating_point_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // A-extension instruction
-`define DEFINE_AMO_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_AMO_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_amo_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // Compressed instruction
-`define DEFINE_C_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_C_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_compressed_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // Floating point compressed instruction
-`define DEFINE_FC_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_FC_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_compressed_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 // Vector arithmetic instruction
-`define DEFINE_VA_INSTR(instr_n, instr_format, instr_category, instr_group, vav = {}, imm_tp = IMM)\
+`define DEFINE_VA_INSTR(instr_n, instr_format, instr_category, instr_group, vav = {},
+                        imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_vector_instr;  \
     `VA_INSTR_BODY(instr_n, instr_format, instr_category, instr_group, vav, imm_tp)
 
 // Custom extension instruction
-`define DEFINE_CUSTOM_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_CUSTOM_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_custom_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 
 //B-extension instruction
-`define DEFINE_B_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM)  \
+`define DEFINE_B_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp = IMM) \
   class riscv_``instr_n``_instr extends riscv_b_instr;  \
     `INSTR_BODY(instr_n, instr_format, instr_category, instr_group, imm_tp)
 

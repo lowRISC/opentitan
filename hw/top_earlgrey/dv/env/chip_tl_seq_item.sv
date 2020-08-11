@@ -8,9 +8,7 @@
 class chip_tl_seq_item extends tl_seq_item;
 
   // TODO: need to capture this as param
-  constraint a_source_c {
-    a_source[TL_AIW-1:TL_AIW-2] == 0;
-  }
+  constraint a_source_c {a_source[TL_AIW - 1:TL_AIW - 2] == 0;}
 
   `uvm_object_utils_begin(chip_tl_seq_item)
   `uvm_object_utils_end

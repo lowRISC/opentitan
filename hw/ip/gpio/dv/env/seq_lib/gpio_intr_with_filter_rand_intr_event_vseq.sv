@@ -16,27 +16,26 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
 
   // Random variable to specify for how many cycles one would like to keep
   // gpio input pin value stable
-  rand uint stable_cycles_per_pin [NUM_GPIOS];
+  rand uint stable_cycles_per_pin[NUM_GPIOS];
 
   // Filter enable value
   bit [TL_DW-1:0] gpio_filter_value;
 
   constraint stable_cycles_for_input_c {
     foreach (stable_cycles_per_pin[i])
-      stable_cycles_per_pin[i] dist { [1:FILTER_CYCLES-1] :/ 70,
-                                            FILTER_CYCLES :/ 30 };
+    stable_cycles_per_pin[i] dist {
+      [1 : FILTER_CYCLES - 1] :/ 70,
+      FILTER_CYCLES :/ 30
+    };
   }
 
-  covergroup pins_stable_period_and_filter_cg with function sample(uint pin,
-                                                                   uint stable_cycles,
-                                                                   bit pin_value,
-                                                                   bit filter_en);
-    cp_pins: coverpoint pin {
-      bins all_gpio_pins[] = {[0:NUM_GPIOS-1]};
-    }
+  covergroup pins_stable_period_and_filter_cg with function sample (
+      uint pin, uint stable_cycles, bit pin_value, bit filter_en
+  );
+    cp_pins: coverpoint pin {bins all_gpio_pins[] = {[0 : NUM_GPIOS - 1]};}
     cp_stable_cycles: coverpoint stable_cycles {
-      bins one_to_filter_cycles_minus_1[] = {[1:FILTER_CYCLES - 1]};
-      bins filter_cycles_or_more          = {[FILTER_CYCLES:$]};
+      bins one_to_filter_cycles_minus_1[] = {[1 : FILTER_CYCLES - 1]};
+      bins filter_cycles_or_more = {[FILTER_CYCLES : $]};
     }
     cp_pin_value: coverpoint pin_value;
     cp_filter_en: coverpoint filter_en;
@@ -55,23 +54,23 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
     bit [NUM_GPIOS-1:0] prev_pins_val = (cfg.pullup_en == 1'b1) ? '1 : '0;
     bit [NUM_GPIOS-1:0] crnt_pins_val;
     uint stable_cycles_cnt[NUM_GPIOS];
-    forever @(cfg.clk_rst_vif.cb) begin
-      // Assign current sampled gpio value
-      crnt_pins_val = cfg.gpio_vif.sample();
-      foreach (crnt_pins_val[each_pin]) begin
-        if (crnt_pins_val[each_pin] == prev_pins_val[each_pin]) begin
-          stable_cycles_cnt[each_pin]++;
-        end else begin
-          stable_cycles_cnt[each_pin] = 1;
+    forever
+      @(cfg.clk_rst_vif.cb) begin
+        // Assign current sampled gpio value
+        crnt_pins_val = cfg.gpio_vif.sample();
+        foreach (crnt_pins_val[each_pin]) begin
+          if (crnt_pins_val[each_pin] == prev_pins_val[each_pin]) begin
+            stable_cycles_cnt[each_pin]++;
+          end else begin
+            stable_cycles_cnt[each_pin] = 1;
+          end
+          pins_stable_period_and_filter_cg.sample(each_pin, stable_cycles_cnt[each_pin],
+                                                  crnt_pins_val[each_pin],
+                                                  gpio_filter_value[each_pin]);
         end
-        pins_stable_period_and_filter_cg.sample(each_pin,
-                                                stable_cycles_cnt[each_pin],
-                                                crnt_pins_val[each_pin],
-                                                gpio_filter_value[each_pin]);
+        // Update previous gpio value
+        prev_pins_val = crnt_pins_val;
       end
-      // Update previous gpio value
-      prev_pins_val = crnt_pins_val;
-    end
   endtask : sample_stable_cycles_and_filter_coverage
 
   task body();
@@ -99,8 +98,9 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
       // Maximum no. of stable cycles among all the pins
       uint max_stable_cycles;
 
-      `uvm_info(msg_id, $sformatf("crnt_intr_status = 0x%0h [%0b]",
-                                  crnt_intr_status, crnt_intr_status), UVM_HIGH)
+      `uvm_info(msg_id,
+                $sformatf("crnt_intr_status = 0x%0h [%0b]", crnt_intr_status, crnt_intr_status),
+                UVM_HIGH)
       // Program random set of interrupt registers
       pgm_intr_regs();
       // Predict updated interrupt status register
@@ -111,8 +111,9 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
         ral.ctrl_en_input_filter.set(gpio_filter_value);
         csr_update(ral.ctrl_en_input_filter);
       end
-      `uvm_info(msg_id, $sformatf("gpio_filter_value = 0x%0h [%0b]",
-                                  gpio_filter_value, gpio_filter_value), UVM_HIGH)
+      `uvm_info(msg_id,
+                $sformatf("gpio_filter_value = 0x%0h [%0b]", gpio_filter_value, gpio_filter_value),
+                UVM_HIGH)
       // Predict updated interrupt status register again
       update_intr_state(crnt_intr_status, stable_value, stable_value);
       // Randomize gpio data
@@ -143,7 +144,7 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
       `uvm_info(msg_id, "Start driving new random value in gpio_i", UVM_HIGH)
       fork
         begin : drive_each_pin
-          for (uint pin_num = 0; pin_num  < NUM_GPIOS; pin_num++) begin
+          for (uint pin_num = 0; pin_num < NUM_GPIOS; pin_num++) begin
             automatic uint pin = pin_num;
             fork
               begin
@@ -174,25 +175,27 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
             stable_value = latest_stable_value;
             `uvm_info(msg_id, $sformatf("stable_value updated to %0h", stable_value), UVM_HIGH)
           end
-        end // drive_each_pin
+        end  // drive_each_pin
 
         begin : csr_read_and_check
           uint num_cycles_elapsed;
-          bit [NUM_GPIOS-1:0] expected_value_data_in = predict_data_in_value(gpio_filter_value,
-                                                                             stable_value,
-                                                                             gpio_i);
+          bit [NUM_GPIOS-1:0] expected_value_data_in =
+              predict_data_in_value(gpio_filter_value, stable_value, gpio_i);
           // Predict updated interrupt status register again
           update_intr_state(crnt_intr_status, stable_value, expected_value_data_in);
-          `uvm_info(msg_id, $sformatf("crnt_intr_status = 0x%0h [%0b]",
-                                      crnt_intr_status, crnt_intr_status), UVM_HIGH)
-          `uvm_info(`gfn, $sformatf("Expected data in = 0x%0h [%0b]",
-                                    expected_value_data_in, expected_value_data_in), UVM_HIGH)
+          `uvm_info(msg_id,
+                    $sformatf("crnt_intr_status = 0x%0h [%0b]", crnt_intr_status, crnt_intr_status),
+                    UVM_HIGH)
+          `uvm_info(`gfn,
+                    $sformatf("Expected data in = 0x%0h [%0b]", expected_value_data_in,
+                              expected_value_data_in),
+                    UVM_HIGH)
           fork
             begin : count_clock
               while (num_cycles_elapsed < FILTER_CYCLES) begin
                 cfg.clk_rst_vif.wait_clks(1);
                 num_cycles_elapsed++;
-              end // count_clock
+              end  // count_clock
             end
             begin : csr_rd_and_check
               // Actual rtl register update takes additional cycle
@@ -204,11 +207,10 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
                   3: csr_rd_check(.ptr(ral.intr_state), .compare_value(crnt_intr_status));
                   1: csr_rd_check(.ptr(ral.data_in), .compare_value(expected_value_data_in));
                 endcase
-              end
-              while (num_cycles_elapsed < (FILTER_CYCLES -2));
-            end // csr_rd_and_check
-          join // end fork..join
-        end // csr_read_and_check
+              end while (num_cycles_elapsed < (FILTER_CYCLES - 2));
+            end  // csr_rd_and_check
+          join  // end fork..join
+        end  // csr_read_and_check
 
       join
 
@@ -222,8 +224,10 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
             cycles_after_16_per_pin[pin]++;
             if (cycles_after_16_per_pin[pin] == stable_cycles_per_pin[pin]) begin
               latest_stable_value[pin] = ~gpio_i[pin];
-              `uvm_info(msg_id, $sformatf("updating latest_stable_value[%0d] to %0b",
-                                          pin, latest_stable_value[pin]), UVM_HIGH)
+              `uvm_info(msg_id,
+                        $sformatf("updating latest_stable_value[%0d] to %0b", pin,
+                                  latest_stable_value[pin]),
+                        UVM_HIGH)
             end
           end
           // Check for interrupt update based on stabilized pin
@@ -239,11 +243,11 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
         csr_rd_check(.ptr(ral.data_in), .compare_value(stable_value));
         // Read and check INTR_STATE value
         csr_rd_check(.ptr(ral.intr_state), .compare_value(crnt_intr_status));
-      end // wait_all_pins_stable
+      end  // wait_all_pins_stable
 
       `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
 
-    end // end for
+    end  // end for
 
   endtask : body
 
@@ -252,16 +256,18 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
   // predicts expected effective data_in value based on following:
   // ( i) noise filter programming, and
   // (ii) previous filtered value
-  function bit [NUM_GPIOS-1:0] predict_data_in_value(
-    input bit [    TL_DW-1:0] filter_en,
-    input bit [NUM_GPIOS-1:0] crnt_filtered_value,
-    input bit [NUM_GPIOS-1:0] gpio_i);
+  function bit [NUM_GPIOS-1:0] predict_data_in_value(input bit [TL_DW-1:0] filter_en,
+                                                       input
+                                                           bit [NUM_GPIOS-1:0] crnt_filtered_value,
+                                                       input bit [NUM_GPIOS-1:0] gpio_i);
     string msg_id = {`gfn, " predict_data_in_value: "};
     for (uint i = 0; i < NUM_GPIOS; i++) begin
       predict_data_in_value[i] = filter_en[i] ? crnt_filtered_value[i] : gpio_i[i];
-      `uvm_info(msg_id, { $sformatf("pin-%0d filter_en[%0d] = %0b", i, i, filter_en[i]),
-                          $sformatf("crnt_filtered_value[%0d] = %0b", i, crnt_filtered_value[i]),
-                          $sformatf("gpio_i[%0d] = %0b", i, gpio_i[i]) }, UVM_HIGH)
+      `uvm_info(msg_id, {
+                $sformatf("pin-%0d filter_en[%0d] = %0b", i, i, filter_en[i]),
+                $sformatf("crnt_filtered_value[%0d] = %0b", i, crnt_filtered_value[i]),
+                $sformatf("gpio_i[%0d] = %0b", i, gpio_i[i])
+                }, UVM_HIGH)
     end
   endfunction : predict_data_in_value
 
@@ -271,29 +277,29 @@ class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
   // (i) interrupt control registers' values
   // (ii) previous filtered gpio value
   // (iii) currently filtered gpio value
-  function void update_intr_state(  ref bit [    TL_DW-1:0] current_interrupt_state,
+  function void update_intr_state(ref bit [TL_DW-1:0] current_interrupt_state,
                                   input bit [NUM_GPIOS-1:0] prev_filtered_value,
                                   input bit [NUM_GPIOS-1:0] crnt_exp_filtered_value);
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_rising  = ral.intr_ctrl_en_rising.get();
+    bit [NUM_GPIOS-1:0] intr_ctrl_en_rising = ral.intr_ctrl_en_rising.get();
     bit [NUM_GPIOS-1:0] intr_ctrl_en_falling = ral.intr_ctrl_en_falling.get();
     bit [NUM_GPIOS-1:0] intr_ctrl_en_lvlhigh = ral.intr_ctrl_en_lvlhigh.get();
-    bit [NUM_GPIOS-1:0] intr_ctrl_en_lvllow  = ral.intr_ctrl_en_lvllow.get();
+    bit [NUM_GPIOS-1:0] intr_ctrl_en_lvllow = ral.intr_ctrl_en_lvllow.get();
     bit [TL_DW-1:0] new_intr_state_updates;
 
     foreach (crnt_exp_filtered_value[pin]) begin
       // Look for edge triggered interrupts
       if (crnt_exp_filtered_value[pin] != prev_filtered_value[pin]) begin
         if (((prev_filtered_value[pin] == 1'b0 && crnt_exp_filtered_value[pin] == 1'b1) &&
-             intr_ctrl_en_rising[pin] == 1'b1) ||
-            ((prev_filtered_value[pin] == 1'b1 && crnt_exp_filtered_value[pin] == 1'b0) &&
-             intr_ctrl_en_falling[pin] == 1'b1)) begin
+             intr_ctrl_en_rising[pin] == 1'b1
+            ) || ((prev_filtered_value[pin] == 1'b1 && crnt_exp_filtered_value[pin] == 1'b0) &&
+                  intr_ctrl_en_falling[pin] == 1'b1)) begin
           new_intr_state_updates[pin] = 1'b1;
         end
       end
       // Look for level triggerred interrupts
       if (new_intr_state_updates[pin] == 1'b0) begin
-        if ((crnt_exp_filtered_value[pin] == 1'b1 && intr_ctrl_en_lvlhigh[pin]) ||
-            (crnt_exp_filtered_value[pin] == 1'b0 && intr_ctrl_en_lvllow[pin])) begin
+        if ((crnt_exp_filtered_value[pin] == 1'b1 && intr_ctrl_en_lvlhigh[pin]) || (
+            crnt_exp_filtered_value[pin] == 1'b0 && intr_ctrl_en_lvllow[pin])) begin
           new_intr_state_updates[pin] = 1'b1;
         end
       end

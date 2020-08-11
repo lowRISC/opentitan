@@ -5,12 +5,12 @@
 
 package ast_wrapper_pkg;
 
-  parameter int NumAlerts      = top_pkg::NUM_AST_ALERTS;
-  parameter int NumIoRails     = top_pkg::NUM_IO_RAILS;
+  parameter int NumAlerts = top_pkg::NUM_AST_ALERTS;
+  parameter int NumIoRails = top_pkg::NUM_IO_RAILS;
   parameter int EntropyStreams = top_pkg::ENTROPY_STREAM;
-  parameter int AdcChannels    = top_pkg::ADC_CHANNELS;
-  parameter int AdcDataWidth   = top_pkg::ADC_DATAW;
-  parameter int UsbCalibWidth  = 16;
+  parameter int AdcChannels = top_pkg::ADC_CHANNELS;
+  parameter int AdcDataWidth = top_pkg::ADC_DATAW;
+  parameter int UsbCalibWidth = 16;
 
   // The following structs should eventually be relocted to other modules
   typedef struct packed {
@@ -23,13 +23,9 @@ package ast_wrapper_pkg;
     logic data_valid;
   } adc_ast_rsp_t;
 
-  typedef struct packed {
-    logic aon_pok;
-  } ast_rst_t;
+  typedef struct packed {logic aon_pok;} ast_rst_t;
 
-  parameter ast_rst_t AST_RST_DEFAULT = '{
-    aon_pok: 1'b1
-  };
+  parameter ast_rst_t AST_RST_DEFAULT = '{aon_pok: 1'b1};
 
   typedef struct packed {
     logic clk_sys;
@@ -48,9 +44,7 @@ package ast_wrapper_pkg;
     logic [NumAlerts-1:0] alerts_trig;
   } ast_alert_rsp_t;
 
-  typedef struct packed {
-    logic [NumIoRails-1:0] io_pok;
-  } ast_status_t;
+  typedef struct packed {logic [NumIoRails-1:0] io_pok;} ast_status_t;
 
   typedef struct packed {
     logic clk_ast_adc;
@@ -70,17 +64,14 @@ package ast_wrapper_pkg;
   // Ack mode enumerations
   typedef enum logic {
     ImmAck = 0,
-    SwAck  = 1
+    SwAck = 1
   } ast_ack_mode_e;
 
-  parameter ast_alert_req_t AST_ALERT_REQ_DEFAULT = '{
-    alerts_p: '0,
-    alerts_n: {NumAlerts{1'b1}}
-  };
+  parameter ast_alert_req_t AST_ALERT_REQ_DEFAULT = '{alerts_p: '0, alerts_n: {NumAlerts{1'b1}}};
 
   typedef struct packed {
     logic flash_power_down_h;
     logic flash_power_ready_h;
   } ast_eflash_t;
 
-endpackage // ast_wrapper_pkg
+endpackage  // ast_wrapper_pkg

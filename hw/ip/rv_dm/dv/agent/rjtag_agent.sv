@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 class rjtag_agent extends uvm_agent;
-  rjtag_driver    m_drv;
-  rjtag_monitor   m_mon;
+  rjtag_driver m_drv;
+  rjtag_monitor m_mon;
   rjtag_sequencer m_seqr;
 
   `uvm_component_utils(rjtag_agent)
 
-  function new (string name, uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction : new
 

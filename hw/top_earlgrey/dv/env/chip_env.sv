@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_env extends cip_base_env #(
-    .CFG_T              (chip_env_cfg),
-    .COV_T              (chip_env_cov),
+class chip_env extends cip_base_env#(
+    .CFG_T(chip_env_cfg),
+    .COV_T(chip_env_cov),
     .VIRTUAL_SEQUENCER_T(chip_virtual_sequencer),
-    .SCOREBOARD_T       (chip_scoreboard)
-  );
+    .SCOREBOARD_T(chip_scoreboard)
+);
   `uvm_component_utils(chip_env)
 
-  uart_agent          m_uart_agent;
-  jtag_agent          m_jtag_agent;
-  spi_agent           m_spi_agent;
+  uart_agent m_uart_agent;
+  jtag_agent m_jtag_agent;
+  spi_agent m_spi_agent;
 
   `uvm_component_new
 
@@ -20,8 +20,8 @@ class chip_env extends cip_base_env #(
     super.build_phase(phase);
     // configure the cpu d tl agent
     // get the vifs from config db
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "usb_clk_rst_vif",
-        cfg.usb_clk_rst_vif)) begin
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "usb_clk_rst_vif", cfg.usb_clk_rst_vif)
+        ) begin
       `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
     end
 
@@ -29,22 +29,22 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get gpio_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "srst_n_vif", cfg.srst_n_vif)) begin
+    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "srst_n_vif", cfg.srst_n_vif)) begin
       `uvm_fatal(`gfn, "failed to get srst_n_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "jtag_spi_n_vif",
-        cfg.jtag_spi_n_vif)) begin
+    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "jtag_spi_n_vif", cfg.jtag_spi_n_vif)
+        ) begin
       `uvm_fatal(`gfn, "failed to get jtag_spi_n_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "bootstrap_vif",
-        cfg.bootstrap_vif)) begin
+    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "bootstrap_vif", cfg.bootstrap_vif)
+        ) begin
       `uvm_fatal(`gfn, "failed to get bootstrap_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "rst_n_mon_vif",
-        cfg.rst_n_mon_vif)) begin
+    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "rst_n_mon_vif", cfg.rst_n_mon_vif)
+        ) begin
       `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
     end
 
@@ -61,7 +61,7 @@ class chip_env extends cip_base_env #(
     end
 
     if (!uvm_config_db#(virtual sw_test_status_if)::get(this, "", "sw_test_status_vif",
-        cfg.sw_test_status_vif)) begin
+                                                        cfg.sw_test_status_vif)) begin
       `uvm_fatal(`gfn, "failed to get sw_test_status_vif from uvm_config_db")
     end
 

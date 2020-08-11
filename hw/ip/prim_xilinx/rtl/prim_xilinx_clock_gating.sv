@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module prim_xilinx_clock_gating (
-  input        clk_i,
-  input        en_i,
-  input        test_en_i,
-  output logic clk_o
+    input        clk_i,
+    input        en_i,
+    input        test_en_i,
+    output logic clk_o
 );
 
   BUFGCE u_bufgce (
-    .I  (clk_i),
-    .CE (en_i | test_en_i),
-    .O  (clk_o)
+      .I (clk_i),
+      .CE(en_i | test_en_i),
+      .O (clk_o)
   );
 
 endmodule

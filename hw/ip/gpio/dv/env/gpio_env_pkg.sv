@@ -20,14 +20,14 @@ package gpio_env_pkg;
   // csr and mem total size for IP
   parameter uint GPIO_ADDR_MAP_SIZE = 64;
   // no. of gpio pins
-  parameter uint NUM_GPIOS     = 32;
+  parameter uint NUM_GPIOS = 32;
   // no. of cycles for noise filter
   parameter uint FILTER_CYCLES = 16;
 
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef class gpio_env_cfg;
   typedef class gpio_env_cov;
-  typedef cip_base_virtual_sequencer #(gpio_env_cfg, gpio_env_cov) gpio_virtual_sequencer;
+  typedef cip_base_virtual_sequencer#(gpio_env_cfg, gpio_env_cov) gpio_virtual_sequencer;
 
   // structure to indicate gpio pin transition and type of transition
   // transition_occurred: 1-yes, 0-no

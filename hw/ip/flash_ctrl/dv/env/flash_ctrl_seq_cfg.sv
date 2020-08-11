@@ -30,9 +30,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint bank_erase_en_pc = 50;
 
   // Default region knobs.
-  uint default_region_read_en_pc    = 50;
+  uint default_region_read_en_pc = 50;
   uint default_region_program_en_pc = 50;
-  uint default_region_erase_en_pc   = 50;
+  uint default_region_erase_en_pc = 50;
 
   // Control the number of flash ops.
   uint max_flash_ops_per_cfg = 50;
@@ -41,7 +41,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_on_data_partition_pc = 100;
   uint op_erase_type_bank_pc = 0;
   uint op_max_words = 512;
-  bit  op_allow_invalid = 1'b0;
+  bit op_allow_invalid = 1'b0;
 
   // Poll fifo status before writing to prog_fifo / reading from rd_fifo.
   uint poll_fifo_status_pc = 30;

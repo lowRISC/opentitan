@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_base_vseq extends cip_base_vseq #(
-    .CFG_T               (chip_env_cfg),
-    .RAL_T               (chip_reg_block),
-    .COV_T               (chip_env_cov),
-    .VIRTUAL_SEQUENCER_T (chip_virtual_sequencer)
-  );
+class chip_base_vseq extends cip_base_vseq#(
+    .CFG_T(chip_env_cfg),
+    .RAL_T(chip_reg_block),
+    .COV_T(chip_env_cov),
+    .VIRTUAL_SEQUENCER_T(chip_virtual_sequencer)
+);
   `uvm_object_utils(chip_base_vseq)
 
   // knobs to enable pre_start routines
-  bit do_strap_pins_init = 1'b1; // initialize the strap
+  bit do_strap_pins_init = 1'b1;  // initialize the strap
 
   // knobs to enable post_start routines
 
@@ -66,7 +66,7 @@ class chip_base_vseq extends cip_base_vseq #(
     // Drive strap signals at the start.
     if (do_strap_pins_init) begin
       cfg.srst_n_vif.drive(1'b1);
-      cfg.jtag_spi_n_vif.drive(1'b1); // Select JTAG.
+      cfg.jtag_spi_n_vif.drive(1'b1);  // Select JTAG.
       cfg.bootstrap_vif.drive(1'b0);
     end
 

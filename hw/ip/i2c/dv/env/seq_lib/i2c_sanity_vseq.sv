@@ -8,7 +8,7 @@ class i2c_sanity_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // increase num_trans to cover all transaction types
-  constraint num_trans_c       { num_trans      inside {[50 : 100]}; }
+  constraint num_trans_c {num_trans inside {[50 : 100]};}
 
   virtual task body();
     device_init();
@@ -21,7 +21,7 @@ class i2c_sanity_vseq extends i2c_rx_tx_vseq;
       end
       begin
         host_send_trans(num_trans);
-        do_interrupt = 1'b0; // gracefully stop process_interrupts
+        do_interrupt = 1'b0;  // gracefully stop process_interrupts
       end
     join
   endtask : body

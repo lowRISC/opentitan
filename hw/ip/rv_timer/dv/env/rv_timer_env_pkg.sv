@@ -26,8 +26,8 @@ package rv_timer_env_pkg;
 
   typedef class rv_timer_env_cfg;
   typedef class rv_timer_env_cov;
-  typedef cip_base_virtual_sequencer #(rv_timer_env_cfg,
-                                       rv_timer_env_cov) rv_timer_virtual_sequencer;
+  typedef cip_base_virtual_sequencer#(rv_timer_env_cfg, rv_timer_env_cov)
+      rv_timer_virtual_sequencer;
 
   // functions
 

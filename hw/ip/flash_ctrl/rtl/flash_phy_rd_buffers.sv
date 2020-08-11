@@ -19,16 +19,18 @@
 // Basically...this is a tag ram + data ram combined into one
 //
 
-module flash_phy_rd_buffers import flash_phy_pkg::*; (
-  input clk_i,
-  input rst_ni,
-  input alloc_i,
-  input update_i,
-  input wipe_i,
-  input [BankAddrW-1:0] addr_i,
-  input part_i,
-  input [DataWidth-1:0] data_i,
-  output rd_buf_t out_o
+module flash_phy_rd_buffers
+import flash_phy_pkg::*;
+(
+    input                           clk_i,
+    input                           rst_ni,
+    input                           alloc_i,
+    input                           update_i,
+    input                           wipe_i,
+    input           [BankAddrW-1:0] addr_i,
+    input                           part_i,
+    input           [DataWidth-1:0] data_i,
+    output rd_buf_t                 out_o
 );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -49,4 +51,4 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
     end
   end
 
-endmodule // flash_phy_rd_buffers
+endmodule  // flash_phy_rd_buffers

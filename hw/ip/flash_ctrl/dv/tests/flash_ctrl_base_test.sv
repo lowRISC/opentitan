@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_base_test extends cip_base_test #(
-    .CFG_T(flash_ctrl_env_cfg),
-    .ENV_T(flash_ctrl_env)
-  );
+class flash_ctrl_base_test extends cip_base_test#(
+    .CFG_T(flash_ctrl_env_cfg), .ENV_T(flash_ctrl_env)
+);
 
   `uvm_component_utils(flash_ctrl_base_test)
   `uvm_component_new

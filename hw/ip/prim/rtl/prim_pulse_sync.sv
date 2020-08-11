@@ -9,14 +9,14 @@
 // of the two clock domains.
 
 module prim_pulse_sync (
-  // source clock domain
-  input  logic clk_src_i,
-  input  logic rst_src_ni,
-  input  logic src_pulse_i,
-  // destination clock domain
-  input  logic clk_dst_i,
-  input  logic rst_dst_ni,
-  output logic dst_pulse_o
+    // source clock domain
+    input  logic clk_src_i,
+    input  logic rst_src_ni,
+    input  logic src_pulse_i,
+    // destination clock domain
+    input  logic clk_dst_i,
+    input  logic rst_dst_ni,
+    output logic dst_pulse_o
 );
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -37,13 +37,15 @@ module prim_pulse_sync (
   //////////////////////////////////////////////////////////
   logic dst_level;
 
-  prim_flop_2sync #(.Width(1)) prim_flop_2sync (
-    // source clock domain
-    .d_i    (src_level),
-    // destination clock domain
-    .clk_i  (clk_dst_i),
-    .rst_ni (rst_dst_ni),
-    .q_o    (dst_level)
+  prim_flop_2sync #(
+      .Width(1)
+  ) prim_flop_2sync (
+      // source clock domain
+      .d_i   (src_level),
+      // destination clock domain
+      .clk_i (clk_dst_i),
+      .rst_ni(rst_dst_ni),
+      .q_o   (dst_level)
   );
 
   ////////////////////////////////////////

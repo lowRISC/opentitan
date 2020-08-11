@@ -18,13 +18,15 @@
 // This class is defined based on RISC-V privileged spec 1.10, three page table structure is
 // supported: SV32, SV39, SV48
 // This class is used by riscv_page_table_list to generate all page tables the program
-class riscv_page_table#(satp_mode_t MODE = SV39) extends uvm_object;
+class riscv_page_table #(
+    satp_mode_t MODE = SV39
+) extends uvm_object;
 
-  int unsigned                        num_of_pte;    // Number of page table entry
-  int unsigned                        table_id;      // Page table ID
-  bit [1:0]                           level;         // Page table level
-  bit [XLEN-1:0]                      pte_binary[];  // Page table entry in binary format
-  rand riscv_page_table_entry#(MODE)  pte[];         // List of all page table entries
+  int unsigned num_of_pte;  // Number of page table entry
+  int unsigned table_id;  // Page table ID
+  bit [1:0] level;  // Page table level
+  bit [XLEN-1:0] pte_binary[];  // Page table entry in binary format
+  rand riscv_page_table_entry #(MODE) pte[];  // List of all page table entries
 
   `uvm_object_param_utils(riscv_page_table#(MODE))
   `uvm_object_new
@@ -38,7 +40,7 @@ class riscv_page_table#(satp_mode_t MODE = SV39) extends uvm_object;
 
   // Generate the page table binary
   function void gen_page_table_binary();
-    foreach(pte[i]) begin
+    foreach (pte[i]) begin
       pte_binary[i] = pte[i].bits;
     end
   endfunction
@@ -49,10 +51,8 @@ class riscv_page_table#(satp_mode_t MODE = SV39) extends uvm_object;
     string str;
     this.gen_page_table_binary();
     // Align the page table to 4K boundary
-    instr = {instr,
-             ".align 12",
-             $sformatf("%0s:", get_name())};
-    foreach(pte_binary[i]) begin
+    instr = {instr, ".align 12", $sformatf("%0s:", get_name())};
+    foreach (pte_binary[i]) begin
       if (i % 8 == 0) begin
         if (XLEN == 64) begin
           str = $sformatf(".dword 0x%0x", pte_binary[i]);

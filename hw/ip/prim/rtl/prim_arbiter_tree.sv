@@ -33,30 +33,30 @@
 `include "prim_assert.sv"
 
 module prim_arbiter_tree #(
-  parameter int N   = 8,
-  parameter int DW  = 32,
+    parameter int N = 8,
+    parameter int DW = 32,
 
-  // Configurations
-  // EnDataPort: {0, 1}, if 0, input data will be ignored
-  parameter bit EnDataPort = 1,
+    // Configurations
+    // EnDataPort: {0, 1}, if 0, input data will be ignored
+    parameter bit EnDataPort = 1,
 
-  // Non-functional parameter to switch on the request stability assertion
-  parameter bit EnReqStabA = 1,
+    // Non-functional parameter to switch on the request stability assertion
+    parameter bit EnReqStabA = 1,
 
-  // Derived parameters
-  localparam int IdxW = $clog2(N)
+    // Derived parameters
+    localparam int IdxW = $clog2 (N)
 ) (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  input        [ N-1:0]    req_i,
-  input        [DW-1:0]    data_i [N],
-  output logic [ N-1:0]    gnt_o,
-  output logic [IdxW-1:0]  idx_o,
+    input        [   N-1:0] req_i,
+    input        [  DW-1:0] data_i[N],
+    output logic [   N-1:0] gnt_o,
+    output logic [IdxW-1:0] idx_o,
 
-  output logic             valid_o,
-  output logic [DW-1:0]    data_o,
-  input                    ready_i
+    output logic          valid_o,
+    output logic [DW-1:0] data_o,
+    input                 ready_i
 );
 
   `ASSERT_INIT(CheckNGreaterZero_A, N > 0)
@@ -64,25 +64,25 @@ module prim_arbiter_tree #(
   // this case is basically just a bypass
   if (N == 1) begin : gen_degenerate_case
 
-    assign valid_o  = req_i[0];
-    assign data_o   = data_i[0];
+    assign valid_o = req_i[0];
+    assign data_o = data_i[0];
     assign gnt_o[0] = valid_o & ready_i;
-    assign idx_o    = '0;
+    assign idx_o = '0;
 
   end else begin : gen_normal_case
 
     // align to powers of 2 for simplicity
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
-    logic [2**(IdxW+1)-2:0]           req_tree;
-    logic [2**(IdxW+1)-2:0]           prio_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
-    logic [2**(IdxW+1)-2:0]           sel_tree;
-    logic [2**(IdxW+1)-2:0]           mask_tree;
+    logic [2**(IdxW+1)-2:0] req_tree;
+    logic [2**(IdxW+1)-2:0] prio_tree;
+    logic [2**(IdxW+1)-2:0] rdy_tree;
+    logic [2**(IdxW+1)-2:0] sel_tree;
+    logic [2**(IdxW+1)-2:0] mask_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;
-    logic [2**(IdxW+1)-2:0][DW-1:0]   data_tree;
-    logic [2**IdxW-1:0]               prio_mask_d, prio_mask_q;
+    logic [2**(IdxW+1)-2:0][DW-1:0] data_tree;
+    logic [2**IdxW-1:0] prio_mask_d, prio_mask_q;
 
-    for (genvar level = 0; level < IdxW+1; level++) begin : gen_tree
+    for (genvar level = 0; level < IdxW + 1; level++) begin : gen_tree
       //
       // level+1   C0   C1   <- "Base1" points to the first node on "level+1",
       //            \  /         these nodes are the children of the nodes one level below
@@ -94,13 +94,13 @@ module prim_arbiter_tree #(
       // C0 = 2**(level+1) - 1 + 2*offset     = Base1 + 2*offset
       // C1 = 2**(level+1) - 1 + 2*offset + 1 = Base1 + 2*offset + 1
       //
-      localparam int Base0 = (2**level)-1;
-      localparam int Base1 = (2**(level+1))-1;
+      localparam int Base0 = (2 ** level) - 1;
+      localparam int Base1 = (2 ** (level + 1)) - 1;
 
-      for (genvar offset = 0; offset < 2**level; offset++) begin : gen_level
+      for (genvar offset = 0; offset < 2 ** level; offset++) begin : gen_level
         localparam int Pa = Base0 + offset;
-        localparam int C0 = Base1 + 2*offset;
-        localparam int C1 = Base1 + 2*offset + 1;
+        localparam int C0 = Base1 + 2 * offset;
+        localparam int C1 = Base1 + 2 * offset + 1;
 
         // this assigns the gated interrupt source signals, their
         // corresponding IDs and priorities to the tree leafs
@@ -108,33 +108,32 @@ module prim_arbiter_tree #(
           if (offset < N) begin : gen_assign
             // forward path (requests and data)
             // all requests inputs are assigned to the request tree
-            assign req_tree[Pa]      = req_i[offset];
+            assign req_tree[Pa] = req_i[offset];
             // we basically split the incoming request vector into two halves with the following
             // priority assignment. the prio_mask_q register contains a prefix sum that has been
             // computed using the last winning index, and hence masks out all requests at offsets
             // lower or equal the previously granted index. hence, all higher indices are considered
             // first in the arbitration tree nodes below, before considering the lower indices.
-            assign prio_tree[Pa]     = req_i[offset] & prio_mask_q[offset];
+            assign prio_tree[Pa] = req_i[offset] & prio_mask_q[offset];
             // input for the index muxes (used to compute the winner index)
-            assign idx_tree[Pa]      = offset;
+            assign idx_tree[Pa] = offset;
             // input for the data muxes
-            assign data_tree[Pa]     = data_i[offset];
+            assign data_tree[Pa] = data_i[offset];
 
             // backward path (grants and prefix sum)
             // grant if selected, ready and request asserted
-            assign gnt_o[offset]       = req_i[offset] & sel_tree[Pa] & ready_i;
+            assign gnt_o[offset] = req_i[offset] & sel_tree[Pa] & ready_i;
             // only update mask if there is a valid request
-            assign prio_mask_d[offset] = (|req_i) ?
-                                         mask_tree[Pa] | sel_tree[Pa] & ~ready_i :
-                                         prio_mask_q[offset];
+            assign prio_mask_d[offset] = (|req_i) ? mask_tree[Pa] | sel_tree[Pa] & ~ready_i :
+                prio_mask_q[offset];
           end else begin : gen_tie_off
             // forward path
-            assign req_tree[Pa]  = '0;
-            assign idx_tree[Pa]  = '0;
+            assign req_tree[Pa] = '0;
+            assign idx_tree[Pa] = '0;
             assign data_tree[Pa] = '0;
             assign prio_mask_d[offset] = '0;
           end
-        // this creates the node assignments
+          // this creates the node assignments
         end else begin : gen_nodes
           // local helper variable
           logic sel;
@@ -143,16 +142,16 @@ module prim_arbiter_tree #(
             // each node looks at its two children, and selects the one with higher priority
             sel = ~req_tree[C0] | ~prio_tree[C0] & prio_tree[C1];
             // propagate requests
-            req_tree[Pa]  = req_tree[C0] | req_tree[C1];
+            req_tree[Pa] = req_tree[C0] | req_tree[C1];
             prio_tree[Pa] = prio_tree[C1] | prio_tree[C0];
             // data and index muxes
-            idx_tree[Pa]  = (sel) ? idx_tree[C1]  : idx_tree[C0];
+            idx_tree[Pa] = (sel) ? idx_tree[C1] : idx_tree[C0];
             data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
 
             // backward path (grants and prefix sum)
             // this propagates the selction index back and computes a hot one mask
             sel_tree[C0] = sel_tree[Pa] & ~sel;
-            sel_tree[C1] = sel_tree[Pa] &  sel;
+            sel_tree[C1] = sel_tree[Pa] & sel;
             // this performs a prefix sum for masking the input requests in the next cycle
             mask_tree[C0] = mask_tree[Pa];
             mask_tree[C1] = mask_tree[Pa] | sel_tree[C0];
@@ -163,15 +162,15 @@ module prim_arbiter_tree #(
 
     // the results can be found at the tree root
     if (EnDataPort) begin : gen_data_port
-      assign data_o      = data_tree[0];
+      assign data_o = data_tree[0];
     end else begin : gen_no_dataport
-      logic [DW-1:0] unused_data [N];
+      logic [DW-1:0] unused_data[N];
       assign unused_data = data_i;
       assign data_o = '1;
     end
 
-    assign idx_o       = idx_tree[0];
-    assign valid_o     = req_tree[0];
+    assign idx_o = idx_tree[0];
+    assign valid_o = req_tree[0];
 
     // the select tree computes a hot one signal that indicates which request is currently selected
     assign sel_tree[0] = 1'b1;
@@ -199,9 +198,8 @@ module prim_arbiter_tree #(
 
   // grant index shall be higher index than previous index, unless no higher requests exist.
   `ASSERT(RoundRobin_A,
-      ##1 valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
-      |(req_i & ~((N'(1) << $past(idx_o)+1) - 1)) |->
-      idx_o > $past(idx_o))
+          ##1 valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
+              |(req_i & ~((N'(1) << $past(idx_o) + 1) - 1)) |-> idx_o > $past(idx_o))
   // we can only grant one requestor at a time
   `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
@@ -219,20 +217,20 @@ module prim_arbiter_tree #(
   // check index / grant correspond
   `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
 
-if (EnDataPort) begin: gen_data_port_assertion
-  // data flow
-  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
-end
+  if (EnDataPort) begin : gen_data_port_assertion
+    // data flow
+    `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
+  end
 
-if (EnReqStabA) begin : gen_lock_assertion
-  // requests must stay asserted until they have been granted
-  `ASSUME(ReqStaysHighUntilGranted0_M, (|req_i) && !ready_i |=>
-      (req_i & $past(req_i)) == $past(req_i))
-  // check that the arbitration decision is held if the sink is not ready
-  `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o))
-end
+  if (EnReqStabA) begin : gen_lock_assertion
+    // requests must stay asserted until they have been granted
+    `ASSUME(ReqStaysHighUntilGranted0_M,
+            (|req_i) && !ready_i |=> (req_i & $past(req_i)) == $past(req_i))
+    // check that the arbitration decision is held if the sink is not ready
+    `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o))
+  end
 
-// FPV-only assertions with symbolic variables
+  // FPV-only assertions with symbolic variables
 `ifdef FPV_ON
   // symbolic variables
   int unsigned k;
@@ -254,17 +252,15 @@ end
 
   // if request and ready are constantly held at 1, we should eventually get a grant
   `ASSERT(NoStarvation_A,
-      ReqsAreStable && ReadyIsStable && ready_i && req_i[k] |->
-      strong(##[0:$] gnt_o[k]))
+          ReqsAreStable && ReadyIsStable && ready_i && req_i[k] |-> strong (##[0:$] gnt_o[k]))
 
   // if N requests are constantly asserted and ready is constant 1, each request must
   // be granted exactly once over a time window of N cycles for the arbiter to be fair.
   for (genvar n = 1; n <= N; n++) begin : gen_fairness
     integer gnt_cnt;
     `ASSERT(Fairness_A,
-        ReqsAreStable && ReadyIsStable && ready_i && req_i[k] &&
-        $countones(req_i) == n |->
-        ##n gnt_cnt == $past(gnt_cnt, n) + 1)
+            ReqsAreStable && ReadyIsStable && ready_i && req_i[k] && $countones(req_i) == n |->
+                ##n gnt_cnt == $past(gnt_cnt, n) + 1)
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_cnt
       if (!rst_ni) begin
@@ -277,8 +273,7 @@ end
 
   if (EnReqStabA) begin : gen_lock_assertion_fpv
     // requests must stay asserted until they have been granted
-    `ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] & !gnt_o[k] |=>
-        req_i[k], clk_i, !rst_ni)
+    `ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] & !gnt_o[k] |=> req_i[k], clk_i, !rst_ni)
   end
 `endif
 

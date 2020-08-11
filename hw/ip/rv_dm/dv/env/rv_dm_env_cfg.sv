@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_dm_env_cfg extends dv_base_env_cfg #(.RAL_T(rv_dm_reg_block));
+class rv_dm_env_cfg extends dv_base_env_cfg#(
+    .RAL_T(rv_dm_reg_block)
+);
 
   // ext component cfgs
-  rand jtag_agent_cfg     m_jtag_agent_cfg;
-  rand tl_agent_cfg       m_tl_host_agent_cfg;
-  rand tl_agent_cfg       m_tl_device_agent_cfg;
+  rand jtag_agent_cfg m_jtag_agent_cfg;
+  rand tl_agent_cfg m_tl_host_agent_cfg;
+  rand tl_agent_cfg m_tl_device_agent_cfg;
 
-  virtual rv_dm_if        rv_dm_vif;
+  virtual rv_dm_if rv_dm_vif;
 
   `uvm_object_utils_begin(rv_dm_env_cfg)
     `uvm_field_object(m_jtag_agent_cfg, UVM_DEFAULT)

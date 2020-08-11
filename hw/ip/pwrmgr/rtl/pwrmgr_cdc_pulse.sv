@@ -9,13 +9,13 @@
 `include "prim_assert.sv"
 
 module pwrmgr_cdc_pulse (
-  input clk_slow_i,
-  input clk_i,
-  input rst_ni,
-  input rst_slow_ni,
-  input start_i,
-  input stop_i,
-  output logic pulse_o
+    input        clk_slow_i,
+    input        clk_i,
+    input        rst_ni,
+    input        rst_slow_ni,
+    input        start_i,
+    input        stop_i,
+    output logic pulse_o
 );
 
   logic slow_toggle_pq, slow_toggle_nq;
@@ -43,22 +43,22 @@ module pwrmgr_cdc_pulse (
   end
 
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_pos_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_toggle_pq),
-    .q_o(clk_slow_pq)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_toggle_pq),
+      .q_o(clk_slow_pq)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
+  prim_flop_2sync #(
+      .Width(1)
   ) i_neg_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_toggle_nq),
-    .q_o(clk_slow_nq)
+      .clk_i,
+      .rst_ni,
+      .d_i(slow_toggle_nq),
+      .q_o(clk_slow_nq)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -88,4 +88,4 @@ module pwrmgr_cdc_pulse (
 
 
 
-endmodule // pwrmgr
+endmodule  // pwrmgr

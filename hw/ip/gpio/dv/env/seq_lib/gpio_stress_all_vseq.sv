@@ -11,18 +11,20 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"gpio_sanity_vseq",
-                          // "gpio_common_vseq",
-                          // does not support intr_test as plus_arg disable do_clear_all_interrupts
-                          "gpio_random_dout_din_vseq",
-                          "gpio_dout_din_regs_random_rw_vseq",
-                          "gpio_intr_rand_pgm_vseq",
-                          "gpio_rand_intr_trigger_vseq",
-                          "gpio_random_long_reg_writes_reg_reads_vseq"};
+    string seq_names[] = {
+      "gpio_sanity_vseq",
+      // "gpio_common_vseq",
+      // does not support intr_test as plus_arg disable do_clear_all_interrupts
+      "gpio_random_dout_din_vseq",
+      "gpio_dout_din_regs_random_rw_vseq",
+      "gpio_intr_rand_pgm_vseq",
+      "gpio_rand_intr_trigger_vseq",
+      "gpio_random_long_reg_writes_reg_reads_vseq"
+    };
     for (int i = 1; i <= num_trans; i++) begin
-      uvm_sequence   seq;
+      uvm_sequence seq;
       gpio_base_vseq gpio_vseq;
-      uint           seq_idx = $urandom_range(0, seq_names.size - 1);
+      uint seq_idx = $urandom_range(0, seq_names.size - 1);
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(gpio_vseq, seq)
@@ -37,8 +39,9 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
                 UVM_HIGH)
 
       gpio_vseq.start(p_sequencer);
-      `uvm_info(`gfn, $sformatf("End of sequence %0s with seq_idx = %0d", gpio_vseq.get_name(),
-          seq_idx), UVM_HIGH)
+      `uvm_info(`gfn,
+                $sformatf("End of sequence %0s with seq_idx = %0d", gpio_vseq.get_name(), seq_idx),
+                UVM_HIGH)
     end
   endtask : body
 endclass

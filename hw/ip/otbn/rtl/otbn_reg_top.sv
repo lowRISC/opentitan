@@ -7,49 +7,49 @@
 `include "prim_assert.sv"
 
 module otbn_reg_top (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+    // Below Regster interface can be changed
+    input  tlul_pkg::tl_h2d_t tl_i,
+    output tlul_pkg::tl_d2h_t tl_o,
 
-  // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [2],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
+    // Output port for window
+    output tlul_pkg::tl_h2d_t tl_win_o[2],
+    input  tlul_pkg::tl_d2h_t tl_win_i[2],
 
-  // To HW
-  output otbn_reg_pkg::otbn_reg2hw_t reg2hw, // Write
-  input  otbn_reg_pkg::otbn_hw2reg_t hw2reg, // Read
+    // To HW
+    output otbn_reg_pkg::otbn_reg2hw_t reg2hw,  // Write
+    input  otbn_reg_pkg::otbn_hw2reg_t hw2reg,  // Read
 
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+    // Config
+    input devmode_i  // If 1, explicit error return for unmapped register access
 );
 
-  import otbn_reg_pkg::* ;
+  import otbn_reg_pkg::*;
 
   localparam int AW = 22;
   localparam int DW = 32;
-  localparam int DBW = DW/8;                    // Byte Width
+  localparam int DBW = DW / 8;  // Byte Width
 
   // register signals
-  logic           reg_we;
-  logic           reg_re;
-  logic [AW-1:0]  reg_addr;
-  logic [DW-1:0]  reg_wdata;
+  logic reg_we;
+  logic reg_re;
+  logic [AW-1:0] reg_addr;
+  logic [DW-1:0] reg_wdata;
   logic [DBW-1:0] reg_be;
-  logic [DW-1:0]  reg_rdata;
-  logic           reg_error;
+  logic [DW-1:0] reg_rdata;
+  logic reg_error;
 
-  logic          addrmiss, wr_err;
+  logic addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
+  tlul_pkg::tl_h2d_t tl_socket_h2d[3];
+  tlul_pkg::tl_d2h_t tl_socket_d2h[3];
 
   logic [1:0] reg_steer;
 
@@ -64,59 +64,59 @@ module otbn_reg_top (
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (3),
-    .HReqPass   (1'b1),
-    .HRspPass   (1'b1),
-    .DReqPass   ({3{1'b1}}),
-    .DRspPass   ({3{1'b1}}),
-    .HReqDepth  (4'h0),
-    .HRspDepth  (4'h0),
-    .DReqDepth  ({3{4'h0}}),
-    .DRspDepth  ({3{4'h0}})
+      .N(3),
+      .HReqPass(1'b1),
+      .HRspPass(1'b1),
+      .DReqPass({3{1'b1}}),
+      .DRspPass({3{1'b1}}),
+      .HReqDepth(4'h0),
+      .HRspDepth(4'h0),
+      .DReqDepth({3{4'h0}}),
+      .DRspDepth({3{4'h0}})
   ) u_socket (
-    .clk_i,
-    .rst_ni,
-    .tl_h_i (tl_i),
-    .tl_h_o (tl_o),
-    .tl_d_o (tl_socket_h2d),
-    .tl_d_i (tl_socket_d2h),
-    .dev_select_i (reg_steer)
+      .clk_i,
+      .rst_ni,
+      .tl_h_i      (tl_i),
+      .tl_h_o      (tl_o),
+      .tl_d_o      (tl_socket_h2d),
+      .tl_d_i      (tl_socket_d2h),
+      .dev_select_i(reg_steer)
   );
 
   // Create steering logic
   always_comb begin
-    reg_steer = 2;       // Default set to register
+    reg_steer = 2;  // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 1048576 && tl_i.a_address[AW-1:0] < 1052672) begin
+    if (tl_i.a_address[AW - 1:0] >= 1048576 && tl_i.a_address[AW - 1:0] < 1052672) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 2097152 && tl_i.a_address[AW-1:0] < 2101248) begin
+    if (tl_i.a_address[AW - 1:0] >= 2097152 && tl_i.a_address[AW - 1:0] < 2101248) begin
       reg_steer = 1;
     end
   end
 
   tlul_adapter_reg #(
-    .RegAw(AW),
-    .RegDw(DW)
+      .RegAw(AW),
+      .RegDw(DW)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i (tl_reg_h2d),
-    .tl_o (tl_reg_d2h),
+      .tl_i(tl_reg_h2d),
+      .tl_o(tl_reg_d2h),
 
-    .we_o    (reg_we),
-    .re_o    (reg_re),
-    .addr_o  (reg_addr),
-    .wdata_o (reg_wdata),
-    .be_o    (reg_be),
-    .rdata_i (reg_rdata),
-    .error_i (reg_error)
+      .we_o   (reg_we),
+      .re_o   (reg_re),
+      .addr_o (reg_addr),
+      .wdata_o(reg_wdata),
+      .be_o   (reg_be),
+      .rdata_i(reg_rdata),
+      .error_i(reg_error)
   );
 
-  assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_rdata = reg_rdata_next;
+  assign reg_error = (devmode_i & addrmiss) | wr_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -154,53 +154,53 @@ module otbn_reg_top (
 
   //   F[done]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_done_we),
-    .wd     (intr_state_done_wd),
+      // from register interface
+      .we(intr_state_done_we),
+      .wd(intr_state_done_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.done.de),
-    .d      (hw2reg.intr_state.done.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.done.de),
+      .d (hw2reg.intr_state.done.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.done.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.done.q),
 
-    // to register interface (read)
-    .qs     (intr_state_done_qs)
+      // to register interface (read)
+      .qs(intr_state_done_qs)
   );
 
 
   //   F[err]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_err_we),
-    .wd     (intr_state_err_wd),
+      // from register interface
+      .we(intr_state_err_we),
+      .wd(intr_state_err_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.err.de),
-    .d      (hw2reg.intr_state.err.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.err.de),
+      .d (hw2reg.intr_state.err.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.err.q),
 
-    // to register interface (read)
-    .qs     (intr_state_err_qs)
+      // to register interface (read)
+      .qs(intr_state_err_qs)
   );
 
 
@@ -208,53 +208,53 @@ module otbn_reg_top (
 
   //   F[done]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_done_we),
-    .wd     (intr_enable_done_wd),
+      // from register interface
+      .we(intr_enable_done_we),
+      .wd(intr_enable_done_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.done.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.done.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_done_qs)
+      // to register interface (read)
+      .qs(intr_enable_done_qs)
   );
 
 
   //   F[err]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_err_we),
-    .wd     (intr_enable_err_wd),
+      // from register interface
+      .we(intr_enable_err_we),
+      .wd(intr_enable_err_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.err.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_err_qs)
+      // to register interface (read)
+      .qs(intr_enable_err_qs)
   );
 
 
@@ -262,31 +262,31 @@ module otbn_reg_top (
 
   //   F[done]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_done (
-    .re     (1'b0),
-    .we     (intr_test_done_we),
-    .wd     (intr_test_done_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.done.qe),
-    .q      (reg2hw.intr_test.done.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_done_we),
+      .wd (intr_test_done_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.done.qe),
+      .q  (reg2hw.intr_test.done.q),
+      .qs ()
   );
 
 
   //   F[err]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_err (
-    .re     (1'b0),
-    .we     (intr_test_err_we),
-    .wd     (intr_test_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.err.qe),
-    .q      (reg2hw.intr_test.err.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_err_we),
+      .wd (intr_test_err_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.err.qe),
+      .q  (reg2hw.intr_test.err.q),
+      .qs ()
   );
 
 
@@ -294,31 +294,31 @@ module otbn_reg_top (
 
   //   F[start]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_cmd_start (
-    .re     (1'b0),
-    .we     (cmd_start_we),
-    .wd     (cmd_start_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.start.qe),
-    .q      (reg2hw.cmd.start.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (cmd_start_we),
+      .wd (cmd_start_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.cmd.start.qe),
+      .q  (reg2hw.cmd.start.q),
+      .qs ()
   );
 
 
   //   F[dummy]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_cmd_dummy (
-    .re     (1'b0),
-    .we     (cmd_dummy_we),
-    .wd     (cmd_dummy_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.dummy.qe),
-    .q      (reg2hw.cmd.dummy.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (cmd_dummy_we),
+      .wd (cmd_dummy_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.cmd.dummy.qe),
+      .q  (reg2hw.cmd.dummy.q),
+      .qs ()
   );
 
 
@@ -326,83 +326,83 @@ module otbn_reg_top (
 
   //   F[busy]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_busy (
-    .re     (status_busy_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.busy.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_busy_qs)
+      .re (status_busy_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.busy.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_busy_qs)
   );
 
 
   //   F[dummy]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_dummy (
-    .re     (status_dummy_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.dummy.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_dummy_qs)
+      .re (status_dummy_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.dummy.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_dummy_qs)
   );
 
 
   // R[err_code]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RO"),
+      .RESVAL(32'h0)
   ) u_err_code (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    .we     (1'b0),
-    .wd     ('0  ),
+      .we(1'b0),
+      .wd('0),
 
-    // from internal hardware
-    .de     (hw2reg.err_code.de),
-    .d      (hw2reg.err_code.d ),
+      // from internal hardware
+      .de(hw2reg.err_code.de),
+      .d (hw2reg.err_code.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (),
+      // to internal hardware
+      .qe(),
+      .q (),
 
-    // to register interface (read)
-    .qs     (err_code_qs)
+      // to register interface (read)
+      .qs(err_code_qs)
   );
 
 
   // R[start_addr]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("WO"),
+      .RESVAL(32'h0)
   ) u_start_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (start_addr_we),
-    .wd     (start_addr_wd),
+      // from register interface
+      .we(start_addr_we),
+      .wd(start_addr_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.start_addr.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.start_addr.q),
 
-    .qs     ()
+      .qs()
   );
 
 
@@ -420,18 +420,18 @@ module otbn_reg_top (
     addr_hit[6] = (reg_addr == OTBN_START_ADDR_OFFSET);
   end
 
-  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0;
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (OTBN_PERMIT[0] != (OTBN_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (OTBN_PERMIT[1] != (OTBN_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (OTBN_PERMIT[2] != (OTBN_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[3] && reg_we && (OTBN_PERMIT[3] != (OTBN_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[4] && reg_we && (OTBN_PERMIT[4] != (OTBN_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[5] && reg_we && (OTBN_PERMIT[5] != (OTBN_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[6] && reg_we && (OTBN_PERMIT[6] != (OTBN_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[0] && reg_we && (OTBN_PERMIT[0] != (OTBN_PERMIT[0] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[1] && reg_we && (OTBN_PERMIT[1] != (OTBN_PERMIT[1] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[2] && reg_we && (OTBN_PERMIT[2] != (OTBN_PERMIT[2] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[3] && reg_we && (OTBN_PERMIT[3] != (OTBN_PERMIT[3] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[4] && reg_we && (OTBN_PERMIT[4] != (OTBN_PERMIT[4] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[5] && reg_we && (OTBN_PERMIT[5] != (OTBN_PERMIT[5] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[6] && reg_we && (OTBN_PERMIT[6] != (OTBN_PERMIT[6] & reg_be))) wr_err = 1'b1;
   end
 
   assign intr_state_done_we = addr_hit[0] & reg_we & ~wr_err;

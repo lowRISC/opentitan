@@ -8,15 +8,13 @@ class spi_device_sanity_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_sanity_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[1:6]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 6]};}
 
   virtual task body();
     bit [31:0] host_data;
     bit [31:0] device_data;
     bit [31:0] device_data_exp;
-    uint       avail_bytes;
+    uint avail_bytes;
 
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)

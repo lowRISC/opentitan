@@ -12,12 +12,12 @@
 
 module prim_present_tb;
 
-//////////////////////////////////////////////////////
-// config
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // config
+  //////////////////////////////////////////////////////
 
-// Default to {data_width:64, key_width:128} configuration.
-// Data width and key width can be overriden from command-line if desired.
+  // Default to {data_width:64, key_width:128} configuration.
+  // Data width and key width can be overriden from command-line if desired.
 
 `ifdef DATA_WIDTH
   localparam int unsigned DataWidth = `DATA_WIDTH;
@@ -43,42 +43,41 @@ module prim_present_tb;
   localparam KeySize80 = (KeyWidth == 80);
 
 
-//////////////////////////////////////////////////////
-// DUTs for both encryption and decryption
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // DUTs for both encryption and decryption
+  //////////////////////////////////////////////////////
 
   // data_in[0]: encryption, data_in[1]: decryption.
   // Same scheme used for key_in, data_out, key_out.
   logic [1:0][NumRounds-1:0][DataWidth-1:0] data_in;
-  logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_in;
+  logic [1:0][NumRounds-1:0][KeyWidth-1 : 0] key_in;
   logic [1:0][NumRounds-1:0][DataWidth-1:0] data_out;
-  logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_out;
+  logic [1:0][NumRounds-1:0][KeyWidth-1 : 0] key_out;
 
   for (genvar j = 0; j < 2; j++) begin : gen_encrypt_decrypt
     for (genvar k = 0; k < NumRounds; k++) begin : gen_duts
       prim_present #(
-        .DataWidth  ( DataWidth ),
-        .KeyWidth   ( KeyWidth  ),
-        .NumRounds  ( k+1       ),
-        .Decrypt    ( j         )
+          .DataWidth(DataWidth),
+          .KeyWidth(KeyWidth),
+          .NumRounds(k + 1),
+          .Decrypt(j)
       ) dut (
-        .data_i     ( data_in[j][k]  ),
-        .key_i      ( key_in[j][k]   ),
-        .data_o     ( data_out[j][k] ),
-        .key_o      ( key_out[j][k]  )
+          .data_i(data_in[j][k]),
+          .key_i (key_in[j][k]),
+          .data_o(data_out[j][k]),
+          .key_o (key_out[j][k])
       );
     end
   end
 
 
-//////////////////////////////////////////////////////
-// API called by the testbench to drive/check stimulus
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // API called by the testbench to drive/check stimulus
+  //////////////////////////////////////////////////////
 
   // Top level API task that should be called to run a full pass
   // of encryption and decryption on some input data and key.
-  task test_present(bit [DataWidth-1:0] plaintext,
-                    bit [KeyWidth-1:0]  key);
+  task test_present(bit [DataWidth-1:0] plaintext, bit [KeyWidth-1:0] key);
 
     bit [NumRounds:0][63:0] key_schedule;
     bit [NumRounds-1:0][DataWidth-1:0] encrypted_text;
@@ -97,34 +96,32 @@ module prim_present_tb;
 
   // Helper task to drive plaintext and key into each encryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
-  task check_encryption(input bit [DataWidth-1:0]                 plaintext,
-                        input bit [KeyWidth-1:0]                  key,
-                        input bit [NumRounds:0][63:0]             key_schedule,
+  task check_encryption(input bit [DataWidth-1:0] plaintext, input bit [KeyWidth-1:0] key,
+                        input bit [NumRounds:0][63:0] key_schedule,
                         output bit [NumRounds-1:0][DataWidth-1:0] expected_ciphertext);
 
     // Drive input into encryption instances.
     for (int unsigned i = 0; i < NumRounds; i++) begin
       data_in[Encrypt][i] = plaintext;
-      key_in[Encrypt][i]  = key;
+      key_in[Encrypt][i] = key;
     end
 
     // Wait a bit for the DUTs to finish calculations.
     #100ns;
 
     // query DPI model for expected encrypted output.
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(plaintext, key,
-                                                   KeySize80, expected_ciphertext);
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(plaintext, key, KeySize80, expected_ciphertext);
 
-    check_output(key_schedule[NumRounds:1], expected_ciphertext,
-                 key_out[Encrypt], data_out[Encrypt], "Encryption");
+    check_output(key_schedule[NumRounds:1], expected_ciphertext, key_out[Encrypt],
+                 data_out[Encrypt], "Encryption");
   endtask
 
 
   // Helper task to drive ciphertext and key into each decryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
-  task check_decryption(input bit [NumRounds-1:0][DataWidth-1:0]  ciphertext,
-                        input bit [KeyWidth-1:0]                  key,
-                        input bit [NumRounds-1:0][KeyWidth-1:0]   decryption_keys);
+  task check_decryption(input bit [NumRounds-1:0][DataWidth-1:0] ciphertext,
+                        input bit [KeyWidth-1:0] key,
+                        input bit [NumRounds-1:0][KeyWidth-1:0] decryption_keys);
 
     // the expected plaintext after decryption will be provided by the C model.
     bit [NumRounds-1:0][DataWidth-1:0] expected_plaintext;
@@ -133,7 +130,7 @@ module prim_present_tb;
     // the C model only provides a key schedule, which is not useful here.
     bit [NumRounds-1:0][63:0] expected_key;
     for (int i = 0; i < NumRounds; i++) begin
-      expected_key[i] = key[KeyWidth-1:KeyWidth-64];
+      expected_key[i] = key[KeyWidth - 1:KeyWidth - 64];
     end
 
     // Drive input into decryption instances.
@@ -146,8 +143,8 @@ module prim_present_tb;
     // query DPI model for expected decrypted output.
     crypto_dpi_present_pkg::sv_dpi_present_decrypt(ciphertext, key, KeySize80, expected_plaintext);
 
-    check_output(expected_key, expected_plaintext,
-                 key_out[Decrypt], data_out[Decrypt], "Decryption");
+    check_output(expected_key, expected_plaintext, key_out[Decrypt], data_out[Decrypt],
+                 "Decryption");
   endtask
 
 
@@ -161,27 +158,26 @@ module prim_present_tb;
   //
   // If any comparison error is seen, this task short-circuits immediately,
   // printing out some debug information and the correct failure signature.
-  task check_output(input bit [NumRounds-1:0][63:0]           expected_key,
-                    input bit [NumRounds-1:0][DataWidth-1:0]  expected_text,
-                    input bit [NumRounds-1:0][KeyWidth-1:0]   actual_key,
-                    input bit [NumRounds-1:0][DataWidth-1:0]  actual_data,
-                    input string msg);
+  task check_output(input bit [NumRounds-1:0][63:0] expected_key,
+                    input bit [NumRounds-1:0][DataWidth-1:0] expected_text,
+                    input bit [NumRounds-1:0][KeyWidth-1:0] actual_key,
+                    input bit [NumRounds-1:0][DataWidth-1:0] actual_data, input string msg);
 
     bit error = 1'b0;
 
     for (int unsigned i = 0; i < NumRounds; i++) begin
       // compare the output key to the corresponding key in the schedule.
-      if (expected_key[i] != actual_key[i][KeyWidth-1:KeyWidth-64]) begin
+      if (expected_key[i] != actual_key[i][KeyWidth - 1:KeyWidth - 64]) begin
         error = 1'b1;
-        $error("%s output key mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]",
-               msg, i, expected_key[i], actual_key[i][KeyWidth-1:KeyWidth-64]);
+        $error("%s output key mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]", msg, i,
+               expected_key[i], actual_key[i][KeyWidth - 1:KeyWidth - 64]);
         break;
       end
       // compare encrypted output text to reference model
       if (expected_text[i] != actual_data[i]) begin
         error = 1'b1;
-        $error("%s output text mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]",
-               msg, i, expected_text[i], actual_data[i]);
+        $error("%s output text mismatch at round %0d! Expected[0x%0x] - Actual[0x%0x]", msg, i,
+               expected_text[i], actual_data[i]);
         break;
       end
     end
@@ -189,9 +185,9 @@ module prim_present_tb;
   endtask
 
 
-//////////////////////////////////////////////////////
-// main testbench body
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // main testbench body
+  //////////////////////////////////////////////////////
 
   initial begin : p_stimuli
 

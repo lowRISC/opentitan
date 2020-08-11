@@ -13,32 +13,24 @@ package clkmgr_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } clk_fixed_peri_en;
-    struct packed {
-      logic        q;
-    } clk_usb_48mhz_peri_en;
+    struct packed {logic q;} clk_fixed_peri_en;
+    struct packed {logic q;} clk_usb_48mhz_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } clk_main_aes_hint;
-    struct packed {
-      logic        q;
-    } clk_main_hmac_hint;
+    struct packed {logic q;} clk_main_aes_hint;
+    struct packed {logic q;} clk_main_hmac_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
 
   typedef struct packed {
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } clk_main_aes_val;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } clk_main_hmac_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
@@ -47,21 +39,21 @@ package clkmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [3:2]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [1:0]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables;  // [3:2]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints;  // [1:0]
   } clkmgr_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [3:4]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status;  // [3:4]
   } clkmgr_hw2reg_t;
 
   // Register Address
-  parameter logic [3:0] CLKMGR_CLK_ENABLES_OFFSET = 4'h 0;
-  parameter logic [3:0] CLKMGR_CLK_HINTS_OFFSET = 4'h 4;
-  parameter logic [3:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h 8;
+  parameter logic [3:0] CLKMGR_CLK_ENABLES_OFFSET = 4'h0;
+  parameter logic [3:0] CLKMGR_CLK_HINTS_OFFSET = 4'h4;
+  parameter logic [3:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h8;
 
 
   // Register Index
@@ -72,10 +64,9 @@ package clkmgr_reg_pkg;
   } clkmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CLKMGR_PERMIT [3] = '{
-    4'b 0001, // index[0] CLKMGR_CLK_ENABLES
-    4'b 0001, // index[1] CLKMGR_CLK_HINTS
-    4'b 0001  // index[2] CLKMGR_CLK_HINTS_STATUS
+  parameter logic [3:0] CLKMGR_PERMIT[3] = '{4'b0001,  // index[0] CLKMGR_CLK_ENABLES
+  4'b0001,  // index[1] CLKMGR_CLK_HINTS
+  4'b0001  // index[2] CLKMGR_CLK_HINTS_STATUS
   };
 endpackage
 

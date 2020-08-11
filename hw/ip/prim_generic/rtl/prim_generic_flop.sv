@@ -4,15 +4,15 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_flop # (
-  parameter int Width      = 1,
-  localparam int WidthSubOne = Width-1,
-  parameter logic [WidthSubOne:0] ResetValue = 0
+module prim_generic_flop #(
+    parameter int Width = 1,
+    localparam int WidthSubOne = Width - 1,
+    parameter logic [WidthSubOne:0] ResetValue = 0
 ) (
-  input clk_i,
-  input rst_ni,
-  input [Width-1:0] d_i,
-  output logic [Width-1:0] q_o
+    input                    clk_i,
+    input                    rst_ni,
+    input        [Width-1:0] d_i,
+    output logic [Width-1:0] q_o
 );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -23,4 +23,4 @@ module prim_generic_flop # (
     end
   end
 
-endmodule // prim_generic_flop
+endmodule  // prim_generic_flop

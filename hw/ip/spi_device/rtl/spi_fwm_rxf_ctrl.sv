@@ -6,51 +6,51 @@
 //
 
 module spi_fwm_rxf_ctrl #(
-  parameter int unsigned FifoDw = 8,
-  parameter int unsigned SramAw = 11,
-  parameter int unsigned SramDw = 32,
-  // Do not touch below
-  // SramDw should be multiple of FifoDw
-  localparam int unsigned NumBytes = SramDw/FifoDw,    // derived parameter
-  localparam int unsigned SDW      = $clog2(NumBytes), // derived parameter
-  localparam int unsigned PtrW     = SramAw + SDW + 1  // derived parameter
+    parameter int unsigned FifoDw = 8,
+    parameter int unsigned SramAw = 11,
+    parameter int unsigned SramDw = 32,
+    // Do not touch below
+    // SramDw should be multiple of FifoDw
+    localparam int unsigned NumBytes = SramDw / FifoDw,  // derived parameter
+    localparam int unsigned SDW = $clog2 (NumBytes),  // derived parameter
+    localparam int unsigned PtrW = SramAw + SDW + 1  // derived parameter
 ) (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Configuration
-  input      [SramAw-1:0] base_index_i,
-  input      [SramAw-1:0] limit_index_i,
-  input             [7:0] timer_v,
-  input        [PtrW-1:0] rptr,
-  output logic [PtrW-1:0] wptr,
-  output logic [PtrW-1:0] depth,
+    // Configuration
+    input        [SramAw-1:0] base_index_i,
+    input        [SramAw-1:0] limit_index_i,
+    input        [       7:0] timer_v,
+    input        [  PtrW-1:0] rptr,
+    output logic [  PtrW-1:0] wptr,
+    output logic [  PtrW-1:0] depth,
 
-  output logic            full,
+    output logic full,
 
-  input               fifo_valid,
-  output logic        fifo_ready,
-  input  [FifoDw-1:0] fifo_rdata,
+    input                     fifo_valid,
+    output logic              fifo_ready,
+    input        [FifoDw-1:0] fifo_rdata,
 
-  output logic              sram_req,
-  output logic              sram_write,
-  output logic [SramAw-1:0] sram_addr,
-  output logic [SramDw-1:0] sram_wdata,
-  input                     sram_gnt,
-  input                     sram_rvalid,
-  input        [SramDw-1:0] sram_rdata,
-  input               [1:0] sram_error
+    output logic              sram_req,
+    output logic              sram_write,
+    output logic [SramAw-1:0] sram_addr,
+    output logic [SramDw-1:0] sram_wdata,
+    input                     sram_gnt,
+    input                     sram_rvalid,
+    input        [SramDw-1:0] sram_rdata,
+    input        [       1:0] sram_error
 );
 
   // Internal variable
   logic [NumBytes-1:0] byte_enable;
-  logic [SDW-1:0]      pos;   // current byte position
+  logic [SDW-1:0] pos;  // current byte position
   logic [7:0] cur_timer;
   logic [SramAw-1:0] sramf_limit;
 
   // State input
-  logic sramf_full;   // SRAM Fifo full
-  logic full_sramwidth;   // Write data filled full SRAM
+  logic sramf_full;  // SRAM Fifo full
+  logic full_sramwidth;  // Write data filled full SRAM
   logic timer_expired;
 
   // State output
@@ -63,12 +63,12 @@ module spi_fwm_rxf_ctrl #(
   logic update_wptr;
 
   typedef enum logic [2:0] {
-    StIdle   = 'h0,
-    StPop    = 'h1,
-    StWait   = 'h2,
-    StRead   = 'h3,
+    StIdle = 'h0,
+    StPop = 'h1,
+    StWait = 'h2,
+    StRead = 'h3,
     StModify = 'h4,
-    StWrite  = 'h5,
+    StWrite = 'h5,
     StUpdate = 'h6
   } state_e;
 
@@ -76,14 +76,14 @@ module spi_fwm_rxf_ctrl #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) st <= StIdle;
-    else         st <= st_next;
+    else st <= st_next;
   end
 
 
   logic [PtrW-1:0] ptr_cmp;
   assign ptr_cmp = rptr ^ wptr;
   // TODO: Check partial SRAM width read condition
-  assign sramf_full = (ptr_cmp[PtrW-1] == 1'b1) && (ptr_cmp[PtrW-2:SDW] == '0);
+  assign sramf_full = (ptr_cmp[PtrW - 1] == 1'b1) && (ptr_cmp[PtrW - 2:SDW] == '0);
   assign full = sramf_full;
 
   assign sramf_limit = limit_index_i - base_index_i;
@@ -95,15 +95,15 @@ module spi_fwm_rxf_ctrl #(
     end else if (update_wptr) begin
       if (byte_enable == '0) begin
         // as byte enable is cleared, it means full write was done
-        if (wptr[PtrW-2:SDW] == sramf_limit) begin
-          wptr[PtrW-1] <= ~wptr[PtrW-1];
-          wptr[PtrW-2:0] <= '0;
+        if (wptr[PtrW - 2:SDW] == sramf_limit) begin
+          wptr[PtrW - 1] <= ~wptr[PtrW - 1];
+          wptr[PtrW - 2:0] <= '0;
         end else begin
-          wptr[PtrW-2:SDW] <= wptr[PtrW-2:SDW] + 1'b1;
-          wptr[SDW-1:0] <= '0;
+          wptr[PtrW - 2:SDW] <= wptr[PtrW - 2:SDW] + 1'b1;
+          wptr[SDW - 1:0] <= '0;
         end
       end else begin
-        wptr[SDW-1:0] <= pos;
+        wptr[SDW - 1:0] <= pos;
       end
     end
   end
@@ -113,12 +113,17 @@ module spi_fwm_rxf_ctrl #(
 
   // Depth
   always_comb begin
-    if (wptr[PtrW-1] == rptr[PtrW-1]) begin
+    if (wptr[PtrW - 1] == rptr[PtrW - 1]) begin
       // Same phase
-      depth = {1'b0, wptr[PtrW-2:0]} - {1'b0, rptr[PtrW-2:0]};
+      depth = {1'b0, wptr[PtrW - 2:0]} - {1'b0, rptr[PtrW - 2:0]};
     end else begin
-      depth = {1'b0, wptr[PtrW-2:0]}
-            + ({1'b0, sramf_limit,{SDW{1'b1}}} - {1'b0, rptr[PtrW-2:0]} + 1'b1);
+      depth = {
+        1'b0, wptr[PtrW - 2:0]
+      } + ({
+        1'b0, sramf_limit, {SDW{1'b1}}
+      } - {
+        1'b0, rptr[PtrW - 2:0]
+      } + 1'b1);
     end
   end
 
@@ -135,7 +140,7 @@ module spi_fwm_rxf_ctrl #(
   assign timer_expired = (cur_timer == '0);
 
   // Data output
-  assign sram_addr = base_index_i + wptr[PtrW-2:SDW];
+  assign sram_addr = base_index_i + wptr[PtrW - 2:SDW];
 
   // Byte Enable control
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -144,8 +149,8 @@ module spi_fwm_rxf_ctrl #(
       pos <= '0;
     end else if (update_wdata) begin
       byte_enable[pos] <= 1'b1;
-      if (pos == SDW'(NumBytes-1)) pos <= '0;
-      else                         pos <= pos + 1'b1;
+      if (pos == SDW'(NumBytes - 1)) pos <= '0;
+      else pos <= pos + 1'b1;
     end else if (clr_byte_enable) begin
       byte_enable <= '0;
       pos <= '0;
@@ -156,11 +161,11 @@ module spi_fwm_rxf_ctrl #(
     if (!rst_ni) begin
       sram_wdata <= '0;
     end else if (update_wdata) begin
-      sram_wdata[8*pos+:8] <= fifo_rdata;
+      sram_wdata[8 * pos +: 8] <= fifo_rdata;
     end else if (sram_wdata_sel == 1'b1) begin
-      for (int i = 0 ; i < NumBytes ; i++) begin
+      for (int i = 0; i < NumBytes; i++) begin
         if (!byte_enable[i]) begin
-          sram_wdata[8*i+:8] <= sram_rdata[8*i+:8];
+          sram_wdata[8 * i +: 8] <= sram_rdata[8 * i +: 8];
         end
       end
     end
@@ -208,7 +213,7 @@ module spi_fwm_rxf_ctrl #(
         end else if (full_sramwidth) begin
           st_next = StWrite;
           clr_byte_enable = 1'b1;
-          sram_req_d   = 1'b1;
+          sram_req_d = 1'b1;
           sram_write_d = 1'b1;
         end else begin
           st_next = StWait;
@@ -226,7 +231,7 @@ module spi_fwm_rxf_ctrl #(
           update_wdata = 1'b1;
         end else if (!fifo_valid && timer_expired) begin
           st_next = StRead;
-          sram_req_d   = 1'b1;
+          sram_req_d = 1'b1;
           sram_write_d = 1'b0;
         end else begin
           st_next = StWait;
@@ -240,7 +245,7 @@ module spi_fwm_rxf_ctrl #(
           st_next = StModify;
         end else begin
           st_next = StRead;
-          sram_req_d   = 1'b1;
+          sram_req_d = 1'b1;
           sram_write_d = 1'b0;
         end
       end
@@ -249,7 +254,7 @@ module spi_fwm_rxf_ctrl #(
         // Waits until read data arrives.
         if (sram_rvalid) begin
           st_next = StWrite;
-          sram_req_d   = 1'b1;
+          sram_req_d = 1'b1;
           sram_write_d = 1'b1;
           sram_wdata_sel = 1'b1;
         end else begin
@@ -264,7 +269,7 @@ module spi_fwm_rxf_ctrl #(
           st_next = StUpdate;
         end else begin
           st_next = StWrite;
-          sram_req_d   = 1'b1;
+          sram_req_d = 1'b1;
           sram_write_d = 1'b1;
         end
       end

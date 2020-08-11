@@ -6,22 +6,20 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_sanity_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[1:100]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 100]};}
 
-  rand bit        hmac_en;
-  rand bit        sha_en;
-  rand bit        endian_swap;
-  rand bit        digest_swap;
-  rand bit        intr_fifo_empty_en;
-  rand bit        intr_hmac_done_en;
-  rand bit        intr_hmac_err_en;
+  rand bit hmac_en;
+  rand bit sha_en;
+  rand bit endian_swap;
+  rand bit digest_swap;
+  rand bit intr_fifo_empty_en;
+  rand bit intr_hmac_done_en;
+  rand bit intr_hmac_err_en;
   rand bit [31:0] key[8];
-  rand bit [7:0]  msg[];
-  rand int        burst_wr_length;
-  rand bit        do_hash_start_when_active;
-  rand bit        do_hash_start;
+  rand bit [7:0] msg[];
+  rand int burst_wr_length;
+  rand bit do_hash_start_when_active;
+  rand bit do_hash_start;
 
   constraint legal_seq_c {
     do_hash_start == 1;
@@ -33,20 +31,27 @@ class hmac_sanity_vseq extends hmac_base_vseq;
 
   constraint msg_c {
     msg.size() dist {
-        0       :/ 1,
-        [1 :60] :/ 8,
-        [61:64] :/ 1
-    }; // upto 64 bytes (16 words, 512 bits)
+      0 :/ 1,
+      [1 : 60] :/ 8,
+      [61 : 64] :/ 1
+    };  // upto 64 bytes (16 words, 512 bits)
   }
 
-  constraint burst_wr_c {
-    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
-  }
+  constraint burst_wr_c {burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};}
 
   constraint intr_enable_c {
-    intr_fifo_empty_en dist {1'b1 := 8, 1'b0 := 2};
-    intr_hmac_done_en dist {1'b1 := 8, 1'b0 := 2};
-    intr_hmac_err_en  dist {1'b1 := 8, 1'b0 := 2};
+    intr_fifo_empty_en dist {
+      1'b1 := 8,
+      1'b0 := 2
+    };
+    intr_hmac_done_en dist {
+      1'b1 := 8,
+      1'b0 := 2
+    };
+    intr_hmac_err_en dist {
+      1'b1 := 8,
+      1'b0 := 2
+    };
   }
 
   virtual task pre_start();
@@ -59,15 +64,23 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d",
-                                i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
-                                {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
-                                {endian_swap, digest_swap}), UVM_HIGH)
+      `uvm_info(`gfn,
+                $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d", i, num_trans,
+                          msg.size(), hmac_en, sha_en),
+                UVM_LOW)
+      `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b", {
+                intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en}, {endian_swap, digest_swap
+                }), UVM_HIGH)
       // initialize hmac configs
-      hmac_init(.sha_en(sha_en), .hmac_en(hmac_en), .endian_swap(endian_swap),
-                .digest_swap(digest_swap), .intr_fifo_empty_en(intr_fifo_empty_en),
-                .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
+      hmac_init(
+      .sha_en(sha_en),
+      .hmac_en(hmac_en),
+      .endian_swap(endian_swap),
+      .digest_swap(digest_swap),
+      .intr_fifo_empty_en(intr_fifo_empty_en),
+      .intr_hmac_done_en(intr_hmac_done_en),
+      .intr_hmac_err_en(intr_hmac_err_en)
+      );
 
       // can randomly read previous digest
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
@@ -86,11 +99,11 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
         else wr_msg(msg);
         if (!sha_en) begin
-          if ($urandom_range(0, 1)) begin // restream in the message
+          if ($urandom_range(0, 1)) begin  // restream in the message
             sha_enable();
             if (do_hash_start) trigger_hash();
             wr_msg(msg);
-          end else begin // discard current transaction
+          end else begin  // discard current transaction
             continue;
           end
         end

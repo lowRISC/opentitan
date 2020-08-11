@@ -58,14 +58,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task wait_for_sw_test_done();
     `uvm_info(`gfn, "Waiting for the SW test to finish", UVM_MEDIUM)
     fork
-      begin: isolation_thread
+      begin : isolation_thread
         fork
           wait(cfg.sw_test_status_vif.sw_test_done);
           #(cfg.sw_test_timeout_ns * 1ns);
         join_any
         disable fork;
         log_sw_test_status();
-      end: isolation_thread
+      end : isolation_thread
     join
   endtask
 
@@ -76,8 +76,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       SwTestStatusFailed: `uvm_error(`gfn, "SW TEST FAILED!")
       default: begin
         // If the SW test has not reached the passed / failed state, then it timed out.
-        `uvm_error(`gfn, $sformatf("SW TEST TIMED OUT. STATE: %0s, TIMEOUT = %0d ns\n",
-            cfg.sw_test_status_vif.sw_test_status.name(), cfg.sw_test_timeout_ns))
+        `uvm_error(`gfn,
+                   $sformatf("SW TEST TIMED OUT. STATE: %0s, TIMEOUT = %0d ns\n",
+                             cfg.sw_test_status_vif.sw_test_status.name(), cfg.sw_test_timeout_ns))
       end
     endcase
   endfunction

@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usbdev_scoreboard extends cip_base_scoreboard #(
-  .CFG_T(usbdev_env_cfg),
-  .RAL_T(usbdev_reg_block),
-  .COV_T(usbdev_env_cov)
+class usbdev_scoreboard extends cip_base_scoreboard#(
+    .CFG_T(usbdev_env_cfg), .RAL_T(usbdev_reg_block), .COV_T(usbdev_env_cov)
 );
   `uvm_component_utils(usbdev_scoreboard)
 
@@ -49,16 +47,15 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
+    bit do_read_check = 1'b1;
+    bit write = item.is_write();
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -91,14 +88,14 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_state": begin
-        if (!write && channel == AddrChannel) begin // read & addr phase
+        if (!write && channel == AddrChannel) begin  // read & addr phase
           intr_exp_at_addr_phase = intr_exp;
-        end else if (!write && channel == DataChannel) begin // read & data phase
-          usbdev_intr_e   intr;
+        end else if (!write && channel == DataChannel) begin  // read & data phase
+          usbdev_intr_e intr;
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           do_read_check = 1'b0;
           foreach (intr_exp[i]) begin
-            intr = usbdev_intr_e'(i); // cast to enum to get interrupt name
+            intr = usbdev_intr_e'(i);  // cast to enum to get interrupt name
             if (cfg.en_cov) begin
               cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
@@ -109,7 +106,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
             // `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
             //              $sformatf("Interrupt_pin: %0s", intr.name));
           end
-        end // read & data phase
+        end  // read & data phase
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

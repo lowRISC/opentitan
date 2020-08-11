@@ -7,21 +7,23 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
-  input  clk_i,
-  input  rst_ni,
-  input  en_i,
-  input  clr_i,
-  input  accum_trig_i,
-  input  timeout_en_i,
-  input [EscCntDw-1:0] timeout_cyc_i,
-  input [N_ESC_SEV-1:0] esc_en_i,
-  input [N_ESC_SEV-1:0][PHASE_DW-1:0] esc_map_i,
-  input [N_PHASES-1:0][EscCntDw-1:0] phase_cyc_i,
-  input logic esc_trig_o,
-  input logic[EscCntDw-1:0] esc_cnt_o,
-  input logic[N_ESC_SEV-1:0] esc_sig_en_o,
-  input cstate_e esc_state_o
+module alert_handler_esc_timer_assert_fpv
+import alert_pkg::*;
+(
+    input                                        clk_i,
+    input                                        rst_ni,
+    input                                        en_i,
+    input                                        clr_i,
+    input                                        accum_trig_i,
+    input                                        timeout_en_i,
+    input          [ EscCntDw-1:0]               timeout_cyc_i,
+    input          [N_ESC_SEV-1:0]               esc_en_i,
+    input          [N_ESC_SEV-1:0][PHASE_DW-1:0] esc_map_i,
+    input          [ N_PHASES-1:0][EscCntDw-1:0] phase_cyc_i,
+    input logic                                  esc_trig_o,
+    input logic    [ EscCntDw-1:0]               esc_cnt_o,
+    input logic    [N_ESC_SEV-1:0]               esc_sig_en_o,
+    input cstate_e                               esc_state_o
 );
 
   ///////////////////////////////
@@ -35,7 +37,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // symbolic vars for phase map check
   logic [1:0] esc_sel;
   logic [1:0] phase_sel;
-  localparam cstate_e phases [4] = {Phase0, Phase1, Phase2, Phase3};
+  localparam cstate_e phases[4] = {Phase0, Phase1, Phase2, Phase3};
 
   // set regs
   logic esc_has_triggered_q;
@@ -66,13 +68,14 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
   // assume accumulation trigger is not asserted during this sequence
-  `ASSERT(TimeoutEscTrig_A, ##1 en_i && $rose(timeout_en_i) && (timeout_cyc_i > 0) ##1
-      timeout_en_i [*MAX_TIMEOUT_CYCLES] |=> esc_has_triggered_q,
-      clk_i, !rst_ni || accum_trig_i || clr_i)
+  `ASSERT(TimeoutEscTrig_A,
+          ##1 en_i && $rose(timeout_en_i) && (timeout_cyc_i > 0) ##1
+              timeout_en_i [* MAX_TIMEOUT_CYCLES] |=> esc_has_triggered_q,
+          clk_i, !rst_ni || accum_trig_i || clr_i)
 
   // check whether an accum trig leads to escalation if enabled
-  `ASSERT(AccumEscTrig_A, ##1 en_i && accum_trig_i && esc_state_o inside {Idle, Timeout} |=>
-      esc_has_triggered_q)
+  `ASSERT(AccumEscTrig_A,
+          ##1 en_i && accum_trig_i && esc_state_o inside {Idle, Timeout} |=> esc_has_triggered_q)
 
   // check escalation cnt and state out
   `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == esc_state_o)
@@ -80,16 +83,16 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // check clr input
   // we cannot use clr to exit from the timeout state
-  `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout}) |=>
-      esc_state_o == Idle)
+  `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout}) |=> esc_state_o == Idle)
 
   // check escalation map
-  `ASSERT(PhaseEscMap_A, esc_state_o == phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
-      esc_en_i[esc_sel] |-> esc_sig_en_o[esc_sel])
+  `ASSERT(PhaseEscMap_A,
+          esc_state_o == phases[phase_sel] && esc_map_i[esc_sel] == phase_sel && esc_en_i[esc_sel]
+              |-> esc_sig_en_o[esc_sel])
 
   // check terminal state is reached eventually if triggered and not cleared
-  `ASSERT(TerminalState_A, esc_trig_o |-> strong(##[1:$] esc_state_o == Terminal),
-      clk_i, !rst_ni || clr_i)
+  `ASSERT(TerminalState_A, esc_trig_o |-> strong (##[1:$] esc_state_o == Terminal), clk_i,
+          !rst_ni || clr_i)
 
   /////////////////////////
   // Backward Assertions //
@@ -97,16 +100,19 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
 
   // escalation can only be triggered when in Idle or Timeout state. Trigger mechanisms are either
   // the accumulation trigger or a timeout trigger
-  `ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accum_trig_i ||
-      esc_state_o  == Timeout && esc_cnt_o >= timeout_cyc_i)
-  `ASSERT(NoEscTrigBkwd_A, !esc_trig_o |-> !(esc_state_o inside {Idle, Timeout}) ||
-      (!en_i || !accum_trig_i || !timeout_en_i))
+  `ASSERT(EscTrigBkwd_A,
+          esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accum_trig_i ||
+              esc_state_o == Timeout && esc_cnt_o >= timeout_cyc_i)
+  `ASSERT(NoEscTrigBkwd_A,
+          !esc_trig_o |->
+              !(esc_state_o inside {Idle, Timeout}) || (!en_i || !accum_trig_i || !timeout_en_i))
 
   // escalation signals can only be asserted in the escalation phase states
-  `ASSERT(EscBkwd_A, esc_sig_en_o[esc_sel] |-> esc_en_i[esc_sel] &&
-      esc_has_triggered_q)
-  `ASSERT(NoEscBkwd_A, !esc_sig_en_o[esc_sel] |-> !esc_en_i[esc_sel] ||
-      esc_state_o != phases[esc_map_i[esc_sel]], clk_i, !rst_ni || clr_i)
+  `ASSERT(EscBkwd_A, esc_sig_en_o[esc_sel] |-> esc_en_i[esc_sel] && esc_has_triggered_q)
+  `ASSERT(NoEscBkwd_A,
+          !esc_sig_en_o[esc_sel] |->
+              !esc_en_i[esc_sel] || esc_state_o != phases[esc_map_i[esc_sel]],
+          clk_i, !rst_ni || clr_i)
 
   //////////////////////
   // Helper Processes //

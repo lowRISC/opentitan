@@ -17,7 +17,7 @@
 package riscv_signature_pkg;
 
   // Will be the lowest 8 bits of the data word
-  typedef enum bit[7:0] {
+  typedef enum bit [7:0] {
     // Information sent to the core relating its current status.
     // Bits [12:8] of the data word will be the core_status_t value
     // corresponding to the current core status.
@@ -34,7 +34,7 @@ package riscv_signature_pkg;
     WRITE_CSR
   } signature_type_t;
 
-  typedef enum bit[4:0] {
+  typedef enum bit [4:0] {
     INITIALIZED,
     IN_DEBUG_MODE,
     IN_MACHINE_MODE,

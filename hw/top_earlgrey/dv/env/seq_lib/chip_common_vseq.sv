@@ -5,9 +5,7 @@
 class chip_common_vseq extends chip_base_vseq;
   `uvm_object_utils(chip_common_vseq)
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
   virtual task pre_start();
@@ -19,7 +17,7 @@ class chip_common_vseq extends chip_base_vseq;
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
-    wait (cfg.rst_n_mon_vif.pins[0] === 1);
+    wait(cfg.rst_n_mon_vif.pins[0] === 1);
     cfg.clk_rst_vif.wait_clks(100);
   endtask
 

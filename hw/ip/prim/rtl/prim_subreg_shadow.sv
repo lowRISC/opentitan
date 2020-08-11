@@ -5,61 +5,61 @@
 // Shadowed register slice conforming to Comportibility guide.
 
 module prim_subreg_shadow #(
-  parameter int            DW       = 32  ,
-  parameter                SWACCESS = "RW", // {RW, RO, WO, W1C, W1S, W0C, RC}
-  parameter logic [DW-1:0] RESVAL   = '0    // reset value
+    parameter int DW = 32,
+    parameter SWACCESS = "RW",  // {RW, RO, WO, W1C, W1S, W0C, RC}
+    parameter logic [DW-1:0] RESVAL = '0  // reset value
 ) (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
-  // SW reads clear phase unless SWACCESS is RO.
-  input          re,
-  // In case of RC, top connects read pulse to we.
-  input          we,
-  input [DW-1:0] wd,
+    // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
+    // SW reads clear phase unless SWACCESS is RO.
+    input          re,
+    // In case of RC, top connects read pulse to we.
+    input          we,
+    input [DW-1:0] wd,
 
-  // From HW: valid for HRW, HWO.
-  input          de,
-  input [DW-1:0] d,
+    // From HW: valid for HRW, HWO.
+    input          de,
+    input [DW-1:0] d,
 
-  // Output to HW and Reg Read
-  output logic          qe,
-  output logic [DW-1:0] q,
-  output logic [DW-1:0] qs,
+    // Output to HW and Reg Read
+    output logic          qe,
+    output logic [DW-1:0] q,
+    output logic [DW-1:0] qs,
 
-  // Error conditions
-  output logic err_update,
-  output logic err_storage
+    // Error conditions
+    output logic err_update,
+    output logic err_storage
 );
 
   // Subreg control signals
-  logic          phase_clear;
-  logic          phase_q;
-  logic          staged_we, shadow_we, committed_we;
-  logic          staged_de, shadow_de, committed_de;
+  logic phase_clear;
+  logic phase_q;
+  logic staged_we, shadow_we, committed_we;
+  logic staged_de, shadow_de, committed_de;
 
   // Subreg status and data signals
-  logic          staged_qe, shadow_qe, committed_qe;
-  logic [DW-1:0] staged_q,  shadow_q,  committed_q;
+  logic staged_qe, shadow_qe, committed_qe;
+  logic [DW-1:0] staged_q, shadow_q, committed_q;
   logic [DW-1:0] committed_qs;
 
   // Effective write enable and write data signals.
   // These depend on we, de and wd, d, q as well as SWACCESS.
-  logic          wr_en;
+  logic wr_en;
   logic [DW-1:0] wr_data;
 
   prim_subreg_arb #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS )
+      .DW(DW),
+      .SWACCESS(SWACCESS)
   ) wr_en_data_arb (
-    .we      ( we      ),
-    .wd      ( wd      ),
-    .de      ( de      ),
-    .d       ( d       ),
-    .q       ( q       ),
-    .wr_en   ( wr_en   ),
-    .wr_data ( wr_data )
+      .we     (we),
+      .wd     (wd),
+      .de     (de),
+      .d      (d),
+      .q      (q),
+      .wr_en  (wr_en),
+      .wr_data(wr_data)
   );
 
   // Phase clearing:
@@ -86,19 +86,19 @@ module prim_subreg_shadow #(
   assign staged_we = we & ~phase_q;
   assign staged_de = de & ~phase_q;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
-    .RESVAL   ( ~RESVAL  )
+      .DW(DW),
+      .SWACCESS(SWACCESS),
+      .RESVAL(~RESVAL)
   ) staged_reg (
-    .clk_i    ( clk_i     ),
-    .rst_ni   ( rst_ni    ),
-    .we       ( staged_we ),
-    .wd       ( ~wd       ),
-    .de       ( staged_de ),
-    .d        ( ~d        ),
-    .qe       ( staged_qe ),
-    .q        ( staged_q  ),
-    .qs       (           )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .we    (staged_we),
+      .wd    (~wd),
+      .de    (staged_de),
+      .d     (~d),
+      .qe    (staged_qe),
+      .q     (staged_q),
+      .qs    ()
   );
 
   // The shadow register:
@@ -109,19 +109,19 @@ module prim_subreg_shadow #(
   assign shadow_we = we & phase_q & ~err_update;
   assign shadow_de = de & phase_q & ~err_update;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
-    .RESVAL   ( ~RESVAL  )
+      .DW(DW),
+      .SWACCESS(SWACCESS),
+      .RESVAL(~RESVAL)
   ) shadow_reg (
-    .clk_i    ( clk_i     ),
-    .rst_ni   ( rst_ni    ),
-    .we       ( shadow_we ),
-    .wd       ( staged_q  ),
-    .de       ( shadow_de ),
-    .d        ( staged_q  ),
-    .qe       ( shadow_qe ),
-    .q        ( shadow_q  ),
-    .qs       (           )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .we    (shadow_we),
+      .wd    (staged_q),
+      .de    (shadow_de),
+      .d     (staged_q),
+      .qe    (shadow_qe),
+      .q     (shadow_q),
+      .qs    ()
   );
 
   // The committed register:
@@ -130,28 +130,28 @@ module prim_subreg_shadow #(
   assign committed_we = shadow_we;
   assign committed_de = shadow_de;
   prim_subreg #(
-    .DW       ( DW       ),
-    .SWACCESS ( SWACCESS ),
-    .RESVAL   ( RESVAL   )
+      .DW(DW),
+      .SWACCESS(SWACCESS),
+      .RESVAL(RESVAL)
   ) committed_reg (
-    .clk_i    ( clk_i        ),
-    .rst_ni   ( rst_ni       ),
-    .we       ( committed_we ),
-    .wd       ( wd           ),
-    .de       ( committed_de ),
-    .d        ( d            ),
-    .qe       ( committed_qe ),
-    .q        ( committed_q  ),
-    .qs       ( committed_qs )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .we    (committed_we),
+      .wd    (wd),
+      .de    (committed_de),
+      .d     (d),
+      .qe    (committed_qe),
+      .q     (committed_q),
+      .qs    (committed_qs)
   );
 
   // Error detection - all bits must match.
-  assign err_update  = (~staged_q != wr_data) ? phase_q & wr_en : 1'b0;
+  assign err_update = (~staged_q != wr_data) ? phase_q & wr_en : 1'b0;
   assign err_storage = (~shadow_q != committed_q);
 
   // Remaining output assignments
   assign qe = staged_qe | shadow_qe | committed_qe;
-  assign q  = committed_q;
+  assign q = committed_q;
   assign qs = committed_qs;
 
 endmodule

@@ -5,21 +5,23 @@
 // Generic double-synchronizer flop followed by pulse generation
 
 module usbdev_flop_2syncpulse #(
-  parameter int unsigned Width = 16
+    parameter int unsigned Width = 16
 ) (
-  input  logic             clk_i,    // receive clock
-  input  logic             rst_ni,
-  input  logic [Width-1:0] d_i,
-  output logic [Width-1:0] q_o
+    input  logic             clk_i,  // receive clock
+    input  logic             rst_ni,
+    input  logic [Width-1:0] d_i,
+    output logic [Width-1:0] q_o
 );
 
   // double-flop synchronizer cell
   logic [Width-1:0] d_sync;
-  prim_flop_2sync #(.Width (Width)) prim_flop_2sync (
-    .clk_i,
-    .rst_ni,
-    .d_i,
-    .q_o(d_sync)
+  prim_flop_2sync #(
+      .Width(Width)
+  ) prim_flop_2sync (
+      .clk_i,
+      .rst_ni,
+      .d_i,
+      .q_o(d_sync)
   );
 
   // delay d_sync by 1 cycle

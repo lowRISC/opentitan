@@ -25,25 +25,27 @@ class riscv_instr_test extends riscv_instr_base_test;
     riscv_instr instr;
     riscv_instr_name_t instr_name;
     string test_name = $sformatf("%0s_0.S", asm_file_name);
-    fd = $fopen(test_name,"w");
+    fd = $fopen(test_name, "w");
     `uvm_info(`gfn, "Creating instruction list", UVM_LOW)
     riscv_instr::create_instr_list(cfg);
     `uvm_info(`gfn, "Randomizing instruction list now...", UVM_LOW)
     repeat (10000) begin
       instr = riscv_instr::get_rand_instr();
       `DV_CHECK_RANDOMIZE_FATAL(instr);
-      $fwrite(fd, {instr.convert2asm(),"\n"});
+      $fwrite(fd, {instr.convert2asm(), "\n"});
     end
     repeat (10000) begin
       instr = riscv_instr::get_rand_instr(.include_category({LOAD, STORE}));
       `DV_CHECK_RANDOMIZE_FATAL(instr);
-      $fwrite(fd, {instr.convert2asm(),"\n"});
+      $fwrite(fd, {instr.convert2asm(), "\n"});
     end
     repeat (10000) begin
-      instr = riscv_instr::get_rand_instr(.exclude_category({LOAD, STORE , BRANCH}),
-                                          .include_group({RV32I, RV32M}));
+      instr = riscv_instr::get_rand_instr(
+      .exclude_category({LOAD, STORE, BRANCH}),
+      .include_group({RV32I, RV32M})
+      );
       `DV_CHECK_RANDOMIZE_FATAL(instr);
-      $fwrite(fd, {instr.convert2asm(),"\n"});
+      $fwrite(fd, {instr.convert2asm(), "\n"});
     end
     $fclose(fd);
     `uvm_info(get_full_name(), $sformatf("%0s is generated", test_name), UVM_LOW)
@@ -51,8 +53,7 @@ class riscv_instr_test extends riscv_instr_base_test;
 
   virtual function void randomize_cfg();
     `DV_CHECK_RANDOMIZE_FATAL(cfg);
-    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s",
-                    cfg.sprint()), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("riscv_instr_gen_config is randomized:\n%0s", cfg.sprint()), UVM_LOW)
   endfunction
 
 endclass

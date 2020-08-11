@@ -28,38 +28,53 @@ class riscv_page_table_exception_cfg extends uvm_object;
   rand bit allow_zero_dirty_bit_exception;
 
   // Exception ratio control
-  int unsigned page_access_fault_ratio     = 10;
-  int unsigned misaligned_superpage_ratio  = 10;
-  int unsigned leaf_link_page_ratio        = 10;
-  int unsigned invalid_page_ratio          = 10;
-  int unsigned privl_mode_fault_ratio      = 10;
-  int unsigned zero_access_fault_ratio     = 5;
-  int unsigned zero_dirty_fault_ratio      = 5;
+  int unsigned page_access_fault_ratio = 10;
+  int unsigned misaligned_superpage_ratio = 10;
+  int unsigned leaf_link_page_ratio = 10;
+  int unsigned invalid_page_ratio = 10;
+  int unsigned privl_mode_fault_ratio = 10;
+  int unsigned zero_access_fault_ratio = 5;
+  int unsigned zero_dirty_fault_ratio = 5;
 
   constraint exception_ratio_c {
-    if(enable_exception) {
-      allow_page_access_control_exception  dist { 1 := page_access_fault_ratio,
-                                                  0 := 100 - page_access_fault_ratio };
-      allow_superpage_misaligned_exception dist { 1 := misaligned_superpage_ratio,
-                                                  0 := 100 - misaligned_superpage_ratio };
-      allow_leaf_link_page_exception       dist { 1 := leaf_link_page_ratio,
-                                                  0 := 100 - leaf_link_page_ratio };
-      allow_invalid_page_exception         dist { 1 := invalid_page_ratio,
-                                                  0 := 100 - invalid_page_ratio };
-      allow_privileged_mode_exception      dist { 1 := privl_mode_fault_ratio,
-                                                  0 := 100 - privl_mode_fault_ratio };
-      allow_zero_access_bit_exception      dist { 1 := zero_access_fault_ratio,
-                                                  0 := 100 - zero_access_fault_ratio };
-      allow_zero_dirty_bit_exception       dist { 1 := zero_dirty_fault_ratio,
-                                                  0 := 100 - zero_dirty_fault_ratio };
-    } else {
-      allow_page_access_control_exception  == 0;
+    if (enable_exception) {
+      allow_page_access_control_exception dist {
+        1 := page_access_fault_ratio,
+        0 := 100 - page_access_fault_ratio
+      };
+      allow_superpage_misaligned_exception dist {
+        1 := misaligned_superpage_ratio,
+        0 := 100 - misaligned_superpage_ratio
+      };
+      allow_leaf_link_page_exception dist {
+        1 := leaf_link_page_ratio,
+        0 := 100 - leaf_link_page_ratio
+      };
+      allow_invalid_page_exception dist {
+        1 := invalid_page_ratio,
+        0 := 100 - invalid_page_ratio
+      };
+      allow_privileged_mode_exception dist {
+        1 := privl_mode_fault_ratio,
+        0 := 100 - privl_mode_fault_ratio
+      };
+      allow_zero_access_bit_exception dist {
+        1 := zero_access_fault_ratio,
+        0 := 100 - zero_access_fault_ratio
+      };
+      allow_zero_dirty_bit_exception dist {
+        1 := zero_dirty_fault_ratio,
+        0 := 100 - zero_dirty_fault_ratio
+      };
+    }
+        else {
+      allow_page_access_control_exception == 0;
       allow_superpage_misaligned_exception == 0;
-      allow_leaf_link_page_exception       == 0;
-      allow_invalid_page_exception         == 0;
-      allow_privileged_mode_exception      == 0;
-      allow_zero_access_bit_exception      == 0;
-      allow_zero_dirty_bit_exception       == 0;
+      allow_leaf_link_page_exception == 0;
+      allow_invalid_page_exception == 0;
+      allow_privileged_mode_exception == 0;
+      allow_zero_access_bit_exception == 0;
+      allow_zero_dirty_bit_exception == 0;
     }
   }
 

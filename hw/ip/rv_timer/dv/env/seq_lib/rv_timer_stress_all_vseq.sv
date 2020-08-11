@@ -11,13 +11,13 @@ class rv_timer_stress_all_vseq extends rv_timer_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"rv_timer_sanity_vseq",
-                          "rv_timer_disabled_vseq",
-                          "rv_timer_common_vseq"}; // for intr_test
+    string seq_names[] = {
+      "rv_timer_sanity_vseq", "rv_timer_disabled_vseq", "rv_timer_common_vseq"
+    };  // for intr_test
     for (int i = 1; i <= num_trans; i++) begin
-      uvm_sequence       seq;
+      uvm_sequence seq;
       rv_timer_base_vseq rv_timer_vseq;
-      uint               seq_idx = $urandom_range(0, seq_names.size - 1);
+      uint seq_idx = $urandom_range(0, seq_names.size - 1);
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(rv_timer_vseq, seq)

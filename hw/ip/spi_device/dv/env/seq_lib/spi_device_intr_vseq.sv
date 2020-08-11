@@ -9,7 +9,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
   virtual task body();
     spi_device_intr_e spi_dev_intr;
-    bit               is_tx_async_fifo_filled;
+    bit is_tx_async_fifo_filled;
 
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -30,8 +30,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
       end
 
       repeat (NumSpiDevIntr) begin
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(spi_dev_intr,
-                                           spi_dev_intr != NumSpiDevIntr;)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(spi_dev_intr, spi_dev_intr != NumSpiDevIntr;)
         `uvm_info(`gfn, $sformatf("\nTesting %0s", spi_dev_intr.name), UVM_LOW)
         drive_and_check_one_intr(spi_dev_intr);
 
@@ -48,7 +47,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
     uint avail_bytes;
 
     case (spi_dev_intr)
-      RxFifoFull, RxFifoOverflow: begin // test fifo full and overflow together
+      RxFifoFull, RxFifoOverflow: begin  // test fifo full and overflow together
         // just below fifo full
         spi_host_xfer_bytes(sram_host_byte_size - SRAM_WORD_SIZE, device_bytes_q);
         wait_for_rx_avail_bytes(sram_host_byte_size - SRAM_WORD_SIZE, SramDataAvail, avail_bytes);
@@ -61,20 +60,22 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
         // fill async fifo and check fifo doesn't overflow
         spi_host_xfer_bytes(ASYNC_FIFO_SIZE, device_bytes_q);
-        cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
+        cfg.clk_rst_vif.wait_clks(4);  // for interrupt to triggered
         check_interrupts(.interrupts(1 << RxFifoOverflow), .check_set(0));
 
         // fill 1 word and check fifo overflow
         spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
         check_interrupts(.interrupts(1 << RxFifoOverflow), .check_set(1));
-        check_interrupts(.interrupts(1 << RxFifoGeLevel),
-                         .check_set(rx_watermark_lvl inside {[1:sram_host_byte_size]}));
+        check_interrupts(
+        .interrupts(1 << RxFifoGeLevel),
+        .check_set(rx_watermark_lvl inside {[1 : sram_host_byte_size]})
+        );
 
         // clean up rx fifo
         process_rx_read(sram_host_byte_size + ASYNC_FIFO_SIZE);
       end
       RxFifoGeLevel: begin
-        uint aligned_watermark = (rx_watermark_lvl >> 2) << 2; // remove lsb 2bits
+        uint aligned_watermark = (rx_watermark_lvl >> 2) << 2;  // remove lsb 2bits
         uint filled_bytes;
 
         if (rx_watermark_lvl[1:0] > 0) aligned_watermark += SRAM_WORD_SIZE;
@@ -103,12 +104,12 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         end
       end
       TxFifoLtLevel: begin
-        uint aligned_watermark = (tx_watermark_lvl >> 2) << 2; // remove lsb 2bits
+        uint aligned_watermark = (tx_watermark_lvl >> 2) << 2;  // remove lsb 2bits
         uint filled_bytes;
 
         if (tx_watermark_lvl[1:0] > 0) aligned_watermark += SRAM_WORD_SIZE;
 
-        if (tx_watermark_lvl == 0 || tx_watermark_lvl > sram_device_byte_size) begin // no intr
+        if (tx_watermark_lvl == 0 || tx_watermark_lvl > sram_device_byte_size) begin  // no intr
           // fill the sram fifo and async fifo, als wait until data is ready
           process_tx_write(sram_device_byte_size + SRAM_WORD_SIZE);
           wait_for_tx_avail_bytes(sram_device_byte_size, SramDataAvail, avail_bytes);
@@ -135,7 +136,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
           // send one word and fifo is less than watermark
           spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
-          cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
+          cfg.clk_rst_vif.wait_clks(4);  // for interrupt to triggered
           check_interrupts(.interrupts(1 << TxFifoLtLevel), .check_set(1));
 
           // clean up tx fifo
@@ -152,7 +153,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
       TxFifoUnderflow: begin
         // send one word when fifo is empty
         spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
-        cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
+        cfg.clk_rst_vif.wait_clks(4);  // for interrupt to triggered
         check_interrupts(.interrupts(1 << TxFifoUnderflow), .check_set(1));
 
         // clean up rx fifo

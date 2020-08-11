@@ -5,13 +5,8 @@
 module flash_ctrl_bind;
 
   bind flash_ctrl tlul_assert #(
-    .EndpointType("Device")
-  ) tlul_assert_device (
-    .clk_i,
-    .rst_ni,
-    .h2d  (tl_i),
-    .d2h  (tl_o)
-  );
+      .EndpointType("Device")
+  ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   // import flash_ctrl_reg_pkg::*;
   // bind flash_ctrl flash_ctrl_csr_assert_fpv flash_ctrl_csr_assert (

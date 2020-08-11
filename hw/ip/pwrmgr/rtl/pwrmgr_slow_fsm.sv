@@ -7,30 +7,32 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
-  input clk_i,
-  input rst_ni,
+module pwrmgr_slow_fsm
+import pwrmgr_pkg::*;
+(
+    input clk_i,
+    input rst_ni,
 
-  // sync'ed requests from peripherals
-  input wakeup_i,
-  input reset_req_i,
+    // sync'ed requests from peripherals
+    input wakeup_i,
+    input reset_req_i,
 
-  // interface with fast fsm
-  output logic req_pwrup_o,
-  output logic pwrup_cause_toggle_o,
-  output pwrup_cause_e pwrup_cause_o,
-  input ack_pwrup_i,
-  input req_pwrdn_i,
-  output logic ack_pwrdn_o,
+    // interface with fast fsm
+    output logic         req_pwrup_o,
+    output logic         pwrup_cause_toggle_o,
+    output pwrup_cause_e pwrup_cause_o,
+    input                ack_pwrup_i,
+    input                req_pwrdn_i,
+    output logic         ack_pwrdn_o,
 
-  // low power entry configuration
-  input main_pd_ni,
-  input io_clk_en_i,
-  input core_clk_en_i,
+    // low power entry configuration
+    input main_pd_ni,
+    input io_clk_en_i,
+    input core_clk_en_i,
 
-  // AST interface
-  input pwr_ast_rsp_t ast_i,
-  output pwr_ast_req_t ast_o
+    // AST interface
+    input  pwr_ast_rsp_t ast_i,
+    output pwr_ast_req_t ast_o
 );
 
   // state enum
@@ -68,46 +70,46 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   assign all_clks_valid = ast_i.core_clk_val == 2'b10 && ast_i.io_clk_val == 2'b10;
 
   // if clock were configured to turn off, make sure val is 2'b01
-  assign all_clks_invalid = (core_clk_en_i | ast_i.core_clk_val == 2'b01) &&
-                            (io_clk_en_i   | ast_i.io_clk_val == 2'b01);
+  assign all_clks_invalid =
+      (core_clk_en_i | ast_i.core_clk_val == 2'b01) && (io_clk_en_i | ast_i.io_clk_val == 2'b01);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q        <= StReset;
-      cause_q        <= Por;
+      state_q <= StReset;
+      cause_q <= Por;
       cause_toggle_q <= 1'b0;
-      pd_nq          <= 1'b0;
-      pwr_clamp_q    <= 1'b1;
-      core_clk_en_q  <= 1'b0;
-      io_clk_en_q    <= 1'b0;
-      req_pwrup_q    <= 1'b0;
-      ack_pwrdn_q    <= 1'b0;
+      pd_nq <= 1'b0;
+      pwr_clamp_q <= 1'b1;
+      core_clk_en_q <= 1'b0;
+      io_clk_en_q <= 1'b0;
+      req_pwrup_q <= 1'b0;
+      ack_pwrdn_q <= 1'b0;
     end else begin
-      state_q        <= state_d;
-      cause_q        <= cause_d;
+      state_q <= state_d;
+      cause_q <= cause_d;
       cause_toggle_q <= cause_toggle_d;
-      pd_nq          <= pd_nd;
-      pwr_clamp_q    <= pwr_clamp_d;
-      core_clk_en_q  <= core_clk_en_d;
-      io_clk_en_q    <= io_clk_en_d;
-      req_pwrup_q    <= req_pwrup_d;
-      ack_pwrdn_q    <= ack_pwrdn_d;
+      pd_nq <= pd_nd;
+      pwr_clamp_q <= pwr_clamp_d;
+      core_clk_en_q <= core_clk_en_d;
+      io_clk_en_q <= io_clk_en_d;
+      req_pwrup_q <= req_pwrup_d;
+      ack_pwrdn_q <= ack_pwrdn_d;
     end
   end
 
   always_comb begin
-    state_d        = state_q;
-    cause_d        = cause_q;
-    pd_nd          = pd_nq;
+    state_d = state_q;
+    cause_d = cause_q;
+    pd_nd = pd_nq;
     cause_toggle_d = cause_toggle_q;
-    pwr_clamp_d    = pwr_clamp_q;
-    core_clk_en_d  = core_clk_en_q;
-    io_clk_en_d    = io_clk_en_q;
+    pwr_clamp_d = pwr_clamp_q;
+    core_clk_en_d = core_clk_en_q;
+    io_clk_en_d = io_clk_en_q;
 
-    req_pwrup_d    = req_pwrup_q;
-    ack_pwrdn_d    = ack_pwrdn_q;
+    req_pwrup_d = req_pwrup_q;
+    ack_pwrdn_d = ack_pwrdn_q;
 
-    unique case(state_q)
+    unique case (state_q)
 
       StReset: begin
         state_d = StMainPowerOn;
@@ -192,15 +194,15 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
       // Very terminal state, kill everything
       default: begin
-        pd_nd         = 1'b0;
-        pwr_clamp_d   = 1'b1;
+        pd_nd = 1'b0;
+        pwr_clamp_d = 1'b1;
         core_clk_en_d = 1'b0;
-        io_clk_en_d   = 1'b0;
+        io_clk_en_d = 1'b0;
       end
 
 
-    endcase // unique case (state_q)
-  end // always_comb
+    endcase  // unique case (state_q)
+  end  // always_comb
 
 
   assign pwrup_cause_o = cause_q;

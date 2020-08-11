@@ -8,28 +8,28 @@
  * OpenTitan Big Number Accelerator (OTBN)
  */
 module otbn
-  import prim_alert_pkg::*;
-  import otbn_pkg::*;
+import prim_alert_pkg::*;
+import otbn_pkg::*;
 (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+    input  tlul_pkg::tl_h2d_t tl_i,
+    output tlul_pkg::tl_d2h_t tl_o,
 
-  // Inter-module signals
-  output logic idle_o,
+    // Inter-module signals
+    output logic idle_o,
 
-  // Interrupts
-  output logic intr_done_o,
-  output logic intr_err_o,
+    // Interrupts
+    output logic intr_done_o,
+    output logic intr_err_o,
 
-  // Alerts
-  input  prim_alert_pkg::alert_rx_t [otbn_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [otbn_pkg::NumAlerts-1:0] alert_tx_o
+    // Alerts
+    input  prim_alert_pkg::alert_rx_t [otbn_pkg::NumAlerts-1:0] alert_rx_i,
+    output prim_alert_pkg::alert_tx_t [otbn_pkg::NumAlerts-1:0] alert_tx_o
 
-  // CSRNG interface
-  // TODO: Needs to be connected to RNG distribution network (#2638)
+    // CSRNG interface
+    // TODO: Needs to be connected to RNG distribution network (#2638)
 );
 
   import otbn_reg_pkg::*;
@@ -47,7 +47,7 @@ module otbn
   logic busy_d, busy_q;
   logic done;
 
-  logic        err_valid;
+  logic err_valid;
   logic [31:0] err_code;
 
   logic [ImemAddrWidth-1:0] start_addr;
@@ -61,8 +61,8 @@ module otbn
     TlWinDmem = 1
   } tl_win_e;
 
-  tlul_pkg::tl_h2d_t tl_win_h2d [2];
-  tlul_pkg::tl_d2h_t tl_win_d2h [2];
+  tlul_pkg::tl_h2d_t tl_win_h2d[2];
+  tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
 
   // Inter-module signals ======================================================
@@ -75,45 +75,45 @@ module otbn
   // Interrupts ================================================================
 
   prim_intr_hw #(
-    .Width(1)
+      .Width(1)
   ) u_intr_hw_done (
-    .event_intr_i           (done),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.done.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.done.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.done.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.done.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.done.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.done.d),
-    .intr_o                 (intr_done_o)
+      .event_intr_i          (done),
+      .reg2hw_intr_enable_q_i(reg2hw.intr_enable.done.q),
+      .reg2hw_intr_test_q_i  (reg2hw.intr_test.done.q),
+      .reg2hw_intr_test_qe_i (reg2hw.intr_test.done.qe),
+      .reg2hw_intr_state_q_i (reg2hw.intr_state.done.q),
+      .hw2reg_intr_state_de_o(hw2reg.intr_state.done.de),
+      .hw2reg_intr_state_d_o (hw2reg.intr_state.done.d),
+      .intr_o                (intr_done_o)
   );
   prim_intr_hw #(
-    .Width(1)
+      .Width(1)
   ) u_intr_hw_err (
-    .event_intr_i           (err_valid),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.err.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.err.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.err.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.err.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.err.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.err.d),
-    .intr_o                 (intr_err_o)
+      .event_intr_i          (err_valid),
+      .reg2hw_intr_enable_q_i(reg2hw.intr_enable.err.q),
+      .reg2hw_intr_test_q_i  (reg2hw.intr_test.err.q),
+      .reg2hw_intr_test_qe_i (reg2hw.intr_test.err.qe),
+      .reg2hw_intr_state_q_i (reg2hw.intr_state.err.q),
+      .hw2reg_intr_state_de_o(hw2reg.intr_state.err.de),
+      .hw2reg_intr_state_d_o (hw2reg.intr_state.err.d),
+      .intr_o                (intr_err_o)
   );
 
 
   // Registers =================================================================
 
   otbn_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .tl_win_o (tl_win_h2d),
-    .tl_win_i (tl_win_d2h),
+      .clk_i,
+      .rst_ni,
+      .tl_i,
+      .tl_o,
+      .tl_win_o(tl_win_h2d),
+      .tl_win_i(tl_win_d2h),
 
-    .reg2hw,
-    .hw2reg,
+      .reg2hw,
+      .hw2reg,
 
-    .devmode_i (1'b1)
+      .devmode_i(1'b1)
   );
 
   // CMD register
@@ -125,10 +125,10 @@ module otbn
 
   // ERR_CODE register
   assign hw2reg.err_code.de = err_valid;
-  assign hw2reg.err_code.d  = err_code;
+  assign hw2reg.err_code.d = err_code;
 
   // START_ADDR register
-  assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
+  assign start_addr = reg2hw.start_addr.q[ImemAddrWidth - 1:0];
 
   // Errors ====================================================================
 
@@ -138,8 +138,7 @@ module otbn
   // in a series, err_valid is squashed if there is an existing error. Software
   // should read the ERR_CODE register before clearing the interrupt to avoid
   // race conditions.
-  assign err_valid = ~reg2hw.intr_state.err.q &
-    (1'b0); // TODO: OR error signals here.
+  assign err_valid = ~reg2hw.intr_state.err.q & (1'b0);  // TODO: OR error signals here.
 
   always_comb begin
     err_code = ErrCodeNoError;
@@ -187,28 +186,28 @@ module otbn
   logic [1:0] imem_rerror_bus;
 
   logic [ImemAddrWidth-1:0] imem_addr_core;
-  assign imem_index_core = imem_addr_core[ImemAddrWidth-1:2];
+  assign imem_index_core = imem_addr_core[ImemAddrWidth - 1:2];
 
   logic [1:0] unused_imem_addr_core_wordbits;
   assign unused_imem_addr_core_wordbits = imem_addr_core[1:0];
 
   prim_ram_1p_adv #(
-    .Width           (32),
-    .Depth           (ImemSizeWords),
-    .DataBitsPerMask (32), // Write masks are not supported.
-    .CfgW            (8)
+      .Width(32),
+      .Depth(ImemSizeWords),
+      .DataBitsPerMask(32),  // Write masks are not supported.
+      .CfgW(8)
   ) u_imem (
-    .clk_i,
-    .rst_ni,
-    .req_i    (imem_req),
-    .write_i  (imem_write),
-    .addr_i   (imem_index),
-    .wdata_i  (imem_wdata),
-    .wmask_i  (imem_wmask),
-    .rdata_o  (imem_rdata),
-    .rvalid_o (imem_rvalid),
-    .rerror_o (imem_rerror),
-    .cfg_i    ('0)
+      .clk_i,
+      .rst_ni,
+      .req_i   (imem_req),
+      .write_i (imem_write),
+      .addr_i  (imem_index),
+      .wdata_i (imem_wdata),
+      .wmask_i (imem_wmask),
+      .rdata_o (imem_rdata),
+      .rvalid_o(imem_rvalid),
+      .rerror_o(imem_rerror),
+      .cfg_i   ('0)
   );
 
   // IMEM access from main TL-UL bus
@@ -216,32 +215,32 @@ module otbn
   assign imem_gnt_bus = imem_req_bus & ~imem_access_core;
 
   tlul_adapter_sram #(
-    .SramAw      (ImemIndexWidth),
-    .SramDw      (32),
-    .Outstanding (1),
-    .ByteAccess  (0),
-    .ErrOnRead   (0)
+      .SramAw(ImemIndexWidth),
+      .SramDw(32),
+      .Outstanding(1),
+      .ByteAccess(0),
+      .ErrOnRead(0)
   ) u_tlul_adapter_sram_imem (
-    .clk_i,
-    .rst_ni,
-    .tl_i   (tl_win_h2d[TlWinImem]),
-    .tl_o   (tl_win_d2h[TlWinImem]),
+      .clk_i,
+      .rst_ni,
+      .tl_i(tl_win_h2d[TlWinImem]),
+      .tl_o(tl_win_d2h[TlWinImem]),
 
-    .req_o    (imem_req_bus   ),
-    .gnt_i    (imem_gnt_bus   ),
-    .we_o     (imem_write_bus ),
-    .addr_o   (imem_index_bus ),
-    .wdata_o  (imem_wdata_bus ),
-    .wmask_o  (imem_wmask_bus ),
-    .rdata_i  (imem_rdata_bus ),
-    .rvalid_i (imem_rvalid_bus),
-    .rerror_i (imem_rerror_bus)
+      .req_o   (imem_req_bus),
+      .gnt_i   (imem_gnt_bus),
+      .we_o    (imem_write_bus),
+      .addr_o  (imem_index_bus),
+      .wdata_o (imem_wdata_bus),
+      .wmask_o (imem_wmask_bus),
+      .rdata_i (imem_rdata_bus),
+      .rvalid_i(imem_rvalid_bus),
+      .rerror_i(imem_rerror_bus)
   );
 
   // Mux core and bus access into IMEM
   assign imem_access_core = busy_q;
 
-  assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
+  assign imem_req = imem_access_core ? imem_req_core : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core : imem_write_bus;
   assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
   assign imem_wdata = imem_access_core ? imem_wdata_core : imem_wdata_bus;
@@ -256,20 +255,20 @@ module otbn
   // core cannot perform writes (and has no imem_wmask_o port).
   assign imem_wmask = 32'hFFFFFFFF;
   `ASSERT(ImemWmaskBusIsFullWord_A,
-      imem_req_bus && imem_write_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
+          imem_req_bus && imem_write_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
-  assign imem_rdata_bus  = !imem_access_core ? imem_rdata : 32'b0;
+  assign imem_rdata_bus = !imem_access_core ? imem_rdata : 32'b0;
   assign imem_rdata_core = imem_rdata;
 
-  assign imem_rvalid_bus  = !imem_access_core ? imem_rvalid : 1'b0;
+  assign imem_rvalid_bus = !imem_access_core ? imem_rvalid : 1'b0;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
   // Since rerror depends on rvalid we could save this mux, but could
   // potentially leak rerror to the bus. Err on the side of caution.
-  assign imem_rerror_bus  = !imem_access_core ? imem_rerror : 2'b00;
+  assign imem_rerror_bus = !imem_access_core ? imem_rerror : 2'b00;
   assign imem_rerror_core = imem_rerror;
 
 
@@ -309,25 +308,25 @@ module otbn
   logic [1:0] dmem_rerror_bus;
 
   logic [DmemAddrWidth-1:0] dmem_addr_core;
-  assign dmem_index_core = dmem_addr_core[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
+  assign dmem_index_core = dmem_addr_core[DmemAddrWidth - 1:DmemAddrWidth - DmemIndexWidth];
 
   prim_ram_1p_adv #(
-    .Width           (WLEN),
-    .Depth           (DmemSizeWords),
-    .DataBitsPerMask (32), // 32b write masks for 32b word writes from bus
-    .CfgW            (8)
+      .Width(WLEN),
+      .Depth(DmemSizeWords),
+      .DataBitsPerMask(32),  // 32b write masks for 32b word writes from bus
+      .CfgW(8)
   ) u_dmem (
-    .clk_i,
-    .rst_ni,
-    .req_i    (dmem_req),
-    .write_i  (dmem_write),
-    .addr_i   (dmem_index),
-    .wdata_i  (dmem_wdata),
-    .wmask_i  (dmem_wmask),
-    .rdata_o  (dmem_rdata),
-    .rvalid_o (dmem_rvalid),
-    .rerror_o (dmem_rerror),
-    .cfg_i    ('0)
+      .clk_i,
+      .rst_ni,
+      .req_i   (dmem_req),
+      .write_i (dmem_write),
+      .addr_i  (dmem_index),
+      .wdata_i (dmem_wdata),
+      .wmask_i (dmem_wmask),
+      .rdata_o (dmem_rdata),
+      .rvalid_o(dmem_rvalid),
+      .rerror_o(dmem_rerror),
+      .cfg_i   ('0)
   );
 
   // DMEM access from main TL-UL bus
@@ -335,33 +334,33 @@ module otbn
   assign dmem_gnt_bus = dmem_req_bus & ~dmem_access_core;
 
   tlul_adapter_sram #(
-    .SramAw      (DmemIndexWidth),
-    .SramDw      (WLEN),
-    .Outstanding (1),
-    .ByteAccess  (0),
-    .ErrOnRead   (0)
+      .SramAw(DmemIndexWidth),
+      .SramDw(WLEN),
+      .Outstanding(1),
+      .ByteAccess(0),
+      .ErrOnRead(0)
   ) u_tlul_adapter_sram_dmem (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i     (tl_win_h2d[TlWinDmem]),
-    .tl_o     (tl_win_d2h[TlWinDmem]),
+      .tl_i(tl_win_h2d[TlWinDmem]),
+      .tl_o(tl_win_d2h[TlWinDmem]),
 
-    .req_o    (dmem_req_bus   ),
-    .gnt_i    (dmem_gnt_bus   ),
-    .we_o     (dmem_write_bus ),
-    .addr_o   (dmem_index_bus ),
-    .wdata_o  (dmem_wdata_bus ),
-    .wmask_o  (dmem_wmask_bus ),
-    .rdata_i  (dmem_rdata_bus ),
-    .rvalid_i (dmem_rvalid_bus),
-    .rerror_i (dmem_rerror_bus)
+      .req_o   (dmem_req_bus),
+      .gnt_i   (dmem_gnt_bus),
+      .we_o    (dmem_write_bus),
+      .addr_o  (dmem_index_bus),
+      .wdata_o (dmem_wdata_bus),
+      .wmask_o (dmem_wmask_bus),
+      .rdata_i (dmem_rdata_bus),
+      .rvalid_i(dmem_rvalid_bus),
+      .rerror_i(dmem_rerror_bus)
   );
 
   // Mux core and bus access into dmem
   assign dmem_access_core = busy_q;
 
-  assign dmem_req   = dmem_access_core ? dmem_req_core   : dmem_req_bus;
+  assign dmem_req = dmem_access_core ? dmem_req_core : dmem_req_bus;
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
   assign dmem_wmask = dmem_access_core ? dmem_wmask_core : dmem_wmask_bus;
   assign dmem_index = dmem_access_core ? dmem_index_core : dmem_index_bus;
@@ -369,15 +368,15 @@ module otbn
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // DMEM data through the bus unintentionally.
-  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata : '0;
+  assign dmem_rdata_bus = !dmem_access_core ? dmem_rdata : '0;
   assign dmem_rdata_core = dmem_rdata;
 
-  assign dmem_rvalid_bus  = !dmem_access_core ? dmem_rvalid : 1'b0;
-  assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
+  assign dmem_rvalid_bus = !dmem_access_core ? dmem_rvalid : 1'b0;
+  assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid : 1'b0;
 
   // Since rerror depends on rvalid we could save this mux, but could
   // potentially leak rerror to the bus. Err on the side of caution.
-  assign dmem_rerror_bus  = !dmem_access_core ? dmem_rerror : 2'b00;
+  assign dmem_rerror_bus = !dmem_access_core ? dmem_rerror : 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
 
@@ -386,16 +385,16 @@ module otbn
   logic [NumAlerts-1:0] alerts;
   assign alerts[AlertImemUncorrectable] = imem_rerror[1];
   assign alerts[AlertDmemUncorrectable] = dmem_rerror[1];
-  assign alerts[AlertRegUncorrectable] = 1'b0; // TODO: Implement
-  for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
+  assign alerts[AlertRegUncorrectable] = 1'b0;  // TODO: Implement
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i])
+        .AsyncOn(AlertAsyncOn[i])
     ) i_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_i    (alerts[i]    ),
-      .alert_rx_i (alert_rx_i[i]),
-      .alert_tx_o (alert_tx_o[i])
+        .clk_i,
+        .rst_ni,
+        .alert_i   (alerts[i]),
+        .alert_rx_i(alert_rx_i[i]),
+        .alert_tx_o(alert_tx_o[i])
     );
   end
 
@@ -412,32 +411,32 @@ module otbn
   assign busy_d = (busy_q | start) & ~done;
 
   otbn_core #(
-    .DmemSizeByte(DmemSizeByte),
-    .ImemSizeByte(ImemSizeByte)
+      .DmemSizeByte(DmemSizeByte),
+      .ImemSizeByte(ImemSizeByte)
   ) u_otbn_core (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .start_i (start),
-    .done_o  (done),
+      .start_i(start),
+      .done_o (done),
 
-    .start_addr_i  (start_addr),
+      .start_addr_i(start_addr),
 
-    .imem_req_o    (imem_req_core),
-    .imem_addr_o   (imem_addr_core),
-    .imem_wdata_o  (imem_wdata_core),
-    .imem_rdata_i  (imem_rdata_core),
-    .imem_rvalid_i (imem_rvalid_core),
-    .imem_rerror_i (imem_rerror_core),
+      .imem_req_o   (imem_req_core),
+      .imem_addr_o  (imem_addr_core),
+      .imem_wdata_o (imem_wdata_core),
+      .imem_rdata_i (imem_rdata_core),
+      .imem_rvalid_i(imem_rvalid_core),
+      .imem_rerror_i(imem_rerror_core),
 
-    .dmem_req_o    (dmem_req_core),
-    .dmem_write_o  (dmem_write_core),
-    .dmem_addr_o   (dmem_addr_core),
-    .dmem_wdata_o  (dmem_wdata_core),
-    .dmem_wmask_o  (dmem_wmask_core),
-    .dmem_rdata_i  (dmem_rdata_core),
-    .dmem_rvalid_i (dmem_rvalid_core),
-    .dmem_rerror_i (dmem_rerror_core)
+      .dmem_req_o   (dmem_req_core),
+      .dmem_write_o (dmem_write_core),
+      .dmem_addr_o  (dmem_addr_core),
+      .dmem_wdata_o (dmem_wdata_core),
+      .dmem_wmask_o (dmem_wmask_core),
+      .dmem_rdata_i (dmem_rdata_core),
+      .dmem_rvalid_i(dmem_rvalid_core),
+      .dmem_rerror_i(dmem_rerror_core)
   );
 
   // The core can never signal a write to IMEM

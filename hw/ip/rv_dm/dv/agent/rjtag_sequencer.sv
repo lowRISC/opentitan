@@ -6,8 +6,8 @@ class rjtag_sequencer extends uvm_sequencer#(rjtag_seq_item);
 
   `uvm_sequencer_utils(rjtag_sequencer)
 
-  function new (string name, uvm_component parent);
-    super.new(name,parent);
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
   endfunction : new
 
 endclass : rjtag_sequencer

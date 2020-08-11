@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
+class i2c_env_cfg extends cip_base_env_cfg#(
+    .RAL_T(i2c_reg_block)
+);
 
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
   uint ok_to_end_delay_ns = I2C_IDLE_TIME;

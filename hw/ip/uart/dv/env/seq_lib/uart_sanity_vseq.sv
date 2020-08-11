@@ -7,25 +7,15 @@
 class uart_sanity_vseq extends uart_tx_rx_vseq;
   `uvm_object_utils(uart_sanity_vseq)
 
-  constraint num_trans_c {
-    num_trans == 10;
-  }
+  constraint num_trans_c {num_trans == 10;}
 
-  constraint num_tx_bytes_c {
-    num_tx_bytes == 5;
-  }
+  constraint num_tx_bytes_c {num_tx_bytes == 5;}
 
-  constraint num_rx_bytes_c {
-    num_rx_bytes == 5;
-  }
+  constraint num_rx_bytes_c {num_rx_bytes == 5;}
 
-  constraint en_tx_c {
-    en_tx == 1;
-  }
+  constraint en_tx_c {en_tx == 1;}
 
-  constraint en_rx_c {
-    en_rx == 1;
-  }
+  constraint en_rx_c {en_rx == 1;}
 
   `uvm_object_new
 

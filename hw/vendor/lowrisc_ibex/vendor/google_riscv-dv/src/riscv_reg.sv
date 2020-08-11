@@ -21,19 +21,15 @@
 // Base class for RISC-V register field
 class riscv_reg_field extends uvm_object;
 
-  int unsigned                bit_width;
-  bit [XLEN-1:0]              reset_val;
-  rand bit [XLEN-1:0]         val;
-  reg_field_access_t          access_type;
-  bit                         hard_wired;
+  int unsigned bit_width;
+  bit [XLEN-1:0] reset_val;
+  rand bit [XLEN-1:0] val;
+  reg_field_access_t access_type;
+  bit hard_wired;
 
-  constraint zero_reserved_field_c {
-    (access_type == WPRI) -> (val == '0);
-  }
+  constraint zero_reserved_field_c {(access_type == WPRI) -> (val == '0);}
 
-  constraint hardwired_fld_c {
-    (hard_wired) -> (val == reset_val);
-  }
+  constraint hardwired_fld_c {(hard_wired) -> (val == reset_val);}
 
   `uvm_object_utils(riscv_reg_field)
 
@@ -42,26 +38,28 @@ class riscv_reg_field extends uvm_object;
   endfunction
 
   function string convert2string();
-    return($sformatf("%0s bit_width:%0d val:0x%0x type:%0s",
-                     get_name(), bit_width, val, access_type));
+    return (
+        $sformatf("%0s bit_width:%0d val:0x%0x type:%0s", get_name(), bit_width, val, access_type));
   endfunction
 
   function void post_randomize();
     bit [XLEN-1:0] mask = '1;
-    mask = mask >> (XLEN-bit_width);
+    mask = mask >> (XLEN - bit_width);
     val = mask & val;
   endfunction
 
 endclass
 
 // Base class for RISC-V register
-class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
+class riscv_reg #(
+    type REG_T = privileged_reg_t
+) extends uvm_object;
 
-  REG_T                         reg_name;
-  riscv_csr_t                   offset;
-  privileged_level_t            privil_level;
-  bit [XLEN-1:0]                val;
-  rand riscv_reg_field          fld[$];
+  REG_T reg_name;
+  riscv_csr_t offset;
+  privileged_level_t privil_level;
+  bit [XLEN-1:0] val;
+  rand riscv_reg_field fld[$];
 
   `uvm_object_param_utils(riscv_reg#(REG_T))
 
@@ -74,25 +72,22 @@ class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
     offset = riscv_csr_t'(reg_name);
   endfunction
 
-  virtual function bit[XLEN-1:0] get_val();
+  virtual function bit [XLEN-1:0] get_val();
     int total_len;
     total_len = fld.sum() with (item.bit_width);
-    if(total_len != XLEN) begin
-      foreach(fld[i])
-        $display(fld[i].convert2string());
-      `uvm_fatal(get_full_name(),
-                 $sformatf("Total field length %0d != XLEN %0d", total_len, XLEN))
+    if (total_len != XLEN) begin
+      foreach (fld[i]) $display(fld[i].convert2string());
+      `uvm_fatal(get_full_name(), $sformatf("Total field length %0d != XLEN %0d", total_len, XLEN))
     end
     val = '0;
-    foreach(fld[i]) begin
+    foreach (fld[i]) begin
       val = (val << fld[i].bit_width) | fld[i].val;
     end
     return val;
   endfunction
 
   virtual function void add_field(string fld_name, int unsigned bit_width,
-                                  reg_field_access_t access_type,
-                                  bit [XLEN-1:0] reset_val = '0);
+                                  reg_field_access_t access_type, bit [XLEN-1:0] reset_val = '0);
     riscv_reg_field new_fld;
     new_fld = riscv_reg_field::type_id::create(fld_name);
     new_fld.bit_width = bit_width;
@@ -101,12 +96,12 @@ class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
     fld.push_front(new_fld);
   endfunction
 
-  virtual function void set_field(string fld_name, bit[XLEN-1:0] val, bit hard_wired = 1'b0);
-    foreach(fld[i]) begin
-      if(fld_name == fld[i].get_name()) begin
+  virtual function void set_field(string fld_name, bit [XLEN-1:0] val, bit hard_wired = 1'b0);
+    foreach (fld[i]) begin
+      if (fld_name == fld[i].get_name()) begin
         fld[i].val = val;
         fld[i].hard_wired = hard_wired;
-        if(hard_wired) begin
+        if (hard_wired) begin
           fld[i].reset_val = val;
         end
         return;
@@ -116,8 +111,8 @@ class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
   endfunction
 
   virtual function riscv_reg_field get_field_by_name(string fld_name);
-    foreach(fld[i]) begin
-      if(fld_name == fld[i].get_name()) begin
+    foreach (fld[i]) begin
+      if (fld_name == fld[i].get_name()) begin
         return fld[i];
       end
     end
@@ -135,19 +130,20 @@ class riscv_reg#(type REG_T = privileged_reg_t) extends uvm_object;
   endfunction
 
   virtual function void reset();
-    foreach(fld[i]) begin
+    foreach (fld[i]) begin
       fld[i].val = fld[i].reset_val;
     end
   endfunction
 
   virtual function void set_val(bit [XLEN-1:0] val);
-    foreach(fld[i]) begin
-      if(!fld[i].hard_wired) begin
+    foreach (fld[i]) begin
+      if (!fld[i].hard_wired) begin
         // Assign the valid msb to the field
         fld[i].val = (val >> (XLEN - fld[i].bit_width));
-        `uvm_info(get_full_name(), $sformatf(
-                  "Assign field %0s, bit_width:%0d, reg_val 0x%0x,  fld_val:0x%0x",
-                  fld[i].get_name(), fld[i].bit_width, val, fld[i].val), UVM_LOW)
+        `uvm_info(get_full_name(),
+                  $sformatf("Assign field %0s, bit_width:%0d, reg_val 0x%0x,  fld_val:0x%0x",
+                            fld[i].get_name(), fld[i].bit_width, val, fld[i].val),
+                  UVM_LOW)
       end
       val = val << fld[i].bit_width;
     end

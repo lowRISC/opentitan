@@ -30,7 +30,7 @@ package otbn_pkg;
   // Toplevel constants ============================================================================
 
   // Alerts
-  parameter int                   NumAlerts = 3;
+  parameter int NumAlerts = 3;
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}};
 
   parameter int AlertImemUncorrectable = 0;
@@ -38,31 +38,30 @@ package otbn_pkg;
   parameter int AlertRegUncorrectable = 2;
 
   // Error codes
-  typedef enum logic [31:0] {
-    ErrCodeNoError = 32'h 0000_0000
-  } err_code_e;
+  typedef enum logic [31:0] {ErrCodeNoError = 32'h0000_0000} err_code_e;
 
   // Constants =====================================================================================
 
   typedef enum logic {
-    InsnSubsetBase = 1'b0,  // Base (RV32/Narrow) Instruction Subset
-    InsnSubsetBignum = 1'b1 // Big Number (BN/Wide) Instruction Subset
+    InsnSubsetBase = 1'b0
+    ,  // Base (RV32/Narrow) Instruction Subset
+    InsnSubsetBignum = 1'b1  // Big Number (BN/Wide) Instruction Subset
   } insn_subset_e;
 
   // Opcodes (field [6:0] in the instruction), matching the RISC-V specification for the base
   // instruction subset.
   typedef enum logic [6:0] {
-    InsnOpcodeBaseLoad     = 7'h03,
-    InsnOpcodeBaseMemMisc  = 7'h0f,
-    InsnOpcodeBaseOpImm    = 7'h13,
-    InsnOpcodeBaseAuipc    = 7'h17,
-    InsnOpcodeBaseStore    = 7'h23,
-    InsnOpcodeBaseOp       = 7'h33,
-    InsnOpcodeBaseLui      = 7'h37,
-    InsnOpcodeBaseBranch   = 7'h63,
-    InsnOpcodeBaseJalr     = 7'h67,
-    InsnOpcodeBaseJal      = 7'h6f,
-    InsnOpcodeBaseSystem   = 7'h73
+    InsnOpcodeBaseLoad = 7'h03,
+    InsnOpcodeBaseMemMisc = 7'h0f,
+    InsnOpcodeBaseOpImm = 7'h13,
+    InsnOpcodeBaseAuipc = 7'h17,
+    InsnOpcodeBaseStore = 7'h23,
+    InsnOpcodeBaseOp = 7'h33,
+    InsnOpcodeBaseLui = 7'h37,
+    InsnOpcodeBaseBranch = 7'h63,
+    InsnOpcodeBaseJalr = 7'h67,
+    InsnOpcodeBaseJal = 7'h6f,
+    InsnOpcodeBaseSystem = 7'h73
   } insn_opcode_e;
 
   typedef enum logic [3:0] {
@@ -86,7 +85,7 @@ package otbn_pkg;
 
   // Operand a source selection
   typedef enum logic [1:0] {
-    OpASelRegister  = 'd0,
+    OpASelRegister = 'd0,
     OpASelImmediate = 'd1,
     OpASelFwd = 'd2,
     OpASelCurrPc = 'd3
@@ -94,15 +93,13 @@ package otbn_pkg;
 
   // Operand b source selection
   typedef enum logic {
-    OpBSelRegister  = 1'b0,
+    OpBSelRegister = 1'b0,
     OpBSelImmediate = 1'b1
   } op_b_sel_e;
 
 
   // Immediate a selection
-  typedef enum logic {
-    ImmAZero
-  } imm_a_sel_e;
+  typedef enum logic {ImmAZero} imm_a_sel_e;
 
   // Immediate b selection
   typedef enum logic [2:0] {
@@ -114,27 +111,25 @@ package otbn_pkg;
   } imm_b_sel_e;
 
   // Regfile write data selection
-  typedef enum logic {
-    RfWdSelEx
-  } rf_wd_sel_e;
+  typedef enum logic {RfWdSelEx} rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
   parameter int CsrNumWidth = 12;
   typedef enum logic [CsrNumWidth-1:0] {
     CsrFlags = 12'h7C0,
-    CsrMod0  = 12'h7D0,
-    CsrMod1  = 12'h7D1,
-    CsrMod2  = 12'h7D2,
-    CsrMod3  = 12'h7D3,
-    CsrMod4  = 12'h7D4,
-    CsrMod5  = 12'h7D5,
-    CsrMod6  = 12'hdD6,
-    CsrMod7  = 12'h7D7,
-    CsrRnd   = 12'hFC0
+    CsrMod0 = 12'h7D0,
+    CsrMod1 = 12'h7D1,
+    CsrMod2 = 12'h7D2,
+    CsrMod3 = 12'h7D3,
+    CsrMod4 = 12'h7D4,
+    CsrMod5 = 12'h7D5,
+    CsrMod6 = 12'hdD6,
+    CsrMod7 = 12'h7D7,
+    CsrRnd = 12'hFC0
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 3; // Number of WSRs
+  parameter int NWsr = 3;  // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod = 'd0,
@@ -150,9 +145,9 @@ package otbn_pkg;
   // TODO: The variable names are rather short, especially "i" is confusing. Think about renaming.
 
   typedef struct packed {
-    logic [4:0]  d;  // Destination register
-    logic [4:0]  a;  // First source register
-    logic [4:0]  b;  // Second source register
+    logic [4:0] d;  // Destination register
+    logic [4:0] a;  // First source register
+    logic [4:0] b;  // Second source register
     logic [31:0] i;  // Immediate
   } insn_dec_base_t;
 
@@ -160,16 +155,16 @@ package otbn_pkg;
   // instruction influencing the operation.
   typedef struct packed {
     insn_subset_e subset;
-    op_a_sel_e    op_a_sel;
-    op_b_sel_e    op_b_sel;
-    alu_op_e      alu_op;
-    logic         rf_we;
-    rf_wd_sel_e   rf_wdata_sel;
-    logic         ecall_insn;
+    op_a_sel_e op_a_sel;
+    op_b_sel_e op_b_sel;
+    alu_op_e alu_op;
+    logic rf_we;
+    rf_wd_sel_e rf_wdata_sel;
+    logic ecall_insn;
   } insn_dec_ctrl_t;
 
   typedef struct packed {
-    alu_op_e     op;
+    alu_op_e op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_operation_t;

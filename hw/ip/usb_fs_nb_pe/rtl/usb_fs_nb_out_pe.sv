@@ -14,65 +14,65 @@
 `include "prim_assert.sv"
 
 module usb_fs_nb_out_pe #(
-  parameter logic [4:0] NumOutEps = 2,
-  parameter int unsigned MaxOutPktSizeByte = 32,
-  localparam int unsigned OutEpW = $clog2(NumOutEps), // derived parameter
-  localparam int unsigned PktW = $clog2(MaxOutPktSizeByte) // derived parameter
+    parameter logic [4:0] NumOutEps = 2,
+    parameter int unsigned MaxOutPktSizeByte = 32,
+    localparam int unsigned OutEpW = $clog2 (NumOutEps),  // derived parameter
+    localparam int unsigned PktW = $clog2 (MaxOutPktSizeByte)  // derived parameter
 ) (
-  input  logic                   clk_48mhz_i,
-  input  logic                   rst_ni,
-  input  logic                   link_reset_i,
-  input  logic [6:0]             dev_addr_i,
+    input logic       clk_48mhz_i,
+    input logic       rst_ni,
+    input logic       link_reset_i,
+    input logic [6:0] dev_addr_i,
 
-  ////////////////////////
-  // endpoint interface //
-  ////////////////////////
-  output logic [3:0]             out_ep_current_o, // Other signals address to this ep,
-                                                   // stable for several cycles
-  output logic                   out_ep_data_put_o, // put the data (put addr advances after)
-  output logic [PktW - 1:0]      out_ep_put_addr_o, // Offset to put data (0..pktlen)
-  output logic [7:0]             out_ep_data_o,
-  output logic                   out_ep_newpkt_o, // new packed, current was set
-  output logic                   out_ep_acked_o, // good termination, device has acked
-  output logic                   out_ep_rollback_o, // bad termination, discard data
-  output logic [NumOutEps-1:0]   out_ep_setup_o,
-  input  logic [NumOutEps-1:0]   out_ep_full_i, // Cannot accept data
-  input  logic [NumOutEps-1:0]   out_ep_stall_i, // Stalled
-  input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
+    ////////////////////////
+    // endpoint interface //
+    ////////////////////////
+    output logic [          3:0] out_ep_current_o,  // Other signals address to this ep,
+    // stable for several cycles
+    output logic                 out_ep_data_put_o,  // put the data (put addr advances after)
+    output logic [   PktW - 1:0] out_ep_put_addr_o,  // Offset to put data (0..pktlen)
+    output logic [          7:0] out_ep_data_o,
+    output logic                 out_ep_newpkt_o,  // new packed, current was set
+    output logic                 out_ep_acked_o,  // good termination, device has acked
+    output logic                 out_ep_rollback_o,  // bad termination, discard data
+    output logic [NumOutEps-1:0] out_ep_setup_o,
+    input  logic [NumOutEps-1:0] out_ep_full_i,  // Cannot accept data
+    input  logic [NumOutEps-1:0] out_ep_stall_i,  // Stalled
+    input  logic [NumOutEps-1:0] out_ep_iso_i,  // Configure endpoint in isochronous mode
 
-  input logic  [NumOutEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
+    input logic [NumOutEps-1:0] data_toggle_clear_i,  // Clear the data toggles for an EP
 
-  /////////////
-  // rx path //
-  /////////////
+    /////////////
+    // rx path //
+    /////////////
 
-  // Strobed on reception of packet.
-  input  logic                 rx_pkt_start_i,
-  input  logic                 rx_pkt_end_i,
-  input  logic                 rx_pkt_valid_i,
+    // Strobed on reception of packet.
+    input logic rx_pkt_start_i,
+    input logic rx_pkt_end_i,
+    input logic rx_pkt_valid_i,
 
-  // Most recent packet received.
-  input  logic [3:0]           rx_pid_i,
-  input  logic [6:0]           rx_addr_i,
-  input  logic [3:0]           rx_endp_i,
+    // Most recent packet received.
+    input logic [3:0] rx_pid_i,
+    input logic [6:0] rx_addr_i,
+    input logic [3:0] rx_endp_i,
 
-  // rx_data is pushed into endpoint controller.
-  input  logic                 rx_data_put_i,
-  input  logic [7:0]           rx_data_i,
+    // rx_data is pushed into endpoint controller.
+    input logic       rx_data_put_i,
+    input logic [7:0] rx_data_i,
 
 
-  /////////////
-  // tx path //
-  /////////////
+    /////////////
+    // tx path //
+    /////////////
 
-  // Strobe to send new packet.
-  output logic                 tx_pkt_start_o,
-  input  logic                 tx_pkt_end_i,
-  output logic [3:0]           tx_pid_o
+    // Strobe to send new packet.
+    output logic       tx_pkt_start_o,
+    input  logic       tx_pkt_end_i,
+    output logic [3:0] tx_pid_o
 );
 
   // suppress warnings
-  logic                      unused_1;
+  logic unused_1;
   assign unused_1 = tx_pkt_end_i;
 
   ////////////////////////////////
@@ -88,8 +88,8 @@ module usb_fs_nb_out_pe #(
     StRcvdIsoDataEnd
   } state_out_e;
 
-  state_out_e  out_xfr_state;
-  state_out_e  out_xfr_state_next;
+  state_out_e out_xfr_state;
+  state_out_e out_xfr_state_next;
 
   logic out_xfr_start;
   logic new_pkt_end;
@@ -102,10 +102,10 @@ module usb_fs_nb_out_pe #(
   logic [NumOutEps - 1:0] data_toggle_q, data_toggle_d;
 
   // Decode the rx token
-  logic       token_received, out_token_received, setup_token_received;
-  logic       invalid_packet_received, data_packet_received, non_data_packet_received;
-  logic       bad_data_toggle;
-  logic       ep_impl_d, ep_impl_q;
+  logic token_received, out_token_received, setup_token_received;
+  logic invalid_packet_received, data_packet_received, non_data_packet_received;
+  logic bad_data_toggle;
+  logic ep_impl_d, ep_impl_q;
   logic [3:0] out_ep_current_d;
 
   // 1: If the current transfer is a SETUP, 0: OUT
@@ -113,40 +113,27 @@ module usb_fs_nb_out_pe #(
 
   // More syntax so can compare with enum
   usb_pid_type_e rx_pid_type;
-  usb_pid_e      rx_pid;
+  usb_pid_e rx_pid;
   assign rx_pid_type = usb_pid_type_e'(rx_pid_i[1:0]);
-  assign rx_pid      = usb_pid_e'(rx_pid_i);
+  assign rx_pid = usb_pid_e'(rx_pid_i);
 
   // Is the specified endpoint actually implemented?
   assign ep_impl_d = {1'b0, rx_endp_i} < NumOutEps;
 
   assign token_received =
-    rx_pkt_end_i &&
-    rx_pkt_valid_i &&
-    rx_pid_type == UsbPidTypeToken &&
-    rx_addr_i == dev_addr_i;
+      rx_pkt_end_i && rx_pkt_valid_i && rx_pid_type == UsbPidTypeToken && rx_addr_i == dev_addr_i;
 
-  assign out_token_received =
-    token_received &&
-    rx_pid == UsbPidOut;
+  assign out_token_received = token_received && rx_pid == UsbPidOut;
 
-  assign setup_token_received =
-    token_received &&
-    rx_pid == UsbPidSetup;
+  assign setup_token_received = token_received && rx_pid == UsbPidSetup;
 
-  assign invalid_packet_received =
-    rx_pkt_end_i &&
-    !rx_pkt_valid_i;
+  assign invalid_packet_received = rx_pkt_end_i && !rx_pkt_valid_i;
 
   assign data_packet_received =
-    rx_pkt_end_i &&
-    rx_pkt_valid_i &&
-    ((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
+      rx_pkt_end_i && rx_pkt_valid_i && ((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
   assign non_data_packet_received =
-    rx_pkt_end_i &&
-    rx_pkt_valid_i &&
-    !((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
+      rx_pkt_end_i && rx_pkt_valid_i && !((rx_pid == UsbPidData0) || (rx_pid == UsbPidData1));
 
   assign out_ep_current_d = ep_impl_d ? rx_endp_i : '0;
 
@@ -155,13 +142,11 @@ module usb_fs_nb_out_pe #(
   // They are only valid if ep_impl_d/q are set, i.e., if the specified endpoint is implemented.
   logic [OutEpW-1:0] out_ep_index;
   logic [OutEpW-1:0] out_ep_index_d;
-  assign out_ep_index   = out_ep_current_o[0 +: OutEpW];
+  assign out_ep_index = out_ep_current_o[0 +: OutEpW];
   assign out_ep_index_d = out_ep_current_d[0 +: OutEpW];
 
   assign bad_data_toggle =
-    data_packet_received &&
-    ep_impl_d &&
-    rx_pid_i[3] != data_toggle_q[out_ep_index_d];
+      data_packet_received && ep_impl_d && rx_pid_i[3] != data_toggle_q[out_ep_index_d];
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -229,7 +214,7 @@ module usb_fs_nb_out_pe #(
           out_xfr_state_next = StIdle;
           rollback_data = 1'b1;
           tx_pkt_start_o = 1'b1;
-          tx_pid_o = {UsbPidAck}; // ACK by spec because this is most likely previous ACK was lost
+          tx_pid_o = {UsbPidAck};  // ACK by spec because this is most likely previous ACK was lost
         end else if (invalid_packet_received || non_data_packet_received) begin
           // in these cases eg bad CRC, send no response (not a NAK)
           out_xfr_state_next = StIdle;
@@ -250,12 +235,12 @@ module usb_fs_nb_out_pe #(
           // - is not implemented,
           // - is not set up.
           // SETUP transfers are not stalled.
-          tx_pid_o = {UsbPidStall}; // STALL
+          tx_pid_o = {UsbPidStall};  // STALL
         end else if (nak_out_transfer) begin
-          tx_pid_o = {UsbPidNak}; // NAK -- the endpoint could not accept the data at the moment
+          tx_pid_o = {UsbPidNak};  // NAK -- the endpoint could not accept the data at the moment
           rollback_data = 1'b1;
         end else begin
-          tx_pid_o = {UsbPidAck}; // ACK
+          tx_pid_o = {UsbPidAck};  // ACK
           new_pkt_end = 1'b1;
           out_ep_acked_o = 1'b1;
         end
@@ -268,13 +253,13 @@ module usb_fs_nb_out_pe #(
         if (out_ep_stall_i[out_ep_index] && !current_xfer_setup_q) begin
           // Send a STALL (something bad happened and the host needs to resolve it)
           tx_pkt_start_o = 1'b1;
-          tx_pid_o       = {UsbPidStall}; // STALL
+          tx_pid_o = {UsbPidStall};  // STALL
         end else if (nak_out_transfer) begin
           // We got a valid packet, but can't store it (error that the software must resolve)
           rollback_data = 1'b1;
         end else begin
           // We got a valid packet, but we don't send an ACK on the bus
-          new_pkt_end    = 1'b1;
+          new_pkt_end = 1'b1;
           out_ep_acked_o = 1'b1;
         end
 
@@ -309,9 +294,9 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      data_toggle_q <= '0; // All endpoints
+      data_toggle_q <= '0;  // All endpoints
     end else if (link_reset_i) begin
-      data_toggle_q <= '0; // All endpoints
+      data_toggle_q <= '0;  // All endpoints
     end else begin
       data_toggle_q <= data_toggle_d;
     end
@@ -319,16 +304,16 @@ module usb_fs_nb_out_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_ep_newpkt_o       <= 1'b0;
-      out_ep_current_o      <= '0;
-      current_xfer_setup_q  <= 1'b0;
-      ep_impl_q             <= 1'b0;
+      out_ep_newpkt_o <= 1'b0;
+      out_ep_current_o <= '0;
+      current_xfer_setup_q <= 1'b0;
+      ep_impl_q <= 1'b0;
     end else begin
       if (out_xfr_start) begin
-        out_ep_newpkt_o      <= 1'b1;
-        out_ep_current_o     <= out_ep_current_d;
+        out_ep_newpkt_o <= 1'b1;
+        out_ep_current_o <= out_ep_current_d;
         current_xfer_setup_q <= setup_token_received;
-        ep_impl_q            <= ep_impl_d;
+        ep_impl_q <= ep_impl_d;
       end else begin
         out_ep_newpkt_o <= 1'b0;
       end

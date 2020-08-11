@@ -8,7 +8,9 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
+class flash_ctrl_env_cov extends cip_base_env_cov#(
+    .CFG_T(flash_ctrl_env_cfg)
+);
   `uvm_component_utils(flash_ctrl_env_cov)
 
   // the base class provides the following handles for use:

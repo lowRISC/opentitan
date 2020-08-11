@@ -17,14 +17,14 @@
 // This class provides some common routines for privileged mode operations
 class riscv_privileged_common_seq extends uvm_sequence;
 
-  riscv_instr_gen_config  cfg;
-  int                     hart;
-  riscv_privil_reg        mstatus;
-  riscv_privil_reg        mie;
-  riscv_privil_reg        sstatus;
-  riscv_privil_reg        sie;
-  riscv_privil_reg        ustatus;
-  riscv_privil_reg        uie;
+  riscv_instr_gen_config cfg;
+  int hart;
+  riscv_privil_reg mstatus;
+  riscv_privil_reg mie;
+  riscv_privil_reg sstatus;
+  riscv_privil_reg sie;
+  riscv_privil_reg ustatus;
+  riscv_privil_reg uie;
 
   `uvm_object_utils(riscv_privileged_common_seq)
 
@@ -34,25 +34,26 @@ class riscv_privileged_common_seq extends uvm_sequence;
 
   virtual function void enter_privileged_mode(input privileged_mode_t mode,
                                               output string instrs[$]);
-    string label = format_string({$sformatf("%0sinit_%0s:",
-                                 hart_prefix(hart), mode.name())}, LABEL_STR_LEN);
+    string label = format_string({
+      $sformatf("%0sinit_%0s:", hart_prefix(hart), mode.name())
+    }, LABEL_STR_LEN);
     string ret_instr[] = {"mret"};
     riscv_privil_reg regs[$];
     label = label.tolower();
     setup_mmode_reg(mode, regs);
-    if(mode == SUPERVISOR_MODE) begin
+    if (mode == SUPERVISOR_MODE) begin
       setup_smode_reg(mode, regs);
     end
-    if(mode == USER_MODE) begin
+    if (mode == USER_MODE) begin
       setup_umode_reg(mode, regs);
     end
-    if(cfg.virtual_addr_translation_on) begin
+    if (cfg.virtual_addr_translation_on) begin
       setup_satp(instrs);
     end
     gen_csr_instr(regs, instrs);
     // Use mret/sret to switch to the target privileged mode
     instrs.push_back(ret_instr[0]);
-    foreach(instrs[i]) begin
+    foreach (instrs[i]) begin
       instrs[i] = {indent, instrs[i]};
     end
     instrs.push_front(label);
@@ -91,7 +92,7 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("MPIE", cfg.enable_interrupt);
     mstatus.set_field("MIE", cfg.enable_interrupt);
     mstatus.set_field("SPIE", cfg.enable_interrupt);
-    mstatus.set_field("SIE",  cfg.enable_interrupt);
+    mstatus.set_field("SIE", cfg.enable_interrupt);
     mstatus.set_field("UPIE", cfg.enable_interrupt);
     mstatus.set_field("UIE", riscv_instr_pkg::support_umode_trap);
     `uvm_info(`gfn, $sformatf("mstatus_val: 0x%0x", mstatus.get_val()), UVM_LOW)
@@ -124,10 +125,10 @@ class riscv_privileged_common_seq extends uvm_sequence;
       sstatus.set_val(cfg.sstatus);
     end
     sstatus.set_field("SPIE", cfg.enable_interrupt);
-    sstatus.set_field("SIE",  cfg.enable_interrupt);
+    sstatus.set_field("SIE", cfg.enable_interrupt);
     sstatus.set_field("UPIE", cfg.enable_interrupt);
     sstatus.set_field("UIE", riscv_instr_pkg::support_umode_trap);
-    if(XLEN==64) begin
+    if (XLEN == 64) begin
       sstatus.set_field("UXL", 2'b10);
     end
     sstatus.set_field("FS", cfg.mstatus_fs);
@@ -181,17 +182,17 @@ class riscv_privileged_common_seq extends uvm_sequence;
   endfunction
 
   virtual function void gen_csr_instr(riscv_privil_reg regs[$], ref string instrs[$]);
-    foreach(regs[i]) begin
+    foreach (regs[i]) begin
       instrs.push_back($sformatf("li x%0d, 0x%0x", cfg.gpr[0], regs[i].get_val()));
-      instrs.push_back($sformatf("csrw 0x%0x, x%0d # %0s",
-                       regs[i].reg_name, cfg.gpr[0], regs[i].reg_name.name()));
+      instrs.push_back($sformatf("csrw 0x%0x, x%0d # %0s", regs[i].reg_name, cfg.gpr[0],
+                                 regs[i].reg_name.name()));
     end
   endfunction
 
   virtual function void setup_satp(ref string instrs[$]);
     riscv_privil_reg satp;
     bit [XLEN-1:0] satp_ppn_mask;
-    if(SATP_MODE == BARE) return;
+    if (SATP_MODE == BARE) return;
     satp = riscv_privil_reg::type_id::create("satp");
     satp.init_reg(SATP);
     satp.set_field("MODE", SATP_MODE);

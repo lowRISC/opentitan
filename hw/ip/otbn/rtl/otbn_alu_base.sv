@@ -10,21 +10,21 @@
  * This ALU supports the execution of all of OTBN's base instruction subset.
  */
 module otbn_alu_base
-  import otbn_pkg::*;
+import otbn_pkg::*;
 (
-  // Block is combinatorial; clk/rst are for assertions only.
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
+    // Block is combinatorial; clk/rst are for assertions only.
+    input logic clk_i,
+    input logic rst_ni,
 
-  input  alu_base_operation_t  operation_i,
-  input  alu_base_comparison_t comparison_i,
+    input alu_base_operation_t  operation_i,
+    input alu_base_comparison_t comparison_i,
 
-  output logic [31:0]          operation_result_o,
-  output logic                 comparison_result_o
+    output logic [31:0] operation_result_o,
+    output logic        comparison_result_o
 );
 
   logic [32:0] adder_op_a, adder_op_b;
-  logic        adder_op_b_negate;
+  logic adder_op_b_negate;
   logic [33:0] adder_result;
 
   logic [31:0] and_result;
@@ -32,7 +32,7 @@ module otbn_alu_base
   logic [31:0] xor_result;
   logic [31:0] not_result;
 
-  logic  is_equal;
+  logic is_equal;
 
   ///////////
   // Adder //
@@ -45,7 +45,11 @@ module otbn_alu_base
   assign adder_op_b_negate = operation_i.op == AluOpSub;
 
   assign adder_op_a = {operation_i.operand_a, 1'b1};
-  assign adder_op_b = adder_op_b_negate ? {~operation_i.operand_b, 1'b1} : {operation_i.operand_b, 1'b0};
+  assign adder_op_b = adder_op_b_negate ? {
+    ~operation_i.operand_b, 1'b1
+  } : {
+    operation_i.operand_b, 1'b0
+  };
 
   assign adder_result = adder_op_a + adder_op_b;
 
@@ -54,7 +58,7 @@ module otbn_alu_base
   //////////////////////////
 
   assign and_result = operation_i.operand_a & operation_i.operand_b;
-  assign or_result  = operation_i.operand_a | operation_i.operand_b;
+  assign or_result = operation_i.operand_a | operation_i.operand_b;
   assign xor_result = operation_i.operand_a ^ operation_i.operand_b;
   assign not_result = ~operation_i.operand_a;
 
@@ -63,14 +67,14 @@ module otbn_alu_base
   /////////////
 
   logic [32:0] shift_in;
-  logic [4:0]  shift_amt;
+  logic [4:0] shift_amt;
   logic [31:0] operand_a_reverse;
   logic [32:0] shift_out;
   logic [31:0] shift_out_reverse;
 
-  for (genvar i = 0;i < 32; i++) begin : g_shifter_reverses
-    assign operand_a_reverse[i] = operation_i.operand_a[31-i];
-    assign shift_out_reverse[i] = shift_out[31-i];
+  for (genvar i = 0; i < 32; i++) begin : g_shifter_reverses
+    assign operand_a_reverse[i] = operation_i.operand_a[31 - i];
+    assign shift_out_reverse[i] = shift_out[31 - i];
   end
 
   assign shift_amt = operation_i.operand_b[4:0];
@@ -91,7 +95,7 @@ module otbn_alu_base
 
     unique case (operation_i.op)
       AluOpAnd: operation_result_o = and_result;
-      AluOpOr:  operation_result_o = or_result;
+      AluOpOr: operation_result_o = or_result;
       AluOpXor: operation_result_o = xor_result;
       AluOpNot: operation_result_o = not_result;
       AluOpSra: operation_result_o = shift_out[31:0];

@@ -5,24 +5,23 @@
 
 module prim_alert_rxtx_async_bind_fpv;
 
-  bind prim_alert_rxtx_async_fpv
-        prim_alert_rxtx_async_assert_fpv prim_alert_rxtx_async_assert_fpv (
-    .clk_i,
-    .rst_ni,
-    .ping_err_pi,
-    .ping_err_ni,
-    .ping_skew_i,
-    .ack_err_pi,
-    .ack_err_ni,
-    .ack_skew_i,
-    .alert_err_pi,
-    .alert_err_ni,
-    .alert_skew_i,
-    .alert_i,
-    .ping_en_i,
-    .ping_ok_o,
-    .integ_fail_o,
-    .alert_o
+  bind prim_alert_rxtx_async_fpv prim_alert_rxtx_async_assert_fpv prim_alert_rxtx_async_assert_fpv (
+      .clk_i,
+      .rst_ni,
+      .ping_err_pi,
+      .ping_err_ni,
+      .ping_skew_i,
+      .ack_err_pi,
+      .ack_err_ni,
+      .ack_skew_i,
+      .alert_err_pi,
+      .alert_err_ni,
+      .alert_skew_i,
+      .alert_i,
+      .ping_en_i,
+      .ping_ok_o,
+      .integ_fail_o,
+      .alert_o
   );
 
 endmodule : prim_alert_rxtx_async_bind_fpv

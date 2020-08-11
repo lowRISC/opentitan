@@ -20,36 +20,36 @@
 //     -> sensor_ctrl
 
 module xbar_peri (
-  input clk_peri_i,
-  input rst_peri_ni,
+    input clk_peri_i,
+    input rst_peri_ni,
 
-  // Host interfaces
-  input  tlul_pkg::tl_h2d_t tl_main_i,
-  output tlul_pkg::tl_d2h_t tl_main_o,
+    // Host interfaces
+    input  tlul_pkg::tl_h2d_t tl_main_i,
+    output tlul_pkg::tl_d2h_t tl_main_o,
 
-  // Device interfaces
-  output tlul_pkg::tl_h2d_t tl_uart_o,
-  input  tlul_pkg::tl_d2h_t tl_uart_i,
-  output tlul_pkg::tl_h2d_t tl_gpio_o,
-  input  tlul_pkg::tl_d2h_t tl_gpio_i,
-  output tlul_pkg::tl_h2d_t tl_spi_device_o,
-  input  tlul_pkg::tl_d2h_t tl_spi_device_i,
-  output tlul_pkg::tl_h2d_t tl_rv_timer_o,
-  input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
-  output tlul_pkg::tl_h2d_t tl_usbdev_o,
-  input  tlul_pkg::tl_d2h_t tl_usbdev_i,
-  output tlul_pkg::tl_h2d_t tl_pwrmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
-  output tlul_pkg::tl_h2d_t tl_rstmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
-  output tlul_pkg::tl_h2d_t tl_clkmgr_o,
-  input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
-  output tlul_pkg::tl_h2d_t tl_ram_ret_o,
-  input  tlul_pkg::tl_d2h_t tl_ram_ret_i,
-  output tlul_pkg::tl_h2d_t tl_sensor_ctrl_o,
-  input  tlul_pkg::tl_d2h_t tl_sensor_ctrl_i,
+    // Device interfaces
+    output tlul_pkg::tl_h2d_t tl_uart_o,
+    input  tlul_pkg::tl_d2h_t tl_uart_i,
+    output tlul_pkg::tl_h2d_t tl_gpio_o,
+    input  tlul_pkg::tl_d2h_t tl_gpio_i,
+    output tlul_pkg::tl_h2d_t tl_spi_device_o,
+    input  tlul_pkg::tl_d2h_t tl_spi_device_i,
+    output tlul_pkg::tl_h2d_t tl_rv_timer_o,
+    input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
+    output tlul_pkg::tl_h2d_t tl_usbdev_o,
+    input  tlul_pkg::tl_d2h_t tl_usbdev_i,
+    output tlul_pkg::tl_h2d_t tl_pwrmgr_o,
+    input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
+    output tlul_pkg::tl_h2d_t tl_rstmgr_o,
+    input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
+    output tlul_pkg::tl_h2d_t tl_clkmgr_o,
+    input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
+    output tlul_pkg::tl_h2d_t tl_ram_ret_o,
+    input  tlul_pkg::tl_d2h_t tl_ram_ret_i,
+    output tlul_pkg::tl_h2d_t tl_sensor_ctrl_o,
+    input  tlul_pkg::tl_d2h_t tl_sensor_ctrl_i,
 
-  input scanmode_i
+    input scanmode_i
 );
 
   import tlul_pkg::*;
@@ -60,12 +60,12 @@ module xbar_peri (
   logic unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
-  tl_h2d_t tl_s1n_11_us_h2d ;
-  tl_d2h_t tl_s1n_11_us_d2h ;
+  tl_h2d_t tl_s1n_11_us_h2d;
+  tl_d2h_t tl_s1n_11_us_d2h;
 
 
-  tl_h2d_t tl_s1n_11_ds_h2d [10];
-  tl_d2h_t tl_s1n_11_ds_d2h [10];
+  tl_h2d_t tl_s1n_11_ds_h2d[10];
+  tl_d2h_t tl_s1n_11_ds_d2h[10];
 
   // Create steering signal
   logic [3:0] dev_sel_s1n_11;
@@ -114,7 +114,8 @@ module xbar_peri (
     end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
       dev_sel_s1n_11 = 4'd1;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
+    end else
+        if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
       dev_sel_s1n_11 = 4'd2;
 
     end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
@@ -135,27 +136,28 @@ module xbar_peri (
     end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_RAM_RET)) == ADDR_SPACE_RAM_RET) begin
       dev_sel_s1n_11 = 4'd8;
 
-    end else if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
+    end else
+        if ((tl_s1n_11_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
       dev_sel_s1n_11 = 4'd9;
-end
+    end
   end
 
 
   // Instantiation phase
   tlul_socket_1n #(
-    .HReqDepth (4'h0),
-    .HRspDepth (4'h0),
-    .DReqDepth (40'h0),
-    .DRspDepth (40'h0),
-    .N         (10)
+      .HReqDepth(4'h0),
+      .HRspDepth(4'h0),
+      .DReqDepth(40'h0),
+      .DRspDepth(40'h0),
+      .N(10)
   ) u_s1n_11 (
-    .clk_i        (clk_peri_i),
-    .rst_ni       (rst_peri_ni),
-    .tl_h_i       (tl_s1n_11_us_h2d),
-    .tl_h_o       (tl_s1n_11_us_d2h),
-    .tl_d_o       (tl_s1n_11_ds_h2d),
-    .tl_d_i       (tl_s1n_11_ds_d2h),
-    .dev_select_i (dev_sel_s1n_11)
+      .clk_i       (clk_peri_i),
+      .rst_ni      (rst_peri_ni),
+      .tl_h_i      (tl_s1n_11_us_h2d),
+      .tl_h_o      (tl_s1n_11_us_d2h),
+      .tl_d_o      (tl_s1n_11_ds_h2d),
+      .tl_d_i      (tl_s1n_11_ds_d2h),
+      .dev_select_i(dev_sel_s1n_11)
   );
 
 endmodule

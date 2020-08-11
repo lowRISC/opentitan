@@ -10,7 +10,12 @@ class alert_handler_random_alerts_vseq extends alert_handler_sanity_vseq;
   `uvm_object_new
 
   constraint esc_accum_thresh_c {
-    foreach (accum_thresh[i]) {accum_thresh[i] dist {[0:1] :/ 5, [2:5] :/ 5};}
+    foreach (accum_thresh[i]) {
+      accum_thresh[i] dist {
+        [0 : 1] :/ 5,
+        [2 : 5] :/ 5
+      };
+    }
   }
 
   function void pre_randomize();

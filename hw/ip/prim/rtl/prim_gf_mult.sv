@@ -27,27 +27,23 @@
 `include "prim_assert.sv"
 
 module prim_gf_mult #(
-  parameter int Width = 32,
-  parameter int StagesPerCycle = Width,
+    parameter int Width = 32,
+    parameter int StagesPerCycle = Width,
 
-  // The field-generating, irreducible polynomial of degree Width.
-  // Can for example be a Conway polynomial, see
-  // http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/CP2.html
-  // For Width = 33, the Conway polynomial hast bits 32, 15, 9, 7, 4, 3, 0 set to one.
-  parameter logic[Width-1:0] IPoly = 1'b1 << 15 |
-                                     1'b1 << 9  |
-                                     1'b1 << 7  |
-                                     1'b1 << 4  |
-                                     1'b1 << 3  |
-                                     1'b1 << 0
+    // The field-generating, irreducible polynomial of degree Width.
+    // Can for example be a Conway polynomial, see
+    // http://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/CP2.html
+    // For Width = 33, the Conway polynomial hast bits 32, 15, 9, 7, 4, 3, 0 set to one.
+    parameter logic [Width-1:0] IPoly =
+        1'b1 << 15 | 1'b1 << 9 | 1'b1 << 7 | 1'b1 << 4 | 1'b1 << 3 | 1'b1 << 0
 ) (
-  input clk_i,
-  input rst_ni,
-  input req_i,
-  input [Width-1:0] operand_a_i,
-  input [Width-1:0] operand_b_i,
-  output logic ack_o,
-  output logic [Width-1:0] prod_o
+    input                    clk_i,
+    input                    rst_ni,
+    input                    req_i,
+    input        [Width-1:0] operand_a_i,
+    input        [Width-1:0] operand_b_i,
+    output logic             ack_o,
+    output logic [Width-1:0] prod_o
 );
 
   `ASSERT_INIT(IntegerLoops_A, (Width % StagesPerCycle) == 0)
@@ -116,7 +112,7 @@ module prim_gf_mult #(
         vector <= '0;
       end else if (req_i) begin
         prod_q <= prod_d;
-        vector <= matrix[StagesPerCycle-1];
+        vector <= matrix[StagesPerCycle - 1];
       end
     end
   end
@@ -130,34 +126,28 @@ module prim_gf_mult #(
 
 
   // GF(2^Width) * x
-  function automatic logic [Width-1:0] gf_mult2(
-    logic [Width-1:0] operand
-  );
+  function automatic logic [Width-1:0] gf_mult2(logic [Width-1:0] operand);
     logic [Width-1:0] mult_out;
-    mult_out = operand[Width-1] ? (operand << 1) ^ IPoly : (operand << 1);
+    mult_out = operand[Width - 1] ? (operand << 1) ^ IPoly : (operand << 1);
     return mult_out;
   endfunction
 
   // Matrix generate step
-  function automatic logic [StagesPerCycle-1:0][Width-1:0] gen_matrix(
-    logic [Width-1:0] seed,
-    logic init
-  );
+  function automatic logic [StagesPerCycle-1:0][Width-1:0] gen_matrix(logic [Width-1:0] seed,
+                                                                          logic init);
     logic [StagesPerCycle-1:0][Width-1:0] matrix_out;
 
     matrix_out[0] = init ? seed : gf_mult2(seed);
-    matrix_out[StagesPerCycle-1:1] = '0;
+    matrix_out[StagesPerCycle - 1:1] = '0;
     for (int i = 1; i < StagesPerCycle; i++) begin
-      matrix_out[i] = gf_mult2(matrix_out[i-1]);
+      matrix_out[i] = gf_mult2(matrix_out[i - 1]);
     end
     return matrix_out;
   endfunction
 
   // Galois multiply step
-  function automatic logic [Width-1:0] gf_mult(
-    logic [StagesPerCycle-1:0][Width-1:0] matrix,
-    logic [StagesPerCycle-1:0] operand
-  );
+  function automatic logic [Width-1:0] gf_mult(logic [StagesPerCycle-1:0][Width-1:0] matrix,
+                                                 logic [StagesPerCycle-1:0] operand);
     logic [Width-1:0] mult_out;
     logic [Width-1:0] add_vector;
     mult_out = '0;
@@ -166,6 +156,6 @@ module prim_gf_mult #(
       mult_out = mult_out ^ add_vector;
     end
     return mult_out;
-  endfunction // gf_mult
+  endfunction  // gf_mult
 
-endmodule // prim_gf_mult
+endmodule  // prim_gf_mult

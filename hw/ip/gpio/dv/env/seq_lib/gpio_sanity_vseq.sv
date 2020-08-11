@@ -24,7 +24,7 @@ class gpio_sanity_vseq extends gpio_base_vseq;
     // no_pullup_pulldown is passed to have no pullup/pulldown
     set_gpio_pulls(.pu(cfg.pullup_en), .pd(cfg.pulldown_en));
     super.dut_init(reset_kind);
-  endtask: dut_init
+  endtask : dut_init
 
   task body();
 
@@ -41,8 +41,10 @@ class gpio_sanity_vseq extends gpio_base_vseq;
       cfg.clk_rst_vif.wait_clks(delay);
       // Reading data_in will trigger a check inside scoreboard
       csr_rd(.ptr(ral.data_in), .value(csr_rd_val));
-      `uvm_info(msg_id, {$sformatf("reading data_in after %0d clock cycles ", delay),
-                         $sformatf("csr_rd_val = %0h", csr_rd_val)}, UVM_HIGH)
+      `uvm_info(msg_id, {
+                $sformatf("reading data_in after %0d clock cycles ", delay),
+                $sformatf("csr_rd_val = %0h", csr_rd_val)
+                }, UVM_HIGH)
     end
 
     // test gpio outputs
@@ -56,8 +58,10 @@ class gpio_sanity_vseq extends gpio_base_vseq;
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_o)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_oe)
-      `uvm_info(msg_id, $sformatf("writing direct_out = 0x%0h [%0b] direct_oe = 0x%0h [%0b]",
-                                  gpio_o, gpio_o, gpio_oe, gpio_oe), UVM_HIGH)
+      `uvm_info(msg_id,
+                $sformatf("writing direct_out = 0x%0h [%0b] direct_oe = 0x%0h [%0b]", gpio_o,
+                          gpio_o, gpio_oe, gpio_oe),
+                UVM_HIGH)
       ral.direct_out.set(gpio_o);
       ral.direct_oe.set(gpio_oe);
       csr_update(.csr(ral.direct_out));

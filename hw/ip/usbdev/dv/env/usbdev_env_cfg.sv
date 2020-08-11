@@ -2,25 +2,25 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
+class usbdev_env_cfg extends cip_base_env_cfg#(
+    .RAL_T(usbdev_reg_block)
+);
 
-  virtual clk_rst_if  usb_clk_rst_vif;
+  virtual clk_rst_if usb_clk_rst_vif;
   rand clk_freq_mhz_e usb_clk_freq_mhz;
 
   // Reset kinds for USB
   string reset_kinds[] = {"HARD", "TL_IF", "USB_IF"};
 
   // Constrain USB to be at 48MHz based on spec
-  constraint usb_clk_freq_mhz_c {
-    usb_clk_freq_mhz == dv_utils_pkg::ClkFreq48Mhz;
-  }
+  constraint usb_clk_freq_mhz_c {usb_clk_freq_mhz == dv_utils_pkg::ClkFreq48Mhz;}
 
   // ext component cfgs
   rand usb20_agent_cfg m_usb20_agent_cfg;
 
   `uvm_object_utils_begin(usbdev_env_cfg)
-    `uvm_field_object(m_usb20_agent_cfg,                UVM_DEFAULT)
-    `uvm_field_enum  (clk_freq_mhz_e, usb_clk_freq_mhz, UVM_DEFAULT)
+    `uvm_field_object(m_usb20_agent_cfg, UVM_DEFAULT)
+    `uvm_field_enum(clk_freq_mhz_e, usb_clk_freq_mhz, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

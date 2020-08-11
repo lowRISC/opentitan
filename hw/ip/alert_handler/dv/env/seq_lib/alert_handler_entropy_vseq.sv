@@ -10,26 +10,28 @@ class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
   `uvm_object_new
 
   // large number of num_trans to make sure covers all alerts and escalation pings
-  constraint num_trans_c {
-    num_trans inside {[4_000:100_000]};
-  }
+  constraint num_trans_c {num_trans inside {[4_000 : 100_000]};}
 
   // increase the possibility to enable more alerts, because alert_handler only sends ping on
   // enabled alerts
   constraint enable_one_alert_c {
-    alert_en dist {'b1111 :/ 9, [0:'b1110] :/ 1};
+    alert_en dist {
+      'b1111 :/ 9,
+      [0 : 'b1110] :/ 1
+    };
   }
 
-  constraint sig_int_c {
-    esc_int_err == 0;
-  }
+  constraint sig_int_c {esc_int_err == 0;}
 
-  constraint lock_bit_c {
-    do_lock_config == 1;
-  }
+  constraint lock_bit_c {do_lock_config == 1;}
 
   constraint esc_accum_thresh_c {
-    foreach (accum_thresh[i]) {accum_thresh[i] dist {[0:1] :/ 5, [2:10] :/ 5};}
+    foreach (accum_thresh[i]) {
+      accum_thresh[i] dist {
+        [0 : 1] :/ 5,
+        [2 : 10] :/ 5
+      };
+    }
   }
 
   function void pre_randomize();

@@ -7,42 +7,45 @@
 
 `include "prim_assert.sv"
 
-module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
-  input                            clk_i,
-  input                            rst_ni,
-  // Slow always-on clock
-  input                            clk_aon_i,
-  input                            rst_aon_ni,
-  // Wakeup request, running on clk_aon_i
-  output logic                     aon_wkup_req_o,
-  // Sleep enable, running on clk_i
-  input                            sleep_en_i,
-  // IO Power OK signal
-  input  io_pok_req_t              io_pok_i,
-  // Strap sample request
-  input  lc_strap_req_t            lc_pinmux_strap_i,
-  output lc_strap_rsp_t            lc_pinmux_strap_o,
-  output dft_strap_test_req_t      dft_strap_test_o,
-  // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t        tl_i,
-  output tlul_pkg::tl_d2h_t        tl_o,
-  // Muxed Peripheral side
-  input        [NMioPeriphOut-1:0] periph_to_mio_i,
-  input        [NMioPeriphOut-1:0] periph_to_mio_oe_i,
-  output logic [NMioPeriphIn-1:0]  mio_to_periph_o,
-  // Dedicated Peripheral side
-  input        [NDioPads-1:0]      periph_to_dio_i,
-  input        [NDioPads-1:0]      periph_to_dio_oe_i,
-  output logic [NDioPads-1:0]      dio_to_periph_o,
-  // Pad side
-  // MIOs
-  output logic [NMioPads-1:0]      mio_out_o,
-  output logic [NMioPads-1:0]      mio_oe_o,
-  input        [NMioPads-1:0]      mio_in_i,
-  // DIOs
-  output logic [NDioPads-1:0]      dio_out_o,
-  output logic [NDioPads-1:0]      dio_oe_o,
-  input        [NDioPads-1:0]      dio_in_i
+module pinmux
+import pinmux_pkg::*;
+import pinmux_reg_pkg::*;
+(
+    input                                           clk_i,
+    input                                           rst_ni,
+    // Slow always-on clock
+    input                                           clk_aon_i,
+    input                                           rst_aon_ni,
+    // Wakeup request, running on clk_aon_i
+    output logic                                    aon_wkup_req_o,
+    // Sleep enable, running on clk_i
+    input                                           sleep_en_i,
+    // IO Power OK signal
+    input  io_pok_req_t                             io_pok_i,
+    // Strap sample request
+    input  lc_strap_req_t                           lc_pinmux_strap_i,
+    output lc_strap_rsp_t                           lc_pinmux_strap_o,
+    output dft_strap_test_req_t                     dft_strap_test_o,
+    // Bus Interface (device)
+    input  tlul_pkg::tl_h2d_t                       tl_i,
+    output tlul_pkg::tl_d2h_t                       tl_o,
+    // Muxed Peripheral side
+    input                       [NMioPeriphOut-1:0] periph_to_mio_i,
+    input                       [NMioPeriphOut-1:0] periph_to_mio_oe_i,
+    output logic                [ NMioPeriphIn-1:0] mio_to_periph_o,
+    // Dedicated Peripheral side
+    input                       [     NDioPads-1:0] periph_to_dio_i,
+    input                       [     NDioPads-1:0] periph_to_dio_oe_i,
+    output logic                [     NDioPads-1:0] dio_to_periph_o,
+    // Pad side
+    // MIOs
+    output logic                [     NMioPads-1:0] mio_out_o,
+    output logic                [     NMioPads-1:0] mio_oe_o,
+    input                       [     NMioPads-1:0] mio_in_i,
+    // DIOs
+    output logic                [     NDioPads-1:0] dio_out_o,
+    output logic                [     NDioPads-1:0] dio_oe_o,
+    input                       [     NDioPads-1:0] dio_in_i
 );
 
   ////////////////////////////
@@ -53,12 +56,12 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // They have been placed here such that they do not generate
   // warnings in the C header generation step, since logic is not supported
   // as a data type yet.
-  localparam logic [pinmux_reg_pkg::NMioPeriphOut-1:0] MioPeriphHasSleepMode
-                   = {pinmux_reg_pkg::NMioPeriphOut{1'b1}};
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasSleepMode
-                   = {pinmux_reg_pkg::NDioPads{1'b1}};
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasWkup
-                   = {pinmux_reg_pkg::NDioPads{1'b1}};
+  localparam logic [pinmux_reg_pkg::NMioPeriphOut-1:0]
+      MioPeriphHasSleepMode = {pinmux_reg_pkg::NMioPeriphOut{1'b1}};
+  localparam
+      logic [pinmux_reg_pkg::NDioPads-1:0] DioPeriphHasSleepMode = {pinmux_reg_pkg::NDioPads{1'b1}};
+  localparam
+      logic [pinmux_reg_pkg::NDioPads-1:0] DioPeriphHasWkup = {pinmux_reg_pkg::NDioPads{1'b1}};
 
   //////////////////////////////////
   // Regfile Breakout and Mapping //
@@ -68,13 +71,13 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   pinmux_hw2reg_t hw2reg;
 
   pinmux_reg_top u_reg (
-    .clk_i  ,
-    .rst_ni ,
-    .tl_i   ,
-    .tl_o   ,
-    .reg2hw ,
-    .hw2reg ,
-    .devmode_i(1'b1)
+      .clk_i,
+      .rst_ni,
+      .tl_i,
+      .tl_o,
+      .reg2hw,
+      .hw2reg,
+      .devmode_i(1'b1)
   );
 
   /////////////////////
@@ -95,13 +98,13 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // 2: high-z
   // 3: previous value
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_sleep
-    assign mio_out_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ? 1'b0 :
-                                (reg2hw.mio_out_sleep_val[k].q == 1) ? 1'b1 :
-                                (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_out_o[k];
+    assign mio_out_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ?
+        1'b0 : (reg2hw.mio_out_sleep_val[k].q == 1) ?
+        1'b1 : (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_out_o[k];
 
-    assign mio_oe_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ? 1'b1 :
-                               (reg2hw.mio_out_sleep_val[k].q == 1) ? 1'b1 :
-                               (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_oe_o[k];
+    assign mio_oe_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ?
+        1'b1 : (reg2hw.mio_out_sleep_val[k].q == 1) ?
+        1'b1 : (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_oe_o[k];
   end
 
   // since DIO pads are permanently mapped to a specific peripheral,
@@ -112,42 +115,39 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
       assign hw2reg.dio_out_sleep_val[k].d = dio_out_sleep_val_q[k];
 
       assign dio_out_sleep_val_d[k] = (reg2hw.dio_out_sleep_val[k].qe) ?
-                                      reg2hw.dio_out_sleep_val[k].q :
-                                      dio_out_sleep_val_q[k];
+          reg2hw.dio_out_sleep_val[k].q : dio_out_sleep_val_q[k];
 
-      assign dio_out_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b0 :
-                                  (dio_out_sleep_val_q[k] == 1) ? 1'b1 :
-                                  (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_out_o[k];
+      assign dio_out_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b0 : (
+          dio_out_sleep_val_q[k] == 1) ? 1'b1 : (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_out_o[k];
 
-      assign dio_oe_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b1 :
-                                 (dio_out_sleep_val_q[k] == 1) ? 1'b1 :
-                                 (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_oe_o[k];
+      assign dio_oe_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b1 : (dio_out_sleep_val_q[k] == 1
+          ) ? 1'b1 : (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_oe_o[k];
     end else begin : gen_warl_tie0
       // these signals will be unused
-      assign hw2reg.dio_out_sleep_val[k].d = 2'b10; // default value defined in hjson
-      assign dio_out_sleep_val_d[k] = 2'b10; // default value defined in hjson
-      assign dio_out_sleep_d[k]     = '0;
-      assign dio_oe_sleep_d[k]      = '0;
+      assign hw2reg.dio_out_sleep_val[k].d = 2'b10;  // default value defined in hjson
+      assign dio_out_sleep_val_d[k] = 2'b10;  // default value defined in hjson
+      assign dio_out_sleep_d[k] = '0;
+      assign dio_oe_sleep_d[k] = '0;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_sleep
     if (!rst_ni) begin
-      sleep_en_q          <= 1'b0;
-      dio_out_sleep_val_q <= {NDioPads{2'b10}}; // default value defined in hjson
-      mio_out_sleep_q     <= '0;
-      mio_oe_sleep_q      <= '0;
-      dio_out_sleep_q     <= '0;
-      dio_oe_sleep_q      <= '0;
+      sleep_en_q <= 1'b0;
+      dio_out_sleep_val_q <= {NDioPads{2'b10}};  // default value defined in hjson
+      mio_out_sleep_q <= '0;
+      mio_oe_sleep_q <= '0;
+      dio_out_sleep_q <= '0;
+      dio_oe_sleep_q <= '0;
     end else begin
-      sleep_en_q          <= sleep_en_i;
+      sleep_en_q <= sleep_en_i;
       dio_out_sleep_val_q <= dio_out_sleep_val_d;
 
       if (sleep_en_i & !sleep_en_q) begin
         mio_out_sleep_q <= mio_out_sleep_d;
-        mio_oe_sleep_q  <= mio_oe_sleep_d;
+        mio_oe_sleep_q <= mio_oe_sleep_d;
         dio_out_sleep_q <= dio_out_sleep_d;
-        dio_oe_sleep_q  <= dio_oe_sleep_d;
+        dio_oe_sleep_q <= dio_oe_sleep_d;
       end
     end
   end
@@ -156,8 +156,8 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // Input Mux //
   ///////////////
 
-  localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2**$clog2(NMioPads + 2) :
-                                                              2**$clog2(NDioPads);
+  localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2 ** $clog2(NMioPads + 2) :
+      2 ** $clog2(NDioPads);
 
   // stack input and default signals for convenient indexing below possible defaults: constant 0 or
   // 1. make sure mux is aligned to a power of 2 to avoid Xes.
@@ -177,9 +177,9 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // stack output data/enable and default signals for convenient indexing below
   // possible defaults: 0, 1 or 2 (high-Z). make sure mux is aligned to a power of 2 to avoid Xes.
   logic [2**$clog2(NMioPeriphOut+3)-1:0] periph_data_mux, periph_oe_mux, periph_sleep_mux;
-  assign periph_data_mux  = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
-  assign periph_oe_mux    = $bits(periph_oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
-  assign periph_sleep_mux = $bits(periph_sleep_mux)'({MioPeriphHasSleepMode,  1'b1, 1'b1, 1'b1});
+  assign periph_data_mux = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
+  assign periph_oe_mux = $bits(periph_oe_mux)'({periph_to_mio_oe_i, 1'b0, 1'b1, 1'b1});
+  assign periph_sleep_mux = $bits(periph_sleep_mux)'({MioPeriphHasSleepMode, 1'b1, 1'b1, 1'b1});
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_out
     logic sleep_en;
@@ -187,7 +187,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     assign sleep_en = periph_sleep_mux[reg2hw.mio_outsel[k].q] & sleep_en_q;
     // index using configured outsel
     assign mio_out_o[k] = (sleep_en) ? mio_out_sleep_q[k] : periph_data_mux[reg2hw.mio_outsel[k].q];
-    assign mio_oe_o[k]  = (sleep_en) ? mio_oe_sleep_q[k]  : periph_oe_mux[reg2hw.mio_outsel[k].q];
+    assign mio_oe_o[k] = (sleep_en) ? mio_oe_sleep_q[k] : periph_oe_mux[reg2hw.mio_outsel[k].q];
   end
 
   /////////////////////
@@ -201,10 +201,10 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     // Since this is a DIO, this can be determined at design time
     if (DioPeriphHasSleepMode[k]) begin : gen_sleep
       assign dio_out_o[k] = (sleep_en_q) ? dio_out_sleep_q[k] : periph_to_dio_i[k];
-      assign dio_oe_o[k]  = (sleep_en_q) ? dio_oe_sleep_q[k]  : periph_to_dio_oe_i[k];
+      assign dio_oe_o[k] = (sleep_en_q) ? dio_oe_sleep_q[k] : periph_to_dio_oe_i[k];
     end else begin : gen_nosleep
       assign dio_out_o[k] = periph_to_dio_i[k];
-      assign dio_oe_o[k]  = periph_to_dio_oe_i[k];
+      assign dio_oe_o[k] = periph_to_dio_oe_i[k];
     end
   end
 
@@ -226,32 +226,31 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   end
 
   for (genvar k = NDioPads; k < AlignedMuxSize; k++) begin : gen_dio_data_mux_tie_off
-      assign dio_data_mux[k] = 1'b0;
+    assign dio_data_mux[k] = 1'b0;
   end
 
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
     logic pin_value;
-    assign pin_value = (reg2hw.wkup_detector[k].miodio.q)           ?
-                       dio_data_mux[reg2hw.wkup_detector_padsel[k]] :
-                       mio_data_mux[reg2hw.wkup_detector_padsel[k]];
+    assign pin_value = (reg2hw.wkup_detector[k].miodio.q) ?
+        dio_data_mux[reg2hw.wkup_detector_padsel[k]] : mio_data_mux[reg2hw.wkup_detector_padsel[k]];
 
     pinmux_wkup i_pinmux_wkup (
-      .clk_i,
-      .rst_ni,
-      .clk_aon_i,
-      .rst_aon_ni,
-      // config signals. these are synched to clk_aon internally
-      .wkup_en_i          ( reg2hw.wkup_detector_en[k].q                ),
-      .filter_en_i        ( reg2hw.wkup_detector[k].filter.q            ),
-      .wkup_mode_i        ( wkup_mode_e'(reg2hw.wkup_detector[k].mode.q)),
-      .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q            ),
-      .pin_value_i        ( pin_value                                   ),
-      // cause reg signals. these are synched from/to clk_aon internally
-      .wkup_cause_valid_i ( reg2hw.wkup_cause[k].qe                     ),
-      .wkup_cause_data_i  ( reg2hw.wkup_cause[k].q                      ),
-      .wkup_cause_data_o  ( hw2reg.wkup_cause[k].d                      ),
-      // wakeup request signals on clk_aon (level encoded)
-      .aon_wkup_req_o     ( aon_wkup_req[k]                             )
+        .clk_i,
+        .rst_ni,
+        .clk_aon_i,
+        .rst_aon_ni,
+        // config signals. these are synched to clk_aon internally
+        .wkup_en_i         (reg2hw.wkup_detector_en[k].q),
+        .filter_en_i       (reg2hw.wkup_detector[k].filter.q),
+        .wkup_mode_i       (wkup_mode_e'(reg2hw.wkup_detector[k].mode.q)),
+        .wkup_cnt_th_i     (reg2hw.wkup_detector_cnt_th[k].q),
+        .pin_value_i       (pin_value),
+        // cause reg signals. these are synched from/to clk_aon internally
+        .wkup_cause_valid_i(reg2hw.wkup_cause[k].qe),
+        .wkup_cause_data_i (reg2hw.wkup_cause[k].q),
+        .wkup_cause_data_o (hw2reg.wkup_cause[k].d),
+        // wakeup request signals on clk_aon (level encoded)
+        .aon_wkup_req_o    (aon_wkup_req[k])
     );
   end
 
@@ -276,22 +275,20 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   end
 
   assign lc_pinmux_strap_o = lc_strap_q;
-  assign lc_strap_d = (lc_pinmux_strap_i.sample_pulse)      ?
-                      '{valid: 1'b1, straps: lc_strap_taps} :
-                      lc_strap_q;
+  assign lc_strap_d = (lc_pinmux_strap_i.sample_pulse) ? '{valid: 1'b1, straps: lc_strap_taps} :
+      lc_strap_q;
 
   // DFT straps are triggered by the same LC sampling pulse
   assign dft_strap_test_o = dft_strap_test_q;
-  assign dft_strap_test_d = (lc_pinmux_strap_i.sample_pulse) ?
-                            '{valid: 1'b1, straps: dft_strap_taps} :
-                            dft_strap_test_q;
+  assign dft_strap_test_d =
+      (lc_pinmux_strap_i.sample_pulse) ? '{valid: 1'b1, straps: dft_strap_taps} : dft_strap_test_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_sample
     if (!rst_ni) begin
-      lc_strap_q       <= '0;
+      lc_strap_q <= '0;
       dft_strap_test_q <= '0;
     end else begin
-      lc_strap_q       <= lc_strap_d;
+      lc_strap_q <= lc_strap_d;
       dft_strap_test_q <= dft_strap_test_d;
     end
   end

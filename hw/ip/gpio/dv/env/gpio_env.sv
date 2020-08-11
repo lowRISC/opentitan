@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class gpio_env extends cip_base_env #(
-        .CFG_T               (gpio_env_cfg),
-        .COV_T               (gpio_env_cov),
-        .VIRTUAL_SEQUENCER_T (gpio_virtual_sequencer),
-        .SCOREBOARD_T        (gpio_scoreboard)
-    );
+class gpio_env extends cip_base_env#(
+    .CFG_T(gpio_env_cfg),
+    .COV_T(gpio_env_cov),
+    .VIRTUAL_SEQUENCER_T(gpio_virtual_sequencer),
+    .SCOREBOARD_T(gpio_scoreboard)
+);
   `uvm_component_utils(gpio_env)
 
   `uvm_component_new

@@ -25,20 +25,21 @@
 `include "prim_assert.sv"
 
 module prim_sync_reqack (
-  input  clk_src_i,       // REQ side, SRC domain
-  input  rst_src_ni,      // REQ side, SRC domain
-  input  clk_dst_i,       // ACK side, DST domain
-  input  rst_dst_ni,      // ACK side, DST domain
+    input clk_src_i,  // REQ side, SRC domain
+    input rst_src_ni,  // REQ side, SRC domain
+    input clk_dst_i,  // ACK side, DST domain
+    input rst_dst_ni,  // ACK side, DST domain
 
-  input  logic src_req_i, // REQ side, SRC domain
-  output logic src_ack_o, // REQ side, SRC domain
-  output logic dst_req_o, // ACK side, DST domain
-  input  logic dst_ack_i  // ACK side, DST domain
+    input  logic src_req_i,  // REQ side, SRC domain
+    output logic src_ack_o,  // REQ side, SRC domain
+    output logic dst_req_o,  // ACK side, DST domain
+    input  logic dst_ack_i  // ACK side, DST domain
 );
 
   // Types
   typedef enum logic {
-    HANDSHAKE, SYNC
+    HANDSHAKE,
+    SYNC
   } sync_reqack_fsm_e;
 
   // Signals
@@ -49,22 +50,22 @@ module prim_sync_reqack (
 
   // Move REQ over to ACK side.
   prim_flop_2sync #(
-    .Width(1)
+      .Width(1)
   ) req_sync (
-    .clk_i  (clk_dst_i),
-    .rst_ni (rst_dst_ni),
-    .d_i    (src_req_q),
-    .q_o    (dst_req)
+      .clk_i (clk_dst_i),
+      .rst_ni(rst_dst_ni),
+      .d_i   (src_req_q),
+      .q_o   (dst_req)
   );
 
   // Move ACK over to REQ side.
   prim_flop_2sync #(
-    .Width(1)
+      .Width(1)
   ) ack_sync (
-    .clk_i  (clk_src_i),
-    .rst_ni (rst_src_ni),
-    .d_i    (dst_ack_q),
-    .q_o    (src_ack)
+      .clk_i (clk_src_i),
+      .rst_ni(rst_src_ni),
+      .d_i   (dst_ack_q),
+      .q_o   (src_ack)
   );
 
   // REQ-side FSM (source domain)
@@ -82,7 +83,7 @@ module prim_sync_reqack (
         if (src_req_i && src_ack) begin
           src_fsm_ns = SYNC;
           // Tell ACK side that we are done.
-          src_req_d  = 1'b0;
+          src_req_d = 1'b0;
         end
       end
 
@@ -118,8 +119,8 @@ module prim_sync_reqack (
 
       SYNC: begin
         // Don't forward REQ, hold ACK, wait for REQ side.
-        dst_req_o  = 1'b0;
-        dst_ack_d  = 1'b1;
+        dst_req_o = 1'b0;
+        dst_ack_d = 1'b1;
         if (!dst_req) begin
           dst_fsm_ns = HANDSHAKE;
         end
@@ -133,19 +134,19 @@ module prim_sync_reqack (
   always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
     if (!rst_src_ni) begin
       src_fsm_cs <= HANDSHAKE;
-      src_req_q  <= 1'b0;
+      src_req_q <= 1'b0;
     end else begin
       src_fsm_cs <= src_fsm_ns;
-      src_req_q  <= src_req_d;
+      src_req_q <= src_req_d;
     end
   end
   always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
     if (!rst_dst_ni) begin
       dst_fsm_cs <= HANDSHAKE;
-      dst_ack_q  <= 1'b0;
+      dst_ack_q <= 1'b0;
     end else begin
       dst_fsm_cs <= dst_fsm_ns;
-      dst_ack_q  <= dst_ack_d;
+      dst_ack_q <= dst_ack_d;
     end
   end
 

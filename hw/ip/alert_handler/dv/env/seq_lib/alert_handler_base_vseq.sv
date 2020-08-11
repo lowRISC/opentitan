@@ -20,17 +20,17 @@
   `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == lock_bit;) \
   csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
 
-class alert_handler_base_vseq extends cip_base_vseq #(
-    .CFG_T               (alert_handler_env_cfg),
-    .RAL_T               (alert_handler_reg_block),
-    .COV_T               (alert_handler_env_cov),
-    .VIRTUAL_SEQUENCER_T (alert_handler_virtual_sequencer)
-  );
+class alert_handler_base_vseq extends cip_base_vseq#(
+    .CFG_T(alert_handler_env_cfg),
+    .RAL_T(alert_handler_reg_block),
+    .COV_T(alert_handler_env_cov),
+    .VIRTUAL_SEQUENCER_T(alert_handler_virtual_sequencer)
+);
   `uvm_object_utils(alert_handler_base_vseq)
 
   // various knobs to enable certain routines
   bit do_alert_handler_init = 1'b0;
-  bit config_locked         = 1'b0;
+  bit config_locked = 1'b0;
 
   `uvm_object_new
 
@@ -45,11 +45,10 @@ class alert_handler_base_vseq extends cip_base_vseq #(
 
   // setup basic alert_handler features
   // alert_class default 0 -> all alert will trigger interrupt classA
-  virtual task alert_handler_init(bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1,
-                                  bit [NUM_ALERTS-1:0]                alert_en = '1,
-                                  bit [TL_DW-1:0]                     alert_class = 'h0,
-                                  bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
-                                  bit [TL_DW-1:0]                     loc_alert_class = 'h0);
+  virtual task alert_handler_init(
+      bit [NUM_ALERT_HANDLER_CLASSES-1:0] intr_en = '1, bit [NUM_ALERTS-1:0] alert_en = '1,
+      bit [TL_DW-1:0] alert_class = 'h0, bit [NUM_LOCAL_ALERT-1:0] loc_alert_en = '1,
+      bit [TL_DW-1:0] loc_alert_class = 'h0);
     csr_wr(.csr(ral.intr_enable), .value(intr_en));
     csr_wr(.csr(ral.alert_en), .value(alert_en));
     csr_wr(.csr(ral.alert_class), .value(alert_class));
@@ -75,10 +74,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
   // to regen register.
   virtual task lock_config(bit do_lock_config);
-    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
+    if (do_lock_config || $urandom_range(0, 1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
   endtask
 
-  virtual task drive_alert(bit[NUM_ALERTS-1:0] alert_trigger, bit[NUM_ALERTS-1:0] alert_int_err);
+  virtual task drive_alert(bit [NUM_ALERTS-1:0] alert_trigger,
+                           bit [NUM_ALERTS-1:0] alert_int_err);
     fork
       begin : isolation_fork
         foreach (alert_trigger[i]) begin
@@ -108,8 +108,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
           if (esc_int_errs[index]) begin
             fork
               begin
-                esc_receiver_esc_rsp_seq esc_seq =
-                    esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
+                esc_receiver_esc_rsp_seq
+                    esc_seq = esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
                 `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1; standalone_int_err == 1;)
                 esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
               end
@@ -179,21 +179,21 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     `RAND_AND_WR_CLASS_PHASES_CYCLE(d);
   endtask
 
-  virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES]);
+  virtual task wr_intr_timeout_cycle(bit [TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES]);
     csr_wr(.csr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
     csr_wr(.csr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
     csr_wr(.csr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
     csr_wr(.csr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
   endtask
 
-  virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_HANDLER_CLASSES]);
+  virtual task wr_class_accum_threshold(bit [TL_DW-1:0] accum_thresh[NUM_ALERT_HANDLER_CLASSES]);
     csr_wr(.csr(ral.classa_accum_thresh), .value(accum_thresh[0]));
     csr_wr(.csr(ral.classb_accum_thresh), .value(accum_thresh[1]));
     csr_wr(.csr(ral.classc_accum_thresh), .value(accum_thresh[2]));
     csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
-  virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
+  virtual task wr_ping_timeout_cycle(bit [TL_DW-1:0] timeout_val);
     csr_wr(.csr(ral.ping_timeout_cyc), .value(timeout_val));
     if (!config_locked) begin
       if (timeout_val == 0) timeout_val = 1;
@@ -209,8 +209,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
       fork
         forever begin
           bit esc_int_err = esc_int_errs[index] ? $urandom_range(0, 1) : 0;
-          esc_receiver_esc_rsp_seq esc_seq =
-              esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
+          esc_receiver_esc_rsp_seq esc_seq = esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
           `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;)
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
         end
@@ -225,8 +224,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
       fork
         forever begin
           bit alert_timeout = alert_int_err[index] ? $urandom_range(0, 1) : 0;
-          alert_sender_ping_rsp_seq ping_seq =
-              alert_sender_ping_rsp_seq::type_id::create("ping_seq");
+          alert_sender_ping_rsp_seq
+              ping_seq = alert_sender_ping_rsp_seq::type_id::create("ping_seq");
           `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; timeout == alert_timeout;)
           ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
         end

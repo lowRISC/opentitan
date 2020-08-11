@@ -17,11 +17,11 @@
 
 class riscv_vector_cfg extends uvm_object;
 
-  rand vtype_t           vtype;
-  rand bit [XLEN-1:0]    vl;
-  rand bit [XLEN-1:0]    vstart;
-  rand vxrm_t            vxrm;
-  rand bit               vxsat;
+  rand vtype_t vtype;
+  rand bit [XLEN-1:0] vl;
+  rand bit [XLEN-1:0] vstart;
+  rand vxrm_t vxrm;
+  rand bit vxsat;
 
   // Allow only vector instructions from the random sequences
   rand bit only_vec_instr;
@@ -56,14 +56,14 @@ class riscv_vector_cfg extends uvm_object;
   constraint legal_c {
     solve vtype before vl;
     solve vl before vstart;
-    vstart inside {[0:vl]};
-    vl inside {[1:VLEN/vtype.vsew]};
+    vstart inside {[0 : vl]};
+    vl inside {[1 : VLEN / vtype.vsew]};
   }
 
   // Basic constraint for initial bringup
   constraint bringup_c {
     vstart == 0;
-    vl == VLEN/vtype.vsew;
+    vl == VLEN / vtype.vsew;
     vtype.vediv == 1;
   }
 
@@ -72,12 +72,8 @@ class riscv_vector_cfg extends uvm_object;
   constraint vlmul_c {
     vtype.vlmul inside {1, 2, 4, 8};
     vtype.vlmul <= MAX_LMUL;
-    if (vec_narrowing_widening) {
-      vtype.vlmul < 8;
-    }
-    if (vec_quad_widening) {
-      vtype.vlmul < 4;
-    }
+    if (vec_narrowing_widening) {vtype.vlmul < 8;}
+    if (vec_quad_widening) {vtype.vlmul < 4;}
   }
 
   constraint vsew_c {
@@ -101,7 +97,7 @@ class riscv_vector_cfg extends uvm_object;
     `uvm_field_int(vtype.vlmul, UVM_DEFAULT)
     `uvm_field_int(vl, UVM_DEFAULT)
     `uvm_field_int(vstart, UVM_DEFAULT)
-    `uvm_field_enum(vxrm_t,vxrm, UVM_DEFAULT)
+    `uvm_field_enum(vxrm_t, vxrm, UVM_DEFAULT)
     `uvm_field_int(vxsat, UVM_DEFAULT)
   `uvm_object_utils_end
 

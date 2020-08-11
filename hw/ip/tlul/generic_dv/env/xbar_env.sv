@@ -5,17 +5,19 @@
 // ---------------------------------------------
 // Xbar environment class
 // ---------------------------------------------
-class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
-                                    .VIRTUAL_SEQUENCER_T(xbar_virtual_sequencer),
-                                    .SCOREBOARD_T       (xbar_scoreboard),
-                                    .COV_T              (xbar_env_cov));
+class xbar_env extends dv_base_env#(
+    .CFG_T(xbar_env_cfg),
+    .VIRTUAL_SEQUENCER_T(xbar_virtual_sequencer),
+    .SCOREBOARD_T(xbar_scoreboard),
+    .COV_T(xbar_env_cov)
+);
 
-  tl_agent          host_agent[];
-  tl_agent          device_agent[];
+  tl_agent host_agent[];
+  tl_agent device_agent[];
 
   `uvm_component_utils(xbar_env)
 
-  function new (string name, uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction : new
 
@@ -24,17 +26,17 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
     // Connect TileLink host and device agents
     host_agent = new[cfg.num_hosts];
     foreach (host_agent[i]) begin
-      host_agent[i] = tl_agent::type_id::create(
-                      $sformatf("%0s_agent", xbar_hosts[i].host_name), this);
-      uvm_config_db#(tl_agent_cfg)::set(this,
-        $sformatf("*%0s*", xbar_hosts[i].host_name),"cfg", cfg.host_agent_cfg[i]);
+      host_agent[i] =
+          tl_agent::type_id::create($sformatf("%0s_agent", xbar_hosts[i].host_name), this);
+      uvm_config_db#(tl_agent_cfg)::set(this, $sformatf("*%0s*", xbar_hosts[i].host_name), "cfg",
+                                        cfg.host_agent_cfg[i]);
     end
     device_agent = new[cfg.num_devices];
     foreach (device_agent[i]) begin
-      device_agent[i] = tl_agent::type_id::create(
-                      $sformatf("%0s_agent", xbar_devices[i].device_name), this);
-      uvm_config_db#(tl_agent_cfg)::set(this,
-        $sformatf("*%0s*", xbar_devices[i].device_name), "cfg", cfg.device_agent_cfg[i]);
+      device_agent[i] =
+          tl_agent::type_id::create($sformatf("%0s_agent", xbar_devices[i].device_name), this);
+      uvm_config_db#(tl_agent_cfg)::set(this, $sformatf("*%0s*", xbar_devices[i].device_name),
+                                        "cfg", cfg.device_agent_cfg[i]);
     end
 
     // this clock isn't connected to design but only used for TB, like measure timeout, drive long
@@ -48,17 +50,20 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
       scoreboard.add_item_port({"a_chan_", xbar_hosts[i].host_name}, scoreboard_pkg::kSrcPort);
       scoreboard.add_item_port({"d_chan_", xbar_hosts[i].host_name}, scoreboard_pkg::kDstPort);
       // this queue is used to store expected rsp in d channel for unmapped address
-      scoreboard.add_item_queue({"host_unmapped_addr_", xbar_hosts[i].host_name},
-                                scoreboard_pkg::kInOrderCheck);
+      scoreboard.add_item_queue({
+        "host_unmapped_addr_", xbar_hosts[i].host_name
+      }, scoreboard_pkg::kInOrderCheck);
     end
     foreach (xbar_devices[i]) begin
       scoreboard.add_item_port({"a_chan_", xbar_devices[i].device_name}, scoreboard_pkg::kDstPort);
       scoreboard.add_item_port({"d_chan_", xbar_devices[i].device_name}, scoreboard_pkg::kSrcPort);
 
-      scoreboard.add_item_queue({"a_chan_", xbar_devices[i].device_name},
-                         scoreboard_pkg::kOutOfOrderCheck);
-      scoreboard.add_item_queue({"d_chan_", xbar_devices[i].device_name},
-                         scoreboard_pkg::kOutOfOrderCheck);
+      scoreboard.add_item_queue({
+        "a_chan_", xbar_devices[i].device_name
+      }, scoreboard_pkg::kOutOfOrderCheck);
+      scoreboard.add_item_queue({
+        "d_chan_", xbar_devices[i].device_name
+      }, scoreboard_pkg::kOutOfOrderCheck);
     end
   endfunction : build_phase
 
@@ -77,16 +82,20 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
     end
     // Connect scoreboard
     foreach (host_agent[i]) begin
-      host_agent[i].monitor.a_chan_port.connect(
-          scoreboard.item_fifos[{"a_chan_", xbar_hosts[i].host_name}].analysis_export);
-      host_agent[i].monitor.d_chan_port.connect(
-          scoreboard.item_fifos[{"d_chan_", xbar_hosts[i].host_name}].analysis_export);
+      host_agent[i].monitor.a_chan_port.connect(scoreboard.item_fifos[{
+        "a_chan_", xbar_hosts[i].host_name
+      }].analysis_export);
+      host_agent[i].monitor.d_chan_port.connect(scoreboard.item_fifos[{
+        "d_chan_", xbar_hosts[i].host_name
+      }].analysis_export);
     end
     foreach (device_agent[i]) begin
-      device_agent[i].monitor.a_chan_port.connect(
-          scoreboard.item_fifos[{"a_chan_", xbar_devices[i].device_name}].analysis_export);
-      device_agent[i].monitor.d_chan_port.connect(
-          scoreboard.item_fifos[{"d_chan_", xbar_devices[i].device_name}].analysis_export);
+      device_agent[i].monitor.a_chan_port.connect(scoreboard.item_fifos[{
+        "a_chan_", xbar_devices[i].device_name
+      }].analysis_export);
+      device_agent[i].monitor.d_chan_port.connect(scoreboard.item_fifos[{
+        "d_chan_", xbar_devices[i].device_name
+      }].analysis_export);
     end
   endfunction : connect_phase
 

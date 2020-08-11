@@ -92,83 +92,84 @@
 
 `include "prim_assert.sv"
 
-module aes_cipher_core import aes_pkg::*;
+module aes_cipher_core
+import aes_pkg::*;
 #(
-  parameter bit         AES192Enable = 1,
-  parameter bit         Masking      = 0,
-  parameter sbox_impl_e SBoxImpl     = SBoxImplLut,
+    parameter bit AES192Enable = 1,
+    parameter bit Masking = 0,
+    parameter sbox_impl_e SBoxImpl = SBoxImplLut,
 
-  localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
+    localparam int NumShares = Masking ? 2 : 1  // derived parameter
 ) (
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  // Input handshake signals
-  input  logic                 in_valid_i,
-  output logic                 in_ready_o,
+    // Input handshake signals
+    input  logic in_valid_i,
+    output logic in_ready_o,
 
-  // Output handshake signals
-  output logic                 out_valid_o,
-  input  logic                 out_ready_i,
+    // Output handshake signals
+    output logic out_valid_o,
+    input  logic out_ready_i,
 
-  // Control and sync signals
-  input  ciph_op_e             op_i,
-  input  key_len_e             key_len_i,
-  input  logic                 crypt_i,
-  output logic                 crypt_o,
-  input  logic                 dec_key_gen_i,
-  output logic                 dec_key_gen_o,
-  input  logic                 key_clear_i,
-  output logic                 key_clear_o,
-  input  logic                 data_out_clear_i, // Re-use the cipher core muxes.
-  output logic                 data_out_clear_o,
+    // Control and sync signals
+    input  ciph_op_e op_i,
+    input  key_len_e key_len_i,
+    input  logic     crypt_i,
+    output logic     crypt_o,
+    input  logic     dec_key_gen_i,
+    output logic     dec_key_gen_o,
+    input  logic     key_clear_i,
+    output logic     key_clear_o,
+    input  logic     data_out_clear_i,  // Re-use the cipher core muxes.
+    output logic     data_out_clear_o,
 
-  // Pseudo-random data
-  input  logic          [63:0] prng_data_i,
+    // Pseudo-random data
+    input logic [63:0] prng_data_i,
 
-  // I/O data & initial key
-  input  logic [3:0][3:0][7:0] state_init_i [NumShares],
-  input  logic     [7:0][31:0] key_init_i [NumShares],
-  output logic [3:0][3:0][7:0] state_o [NumShares]
+    // I/O data & initial key
+    input  logic [3:0][ 3:0][7:0] state_init_i[NumShares],
+    input  logic [7:0][31:0]      key_init_i  [NumShares],
+    output logic [3:0][ 3:0][7:0] state_o     [NumShares]
 );
 
   // Signals
-  logic [3:0][3:0][7:0] state_d [NumShares];
-  logic [3:0][3:0][7:0] state_q [NumShares];
-  logic                 state_we;
-  state_sel_e           state_sel;
+  logic [3:0][3:0][7:0] state_d[NumShares];
+  logic [3:0][3:0][7:0] state_q[NumShares];
+  logic state_we;
+  state_sel_e state_sel;
 
   logic [3:0][3:0][7:0] sub_bytes_out;
   logic [3:0][3:0][7:0] sb_in_mask;
   logic [3:0][3:0][7:0] sb_out_mask;
-  logic [3:0][3:0][7:0] shift_rows_in [NumShares];
-  logic [3:0][3:0][7:0] shift_rows_out [NumShares];
-  logic [3:0][3:0][7:0] mix_columns_out [NumShares];
-  logic [3:0][3:0][7:0] add_round_key_in [NumShares];
-  logic [3:0][3:0][7:0] add_round_key_out [NumShares];
-  add_rk_sel_e          add_round_key_in_sel;
+  logic [3:0][3:0][7:0] shift_rows_in[NumShares];
+  logic [3:0][3:0][7:0] shift_rows_out[NumShares];
+  logic [3:0][3:0][7:0] mix_columns_out[NumShares];
+  logic [3:0][3:0][7:0] add_round_key_in[NumShares];
+  logic [3:0][3:0][7:0] add_round_key_out[NumShares];
+  add_rk_sel_e add_round_key_in_sel;
 
-  logic     [7:0][31:0] key_full_d [NumShares];
-  logic     [7:0][31:0] key_full_q [NumShares];
-  logic                 key_full_we;
-  key_full_sel_e        key_full_sel;
-  logic     [7:0][31:0] key_dec_d [NumShares];
-  logic     [7:0][31:0] key_dec_q [NumShares];
-  logic                 key_dec_we;
-  key_dec_sel_e         key_dec_sel;
-  logic     [7:0][31:0] key_expand_out [NumShares];
-  ciph_op_e             key_expand_op;
-  logic                 key_expand_step;
-  logic                 key_expand_clear;
-  logic           [3:0] key_expand_round;
-  key_words_sel_e       key_words_sel;
-  logic     [3:0][31:0] key_words [NumShares];
-  logic [3:0][3:0][7:0] key_bytes [NumShares];
-  logic [3:0][3:0][7:0] key_mix_columns_out [NumShares];
-  logic [3:0][3:0][7:0] round_key [NumShares];
-  round_key_sel_e       round_key_sel;
+  logic [7:0][31:0] key_full_d[NumShares];
+  logic [7:0][31:0] key_full_q[NumShares];
+  logic key_full_we;
+  key_full_sel_e key_full_sel;
+  logic [7:0][31:0] key_dec_d[NumShares];
+  logic [7:0][31:0] key_dec_q[NumShares];
+  logic key_dec_we;
+  key_dec_sel_e key_dec_sel;
+  logic [7:0][31:0] key_expand_out[NumShares];
+  ciph_op_e key_expand_op;
+  logic key_expand_step;
+  logic key_expand_clear;
+  logic [3:0] key_expand_round;
+  key_words_sel_e key_words_sel;
+  logic [3:0][31:0] key_words[NumShares];
+  logic [3:0][3:0][7:0] key_bytes[NumShares];
+  logic [3:0][3:0][7:0] key_mix_columns_out[NumShares];
+  logic [3:0][3:0][7:0] round_key[NumShares];
+  round_key_sel_e round_key_sel;
 
-  logic         [255:0] prng_data_256;
+  logic [255:0] prng_data_256;
 
   //////////
   // Data //
@@ -177,10 +178,10 @@ module aes_cipher_core import aes_pkg::*;
   // State registers
   always_comb begin : state_mux
     unique case (state_sel)
-      STATE_INIT:  state_d = state_init_i;
+      STATE_INIT: state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
       STATE_CLEAR: state_d = '{default: {prng_data_i, prng_data_i}};
-      default:     state_d = '{default: {prng_data_i, prng_data_i}};
+      default: state_d = '{default: {prng_data_i, prng_data_i}};
     endcase
   end
 
@@ -201,18 +202,34 @@ module aes_cipher_core import aes_pkg::*;
 
   // TODO: Use non-constant output masks for SubBytes + remove corresponding comment in aes.sv.
   // See https://github.com/lowRISC/opentitan/issues/1005
-  assign sb_out_mask = {8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55,
-                        8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55};
+  assign sb_out_mask = {
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55,
+    8'h55
+  };
 
   // Cipher data path
   aes_sub_bytes #(
-    .SBoxImpl ( SBoxImpl )
+      .SBoxImpl(SBoxImpl)
   ) u_aes_sub_bytes (
-    .op_i       ( op_i           ),
-    .data_i     ( state_q[0]     ),
-    .in_mask_i  ( sb_in_mask     ),
-    .out_mask_i ( sb_out_mask    ),
-    .data_o     ( sub_bytes_out  )
+      .op_i      (op_i),
+      .data_i    (state_q[0]),
+      .in_mask_i (sb_in_mask),
+      .out_mask_i(sb_out_mask),
+      .data_o    (sub_bytes_out)
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_shift_mix
@@ -225,24 +242,24 @@ module aes_cipher_core import aes_pkg::*;
     end
 
     aes_shift_rows u_aes_shift_rows (
-      .op_i   ( op_i              ),
-      .data_i ( shift_rows_in[s]  ),
-      .data_o ( shift_rows_out[s] )
+        .op_i  (op_i),
+        .data_i(shift_rows_in[s]),
+        .data_o(shift_rows_out[s])
     );
 
     aes_mix_columns u_aes_mix_columns (
-      .op_i   ( op_i               ),
-      .data_i ( shift_rows_out[s]  ),
-      .data_o ( mix_columns_out[s] )
+        .op_i  (op_i),
+        .data_i(shift_rows_out[s]),
+        .data_o(mix_columns_out[s])
     );
   end
 
   always_comb begin : add_round_key_in_mux
     unique case (add_round_key_in_sel)
-      ADD_RK_INIT:  add_round_key_in = state_q;
+      ADD_RK_INIT: add_round_key_in = state_q;
       ADD_RK_ROUND: add_round_key_in = mix_columns_out;
       ADD_RK_FINAL: add_round_key_in = shift_rows_out;
-      default:      add_round_key_in = state_q;
+      default: add_round_key_in = state_q;
     endcase
   end
 
@@ -260,9 +277,9 @@ module aes_cipher_core import aes_pkg::*;
     unique case (key_full_sel)
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
-      KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d ='{default: prng_data_256};
-      default:           key_full_d ='{default: prng_data_256};
+      KEY_FULL_ROUND: key_full_d = key_expand_out;
+      KEY_FULL_CLEAR: key_full_d = '{default: prng_data_256};
+      default: key_full_d = '{default: prng_data_256};
     endcase
   end
 
@@ -276,8 +293,8 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = '{default: prng_data_256};
-      default:        key_dec_d = '{default: prng_data_256};
+      KEY_DEC_CLEAR: key_dec_d = '{default: prng_data_256};
+      default: key_dec_d = '{default: prng_data_256};
     endcase
   end
 
@@ -289,19 +306,19 @@ module aes_cipher_core import aes_pkg::*;
 
   // Key expand data path
   aes_key_expand #(
-    .AES192Enable ( AES192Enable ),
-    .Masking      ( Masking      ),
-    .SBoxImpl     ( SBoxImpl     )
+      .AES192Enable(AES192Enable),
+      .Masking(Masking),
+      .SBoxImpl(SBoxImpl)
   ) u_aes_key_expand (
-    .clk_i     ( clk_i            ),
-    .rst_ni    ( rst_ni           ),
-    .op_i      ( key_expand_op    ),
-    .step_i    ( key_expand_step  ),
-    .clear_i   ( key_expand_clear ),
-    .round_i   ( key_expand_round ),
-    .key_len_i ( key_len_i        ),
-    .key_i     ( key_full_q       ),
-    .key_o     ( key_expand_out   )
+      .clk_i    (clk_i),
+      .rst_ni   (rst_ni),
+      .op_i     (key_expand_op),
+      .step_i   (key_expand_step),
+      .clear_i  (key_expand_clear),
+      .round_i  (key_expand_round),
+      .key_len_i(key_len_i),
+      .key_i    (key_full_q),
+      .key_o    (key_expand_out)
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
@@ -311,7 +328,7 @@ module aes_cipher_core import aes_pkg::*;
         KEY_WORDS_2345: key_words[s] = AES192Enable ? key_full_q[s][5:2] : '0;
         KEY_WORDS_4567: key_words[s] = key_full_q[s][7:4];
         KEY_WORDS_ZERO: key_words[s] = '0;
-        default:        key_words[s] = '0;
+        default: key_words[s] = '0;
       endcase
     end
 
@@ -319,17 +336,17 @@ module aes_cipher_core import aes_pkg::*;
     assign key_bytes[s] = aes_transpose(key_words[s]);
 
     aes_mix_columns u_aes_key_mix_columns (
-      .op_i   ( CIPH_INV               ),
-      .data_i ( key_bytes[s]           ),
-      .data_o ( key_mix_columns_out[s] )
+        .op_i  (CIPH_INV),
+        .data_i(key_bytes[s]),
+        .data_o(key_mix_columns_out[s])
     );
   end
 
   always_comb begin : round_key_mux
     unique case (round_key_sel)
       ROUND_KEY_DIRECT: round_key = key_bytes;
-      ROUND_KEY_MIXED:  round_key = key_mix_columns_out;
-      default:          round_key = key_bytes;
+      ROUND_KEY_MIXED: round_key = key_mix_columns_out;
+      default: round_key = key_bytes;
     endcase
   end
 
@@ -339,37 +356,37 @@ module aes_cipher_core import aes_pkg::*;
 
   // Control
   aes_cipher_control u_aes_cipher_control (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    .in_valid_i             ( in_valid_i           ),
-    .in_ready_o             ( in_ready_o           ),
-    .out_valid_o            ( out_valid_o          ),
-    .out_ready_i            ( out_ready_i          ),
-    .op_i                   ( op_i                 ),
-    .key_len_i              ( key_len_i            ),
-    .crypt_i                ( crypt_i              ),
-    .crypt_o                ( crypt_o              ),
-    .dec_key_gen_i          ( dec_key_gen_i        ),
-    .dec_key_gen_o          ( dec_key_gen_o        ),
-    .key_clear_i            ( key_clear_i          ),
-    .key_clear_o            ( key_clear_o          ),
-    .data_out_clear_i       ( data_out_clear_i     ),
-    .data_out_clear_o       ( data_out_clear_o     ),
+      .in_valid_i      (in_valid_i),
+      .in_ready_o      (in_ready_o),
+      .out_valid_o     (out_valid_o),
+      .out_ready_i     (out_ready_i),
+      .op_i            (op_i),
+      .key_len_i       (key_len_i),
+      .crypt_i         (crypt_i),
+      .crypt_o         (crypt_o),
+      .dec_key_gen_i   (dec_key_gen_i),
+      .dec_key_gen_o   (dec_key_gen_o),
+      .key_clear_i     (key_clear_i),
+      .key_clear_o     (key_clear_o),
+      .data_out_clear_i(data_out_clear_i),
+      .data_out_clear_o(data_out_clear_o),
 
-    .state_sel_o            ( state_sel            ),
-    .state_we_o             ( state_we             ),
-    .add_rk_sel_o           ( add_round_key_in_sel ),
-    .key_expand_op_o        ( key_expand_op        ),
-    .key_full_sel_o         ( key_full_sel         ),
-    .key_full_we_o          ( key_full_we          ),
-    .key_dec_sel_o          ( key_dec_sel          ),
-    .key_dec_we_o           ( key_dec_we           ),
-    .key_expand_step_o      ( key_expand_step      ),
-    .key_expand_clear_o     ( key_expand_clear     ),
-    .key_expand_round_o     ( key_expand_round     ),
-    .key_words_sel_o        ( key_words_sel        ),
-    .round_key_sel_o        ( round_key_sel        )
+      .state_sel_o       (state_sel),
+      .state_we_o        (state_we),
+      .add_rk_sel_o      (add_round_key_in_sel),
+      .key_expand_op_o   (key_expand_op),
+      .key_full_sel_o    (key_full_sel),
+      .key_full_we_o     (key_full_we),
+      .key_dec_sel_o     (key_dec_sel),
+      .key_dec_we_o      (key_dec_we),
+      .key_expand_step_o (key_expand_step),
+      .key_expand_clear_o(key_expand_clear),
+      .key_expand_round_o(key_expand_round),
+      .key_words_sel_o   (key_words_sel),
+      .round_key_sel_o   (round_key_sel)
   );
 
   /////////////
@@ -385,24 +402,13 @@ module aes_cipher_core import aes_pkg::*;
 
   // Cipher core masking requires a masked SBox and vice versa.
   `ASSERT_INIT(AesMaskedCoreAndSBox,
-      (Masking &&
-      (SBoxImpl == SBoxImplCanrightMasked ||
-       SBoxImpl == SBoxImplCanrightMaskedNoreuse)) ||
-      (!Masking &&
-      (SBoxImpl == SBoxImplLut ||
-       SBoxImpl == SBoxImplCanright)))
+               (Masking && (
+                SBoxImpl == SBoxImplCanrightMasked || SBoxImpl == SBoxImplCanrightMaskedNoreuse)
+                   ) || (!Masking && (SBoxImpl == SBoxImplLut || SBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
-  `ASSERT(AesStateSelValid, state_sel inside {
-      STATE_INIT,
-      STATE_ROUND,
-      STATE_CLEAR
-      })
-  `ASSERT(AesAddRKSelValid, add_round_key_in_sel inside {
-      ADD_RK_INIT,
-      ADD_RK_ROUND,
-      ADD_RK_FINAL
-      })
+  `ASSERT(AesStateSelValid, state_sel inside {STATE_INIT, STATE_ROUND, STATE_CLEAR})
+  `ASSERT(AesAddRKSelValid, add_round_key_in_sel inside {ADD_RK_INIT, ADD_RK_ROUND, ADD_RK_FINAL})
   `ASSERT_KNOWN(AesKeyFullSelKnown, key_full_sel)
   `ASSERT_KNOWN(AesKeyDecSelKnown, key_dec_sel)
   `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel)

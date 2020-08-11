@@ -11,8 +11,8 @@ class rv_timer_random_reset_vseq extends rv_timer_sanity_vseq;
   // assert reset randomly
   constraint assert_reset_c {
     assert_reset dist {
-      0  := 1,
-      1  := 2
+      0 := 1,
+      1 := 2
     };
   }
 

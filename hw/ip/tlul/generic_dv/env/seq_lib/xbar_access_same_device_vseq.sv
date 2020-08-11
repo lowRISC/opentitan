@@ -14,8 +14,10 @@ class xbar_access_same_device_vseq extends xbar_random_vseq;
     int device_id = $urandom_range(0, xbar_devices.size - 1);
 
     if (cfg.en_cov) cov.same_device_access_cg.sample(device_id);
-    `uvm_info(`gfn, $sformatf("Picked device (%0s) for all hosts to access",
-              xbar_devices[device_id].device_name), UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("Picked device (%0s) for all hosts to access",
+                        xbar_devices[device_id].device_name),
+              UVM_HIGH)
 
     // change host to only access the picked device
     foreach (host_seq[i]) begin
@@ -23,8 +25,10 @@ class xbar_access_same_device_vseq extends xbar_random_vseq;
       if (device_id inside {host_seq[i].valid_device_id}) begin
         host_seq[i].valid_device_id.delete();
         host_seq[i].valid_device_id.push_back(device_id);
-        `uvm_info(`gfn, $sformatf("Host (%0s) only accesses device (%0s)",
-                  host_seq[i].get_name(), xbar_devices[device_id].device_name), UVM_HIGH)
+        `uvm_info(`gfn,
+                  $sformatf("Host (%0s) only accesses device (%0s)", host_seq[i].get_name(),
+                            xbar_devices[device_id].device_name),
+                  UVM_HIGH)
       end
     end
   endfunction

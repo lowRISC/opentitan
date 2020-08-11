@@ -6,26 +6,26 @@
 //
 
 module usbdev_linkstate (
-  input  logic clk_48mhz_i,
-  input  logic rst_ni,
-  input  logic us_tick_i,
-  input  logic usb_sense_i,
-  input  logic usb_rx_d_i,
-  input  logic usb_rx_se0_i,
-  input  logic sof_valid_i,
-  output logic link_disconnect_o,  // level
-  output logic link_connect_o,     // level
-  output logic link_reset_o,       // level
-  output logic link_active_o,      // level
-  output logic link_suspend_o,     // level
-  output logic link_resume_o,      // pulse
-  output logic host_lost_o,        // level
+    input  logic clk_48mhz_i,
+    input  logic rst_ni,
+    input  logic us_tick_i,
+    input  logic usb_sense_i,
+    input  logic usb_rx_d_i,
+    input  logic usb_rx_se0_i,
+    input  logic sof_valid_i,
+    output logic link_disconnect_o,  // level
+    output logic link_connect_o,  // level
+    output logic link_reset_o,  // level
+    output logic link_active_o,  // level
+    output logic link_suspend_o,  // level
+    output logic link_resume_o,  // pulse
+    output logic host_lost_o,  // level
 
-  output logic [2:0] link_state_o
+    output logic [2:0] link_state_o
 );
 
-  localparam logic [11:0] SUSPEND_TIMEOUT = 12'd3000; // 3ms by spec
-  localparam logic [2:0]  RESET_TIMEOUT   = 3'd3;     // 3us. Can be 2.5us - 10ms by spec
+  localparam logic [11:0] SUSPEND_TIMEOUT = 12'd3000;  // 3ms by spec
+  localparam logic [2:0] RESET_TIMEOUT = 3'd3;  // 3us. Can be 2.5us - 10ms by spec
 
   typedef enum logic [2:0] {
     // Unpowered state
@@ -50,19 +50,19 @@ module usbdev_linkstate (
     InactPend
   } link_inac_state_e;
 
-  link_state_e  link_state_d, link_state_q;
-  logic         line_se0_raw, line_idle_raw;
-  logic         see_se0, see_idle, see_pwr_sense;
+  link_state_e link_state_d, link_state_q;
+  logic line_se0_raw, line_idle_raw;
+  logic see_se0, see_idle, see_pwr_sense;
 
   // Reset FSM
-  logic [2:0]      link_rst_timer_d, link_rst_timer_q;
+  logic [2:0] link_rst_timer_d, link_rst_timer_q;
   link_rst_state_e link_rst_state_d, link_rst_state_q;
-  logic            link_reset; // reset detected (level)
+  logic link_reset;  // reset detected (level)
 
   // Link inactivity detection
-  logic              monitor_inac; // monitor link inactivity
-  logic [11:0]       link_inac_timer_d, link_inac_timer_q;
-  link_inac_state_e  link_inac_state_d, link_inac_state_q;
+  logic monitor_inac;  // monitor link inactivity
+  logic [11:0] link_inac_timer_d, link_inac_timer_q;
+  link_inac_state_e link_inac_state_d, link_inac_state_q;
 
 
   // Events that are not triggered by a timeout
@@ -72,41 +72,46 @@ module usbdev_linkstate (
   logic ev_bus_inactive, ev_reset;
 
   assign link_disconnect_o = (link_state_q == LinkDisconnect);
-  assign link_connect_o    = (link_state_q != LinkDisconnect);
-  assign link_suspend_o    = (link_state_q == LinkSuspend ||
-    link_state_q == LinkPoweredSuspend);
-  assign link_active_o     = (link_state_q == LinkActive);
+  assign link_connect_o = (link_state_q != LinkDisconnect);
+  assign link_suspend_o = (link_state_q == LinkSuspend || link_state_q == LinkPoweredSuspend);
+  assign link_active_o = (link_state_q == LinkActive);
   // Link state is stable, so we can output it to the register
-  assign link_state_o      =  link_state_q;
+  assign link_state_o = link_state_q;
 
   assign line_se0_raw = usb_rx_se0_i;
-  assign line_idle_raw = usb_rx_d_i && !usb_rx_se0_i; // same as J
+  assign line_idle_raw = usb_rx_d_i && !usb_rx_se0_i;  // same as J
 
   // four ticks is a bit time
   // Could completely filter out 2-cycle EOP SE0 here but
   // does not seem needed
-  prim_filter #(.Cycles(6)) filter_se0 (
-    .clk_i    (clk_48mhz_i),
-    .rst_ni   (rst_ni),
-    .enable_i (1'b1),
-    .filter_i (line_se0_raw),
-    .filter_o (see_se0)
+  prim_filter #(
+      .Cycles(6)
+  ) filter_se0 (
+      .clk_i   (clk_48mhz_i),
+      .rst_ni  (rst_ni),
+      .enable_i(1'b1),
+      .filter_i(line_se0_raw),
+      .filter_o(see_se0)
   );
 
-  prim_filter #(.Cycles(6)) filter_idle (
-    .clk_i    (clk_48mhz_i),
-    .rst_ni   (rst_ni),
-    .enable_i (1'b1),
-    .filter_i (line_idle_raw),
-    .filter_o (see_idle)
+  prim_filter #(
+      .Cycles(6)
+  ) filter_idle (
+      .clk_i   (clk_48mhz_i),
+      .rst_ni  (rst_ni),
+      .enable_i(1'b1),
+      .filter_i(line_idle_raw),
+      .filter_o(see_idle)
   );
 
-  prim_filter #(.Cycles(6)) filter_pwr_sense (
-    .clk_i    (clk_48mhz_i),
-    .rst_ni   (rst_ni),
-    .enable_i (1'b1),
-    .filter_i (usb_sense_i),
-    .filter_o (see_pwr_sense)
+  prim_filter #(
+      .Cycles(6)
+  ) filter_pwr_sense (
+      .clk_i   (clk_48mhz_i),
+      .rst_ni  (rst_ni),
+      .enable_i(1'b1),
+      .filter_i(usb_sense_i),
+      .filter_o(see_pwr_sense)
   );
 
   // Simple events
@@ -115,8 +120,8 @@ module usbdev_linkstate (
   always_comb begin
     link_state_d = link_state_q;
     link_resume_o = 0;
-    monitor_inac = see_pwr_sense ? ((link_state_q == LinkPowered) | (link_state_q == LinkActive)) :
-                                   1'b0;
+    monitor_inac =
+        see_pwr_sense ? ((link_state_q == LinkPowered) | (link_state_q == LinkActive)) : 1'b0;
 
     // If VBUS ever goes away the link has disconnected
     if (!see_pwr_sense) begin
@@ -143,7 +148,7 @@ module usbdev_linkstate (
             link_state_d = LinkActive;
           end else if (ev_bus_active) begin
             link_resume_o = 1;
-            link_state_d  = LinkPowered;
+            link_state_d = LinkPowered;
           end
         end
 
@@ -157,14 +162,14 @@ module usbdev_linkstate (
         LinkSuspend: begin
           if (ev_reset || ev_bus_active) begin
             link_resume_o = 1;
-            link_state_d  = LinkActive;
+            link_state_d = LinkActive;
           end
         end
 
         default: begin
           link_state_d = LinkDisconnect;
         end
-      endcase // case (link_state_q)
+      endcase  // case (link_state_q)
     end
   end
 
@@ -183,10 +188,10 @@ module usbdev_linkstate (
   //  the end of a valid reset
 
   always_comb begin : proc_rst_fsm
-    link_rst_state_d  = link_rst_state_q;
-    link_rst_timer_d  = link_rst_timer_q;
-    ev_reset          = 1'b0;
-    link_reset        = 1'b0;
+    link_rst_state_d = link_rst_state_q;
+    link_rst_timer_d = link_rst_timer_q;
+    ev_reset = 1'b0;
+    link_reset = 1'b0;
 
     unique case (link_rst_state_q)
       // No reset signal detected
@@ -221,7 +226,7 @@ module usbdev_linkstate (
         link_reset = 1'b1;
       end
 
-      default : link_rst_state_d = NoRst;
+      default: link_rst_state_d = NoRst;
     endcase
   end
 
@@ -245,7 +250,7 @@ module usbdev_linkstate (
   always_comb begin : proc_idle_det
     link_inac_state_d = link_inac_state_q;
     link_inac_timer_d = link_inac_timer_q;
-    ev_bus_inactive   = 0;
+    ev_bus_inactive = 0;
 
     unique case (link_inac_state_q)
       // Active or disabled
@@ -259,7 +264,7 @@ module usbdev_linkstate (
       // Got an inactivity signal -> count duration
       InactCnt: begin
         if (!see_idle || !monitor_inac) begin
-          link_inac_state_d  = Active;
+          link_inac_state_d = Active;
         end else if (us_tick_i) begin
           if (link_inac_timer_q == SUSPEND_TIMEOUT) begin
             link_inac_state_d = InactPend;
@@ -273,11 +278,11 @@ module usbdev_linkstate (
       // Counter expired & event sent, wait here
       InactPend: begin
         if (!see_idle || !monitor_inac) begin
-          link_inac_state_d  = Active;
+          link_inac_state_d = Active;
         end
       end
 
-      default : link_inac_state_d = Active;
+      default: link_inac_state_d = Active;
     endcase
   end
 

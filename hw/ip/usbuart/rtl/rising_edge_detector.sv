@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module rising_edge_detector (
-  input  logic clk_i,
-  input  logic rst_ni,
-  input  logic in_i,
-  output logic out_o
+    input  logic clk_i,
+    input  logic rst_ni,
+    input  logic in_i,
+    output logic out_o
 );
 
   // Store last value

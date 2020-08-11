@@ -5,39 +5,51 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module usb_fs_tx (
-  // A 48MHz clock is required to receive USB data at 12MHz
-  // it's simpler to juse use 48MHz everywhere
-  input  logic clk_i,
-  input  logic rst_ni,  // asyc reset
-  input  logic link_reset_i, // USB reset, sync to 48 MHz, active high
+    // A 48MHz clock is required to receive USB data at 12MHz
+    // it's simpler to juse use 48MHz everywhere
+    input logic clk_i,
+    input logic rst_ni,  // asyc reset
+    input logic link_reset_i,  // USB reset, sync to 48 MHz, active high
 
-  // Oscillator test mode (constantly output JK)
-  input  logic tx_osc_test_mode_i,
+    // Oscillator test mode (constantly output JK)
+    input logic tx_osc_test_mode_i,
 
-  // bit strobe from rx to align with senders clock
-  input  logic bit_strobe_i,
+    // bit strobe from rx to align with senders clock
+    input logic bit_strobe_i,
 
-  // output enable to take ownership of bus and data out
-  output logic usb_oe_o,
-  output logic usb_d_o,
-  output logic usb_se0_o,
+    // output enable to take ownership of bus and data out
+    output logic usb_oe_o,
+    output logic usb_d_o,
+    output logic usb_se0_o,
 
-  // pulse to initiate new packet transmission
-  input  logic pkt_start_i,
-  output logic pkt_end_o,
+    // pulse to initiate new packet transmission
+    input  logic pkt_start_i,
+    output logic pkt_end_o,
 
-  // pid_i to send
-  input  logic [3:0] pid_i,
+    // pid_i to send
+    input logic [3:0] pid_i,
 
-  // tx logic pulls data until there is nothing available
-  input  logic tx_data_avail_i,
-  output logic tx_data_get_o,
-  input  logic [7:0] tx_data_i
+    // tx logic pulls data until there is nothing available
+    input  logic       tx_data_avail_i,
+    output logic       tx_data_get_o,
+    input  logic [7:0] tx_data_i
 );
 
 
-  typedef enum logic [2:0] {Idle, Sync, Pid, DataOrCrc160, Crc161, Eop, OscTest} state_e;
-  typedef enum logic [1:0] {OsIdle, OsWaitByte, OsTransmit} out_state_e;
+  typedef enum logic [2:0] {
+    Idle,
+    Sync,
+    Pid,
+    DataOrCrc160,
+    Crc161,
+    Eop,
+    OscTest
+  } state_e;
+  typedef enum logic [1:0] {
+    OsIdle,
+    OsWaitByte,
+    OsTransmit
+  } out_state_e;
 
 
   /////////////////////////
@@ -52,8 +64,8 @@ module usb_fs_tx (
 
   logic [5:0] bit_history;
 
-  state_e      state_d, state_q;
-  out_state_e  out_state_d, out_state_q;
+  state_e state_d, state_q;
+  out_state_e out_state_d, out_state_q;
 
 
   logic [7:0] data_shift_reg_q, data_shift_reg_d;
@@ -103,22 +115,22 @@ module usb_fs_tx (
 
   // serialize sync, pid_i, data payload, and crc16
   assign bit_history = {serial_tx_data, bit_history_q};
-  assign bitstuff    = bit_history == 6'b111111;
+  assign bitstuff = bit_history == 6'b111111;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_bitstuff
     if (!rst_ni) begin
-      bitstuff_q  <= 0;
+      bitstuff_q <= 0;
       bitstuff_q2 <= 0;
       bitstuff_q3 <= 0;
       bitstuff_q4 <= 0;
     end else begin
       if (link_reset_i) begin
-        bitstuff_q  <= 0;
+        bitstuff_q <= 0;
         bitstuff_q2 <= 0;
         bitstuff_q3 <= 0;
         bitstuff_q4 <= 0;
       end else begin
-        bitstuff_q  <= bitstuff;
+        bitstuff_q <= bitstuff;
         bitstuff_q2 <= bitstuff_q;
         bitstuff_q3 <= bitstuff_q2;
         bitstuff_q4 <= bitstuff_q3;
@@ -126,7 +138,7 @@ module usb_fs_tx (
     end
   end
 
-  assign pkt_end   = bit_strobe_i && se0_shift_reg_q[1:0] == 2'b01;
+  assign pkt_end = bit_strobe_i && se0_shift_reg_q[1:0] == 2'b01;
   assign pkt_end_o = pkt_end;
 
 
@@ -135,27 +147,27 @@ module usb_fs_tx (
   /////////
   always_comb begin : proc_fsm
     // Default assignments
-    state_d          = state_q;
+    state_d = state_q;
     data_shift_reg_d = data_shift_reg_q;
-    oe_shift_reg_d   = oe_shift_reg_q;
-    se0_shift_reg_d  = se0_shift_reg_q;
-    data_payload_d   = data_payload_q;
-    tx_data_get_d    = tx_data_get_q;
-    bit_history_d    = bit_history_q;
-    bit_count_d      = bit_count_q;
-    test_mode_start  = 0;
+    oe_shift_reg_d = oe_shift_reg_q;
+    se0_shift_reg_d = se0_shift_reg_q;
+    data_payload_d = data_payload_q;
+    tx_data_get_d = tx_data_get_q;
+    bit_history_d = bit_history_q;
+    bit_count_d = bit_count_q;
+    test_mode_start = 0;
 
     unique case (state_q)
-      Idle : begin
+      Idle: begin
         if (tx_osc_test_mode_i) begin
-          state_d         = OscTest;
+          state_d = OscTest;
           test_mode_start = 1;
         end else if (pkt_start_i) begin
           state_d = Sync;
         end
       end
 
-      Sync : begin
+      Sync: begin
         if (byte_strobe_q) begin
           state_d = Pid;
           data_shift_reg_d = 8'b10000000;
@@ -164,7 +176,7 @@ module usb_fs_tx (
         end
       end
 
-      Pid : begin
+      Pid: begin
         if (byte_strobe_q) begin
           if (pid_q[1:0] == 2'b11) begin
             state_d = DataOrCrc160;
@@ -178,7 +190,7 @@ module usb_fs_tx (
         end
       end
 
-      DataOrCrc160 : begin
+      DataOrCrc160: begin
         if (byte_strobe_q) begin
           if (tx_data_avail_i) begin
             state_d = DataOrCrc160;
@@ -191,8 +203,16 @@ module usb_fs_tx (
             state_d = Crc161;
             data_payload_d = 0;
             tx_data_get_d = 0;
-            data_shift_reg_d = ~{crc16_q[8],  crc16_q[9],  crc16_q[10], crc16_q[11],
-                                 crc16_q[12], crc16_q[13], crc16_q[14], crc16_q[15]};
+            data_shift_reg_d = ~{
+              crc16_q[8],
+              crc16_q[9],
+              crc16_q[10],
+              crc16_q[11],
+              crc16_q[12],
+              crc16_q[13],
+              crc16_q[14],
+              crc16_q[15]
+            };
             oe_shift_reg_d = 8'b11111111;
             se0_shift_reg_d = 8'b00000000;
           end
@@ -201,17 +221,25 @@ module usb_fs_tx (
         end
       end
 
-      Crc161 : begin
+      Crc161: begin
         if (byte_strobe_q) begin
           state_d = Eop;
-          data_shift_reg_d = ~{crc16_q[0], crc16_q[1], crc16_q[2], crc16_q[3],
-                               crc16_q[4], crc16_q[5], crc16_q[6], crc16_q[7]};
+          data_shift_reg_d = ~{
+            crc16_q[0],
+            crc16_q[1],
+            crc16_q[2],
+            crc16_q[3],
+            crc16_q[4],
+            crc16_q[5],
+            crc16_q[6],
+            crc16_q[7]
+          };
           oe_shift_reg_d = 8'b11111111;
           se0_shift_reg_d = 8'b00000000;
         end
       end
 
-      Eop : begin
+      Eop: begin
         if (byte_strobe_q) begin
           state_d = Idle;
           oe_shift_reg_d = 8'b00000111;
@@ -222,12 +250,12 @@ module usb_fs_tx (
       OscTest: begin
         // Oscillator test mode: toggle constantly
         if (!tx_osc_test_mode_i && byte_strobe_q) begin
-          oe_shift_reg_d   = 8'b00000000;
+          oe_shift_reg_d = 8'b00000000;
           state_d = Idle;
         end else if (byte_strobe_q) begin
           data_shift_reg_d = 8'b00000000;
-          oe_shift_reg_d   = 8'b11111111;
-          se0_shift_reg_d  = 8'b00000000;
+          oe_shift_reg_d = 8'b11111111;
+          se0_shift_reg_d = 8'b00000000;
         end
       end
 
@@ -240,22 +268,22 @@ module usb_fs_tx (
       // 2 and 6.5 bit times (see USB 2.0 spec / 7.1.18.1)
       // The latency in the rest of the system is approximately (measured)
       // 3.68 bit-times, so we only introduce 1 bit-time here
-      bit_count_d   = 7; // 8-7 = 1
+      bit_count_d = 7;  // 8-7 = 1
       bit_history_d = 0;
 
     end else if (bit_strobe_i) begin
       // bitstuff
-      if (bitstuff /* && !serial_tx_se0*/) begin
-        bit_history_d       = bit_history[5:1];
+      if (bitstuff  /* && !serial_tx_se0*/) begin
+        bit_history_d = bit_history[5:1];
         data_shift_reg_d[0] = 0;
 
-      // normal deserialize
+        // normal deserialize
       end else begin
         bit_count_d = bit_count_q + 1;
 
-        data_shift_reg_d  = (data_shift_reg_q >> 1);
-        oe_shift_reg_d    = (oe_shift_reg_q >> 1);
-        se0_shift_reg_d   = (se0_shift_reg_q >> 1);
+        data_shift_reg_d = (data_shift_reg_q >> 1);
+        oe_shift_reg_d = (oe_shift_reg_q >> 1);
+        se0_shift_reg_d = (se0_shift_reg_q >> 1);
 
         bit_history_d = bit_history[5:1];
       end
@@ -277,7 +305,7 @@ module usb_fs_tx (
   assign crc16_invert = serial_tx_data ^ crc16_q[15];
 
   always_comb begin : proc_crc16
-    crc16_d = crc16_q; // default assignment
+    crc16_d = crc16_q;  // default assignment
 
     if (pkt_start_i) begin
       crc16_d = 16'b1111111111111111;
@@ -294,39 +322,39 @@ module usb_fs_tx (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg
     if (!rst_ni) begin
-      state_q           <= Idle;
-      data_payload_q    <= 0;
-      data_shift_reg_q  <= 0;
-      oe_shift_reg_q    <= 0;
-      se0_shift_reg_q   <= 0;
-      tx_data_get_q     <= 0;
-      byte_strobe_q     <= 0;
-      bit_history_q     <= 0;
-      bit_count_q       <= 0;
-      crc16_q           <= 0;
+      state_q <= Idle;
+      data_payload_q <= 0;
+      data_shift_reg_q <= 0;
+      oe_shift_reg_q <= 0;
+      se0_shift_reg_q <= 0;
+      tx_data_get_q <= 0;
+      byte_strobe_q <= 0;
+      bit_history_q <= 0;
+      bit_count_q <= 0;
+      crc16_q <= 0;
     end else begin
       if (link_reset_i) begin
-        state_q           <= Idle;
-        data_payload_q    <= 0;
-        data_shift_reg_q  <= 0;
-        oe_shift_reg_q    <= 0;
-        se0_shift_reg_q   <= 0;
-        tx_data_get_q     <= 0;
-        byte_strobe_q     <= 0;
-        bit_history_q     <= 0;
-        bit_count_q       <= 0;
-        crc16_q           <= 0;
+        state_q <= Idle;
+        data_payload_q <= 0;
+        data_shift_reg_q <= 0;
+        oe_shift_reg_q <= 0;
+        se0_shift_reg_q <= 0;
+        tx_data_get_q <= 0;
+        byte_strobe_q <= 0;
+        bit_history_q <= 0;
+        bit_count_q <= 0;
+        crc16_q <= 0;
       end else begin
-        state_q           <= state_d;
-        data_payload_q    <= data_payload_d;
-        data_shift_reg_q  <= data_shift_reg_d;
-        oe_shift_reg_q    <= oe_shift_reg_d;
-        se0_shift_reg_q   <= se0_shift_reg_d;
-        tx_data_get_q     <= tx_data_get_d;
-        byte_strobe_q     <= byte_strobe_d;
-        bit_history_q     <= bit_history_d;
-        bit_count_q       <= bit_count_d;
-        crc16_q           <= crc16_d;
+        state_q <= state_d;
+        data_payload_q <= data_payload_d;
+        data_shift_reg_q <= data_shift_reg_d;
+        oe_shift_reg_q <= oe_shift_reg_d;
+        se0_shift_reg_q <= se0_shift_reg_d;
+        tx_data_get_q <= tx_data_get_d;
+        byte_strobe_q <= byte_strobe_d;
+        bit_history_q <= bit_history_d;
+        bit_count_q <= bit_count_d;
+        crc16_q <= crc16_d;
       end
     end
   end
@@ -337,8 +365,8 @@ module usb_fs_tx (
 
   // Output FSM
   always_comb begin : proc_out_fsm
-    out_state_d          = out_state_q;
-    out_nrzi_en          = 1'b0;
+    out_state_d = out_state_q;
+    out_nrzi_en = 1'b0;
 
     unique case (out_state_q)
       OsIdle: begin
@@ -354,25 +382,25 @@ module usb_fs_tx (
       end
 
       OsTransmit: begin
-        out_nrzi_en          = 1'b1;
+        out_nrzi_en = 1'b1;
         if ((bit_strobe_i && !serial_tx_oe)) begin
           out_state_d = OsIdle;
         end
       end
 
-      default : out_state_d = OsIdle;
+      default: out_state_d = OsIdle;
     endcase
   end
 
   always_comb begin : proc_diff
-    usb_d_d   = usb_d_q;
+    usb_d_d = usb_d_q;
     usb_se0_d = usb_se0_q;
-    oe_d     = oe_q;
+    oe_d = oe_q;
     dp_eop_d = dp_eop_q;
 
     if (pkt_start_i) begin
-      usb_d_d = 1; // J -> first bit will be K (start of sync)
-      dp_eop_d = 3'b100; // Eop: {SE0, SE0, J}
+      usb_d_d = 1;  // J -> first bit will be K (start of sync)
+      dp_eop_d = 3'b100;  // Eop: {SE0, SE0, J}
 
     end else if (bit_strobe_i && out_nrzi_en) begin
       oe_d = serial_tx_oe;
@@ -383,7 +411,7 @@ module usb_fs_tx (
 
         if (dp_eop_q[0]) begin
           // last bit of Eop: J
-          usb_d_d   = 1;
+          usb_d_d = 1;
           usb_se0_d = 0;
         end else begin
           // first two bits of Eop: SE0
@@ -408,30 +436,30 @@ module usb_fs_tx (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_diff_reg
     if (!rst_ni) begin
-      dp_eop_q             <= 0;
-      oe_q                 <= 0;
-      usb_d_q              <= 1; // J state = idle state
-      usb_se0_q            <= 0;
-      out_state_q          <= OsIdle;
+      dp_eop_q <= 0;
+      oe_q <= 0;
+      usb_d_q <= 1;  // J state = idle state
+      usb_se0_q <= 0;
+      out_state_q <= OsIdle;
     end else begin
       if (link_reset_i) begin
-        dp_eop_q             <= 0;
-        oe_q                 <= 0;
-        usb_d_q              <= 1;
-        usb_se0_q            <= 0;
-        out_state_q          <= OsIdle;
+        dp_eop_q <= 0;
+        oe_q <= 0;
+        usb_d_q <= 1;
+        usb_se0_q <= 0;
+        out_state_q <= OsIdle;
       end else begin
-        dp_eop_q             <= dp_eop_d;
-        oe_q                 <= oe_d;
-        usb_d_q              <= usb_d_d;
-        usb_se0_q            <= usb_se0_d;
-        out_state_q          <= out_state_d;
+        dp_eop_q <= dp_eop_d;
+        oe_q <= oe_d;
+        usb_d_q <= usb_d_d;
+        usb_se0_q <= usb_se0_d;
+        out_state_q <= out_state_d;
       end
     end
   end
 
-  assign usb_oe_o  = oe_q;
-  assign usb_d_o   = usb_d_q;
+  assign usb_oe_o = oe_q;
+  assign usb_d_o = usb_d_q;
   assign usb_se0_o = usb_se0_q;
 
 endmodule

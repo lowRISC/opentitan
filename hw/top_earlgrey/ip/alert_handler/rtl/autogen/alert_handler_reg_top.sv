@@ -7,36 +7,36 @@
 `include "prim_assert.sv"
 
 module alert_handler_reg_top (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
-  // To HW
-  output alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw, // Write
-  input  alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg, // Read
+    // Below Regster interface can be changed
+    input  tlul_pkg::tl_h2d_t                            tl_i,
+    output tlul_pkg::tl_d2h_t                            tl_o,
+    // To HW
+    output alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw,  // Write
+    input  alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg,  // Read
 
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+    // Config
+    input devmode_i  // If 1, explicit error return for unmapped register access
 );
 
-  import alert_handler_reg_pkg::* ;
+  import alert_handler_reg_pkg::*;
 
   localparam int AW = 8;
   localparam int DW = 32;
-  localparam int DBW = DW/8;                    // Byte Width
+  localparam int DBW = DW / 8;  // Byte Width
 
   // register signals
-  logic           reg_we;
-  logic           reg_re;
-  logic [AW-1:0]  reg_addr;
-  logic [DW-1:0]  reg_wdata;
+  logic reg_we;
+  logic reg_re;
+  logic [AW-1:0] reg_addr;
+  logic [DW-1:0] reg_wdata;
   logic [DBW-1:0] reg_be;
-  logic [DW-1:0]  reg_rdata;
-  logic           reg_error;
+  logic [DW-1:0] reg_rdata;
+  logic reg_error;
 
-  logic          addrmiss, wr_err;
+  logic addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -44,29 +44,29 @@ module alert_handler_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o = tl_reg_d2h;
 
   tlul_adapter_reg #(
-    .RegAw(AW),
-    .RegDw(DW)
+      .RegAw(AW),
+      .RegDw(DW)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i (tl_reg_h2d),
-    .tl_o (tl_reg_d2h),
+      .tl_i(tl_reg_h2d),
+      .tl_o(tl_reg_d2h),
 
-    .we_o    (reg_we),
-    .re_o    (reg_re),
-    .addr_o  (reg_addr),
-    .wdata_o (reg_wdata),
-    .be_o    (reg_be),
-    .rdata_i (reg_rdata),
-    .error_i (reg_error)
+      .we_o   (reg_we),
+      .re_o   (reg_re),
+      .addr_o (reg_addr),
+      .wdata_o(reg_wdata),
+      .be_o   (reg_be),
+      .rdata_i(reg_rdata),
+      .error_i(reg_error)
   );
 
-  assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_rdata = reg_rdata_next;
+  assign reg_error = (devmode_i & addrmiss) | wr_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -495,105 +495,105 @@ module alert_handler_reg_top (
 
   //   F[classa]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_classa (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_classa_we),
-    .wd     (intr_state_classa_wd),
+      // from register interface
+      .we(intr_state_classa_we),
+      .wd(intr_state_classa_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.classa.de),
-    .d      (hw2reg.intr_state.classa.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.classa.de),
+      .d (hw2reg.intr_state.classa.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.classa.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.classa.q),
 
-    // to register interface (read)
-    .qs     (intr_state_classa_qs)
+      // to register interface (read)
+      .qs(intr_state_classa_qs)
   );
 
 
   //   F[classb]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_classb (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_classb_we),
-    .wd     (intr_state_classb_wd),
+      // from register interface
+      .we(intr_state_classb_we),
+      .wd(intr_state_classb_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.classb.de),
-    .d      (hw2reg.intr_state.classb.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.classb.de),
+      .d (hw2reg.intr_state.classb.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.classb.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.classb.q),
 
-    // to register interface (read)
-    .qs     (intr_state_classb_qs)
+      // to register interface (read)
+      .qs(intr_state_classb_qs)
   );
 
 
   //   F[classc]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_classc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_classc_we),
-    .wd     (intr_state_classc_wd),
+      // from register interface
+      .we(intr_state_classc_we),
+      .wd(intr_state_classc_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.classc.de),
-    .d      (hw2reg.intr_state.classc.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.classc.de),
+      .d (hw2reg.intr_state.classc.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.classc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.classc.q),
 
-    // to register interface (read)
-    .qs     (intr_state_classc_qs)
+      // to register interface (read)
+      .qs(intr_state_classc_qs)
   );
 
 
   //   F[classd]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_classd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_classd_we),
-    .wd     (intr_state_classd_wd),
+      // from register interface
+      .we(intr_state_classd_we),
+      .wd(intr_state_classd_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.classd.de),
-    .d      (hw2reg.intr_state.classd.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.classd.de),
+      .d (hw2reg.intr_state.classd.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.classd.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.classd.q),
 
-    // to register interface (read)
-    .qs     (intr_state_classd_qs)
+      // to register interface (read)
+      .qs(intr_state_classd_qs)
   );
 
 
@@ -601,105 +601,105 @@ module alert_handler_reg_top (
 
   //   F[classa]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_classa (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_classa_we),
-    .wd     (intr_enable_classa_wd),
+      // from register interface
+      .we(intr_enable_classa_we),
+      .wd(intr_enable_classa_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.classa.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.classa.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_classa_qs)
+      // to register interface (read)
+      .qs(intr_enable_classa_qs)
   );
 
 
   //   F[classb]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_classb (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_classb_we),
-    .wd     (intr_enable_classb_wd),
+      // from register interface
+      .we(intr_enable_classb_we),
+      .wd(intr_enable_classb_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.classb.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.classb.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_classb_qs)
+      // to register interface (read)
+      .qs(intr_enable_classb_qs)
   );
 
 
   //   F[classc]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_classc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_classc_we),
-    .wd     (intr_enable_classc_wd),
+      // from register interface
+      .we(intr_enable_classc_we),
+      .wd(intr_enable_classc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.classc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.classc.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_classc_qs)
+      // to register interface (read)
+      .qs(intr_enable_classc_qs)
   );
 
 
   //   F[classd]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_classd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_classd_we),
-    .wd     (intr_enable_classd_wd),
+      // from register interface
+      .we(intr_enable_classd_we),
+      .wd(intr_enable_classd_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.classd.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.classd.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_classd_qs)
+      // to register interface (read)
+      .qs(intr_enable_classd_qs)
   );
 
 
@@ -707,115 +707,115 @@ module alert_handler_reg_top (
 
   //   F[classa]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_classa (
-    .re     (1'b0),
-    .we     (intr_test_classa_we),
-    .wd     (intr_test_classa_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.classa.qe),
-    .q      (reg2hw.intr_test.classa.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_classa_we),
+      .wd (intr_test_classa_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.classa.qe),
+      .q  (reg2hw.intr_test.classa.q),
+      .qs ()
   );
 
 
   //   F[classb]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_classb (
-    .re     (1'b0),
-    .we     (intr_test_classb_we),
-    .wd     (intr_test_classb_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.classb.qe),
-    .q      (reg2hw.intr_test.classb.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_classb_we),
+      .wd (intr_test_classb_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.classb.qe),
+      .q  (reg2hw.intr_test.classb.q),
+      .qs ()
   );
 
 
   //   F[classc]: 2:2
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_classc (
-    .re     (1'b0),
-    .we     (intr_test_classc_we),
-    .wd     (intr_test_classc_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.classc.qe),
-    .q      (reg2hw.intr_test.classc.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_classc_we),
+      .wd (intr_test_classc_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.classc.qe),
+      .q  (reg2hw.intr_test.classc.q),
+      .qs ()
   );
 
 
   //   F[classd]: 3:3
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_classd (
-    .re     (1'b0),
-    .we     (intr_test_classd_we),
-    .wd     (intr_test_classd_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.classd.qe),
-    .q      (reg2hw.intr_test.classd.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_classd_we),
+      .wd (intr_test_classd_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.classd.qe),
+      .q  (reg2hw.intr_test.classd.q),
+      .qs ()
   );
 
 
   // R[regen]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_regen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+      // from register interface
+      .we(regen_we),
+      .wd(regen_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.regen.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.regen.q),
 
-    // to register interface (read)
-    .qs     (regen_qs)
+      // to register interface (read)
+      .qs(regen_qs)
   );
 
 
   // R[ping_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (24),
-    .SWACCESS("RW"),
-    .RESVAL  (24'h20)
+      .DW(24),
+      .SWACCESS("RW"),
+      .RESVAL(24'h20)
   ) u_ping_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (ping_timeout_cyc_we & regen_qs),
-    .wd     (ping_timeout_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(ping_timeout_cyc_we & regen_qs),
+      .wd(ping_timeout_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ping_timeout_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ping_timeout_cyc.q),
 
-    // to register interface (read)
-    .qs     (ping_timeout_cyc_qs)
+      // to register interface (read)
+      .qs(ping_timeout_cyc_qs)
   );
 
 
@@ -825,313 +825,313 @@ module alert_handler_reg_top (
 
   // F[en_a_0]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_0_we & regen_qs),
-    .wd     (alert_en_en_a_0_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_0_we & regen_qs),
+      .wd(alert_en_en_a_0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[0].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_0_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_0_qs)
   );
 
 
   // F[en_a_1]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_1_we & regen_qs),
-    .wd     (alert_en_en_a_1_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_1_we & regen_qs),
+      .wd(alert_en_en_a_1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[1].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_1_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_1_qs)
   );
 
 
   // F[en_a_2]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_2_we & regen_qs),
-    .wd     (alert_en_en_a_2_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_2_we & regen_qs),
+      .wd(alert_en_en_a_2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[2].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_2_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_2_qs)
   );
 
 
   // F[en_a_3]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_3_we & regen_qs),
-    .wd     (alert_en_en_a_3_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_3_we & regen_qs),
+      .wd(alert_en_en_a_3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[3].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_3_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_3_qs)
   );
 
 
   // F[en_a_4]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_4_we & regen_qs),
-    .wd     (alert_en_en_a_4_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_4_we & regen_qs),
+      .wd(alert_en_en_a_4_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[4].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[4].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_4_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_4_qs)
   );
 
 
   // F[en_a_5]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_5_we & regen_qs),
-    .wd     (alert_en_en_a_5_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_5_we & regen_qs),
+      .wd(alert_en_en_a_5_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[5].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[5].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_5_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_5_qs)
   );
 
 
   // F[en_a_6]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_6_we & regen_qs),
-    .wd     (alert_en_en_a_6_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_6_we & regen_qs),
+      .wd(alert_en_en_a_6_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[6].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[6].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_6_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_6_qs)
   );
 
 
   // F[en_a_7]: 7:7
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_7_we & regen_qs),
-    .wd     (alert_en_en_a_7_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_7_we & regen_qs),
+      .wd(alert_en_en_a_7_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[7].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[7].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_7_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_7_qs)
   );
 
 
   // F[en_a_8]: 8:8
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_8_we & regen_qs),
-    .wd     (alert_en_en_a_8_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_8_we & regen_qs),
+      .wd(alert_en_en_a_8_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[8].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[8].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_8_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_8_qs)
   );
 
 
   // F[en_a_9]: 9:9
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_9_we & regen_qs),
-    .wd     (alert_en_en_a_9_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_9_we & regen_qs),
+      .wd(alert_en_en_a_9_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[9].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[9].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_9_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_9_qs)
   );
 
 
   // F[en_a_10]: 10:10
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_10_we & regen_qs),
-    .wd     (alert_en_en_a_10_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_10_we & regen_qs),
+      .wd(alert_en_en_a_10_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[10].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[10].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_10_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_10_qs)
   );
 
 
   // F[en_a_11]: 11:11
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_alert_en_en_a_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_11_we & regen_qs),
-    .wd     (alert_en_en_a_11_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_en_en_a_11_we & regen_qs),
+      .wd(alert_en_en_a_11_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_en[11].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_en[11].q),
 
-    // to register interface (read)
-    .qs     (alert_en_en_a_11_qs)
+      // to register interface (read)
+      .qs(alert_en_en_a_11_qs)
   );
 
 
@@ -1142,313 +1142,313 @@ module alert_handler_reg_top (
 
   // F[class_a_0]: 1:0
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_0_we & regen_qs),
-    .wd     (alert_class_class_a_0_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_0_we & regen_qs),
+      .wd(alert_class_class_a_0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[0].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_0_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_0_qs)
   );
 
 
   // F[class_a_1]: 3:2
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_1_we & regen_qs),
-    .wd     (alert_class_class_a_1_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_1_we & regen_qs),
+      .wd(alert_class_class_a_1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[1].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_1_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_1_qs)
   );
 
 
   // F[class_a_2]: 5:4
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_2_we & regen_qs),
-    .wd     (alert_class_class_a_2_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_2_we & regen_qs),
+      .wd(alert_class_class_a_2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[2].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_2_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_2_qs)
   );
 
 
   // F[class_a_3]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_3_we & regen_qs),
-    .wd     (alert_class_class_a_3_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_3_we & regen_qs),
+      .wd(alert_class_class_a_3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[3].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_3_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_3_qs)
   );
 
 
   // F[class_a_4]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_4_we & regen_qs),
-    .wd     (alert_class_class_a_4_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_4_we & regen_qs),
+      .wd(alert_class_class_a_4_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[4].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[4].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_4_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_4_qs)
   );
 
 
   // F[class_a_5]: 11:10
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_5_we & regen_qs),
-    .wd     (alert_class_class_a_5_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_5_we & regen_qs),
+      .wd(alert_class_class_a_5_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[5].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[5].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_5_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_5_qs)
   );
 
 
   // F[class_a_6]: 13:12
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_6_we & regen_qs),
-    .wd     (alert_class_class_a_6_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_6_we & regen_qs),
+      .wd(alert_class_class_a_6_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[6].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[6].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_6_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_6_qs)
   );
 
 
   // F[class_a_7]: 15:14
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_7_we & regen_qs),
-    .wd     (alert_class_class_a_7_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_7_we & regen_qs),
+      .wd(alert_class_class_a_7_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[7].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[7].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_7_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_7_qs)
   );
 
 
   // F[class_a_8]: 17:16
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_8_we & regen_qs),
-    .wd     (alert_class_class_a_8_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_8_we & regen_qs),
+      .wd(alert_class_class_a_8_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[8].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[8].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_8_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_8_qs)
   );
 
 
   // F[class_a_9]: 19:18
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_9_we & regen_qs),
-    .wd     (alert_class_class_a_9_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_9_we & regen_qs),
+      .wd(alert_class_class_a_9_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[9].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[9].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_9_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_9_qs)
   );
 
 
   // F[class_a_10]: 21:20
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_10_we & regen_qs),
-    .wd     (alert_class_class_a_10_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_10_we & regen_qs),
+      .wd(alert_class_class_a_10_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[10].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[10].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_10_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_10_qs)
   );
 
 
   // F[class_a_11]: 23:22
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_alert_class_class_a_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_11_we & regen_qs),
-    .wd     (alert_class_class_a_11_wd),
+      // from register interface (qualified with register enable)
+      .we(alert_class_class_a_11_we & regen_qs),
+      .wd(alert_class_class_a_11_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_class[11].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_class[11].q),
 
-    // to register interface (read)
-    .qs     (alert_class_class_a_11_qs)
+      // to register interface (read)
+      .qs(alert_class_class_a_11_qs)
   );
 
 
@@ -1459,313 +1459,313 @@ module alert_handler_reg_top (
 
   // F[a_0]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_0_we),
-    .wd     (alert_cause_a_0_wd),
+      // from register interface
+      .we(alert_cause_a_0_we),
+      .wd(alert_cause_a_0_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[0].de),
-    .d      (hw2reg.alert_cause[0].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[0].de),
+      .d (hw2reg.alert_cause[0].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[0].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_0_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_0_qs)
   );
 
 
   // F[a_1]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_1_we),
-    .wd     (alert_cause_a_1_wd),
+      // from register interface
+      .we(alert_cause_a_1_we),
+      .wd(alert_cause_a_1_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[1].de),
-    .d      (hw2reg.alert_cause[1].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[1].de),
+      .d (hw2reg.alert_cause[1].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[1].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_1_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_1_qs)
   );
 
 
   // F[a_2]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_2_we),
-    .wd     (alert_cause_a_2_wd),
+      // from register interface
+      .we(alert_cause_a_2_we),
+      .wd(alert_cause_a_2_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[2].de),
-    .d      (hw2reg.alert_cause[2].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[2].de),
+      .d (hw2reg.alert_cause[2].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[2].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_2_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_2_qs)
   );
 
 
   // F[a_3]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_3_we),
-    .wd     (alert_cause_a_3_wd),
+      // from register interface
+      .we(alert_cause_a_3_we),
+      .wd(alert_cause_a_3_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[3].de),
-    .d      (hw2reg.alert_cause[3].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[3].de),
+      .d (hw2reg.alert_cause[3].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[3].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_3_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_3_qs)
   );
 
 
   // F[a_4]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_4_we),
-    .wd     (alert_cause_a_4_wd),
+      // from register interface
+      .we(alert_cause_a_4_we),
+      .wd(alert_cause_a_4_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[4].de),
-    .d      (hw2reg.alert_cause[4].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[4].de),
+      .d (hw2reg.alert_cause[4].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[4].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[4].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_4_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_4_qs)
   );
 
 
   // F[a_5]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_5_we),
-    .wd     (alert_cause_a_5_wd),
+      // from register interface
+      .we(alert_cause_a_5_we),
+      .wd(alert_cause_a_5_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[5].de),
-    .d      (hw2reg.alert_cause[5].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[5].de),
+      .d (hw2reg.alert_cause[5].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[5].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[5].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_5_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_5_qs)
   );
 
 
   // F[a_6]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_6_we),
-    .wd     (alert_cause_a_6_wd),
+      // from register interface
+      .we(alert_cause_a_6_we),
+      .wd(alert_cause_a_6_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[6].de),
-    .d      (hw2reg.alert_cause[6].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[6].de),
+      .d (hw2reg.alert_cause[6].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[6].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[6].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_6_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_6_qs)
   );
 
 
   // F[a_7]: 7:7
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_7_we),
-    .wd     (alert_cause_a_7_wd),
+      // from register interface
+      .we(alert_cause_a_7_we),
+      .wd(alert_cause_a_7_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[7].de),
-    .d      (hw2reg.alert_cause[7].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[7].de),
+      .d (hw2reg.alert_cause[7].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[7].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[7].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_7_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_7_qs)
   );
 
 
   // F[a_8]: 8:8
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_8_we),
-    .wd     (alert_cause_a_8_wd),
+      // from register interface
+      .we(alert_cause_a_8_we),
+      .wd(alert_cause_a_8_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[8].de),
-    .d      (hw2reg.alert_cause[8].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[8].de),
+      .d (hw2reg.alert_cause[8].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[8].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[8].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_8_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_8_qs)
   );
 
 
   // F[a_9]: 9:9
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_9_we),
-    .wd     (alert_cause_a_9_wd),
+      // from register interface
+      .we(alert_cause_a_9_we),
+      .wd(alert_cause_a_9_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[9].de),
-    .d      (hw2reg.alert_cause[9].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[9].de),
+      .d (hw2reg.alert_cause[9].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[9].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[9].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_9_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_9_qs)
   );
 
 
   // F[a_10]: 10:10
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_10_we),
-    .wd     (alert_cause_a_10_wd),
+      // from register interface
+      .we(alert_cause_a_10_we),
+      .wd(alert_cause_a_10_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[10].de),
-    .d      (hw2reg.alert_cause[10].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[10].de),
+      .d (hw2reg.alert_cause[10].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[10].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[10].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_10_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_10_qs)
   );
 
 
   // F[a_11]: 11:11
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_alert_cause_a_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (alert_cause_a_11_we),
-    .wd     (alert_cause_a_11_wd),
+      // from register interface
+      .we(alert_cause_a_11_we),
+      .wd(alert_cause_a_11_wd),
 
-    // from internal hardware
-    .de     (hw2reg.alert_cause[11].de),
-    .d      (hw2reg.alert_cause[11].d ),
+      // from internal hardware
+      .de(hw2reg.alert_cause[11].de),
+      .d (hw2reg.alert_cause[11].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_cause[11].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.alert_cause[11].q),
 
-    // to register interface (read)
-    .qs     (alert_cause_a_11_qs)
+      // to register interface (read)
+      .qs(alert_cause_a_11_qs)
   );
 
 
@@ -1776,105 +1776,105 @@ module alert_handler_reg_top (
 
   // F[en_la_0]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_loc_alert_en_en_la_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_0_we & regen_qs),
-    .wd     (loc_alert_en_en_la_0_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_en_en_la_0_we & regen_qs),
+      .wd(loc_alert_en_en_la_0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_en[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_en[0].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_en_en_la_0_qs)
+      // to register interface (read)
+      .qs(loc_alert_en_en_la_0_qs)
   );
 
 
   // F[en_la_1]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_loc_alert_en_en_la_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_1_we & regen_qs),
-    .wd     (loc_alert_en_en_la_1_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_en_en_la_1_we & regen_qs),
+      .wd(loc_alert_en_en_la_1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_en[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_en[1].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_en_en_la_1_qs)
+      // to register interface (read)
+      .qs(loc_alert_en_en_la_1_qs)
   );
 
 
   // F[en_la_2]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_loc_alert_en_en_la_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_2_we & regen_qs),
-    .wd     (loc_alert_en_en_la_2_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_en_en_la_2_we & regen_qs),
+      .wd(loc_alert_en_en_la_2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_en[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_en[2].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_en_en_la_2_qs)
+      // to register interface (read)
+      .qs(loc_alert_en_en_la_2_qs)
   );
 
 
   // F[en_la_3]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_loc_alert_en_en_la_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_3_we & regen_qs),
-    .wd     (loc_alert_en_en_la_3_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_en_en_la_3_we & regen_qs),
+      .wd(loc_alert_en_en_la_3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_en[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_en[3].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_en_en_la_3_qs)
+      // to register interface (read)
+      .qs(loc_alert_en_en_la_3_qs)
   );
 
 
@@ -1885,105 +1885,105 @@ module alert_handler_reg_top (
 
   // F[class_la_0]: 1:0
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_loc_alert_class_class_la_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_0_we & regen_qs),
-    .wd     (loc_alert_class_class_la_0_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_class_class_la_0_we & regen_qs),
+      .wd(loc_alert_class_class_la_0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_class[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_class[0].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_class_class_la_0_qs)
+      // to register interface (read)
+      .qs(loc_alert_class_class_la_0_qs)
   );
 
 
   // F[class_la_1]: 3:2
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_loc_alert_class_class_la_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_1_we & regen_qs),
-    .wd     (loc_alert_class_class_la_1_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_class_class_la_1_we & regen_qs),
+      .wd(loc_alert_class_class_la_1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_class[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_class[1].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_class_class_la_1_qs)
+      // to register interface (read)
+      .qs(loc_alert_class_class_la_1_qs)
   );
 
 
   // F[class_la_2]: 5:4
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_loc_alert_class_class_la_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_2_we & regen_qs),
-    .wd     (loc_alert_class_class_la_2_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_class_class_la_2_we & regen_qs),
+      .wd(loc_alert_class_class_la_2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_class[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_class[2].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_class_class_la_2_qs)
+      // to register interface (read)
+      .qs(loc_alert_class_class_la_2_qs)
   );
 
 
   // F[class_la_3]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_loc_alert_class_class_la_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_3_we & regen_qs),
-    .wd     (loc_alert_class_class_la_3_wd),
+      // from register interface (qualified with register enable)
+      .we(loc_alert_class_class_la_3_we & regen_qs),
+      .wd(loc_alert_class_class_la_3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_class[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_class[3].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_class_class_la_3_qs)
+      // to register interface (read)
+      .qs(loc_alert_class_class_la_3_qs)
   );
 
 
@@ -1994,105 +1994,105 @@ module alert_handler_reg_top (
 
   // F[la_0]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_loc_alert_cause_la_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (loc_alert_cause_la_0_we),
-    .wd     (loc_alert_cause_la_0_wd),
+      // from register interface
+      .we(loc_alert_cause_la_0_we),
+      .wd(loc_alert_cause_la_0_wd),
 
-    // from internal hardware
-    .de     (hw2reg.loc_alert_cause[0].de),
-    .d      (hw2reg.loc_alert_cause[0].d ),
+      // from internal hardware
+      .de(hw2reg.loc_alert_cause[0].de),
+      .d (hw2reg.loc_alert_cause[0].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_cause[0].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_cause[0].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_cause_la_0_qs)
+      // to register interface (read)
+      .qs(loc_alert_cause_la_0_qs)
   );
 
 
   // F[la_1]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_loc_alert_cause_la_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (loc_alert_cause_la_1_we),
-    .wd     (loc_alert_cause_la_1_wd),
+      // from register interface
+      .we(loc_alert_cause_la_1_we),
+      .wd(loc_alert_cause_la_1_wd),
 
-    // from internal hardware
-    .de     (hw2reg.loc_alert_cause[1].de),
-    .d      (hw2reg.loc_alert_cause[1].d ),
+      // from internal hardware
+      .de(hw2reg.loc_alert_cause[1].de),
+      .d (hw2reg.loc_alert_cause[1].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_cause[1].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_cause[1].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_cause_la_1_qs)
+      // to register interface (read)
+      .qs(loc_alert_cause_la_1_qs)
   );
 
 
   // F[la_2]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_loc_alert_cause_la_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (loc_alert_cause_la_2_we),
-    .wd     (loc_alert_cause_la_2_wd),
+      // from register interface
+      .we(loc_alert_cause_la_2_we),
+      .wd(loc_alert_cause_la_2_wd),
 
-    // from internal hardware
-    .de     (hw2reg.loc_alert_cause[2].de),
-    .d      (hw2reg.loc_alert_cause[2].d ),
+      // from internal hardware
+      .de(hw2reg.loc_alert_cause[2].de),
+      .d (hw2reg.loc_alert_cause[2].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_cause[2].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_cause[2].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_cause_la_2_qs)
+      // to register interface (read)
+      .qs(loc_alert_cause_la_2_qs)
   );
 
 
   // F[la_3]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_loc_alert_cause_la_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (loc_alert_cause_la_3_we),
-    .wd     (loc_alert_cause_la_3_wd),
+      // from register interface
+      .we(loc_alert_cause_la_3_we),
+      .wd(loc_alert_cause_la_3_wd),
 
-    // from internal hardware
-    .de     (hw2reg.loc_alert_cause[3].de),
-    .d      (hw2reg.loc_alert_cause[3].d ),
+      // from internal hardware
+      .de(hw2reg.loc_alert_cause[3].de),
+      .d (hw2reg.loc_alert_cause[3].d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.loc_alert_cause[3].q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.loc_alert_cause[3].q),
 
-    // to register interface (read)
-    .qs     (loc_alert_cause_la_3_qs)
+      // to register interface (read)
+      .qs(loc_alert_cause_la_3_qs)
   );
 
 
@@ -2101,524 +2101,524 @@ module alert_handler_reg_top (
 
   //   F[en]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classa_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_we & regen_qs),
-    .wd     (classa_ctrl_en_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_en_we & regen_qs),
+      .wd(classa_ctrl_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.en.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_en_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_en_qs)
   );
 
 
   //   F[lock]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classa_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_lock_we & regen_qs),
-    .wd     (classa_ctrl_lock_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_lock_we & regen_qs),
+      .wd(classa_ctrl_lock_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.lock.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.lock.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_lock_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_lock_qs)
   );
 
 
   //   F[en_e0]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classa_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e0_we & regen_qs),
-    .wd     (classa_ctrl_en_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_en_e0_we & regen_qs),
+      .wd(classa_ctrl_en_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.en_e0.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_en_e0_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_en_e0_qs)
   );
 
 
   //   F[en_e1]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classa_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e1_we & regen_qs),
-    .wd     (classa_ctrl_en_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_en_e1_we & regen_qs),
+      .wd(classa_ctrl_en_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.en_e1.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_en_e1_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_en_e1_qs)
   );
 
 
   //   F[en_e2]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classa_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e2_we & regen_qs),
-    .wd     (classa_ctrl_en_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_en_e2_we & regen_qs),
+      .wd(classa_ctrl_en_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.en_e2.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_en_e2_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_en_e2_qs)
   );
 
 
   //   F[en_e3]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classa_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e3_we & regen_qs),
-    .wd     (classa_ctrl_en_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_en_e3_we & regen_qs),
+      .wd(classa_ctrl_en_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.en_e3.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_en_e3_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_en_e3_qs)
   );
 
 
   //   F[map_e0]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_classa_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e0_we & regen_qs),
-    .wd     (classa_ctrl_map_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_map_e0_we & regen_qs),
+      .wd(classa_ctrl_map_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.map_e0.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_map_e0_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_map_e0_qs)
   );
 
 
   //   F[map_e1]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h1)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h1)
   ) u_classa_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e1_we & regen_qs),
-    .wd     (classa_ctrl_map_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_map_e1_we & regen_qs),
+      .wd(classa_ctrl_map_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.map_e1.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_map_e1_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_map_e1_qs)
   );
 
 
   //   F[map_e2]: 11:10
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h2)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h2)
   ) u_classa_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e2_we & regen_qs),
-    .wd     (classa_ctrl_map_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_map_e2_we & regen_qs),
+      .wd(classa_ctrl_map_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.map_e2.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_map_e2_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_map_e2_qs)
   );
 
 
   //   F[map_e3]: 13:12
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h3)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h3)
   ) u_classa_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e3_we & regen_qs),
-    .wd     (classa_ctrl_map_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_ctrl_map_e3_we & regen_qs),
+      .wd(classa_ctrl_map_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_ctrl.map_e3.q),
 
-    // to register interface (read)
-    .qs     (classa_ctrl_map_e3_qs)
+      // to register interface (read)
+      .qs(classa_ctrl_map_e3_qs)
   );
 
 
   // R[classa_clren]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_classa_clren (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (classa_clren_we),
-    .wd     (classa_clren_wd),
+      // from register interface
+      .we(classa_clren_we),
+      .wd(classa_clren_wd),
 
-    // from internal hardware
-    .de     (hw2reg.classa_clren.de),
-    .d      (hw2reg.classa_clren.d ),
+      // from internal hardware
+      .de(hw2reg.classa_clren.de),
+      .d (hw2reg.classa_clren.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (),
+      // to internal hardware
+      .qe(),
+      .q (),
 
-    // to register interface (read)
-    .qs     (classa_clren_qs)
+      // to register interface (read)
+      .qs(classa_clren_qs)
   );
 
 
   // R[classa_clr]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("WO"),
+      .RESVAL(1'h0)
   ) u_classa_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_clr_we & classa_clren_qs),
-    .wd     (classa_clr_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_clr_we & classa_clren_qs),
+      .wd(classa_clr_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (reg2hw.classa_clr.qe),
-    .q      (reg2hw.classa_clr.q ),
+      // to internal hardware
+      .qe(reg2hw.classa_clr.qe),
+      .q (reg2hw.classa_clr.q),
 
-    .qs     ()
+      .qs()
   );
 
 
   // R[classa_accum_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_classa_accum_cnt (
-    .re     (classa_accum_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classa_accum_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classa_accum_cnt_qs)
+      .re (classa_accum_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classa_accum_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classa_accum_cnt_qs)
   );
 
 
   // R[classa_accum_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h0)
   ) u_classa_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_accum_thresh_we & regen_qs),
-    .wd     (classa_accum_thresh_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_accum_thresh_we & regen_qs),
+      .wd(classa_accum_thresh_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_accum_thresh.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_accum_thresh.q),
 
-    // to register interface (read)
-    .qs     (classa_accum_thresh_qs)
+      // to register interface (read)
+      .qs(classa_accum_thresh_qs)
   );
 
 
   // R[classa_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classa_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_timeout_cyc_we & regen_qs),
-    .wd     (classa_timeout_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_timeout_cyc_we & regen_qs),
+      .wd(classa_timeout_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_timeout_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_timeout_cyc.q),
 
-    // to register interface (read)
-    .qs     (classa_timeout_cyc_qs)
+      // to register interface (read)
+      .qs(classa_timeout_cyc_qs)
   );
 
 
   // R[classa_phase0_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classa_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_phase0_cyc_we & regen_qs),
-    .wd     (classa_phase0_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_phase0_cyc_we & regen_qs),
+      .wd(classa_phase0_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_phase0_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_phase0_cyc.q),
 
-    // to register interface (read)
-    .qs     (classa_phase0_cyc_qs)
+      // to register interface (read)
+      .qs(classa_phase0_cyc_qs)
   );
 
 
   // R[classa_phase1_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classa_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_phase1_cyc_we & regen_qs),
-    .wd     (classa_phase1_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_phase1_cyc_we & regen_qs),
+      .wd(classa_phase1_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_phase1_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_phase1_cyc.q),
 
-    // to register interface (read)
-    .qs     (classa_phase1_cyc_qs)
+      // to register interface (read)
+      .qs(classa_phase1_cyc_qs)
   );
 
 
   // R[classa_phase2_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classa_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_phase2_cyc_we & regen_qs),
-    .wd     (classa_phase2_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_phase2_cyc_we & regen_qs),
+      .wd(classa_phase2_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_phase2_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_phase2_cyc.q),
 
-    // to register interface (read)
-    .qs     (classa_phase2_cyc_qs)
+      // to register interface (read)
+      .qs(classa_phase2_cyc_qs)
   );
 
 
   // R[classa_phase3_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classa_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classa_phase3_cyc_we & regen_qs),
-    .wd     (classa_phase3_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classa_phase3_cyc_we & regen_qs),
+      .wd(classa_phase3_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classa_phase3_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classa_phase3_cyc.q),
 
-    // to register interface (read)
-    .qs     (classa_phase3_cyc_qs)
+      // to register interface (read)
+      .qs(classa_phase3_cyc_qs)
   );
 
 
   // R[classa_esc_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+      .DW(32)
   ) u_classa_esc_cnt (
-    .re     (classa_esc_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classa_esc_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classa_esc_cnt_qs)
+      .re (classa_esc_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classa_esc_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classa_esc_cnt_qs)
   );
 
 
   // R[classa_state]: V(True)
 
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_classa_state (
-    .re     (classa_state_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classa_state.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classa_state_qs)
+      .re (classa_state_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classa_state.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classa_state_qs)
   );
 
 
@@ -2626,524 +2626,524 @@ module alert_handler_reg_top (
 
   //   F[en]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classb_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_we & regen_qs),
-    .wd     (classb_ctrl_en_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_en_we & regen_qs),
+      .wd(classb_ctrl_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.en.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_en_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_en_qs)
   );
 
 
   //   F[lock]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classb_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_lock_we & regen_qs),
-    .wd     (classb_ctrl_lock_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_lock_we & regen_qs),
+      .wd(classb_ctrl_lock_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.lock.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.lock.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_lock_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_lock_qs)
   );
 
 
   //   F[en_e0]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classb_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e0_we & regen_qs),
-    .wd     (classb_ctrl_en_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_en_e0_we & regen_qs),
+      .wd(classb_ctrl_en_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.en_e0.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_en_e0_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_en_e0_qs)
   );
 
 
   //   F[en_e1]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classb_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e1_we & regen_qs),
-    .wd     (classb_ctrl_en_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_en_e1_we & regen_qs),
+      .wd(classb_ctrl_en_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.en_e1.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_en_e1_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_en_e1_qs)
   );
 
 
   //   F[en_e2]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classb_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e2_we & regen_qs),
-    .wd     (classb_ctrl_en_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_en_e2_we & regen_qs),
+      .wd(classb_ctrl_en_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.en_e2.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_en_e2_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_en_e2_qs)
   );
 
 
   //   F[en_e3]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classb_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e3_we & regen_qs),
-    .wd     (classb_ctrl_en_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_en_e3_we & regen_qs),
+      .wd(classb_ctrl_en_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.en_e3.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_en_e3_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_en_e3_qs)
   );
 
 
   //   F[map_e0]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_classb_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e0_we & regen_qs),
-    .wd     (classb_ctrl_map_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_map_e0_we & regen_qs),
+      .wd(classb_ctrl_map_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.map_e0.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_map_e0_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_map_e0_qs)
   );
 
 
   //   F[map_e1]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h1)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h1)
   ) u_classb_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e1_we & regen_qs),
-    .wd     (classb_ctrl_map_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_map_e1_we & regen_qs),
+      .wd(classb_ctrl_map_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.map_e1.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_map_e1_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_map_e1_qs)
   );
 
 
   //   F[map_e2]: 11:10
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h2)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h2)
   ) u_classb_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e2_we & regen_qs),
-    .wd     (classb_ctrl_map_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_map_e2_we & regen_qs),
+      .wd(classb_ctrl_map_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.map_e2.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_map_e2_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_map_e2_qs)
   );
 
 
   //   F[map_e3]: 13:12
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h3)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h3)
   ) u_classb_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e3_we & regen_qs),
-    .wd     (classb_ctrl_map_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_ctrl_map_e3_we & regen_qs),
+      .wd(classb_ctrl_map_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_ctrl.map_e3.q),
 
-    // to register interface (read)
-    .qs     (classb_ctrl_map_e3_qs)
+      // to register interface (read)
+      .qs(classb_ctrl_map_e3_qs)
   );
 
 
   // R[classb_clren]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_classb_clren (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (classb_clren_we),
-    .wd     (classb_clren_wd),
+      // from register interface
+      .we(classb_clren_we),
+      .wd(classb_clren_wd),
 
-    // from internal hardware
-    .de     (hw2reg.classb_clren.de),
-    .d      (hw2reg.classb_clren.d ),
+      // from internal hardware
+      .de(hw2reg.classb_clren.de),
+      .d (hw2reg.classb_clren.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (),
+      // to internal hardware
+      .qe(),
+      .q (),
 
-    // to register interface (read)
-    .qs     (classb_clren_qs)
+      // to register interface (read)
+      .qs(classb_clren_qs)
   );
 
 
   // R[classb_clr]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("WO"),
+      .RESVAL(1'h0)
   ) u_classb_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_clr_we & classb_clren_qs),
-    .wd     (classb_clr_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_clr_we & classb_clren_qs),
+      .wd(classb_clr_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (reg2hw.classb_clr.qe),
-    .q      (reg2hw.classb_clr.q ),
+      // to internal hardware
+      .qe(reg2hw.classb_clr.qe),
+      .q (reg2hw.classb_clr.q),
 
-    .qs     ()
+      .qs()
   );
 
 
   // R[classb_accum_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_classb_accum_cnt (
-    .re     (classb_accum_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classb_accum_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classb_accum_cnt_qs)
+      .re (classb_accum_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classb_accum_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classb_accum_cnt_qs)
   );
 
 
   // R[classb_accum_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h0)
   ) u_classb_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_accum_thresh_we & regen_qs),
-    .wd     (classb_accum_thresh_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_accum_thresh_we & regen_qs),
+      .wd(classb_accum_thresh_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_accum_thresh.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_accum_thresh.q),
 
-    // to register interface (read)
-    .qs     (classb_accum_thresh_qs)
+      // to register interface (read)
+      .qs(classb_accum_thresh_qs)
   );
 
 
   // R[classb_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classb_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_timeout_cyc_we & regen_qs),
-    .wd     (classb_timeout_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_timeout_cyc_we & regen_qs),
+      .wd(classb_timeout_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_timeout_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_timeout_cyc.q),
 
-    // to register interface (read)
-    .qs     (classb_timeout_cyc_qs)
+      // to register interface (read)
+      .qs(classb_timeout_cyc_qs)
   );
 
 
   // R[classb_phase0_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classb_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_phase0_cyc_we & regen_qs),
-    .wd     (classb_phase0_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_phase0_cyc_we & regen_qs),
+      .wd(classb_phase0_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_phase0_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_phase0_cyc.q),
 
-    // to register interface (read)
-    .qs     (classb_phase0_cyc_qs)
+      // to register interface (read)
+      .qs(classb_phase0_cyc_qs)
   );
 
 
   // R[classb_phase1_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classb_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_phase1_cyc_we & regen_qs),
-    .wd     (classb_phase1_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_phase1_cyc_we & regen_qs),
+      .wd(classb_phase1_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_phase1_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_phase1_cyc.q),
 
-    // to register interface (read)
-    .qs     (classb_phase1_cyc_qs)
+      // to register interface (read)
+      .qs(classb_phase1_cyc_qs)
   );
 
 
   // R[classb_phase2_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classb_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_phase2_cyc_we & regen_qs),
-    .wd     (classb_phase2_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_phase2_cyc_we & regen_qs),
+      .wd(classb_phase2_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_phase2_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_phase2_cyc.q),
 
-    // to register interface (read)
-    .qs     (classb_phase2_cyc_qs)
+      // to register interface (read)
+      .qs(classb_phase2_cyc_qs)
   );
 
 
   // R[classb_phase3_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classb_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classb_phase3_cyc_we & regen_qs),
-    .wd     (classb_phase3_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classb_phase3_cyc_we & regen_qs),
+      .wd(classb_phase3_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classb_phase3_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classb_phase3_cyc.q),
 
-    // to register interface (read)
-    .qs     (classb_phase3_cyc_qs)
+      // to register interface (read)
+      .qs(classb_phase3_cyc_qs)
   );
 
 
   // R[classb_esc_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+      .DW(32)
   ) u_classb_esc_cnt (
-    .re     (classb_esc_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classb_esc_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classb_esc_cnt_qs)
+      .re (classb_esc_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classb_esc_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classb_esc_cnt_qs)
   );
 
 
   // R[classb_state]: V(True)
 
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_classb_state (
-    .re     (classb_state_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classb_state.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classb_state_qs)
+      .re (classb_state_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classb_state.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classb_state_qs)
   );
 
 
@@ -3151,524 +3151,524 @@ module alert_handler_reg_top (
 
   //   F[en]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classc_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_we & regen_qs),
-    .wd     (classc_ctrl_en_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_en_we & regen_qs),
+      .wd(classc_ctrl_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.en.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_en_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_en_qs)
   );
 
 
   //   F[lock]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classc_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_lock_we & regen_qs),
-    .wd     (classc_ctrl_lock_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_lock_we & regen_qs),
+      .wd(classc_ctrl_lock_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.lock.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.lock.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_lock_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_lock_qs)
   );
 
 
   //   F[en_e0]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classc_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e0_we & regen_qs),
-    .wd     (classc_ctrl_en_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_en_e0_we & regen_qs),
+      .wd(classc_ctrl_en_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.en_e0.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_en_e0_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_en_e0_qs)
   );
 
 
   //   F[en_e1]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classc_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e1_we & regen_qs),
-    .wd     (classc_ctrl_en_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_en_e1_we & regen_qs),
+      .wd(classc_ctrl_en_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.en_e1.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_en_e1_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_en_e1_qs)
   );
 
 
   //   F[en_e2]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classc_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e2_we & regen_qs),
-    .wd     (classc_ctrl_en_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_en_e2_we & regen_qs),
+      .wd(classc_ctrl_en_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.en_e2.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_en_e2_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_en_e2_qs)
   );
 
 
   //   F[en_e3]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classc_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e3_we & regen_qs),
-    .wd     (classc_ctrl_en_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_en_e3_we & regen_qs),
+      .wd(classc_ctrl_en_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.en_e3.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_en_e3_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_en_e3_qs)
   );
 
 
   //   F[map_e0]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_classc_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e0_we & regen_qs),
-    .wd     (classc_ctrl_map_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_map_e0_we & regen_qs),
+      .wd(classc_ctrl_map_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.map_e0.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_map_e0_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_map_e0_qs)
   );
 
 
   //   F[map_e1]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h1)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h1)
   ) u_classc_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e1_we & regen_qs),
-    .wd     (classc_ctrl_map_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_map_e1_we & regen_qs),
+      .wd(classc_ctrl_map_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.map_e1.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_map_e1_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_map_e1_qs)
   );
 
 
   //   F[map_e2]: 11:10
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h2)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h2)
   ) u_classc_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e2_we & regen_qs),
-    .wd     (classc_ctrl_map_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_map_e2_we & regen_qs),
+      .wd(classc_ctrl_map_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.map_e2.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_map_e2_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_map_e2_qs)
   );
 
 
   //   F[map_e3]: 13:12
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h3)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h3)
   ) u_classc_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e3_we & regen_qs),
-    .wd     (classc_ctrl_map_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_ctrl_map_e3_we & regen_qs),
+      .wd(classc_ctrl_map_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_ctrl.map_e3.q),
 
-    // to register interface (read)
-    .qs     (classc_ctrl_map_e3_qs)
+      // to register interface (read)
+      .qs(classc_ctrl_map_e3_qs)
   );
 
 
   // R[classc_clren]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_classc_clren (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (classc_clren_we),
-    .wd     (classc_clren_wd),
+      // from register interface
+      .we(classc_clren_we),
+      .wd(classc_clren_wd),
 
-    // from internal hardware
-    .de     (hw2reg.classc_clren.de),
-    .d      (hw2reg.classc_clren.d ),
+      // from internal hardware
+      .de(hw2reg.classc_clren.de),
+      .d (hw2reg.classc_clren.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (),
+      // to internal hardware
+      .qe(),
+      .q (),
 
-    // to register interface (read)
-    .qs     (classc_clren_qs)
+      // to register interface (read)
+      .qs(classc_clren_qs)
   );
 
 
   // R[classc_clr]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("WO"),
+      .RESVAL(1'h0)
   ) u_classc_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_clr_we & classc_clren_qs),
-    .wd     (classc_clr_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_clr_we & classc_clren_qs),
+      .wd(classc_clr_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (reg2hw.classc_clr.qe),
-    .q      (reg2hw.classc_clr.q ),
+      // to internal hardware
+      .qe(reg2hw.classc_clr.qe),
+      .q (reg2hw.classc_clr.q),
 
-    .qs     ()
+      .qs()
   );
 
 
   // R[classc_accum_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_classc_accum_cnt (
-    .re     (classc_accum_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classc_accum_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classc_accum_cnt_qs)
+      .re (classc_accum_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classc_accum_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classc_accum_cnt_qs)
   );
 
 
   // R[classc_accum_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h0)
   ) u_classc_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_accum_thresh_we & regen_qs),
-    .wd     (classc_accum_thresh_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_accum_thresh_we & regen_qs),
+      .wd(classc_accum_thresh_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_accum_thresh.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_accum_thresh.q),
 
-    // to register interface (read)
-    .qs     (classc_accum_thresh_qs)
+      // to register interface (read)
+      .qs(classc_accum_thresh_qs)
   );
 
 
   // R[classc_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classc_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_timeout_cyc_we & regen_qs),
-    .wd     (classc_timeout_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_timeout_cyc_we & regen_qs),
+      .wd(classc_timeout_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_timeout_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_timeout_cyc.q),
 
-    // to register interface (read)
-    .qs     (classc_timeout_cyc_qs)
+      // to register interface (read)
+      .qs(classc_timeout_cyc_qs)
   );
 
 
   // R[classc_phase0_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classc_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_phase0_cyc_we & regen_qs),
-    .wd     (classc_phase0_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_phase0_cyc_we & regen_qs),
+      .wd(classc_phase0_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_phase0_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_phase0_cyc.q),
 
-    // to register interface (read)
-    .qs     (classc_phase0_cyc_qs)
+      // to register interface (read)
+      .qs(classc_phase0_cyc_qs)
   );
 
 
   // R[classc_phase1_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classc_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_phase1_cyc_we & regen_qs),
-    .wd     (classc_phase1_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_phase1_cyc_we & regen_qs),
+      .wd(classc_phase1_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_phase1_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_phase1_cyc.q),
 
-    // to register interface (read)
-    .qs     (classc_phase1_cyc_qs)
+      // to register interface (read)
+      .qs(classc_phase1_cyc_qs)
   );
 
 
   // R[classc_phase2_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classc_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_phase2_cyc_we & regen_qs),
-    .wd     (classc_phase2_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_phase2_cyc_we & regen_qs),
+      .wd(classc_phase2_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_phase2_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_phase2_cyc.q),
 
-    // to register interface (read)
-    .qs     (classc_phase2_cyc_qs)
+      // to register interface (read)
+      .qs(classc_phase2_cyc_qs)
   );
 
 
   // R[classc_phase3_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classc_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classc_phase3_cyc_we & regen_qs),
-    .wd     (classc_phase3_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classc_phase3_cyc_we & regen_qs),
+      .wd(classc_phase3_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classc_phase3_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classc_phase3_cyc.q),
 
-    // to register interface (read)
-    .qs     (classc_phase3_cyc_qs)
+      // to register interface (read)
+      .qs(classc_phase3_cyc_qs)
   );
 
 
   // R[classc_esc_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+      .DW(32)
   ) u_classc_esc_cnt (
-    .re     (classc_esc_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classc_esc_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classc_esc_cnt_qs)
+      .re (classc_esc_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classc_esc_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classc_esc_cnt_qs)
   );
 
 
   // R[classc_state]: V(True)
 
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_classc_state (
-    .re     (classc_state_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classc_state.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classc_state_qs)
+      .re (classc_state_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classc_state.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classc_state_qs)
   );
 
 
@@ -3676,524 +3676,524 @@ module alert_handler_reg_top (
 
   //   F[en]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classd_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_we & regen_qs),
-    .wd     (classd_ctrl_en_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_en_we & regen_qs),
+      .wd(classd_ctrl_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.en.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_en_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_en_qs)
   );
 
 
   //   F[lock]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_classd_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_lock_we & regen_qs),
-    .wd     (classd_ctrl_lock_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_lock_we & regen_qs),
+      .wd(classd_ctrl_lock_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.lock.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.lock.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_lock_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_lock_qs)
   );
 
 
   //   F[en_e0]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classd_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e0_we & regen_qs),
-    .wd     (classd_ctrl_en_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_en_e0_we & regen_qs),
+      .wd(classd_ctrl_en_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.en_e0.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_en_e0_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_en_e0_qs)
   );
 
 
   //   F[en_e1]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classd_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e1_we & regen_qs),
-    .wd     (classd_ctrl_en_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_en_e1_we & regen_qs),
+      .wd(classd_ctrl_en_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.en_e1.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_en_e1_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_en_e1_qs)
   );
 
 
   //   F[en_e2]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classd_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e2_we & regen_qs),
-    .wd     (classd_ctrl_en_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_en_e2_we & regen_qs),
+      .wd(classd_ctrl_en_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.en_e2.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_en_e2_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_en_e2_qs)
   );
 
 
   //   F[en_e3]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_classd_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e3_we & regen_qs),
-    .wd     (classd_ctrl_en_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_en_e3_we & regen_qs),
+      .wd(classd_ctrl_en_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.en_e3.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_en_e3_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_en_e3_qs)
   );
 
 
   //   F[map_e0]: 7:6
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_classd_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e0_we & regen_qs),
-    .wd     (classd_ctrl_map_e0_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_map_e0_we & regen_qs),
+      .wd(classd_ctrl_map_e0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.map_e0.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_map_e0_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_map_e0_qs)
   );
 
 
   //   F[map_e1]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h1)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h1)
   ) u_classd_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e1_we & regen_qs),
-    .wd     (classd_ctrl_map_e1_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_map_e1_we & regen_qs),
+      .wd(classd_ctrl_map_e1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.map_e1.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_map_e1_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_map_e1_qs)
   );
 
 
   //   F[map_e2]: 11:10
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h2)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h2)
   ) u_classd_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e2_we & regen_qs),
-    .wd     (classd_ctrl_map_e2_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_map_e2_we & regen_qs),
+      .wd(classd_ctrl_map_e2_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e2.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.map_e2.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_map_e2_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_map_e2_qs)
   );
 
 
   //   F[map_e3]: 13:12
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h3)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h3)
   ) u_classd_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e3_we & regen_qs),
-    .wd     (classd_ctrl_map_e3_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_ctrl_map_e3_we & regen_qs),
+      .wd(classd_ctrl_map_e3_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e3.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_ctrl.map_e3.q),
 
-    // to register interface (read)
-    .qs     (classd_ctrl_map_e3_qs)
+      // to register interface (read)
+      .qs(classd_ctrl_map_e3_qs)
   );
 
 
   // R[classd_clren]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h1)
   ) u_classd_clren (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (classd_clren_we),
-    .wd     (classd_clren_wd),
+      // from register interface
+      .we(classd_clren_we),
+      .wd(classd_clren_wd),
 
-    // from internal hardware
-    .de     (hw2reg.classd_clren.de),
-    .d      (hw2reg.classd_clren.d ),
+      // from internal hardware
+      .de(hw2reg.classd_clren.de),
+      .d (hw2reg.classd_clren.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (),
+      // to internal hardware
+      .qe(),
+      .q (),
 
-    // to register interface (read)
-    .qs     (classd_clren_qs)
+      // to register interface (read)
+      .qs(classd_clren_qs)
   );
 
 
   // R[classd_clr]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("WO"),
+      .RESVAL(1'h0)
   ) u_classd_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_clr_we & classd_clren_qs),
-    .wd     (classd_clr_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_clr_we & classd_clren_qs),
+      .wd(classd_clr_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (reg2hw.classd_clr.qe),
-    .q      (reg2hw.classd_clr.q ),
+      // to internal hardware
+      .qe(reg2hw.classd_clr.qe),
+      .q (reg2hw.classd_clr.q),
 
-    .qs     ()
+      .qs()
   );
 
 
   // R[classd_accum_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_classd_accum_cnt (
-    .re     (classd_accum_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classd_accum_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classd_accum_cnt_qs)
+      .re (classd_accum_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classd_accum_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classd_accum_cnt_qs)
   );
 
 
   // R[classd_accum_thresh]: V(False)
 
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h0)
   ) u_classd_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_accum_thresh_we & regen_qs),
-    .wd     (classd_accum_thresh_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_accum_thresh_we & regen_qs),
+      .wd(classd_accum_thresh_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_accum_thresh.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_accum_thresh.q),
 
-    // to register interface (read)
-    .qs     (classd_accum_thresh_qs)
+      // to register interface (read)
+      .qs(classd_accum_thresh_qs)
   );
 
 
   // R[classd_timeout_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classd_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_timeout_cyc_we & regen_qs),
-    .wd     (classd_timeout_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_timeout_cyc_we & regen_qs),
+      .wd(classd_timeout_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_timeout_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_timeout_cyc.q),
 
-    // to register interface (read)
-    .qs     (classd_timeout_cyc_qs)
+      // to register interface (read)
+      .qs(classd_timeout_cyc_qs)
   );
 
 
   // R[classd_phase0_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classd_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_phase0_cyc_we & regen_qs),
-    .wd     (classd_phase0_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_phase0_cyc_we & regen_qs),
+      .wd(classd_phase0_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_phase0_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_phase0_cyc.q),
 
-    // to register interface (read)
-    .qs     (classd_phase0_cyc_qs)
+      // to register interface (read)
+      .qs(classd_phase0_cyc_qs)
   );
 
 
   // R[classd_phase1_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classd_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_phase1_cyc_we & regen_qs),
-    .wd     (classd_phase1_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_phase1_cyc_we & regen_qs),
+      .wd(classd_phase1_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_phase1_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_phase1_cyc.q),
 
-    // to register interface (read)
-    .qs     (classd_phase1_cyc_qs)
+      // to register interface (read)
+      .qs(classd_phase1_cyc_qs)
   );
 
 
   // R[classd_phase2_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classd_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_phase2_cyc_we & regen_qs),
-    .wd     (classd_phase2_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_phase2_cyc_we & regen_qs),
+      .wd(classd_phase2_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_phase2_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_phase2_cyc.q),
 
-    // to register interface (read)
-    .qs     (classd_phase2_cyc_qs)
+      // to register interface (read)
+      .qs(classd_phase2_cyc_qs)
   );
 
 
   // R[classd_phase3_cyc]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'h0)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'h0)
   ) u_classd_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface (qualified with register enable)
-    .we     (classd_phase3_cyc_we & regen_qs),
-    .wd     (classd_phase3_cyc_wd),
+      // from register interface (qualified with register enable)
+      .we(classd_phase3_cyc_we & regen_qs),
+      .wd(classd_phase3_cyc_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.classd_phase3_cyc.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.classd_phase3_cyc.q),
 
-    // to register interface (read)
-    .qs     (classd_phase3_cyc_qs)
+      // to register interface (read)
+      .qs(classd_phase3_cyc_qs)
   );
 
 
   // R[classd_esc_cnt]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+      .DW(32)
   ) u_classd_esc_cnt (
-    .re     (classd_esc_cnt_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classd_esc_cnt.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classd_esc_cnt_qs)
+      .re (classd_esc_cnt_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classd_esc_cnt.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classd_esc_cnt_qs)
   );
 
 
   // R[classd_state]: V(True)
 
   prim_subreg_ext #(
-    .DW    (3)
+      .DW(3)
   ) u_classd_state (
-    .re     (classd_state_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.classd_state.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (classd_state_qs)
+      .re (classd_state_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.classd_state.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (classd_state_qs)
   );
 
 
@@ -4202,16 +4202,16 @@ module alert_handler_reg_top (
   logic [58:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == ALERT_HANDLER_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == ALERT_HANDLER_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == ALERT_HANDLER_REGEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET);
-    addr_hit[ 5] = (reg_addr == ALERT_HANDLER_ALERT_EN_OFFSET);
-    addr_hit[ 6] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_OFFSET);
-    addr_hit[ 7] = (reg_addr == ALERT_HANDLER_ALERT_CAUSE_OFFSET);
-    addr_hit[ 8] = (reg_addr == ALERT_HANDLER_LOC_ALERT_EN_OFFSET);
-    addr_hit[ 9] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET);
+    addr_hit[0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
+    addr_hit[1] = (reg_addr == ALERT_HANDLER_INTR_ENABLE_OFFSET);
+    addr_hit[2] = (reg_addr == ALERT_HANDLER_INTR_TEST_OFFSET);
+    addr_hit[3] = (reg_addr == ALERT_HANDLER_REGEN_OFFSET);
+    addr_hit[4] = (reg_addr == ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET);
+    addr_hit[5] = (reg_addr == ALERT_HANDLER_ALERT_EN_OFFSET);
+    addr_hit[6] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_OFFSET);
+    addr_hit[7] = (reg_addr == ALERT_HANDLER_ALERT_CAUSE_OFFSET);
+    addr_hit[8] = (reg_addr == ALERT_HANDLER_LOC_ALERT_EN_OFFSET);
+    addr_hit[9] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET);
     addr_hit[10] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET);
     addr_hit[11] = (reg_addr == ALERT_HANDLER_CLASSA_CTRL_OFFSET);
     addr_hit[12] = (reg_addr == ALERT_HANDLER_CLASSA_CLREN_OFFSET);
@@ -4263,70 +4263,129 @@ module alert_handler_reg_top (
     addr_hit[58] = (reg_addr == ALERT_HANDLER_CLASSD_STATE_OFFSET);
   end
 
-  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0;
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (ALERT_HANDLER_PERMIT[ 0] != (ALERT_HANDLER_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (ALERT_HANDLER_PERMIT[ 1] != (ALERT_HANDLER_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (ALERT_HANDLER_PERMIT[ 2] != (ALERT_HANDLER_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (ALERT_HANDLER_PERMIT[ 3] != (ALERT_HANDLER_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (ALERT_HANDLER_PERMIT[ 4] != (ALERT_HANDLER_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (ALERT_HANDLER_PERMIT[ 5] != (ALERT_HANDLER_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (ALERT_HANDLER_PERMIT[ 6] != (ALERT_HANDLER_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (ALERT_HANDLER_PERMIT[ 7] != (ALERT_HANDLER_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (ALERT_HANDLER_PERMIT[ 8] != (ALERT_HANDLER_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (ALERT_HANDLER_PERMIT[ 9] != (ALERT_HANDLER_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (ALERT_HANDLER_PERMIT[10] != (ALERT_HANDLER_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (ALERT_HANDLER_PERMIT[11] != (ALERT_HANDLER_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (ALERT_HANDLER_PERMIT[12] != (ALERT_HANDLER_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (ALERT_HANDLER_PERMIT[13] != (ALERT_HANDLER_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (ALERT_HANDLER_PERMIT[14] != (ALERT_HANDLER_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (ALERT_HANDLER_PERMIT[15] != (ALERT_HANDLER_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (ALERT_HANDLER_PERMIT[16] != (ALERT_HANDLER_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (ALERT_HANDLER_PERMIT[17] != (ALERT_HANDLER_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (ALERT_HANDLER_PERMIT[18] != (ALERT_HANDLER_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (ALERT_HANDLER_PERMIT[19] != (ALERT_HANDLER_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (ALERT_HANDLER_PERMIT[20] != (ALERT_HANDLER_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (ALERT_HANDLER_PERMIT[21] != (ALERT_HANDLER_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (ALERT_HANDLER_PERMIT[22] != (ALERT_HANDLER_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (ALERT_HANDLER_PERMIT[23] != (ALERT_HANDLER_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (ALERT_HANDLER_PERMIT[24] != (ALERT_HANDLER_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (ALERT_HANDLER_PERMIT[25] != (ALERT_HANDLER_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (ALERT_HANDLER_PERMIT[26] != (ALERT_HANDLER_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (ALERT_HANDLER_PERMIT[27] != (ALERT_HANDLER_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (ALERT_HANDLER_PERMIT[28] != (ALERT_HANDLER_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (ALERT_HANDLER_PERMIT[29] != (ALERT_HANDLER_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (ALERT_HANDLER_PERMIT[30] != (ALERT_HANDLER_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (ALERT_HANDLER_PERMIT[31] != (ALERT_HANDLER_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (ALERT_HANDLER_PERMIT[32] != (ALERT_HANDLER_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (ALERT_HANDLER_PERMIT[33] != (ALERT_HANDLER_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (ALERT_HANDLER_PERMIT[34] != (ALERT_HANDLER_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (ALERT_HANDLER_PERMIT[35] != (ALERT_HANDLER_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (ALERT_HANDLER_PERMIT[36] != (ALERT_HANDLER_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (ALERT_HANDLER_PERMIT[37] != (ALERT_HANDLER_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (ALERT_HANDLER_PERMIT[38] != (ALERT_HANDLER_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (ALERT_HANDLER_PERMIT[39] != (ALERT_HANDLER_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (ALERT_HANDLER_PERMIT[40] != (ALERT_HANDLER_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (ALERT_HANDLER_PERMIT[41] != (ALERT_HANDLER_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (ALERT_HANDLER_PERMIT[42] != (ALERT_HANDLER_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (ALERT_HANDLER_PERMIT[43] != (ALERT_HANDLER_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (ALERT_HANDLER_PERMIT[44] != (ALERT_HANDLER_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (ALERT_HANDLER_PERMIT[45] != (ALERT_HANDLER_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (ALERT_HANDLER_PERMIT[46] != (ALERT_HANDLER_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (ALERT_HANDLER_PERMIT[47] != (ALERT_HANDLER_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (ALERT_HANDLER_PERMIT[48] != (ALERT_HANDLER_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (ALERT_HANDLER_PERMIT[49] != (ALERT_HANDLER_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (ALERT_HANDLER_PERMIT[50] != (ALERT_HANDLER_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[51] && reg_we && (ALERT_HANDLER_PERMIT[51] != (ALERT_HANDLER_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[52] && reg_we && (ALERT_HANDLER_PERMIT[52] != (ALERT_HANDLER_PERMIT[52] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[53] && reg_we && (ALERT_HANDLER_PERMIT[53] != (ALERT_HANDLER_PERMIT[53] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[54] && reg_we && (ALERT_HANDLER_PERMIT[54] != (ALERT_HANDLER_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[55] && reg_we && (ALERT_HANDLER_PERMIT[55] != (ALERT_HANDLER_PERMIT[55] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[56] && reg_we && (ALERT_HANDLER_PERMIT[56] != (ALERT_HANDLER_PERMIT[56] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[57] && reg_we && (ALERT_HANDLER_PERMIT[57] != (ALERT_HANDLER_PERMIT[57] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[58] && reg_we && (ALERT_HANDLER_PERMIT[58] != (ALERT_HANDLER_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[0] && reg_we && (ALERT_HANDLER_PERMIT[0] != (ALERT_HANDLER_PERMIT[0] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[1] && reg_we && (ALERT_HANDLER_PERMIT[1] != (ALERT_HANDLER_PERMIT[1] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[2] && reg_we && (ALERT_HANDLER_PERMIT[2] != (ALERT_HANDLER_PERMIT[2] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[3] && reg_we && (ALERT_HANDLER_PERMIT[3] != (ALERT_HANDLER_PERMIT[3] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[4] && reg_we && (ALERT_HANDLER_PERMIT[4] != (ALERT_HANDLER_PERMIT[4] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[5] && reg_we && (ALERT_HANDLER_PERMIT[5] != (ALERT_HANDLER_PERMIT[5] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[6] && reg_we && (ALERT_HANDLER_PERMIT[6] != (ALERT_HANDLER_PERMIT[6] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[7] && reg_we && (ALERT_HANDLER_PERMIT[7] != (ALERT_HANDLER_PERMIT[7] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[8] && reg_we && (ALERT_HANDLER_PERMIT[8] != (ALERT_HANDLER_PERMIT[8] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[9] && reg_we && (ALERT_HANDLER_PERMIT[9] != (ALERT_HANDLER_PERMIT[9] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[10] && reg_we && (ALERT_HANDLER_PERMIT[10] != (ALERT_HANDLER_PERMIT[10] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[11] && reg_we && (ALERT_HANDLER_PERMIT[11] != (ALERT_HANDLER_PERMIT[11] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[12] && reg_we && (ALERT_HANDLER_PERMIT[12] != (ALERT_HANDLER_PERMIT[12] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[13] && reg_we && (ALERT_HANDLER_PERMIT[13] != (ALERT_HANDLER_PERMIT[13] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[14] && reg_we && (ALERT_HANDLER_PERMIT[14] != (ALERT_HANDLER_PERMIT[14] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[15] && reg_we && (ALERT_HANDLER_PERMIT[15] != (ALERT_HANDLER_PERMIT[15] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[16] && reg_we && (ALERT_HANDLER_PERMIT[16] != (ALERT_HANDLER_PERMIT[16] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[17] && reg_we && (ALERT_HANDLER_PERMIT[17] != (ALERT_HANDLER_PERMIT[17] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[18] && reg_we && (ALERT_HANDLER_PERMIT[18] != (ALERT_HANDLER_PERMIT[18] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[19] && reg_we && (ALERT_HANDLER_PERMIT[19] != (ALERT_HANDLER_PERMIT[19] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[20] && reg_we && (ALERT_HANDLER_PERMIT[20] != (ALERT_HANDLER_PERMIT[20] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[21] && reg_we && (ALERT_HANDLER_PERMIT[21] != (ALERT_HANDLER_PERMIT[21] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[22] && reg_we && (ALERT_HANDLER_PERMIT[22] != (ALERT_HANDLER_PERMIT[22] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[23] && reg_we && (ALERT_HANDLER_PERMIT[23] != (ALERT_HANDLER_PERMIT[23] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[24] && reg_we && (ALERT_HANDLER_PERMIT[24] != (ALERT_HANDLER_PERMIT[24] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[25] && reg_we && (ALERT_HANDLER_PERMIT[25] != (ALERT_HANDLER_PERMIT[25] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[26] && reg_we && (ALERT_HANDLER_PERMIT[26] != (ALERT_HANDLER_PERMIT[26] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[27] && reg_we && (ALERT_HANDLER_PERMIT[27] != (ALERT_HANDLER_PERMIT[27] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[28] && reg_we && (ALERT_HANDLER_PERMIT[28] != (ALERT_HANDLER_PERMIT[28] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[29] && reg_we && (ALERT_HANDLER_PERMIT[29] != (ALERT_HANDLER_PERMIT[29] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[30] && reg_we && (ALERT_HANDLER_PERMIT[30] != (ALERT_HANDLER_PERMIT[30] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[31] && reg_we && (ALERT_HANDLER_PERMIT[31] != (ALERT_HANDLER_PERMIT[31] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[32] && reg_we && (ALERT_HANDLER_PERMIT[32] != (ALERT_HANDLER_PERMIT[32] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[33] && reg_we && (ALERT_HANDLER_PERMIT[33] != (ALERT_HANDLER_PERMIT[33] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[34] && reg_we && (ALERT_HANDLER_PERMIT[34] != (ALERT_HANDLER_PERMIT[34] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[35] && reg_we && (ALERT_HANDLER_PERMIT[35] != (ALERT_HANDLER_PERMIT[35] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[36] && reg_we && (ALERT_HANDLER_PERMIT[36] != (ALERT_HANDLER_PERMIT[36] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[37] && reg_we && (ALERT_HANDLER_PERMIT[37] != (ALERT_HANDLER_PERMIT[37] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[38] && reg_we && (ALERT_HANDLER_PERMIT[38] != (ALERT_HANDLER_PERMIT[38] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[39] && reg_we && (ALERT_HANDLER_PERMIT[39] != (ALERT_HANDLER_PERMIT[39] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[40] && reg_we && (ALERT_HANDLER_PERMIT[40] != (ALERT_HANDLER_PERMIT[40] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[41] && reg_we && (ALERT_HANDLER_PERMIT[41] != (ALERT_HANDLER_PERMIT[41] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[42] && reg_we && (ALERT_HANDLER_PERMIT[42] != (ALERT_HANDLER_PERMIT[42] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[43] && reg_we && (ALERT_HANDLER_PERMIT[43] != (ALERT_HANDLER_PERMIT[43] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[44] && reg_we && (ALERT_HANDLER_PERMIT[44] != (ALERT_HANDLER_PERMIT[44] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[45] && reg_we && (ALERT_HANDLER_PERMIT[45] != (ALERT_HANDLER_PERMIT[45] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[46] && reg_we && (ALERT_HANDLER_PERMIT[46] != (ALERT_HANDLER_PERMIT[46] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[47] && reg_we && (ALERT_HANDLER_PERMIT[47] != (ALERT_HANDLER_PERMIT[47] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[48] && reg_we && (ALERT_HANDLER_PERMIT[48] != (ALERT_HANDLER_PERMIT[48] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[49] && reg_we && (ALERT_HANDLER_PERMIT[49] != (ALERT_HANDLER_PERMIT[49] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[50] && reg_we && (ALERT_HANDLER_PERMIT[50] != (ALERT_HANDLER_PERMIT[50] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[51] && reg_we && (ALERT_HANDLER_PERMIT[51] != (ALERT_HANDLER_PERMIT[51] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[52] && reg_we && (ALERT_HANDLER_PERMIT[52] != (ALERT_HANDLER_PERMIT[52] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[53] && reg_we && (ALERT_HANDLER_PERMIT[53] != (ALERT_HANDLER_PERMIT[53] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[54] && reg_we && (ALERT_HANDLER_PERMIT[54] != (ALERT_HANDLER_PERMIT[54] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[55] && reg_we && (ALERT_HANDLER_PERMIT[55] != (ALERT_HANDLER_PERMIT[55] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[56] && reg_we && (ALERT_HANDLER_PERMIT[56] != (ALERT_HANDLER_PERMIT[56] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[57] && reg_we && (ALERT_HANDLER_PERMIT[57] != (ALERT_HANDLER_PERMIT[57] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[58] && reg_we && (ALERT_HANDLER_PERMIT[58] != (ALERT_HANDLER_PERMIT[58] & reg_be)))
+      wr_err = 1'b1;
   end
 
   assign intr_state_classa_we = addr_hit[0] & reg_we & ~wr_err;

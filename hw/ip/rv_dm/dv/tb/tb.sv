@@ -23,45 +23,54 @@ module tb;
   wire jtag_tdo_oe;
 
   // interfaces
-  clk_rst_if  clk_rst_if(.clk(clk), .rst_n(rst_n));
-  jtag_if     jtag_if();
-  tl_if       tl_host_if(.clk(clk), .rst_n(rst_n));
-  tl_if       tl_device_if(.clk(clk), .rst_n(rst_n));
-  rv_dm_if    rv_dm_if();
+  clk_rst_if clk_rst_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  jtag_if jtag_if ();
+  tl_if tl_host_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  tl_if tl_device_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  rv_dm_if rv_dm_if ();
 
   // dut
   rv_dm #(
-    .NrHarts      (rv_dm_params_pkg::NR_HARTS),
-    .IdcodeValue  (rv_dm_params_pkg::JTAG_ID_CODE)
+      .NrHarts(rv_dm_params_pkg::NR_HARTS),
+      .IdcodeValue(rv_dm_params_pkg::JTAG_ID_CODE)
   ) dut (
-    .clk_i        (clk        ),
-    .rst_ni       (rst_n      ),
+      .clk_i (clk),
+      .rst_ni(rst_n),
 
-    .testmode_i   (rv_dm_if.testmode    ),
-    .ndmreset_o   (rv_dm_if.ndmreset    ),
-    .dmactive_o   (rv_dm_if.dmactive    ),
-    .debug_req_o  (rv_dm_if.debug_req   ),
-    .unavailable_i(rv_dm_if.unavailable ),
+      .testmode_i   (rv_dm_if.testmode),
+      .ndmreset_o   (rv_dm_if.ndmreset),
+      .dmactive_o   (rv_dm_if.dmactive),
+      .debug_req_o  (rv_dm_if.debug_req),
+      .unavailable_i(rv_dm_if.unavailable),
 
-    .tl_d_i       (tl_device_if.h2d ),
-    .tl_d_o       (tl_device_if.d2h ),
+      .tl_d_i(tl_device_if.h2d),
+      .tl_d_o(tl_device_if.d2h),
 
-    .tl_h_o       (tl_host_if.h2d   ),
-    .tl_h_i       (tl_host_if.d2h   ),
+      .tl_h_o(tl_host_if.h2d),
+      .tl_h_i(tl_host_if.d2h),
 
-    .tck_i        (jtag_tck     ),
-    .tms_i        (jtag_tms     ),
-    .trst_ni      (jtag_trst_n  ),
-    .td_i         (jtag_tdo     ),
-    .td_o         (jtag_tdi     ),
-    .tdo_oe_o     (jtag_tdo_oe  )
+      .tck_i   (jtag_tck),
+      .tms_i   (jtag_tms),
+      .trst_ni (jtag_trst_n),
+      .td_i    (jtag_tdo),
+      .td_o    (jtag_tdi),
+      .tdo_oe_o(jtag_tdo_oe)
   );
 
-  assign jtag_tck    = jtag_if.tck   ;
-  assign jtag_tms    = jtag_if.tms   ;
+  assign jtag_tck = jtag_if.tck;
+  assign jtag_tms = jtag_if.tms;
   assign jtag_trst_n = jtag_if.trst_n;
-  assign jtag_tdo    = jtag_if.tdo   ;
-  assign jtag_if.tdi = jtag_tdi      ;
+  assign jtag_tdo = jtag_if.tdo;
+  assign jtag_if.tdi = jtag_tdi;
 
   initial begin
     // drive clk and rst_n from clk_if

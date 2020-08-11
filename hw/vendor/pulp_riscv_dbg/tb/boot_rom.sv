@@ -12,28 +12,29 @@
 // Description: Bootrom for firmware booting
 
 module boot_rom (
-    input logic         clk_i,
-    input logic         req_i,
-    input logic [31:0]  addr_i,
+    input  logic        clk_i,
+    input  logic        req_i,
+    input  logic [31:0] addr_i,
     output logic [31:0] rdata_o
 );
-    localparam int          RomSize    = 2;
-    localparam logic [31:0] entry_addr = 32'h1c00_0080;
+  localparam int RomSize = 2;
+  localparam logic [31:0] entry_addr = 32'h1c00_0080;
 
-    const logic [RomSize-1:0][31:0] mem = {
-        dm_tb_pkg::jalr(5'h0, 5'h1, entry_addr[11:0]),
-        dm_tb_pkg::lui(5'h1, entry_addr[31:12])
-    };
+  const
+  logic [RomSize-1:0][31:0]
+  mem = {
+    dm_tb_pkg::jalr(5'h0, 5'h1, entry_addr[11:0]), dm_tb_pkg::lui(5'h1, entry_addr[31:12])
+  };
 
-  logic [$clog2(RomSize)-1:0]     addr_q;
+  logic [$clog2(RomSize)-1:0] addr_q;
 
 
   assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
 
   always_ff @(posedge clk_i) begin
-      if (req_i) begin
-          addr_q <= addr_i[$clog2(RomSize)-1+3:2];
-      end
+    if (req_i) begin
+      addr_q <= addr_i[$clog2(RomSize) - 1 + 3:2];
+    end
   end
 
 endmodule

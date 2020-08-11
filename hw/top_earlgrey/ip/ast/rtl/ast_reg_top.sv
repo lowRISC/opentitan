@@ -7,35 +7,35 @@
 `include "prim_assert.sv"
 
 module ast_reg_top (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
-  // To HW
-  output ast_reg_pkg::ast_reg2hw_t reg2hw, // Write
+    // Below Regster interface can be changed
+    input  tlul_pkg::tl_h2d_t        tl_i,
+    output tlul_pkg::tl_d2h_t        tl_o,
+    // To HW
+    output ast_reg_pkg::ast_reg2hw_t reg2hw,  // Write
 
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+    // Config
+    input devmode_i  // If 1, explicit error return for unmapped register access
 );
 
-  import ast_reg_pkg::* ;
+  import ast_reg_pkg::*;
 
   localparam int AW = 3;
   localparam int DW = 32;
-  localparam int DBW = DW/8;                    // Byte Width
+  localparam int DBW = DW / 8;  // Byte Width
 
   // register signals
-  logic           reg_we;
-  logic           reg_re;
-  logic [AW-1:0]  reg_addr;
-  logic [DW-1:0]  reg_wdata;
+  logic reg_we;
+  logic reg_re;
+  logic [AW-1:0] reg_addr;
+  logic [DW-1:0] reg_wdata;
   logic [DBW-1:0] reg_be;
-  logic [DW-1:0]  reg_rdata;
-  logic           reg_error;
+  logic [DW-1:0] reg_rdata;
+  logic reg_error;
 
-  logic          addrmiss, wr_err;
+  logic addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -43,29 +43,29 @@ module ast_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o = tl_reg_d2h;
 
   tlul_adapter_reg #(
-    .RegAw(AW),
-    .RegDw(DW)
+      .RegAw(AW),
+      .RegDw(DW)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i (tl_reg_h2d),
-    .tl_o (tl_reg_d2h),
+      .tl_i(tl_reg_h2d),
+      .tl_o(tl_reg_d2h),
 
-    .we_o    (reg_we),
-    .re_o    (reg_re),
-    .addr_o  (reg_addr),
-    .wdata_o (reg_wdata),
-    .be_o    (reg_be),
-    .rdata_i (reg_rdata),
-    .error_i (reg_error)
+      .we_o   (reg_we),
+      .re_o   (reg_re),
+      .addr_o (reg_addr),
+      .wdata_o(reg_wdata),
+      .be_o   (reg_be),
+      .rdata_i(reg_rdata),
+      .error_i(reg_error)
   );
 
-  assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_rdata = reg_rdata_next;
+  assign reg_error = (devmode_i & addrmiss) | wr_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -90,27 +90,27 @@ module ast_reg_top (
   // R[rwtype0]: V(False)
 
   prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'hbc614e)
+      .DW(32),
+      .SWACCESS("RW"),
+      .RESVAL(32'hbc614e)
   ) u_rwtype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (rwtype0_we),
-    .wd     (rwtype0_wd),
+      // from register interface
+      .we(rwtype0_we),
+      .wd(rwtype0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rwtype0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.rwtype0.q),
 
-    // to register interface (read)
-    .qs     (rwtype0_qs)
+      // to register interface (read)
+      .qs(rwtype0_qs)
   );
 
 
@@ -118,105 +118,105 @@ module ast_reg_top (
 
   //   F[field0]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_rwtype1_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (rwtype1_field0_we),
-    .wd     (rwtype1_field0_wd),
+      // from register interface
+      .we(rwtype1_field0_we),
+      .wd(rwtype1_field0_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rwtype1.field0.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.rwtype1.field0.q),
 
-    // to register interface (read)
-    .qs     (rwtype1_field0_qs)
+      // to register interface (read)
+      .qs(rwtype1_field0_qs)
   );
 
 
   //   F[field1]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_rwtype1_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (rwtype1_field1_we),
-    .wd     (rwtype1_field1_wd),
+      // from register interface
+      .we(rwtype1_field1_we),
+      .wd(rwtype1_field1_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rwtype1.field1.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.rwtype1.field1.q),
 
-    // to register interface (read)
-    .qs     (rwtype1_field1_qs)
+      // to register interface (read)
+      .qs(rwtype1_field1_qs)
   );
 
 
   //   F[field4]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h1)
   ) u_rwtype1_field4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (rwtype1_field4_we),
-    .wd     (rwtype1_field4_wd),
+      // from register interface
+      .we(rwtype1_field4_we),
+      .wd(rwtype1_field4_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rwtype1.field4.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.rwtype1.field4.q),
 
-    // to register interface (read)
-    .qs     (rwtype1_field4_qs)
+      // to register interface (read)
+      .qs(rwtype1_field4_qs)
   );
 
 
   //   F[field15_8]: 15:8
   prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RW"),
-    .RESVAL  (8'h64)
+      .DW(8),
+      .SWACCESS("RW"),
+      .RESVAL(8'h64)
   ) u_rwtype1_field15_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (rwtype1_field15_8_we),
-    .wd     (rwtype1_field15_8_wd),
+      // from register interface
+      .we(rwtype1_field15_8_we),
+      .wd(rwtype1_field15_8_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rwtype1.field15_8.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.rwtype1.field15_8.q),
 
-    // to register interface (read)
-    .qs     (rwtype1_field15_8_qs)
+      // to register interface (read)
+      .qs(rwtype1_field15_8_qs)
   );
 
 
@@ -229,13 +229,13 @@ module ast_reg_top (
     addr_hit[1] = (reg_addr == AST_RWTYPE1_OFFSET);
   end
 
-  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0;
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (AST_PERMIT[0] != (AST_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (AST_PERMIT[1] != (AST_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[0] && reg_we && (AST_PERMIT[0] != (AST_PERMIT[0] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[1] && reg_we && (AST_PERMIT[1] != (AST_PERMIT[1] & reg_be))) wr_err = 1'b1;
   end
 
   assign rwtype0_we = addr_hit[0] & reg_we & ~wr_err;

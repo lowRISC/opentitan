@@ -14,14 +14,14 @@ package xbar_env_pkg;
   import dv_lib_pkg::*;
 
   typedef struct {
-    string                      device_name;
-    addr_range_t                addr_ranges[$];
+    string device_name;
+    addr_range_t addr_ranges[$];
   } tl_device_t;
 
   typedef struct {
-    string                      host_name;
-    int                         host_id;
-    string                      valid_devices[$];
+    string host_name;
+    int host_id;
+    string valid_devices[$];
   } tl_host_t;
 
   // this file is auto-generated and the path to this file should be provided in xbar_*_sim.core
@@ -38,20 +38,20 @@ package xbar_env_pkg;
     foreach (xbar_hosts[i]) begin
       if (xbar_hosts[i].host_name == host_name) begin
         foreach (xbar_hosts[i].valid_devices[j]) begin
-          if (xbar_hosts[i].valid_devices[j] == device_name)
-            return 1;
+          if (xbar_hosts[i].valid_devices[j] == device_name) return 1;
         end
       end
     end
     return 0;
   endfunction
 
-  function automatic bit is_device_valid_addr(string device_name, bit [top_pkg::TL_AW-1 : 0] addr);
+  function automatic bit is_device_valid_addr(string device_name,
+                                              bit [top_pkg::TL_AW-1 : 0] addr);
     foreach (xbar_devices[i]) begin
       if (xbar_devices[i].device_name == device_name) begin
         foreach (xbar_devices[i].addr_ranges[j]) begin
           if (addr inside {[xbar_devices[i].addr_ranges[j].start_addr :
-                           xbar_devices[i].addr_ranges[j].end_addr]}) begin
+                            xbar_devices[i].addr_ranges[j].end_addr]}) begin
             return 1;
           end
         end

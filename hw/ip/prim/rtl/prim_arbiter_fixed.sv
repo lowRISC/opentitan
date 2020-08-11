@@ -14,28 +14,28 @@
 `include "prim_assert.sv"
 
 module prim_arbiter_fixed #(
-  parameter int N   = 8,
-  parameter int DW  = 32,
+    parameter int N = 8,
+    parameter int DW = 32,
 
-  // Configurations
-  // EnDataPort: {0, 1}, if 0, input data will be ignored
-  parameter bit EnDataPort = 1,
+    // Configurations
+    // EnDataPort: {0, 1}, if 0, input data will be ignored
+    parameter bit EnDataPort = 1,
 
-  // Derived parameters
-  localparam int IdxW = $clog2(N)
+    // Derived parameters
+    localparam int IdxW = $clog2 (N)
 ) (
-  // used for assertions only
-  input clk_i,
-  input rst_ni,
+    // used for assertions only
+    input clk_i,
+    input rst_ni,
 
-  input        [ N-1:0]    req_i,
-  input        [DW-1:0]    data_i [N],
-  output logic [ N-1:0]    gnt_o,
-  output logic [IdxW-1:0]  idx_o,
+    input        [   N-1:0] req_i,
+    input        [  DW-1:0] data_i[N],
+    output logic [   N-1:0] gnt_o,
+    output logic [IdxW-1:0] idx_o,
 
-  output logic             valid_o,
-  output logic [DW-1:0]    data_o,
-  input                    ready_i
+    output logic          valid_o,
+    output logic [DW-1:0] data_o,
+    input                 ready_i
 );
 
   `ASSERT_INIT(CheckNGreaterZero_A, N > 0)
@@ -43,22 +43,22 @@ module prim_arbiter_fixed #(
   // this case is basically just a bypass
   if (N == 1) begin : gen_degenerate_case
 
-    assign valid_o  = req_i[0];
-    assign data_o   = data_i[0];
+    assign valid_o = req_i[0];
+    assign data_o = data_i[0];
     assign gnt_o[0] = valid_o & ready_i;
-    assign idx_o    = '0;
+    assign idx_o = '0;
 
   end else begin : gen_normal_case
 
     // align to powers of 2 for simplicity
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
-    logic [2**(IdxW+1)-2:0]           req_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
-    logic [2**(IdxW+1)-2:0]           gnt_tree;
+    logic [2**(IdxW+1)-2:0] req_tree;
+    logic [2**(IdxW+1)-2:0] rdy_tree;
+    logic [2**(IdxW+1)-2:0] gnt_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;
-    logic [2**(IdxW+1)-2:0][DW-1:0]   data_tree;
+    logic [2**(IdxW+1)-2:0][DW-1:0] data_tree;
 
-    for (genvar level = 0; level < IdxW+1; level++) begin : gen_tree
+    for (genvar level = 0; level < IdxW + 1; level++) begin : gen_tree
       //
       // level+1   C0   C1   <- "Base1" points to the first node on "level+1",
       //            \  /         these nodes are the children of the nodes one level below
@@ -70,46 +70,46 @@ module prim_arbiter_fixed #(
       // C0 = 2**(level+1) - 1 + 2*offset     = Base1 + 2*offset
       // C1 = 2**(level+1) - 1 + 2*offset + 1 = Base1 + 2*offset + 1
       //
-      localparam int Base0 = (2**level)-1;
-      localparam int Base1 = (2**(level+1))-1;
+      localparam int Base0 = (2 ** level) - 1;
+      localparam int Base1 = (2 ** (level + 1)) - 1;
 
-      for (genvar offset = 0; offset < 2**level; offset++) begin : gen_level
+      for (genvar offset = 0; offset < 2 ** level; offset++) begin : gen_level
         localparam int Pa = Base0 + offset;
-        localparam int C0 = Base1 + 2*offset;
-        localparam int C1 = Base1 + 2*offset + 1;
+        localparam int C0 = Base1 + 2 * offset;
+        localparam int C1 = Base1 + 2 * offset + 1;
 
         // this assigns the gated interrupt source signals, their
         // corresponding IDs and priorities to the tree leafs
         if (level == IdxW) begin : gen_leafs
           if (offset < N) begin : gen_assign
             // forward path
-            assign req_tree[Pa]      = req_i[offset];
-            assign idx_tree[Pa]      = offset;
-            assign data_tree[Pa]     = data_i[offset];
+            assign req_tree[Pa] = req_i[offset];
+            assign idx_tree[Pa] = offset;
+            assign data_tree[Pa] = data_i[offset];
             // backward (grant) path
-            assign gnt_o[offset]     = gnt_tree[Pa];
+            assign gnt_o[offset] = gnt_tree[Pa];
 
           end else begin : gen_tie_off
             // forward path
-            assign req_tree[Pa]  = '0;
-            assign idx_tree[Pa]  = '0;
+            assign req_tree[Pa] = '0;
+            assign idx_tree[Pa] = '0;
             assign data_tree[Pa] = '0;
           end
-        // this creates the node assignments
+          // this creates the node assignments
         end else begin : gen_nodes
           // forward path
-          logic sel; // local helper variable
+          logic sel;  // local helper variable
           always_comb begin : p_node
             // this always gives priority to the left child
             sel = ~req_tree[C0];
             // propagate requests
-            req_tree[Pa]  = req_tree[C0] | req_tree[C1];
+            req_tree[Pa] = req_tree[C0] | req_tree[C1];
             // data and index muxes
-            idx_tree[Pa]  = (sel) ? idx_tree[C1]  : idx_tree[C0];
+            idx_tree[Pa] = (sel) ? idx_tree[C1] : idx_tree[C0];
             data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
             // propagate the grants back to the input
             gnt_tree[C0] = gnt_tree[Pa] & ~sel;
-            gnt_tree[C1] = gnt_tree[Pa] &  sel;
+            gnt_tree[C1] = gnt_tree[Pa] & sel;
           end
         end
       end : gen_level
@@ -117,15 +117,15 @@ module prim_arbiter_fixed #(
 
     // the results can be found at the tree root
     if (EnDataPort) begin : gen_data_port
-      assign data_o      = data_tree[0];
+      assign data_o = data_tree[0];
     end else begin : gen_no_dataport
-      logic [DW-1:0] unused_data [N];
+      logic [DW-1:0] unused_data[N];
       assign unused_data = data_i;
       assign data_o = '1;
     end
 
-    assign idx_o       = idx_tree[0];
-    assign valid_o     = req_tree[0];
+    assign idx_o = idx_tree[0];
+    assign valid_o = req_tree[0];
 
     // this propagates a grant back to the input
     assign gnt_tree[0] = valid_o & ready_i;
@@ -161,9 +161,9 @@ module prim_arbiter_fixed #(
   // check index / grant correspond
   `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
 
-if (EnDataPort) begin: gen_data_port_assertion
-  // data flow
-  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
-end
+  if (EnDataPort) begin : gen_data_port_assertion
+    // data flow
+    `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
+  end
 
 endmodule : prim_arbiter_fixed

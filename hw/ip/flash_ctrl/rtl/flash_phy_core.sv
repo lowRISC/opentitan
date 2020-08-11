@@ -9,33 +9,35 @@
 // scramble, ECC, security and arbitration logic.
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
-module flash_phy_core import flash_phy_pkg::*; #(
-  parameter bit SkipInit     = 1,  // this is an option to reset flash to all F's at reset
-  parameter int ArbCnt       = 4   // this is an option to reset flash to all F's at reset
+module flash_phy_core
+import flash_phy_pkg::*;
+#(
+    parameter bit SkipInit = 1,  // this is an option to reset flash to all F's at reset
+    parameter int ArbCnt = 4  // this is an option to reset flash to all F's at reset
 ) (
-  input                              clk_i,
-  input                              rst_ni,
-  input                              scramble_en_i,// temporary signal
-  input                              host_req_i,   // host request - read only
-  input [BusBankAddrW-1:0]           host_addr_i,
-  input                              req_i,        // controller request
-  input                              rd_i,
-  input                              prog_i,
-  input                              pg_erase_i,
-  input                              bk_erase_i,
-  input flash_ctrl_pkg::flash_part_e part_i,
-  input [BusBankAddrW-1:0]           addr_i,
-  input [BusWidth-1:0]               prog_data_i,
-  input                              prog_last_i,
-  input [KeySize-1:0]                addr_key_i,
-  input [KeySize-1:0]                data_key_i,
-  output logic                       host_req_rdy_o,
-  output logic                       host_req_done_o,
-  output logic                       rd_done_o,
-  output logic                       prog_done_o,
-  output logic                       erase_done_o,
-  output logic [BusWidth-1:0]        rd_data_o,
-  output logic                       init_busy_o
+    input clk_i,
+    input rst_ni,
+    input scramble_en_i,  // temporary signal
+    input host_req_i,  // host request - read only
+    input [BusBankAddrW-1:0] host_addr_i,
+    input req_i,  // controller request
+    input rd_i,
+    input prog_i,
+    input pg_erase_i,
+    input bk_erase_i,
+    input flash_ctrl_pkg::flash_part_e part_i,
+    input [BusBankAddrW-1:0] addr_i,
+    input [BusWidth-1:0] prog_data_i,
+    input prog_last_i,
+    input [KeySize-1:0] addr_key_i,
+    input [KeySize-1:0] data_key_i,
+    output logic host_req_rdy_o,
+    output logic host_req_done_o,
+    output logic rd_done_o,
+    output logic prog_done_o,
+    output logic erase_done_o,
+    output logic [BusWidth-1:0] rd_data_o,
+    output logic init_busy_o
 );
 
 
@@ -203,9 +205,10 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
       // state is terminal, no flash transactions are ever accepted again
       // until reboot
-      default:;
-    endcase // unique case (state_q)
-  end // always_comb
+      default:
+      ;
+    endcase  // unique case (state_q)
+  end  // always_comb
 
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
@@ -226,32 +229,32 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic [DataWidth-1:0] rd_descrambled_data;
 
   flash_phy_rd u_rd (
-    .clk_i,
-    .rst_ni,
-    .req_i(reqs[PhyRead]),
-    .descramble_i(scramble_en_i),
-    .prog_i(reqs[PhyProg]),
-    .pg_erase_i(reqs[PhyPgErase]),
-    .bk_erase_i(reqs[PhyBkErase]),
-    .addr_i(muxed_addr),
-    .part_i(muxed_part),
-    .rdy_o(rd_stage_rdy),
-    .data_valid_o(rd_stage_data_valid),
-    .data_o(rd_data_o),
-    .idle_o(rd_stage_idle),
-    .req_o(flash_rd_req),
-    .ack_i(ack),
-    .data_i(flash_rdata),
-    //scramble unit interface
-    .calc_req_o(rd_calc_req),
-    .calc_addr_o(rd_calc_addr),
-    .descramble_req_o(rd_op_req),
-    .scrambled_data_o(rd_scrambled_data),
-    .calc_ack_i(calc_ack),
-    .descramble_ack_i(op_ack),
-    .mask_i(scramble_mask),
-    .descrambled_data_i(rd_descrambled_data)
-    );
+      .clk_i,
+      .rst_ni,
+      .req_i             (reqs[PhyRead]),
+      .descramble_i      (scramble_en_i),
+      .prog_i            (reqs[PhyProg]),
+      .pg_erase_i        (reqs[PhyPgErase]),
+      .bk_erase_i        (reqs[PhyBkErase]),
+      .addr_i            (muxed_addr),
+      .part_i            (muxed_part),
+      .rdy_o             (rd_stage_rdy),
+      .data_valid_o      (rd_stage_data_valid),
+      .data_o            (rd_data_o),
+      .idle_o            (rd_stage_idle),
+      .req_o             (flash_rd_req),
+      .ack_i             (ack),
+      .data_i            (flash_rdata),
+      //scramble unit interface
+      .calc_req_o        (rd_calc_req),
+      .calc_addr_o       (rd_calc_addr),
+      .descramble_req_o  (rd_op_req),
+      .scrambled_data_o  (rd_scrambled_data),
+      .calc_ack_i        (calc_ack),
+      .descramble_ack_i  (op_ack),
+      .mask_i            (scramble_mask),
+      .descrambled_data_i(rd_descrambled_data)
+  );
 
   ////////////////////////
   // program pipeline
@@ -268,23 +271,23 @@ module flash_phy_core import flash_phy_pkg::*; #(
   end else begin : gen_prog_data
 
     flash_phy_prog u_prog (
-      .clk_i,
-      .rst_ni,
-      .req_i(reqs[PhyProg]),
-      .scramble_i(scramble_en_i),
-      .sel_i(addr_i[0 +: WordSelW]),
-      .data_i(prog_data_i),
-      .last_i(prog_last_i),
-      .ack_i(ack),
-      .calc_ack_i(calc_ack),
-      .scramble_ack_i(op_ack),
-      .mask_i(scramble_mask),
-      .scrambled_data_i(prog_scrambled_data),
-      .calc_req_o(prog_calc_req),
-      .scramble_req_o(prog_op_req),
-      .req_o(flash_prog_req),
-      .ack_o(prog_ack),
-      .data_o(prog_data)
+        .clk_i,
+        .rst_ni,
+        .req_i           (reqs[PhyProg]),
+        .scramble_i      (scramble_en_i),
+        .sel_i           (addr_i[0 +: WordSelW]),
+        .data_i          (prog_data_i),
+        .last_i          (prog_last_i),
+        .ack_i           (ack),
+        .calc_ack_i      (calc_ack),
+        .scramble_ack_i  (op_ack),
+        .mask_i          (scramble_mask),
+        .scrambled_data_i(prog_scrambled_data),
+        .calc_req_o      (prog_calc_req),
+        .scramble_req_o  (prog_op_req),
+        .req_o           (flash_prog_req),
+        .ack_o           (prog_ack),
+        .data_o          (prog_data)
     );
 
   end
@@ -294,25 +297,25 @@ module flash_phy_core import flash_phy_pkg::*; #(
   ////////////////////////
 
   logic [BankAddrW-1:0] scramble_muxed_addr;
-  assign scramble_muxed_addr = prog_calc_req ? muxed_addr[BusBankAddrW-1:LsbAddrBit] :
-                                               rd_calc_addr;
+  assign
+      scramble_muxed_addr = prog_calc_req ? muxed_addr[BusBankAddrW - 1:LsbAddrBit] : rd_calc_addr;
 
   flash_phy_scramble u_scramble (
-    .clk_i,
-    .rst_ni,
-    .calc_req_i(prog_calc_req | rd_calc_req),
-    .op_req_i(prog_op_req | rd_op_req),
-    .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),
-    .addr_i(scramble_muxed_addr),
-    .plain_data_i(prog_data),
-    .scrambled_data_i(rd_scrambled_data),
-    .addr_key_i(addr_key_i),
-    .data_key_i(data_key_i),
-    .calc_ack_o(calc_ack),
-    .op_ack_o(op_ack),
-    .mask_o(scramble_mask),
-    .plain_data_o(rd_descrambled_data),
-    .scrambled_data_o(prog_scrambled_data)
+      .clk_i,
+      .rst_ni,
+      .calc_req_i      (prog_calc_req | rd_calc_req),
+      .op_req_i        (prog_op_req | rd_op_req),
+      .op_type_i       (prog_op_req ? ScrambleOp : DeScrambleOp),
+      .addr_i          (scramble_muxed_addr),
+      .plain_data_i    (prog_data),
+      .scrambled_data_i(rd_scrambled_data),
+      .addr_key_i      (addr_key_i),
+      .data_key_i      (data_key_i),
+      .calc_ack_o      (calc_ack),
+      .op_ack_o        (op_ack),
+      .mask_o          (scramble_mask),
+      .plain_data_o    (rd_descrambled_data),
+      .scrambled_data_o(prog_scrambled_data)
   );
 
 
@@ -330,35 +333,35 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // The size of a page is fixed.  However, depending on the sizing of the word,
   // the number of words within a page will change.
   prim_flash #(
-    .InfosPerBank(InfosPerBank),
-    .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage),
-    .DataWidth(DataWidth),
-    .SkipInit(SkipInit)
+      .InfosPerBank(InfosPerBank),
+      .PagesPerBank(PagesPerBank),
+      .WordsPerPage(WordsPerPage),
+      .DataWidth(DataWidth),
+      .SkipInit(SkipInit)
   ) i_flash (
-    .clk_i,
-    .rst_ni,
-    .rd_i(flash_rd_req),
-    .prog_i(flash_prog_req),
-    .pg_erase_i(reqs[PhyPgErase]),
-    .bk_erase_i(reqs[PhyBkErase]),
-    .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
-    .part_i(muxed_part),
-    .prog_data_i(prog_data),
-    .ack_o(ack),
-    .rd_data_o(flash_rdata),
-    .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
-                  // and where does it make the most sense?
-    .tck_i('0),
-    .tdi_i('0),
-    .tms_i('0),
-    .tdo_o(),
-    .scanmode_i('0),
-    .scan_reset_ni('0),
-    .flash_power_ready_hi('0),
-    .flash_power_down_hi('0),
-    .flash_test_mode_ai(flash_test_mode_a),
-    .flash_test_voltage_hi(flash_test_voltage_h)
+      .clk_i,
+      .rst_ni,
+      .rd_i                 (flash_rd_req),
+      .prog_i               (flash_prog_req),
+      .pg_erase_i           (reqs[PhyPgErase]),
+      .bk_erase_i           (reqs[PhyBkErase]),
+      .addr_i               (muxed_addr[BusBankAddrW - 1:LsbAddrBit]),
+      .part_i               (muxed_part),
+      .prog_data_i          (prog_data),
+      .ack_o                (ack),
+      .rd_data_o            (flash_rdata),
+      .init_busy_o,  // TBD this needs to be looked at later. What init do we need to do,
+      // and where does it make the most sense?
+      .tck_i                ('0),
+      .tdi_i                ('0),
+      .tms_i                ('0),
+      .tdo_o                (),
+      .scanmode_i           ('0),
+      .scan_reset_ni        ('0),
+      .flash_power_ready_hi ('0),
+      .flash_power_down_hi  ('0),
+      .flash_test_mode_ai   (flash_test_mode_a),
+      .flash_test_voltage_hi(flash_test_voltage_h)
   );
 
   /////////////////////////////////
@@ -371,6 +374,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
   `ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
 
   `ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
-  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> strong(##[0:20] clr_arb_cnt))
+  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> strong (##[0:20] clr_arb_cnt))
 
-endmodule // flash_phy_core
+endmodule  // flash_phy_core

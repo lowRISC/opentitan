@@ -10,23 +10,23 @@
  * - 1 write port
  */
 module otbn_rf_base
-  import otbn_pkg::*;
+import otbn_pkg::*;
 (
-  input logic          clk_i,
-  input logic          rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  input logic [4:0]    wr_addr_i,
-  input logic          wr_en_i,
-  input logic [31:0]   wr_data_i,
+    input logic [ 4:0] wr_addr_i,
+    input logic        wr_en_i,
+    input logic [31:0] wr_data_i,
 
-  input  logic [4:0]   rd_addr_a_i,
-  output logic [31:0]  rd_data_a_o,
+    input  logic [ 4:0] rd_addr_a_i,
+    output logic [31:0] rd_data_a_o,
 
-  input  logic [4:0]   rd_addr_b_i,
-  output logic [31:0]  rd_data_b_o
+    input  logic [ 4:0] rd_addr_b_i,
+    output logic [31:0] rd_data_b_o
 );
 
-  logic [31:0] rf_reg [NGpr];
+  logic [31:0] rf_reg[NGpr];
   logic [31:1] we_onehot;
 
   // No write-enable for register 0 as writes to it are ignored
@@ -44,7 +44,7 @@ module otbn_rf_base
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         rf_reg_q <= '0;
-      end else if(we_onehot[i]) begin
+      end else if (we_onehot[i]) begin
         rf_reg_q <= wr_data_i;
       end
     end

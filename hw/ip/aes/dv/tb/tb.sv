@@ -16,28 +16,34 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx;
+  prim_alert_pkg::alert_rx_t[aes_pkg::NumAlerts - 1:0] alert_rx;
   assign alert_rx[0] = 4'b0101;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
+  clk_rst_if clk_rst_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
 
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+      .clk  (clk),
+      .rst_n(rst_n)
+  );
 
   // dut
   aes dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
+      .clk_i (clk),
+      .rst_ni(rst_n),
 
-    .idle_o               (           ),
+      .idle_o(),
 
-    .tl_i                 (tl_if.h2d  ),
-    .tl_o                 (tl_if.d2h  ),
+      .tl_i(tl_if.h2d),
+      .tl_o(tl_if.d2h),
 
-    .alert_rx_i           ( alert_rx  ),
-    .alert_tx_o           (           )
+      .alert_rx_i(alert_rx),
+      .alert_tx_o()
   );
 
   initial begin

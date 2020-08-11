@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class gpio_env_cfg extends cip_base_env_cfg #(.RAL_T(gpio_reg_block));
+class gpio_env_cfg extends cip_base_env_cfg#(
+    .RAL_T(gpio_reg_block)
+);
 
   // flag to indicate if weak pullup has been introduced on gpio
   // By default, weak pull up is always present
@@ -12,9 +14,7 @@ class gpio_env_cfg extends cip_base_env_cfg #(.RAL_T(gpio_reg_block));
   // gpio virtual interface
   gpio_vif gpio_vif;
 
-  constraint pullup_pulldown_en_c {
-    pullup_en ^ pulldown_en;
-  }
+  constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
 
   `uvm_object_utils(gpio_env_cfg)
   `uvm_object_new

@@ -6,36 +6,36 @@
 //
 
 module flash_rd_ctrl #(
-  parameter int AddrW = 10,
-  parameter int DataW = 32
+    parameter int AddrW = 10,
+    parameter int DataW = 32
 ) (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Software Interface
-  input                    op_start_i,
-  input  [11:0]            op_num_words_i,
-  output logic             op_done_o,
-  output logic             op_err_o,
-  input [AddrW-1:0]        op_addr_i,
+    // Software Interface
+    input                    op_start_i,
+    input        [     11:0] op_num_words_i,
+    output logic             op_done_o,
+    output logic             op_err_o,
+    input        [AddrW-1:0] op_addr_i,
 
-  // FIFO Interface
-  input                    data_rdy_i,
-  output logic [DataW-1:0] data_o,
-  output logic             data_wr_o,
+    // FIFO Interface
+    input                    data_rdy_i,
+    output logic [DataW-1:0] data_o,
+    output logic             data_wr_o,
 
-  // Flash Macro Interface
-  output logic             flash_req_o,
-  output logic [AddrW-1:0] flash_addr_o,
-  output logic             flash_ovfl_o,
-  input [DataW-1:0]        flash_data_i,
-  input                    flash_done_i,
-  input                    flash_error_i
+    // Flash Macro Interface
+    output logic             flash_req_o,
+    output logic [AddrW-1:0] flash_addr_o,
+    output logic             flash_ovfl_o,
+    input        [DataW-1:0] flash_data_i,
+    input                    flash_done_i,
+    input                    flash_error_i
 );
 
   typedef enum logic {
-    StNorm  = 'h0,
-    StErr   = 'h1
+    StNorm = 'h0,
+    StErr = 'h1
   } state_e;
 
   state_e st, st_nxt;
@@ -43,7 +43,7 @@ module flash_rd_ctrl #(
   logic cnt_hit;
   logic [AddrW:0] int_addr;
   logic txn_done;
-  logic err_sel; //1 selects error data, 0 selects normal data
+  logic err_sel;  //1 selects error data, 0 selects normal data
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -100,8 +100,8 @@ module flash_rd_ctrl #(
           cnt_nxt = cnt + 1'b1;
         end
       end
-      default:;
-    endcase // unique case (st)
+      default: ;
+    endcase  // unique case (st)
   end
 
   // overflow error detection is not here, but instead handled at memory protection
@@ -112,4 +112,4 @@ module flash_rd_ctrl #(
   assign data_o = err_sel ? {DataW{1'b1}} : flash_data_i;
 
 
-endmodule // flash_rd_ctrl
+endmodule  // flash_rd_ctrl

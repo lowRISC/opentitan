@@ -81,8 +81,8 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
         gen_increment_ebreak_counter();
       end
       format_section(debug_main);
-      gen_sub_program(hart, sub_program[hart], sub_program_name,
-                      cfg.num_debug_sub_program, 1'b1, "debug_sub");
+      gen_sub_program(hart, sub_program[hart], sub_program_name, cfg.num_debug_sub_program, 1'b1,
+                      "debug_sub");
       main_program[hart] = riscv_instr_sequence::type_id::create("debug_program");
       main_program[hart].instr_cnt = cfg.debug_program_instr_cnt;
       main_program[hart].is_debug_program = 1;
@@ -99,8 +99,7 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
       if (cfg.enable_ebreak_in_debug_rom) begin
         gen_ebreak_footer();
       end
-      pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv,
-                                cfg.sp, cfg.tp, debug_end);
+      pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, debug_end);
       if (cfg.enable_ebreak_in_debug_rom) begin
         gen_restore_ebreak_scratch_reg();
       end
@@ -128,11 +127,13 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   // Write dscratch to random GPR and branch to debug_end if greater than 0, for ebreak loops.
   // Use dscratch1 to store original GPR value.
   virtual function void gen_ebreak_header();
-    str = {$sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
-           $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
-           $sformatf("beq x%0d, x0, 1f", cfg.scratch_reg),
-           $sformatf("j %0sdebug_end", hart_prefix(hart)),
-           $sformatf("1: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)};
+    str = {
+      $sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
+      $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+      $sformatf("beq x%0d, x0, 1f", cfg.scratch_reg),
+      $sformatf("j %0sdebug_end", hart_prefix(hart)),
+      $sformatf("1: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)
+    };
     debug_main = {debug_main, str};
   endfunction
 
@@ -172,29 +173,30 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   // dcsr.step to 0 until the next debug stimulus is asserted.
   // Store our designated scratch_reg to dscratch1
   virtual function void gen_single_step_logic();
-    str = {$sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
-           // Only un-set dcsr.step if it is 1 and the iterations counter
-           // is at 0 (has finished iterating)
-           $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
-           $sformatf("andi x%0d, x%0d, 4", cfg.scratch_reg, cfg.scratch_reg),
-           // If dcsr.step is 0, set to 1 and set the counter
-           $sformatf("beqz x%0d, 1f", cfg.scratch_reg),
-           $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
-           // if the counter is greater than 0, decrement and continue single stepping
-           $sformatf("bgtz x%0d, 2f", cfg.scratch_reg),
-           $sformatf("csrc 0x%0x, 0x4", DCSR),
-           $sformatf("beqz x0, 3f"),
-           // Set dcsr.step and the num_iterations counter
-           $sformatf("1: csrs 0x%0x, 0x4", DCSR),
-           $sformatf("li x%0d, %0d", cfg.scratch_reg, cfg.single_step_iterations),
-           $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
-           $sformatf("beqz x0, 3f"),
-           // Decrement dscratch counter
-           $sformatf("2: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
-           $sformatf("addi x%0d, x%0d, -1", cfg.scratch_reg, cfg.scratch_reg),
-           $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
-           // Restore scratch_reg value from dscratch1
-           $sformatf("3: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)
+    str = {
+      $sformatf("csrw 0x%0x, x%0d", DSCRATCH1, cfg.scratch_reg),
+      // Only un-set dcsr.step if it is 1 and the iterations counter
+      // is at 0 (has finished iterating)
+      $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
+      $sformatf("andi x%0d, x%0d, 4", cfg.scratch_reg, cfg.scratch_reg),
+      // If dcsr.step is 0, set to 1 and set the counter
+      $sformatf("beqz x%0d, 1f", cfg.scratch_reg),
+      $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+      // if the counter is greater than 0, decrement and continue single stepping
+      $sformatf("bgtz x%0d, 2f", cfg.scratch_reg),
+      $sformatf("csrc 0x%0x, 0x4", DCSR),
+      $sformatf("beqz x0, 3f"),
+      // Set dcsr.step and the num_iterations counter
+      $sformatf("1: csrs 0x%0x, 0x4", DCSR),
+      $sformatf("li x%0d, %0d", cfg.scratch_reg, cfg.single_step_iterations),
+      $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
+      $sformatf("beqz x0, 3f"),
+      // Decrement dscratch counter
+      $sformatf("2: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH0),
+      $sformatf("addi x%0d, x%0d, -1", cfg.scratch_reg, cfg.scratch_reg),
+      $sformatf("csrw 0x%0x, x%0d", DSCRATCH0, cfg.scratch_reg),
+      // Restore scratch_reg value from dscratch1
+      $sformatf("3: csrr x%0d, 0x%0x", cfg.scratch_reg, DSCRATCH1)
     };
     debug_main = {debug_main, str};
     // write dpc to testbench
@@ -207,11 +209,13 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   // ebreak will set set dpc to its own address, which will cause an
   // infinite loop.
   virtual function void gen_dpc_update();
-    str = {$sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
-           $sformatf("slli x%0d, x%0d, 0x17", cfg.scratch_reg, cfg.scratch_reg),
-           $sformatf("srli x%0d, x%0d, 0x1d", cfg.scratch_reg, cfg.scratch_reg),
-           $sformatf("li x%0d, 0x1", cfg.gpr[0]),
-           $sformatf("bne x%0d, x%0d, 4f", cfg.scratch_reg, cfg.gpr[0])};
+    str = {
+      $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, DCSR),
+      $sformatf("slli x%0d, x%0d, 0x17", cfg.scratch_reg, cfg.scratch_reg),
+      $sformatf("srli x%0d, x%0d, 0x1d", cfg.scratch_reg, cfg.scratch_reg),
+      $sformatf("li x%0d, 0x1", cfg.gpr[0]),
+      $sformatf("bne x%0d, x%0d, 4f", cfg.scratch_reg, cfg.gpr[0])
+    };
     debug_main = {debug_main, str};
     increment_csr(DPC, 4, debug_main);
     str = {"4: nop"};
@@ -222,26 +226,31 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   // TODO(udinator) - randomize the setup for these fields
   virtual function void gen_dcsr_ebreak();
     if (MACHINE_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
-      str = {$sformatf("li x%0d, 0x8000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+      str = {
+        $sformatf("li x%0d, 0x8000", cfg.scratch_reg), $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)
+      };
       debug_main = {debug_main, str};
     end
     if (SUPERVISOR_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
-      str = {$sformatf("li x%0d, 0x2000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+      str = {
+        $sformatf("li x%0d, 0x2000", cfg.scratch_reg), $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)
+      };
       debug_main = {debug_main, str};
     end
     if (USER_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
-      str = {$sformatf("li x%0d, 0x1000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+      str = {
+        $sformatf("li x%0d, 0x1000", cfg.scratch_reg), $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)
+      };
       debug_main = {debug_main, str};
     end
   endfunction
 
   virtual function void increment_csr(privileged_reg_t csr, int val, ref string instr[$]);
-    str = {$sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, csr),
-           $sformatf("addi x%0d, x%0d, 0x%0x", cfg.scratch_reg, cfg.scratch_reg, val),
-           $sformatf("csrw 0x%0x, x%0d", csr, cfg.scratch_reg)};
+    str = {
+      $sformatf("csrr x%0d, 0x%0x", cfg.scratch_reg, csr),
+      $sformatf("addi x%0d, x%0d, 0x%0x", cfg.scratch_reg, cfg.scratch_reg, val),
+      $sformatf("csrw 0x%0x, x%0d", csr, cfg.scratch_reg)
+    };
     instr = {instr, str};
   endfunction
 

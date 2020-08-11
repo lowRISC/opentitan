@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(chip_env_cfg),
-    .RAL_T(chip_reg_block),
-    .COV_T(chip_env_cov)
-  );
+class chip_scoreboard extends cip_base_scoreboard#(
+    .CFG_T(chip_env_cfg), .RAL_T(chip_reg_block), .COV_T(chip_env_cov)
+);
   `uvm_component_utils(chip_scoreboard)
 
   // local variables

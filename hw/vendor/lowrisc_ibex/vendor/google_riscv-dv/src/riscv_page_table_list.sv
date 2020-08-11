@@ -25,10 +25,12 @@
 // - Allow injecting page table exceptions for any PTE
 //----------------------------------------------------------------------------------------------
 
-class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
+class riscv_page_table_list #(
+    satp_mode_t MODE = SV39
+) extends uvm_object;
 
-  localparam int PteSize   = XLEN / 8;
-  localparam int PteCnt    = 4096 / PteSize;
+  localparam int PteSize = XLEN / 8;
+  localparam int PteCnt = 4096 / PteSize;
   localparam int PageLevel = (MODE == SV32) ? 2 : ((MODE == SV39) ? 3 : 4);
   localparam int LinkPtePerTable = 2;
   localparam int SuperLeafPtePerTable = 2;
@@ -45,7 +47,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   int unsigned num_of_page_table[];
 
   // Page table list, from highest level to the lowest level
-  riscv_page_table#(MODE) page_table[];
+  riscv_page_table #(MODE) page_table[];
 
   // Root page table PTE idx for the init code entry
   int unsigned root_init_pte_idx;
@@ -58,10 +60,10 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   riscv_page_table_exception_cfg exception_cfg;
 
   // Valid PTE entry for exception recovery
-  riscv_page_table_entry#(MODE) valid_leaf_pte;
-  riscv_page_table_entry#(MODE) valid_link_pte;
-  riscv_page_table_entry#(MODE) valid_data_leaf_pte;
-  riscv_page_table_entry#(MODE) illegal_pte;
+  riscv_page_table_entry #(MODE) valid_leaf_pte;
+  riscv_page_table_entry #(MODE) valid_link_pte;
+  riscv_page_table_entry #(MODE) valid_data_leaf_pte;
+  riscv_page_table_entry #(MODE) illegal_pte;
 
   // Registers used for page table exception handling
   rand riscv_reg_t level_reg;
@@ -73,8 +75,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   rand riscv_reg_t mpp_reg;
 
   constraint page_table_exception_handling_reg_c {
-    unique {level_reg, fault_vaddr_reg, pte_addr_reg,
-            pte_reg, tmp_reg, mask_reg, mpp_reg};
+    unique {level_reg, fault_vaddr_reg, pte_addr_reg, pte_reg, tmp_reg, mask_reg, mpp_reg};
     !(level_reg inside {cfg.reserved_regs, ZERO});
     !(fault_vaddr_reg inside {cfg.reserved_regs, ZERO});
     !(pte_addr_reg inside {cfg.reserved_regs, ZERO});
@@ -119,16 +120,18 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     int pte_index;
     exception_cfg.enable_exception = enable_exception;
     create_valid_pte();
-    foreach(page_table[i]) begin
-      `uvm_info(`gfn, $sformatf("Randomizing page table %0d, num of PTE: %0d",
-                      i, page_table[i].pte.size()), UVM_LOW)
-      if(i == 0) begin
+    foreach (page_table[i]) begin
+      `uvm_info(`gfn,
+                $sformatf("Randomizing page table %0d, num of PTE: %0d", i,
+                          page_table[i].pte.size()),
+                UVM_LOW)
+      if (i == 0) begin
         pte_index = 0;
-      end else if(page_table[i].level != page_table[i-1].level) begin
+      end else if (page_table[i].level != page_table[i - 1].level) begin
         pte_index = 0;
       end
-      foreach(page_table[i].pte[j]) begin
-        if(page_table[i].level > 0) begin
+      foreach (page_table[i].pte[j]) begin
+        if (page_table[i].level > 0) begin
           // Superpage
           if (j < LinkPtePerTable) begin
             // First few super pages are link PTE to the next level
@@ -138,24 +141,26 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
             $cast(page_table[i].pte[j], valid_leaf_pte.clone());
           end else begin
             // Invalid unused PTEs
-            page_table[i].pte[j] = riscv_page_table_entry#(MODE)::type_id::
-                                   create($sformatf("pte_%0d_%0d",i, j));
+            page_table[i].pte[j] =
+                riscv_page_table_entry#(MODE)::type_id::create($sformatf("pte_%0d_%0d", i, j));
             page_table[i].pte[j].v = 1'b0;
           end
         end else begin
           // Lowest level leaf pages
-         $cast(page_table[i].pte[j], valid_leaf_pte.clone());
+          $cast(page_table[i].pte[j], valid_leaf_pte.clone());
         end
-        if(page_table[i].pte[j].xwr != NEXT_LEVEL_PAGE) begin
+        if (page_table[i].pte[j].xwr != NEXT_LEVEL_PAGE) begin
           page_table[i].pte[j].set_ppn(start_pa, pte_index, page_table[i].level);
         end
         pte_index++;
-        if(enable_exception) begin
+        if (enable_exception) begin
           inject_page_table_exception(page_table[i].pte[j], page_table[i].level);
         end
         page_table[i].pte[j].pack_entry();
-        `uvm_info(`gfn, $sformatf("%0s PT_%0d_%0d: %0s", privileged_mode.name(),
-                        i, j, page_table[i].pte[j].convert2string()), UVM_HIGH)
+        `uvm_info(`gfn,
+                  $sformatf("%0s PT_%0d_%0d: %0s", privileged_mode.name(), i, j,
+                            page_table[i].pte[j].convert2string()),
+                  UVM_HIGH)
       end
     end
   endfunction
@@ -163,8 +168,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   // Create the basic legal page table entries
   virtual function void create_valid_pte();
     // Randomize a valid leaf PTE entry
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(valid_leaf_pte,
-      // Set the correct privileged mode
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(valid_leaf_pte, // Set the correct privileged mode
       if(privileged_mode == USER_MODE) {
         u == 1'b1;
       } else {
@@ -180,8 +184,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
       // Default: Readable, writable, executable page
       soft xwr == R_W_EXECUTE_PAGE;
       // Page is valid
-      v == 1'b1;
-    )
+      v == 1'b1;)
     $cast(valid_link_pte, valid_leaf_pte.clone());
     $cast(valid_data_leaf_pte, valid_leaf_pte.clone());
     illegal_pte.turn_off_default_constraint();
@@ -194,36 +197,34 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
 
   virtual function void inject_page_table_exception(riscv_page_table_entry#(MODE) pte, int level);
     `DV_CHECK_RANDOMIZE_FATAL(exception_cfg)
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_pte,
-                                   !(xwr inside {NEXT_LEVEL_PAGE, R_W_EXECUTE_PAGE});)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(illegal_pte, !(xwr inside {NEXT_LEVEL_PAGE, R_W_EXECUTE_PAGE});)
     // Wrong privilege mode setting
-    if(exception_cfg.allow_privileged_mode_exception) begin
+    if (exception_cfg.allow_privileged_mode_exception) begin
       pte.u = ~pte.u;
     end
     // Random access control
     // The link PTE is unchanged to avoid changing page table mappings
-    if(exception_cfg.allow_page_access_control_exception &&
-       (pte.xwr != NEXT_LEVEL_PAGE)) begin
+    if (exception_cfg.allow_page_access_control_exception && (pte.xwr != NEXT_LEVEL_PAGE)) begin
       pte.xwr = illegal_pte.xwr;
     end
     // Invalid page exception
-    if(exception_cfg.allow_invalid_page_exception) begin
+    if (exception_cfg.allow_invalid_page_exception) begin
       pte.v = 0;
     end
     // Set "access" bit to zero
-    if(exception_cfg.allow_zero_access_bit_exception) begin
+    if (exception_cfg.allow_zero_access_bit_exception) begin
       pte.a = 0;
     end
     // Set "dirty" bit to zero
-    if(exception_cfg.allow_zero_dirty_bit_exception) begin
+    if (exception_cfg.allow_zero_dirty_bit_exception) begin
       pte.d = 0;
     end
     // Unaligned super leaf PTE
-    if(exception_cfg.allow_superpage_misaligned_exception &&
-       (level > 0) && (pte.xwr != NEXT_LEVEL_PAGE)) begin
+    if (exception_cfg.allow_superpage_misaligned_exception && (level > 0) && (
+        pte.xwr != NEXT_LEVEL_PAGE)) begin
       bit [riscv_page_table_entry#(MODE)::VPN_WIDTH-1:0] fault_ppn;
       `DV_CHECK_STD_RANDOMIZE_FATAL(fault_ppn)
-      if(level == 3) begin
+      if (level == 3) begin
         pte.ppn2 = fault_ppn;
       end else if (level == 2) begin
         pte.ppn1 = fault_ppn;
@@ -232,7 +233,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
       end
     end
     // Illegal link PTE for the lowest level page table
-    if(exception_cfg.allow_leaf_link_page_exception && (level == 0)) begin
+    if (exception_cfg.allow_leaf_link_page_exception && (level == 0)) begin
       pte.xwr = NEXT_LEVEL_PAGE;
     end
   endfunction
@@ -246,21 +247,21 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   //    memcpy to move data from lower physical address to the place the virtual address map to.
   // TODO: Refactor this part with new reserved GPR
   virtual function void gen_page_fault_handling_routine(ref string instr[$]);
-    int unsigned  level;
-    string        load_store_unit;
-    bit[XLEN-1:0] bit_mask = '1;
+    int unsigned level;
+    string load_store_unit;
+    bit [XLEN-1:0] bit_mask = '1;
 
-    if(MODE == SV48) begin
+    if (MODE == SV48) begin
       load_store_unit = "d";
       level = 3;
-      bit_mask = bit_mask >> (riscv_page_table_entry#(MODE)::RSVD_WIDTH +
-                              riscv_page_table_entry#(MODE)::PPN3_WIDTH);
-    end else if(MODE == SV39) begin
+      bit_mask = bit_mask >> (
+          riscv_page_table_entry#(MODE)::RSVD_WIDTH + riscv_page_table_entry#(MODE)::PPN3_WIDTH);
+    end else if (MODE == SV39) begin
       load_store_unit = "d";
       level = 2;
-      bit_mask = bit_mask >> (riscv_page_table_entry#(MODE)::RSVD_WIDTH +
-                              riscv_page_table_entry#(MODE)::PPN2_WIDTH);
-    end else if(MODE == SV32) begin
+      bit_mask = bit_mask >> (
+          riscv_page_table_entry#(MODE)::RSVD_WIDTH + riscv_page_table_entry#(MODE)::PPN2_WIDTH);
+    end else if (MODE == SV32) begin
       load_store_unit = "w";
       level = 1;
       bit_mask = bit_mask >> (riscv_page_table_entry#(MODE)::PPN1_WIDTH);
@@ -268,7 +269,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
       `uvm_fatal(`gfn, "Unsupported MODE")
     end
 
-    if(cfg.mstatus_mprv && (SATP_MODE != BARE)) begin
+    if (cfg.mstatus_mprv && (SATP_MODE != BARE)) begin
       // Check if mstatus.mpp equals to machine mode(0x11)
       // If MPP != Machine_mode and MSTATUS.MPRV = 1, load/store address translation is the same as
       // the mode indicated by MPP
@@ -290,7 +291,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     instr.push_back($sformatf("srli x%0d, x%0d, 12", fault_vaddr_reg, fault_vaddr_reg));
     // Remove the virtual address spare bits, align the VPN to the msb
     instr.push_back($sformatf("slli x%0d, x%0d, %0d", fault_vaddr_reg, fault_vaddr_reg,
-                    riscv_page_table_entry#(MODE)::VADDR_SPARE + 12));
+                              riscv_page_table_entry#(MODE)::VADDR_SPARE + 12));
 
     // Starting from the root table
     instr.push_back($sformatf("la x%0d, page_table_0", pte_addr_reg));
@@ -298,23 +299,17 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     instr.push_back("fix_pte:");
     // Get the VPN of the current level
     // Note the VPN under process is on the msb, right shift XLEN - VPN_WIDTH to get the VPN value
-    instr.push_back($sformatf("srli x%0d, x%0d, %0d",
-                    tmp_reg, fault_vaddr_reg,
-                    XLEN - riscv_page_table_entry#(MODE)::VPN_WIDTH));
+    instr.push_back($sformatf("srli x%0d, x%0d, %0d", tmp_reg, fault_vaddr_reg,
+                              XLEN - riscv_page_table_entry#(MODE)::VPN_WIDTH));
     // Get the actual address offset within the page table
-    instr.push_back($sformatf("slli x%0d, x%0d, %0d",
-                    tmp_reg, tmp_reg, $clog2(XLEN/8)));
+    instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, tmp_reg, $clog2(XLEN / 8)));
     // Add page table starting address and PTE offset to get PTE physical address
-    instr.push_back($sformatf("add x%0d, x%0d, x%0d",
-                    pte_addr_reg, pte_addr_reg, tmp_reg));
+    instr.push_back($sformatf("add x%0d, x%0d, x%0d", pte_addr_reg, pte_addr_reg, tmp_reg));
     // Load the PTE from the memory
-    instr.push_back($sformatf("l%0s x%0d, 0(x%0d)",
-                    load_store_unit, pte_reg, pte_addr_reg));
+    instr.push_back($sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, pte_reg, pte_addr_reg));
     // Check if the it's a link PTE (PTE[4:1] == 0)
-    instr.push_back($sformatf("slli x%0d, x%0d, %0d",
-                    tmp_reg, pte_reg, XLEN - 4));
-    instr.push_back($sformatf("srli x%0d, x%0d, %0d",
-                    tmp_reg, tmp_reg, XLEN - 3));
+    instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, pte_reg, XLEN - 4));
+    instr.push_back($sformatf("srli x%0d, x%0d, %0d", tmp_reg, tmp_reg, XLEN - 3));
     instr.push_back($sformatf("bne zero, x%0d, fix_leaf_pte", tmp_reg));
 
     // Handle link PTE exceptions
@@ -333,11 +328,11 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     instr.push_back($sformatf("slli x%0d, x%0d, 12", pte_addr_reg, pte_addr_reg));
     //   - Remove the VPN of the current level
     instr.push_back($sformatf("slli x%0d, x%0d, %0d", fault_vaddr_reg, fault_vaddr_reg,
-                    riscv_page_table_entry#(MODE)::VPN_WIDTH));
+                              riscv_page_table_entry#(MODE)::VPN_WIDTH));
     //   - Decrement the level, update the bit mask
     instr.push_back($sformatf("addi x%0d, x%0d, -1", level_reg, level_reg));
-    instr.push_back($sformatf("srli x%0d, x%0d, %0d",
-                    mask_reg, mask_reg, riscv_page_table_entry#(MODE)::VPN_WIDTH));
+    instr.push_back($sformatf("srli x%0d, x%0d, %0d", mask_reg, mask_reg,
+                              riscv_page_table_entry#(MODE)::VPN_WIDTH));
     //   - Jump to fix the PTE of the next level
     instr.push_back("j fix_pte");
 
@@ -356,10 +351,10 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     // - Load the starting virtual address of the kernel space
     instr.push_back($sformatf("la x%0d, kernel_instr_start", tmp_reg));
     // TODO: Fix kernel instruction/data pages separatedly
-    instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, tmp_reg,
-                    XLEN - MAX_USED_VADDR_BITS));
-    instr.push_back($sformatf("srli x%0d, x%0d, %0d", tmp_reg, tmp_reg,
-                    XLEN - MAX_USED_VADDR_BITS));
+    instr.push_back($sformatf("slli x%0d, x%0d, %0d", tmp_reg, tmp_reg, XLEN - MAX_USED_VADDR_BITS)
+        );
+    instr.push_back($sformatf("srli x%0d, x%0d, %0d", tmp_reg, tmp_reg, XLEN - MAX_USED_VADDR_BITS)
+        );
     instr.push_back($sformatf("csrr x%0d, 0x%0x # MTVAL", fault_vaddr_reg, MTVAL));
     // - Check if the fault virtual address is in the kernel space
     instr.push_back($sformatf("bgeu x%0d, x%0d, fix_pte_done", tmp_reg, fault_vaddr_reg));
@@ -398,7 +393,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     pop_gpr_from_kernel_stack(MSTATUS, MSCRATCH, cfg.mstatus_mprv, cfg.sp, cfg.tp, instr);
     instr.push_back("mret");
 
-    foreach(instr[i]) begin
+    foreach (instr[i]) begin
       instr[i] = instr[i].tolower();
     end
 
@@ -406,15 +401,15 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
 
   virtual function void default_page_table_setting();
     num_of_page_table = new[PageLevel];
-    foreach(num_of_page_table[i]) begin
+    foreach (num_of_page_table[i]) begin
       num_of_page_table[i] = LinkPtePerTable ** (PageLevel - i - 1);
     end
   endfunction
 
   virtual function void create_page_table_list();
     page_table = new[num_of_page_table.sum()];
-    foreach(page_table[i]) begin
-      page_table[i] = riscv_page_table#(MODE)::type_id::create($sformatf("page_table_%0d",i));
+    foreach (page_table[i]) begin
+      page_table[i] = riscv_page_table#(MODE)::type_id::create($sformatf("page_table_%0d", i));
       page_table[i].init_page_table(PteCnt);
       page_table[i].table_id = i;
       page_table[i].level = get_level(i);
@@ -422,8 +417,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
   endfunction
 
   virtual function int get_1st_4k_table_id();
-    foreach(page_table[i]) begin
-      if(page_table[i].level == 0) return i;
+    foreach (page_table[i]) begin
+      if (page_table[i].level == 0) return i;
     end
     return -1;
   endfunction
@@ -433,35 +428,38 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     string load_store_unit;
     int pte_addr_offset;
     bit [XLEN-1:0] ubit_mask = '1;
-    ubit_mask[4] = 1'b0; // U bit of PTE
+    ubit_mask[4] = 1'b0;  // U bit of PTE
     load_store_unit = (XLEN == 32) ? "w" : "d";
     // Assign the PPN of link PTE to link the page tables together
-    foreach(page_table[i]) begin
+    foreach (page_table[i]) begin
       if (page_table[i].level == 0) break;
-      instr = {instr, $sformatf("la x%0d, page_table_%0d+2048 # Process PT_%0d",
-                                cfg.gpr[1], i, i)};
-      foreach(page_table[i].pte[j]) begin
-        if(j >= SuperLeafPtePerTable) continue;
+      instr = {instr, $sformatf("la x%0d, page_table_%0d+2048 # Process PT_%0d", cfg.gpr[1], i, i)};
+      foreach (page_table[i].pte[j]) begin
+        if (j >= SuperLeafPtePerTable) continue;
         pte_addr_offset = (j * PteSize) - 2048;
-        `uvm_info(`gfn, $sformatf("Processing PT_%0d_PTE_%0d, v = %0d, level = %0d",
-                        i, j, page_table[i].pte[j].v, page_table[i].level), UVM_LOW)
-        if(page_table[i].pte[j].xwr == NEXT_LEVEL_PAGE) begin
+        `uvm_info(`gfn,
+                  $sformatf("Processing PT_%0d_PTE_%0d, v = %0d, level = %0d", i, j,
+                            page_table[i].pte[j].v, page_table[i].level),
+                  UVM_LOW)
+        if (page_table[i].pte[j].xwr == NEXT_LEVEL_PAGE) begin
           // Use the target table address as PPN of this PTE
           // x%0d holds the target table physical address
-          instr = {instr,
-                   // Load the current PTE value
-                   $sformatf("l%0s x%0d, %0d(x%0d)",
-                             load_store_unit, cfg.gpr[2], pte_addr_offset, cfg.gpr[1]),
-                   // Load the target page table physical address, PPN should be 0
-                   $sformatf("la x%0d, page_table_%0d # Link PT_%0d_PTE_%0d -> PT_%0d", cfg.gpr[0],
-                             get_child_table_id(i, j), i, j, get_child_table_id(i, j)),
-                   // Right shift the address for 2 bits to the correct PPN position in PTE
-                   $sformatf("srli x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
-                   // Assign PPN
-                   $sformatf("or x%0d, x%0d, x%0d", cfg.gpr[2], cfg.gpr[0], cfg.gpr[2]),
-                   // Store the new PTE value
-                   $sformatf("s%0s x%0d, %0d(x%0d)",
-                   load_store_unit, cfg.gpr[2], pte_addr_offset, cfg.gpr[1])};
+          instr = {
+            instr,
+            // Load the current PTE value
+            $sformatf("l%0s x%0d, %0d(x%0d)", load_store_unit, cfg.gpr[2], pte_addr_offset,
+                      cfg.gpr[1]),
+            // Load the target page table physical address, PPN should be 0
+            $sformatf("la x%0d, page_table_%0d # Link PT_%0d_PTE_%0d -> PT_%0d", cfg.gpr[0],
+                      get_child_table_id(i, j), i, j, get_child_table_id(i, j)),
+            // Right shift the address for 2 bits to the correct PPN position in PTE
+            $sformatf("srli x%0d, x%0d, 2", cfg.gpr[0], cfg.gpr[0]),
+            // Assign PPN
+            $sformatf("or x%0d, x%0d, x%0d", cfg.gpr[2], cfg.gpr[0], cfg.gpr[2]),
+            // Store the new PTE value
+            $sformatf("s%0s x%0d, %0d(x%0d)", load_store_unit, cfg.gpr[2], pte_addr_offset,
+                      cfg.gpr[1])
+          };
         end
       end
     end
@@ -469,70 +467,66 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     // Set the kernel page u bit to 0 for supervisor mode instruction/data pages
     // ---------------------------------------------------------------------------
     if (cfg.support_supervisor_mode) begin
-      instr = {instr,
-               // Process kernel instruction pages
-               $sformatf("la x%0d, kernel_instr_start", cfg.gpr[0]),
-               $sformatf("la x%0d, kernel_instr_end", cfg.gpr[1]),
-               // Get the VPN of the physical address
-               $sformatf("slli x%0d, x%0d, %0d",
-                         cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x%0d, x%0d, %0d",
-                         cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
-               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1],
-                         XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1],
-                         XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], $clog2(XLEN)),
-               // Starting from the first 4KB leaf page table
-               $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
-               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
-               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[1], cfg.gpr[2], cfg.gpr[1]),
-               $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
-               "1:",
-               // Load the PTE from the memory
-               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
-               // Unset U bit
-               $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
-               // Save PTE back to memory
-               $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
-               // Move to the next PTE
-               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
-               // If not the end of the kernel space, process the next PTE
-               $sformatf("ble x%0d, x%0d, 1b", cfg.gpr[0], cfg.gpr[1]),
-               // Process kernel data pages
-               $sformatf("la x%0d, kernel_data_start", cfg.gpr[0]),
-               // Get the VPN of the physical address
-               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0],
-                         XLEN - MAX_USED_VADDR_BITS),
-               $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0],
-                         XLEN - MAX_USED_VADDR_BITS + 12),
-               $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
-               // Starting from the first 4KB leaf page table
-               $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
-               $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
-               $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
-               // Assume 20 PTEs for kernel data pages
-               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], 20 * XLEN/8),
-               "2:",
-               // Load the PTE from the memory
-               $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
-               // Unset U bit
-               $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
-               // Save PTE back to memory
-               $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
-               // Move to the next PTE
-               $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN/8),
-               // If not the end of the kernel space, process the next PTE
-               $sformatf("ble x%0d, x%0d, 2b", cfg.gpr[0], cfg.gpr[1])};
+      instr = {
+        instr,
+        // Process kernel instruction pages
+        $sformatf("la x%0d, kernel_instr_start", cfg.gpr[0]),
+        $sformatf("la x%0d, kernel_instr_end", cfg.gpr[1]),
+        // Get the VPN of the physical address
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS),
+        $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS + 12),
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], XLEN - MAX_USED_VADDR_BITS),
+        $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], XLEN - MAX_USED_VADDR_BITS + 12),
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], $clog2(XLEN)),
+        // Starting from the first 4KB leaf page table
+        $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
+        $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
+        $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[1], cfg.gpr[2], cfg.gpr[1]),
+        $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
+        "1:",
+        // Load the PTE from the memory
+        $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+        // Unset U bit
+        $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+        // Save PTE back to memory
+        $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+        // Move to the next PTE
+        $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN / 8),
+        // If not the end of the kernel space, process the next PTE
+        $sformatf("ble x%0d, x%0d, 1b", cfg.gpr[0], cfg.gpr[1]),
+        // Process kernel data pages
+        $sformatf("la x%0d, kernel_data_start", cfg.gpr[0]),
+        // Get the VPN of the physical address
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS),
+        $sformatf("srli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN - MAX_USED_VADDR_BITS + 12),
+        $sformatf("slli x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], $clog2(XLEN)),
+        // Starting from the first 4KB leaf page table
+        $sformatf("la x%0d, page_table_%0d", cfg.gpr[2], get_1st_4k_table_id()),
+        $sformatf("add x%0d, x%0d, x%0d", cfg.gpr[0], cfg.gpr[2], cfg.gpr[0]),
+        $sformatf("li x%0d, 0x%0x", cfg.gpr[2], ubit_mask),
+        // Assume 20 PTEs for kernel data pages
+        $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[1], cfg.gpr[1], 20 * XLEN / 8),
+        "2:",
+        // Load the PTE from the memory
+        $sformatf("l%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+        // Unset U bit
+        $sformatf("and x%0d, x%0d, x%0d", cfg.gpr[3], cfg.gpr[3], cfg.gpr[2]),
+        // Save PTE back to memory
+        $sformatf("s%0s x%0d, 0(x%0d)", load_store_unit, cfg.gpr[3], cfg.gpr[0]),
+        // Move to the next PTE
+        $sformatf("addi x%0d, x%0d, %0d", cfg.gpr[0], cfg.gpr[0], XLEN / 8),
+        // If not the end of the kernel space, process the next PTE
+        $sformatf("ble x%0d, x%0d, 2b", cfg.gpr[0], cfg.gpr[1])
+      };
     end
   endfunction
 
   // If you want to create custom page table topology, override the below tasks to specify the
   // level and parent of each table.
   virtual function int get_level(int table_id);
-    for(int level = PageLevel - 1; level >= 0; level--) begin
-      if(table_id < num_of_page_table[level]) return level;
+    for (int level = PageLevel - 1; level >= 0; level--) begin
+      if (table_id < num_of_page_table[level]) return level;
       table_id -= num_of_page_table[level];
     end
   endfunction

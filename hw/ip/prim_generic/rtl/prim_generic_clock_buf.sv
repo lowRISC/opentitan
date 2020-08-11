@@ -5,10 +5,10 @@
 `include "prim_assert.sv"
 
 module prim_generic_clock_buf (
-  input clk_i,
-  output logic clk_o
+    input        clk_i,
+    output logic clk_o
 );
 
   assign clk_o = clk_i;
 
-endmodule // prim_generic_clock_buf
+endmodule  // prim_generic_clock_buf

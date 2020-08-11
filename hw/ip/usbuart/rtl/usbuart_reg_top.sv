@@ -7,36 +7,36 @@
 `include "prim_assert.sv"
 
 module usbuart_reg_top (
-  input clk_i,
-  input rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
-  // To HW
-  output usbuart_reg_pkg::usbuart_reg2hw_t reg2hw, // Write
-  input  usbuart_reg_pkg::usbuart_hw2reg_t hw2reg, // Read
+    // Below Regster interface can be changed
+    input  tlul_pkg::tl_h2d_t                tl_i,
+    output tlul_pkg::tl_d2h_t                tl_o,
+    // To HW
+    output usbuart_reg_pkg::usbuart_reg2hw_t reg2hw,  // Write
+    input  usbuart_reg_pkg::usbuart_hw2reg_t hw2reg,  // Read
 
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+    // Config
+    input devmode_i  // If 1, explicit error return for unmapped register access
 );
 
-  import usbuart_reg_pkg::* ;
+  import usbuart_reg_pkg::*;
 
   localparam int AW = 6;
   localparam int DW = 32;
-  localparam int DBW = DW/8;                    // Byte Width
+  localparam int DBW = DW / 8;  // Byte Width
 
   // register signals
-  logic           reg_we;
-  logic           reg_re;
-  logic [AW-1:0]  reg_addr;
-  logic [DW-1:0]  reg_wdata;
+  logic reg_we;
+  logic reg_re;
+  logic [AW-1:0] reg_addr;
+  logic [DW-1:0] reg_wdata;
   logic [DBW-1:0] reg_be;
-  logic [DW-1:0]  reg_rdata;
-  logic           reg_error;
+  logic [DW-1:0] reg_rdata;
+  logic reg_error;
 
-  logic          addrmiss, wr_err;
+  logic addrmiss, wr_err;
 
   logic [DW-1:0] reg_rdata_next;
 
@@ -44,29 +44,29 @@ module usbuart_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o = tl_reg_d2h;
 
   tlul_adapter_reg #(
-    .RegAw(AW),
-    .RegDw(DW)
+      .RegAw(AW),
+      .RegDw(DW)
   ) u_reg_if (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i (tl_reg_h2d),
-    .tl_o (tl_reg_d2h),
+      .tl_i(tl_reg_h2d),
+      .tl_o(tl_reg_d2h),
 
-    .we_o    (reg_we),
-    .re_o    (reg_re),
-    .addr_o  (reg_addr),
-    .wdata_o (reg_wdata),
-    .be_o    (reg_be),
-    .rdata_i (reg_rdata),
-    .error_i (reg_error)
+      .we_o   (reg_we),
+      .re_o   (reg_re),
+      .addr_o (reg_addr),
+      .wdata_o(reg_wdata),
+      .be_o   (reg_be),
+      .rdata_i(reg_rdata),
+      .error_i(reg_error)
   );
 
-  assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_rdata = reg_rdata_next;
+  assign reg_error = (devmode_i & addrmiss) | wr_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -226,209 +226,209 @@ module usbuart_reg_top (
 
   //   F[tx_watermark]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_tx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_tx_watermark_we),
-    .wd     (intr_state_tx_watermark_wd),
+      // from register interface
+      .we(intr_state_tx_watermark_we),
+      .wd(intr_state_tx_watermark_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.tx_watermark.de),
-    .d      (hw2reg.intr_state.tx_watermark.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.tx_watermark.de),
+      .d (hw2reg.intr_state.tx_watermark.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.tx_watermark.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.tx_watermark.q),
 
-    // to register interface (read)
-    .qs     (intr_state_tx_watermark_qs)
+      // to register interface (read)
+      .qs(intr_state_tx_watermark_qs)
   );
 
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_watermark_we),
-    .wd     (intr_state_rx_watermark_wd),
+      // from register interface
+      .we(intr_state_rx_watermark_we),
+      .wd(intr_state_rx_watermark_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_watermark.de),
-    .d      (hw2reg.intr_state.rx_watermark.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_watermark.de),
+      .d (hw2reg.intr_state.rx_watermark.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_watermark.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_watermark.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_watermark_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_watermark_qs)
   );
 
 
   //   F[tx_overflow]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_tx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_tx_overflow_we),
-    .wd     (intr_state_tx_overflow_wd),
+      // from register interface
+      .we(intr_state_tx_overflow_we),
+      .wd(intr_state_tx_overflow_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.tx_overflow.de),
-    .d      (hw2reg.intr_state.tx_overflow.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.tx_overflow.de),
+      .d (hw2reg.intr_state.tx_overflow.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.tx_overflow.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.tx_overflow.q),
 
-    // to register interface (read)
-    .qs     (intr_state_tx_overflow_qs)
+      // to register interface (read)
+      .qs(intr_state_tx_overflow_qs)
   );
 
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_overflow_we),
-    .wd     (intr_state_rx_overflow_wd),
+      // from register interface
+      .we(intr_state_rx_overflow_we),
+      .wd(intr_state_rx_overflow_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_overflow.de),
-    .d      (hw2reg.intr_state.rx_overflow.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_overflow.de),
+      .d (hw2reg.intr_state.rx_overflow.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_overflow.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_overflow.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_overflow_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_overflow_qs)
   );
 
 
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_frame_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_frame_err_we),
-    .wd     (intr_state_rx_frame_err_wd),
+      // from register interface
+      .we(intr_state_rx_frame_err_we),
+      .wd(intr_state_rx_frame_err_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_frame_err.de),
-    .d      (hw2reg.intr_state.rx_frame_err.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_frame_err.de),
+      .d (hw2reg.intr_state.rx_frame_err.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_frame_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_frame_err.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_frame_err_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_frame_err_qs)
   );
 
 
   //   F[rx_break_err]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_break_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_break_err_we),
-    .wd     (intr_state_rx_break_err_wd),
+      // from register interface
+      .we(intr_state_rx_break_err_we),
+      .wd(intr_state_rx_break_err_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_break_err.de),
-    .d      (hw2reg.intr_state.rx_break_err.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_break_err.de),
+      .d (hw2reg.intr_state.rx_break_err.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_break_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_break_err.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_break_err_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_break_err_qs)
   );
 
 
   //   F[rx_timeout]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_timeout_we),
-    .wd     (intr_state_rx_timeout_wd),
+      // from register interface
+      .we(intr_state_rx_timeout_we),
+      .wd(intr_state_rx_timeout_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_timeout.de),
-    .d      (hw2reg.intr_state.rx_timeout.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_timeout.de),
+      .d (hw2reg.intr_state.rx_timeout.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_timeout.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_timeout.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_timeout_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_timeout_qs)
   );
 
 
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("W1C"),
+      .RESVAL(1'h0)
   ) u_intr_state_rx_parity_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_state_rx_parity_err_we),
-    .wd     (intr_state_rx_parity_err_wd),
+      // from register interface
+      .we(intr_state_rx_parity_err_we),
+      .wd(intr_state_rx_parity_err_wd),
 
-    // from internal hardware
-    .de     (hw2reg.intr_state.rx_parity_err.de),
-    .d      (hw2reg.intr_state.rx_parity_err.d ),
+      // from internal hardware
+      .de(hw2reg.intr_state.rx_parity_err.de),
+      .d (hw2reg.intr_state.rx_parity_err.d),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.rx_parity_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_state.rx_parity_err.q),
 
-    // to register interface (read)
-    .qs     (intr_state_rx_parity_err_qs)
+      // to register interface (read)
+      .qs(intr_state_rx_parity_err_qs)
   );
 
 
@@ -436,209 +436,209 @@ module usbuart_reg_top (
 
   //   F[tx_watermark]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_tx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_tx_watermark_we),
-    .wd     (intr_enable_tx_watermark_wd),
+      // from register interface
+      .we(intr_enable_tx_watermark_we),
+      .wd(intr_enable_tx_watermark_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.tx_watermark.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.tx_watermark.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_tx_watermark_qs)
+      // to register interface (read)
+      .qs(intr_enable_tx_watermark_qs)
   );
 
 
   //   F[rx_watermark]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_watermark_we),
-    .wd     (intr_enable_rx_watermark_wd),
+      // from register interface
+      .we(intr_enable_rx_watermark_we),
+      .wd(intr_enable_rx_watermark_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_watermark.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_watermark.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_watermark_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_watermark_qs)
   );
 
 
   //   F[tx_overflow]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_tx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_tx_overflow_we),
-    .wd     (intr_enable_tx_overflow_wd),
+      // from register interface
+      .we(intr_enable_tx_overflow_we),
+      .wd(intr_enable_tx_overflow_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.tx_overflow.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.tx_overflow.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_tx_overflow_qs)
+      // to register interface (read)
+      .qs(intr_enable_tx_overflow_qs)
   );
 
 
   //   F[rx_overflow]: 3:3
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_overflow_we),
-    .wd     (intr_enable_rx_overflow_wd),
+      // from register interface
+      .we(intr_enable_rx_overflow_we),
+      .wd(intr_enable_rx_overflow_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_overflow.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_overflow.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_overflow_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_overflow_qs)
   );
 
 
   //   F[rx_frame_err]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_frame_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_frame_err_we),
-    .wd     (intr_enable_rx_frame_err_wd),
+      // from register interface
+      .we(intr_enable_rx_frame_err_we),
+      .wd(intr_enable_rx_frame_err_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_frame_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_frame_err.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_frame_err_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_frame_err_qs)
   );
 
 
   //   F[rx_break_err]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_break_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_break_err_we),
-    .wd     (intr_enable_rx_break_err_wd),
+      // from register interface
+      .we(intr_enable_rx_break_err_we),
+      .wd(intr_enable_rx_break_err_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_break_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_break_err.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_break_err_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_break_err_qs)
   );
 
 
   //   F[rx_timeout]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_timeout_we),
-    .wd     (intr_enable_rx_timeout_wd),
+      // from register interface
+      .we(intr_enable_rx_timeout_we),
+      .wd(intr_enable_rx_timeout_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_timeout.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_timeout.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_timeout_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_timeout_qs)
   );
 
 
   //   F[rx_parity_err]: 7:7
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_intr_enable_rx_parity_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (intr_enable_rx_parity_err_we),
-    .wd     (intr_enable_rx_parity_err_wd),
+      // from register interface
+      .we(intr_enable_rx_parity_err_we),
+      .wd(intr_enable_rx_parity_err_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.rx_parity_err.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.intr_enable.rx_parity_err.q),
 
-    // to register interface (read)
-    .qs     (intr_enable_rx_parity_err_qs)
+      // to register interface (read)
+      .qs(intr_enable_rx_parity_err_qs)
   );
 
 
@@ -646,121 +646,121 @@ module usbuart_reg_top (
 
   //   F[tx_watermark]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_tx_watermark (
-    .re     (1'b0),
-    .we     (intr_test_tx_watermark_we),
-    .wd     (intr_test_tx_watermark_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.tx_watermark.qe),
-    .q      (reg2hw.intr_test.tx_watermark.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_tx_watermark_we),
+      .wd (intr_test_tx_watermark_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.tx_watermark.qe),
+      .q  (reg2hw.intr_test.tx_watermark.q),
+      .qs ()
   );
 
 
   //   F[rx_watermark]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_watermark (
-    .re     (1'b0),
-    .we     (intr_test_rx_watermark_we),
-    .wd     (intr_test_rx_watermark_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_watermark.qe),
-    .q      (reg2hw.intr_test.rx_watermark.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_watermark_we),
+      .wd (intr_test_rx_watermark_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_watermark.qe),
+      .q  (reg2hw.intr_test.rx_watermark.q),
+      .qs ()
   );
 
 
   //   F[tx_overflow]: 2:2
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_tx_overflow (
-    .re     (1'b0),
-    .we     (intr_test_tx_overflow_we),
-    .wd     (intr_test_tx_overflow_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.tx_overflow.qe),
-    .q      (reg2hw.intr_test.tx_overflow.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_tx_overflow_we),
+      .wd (intr_test_tx_overflow_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.tx_overflow.qe),
+      .q  (reg2hw.intr_test.tx_overflow.q),
+      .qs ()
   );
 
 
   //   F[rx_overflow]: 3:3
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_overflow (
-    .re     (1'b0),
-    .we     (intr_test_rx_overflow_we),
-    .wd     (intr_test_rx_overflow_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_overflow.qe),
-    .q      (reg2hw.intr_test.rx_overflow.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_overflow_we),
+      .wd (intr_test_rx_overflow_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_overflow.qe),
+      .q  (reg2hw.intr_test.rx_overflow.q),
+      .qs ()
   );
 
 
   //   F[rx_frame_err]: 4:4
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_frame_err (
-    .re     (1'b0),
-    .we     (intr_test_rx_frame_err_we),
-    .wd     (intr_test_rx_frame_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_frame_err.qe),
-    .q      (reg2hw.intr_test.rx_frame_err.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_frame_err_we),
+      .wd (intr_test_rx_frame_err_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_frame_err.qe),
+      .q  (reg2hw.intr_test.rx_frame_err.q),
+      .qs ()
   );
 
 
   //   F[rx_break_err]: 5:5
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_break_err (
-    .re     (1'b0),
-    .we     (intr_test_rx_break_err_we),
-    .wd     (intr_test_rx_break_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_break_err.qe),
-    .q      (reg2hw.intr_test.rx_break_err.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_break_err_we),
+      .wd (intr_test_rx_break_err_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_break_err.qe),
+      .q  (reg2hw.intr_test.rx_break_err.q),
+      .qs ()
   );
 
 
   //   F[rx_timeout]: 6:6
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_timeout (
-    .re     (1'b0),
-    .we     (intr_test_rx_timeout_we),
-    .wd     (intr_test_rx_timeout_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_timeout.qe),
-    .q      (reg2hw.intr_test.rx_timeout.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_timeout_we),
+      .wd (intr_test_rx_timeout_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_timeout.qe),
+      .q  (reg2hw.intr_test.rx_timeout.q),
+      .qs ()
   );
 
 
   //   F[rx_parity_err]: 7:7
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_intr_test_rx_parity_err (
-    .re     (1'b0),
-    .we     (intr_test_rx_parity_err_we),
-    .wd     (intr_test_rx_parity_err_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.rx_parity_err.qe),
-    .q      (reg2hw.intr_test.rx_parity_err.q ),
-    .qs     ()
+      .re (1'b0),
+      .we (intr_test_rx_parity_err_we),
+      .wd (intr_test_rx_parity_err_wd),
+      .d  ('0),
+      .qre(),
+      .qe (reg2hw.intr_test.rx_parity_err.qe),
+      .q  (reg2hw.intr_test.rx_parity_err.q),
+      .qs ()
   );
 
 
@@ -768,235 +768,235 @@ module usbuart_reg_top (
 
   //   F[tx]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_tx (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_tx_we),
-    .wd     (ctrl_tx_wd),
+      // from register interface
+      .we(ctrl_tx_we),
+      .wd(ctrl_tx_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.tx.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.tx.q),
 
-    // to register interface (read)
-    .qs     (ctrl_tx_qs)
+      // to register interface (read)
+      .qs(ctrl_tx_qs)
   );
 
 
   //   F[rx]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_rx (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_rx_we),
-    .wd     (ctrl_rx_wd),
+      // from register interface
+      .we(ctrl_rx_we),
+      .wd(ctrl_rx_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.rx.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.rx.q),
 
-    // to register interface (read)
-    .qs     (ctrl_rx_qs)
+      // to register interface (read)
+      .qs(ctrl_rx_qs)
   );
 
 
   //   F[nf]: 2:2
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_nf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_nf_we),
-    .wd     (ctrl_nf_wd),
+      // from register interface
+      .we(ctrl_nf_we),
+      .wd(ctrl_nf_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.nf.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.nf.q),
 
-    // to register interface (read)
-    .qs     (ctrl_nf_qs)
+      // to register interface (read)
+      .qs(ctrl_nf_qs)
   );
 
 
   //   F[slpbk]: 4:4
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_slpbk (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_slpbk_we),
-    .wd     (ctrl_slpbk_wd),
+      // from register interface
+      .we(ctrl_slpbk_we),
+      .wd(ctrl_slpbk_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.slpbk.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.slpbk.q),
 
-    // to register interface (read)
-    .qs     (ctrl_slpbk_qs)
+      // to register interface (read)
+      .qs(ctrl_slpbk_qs)
   );
 
 
   //   F[llpbk]: 5:5
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_llpbk (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_llpbk_we),
-    .wd     (ctrl_llpbk_wd),
+      // from register interface
+      .we(ctrl_llpbk_we),
+      .wd(ctrl_llpbk_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.llpbk.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.llpbk.q),
 
-    // to register interface (read)
-    .qs     (ctrl_llpbk_qs)
+      // to register interface (read)
+      .qs(ctrl_llpbk_qs)
   );
 
 
   //   F[parity_en]: 6:6
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_parity_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_parity_en_we),
-    .wd     (ctrl_parity_en_wd),
+      // from register interface
+      .we(ctrl_parity_en_we),
+      .wd(ctrl_parity_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.parity_en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.parity_en.q),
 
-    // to register interface (read)
-    .qs     (ctrl_parity_en_qs)
+      // to register interface (read)
+      .qs(ctrl_parity_en_qs)
   );
 
 
   //   F[parity_odd]: 7:7
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ctrl_parity_odd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_parity_odd_we),
-    .wd     (ctrl_parity_odd_wd),
+      // from register interface
+      .we(ctrl_parity_odd_we),
+      .wd(ctrl_parity_odd_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.parity_odd.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.parity_odd.q),
 
-    // to register interface (read)
-    .qs     (ctrl_parity_odd_qs)
+      // to register interface (read)
+      .qs(ctrl_parity_odd_qs)
   );
 
 
   //   F[rxblvl]: 9:8
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_ctrl_rxblvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_rxblvl_we),
-    .wd     (ctrl_rxblvl_wd),
+      // from register interface
+      .we(ctrl_rxblvl_we),
+      .wd(ctrl_rxblvl_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.rxblvl.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.rxblvl.q),
 
-    // to register interface (read)
-    .qs     (ctrl_rxblvl_qs)
+      // to register interface (read)
+      .qs(ctrl_rxblvl_qs)
   );
 
 
   //   F[nco]: 31:16
   prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+      .DW(16),
+      .SWACCESS("RW"),
+      .RESVAL(16'h0)
   ) u_ctrl_nco (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ctrl_nco_we),
-    .wd     (ctrl_nco_wd),
+      // from register interface
+      .we(ctrl_nco_we),
+      .wd(ctrl_nco_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.nco.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ctrl.nco.q),
 
-    // to register interface (read)
-    .qs     (ctrl_nco_qs)
+      // to register interface (read)
+      .qs(ctrl_nco_qs)
   );
 
 
@@ -1004,133 +1004,133 @@ module usbuart_reg_top (
 
   //   F[txfull]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_txfull (
-    .re     (status_txfull_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.txfull.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_txfull_qs)
+      .re (status_txfull_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.txfull.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_txfull_qs)
   );
 
 
   //   F[rxfull]: 1:1
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_rxfull (
-    .re     (status_rxfull_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rxfull.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_rxfull_qs)
+      .re (status_rxfull_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.rxfull.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_rxfull_qs)
   );
 
 
   //   F[txempty]: 2:2
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_txempty (
-    .re     (status_txempty_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.txempty.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_txempty_qs)
+      .re (status_txempty_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.txempty.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_txempty_qs)
   );
 
 
   //   F[txidle]: 3:3
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_txidle (
-    .re     (status_txidle_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.txidle.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_txidle_qs)
+      .re (status_txidle_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.txidle.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_txidle_qs)
   );
 
 
   //   F[rxidle]: 4:4
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_rxidle (
-    .re     (status_rxidle_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rxidle.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_rxidle_qs)
+      .re (status_rxidle_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.rxidle.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_rxidle_qs)
   );
 
 
   //   F[rxempty]: 5:5
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_status_rxempty (
-    .re     (status_rxempty_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rxempty.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_rxempty_qs)
+      .re (status_rxempty_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.status.rxempty.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (status_rxempty_qs)
   );
 
 
   // R[rdata]: V(True)
 
   prim_subreg_ext #(
-    .DW    (8)
+      .DW(8)
   ) u_rdata (
-    .re     (rdata_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.rdata.d),
-    .qre    (reg2hw.rdata.re),
-    .qe     (),
-    .q      (reg2hw.rdata.q ),
-    .qs     (rdata_qs)
+      .re (rdata_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.rdata.d),
+      .qre(reg2hw.rdata.re),
+      .qe (),
+      .q  (reg2hw.rdata.q),
+      .qs (rdata_qs)
   );
 
 
   // R[wdata]: V(False)
 
   prim_subreg #(
-    .DW      (8),
-    .SWACCESS("WO"),
-    .RESVAL  (8'h0)
+      .DW(8),
+      .SWACCESS("WO"),
+      .RESVAL(8'h0)
   ) u_wdata (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (wdata_we),
-    .wd     (wdata_wd),
+      // from register interface
+      .we(wdata_we),
+      .wd(wdata_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (reg2hw.wdata.qe),
-    .q      (reg2hw.wdata.q ),
+      // to internal hardware
+      .qe(reg2hw.wdata.qe),
+      .q (reg2hw.wdata.q),
 
-    .qs     ()
+      .qs()
   );
 
 
@@ -1138,105 +1138,105 @@ module usbuart_reg_top (
 
   //   F[rxrst]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_fifo_ctrl_rxrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (fifo_ctrl_rxrst_we),
-    .wd     (fifo_ctrl_rxrst_wd),
+      // from register interface
+      .we(fifo_ctrl_rxrst_we),
+      .wd(fifo_ctrl_rxrst_wd),
 
-    // from internal hardware
-    .de     (hw2reg.fifo_ctrl.rxrst.de),
-    .d      (hw2reg.fifo_ctrl.rxrst.d ),
+      // from internal hardware
+      .de(hw2reg.fifo_ctrl.rxrst.de),
+      .d (hw2reg.fifo_ctrl.rxrst.d),
 
-    // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxrst.qe),
-    .q      (reg2hw.fifo_ctrl.rxrst.q ),
+      // to internal hardware
+      .qe(reg2hw.fifo_ctrl.rxrst.qe),
+      .q (reg2hw.fifo_ctrl.rxrst.q),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_rxrst_qs)
+      // to register interface (read)
+      .qs(fifo_ctrl_rxrst_qs)
   );
 
 
   //   F[txrst]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_fifo_ctrl_txrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (fifo_ctrl_txrst_we),
-    .wd     (fifo_ctrl_txrst_wd),
+      // from register interface
+      .we(fifo_ctrl_txrst_we),
+      .wd(fifo_ctrl_txrst_wd),
 
-    // from internal hardware
-    .de     (hw2reg.fifo_ctrl.txrst.de),
-    .d      (hw2reg.fifo_ctrl.txrst.d ),
+      // from internal hardware
+      .de(hw2reg.fifo_ctrl.txrst.de),
+      .d (hw2reg.fifo_ctrl.txrst.d),
 
-    // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txrst.qe),
-    .q      (reg2hw.fifo_ctrl.txrst.q ),
+      // to internal hardware
+      .qe(reg2hw.fifo_ctrl.txrst.qe),
+      .q (reg2hw.fifo_ctrl.txrst.q),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_txrst_qs)
+      // to register interface (read)
+      .qs(fifo_ctrl_txrst_qs)
   );
 
 
   //   F[rxilvl]: 4:2
   prim_subreg #(
-    .DW      (3),
-    .SWACCESS("RW"),
-    .RESVAL  (3'h0)
+      .DW(3),
+      .SWACCESS("RW"),
+      .RESVAL(3'h0)
   ) u_fifo_ctrl_rxilvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (fifo_ctrl_rxilvl_we),
-    .wd     (fifo_ctrl_rxilvl_wd),
+      // from register interface
+      .we(fifo_ctrl_rxilvl_we),
+      .wd(fifo_ctrl_rxilvl_wd),
 
-    // from internal hardware
-    .de     (hw2reg.fifo_ctrl.rxilvl.de),
-    .d      (hw2reg.fifo_ctrl.rxilvl.d ),
+      // from internal hardware
+      .de(hw2reg.fifo_ctrl.rxilvl.de),
+      .d (hw2reg.fifo_ctrl.rxilvl.d),
 
-    // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxilvl.qe),
-    .q      (reg2hw.fifo_ctrl.rxilvl.q ),
+      // to internal hardware
+      .qe(reg2hw.fifo_ctrl.rxilvl.qe),
+      .q (reg2hw.fifo_ctrl.rxilvl.q),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_rxilvl_qs)
+      // to register interface (read)
+      .qs(fifo_ctrl_rxilvl_qs)
   );
 
 
   //   F[txilvl]: 6:5
   prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+      .DW(2),
+      .SWACCESS("RW"),
+      .RESVAL(2'h0)
   ) u_fifo_ctrl_txilvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (fifo_ctrl_txilvl_we),
-    .wd     (fifo_ctrl_txilvl_wd),
+      // from register interface
+      .we(fifo_ctrl_txilvl_we),
+      .wd(fifo_ctrl_txilvl_wd),
 
-    // from internal hardware
-    .de     (hw2reg.fifo_ctrl.txilvl.de),
-    .d      (hw2reg.fifo_ctrl.txilvl.d ),
+      // from internal hardware
+      .de(hw2reg.fifo_ctrl.txilvl.de),
+      .d (hw2reg.fifo_ctrl.txilvl.d),
 
-    // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txilvl.qe),
-    .q      (reg2hw.fifo_ctrl.txilvl.q ),
+      // to internal hardware
+      .qe(reg2hw.fifo_ctrl.txilvl.qe),
+      .q (reg2hw.fifo_ctrl.txilvl.q),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_txilvl_qs)
+      // to register interface (read)
+      .qs(fifo_ctrl_txilvl_qs)
   );
 
 
@@ -1244,31 +1244,31 @@ module usbuart_reg_top (
 
   //   F[txlvl]: 5:0
   prim_subreg_ext #(
-    .DW    (6)
+      .DW(6)
   ) u_fifo_status_txlvl (
-    .re     (fifo_status_txlvl_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.fifo_status.txlvl.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (fifo_status_txlvl_qs)
+      .re (fifo_status_txlvl_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.fifo_status.txlvl.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (fifo_status_txlvl_qs)
   );
 
 
   //   F[rxlvl]: 21:16
   prim_subreg_ext #(
-    .DW    (6)
+      .DW(6)
   ) u_fifo_status_rxlvl (
-    .re     (fifo_status_rxlvl_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.fifo_status.rxlvl.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (fifo_status_rxlvl_qs)
+      .re (fifo_status_rxlvl_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.fifo_status.rxlvl.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (fifo_status_rxlvl_qs)
   );
 
 
@@ -1276,69 +1276,69 @@ module usbuart_reg_top (
 
   //   F[txen]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ovrd_txen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ovrd_txen_we),
-    .wd     (ovrd_txen_wd),
+      // from register interface
+      .we(ovrd_txen_we),
+      .wd(ovrd_txen_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ovrd.txen.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ovrd.txen.q),
 
-    // to register interface (read)
-    .qs     (ovrd_txen_qs)
+      // to register interface (read)
+      .qs(ovrd_txen_qs)
   );
 
 
   //   F[txval]: 1:1
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_ovrd_txval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (ovrd_txval_we),
-    .wd     (ovrd_txval_wd),
+      // from register interface
+      .we(ovrd_txval_we),
+      .wd(ovrd_txval_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ovrd.txval.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.ovrd.txval.q),
 
-    // to register interface (read)
-    .qs     (ovrd_txval_qs)
+      // to register interface (read)
+      .qs(ovrd_txval_qs)
   );
 
 
   // R[val]: V(True)
 
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_val (
-    .re     (val_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.val.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (val_qs)
+      .re (val_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.val.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (val_qs)
   );
 
 
@@ -1346,53 +1346,53 @@ module usbuart_reg_top (
 
   //   F[val]: 23:0
   prim_subreg #(
-    .DW      (24),
-    .SWACCESS("RW"),
-    .RESVAL  (24'h0)
+      .DW(24),
+      .SWACCESS("RW"),
+      .RESVAL(24'h0)
   ) u_timeout_ctrl_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (timeout_ctrl_val_we),
-    .wd     (timeout_ctrl_val_wd),
+      // from register interface
+      .we(timeout_ctrl_val_we),
+      .wd(timeout_ctrl_val_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.timeout_ctrl.val.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.timeout_ctrl.val.q),
 
-    // to register interface (read)
-    .qs     (timeout_ctrl_val_qs)
+      // to register interface (read)
+      .qs(timeout_ctrl_val_qs)
   );
 
 
   //   F[en]: 31:31
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1'h0)
   ) u_timeout_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
 
-    // from register interface
-    .we     (timeout_ctrl_en_we),
-    .wd     (timeout_ctrl_en_wd),
+      // from register interface
+      .we(timeout_ctrl_en_we),
+      .wd(timeout_ctrl_en_wd),
 
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+      // from internal hardware
+      .de(1'b0),
+      .d ('0),
 
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.timeout_ctrl.en.q ),
+      // to internal hardware
+      .qe(),
+      .q (reg2hw.timeout_ctrl.en.q),
 
-    // to register interface (read)
-    .qs     (timeout_ctrl_en_qs)
+      // to register interface (read)
+      .qs(timeout_ctrl_en_qs)
   );
 
 
@@ -1400,61 +1400,61 @@ module usbuart_reg_top (
 
   //   F[frame]: 10:0
   prim_subreg_ext #(
-    .DW    (11)
+      .DW(11)
   ) u_usbstat_frame (
-    .re     (usbstat_frame_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbstat.frame.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbstat_frame_qs)
+      .re (usbstat_frame_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbstat.frame.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbstat_frame_qs)
   );
 
 
   //   F[host_timeout]: 14:14
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_usbstat_host_timeout (
-    .re     (usbstat_host_timeout_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbstat.host_timeout.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbstat_host_timeout_qs)
+      .re (usbstat_host_timeout_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbstat.host_timeout.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbstat_host_timeout_qs)
   );
 
 
   //   F[host_lost]: 15:15
   prim_subreg_ext #(
-    .DW    (1)
+      .DW(1)
   ) u_usbstat_host_lost (
-    .re     (usbstat_host_lost_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbstat.host_lost.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbstat_host_lost_qs)
+      .re (usbstat_host_lost_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbstat.host_lost.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbstat_host_lost_qs)
   );
 
 
   //   F[device_address]: 22:16
   prim_subreg_ext #(
-    .DW    (7)
+      .DW(7)
   ) u_usbstat_device_address (
-    .re     (usbstat_device_address_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbstat.device_address.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbstat_device_address_qs)
+      .re (usbstat_device_address_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbstat.device_address.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbstat_device_address_qs)
   );
 
 
@@ -1462,31 +1462,31 @@ module usbuart_reg_top (
 
   //   F[baud_req]: 15:0
   prim_subreg_ext #(
-    .DW    (16)
+      .DW(16)
   ) u_usbparam_baud_req (
-    .re     (usbparam_baud_req_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbparam.baud_req.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbparam_baud_req_qs)
+      .re (usbparam_baud_req_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbparam.baud_req.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbparam_baud_req_qs)
   );
 
 
   //   F[parity_req]: 17:16
   prim_subreg_ext #(
-    .DW    (2)
+      .DW(2)
   ) u_usbparam_parity_req (
-    .re     (usbparam_parity_req_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.usbparam.parity_req.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (usbparam_parity_req_qs)
+      .re (usbparam_parity_req_re),
+      .we (1'b0),
+      .wd ('0),
+      .d  (hw2reg.usbparam.parity_req.d),
+      .qre(),
+      .qe (),
+      .q  (),
+      .qs (usbparam_parity_req_qs)
   );
 
 
@@ -1495,41 +1495,45 @@ module usbuart_reg_top (
   logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == USBUART_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == USBUART_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == USBUART_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == USBUART_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == USBUART_STATUS_OFFSET);
-    addr_hit[ 5] = (reg_addr == USBUART_RDATA_OFFSET);
-    addr_hit[ 6] = (reg_addr == USBUART_WDATA_OFFSET);
-    addr_hit[ 7] = (reg_addr == USBUART_FIFO_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == USBUART_FIFO_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == USBUART_OVRD_OFFSET);
+    addr_hit[0] = (reg_addr == USBUART_INTR_STATE_OFFSET);
+    addr_hit[1] = (reg_addr == USBUART_INTR_ENABLE_OFFSET);
+    addr_hit[2] = (reg_addr == USBUART_INTR_TEST_OFFSET);
+    addr_hit[3] = (reg_addr == USBUART_CTRL_OFFSET);
+    addr_hit[4] = (reg_addr == USBUART_STATUS_OFFSET);
+    addr_hit[5] = (reg_addr == USBUART_RDATA_OFFSET);
+    addr_hit[6] = (reg_addr == USBUART_WDATA_OFFSET);
+    addr_hit[7] = (reg_addr == USBUART_FIFO_CTRL_OFFSET);
+    addr_hit[8] = (reg_addr == USBUART_FIFO_STATUS_OFFSET);
+    addr_hit[9] = (reg_addr == USBUART_OVRD_OFFSET);
     addr_hit[10] = (reg_addr == USBUART_VAL_OFFSET);
     addr_hit[11] = (reg_addr == USBUART_TIMEOUT_CTRL_OFFSET);
     addr_hit[12] = (reg_addr == USBUART_USBSTAT_OFFSET);
     addr_hit[13] = (reg_addr == USBUART_USBPARAM_OFFSET);
   end
 
-  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0;
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (USBUART_PERMIT[ 0] != (USBUART_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (USBUART_PERMIT[ 1] != (USBUART_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (USBUART_PERMIT[ 2] != (USBUART_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (USBUART_PERMIT[ 3] != (USBUART_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (USBUART_PERMIT[ 4] != (USBUART_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (USBUART_PERMIT[ 5] != (USBUART_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (USBUART_PERMIT[ 6] != (USBUART_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (USBUART_PERMIT[ 7] != (USBUART_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (USBUART_PERMIT[ 8] != (USBUART_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (USBUART_PERMIT[ 9] != (USBUART_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (USBUART_PERMIT[10] != (USBUART_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (USBUART_PERMIT[11] != (USBUART_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (USBUART_PERMIT[12] != (USBUART_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (USBUART_PERMIT[13] != (USBUART_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[0] && reg_we && (USBUART_PERMIT[0] != (USBUART_PERMIT[0] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[1] && reg_we && (USBUART_PERMIT[1] != (USBUART_PERMIT[1] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[2] && reg_we && (USBUART_PERMIT[2] != (USBUART_PERMIT[2] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[3] && reg_we && (USBUART_PERMIT[3] != (USBUART_PERMIT[3] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[4] && reg_we && (USBUART_PERMIT[4] != (USBUART_PERMIT[4] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[5] && reg_we && (USBUART_PERMIT[5] != (USBUART_PERMIT[5] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[6] && reg_we && (USBUART_PERMIT[6] != (USBUART_PERMIT[6] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[7] && reg_we && (USBUART_PERMIT[7] != (USBUART_PERMIT[7] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[8] && reg_we && (USBUART_PERMIT[8] != (USBUART_PERMIT[8] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[9] && reg_we && (USBUART_PERMIT[9] != (USBUART_PERMIT[9] & reg_be))) wr_err = 1'b1;
+    if (addr_hit[10] && reg_we && (USBUART_PERMIT[10] != (USBUART_PERMIT[10] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[11] && reg_we && (USBUART_PERMIT[11] != (USBUART_PERMIT[11] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[12] && reg_we && (USBUART_PERMIT[12] != (USBUART_PERMIT[12] & reg_be)))
+      wr_err = 1'b1;
+    if (addr_hit[13] && reg_we && (USBUART_PERMIT[13] != (USBUART_PERMIT[13] & reg_be)))
+      wr_err = 1'b1;
   end
 
   assign intr_state_tx_watermark_we = addr_hit[0] & reg_we & ~wr_err;

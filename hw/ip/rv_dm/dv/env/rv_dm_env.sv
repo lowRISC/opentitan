@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_dm_env extends dv_base_env #(
-    .CFG_T              (rv_dm_env_cfg),
-    .COV_T              (rv_dm_env_cov),
+class rv_dm_env extends dv_base_env#(
+    .CFG_T(rv_dm_env_cfg),
+    .COV_T(rv_dm_env_cov),
     .VIRTUAL_SEQUENCER_T(rv_dm_virtual_sequencer),
-    .SCOREBOARD_T       (rv_dm_scoreboard)
-  );
+    .SCOREBOARD_T(rv_dm_scoreboard)
+);
   `uvm_component_utils(rv_dm_env)
 
   jtag_agent m_jtag_agent;
@@ -48,12 +48,10 @@ class rv_dm_env extends dv_base_env #(
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
 
     m_tl_host_agent = tl_agent::type_id::create("m_tl_host_agent", this);
-    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_host_agent*", "cfg",
-                                      cfg.m_tl_host_agent_cfg);
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_host_agent*", "cfg", cfg.m_tl_host_agent_cfg);
 
     m_tl_device_agent = tl_agent::type_id::create("m_tl_device_agent", this);
-    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_device_agent*", "cfg",
-                                      cfg.m_tl_device_agent_cfg);
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_device_agent*", "cfg", cfg.m_tl_device_agent_cfg);
   endfunction
 
   function void connect_phase(uvm_phase phase);

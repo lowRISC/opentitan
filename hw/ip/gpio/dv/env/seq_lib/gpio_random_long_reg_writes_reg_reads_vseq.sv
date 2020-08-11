@@ -29,7 +29,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
       uint num_reg_op;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reg_op, num_reg_op inside {[25:50]};)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reg_op, num_reg_op inside {[25 : 50]};)
 
       cfg.clk_rst_vif.wait_clks(delay);
       randcase
@@ -54,7 +54,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
         end
       endcase
 
-    end // end for
+    end  // end for
 
   endtask : body
 

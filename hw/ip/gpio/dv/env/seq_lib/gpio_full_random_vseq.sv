@@ -46,19 +46,17 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         1: begin
           `uvm_info(msg_id, $sformatf("Latest data_out = 0x%0h [%0b]", data_out, data_out),
                     UVM_HIGH)
-          `uvm_info(msg_id, $sformatf("Latest data_oe = 0x%0h [%0b]", data_oe, data_oe),
-                    UVM_HIGH)
+          `uvm_info(msg_id, $sformatf("Latest data_oe = 0x%0h [%0b]", data_oe, data_oe), UVM_HIGH)
           // Set all 1's in gpio_i_oen first up
           gpio_i_oen = '1;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i", gpio_i), UVM_HIGH)
 
-          foreach(gpio_i[pin]) begin
+          foreach (gpio_i[pin]) begin
             if (data_oe[pin]) begin
               if (gpio_i[pin] != data_out[pin]) begin
                 data_oe[pin] = 1'b0;
-              end
-              else begin
+              end else begin
                 bit gpio_i_oe_pin;
                 `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i_oe_pin)
                 gpio_i_oen[pin] = gpio_i_oe_pin;
@@ -87,13 +85,13 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           csr_utils_pkg::wait_no_outstanding_access();
           apply_reset("HARD");
           data_out = '0;
-          data_oe  = '0;
+          data_oe = '0;
         end
       endcase
 
       `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
 
-    end // end for
+    end  // end for
 
   endtask : body
 
@@ -132,8 +130,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       bit [(NUM_GPIOS/2)-1:0] mask, data;
       {mask, data} = csr_wr_value;
       for (uint pin = 0; pin < ral.masked_out_lower.mask.get_n_bits(); pin++) begin
-        if ((data_oe[pin] == 1'b1) && (gpio_if_pins_oe_val[pin] == 1'b1) &&
-            (mask[pin] == 1'b1 && (data[pin] != gpio_if_pins_o_val[pin]))) begin
+        if ((data_oe[pin] == 1'b1) && (gpio_if_pins_oe_val[pin] == 1'b1) && (
+            mask[pin] == 1'b1 && (data[pin] != gpio_if_pins_o_val[pin]))) begin
           randcase
             1: data[pin] = gpio_if_pins_o_val[pin];
             1: mask[pin] = 1'b0;
@@ -159,12 +157,11 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       bit [(NUM_GPIOS/2)-1:0] mask, data;
       {mask, data} = csr_wr_value;
       for (uint pin = 0; pin < ral.masked_out_upper.mask.get_n_bits(); pin++) begin
-        if ((data_oe[(NUM_GPIOS/2) + pin] == 1'b1) &&
-            (gpio_if_pins_oe_val[(NUM_GPIOS/2) + pin] == 1'b1) &&
-            (mask[pin] == 1'b1 &&
-             (data[pin] != gpio_if_pins_o_val[(NUM_GPIOS/2) + pin]))) begin
+        if ((data_oe[(NUM_GPIOS / 2) + pin] == 1'b1) && (
+            gpio_if_pins_oe_val[(NUM_GPIOS / 2) + pin] == 1'b1) && (
+            mask[pin] == 1'b1 && (data[pin] != gpio_if_pins_o_val[(NUM_GPIOS / 2) + pin]))) begin
           randcase
-            1: data[pin] = gpio_if_pins_o_val[(NUM_GPIOS/2) + pin];
+            1: data[pin] = gpio_if_pins_o_val[(NUM_GPIOS / 2) + pin];
             1: mask[pin] = 1'b0;
           endcase
         end
@@ -186,8 +183,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
     // write to direct_oe reg
     if ($urandom_range(0, 1)) begin
       for (uint pin = 0; pin < NUM_GPIOS; pin++) begin
-        if ((csr_wr_value[pin] == 1'b1 && gpio_if_pins_oe_val[pin] == 1'b1) &&
-            (data_out[pin] != gpio_if_pins_o_val[pin])) begin
+        if ((csr_wr_value[pin] == 1'b1 && gpio_if_pins_oe_val[pin] == 1'b1) && (
+            data_out[pin] != gpio_if_pins_o_val[pin])) begin
           csr_wr_value[pin] = 1'b0;
         end
       end
@@ -204,8 +201,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       bit [(NUM_GPIOS/2)-1:0] mask, data;
       {mask, data} = csr_wr_value;
       for (uint pin = 0; pin < ral.masked_oe_lower.mask.get_n_bits(); pin++) begin
-        if (mask[pin] == 1'b1 && data[pin] == 1'b1 && gpio_if_pins_oe_val[pin] == 1'b1 &&
-            (data_out[pin] != gpio_if_pins_o_val[pin])) begin
+        if (mask[pin] == 1'b1 && data[pin] == 1'b1 && gpio_if_pins_oe_val[pin] == 1'b1 && (
+            data_out[pin] != gpio_if_pins_o_val[pin])) begin
           randcase
             1: mask[pin] = 1'b0;
             1: data[pin] = 1'b0;
@@ -231,9 +228,8 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       bit [(NUM_GPIOS/2)-1:0] mask, data;
       {mask, data} = csr_wr_value;
       for (uint pin = 0; pin < ral.masked_oe_upper.mask.get_n_bits(); pin++) begin
-        if (mask[pin] == 1'b1 && data[pin] == 1'b1 &&
-            gpio_if_pins_oe_val[(TL_DW/2) + pin] == 1'b1 &&
-            (data_out[(TL_DW/2) + pin] != gpio_if_pins_o_val[(TL_DW/2) + pin])) begin
+        if (mask[pin] == 1'b1 && data[pin] == 1'b1 && gpio_if_pins_oe_val[(TL_DW / 2) + pin] ==
+            1'b1 && (data_out[(TL_DW / 2) + pin] != gpio_if_pins_o_val[(TL_DW / 2) + pin])) begin
           randcase
             1: mask[pin] = 1'b0;
             1: data[pin] = 1'b0;
@@ -274,7 +270,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
         `DV_CHECK_RANDOMIZE_FATAL(ral.data_in)
         csr_update(.csr(ral.data_in));
       end
-      1 : begin
+      1: begin
         `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl_en_input_filter)
         wait_for_filter_cyles();
         csr_update(.csr(ral.ctrl_en_input_filter));

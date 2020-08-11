@@ -6,44 +6,45 @@
 
 `include "prim_assert.sv"
 
-module aes_key_expand import aes_pkg::*;
+module aes_key_expand
+import aes_pkg::*;
 #(
-  parameter bit         AES192Enable = 1,
-  parameter bit         Masking      = 0,
-  parameter sbox_impl_e SBoxImpl     = SBoxImplLut,
+    parameter bit AES192Enable = 1,
+    parameter bit Masking = 0,
+    parameter sbox_impl_e SBoxImpl = SBoxImplLut,
 
-  localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
+    localparam int NumShares = Masking ? 2 : 1  // derived parameter
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  ciph_op_e          op_i,
-  input  logic              step_i,
-  input  logic              clear_i,
-  input  logic        [3:0] round_i,
-  input  key_len_e          key_len_i,
-  input  logic  [7:0][31:0] key_i [NumShares],
-  output logic  [7:0][31:0] key_o [NumShares]
+    input  logic                 clk_i,
+    input  logic                 rst_ni,
+    input  ciph_op_e             op_i,
+    input  logic                 step_i,
+    input  logic                 clear_i,
+    input  logic     [3:0]       round_i,
+    input  key_len_e             key_len_i,
+    input  logic     [7:0][31:0] key_i    [NumShares],
+    output logic     [7:0][31:0] key_o    [NumShares]
 );
 
-  logic       [7:0] rcon_d, rcon_q;
-  logic             rcon_we;
-  logic             use_rcon;
+  logic [7:0] rcon_d, rcon_q;
+  logic rcon_we;
+  logic use_rcon;
 
-  logic       [3:0] rnd;
-  logic       [3:0] rnd_type;
+  logic [3:0] rnd;
+  logic [3:0] rnd_type;
 
-  logic      [31:0] spec_in_128 [NumShares];
-  logic      [31:0] spec_in_192 [NumShares];
-  logic      [31:0] rot_word_in [NumShares];
-  logic      [31:0] rot_word_out [NumShares];
-  logic             use_rot_word;
-  logic      [31:0] sub_word_in, sub_word_out;
-  logic      [31:0] sw_in_mask, sw_out_mask;
-  logic       [7:0] rcon_add_in, rcon_add_out;
-  logic      [31:0] rcon_added;
+  logic [31:0] spec_in_128[NumShares];
+  logic [31:0] spec_in_192[NumShares];
+  logic [31:0] rot_word_in[NumShares];
+  logic [31:0] rot_word_out[NumShares];
+  logic use_rot_word;
+  logic [31:0] sub_word_in, sub_word_out;
+  logic [31:0] sw_in_mask, sw_out_mask;
+  logic [7:0] rcon_add_in, rcon_add_out;
+  logic [31:0] rcon_added;
 
-  logic      [31:0] irregular [NumShares];
-  logic [7:0][31:0] regular [NumShares];
+  logic [31:0] irregular[NumShares];
+  logic [7:0][31:0] regular[NumShares];
 
   assign rnd = round_i;
 
@@ -71,9 +72,8 @@ module aes_key_expand import aes_pkg::*;
     use_rcon = 1'b1;
 
     if (AES192Enable) begin
-      if (key_len_i == AES_192 &&
-          ((op_i == CIPH_FWD &&  rnd_type[1]) ||
-           (op_i == CIPH_INV && (rnd_type[0] || rnd_type[3])))) begin
+      if (key_len_i == AES_192 && ((op_i == CIPH_FWD && rnd_type[1]) || (
+                                   op_i == CIPH_INV && (rnd_type[0] || rnd_type[3])))) begin
         use_rcon = 1'b0;
       end
     end
@@ -88,13 +88,12 @@ module aes_key_expand import aes_pkg::*;
     rcon_d = rcon_q;
 
     if (clear_i) begin
-      rcon_d = (op_i == CIPH_FWD)                            ? 8'h01 :
-              ((op_i == CIPH_INV) && (key_len_i == AES_128)) ? 8'h36 :
-              ((op_i == CIPH_INV) && (key_len_i == AES_192)) ? 8'h80 :
-              ((op_i == CIPH_INV) && (key_len_i == AES_256)) ? 8'h40 : 8'h01;
+      rcon_d = (op_i == CIPH_FWD) ? 8'h01 : ((op_i == CIPH_INV) && (key_len_i == AES_128)) ?
+          8'h36 : ((op_i == CIPH_INV) && (key_len_i == AES_192)) ?
+          8'h80 : ((op_i == CIPH_INV) && (key_len_i == AES_256)) ? 8'h40 : 8'h01;
     end else begin
-      rcon_d = (op_i == CIPH_FWD) ? aes_mul2(rcon_q) :
-               (op_i == CIPH_INV) ? aes_div2(rcon_q) : 8'h01;
+      rcon_d = (op_i == CIPH_FWD) ?
+          aes_mul2(rcon_q) : (op_i == CIPH_INV) ? aes_div2(rcon_q) : 8'h01;
     end
   end
 
@@ -125,7 +124,7 @@ module aes_key_expand import aes_pkg::*;
           unique case (op_i)
             CIPH_FWD: rot_word_in[s] = key_i[s][3];
             CIPH_INV: rot_word_in[s] = spec_in_128[s];
-            default:  rot_word_in[s] = key_i[s][3];
+            default: rot_word_in[s] = key_i[s][3];
           endcase
         end
 
@@ -136,13 +135,12 @@ module aes_key_expand import aes_pkg::*;
           if (AES192Enable) begin
             unique case (op_i)
               CIPH_FWD: begin
-                rot_word_in[s] = rnd_type[0] ? key_i[s][5]    :
-                                 rnd_type[2] ? key_i[s][5]    :
-                                 rnd_type[3] ? spec_in_192[s] : key_i[s][3];
+                rot_word_in[s] = rnd_type[0] ? key_i[s][5] :
+                    rnd_type[2] ? key_i[s][5] : rnd_type[3] ? spec_in_192[s] : key_i[s][3];
               end
               CIPH_INV: begin
-                rot_word_in[s] = rnd_type[1] ? key_i[s][3] :
-                                 rnd_type[2] ? key_i[s][1] : key_i[s][3];
+                rot_word_in[s] =
+                    rnd_type[1] ? key_i[s][3] : rnd_type[2] ? key_i[s][1] : key_i[s][3];
               end
               default: rot_word_in[s] = key_i[s][3];
             endcase
@@ -158,7 +156,7 @@ module aes_key_expand import aes_pkg::*;
           unique case (op_i)
             CIPH_FWD: rot_word_in[s] = key_i[s][7];
             CIPH_INV: rot_word_in[s] = key_i[s][3];
-            default:  rot_word_in[s] = key_i[s][7];
+            default: rot_word_in[s] = key_i[s][7];
           endcase
         end
 
@@ -176,7 +174,7 @@ module aes_key_expand import aes_pkg::*;
   // Masking
   if (!Masking) begin : gen_no_sw_in_mask
     // The mask share is ignored anyway, it can be 0.
-    assign sw_in_mask  = '0;
+    assign sw_in_mask = '0;
   end else begin : gen_sw_in_mask
     // The input mask is the mask share of rot_word_in/out.
     assign sw_in_mask = use_rot_word ? rot_word_out[1] : rot_word_in[1];
@@ -189,20 +187,20 @@ module aes_key_expand import aes_pkg::*;
   // SubWord - individually substitute bytes
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     aes_sbox #(
-      .SBoxImpl ( SBoxImpl )
+        .SBoxImpl(SBoxImpl)
     ) u_aes_sbox_i (
-      .op_i       ( CIPH_FWD               ),
-      .data_i     ( sub_word_in[8*i +: 8]  ),
-      .in_mask_i  ( sw_in_mask[8*i +: 8]   ),
-      .out_mask_i ( sw_out_mask[8*i +: 8]  ),
-      .data_o     ( sub_word_out[8*i +: 8] )
+        .op_i      (CIPH_FWD),
+        .data_i    (sub_word_in[8 * i +: 8]),
+        .in_mask_i (sw_in_mask[8 * i +: 8]),
+        .out_mask_i(sw_out_mask[8 * i +: 8]),
+        .data_o    (sub_word_out[8 * i +: 8])
     );
   end
 
   // Add Rcon
-  assign rcon_add_in  = sub_word_out[7:0];
+  assign rcon_add_in = sub_word_out[7:0];
   assign rcon_add_out = rcon_add_in ^ rcon_q;
-  assign rcon_added   = {sub_word_out[31:8], rcon_add_out};
+  assign rcon_added = {sub_word_out[31:8], rcon_add_out};
 
   // Mux output coming from Rcon & SubWord
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_irregular
@@ -235,14 +233,14 @@ module aes_key_expand import aes_pkg::*;
           regular[s][0] = irregular[s] ^ key_i[s][0];
           unique case (op_i)
             CIPH_FWD: begin
-              for (int i=1; i<4; i++) begin
-                regular[s][i] = regular[s][i-1] ^ key_i[s][i];
+              for (int i = 1; i < 4; i++) begin
+                regular[s][i] = regular[s][i - 1] ^ key_i[s][i];
               end
             end
 
             CIPH_INV: begin
-              for (int i=1; i<4; i++) begin
-                regular[s][i] = key_i[s][i-1] ^ key_i[s][i];
+              for (int i = 1; i < 4; i++) begin
+                regular[s][i] = key_i[s][i - 1] ^ key_i[s][i];
               end
             end
 
@@ -264,21 +262,20 @@ module aes_key_expand import aes_pkg::*;
                   // Shift down four upper most words
                   regular[s][3:0] = key_i[s][5:2];
                   // Generate Words 6 and 7
-                  regular[s][4]   = irregular[s]  ^ key_i[s][0];
-                  regular[s][5]   = regular[s][4] ^ key_i[s][1];
+                  regular[s][4] = irregular[s] ^ key_i[s][0];
+                  regular[s][5] = regular[s][4] ^ key_i[s][1];
                 end else begin
                   // Shift down two upper most words
                   regular[s][1:0] = key_i[s][5:4];
                   // Generate new upper four words
-                  for (int i=0; i<4; i++) begin
-                    if ((i == 0 && rnd_type[2]) ||
-                        (i == 2 && rnd_type[3])) begin
-                      regular[s][i+2] = irregular[s]    ^ key_i[s][i];
+                  for (int i = 0; i < 4; i++) begin
+                    if ((i == 0 && rnd_type[2]) || (i == 2 && rnd_type[3])) begin
+                      regular[s][i + 2] = irregular[s] ^ key_i[s][i];
                     end else begin
-                      regular[s][i+2] = regular[s][i+1] ^ key_i[s][i];
+                      regular[s][i + 2] = regular[s][i + 1] ^ key_i[s][i];
                     end
                   end
-                end // rnd_type[0]
+                end  // rnd_type[0]
               end
 
               CIPH_INV: begin
@@ -286,22 +283,21 @@ module aes_key_expand import aes_pkg::*;
                   // Shift up four lowest words
                   regular[s][5:2] = key_i[s][3:0];
                   // Generate Word 44 and 45
-                  for (int i=0; i<2; i++) begin
-                    regular[s][i] = key_i[s][3+i] ^ key_i[s][3+i+1];
+                  for (int i = 0; i < 2; i++) begin
+                    regular[s][i] = key_i[s][3 + i] ^ key_i[s][3 + i + 1];
                   end
                 end else begin
                   // Shift up two lowest words
                   regular[s][5:4] = key_i[s][1:0];
                   // Generate new lower four words
-                  for (int i=0; i<4; i++) begin
-                    if ((i == 2 && rnd_type[1]) ||
-                        (i == 0 && rnd_type[2])) begin
-                      regular[s][i] = irregular[s]  ^ key_i[s][i+2];
+                  for (int i = 0; i < 4; i++) begin
+                    if ((i == 2 && rnd_type[1]) || (i == 0 && rnd_type[2])) begin
+                      regular[s][i] = irregular[s] ^ key_i[s][i + 2];
                     end else begin
-                      regular[s][i] = key_i[s][i+1] ^ key_i[s][i+2];
+                      regular[s][i] = key_i[s][i + 1] ^ key_i[s][i + 2];
                     end
                   end
-                end // rnd_type[0]
+                end  // rnd_type[0]
               end
 
               default: regular[s] = {key_i[s][3:0], key_i[s][7:4]};
@@ -309,7 +305,7 @@ module aes_key_expand import aes_pkg::*;
 
           end else begin
             regular[s] = {key_i[s][3:0], key_i[s][7:4]};
-          end // AES192Enable
+          end  // AES192Enable
         end
 
         /////////////
@@ -326,11 +322,11 @@ module aes_key_expand import aes_pkg::*;
                 // Shift down old upper half
                 regular[s][3:0] = key_i[s][7:4];
                 // Generate new upper half
-                regular[s][4]   = irregular[s] ^ key_i[s][0];
-                for (int i=1; i<4; i++) begin
-                  regular[s][i+4] = regular[s][i+4-1] ^ key_i[s][i];
+                regular[s][4] = irregular[s] ^ key_i[s][0];
+                for (int i = 1; i < 4; i++) begin
+                  regular[s][i + 4] = regular[s][i + 4 - 1] ^ key_i[s][i];
                 end
-              end // rnd == 0
+              end  // rnd == 0
             end
 
             CIPH_INV: begin
@@ -342,11 +338,11 @@ module aes_key_expand import aes_pkg::*;
                 // Shift up old lower half
                 regular[s][7:4] = key_i[s][3:0];
                 // Generate new lower half
-                regular[s][0]   = irregular[s] ^ key_i[s][4];
-                for (int i=0; i<3; i++) begin
-                  regular[s][i+1] = key_i[s][4+i] ^ key_i[s][4+i+1];
+                regular[s][0] = irregular[s] ^ key_i[s][4];
+                for (int i = 0; i < 3; i++) begin
+                  regular[s][i + 1] = key_i[s][4 + i] ^ key_i[s][4 + i + 1];
                 end
-              end // rnd == 0
+              end  // rnd == 0
             end
 
             default: regular[s] = {key_i[s][3:0], key_i[s][7:4]};
@@ -354,9 +350,9 @@ module aes_key_expand import aes_pkg::*;
         end
 
         default: regular[s] = {key_i[s][3:0], key_i[s][7:4]};
-      endcase // key_len_i
-    end // drive_regular
-  end // gen_shares_regular
+      endcase  // key_len_i
+    end  // drive_regular
+  end  // gen_shares_regular
 
   // Drive output
   assign key_o = regular;
@@ -367,19 +363,12 @@ module aes_key_expand import aes_pkg::*;
 
   // Cipher core masking requires a masked SBox and vice versa.
   `ASSERT_INIT(AesMaskedCoreAndSBox,
-      (Masking &&
-      (SBoxImpl == SBoxImplCanrightMasked ||
-       SBoxImpl == SBoxImplCanrightMaskedNoreuse)) ||
-      (!Masking &&
-      (SBoxImpl == SBoxImplLut ||
-       SBoxImpl == SBoxImplCanright)))
+               (Masking && (
+                SBoxImpl == SBoxImplCanrightMasked || SBoxImpl == SBoxImplCanrightMaskedNoreuse)
+                   ) || (!Masking && (SBoxImpl == SBoxImplLut || SBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
   `ASSERT_KNOWN(AesCiphOpKnown, op_i)
-  `ASSERT(AesKeyLenValid, key_len_i inside {
-      AES_128,
-      AES_192,
-      AES_256
-      })
+  `ASSERT(AesKeyLenValid, key_len_i inside {AES_128, AES_192, AES_256})
 
 endmodule

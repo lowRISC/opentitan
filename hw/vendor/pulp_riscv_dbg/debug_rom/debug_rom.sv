@@ -15,15 +15,17 @@
 
 // Auto-generated code
 module debug_rom (
-  input  logic         clk_i,
-  input  logic         req_i,
-  input  logic [63:0]  addr_i,
-  output logic [63:0]  rdata_o
+    input  logic        clk_i,
+    input  logic        req_i,
+    input  logic [63:0] addr_i,
+    output logic [63:0] rdata_o
 );
 
   localparam int unsigned RomSize = 19;
 
-  const logic [RomSize-1:0][63:0] mem = {
+  const
+  logic [RomSize-1:0][63:0]
+  mem = {
     64'h00000000_7b200073,
     64'h7b202473_7b302573,
     64'h10852423_f1402473,
@@ -49,7 +51,7 @@ module debug_rom (
 
   always_ff @(posedge clk_i) begin
     if (req_i) begin
-      addr_q <= addr_i[$clog2(RomSize)-1+3:3];
+      addr_q <= addr_i[$clog2(RomSize) - 1 + 3:3];
     end
   end
 
@@ -58,7 +60,7 @@ module debug_rom (
   always_comb begin : p_outmux
     rdata_o = '0;
     if (addr_q < $clog2(RomSize)'(RomSize)) begin
-        rdata_o = mem[addr_q];
+      rdata_o = mem[addr_q];
     end
   end
 

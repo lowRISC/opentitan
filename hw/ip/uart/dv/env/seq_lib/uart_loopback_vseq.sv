@@ -8,13 +8,9 @@
 class uart_loopback_vseq extends uart_tx_rx_vseq;
   `uvm_object_utils(uart_loopback_vseq)
 
-  constraint en_tx_c {
-    en_tx == 1;
-  }
+  constraint en_tx_c {en_tx == 1;}
 
-  constraint en_rx_c {
-    en_rx == 1;
-  }
+  constraint en_rx_c {en_rx == 1;}
 
   `uvm_object_new
 
@@ -69,29 +65,28 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
     cfg.m_uart_agent_cfg.en_tx_monitor = 0;
     cfg.m_uart_agent_cfg.en_rx_monitor = 0;
     fork
-      begin // isolation_fork
+      begin  // isolation_fork
         fork
           // drive RX with random data and random delay
           repeat ($urandom_range(100, 1000)) begin
             cfg.m_uart_agent_cfg.vif.uart_rx = $urandom_range(0, 1);
-            `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(dly_to_next_trans,
-                                                  dly_to_next_trans > 0;)
+            `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(dly_to_next_trans, dly_to_next_trans > 0;)
             #(dly_to_next_trans * 1ns);
           end
           // RX has same value as TX without any synchronizer in the data path
           forever begin
             @(cfg.m_uart_agent_cfg.vif.uart_tx || cfg.m_uart_agent_cfg.vif.uart_rx);
-            #1ps; // avoid race condition
+            #1ps;  // avoid race condition
             if (!cfg.under_reset) begin
               `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, cfg.m_uart_agent_cfg.vif.uart_rx)
             end
           end
         join_any
         disable fork;
-      end // isolation_fork
+      end  // isolation_fork
     join
 
-    cfg.m_uart_agent_cfg.vif.uart_rx = 1; // back to default value
+    cfg.m_uart_agent_cfg.vif.uart_rx = 1;  // back to default value
     cfg.m_uart_agent_cfg.en_tx_monitor = 1;
     cfg.m_uart_agent_cfg.en_rx_monitor = 1;
 

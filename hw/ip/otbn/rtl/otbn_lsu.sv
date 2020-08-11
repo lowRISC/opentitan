@@ -15,24 +15,24 @@
  * - The write mask supports aligned 32b write accesses.
  */
 module otbn_lsu
-  import otbn_pkg::*;
+import otbn_pkg::*;
 #(
-  parameter int DmemSizeByte = 4096,
+    parameter int DmemSizeByte = 4096,
 
-  localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
+    localparam int DmemAddrWidth = prim_util_pkg::vbits (DmemSizeByte)
 ) (
-  input logic clk_i,
-  input logic rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  // Data memory (DMEM) interface
-  output logic                     dmem_req_o,
-  output logic                     dmem_write_o,
-  output logic [DmemAddrWidth-1:0] dmem_addr_o,
-  output logic [WLEN-1:0]          dmem_wdata_o,
-  output logic [WLEN-1:0]          dmem_wmask_o,
-  input  logic [WLEN-1:0]          dmem_rdata_i,
-  input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i // Bit1: Uncorrectable, Bit0: Correctable
+    // Data memory (DMEM) interface
+    output logic                     dmem_req_o,
+    output logic                     dmem_write_o,
+    output logic [DmemAddrWidth-1:0] dmem_addr_o,
+    output logic [         WLEN-1:0] dmem_wdata_o,
+    output logic [         WLEN-1:0] dmem_wmask_o,
+    input  logic [         WLEN-1:0] dmem_rdata_i,
+    input  logic                     dmem_rvalid_i,
+    input  logic [              1:0] dmem_rerror_i  // Bit1: Uncorrectable, Bit0: Correctable
 
 );
 

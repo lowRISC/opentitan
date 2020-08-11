@@ -29,9 +29,9 @@ package chip_env_pkg;
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR = 32'h1000fffc;
   parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR = 32'h1000fff8;
 
-  typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
-  typedef virtual mem_bkdr_if           mem_bkdr_vif;
-  typedef virtual sw_logger_if          sw_logger_vif;
+  typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
+  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  typedef virtual sw_logger_if sw_logger_vif;
 
   // Types of memories in the chip.
   typedef enum {

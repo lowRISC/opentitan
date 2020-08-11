@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class uart_env extends cip_base_env #(.CFG_T               (uart_env_cfg),
-                                      .COV_T               (uart_env_cov),
-                                      .VIRTUAL_SEQUENCER_T (uart_virtual_sequencer),
-                                      .SCOREBOARD_T        (uart_scoreboard));
+class uart_env extends cip_base_env#(
+    .CFG_T(uart_env_cfg),
+    .COV_T(uart_env_cov),
+    .VIRTUAL_SEQUENCER_T(uart_virtual_sequencer),
+    .SCOREBOARD_T(uart_scoreboard)
+);
   `uvm_component_utils(uart_env)
 
-  uart_agent              m_uart_agent;
+  uart_agent m_uart_agent;
 
   `uvm_component_new
 

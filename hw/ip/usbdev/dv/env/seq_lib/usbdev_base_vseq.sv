@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usbdev_base_vseq extends cip_base_vseq #(
-  .CFG_T               (usbdev_env_cfg),
-  .RAL_T               (usbdev_reg_block),
-  .COV_T               (usbdev_env_cov),
-  .VIRTUAL_SEQUENCER_T (usbdev_virtual_sequencer)
+class usbdev_base_vseq extends cip_base_vseq#(
+    .CFG_T(usbdev_env_cfg),
+    .RAL_T(usbdev_reg_block),
+    .COV_T(usbdev_env_cov),
+    .VIRTUAL_SEQUENCER_T(usbdev_virtual_sequencer)
 );
   `uvm_object_utils(usbdev_base_vseq)
 
@@ -45,8 +45,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
   endtask
 
   // Override wait_for_reset to cater to usb domain as well.
-  virtual task wait_for_reset(string reset_kind     = "HARD",
-                              bit wait_for_assert   = 1,
+  virtual task wait_for_reset(string reset_kind = "HARD", bit wait_for_assert = 1,
                               bit wait_for_deassert = 1);
 
     fork

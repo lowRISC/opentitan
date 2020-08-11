@@ -13,16 +13,15 @@ module tb;
   initial begin
     clk = 0;
     forever begin
-      #(CLK_PERIOD/2) clk = ~clk;
+      #(CLK_PERIOD / 2) clk = ~clk;
     end
   end
   // Reset gen
   initial begin
     rst_n = 1'b1;
-    #(CLK_PERIOD/2.5) rst_n = 1'b0;
-    #(CLK_PERIOD*4) rst_n = 1'b1;
-    repeat(10000)
-      @(posedge clk);
+    #(CLK_PERIOD / 2.5) rst_n = 1'b0;
+    #(CLK_PERIOD * 4) rst_n = 1'b1;
+    repeat (10000) @(posedge clk);
     $finish;
   end
 
@@ -43,39 +42,39 @@ module tb;
   trial1_reg2hw_t reg2hw;
 
   trial1_reg_top dut (
-    .clk_i  (clk),
-    .rst_ni (rst_n),
+      .clk_i (clk),
+      .rst_ni(rst_n),
 
-    .tl_i   (tl_h2d),
-    .tl_o   (tl_d2h),
-    //.bus_reg_valid,
-    //.bus_reg_ready,
-    //.bus_reg,
+      .tl_i(tl_h2d),
+      .tl_o(tl_d2h),
+      //.bus_reg_valid,
+      //.bus_reg_ready,
+      //.bus_reg,
 
-    //.reg_bus_valid,
-    //.reg_bus_ready,
-    //.reg_bus,
+      //.reg_bus_valid,
+      //.reg_bus_ready,
+      //.reg_bus,
 
-    .reg2hw,
-    .hw2reg
+      .reg2hw,
+      .hw2reg
   );
 
   trial1_test test (
-    .clk,
-    .rst_n,
+      .clk,
+      .rst_n,
 
-    .tl_h2d   (tl_h2d),
-    .tl_d2h   (tl_d2h),
-    //.bus_reg_valid,
-    //.bus_reg_ready,
-    //.bus_reg,
+      .tl_h2d(tl_h2d),
+      .tl_d2h(tl_d2h),
+      //.bus_reg_valid,
+      //.bus_reg_ready,
+      //.bus_reg,
 
-    //.reg_bus_valid,
-    //.reg_bus_ready,
-    //.reg_bus,
+      //.reg_bus_valid,
+      //.reg_bus_ready,
+      //.reg_bus,
 
-    .reg2hw,
-    .hw2reg
+      .reg2hw,
+      .hw2reg
   );
 
 endmodule

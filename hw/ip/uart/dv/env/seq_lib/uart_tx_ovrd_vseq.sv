@@ -25,7 +25,7 @@ class uart_tx_ovrd_vseq extends uart_sanity_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_trans)
 
       if (en_ovrd) exp = txval;
-      else         exp = 1;
+      else exp = 1;
       csr_wr(.csr(ral.ovrd), .value({txval, en_ovrd}));
       cfg.clk_rst_vif.wait_clks(1);
       if (!cfg.under_reset) `DV_CHECK_EQ(cfg.m_uart_agent_cfg.vif.uart_tx, exp)

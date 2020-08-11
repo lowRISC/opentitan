@@ -6,12 +6,12 @@
  * OTBN Special Purpose Registers: 32b CSRs, and WLEN WSRs
  */
 module otbn_status_registers
-  import otbn_pkg::*;
+import otbn_pkg::*;
 (
-  input logic             clk_i,
-  input logic             rst_ni,
+    input logic clk_i,
+    input logic rst_ni,
 
-  input [WLEN-1:0]        rnd_i
+    input [WLEN-1:0] rnd_i
 );
 
 endmodule

@@ -22,64 +22,66 @@
 // Verilog parameter
 //   MAX_PRIO: Maximum value of interrupt priority
 
-module rv_plic import rv_plic_reg_pkg::*; #(
-  // derived parameter
-  localparam int SRCW    = $clog2(NumSrc)
+module rv_plic
+import rv_plic_reg_pkg::*;
+#(
+    // derived parameter
+    localparam int SRCW = $clog2 (NumSrc)
 ) (
-  input     clk_i,
-  input     rst_ni,
+    input clk_i,
+    input rst_ni,
 
-  // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+    // Bus Interface (device)
+    input  tlul_pkg::tl_h2d_t tl_i,
+    output tlul_pkg::tl_d2h_t tl_o,
 
-  // Interrupt Sources
-  input  [NumSrc-1:0] intr_src_i,
+    // Interrupt Sources
+    input [NumSrc-1:0] intr_src_i,
 
-  // Interrupt notification to targets
-  output [NumTarget-1:0] irq_o,
-  output [SRCW-1:0]      irq_id_o [NumTarget],
+    // Interrupt notification to targets
+    output [NumTarget-1:0] irq_o,
+    output [     SRCW-1:0] irq_id_o[NumTarget],
 
-  output logic [NumTarget-1:0] msip_o
+    output logic [NumTarget-1:0] msip_o
 );
 
   rv_plic_reg2hw_t reg2hw;
   rv_plic_hw2reg_t hw2reg;
 
-  localparam int MAX_PRIO    = 3;
-  localparam int PRIOW = $clog2(MAX_PRIO+1);
+  localparam int MAX_PRIO = 3;
+  localparam int PRIOW = $clog2(MAX_PRIO + 1);
 
-  logic [NumSrc-1:0] le; // 0:level 1:edge
+  logic [NumSrc-1:0] le;  // 0:level 1:edge
   logic [NumSrc-1:0] ip;
 
-  logic [NumSrc-1:0] ie [NumTarget];
+  logic [NumSrc-1:0] ie[NumTarget];
 
-  logic [NumTarget-1:0] claim_re; // Target read indicator
-  logic [SRCW-1:0]      claim_id [NumTarget];
-  logic [NumSrc-1:0]    claim; // Converted from claim_re/claim_id
+  logic [NumTarget-1:0] claim_re;  // Target read indicator
+  logic [SRCW-1:0] claim_id[NumTarget];
+  logic [NumSrc-1:0] claim;  // Converted from claim_re/claim_id
 
-  logic [NumTarget-1:0] complete_we; // Target write indicator
-  logic [SRCW-1:0]      complete_id [NumTarget];
-  logic [NumSrc-1:0]    complete; // Converted from complete_re/complete_id
+  logic [NumTarget-1:0] complete_we;  // Target write indicator
+  logic [SRCW-1:0] complete_id[NumTarget];
+  logic [NumSrc-1:0] complete;  // Converted from complete_re/complete_id
 
-  logic [SRCW-1:0]      cc_id [NumTarget]; // Write ID
+  logic [SRCW-1:0] cc_id[NumTarget];  // Write ID
 
-  logic [PRIOW-1:0] prio [NumSrc];
+  logic [PRIOW-1:0] prio[NumSrc];
 
-  logic [PRIOW-1:0] threshold [NumTarget];
+  logic [PRIOW-1:0] threshold[NumTarget];
 
   // Glue logic between rv_plic_reg_top and others
   assign cc_id = irq_id_o;
 
   always_comb begin
     claim = '0;
-    for (int i = 0 ; i < NumTarget ; i++) begin
+    for (int i = 0; i < NumTarget; i++) begin
       if (claim_re[i]) claim[claim_id[i]] = 1'b1;
     end
   end
   always_comb begin
     complete = '0;
-    for (int i = 0 ; i < NumTarget ; i++) begin
+    for (int i = 0; i < NumTarget; i++) begin
       if (complete_we[i]) complete[complete_id[i]] = 1'b1;
     end
   end
@@ -193,11 +195,11 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   /////////////////
   // CC register //
   /////////////////
-  assign claim_re[0]    = reg2hw.cc0.re;
-  assign claim_id[0]    = irq_id_o[0];
+  assign claim_re[0] = reg2hw.cc0.re;
+  assign claim_id[0] = irq_id_o[0];
   assign complete_we[0] = reg2hw.cc0.qe;
   assign complete_id[0] = reg2hw.cc0.q;
-  assign hw2reg.cc0.d   = cc_id[0];
+  assign hw2reg.cc0.d = cc_id[0];
 
   ///////////////////
   // MSIP register //
@@ -208,8 +210,8 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // IP //
   ////////
   for (genvar s = 0; s < 83; s++) begin : gen_ip
-    assign hw2reg.ip[s].de = 1'b1; // Always write
-    assign hw2reg.ip[s].d  = ip[s];
+    assign hw2reg.ip[s].de = 1'b1;  // Always write
+    assign hw2reg.ip[s].d = ip[s];
   end
 
   ///////////////////////////////////
@@ -223,39 +225,39 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // Gateways //
   //////////////
   rv_plic_gateway #(
-    .N_SOURCE   (NumSrc)
+      .N_SOURCE(NumSrc)
   ) u_gateway (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .src_i      (intr_src_i),
-    .le_i       (le),
+      .src_i(intr_src_i),
+      .le_i (le),
 
-    .claim_i    (claim),
-    .complete_i (complete),
+      .claim_i   (claim),
+      .complete_i(complete),
 
-    .ip_o       (ip)
+      .ip_o(ip)
   );
 
   ///////////////////////////////////
   // Target interrupt notification //
   ///////////////////////////////////
-  for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
+  for (genvar i = 0; i < NumTarget; i++) begin : gen_target
     rv_plic_target #(
-      .N_SOURCE    (NumSrc),
-      .MAX_PRIO    (MAX_PRIO)
+        .N_SOURCE(NumSrc),
+        .MAX_PRIO(MAX_PRIO)
     ) u_target (
-      .clk_i,
-      .rst_ni,
+        .clk_i,
+        .rst_ni,
 
-      .ip_i        (ip),
-      .ie_i        (ie[i]),
+        .ip_i(ip),
+        .ie_i(ie[i]),
 
-      .prio_i      (prio),
-      .threshold_i (threshold[i]),
+        .prio_i     (prio),
+        .threshold_i(threshold[i]),
 
-      .irq_o       (irq_o[i]),
-      .irq_id_o    (irq_id_o[i])
+        .irq_o   (irq_o[i]),
+        .irq_id_o(irq_id_o[i])
 
     );
   end
@@ -266,16 +268,16 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
   rv_plic_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
+      .clk_i,
+      .rst_ni,
 
-    .tl_i,
-    .tl_o,
+      .tl_i,
+      .tl_o,
 
-    .reg2hw,
-    .hw2reg,
+      .reg2hw,
+      .hw2reg,
 
-    .devmode_i  (1'b1)
+      .devmode_i(1'b1)
   );
 
   // Assertions

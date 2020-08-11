@@ -10,71 +10,55 @@ package nmi_gen_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } esc0;
-    struct packed {
-      logic        q;
-    } esc1;
-    struct packed {
-      logic        q;
-    } esc2;
-    struct packed {
-      logic        q;
-    } esc3;
+    struct packed {logic q;} esc0;
+    struct packed {logic q;} esc1;
+    struct packed {logic q;} esc2;
+    struct packed {logic q;} esc3;
   } nmi_gen_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } esc0;
-    struct packed {
-      logic        q;
-    } esc1;
-    struct packed {
-      logic        q;
-    } esc2;
-    struct packed {
-      logic        q;
-    } esc3;
+    struct packed {logic q;} esc0;
+    struct packed {logic q;} esc1;
+    struct packed {logic q;} esc2;
+    struct packed {logic q;} esc3;
   } nmi_gen_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } esc0;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } esc1;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } esc2;
     struct packed {
-      logic        q;
-      logic        qe;
+      logic q;
+      logic qe;
     } esc3;
   } nmi_gen_reg2hw_intr_test_reg_t;
 
 
   typedef struct packed {
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } esc0;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } esc1;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } esc2;
     struct packed {
-      logic        d;
-      logic        de;
+      logic d;
+      logic de;
     } esc3;
   } nmi_gen_hw2reg_intr_state_reg_t;
 
@@ -83,22 +67,22 @@ package nmi_gen_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    nmi_gen_reg2hw_intr_state_reg_t intr_state; // [15:12]
-    nmi_gen_reg2hw_intr_enable_reg_t intr_enable; // [11:8]
-    nmi_gen_reg2hw_intr_test_reg_t intr_test; // [7:0]
+    nmi_gen_reg2hw_intr_state_reg_t intr_state;  // [15:12]
+    nmi_gen_reg2hw_intr_enable_reg_t intr_enable;  // [11:8]
+    nmi_gen_reg2hw_intr_test_reg_t intr_test;  // [7:0]
   } nmi_gen_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    nmi_gen_hw2reg_intr_state_reg_t intr_state; // [7:4]
+    nmi_gen_hw2reg_intr_state_reg_t intr_state;  // [7:4]
   } nmi_gen_hw2reg_t;
 
   // Register Address
-  parameter logic [3:0] NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
-  parameter logic [3:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
-  parameter logic [3:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
+  parameter logic [3:0] NMI_GEN_INTR_STATE_OFFSET = 4'h0;
+  parameter logic [3:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h4;
+  parameter logic [3:0] NMI_GEN_INTR_TEST_OFFSET = 4'h8;
 
 
   // Register Index
@@ -109,10 +93,9 @@ package nmi_gen_reg_pkg;
   } nmi_gen_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] NMI_GEN_PERMIT [3] = '{
-    4'b 0001, // index[0] NMI_GEN_INTR_STATE
-    4'b 0001, // index[1] NMI_GEN_INTR_ENABLE
-    4'b 0001  // index[2] NMI_GEN_INTR_TEST
+  parameter logic [3:0] NMI_GEN_PERMIT[3] = '{4'b0001,  // index[0] NMI_GEN_INTR_STATE
+  4'b0001,  // index[1] NMI_GEN_INTR_ENABLE
+  4'b0001  // index[2] NMI_GEN_INTR_TEST
   };
 endpackage
 
