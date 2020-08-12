@@ -46,8 +46,8 @@ execution.
 Memory Model
 """"""""""""
 
-The code can be found in the
-`dv/uvm/core_ibex/common/mem_model <https://github.com/lowRISC/ibex/tree/master/dv/uvm/core_ibex/common/mem_model>`_
+The code is vendored from OpenTitan and can be found in the
+`vendor/lowrisc_ip/mem_model <https://github.com/lowRISC/ibex/tree/master/vendor/lowrisc_ip/mem_model>`_
 directory.
 The testbench instantiates a single instance of this memory model that it loads the compiled
 assembly test program into at the beginning of each test.

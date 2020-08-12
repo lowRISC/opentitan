@@ -223,17 +223,17 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   virtual function void gen_dcsr_ebreak();
     if (MACHINE_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
       str = {$sformatf("li x%0d, 0x8000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+             $sformatf("csrs 0x%0x, x%0d", DCSR, cfg.scratch_reg)};
       debug_main = {debug_main, str};
     end
     if (SUPERVISOR_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
       str = {$sformatf("li x%0d, 0x2000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+             $sformatf("csrs 0x%0x, x%0d", DCSR, cfg.scratch_reg)};
       debug_main = {debug_main, str};
     end
     if (USER_MODE inside {riscv_instr_pkg::supported_privileged_mode}) begin
       str = {$sformatf("li x%0d, 0x1000", cfg.scratch_reg),
-             $sformatf("csrs dcsr, x%0d", cfg.scratch_reg)};
+             $sformatf("csrs 0x%0x, x%0d", DCSR, cfg.scratch_reg)};
       debug_main = {debug_main, str};
     end
   endfunction

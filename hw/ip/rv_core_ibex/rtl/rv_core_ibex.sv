@@ -131,6 +131,13 @@ module rv_core_ibex #(
     .esc_tx_i
   );
 
+  // Alert outputs
+  // TODO - Wire these up once driven
+  logic alert_minor, alert_major;
+  logic unused_alert_minor, unused_alert_major;
+  assign unused_alert_minor = alert_minor;
+  assign unused_alert_major = alert_major;
+
   ibex_core #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -209,6 +216,8 @@ module rv_core_ibex #(
 `endif
 
     .fetch_enable_i,
+    .alert_minor_o    (alert_minor),
+    .alert_major_o    (alert_major),
     .core_sleep_o
   );
 

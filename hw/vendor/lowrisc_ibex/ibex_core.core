@@ -60,6 +60,12 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
 
+  FPGA_XILINX:
+    datatype: bool
+    description: Identifies Xilinx FPGA targets to set DSP pragmas for performance counters.
+    default: false
+    paramtype: vlogdefine
+
   RV32E:
     datatype: int
     default: 0
@@ -138,6 +144,8 @@ targets:
       - files_rtl
       - files_check_tool_requirements
     toplevel: ibex_core
+    parameters:
+      - tool_vivado ? (FPGA_XILINX=true)
   lint:
     <<: *default_target
     parameters:

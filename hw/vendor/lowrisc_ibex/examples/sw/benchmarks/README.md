@@ -68,7 +68,7 @@ Different ISAs (to choose different RISC-V ISA extensions) can be selected by
 passing the desired ISA string into `RV_ISA` when invoking make.
 
 ```
-make -C ./examples/sw/bencharmsk/coremark clean
+make -C ./examples/sw/benchmarks/coremark clean
 make -C ./examples/sw/benchmarks/coremark RV_ISA=rv32imc
 ```
 

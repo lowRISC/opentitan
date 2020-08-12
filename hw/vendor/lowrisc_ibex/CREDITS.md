@@ -29,6 +29,7 @@ please feel free to open a pull request to get your name added to this file.
 - Michael Schaffner
 - Nils Graf
 - Noah Huesser
+- Noam Gallmann
 - Pasquale Davide Schiavone
 - Philipp Wagner
 - Pirmin Vogel

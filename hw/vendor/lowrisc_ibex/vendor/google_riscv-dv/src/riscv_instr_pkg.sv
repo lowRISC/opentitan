@@ -36,6 +36,13 @@ package riscv_instr_pkg;
     bit [2:0]      xwr; // Excutable,Writable,Readale
   } mem_region_t;
 
+  // Initialization of the vregs
+  typedef enum {
+    SAME_VALUES_ALL_ELEMS,
+    RANDOM_VALUES_VMV,
+    RANDOM_VALUES_LOAD
+  } vreg_init_method_t;
+
   typedef enum bit [3:0] {
     BARE = 4'b0000,
     SV32 = 4'b0001,
@@ -634,6 +641,72 @@ package riscv_instr_pkg;
     VLHUFF_V,
     VLWUFF_V,
     VLEFF_V,
+    // Segmented load/store instruction
+    VLSEGE_V,
+    VSSEGE_V,
+    VLSEGB_V,
+    VSSEGB_V,
+    VLSEGH_V,
+    VSSEGH_V,
+    VLSEGW_V,
+    VSSEGW_V,
+    VLSEGBFF_V,
+    VLSEGHFF_V,
+    VLSEGWFF_V,
+    VLSEGBUFF_V,
+    VLSEGHUFF_V,
+    VLSEGWUFF_V,
+    VLSEGEFF_V,
+    VLSEGBU_V,
+    VLSEGHU_V,
+    VLSEGWU_V,
+    VLSSEGB_V,
+    VLSSEGH_V,
+    VLSSEGW_V,
+    VLSSEGBU_V,
+    VLSSEGHU_V,
+    VLSSEGWU_V,
+    VLSSEGE_V,
+    VSSSEGB_V,
+    VSSSEGH_V,
+    VSSSEGW_V,
+    VSSSEGE_V,
+    VLXSEGB_V,
+    VLXSEGH_V,
+    VLXSEGW_V,
+    VLXSEGBU_V,
+    VLXSEGHU_V,
+    VLXSEGWU_V,
+    VLXSEGE_V,
+    VSXSEGB_V,
+    VSXSEGH_V,
+    VSXSEGW_V,
+    VSXSEGE_V,
+    VSUXSEGB_V,
+    VSUXSEGH_V,
+    VSUXSEGW_V,
+    VSUXSEGE_V,
+    // Vector AMO instruction
+    // 32-bit vector AMOs
+    VAMOSWAPW_V,
+    VAMOADDW_V,
+    VAMOXORW_V,
+    VAMOANDW_V,
+    VAMOORW_V,
+    VAMOMINW_V,
+    VAMOMAXW_V,
+    VAMOMINUW_V,
+    VAMOMAXUW_V,
+    // SEW-bit vector AMOs
+    VAMOSWAPE_V,
+    VAMOADDE_V,
+    VAMOXORE_V,
+    VAMOANDE_V,
+    VAMOORE_V,
+    VAMOMINE_V,
+    VAMOMAXE_V,
+    VAMOMINUE_V,
+    VAMOMAXUE_V,
     // Supervisor instruction
     DRET,
     MRET,
@@ -693,10 +766,11 @@ package riscv_instr_pkg;
     VS2_FORMAT, // op vd,vs2
     VL_FORMAT,
     VS_FORMAT,
-    VLV_FORMAT,
-    VSV_FORMAT,
+    VLX_FORMAT,
+    VSX_FORMAT,
     VLS_FORMAT,
-    VSS_FORMAT
+    VSS_FORMAT,
+    VAMO_FORMAT
   } riscv_instr_format_t;
 
 
@@ -962,6 +1036,10 @@ package riscv_instr_pkg;
     TDATA1          = 'h7A1,  // First Debug/Trace trigger data register
     TDATA2          = 'h7A2,  // Second Debug/Trace trigger data register
     TDATA3          = 'h7A3,  // Third Debug/Trace trigger data register
+    TINFO           = 'h7A4,  // Debug trigger info register
+    TCONTROL        = 'h7A5,  // Debug trigger control register
+    MCONTEXT        = 'h7A8,  // Machine mode trigger context register
+    SCONTEXT        = 'h7AA,  // Supervisor mode trigger context register
     DCSR            = 'h7B0,  // Debug control and status register
     DPC             = 'h7B1,  // Debug PC
     DSCRATCH0       = 'h7B2,  // Debug scratch register

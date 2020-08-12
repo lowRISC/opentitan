@@ -825,7 +825,7 @@ module ibex_cs_registers #(
       // --------------------------
       if (i < PMPNumRegions - 1) begin : g_lower
         assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg[i].lock &
-                                (pmp_cfg[i+1].mode != PMP_MODE_TOR) &
+                                (~pmp_cfg[i+1].lock | (pmp_cfg[i+1].mode != PMP_MODE_TOR)) &
                                 (csr_addr == (CSR_OFF_PMP_ADDR + i[11:0]));
       end else begin : g_upper
         assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg[i].lock &

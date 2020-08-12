@@ -147,15 +147,15 @@ module ibex_id_stage #(
     input  logic [31:0]               rf_rdata_a_i,
     output logic [4:0]                rf_raddr_b_o,
     input  logic [31:0]               rf_rdata_b_i,
-`ifdef RVFI
     output logic                      rf_ren_a_o,
     output logic                      rf_ren_b_o,
-`endif
 
     // Register file write (via writeback)
     output logic [4:0]                rf_waddr_id_o,
     output logic [31:0]               rf_wdata_id_o,
     output logic                      rf_we_id_o,
+    output logic                      rf_rd_a_wb_match_o,
+    output logic                      rf_rd_b_wb_match_o,
 
     // Register write information from writeback (for resolving data hazards)
     input  logic [4:0]                rf_waddr_wb_i,
@@ -206,7 +206,6 @@ module ibex_id_stage #(
   logic        controller_run;
   logic        stall_ld_hz;
   logic        stall_mem;
-  logic        lsu_req_in_id;
   logic        stall_multdiv;
   logic        stall_branch;
   logic        stall_jump;
@@ -232,10 +231,8 @@ module ibex_id_stage #(
   logic        rf_we_dec, rf_we_raw;
   logic        rf_ren_a, rf_ren_b;
 
-`ifdef RVFI
   assign rf_ren_a_o = rf_ren_a;
   assign rf_ren_b_o = rf_ren_b;
-`endif
 
   logic [31:0] rf_rdata_a_fwd;
   logic [31:0] rf_rdata_b_fwd;
@@ -599,8 +596,6 @@ module ibex_id_stage #(
       .debug_ebreaku_i                ( debug_ebreaku_i         ),
       .trigger_match_i                ( trigger_match_i         ),
 
-      // stall signals
-      .lsu_req_in_id_i                ( lsu_req_in_id           ),
       .stall_id_i                     ( stall_id                ),
       .stall_wb_i                     ( stall_wb                ),
       .flush_id_o                     ( flush_id                ),
@@ -885,12 +880,11 @@ module ibex_id_stage #(
     `ASSERT(IbexStallMemNoRequest,
       instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
 
-    // Indicate to the controller that an lsu req is in ID stage - we cannot handle interrupts or
-    // debug requests until the load/store completes
-    assign lsu_req_in_id = instr_valid_i & lsu_req_dec;
-
     assign rf_rd_a_wb_match = (rf_waddr_wb_i == rf_raddr_a_o) & |rf_raddr_a_o;
     assign rf_rd_b_wb_match = (rf_waddr_wb_i == rf_raddr_b_o) & |rf_raddr_b_o;
+
+    assign rf_rd_a_wb_match_o = rf_rd_a_wb_match;
+    assign rf_rd_b_wb_match_o = rf_rd_b_wb_match;
 
     // If instruction is reading register that load will be writing stall in
     // ID until load is complete. No need to stall when reading zero register.
@@ -930,7 +924,6 @@ module ibex_id_stage #(
 
     // No load hazards without Writeback Stage
     assign stall_ld_hz   = 1'b0;
-    assign lsu_req_in_id = 1'b0;
 
     // Without writeback stage any valid instruction that hasn't seen an error will execute
     assign instr_executing = instr_valid_i & ~instr_fetch_err_i & controller_run;
@@ -943,6 +936,9 @@ module ibex_id_stage #(
     assign rf_rdata_a_fwd = rf_rdata_a_i;
     assign rf_rdata_b_fwd = rf_rdata_b_i;
 
+    assign rf_rd_a_wb_match_o = 1'b0;
+    assign rf_rd_b_wb_match_o = 1'b0;
+
     // Unused Writeback stage only IO & wiring
     // Assign inputs and internal wiring to unused signals to satisfy lint checks
     // Tie-off outputs to constant values
@@ -953,7 +949,6 @@ module ibex_id_stage #(
     logic unused_outstanding_load_wb;
     logic unused_outstanding_store_wb;
     logic unused_wb_exception;
-    logic unused_rf_ren_a, unused_rf_ren_b;
     logic [31:0] unused_rf_wdata_fwd_wb;
 
     assign unused_data_req_done_ex     = lsu_req_done_i;
@@ -962,8 +957,6 @@ module ibex_id_stage #(
     assign unused_outstanding_load_wb  = outstanding_load_wb_i;
     assign unused_outstanding_store_wb = outstanding_store_wb_i;
     assign unused_wb_exception         = wb_exception;
-    assign unused_rf_ren_a             = rf_ren_a;
-    assign unused_rf_ren_b             = rf_ren_b;
     assign unused_rf_wdata_fwd_wb      = rf_wdata_fwd_wb_i;
 
     assign instr_type_wb_o = WB_INSTR_OTHER;

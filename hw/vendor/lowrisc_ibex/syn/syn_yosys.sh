@@ -42,9 +42,9 @@ rm -f $LR_SYNTH_OUT_DIR/generated/*_pkg.v
 # remove tracer (not needed for synthesis)
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_tracer.v
 
-# remove the FPGA & latch-based register file (because we will use the
-# flop-based one instead)
-rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_latch.v
+# remove the FPGA & register-based register file (because we will use the
+# latch-based one instead)
+rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_ff.v
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_fpga.v
 
 yosys -c ./tcl/yosys_run_synth.tcl | tee ./$LR_SYNTH_OUT_DIR/log/syn.log

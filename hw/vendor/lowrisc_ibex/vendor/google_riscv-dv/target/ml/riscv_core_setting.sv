@@ -88,10 +88,10 @@ parameter int MAX_LMUL = 8;
 parameter int NUM_HARTS = 1;
 
 // ----------------------------------------------------------------------------
-// Previleged CSR implementation
+// Privileged CSR implementation
 // ----------------------------------------------------------------------------
 
-// Implemented previlieged CSR list
+// Implemented privileged CSR list
 `ifdef DSIM
 privileged_reg_t implemented_csr[] = {
 `else
@@ -112,6 +112,14 @@ const privileged_reg_t implemented_csr[] = {
     MCAUSE,     // Machine trap cause
     MTVAL,      // Machine bad address or instruction
     MIP         // Machine interrupt pending
+};
+
+// Implementation-specific custom CSRs
+`ifdef DSIM
+bit [11:0] custom_csr[] = {
+`else
+const bit [11:0] custom_csr[] = {
+`endif
 };
 
 // ----------------------------------------------------------------------------

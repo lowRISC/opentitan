@@ -6,6 +6,13 @@ Security Features
 Ibex implements a set of extra features (when the SecureIbex parameter is set) to support security-critical applications.
 All features are runtime configurable via bits in the **cpuctrl** custom CSR.
 
+Outputs
+-------
+
+Ibex has two alert outputs for signalling security issues.
+The major alert (**alert_major_o**) indicates a critical security issue from which the core cannot recover.
+The minor alert (**alert_minor_o**) indicates potential security issues which can be monitored over time by a system.
+
 Data Independent Timing
 -----------------------
 
@@ -44,3 +51,18 @@ Other values of **dummy_instr_mask** are legal, but will have a less predictable
 The interval between instruction insertion is randomized in the core using an LFSR.
 Sofware can periodically re-seed this LFSR with true random numbers (if available) via the **secureseed** CSR.
 This will make the insertion interval of dummy instructions much harder for an attacker to predict.
+
+Register file ECC
+-----------------
+
+When Ibex is configured with the SecureIbex parameter, ECC checking is added to all reads of the register file.
+This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
+No attempt is made to correct detected errors, but an external alert is raised for the system to take action.
+
+Hardened PC
+-----------
+
+This adds a check that the PC driven from the IF stage has not been modified.
+A check is asserted that the current IF stage PC equals the previous PC plus the correct increment.
+The check is disabled after branches and after reset.
+If a mismatch is detected, a major alert is signaled.
