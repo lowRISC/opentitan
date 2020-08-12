@@ -1,0 +1,11 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/dif/dif_pwrmgr.h"
+
+#include "sw/device/lib/common.h"
+
+#include "pwrmgr_regs.h"  // Generated.
+
+#error "Power Manager DIF library is not implemented yet."
