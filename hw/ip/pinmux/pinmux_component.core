@@ -13,7 +13,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:systems:ast_pkg
+      - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:top_earlgrey:pinmux_reg
     files:
       - rtl/pinmux_pkg.sv

@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:ast:0.1"
+name: "lowrisc:systems:ast_wrapper:0.1"
 description: "Earl Grey toplevel for DV simulations"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:systems:ast_pkg
+      - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:prim:clock_buf
     files:
       - rtl/ast.sv
