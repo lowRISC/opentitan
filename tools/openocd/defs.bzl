@@ -162,7 +162,10 @@ def _openocd_execution_wrapper_impl(ctx):
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
-$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit {flash_offset}"
+set -eo pipefail
+ln -s $1 $1.elf
+$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit"
+$RUNFILES_DIR/serial_wrapper -p {port} -f {fail_string} -s {success_string} -b {baud_rate}
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
 
@@ -172,11 +175,15 @@ $RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}
         flash_offset = ctx.attr.flash_offset,
         programmer_frequency = ctx.attr.programmer_frequency,
         transport = ctx.attr.transport,
+        port = ctx.attr.port,
+        fail_string = ctx.attr.fail_string,
+        success_string = ctx.attr.success_string,
+        baud_rate = ctx.attr.baud_rate,
     )
     ctx.actions.write(script, script_content, is_executable = True)
     runfiles = ctx.runfiles(
-        files = [ctx.files._openocd[0]],
-        root_symlinks = {"openocd": ctx.files._openocd[0]},
+        files = [ctx.files._openocd[0], ctx.files._serial_wrapper[0]],
+        root_symlinks = {"openocd": ctx.files._openocd[0], "serial_wrapper": ctx.files._serial_wrapper[0]},
     )
     return [DefaultInfo(executable = script, runfiles = runfiles)]
 
@@ -212,6 +219,13 @@ Example:
             doc = "Executable for flashing using stlink",
             default = "@com_openocd//:openocd",
             allow_single_file = True,
+            cfg = "host",
+        ),
+        "_serial_wrapper": attr.label(
+            doc = "Executable to wrap serial output to stdout with a given return code",
+            default = "@bazel_embedded//tools/serial:serial_wrapper",
+            allow_single_file = True,
+            cfg = "host",
         ),
         "programmer_frequency": attr.string(
             doc = "The programming frequency of the adapter",
@@ -227,6 +241,22 @@ Example:
             doc = "The starting point of the flash memory",
             mandatory = False,
             default = "0x8000000",
+        ),
+        "fail_string": attr.string(
+            doc = "When a line from the serial output contains this string exit the wrapper with a failure code",
+            default = "",
+        ),
+        "success_string": attr.string(
+            doc = "When a line from the serial output contains this string exit the wrapper with a success code",
+            default = "",
+        ),
+        "port": attr.string(
+            doc = "The serial port to monitor after uploading to the microcontroller",
+            default = "/dev/ttyACM0",
+        ),
+        "baud_rate": attr.string(
+            doc = "The baud rate that the serial port is operating at",
+            default = "115200",
         ),
     },
     executable = True,
