@@ -10,6 +10,10 @@ interface alert_esc_if(input clk, input rst_n);
   wire prim_alert_pkg::alert_rx_t alert_rx;
   wire prim_esc_pkg::esc_tx_t esc_tx;
   wire prim_esc_pkg::esc_rx_t esc_rx;
+  wire clk_async;
+  clk_rst_if clk_rst_async_if(.clk(clk_async), .rst_n(rst_n));
+
+  // dut clk freq, used to generate async alert frequency
 
   clocking sender_cb @(posedge clk);
     input  rst_n;
@@ -17,6 +21,13 @@ interface alert_esc_if(input clk, input rst_n);
     input  alert_rx;
     output esc_tx;
     input  esc_rx;
+  endclocking
+
+  // only alert has async mode, escalator only has sync mode
+  clocking sender_async_cb @(posedge clk_async);
+    input  rst_n;
+    output alert_tx;
+    input  alert_rx;
   endclocking
 
   clocking receiver_cb @(posedge clk);
@@ -42,4 +53,5 @@ interface alert_esc_if(input clk, input rst_n);
   task automatic wait_esc_complete();
     while (esc_tx.esc_p === 1'b1 && esc_tx.esc_n === 1'b0) @(monitor_cb);
   endtask : wait_esc_complete
+
 endinterface: alert_esc_if
