@@ -110,6 +110,7 @@ class Insn:
         if encoding_yml is not None:
             self.encoding = Encoding(encoding_yml, encoding_schemes,
                                      self.name_to_operand, self.mnemonic)
+            self._update_widths_from_encoding(self.encoding)
 
         self.python_pseudo_op = check_bool(yd.get('python-pseudo-op', False),
                                            'python-pseudo-op flag for ' + what)
@@ -150,6 +151,20 @@ class Insn:
                                      'field for {} is {!r}, which is not a '
                                      'operand name of the instruction.'
                                      .format(idx, what, op_name))
+
+    def _update_widths_from_encoding(self, encoding: Encoding) -> None:
+        '''Update operand widths from encoding'''
+        for field_name, field in encoding.fields.items():
+            if not isinstance(field.value, str):
+                continue
+            operand = self.name_to_operand[field.value]
+            enc_width = field.scheme_field.bits.width
+
+            if operand.op_type.width is None:
+                operand.op_type.width = enc_width
+
+            # This should have been checked in the Encoding constructor
+            assert operand.op_type.width == enc_width
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:
