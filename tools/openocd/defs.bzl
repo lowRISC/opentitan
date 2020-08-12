@@ -218,11 +218,13 @@ Example:
             doc = "Executable for flashing using stlink",
             default = "@com_openocd//:openocd",
             allow_single_file = True,
+            cfg = "host",
         ),
         "_serial_wrapper": attr.label(
             doc = "Executable to wrap serial output to stdout with a given return code",
             default = "@bazel_embedded//tools/serial:serial_wrapper",
             allow_single_file = True,
+            cfg = "host",
         ),
         "programmer_frequency": attr.string(
             doc = "The programming frequency of the adapter",
