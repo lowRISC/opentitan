@@ -154,8 +154,7 @@ class Deploy():
         cmd = "make -f " + self.flow_makefile + " " + self.target
         if self.dry_run is True:
             cmd += " -n"
-        for attr in self.mandatory_cmd_attrs.keys():
-            value = getattr(self, attr)
+        for attr, value in sorted(self.mandatory_cmd_attrs.items()):
             if type(value) is list:
                 pretty_value = []
                 for item in value:
