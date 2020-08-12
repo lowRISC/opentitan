@@ -61,6 +61,7 @@ config = {
         "hw/ip/padctrl/data/padctrl.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
         "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
+        "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson",
         "hw/ip/rv_timer/data/rv_timer.hjson",
         "hw/ip/spi_device/data/spi_device.hjson",
         "hw/ip/uart/data/uart.hjson",
