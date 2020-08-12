@@ -10,7 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:systems:ast_pkg
+      - lowrisc:systems:ast_wrapper_pkg
     files:
       - rtl/dcd_reg_pkg.sv
       - rtl/dcd_reg_top.sv
@@ -43,5 +43,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-

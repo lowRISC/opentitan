@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:sensor_ctrl_reg
       - lowrisc:ip:sensor_ctrl_pkg
-      - lowrisc:systems:ast_pkg
+      - lowrisc:systems:ast_wrapper_pkg
     files:
       - rtl/sensor_ctrl.sv
     file_type: systemVerilogSource

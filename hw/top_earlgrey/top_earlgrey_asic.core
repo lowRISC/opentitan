@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:systems:top_earlgrey:0.1
-      - lowrisc:systems:ast
+      - lowrisc:systems:ast_wrapper
     files:
       - rtl/top_earlgrey_asic.sv
     file_type: systemVerilogSource
