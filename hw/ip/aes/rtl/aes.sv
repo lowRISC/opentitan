@@ -67,6 +67,8 @@ module aes #(
     .prng_reseed_req_o ( prng_reseed_req ),
     .prng_reseed_ack_i ( prng_reseed_ack ),
 
+    .keymgr_key_i,
+
     .reg2hw,
     .hw2reg
   );

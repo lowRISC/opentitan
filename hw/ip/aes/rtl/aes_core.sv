@@ -21,6 +21,9 @@ module aes_core #(
   output logic                     prng_reseed_req_o,
   input  logic                     prng_reseed_ack_i,
 
+  // Key manager interface
+  input  keymgr_pkg::hw_key_req_t  keymgr_key_i,
+
   // Bus Interface
   input  aes_reg_pkg::aes_reg2hw_t reg2hw,
   output aes_reg_pkg::aes_hw2reg_t hw2reg
@@ -184,11 +187,11 @@ module aes_core #(
   logic [7:0]       key_init_share1_we;
   logic [7:0][31:0] key_init_share1_d;
   logic [7:0][31:0] key_init_share1_q;
-  assign key_init_share1_we = key_init_we;
+  assign key_init_share1_we = {8{keymgr_key_i.valid}};
 
   always_comb begin : key_init_share1_mux
     unique case (key_init_sel)
-      KEY_INIT_INPUT: key_init_share1_d = key_init;
+      KEY_INIT_INPUT: key_init_share1_d = keymgr_key_i.key_share0 ^ keymgr_key_i.key_share1;
       KEY_INIT_CLEAR: key_init_share1_d = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
       default:        key_init_share1_d = key_init_share1_q;
     endcase
