@@ -123,7 +123,7 @@ module usbdev_usbif  #(
       // Following all ones out_max_used_q will get 1,00..00 and 1,00..01 to cover
       // one and two bytes of the CRC overflowing, then stick at 1,00..01
       if (out_max_used_q < MaxPktSizeByte - 1) begin
-        out_max_used_d = out_ep_put_addr;
+        out_max_used_d = {1'b0, out_ep_put_addr};
       end else if (out_max_used_q < MaxPktSizeByte + 1) begin
         out_max_used_d = out_max_used_q + 1;
       end else begin
@@ -161,6 +161,9 @@ module usbdev_usbif  #(
           end
           3: begin
             wdata[31:24] <= out_ep_data;
+          end
+          default: begin
+            wdata[7:0] <= out_ep_data;
           end
         endcase
       end
