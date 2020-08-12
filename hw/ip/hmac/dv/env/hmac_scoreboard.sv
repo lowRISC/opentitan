@@ -254,8 +254,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             begin : increase_wr_cnt
               bit has_unprocessed_msg = 1;
               wait(msg_q.size() >= (hmac_wr_cnt + 1) * 4 || (hmac_process && msg_q.size() > 0));
+              // if hmac process is issued and there are still unprocessed word (can hold up to at
+              // most one word), then the hmac_wr_cnt will increment
+              // if all the written msgs have been process, will skip the counter incrementation
               if (hmac_process) begin
-                has_unprocessed_msg = msg_q.size() % 4 != 0;
+                if (msg_q.size() <= hmac_wr_cnt * 4) has_unprocessed_msg = 0;
                 msg_q.delete();
               end
               if (sha_en && has_unprocessed_msg) begin
