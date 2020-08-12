@@ -90,6 +90,11 @@ class alert_monitor extends alert_esc_base_monitor;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
+        // TODO: temp solution for alert async mode - it adds another diff_reg to pass the
+        // alert_trigger signal. Needs more testing on different clk freqs.
+        if (cfg.is_async) begin
+          repeat (2) @(cfg.vif.monitor_cb);
+        end
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
