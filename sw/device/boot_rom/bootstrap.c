@@ -129,7 +129,7 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
         }
 
         if (flash_write(frame.header.flash_offset, kDataPartition, frame.data,
-                        SPIFLASH_FRAME_DATA_WORDS) == 0) {
+                        SPIFLASH_FRAME_DATA_WORDS) != 0) {
           return E_BS_WRITE;
         }
 
