@@ -91,7 +91,7 @@ class alert_sender_driver extends alert_esc_base_driver;
               if (!req.timeout) begin
                 drive_alert_pins(req);
               end else begin
-                repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+                repeat (cfg.ping_timeout_cycle) wait_sender_clk();
               end
               alert_atomic.put(1);
             end
@@ -133,14 +133,14 @@ class alert_sender_driver extends alert_esc_base_driver;
     end
 
     // there must have at least two sender clock delays before next alert_handshake
-    repeat(2) @(cfg.vif.sender_cb);
+    repeat(2) wait_sender_clk();
   endtask : drive_alert_pins
 
   // this task set alert_p=1 and alert_n=0 after certain delay
   virtual task set_alert_pins(int alert_delay);
     repeat (alert_delay + 1) begin
       if (under_reset) return;
-      else @(cfg.vif.sender_cb);
+      else wait_sender_clk();
     end
     set_alert();
   endtask : set_alert_pins
@@ -152,12 +152,12 @@ class alert_sender_driver extends alert_esc_base_driver;
       begin : isolation_fork
         fork
           begin : alert_timeout
-            repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
+            repeat (cfg.handshake_timeout_cycle) wait_sender_clk();
           end
           begin : wait_alert_handshake
             wait(cfg.vif.alert_rx.ack_p == 1'b1);
-            @(cfg.vif.sender_cb);
-            repeat (ack_delay) @(cfg.vif.sender_cb);
+            wait_sender_clk();
+            repeat (ack_delay) wait_sender_clk();
             reset_alert();
             wait(cfg.vif.alert_rx.ack_p == 1'b0);
           end
@@ -174,36 +174,61 @@ class alert_sender_driver extends alert_esc_base_driver;
         1: drive_alerts_low();
         1: drive_alerts_high();
       endcase
-        @(cfg.vif.sender_cb);
+      wait_sender_clk();
     end
   endtask : random_drive_int_fail
 
   virtual task set_alert();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    if (cfg.is_async) begin
+      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b1;
+      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b0;
+    end else begin
+      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    end
   endtask
 
   virtual task reset_alert();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    if (cfg.is_async) begin
+      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b0;
+      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b1;
+    end else begin
+      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    end
   endtask
 
   virtual task drive_alerts_high();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    if (cfg.is_async) begin
+      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b1;
+      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b1;
+    end else begin
+      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    end
   endtask
 
   virtual task drive_alerts_low();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    if (cfg.is_async) begin
+      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b0;
+      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b0;
+    end else begin
+      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    end
   endtask
 
   virtual task wait_ping();
     logic ping_p_value = cfg.vif.alert_rx.ping_p;
     while (cfg.vif.alert_rx.ping_p === ping_p_value) begin
       ping_p_value = cfg.vif.alert_rx.ping_p;
-      @(cfg.vif.sender_cb);
+      wait_sender_clk();
     end
   endtask : wait_ping
+
+  virtual task wait_sender_clk();
+    if (cfg.is_async) @(cfg.vif.sender_async_cb);
+    else @(cfg.vif.sender_cb);
+  endtask
 
 endclass : alert_sender_driver

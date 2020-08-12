@@ -15,7 +15,6 @@ class alert_monitor extends alert_esc_base_monitor;
 
   `uvm_component_new
 
-  //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
@@ -90,11 +89,7 @@ class alert_monitor extends alert_esc_base_monitor;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
-        // TODO: temp solution for alert async mode - it adds another diff_reg to pass the
-        // alert_trigger signal. Needs more testing on different clk freqs.
-        if (cfg.is_async) begin
-          repeat (2) @(cfg.vif.monitor_cb);
-        end
+        alert_async_delays();
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
@@ -138,21 +133,31 @@ class alert_monitor extends alert_esc_base_monitor;
 
   virtual task int_fail_thread();
     alert_esc_seq_item req;
+    bit prev_err;
     forever @(cfg.vif.monitor_cb) begin
-      if (!under_reset && is_sig_int_err()) begin
-        req = alert_esc_seq_item::type_id::create("req");
-        req.alert_esc_type = AlertEscIntFail;
-        alert_esc_port.write(req);
+      // use prev_err to exclude the async clk skew
+      if (!under_reset && is_sig_int_err() && (!cfg.is_async || prev_err != 0)) begin
+        fork
+          begin
+            alert_async_delays();
+            req = alert_esc_seq_item::type_id::create("req");
+            req.alert_esc_type = AlertEscIntFail;
+            alert_esc_port.write(req);
+          end
+        join_none;
       end
+      prev_err = is_sig_int_err();
     end
   endtask : int_fail_thread
 
   virtual task wait_alert();
     while (cfg.vif.alert_tx.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+    alert_async_delays();
   endtask : wait_alert
 
   virtual task wait_alert_complete();
     while (cfg.vif.alert_tx.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
+    alert_async_delays();
   endtask : wait_alert_complete
 
   virtual task wait_ack();
@@ -179,4 +184,11 @@ class alert_monitor extends alert_esc_base_monitor;
     end
   endtask
 
+  // if alert is detected under async_mode
+  // will take extra two clock cycles for alert to propogate to the main clock domain
+  task alert_async_delays();
+    if (cfg.is_async) begin
+      repeat (2) @(cfg.vif.monitor_cb);
+    end
+  endtask
 endclass : alert_monitor

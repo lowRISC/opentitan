@@ -11,6 +11,8 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   virtual alert_esc_probe_if probe_vif;
   bit is_alert = 1;
   bit is_async = 0;
+  // dut clk frequency, used to generate alert async_clk frequency
+  int clk_freq_mhz;
 
   // sender mode
   bit use_seq_item_alert_delay;

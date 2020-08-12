@@ -15,7 +15,6 @@ class esc_monitor extends alert_esc_base_monitor;
 
   bit under_esc_ping;
 
-  //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
     fork
       esc_thread();

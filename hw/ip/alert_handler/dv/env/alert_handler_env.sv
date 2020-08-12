@@ -25,6 +25,7 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("alert_host_agent[%0d]", i), this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this,
           $sformatf("alert_host_agent[%0d]", i), "cfg", cfg.alert_host_cfg[i]);
+      cfg.alert_host_cfg[i].clk_freq_mhz = int'(cfg.clk_freq_mhz);
     end
     // build escalator agents
     esc_device_agent                    = new[NUM_ESCS];
