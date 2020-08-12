@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "pwrmgr",
+    design_spec:        "hw/ip/pwrmgr/doc",
+    dv_plan:            "",
+    hw_checklist:       "",
+    sw_checklist:       "",
+    revisions: [
+      {
+        version:            "0.1",
+        life_stage:         "L1",
+        design_stage:       "D1",
+        verification_stage: "V0", // this module is not verified at the block level
+      }
+    ]
+}
