@@ -20,7 +20,14 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   rand flash_op_t flash_op;
 
   constraint flash_op_c {
+    solve flash_op.op before flash_op.erase_type;
+    solve flash_op.op before flash_op.num_words;
+
     flash_op.addr inside {[0:FlashSizeBytes-1]};
+
+    if (!cfg.seq_cfg.op_allow_invalid) {
+      flash_op.op != flash_ctrl_pkg::FlashOpInvalid;
+    }
 
     (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
         flash_op.erase_type dist {
@@ -178,6 +185,18 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     read_fifo_intr_level < flash_ctrl_pkg::FifoDepth;
   }
 
+  // Indicates whether to poll before writing to prog_fifo or reading from rd_fifo. If interupts are
+  // enabled, the interrupt signals will be used instead. When set to 0, it will continuously write
+  // to prog_fifo / read from rd_fifo, relying on their natural backpressure mechanism.
+  rand bit poll_fifo_status;
+
+  constraint poll_fifo_status_c {
+    poll_fifo_status dist {
+      0 :/ (100 - cfg.seq_cfg.poll_fifo_status_pc),
+      1 :/ cfg.seq_cfg.poll_fifo_status_pc
+    };
+  }
+
   `uvm_object_new
 
   task body();
@@ -205,7 +224,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flash_op_data)
 
         `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %0d/%0d: %p",
-                                  j, num_flash_ops_per_cfg, flash_op), UVM_MEDIUM)
+                                  j, num_flash_ops_per_cfg, flash_op), UVM_LOW)
 
         // Bkdr initialize the flash mem based on op.
         flash_ctrl_prep_mem(flash_op);
@@ -213,12 +232,14 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_start_op(flash_op);
         case (flash_op.op)
           flash_ctrl_pkg::FlashOpRead: begin
-            flash_ctrl_read(flash_op.num_words, flash_op_data);
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
+            flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
             flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpProgram: begin
-            flash_ctrl_write(flash_op_data);
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
+            flash_ctrl_write(flash_op_data, poll_fifo_status);
             wait_flash_op_done();
             flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end

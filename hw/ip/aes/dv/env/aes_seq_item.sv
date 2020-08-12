@@ -12,7 +12,7 @@ class aes_seq_item extends uvm_sequence_item;
   aes_op_e operation;
 
   ///////////////////////////////////////
-  //  control Knobs                    //
+  //  Control Knobs                    //
   ///////////////////////////////////////
 
   // set if this item contains valid information
@@ -20,17 +20,16 @@ class aes_seq_item extends uvm_sequence_item;
   // 0: auto mode 1: manual start
   bit             manual_op;
   // 0: output data cannot be overwritten
-  // 1: new output will overwrite old output even if not read.
-  bit             allow_data_ovrwrt;
+
   // lenth of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
   bit [3:0]       data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
   bit [2:0]       key_len;
-  // 256 bit key (8x32 bit)
-  bit [7:0][31:0] key;
+  // 256 bit key (8x32 bit) in two shares, key = share0 ^ share1
+  bit [7:0][31:0] key [2];
   // which fields of the key is valid
-  bit [7:0]       key_vld             = 8'b0;
+  bit [7:0]       key_vld [2]         = '{8'b0, 8'b0};
   // randomized data to add to queue
   bit [3:0][31:0] iv;
   // indicate if the initialization vector is valid
@@ -39,7 +38,7 @@ class aes_seq_item extends uvm_sequence_item;
 
 
   ///////////////////////////////////////
-  // FIXED variables                   //
+  // Fixed variables                   //
   ///////////////////////////////////////
 
   // indicate which words has data
@@ -50,10 +49,6 @@ class aes_seq_item extends uvm_sequence_item;
 
   // used by the checker
   bit [3:0][31:0] data_out;
-  // used byt the scoreboard to rebuild plaintext messages
-  //   bit [31:0]      data_in_queue[$];
-  //used by the scoreboard to build the processed message
-  //   bit [31:0]      data_out_queue[$];
   // set if data should be fixed and not randomized
   bit             fixed_data          = 0;
   // if set unused key bytes will be forced to 0 - controlled from test
@@ -78,10 +73,12 @@ class aes_seq_item extends uvm_sequence_item;
     if(key_mask) begin
       case (key_len)
         3'b001: begin
-          key[7:4] = 32'h00000000;
+          key[0][7:4] = 32'h00000000;
+          key[1][7:4] = 32'h00000000;
         end
         3'b010: begin
-          key[7:6] = 32'h00000000;
+          key[0][7:6] = 32'h00000000;
+          key[1][7:6] = 32'h00000000;
         end
         default: begin
         end
@@ -100,7 +97,7 @@ class aes_seq_item extends uvm_sequence_item;
   // have been updated.
   function bit data_in_valid();
     `uvm_info(`gfn, $sformatf("\n\t ----| Checking if ALL data is updated %4b", data_in_vld)
-              , UVM_FULL)
+              , UVM_MEDIUM)
 
     return &data_in_vld;
   endfunction // data_in_valid
@@ -119,11 +116,11 @@ class aes_seq_item extends uvm_sequence_item;
   // if ret_celan = 1
   // return 1 if all or none of the registers have been written
   function bit key_clean(bit ret_clean);
-    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b", key_vld), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b %b", key_vld[0], key_vld[1]), UVM_MEDIUM)
     if(ret_clean) begin
-      return ( (&key_vld) || ~(|key_vld));
+      return ( (&key_vld[0] & &key_vld[1]) || ~(|key_vld[0] | |key_vld[1]));
     end else begin
-      return &key_vld;
+      return (&key_vld[0] & &key_vld[1]);
     end
   endfunction // key_clean
 
@@ -144,18 +141,29 @@ class aes_seq_item extends uvm_sequence_item;
   function bit message_start();
     case(mode)
       AES_ECB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b) %b",key_vld, &key_vld), UVM_HIGH)
-        return (&key_vld);
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b",
+                   key_vld[0], key_vld[1], &key_vld[0] & &key_vld[1]), UVM_MEDIUM)
+        return (&key_vld[0] & &key_vld[1]);
       end
       AES_CBC: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
-        return (&key_vld && &iv_vld);
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+      end
+      AES_CFB: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+      end
+      AES_OFB: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       AES_CTR: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b) %b AND iv (%b) &b",
-                   key_vld, &key_vld, iv_vld, &iv_vld), UVM_HIGH)
-        return (&key_vld && &iv_vld);
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+                   key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
@@ -165,10 +173,10 @@ class aes_seq_item extends uvm_sequence_item;
 
 
   function void clean();
-    data_in_vld = '0;
-    iv_vld      = '0;
-    key_vld     = '0;
-    data_out_vld= '0;
+    data_in_vld  = '0;
+    iv_vld       = '0;
+    key_vld      = '{default: '0};
+    data_out_vld = '0;
   endfunction // clean
 
 
@@ -188,6 +196,8 @@ class aes_seq_item extends uvm_sequence_item;
     iv_vld       = rhs_.iv_vld;
     data_out     = rhs_.data_out;
     data_len     = rhs_.data_len;
+    manual_op    = rhs_.manual_op;
+    key_mask     = rhs_.key_mask;
   endfunction // copy
 
 
@@ -217,10 +227,19 @@ class aes_seq_item extends uvm_sequence_item;
     str = {str,  $psprintf("\n\t ----| Operation:    \t %s                          |----\t ", operation.name() ) };
     str = {str,  $psprintf("\n\t ----| Key len:    \t %s                             |----\t ",
                            (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b") };
-    str = {str,  $psprintf("\n\t ----| Key:         \t ") };
+    str = {str,  $psprintf("\n\t ----| Key Share 0: \t ") };
     for(int i=0; i <8; i++) begin
-      str = {str, $psprintf("%h ",key[i])};
+      str = {str, $psprintf("%h ",key[0][i])};
     end
+    str = {str,  $psprintf("\n\t ----| Key Share 1: \t ") };
+    for(int i=0; i <8; i++) begin
+      str = {str, $psprintf("%h ",key[1][i])};
+    end
+    str = {str,  $sformatf("\n\t ----| Initializaion vector:         \t ") };
+    for(int i=0; i <4; i++) begin
+      str = {str, $sformatf("%h ",iv[i])};
+    end
+    str = {str,  $psprintf("\n\t ----| key_mask: \t %d |----\t  \t", key_mask) };
     str = {str,  $psprintf("\n\t ----| Data Length: \t %d |----\t  \t", data_len) };
     str = {str,  $psprintf("\n\t ----| Input data:  \t %h |----\t ", data_in) };
     str = {str,  $psprintf("\n\t ----| Output data: \t %h |----\t ", data_out) };

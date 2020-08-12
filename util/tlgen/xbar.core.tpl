@@ -12,8 +12,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
     files:
-      - tl_${xbar.name}_pkg.sv
-      - xbar_${xbar.name}.sv
+      - rtl/autogen/tl_${xbar.name}_pkg.sv
+      - rtl/autogen/xbar_${xbar.name}.sv
     file_type: systemVerilogSource
 
 

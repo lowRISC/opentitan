@@ -74,7 +74,7 @@ inline static void fill_av_fifo(usbdev_ctx_t *ctx) {
 
 void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
                          int endpoint) {
-  uint32_t configin = USBDEV_CONFIGIN0() + (4 * endpoint);
+  uint32_t configin = USBDEV_CONFIGIN_0() + (4 * endpoint);
 
   if ((endpoint >= NUM_ENDPOINTS) || (buf >= NUM_BUFS)) {
     return;
@@ -84,9 +84,9 @@ void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
     size = BUF_LENGTH;
   }
 
-  REG32(configin) =
-      ((buf << USBDEV_CONFIGIN0_BUFFER0_OFFSET) |
-       (size << USBDEV_CONFIGIN0_SIZE0_OFFSET) | (1 << USBDEV_CONFIGIN0_RDY0));
+  REG32(configin) = ((buf << USBDEV_CONFIGIN_0_BUFFER_0_OFFSET) |
+                     (size << USBDEV_CONFIGIN_0_SIZE_0_OFFSET) |
+                     (1 << USBDEV_CONFIGIN_0_RDY_0));
 }
 
 void usbdev_poll(usbdev_ctx_t *ctx) {
@@ -99,13 +99,13 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   // before processing a response
   if (istate & (1 << USBDEV_INTR_STATE_PKT_SENT)) {
     uint32_t sentep = REG32(USBDEV_IN_SENT());
-    uint32_t configin = USBDEV_CONFIGIN0();
+    uint32_t configin = USBDEV_CONFIGIN_0();
     TRC_C('a' + sentep);
     for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
       if (sentep & (1 << ep)) {
         // Free up the buffer and optionally callback
         int32_t cfgin = REG32(configin + (4 * ep));
-        usbdev_buf_free_byid(ctx, EXTRACT(cfgin, CONFIGIN0_BUFFER0));
+        usbdev_buf_free_byid(ctx, EXTRACT(cfgin, CONFIGIN_0_BUFFER_0));
         if (ctx->tx_done_callback[ep]) {
           ctx->tx_done_callback[ep](ctx->ep_ctx[ep]);
         }
@@ -246,7 +246,7 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   ctx->reset[ep] = reset;
   if (enableout) {
     uint32_t rxen = REG32(USBDEV_RXENABLE_OUT());
-    rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT0));
+    rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT_0));
     REG32(USBDEV_RXENABLE_OUT()) = rxen;
   }
 }
@@ -266,8 +266,8 @@ void usbdev_init(usbdev_ctx_t *ctx) {
   // Provide buffers for any reception
   fill_av_fifo(ctx);
 
-  REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP0);
-  REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT0);
+  REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP_0);
+  REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT_0);
 
   REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE);
 }

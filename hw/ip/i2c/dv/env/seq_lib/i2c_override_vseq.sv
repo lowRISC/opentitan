@@ -17,6 +17,9 @@ class i2c_override_vseq extends i2c_base_vseq;
     cfg.m_i2c_agent_cfg.en_monitor = 1'b0;
     cfg.en_scb = 1'b0;
 
+    // disable clear_all_interrupts task due to abnormal assertion of interrupts
+    do_clear_all_interrupts = 1'b0;
+
     device_init();
     host_init();
 
@@ -43,10 +46,5 @@ class i2c_override_vseq extends i2c_base_vseq;
       end
     end
   endtask : body
-
-  task post_start();
-    super.post_start();
-    `uvm_info(`gfn, "stop simulation", UVM_DEBUG)
-  endtask : post_start
 
 endclass : i2c_override_vseq

@@ -259,7 +259,7 @@ module hmac
 
   prim_fifo_sync #(
     .Width   ($bits(sha_fifo_t)),
-    .Pass    (1'b0),
+    .Pass    (1'b1),
     .Depth   (MsgFifoDepth)
   ) u_msg_fifo (
     .clk_i,

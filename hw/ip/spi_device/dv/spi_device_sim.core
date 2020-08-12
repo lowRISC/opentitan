@@ -8,21 +8,31 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:spi_device:0.1
-    files:
-      - tb/spi_device_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:spi_device_test
+      - lowrisc:dv:spi_device_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
 
 targets:
-  sim:
+  sim: &sim_target
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
     default_tool: vcs
+
+  lint:
+    <<: *sim_target
+    default_tool: verilator
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -43,7 +43,7 @@ Implementations for some of these components are available for reference and may
 | ---------- | ----------- |
 | TRNG Digital Wrapper | Digital wrapper for a NIST SP 800-90 compliant entropy source. <br> An additional emulated entropy source implementation will be available for FPGA functional testing. |
 | DRBG | Proposed: DRBG-HMAC-SHA-2* NIST 800-90A.rev1 compliant. |
-| [AES][8] | AES ECB/CBC/CTR 128/192/256 NIST 800-38A compliant. |
+| [AES][8] | AES ECB/CBC/CFB/OFB/CTR 128/192/256 NIST 800-38A compliant. |
 | [HMAC-SHA-2][9] | HMAC_SHA-2 NIST FIPS 180-4 compliant supporting both HMAC and SHA modes of operation. |
 | Key Manager | Proposed: Hardware backed symmetric key generation and storage providing strong isolation properties. |
 | Crypto Co-Processor | Proposed: Public key cryptography accelerator with support for bignum operations in hardware. |

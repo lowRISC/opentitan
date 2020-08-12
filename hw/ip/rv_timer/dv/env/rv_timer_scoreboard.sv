@@ -77,7 +77,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
         (!uvm_re_match("ctrl*", csr_name)): begin
           for (int i = 0; i < NUM_HARTS; i++) begin
             for (int j = 0; j < NUM_TIMERS; j++) begin
-              en_timers[i][j] = get_reg_fld_mirror_value(ral, "ctrl", $sformatf("active%0d", j));
+              en_timers[i][j] = get_reg_fld_mirror_value(ral, "ctrl", $sformatf("active_%0d", j));
             end
             //Sample all timers active coverage for each hart
             if (cfg.en_cov) cov.ctrl_reg_cov_obj[i].timer_active_cg.sample(en_timers[i]);
@@ -161,7 +161,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
           for (int i = 0; i < NUM_HARTS; i++) begin
             for (int j = 0; j < NUM_TIMERS; j++) begin
               en_interrupt[i][j] = get_reg_fld_mirror_value(
-                                       ral, $sformatf("intr_enable%0d", i), $sformatf("ie%0d", j));
+                                       ral, $sformatf("intr_enable%0d", i), $sformatf("ie_%0d", j));
             end
           end
         end

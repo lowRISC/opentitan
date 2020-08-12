@@ -57,5 +57,5 @@ module prim_generic_ram_1p #(
     end
   end
 
-  `include "prim_util_memload.sv"
+  `include "prim_util_memload.svh"
 endmodule

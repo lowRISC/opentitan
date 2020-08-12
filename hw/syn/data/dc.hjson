@@ -8,7 +8,8 @@
               "{proj_root}/hw/foundry/syn/{tool}/lib-setup.tcl"
               "{proj_root}/hw/foundry/syn/{tool}/ram-macros-setup.tcl"
               "{proj_root}/hw/syn/tools/{tool}/run-syn.tcl"
-              "{sdc_path}/{sdc_file}"]
+              "{sdc_path}/{sdc_file}"
+              "{foundry_sdc_path}/{foundry_sdc_file}"]
 
   // Environment variables that are needed in the synthesis script
   exports: [{"DUT"       : "{dut}"},
@@ -21,7 +22,7 @@
   build_opts: ["-f run-syn.tcl"]
 
   // DC-specific results parsing script that is called after running synthesis
-  report_cmd: "{proj_root}/hw/syn/tools/{tool}/parse-syn-report.py "
+  report_cmd: "{proj_root}/hw/syn/tools/{tool}/parse-syn-report.py --depth {area_depth}"
   report_opts: ["--dut {dut}",
                 "--logpath {build_dir} ",
                 "--reppath {build_dir}/REPORTS/ ",

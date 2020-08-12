@@ -11,15 +11,17 @@ import sys
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
+from copy import deepcopy
 
 import hjson
 from mako import exceptions
 from mako.template import Template
 
 import tlgen
-from reggen import gen_dv, gen_fpv, gen_rtl, validate
+from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
+from topgen import intermodule as im
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -63,33 +65,38 @@ def generate_xbars(top, out_path):
             log.error("Elaboration failed." + repr(xbar))
 
         try:
-            out_rtl, out_pkg, out_core = tlgen.generate(
-                xbar, "top_" + top["name"])
+            results = tlgen.generate(xbar, "top_" + top["name"])
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
 
-        rtl_path = out_path / 'ip/xbar_{}/rtl/autogen'.format(obj["name"])
-        rtl_path.mkdir(parents=True, exist_ok=True)
+        ip_path = out_path / 'ip/xbar_{}'.format(obj["name"])
+
+        for filename, filecontent in results:
+            filepath = ip_path / filename
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            with filepath.open(mode='w', encoding='UTF-8') as fout:
+                fout.write(filecontent)
+
         dv_path = out_path / 'ip/xbar_{}/dv/autogen'.format(obj["name"])
         dv_path.mkdir(parents=True, exist_ok=True)
 
-        rtl_filename = "xbar_%s.sv" % (xbar.name)
-        rtl_filepath = rtl_path / rtl_filename
-        with rtl_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_rtl)
-
-        pkg_filename = "tl_%s_pkg.sv" % (xbar.name)
-        pkg_filepath = rtl_path / pkg_filename
-        with pkg_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_pkg)
-
-        core_filename = "xbar_%s.core" % (xbar.name)
-        core_filepath = rtl_path / core_filename
-        with core_filepath.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out_core)
-
         # generate testbench for xbar
         tlgen.generate_tb(xbar, dv_path, "top_" + top["name"])
+
+        # Read back the comportable IP and amend to Xbar
+        xbar_ipfile = ip_path / ("data/autogen/xbar_%s.hjson" % obj["name"])
+        with xbar_ipfile.open() as fxbar:
+            xbar_ipobj = hjson.load(fxbar,
+                                    use_decimal=True,
+                                    object_pairs_hook=OrderedDict)
+
+            # Deepcopy of the inter_signal_list.
+            # As of writing the code, it is not expected to write-back the
+            # read xbar objects into files. Still, as `inter_signal_list` is
+            # modified in the `elab_intermodule()` stage, it is better to keep
+            # the original content.
+            obj["inter_signal_list"] = deepcopy(
+                xbar_ipobj["inter_signal_list"])
 
 
 def generate_alert_handler(top, out_path):
@@ -133,7 +140,8 @@ def generate_alert_handler(top, out_path):
     else:
         async_on = ""
         for alert in top['alert']:
-            async_on = str(alert['async']) + async_on
+            for k in range(alert['width']):
+                async_on = str(alert['async']) + async_on
         async_on = ("%d'b" % n_alerts) + async_on
 
     log.info("alert handler parameterization:")
@@ -178,7 +186,7 @@ def generate_alert_handler(top, out_path):
 
     hjson_gen_path = doc_path / "alert_handler.hjson"
     gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/doc/top_{topname}.hjson --alert-handler-only "
+        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --alert-handler-only "
         "-o hw/top_{topname}/\n\n".format(topname=topname))
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
@@ -225,8 +233,6 @@ def generate_plic(top, out_path):
     #   data: rv_plic.hjson
     rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
     rtl_path.mkdir(parents=True, exist_ok=True)
-    fpv_path = out_path / 'ip/rv_plic/fpv/autogen'
-    fpv_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rv_plic/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
     hjson_path = out_path / 'ip/rv_plic/data/autogen'
@@ -238,9 +244,6 @@ def generate_plic(top, out_path):
     tpl_path = out_path / '../ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
-    fpv_tpl_names = [
-        'rv_plic_bind_fpv.sv', 'rv_plic_fpv.sv', 'rv_plic_fpv.core'
-    ]
 
     # Generate Register Package and RTLs
     out = StringIO()
@@ -270,7 +273,6 @@ def generate_plic(top, out_path):
                             object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
-    gen_fpv.gen_fpv(hjson_obj, str(fpv_path))
 
     # Generate RV_PLIC Top Module
     with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
@@ -288,25 +290,6 @@ def generate_plic(top, out_path):
     rtl_gen_path = rtl_path / "rv_plic.sv"
     with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
-
-    # Generate RV_PLIC FPV testbench
-    for file_name in fpv_tpl_names:
-        tpl_name = file_name + ".tpl"
-        path = tpl_path / tpl_name
-        with path.open(mode='r', encoding='UTF-8') as fin:
-            fpv_tpl = Template(fin.read())
-            try:
-                out = fpv_tpl.render(src=src, target=target, prio=prio)
-            except:  # noqa : E722
-                log.error(exceptions.text_error_template().render())
-            log.info("RV_PLIC FPV: %s" % out)
-        if out == "":
-            log.error("Cannot generate rv_plic FPV testbench")
-            return
-
-        fpv_gen_path = fpv_path / file_name
-        with fpv_gen_path.open(mode='w', encoding='UTF-8') as fout:
-            fout.write(out)
 
 
 def generate_pinmux_and_padctrl(top, out_path):
@@ -533,36 +516,36 @@ def generate_clkmgr(top, cfg_path, out_path):
     # This includes two groups of clocks
     # Clocks fed from the always-on source
     # Clocks fed to the powerup group
-    ft_clks = {
-        clk: src
+    ft_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if src_aon_attr[src] or grp['name'] == 'powerup'
-    }
+    ])
 
     # root-gate clocks
-    rg_clks = {
-        clk: src
+    rg_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and
         not src_aon_attr[src]
-    }
+    ])
 
     # direct sw control clocks
-    sw_clks = {
-        clk: src
+    sw_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'yes' and not src_aon_attr[src]
-    }
+    ])
 
     # sw hint clocks
-    hint_clks = {
-        clk: src
+    hint_clks = OrderedDict([
+        (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
-    }
+    ])
 
-    out = StringIO()
     for idx, tpl in enumerate(tpls):
+        out = ""
         with tpl.open(mode='r', encoding='UTF-8') as fin:
             tpl = Template(fin.read())
             try:
@@ -602,7 +585,8 @@ def generate_pwrmgr(top, out_path):
 
     if n_wkups < 1:
         n_wkups = 1
-        log.warning("The design has no wakeup sources. Low power not supported")
+        log.warning(
+            "The design has no wakeup sources. Low power not supported")
 
     # Define target path
     rtl_path = out_path / 'ip/pwrmgr/rtl/autogen'
@@ -640,6 +624,24 @@ def generate_pwrmgr(top, out_path):
                                object_pairs_hook=OrderedDict)
     validate.validate(hjson_obj)
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+
+def generate_top_only(top_only_list, out_path):
+    log.info("Generating top only modules")
+
+    for ip in top_only_list:
+        rtl_path = out_path / "ip/{}/rtl".format(ip)
+        hjson_path = out_path / "ip/{}/data/{}.hjson".format(ip, ip)
+        log.info("Generating top modules {}, hjson: {}, output: {}".format(
+            ip, hjson_path, rtl_path))
+
+        # Generate reg files
+        with open(str(hjson_path), 'r') as out:
+            hjson_obj = hjson.load(out,
+                                   use_decimal=True,
+                                   object_pairs_hook=OrderedDict)
+            validate.validate(hjson_obj)
+            gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
 def generate_top_ral(top, ip_objs, out_path):
@@ -714,13 +716,6 @@ def main():
         action='store_true',
         help="If defined, topgen doesn't generate the interrup controller RTLs."
     )
-    parser.add_argument(
-        '--no-gen-hjson',
-        action='store_true',
-        help='''If defined, the tool assumes topcfg as a generated hjson.
-             So it bypasses the validation step and doesn't read ip and
-             xbar configurations
-             ''')
 
     # Generator options: 'only' series. cannot combined with 'no' series
     parser.add_argument(
@@ -739,10 +734,6 @@ def main():
         '--alert-handler-only',
         action='store_true',
         help="If defined, the tool generates alert handler hjson only")
-    parser.add_argument(
-        '--hjson-only',
-        action='store_true',
-        help="If defined, the tool generates complete Hjson only")
     # Generator options: generate dv ral model
     parser.add_argument(
         '--top_ral',
@@ -755,11 +746,7 @@ def main():
 
     # check combinations
     if args.top_ral:
-        args.hjson_only = True
         args.no_top = True
-
-    if args.hjson_only:
-        args.no_gen_hjson = False
 
     if (args.no_top or args.no_xbar or
             args.no_plic) and (args.top_only or args.xbar_only or
@@ -768,7 +755,7 @@ def main():
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
-    if not (args.hjson_only or args.plic_only or args.alert_handler_only or
+    if not (args.top_ral or args.plic_only or args.alert_handler_only or
             args.tpl):
         log.error(
             "Template file can be omitted only if '--hjson-only' is true")
@@ -791,111 +778,102 @@ def main():
     out_path = Path(outdir)
     cfg_path = Path(args.topcfg).parents[1]
 
-    if not args.no_gen_hjson or args.hjson_only:
-        # load top configuration
-        try:
-            with open(args.topcfg, 'r') as ftop:
-                topcfg = hjson.load(ftop,
-                                    use_decimal=True,
-                                    object_pairs_hook=OrderedDict)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    try:
+        with open(args.topcfg, 'r') as ftop:
+            topcfg = hjson.load(ftop,
+                                use_decimal=True,
+                                object_pairs_hook=OrderedDict)
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
 
-        # Create filtered list
-        filter_list = [
-            module['type'] for module in topcfg['module']
-            if 'generated' in module and module['generated'] == 'true'
-        ]
-        log.info("Filtered list is {}".format(filter_list))
+    # Create generated list
+    # These modules are generated through topgen
+    generated_list = [
+        module['type'] for module in topcfg['module']
+        if 'generated' in module and module['generated'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(generated_list))
 
-        topname = topcfg["name"]
+    # These modules are NOT generated but belong to a specific top
+    # and therefore not part of "hw/ip"
+    top_only_list = [
+        module['type'] for module in topcfg['module']
+        if 'top_only' in module and module['top_only'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(top_only_list))
 
-        # Sweep the IP directory and gather the config files
-        ip_dir = Path(__file__).parents[1] / 'hw/ip'
-        ips = search_ips(ip_dir)
+    topname = topcfg["name"]
 
-        # exclude filtered IPs (to use top_${topname} one) and
-        ips = [x for x in ips if not x.parents[1].name in filter_list]
+    # Sweep the IP directory and gather the config files
+    ip_dir = Path(__file__).parents[1] / 'hw/ip'
+    ips = search_ips(ip_dir)
 
-        # Hack alert
-        # Generate clkmgr.hjson here so that it can be included below
-        # Unlike other generated hjsons, clkmgr thankfully does not require
-        # ip.hjson information.  All the information is embedded within
-        # the top hjson file
-        amend_clocks(topcfg)
-        generate_clkmgr(topcfg, cfg_path, out_path)
+    # exclude filtered IPs (to use top_${topname} one) and
+    exclude_list = generated_list + top_only_list
+    ips = [x for x in ips if not x.parents[1].name in exclude_list]
 
-        # It may require two passes to check if the module is needed.
-        # TODO: first run of topgen will fail due to the absent of rv_plic.
-        # It needs to run up to amend_interrupt in merge_top function
-        # then creates rv_plic.hjson then run xbar generation.
-        hjson_dir = Path(args.topcfg).parent
+    # Hack alert
+    # Generate clkmgr.hjson here so that it can be included below
+    # Unlike other generated hjsons, clkmgr thankfully does not require
+    # ip.hjson information.  All the information is embedded within
+    # the top hjson file
+    amend_clocks(topcfg)
+    generate_clkmgr(topcfg, cfg_path, out_path)
 
-        for ip in filter_list:
-            log.info("Appending {}".format(ip))
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-            ips.append(ip_hjson)
+    # It may require two passes to check if the module is needed.
+    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # It needs to run up to amend_interrupt in merge_top function
+    # then creates rv_plic.hjson then run xbar generation.
+    hjson_dir = Path(args.topcfg).parent
 
-        # load Hjson and pass validate from reggen
-        try:
-            ip_objs = []
-            for x in ips:
-                # Skip if it is not in the module list
-                if x.stem not in [ip["type"] for ip in topcfg["module"]]:
-                    log.info(
-                        "Skip module %s as it isn't in the top module list" %
-                        x.stem)
-                    continue
+    for ip in generated_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+            ip, ip)
+        ips.append(ip_hjson)
 
-                obj = hjson.load(x.open('r'),
-                                 use_decimal=True,
-                                 object_pairs_hook=OrderedDict)
-                if validate.validate(obj) != 0:
-                    log.info("Parsing IP %s configuration failed. Skip" % x)
-                    continue
-                ip_objs.append(obj)
+    for ip in top_only_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(
+            ip, ip)
+        ips.append(ip_hjson)
 
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    # load Hjson and pass validate from reggen
+    try:
+        ip_objs = []
+        for x in ips:
+            # Skip if it is not in the module list
+            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+                log.info("Skip module %s as it isn't in the top module list" %
+                         x.stem)
+                continue
 
-        # Read the crossbars under the top directory
-        xbar_objs = get_hjsonobj_xbars(hjson_dir)
+            obj = hjson.load(x.open('r'),
+                             use_decimal=True,
+                             object_pairs_hook=OrderedDict)
+            if validate.validate(obj) != 0:
+                log.info("Parsing IP %s configuration failed. Skip" % x)
+                continue
+            ip_objs.append(obj)
 
-        log.info("Detected crossbars: %s" %
-                 (", ".join([x["name"] for x in xbar_objs])))
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
 
-        topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
-        if error != 0:
-            raise SystemExit("Error occured while validating top.hjson")
+    # Read the crossbars under the top directory
+    xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
-        completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+    log.info("Detected crossbars: %s" %
+             (", ".join([x["name"] for x in xbar_objs])))
 
-        genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                     completecfg["name"])
-        gencmd = (
-            "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
-            "-o hw/top_{topname}/\n".format(topname=topname))
+    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    if error != 0:
+        raise SystemExit("Error occured while validating top.hjson")
 
-        if args.top_ral:
-            generate_top_ral(completecfg, ip_objs, out_path)
-        else:
-            genhjson_path.write_text(genhdr + gencmd +
-                                     hjson.dumps(completecfg, for_json=True))
+    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
-    if args.hjson_only:
-        log.info("hjson is generated. Exiting...")
+    if args.top_ral:
+        generate_top_ral(completecfg, ip_objs, out_path)
         sys.exit()
-
-    if args.no_gen_hjson:
-        # load top.complete configuration
-        try:
-            with open(args.topcfg, 'r') as ftop:
-                completecfg = hjson.load(ftop,
-                                         use_decimal=True,
-                                         object_pairs_hook=OrderedDict)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
 
     # Generate PLIC
     if not args.no_plic and \
@@ -917,11 +895,33 @@ def main():
     # Generate Pwrmgr
     generate_pwrmgr(completecfg, out_path)
 
+    # Generate top only modules
+    # These modules are not templated, but are not in hw/ip
+    generate_top_only(top_only_list, out_path)
+
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
         generate_xbars(completecfg, out_path)
 
+    # All IPs are generated. Connect phase now
+    # Find {memory, module} <-> {xbar} connections first.
+    im.autoconnect(completecfg)
+
+    # Generic Inter-module connection
+    im.elab_intermodule(completecfg)
+
     top_name = completecfg["name"]
+
+    # Generate top.gen.hjson right before rendering
+    hjson_dir = Path(args.topcfg).parent
+    genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
+                                 completecfg["name"])
+    gencmd = (
+        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
+        "-o hw/top_{topname}/\n".format(topname=topname))
+
+    genhjson_path.write_text(genhdr + gencmd +
+                             hjson.dumps(completecfg, for_json=True))
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
@@ -974,14 +974,18 @@ def main():
         # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
 
-        # Fix the C header guard, which will have the wrong name
+        # 'top_earlgrey_memory.h.tpl' -> 'sw/autogen/top_earlgrey_memory.h'
+        memory_cheader_path = render_template('top_%s_memory.h', 'sw/autogen')
+
+        # Fix the C header guards, which will have the wrong name
         subprocess.run(["util/fix_include_guard.py",
-                        str(cheader_path)],
+                        str(cheader_path),
+                        str(memory_cheader_path)],
                        universal_newlines=True,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL,
                        check=True,
-                       cwd=str(SRCTREE_TOP))
+                       cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar TB
         tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv"]

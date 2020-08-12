@@ -6,7 +6,7 @@ import logging as log
 import re
 from collections import OrderedDict
 from enum import Enum
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from reggen.validate import check_int
 from topgen import lib
@@ -58,6 +58,128 @@ def intersignal_format(req: Dict) -> str:
     return result
 
 
+def get_suffixes(ims: OrderedDict) -> (str, str):
+    """Get suffixes of the struct.
+
+    TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.
+    """
+    if ims["package"] == "tlul_pkg" and ims["struct"] == "tl":
+        return ("_h2d", "_d2h")
+
+    return ("_req", "_rsp")
+
+
+def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
+                               rsp_m: str, rsp_s: str):
+    """Add if doesn't exist the connection
+
+    Add a connection into obj['inter_module']['connect'] dictionary if doesn't exist.
+
+    Parameters:
+        obj:   Top dictionary object
+        req_m: Requester module name
+        req_s: Requester signal name
+        rsp_m: Responder module name
+        rsp_s: Responder signal name
+
+    Returns:
+        No return type for this function
+    """
+    req_key = "{}.{}".format(req_m, req_s)
+    rsp_key = "{}.{}".format(rsp_m, rsp_s)
+
+    connect = obj["inter_module"]["connect"]
+    if req_key in connect:
+        # check if rsp has data
+        if rsp_key in connect[req_key]:
+            return
+        req_key.append(rsp_key)
+        return
+
+    # req_key is not in connect:
+    # check if rsp_key
+    if rsp_key in connect:
+        # check if rsp has data
+        if req_key in connect[rsp_key]:
+            return
+        rsp_key.append(req_key)
+        return
+
+    # Add new key and connect
+    connect[req_key] = [rsp_key]
+
+
+def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
+    ports = [x for x in xbar["nodes"] if x["type"] in ["host", "device"]]
+    for port in ports:
+        if port["xbar"]:
+            if port["type"] == "host":
+                # Skip as device will add connection
+                continue
+
+            # Device port adds signal
+            add_intermodule_connection(obj=topcfg,
+                                       req_m=xbar["name"],
+                                       req_s="tl_%s" % port["name"],
+                                       rsp_m=port["name"],
+                                       rsp_s="tl_%s" % xbar["name"])
+            continue  # xbar port case
+
+        # check if name exists in ["module", "memory"]
+        ips = [
+            x for x in topcfg["module"] + topcfg["memory"]
+            if x["name"] == port["name"]
+        ]
+
+        assert len(ips) <= 1
+
+        if len(ips) == 0:
+            # if not in module, memory, should be existed in top or ext field
+            module_key = "{}.tl_{}".format(xbar["name"], port["name"])
+            if module_key not in topcfg["inter_module"]["top"] + list(
+                    topcfg["inter_module"]["external"].keys()):
+                log.error("Inter-module key {} cannot be found in module, "
+                          "memory, top, or external lists.".format(module_key))
+            continue
+
+        ip = ips[0]
+
+        # get the port name
+        def get_signame(ip: OrderedDict, package: str, struct: str,
+                        act: str) -> OrderedDict:
+            ims = [
+                x for x in ip["inter_signal_list"]
+                if (x['package'] == package if 'package' in x else False) and
+                x['struct'] == struct and x['act'] == act
+            ]
+            return ims
+
+        if port["type"] == "device":
+            ims = get_signame(ip, "tlul_pkg", "tl", "rsp")
+        else:  # host type
+            ims = get_signame(ip, "tlul_pkg", "tl", "req")
+
+        assert len(ims) == 1
+        sig_name = ims[0]["name"]
+
+        add_intermodule_connection(obj=topcfg,
+                                   req_m=port["name"],
+                                   req_s=sig_name,
+                                   rsp_m=xbar["name"],
+                                   rsp_s="tl_%s" % port["name"])
+        continue  # len() == 1
+
+
+def autoconnect(topcfg: OrderedDict):
+    """Matching the connection based on the naming rule
+    between {memory, module} <-> Xbar.
+    """
+
+    # Add xbar connection to the modules, memories
+    for xbar in topcfg["xbar"]:
+        autoconnect_xbar(topcfg, xbar)
+
+
 def elab_intermodule(topcfg: OrderedDict):
     """Check the connection of inter-module and categorize them
 
@@ -73,7 +195,7 @@ def elab_intermodule(topcfg: OrderedDict):
         topcfg["inter_signal"] = OrderedDict()
 
     # Gather the inter_signal_list
-    instances = topcfg["module"] + topcfg["memory"]
+    instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"]
 
     intermodule_instances = [x for x in instances if "inter_signal_list" in x]
 
@@ -144,17 +266,18 @@ def elab_intermodule(topcfg: OrderedDict):
 
         # Add to definition
         if req_struct["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(req_struct)
             # Add two definitions
             definitions.append(
                 OrderedDict([('package', package),
-                             ('struct', req_struct["struct"] + "_req"),
+                             ('struct', req_struct["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
                              ('default', req_struct["default"])]))
             definitions.append(
                 OrderedDict([('package', package),
-                             ('struct', req_struct["struct"] + "_rsp"),
+                             ('struct', req_struct["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
@@ -218,69 +341,77 @@ def elab_intermodule(topcfg: OrderedDict):
             sig["index"] = -1
 
         if sig["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(sig)
             # Add two definitions
             definitions.append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_req"),
+                             ('struct', sig["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_rsp"),
+                             ('struct', sig["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
         else:  # if sig["type"] == "uni":
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
-                             ('width', sig["width"]),
-                             ('type', sig["type"]),
+                             ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"])]))
 
-    if "external" not in topcfg["inter_module"]:
-        topcfg["inter_module"]["external"] = []
-        topcfg["inter_signal"]["external"] = []
+    topcfg["inter_module"].setdefault('external', [])
+    topcfg["inter_signal"].setdefault('external', [])
 
-    if "external" not in topcfg["inter_signal"]:
-        topcfg["inter_signal"]["external"] = []
-
-    for s in topcfg["inter_module"]["external"]:
+    for s, port in topcfg["inter_module"]["external"].items():
         sig_m, sig_s, sig_i = filter_index(s)
         assert sig_i == -1, 'top net connection should not use bit index'
         sig = find_intermodule_signal(list_of_intersignals, sig_m, sig_s)
-        sig_name = intersignal_format(sig)
+
+        # To make netname `_o` or `_i`
+        sig['external'] = True
+
+        sig_name = port if port != "" else intersignal_format(sig)
         sig["top_signame"] = sig_name
+
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
-        # TODO: Handle the suffix `_i`, `_o` correctly.
-        # For now, external doesn't create _i, _o
         if sig["type"] == "req_rsp":
+            req_suffix, rsp_suffix = get_suffixes(sig)
+            if sig["act"] == "req":
+                req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
+            else:
+                req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
+
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_req"),
-                             ('signame', sig_name + "_req"),
+                             ('struct', sig["struct"] + req_suffix),
+                             ('signame', sig_name + "_req" + req_sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
                               'out' if sig['act'] == "req" else 'in')]))
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"] + "_rsp"),
-                             ('signame', sig_name + "_rsp"),
+                             ('struct', sig["struct"] + rsp_suffix),
+                             ('signame', sig_name + "_rsp" + rsp_sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
                               'in' if sig['act'] == "req" else 'out')]))
         else:  # uni
+            if sig["act"] == "req":
+                sigsuffix = "_o"
+            else:
+                sigsuffix = "_i"
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
-                             ('struct', sig["struct"]), ('signame', sig_name),
+                             ('struct', sig["struct"]),
+                             ('signame', sig_name + sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
@@ -388,6 +519,47 @@ def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
         obj["default"] = ""
 
     return error
+
+
+def find_otherside_modules(topcfg: OrderedDict, m,
+                           s) -> List[Tuple[str, str, str]]:
+    """Find far-end port based on given module and signal name
+    """
+    # TODO: handle special cases
+    special_inst_names = {
+        ('main', 'tl_rom'): ('tl_adapter_rom', 'tl'),
+        ('main', 'tl_ram_main'): ('tl_adapter_ram_main', 'tl'),
+        ('main', 'tl_eflash'): ('tl_adapter_eflash', 'tl'),
+        ('peri', 'tl_ram_ret'): ('tl_adapter_ram_ret', 'tl'),
+        ('main', 'tl_corei'): ('rv_core_ibex', 'tl_i'),
+        ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
+        ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
+        ('main', 'tl_debug_mem'): ('dm_top', 'tl_d')
+    }
+    for pair in special_inst_names:
+        if pair == (m, s):
+            result = special_inst_names.get(pair)
+            return [('top', result[0], result[1])]
+
+    signame = "{}.{}".format(m, s)
+    for req, rsps in topcfg["inter_module"]["connect"].items():
+        if req.startswith(signame):
+            # return rsps after splitting module instance name and the port
+            result = []
+            for rsp in rsps:
+                rsp_m, rsp_s, rsp_i = filter_index(rsp)
+                result.append(('connect', rsp_m, rsp_s))
+            return result
+
+        for rsp in rsps:
+            if signame == rsp:
+                req_m, req_s, req_i = filter_index(req)
+                return [('connect', req_m, req_s)]
+
+    # if reaches here, it means either the format is wrong, or floating port.
+    log.error("`find_otherside_modules()`: "
+              "No such signal {}.{} exists.".format(m, s))
+    return []
 
 
 def check_intermodule(topcfg: Dict, prefix: str) -> int:
@@ -543,8 +715,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 .format(req_struct["width"], rsps_width))
             error += 1
 
-    for item in topcfg["inter_module"]["top"] + topcfg["inter_module"][
-            "external"]:
+    for item in topcfg["inter_module"]["top"] + list(
+            topcfg["inter_module"]["external"].keys()):
         sig_m, sig_s, sig_i = filter_index(item)
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))
@@ -572,6 +744,8 @@ def im_defname(obj: OrderedDict) -> str:
 
 def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     """return top signal name with index
+
+    It also adds suffix for external signal
     """
 
     # sanity check and add missing fields
@@ -588,12 +762,18 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
+            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+                return "{package}::{struct}_D2H_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_RSP_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rsp" and suffix == "req":
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
+            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+                return "{package}::{struct}_H2D_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj["package"], struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
@@ -614,6 +794,20 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     assert suffix in ["", "req", "rsp"]
 
     suffix_s = "_{suffix}".format(suffix=suffix) if suffix != "" else suffix
+
+    # External signal handling
+    if "external" in obj and obj["external"]:
+        pairs = {
+            # act , suffix: additional suffix
+            ("req", "req"): "_o",
+            ("req", "rsp"): "_i",
+            ("rsp", "req"): "_i",
+            ("rsp", "rsp"): "_o",
+            ("req", ""): "_o",
+            ("rcv", ""): "_i"
+        }
+        suffix_s += pairs[(obj['act'], suffix)]
+
     return "{top_signame}{suffix}{index}".format(
         top_signame=obj["top_signame"],
         suffix=suffix_s,

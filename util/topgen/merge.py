@@ -8,7 +8,6 @@ from functools import partial
 from collections import OrderedDict
 
 from topgen import lib
-from .intermodule import elab_intermodule
 
 
 def amend_ip(top, ip):
@@ -175,17 +174,17 @@ def xbar_addhost(top, xbar, host):
         log.warning(
             "host %s doesn't exist in the node list. Using default values" %
             host)
-        obj = {
-            "name": host,
-            "clock": xbar['clock'],
-            "reset": xbar['reset'],
-            "type": "host",
-            "inst_type": "",
+        obj = OrderedDict([
+            ("name", host),
+            ("clock", xbar['clock']),
+            ("reset", xbar['reset']),
+            ("type", "host"),
+            ("inst_type", ""),
             # The default matches RTL default
             # pipeline_byp is don't care if pipeline is false
-            "pipeline": "true",
-            "pipeline_byp": "true"
-        }
+            ("pipeline", "true"),
+            ("pipeline_byp", "true")
+        ])
         xbar["nodes"].append(obj)
         return
 
@@ -450,7 +449,7 @@ def amend_clocks(top: OrderedDict):
     for src in clks_attr['srcs']:
         if 'derived' not in src:
             src['derived'] = "no"
-            src['params'] = {}
+            src['params'] = OrderedDict()
 
     # Default assignments
     for group in clks_attr['groups']:
@@ -518,7 +517,7 @@ def amend_clocks(top: OrderedDict):
 def amend_resets(top):
     """Add a path variable to reset declaration
     """
-    reset_paths = {}
+    reset_paths = OrderedDict()
 
     for reset in top["resets"]:
 
@@ -746,9 +745,6 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
 
     # Combine the wakeups
     amend_wkup(gencfg)
-
-    # Inter-module signals
-    elab_intermodule(gencfg)
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)

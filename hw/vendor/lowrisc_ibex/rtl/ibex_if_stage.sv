@@ -17,7 +17,8 @@ module ibex_if_stage #(
     parameter int unsigned DmExceptionAddr   = 32'h1A110808,
     parameter bit          DummyInstructions = 1'b0,
     parameter bit          ICache            = 1'b0,
-    parameter bit          ICacheECC         = 1'b0
+    parameter bit          ICacheECC         = 1'b0,
+    parameter bit          SecureIbex        = 1'b0
 ) (
     input  logic                   clk_i,
     input  logic                   rst_ni,
@@ -83,6 +84,7 @@ module ibex_if_stage #(
     input  logic                  id_in_ready_i,            // ID stage is ready for new instr
 
     // misc signals
+    output logic                  pc_mismatch_alert_o,
     output logic                  if_busy_o                 // IF stage is busy fetching instr
 );
 
@@ -341,6 +343,32 @@ module ibex_if_stage #(
       illegal_c_insn_id_o      <= illegal_c_instr_out;
       pc_id_o                  <= pc_if_o;
     end
+  end
+
+  // Check for expected increments of the PC when security hardening enabled
+  if (SecureIbex) begin : g_secure_pc
+    logic [31:0] prev_instr_addr_incr;
+    logic        prev_instr_seq_q, prev_instr_seq_d;
+
+    // Do not check for sequential increase after a branch, jump, exception, interrupt or debug
+    // request, all of which will set branch_req. Also do not check after reset.
+    assign prev_instr_seq_d = (prev_instr_seq_q | instr_new_id_d) & ~branch_req;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        prev_instr_seq_q <= 1'b0;
+      end else begin
+        prev_instr_seq_q <= prev_instr_seq_d;
+      end
+    end
+
+    assign prev_instr_addr_incr = pc_id_o + (instr_is_compressed_id_o ? 32'd2 : 32'd4);
+
+    // Check that the address equals the previous address +2/+4
+    assign pc_mismatch_alert_o = prev_instr_seq_q & (pc_if_o != prev_instr_addr_incr);
+
+  end else begin : g_no_secure_pc
+    assign pc_mismatch_alert_o = 1'b0;
   end
 
   ////////////////

@@ -45,8 +45,8 @@ package i2c_env_pkg;
   parameter uint I2C_RX_FIFO_DEPTH  = 32;
 
   // for constrains
-  parameter uint I2C_MIN_TRAN    = 10;
-  parameter uint I2C_MAX_TRAN    = 20;
+  parameter uint I2C_MIN_TRAN    = 30;
+  parameter uint I2C_MAX_TRAN    = 50;
   parameter uint I2C_MIN_ADDR    = 0;
   parameter uint I2C_MAX_ADDR    = 127;
   parameter uint I2C_MIN_DLY     = 0;

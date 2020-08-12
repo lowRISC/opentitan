@@ -71,36 +71,23 @@ The same lint target is reused for all three tools (we override the tool selecti
 Lint waivers can be added to the flow by placing them in the corresponding waiver file.
 In this example this would be `lint/aes.waiver` for AscentLint and `lint/aes.vlt` for Verilator.
 
-In order to manually run lint on a specific block, make sure AscentLint is properly installed and step into the `hw/lint` folder.
-The makefile in that folder contains all targets that can be manually invoked.
-For example, to run lint on AES, do:
-```console
-$ cd $REPO_TOP/hw/lint
-$ make ip-aes_lint
-```
-This run will exit with PASSED status on the command line if there are no lint errors or warnings.
-Otherwise it will exit with ERROR status, in which case you can get more information by running
-```console
-$ cd $REPO_TOP/hw/lint
-$ make clean
-$ make ip-aes_lint
-$ make report
-```
-In order to build all lint targets and produce a summary report, the `make all` target can be invoked.
-For more detailed information on a particular lint run you can inspect the tool output inside the build folder that is created by FuseSoC.
-
-Note that all AscentLint targets have a Verilator and Verible counterparts that are suffixed with `_vlint` and `_slint`, respectively.
-This enables designers without access to AscentLint to iterate with open-source tools before making their first Pull Request.
-
-For batch regressions we have integrated this flow into the `dvsim` tool, which can be invoked as follows from the root of the project repository:
+All three linting tools mentioned above have been integrated with the `dvsim` regression tool.
+In order to manually invoke any of the linting tools on a specific block, make sure that the corresponding linting tool is properly installed, step into the project root and call
 ```console
 $ cd $REPO_TOP
-$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool ascentlint --purge -mp 1
+$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --purge --select-cfgs <lint-config-name>
 ```
-where the `top_earlgrey_lint_cfgs.hjson` file contains all the lint targets to be run in that regression (currently all available comportable IPs and the top-level are run).
-The `purge` option ensures that the scratch directory is fully erased before starting the build, and `mp 1` sets the number of parallel workers to one (should be set depending on your licensing situation).
+where `<lint-config-name>` is the name of the linting configuration as defined in the `top_earlgrey_lint_cfgs.hjson` regression list (currently that file contains a lint configuration for all available comportable IPs and the top-level).
 
-The batch regression is regularly run on the `master` branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
+In order to run all defined configs in `top_earlgrey_lint_cfgs.hjson` as a batch regression, just omit the `--select-cfgs` switch as follows:
+```console
+$ cd $REPO_TOP
+$ util/dvsim/dvsim.py hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --purge
+```
+The `purge` option ensures that the scratch directory is fully erased before starting the build.
+Depending on the number of AscentLint licenses that can be checked out at a time, you may also want to set the number of parallel workers to one using `--max-parallel <number>`.
+
+Batch regressions for all three tools are regularly run on the `master` branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
 The dashboard can be found by following the appropriate link on the [hardware IP overview page](https://docs.opentitan.org/hw).
 
 # CDC Linting

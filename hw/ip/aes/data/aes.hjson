@@ -48,23 +48,46 @@
 ##############################################################################
 # initial key registers
     { multireg: {
-      name: "KEY",
+      name: "KEY_SHARE0",
       desc: '''
-        Initial Key Registers.
+        Initial Key Registers Share 0.
+        The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
         Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
-        All key registers must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+        All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
         The order in which the registers are updated does not matter.
         Can only be updated when the AES unit is idle.
         If the AES unit is non-idle, writes to these registers are ignored.
       '''
       count: "NumRegsKey",
-      cname: "KEY",
+      cname: "KEY_SHARE0",
       swaccess: "wo",
       hwaccess: "hrw",
       hwext:    "true",
       hwqe:     "true",
       fields: [
-        { bits: "31:0", name: "key", desc: "Initial Key" }
+        { bits: "31:0", name: "key_share0", desc: "Initial Key Share 0" }
+      ],
+      }
+    },
+    { multireg: {
+      name: "KEY_SHARE1",
+      desc: '''
+        Initial Key Registers Share 1.
+        The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+        Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+        All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+        The order in which the registers are updated does not matter.
+        Can only be updated when the AES unit is idle.
+        If the AES unit is non-idle, writes to these registers are ignored.
+      '''
+      count: "NumRegsKey",
+      cname: "KEY_SHARE1",
+      swaccess: "wo",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      fields: [
+        { bits: "31:0", name: "key_share1", desc: "Initial Key Share 1" }
       ],
       }
     },
@@ -151,6 +174,9 @@
       AES unit is non-idle, writes to this register are ignored.
       This register is shadowed, meaning two subsequent write operations are required to change its content.
       If the two write operations try to set a different value, a ctrl_err alert is triggered.
+      Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
+      A write to the Control Register is considered the start of a new message.
+      Hence, software needs to provide new key, IV and input data afterwards.
     '''
     swaccess: "rw",
     hwaccess: "hrw",
@@ -164,42 +190,54 @@
           Select encryption(0) or decryption(1) operation of AES unit.
         '''
       }
-      { bits: "4:1",
+      { bits: "6:1",
         name: "MODE",
-        resval: "0x8",
+        resval: "0x20",
         hwaccess: "hrw",
         desc:  '''
-          4-bit one-hot field to select AES block cipher mode.
-          Invalid input values, i.e., values with multiple bits set and value 4'b0000, are mapped to AES_NONE (4'b1000).
+          6-bit one-hot field to select AES block cipher mode.
+          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
         '''
         enum: [
           { value: "1",
             name: "AES_ECB",
             desc: '''
-              4'b0001: Electronic Codebook (ECB) mode.
+              6'b00_0001: Electronic Codebook (ECB) mode.
             '''
           },
           { value: "2",
             name: "AES_CBC",
             desc: '''
-              4'b0010: Cipher Block Chaining (CBC) mode.
+              6'b00_0010: Cipher Block Chaining (CBC) mode.
             '''
           },
           { value: "4",
-            name: "AES_CTR",
+            name: "AES_CFB",
             desc: '''
-              4'b0100: Counter (CTR) mode.
+              6'b00_0100: Cipher Feedback (CFB) mode.
             '''
           },
           { value: "8",
+            name: "AES_OFB",
+            desc: '''
+              6'b00_1000: Output Feedback (OFB) mode.
+            '''
+          },
+          { value: "16",
+            name: "AES_CTR",
+            desc: '''
+              6'b01_0000: Counter (CTR) mode.
+            '''
+          },
+          { value: "32",
             name: "AES_NONE",
             desc: '''
-              4'b1000: Invalid input values, i.e., value with multiple bits set and value 4'b0000, are mapped to AES_NONE.
+              6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE.
             '''
           }
         ]
       }
-      { bits: "7:5",
+      { bits: "9:7",
         name: "KEY_LEN",
         resval: "1",
         hwaccess: "hrw",
@@ -230,12 +268,13 @@
           }
         ]
       }
-      { bits: "8",
+      { bits: "10",
         name: "MANUAL_OPERATION",
         desc:  '''
           Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
           In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
           This is the most efficient mode to operate in.
+          Note that the corresponding status tracking is automatically cleared upon a write to the Control Register.
           In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
           This mode is useful if software needs full control over the AES unit.
         '''

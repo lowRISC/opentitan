@@ -268,7 +268,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   flash_erase_ctrl #(
     .AddrW(BusAddrW),
     .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage),
+    .WordsPerPage(BusWordsPerPage),
     .EraseBitWidth(EraseBitWidth)
   ) u_flash_erase_ctrl (
     // Software Interface

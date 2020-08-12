@@ -59,7 +59,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end else begin
-      `uvm_fatal(`gfn, $sformatf("access unexpected addr 0x%0h", csr_addr))
+      `uvm_fatal(`gfn, $sformatf("\naccess unexpected addr 0x%0h", csr_addr))
     end
 
     sb_exp_wr_item = new();
@@ -239,11 +239,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
       if (!dut_trn.compare(exp_trn)) begin
           if (!check_overflow_data_fmt_fifo(exp_trn, dut_trn)) begin  // fmt_overflow transaction
-            `uvm_error(`gfn, $sformatf("%s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
+            `uvm_error(`gfn, $sformatf("\ndirection %s item mismatch!\n--> EXP:\n%0s\--> DUT:\n%0s",
               (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()))
           end
       end else begin
-        `uvm_info(`gfn, $sformatf("direction %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
+        `uvm_info(`gfn, $sformatf("\ndirection %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
             (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()), UVM_DEBUG)
       end
     end
@@ -279,7 +279,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_DEBUG)
     if (cfg.en_scb) begin
       str = {$sformatf("\n\n*** SCOREBOARD CHECK\n")};
-      str = {str, $sformatf("    - Total checked trans   %0d\n", num_exp_tran)};
+      str = {str, $sformatf("    - total checked trans   %0d\n", num_exp_tran)};
       `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
     end
   endfunction : report_phase

@@ -196,7 +196,7 @@ module top_earlgrey_cw305 #(
     .jtag_tdi_o   ( jtag_tdi        ),
     .jtag_tdo_i   ( jtag_tdo        ),
     // To core side
-    .out_core_i   ( {dio_out_core, mio_out_core} ),
+    .out_core_i   ( {dio_out_core, mio_out}      ),
     .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
     .in_core_o    ( {dio_in_core,  mio_in_core}  ),
     // To padring side
@@ -258,5 +258,24 @@ module top_earlgrey_cw305 #(
     // DFT signals
     .scanmode_i      ( 1'b0          )
   );
+
+  //////////////////////////////////////
+  // Generate precise capture trigger //
+  //////////////////////////////////////
+
+  // GPIO15 is used as capture trigger.
+  localparam int MioIdxTrigger = 15;
+  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out;
+
+  for (genvar i = 0; i < padctrl_reg_pkg::NMioPads; i++) begin : gen_mio_out
+    if (i == MioIdxTrigger) begin
+      // To obtain a more precise capture trigger for SCA analysis, we only forward the software-
+      // controlled capture trigger when the AES module is actually busy (performing either
+      // encryption/decryption or clearing internal registers).
+      assign mio_out[i] = mio_out_core[i] & ~top_earlgrey.aes_idle;
+    end else begin
+      assign mio_out[i] = mio_out_core[i];
+    end
+  end
 
 endmodule : top_earlgrey_cw305

@@ -26,7 +26,8 @@ void aes_init(aes_cfg_t aes_cfg) {
   REG32(AES_CTRL_SHADOWED(0)) = cfg_val;
 };
 
-void aes_key_put(const void *key, aes_key_len_t key_len) {
+void aes_key_put(const void *key_share0, const void *key_share1,
+                 aes_key_len_t key_len) {
   // Determine how many key registers to use.
   size_t num_regs_key_used;
   if (key_len == kAes256) {
@@ -39,19 +40,23 @@ void aes_key_put(const void *key, aes_key_len_t key_len) {
 
   // Write the used key registers.
   for (int i = 0; i < num_regs_key_used; ++i) {
-    REG32(AES_KEY0(0) + i * sizeof(uint32_t)) = ((uint32_t *)key)[i];
+    REG32(AES_KEY_SHARE0_0(0) + i * sizeof(uint32_t)) =
+        ((uint32_t *)key_share0)[i];
+    REG32(AES_KEY_SHARE1_0(0) + i * sizeof(uint32_t)) =
+        ((uint32_t *)key_share1)[i];
   }
   // Write the unused key registers (the AES unit requires all key registers to
   // be written).
   for (int i = num_regs_key_used; i < AES_NUM_REGS_KEY; ++i) {
-    REG32(AES_KEY0(0) + i * sizeof(uint32_t)) = 0x0;
+    REG32(AES_KEY_SHARE0_0(0) + i * sizeof(uint32_t)) = 0x0;
+    REG32(AES_KEY_SHARE1_0(0) + i * sizeof(uint32_t)) = 0x0;
   }
 }
 
 void aes_iv_put(const void *iv) {
   // Write the four initialization vector registers.
   for (int i = 0; i < AES_NUM_REGS_IV; ++i) {
-    REG32(AES_IV0(0) + i * sizeof(uint32_t)) = ((uint32_t *)iv)[i];
+    REG32(AES_IV_0(0) + i * sizeof(uint32_t)) = ((uint32_t *)iv)[i];
   }
 }
 
@@ -67,7 +72,7 @@ void aes_data_put_wait(const void *data) {
 void aes_data_put(const void *data) {
   // Write the four input data registers.
   for (int i = 0; i < AES_NUM_REGS_DATA; ++i) {
-    REG32(AES_DATA_IN0(0) + i * sizeof(uint32_t)) = ((uint32_t *)data)[i];
+    REG32(AES_DATA_IN_0(0) + i * sizeof(uint32_t)) = ((uint32_t *)data)[i];
   }
 }
 
@@ -83,7 +88,7 @@ void aes_data_get_wait(void *data) {
 void aes_data_get(void *data) {
   // Read the four output data registers.
   for (int i = 0; i < AES_NUM_REGS_DATA; ++i) {
-    ((uint32_t *)data)[i] = REG32(AES_DATA_OUT0(0) + i * sizeof(uint32_t));
+    ((uint32_t *)data)[i] = REG32(AES_DATA_OUT_0(0) + i * sizeof(uint32_t));
   }
 }
 

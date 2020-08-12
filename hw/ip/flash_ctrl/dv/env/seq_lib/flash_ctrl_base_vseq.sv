@@ -35,14 +35,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     uvm_reg csr;
     data =
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.en0, data, region_cfg.en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.rd_en0, data, region_cfg.read_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.prog_en0, data, region_cfg.program_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.erase_en0, data, region_cfg.erase_en) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.base0, data, region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.size0, data, region_cfg.num_pages) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg0.partition0, data, region_cfg.partition);
-    csr = ral.get_reg_by_name($sformatf("mp_region_cfg%0d", index));
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.en_0, data, region_cfg.en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.rd_en_0, data, region_cfg.read_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.prog_en_0, data, region_cfg.program_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.erase_en_0, data, region_cfg.erase_en) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages) |
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.partition_0, data, region_cfg.partition);
+    csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
     csr_wr(.csr(csr), .value(data));
   endtask
 
@@ -113,6 +113,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for prog fifo to not be full.
   virtual task wait_flash_ctrl_prog_fifo_not_full();
+    // TODO: if intr enabled, then check interrupt, else check status.
     bit prog_full;
     `DV_SPINWAIT(
       do begin
@@ -124,6 +125,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for rd fifo to not be empty.
   virtual task wait_flash_ctrl_rd_fifo_not_empty();
+    // TODO: if intr enabled, then check interrupt, else check status.
     bit read_empty;
     `DV_SPINWAIT(
       do begin
@@ -149,12 +151,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Program data into flash, stopping whenever full.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_write(bit [TL_DW-1:0] data[$]);
+  virtual task flash_ctrl_write(bit [TL_DW-1:0] data[$], bit poll_fifo_status);
     foreach (data[i]) begin
       // Check if prog fifo is full. If yes, then wait for space to become available.
-      // TODO: interface is backpressure enabled, so the above check is not needed atm.
-      // TODO: if intr enabled, then check interrupt, else check status.
-      // wait_flash_ctrl_prog_fifo_not_full();
+      // Note that this polling is not needed since the interface is backpressure enabled.
+      if (poll_fifo_status) begin
+        wait_flash_ctrl_prog_fifo_not_full();
+      end
       mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(data[i]));
       `uvm_info(`gfn, $sformatf("flash_ctrl_write: 0x%0h", data[i]), UVM_MEDIUM)
     end
@@ -162,12 +165,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read data from flash, stopping whenever empty.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_read(uint num_words, ref bit [TL_DW-1:0] data[$]);
+  virtual task flash_ctrl_read(uint num_words, ref bit [TL_DW-1:0] data[$], bit poll_fifo_status);
     for (int i = 0; i < num_words; i++) begin
       // Check if rd fifo is empty. If yes, then wait for data to become available.
-      // TODO: interface is backpressure enabled, so the above check is not needed atm.
-      // TODO: if intr enabled, then check interrupt, else check status.
-      // wait_flash_ctrl_rd_fifo_not_empty();
+      // Note that this polling is not needed since the interface is backpressure enabled.
+      if (poll_fifo_status) begin
+        wait_flash_ctrl_rd_fifo_not_empty();
+      end
       mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[i]));
       `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_MEDIUM)
     end
@@ -264,34 +268,33 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Ensure that the flash page / bank has indeed been erased.
   virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op);
     flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
-    bit [TL_AW-1:0]         start_addr;
+    bit [TL_AW-1:0]         erase_check_addr;
     uint                    num_words;
 
     case (flash_op.erase_type)
       flash_ctrl_pkg::FlashErasePage: begin
-        start_addr = addr_attrs.page_start_addr;
+        erase_check_addr = addr_attrs.page_start_addr;
         num_words = FlashNumBusWordsPerPage;
       end
       flash_ctrl_pkg::FlashEraseBank: begin
         // TODO: check if bank erase was supported
-        start_addr = addr_attrs.bank_start_addr;
+        erase_check_addr = addr_attrs.bank_start_addr;
         num_words = FlashNumBusWordsPerBank;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
       end
     endcase
-    `uvm_info(`gfn, $sformatf("{%s}: start_addr = 0x%0h, num_words = %0d",
-                              addr_attrs.sprint(), start_addr, num_words), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: addr = 0x%0h, num_words = %0d",
+                              erase_check_addr, num_words), UVM_MEDIUM)
 
     for (int i = 0; i < num_words; i++) begin
       logic [TL_DW-1:0] data;
-      addr_attrs.incr(TL_DBW);
-      data = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(
-          addr_attrs.bank_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: {%s} = 0x%0h",
-                                addr_attrs.sprint(), data), UVM_MEDIUM)
+      data = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
+      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: bank: %0d, addr: 0x%0h, data: 0x%0h",
+                                addr_attrs.bank, erase_check_addr, data), UVM_MEDIUM)
       `DV_CHECK_CASE_EQ(data, '1)
+      erase_check_addr += TL_DBW;
     end
   endfunction
 

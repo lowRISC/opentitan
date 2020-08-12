@@ -243,7 +243,7 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
     randomize_gpr(instr);
   endfunction
 
-  function void randomize_gpr(ref riscv_instr instr);
+  function void randomize_gpr(riscv_instr instr);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
       if (avail_regs.size() > 0) {
         if (has_rs1) {
@@ -274,6 +274,31 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
       }
       // TODO: Add constraint for CSR, floating point register
     )
+  endfunction
+
+  function riscv_instr get_init_gpr_instr(riscv_reg_t gpr, bit [XLEN-1:0] val);
+    riscv_pseudo_instr li_instr;
+    li_instr = riscv_pseudo_instr::type_id::create("li_instr");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(li_instr,
+       pseudo_instr_name == LI;
+       rd == gpr;
+    )
+    li_instr.imm_str = $sformatf("0x%0x", val);
+    return li_instr;
+  endfunction
+
+  function void add_init_vector_gpr_instr(riscv_vreg_t gpr, bit [XLEN-1:0] val);
+    riscv_vector_instr instr;
+    $cast(instr, riscv_instr::get_instr(VMV));
+    instr.m_cfg = cfg;
+    instr.avoid_reserved_vregs_c.constraint_mode(0);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(instr,
+      va_variant == VX;
+      vd == gpr;
+      rs1 == cfg.gpr[0];
+    )
+    instr_list.push_front(instr);
+    instr_list.push_front(get_init_gpr_instr(cfg.gpr[0], val));
   endfunction
 
 endclass

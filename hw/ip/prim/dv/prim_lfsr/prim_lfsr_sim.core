@@ -7,7 +7,7 @@ description: "LFSR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:lfsr:0.1
     file_type: systemVerilogSource
 
   files_dv:
@@ -16,7 +16,6 @@ filesets:
       - lowrisc:dv:common_ifs
     files:
       - tb/prim_lfsr_tb.sv
-      - tb/prim_lfsr_bind.sv
     file_type: systemVerilogSource
 
 targets:

@@ -103,8 +103,8 @@ JAL x1, selcxSub
 ADDI x0, x0, 0
 ADDI x8, x0, 5
 LOOP x30, 2
-BN.SID x8++, 0(x18)
-ADDI x18, x18, 1
+BN.SID x8, 0(x18++)
+ADDI x8, x8, 1
 JALR x0, x1, 0
 
 dmXd0:
@@ -265,8 +265,8 @@ ADD x19, x5, x0
 ADD x20, x6, x0
 ADDI x8, x0, 4
 LOOP x30, 2
-BN.SID x8++, 0(x21)
-ADDI x21, x21, 1
+BN.SID x8, 0(x21++)
+ADDI x8, x8, 1
 ADDI x8, x0, 4
 JALR x0, x1, 0
 
@@ -361,8 +361,8 @@ ADDI x19, x7, 0
 ADDI x10, x0, 4
 ADDI x8, x0, 4
 LOOP x30, 2
-BN.SID x8++, 0(x21)
-ADDI x21, x21, 1
+BN.SID x8, 0(x21++)
+ADDI x8, x8, 1
 ADDI x8, x0, 4
 ADDI x10, x0, 4
 LW x12, 4(x0)

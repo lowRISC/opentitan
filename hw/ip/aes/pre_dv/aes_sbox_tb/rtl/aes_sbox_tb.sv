@@ -38,17 +38,13 @@ module aes_sbox_tb #(
   assign stimulus = count_q[7:0];
 
   // Instantiate SBox Implementations
-  aes_sbox #(
-    .SBoxImpl ( "lut" )
-  ) aes_sbox_lut (
+  aes_sbox_lut aes_sbox_lut (
     .op_i   ( op           ),
     .data_i ( stimulus     ),
     .data_o ( responses[0] )
   );
 
-  aes_sbox #(
-    .SBoxImpl ( "canright" )
-  ) aes_sbox_canright (
+  aes_sbox_canright aes_sbox_canright (
     .op_i   ( op           ),
     .data_i ( stimulus     ),
     .data_o ( responses[1] )

@@ -8,21 +8,32 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rv_timer:0.1
-    files:
-      - tb/rv_timer_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:rv_timer_test
+      - lowrisc:dv:rv_timer_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
 
 targets:
-  sim:
+  sim: &sim_target
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
     default_tool: vcs
+
+  lint:
+    <<: *sim_target
+    default_tool: verilator
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+

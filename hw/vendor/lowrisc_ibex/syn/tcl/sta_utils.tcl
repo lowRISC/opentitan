@@ -5,37 +5,28 @@
 proc setup_path_groups {input_list output_list path_group_list_name} {
   upvar $path_group_list_name path_group_list
 
+  set flops_in [all_registers -edge_triggered -data_pins]
+  set flops_out [all_registers -edge_triggered -clock_pins]
+  group_path -name reg2reg -from $flops_out -to $flops_in
+  lappend path_group_list reg2reg
+
   foreach output $output_list {
     set output_name [lindex $output 0]
-    set output_ports [get_ports $output_name]
-    set path_group_name "x2out_${output_name}"
-    group_path -name $path_group_name -to $output_ports
-    lappend path_group_list $path_group_name
+    lappend outputs_list [get_ports $output_name]
   }
+  group_path -name reg2out -from $flops_out -to $outputs_list
+  lappend path_group_list reg2out
 
   foreach input $input_list {
     set input_name [lindex $input 0]
-    set input_ports [get_ports $input_name]
-    set path_group_name "in2x_${input_name}"
-    group_path -name $path_group_name -from $input_ports
-    lappend path_group_list $path_group_name
+    lappend inputs_list [get_ports $input_name]
   }
+  group_path -name in2reg -from $inputs_list -to $flops_in
+  lappend path_group_list in2reg
 
-  global lr_synth_flop_in_pin
-  global lr_synth_flop_out_pin
+  group_path -name in2out -from $inputs_list -to $outputs_list
+  lappend path_group_list in2out
 
-  set flops_in [get_pins $lr_synth_flop_in_pin]
-  set flops_out [get_pins $lr_synth_flop_out_pin]
-
-  group_path -name "reg2reg" -to $flops_in -from $flops_out
-  lappend path_group_list "reg2reg"
-}
-
-proc setup_i2o_pathgroup {input_name output_name group_name} {
-  set output_ports [get_ports $output_name]
-  set input_ports [get_ports $input_name]
-
-  group_path -name $group_name -to $output_ports -from $input_ports
 }
 
 proc timing_report {path_group rpt_out path_count} {

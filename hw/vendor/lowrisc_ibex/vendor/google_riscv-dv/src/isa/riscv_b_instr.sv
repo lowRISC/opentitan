@@ -111,7 +111,7 @@ class riscv_b_instr extends riscv_instr;
       return super.convert2asm(prefix);
     end
 
-    if (comment != "") asm_str_final = {asm_str, " #", comment};
+    if (comment != "") asm_str_final = {asm_str_final, " #", comment};
     return asm_str_final.tolower();
   endfunction
 

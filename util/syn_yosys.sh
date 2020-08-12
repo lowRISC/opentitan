@@ -35,41 +35,23 @@ cd syn_out
 grep -Ev 'incdir|pins_if' ../build/*/*/*.scr | sed 's!.*/!!' > flist_gold
 
 # generate revised flist by replacing '.sv' by '.v' and removing packages
-sed 's/.sv/.v/g' flist_gold | grep -v "_pkg.v" > flist_rev
+sed -e 's/.sv/.v/g' flist_gold | grep -v "_pkg.v" > flist_rev
 
 #-------------------------------------------------------------------------
 # convert all RTL files to Verilog
 #-------------------------------------------------------------------------
-
-# hack SystemVerilog files to avoid SV2V and/or LEC issues
-# TODO: eventually remove these hacks
-
-# 1) Setting ByteAccess = 0 for tlul_adapter_sram.sv doesn't work. This
-# hack changes the functionality so needs fixing
-sed -i 's/ByteAccess *(0)/ByteAccess(1)/g' *.sv
-
-# 2) Replace "inside" for dm_csrs.sv and dm_mem.sv. This hack changes
-# the functionality so needs fixing
-sed -i 's/) inside/)/g' dm_csrs.sv
-sed -i 's/\[(dm::Data0):DataEnd\]:/dm::Data0:/g' dm_csrs.sv
-sed -i 's/\[(dm::ProgBuf0):ProgBufEnd\]:/dm::ProgBuf0:/g' dm_csrs.sv
-sed -i 's/inside//g' dm_mem.sv
-sed -i 's/\[(dm::DataAddr):DataEndAddr\]:/dm::DataAddr:/' dm_mem.sv
-sed -i 's/\[DataBaseAddr:DataEndAddr\]:/DataBaseAddr:/' dm_mem.sv
-sed -i 's/\[ProgBufBaseAddr:ProgBufEndAddr\]:/ProgBufBaseAddr:/' dm_mem.sv
-sed -i 's/\[AbstractCmdBaseAddr:AbstractCmdEndAddr\]:/AbstractCmdBaseAddr:/' dm_mem.sv
-sed -i 's/\[FlagsBaseAddr:FlagsEndAddr\]:/FlagsBaseAddr:/' dm_mem.sv
 
 printf "\nSV2V VERSION:\n"
 sv2v --version
 
 printf "\nSV2V ERRORS:\n"
 
-# prim_util_memload.sv is only meant to be included within a module
-mv prim_util_memload.sv{,h}
-sed -i "s/prim_util_memload\.sv/prim_util_memload.svh/" *.sv
+# drive strengths are not supported by Yosys
+sed -i.bak -e "s/VERILATOR/SYNTHESIS/" prim_generic_pad_wrapper.sv
 
-sv2v -DSYNTHESIS *.sv > combined.v
+rm *.sv.bak
+
+sv2v -DSYNTHESIS *.sv +RTS -N4 > combined.v
 # split files up
 modules=`cat combined.v | grep "^module" | sed -e "s/^module //" | sed -e "s/ (//"`
 echo "$modules" > modules.txt  # for debugging
@@ -81,15 +63,12 @@ rm combined.v
 # rename ibex_register_file_ff, match filename to module name
 mv ibex_register_file{,_ff}.v
 
-# remove *pkg.v files (they are empty files and not needed for Verilog)
-rm -Rf *_pkg.v
-
 #-------------------------------------------------------------------------
 # run LEC (generarted Verilog vs. original SystemVerilog)
 #-------------------------------------------------------------------------
 printf "\n\nLEC RESULTS:\n"
 
-# top_earlgrey and all its submodules
+# all of top_earlgrey's submodules
 declare -a modules=(
   "rv_dm"
   "spi_device"
@@ -115,8 +94,10 @@ declare -a modules=(
   "xbar_main"
   "xbar_peri"
   "flash_phy"
-  "top_earlgrey"
 )
+
+# TODO: top_earlgrey appears to be too large for verification under the currrent
+# setup. Consider adding verification using `hier_compare`.
 
 for module in "${modules[@]}"; do
   export LEC_TOP="$module"

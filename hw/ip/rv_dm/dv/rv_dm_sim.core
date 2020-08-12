@@ -8,13 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rv_dm:0.1
-    files:
-      - tb/rv_dm_bind.sv
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
       - lowrisc:dv:rv_dm_test
+      - lowrisc:dv:rv_dm_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

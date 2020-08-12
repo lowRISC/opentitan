@@ -18,8 +18,9 @@
   build_log:  "{build_dir}/lint.log"
   // We rely on fusesoc to run lint for us
   build_cmd:  "fusesoc"
-  build_opts: ["--cores-root {proj_root}",
+  build_opts: ["--cores-root {proj_root}/hw",
                "run",
+               "--flag=fileset_{design_level}",
                "--target={flow}",
                "--tool={tool}",
                "--build-root={build_dir}",

@@ -201,7 +201,7 @@ def main():
         if args.update and target_dir.exists():
             # We only reach this point if |target_dir| contained a toolchain
             # before, so removing it is reasonably safe.
-            shutil.rmtree(target_dir)
+            shutil.rmtree(str(target_dir))
 
         install(archive_file, target_dir)
         postinstall_rewrite_configs(target_dir.resolve())

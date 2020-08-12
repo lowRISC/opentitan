@@ -13,6 +13,7 @@ framework and build a scalable python based generator in the near future.
 ```bash
 pip3 install python-constraint
 pip3 install numpy
+pip3 install bitstring
 ```
 
 ### Generate a simple test

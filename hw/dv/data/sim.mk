@@ -4,6 +4,7 @@
 
 .DEFAULT_GOAL := all
 
+LOCK_TOOL_SRCS_DIR ?= flock --timeout 3600 ${tool_srcs_dir} --command
 LOCK_SW_BUILD ?= flock --timeout 3600 ${sw_build_dir} --command
 
 all: build run
@@ -16,7 +17,7 @@ build: compile_result
 prep_tool_srcs:
 	@echo "[make]: prep_tool_srcs"
 	mkdir -p ${tool_srcs_dir}
-	cp -Ru ${tool_srcs} ${tool_srcs_dir}/.
+	${LOCK_TOOL_SRCS_DIR} "cp -Ru ${tool_srcs} ${tool_srcs_dir}/."
 
 pre_compile:
 	@echo "[make]: pre_compile"

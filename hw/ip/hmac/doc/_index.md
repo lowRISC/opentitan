@@ -25,9 +25,9 @@ generator to check the integrity of an incoming message and a signature signed
 with the same secret key. It generates a different authentication code with the
 same message if the secret key is different.
 
-The 256-bit secret key written in {{< regref "KEY0" >}} to {{< regref "KEY7" >}}. The message to authenticate
+The 256-bit secret key written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}. The message to authenticate
 is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can
-be read from {{< regref "DIGEST0" >}} to {{< regref "DIGEST7" >}}. The `hash_done` interrupt is raised to
+be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}. The `hash_done` interrupt is raised to
 report to software that the final digest is available.
 
 The HMAC IP can run in SHA-256-only mode, whose purpose is to check the
@@ -97,7 +97,7 @@ contents). It is recommended this back-pressure is avoided by not writing to the
 memory-mapped message FIFO when it is full (As indicated by {{< regref "STATUS.fifo_full" >}}).
 The logic assumes the received message is big-endian. If it is little-endian,
 the software must set {{< regref "CFG.endian_swap" >}} to **1**.  The byte order of the digest
-registers, from {{< regref "DIGEST0" >}} to {{< regref "DIGEST7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
+registers, from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
 
 The message length is calculated by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
 The packer converts non-word writes into full word writes and feeds into the message FIFO.
@@ -231,7 +231,7 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
   HMAC_CFG(0) = HMAC_CFG_SHA_EN
               | HMAC_CFG_HMAC_EN
               | (endianess << HMAC_CFG_ENDIAN_SWAP_LSB)
-              | (digest_endian << HMAC_CFG_DIGEST_SWAP_LSB);
+              | (digest_endian << HMAC_CFG_DIGEST__SWAP_LSB);
 
   // Enable interrupts if needed.
 
@@ -278,7 +278,7 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 
   // Read the digest
   for (int i = 0 ; i < 8 ; i++) {
-    *(hash + i) = REG32(HMAC_DIGEST0(0) + (i << 2));
+    *(hash + i) = REG32(HMAC_DIGEST_0(0) + (i << 2));
   }
 }
 ```

@@ -10,10 +10,10 @@
 #include "sw/device/lib/base/log.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/spi_device.h"
 #include "sw/device/lib/uart.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
@@ -77,13 +77,26 @@ static void usb_receipt_callback_1(uint8_t c) {
 }
 
 static dif_gpio_t gpio;
+static dif_spi_device_t spi;
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
   base_set_stdout(uart_stdout);
 
   pinmux_init();
-  spid_init();
+
+  mmio_region_t spi_reg = mmio_region_from_addr(0x40020000);
+  dif_spi_device_config_t spi_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_fifo_timeout = 63,
+      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+  };
+  CHECK(dif_spi_device_init(spi_reg, &spi_config, &spi) ==
+        kDifSpiDeviceResultOk);
 
   dif_gpio_config_t gpio_config = {
       .base_addr = mmio_region_from_addr(0x40010000),
@@ -106,7 +119,8 @@ int main(int argc, char **argv) {
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
   usb_simpleserial_init(&simple_serial1, &usbdev, 2, usb_receipt_callback_1);
 
-  spid_send("SPI!", 4);
+  CHECK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL) ==
+        kDifSpiDeviceResultOk);
 
   uint32_t gpio_state = 0;
   bool pass_signaled = false;
@@ -114,7 +128,7 @@ int main(int argc, char **argv) {
     usbdev_poll(&usbdev);
 
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
-    demo_spi_to_log_echo();
+    demo_spi_to_log_echo(&spi);
 
     char rcv_char;
     while (uart_rcv_char(&rcv_char) != -1) {

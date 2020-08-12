@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for sensor_ctrl
+
+waive -rules HIER_NET_NOT_READ -location {sensor_ctrl_reg_top.sv} -regexp {reg_wdata} \
+      -comment "No registers are 32 bits"
+
+waive -rules HIER_NET_NOT_READ -location {sensor_ctrl_reg_top.sv} -regexp {reg_be} \
+      -comment "No registers are 32 bits"
+
+waive -rules NOT_READ -location {sensor_ctrl_reg_top.sv} -regexp {reg_wdata} \
+      -comment "No registers are 32 bits"

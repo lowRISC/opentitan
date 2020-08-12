@@ -128,7 +128,9 @@ class riscv_instr extends uvm_object;
           !(!cfg.enable_floating_point &&
             (instr_inst.group inside {RV32F, RV64F, RV32D, RV64D})) &&
           !(!cfg.enable_vector_extension &&
-            (instr_inst.group inside {RVV}))
+            (instr_inst.group inside {RVV})) &&
+          !(cfg.vector_instr_only &&
+            !(instr_inst.group inside {RVV}))
           ) begin
         instr_category[instr_inst.category].push_back(instr_name);
         instr_group[instr_inst.group].push_back(instr_name);
@@ -267,12 +269,27 @@ class riscv_instr extends uvm_object;
      return instr_h;
   endfunction : get_rand_instr
 
-  static function riscv_instr get_load_store_instr(riscv_instr_name_t load_store_instr[] = {});
+  static function riscv_instr get_load_store_instr(riscv_instr_name_t load_store_instr[$] = {});
      riscv_instr instr_h;
      int unsigned idx;
+     int unsigned i;
      riscv_instr_name_t name;
      if (load_store_instr.size() == 0) begin
        load_store_instr = {instr_category[LOAD], instr_category[STORE]};
+     end
+     // Filter out unsupported load/store instruction
+     if (unsupported_instr.size() > 0) begin
+       while (i < load_store_instr.size()) begin
+         if (load_store_instr[i] inside {unsupported_instr}) begin
+           load_store_instr.delete(i);
+         end else begin
+           i++;
+         end
+       end
+     end
+     if (load_store_instr.size() == 0) begin
+       $error("Cannot find available load/store instruction");
+       $fatal(1);
      end
      idx = $urandom_range(0, load_store_instr.size()-1);
      name = load_store_instr[idx];

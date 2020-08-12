@@ -43,6 +43,13 @@ package tlul_pkg;
     logic                         d_ready;
   } tl_h2d_t;
 
+  localparam tl_h2d_t TL_H2D_DEFAULT = '{
+    d_ready:  1'b1,
+    a_opcode: tl_a_op_e'('0),
+    a_user:   tl_a_user_t'('0),
+    default:  '0
+  };
+
   typedef struct packed {
     logic                         d_valid;
     tl_d_op_e                     d_opcode;
@@ -57,4 +64,9 @@ package tlul_pkg;
     logic                         a_ready;
   } tl_d2h_t;
 
+  localparam tl_d2h_t TL_D2H_DEFAULT = '{
+    a_ready:  1'b1,
+    d_opcode: tl_d_op_e'('0),
+    default:  '0
+  };
 endpackage

@@ -31,12 +31,6 @@ parameters:
     default: "../../../../../examples/sw/led/led.vmem"
     paramtype: vlogparam
 
-  FPGA_XILINX:
-    datatype: str
-    description: Identifies Xilinx FPGA targets to set DSP pragmas for performance counters.
-    default: 1
-    paramtype: vlogdefine
-
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
     datatype: str
@@ -52,7 +46,6 @@ targets:
     toplevel: top_artya7
     parameters:
       - SRAMInitFile
-      - FPGA_XILINX
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:

@@ -15,7 +15,7 @@ class i2c_device_driver extends i2c_driver;
 
   virtual task get_and_drive();
     uint num_stretch_host_clks;
-    uint rd_data_cnt = 0;
+    bit [7:0] rd_data_cnt = 8'd0;
     i2c_item rsp_item;
 
     @(posedge cfg.vif.rst_ni);
@@ -45,12 +45,12 @@ class i2c_device_driver extends i2c_driver;
           join
         end
         RdData: begin
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
-          rd_data_cnt++;
-          `DV_CHECK_LE(rd_data_cnt, 256);
+          if (rd_data_cnt == 8'd0) `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
           for (int i = 7; i >= 0; i--) begin
             cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
           end
+          // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
+          rd_data_cnt++;
           `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0x",
               rsp_item.tran_id, rsp_item.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
         end

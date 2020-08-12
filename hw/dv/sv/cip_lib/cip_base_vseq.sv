@@ -266,6 +266,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       "tl_errors":                  run_tl_errors_vseq(num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
+      "shadow_reg_errors":          run_shadow_reg_errors(num_times);
       "mem_partial_access":         run_mem_partial_access_vseq(num_times);
       "csr_mem_rw_with_rand_reset": run_csr_mem_rw_with_rand_reset_vseq(num_times);
       "csr_mem_rw":                 run_csr_mem_rw_vseq(num_times);
@@ -471,6 +472,92 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         end
         csr_utils_pkg::wait_no_outstanding_access();
+      end
+    end
+  endtask
+
+  virtual task split_all_csrs_by_shadowed(ref dv_base_reg shadowed_csrs[$],
+                                          ref dv_base_reg non_shadowed_csrs[$]);
+    dv_base_reg all_csrs[$];
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(all_csrs);
+    foreach (all_csrs[i]) begin
+      if (all_csrs[i].get_is_shadowed()) shadowed_csrs.push_back(all_csrs[i]);
+      else non_shadowed_csrs.push_back(all_csrs[i]);
+    end
+  endtask
+
+  virtual task run_shadow_reg_errors(int num_times);
+    csr_excl_item csr_excl = add_and_return_csr_excl("csr_excl");
+    dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$], test_csrs[$];
+    uvm_reg_data_t wdata;
+
+    split_all_csrs_by_shadowed(shadowed_csrs, non_shadowed_csrs);
+
+    for (int trans = 1; trans <= num_times; trans++) begin
+      `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
+                                num_times), UVM_LOW)
+      repeat ($urandom_range(10, 100)) begin
+        non_shadowed_csrs.shuffle();
+        test_csrs.delete();
+        test_csrs = {shadowed_csrs,
+                     non_shadowed_csrs[0: $urandom_range(0, non_shadowed_csrs.size()-1)]};
+        test_csrs.shuffle();
+
+        if ($urandom_range(1, 10) == 10) dut_init("HARD");
+
+        foreach (test_csrs[i]) begin
+          // check if parent block or register is excluded from write
+          if (csr_excl.is_excl(test_csrs[i], CsrExclWrite, CsrRwTest)) begin
+            `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclWrite exclusion",
+                                      test_csrs[i].get_full_name()), UVM_MEDIUM)
+            continue;
+          end
+          `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
+          wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrRwTest, csr_excl);
+
+          // if the write is shadow register's second write, there is a 50% possibility that the
+          // second write value is identical to its staged_value
+          if (test_csrs[i].is_staged()) begin
+            if ($urandom_range(0, 1)) wdata = test_csrs[i].get_staged_shadow_val();
+          end
+          csr_wr(.csr(test_csrs[i]), .value(wdata), .en_shadow_wr(0), .predict(1));
+          if (test_csrs[i].get_shadow_update_err()) begin
+            test_csrs[i].clear_shadow_update_err();
+            `uvm_info(`gfn, $sformatf("%0s update error", test_csrs[i].get_name()), UVM_LOW)
+            // TODO: add alert check
+            // `uvm_info(`gfn, $sformatf("%0s update error alert triggered",
+            //                           test_csrs[i].get_name()), UVM_LOW)
+          end
+        end
+
+        // random read to check if the register values are equal to the predicted values,
+        // reading shadow registers after their first write will clear the phase tracker
+        if ($urandom_range(0, 1)) begin
+          test_csrs = {shadowed_csrs, non_shadowed_csrs};
+          foreach (test_csrs[i]) begin
+            uvm_reg_data_t compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck,
+                                                               CsrRwTest, csr_excl);
+            // check if parent block or register is excluded from read
+            if (csr_excl.is_excl(test_csrs[i], CsrExclCheck, CsrRwTest)) begin
+              `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclCheck exclusion",
+                                        test_csrs[i].get_full_name()), UVM_MEDIUM)
+              continue;
+            end
+            // randomly decided to read a register or a field
+            if ($urandom_range(0, 1)) begin
+              csr_rd_check(.ptr(test_csrs[i]), .blocking(0), .compare(1'b1), .compare_vs_ral(1'b1),
+                           .compare_mask(compare_mask));
+            end else begin
+              uvm_reg_field test_fields[$];
+              bit compare;
+              test_csrs[i].get_fields(test_fields);
+              test_fields.shuffle();
+              compare = !csr_excl.is_excl(test_fields[0], CsrExclWriteCheck, CsrRwTest);
+              csr_rd_check(.ptr(test_fields[0]), .blocking(0), .compare(compare),
+                           .compare_vs_ral(1'b1));
+            end
+          end
+        end
       end
     end
   endtask

@@ -109,19 +109,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               return;
             end
           end
-          "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7": begin
+          "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7": begin
             string str_index;
             if (hmac_start) begin
               update_err_intr_code(SwUpdateSecretKeyInProcess);
               return;
             end
-            str_index = csr_name.substr(3,3);
+            str_index = csr_name.substr(4,4);
             key[str_index.atoi()] = item.a_data;
           end
           "wipe_secret", "intr_enable", "intr_state": begin
             // Do nothing
           end
-          "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7",
+          "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7",
           "status", "msg_length_lower", "msg_length_upper": begin
             `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
@@ -185,7 +185,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end
           end
         end
-        "digest0", "digest1", "digest2", "digest3", "digest4", "digest5", "digest6", "digest7":
+        "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7":
         begin
           // HW default output Littie Endian for each digest (32 bits)
           // But standard DPI function expect output is in Big Endian
@@ -207,7 +207,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
         end
         "err_code": if (cfg.en_cov) cov.err_code_cg.sample(item.d_data);
-        "key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "cfg", "cmd",
+        "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7", "cfg", "cmd",
         "intr_enable", "intr_test", "wipe_secret", "msg_length_upper": begin
           // Do nothing
         end
@@ -388,14 +388,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         exp_digest = '{default:0};
       end
     endcase
-    void'(ral.digest0.predict(exp_digest[0]));
-    void'(ral.digest1.predict(exp_digest[1]));
-    void'(ral.digest2.predict(exp_digest[2]));
-    void'(ral.digest3.predict(exp_digest[3]));
-    void'(ral.digest4.predict(exp_digest[4]));
-    void'(ral.digest5.predict(exp_digest[5]));
-    void'(ral.digest6.predict(exp_digest[6]));
-    void'(ral.digest7.predict(exp_digest[7]));
+    void'(ral.digest_0.predict(exp_digest[0]));
+    void'(ral.digest_1.predict(exp_digest[1]));
+    void'(ral.digest_2.predict(exp_digest[2]));
+    void'(ral.digest_3.predict(exp_digest[3]));
+    void'(ral.digest_4.predict(exp_digest[4]));
+    void'(ral.digest_5.predict(exp_digest[5]));
+    void'(ral.digest_6.predict(exp_digest[6]));
+    void'(ral.digest_7.predict(exp_digest[7]));
   endfunction
 
   virtual function void update_wr_msg_length(int size_bytes);

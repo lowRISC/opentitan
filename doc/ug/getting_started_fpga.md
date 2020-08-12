@@ -43,8 +43,9 @@ $ . /tools/xilinx/Vivado/2018.3/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
-$ fusesoc --cores-root . run --target=synth lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
+The fsel_top flag used above is specific to the OpenTitan project to select the correct fileset.
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.

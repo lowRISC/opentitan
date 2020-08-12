@@ -45,7 +45,7 @@ class i2c_monitor extends dv_base_monitor #(
       if (cfg.en_monitor == 1'b1) begin
         if (mon_dut_item.stop || (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
           cfg.vif.wait_for_host_start(cfg.timing_cfg);
-          `uvm_info(`gfn, $sformatf("monitor, detect HOST START"), UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST START"), UVM_DEBUG)
         end else begin
           mon_dut_item.rstart = 1'b1;
         end
@@ -86,7 +86,7 @@ class i2c_monitor extends dv_base_monitor #(
     `downcast(clone_item, mon_dut_item.clone());
     mon_item_port.write(clone_item);
     cfg.vif.wait_for_device_ack(cfg.timing_cfg);
-    `uvm_info(`gfn, $sformatf("monitor, address, detect TARGET ACK"), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\nmonitor, address, detect TARGET ACK"), UVM_DEBUG)
   endtask : address_thread
 
   virtual protected task read_thread(i2c_item mon_dut_item);
@@ -108,7 +108,7 @@ class i2c_monitor extends dv_base_monitor #(
               // sample read data
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
-                `uvm_info(`gfn, $sformatf("monitor, rd_data, trans %0d, byte %0d, bit[%0d] %0b",
+                `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d, bit[%0d] %0b",
                     mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_DEBUG)
               end
               mon_dut_item.data_q.push_back(mon_data);
@@ -116,7 +116,7 @@ class i2c_monitor extends dv_base_monitor #(
               // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
               cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
               `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
-              `uvm_info(`gfn, $sformatf("monitor, detect HOST %s",
+              `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST %s",
                   (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_DEBUG)
             end
             begin
@@ -124,7 +124,7 @@ class i2c_monitor extends dv_base_monitor #(
                                                    mon_dut_item.rstart,
                                                    mon_dut_item.stop);
               `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
-              `uvm_info(`gfn, $sformatf("monitor, rd_data, detect HOST %s",
+              `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, detect HOST %s",
                   (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_DEBUG)
             end
           join_any
@@ -160,7 +160,7 @@ class i2c_monitor extends dv_base_monitor #(
                                                    mon_dut_item.rstart,
                                                    mon_dut_item.stop);
               `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
-              `uvm_info(`gfn, $sformatf("monitor, wr_data, detect HOST %s %0b",
+              `uvm_info(`gfn, $sformatf("\nmonitor, wr_data, detect HOST %s %0b",
                   (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_DEBUG)
             end
           join_any

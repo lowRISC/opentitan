@@ -150,14 +150,14 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en) {
 }
 
 void flash_cfg_region(const mp_region_t *region_cfg) {
-  REG32(FLASH_CTRL_MP_REGION_CFG0(0) + region_cfg->num * 4) =
-      region_cfg->base << FLASH_CTRL_MP_REGION_CFG0_BASE0_OFFSET |
-      region_cfg->size << FLASH_CTRL_MP_REGION_CFG0_SIZE0_OFFSET |
-      region_cfg->part << FLASH_CTRL_MP_REGION_CFG0_PARTITION0 |
-      region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG0_RD_EN0 |
-      region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG0_PROG_EN0 |
-      region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG0_ERASE_EN0 |
-      0x1 << FLASH_CTRL_MP_REGION_CFG0_EN0;
+  REG32(FLASH_CTRL_MP_REGION_CFG_0(0) + region_cfg->num * 4) =
+      region_cfg->base << FLASH_CTRL_MP_REGION_CFG_0_BASE_0_OFFSET |
+      region_cfg->size << FLASH_CTRL_MP_REGION_CFG_0_SIZE_0_OFFSET |
+      region_cfg->part << FLASH_CTRL_MP_REGION_CFG_0_PARTITION_0 |
+      region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0 |
+      region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0 |
+      region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0 |
+      0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
 }
 
 void flash_write_scratch_reg(uint32_t value) {

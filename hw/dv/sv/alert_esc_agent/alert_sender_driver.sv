@@ -12,10 +12,15 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   `uvm_component_new
 
+  // To guard alert ping response and real alert triggers won't trigger at the same time
+  semaphore alert_atomic = new(1);
+
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
+      void'(alert_atomic.try_get(1));
+      alert_atomic.put(1);
       reset_alert();
       @(posedge cfg.vif.rst_n);
       under_reset = 0;
@@ -46,8 +51,14 @@ class alert_sender_driver extends alert_esc_base_driver;
       fork
         begin : isolation_fork
           fork
-            drive_alert_pins(req);
-            wait(under_reset);
+            begin
+              alert_atomic.get(1);
+              drive_alert_pins(req);
+              alert_atomic.put(1);
+            end
+            begin
+              wait(under_reset);
+            end
           join_any
           disable fork;
         end
@@ -76,9 +87,13 @@ class alert_sender_driver extends alert_esc_base_driver;
           fork
             begin
               wait_ping();
-              // TODO: solve this: if alert and ping all this task together
-              if (!req.timeout) drive_alert_pins(req);
-              else repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+              alert_atomic.get(1);
+              if (!req.timeout) begin
+                drive_alert_pins(req);
+              end else begin
+                repeat (cfg.ping_timeout_cycle) @(cfg.vif.sender_cb);
+              end
+              alert_atomic.put(1);
             end
             begin
               wait(under_reset);
@@ -117,6 +132,8 @@ class alert_sender_driver extends alert_esc_base_driver;
       end
     end
 
+    // there must have at least two sender clock delays before next alert_handshake
+    repeat(2) @(cfg.vif.sender_cb);
   endtask : drive_alert_pins
 
   // this task set alert_p=1 and alert_n=0 after certain delay
@@ -138,10 +155,11 @@ class alert_sender_driver extends alert_esc_base_driver;
             repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
           end
           begin : wait_alert_handshake
-            wait_ack();
+            wait(cfg.vif.alert_rx.ack_p == 1'b1);
             @(cfg.vif.sender_cb);
             repeat (ack_delay) @(cfg.vif.sender_cb);
             reset_alert();
+            wait(cfg.vif.alert_rx.ack_p == 1'b0);
           end
         join_any
         disable fork;
@@ -179,10 +197,6 @@ class alert_sender_driver extends alert_esc_base_driver;
     cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
     cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
   endtask
-
-  virtual task wait_ack();
-    while (cfg.vif.alert_rx.ack_p !== 1'b1) @(cfg.vif.sender_cb);
-  endtask : wait_ack
 
   virtual task wait_ping();
     logic ping_p_value = cfg.vif.alert_rx.ping_p;

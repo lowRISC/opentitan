@@ -9,16 +9,25 @@ filesets:
     depend:
 % for dep in dut.deps:
       - ${dep}
+  % if dut.is_cip:
+      - lowrisc:fpv:csr_assert_gen
+  % endif
 % endfor
       # TODO: add more dependencies here if needed
     files:
       - vip/${dut.name}_assert_fpv.sv
       - tb/${dut.name}_bind_fpv.sv
       - tb/${dut.name}_fpv.sv
-% if dut.is_cip:
-      - vip/${dut.name}_csr_assert_fpv.sv
-% endif
     file_type: systemVerilogSource
+
+% if dut.is_cip:
+generate:
+  csr_assert_gen:
+    generator: csr_assert_gen
+    parameters:
+      spec: ../data/${dut_name}.hjson
+      depend: lowrisc:ip:${dut_name}
+% endif
 
 targets:
   default: &default_target
@@ -27,6 +36,10 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
+% if dut.is_cip:
+    generate:
+      - csr_assert_gen
+% endif
     toplevel: ${dut.name}_fpv
 
   formal:

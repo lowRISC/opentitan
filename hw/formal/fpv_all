@@ -36,6 +36,7 @@ declare -a blocks=(
   # run formal on dedicated FPV testbenches
   "prim_arbiter_ppc_fpv"
   "prim_arbiter_tree_fpv"
+  "prim_arbiter_fixed_fpv"
   "prim_alert_rxtx_fpv"
   "prim_alert_rxtx_async_fpv"
   "prim_esc_rxtx_fpv"

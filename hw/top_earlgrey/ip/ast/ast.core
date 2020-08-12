@@ -1,0 +1,57 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:ast:0.1"
+description: "Analog Sensor Top generic views"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+    files:
+      - rtl/ast_reg_pkg.sv
+      - rtl/ast.sv
+      - rtl/adc.sv
+      - rtl/aon_clk.sv
+      - rtl/aon_osc.sv
+      - rtl/ast_reg_top.sv
+      - rtl/entropy.sv
+      - rtl/gen_alert.sv
+      - rtl/gen_pok.sv
+      - rtl/io_clk.sv
+      - rtl/io_osc.sv
+      - rtl/main_rglt.sv
+      - rtl/pdm.sv
+      - rtl/rng.sv
+      - rtl/rng_osc.sv
+      - rtl/sys_clk.sv
+      - rtl/sys_osc.sv
+      - rtl/usb_clk.sv
+      - rtl/usb_osc.sv
+
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: ast
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  sim:
+    default_tool: vcs
+    filesets:
+      - files_rtl
+    tools:
+      vcs:
+        vcs_options: [-timescale=1ns/1ps]
+    toplevel: ast

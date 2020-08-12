@@ -98,10 +98,9 @@ Timing reports are produced for the following path groups
 * Overall - Every path in the design, WNS (worst negative slack) from this report is the design WNS
   that limits the frequency
 * reg2reg - Paths from register to register
-* in2x - Paths from an input to any end point, one report is produced per named
-  input (e.g. `instr_data_i` has its own report)
-* x2out - Paths from any start point to an output, one report is produced per
-  named output (e.g. `data_wdata_o` has its own report)
+* in2reg - Paths from any input to any register
+* reg2out - Paths from any register to any output
+* in2out - Paths from any input to any output
 
 They are available in two formats .rpt and .csv.rpt. The .rpt is the full output
 from OpenSTA and gives the full path between the start and end points. The CSV

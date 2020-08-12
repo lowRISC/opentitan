@@ -239,7 +239,7 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
 
   // Set the HMAC key.
   // TODO Static assert register layout.
-  mmio_region_memcpy_to_mmio32(hmac->base_addr, HMAC_KEY0_REG_OFFSET, key,
+  mmio_region_memcpy_to_mmio32(hmac->base_addr, HMAC_KEY_0_REG_OFFSET, key,
                                HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
 
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
@@ -375,7 +375,7 @@ dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
 
   // Read the digest.
   // TODO Static assert register layout.
-  mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST0_REG_OFFSET,
+  mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
                                  digest->digest,
                                  HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
 

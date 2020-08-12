@@ -628,7 +628,7 @@ TEST_F(IrqEnableTest, Success) {
 
   // Disable last IRQ.
   EXPECT_MASK32(UART_INTR_ENABLE_REG_OFFSET,
-                {{UART_INTR_STATE_RX_PARITY_ERR, 0x1, false}});
+                {{UART_INTR_ENABLE_RX_PARITY_ERR, 0x1, false}});
 
   result = dif_uart_irq_enable(&dif_uart_, kDifUartInterruptRxParityErr,
                                kDifUartDisable);
@@ -654,7 +654,7 @@ TEST_F(IrqForceTest, Success) {
 
   // Force last IRQ.
   EXPECT_MASK32(UART_INTR_TEST_REG_OFFSET,
-                {{UART_INTR_ENABLE_RX_PARITY_ERR, 0x1, true}});
+                {{UART_INTR_TEST_RX_PARITY_ERR, 0x1, true}});
 
   result = dif_uart_irq_force(&dif_uart_, kDifUartInterruptRxParityErr);
   EXPECT_EQ(result, kDifUartOk);

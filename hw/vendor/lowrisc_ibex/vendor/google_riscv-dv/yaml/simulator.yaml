@@ -108,6 +108,7 @@
     cmd:
       - "vlib <out>/work"
       - "vlog -work <out>/work
+        -err VCP2694 W1
         -uvmver 1.2
         +define+UVM_REGEX_NO_DPI
         +incdir+<setting>

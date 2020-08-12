@@ -99,11 +99,11 @@ package spi_device_env_pkg;
   endfunction
 
   // macros
-  `define get_tx_allocated_sram_size_bytes \
+  `define GET_TX_ALLOCATED_SRAM_SIZE_BYTES \
     get_allocated_sram_size_bytes(ral.txf_addr.base.get_mirrored_value(), \
                                   ral.txf_addr.limit.get_mirrored_value())
 
-  `define get_rx_allocated_sram_size_bytes \
+  `define GET_RX_ALLOCATED_SRAM_SIZE_BYTES \
     get_allocated_sram_size_bytes(ral.rxf_addr.base.get_mirrored_value(), \
                                   ral.rxf_addr.limit.get_mirrored_value())
 
@@ -115,6 +115,6 @@ package spi_device_env_pkg;
   `include "spi_device_env.sv"
   `include "spi_device_vseq_list.sv"
 
-  `undef get_tx_allocated_sram_size_bytes
-  `undef get_rx_allocated_sram_size_bytes
+  `undef GET_TX_ALLOCATED_SRAM_SIZE_BYTES
+  `undef GET_RX_ALLOCATED_SRAM_SIZE_BYTES
 endpackage

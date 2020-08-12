@@ -1,0 +1,32 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:ast_wrapper:0.1"
+description: "ast wrapper"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:systems:ast_wrapper_pkg
+      - lowrisc:systems:ast
+      - lowrisc:ip:entropy_src
+      - lowrisc:prim:clock_buf
+    files:
+      - rtl/ast_wrapper.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: ast_wrapper
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

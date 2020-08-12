@@ -185,7 +185,7 @@ interface clk_rst_if #(
   // 2 - async assert, async dessert
   // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
-  // TODO #2338 issue workaround - $urandom call moved from default argument value to function body 
+  // TODO #2338 issue workaround - $urandom call moved from default argument value to function body
   task automatic apply_reset(int pre_reset_dly_clks   = 0,
                              integer reset_width_clks = 'x,
                              int post_reset_dly_clks  = 0,
@@ -213,6 +213,13 @@ interface clk_rst_if #(
         dly_ps = $urandom_range(0, clk_period_ps);
         #(dly_ps * 1ps);
         o_rst_n <= 1'b1;
+      end
+      default: begin
+`ifdef VERILATOR
+        $error({msg_id, $sformatf("rst_n_scheme %0d not supported", rst_n_scheme)});
+`else
+        `uvm_fatal(msg_id, $sformatf("rst_n_scheme %0d not supported", rst_n_scheme))
+`endif
       end
     endcase
     wait_clks(post_reset_dly_clks);

@@ -39,6 +39,10 @@ class riscv_pmp_cfg extends uvm_object;
   // allowing all access restrictions to be enforced.
   bit enable_pmp_exception_handler = 1'b1;
 
+  // Setting this bit to 1'b1 enables generation of the directed stream of instructions to test
+  // write accesses to all supported pmpaddr[i] CSRs.
+  bit enable_write_pmp_csr;
+
   // pmp CSR configurations
   rand pmp_cfg_reg_t pmp_cfg[];
 
@@ -129,6 +133,7 @@ class riscv_pmp_cfg extends uvm_object;
     get_int_arg_value("+pmp_granularity=", pmp_granularity);
     get_bool_arg_value("+pmp_randomize=", pmp_randomize);
     get_bool_arg_value("+pmp_allow_addr_overlap=", pmp_allow_addr_overlap);
+    get_bool_arg_value("+enable_write_pmp_csr=", enable_write_pmp_csr);
     get_hex_arg_value("+pmp_max_offset=", pmp_max_offset);
     `uvm_info(`gfn, $sformatf("pmp max offset: 0x%0x", pmp_max_offset), UVM_LOW)
     pmp_cfg = new[pmp_num_regions];
@@ -603,6 +608,63 @@ class riscv_pmp_cfg extends uvm_object;
              // for the internal routine after it has "fixed" the pmp configuration CSR.
              $sformatf("34: nop")
             };
+
+  endfunction
+
+  // This function is used for a directed PMP test to test writes to all the pmpcfg and pmpaddr
+  // CSRs to test that writes succeed or fail appropriately.
+  virtual function void gen_pmp_write_test(riscv_reg_t scratch_reg[2],
+                                           ref string instr[$]);
+
+    bit [11:0] pmp_addr;
+    bit [11:0] pmpcfg_addr;
+    bit [XLEN-1:0] pmp_val;
+    for (int i = 0; i < pmp_num_regions; i++) begin
+      pmp_addr = base_pmp_addr + i;
+      pmpcfg_addr = base_pmpcfg_addr + (i / cfg_per_csr);
+      // We randomize the upper 31 bits of pmp_val and then add this to the
+      // address of <main>, guaranteeing that the random value written to
+      // pmpaddr[i] doesn't interfere with the safe region.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pmp_val, pmp_val[31] == 1'b0;)
+      instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[0], pmp_val));
+      instr.push_back($sformatf("la x%0d, main", scratch_reg[1]));
+      instr.push_back($sformatf("add x%0d, x%0d, x%0d",
+                                scratch_reg[0], scratch_reg[0], scratch_reg[1]));
+      // Write the randomized address to pmpaddr[i].
+      // Original value of pmpaddr[i] will be written to scratch_reg[0].
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d",
+                                scratch_reg[0], pmp_addr, scratch_reg[0]));
+      // Restore the original address to pmpaddr[i].
+      // New value of pmpaddr[i] will be written to scratch_reg[0].
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d",
+                                scratch_reg[0], pmp_addr, scratch_reg[0]));
+      // Randomize value to be written to pmpcfg CSR.
+      //
+      // TODO: support rv64.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pmp_val,
+                                         // Need to constrain pmp_val[7], pmp_val[15], ... to 1'b0
+                                         // to ensure that the random config regions aren't locked
+                                         foreach (pmp_val[i]) {
+                                           if ((i+1) % 8 == 0) {
+                                             pmp_val[i] == 1'b0;
+                                           }
+                                         }
+                                        )
+      // If we're writing to the pmpcfg CSR that contains region0 config information,
+      // ensure that the "safe" region remains fully accessible.
+      if (pmpcfg_addr == base_pmpcfg_addr) begin
+        pmp_val[7:0] = 'h0f;
+      end
+      instr.push_back($sformatf("li x%0d, 0x%0x", scratch_reg[0], pmp_val));
+      // Write the randomized address to pmpcfg[i].
+      // Original value of pmpcfg[i] will be written to scratch_reg[0].
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d",
+                                scratch_reg[0], pmpcfg_addr, scratch_reg[0]));
+      // Restore the original address to pmpcfg[i].
+      // New value of pmpcfg[i] will be written to scratch_reg[0].
+      instr.push_back($sformatf("csrrw x%0d, 0x%0x, x%0d",
+                                scratch_reg[0], pmpcfg_addr, scratch_reg[0]));
+    end
 
   endfunction
 

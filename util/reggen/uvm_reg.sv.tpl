@@ -272,4 +272,8 @@ package ${block.name}_ral_pkg;
 
 endpackage\
 </%def>\
+
+// verilog_lint: waive-start package-filename
 ${construct_classes(block)}
+
+// verilog_lint: waive-stop package-filename

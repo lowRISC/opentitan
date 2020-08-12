@@ -66,10 +66,19 @@
     }
 
     {
+      name: i2c_fifo_full
+      uvm_test_seq: i2c_fifo_full_vseq
+    }
+
+    {
       name: i2c_perf
-      // define low reseed due to long simulation time
-      reseed: 5
+      reseed: 10
       uvm_test_seq: i2c_perf_vseq
+    }
+
+    {
+      name: i2c_stretch_timeout
+      uvm_test_seq: i2c_stretch_timeout_vseq
     }
   ]
 

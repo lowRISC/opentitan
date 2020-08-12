@@ -7,16 +7,14 @@ description: "${name.upper()} DV sim target"
 filesets:
   files_rtl:
     depend:
-      - ${vendor}:ip:${name}:0.1
-    files:
-      - tb/${name}_bind.sv
-    file_type: systemVerilogSource
+      - ${vendor}:ip:${name}
 
   files_dv:
     depend:
       - ${vendor}:dv:${name}_test
+      - ${vendor}:dv:${name}_sva
     files:
-      - tb/tb.sv
+      - tb.sv
     file_type: systemVerilogSource
 
 targets:

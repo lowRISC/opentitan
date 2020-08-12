@@ -223,5 +223,5 @@ class LintCfg(OneShotCfg):
         with open(self.results_file, 'w') as f:
             f.write(self.results_md)
 
-        log.info("[results page]: [%s] [%s]", self.name, results_file)
+        log.info("[results page]: [%s] [%s]", self.name, self.results_file)
         return self.results_md

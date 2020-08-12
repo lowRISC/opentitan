@@ -60,13 +60,24 @@ class alert_monitor extends alert_esc_base_monitor;
                 wait(under_reset);
               end
             join_any
+            // wait 1ps in case 'wait_ping_handshake' and 'wait_ping_timeout' thread finish at the
+            // same clock cycle, and give 1ps to make sure both threads are able to update info
+            if (!under_reset) #1ps;
             disable fork;
           end : isolation_fork
         join
 
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
-        if (!under_reset) alert_esc_port.write(req);
+        if (!under_reset) begin
+          alert_esc_port.write(req);
+          // spurious alert error, can only happen one clock after timeout. Detail please see
+          // discussion on Issue #2321
+          if (req.timeout && req.alert_handshake_sta == AlertReceived) begin
+            @(cfg.vif.monitor_cb);
+            if (cfg.vif.alert_rx.ack_p == 1'b1) alert_esc_port.write(req);
+          end
+        end
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
