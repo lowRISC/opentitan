@@ -163,7 +163,8 @@ def _openocd_execution_wrapper_impl(ctx):
         chip_config_string = chip_config_string + " -f " + config
     script_template = """
 set -eo pipefail
-$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit {flash_offset}"
+ln -s $1 $1.elf
+$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit"
 $RUNFILES_DIR/serial_wrapper -p {port} -f {fail_string} -s {success_string} -b {baud_rate}
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
