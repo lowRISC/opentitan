@@ -38,6 +38,7 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
       alert_host_cfg[i] =
           alert_esc_agent_cfg::type_id::create($sformatf("alert_host_cfg[%0d]", i));
       alert_host_cfg[i].if_mode = dv_utils_pkg::Host;
+      alert_host_cfg[i].is_async = ASYNC_ON[i];
     end
     foreach (esc_device_cfg[i]) begin
       esc_device_cfg[i] =
