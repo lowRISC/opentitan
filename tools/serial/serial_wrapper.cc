@@ -41,7 +41,9 @@ int main(int argc, const char** argv) {
     try {
       std::string buffer;
       serial_out.readline(buffer);
-      std::cout << buffer << "\n";
+      if (!buffer.empty()) {
+        std::cout << buffer << "\n";
+      }
       if (buffer.find(success_on_string) != std::string::npos &&
           !success_on_string.empty()) {
         exit(0);
