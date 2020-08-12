@@ -37,9 +37,9 @@ module top_earlgrey_cw305 #(
   inout               IO_GP5,
   inout               IO_GP6,
   inout               IO_GP7,
-  output              IO_GP8,  // XXX: rename as LED
-  output              IO_GP9,  // XXX: rename as LED
-  output              IO_GP10, // XXX: rename as LED
+  inout               IO_GP8,
+  inout               IO_GP9,
+  inout               IO_GP10,
   inout               IO_GP11,
   inout               IO_GP12,
   inout               IO_GP13,
@@ -66,27 +66,13 @@ module top_earlgrey_cw305 #(
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
-  reg io_utx_reg;
-  always @(posedge clk) begin
-      io_utx_reg <<= (IO_UTX == 1'bz)? 0 : IO_UTX;
-  end
-  assign IO_GP8 = io_utx_reg;
-
-  reg io_urx_reg;
-  always @(posedge clk) begin
-    io_urx_reg <<= (IO_URX == 1'bz)? 0 : IO_URX;
-  end
-  assign IO_GP9 = io_urx_reg;
-
-  assign IO_GP10 = 1'b1;
-
-  assign TIO_CLKOUT = clk;
+  assign TIO_CLKOUT = IO_CLK;
 
   padring #(
     // MIOs 31:20 are currently not
     // connected to pads and hence tied off
-    .ConnectMioIn  ( 32'h000FF8FF ),
-    .ConnectMioOut ( 32'h000FF8FF ),
+    .ConnectMioIn  ( 32'h000FFFFF ),
+    .ConnectMioOut ( 32'h000FFFFF ),
     // Tied off DIOs:
     // 2: usbdev_d
     // 3: usbdev_suspend
@@ -113,9 +99,9 @@ module top_earlgrey_cw305 #(
                              IO_GP13,
                              IO_GP12,
                              IO_GP11,
-                             1'bz,
-                             1'bz,
-                             1'bz,
+                             IO_GP10,
+                             IO_GP9,
+                             IO_GP8,
                              IO_GP7,
                              IO_GP6,
                              IO_GP5,
