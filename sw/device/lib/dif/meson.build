@@ -157,3 +157,18 @@ sw_lib_dif_alert_handler = declare_dependency(
     ],
   )
 )
+
+# Power Manager DIF library
+# sw_lib_dif_pwrmgr = declare_dependency(
+#   link_with: static_library(
+#     'sw_lib_dif_pwrmgr',
+#     sources: [
+#       hw_ip_pwrmgr_reg_h,
+#       'dif_pwrmgr.c',
+#     ],
+#     dependencies: [
+#       sw_lib_mmio,
+#       sw_lib_bitfield,
+#     ],
+#   )
+# )
