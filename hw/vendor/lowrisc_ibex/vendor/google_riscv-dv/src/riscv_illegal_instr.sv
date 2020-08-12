@@ -133,6 +133,7 @@ class riscv_illegal_instr extends uvm_object;
       } else {
         // Invalid CSR instructions
         !(instr_bin[31:20] inside {csrs});
+        !(instr_bin[31:20] inside {custom_csr});
       }
     }
   }
@@ -165,11 +166,13 @@ class riscv_illegal_instr extends uvm_object;
     c_op != 2'b11;
   }
 
-  // Avoid generating illegal func3/func7 errors for opcode used by B-extension
+  // Avoid generating illegal func3/func7 errors for opcode used by B-extension for now
+  //
+  // TODO(udi): add support for generating illegal B-extension instructions
   constraint b_extension_c {
     if (RV32B inside {supported_isa}) {
       if (exception inside {kIllegalFunc3, kIllegalFunc7}) {
-        !(opcode inside {7'b0011011, 7'b0010011, 7'b0111011});
+        !(opcode inside {7'b0110011, 7'b0010011, 7'b0111011});
       }
     }
   }
@@ -355,8 +358,8 @@ class riscv_illegal_instr extends uvm_object;
     if (riscv_instr_pkg::RV32A inside {riscv_instr_pkg::supported_isa}) begin
       legal_opcode = {legal_opcode, 7'b0101111};
     end
-    if ((riscv_instr_pkg::RV64I inside {riscv_instr_pkg::supported_isa}) ||
-         riscv_instr_pkg::RV64M inside {riscv_instr_pkg::supported_isa}) begin
+    if (riscv_instr_pkg::RV64I inside {riscv_instr_pkg::supported_isa} ||
+        riscv_instr_pkg::RV64M inside {riscv_instr_pkg::supported_isa}) begin
       legal_opcode = {legal_opcode, 7'b0111011};
     end
     if (riscv_instr_pkg::RV64I inside {riscv_instr_pkg::supported_isa}) begin

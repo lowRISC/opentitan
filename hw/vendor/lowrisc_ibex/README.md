@@ -20,13 +20,13 @@ The options include different choices for the architecture of the multiplier uni
 The table below indicates performance, area and verification status for a few selected configurations.
 These are configurations on which lowRISC is focusing for performance evaluation and design verification (see [supported configs](ibex_configs.yaml)).
 
-| Config | "small" | "maxperf" | "maxperf-pmp-bmfull" |
-| ------ | ------- | --------- | ---------------- |
-| Features | RV32IMC, 3 cycle mult | RV32IMC, 1 cycle mult, Branch target ALU, Writeback stage | RV32IMCB, 1 cycle mult, Branch target ALU, Writeback stage, 16 PMP regions |
-| Performance (CoreMark/MHz) | 2.47 | 3.13 | 3.05 |
-| Area - Yosys (kGE) | 33.15 | 39.03 | 63.32 |
-| Area - Commercial (estimated kGE) | ~27 | ~31 | ~50 |
-| Verification status | Green | Amber | Amber |
+| Config | "micro" | "small" | "maxperf" | "maxperf-pmp-bmfull" |
+| ------ | ------- | --------| ----------| -------------------- |
+| Features | RV32EC | RV32IMC, 3 cycle mult | RV32IMC, 1 cycle mult, Branch target ALU, Writeback stage | RV32IMCB, 1 cycle mult, Branch target ALU, Writeback stage, 16 PMP regions |
+| Performance (CoreMark/MHz) | 0.904 | 2.47 | 3.13 | 3.05 |
+| Area - Yosys (kGE) | 17.44 | 26.06 | 35.64 | 58.74 |
+| Area - Commercial (estimated kGE) | ~16 | ~24 | ~33 | ~54 |
+| Verification status | Red | Green | Amber | Amber |
 
 Notes:
 
@@ -34,12 +34,13 @@ Notes:
   Note that different ISAs (use of B and C extensions) give the best results for different configurations.
   See the [Benchmarks README](examples/sw/benchmarks/README.md) for more information.
   The "maxperf-pmp-bmfull" configuration sets a `SpecBranch` parameter in `ibex_core.sv`; this helps timing but has a small negative performance impact.
-* Yosys synthesis area numbers are based on the Ibex basic synthesis [flow](syn/README.md).
+* Yosys synthesis area numbers are based on the Ibex basic synthesis [flow](syn/README.md) using the latch-based register file.
 * Commercial synthesis area numbers are a rough estimate of what might be achievable with a commercial synthesis flow and technology library.
+* For comparison, the original "Zero-riscy" core yields an area of 23.14kGE using our Yosys synthesis flow.
 * Verification status is a rough guide to the overall maturity of a particular configuration.
   Green indicates that verification is close to complete.
   Amber indicates that some verification has been performed, but the configuration is still experimental.
-  Red indicates a new configuration with minimal/no verification.
+  Red indicates a configuration with minimal/no verification.
   Users must make their own assessment of verification readiness for any tapeout.
 
 ## Documentation

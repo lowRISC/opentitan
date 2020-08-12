@@ -23,6 +23,7 @@ module ibex_simple_system (
   input IO_RST_N
 );
 
+  parameter bit               SecureIbex               = 1'b0;
   parameter bit               PMPEnable                = 1'b0;
   parameter int unsigned      PMPGranularity           = 0;
   parameter int unsigned      PMPNumRegions            = 4;
@@ -146,6 +147,7 @@ module ibex_simple_system (
   );
 
   ibex_core_tracing #(
+      .SecureIbex               ( SecureIbex               ),
       .PMPEnable                ( PMPEnable                ),
       .PMPGranularity           ( PMPGranularity           ),
       .PMPNumRegions            ( PMPNumRegions            ),
@@ -194,6 +196,8 @@ module ibex_simple_system (
       .debug_req_i           ('b0),
 
       .fetch_enable_i        ('b1),
+      .alert_minor_o         (),
+      .alert_major_o         (),
       .core_sleep_o          ()
     );
 

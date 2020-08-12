@@ -104,6 +104,8 @@ module ibex_core #(
 
     // CPU Control Signals
     input  logic        fetch_enable_i,
+    output logic        alert_minor_o,
+    output logic        alert_major_o,
     output logic        core_sleep_o
 );
 
@@ -117,6 +119,8 @@ module ibex_core #(
   // by ~3% (based on CoreMark/MHz score).
   // Set by default in the max PMP config which has the tightest budget for branch target timing.
   localparam bit          SpecBranch        = PMPEnable & (PMPNumRegions == 16);
+  localparam bit          RegFileECC        = SecureIbex;
+  localparam int unsigned RegFileDataWidth  = RegFileECC ? 32 + 7 : 32;
 
   // IF/ID signals
   logic        dummy_instr_id;
@@ -144,6 +148,7 @@ module ibex_core #(
   logic [31:0] dummy_instr_seed;
   logic        icache_enable;
   logic        icache_inval;
+  logic        pc_mismatch_alert;
 
   logic        instr_first_cycle_id;
   logic        instr_valid_clear;
@@ -175,6 +180,8 @@ module ibex_core #(
   logic [31:0] rf_rdata_a;
   logic [4:0]  rf_raddr_b;
   logic [31:0] rf_rdata_b;
+  logic        rf_ren_a;
+  logic        rf_ren_b;
   logic [4:0]  rf_waddr_wb;
   logic [31:0] rf_wdata_wb;
   // Writeback register write data that can be used on the forwarding path (doesn't factor in memory
@@ -187,6 +194,8 @@ module ibex_core #(
   logic [4:0]  rf_waddr_id;
   logic [31:0] rf_wdata_id;
   logic        rf_we_id;
+  logic        rf_rd_a_wb_match;
+  logic        rf_rd_b_wb_match;
 
   // ALU Control
   alu_op_e     alu_operator_ex;
@@ -334,8 +343,6 @@ module ibex_core #(
   logic [31:0] rvfi_mem_wdata_q;
   logic [31:0] rvfi_mem_addr_d;
   logic [31:0] rvfi_mem_addr_q;
-  logic        rf_ren_a;
-  logic        rf_ren_b;
 `endif
 
   //////////////////////
@@ -389,7 +396,8 @@ module ibex_core #(
       .DmExceptionAddr   ( DmExceptionAddr   ),
       .DummyInstructions ( DummyInstructions ),
       .ICache            ( ICache            ),
-      .ICacheECC         ( ICacheECC         )
+      .ICacheECC         ( ICacheECC         ),
+      .SecureIbex        ( SecureIbex        )
   ) if_stage_i (
       .clk_i                    ( clk                    ),
       .rst_ni                   ( rst_ni                 ),
@@ -446,6 +454,7 @@ module ibex_core #(
       // pipeline stalls
       .id_in_ready_i            ( id_in_ready            ),
 
+      .pc_mismatch_alert_o      ( pc_mismatch_alert      ),
       .if_busy_o                ( if_busy                )
   );
 
@@ -584,13 +593,13 @@ module ibex_core #(
       .rf_rdata_a_i                 ( rf_rdata_a               ),
       .rf_raddr_b_o                 ( rf_raddr_b               ),
       .rf_rdata_b_i                 ( rf_rdata_b               ),
-`ifdef RVFI
       .rf_ren_a_o                   ( rf_ren_a                 ),
       .rf_ren_b_o                   ( rf_ren_b                 ),
-`endif
       .rf_waddr_id_o                ( rf_waddr_id              ),
       .rf_wdata_id_o                ( rf_wdata_id              ),
       .rf_we_id_o                   ( rf_we_id                 ),
+      .rf_rd_a_wb_match_o           ( rf_rd_a_wb_match         ),
+      .rf_rd_b_wb_match_o           ( rf_rd_b_wb_match         ),
 
       .rf_waddr_wb_i                ( rf_waddr_wb              ),
       .rf_wdata_fwd_wb_i            ( rf_wdata_fwd_wb          ),
@@ -747,28 +756,101 @@ module ibex_core #(
     .instr_done_wb_o            ( instr_done_wb            )
   );
 
+  ///////////////////////
+  // Register file ECC //
+  ///////////////////////
+
+  logic [RegFileDataWidth-1:0] rf_wdata_wb_ecc;
+  logic [RegFileDataWidth-1:0] rf_rdata_a_ecc;
+  logic [RegFileDataWidth-1:0] rf_rdata_b_ecc;
+  logic                        rf_ecc_err_comb;
+
+  if (RegFileECC) begin : gen_regfile_ecc
+
+    logic [1:0] rf_ecc_err_a, rf_ecc_err_b;
+    logic       rf_ecc_err_a_id, rf_ecc_err_b_id;
+
+    // ECC checkbit generation for regiter file wdata
+    prim_secded_39_32_enc regfile_ecc_enc (
+      .in  (rf_wdata_wb),
+      .out (rf_wdata_wb_ecc)
+    );
+
+    // ECC checking on register file rdata
+    prim_secded_39_32_dec regfile_ecc_dec_a (
+      .in         (rf_rdata_a_ecc),
+      .d_o        (),
+      .syndrome_o (),
+      .err_o      (rf_ecc_err_a)
+    );
+    prim_secded_39_32_dec regfile_ecc_dec_b (
+      .in         (rf_rdata_b_ecc),
+      .d_o        (),
+      .syndrome_o (),
+      .err_o      (rf_ecc_err_b)
+    );
+
+    // Assign read outputs - no error correction, just trigger an alert
+    assign rf_rdata_a = rf_rdata_a_ecc[31:0];
+    assign rf_rdata_b = rf_rdata_b_ecc[31:0];
+
+    // Calculate errors - qualify with WB forwarding to avoid xprop into the alert signal
+    assign rf_ecc_err_a_id = |rf_ecc_err_a & rf_ren_a & ~rf_rd_a_wb_match;
+    assign rf_ecc_err_b_id = |rf_ecc_err_b & rf_ren_b & ~rf_rd_b_wb_match;
+
+    // Combined error
+    assign rf_ecc_err_comb = instr_valid_id & (rf_ecc_err_a_id | rf_ecc_err_b_id);
+
+  end else begin : gen_no_regfile_ecc
+    logic unused_rf_ren_a, unused_rf_ren_b;
+    logic unused_rf_rd_a_wb_match, unused_rf_rd_b_wb_match;
+
+    assign unused_rf_ren_a         = rf_ren_a;
+    assign unused_rf_ren_b         = rf_ren_b;
+    assign unused_rf_rd_a_wb_match = rf_rd_a_wb_match;
+    assign unused_rf_rd_b_wb_match = rf_rd_b_wb_match;
+    assign rf_wdata_wb_ecc         = rf_wdata_wb;
+    assign rf_rdata_a              = rf_rdata_a_ecc;
+    assign rf_rdata_b              = rf_rdata_b_ecc;
+    assign rf_ecc_err_comb         = 1'b0;
+  end
+
   ibex_register_file #(
       .RV32E             (RV32E),
-      .DataWidth         (32),
+      .DataWidth         (RegFileDataWidth),
       .DummyInstructions (DummyInstructions)
   ) register_file_i (
-      .clk_i            ( clk            ),
-      .rst_ni           ( rst_ni         ),
+      .clk_i            ( clk_i           ),
+      .rst_ni           ( rst_ni          ),
 
-      .test_en_i        ( test_en_i      ),
-      .dummy_instr_id_i ( dummy_instr_id ),
+      .test_en_i        ( test_en_i       ),
+      .dummy_instr_id_i ( dummy_instr_id  ),
 
       // Read port a
-      .raddr_a_i        ( rf_raddr_a     ),
-      .rdata_a_o        ( rf_rdata_a     ),
+      .raddr_a_i        ( rf_raddr_a      ),
+      .rdata_a_o        ( rf_rdata_a_ecc  ),
       // Read port b
-      .raddr_b_i        ( rf_raddr_b     ),
-      .rdata_b_o        ( rf_rdata_b     ),
+      .raddr_b_i        ( rf_raddr_b      ),
+      .rdata_b_o        ( rf_rdata_b_ecc  ),
       // write port
-      .waddr_a_i        ( rf_waddr_wb    ),
-      .wdata_a_i        ( rf_wdata_wb    ),
-      .we_a_i           ( rf_we_wb       )
+      .waddr_a_i        ( rf_waddr_wb     ),
+      .wdata_a_i        ( rf_wdata_wb_ecc ),
+      .we_a_i           ( rf_we_wb        )
   );
+
+  ///////////////////
+  // Alert outputs //
+  ///////////////////
+
+  // Minor alert - core is in a recoverable state
+  // TODO add I$ ECC errors here
+  assign alert_minor_o = 1'b0;
+
+  // Major alert - core is unrecoverable
+  assign alert_major_o = rf_ecc_err_comb | pc_mismatch_alert;
+
+  `ASSERT_KNOWN(IbexAlertMinorX, alert_minor_o)
+  `ASSERT_KNOWN(IbexAlertMajorX, alert_major_o)
 
   // Explict INC_ASSERT block to avoid unused signal lint warnings were asserts are not included
   `ifdef INC_ASSERT

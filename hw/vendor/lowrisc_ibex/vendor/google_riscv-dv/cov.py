@@ -53,7 +53,11 @@ def build_cov(out, cfg, cwd, opts_vec, opts_cov):
     build_cmd += (" --custom_target %s" % argv.custom_target)
   if argv.stop_on_first_error:
     build_cmd += (" --stop_on_first_error")
-  run_cmd(build_cmd, debug_cmd = argv.debug)
+  if argv.lsf_cmd != "":
+    build_cmd += (" --lsf_cmd \"%s\"" % argv.lsf_cmd)
+    run_parallel_cmd([build_cmd], argv.timeout, debug_cmd = argv.debug)
+  else:
+    run_cmd(build_cmd, debug_cmd = argv.debug)
 
 def sim_cov(out, cfg, cwd, opts_vec, opts_cov, csv_list):
   """Simulation the coverage collection

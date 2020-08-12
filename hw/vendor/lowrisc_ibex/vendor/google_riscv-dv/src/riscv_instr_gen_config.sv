@@ -39,6 +39,12 @@ class riscv_instr_gen_config extends uvm_object;
   // Pattern of data section: RAND_DATA, ALL_ZERO, INCR_VAL
   rand data_pattern_t    data_page_pattern;
 
+  // Initialization of the vregs
+  // SAME_VALUES_ALL_ELEMS - Using vmv.v.x to fill all the elements of the vreg with the same value as the one in the GPR selected
+  // RANDOM_VALUES_VMV     - Using vmv.v.x + vslide1up.vx to randomize the contents of each vector element
+  // RANDOM_VALUES_LOAD    - Using vle.v, same approach as RANDOM_VALUES_VMV but more efficient for big VLEN
+  vreg_init_method_t vreg_init_method = RANDOM_VALUES_VMV;
+
   // Associate array for delegation configuration for each exception and interrupt
   // When the bit is 1, the corresponding delegation is enabled.
   rand bit               m_mode_exception_delegation[exception_cause_t];
@@ -66,7 +72,7 @@ class riscv_instr_gen_config extends uvm_object;
   // TVEC alignment
   // This value is the log_2 of the byte-alignment of TVEC.BASE field
   // As per RISC-V privileged spec, default will be set to 2 (4-byte aligned)
-  int tvec_alignment = 2;
+  rand int tvec_alignment = 2;
 
   // Floating point rounding mode
   rand f_rounding_mode_t fcsr_rm;
@@ -111,10 +117,7 @@ class riscv_instr_gen_config extends uvm_object;
 
   mem_region_t mem_region[$] = '{
     '{name:"region_0", size_in_bytes: 4096,      xwr: 3'b111},
-    '{name:"region_1", size_in_bytes: 4096 * 4,  xwr: 3'b111},
-    '{name:"region_2", size_in_bytes: 4096 * 2,  xwr: 3'b111},
-    '{name:"region_3", size_in_bytes: 512,       xwr: 3'b111},
-    '{name:"region_4", size_in_bytes: 4096,      xwr: 3'b111}
+    '{name:"region_1", size_in_bytes: 4096 * 16, xwr: 3'b111}
   };
 
   // Dedicated shared memory region for multi-harts atomic operations
@@ -245,6 +248,8 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_floating_point;
   // Vector extension support
   bit                    enable_vector_extension;
+  // Only generate vector instructions
+  bit                    vector_instr_only;
   // Bit manipulation extension support
   bit                    enable_b_extension;
   b_ext_group_t          enable_bitmanip_groups[] = {ZBB, ZBS, ZBP, ZBE, ZBF, ZBC, ZBR, ZBM, ZBT,
@@ -323,6 +328,13 @@ class riscv_instr_gen_config extends uvm_object;
 
   constraint mtvec_c {
     mtvec_mode inside {supported_interrupt_mode};
+    if (mtvec_mode == DIRECT) {
+     soft tvec_alignment == 2;
+    } else {
+     // Setting MODE = Vectored may impose an additional alignmentconstraint on BASE,
+     // requiring up to 4×XLEN-byte alignment
+     soft tvec_alignment == $clog2((XLEN * 4) / 8);
+    }
   }
 
   constraint mstatus_c {
@@ -501,6 +513,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(max_directed_instr_stream_seq, UVM_DEFAULT)
     `uvm_field_int(enable_floating_point, UVM_DEFAULT)
     `uvm_field_int(enable_vector_extension, UVM_DEFAULT)
+    `uvm_field_int(vector_instr_only, UVM_DEFAULT)
     `uvm_field_int(enable_b_extension, UVM_DEFAULT)
     `uvm_field_array_enum(b_ext_group_t, enable_bitmanip_groups, UVM_DEFAULT)
     `uvm_field_int(use_push_data_section, UVM_DEFAULT)
@@ -519,7 +532,6 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_timer_irq=", enable_timer_irq);
     get_int_arg_value("+num_of_sub_program=", num_of_sub_program);
     get_int_arg_value("+instr_cnt=", instr_cnt);
-    get_int_arg_value("+tvec_alignment=", tvec_alignment);
     get_bool_arg_value("+no_ebreak=", no_ebreak);
     get_bool_arg_value("+no_dret=", no_dret);
     get_bool_arg_value("+no_wfi=", no_wfi);
@@ -548,6 +560,9 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+randomize_csr=", randomize_csr);
     if (this.require_signature_addr) begin
       get_hex_arg_value("+signature_addr=", signature_addr);
+    end
+    if ($value$plusargs("tvec_alignment=%0d", tvec_alignment)) begin
+      tvec_alignment.rand_mode(0);
     end
     get_bool_arg_value("+gen_debug_section=", gen_debug_section);
     get_bool_arg_value("+bare_program_mode=", bare_program_mode);

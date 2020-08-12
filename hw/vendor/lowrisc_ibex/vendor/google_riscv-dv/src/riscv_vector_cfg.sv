@@ -22,6 +22,7 @@ class riscv_vector_cfg extends uvm_object;
   rand bit [XLEN-1:0]    vstart;
   rand vxrm_t            vxrm;
   rand bit               vxsat;
+  riscv_vreg_t           reserved_vregs[$];
 
   // Allow only vector instructions from the random sequences
   rand bit only_vec_instr;
@@ -52,6 +53,12 @@ class riscv_vector_cfg extends uvm_object;
   //  * Write-After-Write (WAW)
   // These hazard conditions are induced by keeping a small (~5) list of registers to select from.
   rand bit vec_reg_hazards;
+
+  // Enable segmented load/store extension ops
+  rand bit enable_zvlsseg = 1'b1;
+
+  // Enable fault only first load ops
+  rand bit enable_fault_only_first_load;
 
   constraint legal_c {
     solve vtype before vl;
@@ -89,6 +96,10 @@ class riscv_vector_cfg extends uvm_object;
     if (vec_quad_widening) {vtype.vsew < (ELEN >> 1);}
   }
 
+  constraint vseg_c {
+    enable_zvlsseg -> (vtype.vlmul < 8);
+  }
+
   constraint vdeiv_c {
     vtype.vediv inside {1, 2, 4, 8};
     vtype.vediv <= (vtype.vsew / SELEN);
@@ -103,8 +114,18 @@ class riscv_vector_cfg extends uvm_object;
     `uvm_field_int(vstart, UVM_DEFAULT)
     `uvm_field_enum(vxrm_t,vxrm, UVM_DEFAULT)
     `uvm_field_int(vxsat, UVM_DEFAULT)
+    `uvm_field_int(enable_zvlsseg, UVM_DEFAULT)
+    `uvm_field_int(enable_fault_only_first_load, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name = "");
+    super.new(name);
+    if ($value$plusargs("enable_zvlsseg=%0d", enable_zvlsseg)) begin
+      enable_zvlsseg.rand_mode(0);
+    end
+    if ($value$plusargs("enable_fault_only_first_load=%0d", enable_fault_only_first_load)) begin
+      enable_fault_only_first_load.rand_mode(0);
+    end
+  endfunction : new
 
 endclass : riscv_vector_cfg

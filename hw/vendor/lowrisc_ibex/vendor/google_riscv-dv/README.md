@@ -83,10 +83,11 @@ You can find the prebuilt document under docs/build/singlehtml/index.html
 
 ## External contributions and collaborations
 
-This repository is still under active development. We hope the RISC-V processor
-verification platform development to be a collaborative effort of the RISC-V
-community. Free feel to submit issues, feature requests, pull requests through
-Github. You can also send your private collaboration request to [riscv_dv_dev@google.com](riscv_dv_dev@google.com).
+RISC-V DV is now contributed to CHIPS Alliance. We have regular meetings to
+discuss the issues, feature priorities, development progress etc. Please join
+the [mail group](https://lists.chipsalliance.org/g/riscv-dv-wg) for latest
+status. 
+
 Please refer to CONTRIBUTING.md for license related questions.
 
 ## Supporting model

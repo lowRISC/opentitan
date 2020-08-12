@@ -65,8 +65,8 @@ module ibex_register_file #(
   // With dummy instructions enabled, R0 behaves as a real register but will always return 0 for
   // real instructions.
   if (DummyInstructions) begin : g_dummy_r0
-    logic        we_r0_dummy;
-    logic [31:0] rf_r0_q;
+    logic                 we_r0_dummy;
+    logic [DataWidth-1:0] rf_r0_q;
 
     // Write enable for dummy R0 register (waddr_a_i will always be 0 for dummy instructions)
     assign we_r0_dummy = we_a_i & dummy_instr_id_i;

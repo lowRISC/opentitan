@@ -90,7 +90,6 @@ module ibex_controller #(
     input  logic                  csr_mstatus_tw_i,
 
     // stall & flush signals
-    input  logic                  lsu_req_in_id_i,
     input  logic                  stall_id_i,
     input  logic                  stall_wb_i,
     output logic                  flush_id_o,
@@ -510,11 +509,11 @@ module ibex_controller #(
         // If entering debug mode or handling an IRQ the core needs to wait
         // until the current instruction has finished executing. Stall IF
         // during that time.
-        if ((enter_debug_mode || handle_irq) && (stall || lsu_req_in_id_i)) begin
+        if ((enter_debug_mode || handle_irq) && stall) begin
           halt_if = 1'b1;
         end
 
-        if (!stall && !lsu_req_in_id_i && !special_req_all) begin
+        if (!stall && !special_req_all) begin
           if (enter_debug_mode) begin
             // enter debug mode
             ctrl_fsm_ns = DBG_TAKEN_IF;

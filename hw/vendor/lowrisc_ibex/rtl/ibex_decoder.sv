@@ -348,7 +348,7 @@ module ibex_decoder #(
 
           3'b001: begin
             unique case (instr[31:27])
-              5'b0_0000: illegal_insn = 1'b0;                                         // slli
+              5'b0_0000: illegal_insn = (instr[26:25] == 2'b00) ? 1'b0 : 1'b1;        // slli
               5'b0_0100,                                                              // sloi
               5'b0_1001,                                                              // sbclri
               5'b0_0101,                                                              // sbseti
@@ -385,7 +385,7 @@ module ibex_decoder #(
             end else begin
               unique case (instr[31:27])
                 5'b0_0000,                                                             // srli
-                5'b0_1000: illegal_insn = 1'b0;                                        // srai
+                5'b0_1000: illegal_insn = (instr[26:25] == 2'b00) ? 1'b0 : 1'b1;       // srai
 
                 5'b0_0100,                                                             // sroi
                 5'b0_1100,                                                             // rori
