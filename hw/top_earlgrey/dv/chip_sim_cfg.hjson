@@ -52,14 +52,14 @@
     // boundary of all pre-verified IPs and full coverage on non-pre-verified
     // IPs. See `hw/dv/data/common_sim_cfg.hjson` for the default value.
     {
-      name: default_vcs_cov_hier
+      name: default_vcs_cov_cfg_file
       value: "-cm_hier {tool_srcs_dir}/chip_cover.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
     // `hw/dv/data//common_sim_cfg.hjson` for the default value.
     {
-      name: cover_reg_top_vcs_cov_hier
+      name: cover_reg_top_vcs_cov_cfg_file
       value: "-cm_hier {tool_srcs_dir}/chip_cover_reg_top.cfg"
     }
 
