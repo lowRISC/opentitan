@@ -503,7 +503,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                      non_shadowed_csrs[0: $urandom_range(0, non_shadowed_csrs.size()-1)]};
         test_csrs.shuffle();
 
-        if ($urandom_range(1, 10) == 10) dut_init("HARD");
+        if ($urandom_range(1, 10) == 10) apply_reset("HARD");
 
         foreach (test_csrs[i]) begin
           // check if parent block or register is excluded from write
@@ -523,7 +523,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           csr_wr(.csr(test_csrs[i]), .value(wdata), .en_shadow_wr(0), .predict(1));
           if (test_csrs[i].get_shadow_update_err()) begin
             test_csrs[i].clear_shadow_update_err();
-            `uvm_info(`gfn, $sformatf("%0s update error", test_csrs[i].get_name()), UVM_LOW)
+            `uvm_info(`gfn, $sformatf("%0s update error", test_csrs[i].get_name()), UVM_MEDIUM)
             // TODO: add alert check
             // `uvm_info(`gfn, $sformatf("%0s update error alert triggered",
             //                           test_csrs[i].get_name()), UVM_LOW)
@@ -556,7 +556,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               csr_rd_check(.ptr(test_fields[0]), .blocking(0), .compare(compare),
                            .compare_vs_ral(1'b1));
             end
+            csr_utils_pkg::wait_if_max_outstanding_accesses_reached();
           end
+          csr_utils_pkg::wait_no_outstanding_access();
         end
       end
     end
