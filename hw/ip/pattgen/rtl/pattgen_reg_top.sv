@@ -71,123 +71,119 @@ module pattgen_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_patt_done0_qs;
-  logic intr_state_patt_done0_wd;
-  logic intr_state_patt_done0_we;
-  logic intr_state_patt_done1_qs;
-  logic intr_state_patt_done1_wd;
-  logic intr_state_patt_done1_we;
-  logic intr_enable_patt_done0_qs;
-  logic intr_enable_patt_done0_wd;
-  logic intr_enable_patt_done0_we;
-  logic intr_enable_patt_done1_qs;
-  logic intr_enable_patt_done1_wd;
-  logic intr_enable_patt_done1_we;
-  logic intr_test_patt_done0_wd;
-  logic intr_test_patt_done0_we;
-  logic intr_test_patt_done1_wd;
-  logic intr_test_patt_done1_we;
-  logic ctrl_qs;
-  logic ctrl_wd;
-  logic ctrl_we;
-  logic start_start0_wd;
-  logic start_start0_we;
-  logic start_start1_wd;
-  logic start_start1_we;
-  logic [31:0] prediv0_wd;
-  logic prediv0_we;
-  logic [31:0] prediv1_wd;
-  logic prediv1_we;
-  logic [31:0] patt0_data0_wd;
-  logic patt0_data0_we;
-  logic [31:0] patt0_data1_wd;
-  logic patt0_data1_we;
-  logic [31:0] patt1_data0_wd;
-  logic patt1_data0_we;
-  logic [31:0] patt1_data1_wd;
-  logic patt1_data1_we;
-  logic [5:0] patt_len_len0_wd;
-  logic patt_len_len0_we;
-  logic [5:0] patt_len_len1_wd;
-  logic patt_len_len1_we;
-  logic [9:0] patt_loop_loop0_wd;
-  logic patt_loop_loop0_we;
-  logic [9:0] patt_loop_loop1_wd;
-  logic patt_loop_loop1_we;
-  logic intr_mask_mask0_wd;
-  logic intr_mask_mask0_we;
-  logic intr_mask_mask1_wd;
-  logic intr_mask_mask1_we;
+  logic intr_state_intr_patt_done_ch0_qs;
+  logic intr_state_intr_patt_done_ch0_wd;
+  logic intr_state_intr_patt_done_ch0_we;
+  logic intr_state_intr_patt_done_ch1_qs;
+  logic intr_state_intr_patt_done_ch1_wd;
+  logic intr_state_intr_patt_done_ch1_we;
+  logic intr_enable_intr_patt_done_ch0_qs;
+  logic intr_enable_intr_patt_done_ch0_wd;
+  logic intr_enable_intr_patt_done_ch0_we;
+  logic intr_enable_intr_patt_done_ch1_qs;
+  logic intr_enable_intr_patt_done_ch1_wd;
+  logic intr_enable_intr_patt_done_ch1_we;
+  logic intr_test_intr_patt_done_ch0_wd;
+  logic intr_test_intr_patt_done_ch0_we;
+  logic intr_test_intr_patt_done_ch1_wd;
+  logic intr_test_intr_patt_done_ch1_we;
+  logic patt_ctrl_qs;
+  logic patt_ctrl_wd;
+  logic patt_ctrl_we;
+  logic patt_start_ch0_start_wd;
+  logic patt_start_ch0_start_we;
+  logic patt_start_ch1_start_wd;
+  logic patt_start_ch1_start_we;
+  logic [31:0] patt_prediv0_wd;
+  logic patt_prediv0_we;
+  logic [31:0] patt_prediv1_wd;
+  logic patt_prediv1_we;
+  logic [31:0] patt_data_ch00_wd;
+  logic patt_data_ch00_we;
+  logic [31:0] patt_data_ch01_wd;
+  logic patt_data_ch01_we;
+  logic [31:0] patt_data_ch10_wd;
+  logic patt_data_ch10_we;
+  logic [31:0] patt_data_ch11_wd;
+  logic patt_data_ch11_we;
+  logic [5:0] patt_len_ch0_len_wd;
+  logic patt_len_ch0_len_we;
+  logic [5:0] patt_len_ch1_len_wd;
+  logic patt_len_ch1_len_we;
+  logic [9:0] patt_loop_ch0_loop_wd;
+  logic patt_loop_ch0_loop_we;
+  logic [9:0] patt_loop_ch1_loop_wd;
+  logic patt_loop_ch1_loop_we;
 
   // Register instances
   // R[intr_state]: V(False)
 
-  //   F[patt_done0]: 0:0
+  //   F[intr_patt_done_ch0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_patt_done0 (
+  ) u_intr_state_intr_patt_done_ch0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_patt_done0_we),
-    .wd     (intr_state_patt_done0_wd),
+    .we     (intr_state_intr_patt_done_ch0_we),
+    .wd     (intr_state_intr_patt_done_ch0_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.patt_done0.de),
-    .d      (hw2reg.intr_state.patt_done0.d ),
+    .de     (hw2reg.intr_state.intr_patt_done_ch0.de),
+    .d      (hw2reg.intr_state.intr_patt_done_ch0.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.patt_done0.q ),
+    .q      (reg2hw.intr_state.intr_patt_done_ch0.q ),
 
     // to register interface (read)
-    .qs     (intr_state_patt_done0_qs)
+    .qs     (intr_state_intr_patt_done_ch0_qs)
   );
 
 
-  //   F[patt_done1]: 1:1
+  //   F[intr_patt_done_ch1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_patt_done1 (
+  ) u_intr_state_intr_patt_done_ch1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_patt_done1_we),
-    .wd     (intr_state_patt_done1_wd),
+    .we     (intr_state_intr_patt_done_ch1_we),
+    .wd     (intr_state_intr_patt_done_ch1_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.patt_done1.de),
-    .d      (hw2reg.intr_state.patt_done1.d ),
+    .de     (hw2reg.intr_state.intr_patt_done_ch1.de),
+    .d      (hw2reg.intr_state.intr_patt_done_ch1.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.patt_done1.q ),
+    .q      (reg2hw.intr_state.intr_patt_done_ch1.q ),
 
     // to register interface (read)
-    .qs     (intr_state_patt_done1_qs)
+    .qs     (intr_state_intr_patt_done_ch1_qs)
   );
 
 
   // R[intr_enable]: V(False)
 
-  //   F[patt_done0]: 0:0
+  //   F[intr_patt_done_ch0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_patt_done0 (
+  ) u_intr_enable_intr_patt_done_ch0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_patt_done0_we),
-    .wd     (intr_enable_patt_done0_wd),
+    .we     (intr_enable_intr_patt_done_ch0_we),
+    .wd     (intr_enable_intr_patt_done_ch0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -195,25 +191,25 @@ module pattgen_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.patt_done0.q ),
+    .q      (reg2hw.intr_enable.intr_patt_done_ch0.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_patt_done0_qs)
+    .qs     (intr_enable_intr_patt_done_ch0_qs)
   );
 
 
-  //   F[patt_done1]: 1:1
+  //   F[intr_patt_done_ch1]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_patt_done1 (
+  ) u_intr_enable_intr_patt_done_ch1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_patt_done1_we),
-    .wd     (intr_enable_patt_done1_wd),
+    .we     (intr_enable_intr_patt_done_ch1_we),
+    .wd     (intr_enable_intr_patt_done_ch1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -221,58 +217,58 @@ module pattgen_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.patt_done1.q ),
+    .q      (reg2hw.intr_enable.intr_patt_done_ch1.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_patt_done1_qs)
+    .qs     (intr_enable_intr_patt_done_ch1_qs)
   );
 
 
   // R[intr_test]: V(True)
 
-  //   F[patt_done0]: 0:0
+  //   F[intr_patt_done_ch0]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_patt_done0 (
+  ) u_intr_test_intr_patt_done_ch0 (
     .re     (1'b0),
-    .we     (intr_test_patt_done0_we),
-    .wd     (intr_test_patt_done0_wd),
+    .we     (intr_test_intr_patt_done_ch0_we),
+    .wd     (intr_test_intr_patt_done_ch0_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.patt_done0.qe),
-    .q      (reg2hw.intr_test.patt_done0.q ),
+    .qe     (reg2hw.intr_test.intr_patt_done_ch0.qe),
+    .q      (reg2hw.intr_test.intr_patt_done_ch0.q ),
     .qs     ()
   );
 
 
-  //   F[patt_done1]: 1:1
+  //   F[intr_patt_done_ch1]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_patt_done1 (
+  ) u_intr_test_intr_patt_done_ch1 (
     .re     (1'b0),
-    .we     (intr_test_patt_done1_we),
-    .wd     (intr_test_patt_done1_wd),
+    .we     (intr_test_intr_patt_done_ch1_we),
+    .wd     (intr_test_intr_patt_done_ch1_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.patt_done1.qe),
-    .q      (reg2hw.intr_test.patt_done1.q ),
+    .qe     (reg2hw.intr_test.intr_patt_done_ch1.qe),
+    .q      (reg2hw.intr_test.intr_patt_done_ch1.q ),
     .qs     ()
   );
 
 
-  // R[ctrl]: V(False)
+  // R[patt_ctrl]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_ctrl (
+  ) u_patt_ctrl (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (ctrl_we),
-    .wd     (ctrl_wd),
+    .we     (patt_ctrl_we),
+    .wd     (patt_ctrl_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -280,222 +276,222 @@ module pattgen_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.q ),
+    .q      (reg2hw.patt_ctrl.q ),
 
     // to register interface (read)
-    .qs     (ctrl_qs)
+    .qs     (patt_ctrl_qs)
   );
 
 
-  // R[start]: V(False)
+  // R[patt_start]: V(False)
 
-  //   F[start0]: 0:0
+  //   F[ch0_start]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
-  ) u_start_start0 (
+  ) u_patt_start_ch0_start (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (start_start0_we),
-    .wd     (start_start0_wd),
+    .we     (patt_start_ch0_start_we),
+    .wd     (patt_start_ch0_start_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.start.start0.qe),
-    .q      (reg2hw.start.start0.q ),
+    .qe     (reg2hw.patt_start.ch0_start.qe),
+    .q      (reg2hw.patt_start.ch0_start.q ),
 
     .qs     ()
   );
 
 
-  //   F[start1]: 1:1
+  //   F[ch1_start]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
-  ) u_start_start1 (
+  ) u_patt_start_ch1_start (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (start_start1_we),
-    .wd     (start_start1_wd),
+    .we     (patt_start_ch1_start_we),
+    .wd     (patt_start_ch1_start_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.start.start1.qe),
-    .q      (reg2hw.start.start1.q ),
+    .qe     (reg2hw.patt_start.ch1_start.qe),
+    .q      (reg2hw.patt_start.ch1_start.q ),
 
     .qs     ()
   );
 
 
 
-  // Subregister 0 of Multireg prediv
-  // R[prediv0]: V(False)
+  // Subregister 0 of Multireg patt_prediv
+  // R[patt_prediv0]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
-  ) u_prediv0 (
+  ) u_patt_prediv0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (prediv0_we),
-    .wd     (prediv0_wd),
+    .we     (patt_prediv0_we),
+    .wd     (patt_prediv0_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prediv[0].qe),
-    .q      (reg2hw.prediv[0].q ),
+    .qe     (reg2hw.patt_prediv[0].qe),
+    .q      (reg2hw.patt_prediv[0].q ),
 
     .qs     ()
   );
 
-  // Subregister 1 of Multireg prediv
-  // R[prediv1]: V(False)
+  // Subregister 1 of Multireg patt_prediv
+  // R[patt_prediv1]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
-  ) u_prediv1 (
+  ) u_patt_prediv1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (prediv1_we),
-    .wd     (prediv1_wd),
+    .we     (patt_prediv1_we),
+    .wd     (patt_prediv1_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prediv[1].qe),
-    .q      (reg2hw.prediv[1].q ),
-
-    .qs     ()
-  );
-
-
-
-  // Subregister 0 of Multireg patt0_data
-  // R[patt0_data0]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
-  ) u_patt0_data0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (patt0_data0_we),
-    .wd     (patt0_data0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (reg2hw.patt0_data[0].qe),
-    .q      (reg2hw.patt0_data[0].q ),
-
-    .qs     ()
-  );
-
-  // Subregister 1 of Multireg patt0_data
-  // R[patt0_data1]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("WO"),
-    .RESVAL  (32'h0)
-  ) u_patt0_data1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (patt0_data1_we),
-    .wd     (patt0_data1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (reg2hw.patt0_data[1].qe),
-    .q      (reg2hw.patt0_data[1].q ),
+    .qe     (reg2hw.patt_prediv[1].qe),
+    .q      (reg2hw.patt_prediv[1].q ),
 
     .qs     ()
   );
 
 
 
-  // Subregister 0 of Multireg patt1_data
-  // R[patt1_data0]: V(False)
+  // Subregister 0 of Multireg patt_data_ch0
+  // R[patt_data_ch00]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
-  ) u_patt1_data0 (
+  ) u_patt_data_ch00 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt1_data0_we),
-    .wd     (patt1_data0_wd),
+    .we     (patt_data_ch00_we),
+    .wd     (patt_data_ch00_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt1_data[0].qe),
-    .q      (reg2hw.patt1_data[0].q ),
+    .qe     (reg2hw.patt_data_ch0[0].qe),
+    .q      (reg2hw.patt_data_ch0[0].q ),
 
     .qs     ()
   );
 
-  // Subregister 1 of Multireg patt1_data
-  // R[patt1_data1]: V(False)
+  // Subregister 1 of Multireg patt_data_ch0
+  // R[patt_data_ch01]: V(False)
 
   prim_subreg #(
     .DW      (32),
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
-  ) u_patt1_data1 (
+  ) u_patt_data_ch01 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt1_data1_we),
-    .wd     (patt1_data1_wd),
+    .we     (patt_data_ch01_we),
+    .wd     (patt_data_ch01_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt1_data[1].qe),
-    .q      (reg2hw.patt1_data[1].q ),
+    .qe     (reg2hw.patt_data_ch0[1].qe),
+    .q      (reg2hw.patt_data_ch0[1].q ),
+
+    .qs     ()
+  );
+
+
+
+  // Subregister 0 of Multireg patt_data_ch1
+  // R[patt_data_ch10]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt_data_ch10 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt_data_ch10_we),
+    .wd     (patt_data_ch10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt_data_ch1[0].qe),
+    .q      (reg2hw.patt_data_ch1[0].q ),
+
+    .qs     ()
+  );
+
+  // Subregister 1 of Multireg patt_data_ch1
+  // R[patt_data_ch11]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("WO"),
+    .RESVAL  (32'h0)
+  ) u_patt_data_ch11 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (patt_data_ch11_we),
+    .wd     (patt_data_ch11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.patt_data_ch1[1].qe),
+    .q      (reg2hw.patt_data_ch1[1].q ),
 
     .qs     ()
   );
@@ -503,51 +499,51 @@ module pattgen_reg_top (
 
   // R[patt_len]: V(False)
 
-  //   F[len0]: 5:0
+  //   F[ch0_len]: 5:0
   prim_subreg #(
     .DW      (6),
     .SWACCESS("WO"),
     .RESVAL  (6'h0)
-  ) u_patt_len_len0 (
+  ) u_patt_len_ch0_len (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt_len_len0_we),
-    .wd     (patt_len_len0_wd),
+    .we     (patt_len_ch0_len_we),
+    .wd     (patt_len_ch0_len_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt_len.len0.qe),
-    .q      (reg2hw.patt_len.len0.q ),
+    .qe     (reg2hw.patt_len.ch0_len.qe),
+    .q      (reg2hw.patt_len.ch0_len.q ),
 
     .qs     ()
   );
 
 
-  //   F[len1]: 12:7
+  //   F[ch1_len]: 12:7
   prim_subreg #(
     .DW      (6),
     .SWACCESS("WO"),
     .RESVAL  (6'h0)
-  ) u_patt_len_len1 (
+  ) u_patt_len_ch1_len (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt_len_len1_we),
-    .wd     (patt_len_len1_wd),
+    .we     (patt_len_ch1_len_we),
+    .wd     (patt_len_ch1_len_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt_len.len1.qe),
-    .q      (reg2hw.patt_len.len1.q ),
+    .qe     (reg2hw.patt_len.ch1_len.qe),
+    .q      (reg2hw.patt_len.ch1_len.q ),
 
     .qs     ()
   );
@@ -555,127 +551,72 @@ module pattgen_reg_top (
 
   // R[patt_loop]: V(False)
 
-  //   F[loop0]: 9:0
+  //   F[ch0_loop]: 9:0
   prim_subreg #(
     .DW      (10),
     .SWACCESS("WO"),
     .RESVAL  (10'h0)
-  ) u_patt_loop_loop0 (
+  ) u_patt_loop_ch0_loop (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt_loop_loop0_we),
-    .wd     (patt_loop_loop0_wd),
+    .we     (patt_loop_ch0_loop_we),
+    .wd     (patt_loop_ch0_loop_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt_loop.loop0.qe),
-    .q      (reg2hw.patt_loop.loop0.q ),
+    .qe     (reg2hw.patt_loop.ch0_loop.qe),
+    .q      (reg2hw.patt_loop.ch0_loop.q ),
 
     .qs     ()
   );
 
 
-  //   F[loop1]: 19:10
+  //   F[ch1_loop]: 19:10
   prim_subreg #(
     .DW      (10),
     .SWACCESS("WO"),
     .RESVAL  (10'h0)
-  ) u_patt_loop_loop1 (
+  ) u_patt_loop_ch1_loop (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (patt_loop_loop1_we),
-    .wd     (patt_loop_loop1_wd),
+    .we     (patt_loop_ch1_loop_we),
+    .wd     (patt_loop_ch1_loop_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.patt_loop.loop1.qe),
-    .q      (reg2hw.patt_loop.loop1.q ),
+    .qe     (reg2hw.patt_loop.ch1_loop.qe),
+    .q      (reg2hw.patt_loop.ch1_loop.q ),
 
     .qs     ()
   );
 
 
-  // R[intr_mask]: V(False)
-
-  //   F[mask0]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
-  ) u_intr_mask_mask0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_mask_mask0_we),
-    .wd     (intr_mask_mask0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (reg2hw.intr_mask.mask0.qe),
-    .q      (reg2hw.intr_mask.mask0.q ),
-
-    .qs     ()
-  );
-
-
-  //   F[mask1]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h0)
-  ) u_intr_mask_mask1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_mask_mask1_we),
-    .wd     (intr_mask_mask1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (reg2hw.intr_mask.mask1.qe),
-    .q      (reg2hw.intr_mask.mask1.q ),
-
-    .qs     ()
-  );
-
-
-
-
-  logic [13:0] addr_hit;
+  logic [12:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PATTGEN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == PATTGEN_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == PATTGEN_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == PATTGEN_CTRL_OFFSET);
-    addr_hit[ 4] = (reg_addr == PATTGEN_START_OFFSET);
-    addr_hit[ 5] = (reg_addr == PATTGEN_PREDIV0_OFFSET);
-    addr_hit[ 6] = (reg_addr == PATTGEN_PREDIV1_OFFSET);
-    addr_hit[ 7] = (reg_addr == PATTGEN_PATT0_DATA0_OFFSET);
-    addr_hit[ 8] = (reg_addr == PATTGEN_PATT0_DATA1_OFFSET);
-    addr_hit[ 9] = (reg_addr == PATTGEN_PATT1_DATA0_OFFSET);
-    addr_hit[10] = (reg_addr == PATTGEN_PATT1_DATA1_OFFSET);
+    addr_hit[ 3] = (reg_addr == PATTGEN_PATT_CTRL_OFFSET);
+    addr_hit[ 4] = (reg_addr == PATTGEN_PATT_START_OFFSET);
+    addr_hit[ 5] = (reg_addr == PATTGEN_PATT_PREDIV0_OFFSET);
+    addr_hit[ 6] = (reg_addr == PATTGEN_PATT_PREDIV1_OFFSET);
+    addr_hit[ 7] = (reg_addr == PATTGEN_PATT_DATA_CH00_OFFSET);
+    addr_hit[ 8] = (reg_addr == PATTGEN_PATT_DATA_CH01_OFFSET);
+    addr_hit[ 9] = (reg_addr == PATTGEN_PATT_DATA_CH10_OFFSET);
+    addr_hit[10] = (reg_addr == PATTGEN_PATT_DATA_CH11_OFFSET);
     addr_hit[11] = (reg_addr == PATTGEN_PATT_LEN_OFFSET);
     addr_hit[12] = (reg_addr == PATTGEN_PATT_LOOP_OFFSET);
-    addr_hit[13] = (reg_addr == PATTGEN_INTR_MASK_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -683,97 +624,103 @@ module pattgen_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (PATTGEN_PERMIT[ 0] != (PATTGEN_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (PATTGEN_PERMIT[ 1] != (PATTGEN_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (PATTGEN_PERMIT[ 2] != (PATTGEN_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (PATTGEN_PERMIT[ 3] != (PATTGEN_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (PATTGEN_PERMIT[ 4] != (PATTGEN_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (PATTGEN_PERMIT[ 5] != (PATTGEN_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (PATTGEN_PERMIT[ 6] != (PATTGEN_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (PATTGEN_PERMIT[ 7] != (PATTGEN_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (PATTGEN_PERMIT[ 8] != (PATTGEN_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (PATTGEN_PERMIT[ 9] != (PATTGEN_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (PATTGEN_PERMIT[10] != (PATTGEN_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (PATTGEN_PERMIT[11] != (PATTGEN_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (PATTGEN_PERMIT[12] != (PATTGEN_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (PATTGEN_PERMIT[13] != (PATTGEN_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 0] && reg_we &&
+      (PATTGEN_PERMIT[ 0] != (PATTGEN_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we &&
+      (PATTGEN_PERMIT[ 1] != (PATTGEN_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we &&
+      (PATTGEN_PERMIT[ 2] != (PATTGEN_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we &&
+      (PATTGEN_PERMIT[ 3] != (PATTGEN_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we &&
+      (PATTGEN_PERMIT[ 4] != (PATTGEN_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we &&
+      (PATTGEN_PERMIT[ 5] != (PATTGEN_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we &&
+      (PATTGEN_PERMIT[ 6] != (PATTGEN_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we &&
+      (PATTGEN_PERMIT[ 7] != (PATTGEN_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we &&
+      (PATTGEN_PERMIT[ 8] != (PATTGEN_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we &&
+      (PATTGEN_PERMIT[ 9] != (PATTGEN_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we &&
+      (PATTGEN_PERMIT[10] != (PATTGEN_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we &&
+      (PATTGEN_PERMIT[11] != (PATTGEN_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we &&
+      (PATTGEN_PERMIT[12] != (PATTGEN_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_patt_done0_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_patt_done0_wd = reg_wdata[0];
+  assign intr_state_intr_patt_done_ch0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_intr_patt_done_ch0_wd = reg_wdata[0];
 
-  assign intr_state_patt_done1_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_patt_done1_wd = reg_wdata[1];
+  assign intr_state_intr_patt_done_ch1_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_intr_patt_done_ch1_wd = reg_wdata[1];
 
-  assign intr_enable_patt_done0_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_patt_done0_wd = reg_wdata[0];
+  assign intr_enable_intr_patt_done_ch0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_intr_patt_done_ch0_wd = reg_wdata[0];
 
-  assign intr_enable_patt_done1_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_patt_done1_wd = reg_wdata[1];
+  assign intr_enable_intr_patt_done_ch1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_intr_patt_done_ch1_wd = reg_wdata[1];
 
-  assign intr_test_patt_done0_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_patt_done0_wd = reg_wdata[0];
+  assign intr_test_intr_patt_done_ch0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_intr_patt_done_ch0_wd = reg_wdata[0];
 
-  assign intr_test_patt_done1_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_patt_done1_wd = reg_wdata[1];
+  assign intr_test_intr_patt_done_ch1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_intr_patt_done_ch1_wd = reg_wdata[1];
 
-  assign ctrl_we = addr_hit[3] & reg_we & ~wr_err;
-  assign ctrl_wd = reg_wdata[0];
+  assign patt_ctrl_we = addr_hit[3] & reg_we & ~wr_err;
+  assign patt_ctrl_wd = reg_wdata[0];
 
-  assign start_start0_we = addr_hit[4] & reg_we & ~wr_err;
-  assign start_start0_wd = reg_wdata[0];
+  assign patt_start_ch0_start_we = addr_hit[4] & reg_we & ~wr_err;
+  assign patt_start_ch0_start_wd = reg_wdata[0];
 
-  assign start_start1_we = addr_hit[4] & reg_we & ~wr_err;
-  assign start_start1_wd = reg_wdata[1];
+  assign patt_start_ch1_start_we = addr_hit[4] & reg_we & ~wr_err;
+  assign patt_start_ch1_start_wd = reg_wdata[1];
 
-  assign prediv0_we = addr_hit[5] & reg_we & ~wr_err;
-  assign prediv0_wd = reg_wdata[31:0];
+  assign patt_prediv0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign patt_prediv0_wd = reg_wdata[31:0];
 
-  assign prediv1_we = addr_hit[6] & reg_we & ~wr_err;
-  assign prediv1_wd = reg_wdata[31:0];
+  assign patt_prediv1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign patt_prediv1_wd = reg_wdata[31:0];
 
-  assign patt0_data0_we = addr_hit[7] & reg_we & ~wr_err;
-  assign patt0_data0_wd = reg_wdata[31:0];
+  assign patt_data_ch00_we = addr_hit[7] & reg_we & ~wr_err;
+  assign patt_data_ch00_wd = reg_wdata[31:0];
 
-  assign patt0_data1_we = addr_hit[8] & reg_we & ~wr_err;
-  assign patt0_data1_wd = reg_wdata[31:0];
+  assign patt_data_ch01_we = addr_hit[8] & reg_we & ~wr_err;
+  assign patt_data_ch01_wd = reg_wdata[31:0];
 
-  assign patt1_data0_we = addr_hit[9] & reg_we & ~wr_err;
-  assign patt1_data0_wd = reg_wdata[31:0];
+  assign patt_data_ch10_we = addr_hit[9] & reg_we & ~wr_err;
+  assign patt_data_ch10_wd = reg_wdata[31:0];
 
-  assign patt1_data1_we = addr_hit[10] & reg_we & ~wr_err;
-  assign patt1_data1_wd = reg_wdata[31:0];
+  assign patt_data_ch11_we = addr_hit[10] & reg_we & ~wr_err;
+  assign patt_data_ch11_wd = reg_wdata[31:0];
 
-  assign patt_len_len0_we = addr_hit[11] & reg_we & ~wr_err;
-  assign patt_len_len0_wd = reg_wdata[5:0];
+  assign patt_len_ch0_len_we = addr_hit[11] & reg_we & ~wr_err;
+  assign patt_len_ch0_len_wd = reg_wdata[5:0];
 
-  assign patt_len_len1_we = addr_hit[11] & reg_we & ~wr_err;
-  assign patt_len_len1_wd = reg_wdata[12:7];
+  assign patt_len_ch1_len_we = addr_hit[11] & reg_we & ~wr_err;
+  assign patt_len_ch1_len_wd = reg_wdata[12:7];
 
-  assign patt_loop_loop0_we = addr_hit[12] & reg_we & ~wr_err;
-  assign patt_loop_loop0_wd = reg_wdata[9:0];
+  assign patt_loop_ch0_loop_we = addr_hit[12] & reg_we & ~wr_err;
+  assign patt_loop_ch0_loop_wd = reg_wdata[9:0];
 
-  assign patt_loop_loop1_we = addr_hit[12] & reg_we & ~wr_err;
-  assign patt_loop_loop1_wd = reg_wdata[19:10];
-
-  assign intr_mask_mask0_we = addr_hit[13] & reg_we & ~wr_err;
-  assign intr_mask_mask0_wd = reg_wdata[0];
-
-  assign intr_mask_mask1_we = addr_hit[13] & reg_we & ~wr_err;
-  assign intr_mask_mask1_wd = reg_wdata[1];
+  assign patt_loop_ch1_loop_we = addr_hit[12] & reg_we & ~wr_err;
+  assign patt_loop_ch1_loop_wd = reg_wdata[19:10];
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_patt_done0_qs;
-        reg_rdata_next[1] = intr_state_patt_done1_qs;
+        reg_rdata_next[0] = intr_state_intr_patt_done_ch0_qs;
+        reg_rdata_next[1] = intr_state_intr_patt_done_ch1_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_patt_done0_qs;
-        reg_rdata_next[1] = intr_enable_patt_done1_qs;
+        reg_rdata_next[0] = intr_enable_intr_patt_done_ch0_qs;
+        reg_rdata_next[1] = intr_enable_intr_patt_done_ch1_qs;
       end
 
       addr_hit[2]: begin
@@ -782,7 +729,7 @@ module pattgen_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = ctrl_qs;
+        reg_rdata_next[0] = patt_ctrl_qs;
       end
 
       addr_hit[4]: begin
@@ -822,11 +769,6 @@ module pattgen_reg_top (
       addr_hit[12]: begin
         reg_rdata_next[9:0] = '0;
         reg_rdata_next[19:10] = '0;
-      end
-
-      addr_hit[13]: begin
-        reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
       end
 
       default: begin

@@ -25,8 +25,8 @@ module tb;
   wire cio_pcl1_tx_en_o;
 
 
-  wire intr_patt_done0;
-  wire intr_patt_done1;
+  wire intr_patt_done_ch0;
+  wire intr_patt_done_ch1;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -44,23 +44,23 @@ module tb;
     .tl_i                 (tl_if.h2d ),
     .tl_o                 (tl_if.d2h ),
 
-    .cio_pda0_tx_o        (cio_pda0_tx_o     ),
-    .cio_pda0_tx_en_o     (cio_pda0_tx_en_o  ),
-    .cio_pcl0_tx_o        (cio_pcl0_tx_o     ),
-    .cio_pcl0_tx_en_o     (cio_pcl0_tx_en_o  ),
+    .cio_pda0_tx_o        (cio_pda0_tx_o      ),
+    .cio_pda0_tx_en_o     (cio_pda0_tx_en_o   ),
+    .cio_pcl0_tx_o        (cio_pcl0_tx_o      ),
+    .cio_pcl0_tx_en_o     (cio_pcl0_tx_en_o   ),
 
-    .cio_pda1_tx_o        (cio_pda1_tx_o     ),
-    .cio_pda1_tx_en_o     (cio_pda1_tx_en_o  ),
-    .cio_pcl1_tx_o        (cio_pcl1_tx_o     ),
-    .cio_pcl1_tx_en_o     (cio_pcl1_tx_en_o  ),
+    .cio_pda1_tx_o        (cio_pda1_tx_o      ),
+    .cio_pda1_tx_en_o     (cio_pda1_tx_en_o   ),
+    .cio_pcl1_tx_o        (cio_pcl1_tx_o      ),
+    .cio_pcl1_tx_en_o     (cio_pcl1_tx_en_o   ),
 
-    .intr_patt_done0_o    (intr_patt_done0 ),
-    .intr_patt_done1_o    (intr_patt_done1 )
+    .intr_patt_done_ch0_o (intr_patt_done_ch0 ),
+    .intr_patt_done_ch1_o (intr_patt_done_ch1 )
   );
 
   // interrupt
-  assign interrupts[PattDone0]   = intr_patt_done0;
-  assign interrupts[PattDone1]   = intr_patt_done1;
+  assign interrupts[PattDoneCh0] = intr_patt_done_ch0;
+  assign interrupts[PattDoneCh1] = intr_patt_done_ch1;
 
   initial begin
     // drive clk and rst_n from clk_if
