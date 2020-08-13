@@ -207,8 +207,11 @@ def _generate_prim_pkg(gapi):
     # Insert the required generic library first to ensure it gets enum value 0
     techlib_enums.append(_enum_name_for_techlib('generic', qualified=False))
 
+    # Temporary library to dv specific prims
+    techlib_enums.append(_enum_name_for_techlib('dv', qualified=False))
+
     for techlib in techlibs:
-        if techlib == 'generic':
+        if techlib in ['generic', 'dv']:
             # The generic implementation is required and handled separately.
             continue
         techlib_enums.append(_enum_name_for_techlib(techlib, qualified=False))

@@ -6,7 +6,7 @@
 // therefore it is self contained and does not reference any packages or other modules from the
 // open source repository.
 
-module ast #(
+module ast_syn #(
   parameter int EntropyStreams  = 4,
   parameter int AdcChannels     = 4,
   parameter int AdcDataWidth    = 10,
