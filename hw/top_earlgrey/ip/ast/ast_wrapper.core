@@ -10,7 +10,7 @@ filesets:
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:prim:clock_buf
     files:
-      - rtl/ast.sv
+      - rtl/ast_syn.sv
       - rtl/ast_wrapper.sv
     file_type: systemVerilogSource
 

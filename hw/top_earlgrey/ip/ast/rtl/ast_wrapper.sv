@@ -71,7 +71,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
   assign pwr_o.slow_clk_val[0] = ~pwr_o.slow_clk_val[1];
   assign pwr_o.io_clk_val[0]   = ~pwr_o.io_clk_val[1];
 
-  ast #(
+  ast_syn #(
     .EntropyStreams(EntropyStreams),
     .AdcChannels(AdcChannels),
     .AdcDataWidth(AdcDataWidth),
