@@ -1,0 +1,30 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tool:opentitan_earlgrey_flash_size_check:0.1"
+description: "Check if flash size has been reduced for smaller FPGA targets"
+
+filesets:
+  files_opentitan_earlgrey_flash_size_check:
+    files:
+      - ./opentitan_earlgrey_flash_size_check.py : { copyto: util/opentitan_earlgrey_flash_size_check.py }
+
+scripts:
+  opentitan_earlgrey_flash_size_check:
+    cmd:
+      - python3
+      - util/opentitan_earlgrey_flash_size_check.py
+    # TODO: Use this syntax once https://github.com/olofk/fusesoc/issues/353 is
+    # fixed. Remove the filesets from the default target, and also remove the
+    # copyto.
+    #filesets:
+    #  - opentitan_earlgrey_flash_size_check
+
+targets:
+  default:
+    filesets:
+      - files_opentitan_earlgrey_flash_size_check
+    hooks:
+      pre_build:
+        - opentitan_earlgrey_flash_size_check

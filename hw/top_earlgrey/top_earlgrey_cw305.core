@@ -4,10 +4,12 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:top_earlgrey_cw305:0.1"
 description: "Earl Grey toplevel for the ChipWhisperer CW305 board"
+
 filesets:
   files_rtl_cw305:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:tool:opentitan_earlgrey_flash_size_check:0.1
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/top_earlgrey_cw305.sv
