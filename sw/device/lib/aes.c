@@ -104,6 +104,10 @@ bool aes_idle(void) {
   return (REG32(AES_STATUS(0)) & (0x1u << AES_STATUS_IDLE));
 }
 
+void aes_manual_trigger(void) {
+  REG32(AES_TRIGGER(0)) = 0x1u << AES_TRIGGER_START;
+}
+
 void aes_clear(void) {
   // Wait for AES unit to be idle.
   while (!aes_idle()) {

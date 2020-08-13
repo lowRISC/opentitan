@@ -120,6 +120,13 @@ bool aes_data_valid(void);
 bool aes_idle(void);
 
 /**
+ * Set AES manual trigger.
+ *
+ * This is only valid when AES is configured to run in manual mode.
+ */
+void aes_manual_trigger(void);
+
+/**
  * Clear key, input and ouput registers of AES unit.
  */
 void aes_clear(void);
