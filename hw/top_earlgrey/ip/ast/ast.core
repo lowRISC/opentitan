@@ -2,16 +2,32 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:ast_wrapper:0.1"
+name: "lowrisc:systems:ast:0.1"
 description: "Analog Sensor Top generic views"
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
-      - lowrisc:systems:ast
-      - lowrisc:systems:ast_wrapper_pkg
     files:
-      - rtl/ast_wrapper.sv
+      - rtl/ast_reg_pkg.sv
+      - rtl/ast.sv
+      - rtl/adc.sv
+      - rtl/aon_clk.sv
+      - rtl/aon_osc.sv
+      - rtl/ast_reg_top.sv
+      - rtl/entropy.sv
+      - rtl/gen_alert.sv
+      - rtl/gen_pok.sv
+      - rtl/io_clk.sv
+      - rtl/io_osc.sv
+      - rtl/main_rglt.sv
+      - rtl/pdm.sv
+      - rtl/rng.sv
+      - rtl/rng_osc.sv
+      - rtl/sys_clk.sv
+      - rtl/sys_osc.sv
+      - rtl/usb_clk.sv
+      - rtl/usb_osc.sv
     file_type: systemVerilogSource
 
 

@@ -9,7 +9,7 @@
 //############################################################################
 `timescale 1ns/1ps
 
-module ast_syn #(
+module ast #(
   parameter int EntropyStreams  = 4,
   parameter int EntropyInWidth  = 1,
   parameter int AdcChannels     = 2,

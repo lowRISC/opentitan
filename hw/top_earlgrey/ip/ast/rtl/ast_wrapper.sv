@@ -61,7 +61,6 @@ module ast_wrapper import ast_wrapper_pkg::*;
   output ast_eflash_t ast_eflash_o
 );
 
-
   ///////////////////////////
   // AST instantiation
   ///////////////////////////
@@ -71,7 +70,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
   assign pwr_o.slow_clk_val[0] = ~pwr_o.slow_clk_val[1];
   assign pwr_o.io_clk_val[0]   = ~pwr_o.io_clk_val[1];
 
-  ast_syn #(
+  ast #(
     .EntropyStreams(EntropyStreams),
     .AdcChannels(AdcChannels),
     .AdcDataWidth(AdcDataWidth),
@@ -200,7 +199,6 @@ module ast_wrapper import ast_wrapper_pkg::*;
     // dft related
     .scan_mode_i(scanmode_i),
     .scan_reset_ni
-    );
-
+  );
 
 endmodule // ast_wrapper
