@@ -50,12 +50,14 @@
   // Coverage related.
   // By default, collect all coverage metrics: block:expr:fsm:toggle:functional.
   cov_metrics: all
+
   // Supply the cov configuration file.
   // Note that this needs to be set as -covfile <file>.
   xcelium_cov_cfg_file: ""
-  // Supply the cov refinement file.
+
+  // Supply the cov refinement files.
   // Note that this needs to be set as -load_refinement <file>.
-  xcelium_cov_refine_file: ""
+  xcelium_cov_refine_files: [""]
 
   // Set the coverage directories.
   cov_work_dir: "{scratch_path}/coverage"
@@ -80,7 +82,8 @@
   cov_report_cmd:   "{job_prefix} imc"
   cov_report_opts:  ["-64bit",
                      "-licqueue",
-                     "-exec {tool_srcs_dir}/cov_report.tcl"]
+                     "-exec {tool_srcs_dir}/cov_report.tcl",
+                     "{xcelium_cov_refine_files}"]
   cov_report_txt:   "{cov_report_dir}/cov_report.txt"
   cov_report_page:  "index.html"
 
@@ -92,7 +95,7 @@
                      "-64bit",
                      "-licqueue",
                      "-load {cov_merge_db_dir}",
-                     "{xcelium_cov_refine_file}"]
+                     "{xcelium_cov_refine_files}"]
 
   // pass and fail patterns
   build_fail_patterns: ["\\*E.*$"]

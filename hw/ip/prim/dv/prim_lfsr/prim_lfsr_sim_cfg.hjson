@@ -37,10 +37,13 @@
     }
   ]
 
-  // TODO: each build_mode needs to supply {build_mode}_vcs_cov_hier, else the
+  // TODO: each build_mode needs to supply {build_mode}_{tool}_cov_cfg_file, else the
   // build breaks.
-  prim_lfsr_dw_8_vcs_cov_hier: ""
-  prim_lfsr_dw_24_vcs_cov_hier: ""
+  prim_lfsr_dw_8_vcs_cov_cfg_file: ""
+  prim_lfsr_dw_24_vcs_cov_cfg_file: ""
+
+  prim_lfsr_dw_8_xcelium_cov_cfg_file: ""
+  prim_lfsr_dw_24_xcelium_cov_cfg_file: ""
 
   // List of test specifications.
   tests: [

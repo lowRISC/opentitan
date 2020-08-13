@@ -110,10 +110,19 @@
   ]
 
   // Defaults for VCS
-  cov_metrics:          "line+cond+fsm+tgl+branch+assert"
-  vcs_cov_hier:         ""
-  vcs_cov_assert_hier:  ""
-  vcs_cov_excl_files:   []
+  // By default, collect all coverage metrics.
+  cov_metrics: "line+cond+fsm+tgl+branch+assert"
+
+  // Supply the cov configuration file.
+  // Note that this needs to be set as -cm_hier <file>.
+  vcs_cov_cfg_file: ""
+
+  // Supply the cov configuration file for assertions.
+  // Note that this needs to be set as -cm_assert_hier <file>.
+  vcs_cov_assert_cfg_file: ""
+
+  // Supply the cov exclusion files.
+  vcs_cov_excl_files: []
 
   // pass and fail patterns
   build_fail_patterns: ["^Error-.*$"]
@@ -131,9 +140,9 @@
       build_opts: [// Enable the required cov metrics
                    "-cm {cov_metrics}",
                    // Set the coverage hierarchy
-                   "{vcs_cov_hier}",
+                   "{vcs_cov_cfg_file}",
                    // Set the assert coverage hierarchy
-                   "{vcs_cov_assert_hier}",
+                   "{vcs_cov_assert_cfg_file}",
                    // Cover all continuous assignments
                    "-cm_line contassign",
                    // Dump toggle coverage on mdas, array of structs and on ports only
