@@ -19,8 +19,8 @@ package pattgen_env_pkg;
 
   // parameters
   typedef enum int {
-    PattDone0      = 0,
-    PattDone1      = 1,
+    PattDoneCh0      = 0,
+    PattDoneCh1      = 1,
     NumI2cIntr     = 2
   } pattgen_intr_e;
 

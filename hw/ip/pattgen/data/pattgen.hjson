@@ -17,10 +17,10 @@
   ]
   // INTERRUPT pins
   interrupt_list: [
-    { name: "patt_done0"
+    { name: "intr_patt_done_ch0",
       desc: "raise if pattern generation on channel 0 is complete"
     }
-    { name: "patt_done1"
+    { name: "intr_patt_done_ch1",
       desc: "raise if pattern generation on channel 1 is complete"
     }
   ],
@@ -28,54 +28,52 @@
     { name:    "NumRegsPrediv",
       type:    "int",
       default: "2",
-      desc:    "Number pre-dividers reg",
+      desc:    "Number pre-dividers egister",
       local:   "true"
     }
     { name:    "NumRegsData",
       type:    "int",
       default: "2",
-      desc:    "Number data_out reg per each pattern",
+      desc:    "Number data register per each channel",
       local:   "true"
     }
   ],
   // REGISTER definition
   registers: [
     // CTRL register
-    { name: "CTRL",
-      desc: "PATTGEN control register (Functions TBD)",
+    { name: "PATT_CTRL",
+      desc: "PATTGEN control register (function tbd ...)",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
         { bits: "0",
           resval: "0",
-          name: "START",
-          desc: '''
-                Start pattern generator functionality
-                '''
+          name: "ENABLE",
+          desc: "Enable pattern generator functionality"
         }
       ]
     }
-    { name: "START",
-      desc: "PATTGEN start pattern generation",
+    { name: "PATT_START",
+      desc: "PATTGEN start generating patterns on output channels",
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
       fields: [
         { bits: "0",
           resval: "0",
-          name: "START0",
+          name: "CH0_START",
           desc: "Start generating pattern on channel 0"
         }
         { bits: "1",
           resval: "0",
-          name: "START1",
+          name: "CH1_START",
           desc: "Start generating pattern on channel 1"
         }
       ]
     }
     { multireg: {
-        name: "PREDIV",
-        desc: "Pre-divider multi registers",
+        name: "PATT_PREDIV",
+        desc: "PATTGEN pre-divider multi-registers",
         count: "NumRegsPrediv",
         cname: "PATTGEN",
         swaccess: "wo",
@@ -84,15 +82,15 @@
         fields: [
           { bits: "31:0",
             resval: "0",
-            name: "RATIO",
+            name: "CLK_RATIO",
             desc: "Dividend ratio from based I/O clock for channel 0 (base is 2)"
           }
         ]
       }
     },
     { multireg: {
-        name: "PATT0_DATA",
-        desc: "Data_out registers for channel 0",
+        name: "PATT_DATA_CH0",
+        desc: "PATTGEN Seed pattern multi-registers for channel 0",
         count: "NumRegsData",
         cname: "PATTGEN",
         swaccess: "wo",
@@ -102,14 +100,14 @@
           { bits: "31:0",
             resval: "0",
             name: "DATA",
-            desc: "Data generated on channel 0 (length is defined by patt_len.len0 register)"
+            desc: "Seed pattern for channel 0 (2-64 bits)"
           }
         ]
       }
     },
     { multireg: {
-        name: "PATT1_DATA",
-        desc: "Data_out registers for channel 1",
+        name: "PATT_DATA_CH1",
+        desc: "PATTGEN Seed pattern multi-registers for channel 1",
         count: "NumRegsData",
         cname: "PATTGEN",
         swaccess: "wo",
@@ -119,7 +117,7 @@
           { bits: "31:0",
             resval: "0",
             name: "DATA",
-            desc: "Data generated on channel 1 (length is defined by patt_len.len1 register)"
+            desc: "Seed pattern for channel 1 (2-64 bits)"
           }
         ]
       }
@@ -132,13 +130,13 @@
       fields: [
         { bits: "5:0",
           resval: "0",
-          name: "LEN0",
-          desc: "Data generated on channel 1 (length is define by patt_len.len1 register)"
+          name: "CH0_LEN",
+          desc: "Length of the seed pattern for channel 0 (2-64 bits)"
         }
         { bits: "12:7",
           resval: "0",
-          name: "LEN1",
-          desc: "Length of pattern generated on channel 1 (base is 2)"
+          name: "CH1_LEN",
+          desc: "Length of the seed pattern for channel 1 (2-64 bits)"
         }
       ]
     }
@@ -150,31 +148,13 @@
       fields: [
         { bits: "9:0",
           resval: "0",
-          name: "LOOP0",
-          desc: "Pattern repeatedly generated on channel 0 (base is 1)"
+          name: "CH0_LOOP",
+          desc: "Number of the seed patterns repeatedly generated on channel 0 (base is 1)"
         }
         { bits: "19:10",
           resval: "0",
-          name: "LOOP1",
-          desc: "Pattern repeatedly generated on channel 1 (base is 1)"
-        }
-      ]
-    }
-    { name: "INTR_MASK",
-      desc: "PATTGEN mask registers for channel interrupts",
-      swaccess: "wo",
-      hwaccess: "hro",
-      hwqe: "true",
-      fields: [
-        { bits: "0",
-          resval: "0",
-          name: "MASK0",
-          desc: "Enable pattern_done interrupt of channel 0 if set to 1"
-        }
-        { bits: "1",
-          resval: "0",
-          name: "MASK1",
-          desc: "Enable pattern_done interrupt of channel 1 if set to 1"
+          name: "CH1_LOOP",
+          desc: "Number of the seed patterns repeatedly generated on channel 1 (base is 1)"
         }
       ]
     }
