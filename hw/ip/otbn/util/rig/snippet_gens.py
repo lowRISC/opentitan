@@ -14,13 +14,15 @@ from .snippet_gen import SnippetGen
 
 from .gens.ecall import ECall
 from .gens.straight_line_insn import StraightLineInsn
+from .gens.jump import Jump
 
 
 class SnippetGens:
     '''A collection of snippet generators'''
     _WEIGHTED_CLASSES = [
         (ECall, 1.0),
-        (StraightLineInsn, 1.0)
+        (StraightLineInsn, 1.0),
+        (Jump, 0.1)
     ]
 
     def __init__(self, insns_file: InsnsFile) -> None:
