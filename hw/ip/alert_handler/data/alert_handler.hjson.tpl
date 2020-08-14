@@ -198,8 +198,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         { bits: "0", name: "A", desc: "Cause bit " }
       ],
-      tags: [// the value of this register is determined by triggering different kinds of alerts
-             // cannot be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by triggering different kinds of alerts
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
@@ -344,7 +344,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASS${chars[i]}_CLR",
       desc:     '''
@@ -373,8 +377,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         { bits: "${accu_cnt_dw - 1}:0" }
       ],
-      tags: [// this value of this register is determined by how many alerts have been triggered
-             // could not be auto-predicted so it is excluded from read check
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASS${chars[i]}_ACCUM_THRESH",
@@ -448,8 +452,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           '''
         }
       ],
-      tags: [// the value of this register is determined by counting how many cycles the escalation
-             // phase has lasted. This can not be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASS${chars[i]}_STATE",
@@ -472,7 +476,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 ]
         }
       ],
-      tags: [// the current escalation state cannot be auto-predicted
+      tags: [// The current escalation state cannot be auto-predicted
              // so this register is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
