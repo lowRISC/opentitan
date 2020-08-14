@@ -9,7 +9,7 @@ from shared.mem_layout import get_memory_layout
 
 from .program import Program
 from .model import Model
-from .snippet_gen import SnippetGens
+from .snippet_gens import SnippetGens
 from .snippet import Snippet
 
 
