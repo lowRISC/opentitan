@@ -36,6 +36,11 @@ if not get_option('keep_includes')
   meson.add_postconf_script(meson.source_root() + '/util/meson-purge-includes.sh')
 endif
 
+coverage = get_option('coverage')
+# Coverage requires clang.
+if coverage and meson.get_compiler('c').get_id() != 'clang'
+  error('Coverage requires clang.')
+endif
 
 # C Arguments to optimize for size, used on cross builds only.
 optimize_size_args = [
