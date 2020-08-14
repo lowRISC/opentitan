@@ -25,7 +25,10 @@ class tl_host_driver extends tl_base_driver;
           if (req != null) begin
             send_a_channel_request(req);
           end else begin
-            @(cfg.vif.host_cb);
+            // avoid zero delay loop and always align with clock edge to send item
+            if (reset_asserted) #1ns;
+            `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                              wait(reset_asserted);)
           end
         end
       end
@@ -57,12 +60,12 @@ class tl_host_driver extends tl_base_driver;
       a_valid_delay = $urandom_range(cfg.a_valid_delay_min, cfg.a_valid_delay_max);
     end
     // break delay loop if reset asserted to release blocking
-    repeat (a_valid_delay) begin
-      if (reset_asserted) break;
-      else @(cfg.vif.host_cb);
-    end
+    `DV_SPINWAIT_EXIT(repeat (a_valid_delay) @(cfg.vif.host_cb);,
+                      wait(reset_asserted);)
     // wait until no outstanding transaction with same source id
-    while (is_source_in_pending_req(req.a_source) & !reset_asserted) @(cfg.vif.host_cb);
+    `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
+                      wait(reset_asserted);)
+
     if (!reset_asserted) begin
       cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
       cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
@@ -74,9 +77,15 @@ class tl_host_driver extends tl_base_driver;
       cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
       cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
       // bypass delay in case of reset
-      @(cfg.vif.host_cb);
+      `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                        wait(reset_asserted);)
     end
-    while(!cfg.vif.host_cb.d2h.a_ready && !reset_asserted) @(cfg.vif.host_cb);
+    `DV_SPINWAIT_EXIT(while(!cfg.vif.host_cb.d2h.a_ready) @(cfg.vif.host_cb);,
+                      wait(reset_asserted);)
+
+    // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
+    // there is a race condition and invalidate_a_channel can't clear a_valid.
+    if (reset_asserted) cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
     invalidate_a_channel();
     seq_item_port.item_done();
     if (reset_asserted) seq_item_port.put_response(req); // if reset, skip data phase
@@ -93,12 +102,13 @@ class tl_host_driver extends tl_base_driver;
       bit req_found;
       d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
       // break delay loop if reset asserted to release blocking
-      repeat (d_ready_delay) begin
-        if (reset_asserted & (pending_a_req.size() != 0)) break;
-        else @(cfg.vif.host_cb);
-      end
+      `DV_SPINWAIT_EXIT(repeat (d_ready_delay) @(cfg.vif.host_cb);,
+                        wait(reset_asserted & (pending_a_req.size() != 0));)
+
       cfg.vif.host_cb.h2d_int.d_ready <= 1'b1;
-      if (!(reset_asserted & (pending_a_req.size() != 0))) @(cfg.vif.host_cb);
+      `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                        wait(reset_asserted & (pending_a_req.size() != 0));)
+
       if (cfg.vif.host_cb.d2h.d_valid | ((pending_a_req.size() != 0) & reset_asserted)) begin
         // Use the source ID to find the matching request
         foreach (pending_a_req[i]) begin
