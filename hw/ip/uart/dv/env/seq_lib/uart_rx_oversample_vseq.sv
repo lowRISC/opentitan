@@ -21,6 +21,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
   `uvm_object_new
 
   task body();
+    int uart_xfer_bits;
     num_bits = ral.val.rx.get_n_bits();
     cfg.m_uart_agent_cfg.en_rx_monitor = 0;
     for (int i = 1; i <= num_trans; i++) begin
@@ -35,6 +36,11 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
     end
+
+    // wait for a full uart transaction time to flush out the remaining rx transaction
+    uart_xfer_bits = NUM_UART_XFER_BITS_WO_PARITY + cfg.m_uart_agent_cfg.en_parity;
+    #(cfg.m_uart_agent_cfg.vif.uart_clk_period_ns * uart_xfer_bits);
+
     cfg.m_uart_agent_cfg.en_rx_monitor = 1;
     clear_fifos(.clear_rx_fifo(1), .clear_tx_fifo(0));
     // clear all interrupts as the driving of rx value in seq may trigger interrupt that scb
