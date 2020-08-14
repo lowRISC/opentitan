@@ -83,6 +83,18 @@ module otbn_core
   logic [31:0]          alu_base_operation_result;
   logic                 alu_base_comparison_result;
 
+  logic                     lsu_load_req;
+  logic                     lsu_store_req;
+  insn_subset_e             lsu_req_subset;
+  logic [DmemAddrWidth-1:0] lsu_addr;
+
+  logic [31:0]              lsu_base_wdata;
+  logic [WLEN-1:0]          lsu_bignum_wdata;
+
+  logic [31:0]              lsu_base_rdata;
+  logic [WLEN-1:0]          lsu_bignum_rdata;
+  logic [1:0]               lsu_rdata_err; // Bit1: Uncorrectable, Bit0: Correctable
+
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
   // signals: insn_fetch_resp_valid (together with the undecoded instruction data), and insn_valid
   // for valid decoded (i.e. legal) instructions. Duplicate the signal in the source code for
@@ -170,7 +182,19 @@ module otbn_core
     .alu_base_operation_o         (alu_base_operation),
     .alu_base_comparison_o        (alu_base_comparison),
     .alu_base_operation_result_i  (alu_base_operation_result),
-    .alu_base_comparison_result_i (alu_base_comparison_result)
+    .alu_base_comparison_result_i (alu_base_comparison_result),
+
+    .lsu_load_req_o     (lsu_load_req),
+    .lsu_store_req_o    (lsu_store_req),
+    .lsu_req_subset_o   (lsu_req_subset),
+    .lsu_addr_o         (lsu_addr),
+
+    .lsu_base_wdata_o   (lsu_base_wdata),
+    .lsu_bignum_wdata_o (lsu_bignum_wdata),
+
+    .lsu_base_rdata_i   (lsu_base_rdata),
+    .lsu_bignum_rdata_i (lsu_bignum_rdata),
+    .lsu_rdata_err_i    (lsu_rdata_err)
   );
 
   // Load store unit: read and write data from data memory
@@ -186,10 +210,19 @@ module otbn_core
     .dmem_wmask_o,
     .dmem_rdata_i,
     .dmem_rvalid_i,
-    .dmem_rerror_i
+    .dmem_rerror_i,
 
-    // Data from base and bn execute blocks.
-    // TODO: Add signals to controller
+    .lsu_load_req_i     (lsu_load_req),
+    .lsu_store_req_i    (lsu_store_req),
+    .lsu_req_subset_i   (lsu_req_subset),
+    .lsu_addr_i         (lsu_addr),
+
+    .lsu_base_wdata_i   (lsu_base_wdata),
+    .lsu_bignum_wdata_i (lsu_bignum_wdata),
+
+    .lsu_base_rdata_o   (lsu_base_rdata),
+    .lsu_bignum_rdata_o (lsu_bignum_rdata),
+    .lsu_rdata_err_o    (lsu_rdata_err)
   );
 
   // Control and Status registers
