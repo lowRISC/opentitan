@@ -15,9 +15,7 @@ from ..snippet_gen import SnippetGen
 class ECall(SnippetGen):
     '''A generator that makes a snippet with a single ECALL instruction'''
     def __init__(self, insns_file: InsnsFile) -> None:
-        ecall_insn = insns_file.mnemonic_to_insn.get('ecall')
-        if ecall_insn is None:
-            raise RuntimeError('No ECALL instruction in instructions file')
+        ecall_insn = self._get_named_insn(insns_file, 'ecall')
 
         if ecall_insn.operands:
             raise RuntimeError('ECALL instruction in instructions file '

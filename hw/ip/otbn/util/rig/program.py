@@ -155,7 +155,7 @@ class Program:
         # instructions by iterating over self._sections.
         self.close_section()
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
-            out_file.write('{}/* Snippet {} ({} instructions) */\n'
+            out_file.write('{}/* Section {} ({} instructions) */\n'
                            .format('\n' if idx else '', idx, len(insns)))
             out_file.write('.offset {:#x}\n'.format(addr))
             for pi in insns:
@@ -184,12 +184,17 @@ class Program:
 
     def pick_branch_targets(self,
                             min_len: int,
-                            count: int) -> Optional[List[int]]:
+                            count: int,
+                            tgt_min: Optional[int],
+                            tgt_max: Optional[int]) -> Optional[List[int]]:
         '''Pick count random targets for a branch destination
 
         There is guaranteed to be at least space for min_len instructions at
         each target, but the weighting tries to favour places with some space
         for instruction sequences.
+
+        If tgt_min is not None, the address returned will be at least tgt_min.
+        Similarly for tgt_max.
 
         If we can't find space for the desired branch targets, returns None.
 
@@ -209,19 +214,46 @@ class Program:
         gap_list = []
         for section_base, section_insns in section_list:
             assert gap_vma <= section_base
-            if section_base - gap_vma >= 4 * min_len:
-                gap_list.append((gap_vma, section_base - gap_vma))
+
+            # We only count the gap if it isn't completely below tgt_min and
+            # isn't completely above tgt_max.
+            if (((tgt_min is None or tgt_min < section_base) and
+                 (tgt_max is None or gap_vma <= tgt_max))):
+                # The minimum address we can pick is gap_vma, but we might need
+                # to bump it up if tgt_min is specified.
+                gap_lo = (max(gap_vma, tgt_min)
+                          if tgt_min is not None else gap_vma)
+
+                # The maximum address we can pick needs space for min_len
+                # instructions before we get to section_base *and* must be at
+                # most tgt_max if that is specified.
+                gap_hi = section_base - 4 * min_len
+                if tgt_max is not None:
+                    gap_hi = min(gap_hi, tgt_max)
+
+                # If we have anything to use, add it!
+                if gap_lo <= gap_hi:
+                    gap_list.append((gap_lo, gap_hi - gap_lo + 1))
+
             gap_vma = section_base + 4 * len(section_insns)
-        if self.imem_size - gap_vma >= 4 * min_len:
-            gap_list.append((gap_vma, self.imem_size - gap_vma))
+
+        # Deal with any final gap above all known sections in the same way as
+        # the internal gaps.
+        gap_lo = (max(gap_vma, tgt_min)
+                  if tgt_min is not None else gap_vma)
+        gap_hi = self.imem_size - 4 * min_len
+        if tgt_max is not None:
+            gap_hi = min(gap_hi, tgt_max)
+        if gap_lo <= gap_hi:
+            gap_list.append((gap_lo, gap_hi - gap_lo + 1))
 
         ret = []
         for _ in range(count):
 
             # gap_list is an ordered list of pairs (addr, len), meaning "there
-            # is a gap starting at address addr of length len bytes". In each
-            # case, len >= 4 * min_len. If there are no gaps wide enough,
-            # gap_list will be empty and we should give up.
+            # is a range of addresses that we can pick from, starting at
+            # address addr and with length len bytes". If there are no gaps
+            # left wide enough, gap_list will be empty and we should give up.
             if not gap_list:
                 return None
 
@@ -269,54 +301,64 @@ class Program:
             assert min_insn_off <= insn_off <= max_insn_off
 
             assert 4 * insn_off <= gap_len
-            ret.append(gap_vma + 4 * insn_off)
+            tgt = gap_vma + 4 * insn_off
+            ret.append(tgt)
 
-            # The last thing we need to do is split up this element in the gap list
-            gap_list_mid = []
-            if insn_off >= min_len:
-                gap_list_mid.append((gap_vma, 4 * insn_off))
+            # The last thing we need to do is update the gap list.
+            new_gap_list = []
+            for gap_lo, gap_len in gap_list:
+                gap_top = gap_lo + gap_len
 
-            above_gap_vma = gap_vma + 4 * (insn_off + min_len)
-            above_gap_len = gap_vma + gap_len - above_gap_vma
-            if above_gap_len >= 4 * min_len:
-                gap_list_mid.append((above_gap_vma, above_gap_len))
+                # Does this gap give us a gap to the left of the range [tgt,
+                # tgt + 4 * min_len]?
+                left_top = min(gap_top, tgt - 4 * min_len)
+                if gap_lo < left_top:
+                    new_gap_list.append((gap_lo, left_top - gap_lo))
 
-            gap_list = gap_list[:idx] + gap_list_mid + gap_list[idx + 1:]
+                # And how about to the right?
+                right_lo = max(gap_lo, tgt + 4 * min_len)
+                if right_lo < gap_top:
+                    new_gap_list.append((right_lo, gap_top - right_lo))
+
+            gap_list = new_gap_list
 
         assert len(ret) == count
         return ret
 
-    def pick_branch_target(self, min_len: int) -> Optional[int]:
+    def pick_branch_target(self,
+                           min_len: int,
+                           tgt_min: Optional[int],
+                           tgt_max: Optional[int]) -> Optional[int]:
         '''Pick a single random target for a branch destination
 
         A simple wrapper around the more general pick_branch_targets
         function.
 
         '''
-        tgts = self.pick_branch_targets(min_len, 1)
+        tgts = self.pick_branch_targets(min_len, 1, tgt_min, tgt_max)
         if tgts is None:
             return None
 
         assert len(tgts) == 1
         return tgts[0]
 
-    def get_blank_insns_above(self, addr: int) -> int:
-        '''Return the number of instructions that fit above addr'''
-        bytes_above = self.imem_size - addr
-        if bytes_above <= 0:
+    def get_insn_space_at(self, addr: int) -> int:
+        '''Return how many instructions there is space for, starting at addr'''
+        space = self.imem_size - addr
+        if space <= 0:
             return 0
 
-        for sec_base, sec_insns in self._sections.items():
-            sec_top = sec_base + 4 * len(sec_insns)
-            if addr < sec_top:
-                bytes_above = min(bytes_above, sec_base - addr)
-                if bytes_above <= 0:
+        for sec_start, sec_insns in self._sections.items():
+            sec_end = sec_start + 4 * len(sec_insns)
+            if addr < sec_end:
+                space = min(space, sec_start - addr)
+                if space <= 0:
                     return 0
 
         if self._cur_section is not None:
-            sec_base, open_section = self._cur_section
-            sec_top = sec_base + 4 * len(open_section.insns)
-            if addr < sec_top:
-                bytes_above = min(bytes_above, sec_base - addr)
+            sec_start, open_section = self._cur_section
+            sec_end = sec_start + 4 * len(open_section.insns)
+            if addr < sec_end:
+                space = min(space, sec_start - addr)
 
-        return max(0, bytes_above // 4)
+        return max(0, space // 4)

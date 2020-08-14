@@ -48,7 +48,7 @@ class StraightLineInsn(SnippetGen):
         # Note that we could do this by defining pick_weight, but we don't
         # expect it to happen very often so it's probably best (and cheaper)
         # just to disable ourselves on the rare occasions when it does.
-        if program.get_blank_insns_above(model.pc) <= 1:
+        if program.get_insn_space_at(model.pc) <= 1:
             return None
 
         # Pick a (YAML) instruction at random. We'll probably do some clever

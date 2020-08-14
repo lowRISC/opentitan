@@ -11,6 +11,8 @@ actually generate some snippets, use the wrapper in snippet_gens.py.
 
 from typing import Optional, Tuple
 
+from shared.insn_yaml import Insn, InsnsFile
+
 from .program import Program
 from .model import Model
 from .snippet import Snippet
@@ -70,3 +72,17 @@ class SnippetGen:
 
         '''
         return 1.0
+
+    def _get_named_insn(self, insns_file: InsnsFile, mnemonic: str) -> Insn:
+        '''Get an instruction from insns_file by mnemonic
+
+        This is used for specialized snippets that need to generate a specific
+        instruction and wraps the error handling for when someone has removed
+        the instruction from the file.
+
+        '''
+        insn = insns_file.mnemonic_to_insn.get(mnemonic.lower())
+        if insn is None:
+            raise RuntimeError('No {} instruction in instructions file.'
+                               .format(mnemonic.upper()))
+        return insn
