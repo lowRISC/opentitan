@@ -320,3 +320,25 @@
     end join \
   end
 `endif
+
+// Wait a task or statement with exit condition
+// Kill the thread when either the wait statement is completed or exit condition occurs
+`ifndef DV_SPINWAIT_EXIT
+`define DV_SPINWAIT_EXIT(WAIT_, EXIT_, MSG_ = "exit condition occurred!", ID_ =`gfn) \
+  begin \
+    fork begin \
+      fork \
+        begin \
+          WAIT_ \
+        end \
+        begin \
+          EXIT_ \
+          if (MSG_ != "") begin \
+            `uvm_info(ID_, MSG_, UVM_HIGH) \
+          end \
+        end \
+      join_any \
+      disable fork; \
+    end join \
+  end
+`endif
