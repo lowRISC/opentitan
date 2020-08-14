@@ -214,6 +214,11 @@ module tb;
     uvm_config_db#(virtual sw_test_status_if)::set(
         null, "*.env", "sw_test_status_vif", sw_test_status_if);
 
+    // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
+    // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
+    // TODO: remove this assertion once pinmux is templatized
+    $assertoff(0, dut.top_earlgrey.u_pinmux.AonWkupReqKnownO_A);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
