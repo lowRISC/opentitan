@@ -25,7 +25,7 @@ $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
 
 # For otbn-rig's stamp file, add extra dependencies on the Python code
 # in ./rig.
-$(lint-build-dir)/otbn-rig.stamp: $(wildcard rig/*.py)
+$(lint-build-dir)/otbn-rig.stamp: $(wildcard rig/*.py rig/gens/*.py)
 
 .PHONY: lint
 lint: $(lint-stamps)
