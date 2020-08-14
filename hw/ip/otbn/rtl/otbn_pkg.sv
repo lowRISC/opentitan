@@ -163,6 +163,8 @@ package otbn_pkg;
     logic         rf_we;
     rf_wd_sel_e   rf_wdata_sel;
     logic         ecall_insn;
+    logic         ld_insn;
+    logic         st_insn;
   } insn_dec_ctrl_t;
 
   typedef struct packed {

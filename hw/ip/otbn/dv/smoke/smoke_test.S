@@ -5,6 +5,8 @@
 # OTBN Smoke test, runs various instructions which are expected to produce the
 # final register state see in smoke_expected.txt
 
+.section .text
+
 # x1 = 0xd0beb513
 lui x1, 0xd0beb
 add x1, x1, 0x513
@@ -54,4 +56,20 @@ srl x15, x1, x2
 # x16 = x1 >>> x2[4:0] = 0xfffffff4
 sra x16, x1, x2
 
+# x17 = dmem[16] = 0xfacefeed
+lw x17, 16(x0)
+
+# dmem[4] = x8 = 0xd0beb533
+sw x8, 4(x0)
+
+# x18 = dmem[4] = 0xd0beb533
+lw x18, 4(x0)
+
 ecall
+
+.section .data
+.word 0x1234abcd
+.word 0xbaadf00d
+.word 0xcafed00d
+.word 0xdeadbeef
+.word 0xfacefeed

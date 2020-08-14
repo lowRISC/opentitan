@@ -87,6 +87,8 @@ module otbn_decoder
   rf_wd_sel_e rf_wdata_sel;
 
   logic ecall_insn;
+  logic ld_insn;
+  logic st_insn;
 
   // Reduced main ALU immediate MUX for Operand B
   logic [31:0] imm_b;
@@ -116,7 +118,9 @@ module otbn_decoder
     alu_op:       alu_operator,
     rf_we:        rf_we,
     rf_wdata_sel: rf_wdata_sel,
-    ecall_insn:   ecall_insn
+    ecall_insn:   ecall_insn,
+    ld_insn:      ld_insn,
+    st_insn:      st_insn
   };
 
   /////////////
@@ -131,6 +135,8 @@ module otbn_decoder
 
     illegal_insn          = 1'b0;
     ecall_insn            = 1'b0;
+    ld_insn               = 1'b0;
+    st_insn               = 1'b0;
 
     opcode                = insn_opcode_e'(insn[6:0]);
 
@@ -204,6 +210,34 @@ module otbn_decoder
         end
       end
 
+      //////////////////
+      // Loads/Stores //
+      //////////////////
+
+      InsnOpcodeBaseLoad: begin
+        insn_subset = InsnSubsetBase;
+        rf_ren_a    = 1'b1;
+        ld_insn     = 1'b1;
+
+        if (insn[14:12] != 3'b010) begin
+          illegal_insn = 1'b1;
+        end
+      end
+
+      InsnOpcodeBaseStore: begin
+        insn_subset = InsnSubsetBase;
+        rf_ren_a    = 1'b1;
+        rf_ren_b    = 1'b1;
+        st_insn     = 1'b1;
+
+        if (insn[14:12] != 3'b010) begin
+          illegal_insn = 1'b1;
+        end
+      end
+
+      /////////////
+      // Special //
+      /////////////
 
       InsnOpcodeBaseSystem: begin
         insn_subset = InsnSubsetBase;
@@ -317,6 +351,24 @@ module otbn_decoder
             default: ;
           endcase
         end
+      end
+
+      //////////////////
+      // Loads/Stores //
+      //////////////////
+
+      InsnOpcodeBaseLoad: begin
+        alu_op_a_mux_sel = OpASelRegister;
+        alu_op_b_mux_sel = OpBSelImmediate;
+        alu_operator     = AluOpAdd;
+        imm_b_mux_sel    = ImmBI;
+      end
+
+      InsnOpcodeBaseStore: begin
+        alu_op_a_mux_sel = OpASelRegister;
+        alu_op_b_mux_sel = OpBSelImmediate;
+        alu_operator     = AluOpAdd;
+        imm_b_mux_sel    = ImmBS;
       end
 
       /////////////
