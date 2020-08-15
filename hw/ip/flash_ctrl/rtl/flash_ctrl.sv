@@ -109,8 +109,22 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [AllPagesW-1:0] err_page;
   logic [BankW-1:0] err_bank;
 
-  // Flash control arbitration connections
+  // Flash control arbitration connections to hardware interface
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
+  logic hw_req;
+  logic [BusAddrW-1:0] hw_addr;
+  logic hw_done;
+  logic hw_err;
+  logic hw_rvalid;
+  logic hw_rready;
+  flash_sel_e if_sel;
+  logic sw_sel;
+
+  // Flash control arbitration connections to software interface
+  logic sw_ctrl_done;
+  logic sw_ctrl_err;
+
+  // Flash control muxed connections
   flash_ctrl_reg2hw_control_reg_t muxed_ctrl;
   logic [31:0] muxed_addr;
   logic op_start;
@@ -119,10 +133,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   flash_op_e op_type;
   flash_part_e op_part;
   logic [EraseBitWidth-1:0] op_erase_type;
-  logic sw_ctrl_done;
-  logic sw_ctrl_err;
+
   logic ctrl_init_busy;
-  logic sw_sel;
   logic fifo_clr;
 
   // software tlul to flash control aribration
@@ -131,11 +143,6 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic sw_wvalid;
   logic sw_wen;
   logic sw_wready;
-
-
-  // hardwire off for now until lifecycle / keymanager module introduced
-  assign ctrl_init_busy = 1'b0;
-  assign hw_ctrl = '0;
 
   // flash control arbitration between softawre / harware interfaces
   flash_ctrl_arb u_ctrl_arb (
@@ -157,15 +164,15 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .sw_wready_o(sw_wready),
 
     // hardware interface to rd_ctrl / erase_ctrl
-    .hw_req_i('0),
+    .hw_req_i(hw_req),
     .hw_ctrl_i(hw_ctrl),
-    .hw_addr_i('0),
-    .hw_ack_o(),
-    .hw_err_o(),
+    .hw_addr_i(top_pkg::TL_AW'(hw_addr)),
+    .hw_ack_o(hw_done),
+    .hw_err_o(hw_err),
 
     // hardware interface to rd_fifo
-    .hw_rvalid_o(),
-    .hw_rready_i(1'b1),
+    .hw_rvalid_o(hw_rvalid),
+    .hw_rready_i(hw_rready),
 
     // hardware interface does not talk to prog_fifo
 
@@ -194,7 +201,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .fifo_clr_o(fifo_clr),
 
     // indication that sw has been selected
-    .sw_sel_o(sw_sel)
+    .sel_o(if_sel)
   );
 
   assign op_start      = muxed_ctrl.start.q;
@@ -206,6 +213,42 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign rd_op         = op_type == FlashOpRead;
   assign prog_op       = op_type == FlashOpProgram;
   assign erase_op      = op_type == FlashOpErase;
+  assign sw_sel        = if_sel == SwSel;
+
+  // hardware interface
+  flash_ctrl_lcmgr u_flash_hw_if (
+    .clk_i,
+    .rst_ni,
+
+    // interface to ctrl arb control ports
+    .ctrl_o(hw_ctrl),
+    .req_o(hw_req),
+    .addr_o(hw_addr),
+    .done_i(hw_done),
+    .err_i(hw_err),
+
+    // interface to ctrl_arb data ports
+    .rready_o(hw_rready),
+    .rvalid_i(hw_rvalid),
+
+    // direct form rd_fifo
+    .rdata_i(rd_fifo_rdata),
+
+    // external rma request
+    .rma_i('0),
+    .rma_token_i('0), // just a random string
+    .rma_token_o(),
+    .rma_rsp_o(),
+
+    // random value
+    .rand_i('0),
+
+    // outgoing seeds
+    .seeds_o(),
+
+    // init ongoing
+    .init_busy_o(ctrl_init_busy)
+  );
 
   // Program FIFO
   // Since the program and read FIFOs are never used at the same time, it should really be one
@@ -431,6 +474,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   ) u_flash_mp (
     .clk_i,
     .rst_ni,
+
+    // arbiter interface selection
+    .if_sel_i(if_sel),
 
     // sw configuration
     .region_cfgs_i(region_cfgs),

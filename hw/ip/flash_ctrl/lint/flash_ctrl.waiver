@@ -3,3 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for Flash Controller
+
+# All leaf resets have a reset multiplex
+waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StRmaRsp.*} \
+      -comment "StRmaRsp is intended to be a terminal state"

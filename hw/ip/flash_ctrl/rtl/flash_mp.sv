@@ -17,6 +17,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   input clk_i,
   input rst_ni,
 
+  // interface selection
+  input flash_sel_e if_sel_i,
+
   // configuration from sw
   input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [TotalRegions-1:0] region_cfgs_i,
   input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
@@ -121,9 +124,18 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   assign final_pg_erase_en = pg_erase_i & |pg_erase_en;
   assign final_bk_erase_en = bk_erase_i & |bk_erase_en;
 
-  assign rd_o = req_i & final_rd_en;
+  // TBD properly account for hardware interface later
+  // right now, hardwire transaction to go through
+  logic hw_sel;
+  logic hw_rd_en;
+  logic hw_erase_en;
+  assign hw_sel = if_sel_i == HwSel;
+  assign hw_rd_en = rd_i & hw_sel;
+  assign hw_erase_en = pg_erase_i & hw_sel;
+
+  assign rd_o = req_i & (final_rd_en | hw_rd_en);
   assign prog_o = req_i & final_prog_en;
-  assign pg_erase_o = req_i & final_pg_erase_en;
+  assign pg_erase_o = req_i & (final_pg_erase_en | hw_erase_en);
   assign bk_erase_o = req_i & final_bk_erase_en;
   assign req_o = rd_o | prog_o | pg_erase_o | bk_erase_o;
 
@@ -132,7 +144,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   logic no_allowed_txn;
   assign txn_ens = final_rd_en | final_prog_en | final_pg_erase_en | final_bk_erase_en;
   // if incoming address overflowed or is invalid or no transaction enables, error back
-  assign no_allowed_txn = req_i & (addr_ovfl_i | invalid_info_txn | ~txn_ens);
+  // TBD: for now, when if_sel == HwSel, then transaction attributes are not checked.
+  // This should eventually be updated to hw interface specific checks.
+  assign no_allowed_txn = req_i & (addr_ovfl_i | invalid_info_txn | ~txn_ens & ~hw_sel);
 
   // return done and error the next cycle
   always_ff @(posedge clk_i or negedge rst_ni) begin

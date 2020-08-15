@@ -66,7 +66,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output logic fifo_clr_o,
 
   // indication that sw has been selected
-  output logic sw_sel_o
+  output flash_sel_e sel_o
 );
 
   // arbitration FSM
@@ -156,7 +156,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
     prog_fifo_wvalid_o = 1'b0;
     rd_fifo_rready_o = 1'b0;
-    sw_sel_o = 1'b0;
 
     unique case (func_sel)
       HwSel: begin
@@ -172,7 +171,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
       end
 
       SwSel: begin
-        sw_sel_o = 1'b1;
 
         // ctrl related muxing
         muxed_ctrl_o = sw_ctrl_i;
@@ -207,6 +205,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
     end
   end
 
-
+  assign sel_o = func_sel;
 
 endmodule // flash_ctrl_rd_arb
