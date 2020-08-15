@@ -28,6 +28,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (kind == "HARD") begin
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
+    flash_mem_bkdr_init(flash_ctrl_pkg::FlashPartInfo, FlashMemInitSet);
   endtask
 
   // Configure the memory protection regions.

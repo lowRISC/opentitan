@@ -37,6 +37,9 @@ package flash_ctrl_pkg;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
+  // parameters for connected components
+  parameter int SeedWidth       = 256;
+
   // fifo parameters
   parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
@@ -44,7 +47,7 @@ package flash_ctrl_pkg;
   // One page for creator seeds
   // One page for owner seeds
   parameter int NumSeeds = 2;
-  parameter int CreatorInfoPage = 2;
+  parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
   parameter logic [NumSeeds-1:0][InfoPageW-1:0] SeedInfoPageSel =
     {
