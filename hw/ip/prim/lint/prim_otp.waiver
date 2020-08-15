@@ -1,0 +1,8 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_otp
+
+waive -rules {STAR_PORT_CONN_USE} -location {prim_otp.sv} -regexp {.*wild card port connection encountered on instance.*} \
+      -comment "Generated prims may have wildcard connections."
