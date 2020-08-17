@@ -31,13 +31,13 @@ def gen_program(start_addr: int,
     # at address 0: a strict Harvard architecture. (mems[x][0] is the LMA
     # for memory x, not the VMA)
     mems = get_memory_layout()
-    imem_size = mems['IMEM'][1]
+    imem_lma, imem_size = mems['IMEM']
     dmem_size = mems['DMEM'][1]
 
     assert start_addr <= imem_size - 4
     assert start_addr & 3 == 0
 
-    program = Program(imem_size)
+    program = Program(imem_lma, imem_size)
     model = Model(dmem_size, start_addr)
 
     generators = SnippetGens(insns_file)
