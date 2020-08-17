@@ -299,3 +299,24 @@ class Program:
 
         assert len(tgts) == 1
         return tgts[0]
+
+    def get_blank_insns_above(self, addr: int) -> int:
+        '''Return the number of instructions that fit above addr'''
+        bytes_above = self.imem_size - addr
+        if bytes_above <= 0:
+            return 0
+
+        for sec_base, sec_insns in self._sections.items():
+            sec_top = sec_base + 4 * len(sec_insns)
+            if addr < sec_top:
+                bytes_above = min(bytes_above, sec_base - addr)
+                if bytes_above <= 0:
+                    return 0
+
+        if self._cur_section is not None:
+            sec_base, open_section = self._cur_section
+            sec_top = sec_base + 4 * len(open_section.insns)
+            if addr < sec_top:
+                bytes_above = min(bytes_above, sec_base - addr)
+
+        return max(0, bytes_above // 4)
