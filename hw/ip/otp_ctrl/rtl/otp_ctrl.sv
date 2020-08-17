@@ -10,7 +10,9 @@
 module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
-(
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input                             clk_i,
   input                             rst_ni,
   // TODO: signals to AST

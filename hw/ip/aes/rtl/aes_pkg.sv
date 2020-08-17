@@ -6,8 +6,6 @@
 
 package aes_pkg;
 
-parameter int NumAlerts = 2;
-
 typedef enum integer {
   SBoxImplLut,                  // Unmasked LUT-based S-Box
   SBoxImplCanright,             // Unmasked Canright S-Box, see aes_sbox_canright.sv

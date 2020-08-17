@@ -6,7 +6,10 @@
 
 `include "prim_assert.sv"
 
-module aes import aes_pkg::*; #(
+module aes
+  import aes_pkg::*;
+  import aes_reg_pkg::*;
+#(
   parameter bit          AES192Enable               = 1, // Can be 0 (disable), or 1 (enable).
   parameter bit          Masking                    = 0, // Can be 0 (no masking), or
                                                          // 1 (first-order masking) of the cipher
@@ -42,8 +45,6 @@ module aes import aes_pkg::*; #(
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
 );
-
-  import aes_reg_pkg::*;
 
   aes_reg2hw_t reg2hw;
   aes_hw2reg_t hw2reg;

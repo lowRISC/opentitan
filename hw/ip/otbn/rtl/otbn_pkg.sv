@@ -29,10 +29,6 @@ package otbn_pkg;
 
   // Toplevel constants ============================================================================
 
-  // Alerts
-  parameter int                   NumAlerts = 3;
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}};
-
   parameter int AlertImemUncorrectable = 0;
   parameter int AlertDmemUncorrectable = 1;
   parameter int AlertRegUncorrectable = 2;

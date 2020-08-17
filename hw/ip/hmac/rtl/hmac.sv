@@ -10,7 +10,9 @@ module hmac
   import prim_alert_pkg::*;
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
-(
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+) (
   input clk_i,
   input rst_ni,
 
@@ -503,9 +505,9 @@ module hmac
   logic [NumAlerts-1:0] alerts;
   assign alerts = {msg_push_sha_disabled};
 
-  for (genvar j = 0; j < hmac_pkg::NumAlerts; j++) begin : gen_alert_tx
+  for (genvar j = 0; j < NumAlerts; j++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(hmac_pkg::AlertAsyncOn[j])
+      .AsyncOn(AlertAsyncOn[j])
     ) i_prim_alert_sender (
       .clk_i      ( clk_i         ),
       .rst_ni     ( rst_ni        ),

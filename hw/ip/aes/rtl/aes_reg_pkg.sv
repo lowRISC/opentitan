@@ -10,6 +10,7 @@ package aes_reg_pkg;
   parameter int NumRegsKey = 8;
   parameter int NumRegsIv = 4;
   parameter int NumRegsData = 4;
+  parameter int NumAlerts = 2;
 
   ////////////////////////////
   // Typedefs for registers //

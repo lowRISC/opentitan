@@ -1510,6 +1510,37 @@ def validate(regs, **kwargs):
         autoregs.extend(iregs)
         offset += addrsep * len(iregs)
 
+    # Generate a NumAlerts parameter for provided alert_list.
+    if 'alert_list' in regs:
+        num_alerts = len(regs['alert_list'])
+        # Some modules have alerts of width > 1.
+        for a in regs['alert_list']:
+            if 'width' in a:
+                a_width = int(a['width'])
+                if a_width > 1:
+                    num_alerts += (a_width - 1)
+        if num_alerts != 0:
+            param = ''
+            for p in regs['param_list']:
+                if p['name'] == 'NumAlerts':
+                    param = p
+            if param:
+                # We already have an NumAlerts parameter.
+                if (param['type'] != 'int' or
+                        param['default'] != str(num_alerts) or
+                        param['local'] != 'true'):
+                    log.error('Conflicting definition of NumAlerts parameter found.')
+                    error += 1
+            else:
+                # Generate the NumAlerts parameter.
+                regs['param_list'].append({
+                    'name': 'NumAlerts',
+                    'type': 'int',
+                    'default': str(num_alerts),
+                    'desc': 'Number of alerts',
+                    'local': 'true'
+                })
+
     # Change default param value if exists.
     #   Assumed param list is already validated in above `check_keys` function
     if "param_list" in regs and len(regs["param_list"]) != 0:
