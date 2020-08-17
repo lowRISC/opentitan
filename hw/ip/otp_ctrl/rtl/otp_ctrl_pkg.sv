@@ -34,12 +34,6 @@ package otp_ctrl_pkg;
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
-  ///////////////////////////////
-  // Typedefs for LC Interface //
-  ///////////////////////////////
-
-  parameter int NumAlerts = 2;
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b0);
 
   ///////////////////////////////
   // Typedefs for LC Interface //

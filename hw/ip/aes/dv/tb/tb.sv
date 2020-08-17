@@ -16,7 +16,7 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  prim_alert_pkg::alert_rx_t [aes_pkg::NumAlerts-1:0] alert_rx;
+  prim_alert_pkg::alert_rx_t [aes_reg_pkg::NumAlerts-1:0] alert_rx;
   assign alert_rx[0] = 4'b0101;
   assign alert_rx[1] = 4'b0101;
 

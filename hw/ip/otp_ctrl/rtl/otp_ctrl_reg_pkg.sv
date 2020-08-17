@@ -14,6 +14,7 @@ package otp_ctrl_reg_pkg;
   parameter int NumLcPartitionWords = 56;
   parameter int NumSecretPartitionWords = 56;
   parameter int NumDebugWindowWords = 500;
+  parameter int NumAlerts = 2;
   parameter int DIRECT_ACCESS_WDATA = 2;
   parameter int DIRECT_ACCESS_RDATA = 2;
   parameter int LC_STATE = 9;

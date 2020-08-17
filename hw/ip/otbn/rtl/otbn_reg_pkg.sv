@@ -6,6 +6,9 @@
 
 package otbn_reg_pkg;
 
+  // Param list
+  parameter int NumAlerts = 3;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
