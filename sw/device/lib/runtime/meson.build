@@ -19,3 +19,13 @@ sw_lib_runtime_hart = declare_dependency(
     ],
   )
 )
+
+sw_lib_runtime_pmp = declare_dependency(
+  link_with: static_library(
+    'runtime_pmp_ot',
+    sources: ['pmp.c'],
+    dependencies: [
+      sw_lib_bitfield,
+    ],
+  )
+)
