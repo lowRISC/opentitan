@@ -4,6 +4,8 @@
 
 from typing import List, Tuple
 
+from shared.insn_yaml import InsnsFile
+
 from .program import ProgInsn, Program
 
 
@@ -40,3 +42,57 @@ class Snippet:
         for addr, insns in self.parts:
             lst.append((addr, [i.to_json() for i in insns]))
         return lst
+
+    @staticmethod
+    def from_json(insns_file: InsnsFile,
+                  idx: int,
+                  json: object) -> 'Snippet':
+        '''The inverse of to_json.
+
+        idx is the 0-based number of the snippet in the file, just used for
+        error messages.
+
+        '''
+        if not isinstance(json, list):
+            raise ValueError('Object for snippet {} is not a list.'
+                             .format(idx))
+
+        parts = []
+        for idx1, part in enumerate(json):
+            # Each element should be a pair: (addr, insns). This will have come
+            # out as a list (since tuples serialize as lists).
+            if not (isinstance(part, list) and len(part) == 2):
+                raise ValueError('Part {} for snippet {} is not a pair.'
+                                 .format(idx1, idx))
+
+            addr, insns_json = part
+
+            # The address should be an aligned non-negative integer and insns
+            # should itself be a list (of serialized Insn objects).
+            if not isinstance(addr, int):
+                raise ValueError('First coordinate of part {} for snippet {} '
+                                 'is not an integer.'
+                                 .format(idx1, idx))
+            if addr < 0:
+                raise ValueError('Address of part {} for snippet {} is {}, '
+                                 'but should be non-negative.'
+                                 .format(idx1, idx, addr))
+            if addr & 3:
+                raise ValueError('Address of part {} for snippet {} is {}, '
+                                 'but should be 4-byte aligned.'
+                                 .format(idx1, idx, addr))
+
+            if not isinstance(insns_json, list):
+                raise ValueError('Second coordinate of part {} for snippet {} '
+                                 'is not a list.'
+                                 .format(idx1, idx))
+
+            insns = []
+            for insn_idx, insn_json in enumerate(insns_json):
+                where = ('In snippet {}, part {}, instruction {}'
+                         .format(idx, idx1, insn_idx))
+                insns.append(ProgInsn.from_json(insns_file, where, insn_json))
+
+            parts.append((addr, insns))
+
+        return Snippet(parts)

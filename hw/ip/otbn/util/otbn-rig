@@ -10,42 +10,35 @@ import json
 import os
 import random
 import sys
+from typing import Optional, cast
 
-from shared.insn_yaml import load_file
+from shared.insn_yaml import InsnsFile, load_file
 
 # Ensure that the OTBN utils directory is on sys.path. This means that RIG code
 # can import modules like "shared.foo" and get the OTBN shared code.
 sys.path.append(os.path.dirname(__file__))
 
-from rig.rig import gen_program  # noqa: E402
+from rig.rig import gen_program, snippets_to_program  # noqa: E402
+from rig.snippet import Snippet  # noqa: E402
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output', '-o',
-                        required=True,
-                        help='Path for JSON output of generated snippets')
-    parser.add_argument('--asm-output',
-                        help='Optional path for generated program')
-    parser.add_argument('--ld-output',
-                        help='Optional path for generated linker script')
-    parser.add_argument('--seed', type=int, default=0,
-                        help='Random seed. Defaults to 0.')
-    parser.add_argument('--size', type=int, default=100,
-                        help=('Max number of instructions in stream. '
-                              'Defaults to 100.'))
-    parser.add_argument('--start-addr', type=int, default=0,
-                        help='Reset address. Defaults to 0.')
-
-    args = parser.parse_args()
-    random.seed(args.seed)
-
+def get_insns_file() -> Optional[InsnsFile]:
+    '''Load up insns.yml'''
     insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
                                               '..', 'data', 'insns.yml'))
     try:
-        insns_file = load_file(insns_yml)
+        return load_file(insns_yml)
     except RuntimeError as err:
-        sys.stderr.write('{}\n'.format(err))
+        print(err, file=sys.stderr)
+        return None
+
+
+def gen_main(args: argparse.Namespace) -> int:
+    '''Entry point for the gen subcommand'''
+    random.seed(args.seed)
+
+    insns_file = get_insns_file()
+    if insns_file is None:
         return 1
 
     # Run the generator
@@ -54,34 +47,117 @@ def main() -> int:
     # Write out the snippets to a JSON file
     ser_snippets = [snippet.to_json() for snippet in snippets]
     try:
-        with open(args.output, 'w') as out_file:
-            out_file.write(json.dumps(ser_snippets))
+        if args.output == '-':
+            json.dump(ser_snippets, sys.stdout)
+            # Add a newline at end of output: json.dump doesn't, and it makes a
+            # bit of a mess of some consoles.
+            sys.stdout.write('\n')
+        else:
+            with open(args.output, 'w') as out_file:
+                json.dump(ser_snippets, out_file)
     except OSError as err:
-        sys.stderr.write('Failed to open json output file {!r}: {}.'
-                         .format(args.output, err))
+        print('Failed to open json output file {!r}: {}.'
+              .format(args.output, err),
+              file=sys.stderr)
         return 1
 
-    # If assembly output was requested, dump that here.
-    if args.asm_output is not None:
+    return 0
+
+
+def asm_main(args: argparse.Namespace) -> int:
+    '''Entry point for the asm subcommand'''
+
+    insns_file = get_insns_file()
+    if insns_file is None:
+        return 1
+
+    # Load snippets JSON
+    try:
+        snippets_json = json.load(args.snippets)
+    except json.JSONDecodeError as err:
+        print('Snippets file at {!r} is not valid JSON: {}.'
+              .format(args.snippets.name, err),
+              file=sys.stderr)
+        return 1
+
+    # Parse these to proper snippet objects and then make a program by
+    # combining them
+    try:
+        if not isinstance(snippets_json, list):
+            raise ValueError('Top-level structure should be a list.')
+        snippets = [Snippet.from_json(insns_file, idx, x)
+                    for idx, x in enumerate(snippets_json)]
+    except ValueError as err:
+        print('Failed to parse snippets from {!r}: {}'
+              .format(args.snippets, err),
+              file=sys.stderr)
+        return 1
+
+    program = snippets_to_program(snippets)
+
+    # Dump the assembly output.
+    if args.output is None or args.output == '-':
+        program.dump_asm(sys.stdout)
+    else:
         try:
-            with open(args.asm_output, 'w') as out_file:
+            asm_path = args.output + '.S'
+            with open(asm_path, 'w') as out_file:
                 program.dump_asm(out_file)
         except OSError as err:
-            sys.stderr.write('Failed to open assembly output file {!r}: {}.'
-                             .format(args.asm_output, err))
+            print('Failed to open asm output file {!r}: {}.'
+                  .format(args.output, err),
+                  file=sys.stderr)
             return 1
 
-    # If a linker script was requested, dump that here
-    if args.ld_output is not None:
         try:
-            with open(args.ld_output, 'w') as out_file:
+            ld_path = args.output + '.ld'
+            with open(ld_path, 'w') as out_file:
                 program.dump_linker_script(out_file)
         except OSError as err:
-            sys.stderr.write('Failed to open ld script output file {!r}: {}.'
-                             .format(args.ld_output, err))
+            print('Failed to open ld script output file {!r}: {}.'
+                  .format(ld_path, err),
+                  file=sys.stderr)
             return 1
 
     return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    gen = subparsers.add_parser('gen', help='Generate a random program')
+    asm = subparsers.add_parser('asm', help='Convert snippets to assembly')
+
+    gen.add_argument('--output', '-o',
+                     default='-',
+                     help=("Path for JSON output of generated snippets. The "
+                           "special path '-' (which is the default) means to "
+                           "write to stdout"))
+    gen.add_argument('--seed', type=int, default=0,
+                     help='Random seed. Defaults to 0.')
+    gen.add_argument('--size', type=int, default=100,
+                     help=('Max number of instructions in stream. '
+                           'Defaults to 100.'))
+    gen.add_argument('--start-addr', type=int, default=0,
+                     help='Reset address. Defaults to 0.')
+    gen.set_defaults(func=gen_main)
+
+    asm.add_argument('--output', '-o',
+                     metavar='out',
+                     help=('Base path for output filenames. Will generate '
+                           'out.S with an assembly listing and out.ld with '
+                           'a linker script. If this is not supplied, the '
+                           'assembly (but no linker script) will be dumped '
+                           'to stdout.'))
+    asm.add_argument('snippets', metavar='path.json',
+                     type=argparse.FileType('r'), nargs='?', default=sys.stdin,
+                     help=('A JSON file of snippets, as generated by '
+                           'otbn-rig gen.'))
+    asm.set_defaults(func=asm_main)
+
+    args = parser.parse_args()
+    return cast(int, args.func(args))
 
 
 if __name__ == '__main__':

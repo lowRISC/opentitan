@@ -55,3 +55,18 @@ def gen_program(start_addr: int,
         size = new_size
 
     return snippets, program
+
+
+def snippets_to_program(snippets: List[Snippet]) -> Program:
+    '''Write a series of disjoint snippets to make a program'''
+    # Find the size of the memory that we can access. Both memories start
+    # at address 0: a strict Harvard architecture. (mems[x][0] is the LMA
+    # for memory x, not the VMA)
+    mems = get_memory_layout()
+    imem_lma, imem_size = mems['IMEM']
+    program = Program(imem_lma, imem_size)
+
+    for snippet in snippets:
+        snippet.insert_into_program(program)
+
+    return program
