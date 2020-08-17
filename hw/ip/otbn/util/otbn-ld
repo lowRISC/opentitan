@@ -8,10 +8,12 @@
 This just adds the OTBN linker script and calls the underlying
 linker.'''
 
+from contextlib import contextmanager
 import os
 import subprocess
 import sys
 import tempfile
+from typing import Iterator, List, Optional
 
 from mako.template import Template  # type: ignore
 from mako import exceptions  # type: ignore
@@ -41,10 +43,10 @@ def interpolate_linker_script(in_path: str, out_path: str) -> None:
                            .format(out_path)) from None
 
 
-def main() -> int:
+@contextmanager
+def mk_linker_script() -> Iterator[str]:
     ld_in = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                          '..', 'data', 'otbn.ld.tpl'))
-
     with tempfile.TemporaryDirectory(prefix='otbn-ld-') as tmpdir:
         ld_out = os.path.join(tmpdir, 'otbn.ld')
         try:
@@ -54,15 +56,42 @@ def main() -> int:
                              .format(err))
             return 1
 
-        try:
-            ld_name = 'riscv32-unknown-elf-ld'
-            cmd = [ld_name, '--script={}'.format(ld_out)] + sys.argv[1:]
-            return subprocess.run(cmd).returncode
-        except FileNotFoundError:
-            sys.stderr.write('Unknown command: {!r}. '
-                             '(is it installed and on your PATH?)\n'
-                             .format(ld_name))
-            return 127
+        yield ld_out
+
+
+def run_ld(ld_script: Optional[str], args: List[str]) -> int:
+    '''Run the underlying linker and return the status code'''
+    ld_name = 'riscv32-unknown-elf-ld'
+    cmd = [ld_name]
+    if ld_script is not None:
+        cmd.append('--script={}'.format(ld_script))
+    cmd += args
+
+    try:
+        return subprocess.run(cmd).returncode
+    except FileNotFoundError:
+        sys.stderr.write('Unknown command: {!r}. '
+                         '(is it installed and on your PATH?)\n'
+                         .format(ld_name))
+        return 127
+
+
+def main() -> int:
+    # Only add the --script argument if the caller isn't supplying one
+    # themselves. This argument accumulates (so -T foo -T bar is like
+    # concatenating foo and bar), so we mustn't supply our own if the user
+    # has one.
+    needs_script = True
+    for arg in sys.argv[1:]:
+        if arg == '-T' or arg.startswith('--script='):
+            needs_script = False
+            break
+
+    if needs_script:
+        with mk_linker_script() as script_path:
+            return run_ld(script_path, sys.argv[1:])
+    else:
+        return run_ld(None, sys.argv[1:])
 
 
 if __name__ == '__main__':
