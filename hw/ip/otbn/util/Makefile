@@ -7,7 +7,8 @@ all: lint asm-sanity
 
 # We need a directory to build stuff and use the "otbn/util" namespace
 # in the top-level build-bin directory.
-build-dir := ../../../../build-bin/otbn/util/code-snippets
+repo-top := ../../../..
+build-dir := $(repo-top)/build-bin/otbn/util
 cs-build-dir := $(build-dir)/code-snippets
 lint-build-dir := $(build-dir)/lint
 
@@ -34,14 +35,14 @@ $(lint-targets): lint-%:
 
 # Sanity check target that assembles and (trivially) links each of
 # the code snippets.
-asm-snippets := $(notdir $(wildcard ../code-snippets/*.S))
+asm-snippets := $(notdir $(wildcard $(repo-top)/sw/otbn/code-snippets/*.S))
 
 asm-objects := $(addprefix $(cs-build-dir)/,$(asm-snippets:%.S=%.o))
 linked-elfs := $(addprefix $(cs-build-dir)/,$(asm-snippets:%.S=%))
 
 # Firstly, assemble them
 $(asm-objects): $(cs-build-dir)/%.o: \
-  ../code-snippets/%.S otbn-as $(pylibs) | $(cs-build-dir)
+  $(repo-top)/sw/otbn/code-snippets/%.S otbn-as $(pylibs) | $(cs-build-dir)
 	./otbn-as -o $@ $<
 
 # Then link them
