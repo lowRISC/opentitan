@@ -131,21 +131,6 @@ if [[ ! -z "${ARG_tock_dir}" ]]; then
   fi
 fi
 
-if [[ -f "${ARG_toolchain_file}" ]]; then
-  echo "Using meson toolchain file at $ARG_toolchain_file." >&2
-else
-  if [[ "${FLAGS_specified_toolchain_file}" == true ]]; then
-    echo "Unable to find meson toolchain file at $ARG_toolchain_file. Aborting." >&2
-    exit 1
-  else
-    cross_file=$(mktemp /tmp/toolchain.XXXXXX.txt)
-    cp toolchain.txt "$cross_file"
-    perl -pi -e "s#$DEFAULT_RISCV_TOOLS#$TOOLCHAIN_PATH#g" "$cross_file"
-    echo "Set up toolchain file at $cross_file." >&2
-    ARG_toolchain_file="${cross_file}"
-  fi
-fi
-
 reconf="${FLAGS_reconfigure}"
 
 if [[ ! -d "$OBJ_DIR" ]]; then
@@ -154,6 +139,22 @@ if [[ ! -d "$OBJ_DIR" ]]; then
   reconf=""
 elif [[ -z "$reconf" ]]; then
   echo "Output directory already exists at $OBJ_DIR; skipping." >&2
+fi
+
+if [[ -f "${ARG_toolchain_file}" ]]; then
+  echo "Using meson toolchain file at $ARG_toolchain_file." >&2
+else
+  if [[ "${FLAGS_specified_toolchain_file}" == true ]]; then
+    echo "Unable to find meson toolchain file at $ARG_toolchain_file. Aborting." >&2
+    exit 1
+  else
+    cross_file="$OBJ_DIR/toolchain-configured.txt"
+    cp toolchain.txt "$cross_file"
+    perl -pi -e "s#$DEFAULT_RISCV_TOOLS#$TOOLCHAIN_PATH#g" "$cross_file"
+    touch -r toolchain.txt "$cross_file"
+    echo "Set up toolchain file at $cross_file." >&2
+    ARG_toolchain_file="${cross_file}"
+  fi
 fi
 
 mkdir -p "$DEV_BIN_DIR"
