@@ -5,7 +5,7 @@
 import random
 from typing import Dict, List, Optional, TextIO, Tuple
 
-from shared.insn_yaml import Insn
+from shared.insn_yaml import Insn, InsnsFile
 
 
 class ProgInsn:
@@ -31,13 +31,124 @@ class ProgInsn:
                  lsu_info: Optional[Tuple[str, int]]):
         assert len(insn.operands) == len(operands)
         assert (lsu_info is None) is (insn.lsu is None)
+        assert insn.syntax is not None
+
         self.insn = insn
         self.operands = operands
         self.lsu_info = lsu_info
 
+    def to_asm(self) -> str:
+        '''Return an assembly representation of the instruction'''
+        insn = self.insn
+        # We should never try to generate an instruction without syntax
+        # (ensuring this is the job of the snippet generators)
+        assert insn.syntax is not None
+
+        # Build a dictionary from operand name to value from self.operands,
+        # which is a list of operand values in the same order as insn.operands.
+        op_vals = {}
+        assert len(insn.operands) == len(self.operands)
+        for operand, op_val in zip(insn.operands, self.operands):
+            op_vals[operand.name] = op_val
+
+        rendered_ops = insn.syntax.render_vals(op_vals, insn.name_to_operand)
+        if insn.glued_ops and rendered_ops:
+            mnem = insn.mnemonic + rendered_ops[0]
+            rendered_ops = rendered_ops[1:]
+        else:
+            mnem = insn.mnemonic
+
+        return '{:14}{}'.format(mnem, rendered_ops)
+
     def to_json(self) -> object:
         '''Serialize to an object that can be written as JSON'''
-        return (self.insn.mnemonic, self.operands)
+        return (self.insn.mnemonic, self.operands, self.lsu_info)
+
+    @staticmethod
+    def from_json(insns_file: InsnsFile,
+                  where: str,
+                  json: object) -> 'ProgInsn':
+        '''The inverse of to_json.
+
+        where is a textual description of where we are in the file, used in
+        error messages.
+
+        '''
+        if not (isinstance(json, list) and len(json) == 3):
+            raise ValueError('{}, top-level data is not a triple.'
+                             .format(where))
+
+        mnemonic, operands, json_lsu_info = json
+
+        if not isinstance(mnemonic, str):
+            raise ValueError('{}, mnemonic is {!r}, not a string.'
+                             .format(where, mnemonic))
+
+        if not isinstance(operands, list):
+            raise ValueError('{}, operands are not represented by a list.'
+                             .format(where))
+        op_vals = []
+        for op_idx, operand in enumerate(operands):
+            if not isinstance(operand, int):
+                raise ValueError('{}, operand {} is not an integer.'
+                                 .format(where, op_idx))
+            if operand < 0:
+                raise ValueError('{}, operand {} is {}, '
+                                 'but should be non-negative.'
+                                 .format(where, op_idx, operand))
+            op_vals.append(operand)
+
+        lsu_info = None
+        if json_lsu_info is not None:
+            if not (isinstance(json_lsu_info, list) and
+                    len(json_lsu_info) == 2):
+                raise ValueError('{}, non-None LSU info is not a pair.'
+                                 .format(where))
+            mem_type, addr = json_lsu_info
+
+            if not isinstance(mem_type, str):
+                raise ValueError('{}, LSU info mem_type is not a string.'
+                                 .format(where))
+            # These are the memory types in Model._known_regs, but we can't
+            # import that without a circular dependency. Rather than being
+            # clever, we'll just duplicate them for now.
+            if mem_type not in ['dmem', 'csr', 'wsr']:
+                raise ValueError('{}, invalid LSU mem_type: {!r}.'
+                                 .format(where, mem_type))
+
+            if not isinstance(addr, int):
+                raise ValueError('{}, LSU info target addr is not an integer.'
+                                 .format(where))
+            if addr < 0:
+                raise ValueError('{}, LSU info target addr is {}, '
+                                 'but should be non-negative.'
+                                 .format(where, addr))
+
+            lsu_info = (mem_type, addr)
+
+        insn = insns_file.mnemonic_to_insn.get(mnemonic)
+        if insn is None:
+            raise ValueError('{}, unknown instruction {!r}.'
+                             .format(where, mnemonic))
+
+        if (lsu_info is None) is not (insn.lsu is None):
+            raise ValueError('{}, LSU info is {}given, but the {} instruction '
+                             '{} it.'
+                             .format(where,
+                                     'not ' if lsu_info is None else '',
+                                     mnemonic,
+                                     ("doesn't expect"
+                                      if insn.lsu is None else "expects")))
+        if len(insn.operands) != len(op_vals):
+            raise ValueError('{}, {} instruction has {} operands, but {} '
+                             'seen in JSON data.'
+                             .format(where, mnemonic,
+                                     len(insn.operands), len(op_vals)))
+        if insn.syntax is None:
+            raise ValueError('{}, {} instruction has no syntax defined.'
+                             .format(where, mnemonic))
+
+        return ProgInsn(insn, op_vals, lsu_info)
 
 
 class OpenSection:
@@ -167,28 +278,7 @@ class Program:
             out_file.write('{}{}\n'.format('\n' if idx else '', comment))
             out_file.write('.section .text.sec{:04}\n'.format(idx))
             for pi in insns:
-                insn = pi.insn
-                # We should never try to generate an instruction without syntax
-                # (ensuring this is the job of the snippet generators)
-                assert insn.syntax is not None
-
-                # Build a dictionary from operand name to value from
-                # pi.operands, which is a list of operand values in the same
-                # order as insn.operands.
-                op_vals = {}
-                assert len(pi.operands) == len(insn.operands)
-                for operand, op_val in zip(insn.operands, pi.operands):
-                    op_vals[operand.name] = op_val
-
-                rendered_ops = insn.syntax.render_vals(op_vals,
-                                                       insn.name_to_operand)
-                if insn.glued_ops and rendered_ops:
-                    mnem = insn.mnemonic + rendered_ops[0]
-                    rendered_ops = rendered_ops[1:]
-                else:
-                    mnem = insn.mnemonic
-
-                out_file.write('{:14}{}\n'.format(mnem, rendered_ops))
+                out_file.write(pi.to_asm() + '\n')
 
     def dump_linker_script(self, out_file: TextIO) -> None:
         '''Write a linker script to link the program
