@@ -13,6 +13,7 @@ from typing import Dict, List, Optional, Tuple
 
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.toolchain import find_tool
 
 
 def snoop_disasm_flags(argv: List[str]) -> bool:
@@ -135,8 +136,8 @@ def main() -> int:
     args = sys.argv[1:]
     has_disasm = snoop_disasm_flags(args)
 
-    objdump_name = 'riscv32-unknown-elf-objdump'
-    cmd = [objdump_name] + args
+    objdump = find_tool('objdump')
+    cmd = [objdump] + args
     try:
         if not has_disasm:
             return subprocess.run(cmd).returncode
@@ -147,9 +148,8 @@ def main() -> int:
                 sys.stdout.write(proc.stdout)
                 return proc.returncode
     except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}. '
-                         '(is it installed and on your PATH?)\n'
-                         .format(objdump_name))
+        sys.stderr.write('Unknown command: {!r}.\n'
+                         .format(objdump))
         return 127
 
     insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),

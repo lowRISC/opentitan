@@ -19,6 +19,7 @@ from mako.template import Template  # type: ignore
 from mako import exceptions  # type: ignore
 
 from shared.mem_layout import get_memory_layout
+from shared.toolchain import find_tool
 
 
 def interpolate_linker_script(in_path: str, out_path: str) -> None:
@@ -61,7 +62,7 @@ def mk_linker_script() -> Iterator[str]:
 
 def run_ld(ld_script: Optional[str], args: List[str]) -> int:
     '''Run the underlying linker and return the status code'''
-    ld_name = 'riscv32-unknown-elf-ld'
+    ld_name = find_tool('ld')
     cmd = [ld_name]
     if ld_script is not None:
         cmd.append('--script={}'.format(ld_script))
