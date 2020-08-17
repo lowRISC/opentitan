@@ -28,6 +28,7 @@ from shared.bit_ranges import BitRanges
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_file
 from shared.operand import ImmOperandType, RegOperandType, Operand
+from shared.toolchain import find_tool
 
 
 class RVFmt:
@@ -760,7 +761,7 @@ class Transformer:
         # A custom instruction. We have two possible approaches.
         #
         #  1. Generate a .insn line. This is fine if the encoding happens to
-        #     map on to one of the encodings that riscv-unknown-elf-as
+        #     map on to one of the encodings that riscv32-unknown-elf-as
         #     supports, but won't work otherwise.
         #
         #  2. Just generate the bits by hand. This is fine if we can resolve
@@ -1113,20 +1114,19 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     Performs no output redirection and returns the process's exit code.
 
     '''
-    assembler_name = 'riscv32-unknown-elf-as'
+    as_name = find_tool('as')
 
     # Don't ask the linker to do relaxation because, in some cases, this might
     # generate a GP-relative load. OTBN doesn't treat x3 (gp) specially, so
     # this won't work.
     default_args = ['-mno-relax']
 
-    cmd = [assembler_name] + default_args + other_args + inputs
+    cmd = [as_name] + default_args + other_args + inputs
     try:
         return subprocess.run(cmd).returncode
     except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}. '
-                         '(is it installed and on your PATH?)\n'
-                         .format(assembler_name))
+        sys.stderr.write('Unknown command: {!r}.\n'
+                         .format(as_name))
         return 127
 
 
