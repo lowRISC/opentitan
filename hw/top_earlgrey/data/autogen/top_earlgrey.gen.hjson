@@ -4494,7 +4494,10 @@
   }
   wakeups:
   [
-    pinmux.aon_wkup_req
+    {
+      name: aon_wkup_req
+      module: pinmux
+    }
   ]
   inter_signal:
   {

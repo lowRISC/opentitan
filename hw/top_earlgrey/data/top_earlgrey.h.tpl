@@ -129,6 +129,11 @@ ${helper.pinmux_mio_out.render()}
  */
 ${helper.pinmux_outsel.render()}
 
+/**
+ * Power Manager Wakeup Signals
+ */
+${helper.pwrmgr_wakeups.render()}
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

@@ -595,13 +595,16 @@ def amend_wkup(topcfg: OrderedDict):
         log.info("Adding wakeup from module %s" % m["name"])
         for entry in m["wakeup_list"]:
             log.info("Adding singal %s" % entry["name"])
-            topcfg["wakeups"].append("{module}.{signal}".format(
-                module=m["name"].lower(), signal=entry["name"]))
+            signal = deepcopy(entry)
+            signal["module"] = m["name"]
+            topcfg["wakeups"].append(signal)
 
     # add wakeup signals to pwrmgr connections
+    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
+                    for s in topcfg["wakeups"]]
     # TBD: What's the best way to not hardcode this signal below?
     #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = topcfg["wakeups"]
+    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 

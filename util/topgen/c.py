@@ -138,6 +138,7 @@ class TopGenC(object):
         self._init_plic_mapping()
         self._init_alert_mapping()
         self._init_pinmux_mapping()
+        self._init_pwrmgr_wakeups()
 
     def modules(self):
         return [(m["name"],
@@ -356,3 +357,14 @@ class TopGenC(object):
         self.pinmux_insel = insel
         self.pinmux_mio_out = mio_out
         self.pinmux_outsel = outsel
+
+    def _init_pwrmgr_wakeups(self):
+        enum = CEnum(self._top_name + Name(["power", "manager", "wake", "ups"]))
+
+        for signal in self.top["wakeups"]:
+            enum.add_constant(Name.from_snake_case(signal["module"]) +
+                              Name.from_snake_case(signal["name"]))
+
+        enum.add_last_constant("Last valid pwrmgr wakeup signal")
+
+        self.pwrmgr_wakeups = enum
