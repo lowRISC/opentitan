@@ -42,6 +42,15 @@ class StraightLineInsn(SnippetGen):
             model: Model,
             program: Program) -> Optional[Tuple[Snippet, bool, int]]:
 
+        # Return None if this is the last instruction in the current gap
+        # because we need to either jump or do an ECALL to avoid getting stuck.
+        #
+        # Note that we could do this by defining pick_weight, but we don't
+        # expect it to happen very often so it's probably best (and cheaper)
+        # just to disable ourselves on the rare occasions when it does.
+        if program.get_blank_insns_above(model.pc) <= 1:
+            return None
+
         # Pick a (YAML) instruction at random. We'll probably do some clever
         # weighting here later on but, for now, we'll pick uniformly at the
         # start.
