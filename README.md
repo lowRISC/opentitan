@@ -29,7 +29,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "bazel_embedded",
-    commit = "d0d4bfacb47bd2db67f558adc69149b4d5a915ab",
+    commit = "d15acc61dd7e168128fa1886e0a491e22a58d0a4",
     remote = "https://github.com/silvergasp/bazel-embedded.git",
     shallow_since = "1585022166 +0800",
 )
@@ -124,6 +124,32 @@ openocd_flash(
     transport = "hla_swd",
 )
 ```
+
+Alternatively, an execution wrapper can be used to execute a binary on an embedded target using openocd, and bazel's `--run_under` command line option.
+
+BUILD
+```python
+load("@bazel_embedded//tools/openocd:defs.bzl", "openocd_execution_wrapper")
+
+openocd_execution_wrapper(
+    name = "test_wrapper",
+    baud_rate = "115200",
+    device_configs = [
+        "target/stm32h7x_dual_bank.cfg",
+    ],
+    fail_string = "FAILED",
+    interface_configs = [
+        "interface/stlink.cfg",
+    ],
+    port = "/dev/ttyACM0",
+    success_string = "PASSED",
+    transport = "hla_swd",
+)
+```
+```sh
+bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu --run_under=//:test_wrapper
+```
+This will pipe the serial output from the microcontroller over /dev/ttyACM0 to stdout. If a line contains 'PASSED', the wrapper will return 0, if a line contains 'FAILED' the wrapper will return 1. This is useful if you are wrapping a cc_test. If success_string or fail_string is not specified, the wrapper will not exit unless sent a sigterm (e.g. by CTRL-C). Leaving these empty can be useful when wrapping a standard cc_binary.
 
 ## Feature configuration
 Bazel can be configured using [features](https://docs.bazel.build/versions/master/cc-toolchain-config-reference.html#features). Each toolchain in this repository aims to implement a consistent behaviour for a given set of features. The list of available configuration features can be listed using the following command.
