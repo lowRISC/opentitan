@@ -27,6 +27,8 @@ def main() -> int:
                         help='Path for JSON output of generated snippets')
     parser.add_argument('--asm-output',
                         help='Optional path for generated program')
+    parser.add_argument('--ld-output',
+                        help='Optional path for generated linker script')
     parser.add_argument('--seed', type=int, default=0,
                         help='Random seed. Defaults to 0.')
     parser.add_argument('--size', type=int, default=100,
@@ -67,6 +69,16 @@ def main() -> int:
         except OSError as err:
             sys.stderr.write('Failed to open assembly output file {!r}: {}.'
                              .format(args.asm_output, err))
+            return 1
+
+    # If a linker script was requested, dump that here
+    if args.ld_output is not None:
+        try:
+            with open(args.ld_output, 'w') as out_file:
+                program.dump_linker_script(out_file)
+        except OSError as err:
+            sys.stderr.write('Failed to open ld script output file {!r}: {}.'
+                             .format(args.ld_output, err))
             return 1
 
     return 0
