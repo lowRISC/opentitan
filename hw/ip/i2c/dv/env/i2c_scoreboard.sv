@@ -14,18 +14,25 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   local i2c_item  exp_rd_item;
   local i2c_item  exp_wr_item;
   local i2c_item  rd_pending_item;
-  local i2c_item  rd_pending_q[$];
-  local i2c_item  exp_rd_q[$];
-  local i2c_item  exp_wr_q[$];
   local uint      rd_wait;
   local bit       host_init = 1'b0;
   local uint      rdata_cnt = 0;
   local uint      tran_id = 0;
   local uint      num_exp_tran = 0;
 
-  // use seperate fifos for dut_rd and dut_wr item
+  // queues hold expected read and write transactions
+  local i2c_item  exp_wr_q[$];
+  local i2c_item  exp_rd_q[$];
+
+  // queues hold partial read transactions (address phase)
+  local i2c_item  rd_pending_q[$];
+
+  // TLM fifos hold the transactions sent by monitor
   uvm_tlm_analysis_fifo #(i2c_item) rd_item_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) wr_item_fifo;
+
+  // interrupt bit vector
+  local bit [NumI2cIntr-1:0] intr_exp;
 
   `uvm_component_new
 
@@ -173,6 +180,32 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
+        "fifo_ctrl": begin 
+          // these fields are WO
+          bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
+          bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
+          if (cfg.en_cov) begin
+            cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtWatermark]),
+                                         .lvl(ral.fifo_status.fmtlvl.get_mirrored_value()),
+                                         .rst(fmtrst_val));
+          end
+          if (cfg.en_cov) begin
+            cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxWatermark]),
+                                        .lvl(ral.fifo_status.rxlvl.get_mirrored_value()),
+                                        .rst(rxrst_val));
+          end
+        end
+        "intr_test": begin
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          intr_exp |= item.a_data;
+          if (cfg.en_cov) begin
+            i2c_intr_e intr;
+            foreach (intr_exp[i]) begin
+              intr = i2c_intr_e'(i); // cast to enum to get interrupt name
+              cov.intr_test_cg.sample(intr, item.a_data[i], intr_en[i], intr_exp[i]);
+            end
+          end
+        end
       endcase
 
       // get full write transaction
@@ -205,7 +238,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             rdata_cnt++;
             `uvm_info(`gfn, $sformatf("\nscoreboard, rd_pending_item\n\%s",
                 rd_pending_item.sprint()), UVM_DEBUG)
-            // get a complete read
+            // get complete read transactions
             if (rdata_cnt == rd_pending_item.num_data) begin
               rd_pending_item.stop = 1'b1;
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
