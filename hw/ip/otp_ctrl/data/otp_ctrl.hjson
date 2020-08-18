@@ -53,19 +53,31 @@
     { name: "NumHwCfgWords",
       desc: "Number of 32bit words in the hardware config partition.",
       type: "int",
-      default: "16",
+      default: "50",
       local: "true"
     },
     { name: "NumLcPartitionWords",
       desc: "Number of 32bit words in the life cycle partition.",
       type: "int",
-      default: "56",
+      default: "22",
       local: "true"
     },
-    { name: "NumSecretPartitionWords",
-      desc: "Number of 32bit words in the secret partition.",
+    { name: "NumSecret0PartitionWords",
+      desc: "Number of 32bit words in the secret0 partition.",
       type: "int",
-      default: "56",
+      default: "10",
+      local: "true"
+    },
+    { name: "NumSecret1PartitionWords",
+      desc: "Number of 32bit words in the secret1 partition.",
+      type: "int",
+      default: "14",
+      local: "true"
+    },
+    { name: "NumSecret2PartitionWords",
+      desc: "Number of 32bit words in the secret2 partition.",
+      type: "int",
+      default: "32",
       local: "true"
     },
     { name: "NumDebugWindowWords",
@@ -243,7 +255,7 @@
             { value: "2",
               name: "INVALID_CMD",
               desc: '''
-              Invalid command has been written to !!DIRECT_ACCESS_CMD.
+              Invalid command has been written to !!DIRECT_ACCESS_CMD or the digest calculation registers.
               The OTP controller automatically recovers from this error when issuing a new command.
               '''
             },
@@ -286,15 +298,32 @@
         }
       ]
     }
+    { name: "DIRECT_ACCESS_REGWEN",
+      desc: '''
+            Register write enable for all direct access interface registers.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When true, the direct access interface registers become writable.
+            Otherwise, all direct access interface registers are write protected.
+            Note that the DAI hardware will temporarily set this to 0 when a transaction is in progress.
+            '''
+            resval: 0,
+        },
+      ]
+    },
     { name: "DIRECT_ACCESS_CMD",
       desc: "Command register for direct accesses.",
       swaccess: "r0w1c",
       hwaccess: "hro",
-      hwext:    "true",
       hwqe:     "true",
+      regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
         { bits: "0",
-          name: "read",
+          name: "READ",
           desc: '''
           Initiates a readout sequence that reads the location specified
           by !!DIRECT_ACCESS_ADDRESS. The command places the data read into
@@ -302,10 +331,17 @@
           '''
         }
         { bits: "1",
-          name: "write",
+          name: "WRITE",
           desc: '''
                 Initiates a programming sequence that writes the data in !!DIRECT_ACCESS_WDATA_0
                 and !!DIRECT_ACCESS_WDATA_1 (for 64bit partitions) to the location specified by
+                !!DIRECT_ACCESS_ADDRESS.
+                '''
+        }
+        { bits: "2",
+          name: "DIGEST",
+          desc: '''
+                Initiates the digest calculation and locking sequence for the partition specified by
                 !!DIRECT_ACCESS_ADDRESS.
                 '''
         }
@@ -315,6 +351,7 @@
       desc: "Address register for direct accesses.",
       swaccess: "rw",
       hwaccess: "hro",
+      regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
         { bits: "OtpByteAddressWidth-1:0",
           desc: '''
@@ -322,6 +359,9 @@
                 the direct access interface. Note that the address is aligned to the access size
                 internally, hence bits 1:0 are ignored for 32bit accesses, and bits 2:0 are ignored
                 for 64bit accesses.
+
+                For the digest calculation command, set this register to the appropriate partition index
+                (0x2: !!HW_CFG_DIGEST, 0x4: !!SECRET0_DIGEST, 0x5: !!SECRET1_DIGEST and 0x6: !!SECRET2_DIGEST).
                 '''
         }
       ]
@@ -335,7 +375,7 @@
         count:    "2", // 2 x 32bit = 64bit
         swaccess: "rw",
         hwaccess: "hro",
-        hwqe:     "true",
+        regwen:   "DIRECT_ACCESS_REGWEN",
         cname:    "WORD",
         fields: [
           { bits: "31:0"
@@ -388,9 +428,9 @@
           The pseudo-random period is generated using a 40bit LFSR internally, and this value defines
           the bit mask to be applied to the LFSR output in order to limit its range. A value of N will generate
           an internal mask of 2^N-1. So for N=16 this would allow the maximum pseudo-random period to be 0xFFFF cycles.
-          The default value has been set to 27, which corresponds to a maximum period of a bit more than 1.3s at 100MHz.
+          The default value has been set to 25, which corresponds to a maximum period of a bit more than 1.3s at 25MHz.
           '''
-          resval: "27"
+          resval: "25"
         }
       ]
     }
@@ -408,9 +448,9 @@
           The pseudo-random period is generated using a 40bit LFSR internally, and this value defines
           the bit mask to be applied to the LFSR output in order to limit its range. A value of N will generate
           an internal mask of 2^N-1. So for N=16 this would allow the maximum pseudo-random period to be 0xFFFF cycles.
-          The default value has been set to 30, which corresponds to a maximum period of a bit more than 10s at 100MHz.
+          The default value has been set to 34, which corresponds to a maximum period of a bit more than 687s at 25MHz.
           '''
-          resval: "30"
+          resval: "34"
         }
       ]
     }
@@ -452,165 +492,124 @@
     ///////////////////////
     // Integrity Digests //
     ///////////////////////
-    { name: "HW_CFG_DIGEST_CALC",
-      desc: "Compute and program digest for the HW_CFG partition.",
-      swaccess: "r0w1c",
-      hwaccess: "hro",
-      fields: [
-        { bits: "0",
-          desc: '''
-          Writing 1 to this register computes the partition digest and burns it into OTP.
-          After a reset, write access to the HW_CFG partition is locked, and the digest
-          becomes visible in !!HW_CFG_DIGEST.
-          '''
-        }
-      ]
-    }
-    { name: "SECRET_DIGEST_CALC",
-      desc: "Compute and program digest for the secret partition.",
-      swaccess: "r0w1c",
-      hwaccess: "hro",
-      fields: [
-        { bits: "0",
-          desc: '''
-          Writing 1 to this register computes the partition digest and burns it into OTP.
-          After a reset, write and read access to the SECRET partition is locked, and the digest
-          becomes visible in !!SECRET_DIGEST.
-          '''
-        }
-      ]
-    }
-    { name: "CREATOR_SW_CFG_DIGEST",
-      desc: "Integrity digest for the creator software config partition.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The integrity digest is 0 by default. Software must write this
-          digest value via the direct access interface in order to lock the partition.
-          After a reset, write access to the !!CREATOR_SW_CFG partition is locked and
-          the digest becomes visible in this CSR.
-          '''
-        }
-      ]
-    }
-    { name: "OWNER_SW_CFG_DIGEST",
-      desc: "Integrity digest for the owner software config partition.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The integrity digest is 0 by default. Software must write this
-          digest value via the direct access interface in order to lock the partition.
-          After a reset, write access to the !!OWNER_SW_CFG partition is locked and
-          the digest becomes visible in this CSR.
-          '''
-        }
-      ]
-    }
-    { name: "HW_CFG_DIGEST",
-      desc: "Hardware config partition integrity digest.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The integrity digest is 0 by default. Once the HW_CFG partition has been locked by
-          writing to !!HW_CFG_DIGEST_CALC, the digest becomes visible in this CSR after a reset.
-          '''
-        }
-      ]
-    }
-    { name: "SECRET_DIGEST",
-      desc: "Integrity digest for the secret config partition.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          The integrity digest is 0 by default. Once the SECRET partition has been locked by
-          writing to !!SECRET_DIGEST_CALC, the digest becomes visible in this CSR after a reset.
-          '''
-        }
-      ]
-    }
+    { multireg: {
+        name:     "CREATOR_SW_CFG_DIGEST",
+        desc:     '''
+                  Integrity digest for the creator software config partition.
+                  The integrity digest is 0 by default. Software must write this
+                  digest value via the direct access interface in order to lock the partition.
+                  After a reset, write access to the !!OWNER_SW_CFG partition is locked and
+                  the digest becomes visible in this CSR.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name:     "OWNER_SW_CFG_DIGEST",
+        desc:     '''
+                  Integrity digest for the owner software config partition.
+                  The integrity digest is 0 by default. Software must write this
+                  digest value via the direct access interface in order to lock the partition.
+                  After a reset, write access to the !!OWNER_SW_CFG partition is locked and
+                  the digest becomes visible in this CSR.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name:     "HW_CFG_DIGEST",
+        desc:     '''
+                  Hardware config partition integrity digest.
+                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name:     "SECRET0_DIGEST",
+        desc:     '''
+                  Integrity digest for the SECRET0 partition.
+                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name:     "SECRET1_DIGEST",
+        desc:     '''
+                  Integrity digest for the SECRET1 partition.
+                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
+    { multireg: {
+        name:     "SECRET2_DIGEST",
+        desc:     '''
+                  Integrity digest for the SECRET2 partition.
+                  The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                  After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                  ''',
+        count:     "2",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "WORD",
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
+    },
 
     ///////////////////////////////
     // Hardware Config Partition //
     ///////////////////////////////
     { skipto: "0x100" }
 
-    { name: "TEST_TOKENS_LOCK",
-      desc: '''
-      TEST token lock value. When set to nonzero, the life cycle tokens TEST_UNLOCK_TOKEN
-      and TEST_EXIT_TOKEN are no longer accessible to software.
-      '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0"
-        }
-      ]
-    }
-    { name: "RMA_TOKEN_LOCK",
-      desc: '''
-      RMA token lock value. When set to nonzero, the life cycle
-      RMA_TOKEN is no longer accessible to software.
-      '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-        }
-      ]
-    }
-    { name: "FLASH_KEYS_LOCK",
-      desc: '''
-      FLASH key lock value. When set to nonzero, the
-      FLASH_ADDR_KEY and FLASH_DATA_KEY are no longer accessible to software.
-      '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-        }
-      ]
-    }
-    { name: "SRAM_KEY_LOCK",
-      desc: '''
-      SRAM key lock value. When set to nonzero, the
-      SRAM_KEY_LOCK is no longer accessible to software.
-      '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-        }
-      ]
-    }
-    { name: "CREATOR_KEY_LOCK",
-      desc: '''
-      CREATOR key lock value. When set to nonzero, the
-      CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 are no longer accessible to software.
-      '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext:    "true",
-      fields: [
-        { bits: "31:0",
-        }
-      ]
-    }
     // TODO: there is likely more collateral that needs to be stored in the HW_CFG partition.
     // add them as they become apparent.
 
@@ -622,38 +621,27 @@
     { multireg: {
         name:     "LC_STATE",
         desc:     '''
-                  Life cycle state, comprised of 9 Byte groups.
+                  Life cycle state, comprised of 12 16bit words.
                   TODO: add link to LC controller spec.
+                  Other values than specified below are invalid.
                   ''',
-        count:    "9",
+        count:    "12",
         swaccess: "ro",
         hwaccess: "hwo",
-        cname:    "BYTE",
+        cname:    "HALFWORD",
         fields: [
-          { bits: "7:0"
+          { bits: "15:0"
             enum: [
               { value: "0",
                 name: "BLANK",
                 desc: '''
-                0x00
+                0x0000
                 '''
               },
-              { value: "106",
-                name: "ONE",
+              { value: "62970",
+                name: "SET",
                 desc: '''
-                0x6A
-                '''
-              },
-              { value: "149",
-                name: "TWO",
-                desc: '''
-                0x95
-                '''
-              },
-              { value: "255",
-                name: "FULL",
-                desc: '''
-                0xFF
+                0xF5FA
                 '''
               },
             ]
