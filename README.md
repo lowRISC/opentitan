@@ -147,7 +147,8 @@ openocd_execution_wrapper(
 )
 ```
 ```sh
-bazel build //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu --run_under=//:test_wrapper
+bazel run //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu --run_under=//:test_wrapper
+bazel test //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu --run_under=//:test_wrapper
 ```
 This will pipe the serial output from the microcontroller over /dev/ttyACM0 to stdout. If a line contains 'PASSED', the wrapper will return 0, if a line contains 'FAILED' the wrapper will return 1. This is useful if you are wrapping a cc_test. If success_string or fail_string is not specified, the wrapper will not exit unless sent a sigterm (e.g. by CTRL-C). Leaving these empty can be useful when wrapping a standard cc_binary.
 
