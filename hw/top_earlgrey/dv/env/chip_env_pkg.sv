@@ -39,6 +39,8 @@ package chip_env_pkg;
     Ram,
     FlashBank0,
     FlashBank1,
+    FlashBank0Info,
+    FlashBank1Info,
     SpiMem
   } chip_mem_e;
 

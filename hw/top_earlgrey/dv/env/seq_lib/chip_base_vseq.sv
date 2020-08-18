@@ -47,6 +47,9 @@ class chip_base_vseq extends cip_base_vseq #(
     cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+    // Initialize flash seeds
+    cfg.mem_bkdr_vifs[FlashBank0Info].set_mem();
+    cfg.mem_bkdr_vifs[FlashBank1Info].set_mem();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
   endtask
