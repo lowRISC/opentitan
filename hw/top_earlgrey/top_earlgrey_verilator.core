@@ -87,10 +87,16 @@ targets:
           - '--trace-max-array 1024'
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=top_earlgrey_verilator -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
-          - "-Wall"
+          - '-Wall'
+          # Execute simulation with four threads by default, which works best
+          # with four physical CPU cores.
+          # Users can override this setting by appending e.g.
+          # --verilator_options '--threads 2'
+          # to the end of the fusesoc invocation when compiling the simulation.
+          - '--threads 4'
           # XXX: Cleanup all warnings and remove this option
           # (or make it more fine-grained at least)
-          - "-Wno-fatal"
+          - '-Wno-fatal'
 
   lint:
     <<: *default_target

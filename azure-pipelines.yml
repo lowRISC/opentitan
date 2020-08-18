@@ -347,10 +347,14 @@ jobs:
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
       export PATH="$VERILATOR_PATH/bin:$PATH"
+      # Compile the simulation without threading; the runners provided by
+      # Azure provide two virtual CPUs, which seems to equal one physical
+      # CPU (at most); the use of threading slows down the simulation.
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_verilator
+        lowrisc:systems:top_earlgrey_verilator \
+        --verilator_options="--no-threads"
 
       cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
