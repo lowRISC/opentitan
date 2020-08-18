@@ -692,7 +692,7 @@
       }
     }
 
-    { skipto: "0x600" }
+    { skipto: "0x700" }
 
     { window: {
         name: "OWNER_SW_CFG"
@@ -709,7 +709,7 @@
     //////////////////////
     // Test Access Port //
     //////////////////////
-    { skipto: "0xA00" }
+    { skipto: "0xB00" }
 
     // TODO: may have to update description, once it is known how RAW unlock is handled.
     { window: {

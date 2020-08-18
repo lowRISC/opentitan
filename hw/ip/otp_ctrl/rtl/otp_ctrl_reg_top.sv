@@ -15,8 +15,8 @@ module otp_ctrl_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [2],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
+  output tlul_pkg::tl_h2d_t tl_win_o  [3],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [3],
 
   // To HW
   output otp_ctrl_reg_pkg::otp_ctrl_reg2hw_t reg2hw, // Write
@@ -28,7 +28,7 @@ module otp_ctrl_reg_top (
 
   import otp_ctrl_reg_pkg::* ;
 
-  localparam int AW = 12;
+  localparam int AW = 13;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -48,31 +48,33 @@ module otp_ctrl_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
+  tlul_pkg::tl_h2d_t tl_socket_h2d [4];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [4];
 
-  logic [1:0] reg_steer;
+  logic [2:0] reg_steer;
 
   // socket_1n connection
-  assign tl_reg_h2d = tl_socket_h2d[2];
-  assign tl_socket_d2h[2] = tl_reg_d2h;
+  assign tl_reg_h2d = tl_socket_h2d[3];
+  assign tl_socket_d2h[3] = tl_reg_d2h;
 
   assign tl_win_o[0] = tl_socket_h2d[0];
   assign tl_socket_d2h[0] = tl_win_i[0];
   assign tl_win_o[1] = tl_socket_h2d[1];
   assign tl_socket_d2h[1] = tl_win_i[1];
+  assign tl_win_o[2] = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_win_i[2];
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (3),
+    .N          (4),
     .HReqPass   (1'b1),
     .HRspPass   (1'b1),
-    .DReqPass   ({3{1'b1}}),
-    .DRspPass   ({3{1'b1}}),
+    .DReqPass   ({4{1'b1}}),
+    .DRspPass   ({4{1'b1}}),
     .HReqDepth  (4'h0),
     .HRspDepth  (4'h0),
-    .DReqDepth  ({3{4'h0}}),
-    .DRspDepth  ({3{4'h0}})
+    .DReqDepth  ({4{4'h0}}),
+    .DRspDepth  ({4{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,
@@ -85,14 +87,17 @@ module otp_ctrl_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 2;       // Default set to register
+    reg_steer = 3;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 1024 && tl_i.a_address[AW-1:0] < 2048) begin
+    if (tl_i.a_address[AW-1:0] >= 1024 && tl_i.a_address[AW-1:0] < 1792) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 2048 && tl_i.a_address[AW-1:0] < 4048) begin
+    if (tl_i.a_address[AW-1:0] >= 2048 && tl_i.a_address[AW-1:0] < 2816) begin
       reg_steer = 1;
+    end
+    if (tl_i.a_address[AW-1:0] >= 4096 && tl_i.a_address[AW-1:0] < 6096) begin
+      reg_steer = 2;
     end
   end
 
@@ -121,34 +126,31 @@ module otp_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_otp_access_done_qs;
-  logic intr_state_otp_access_done_wd;
-  logic intr_state_otp_access_done_we;
-  logic intr_state_otp_ctrl_err_qs;
-  logic intr_state_otp_ctrl_err_wd;
-  logic intr_state_otp_ctrl_err_we;
-  logic intr_enable_otp_access_done_qs;
-  logic intr_enable_otp_access_done_wd;
-  logic intr_enable_otp_access_done_we;
-  logic intr_enable_otp_ctrl_err_qs;
-  logic intr_enable_otp_ctrl_err_wd;
-  logic intr_enable_otp_ctrl_err_we;
-  logic intr_test_otp_access_done_wd;
-  logic intr_test_otp_access_done_we;
-  logic intr_test_otp_ctrl_err_wd;
-  logic intr_test_otp_ctrl_err_we;
-  logic [31:0] status_qs;
-  logic [31:0] err_code_qs;
+  logic intr_state_otp_operation_done_qs;
+  logic intr_state_otp_operation_done_wd;
+  logic intr_state_otp_operation_done_we;
+  logic intr_state_otp_error_qs;
+  logic intr_state_otp_error_wd;
+  logic intr_state_otp_error_we;
+  logic intr_enable_otp_operation_done_qs;
+  logic intr_enable_otp_operation_done_wd;
+  logic intr_enable_otp_operation_done_we;
+  logic intr_enable_otp_error_qs;
+  logic intr_enable_otp_error_wd;
+  logic intr_enable_otp_error_we;
+  logic intr_test_otp_operation_done_wd;
+  logic intr_test_otp_operation_done_we;
+  logic intr_test_otp_error_wd;
+  logic intr_test_otp_error_we;
+  logic [2:0] status_qs;
+  logic [2:0] err_code_qs;
   logic direct_access_cmd_read_wd;
   logic direct_access_cmd_read_we;
   logic direct_access_cmd_write_wd;
   logic direct_access_cmd_write_we;
-  logic [9:0] direct_access_address_qs;
-  logic [9:0] direct_access_address_wd;
+  logic [10:0] direct_access_address_qs;
+  logic [10:0] direct_access_address_wd;
   logic direct_access_address_we;
-  logic [1:0] direct_access_size_qs;
-  logic [1:0] direct_access_size_wd;
-  logic direct_access_size_we;
   logic [31:0] direct_access_wdata_0_qs;
   logic [31:0] direct_access_wdata_0_wd;
   logic direct_access_wdata_0_we;
@@ -157,110 +159,123 @@ module otp_ctrl_reg_top (
   logic direct_access_wdata_1_we;
   logic [31:0] direct_access_rdata_0_qs;
   logic [31:0] direct_access_rdata_1_qs;
-  logic secret_integrity_digest_calc_wd;
-  logic secret_integrity_digest_calc_we;
-  logic hw_cfg_integrity_digest_calc_wd;
-  logic hw_cfg_integrity_digest_calc_we;
-  logic sw_cfg_integrity_digest_calc_wd;
-  logic sw_cfg_integrity_digest_calc_we;
-  logic [31:0] secret_integrity_digest_qs;
-  logic secret_integrity_digest_re;
-  logic [31:0] hw_cfg_integrity_digest_qs;
-  logic hw_cfg_integrity_digest_re;
-  logic [31:0] sw_cfg_integrity_digest_qs;
-  logic sw_cfg_integrity_digest_re;
+  logic check_period_regen_qs;
+  logic check_period_regen_wd;
+  logic check_period_regen_we;
+  logic [5:0] integrity_check_period_msb_qs;
+  logic [5:0] integrity_check_period_msb_wd;
+  logic integrity_check_period_msb_we;
+  logic [5:0] consistency_check_period_msb_qs;
+  logic [5:0] consistency_check_period_msb_wd;
+  logic consistency_check_period_msb_we;
+  logic creator_sw_cfg_read_lock_qs;
+  logic creator_sw_cfg_read_lock_wd;
+  logic creator_sw_cfg_read_lock_we;
+  logic owner_sw_cfg_read_lock_qs;
+  logic owner_sw_cfg_read_lock_wd;
+  logic owner_sw_cfg_read_lock_we;
+  logic hw_cfg_digest_calc_wd;
+  logic hw_cfg_digest_calc_we;
+  logic secret_digest_calc_wd;
+  logic secret_digest_calc_we;
+  logic [31:0] creator_sw_cfg_digest_qs;
+  logic creator_sw_cfg_digest_re;
+  logic [31:0] owner_sw_cfg_digest_qs;
+  logic owner_sw_cfg_digest_re;
+  logic [31:0] hw_cfg_digest_qs;
+  logic hw_cfg_digest_re;
+  logic [31:0] secret_digest_qs;
+  logic secret_digest_re;
+  logic [31:0] test_tokens_lock_qs;
+  logic test_tokens_lock_re;
+  logic [31:0] rma_token_lock_qs;
+  logic rma_token_lock_re;
+  logic [31:0] flash_keys_lock_qs;
+  logic flash_keys_lock_re;
+  logic [31:0] sram_key_lock_qs;
+  logic sram_key_lock_re;
+  logic [31:0] creator_key_lock_qs;
+  logic creator_key_lock_re;
   logic [7:0] lc_state_0_lc_state_0_qs;
   logic [7:0] lc_state_0_lc_state_1_qs;
   logic [7:0] lc_state_0_lc_state_2_qs;
   logic [7:0] lc_state_0_lc_state_3_qs;
   logic [7:0] lc_state_1_lc_state_4_qs;
   logic [7:0] lc_state_1_lc_state_5_qs;
-  logic [7:0] id_state_qs;
-  logic [7:0] test_xxx_cnt_test_state_cnt_qs;
-  logic [7:0] test_xxx_cnt_test_unlock_cnt_qs;
-  logic [7:0] test_xxx_cnt_test_exit_cnt_qs;
-  logic [7:0] test_xxx_cnt_xxx_unlock_cnt_qs;
-  logic [15:0] transition_cnt_qs;
-  logic [2:0] hw_cfg_lock_test_tokens_lock_qs;
-  logic hw_cfg_lock_test_tokens_lock_re;
-  logic [4:0] hw_cfg_lock_xxx_token_lock_qs;
-  logic hw_cfg_lock_xxx_token_lock_re;
-  logic [31:0] hw_cfg_0_qs;
-  logic [31:0] hw_cfg_1_qs;
-  logic [31:0] hw_cfg_2_qs;
-  logic [31:0] hw_cfg_3_qs;
-  logic [31:0] hw_cfg_4_qs;
-  logic [31:0] hw_cfg_5_qs;
+  logic [7:0] lc_state_1_lc_state_6_qs;
+  logic [7:0] lc_state_1_lc_state_7_qs;
+  logic [7:0] lc_state_2_qs;
+  logic [31:0] transition_cnt_qs;
 
   // Register instances
   // R[intr_state]: V(False)
 
-  //   F[otp_access_done]: 0:0
+  //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_otp_access_done (
+  ) u_intr_state_otp_operation_done (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_otp_access_done_we),
-    .wd     (intr_state_otp_access_done_wd),
+    .we     (intr_state_otp_operation_done_we),
+    .wd     (intr_state_otp_operation_done_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.otp_access_done.de),
-    .d      (hw2reg.intr_state.otp_access_done.d ),
+    .de     (hw2reg.intr_state.otp_operation_done.de),
+    .d      (hw2reg.intr_state.otp_operation_done.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.otp_access_done.q ),
+    .q      (reg2hw.intr_state.otp_operation_done.q ),
 
     // to register interface (read)
-    .qs     (intr_state_otp_access_done_qs)
+    .qs     (intr_state_otp_operation_done_qs)
   );
 
 
-  //   F[otp_ctrl_err]: 1:1
+  //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_otp_ctrl_err (
+  ) u_intr_state_otp_error (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_otp_ctrl_err_we),
-    .wd     (intr_state_otp_ctrl_err_wd),
+    .we     (intr_state_otp_error_we),
+    .wd     (intr_state_otp_error_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.otp_ctrl_err.de),
-    .d      (hw2reg.intr_state.otp_ctrl_err.d ),
+    .de     (hw2reg.intr_state.otp_error.de),
+    .d      (hw2reg.intr_state.otp_error.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.otp_ctrl_err.q ),
+    .q      (reg2hw.intr_state.otp_error.q ),
 
     // to register interface (read)
-    .qs     (intr_state_otp_ctrl_err_qs)
+    .qs     (intr_state_otp_error_qs)
   );
 
 
   // R[intr_enable]: V(False)
 
-  //   F[otp_access_done]: 0:0
+  //   F[otp_operation_done]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_otp_access_done (
+  ) u_intr_enable_otp_operation_done (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_otp_access_done_we),
-    .wd     (intr_enable_otp_access_done_wd),
+    .we     (intr_enable_otp_operation_done_we),
+    .wd     (intr_enable_otp_operation_done_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -268,25 +283,25 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.otp_access_done.q ),
+    .q      (reg2hw.intr_enable.otp_operation_done.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_otp_access_done_qs)
+    .qs     (intr_enable_otp_operation_done_qs)
   );
 
 
-  //   F[otp_ctrl_err]: 1:1
+  //   F[otp_error]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_otp_ctrl_err (
+  ) u_intr_enable_otp_error (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_otp_ctrl_err_we),
-    .wd     (intr_enable_otp_ctrl_err_wd),
+    .we     (intr_enable_otp_error_we),
+    .wd     (intr_enable_otp_error_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -294,41 +309,41 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.otp_ctrl_err.q ),
+    .q      (reg2hw.intr_enable.otp_error.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_otp_ctrl_err_qs)
+    .qs     (intr_enable_otp_error_qs)
   );
 
 
   // R[intr_test]: V(True)
 
-  //   F[otp_access_done]: 0:0
+  //   F[otp_operation_done]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_otp_access_done (
+  ) u_intr_test_otp_operation_done (
     .re     (1'b0),
-    .we     (intr_test_otp_access_done_we),
-    .wd     (intr_test_otp_access_done_wd),
+    .we     (intr_test_otp_operation_done_we),
+    .wd     (intr_test_otp_operation_done_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.otp_access_done.qe),
-    .q      (reg2hw.intr_test.otp_access_done.q ),
+    .qe     (reg2hw.intr_test.otp_operation_done.qe),
+    .q      (reg2hw.intr_test.otp_operation_done.q ),
     .qs     ()
   );
 
 
-  //   F[otp_ctrl_err]: 1:1
+  //   F[otp_error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_otp_ctrl_err (
+  ) u_intr_test_otp_error (
     .re     (1'b0),
-    .we     (intr_test_otp_ctrl_err_we),
-    .wd     (intr_test_otp_ctrl_err_wd),
+    .we     (intr_test_otp_error_we),
+    .wd     (intr_test_otp_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.otp_ctrl_err.qe),
-    .q      (reg2hw.intr_test.otp_ctrl_err.q ),
+    .qe     (reg2hw.intr_test.otp_error.qe),
+    .q      (reg2hw.intr_test.otp_error.q ),
     .qs     ()
   );
 
@@ -336,9 +351,9 @@ module otp_ctrl_reg_top (
   // R[status]: V(False)
 
   prim_subreg #(
-    .DW      (32),
+    .DW      (3),
     .SWACCESS("RO"),
-    .RESVAL  (32'h0)
+    .RESVAL  (3'h0)
   ) u_status (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -362,9 +377,9 @@ module otp_ctrl_reg_top (
   // R[err_code]: V(False)
 
   prim_subreg #(
-    .DW      (32),
+    .DW      (3),
     .SWACCESS("RO"),
-    .RESVAL  (32'h0)
+    .RESVAL  (3'h0)
   ) u_err_code (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -420,9 +435,9 @@ module otp_ctrl_reg_top (
   // R[direct_access_address]: V(False)
 
   prim_subreg #(
-    .DW      (10),
+    .DW      (11),
     .SWACCESS("RW"),
-    .RESVAL  (10'h0)
+    .RESVAL  (11'h0)
   ) u_direct_access_address (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -441,33 +456,6 @@ module otp_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (direct_access_address_qs)
-  );
-
-
-  // R[direct_access_size]: V(False)
-
-  prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
-  ) u_direct_access_size (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (direct_access_size_we),
-    .wd     (direct_access_size_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.direct_access_size.q ),
-
-    // to register interface (read)
-    .qs     (direct_access_size_qs)
   );
 
 
@@ -581,19 +569,19 @@ module otp_ctrl_reg_top (
   );
 
 
-  // R[secret_integrity_digest_calc]: V(False)
+  // R[check_period_regen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_secret_integrity_digest_calc (
+    .RESVAL  (1'h1)
+  ) u_check_period_regen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (secret_integrity_digest_calc_we),
-    .wd     (secret_integrity_digest_calc_wd),
+    .we     (check_period_regen_we),
+    .wd     (check_period_regen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -601,25 +589,26 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.secret_integrity_digest_calc.q ),
+    .q      (reg2hw.check_period_regen.q ),
 
-    .qs     ()
+    // to register interface (read)
+    .qs     (check_period_regen_qs)
   );
 
 
-  // R[hw_cfg_integrity_digest_calc]: V(False)
+  // R[integrity_check_period_msb]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_hw_cfg_integrity_digest_calc (
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h1b)
+  ) u_integrity_check_period_msb (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (hw_cfg_integrity_digest_calc_we),
-    .wd     (hw_cfg_integrity_digest_calc_wd),
+    // from register interface (qualified with register enable)
+    .we     (integrity_check_period_msb_we & check_period_regen_qs),
+    .wd     (integrity_check_period_msb_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -627,25 +616,26 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.hw_cfg_integrity_digest_calc.q ),
+    .q      (reg2hw.integrity_check_period_msb.q ),
 
-    .qs     ()
+    // to register interface (read)
+    .qs     (integrity_check_period_msb_qs)
   );
 
 
-  // R[sw_cfg_integrity_digest_calc]: V(False)
+  // R[consistency_check_period_msb]: V(False)
 
   prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_sw_cfg_integrity_digest_calc (
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h1e)
+  ) u_consistency_check_period_msb (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (sw_cfg_integrity_digest_calc_we),
-    .wd     (sw_cfg_integrity_digest_calc_wd),
+    // from register interface (qualified with register enable)
+    .we     (consistency_check_period_msb_we & check_period_regen_qs),
+    .wd     (consistency_check_period_msb_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -653,57 +643,260 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_cfg_integrity_digest_calc.q ),
+    .q      (reg2hw.consistency_check_period_msb.q ),
+
+    // to register interface (read)
+    .qs     (consistency_check_period_msb_qs)
+  );
+
+
+  // R[creator_sw_cfg_read_lock]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_creator_sw_cfg_read_lock (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (creator_sw_cfg_read_lock_we),
+    .wd     (creator_sw_cfg_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.creator_sw_cfg_read_lock.q ),
+
+    // to register interface (read)
+    .qs     (creator_sw_cfg_read_lock_qs)
+  );
+
+
+  // R[owner_sw_cfg_read_lock]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_owner_sw_cfg_read_lock (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (owner_sw_cfg_read_lock_we),
+    .wd     (owner_sw_cfg_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.owner_sw_cfg_read_lock.q ),
+
+    // to register interface (read)
+    .qs     (owner_sw_cfg_read_lock_qs)
+  );
+
+
+  // R[hw_cfg_digest_calc]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_hw_cfg_digest_calc (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (hw_cfg_digest_calc_we),
+    .wd     (hw_cfg_digest_calc_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hw_cfg_digest_calc.q ),
 
     .qs     ()
   );
 
 
-  // R[secret_integrity_digest]: V(True)
+  // R[secret_digest_calc]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (32)
-  ) u_secret_integrity_digest (
-    .re     (secret_integrity_digest_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.secret_integrity_digest.d),
-    .qre    (),
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_secret_digest_calc (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (secret_digest_calc_we),
+    .wd     (secret_digest_calc_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
     .qe     (),
-    .q      (),
-    .qs     (secret_integrity_digest_qs)
+    .q      (reg2hw.secret_digest_calc.q ),
+
+    .qs     ()
   );
 
 
-  // R[hw_cfg_integrity_digest]: V(True)
+  // R[creator_sw_cfg_digest]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_hw_cfg_integrity_digest (
-    .re     (hw_cfg_integrity_digest_re),
+  ) u_creator_sw_cfg_digest (
+    .re     (creator_sw_cfg_digest_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.hw_cfg_integrity_digest.d),
+    .d      (hw2reg.creator_sw_cfg_digest.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (hw_cfg_integrity_digest_qs)
+    .qs     (creator_sw_cfg_digest_qs)
   );
 
 
-  // R[sw_cfg_integrity_digest]: V(True)
+  // R[owner_sw_cfg_digest]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_sw_cfg_integrity_digest (
-    .re     (sw_cfg_integrity_digest_re),
+  ) u_owner_sw_cfg_digest (
+    .re     (owner_sw_cfg_digest_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.sw_cfg_integrity_digest.d),
+    .d      (hw2reg.owner_sw_cfg_digest.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (sw_cfg_integrity_digest_qs)
+    .qs     (owner_sw_cfg_digest_qs)
+  );
+
+
+  // R[hw_cfg_digest]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hw_cfg_digest (
+    .re     (hw_cfg_digest_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_cfg_digest.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (hw_cfg_digest_qs)
+  );
+
+
+  // R[secret_digest]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_secret_digest (
+    .re     (secret_digest_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.secret_digest.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (secret_digest_qs)
+  );
+
+
+  // R[test_tokens_lock]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_test_tokens_lock (
+    .re     (test_tokens_lock_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.test_tokens_lock.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (test_tokens_lock_qs)
+  );
+
+
+  // R[rma_token_lock]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_rma_token_lock (
+    .re     (rma_token_lock_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.rma_token_lock.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (rma_token_lock_qs)
+  );
+
+
+  // R[flash_keys_lock]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_flash_keys_lock (
+    .re     (flash_keys_lock_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.flash_keys_lock.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (flash_keys_lock_qs)
+  );
+
+
+  // R[sram_key_lock]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_sram_key_lock (
+    .re     (sram_key_lock_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.sram_key_lock.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (sram_key_lock_qs)
+  );
+
+
+  // R[creator_key_lock]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_creator_key_lock (
+    .re     (creator_key_lock_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.creator_key_lock.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (creator_key_lock_qs)
   );
 
 
@@ -864,14 +1057,12 @@ module otp_ctrl_reg_top (
   );
 
 
-
-  // R[id_state]: V(False)
-
+  // F[lc_state_6]: 23:16
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_id_state (
+  ) u_lc_state_1_lc_state_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -879,26 +1070,24 @@ module otp_ctrl_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.id_state.de),
-    .d      (hw2reg.id_state.d ),
+    .de     (hw2reg.lc_state[6].de),
+    .d      (hw2reg.lc_state[6].d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (id_state_qs)
+    .qs     (lc_state_1_lc_state_6_qs)
   );
 
 
-  // R[test_xxx_cnt]: V(False)
-
-  //   F[test_state_cnt]: 7:0
+  // F[lc_state_7]: 31:24
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_test_xxx_cnt_test_state_cnt (
+  ) u_lc_state_1_lc_state_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -906,24 +1095,26 @@ module otp_ctrl_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.test_xxx_cnt.test_state_cnt.de),
-    .d      (hw2reg.test_xxx_cnt.test_state_cnt.d ),
+    .de     (hw2reg.lc_state[7].de),
+    .d      (hw2reg.lc_state[7].d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (test_xxx_cnt_test_state_cnt_qs)
+    .qs     (lc_state_1_lc_state_7_qs)
   );
 
 
-  //   F[test_unlock_cnt]: 15:8
+  // Subregister 8 of Multireg lc_state
+  // R[lc_state_2]: V(False)
+
   prim_subreg #(
     .DW      (8),
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
-  ) u_test_xxx_cnt_test_unlock_cnt (
+  ) u_lc_state_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -931,74 +1122,24 @@ module otp_ctrl_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.test_xxx_cnt.test_unlock_cnt.de),
-    .d      (hw2reg.test_xxx_cnt.test_unlock_cnt.d ),
+    .de     (hw2reg.lc_state[8].de),
+    .d      (hw2reg.lc_state[8].d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (test_xxx_cnt_test_unlock_cnt_qs)
-  );
-
-
-  //   F[test_exit_cnt]: 23:16
-  prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h0)
-  ) u_test_xxx_cnt_test_exit_cnt (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.test_xxx_cnt.test_exit_cnt.de),
-    .d      (hw2reg.test_xxx_cnt.test_exit_cnt.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (test_xxx_cnt_test_exit_cnt_qs)
-  );
-
-
-  //   F[xxx_unlock_cnt]: 31:24
-  prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h0)
-  ) u_test_xxx_cnt_xxx_unlock_cnt (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.test_xxx_cnt.xxx_unlock_cnt.de),
-    .d      (hw2reg.test_xxx_cnt.xxx_unlock_cnt.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (test_xxx_cnt_xxx_unlock_cnt_qs)
+    .qs     (lc_state_2_qs)
   );
 
 
   // R[transition_cnt]: V(False)
 
   prim_subreg #(
-    .DW      (16),
+    .DW      (32),
     .SWACCESS("RO"),
-    .RESVAL  (16'h0)
+    .RESVAL  (32'h0)
   ) u_transition_cnt (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -1019,199 +1160,9 @@ module otp_ctrl_reg_top (
   );
 
 
-  // R[hw_cfg_lock]: V(True)
-
-  //   F[test_tokens_lock]: 2:0
-  prim_subreg_ext #(
-    .DW    (3)
-  ) u_hw_cfg_lock_test_tokens_lock (
-    .re     (hw_cfg_lock_test_tokens_lock_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.hw_cfg_lock.test_tokens_lock.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (hw_cfg_lock_test_tokens_lock_qs)
-  );
 
 
-  //   F[xxx_token_lock]: 7:3
-  prim_subreg_ext #(
-    .DW    (5)
-  ) u_hw_cfg_lock_xxx_token_lock (
-    .re     (hw_cfg_lock_xxx_token_lock_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.hw_cfg_lock.xxx_token_lock.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (hw_cfg_lock_xxx_token_lock_qs)
-  );
-
-
-
-  // Subregister 0 of Multireg hw_cfg
-  // R[hw_cfg_0]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[0].de),
-    .d      (hw2reg.hw_cfg[0].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_0_qs)
-  );
-
-  // Subregister 1 of Multireg hw_cfg
-  // R[hw_cfg_1]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[1].de),
-    .d      (hw2reg.hw_cfg[1].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_1_qs)
-  );
-
-  // Subregister 2 of Multireg hw_cfg
-  // R[hw_cfg_2]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[2].de),
-    .d      (hw2reg.hw_cfg[2].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_2_qs)
-  );
-
-  // Subregister 3 of Multireg hw_cfg
-  // R[hw_cfg_3]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[3].de),
-    .d      (hw2reg.hw_cfg[3].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_3_qs)
-  );
-
-  // Subregister 4 of Multireg hw_cfg
-  // R[hw_cfg_4]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[4].de),
-    .d      (hw2reg.hw_cfg[4].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_4_qs)
-  );
-
-  // Subregister 5 of Multireg hw_cfg
-  // R[hw_cfg_5]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_hw_cfg_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.hw_cfg[5].de),
-    .d      (hw2reg.hw_cfg[5].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (hw_cfg_5_qs)
-  );
-
-
-
-
-  logic [29:0] addr_hit;
+  logic [30:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == OTP_CTRL_INTR_STATE_OFFSET);
@@ -1221,29 +1172,30 @@ module otp_ctrl_reg_top (
     addr_hit[ 4] = (reg_addr == OTP_CTRL_ERR_CODE_OFFSET);
     addr_hit[ 5] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET);
     addr_hit[ 6] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET);
-    addr_hit[ 7] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_SIZE_OFFSET);
-    addr_hit[ 8] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET);
-    addr_hit[ 9] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
-    addr_hit[10] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
-    addr_hit[11] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
-    addr_hit[12] = (reg_addr == OTP_CTRL_SECRET_INTEGRITY_DIGEST_CALC_OFFSET);
-    addr_hit[13] = (reg_addr == OTP_CTRL_HW_CFG_INTEGRITY_DIGEST_CALC_OFFSET);
-    addr_hit[14] = (reg_addr == OTP_CTRL_SW_CFG_INTEGRITY_DIGEST_CALC_OFFSET);
-    addr_hit[15] = (reg_addr == OTP_CTRL_SECRET_INTEGRITY_DIGEST_OFFSET);
-    addr_hit[16] = (reg_addr == OTP_CTRL_HW_CFG_INTEGRITY_DIGEST_OFFSET);
-    addr_hit[17] = (reg_addr == OTP_CTRL_SW_CFG_INTEGRITY_DIGEST_OFFSET);
-    addr_hit[18] = (reg_addr == OTP_CTRL_LC_STATE_0_OFFSET);
-    addr_hit[19] = (reg_addr == OTP_CTRL_LC_STATE_1_OFFSET);
-    addr_hit[20] = (reg_addr == OTP_CTRL_ID_STATE_OFFSET);
-    addr_hit[21] = (reg_addr == OTP_CTRL_TEST_XXX_CNT_OFFSET);
-    addr_hit[22] = (reg_addr == OTP_CTRL_TRANSITION_CNT_OFFSET);
-    addr_hit[23] = (reg_addr == OTP_CTRL_HW_CFG_LOCK_OFFSET);
-    addr_hit[24] = (reg_addr == OTP_CTRL_HW_CFG_0_OFFSET);
-    addr_hit[25] = (reg_addr == OTP_CTRL_HW_CFG_1_OFFSET);
-    addr_hit[26] = (reg_addr == OTP_CTRL_HW_CFG_2_OFFSET);
-    addr_hit[27] = (reg_addr == OTP_CTRL_HW_CFG_3_OFFSET);
-    addr_hit[28] = (reg_addr == OTP_CTRL_HW_CFG_4_OFFSET);
-    addr_hit[29] = (reg_addr == OTP_CTRL_HW_CFG_5_OFFSET);
+    addr_hit[ 7] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
+    addr_hit[10] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
+    addr_hit[11] = (reg_addr == OTP_CTRL_CHECK_PERIOD_REGEN_OFFSET);
+    addr_hit[12] = (reg_addr == OTP_CTRL_INTEGRITY_CHECK_PERIOD_MSB_OFFSET);
+    addr_hit[13] = (reg_addr == OTP_CTRL_CONSISTENCY_CHECK_PERIOD_MSB_OFFSET);
+    addr_hit[14] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[15] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[16] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_CALC_OFFSET);
+    addr_hit[17] = (reg_addr == OTP_CTRL_SECRET_DIGEST_CALC_OFFSET);
+    addr_hit[18] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_OFFSET);
+    addr_hit[19] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_OFFSET);
+    addr_hit[20] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_OFFSET);
+    addr_hit[21] = (reg_addr == OTP_CTRL_SECRET_DIGEST_OFFSET);
+    addr_hit[22] = (reg_addr == OTP_CTRL_TEST_TOKENS_LOCK_OFFSET);
+    addr_hit[23] = (reg_addr == OTP_CTRL_RMA_TOKEN_LOCK_OFFSET);
+    addr_hit[24] = (reg_addr == OTP_CTRL_FLASH_KEYS_LOCK_OFFSET);
+    addr_hit[25] = (reg_addr == OTP_CTRL_SRAM_KEY_LOCK_OFFSET);
+    addr_hit[26] = (reg_addr == OTP_CTRL_CREATOR_KEY_LOCK_OFFSET);
+    addr_hit[27] = (reg_addr == OTP_CTRL_LC_STATE_0_OFFSET);
+    addr_hit[28] = (reg_addr == OTP_CTRL_LC_STATE_1_OFFSET);
+    addr_hit[29] = (reg_addr == OTP_CTRL_LC_STATE_2_OFFSET);
+    addr_hit[30] = (reg_addr == OTP_CTRL_TRANSITION_CNT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1281,25 +1233,26 @@ module otp_ctrl_reg_top (
     if (addr_hit[27] && reg_we && (OTP_CTRL_PERMIT[27] != (OTP_CTRL_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[28] && reg_we && (OTP_CTRL_PERMIT[28] != (OTP_CTRL_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[29] && reg_we && (OTP_CTRL_PERMIT[29] != (OTP_CTRL_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[30] && reg_we && (OTP_CTRL_PERMIT[30] != (OTP_CTRL_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_otp_access_done_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_otp_access_done_wd = reg_wdata[0];
+  assign intr_state_otp_operation_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_state_otp_ctrl_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_otp_ctrl_err_wd = reg_wdata[1];
+  assign intr_state_otp_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_otp_error_wd = reg_wdata[1];
 
-  assign intr_enable_otp_access_done_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_otp_access_done_wd = reg_wdata[0];
+  assign intr_enable_otp_operation_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_enable_otp_ctrl_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_otp_ctrl_err_wd = reg_wdata[1];
+  assign intr_enable_otp_error_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_otp_error_wd = reg_wdata[1];
 
-  assign intr_test_otp_access_done_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_otp_access_done_wd = reg_wdata[0];
+  assign intr_test_otp_operation_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_test_otp_ctrl_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_otp_ctrl_err_wd = reg_wdata[1];
+  assign intr_test_otp_error_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_otp_error_wd = reg_wdata[1];
 
 
 
@@ -1310,49 +1263,58 @@ module otp_ctrl_reg_top (
   assign direct_access_cmd_write_wd = reg_wdata[1];
 
   assign direct_access_address_we = addr_hit[6] & reg_we & ~wr_err;
-  assign direct_access_address_wd = reg_wdata[9:0];
+  assign direct_access_address_wd = reg_wdata[10:0];
 
-  assign direct_access_size_we = addr_hit[7] & reg_we & ~wr_err;
-  assign direct_access_size_wd = reg_wdata[1:0];
-
-  assign direct_access_wdata_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign direct_access_wdata_0_we = addr_hit[7] & reg_we & ~wr_err;
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
 
-  assign direct_access_wdata_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign direct_access_wdata_1_we = addr_hit[8] & reg_we & ~wr_err;
   assign direct_access_wdata_1_wd = reg_wdata[31:0];
 
 
 
-  assign secret_integrity_digest_calc_we = addr_hit[12] & reg_we & ~wr_err;
-  assign secret_integrity_digest_calc_wd = reg_wdata[0];
+  assign check_period_regen_we = addr_hit[11] & reg_we & ~wr_err;
+  assign check_period_regen_wd = reg_wdata[0];
 
-  assign hw_cfg_integrity_digest_calc_we = addr_hit[13] & reg_we & ~wr_err;
-  assign hw_cfg_integrity_digest_calc_wd = reg_wdata[0];
+  assign integrity_check_period_msb_we = addr_hit[12] & reg_we & ~wr_err;
+  assign integrity_check_period_msb_wd = reg_wdata[5:0];
 
-  assign sw_cfg_integrity_digest_calc_we = addr_hit[14] & reg_we & ~wr_err;
-  assign sw_cfg_integrity_digest_calc_wd = reg_wdata[0];
+  assign consistency_check_period_msb_we = addr_hit[13] & reg_we & ~wr_err;
+  assign consistency_check_period_msb_wd = reg_wdata[5:0];
 
-  assign secret_integrity_digest_re = addr_hit[15] && reg_re;
+  assign creator_sw_cfg_read_lock_we = addr_hit[14] & reg_we & ~wr_err;
+  assign creator_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign hw_cfg_integrity_digest_re = addr_hit[16] && reg_re;
+  assign owner_sw_cfg_read_lock_we = addr_hit[15] & reg_we & ~wr_err;
+  assign owner_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign sw_cfg_integrity_digest_re = addr_hit[17] && reg_re;
+  assign hw_cfg_digest_calc_we = addr_hit[16] & reg_we & ~wr_err;
+  assign hw_cfg_digest_calc_wd = reg_wdata[0];
+
+  assign secret_digest_calc_we = addr_hit[17] & reg_we & ~wr_err;
+  assign secret_digest_calc_wd = reg_wdata[0];
+
+  assign creator_sw_cfg_digest_re = addr_hit[18] && reg_re;
+
+  assign owner_sw_cfg_digest_re = addr_hit[19] && reg_re;
+
+  assign hw_cfg_digest_re = addr_hit[20] && reg_re;
+
+  assign secret_digest_re = addr_hit[21] && reg_re;
+
+  assign test_tokens_lock_re = addr_hit[22] && reg_re;
+
+  assign rma_token_lock_re = addr_hit[23] && reg_re;
+
+  assign flash_keys_lock_re = addr_hit[24] && reg_re;
+
+  assign sram_key_lock_re = addr_hit[25] && reg_re;
+
+  assign creator_key_lock_re = addr_hit[26] && reg_re;
 
 
 
 
-
-
-
-
-
-
-
-
-
-  assign hw_cfg_lock_test_tokens_lock_re = addr_hit[23] && reg_re;
-
-  assign hw_cfg_lock_xxx_token_lock_re = addr_hit[23] && reg_re;
 
 
 
@@ -1365,13 +1327,13 @@ module otp_ctrl_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_otp_access_done_qs;
-        reg_rdata_next[1] = intr_state_otp_ctrl_err_qs;
+        reg_rdata_next[0] = intr_state_otp_operation_done_qs;
+        reg_rdata_next[1] = intr_state_otp_error_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_otp_access_done_qs;
-        reg_rdata_next[1] = intr_enable_otp_ctrl_err_qs;
+        reg_rdata_next[0] = intr_enable_otp_operation_done_qs;
+        reg_rdata_next[1] = intr_enable_otp_error_qs;
       end
 
       addr_hit[2]: begin
@@ -1380,11 +1342,11 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[31:0] = status_qs;
+        reg_rdata_next[2:0] = status_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[31:0] = err_code_qs;
+        reg_rdata_next[2:0] = err_code_qs;
       end
 
       addr_hit[5]: begin
@@ -1393,107 +1355,109 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[9:0] = direct_access_address_qs;
+        reg_rdata_next[10:0] = direct_access_address_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[1:0] = direct_access_size_qs;
-      end
-
-      addr_hit[8]: begin
         reg_rdata_next[31:0] = direct_access_wdata_0_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = direct_access_wdata_1_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = direct_access_rdata_0_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = direct_access_rdata_1_qs;
       end
 
+      addr_hit[11]: begin
+        reg_rdata_next[0] = check_period_regen_qs;
+      end
+
       addr_hit[12]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[5:0] = integrity_check_period_msb_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[5:0] = consistency_check_period_msb_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = creator_sw_cfg_read_lock_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = secret_integrity_digest_qs;
+        reg_rdata_next[0] = owner_sw_cfg_read_lock_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[31:0] = hw_cfg_integrity_digest_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = sw_cfg_integrity_digest_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[18]: begin
+        reg_rdata_next[31:0] = creator_sw_cfg_digest_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = owner_sw_cfg_digest_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[31:0] = hw_cfg_digest_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[31:0] = secret_digest_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[31:0] = test_tokens_lock_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[31:0] = rma_token_lock_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[31:0] = flash_keys_lock_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[31:0] = sram_key_lock_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[31:0] = creator_key_lock_qs;
+      end
+
+      addr_hit[27]: begin
         reg_rdata_next[7:0] = lc_state_0_lc_state_0_qs;
         reg_rdata_next[15:8] = lc_state_0_lc_state_1_qs;
         reg_rdata_next[23:16] = lc_state_0_lc_state_2_qs;
         reg_rdata_next[31:24] = lc_state_0_lc_state_3_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[28]: begin
         reg_rdata_next[7:0] = lc_state_1_lc_state_4_qs;
         reg_rdata_next[15:8] = lc_state_1_lc_state_5_qs;
-      end
-
-      addr_hit[20]: begin
-        reg_rdata_next[7:0] = id_state_qs;
-      end
-
-      addr_hit[21]: begin
-        reg_rdata_next[7:0] = test_xxx_cnt_test_state_cnt_qs;
-        reg_rdata_next[15:8] = test_xxx_cnt_test_unlock_cnt_qs;
-        reg_rdata_next[23:16] = test_xxx_cnt_test_exit_cnt_qs;
-        reg_rdata_next[31:24] = test_xxx_cnt_xxx_unlock_cnt_qs;
-      end
-
-      addr_hit[22]: begin
-        reg_rdata_next[15:0] = transition_cnt_qs;
-      end
-
-      addr_hit[23]: begin
-        reg_rdata_next[2:0] = hw_cfg_lock_test_tokens_lock_qs;
-        reg_rdata_next[7:3] = hw_cfg_lock_xxx_token_lock_qs;
-      end
-
-      addr_hit[24]: begin
-        reg_rdata_next[31:0] = hw_cfg_0_qs;
-      end
-
-      addr_hit[25]: begin
-        reg_rdata_next[31:0] = hw_cfg_1_qs;
-      end
-
-      addr_hit[26]: begin
-        reg_rdata_next[31:0] = hw_cfg_2_qs;
-      end
-
-      addr_hit[27]: begin
-        reg_rdata_next[31:0] = hw_cfg_3_qs;
-      end
-
-      addr_hit[28]: begin
-        reg_rdata_next[31:0] = hw_cfg_4_qs;
+        reg_rdata_next[23:16] = lc_state_1_lc_state_6_qs;
+        reg_rdata_next[31:24] = lc_state_1_lc_state_7_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = hw_cfg_5_qs;
+        reg_rdata_next[7:0] = lc_state_2_qs;
+      end
+
+      addr_hit[30]: begin
+        reg_rdata_next[31:0] = transition_cnt_qs;
       end
 
       default: begin
