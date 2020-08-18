@@ -20,5 +20,7 @@
   exclude_from_upstream: [
     "src/dm_top.sv",
     "src_files.yml",
+    # We always exclude .clang-format from upstream repos
+    "tb/.clang-format",
   ]
 }
