@@ -67,6 +67,8 @@ module tb;
   bind `RAM_MAIN_SUB_HIER mem_bkdr_if ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
+  bind `FLASH0_INFO_HIER mem_bkdr_if flash0_info_bkdr_if();
+  bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
 
   top_earlgrey_asic dut (
     // Clock and Reset
@@ -208,6 +210,11 @@ module tb;
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank0Info]", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank1Info]", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
+
 
     // SW logger and test status interfaces.
     uvm_config_db#(virtual sw_logger_if)::set(null, "*.env", "sw_logger_vif", sw_logger_if);

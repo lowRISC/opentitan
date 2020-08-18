@@ -24,12 +24,19 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    uvm_reg_data_t data;
+    bit init_busy;
     super.apply_reset(kind);
     if (kind == "HARD") begin
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
     flash_mem_bkdr_init(flash_ctrl_pkg::FlashPartInfo, FlashMemInitSet);
-  endtask
+
+    // Wait for flash_ctrl to finish initializing on every reset
+    // We probably need a parameter to skip this for certain tests
+    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+
+  endtask // apply_reset
 
   // Configure the memory protection regions.
   virtual task flash_ctrl_mp_region_cfg(uint index, flash_mp_region_cfg_t region_cfg);
