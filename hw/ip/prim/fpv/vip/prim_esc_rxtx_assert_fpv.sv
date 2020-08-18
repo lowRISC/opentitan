@@ -16,8 +16,8 @@ module prim_esc_rxtx_assert_fpv (
   input        esc_err_pi,
   input        esc_err_ni,
   // normal I/Os
-  input        esc_en_i,
-  input        ping_en_i,
+  input        esc_req_i,
+  input        ping_req_i,
   input        ping_ok_o,
   input        integ_fail_o,
   input        esc_en_o
@@ -29,27 +29,27 @@ module prim_esc_rxtx_assert_fpv (
 
   // ping will stay high until ping ok received, then it must be deasserted
   // TODO: this escludes the case where no ping ok will be returned due to an error
-  `ASSUME_FPV(PingDeassert_M, ping_en_i && ping_ok_o |=> ping_en_i, clk_i, !rst_ni)
-  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_en_i |=>
-      (ping_en_i && !ping_ok_o) or (ping_en_i && ping_ok_o ##1 $fell(ping_en_i)),
+  `ASSUME_FPV(PingDeassert_M, ping_req_i && ping_ok_o |=> ping_req_i, clk_i, !rst_ni)
+  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_req_i |=>
+      (ping_req_i && !ping_ok_o) or (ping_req_i && ping_ok_o ##1 $fell(ping_req_i)),
       clk_i, !rst_ni || error_present)
 
   // assume that the ping enable and escalation enable signals will eventually be deasserted (and
   // esc will stay low for more than 2 cycles)
-  `ASSUME_FPV(FiniteEsc_M, esc_en_i |-> strong(##[1:$] !esc_en_i [*2]))
-  `ASSUME_FPV(FinitePing_M, ping_en_i |-> strong(##[1:$] !ping_en_i))
+  `ASSUME_FPV(FiniteEsc_M, esc_req_i |-> strong(##[1:$] !esc_req_i [*2]))
+  `ASSUME_FPV(FinitePing_M, ping_req_i |-> strong(##[1:$] !ping_req_i))
 
   // ping response mus occur within 4 cycles (given that no
   // error occured within the previous cycles)
-  `ASSERT(PingRespCheck_A, !error_present [*4] ##1 $rose(ping_en_i) |->
+  `ASSERT(PingRespCheck_A, !error_present [*4] ##1 $rose(ping_req_i) |->
       ##[0:4] ping_ok_o, clk_i, !rst_ni || error_present)
 
   // be more specific (i.e. use throughout)
-  `ASSERT(EscRespCheck_A, ##1 esc_en_i |-> ##[0:1] prim_esc_rxtx_fpv.esc_rx_out.resp_p ##1
+  `ASSERT(EscRespCheck_A, ##1 esc_req_i |-> ##[0:1] prim_esc_rxtx_fpv.esc_rx_out.resp_p ##1
       !prim_esc_rxtx_fpv.esc_rx_out.resp_p, clk_i, !rst_ni || error_present)
 
   // check correct transmission of escalation within 0-1 cycles
-  `ASSERT(EscCheck_A, ##1 esc_en_i |-> ##[0:1] esc_en_o, clk_i, !rst_ni || error_present)
+  `ASSERT(EscCheck_A, ##1 esc_req_i |-> ##[0:1] esc_en_o, clk_i, !rst_ni || error_present)
 
   // check that a single error on the diffpairs is detected
   `ASSERT(SingleSigIntDetected0_A, {esc_err_pi, esc_err_ni} == '0 ##1

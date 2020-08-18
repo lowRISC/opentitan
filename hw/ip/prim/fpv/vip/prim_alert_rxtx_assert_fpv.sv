@@ -19,7 +19,7 @@ module prim_alert_rxtx_assert_fpv (
   input        alert_err_ni,
   // normal I/Os
   input        alert_i,
-  input        ping_en_i,
+  input        ping_req_i,
   input        ping_ok_o,
   input        integ_fail_o,
   input        alert_o
@@ -37,9 +37,9 @@ module prim_alert_rxtx_assert_fpv (
 
   // ping will stay high until ping ok received, then it must be deasserted
   // TODO: this excludes the case where no ping ok will be returned due to an error
-  `ASSUME_FPV(PingDeassert_M, ping_en_i && ping_ok_o |=> !ping_en_i, clk_i, !rst_ni)
-  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_en_i |=> (ping_en_i && !ping_ok_o) or
-      (ping_en_i && ping_ok_o ##1 $fell(ping_en_i)), clk_i, !rst_ni || error_present)
+  `ASSUME_FPV(PingDeassert_M, ping_req_i && ping_ok_o |=> !ping_req_i, clk_i, !rst_ni)
+  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_req_i |=> (ping_req_i && !ping_ok_o) or
+      (ping_req_i && ping_ok_o ##1 $fell(ping_req_i)), clk_i, !rst_ni || error_present)
 
   sequence FullHandshake_S;
     $rose(prim_alert_rxtx_fpv.alert_tx_out.alert_p)   ##1
@@ -67,13 +67,13 @@ module prim_alert_rxtx_assert_fpv (
       FullHandshake_S, clk_i, !rst_ni || error_present)
 
   // transmission of pings
-  `ASSERT(AlertPing_A, !error_present ##1 $rose(ping_en_i) |->
+  `ASSERT(AlertPing_A, !error_present ##1 $rose(ping_req_i) |->
       ##[1:9] ping_ok_o, clk_i, !rst_ni || error_present)
   // transmission of alerts in case of no collision with ping enable
-  `ASSERT(AlertCheck0_A, !ping_en_i [*3] ##0 $rose(alert_i) &&
+  `ASSERT(AlertCheck0_A, !ping_req_i [*3] ##0 $rose(alert_i) &&
       (prim_alert_rxtx_fpv.i_prim_alert_sender.state_q ==
       prim_alert_rxtx_fpv.i_prim_alert_sender.Idle) |=>
-      alert_o, clk_i, !rst_ni || error_present || ping_en_i)
+      alert_o, clk_i, !rst_ni || error_present || ping_req_i)
   // transmission of alerts in the general case which can include ping collisions
   `ASSERT(AlertCheck1_A, alert_i |-> ##[1:9] alert_o, clk_i, !rst_ni || error_present)
 

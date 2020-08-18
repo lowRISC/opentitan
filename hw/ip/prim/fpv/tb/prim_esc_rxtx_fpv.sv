@@ -17,8 +17,8 @@ module prim_esc_rxtx_fpv
   input        esc_err_pi,
   input        esc_err_ni,
   // normal I/Os
-  input        esc_en_i,
-  input        ping_en_i,
+  input        esc_req_i,
+  input        ping_req_i,
   output logic ping_ok_o,
   output logic integ_fail_o,
   output logic esc_en_o
@@ -35,10 +35,10 @@ module prim_esc_rxtx_fpv
   prim_esc_sender i_prim_esc_sender (
     .clk_i        ,
     .rst_ni       ,
-    .ping_en_i    ,
+    .ping_req_i   ,
     .ping_ok_o    ,
     .integ_fail_o ,
-    .esc_en_i     ,
+    .esc_req_i    ,
     .esc_rx_i     ( esc_rx_in  ),
     .esc_tx_o     ( esc_tx_out )
   );
