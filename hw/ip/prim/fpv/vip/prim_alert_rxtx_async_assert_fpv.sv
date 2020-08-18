@@ -22,7 +22,7 @@ module prim_alert_rxtx_async_assert_fpv (
   input [1:0]  alert_skew_i,
   // normal I/Os
   input        alert_i,
-  input        ping_en_i,
+  input        ping_req_i,
   input        ping_ok_o,
   input        integ_fail_o,
   input        alert_o
@@ -56,10 +56,10 @@ module prim_alert_rxtx_async_assert_fpv (
 
   // ping will stay high until ping ok received, then it must be deasserted
   // TODO: this excludes the case where no ping ok will be returned due to an error
-  `ASSUME_FPV(PingDeassert_M, ping_en_i && ping_ok_o |=> !ping_en_i, clk_i, !rst_ni)
-  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_en_i |=>
-      (ping_en_i && !ping_ok_o) or
-      (ping_en_i && ping_ok_o ##1 $fell(ping_en_i)),
+  `ASSUME_FPV(PingDeassert_M, ping_req_i && ping_ok_o |=> !ping_req_i, clk_i, !rst_ni)
+  `ASSUME_FPV(PingEnStaysAsserted0_M, ping_req_i |=>
+      (ping_req_i && !ping_ok_o) or
+      (ping_req_i && ping_ok_o ##1 $fell(ping_req_i)),
       clk_i, !rst_ni || error_present)
 
   // Note: the sequence lengths of the handshake and the following properties needs to
@@ -93,13 +93,13 @@ module prim_alert_rxtx_async_assert_fpv (
   // transmission of pings
   // this bound is relatively large as in the worst case, we need to resolve
   // staggered differential signal patterns on all three differential channels
-  `ASSERT(AlertPing_A, $rose(ping_en_i) |-> ##[1:23] ping_ok_o,
+  `ASSERT(AlertPing_A, $rose(ping_req_i) |-> ##[1:23] ping_ok_o,
       clk_i, !rst_ni || error_setreg_q)
   // transmission of first alert assertion (no ping collision)
-  `ASSERT(AlertCheck0_A, !ping_en_i [*10] ##1 $rose(alert_i) &&
+  `ASSERT(AlertCheck0_A, !ping_req_i [*10] ##1 $rose(alert_i) &&
       (prim_alert_rxtx_async_fpv.i_prim_alert_sender.state_q ==
       prim_alert_rxtx_async_fpv.i_prim_alert_sender.Idle) |->
-      ##[3:5] alert_o, clk_i, !rst_ni || ping_en_i || error_setreg_q)
+      ##[3:5] alert_o, clk_i, !rst_ni || ping_req_i || error_setreg_q)
   // eventual transmission of alerts in the general case which can include ping collisions
   `ASSERT(AlertCheck1_A, alert_i |-> ##[1:25] alert_o,
       clk_i, !rst_ni || error_setreg_q)
