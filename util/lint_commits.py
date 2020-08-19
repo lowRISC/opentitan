@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import re
 import sys
 
 from git import Repo
@@ -79,17 +80,45 @@ def lint_commit_message(commit):
             "separates the summary from the long description.", commit)
         success = False
 
-    # Check that the commit message contains a Signed-off-by line which
-    # matches the author name and email metadata.
-    expected_signoff_line = "Signed-off-by: %s <%s>" % (commit.author.name,
-                                                        commit.author.email)
-    if expected_signoff_line not in lines:
-        error(
-            'The commit message must contain a Signed-off-by line that '
-            'matches the commit author name and email, indicating agreement '
-            'to the Contributor License Agreement. See CONTRIBUTING.md for '
-            'more details. "git commit -s" can be used to have git add this '
-            'line for you.')
+    # Check that the commit message contains at least one Signed-off-by line
+    # that matches the author name and email. There might be other signoffs (if
+    # there are multiple authors). We don't have any requirements about those
+    # at the moment and just pass them through.
+    signoff_lines = []
+    signoff_pfx = 'Signed-off-by: '
+    for idx, line in enumerate(lines):
+        if not line.startswith(signoff_pfx):
+            continue
+
+        signoff_body = line[len(signoff_pfx):]
+        match = re.match(r'[^<]+ <[^>]*>$', signoff_body)
+        if match is None:
+            error('Commit has Signed-off-by line {!r}, but the second part '
+                  'is not of the required form. It should be of the form '
+                  '"Signed-off-by: NAME <EMAIL>".'
+                  .format(line))
+            success = False
+
+        signoff_lines.append(line)
+
+    expected_signoff_line = ("Signed-off-by: {} <{}>"
+                             .format(commit.author.name,
+                                     commit.author.email))
+    signoff_req_msg = ('The commit message must contain a Signed-off-by line '
+                       'that matches the commit author name and email, '
+                       'indicating agreement to the Contributor License '
+                       'Agreement. See CONTRIBUTING.md for more details. '
+                       'You can use "git commit -s" to ask git to add this '
+                       'line for you.')
+
+    if not signoff_lines:
+        error('Commit has no Signed-off-by line. ' + signoff_req_msg)
+        success = False
+    elif expected_signoff_line not in signoff_lines:
+        error(('Commit has one or more Signed-off-by lines, but not the one '
+               'we expect. We expected to find "{}". '
+               .format(expected_signoff_line)) +
+              signoff_req_msg)
         success = False
 
     return success
