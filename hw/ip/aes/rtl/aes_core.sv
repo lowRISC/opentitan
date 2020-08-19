@@ -292,8 +292,11 @@ module aes_core import aes_pkg::*;
 
     .in_valid_i       ( cipher_in_valid            ),
     .in_ready_o       ( cipher_in_ready            ),
+
     .out_valid_o      ( cipher_out_valid           ),
     .out_ready_i      ( cipher_out_ready           ),
+
+    .cfg_valid_i      ( ~ctrl_err_storage_o        ),
     .op_i             ( cipher_op                  ),
     .key_len_i        ( key_len_q                  ),
     .crypt_i          ( cipher_crypt               ),
@@ -548,7 +551,7 @@ module aes_core import aes_pkg::*;
       IV_CLEAR
       })
   `ASSERT_KNOWN(AesDataInPrevSelKnown, data_in_prev_sel)
-  `ASSERT(AesModeValid, aes_mode_q inside {
+  `ASSERT(AesModeValid, !ctrl_err_storage_o |-> aes_mode_q inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,

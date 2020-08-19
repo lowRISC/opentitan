@@ -16,6 +16,7 @@ module aes_key_expand import aes_pkg::*;
 ) (
   input  logic              clk_i,
   input  logic              rst_ni,
+  input  logic              cfg_valid_i,
   input  ciph_op_e          op_i,
   input  logic              step_i,
   input  logic              clear_i,
@@ -45,6 +46,11 @@ module aes_key_expand import aes_pkg::*;
   logic      [31:0] irregular [NumShares];
   logic [7:0][31:0] regular [NumShares];
 
+  // cfg_valid_i is used for gating assertions only.
+  logic             unused_cfg_valid;
+  assign unused_cfg_valid = cfg_valid_i;
+
+  // Get a shorter reference.
   assign rnd = round_i;
 
   // For AES-192, there are four different types of rounds.
@@ -376,7 +382,7 @@ module aes_key_expand import aes_pkg::*;
 
   // Selectors must be known/valid
   `ASSERT_KNOWN(AesCiphOpKnown, op_i)
-  `ASSERT(AesKeyLenValid, key_len_i inside {
+  `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,
       AES_256

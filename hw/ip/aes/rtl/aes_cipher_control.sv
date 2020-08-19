@@ -21,6 +21,7 @@ module aes_cipher_control (
   input  logic                    out_ready_i,
 
   // Control and sync signals
+  input  logic                    cfg_valid_i,
   input  aes_pkg::ciph_op_e       op_i,
   input  aes_pkg::key_len_e       key_len_i,
   input  logic                    crypt_i,
@@ -67,6 +68,10 @@ module aes_cipher_control (
   logic       dec_key_gen_d, dec_key_gen_q;
   logic       key_clear_d, key_clear_q;
   logic       data_out_clear_d, data_out_clear_q;
+
+  // cfg_valid_i is used for gating assertions only.
+  logic       unused_cfg_valid;
+  assign unused_cfg_valid = cfg_valid_i;
 
   // FSM
   always_comb begin : aes_cipher_ctrl_fsm
@@ -310,7 +315,7 @@ module aes_cipher_control (
 
   // Selectors must be known/valid
   `ASSERT_KNOWN(AesCiphOpKnown, op_i)
-  `ASSERT(AesKeyLenValid, key_len_i inside {
+  `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,
       AES_256
