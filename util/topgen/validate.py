@@ -236,7 +236,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
             log.error("{} is not a valid src for {}".format(src['src'], src['name']))
 
     # all defined clock/reset nets
-    reset_nets = [reset['name'] for reset in top['resets']]
+    reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = [clock['name'] for clock in top['clocks']['srcs'] +
                   top['clocks']['derived_srcs']]
 

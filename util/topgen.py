@@ -657,18 +657,18 @@ def generate_rstmgr(topcfg, out_path):
     leaf_rsts = OrderedDict()
 
     # unique clocks
-    for rst in topcfg["resets"]:
+    for rst in topcfg["resets"]["nodes"]:
         if rst['type'] != "ext" and rst['clk'] not in clks:
             clks.append(rst['clk'])
 
     # resets sent to reset struct
-    output_rsts = [rst for rst in topcfg["resets"] if rst['type'] == "top"]
+    output_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"]
 
     # sw controlled resets
-    sw_rsts = [rst for rst in topcfg["resets"] if 'sw' in rst and rst['sw'] == 1]
+    sw_rsts = [rst for rst in topcfg["resets"]["nodes"] if 'sw' in rst and rst['sw'] == 1]
 
     # leaf resets
-    leaf_rsts = [rst for rst in topcfg["resets"] if rst['gen'] == 1]
+    leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
 
     log.info("output resets {}".format(output_rsts))
     log.info("software resets {}".format(sw_rsts))

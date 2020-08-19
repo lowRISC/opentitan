@@ -518,20 +518,19 @@ def amend_resets(top):
     """Add a path variable to reset declaration
     """
     reset_paths = OrderedDict()
+    reset_hiers = top["resets"]['hier_paths']
 
-    for reset in top["resets"]:
+    for reset in top["resets"]["nodes"]:
 
         if "type" not in reset:
             log.error("{} missing type field".format(reset["name"]))
             return
 
         if reset["type"] == "top":
-            # The resets structure will be used once rstmgr is integrated
-            # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
-            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(
-                reset["name"])
+            reset_paths[reset["name"]] = "{}rst_{}_n".format(
+                reset_hiers["top"], reset["name"])
         elif reset["type"] == "ext":
-            reset_paths[reset["name"]] = "rst_ni"
+            reset_paths[reset["name"]] = "{}rst_ni".format(reset_hiers["ext"])
         elif reset["type"] == "int":
             log.info("{} used as internal reset".format(reset["name"]))
         else:
