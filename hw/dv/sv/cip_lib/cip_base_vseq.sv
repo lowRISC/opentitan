@@ -503,7 +503,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                      non_shadowed_csrs[0: $urandom_range(0, non_shadowed_csrs.size()-1)]};
         test_csrs.shuffle();
 
-        if ($urandom_range(1, 10) == 10) apply_reset("HARD");
+        if ($urandom_range(1, 10) == 10) dut_init("HARD");
 
         foreach (test_csrs[i]) begin
           // check if parent block or register is excluded from write
