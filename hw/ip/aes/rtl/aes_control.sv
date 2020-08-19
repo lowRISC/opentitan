@@ -624,7 +624,7 @@ module aes_control
   assign prng_reseed_o    = 1'b0;
 
   // Selectors must be known/valid
-  `ASSERT(AesModeValid, mode_i inside {
+  `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,

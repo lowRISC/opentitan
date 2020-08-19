@@ -112,6 +112,7 @@ module aes_cipher_core import aes_pkg::*;
   input  logic                 out_ready_i,
 
   // Control and sync signals
+  input  logic                 cfg_valid_i, // Used for gating assertions only.
   input  ciph_op_e             op_i,
   input  key_len_e             key_len_i,
   input  logic                 crypt_i,
@@ -293,15 +294,16 @@ module aes_cipher_core import aes_pkg::*;
     .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
   ) u_aes_key_expand (
-    .clk_i     ( clk_i            ),
-    .rst_ni    ( rst_ni           ),
-    .op_i      ( key_expand_op    ),
-    .step_i    ( key_expand_step  ),
-    .clear_i   ( key_expand_clear ),
-    .round_i   ( key_expand_round ),
-    .key_len_i ( key_len_i        ),
-    .key_i     ( key_full_q       ),
-    .key_o     ( key_expand_out   )
+    .clk_i       ( clk_i            ),
+    .rst_ni      ( rst_ni           ),
+    .cfg_valid_i ( cfg_valid_i      ),
+    .op_i        ( key_expand_op    ),
+    .step_i      ( key_expand_step  ),
+    .clear_i     ( key_expand_clear ),
+    .round_i     ( key_expand_round ),
+    .key_len_i   ( key_len_i        ),
+    .key_i       ( key_full_q       ),
+    .key_o       ( key_expand_out   )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
@@ -344,8 +346,11 @@ module aes_cipher_core import aes_pkg::*;
 
     .in_valid_i             ( in_valid_i           ),
     .in_ready_o             ( in_ready_o           ),
+
     .out_valid_o            ( out_valid_o          ),
     .out_ready_i            ( out_ready_i          ),
+
+    .cfg_valid_i            ( cfg_valid_i          ),
     .op_i                   ( op_i                 ),
     .key_len_i              ( key_len_i            ),
     .crypt_i                ( crypt_i              ),
@@ -360,6 +365,7 @@ module aes_cipher_core import aes_pkg::*;
     .state_sel_o            ( state_sel            ),
     .state_we_o             ( state_we             ),
     .add_rk_sel_o           ( add_round_key_in_sel ),
+
     .key_expand_op_o        ( key_expand_op        ),
     .key_full_sel_o         ( key_full_sel         ),
     .key_full_we_o          ( key_full_we          ),
