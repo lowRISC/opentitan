@@ -141,9 +141,20 @@ Its primary functions are two fold
 Importantly, the flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as parity and ECC.
 Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls as well as error handling.
 
-There are two hardware connections between the flash controller and the rest of the design.
-*  The first is to life cycle, in which the flash content plays a part.
-*  The second is to key manager, whose seed material may be partially sourced from flash.
+The flash controller selects requests between the software and hardware interfaces.
+By default, the hardware interfaces have precendence and are used to read out seed materials from flash.
+The seed material is read twice to confirm the values are consistent.
+They are then forwarded to the key manager for processing.
+During this seed phase, software initiated activities are back-pressured until the seed reading is complete.
+It is recommended that instead of blindly issuing transactions to the flash controller, the software polls {{< regref "STATUS.INIT_WIP" >}} until it is 0.
+
+Once the seed phase is complete, the flash controller switches to the software interface.
+Software can then read / program / erase the flash as needed.
+
+When an RMA entry request is received from the life cycle manager, the flash controller waits for any pending flash transaction to complete, then switches priority to the hardware interface.
+The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
+Unlike the seed phase, after the RMA phase, the flash controller does not grant control back to software as the system is expected to reboot after an RMA attempt.
+
 
 ### Flash Physical Controller
 
