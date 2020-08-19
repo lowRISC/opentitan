@@ -139,9 +139,9 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_${rst['name']} (
     .clk_i(clk_${rst['clk']}_i),
   % if "domain" in rst:
-    .rst_ni(rst_${rst['root']}_n[${rst['domain']}]),
+    .rst_ni(rst_${rst['parent']}_n[${rst['domain']}]),
   % else:
-    .rst_ni(rst_${rst['root']}_n),
+    .rst_ni(rst_${rst['parent']}_n),
   % endif
   % if "sw" in rst:
     .d_i(reg2hw.rst_${rst['name']}_n.q),
