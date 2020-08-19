@@ -8,11 +8,10 @@ At the moment, it serves 2 functions:
 ## Bootstrap Overview
 The boot ROM bootstrap function differs between Verilator, DV and FPGA.
 
-In DV, since the embedded flash code is always backdoor loaded, there is no requirement to load code.
-As long as the embedded flash is not empty, boot ROM proceeds and attempts to execute.
-
-In Verilator, embedded flash code can be backdoor loaded, thus code load is not required.
-However, Verilator does support the bootstrap function and can be used similarly to the FPGA in loading code.
+In DV and in Verilator, embedded flash code can be backdoor loaded.
+So, for most of the tests, the run times can be sped up by bypassing the code load.
+However, both do support the bootstrap function and can be used similarly to the FPGA in loading code.
+In DV, a subset of tests will indeed exercise the the bootstrap code paths since it is a system level usecase.
 
 In FPGA, bootstrap is required and requested by an external host via GPIO (IO_DPS7 in the NexysVideo FPGA, which is tied to GPIO17 in the design).
 If bootstrap is true (the connected pin is driven to 1), the boot ROM initializes the SPI interface and flash controller.
