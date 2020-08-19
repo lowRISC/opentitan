@@ -374,7 +374,8 @@ jobs:
   displayName: Run OTBN Smoke Test
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
-  pool: Default
+  pool:
+    vmImage: ubuntu-16.04
   timeoutInMinutes: 5
   steps:
   - template: ci/install-package-dependencies.yml
@@ -386,33 +387,12 @@ jobs:
         --update
     displayName: Install toolchain
   - bash: |
-      set -e
-      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
-        echo "Building verilator (no cached build found)"
-
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz \
-          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
-        tar -xf verilator.tgz
-
-        cd "verilator-$(VERILATOR_VERSION)"
-        ./configure --prefix="$(VERILATOR_PATH)"
-        make -j$(nproc)
-        mkdir -p "$VERILATOR_PATH"
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-    displayName: Build and install Verilator
-  - bash: |
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
     displayName: Display environment
   - bash: |
-      export PATH="/opt/buildcache/riscv/bin:$VERILATOR_PATH/bin:$PATH"
+      export PATH="/opt/buildcache/riscv/bin:$PATH"
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
 
