@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import subprocess
 import sys
 
 from git import Repo
@@ -15,7 +14,7 @@ warning_msg_prefix = 'WARNING: '
 # Maximum length of the summary line in the commit message (the first line)
 # There is no hard limit, but a typical convention is to keep this line at or
 # below 50 characters, with occasional outliers.
-COMMIT_MSG_MAX_SUMMARAY_LEN = 100
+COMMIT_MSG_MAX_SUMMARY_LEN = 100
 
 
 def error(msg, commit=None):
@@ -38,7 +37,7 @@ def lint_commit_author(commit):
         error(
             'Commit author has no valid email address set: %s. '
             'Use "git config user.email user@example.com" to '
-            'set a valid email address, and update the commit '
+            'set a valid email address, then update the commit '
             'with "git rebase -i" and/or '
             '"git commit --amend --reset-author". '
             'Also check your GitHub settings at '
@@ -47,9 +46,9 @@ def lint_commit_author(commit):
             'private" must be disabled.' % (commit.author.email, ), commit)
         success = False
 
-    if not ' ' in commit.author.name:
+    if ' ' not in commit.author.name:
         warning(
-            'The commit author name "%s" does contain no space. '
+            'The commit author name "%s" contains no space. '
             'Use "git config user.name \'Johnny English\'" to '
             'set your real name, and update the commit with "git rebase -i " '
             'and/or "git commit --amend --reset-author".' %
@@ -65,11 +64,11 @@ def lint_commit_message(commit):
 
     # Check length of summary line.
     summary_line_len = len(lines[0])
-    if summary_line_len > COMMIT_MSG_MAX_SUMMARAY_LEN:
+    if summary_line_len > COMMIT_MSG_MAX_SUMMARY_LEN:
         error(
-            "The summary line in the commit message %d characters long, "
+            "The summary line in the commit message is %d characters long; "
             "only %d characters are allowed." %
-            (summary_line_len, COMMIT_MSG_MAX_SUMMARAY_LEN), commit)
+            (summary_line_len, COMMIT_MSG_MAX_SUMMARY_LEN), commit)
         success = False
 
     # Check for an empty line separating the summary line from the long
@@ -110,7 +109,7 @@ def main():
     global warning_msg_prefix
 
     parser = argparse.ArgumentParser(
-        description='Check commit meta data for common mistakes')
+        description='Check commit metadata for common mistakes')
     parser.add_argument('--error-msg-prefix',
                         default=error_msg_prefix,
                         required=False,
@@ -125,7 +124,8 @@ def main():
                         help='do not check commits with more than one parent')
     parser.add_argument('commit_range',
                         metavar='commit-range',
-                        help='git log-compatible commit range to check')
+                        help=('commit range to check '
+                              '(must be understood by git log)'))
     args = parser.parse_args()
 
     error_msg_prefix = args.error_msg_prefix
