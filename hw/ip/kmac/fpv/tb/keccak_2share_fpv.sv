@@ -10,6 +10,8 @@ module keccak_2share_fpv #(
   input                    clk_i,
   input                    rst_ni,
   input                    valid_i,
+  input                    rand_valid_i,
+  input        [Width-1:0] rand_i,
   input        [Width-1:0] state_i,
   output logic             done_o,
   output logic [Width-1:0] state_o
@@ -38,7 +40,6 @@ module keccak_2share_fpv #(
 
   logic inc_round;
   logic update_state;
-  logic [Width-1:0] rand_v;
   logic sel_mux;
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
@@ -47,10 +48,6 @@ module keccak_2share_fpv #(
     end else begin
       keccak_st <= keccak_st_d;
     end
-  end
-
-  always_ff @(posedge clk_i) begin
-    rand_v <= $urandom();
   end
 
   always_comb begin
@@ -76,8 +73,12 @@ module keccak_2share_fpv #(
         sel_mux = 1'b0;
       end
       StPhase2: begin
-        keccak_st_d = StPhase3;
         sel_mux = 1'b1;
+        if (rand_valid_i) begin
+          keccak_st_d = StPhase3;
+        end else begin
+          keccak_st_d = StPhase2;
+        end
       end
       StPhase3: begin
         sel_mux = 1'b1;
@@ -98,8 +99,8 @@ module keccak_2share_fpv #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)            state <= '{default:'0};
     else if (valid_i) begin
-      state[0] <= state_i ^ rand_v;
-      state[1] <= rand_v;
+      state[0] <= state_i ^ rand_i;
+      state[1] <= rand_i;
     end else if (update_state) begin
       state <= state_d;
     end
@@ -127,11 +128,12 @@ module keccak_2share_fpv #(
     .clk_i,
     .rst_ni,
 
-    .rnd_i (round),
-    .rand_i (rand_v),
-    .sel_i  (sel_mux),
-    .s_i    (keccak_in),
-    .s_o    (keccak_out)
+    .rnd_i        (round),
+    .rand_valid_i (rand_valid_i),
+    .rand_i       (rand_i),
+    .sel_i        (sel_mux),
+    .s_i          (keccak_in),
+    .s_o          (keccak_out)
   );
 
   // Compare with keccak Unmasking
@@ -175,9 +177,9 @@ module keccak_2share_fpv #(
   logic [255:0] digest_0;
   // Big-Endian a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
   assign digest_0 = 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7;
+  `ASSUME_FPV(FixedRandomValue_A, rand_i == '1)
   `ASSUME_FPV(Data0TestSHA3_256_A, state_i == data_0)
   `ASSERT(DigestForData0TestSHA3_256_A, done_o |-> state_o[255:0] == digest_0)
-  //`ASSERT(GoldenDigestForData0TestSHA3_256_A, done_o |-> golden_state[255:0] == digest_0)
 
   // After a round is completed or at the beginning, golden value and keccak 2share shall be same
   `ASSERT(MaskedSameToUnmasked_A, keccak_st inside {StIdle, StPhase1} |-> compare_states == '0)

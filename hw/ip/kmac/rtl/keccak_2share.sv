@@ -12,8 +12,8 @@ module keccak_2share #(
   // Derived
   localparam int W        = Width/25,
   localparam int L        = $clog2(W),
-  localparam int MaxRound = 12 + 2*L,         // Keccak-f only
-  localparam int RndW     = $clog2(MaxRound), // Representing up to MaxRound-1
+  localparam int MaxRound = 12 + 2*L,           // Keccak-f only
+  localparam int RndW     = $clog2(MaxRound+1), // Representing up to MaxRound
 
   // Control parameters
   parameter  int EnMasking = 0,                // Enable secure hardening
@@ -23,6 +23,7 @@ module keccak_2share #(
   input rst_ni,
 
   input        [RndW-1:0]  rnd_i,   // Current Round
+  input                    rand_valid_i,
   input        [Width-1:0] rand_i,  // Random values. Used when 2Share enabled
   input                    sel_i,   // Select input/output mux. Used when EnMasking := 1
   input        [Width-1:0] s_i      [Share],
@@ -166,14 +167,15 @@ module keccak_2share #(
         .clk_i,
         .rst_ni,
 
-        .a0_i (a0),
-        .a1_i (a1),
-        .b0_i (b0),
-        .b1_i (b1),
-        .c0_i (c0),
-        .c1_i (c1),
-        .q0_o (q0),
-        .q1_o (q1)
+        .a0_i      (a0),
+        .a1_i      (a1),
+        .b0_i      (b0),
+        .b1_i      (b1),
+        .c_valid_i (rand_valid_i),
+        .c0_i      (c0),
+        .c1_i      (c1),
+        .q0_o      (q0),
+        .q1_o      (q1)
       );
 
       // Convert q0, q1 to sheet_t
