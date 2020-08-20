@@ -24,8 +24,8 @@
 
 wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
-wire clk_io;
-clk_rst_if clk_rst_if_io(.clk(clk_io), .rst_n(rst_n));
+wire clk_io_div4;
+clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
 tl_if corei_tl_if(clk_main, rst_n);
 tl_if cored_tl_if(clk_main, rst_n);
@@ -44,17 +44,17 @@ tl_if padctrl_tl_if(clk_main, rst_n);
 tl_if alert_handler_tl_if(clk_main, rst_n);
 tl_if nmi_gen_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
-tl_if uart_tl_if(clk_io, rst_n);
-tl_if gpio_tl_if(clk_io, rst_n);
-tl_if spi_device_tl_if(clk_io, rst_n);
-tl_if rv_timer_tl_if(clk_io, rst_n);
-tl_if usbdev_tl_if(clk_io, rst_n);
-tl_if pwrmgr_tl_if(clk_io, rst_n);
-tl_if rstmgr_tl_if(clk_io, rst_n);
-tl_if clkmgr_tl_if(clk_io, rst_n);
-tl_if ram_ret_tl_if(clk_io, rst_n);
-tl_if sensor_ctrl_tl_if(clk_io, rst_n);
-tl_if ast_wrapper_tl_if(clk_io, rst_n);
+tl_if uart_tl_if(clk_io_div4, rst_n);
+tl_if gpio_tl_if(clk_io_div4, rst_n);
+tl_if spi_device_tl_if(clk_io_div4, rst_n);
+tl_if rv_timer_tl_if(clk_io_div4, rst_n);
+tl_if usbdev_tl_if(clk_io_div4, rst_n);
+tl_if pwrmgr_tl_if(clk_io_div4, rst_n);
+tl_if rstmgr_tl_if(clk_io_div4, rst_n);
+tl_if clkmgr_tl_if(clk_io_div4, rst_n);
+tl_if ram_ret_tl_if(clk_io_div4, rst_n);
+tl_if sensor_ctrl_tl_if(clk_io_div4, rst_n);
+tl_if ast_wrapper_tl_if(clk_io_div4, rst_n);
 
 initial begin
   bit xbar_mode;
@@ -67,13 +67,13 @@ initial begin
 
     clk_rst_if_main.set_active(.drive_rst_n_val(0));
     clk_rst_if_main.set_freq_khz(100000000 / 1000);
-    clk_rst_if_io.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io.set_freq_khz(96000000 / 1000);
+    clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
+    clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
 
     // bypass clkmgr, force clocks directly
     force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
-    force tb.dut.top_earlgrey.u_xbar_main.clk_fixed_i = clk_io;
-    force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io;
+    force tb.dut.top_earlgrey.u_xbar_main.clk_fixed_i = clk_io_div4;
+    force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_earlgrey.u_xbar_main.rst_main_ni = rst_n;
