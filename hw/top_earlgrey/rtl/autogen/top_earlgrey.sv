@@ -838,7 +838,8 @@ module top_earlgrey #(
       .rst_main_ni (rstmgr_resets.rst_por_n),
       .rst_io_ni (rstmgr_resets.rst_por_io_n),
       .rst_usb_ni (rstmgr_resets.rst_por_usb_n),
-      .rst_io_div2_ni (rstmgr_resets.rst_por_io_div2_n)
+      .rst_io_div2_ni (rstmgr_resets.rst_por_io_div2_n),
+      .rst_io_div4_ni (rstmgr_resets.rst_por_io_div4_n)
   );
 
   nmi_gen u_nmi_gen (

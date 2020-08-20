@@ -23,6 +23,7 @@ module rstmgr import rstmgr_pkg::*; (
   input clk_io_div2_i,
   input clk_main_i,
   input clk_io_i,
+  input clk_io_div4_i,
   input clk_usb_i,
 
   // Bus Interface
@@ -168,6 +169,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
     .q_o(resets_o.rst_por_io_div2_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_por_io_div4 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_io_div4_n)
   );
 
   prim_flop_2sync #(
