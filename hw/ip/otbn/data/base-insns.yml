@@ -283,7 +283,12 @@
 - mnemonic: beq
   rv32i: true
   synopsis: Branch Equal
-  operands: [grs1, grs2, offset]
+  operands: &beq-operands
+    - grs1
+    - grs2
+    - &branch-offset-operand
+      name: offset
+      type: simm<<1
   straight-line: false
   encoding:
     scheme: B
@@ -297,7 +302,7 @@
 - mnemonic: bne
   rv32i: true
   synopsis: Branch Not Equal
-  operands: [grs1, grs2, offset]
+  operands: *beq-operands
   straight-line: false
   encoding:
     scheme: B
@@ -311,7 +316,9 @@
 - mnemonic: jal
   rv32i: true
   synopsis: Jump And Link
-  operands: [grd, offset]
+  operands:
+    - grd
+    - *branch-offset-operand
   straight-line: false
   trailing-doc: |
     The JAL instruction has the same behavior as in RV32I, jumping by the given offset and writing `PC+4` as a link address to the destination register.

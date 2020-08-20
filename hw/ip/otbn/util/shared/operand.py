@@ -40,7 +40,12 @@ class OperandType:
 
         Raises a ValueError on definite failure ("found cabbage when I expected
         a register name"). Returns None on a soft failure: "this is a
-        complicated looking expression, but it might be a sensible immediate".
+        complicated looking expression, but it might be a sensible immediate"
+        or "I don't know my width".
+
+        On success, the value returned will be non-negative (2's complement
+        encoded if a signed operand) and will fit in self.width bits. It will
+        also already have been shifted if necessary.
 
         '''
         return None
@@ -54,6 +59,10 @@ class OperandType:
 
         '''
         return str(value)
+
+    def get_shift(self) -> int:
+        '''Return shift used converting from asm representation to encoding'''
+        return 0
 
 
 class RegOperandType(OperandType):
@@ -93,12 +102,6 @@ class RegOperandType(OperandType):
                                  'register type {!r}, which expects {} bits.'
                                  .format(what, scheme_field.bits.width,
                                          reg_type, width))
-            if scheme_field.shift:
-                raise ValueError('In {}, there is an encoding scheme that '
-                                 'specifies a shift of {}, but this is a '
-                                 'register operand so shifts are not '
-                                 'allowed.'
-                                 .format(what, scheme_field.shift))
 
         return RegOperandType(reg_type, is_dest)
 
@@ -145,14 +148,26 @@ class ImmOperandType(OperandType):
     '''A class representing an immediate operand type'''
     def __init__(self,
                  width: Optional[int],
-                 signed: bool,
-                 what: str,
-                 scheme_field: Optional[EncSchemeField]) -> None:
+                 shift: int,
+                 signed: bool) -> None:
+        assert shift >= 0
 
-        # If there is an encoding scheme, check its width is compatible with
-        # the operand type. If the operand type doesn't specify a width, get
-        # one from the encoding scheme.
+        super().__init__(width)
+        self.shift = shift
+        self.signed = signed
+
+    @staticmethod
+    def make(width: Optional[int],
+             shift: int,
+             signed: bool,
+             what: str,
+             scheme_field: Optional[EncSchemeField]) -> 'ImmOperandType':
+        '''Sanity-checking smart constructor'''
+
         if scheme_field is not None:
+            # If there is an encoding scheme, check its width is compatible
+            # with the operand type. If the operand type doesn't specify a
+            # width, get one from the encoding scheme.
             if width is None:
                 width = scheme_field.bits.width
             if scheme_field.bits.width != width:
@@ -161,22 +176,35 @@ class ImmOperandType(OperandType):
                                  'but the operand claims to have width {}.'
                                  .format(what, scheme_field.bits.width, width))
 
-        super().__init__(width)
-        self.signed = signed
+        return ImmOperandType(width, shift, signed)
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
+        rng = self.get_range()
+        if rng is None:
+            return None
+
+        lo, hi = rng
+        if self.shift == 0:
+            stp_msg = ''
+        else:
+            stp_msg = ' in steps of `{}`'.format(1 << self.shift)
+
+        return 'Valid range: `{}..{}`{}'.format(lo, hi, stp_msg)
+
+    def read_index(self, as_str: str) -> Optional[int]:
+        # Give up immediately if we don't know our width
         if self.width is None:
             return None
 
-        return 'Valid range: `0..{}`'.format((1 << self.width) - 1)
-
-    def read_index(self, as_str: str) -> Optional[int]:
-        # We only support simple integer literals.
+        # Otherwise, try to parse the literal as an integer. Give up safely if
+        # we can't decipher the immediate here.
         try:
-            return int(as_str)
+            value = int(as_str)
         except ValueError:
             return None
+
+        return self.encode_val(value)
 
     def render_val(self, value: int) -> str:
         # If this immediate is signed and we have a valid width, we need to
@@ -189,13 +217,18 @@ class ImmOperandType(OperandType):
                 value -= 1 << self.width
                 assert value < 0
 
-        return str(value)
+        return str(value << self.shift)
+
+    def get_shift(self) -> int:
+        assert self.shift >= 0
+        return self.shift
 
     def get_range(self) -> Optional[Tuple[int, int]]:
         '''Return the range of values representable by this operand
 
         Returns None if the operand has no width. Subclasses might override
-        this.
+        this. Note that if self.shift is nonzero, not every value in the range
+        is necessarily representable.
 
         '''
         if self.width is None:
@@ -208,26 +241,47 @@ class ImmOperandType(OperandType):
             lo = 0
             hi = (1 << self.width) - 1
 
-        return (lo, hi)
+        return (lo << self.shift, hi << self.shift)
 
     def encode_val(self, value: int) -> int:
-        '''Encode this value as 2's complement if necessary.
+        '''Encode this value by shifting and as 2's complement if necessary.
 
         The result is always non-negative. The value should be representable by
-        this operand (width and sign).
+        this operand (width, shift and sign), otherwise this raises a ValueError.
 
         '''
         assert self.width is not None
 
+        # First, try to shift right. Check that we won't clobber any low bits.
+        shift_mask = (1 << self.shift) - 1
+        if (value & shift_mask) != 0:
+            raise ValueError('Cannot encode the value {}: the operand has a '
+                             'shift of {}, but that would clobber some bits '
+                             '(because {} & {} = {}, not zero).'
+                             .format(value, self.shift,
+                                     value, shift_mask, value & shift_mask))
+
+        shifted = value >> self.shift
+
+        rng = self.get_range()
+        assert rng is not None
+        lo, hi = rng
+
+        if not (lo <= shifted <= hi):
+            shifted_msg = (', which shifts down to {}'.format(shifted)
+                           if self.shift != 0 else '')
+            raise ValueError('Cannot encode the value {}{} as a {}-bit '
+                             '{}signed value. Possible range: {}..{}.'
+                             .format(value, shifted_msg,
+                                     self.width,
+                                     '' if self.signed else 'un',
+                                     lo, hi))
+
         if self.signed:
-            rng = self.get_range()
-            assert rng is not None
-            lo, hi = rng
-            assert lo <= value <= hi
-            encoded = (1 << self.width) + value if value < 0 else value
+            encoded = (1 << self.width) + shifted if shifted < 0 else shifted
         else:
-            assert value >= 0
-            encoded = value
+            assert shifted >= 0
+            encoded = shifted
 
         assert (encoded >> self.width) == 0
         return encoded
@@ -257,7 +311,9 @@ class EnumOperandType(ImmOperandType):
                                          len(items), min_width))
             width = scheme_field.bits.width
 
-        super().__init__(width, False, what, scheme_field)
+            # TODO  shift check  
+
+        super().__init__(width, 0, False)
         self.items = items
 
     def markdown_doc(self) -> Optional[str]:
@@ -311,7 +367,9 @@ class OptionOperandType(ImmOperandType):
             assert width <= scheme_field.bits.width
             width = scheme_field.bits.width
 
-        super().__init__(width, False, what, scheme_field)
+        # todo shift check  
+
+        super().__init__(width, 0, False)
         self.option = option
 
     def markdown_doc(self) -> Optional[str]:
@@ -358,11 +416,19 @@ def parse_operand_type(fmt: str,
 
     # Immediates
     for base, signed in [('simm', True), ('uimm', False)]:
-        if fmt == base:
-            return ImmOperandType(None, signed, what, scheme_field)
-        m = re.match(base + r'([1-9][0-9]*)$', fmt)
-        if m:
-            return ImmOperandType(int(m.group(1)), signed, what, scheme_field)
+        # The type of an immediate operand is encoded as
+        #
+        #   BASE WIDTH? (<<SHIFT)?
+        #
+        # where BASE is 'simm' or 'uimm', WIDTH is a positive integer and SHIFT
+        # is a non-negative integer. The regex below captures WIDTH as group 1
+        # and SHIFT as group 2.
+        m = re.match(base + r'([1-9][0-9]*)?(?:<<([0-9]+))?$', fmt)
+        if m is not None:
+            width = int(m.group(1)) if m.group(1) is not None else None
+            shift = int(m.group(2)) if m.group(2) is not None else 0
+            return ImmOperandType.make(width, shift, signed,
+                                       what, scheme_field)
 
     m = re.match(r'enum\(([^\)]+)\)$', fmt)
     if m:

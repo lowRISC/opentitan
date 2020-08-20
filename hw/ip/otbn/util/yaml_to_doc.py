@@ -7,7 +7,7 @@
 
 import argparse
 import sys
-from typing import List
+from typing import Dict, List
 
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
@@ -61,7 +61,9 @@ def render_operand_table(insn: Insn) -> str:
     return ''.join(parts)
 
 
-def render_encoding(mnemonic: str, encoding: Encoding) -> str:
+def render_encoding(mnemonic: str,
+                    name_to_operand: Dict[str, Operand],
+                    encoding: Encoding) -> str:
     '''Generate a table displaying an instruction encoding'''
     parts = []
     parts.append('<table style="font-size: 75%">')
@@ -98,8 +100,11 @@ def render_encoding(mnemonic: str, encoding: Encoding) -> str:
         assert isinstance(field.value, str)
         operand_name = field.value
 
+        # Figure out whether there's any shifting going on.
+        shift = name_to_operand[operand_name].op_type.get_shift()
+
         # If there is only one range (and no shifting), that's easy.
-        if len(scheme_field.bits.ranges) == 1 and scheme_field.shift == 0:
+        if len(scheme_field.bits.ranges) == 1 and shift == 0:
             msb, lsb = scheme_field.bits.ranges[0]
             by_msb[msb] = (msb - lsb + 1, operand_name)
             continue
@@ -107,7 +112,7 @@ def render_encoding(mnemonic: str, encoding: Encoding) -> str:
         # Otherwise, we have to split up the operand into things like "foo[8:5]"
         bits_seen = 0
         for msb, lsb in scheme_field.bits.ranges:
-            val_msb = scheme_field.shift + scheme_field.bits.width - 1 - bits_seen
+            val_msb = shift + scheme_field.bits.width - 1 - bits_seen
             val_lsb = val_msb - msb + lsb
             bits_seen += msb - lsb + 1
             if msb == lsb:
@@ -206,7 +211,9 @@ def render_insn(insn: Insn, heading_level: int) -> str:
 
     # Show encoding if we have one
     if insn.encoding is not None:
-        parts.append(render_encoding(insn.mnemonic, insn.encoding))
+        parts.append(render_encoding(insn.mnemonic,
+                                     insn.name_to_operand,
+                                     insn.encoding))
 
     # If this is a pseudo-op with a literal translation, show it
     if insn.literal_pseudo_op is not None:

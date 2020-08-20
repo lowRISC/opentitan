@@ -163,31 +163,20 @@ class Encoding:
             # optional operand, we might not have one, and just encode zero.
             field_val = op_to_idx.get(field.value, 0)
 
-            # Are there any low bits that shouldn't be there?
-            shift_mask = (1 << field.scheme_field.shift) - 1
-            if field_val & shift_mask:
-                raise ValueError("operand field {} has a shift of {}, "
-                                 "so can't represent the value {:#x}."
-                                 .format(field.value,
-                                         field.scheme_field.shift,
-                                         field_val))
-
-            shifted = field_val >> field.scheme_field.shift
+            # The encoding process should already have converted anything
+            # negative to a 2's complement representation.
+            assert field_val >= 0
 
             # Is the number too big? At the moment, we are assuming immediates
             # are unsigned (because the OTBN big number instructions all have
             # unsigned immediates).
-            if shifted >> field.scheme_field.bits.width:
-                shift_msg = ((' (shifted right by {} bits from {:#x})'
-                              .format(field.scheme_field.shift, field_val))
-                             if field.scheme_field.shift
-                             else '')
+            if field_val >> field.scheme_field.bits.width:
                 raise ValueError("operand field {} has a width of {}, "
-                                 "so can't represent the value {:#x}{}."
+                                 "so can't represent the value {:#x}."
                                  .format(field.value,
                                          field.scheme_field.bits.width,
-                                         shifted, shift_msg))
+                                         field_val))
 
-            val |= field.scheme_field.bits.encode(shifted)
+            val |= field.scheme_field.bits.encode(field_val)
 
         return val

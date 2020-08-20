@@ -16,23 +16,18 @@ class EncSchemeField:
     '''Represents a single field in an encoding scheme'''
     def __init__(self,
                  bits: BitRanges,
-                 value: Optional[BoolLiteral],
-                 shift: int) -> None:
+                 value: Optional[BoolLiteral]) -> None:
         self.bits = bits
         self.value = value
-        self.shift = shift
 
     @staticmethod
     def from_yaml(yml: object, what: str) -> 'EncSchemeField':
         # This is either represented as a dict in the YAML or as a bare string.
         bits_what = 'bits for {}'.format(what)
         value_what = 'value for {}'.format(what)
-        shift_what = 'shift for {}'.format(what)
-
-        shift = 0
 
         if isinstance(yml, dict):
-            yd = check_keys(yml, what, ['bits'], ['value', 'shift'])
+            yd = check_keys(yml, what, ['bits'], ['value'])
 
             bits_yml = yd['bits']
             if not (isinstance(bits_yml, str) or isinstance(bits_yml, int)):
@@ -54,27 +49,6 @@ class EncSchemeField:
                                              type(val_yml).__name__))
                 raw_value = val_yml
 
-            # shift, on the other hand, is written in base 10. Allow an
-            # integer.
-            shift_yml = yd.get('shift')
-            if shift_yml is None:
-                pass
-            elif isinstance(shift_yml, str):
-                if not re.match(r'[0-9]+$', shift_yml):
-                    raise ValueError('{} is {!r} but should be a '
-                                     'non-negative integer.'
-                                     .format(shift_what, shift_yml))
-                shift = int(shift_yml)
-            elif isinstance(shift_yml, int):
-                if shift_yml < 0:
-                    raise ValueError('{} is {!r} but should be a '
-                                     'non-negative integer.'
-                                     .format(shift_what, shift_yml))
-                shift = shift_yml
-            else:
-                raise ValueError("{} is of type {}, but must be a string "
-                                 "or non-negative integer."
-                                 .format(shift_what, type(shift_yml).__name__))
         elif isinstance(yml, str) or isinstance(yml, int):
             bits_yml = yml
             raw_value = None
@@ -97,7 +71,7 @@ class EncSchemeField:
                                  'a value with width {}.'
                                  .format(what, bits.width, value.width))
 
-        return EncSchemeField(bits, value, shift)
+        return EncSchemeField(bits, value)
 
 
 class EncSchemeImport:
@@ -169,9 +143,7 @@ class EncSchemeImport:
                                  .format(what, name, self.parent,
                                          literal.width, old_field.bits.width))
 
-            fields[name] = EncSchemeField(old_field.bits,
-                                          literal,
-                                          old_field.shift)
+            fields[name] = EncSchemeField(old_field.bits, literal)
 
         # Copy anything else
         op_fields = set()
