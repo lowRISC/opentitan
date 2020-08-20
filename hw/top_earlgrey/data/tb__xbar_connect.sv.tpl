@@ -16,7 +16,7 @@ for xbar in top["xbar"]:
     clk_src[clk] = src
 
 clk_freq = OrderedDict()
-for clock in top["clocks"]["srcs"]:
+for clock in top["clocks"]["srcs"] + top["clocks"]["derived_srcs"]:
   if clock["name"] in clk_src.values():
     clk_freq[clock["name"]] = clock["freq"]
 
