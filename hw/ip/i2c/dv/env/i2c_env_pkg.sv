@@ -49,24 +49,8 @@ package i2c_env_pkg;
   parameter uint I2C_FMT_FIFO_DEPTH = 32;
   parameter uint I2C_RX_FIFO_DEPTH  = 32;
 
-  // for constrains
-  parameter uint I2C_MIN_TRAN    = 30;
-  parameter uint I2C_MAX_TRAN    = 50;
-  parameter uint I2C_MIN_ADDR    = 0;
-  parameter uint I2C_MAX_ADDR    = 127;
-  parameter uint I2C_MIN_DLY     = 0;
-  parameter uint I2C_MAX_DLY     = 5;
-  parameter uint I2C_MIN_DATA    = 0;
-  parameter uint I2C_MAX_DATA    = 255;
-  parameter uint I2C_MIN_TIMING  = 1; // at least 1
-  parameter uint I2C_MAX_TIMING  = 5;
-  parameter uint I2C_TIME_RANGE  = I2C_MAX_TIMING - I2C_MIN_TIMING;
-  parameter uint I2C_MIN_TIMEOUT = 1;
-  parameter uint I2C_MAX_TIMEOUT = 4;
-  parameter uint I2C_MAX_RXILVL  = 7;
-  parameter uint I2C_MAX_FMTILVL = 3;
-  parameter uint I2C_IDLE_TIME   = 5000;
   // package sources
+  `include "i2c_seq_cfg.sv"
   `include "i2c_env_cfg.sv"
   `include "i2c_env_cov.sv"
   `include "i2c_virtual_sequencer.sv"

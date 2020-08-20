@@ -13,6 +13,7 @@ filesets:
       - lowrisc:ip:i2c
     files:
       - i2c_env_pkg.sv
+      - i2c_seq_cfg.sv: {is_include_file: true}
       - i2c_env_cfg.sv: {is_include_file: true}
       - i2c_env_cov.sv: {is_include_file: true}
       - i2c_env.sv: {is_include_file: true}
