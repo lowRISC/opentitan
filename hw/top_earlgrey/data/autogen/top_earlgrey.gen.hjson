@@ -28,7 +28,7 @@
       {
         name: io
         aon: no
-        freq: "100000000"
+        freq: "96000000"
         derived: no
         params: {}
       }
@@ -54,7 +54,14 @@
         aon: no
         div: 2
         src: io
-        freq: "50000000"
+        freq: "48000000"
+      }
+      {
+        name: io_div4
+        aon: no
+        div: 4
+        src: io
+        freq: "24000000"
       }
     ]
     groups:
@@ -195,6 +202,13 @@
         type: top
         parent: por_aon
         clk: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        parent: por_aon
+        clk: io_div4
       }
       {
         name: por_usb
@@ -1557,6 +1571,7 @@
         rst_io_ni: por_io
         rst_usb_ni: por_usb
         rst_io_div2_ni: por_io_div2
+        rst_io_div4_ni: por_io_div4
       }
       base_addr: 0x400C0000
       generated: "true"
@@ -4492,6 +4507,7 @@
     por: rstmgr_resets.rst_por_n
     por_io: rstmgr_resets.rst_por_io_n
     por_io_div2: rstmgr_resets.rst_por_io_div2_n
+    por_io_div4: rstmgr_resets.rst_por_io_div4_n
     por_usb: rstmgr_resets.rst_por_usb_n
     lc: rstmgr_resets.rst_lc_n
     sys: rstmgr_resets.rst_sys_n

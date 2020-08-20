@@ -61,7 +61,7 @@ initial begin
     clk_rst_if_main.set_active(.drive_rst_n_val(0));
     clk_rst_if_main.set_freq_khz(100000000 / 1000);
     clk_rst_if_io.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io.set_freq_khz(100000000 / 1000);
+    clk_rst_if_io.set_freq_khz(96000000 / 1000);
 
     // bypass clkmgr, force clocks directly
     force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
