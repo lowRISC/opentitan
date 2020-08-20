@@ -209,7 +209,9 @@ package csr_utils_pkg;
             csr_pre_write_sub(csr, en_shadow_wr);
             csr.update(.status(status), .path(path), .map(map), .prior(100));
             csr_post_write_sub(csr, en_shadow_wr);
-            if (check == UVM_CHECK) begin
+            // when reset occurs, all items will be dropped immediately. This may end up getting
+            // d_error = 1 from previous item on the bus. Skip checking it during reset
+            if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
             decrement_outstanding_access();
@@ -273,7 +275,7 @@ package csr_utils_pkg;
             csr_pre_write_sub(csr, en_shadow_wr);
             csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
             csr_post_write_sub(csr, en_shadow_wr);
-            if (check == UVM_CHECK) begin
+            if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
             decrement_outstanding_access();
@@ -382,7 +384,7 @@ package csr_utils_pkg;
               csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map),
                                   .prior(100));
             end
-            if (check == UVM_CHECK) begin
+            if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
             decrement_outstanding_access();
@@ -568,7 +570,7 @@ package csr_utils_pkg;
           begin
             increment_outstanding_access();
             ptr.read(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
-            if (check == UVM_CHECK) begin
+            if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
             decrement_outstanding_access();
@@ -617,7 +619,7 @@ package csr_utils_pkg;
           begin
             increment_outstanding_access();
             ptr.write(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
-            if (check == UVM_CHECK) begin
+            if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
             end
             decrement_outstanding_access();
