@@ -86,8 +86,8 @@ bool test_main(void) {
   CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerEnabled) ==
         kDifRvTimerOk);
 
+  LOG_INFO("Waiting...");
   while (!irq_fired) {
-    LOG_INFO("Waiting...");
     wait_for_interrupt();
   }
 

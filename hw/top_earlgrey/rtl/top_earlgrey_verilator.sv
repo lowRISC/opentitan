@@ -150,7 +150,7 @@ module top_earlgrey_verilator (
   // Both baud rate and frequency must match the settings used in the on-chip
   // software.
   uartdpi #(
-    .BAUD('d9_600),
+    .BAUD('d7_200),
     .FREQ('d500_000)
   ) u_uart (
     .clk_i  (clk_i),
