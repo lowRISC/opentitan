@@ -6,6 +6,7 @@
 
 from typing import Callable, Dict, List, Optional, Sequence, TypeVar
 
+import yaml
 
 T = TypeVar('T')
 
@@ -130,3 +131,22 @@ def index_list(what: str,
 def get_optional_str(data: Dict[str, object],
                      key: str, what: str) -> Optional[str]:
     return check_optional_str(data.get(key), '{} field for {}'.format(key, what))
+
+
+def load_yaml(path: str, what: Optional[str]) -> object:
+    '''Load a YAML file at path.
+
+    If there is no such file, or the file is not well-formed YAML, this raises
+    a RuntimeError. If what is not None, it will be used in the error message.
+
+    '''
+    for_msg = 'for ' + what if what is not None else ''
+    try:
+        with open(path, 'r') as handle:
+            return yaml.load(handle, Loader=yaml.SafeLoader)
+    except FileNotFoundError:
+        raise RuntimeError('Cannot find YAML file{} at {!r}.'
+                           .format(for_msg, path)) from None
+    except yaml.YAMLError as err:
+        raise RuntimeError('Failed to parse YAML file{} at {!r}: {}'
+                           .format(for_msg, path, err)) from None
