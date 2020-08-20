@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/dif/dif_gpio.h"
 
-#include "gpio_regs.h"  // Generated.
 #include "sw/device/lib/common.h"
+#include "gpio_regs.h"  // Generated.
 
 /**
  * Gives the mask that corresponds to the given bit index.

@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "rv_plic_regs.h"  // Generated.
 #include "sw/device/lib/base/mmio.h"
+#include "rv_plic_regs.h"  // Generated.
 
 // If either of these static assertions fail, then the assumptions in this DIF
 // implementation should be revisited. In particular, `plic_target_reg_offsets`
