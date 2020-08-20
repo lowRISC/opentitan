@@ -76,9 +76,14 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in div_srcs:
-  assign clk_${src['name']}_i = clk_${src['src']}_i;
+  prim_clock_div #(
+    .Divisor(${src['div']})
+  ) u_${src['name']}_div (
+    .clk_i(clk_${src['src']}_i),
+    .rst_ni(rst_${src['src']}_ni),
+    .clk_o(clk_${src['name']}_i)
+  );
 % endfor
-
 
 
   ////////////////////////////////////////////////////
@@ -103,7 +108,7 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in rg_srcs:
-  prim_clock_gating_sync i_${src}_cg (
+  prim_clock_gating_sync u_${src}_cg (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
     .test_en_i(dft_i.test_en),
@@ -128,7 +133,7 @@ module clkmgr import clkmgr_pkg::*; (
   // the signal prior to output
   prim_flop_2sync #(
     .Width(1)
-  ) i_roots_en_sync (
+  ) u_roots_en_sync (
     .clk_i,
     .rst_ni,
     .d_i(async_roots_en),
@@ -168,14 +173,14 @@ module clkmgr import clkmgr_pkg::*; (
 % for k,v in sw_clks.items():
   prim_flop_2sync #(
     .Width(1)
-  ) i_${k}_sw_en_sync (
+  ) u_${k}_sw_en_sync (
     .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
   );
 
-  prim_clock_gating i_${k}_cg (
+  prim_clock_gating u_${k}_cg (
     .clk_i(clk_${v}_i),
     .en_i(${k}_sw_en & clk_${v}_en),
     .test_en_i(dft_i.test_en),
@@ -200,14 +205,14 @@ module clkmgr import clkmgr_pkg::*; (
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_${k}_hint_sync (
+  ) u_${k}_hint_sync (
     .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
     .d_i(reg2hw.clk_hints.${k}_hint.q),
     .q_o(${k}_hint)
   );
 
-  prim_clock_gating i_${k}_cg (
+  prim_clock_gating u_${k}_cg (
     .clk_i(clk_${v}_i),
     .en_i(${k}_en & clk_${v}_en),
     .test_en_i(dft_i.test_en),
@@ -228,4 +233,4 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
 
 
-endmodule // rstmgr
+endmodule // clkmgr
