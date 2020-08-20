@@ -34,12 +34,36 @@ class Insn:
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
         what = 'instruction with mnemonic {!r}'.format(self.mnemonic)
-        self.operands = [Operand(y, self.mnemonic)
+
+        encoding_yml = yd.get('encoding')
+        self.encoding = None
+        if encoding_yml is not None:
+            if encoding_schemes is None:
+                raise ValueError('{} specifies an encoding, but the file '
+                                 'didn\'t specify any encoding schemes.'
+                                 .format(what))
+
+            self.encoding = Encoding(encoding_yml,
+                                     encoding_schemes, self.mnemonic)
+
+        self.operands = [Operand(y, self.mnemonic, self.encoding)
                          for y in check_list(yd['operands'],
                                              'operands for ' + what)]
         self.name_to_operand = index_list('operands for ' + what,
                                           self.operands,
                                           lambda op: op.name)
+
+        if self.encoding is not None:
+            # If we have an encoding, we passed it to the Operand constructors
+            # above. This ensured that each operand has a field. However, it's
+            # possible that there are some operand names the encoding mentions
+            # that don't actually have an operand. Check for that here.
+            missing_ops = (set(self.encoding.op_to_field_name.keys()) -
+                           set(self.name_to_operand.keys()))
+            if missing_ops:
+                raise ValueError('Encoding scheme for {} specifies '
+                                 'some non-existent operands: {}.'
+                                 .format(what, ', '.join(list(missing_ops))))
 
         self.rv32i = check_bool(yd.get('rv32i', False),
                                 'rv32i flag for ' + what)
@@ -73,18 +97,6 @@ class Insn:
                              .format(self.mnemonic,
                                      list(sorted(self.syntax.op_set)),
                                      list(sorted(self.name_to_operand))))
-
-        encoding_yml = yd.get('encoding')
-        self.encoding = None
-        if encoding_yml is not None:
-            if encoding_schemes is None:
-                raise ValueError('{} specifies an encoding, but the file '
-                                 'didn\'t specify any encoding schemes.'
-                                 .format(what))
-
-            self.encoding = Encoding(encoding_yml, encoding_schemes,
-                                     self.name_to_operand, self.mnemonic)
-            self._update_widths_from_encoding(self.encoding)
 
         self.python_pseudo_op = check_bool(yd.get('python-pseudo-op', False),
                                            'python-pseudo-op flag for ' + what)
@@ -127,20 +139,6 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
-
-    def _update_widths_from_encoding(self, encoding: Encoding) -> None:
-        '''Update operand widths from encoding'''
-        for field_name, field in encoding.fields.items():
-            if not isinstance(field.value, str):
-                continue
-            operand = self.name_to_operand[field.value]
-            enc_width = field.scheme_field.bits.width
-
-            if operand.op_type.width is None:
-                operand.op_type.width = enc_width
-
-            # This should have been checked in the Encoding constructor
-            assert operand.op_type.width == enc_width
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:

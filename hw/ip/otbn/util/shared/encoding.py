@@ -7,7 +7,6 @@ from typing import Dict, Tuple, Union
 
 from .bool_literal import BoolLiteral
 from .encoding_scheme import EncSchemeField, EncSchemes
-from .operand import Operand
 from .yaml_parse_helpers import check_keys, check_str
 
 
@@ -22,7 +21,6 @@ class EncodingField:
     @staticmethod
     def from_yaml(as_str: str,
                   scheme_field: EncSchemeField,
-                  name_to_operand: Dict[str, Operand],
                   what: str) -> 'EncodingField':
         # The value should either be a boolean literal ("000xx11" or similar)
         # or should be a name, which is taken as the name of an operand.
@@ -31,29 +29,20 @@ class EncodingField:
 
         # Set self.value to be either the bool literal or the name of the
         # operand.
-        value_width = None
         value = ''  # type: Union[BoolLiteral, str]
         if re.match(r'b[01x_]+$', as_str):
             value = BoolLiteral.from_string(as_str, what)
-            value_width = value.width
-            value_type = 'a literal value'
-        else:
-            operand = name_to_operand.get(as_str)
-            if operand is None:
-                raise ValueError('Unknown operand, {!r}, as {}'
-                                 .format(as_str, what))
-            value_width = operand.op_type.width
-            value = as_str
-            value_type = 'an operand'
 
-        # Unless we had an operand of type 'imm' (unknown width), we now have
-        # an expected width. Check it matches the width of the schema field.
-        if value_width is not None:
-            if scheme_field.bits.width != value_width:
-                raise ValueError('{} is mapped to {} with width {}, but the '
-                                 'encoding schema field has width {}.'
-                                 .format(what, value_type, value_width,
+            # Check that the literal operand value matches the width of the
+            # schema field.
+            if scheme_field.bits.width != value.width:
+                raise ValueError('{} is mapped to a literal value with width '
+                                 '{}, but the encoding schema field has '
+                                 'width {}.'
+                                 .format(what, value.width,
                                          scheme_field.bits.width))
+        else:
+            value = as_str
 
         # Track the scheme field as well (so we don't have to keep track of a
         # scheme once we've made an encoding object)
@@ -65,7 +54,6 @@ class Encoding:
     def __init__(self,
                  yml: object,
                  schemes: EncSchemes,
-                 name_to_operand: Dict[str, Operand],
                  mnemonic: str):
         what = 'encoding for instruction {!r}'.format(mnemonic)
         yd = check_keys(yml, what, ['scheme', 'mapping'], [])
@@ -79,35 +67,37 @@ class Encoding:
         # Check we've got exactly the right fields for the scheme
         ydm = check_keys(yd['mapping'], what, list(scheme_fields.op_fields), [])
 
-        # Track the set of operand names that were used in some field
-        operands_used = set()
+        # Build a map from operand name to the name of a field that uses it.
+        self.op_to_field_name = {}  # type: Dict[str, str]
 
         self.fields = {}
         for field_name, scheme_field in scheme_fields.fields.items():
             if scheme_field.value is not None:
                 field = EncodingField(scheme_field.value, scheme_field)
             else:
-                field_what = ('value for {} field in encoding for instruction {!r}'
+                field_what = ('value for {} field in '
+                              'encoding for instruction {!r}'
                               .format(field_name, mnemonic))
-                field = EncodingField.from_yaml(check_str(ydm[field_name], field_what),
+                ef_val = check_str(ydm[field_name], field_what)
+                field = EncodingField.from_yaml(ef_val,
                                                 scheme_fields.fields[field_name],
-                                                name_to_operand,
                                                 field_what)
 
-                # If the field's value is an operand rather than a literal, it
-                # will have type str. Track the operands that we've used.
+                # If the field's value has type str, the field uses an operand
+                # rather than a literal. Check for linearity and store the
+                # mapping.
                 if isinstance(field.value, str):
-                    operands_used.add(field.value)
+                    other_field_name = self.op_to_field_name.get(field.value)
+                    if other_field_name is not None:
+                        raise ValueError('Non-linear use of operand with name '
+                                         '{!r} in encoding for instruction '
+                                         '{!r}: used in fields {!r} and {!r}.'
+                                         .format(field.value, mnemonic,
+                                                 other_field_name,
+                                                 field_name))
+                    self.op_to_field_name[field.value] = field_name
 
             self.fields[field_name] = field
-
-        # We know that every field in the encoding scheme has a value. But we
-        # still need to check that every operand ended up in some field.
-        assert operands_used <= set(name_to_operand.keys())
-        unused_ops = set(name_to_operand.keys()) - operands_used
-        if unused_ops:
-            raise ValueError('Not all operands used in {} (missing: {}).'
-                             .format(what, ', '.join(list(unused_ops))))
 
     def get_masks(self) -> Tuple[int, int]:
         '''Return zeros/ones masks for encoding
