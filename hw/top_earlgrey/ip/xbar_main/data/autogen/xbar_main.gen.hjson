@@ -11,20 +11,20 @@
   clock_srcs:
   {
     clk_main_i: main
-    clk_fixed_i: io
+    clk_fixed_i: io_div4
   }
   clock_group: infra
   reset: rst_main_ni
   reset_connections:
   {
     rst_main_ni: sys
-    rst_fixed_ni: sys_io
+    rst_fixed_ni: sys_io_div4
   }
   clock_reset_export: []
   clock_connections:
   {
     clk_main_i: clkmgr_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_clocks.clk_io_infra
+    clk_fixed_i: clkmgr_clocks.clk_io_div4_infra
   }
   connections:
   {

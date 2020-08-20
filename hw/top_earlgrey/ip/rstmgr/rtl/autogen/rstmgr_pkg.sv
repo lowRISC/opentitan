@@ -47,8 +47,10 @@ package rstmgr_pkg;
     logic rst_por_io_div4_n;
     logic rst_por_usb_n;
     logic rst_lc_n;
+    logic rst_lc_io_n;
     logic rst_sys_n;
     logic rst_sys_io_n;
+    logic rst_sys_io_div4_n;
     logic rst_sys_aon_n;
     logic rst_spi_device_n;
     logic rst_usb_n;
@@ -62,9 +64,9 @@ package rstmgr_pkg;
 
   // exported resets
   typedef struct packed {
-    logic rst_ast_usbdev_sys_io_n;
+    logic rst_ast_usbdev_sys_io_div4_n;
     logic rst_ast_usbdev_usb_n;
-    logic rst_ast_sensor_ctrl_sys_io_n;
+    logic rst_ast_sensor_ctrl_sys_io_div4_n;
   } rstmgr_ast_out_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)

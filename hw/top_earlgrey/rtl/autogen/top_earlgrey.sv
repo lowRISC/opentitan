@@ -473,8 +473,8 @@ module top_earlgrey #(
     .SramDw(32),
     .Outstanding(2)
   ) u_tl_adapter_ram_ret (
-    .clk_i   (clkmgr_clocks.clk_io_infra),
-    .rst_ni   (rstmgr_resets.rst_sys_io_n),
+    .clk_i   (clkmgr_clocks.clk_io_div4_infra),
+    .rst_ni   (rstmgr_resets.rst_sys_io_div4_n),
     .tl_i     (ram_ret_tl_req),
     .tl_o     (ram_ret_tl_rsp),
 
@@ -497,8 +497,8 @@ module top_earlgrey #(
     // TODO: enable parity once supported by the simulation infrastructure
     .EnableParity(0)
   ) u_ram1p_ram_ret (
-    .clk_i   (clkmgr_clocks.clk_io_infra),
-    .rst_ni   (rstmgr_resets.rst_sys_io_n),
+    .clk_i   (clkmgr_clocks.clk_io_div4_infra),
+    .rst_ni   (rstmgr_resets.rst_sys_io_div4_n),
 
     .req_i    (ram_ret_req),
     .write_i  (ram_ret_we),
@@ -578,8 +578,8 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(uart_tl_req),
       .tl_o(uart_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_secure),
-      .rst_ni (rstmgr_resets.rst_sys_io_n)
+      .clk_i (clkmgr_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
   gpio u_gpio (
@@ -597,8 +597,8 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(gpio_tl_req),
       .tl_o(gpio_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_peri),
-      .rst_ni (rstmgr_resets.rst_sys_io_n)
+      .clk_i (clkmgr_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
   spi_device u_spi_device (
@@ -624,7 +624,7 @@ module top_earlgrey #(
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i   (scanmode_i),
-      .clk_i (clkmgr_clocks.clk_io_peri),
+      .clk_i (clkmgr_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n)
   );
 
@@ -656,8 +656,8 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(rv_timer_tl_req),
       .tl_o(rv_timer_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_timers),
-      .rst_ni (rstmgr_resets.rst_sys_io_n)
+      .clk_i (clkmgr_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
   aes u_aes (
@@ -735,9 +735,9 @@ module top_earlgrey #(
       .dio_oe_o,
       .dio_in_i,
       .clk_i (clkmgr_clocks.clk_main_secure),
-      .clk_aon_i (clkmgr_clocks.clk_io_secure),
+      .clk_aon_i (clkmgr_clocks.clk_aon_secure),
       .rst_ni (rstmgr_resets.rst_sys_n),
-      .rst_aon_ni (rstmgr_resets.rst_sys_io_n)
+      .rst_aon_ni (rstmgr_resets.rst_sys_aon_n)
   );
 
   padctrl u_padctrl (
@@ -799,7 +799,7 @@ module top_earlgrey #(
       .rstreqs_i('0),
       .tl_i(pwrmgr_tl_req),
       .tl_o(pwrmgr_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_powerup),
+      .clk_i (clkmgr_clocks.clk_io_div4_powerup),
       .clk_slow_i (clkmgr_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_resets.rst_por_n),
       .rst_slow_ni (rstmgr_resets.rst_por_aon_n)
@@ -817,7 +817,7 @@ module top_earlgrey #(
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_powerup),
+      .clk_i (clkmgr_clocks.clk_io_div4_powerup),
       .clk_aon_i (clkmgr_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_clocks.clk_main_powerup),
       .clk_io_i (clkmgr_clocks.clk_io_powerup),
@@ -842,7 +842,7 @@ module top_earlgrey #(
       .status_i(clkmgr_status),
       .tl_i(clkmgr_tl_req),
       .tl_o(clkmgr_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_powerup),
+      .clk_i (clkmgr_clocks.clk_io_div4_powerup),
       .rst_ni (rstmgr_resets.rst_por_io_n),
       .rst_main_ni (rstmgr_resets.rst_por_n),
       .rst_io_ni (rstmgr_resets.rst_por_io_n),
@@ -917,9 +917,9 @@ module top_earlgrey #(
       .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_peri),
+      .clk_i (clkmgr_clocks.clk_io_div4_peri),
       .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
-      .rst_ni (rstmgr_resets.rst_sys_io_n),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n),
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n)
   );
 
@@ -941,8 +941,8 @@ module top_earlgrey #(
       .ast_status_i(sensor_ctrl_ast_status_i),
       .tl_i(sensor_ctrl_tl_req),
       .tl_o(sensor_ctrl_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_secure),
-      .rst_ni (rstmgr_resets.rst_sys_io_n)
+      .clk_i (clkmgr_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
   otbn u_otbn (
@@ -1023,9 +1023,9 @@ module top_earlgrey #(
   // TL-UL Crossbar
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_clocks.clk_main_infra),
-    .clk_fixed_i (clkmgr_clocks.clk_io_infra),
+    .clk_fixed_i (clkmgr_clocks.clk_io_div4_infra),
     .rst_main_ni (rstmgr_resets.rst_sys_n),
-    .rst_fixed_ni (rstmgr_resets.rst_sys_io_n),
+    .rst_fixed_ni (rstmgr_resets.rst_sys_io_div4_n),
 
     // port: tl_corei
     .tl_corei_i(main_tl_corei_req),
@@ -1099,8 +1099,8 @@ module top_earlgrey #(
     .scanmode_i
   );
   xbar_peri u_xbar_peri (
-    .clk_peri_i (clkmgr_clocks.clk_io_infra),
-    .rst_peri_ni (rstmgr_resets.rst_sys_io_n),
+    .clk_peri_i (clkmgr_clocks.clk_io_div4_infra),
+    .rst_peri_ni (rstmgr_resets.rst_sys_io_div4_n),
 
     // port: tl_main
     .tl_main_i(main_tl_peri_req),

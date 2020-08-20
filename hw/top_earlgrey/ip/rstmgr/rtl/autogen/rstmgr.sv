@@ -196,10 +196,20 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue('0)
   ) u_lc (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_main_i),
     .rst_ni(rst_lc_src_n[0]),
     .d_i(1'b1),
     .q_o(resets_o.rst_lc_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_lc_io (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_lc_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_lc_io_n)
   );
 
   prim_flop_2sync #(
@@ -220,6 +230,16 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(rst_sys_src_n[0]),
     .d_i(1'b1),
     .q_o(resets_o.rst_sys_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sys_io_div4 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_io_div4_n)
   );
 
   prim_flop_2sync #(
@@ -285,9 +305,9 @@ module rstmgr import rstmgr_pkg::*; (
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////
-  assign resets_ast_o.rst_ast_usbdev_sys_io_n = resets_o.rst_sys_io_n;
+  assign resets_ast_o.rst_ast_usbdev_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
-  assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_n = resets_o.rst_sys_io_n;
+  assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
 
   ////////////////////////////////////////////////////
   // Assertions                                     //
