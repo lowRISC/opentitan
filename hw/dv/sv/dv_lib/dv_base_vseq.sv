@@ -88,6 +88,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (kind == "HARD") begin
       csr_utils_pkg::reset_asserted();
       cfg.clk_rst_vif.apply_reset();
+      csr_utils_pkg::clear_outstanding_access();
       csr_utils_pkg::reset_deasserted();
     end
     if (cfg.has_ral) begin
