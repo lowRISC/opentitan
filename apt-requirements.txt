@@ -32,3 +32,4 @@ srecord
 tree
 xsltproc
 zlib1g-dev
+xz-utils
