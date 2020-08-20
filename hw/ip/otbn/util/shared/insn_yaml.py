@@ -7,7 +7,7 @@
 import itertools
 import os
 import re
-from typing import Dict, List, Optional, Tuple, cast
+from typing import List, Optional, Tuple, cast
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
@@ -19,33 +19,9 @@ from .yaml_parse_helpers import (check_keys, check_str, check_bool,
                                  load_yaml)
 
 
-class InsnGroup:
-    def __init__(self, yml: object) -> None:
-        yd = check_keys(yml, 'insn-group', ['key', 'title', 'doc'], [])
-        self.key = check_str(yd['key'], 'insn-group key')
-        self.title = check_str(yd['title'], 'insn-group title')
-        self.doc = check_str(yd['doc'], 'insn-group doc')
-
-
-class InsnGroups:
-    def __init__(self, yml: object) -> None:
-        self.groups = [InsnGroup(y) for y in check_list(yml, 'insn-groups')]
-        if not self.groups:
-            raise ValueError('Empty list of instruction groups: '
-                             'we need at least one as a base group.')
-        self.key_to_group = index_list('insn-groups',
-                                       self.groups, lambda ig: ig.key)
-
-    def default_group(self) -> str:
-        '''Get the name of the default instruction group'''
-        assert self.groups
-        return self.groups[0].key
-
-
 class Insn:
     def __init__(self,
                  yml: object,
-                 groups: InsnGroups,
                  encoding_schemes: Optional[EncSchemes]) -> None:
         yd = check_keys(yml, 'instruction',
                         ['mnemonic', 'operands'],
@@ -64,14 +40,6 @@ class Insn:
         self.name_to_operand = index_list('operands for ' + what,
                                           self.operands,
                                           lambda op: op.name)
-
-        raw_group = get_optional_str(yd, 'group', what)
-        self.group = groups.default_group() if raw_group is None else raw_group
-
-        if self.group not in groups.key_to_group:
-            raise ValueError('Unknown instruction group, {!r}, '
-                             'for mnemonic {!r}.'
-                             .format(self.group, self.mnemonic))
 
         self.rv32i = check_bool(yd.get('rv32i', False),
                                 'rv32i flag for ' + what)
@@ -207,13 +175,50 @@ def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:
     return ret
 
 
+class InsnGroup:
+    def __init__(self,
+                 path: str,
+                 encoding_schemes: Optional[EncSchemes],
+                 yml: object) -> None:
+
+        yd = check_keys(yml, 'insn-group',
+                        ['key', 'title', 'doc', 'insns'], [])
+        self.key = check_str(yd['key'], 'insn-group key')
+        self.title = check_str(yd['title'], 'insn-group title')
+        self.doc = check_str(yd['doc'], 'insn-group doc')
+
+        insns_what = 'insns field for {!r} instruction group'.format(self.key)
+        insns_rel_path = check_str(yd['insns'], insns_what)
+        insns_path = os.path.normpath(os.path.join(os.path.dirname(path),
+                                                   insns_rel_path))
+        insns_yaml = load_yaml(insns_path, insns_what)
+        try:
+            self.insns = [Insn(i, encoding_schemes)
+                          for i in check_list(insns_yaml, insns_what)]
+        except ValueError as err:
+            raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
+                               .format(insns_path, err)) from None
+
+
+class InsnGroups:
+    def __init__(self,
+                 path: str,
+                 encoding_schemes: Optional[EncSchemes],
+                 yml: object) -> None:
+        self.groups = [InsnGroup(path, encoding_schemes, y)
+                       for y in check_list(yml, 'insn-groups')]
+        if not self.groups:
+            raise ValueError('Empty list of instruction groups: '
+                             'we need at least one as a base group.')
+        self.key_to_group = index_list('insn-groups',
+                                       self.groups, lambda ig: ig.key)
+
+
 class InsnsFile:
     def __init__(self, path: str, yml: object) -> None:
         yd = check_keys(yml, 'top-level',
-                        ['insn-groups', 'insns'],
+                        ['insn-groups'],
                         ['encoding-schemes'])
-
-        self.groups = InsnGroups(yd['insn-groups'])
 
         enc_scheme_path = get_optional_str(yd, 'encoding-schemes', 'top-level')
         if enc_scheme_path is None:
@@ -228,8 +233,17 @@ class InsnsFile:
                 raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
                                    .format(es_path, err)) from None
 
-        self.insns = [Insn(i, self.groups, self.encoding_schemes)
-                      for i in check_list(yd['insns'], 'insns')]
+        self.groups = InsnGroups(path,
+                                 self.encoding_schemes,
+                                 yd['insn-groups'])
+
+        # The instructions are grouped by instruction group and stored in
+        # self.groups. Most of the time, however, we just want "an OTBN
+        # instruction" and don't care about the group. Retrieve them here.
+        self.insns = []
+        for grp in self.groups.groups:
+            self.insns += grp.insns
+
         self.mnemonic_to_insn = index_list('insns', self.insns,
                                            lambda insn: insn.mnemonic.lower())
 
@@ -245,22 +259,7 @@ class InsnsFile:
 
     def grouped_insns(self) -> List[Tuple[InsnGroup, List[Insn]]]:
         '''Return the instructions in groups'''
-        grp_to_insns = {}  # type: Dict[str, List[Insn]]
-        for insn in self.insns:
-            grp_to_insns.setdefault(insn.group, []).append(insn)
-
-        ret = []
-        for grp in self.groups.groups:
-            ret.append((grp, grp_to_insns.get(grp.key, [])))
-
-        # We should have picked up all the instructions, because we checked
-        # that each instruction has a valid group in the Insn constructor. Just
-        # in case something went wrong, check that the counts match.
-        gti_count = sum(len(insns) for insns in grp_to_insns.values())
-        ret_count = sum(len(insns) for _, insns in ret)
-        assert ret_count == gti_count
-
-        return ret
+        return [(grp, grp.insns) for grp in self.groups.groups]
 
 
 def load_file(path: str) -> InsnsFile:
