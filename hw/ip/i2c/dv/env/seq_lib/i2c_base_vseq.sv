@@ -48,9 +48,16 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit                    e_timeout;  // max time target may stretch the clock
 
   // constraints
-  constraint addr_c         { addr         inside {[I2C_MIN_ADDR : I2C_MAX_ADDR]}; }
-  constraint fmtilvl_c      { fmtilvl      inside {[0 : I2C_MAX_FMTILVL]}; }
-  constraint num_trans_c    { num_trans    inside {[I2C_MIN_TRAN : I2C_MAX_TRAN]}; }
+  constraint addr_c {
+    addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
+  }
+  constraint fmtilvl_c {
+    fmtilvl inside {[0 : cfg.seq_cfg.i2c_max_fmtilvl]};
+  }
+  constraint num_trans_c {
+    num_trans inside {[cfg.seq_cfg.min_num_trans : cfg.seq_cfg.max_num_trans]};
+  }
+
   // get an array with unique write data
   constraint wr_data_c {
     solve num_wr_bytes before wr_data;
@@ -68,7 +75,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   constraint rxilvl_c {
     rxilvl dist {
       [0:4] :/ 5,
-      [5:7] :/ 1
+      [5:cfg.seq_cfg.i2c_max_rxilvl] :/ 1
     };
   }
   constraint num_wr_bytes_c {
@@ -93,27 +100,27 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
 
   constraint clear_intr_dly_c {
-    clear_intr_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+    clear_intr_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
   constraint fmt_fifo_access_dly_c {
-    fmt_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+    fmt_fifo_access_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
   constraint rx_fifo_access_dly_c {
-    rx_fifo_access_dly inside {[I2C_MIN_DLY:I2C_MAX_DLY]};
+    rx_fifo_access_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
 
   constraint t_timeout_c {
-    t_timeout inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
+    t_timeout inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
   }
 
   constraint timing_val_c {
-    thigh     inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    t_r       inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    t_f       inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    thd_sta   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    tsu_sto   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    tsu_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
-    thd_dat   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
+    thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    t_f     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    thd_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    tsu_sto inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    tsu_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    thd_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
@@ -123,12 +130,12 @@ class i2c_base_vseq extends cip_base_vseq #(
       tlow    == 2;                // negative tClockLow
       t_buf   == 2;
     } else {
-      tsu_sta   inside { [I2C_MIN_TIMING : I2C_MAX_TIMING] };
+      tsu_sta   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)
-      tlow     inside { [(t_r + tsu_dat + thd_dat + 1) :
-                         (t_r + tsu_dat + thd_dat + 1) + I2C_TIME_RANGE] };
-      t_buf    inside { [(tsu_sta - t_r + 1) :
-                         (tsu_sta - t_r + 1) + I2C_TIME_RANGE] };
+      tlow     inside {[(t_r + tsu_dat + thd_dat + 1) :
+                        (t_r + tsu_dat + thd_dat + 1) + cfg.seq_cfg.i2c_time_range]};
+      t_buf    inside {[(tsu_sta - t_r + 1) :
+                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
     }
   }
 
@@ -145,7 +152,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   endtask : device_init
 
   virtual task host_init();
-    bit [TL_DW-1: 0] intr_state;
+    bit [TL_DW-1:0] intr_state;
 
     `uvm_info(`gfn, "\ninitialize i2c host registers", UVM_DEBUG)
     ral.ctrl.enablehost.set(1'b1);
