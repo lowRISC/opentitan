@@ -114,7 +114,7 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
             if (assert_reset) begin
               `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
               cfg.clk_rst_vif.wait_clks(delay);
-              apply_reset("HARD");
+              dut_init("HARD");
             end
           join_none
 
