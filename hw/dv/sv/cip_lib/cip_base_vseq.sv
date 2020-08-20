@@ -408,7 +408,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               apply_reset("HARD");
               ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
-              csr_utils_pkg::clear_outstanding_access();
             end
           join_any
           p_sequencer.tl_sequencer_h.stop_sequences();
