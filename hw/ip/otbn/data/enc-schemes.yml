@@ -23,11 +23,8 @@
 #         ignored (to make it easier to show grouping) and 'x' means don't
 #         care.
 #
-#  shift: Optional. If specified, this is the number of bits to shift the
-#         encoded value left to get the logical value.
-#
-# For brevity, if value and shift have their default values, the bits string
-# can be used as the value for the field.
+# For brevity, if there's no literal value, the field can be represented as
+# just its bits string.
 #
 # A scheme can inherit from other schemes by listing their names in a 'parents'
 # attribute. If the child scheme needs to set the value of a parents' field to
@@ -109,9 +106,7 @@ B:
     - rv
     - funct3
   fields:
-    imm:
-      bits: 31,7,30-25,11-8
-      shift: 1
+    imm: 31,7,30-25,11-8
     rs2: 24-20
     rs1: 19-15
 
@@ -120,9 +115,7 @@ U:
   parents:
     - rv
   fields:
-    imm:
-      bits: 31-12
-      shift: 12
+    imm: 31-12
     rd: 11-7
 
 # RISC-V "J-type" encoding (like U, but different immediate layout; used for
@@ -131,9 +124,7 @@ J:
   parents:
     - rv
   fields:
-    imm:
-      bits: 31,19-12,20,30-21
-      shift: 1
+    imm: 31,19-12,20,30-21
     rd: 11-7
 
 # A partial scheme for custom instructions with opcode b00010
@@ -285,9 +276,7 @@ bnaq:
     dh: 29
     qs2: 28-27
     qs1: 26-25
-    acc:
-      bits: 14-13
-      shift: 6
+    acc: 14-13
     z: 12
 
 # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
@@ -328,9 +317,7 @@ bnxid:
     - custom0
     - funct3
   fields:
-    imm:
-      bits: 24-22,31-25
-      shift: 4
+    imm: 24-22,31-25
     spp: 21
     dpp: 20
     rs: 19-15

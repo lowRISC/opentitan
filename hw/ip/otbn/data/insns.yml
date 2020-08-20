@@ -108,11 +108,15 @@ encoding-schemes: enc-schemes.yml
 #
 #  wsr:       The name of a WSR. Syntax "wsr" (always considered a destination)
 #
-#  simm:      A signed immediate operand. Syntax "simm<n>" where n is the
-#             number of bits or just simm for an unspecified width.
+#  simm:      A signed immediate operand. The full syntax is simm12<<3 to mean
+#             a signed immediate of width 12 which must be divisible by 2**3
+#             and is encoded by shifting right by 3. If there is no shift, the
+#             syntax simm12 is the same as simm12<<0. Similarly, if there is no
+#             known width (which should be inferred from any encoding scheme),
+#             it can be written as just simm or simm<<3.
 #
-#  uimm:      An unsigned immediate operand. Syntax "uimm<n>" where n is the
-#             number of bits or just uimm for an unspecified width.
+#  uimm:      An unsigned immediate operand. Syntax as with simm, but starting
+#             with "uimm".
 #
 #  enum:      An immediate with weird syntax. The syntax is "enum(a,b,c,d)"
 #             where a..d are the different possible syntaxes that can be used.

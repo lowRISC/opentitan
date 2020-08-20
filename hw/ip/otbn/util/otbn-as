@@ -268,24 +268,28 @@ def find_rv_encoding(enc: Encoding,
 
         # Try to find a non-fixed field in rvfmt with the same bit ranges as
         # those in the encoding field.
-        match_fmt = None
-        for rv_name, (fmt, _, rv_bits) in rvfmt.op_data.items():
+        match = None
+        for rv_name, (fmt, shift, rv_bits) in rvfmt.op_data.items():
             if fmt == 'f':
                 continue
             if field.scheme_field.bits == rv_bits:
-                match_fmt = fmt
+                match = (fmt, shift)
                 break
 
         # If we didn't find a field in rvfmt for this field, we've failed.
-        if match_fmt is None:
+        if match is None:
             return None
 
+        fmt, shift = match
+
         # These "difficult" operands can only be encoded in immediate fields of
-        # the correct sign.
-        if match_fmt == 'i':
+        # the correct shift and sign.
+        if shift != op_type.shift:
+            return None
+        if fmt == 'i':
             if not op_type.signed:
                 return None
-        elif match_fmt == 'u':
+        elif fmt == 'u':
             if op_type.signed:
                 return None
         else:
@@ -622,7 +626,8 @@ class Transformer:
         assert insn.encoding is not None
 
         # Generate a mapping from operand name to an integer value. Note that
-        # read_index checks that the value fits in the operand type.
+        # read_index checks that the value fits in the operand type and
+        # converts to the value that should be encoded.
         op_to_idx = {}
         for op_name, expr in op_to_expr.items():
             op = insn.name_to_operand[op_name]

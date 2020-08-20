@@ -196,10 +196,9 @@
         - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
     - &mulqacc-acc-shift-imm
       name: acc_shift_imm
-      type: uimm2
+      type: uimm2<<6
       doc: |
-        The number of quarter-words (`WLEN/4` bits) to shift the `WLEN/2`-bit
-        multiply result before accumulating.
+        The number of bits to shift the `WLEN/2`-bit multiply result before accumulating.
   syntax: |
     [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
   glued-ops: true
@@ -227,7 +226,7 @@
     if zero_accumulator:
       ACC = 0
 
-    ACC = ACC + (mul_res << (acc_shift_imm * WLEN / 4))
+    ACC = ACC + (mul_res << acc_shift_imm)
 
     if writeback_variant == 'shiftout':
       if d_hwsel == 'L':
@@ -746,6 +745,7 @@
       doc: |
         Offset value.
         Must be WLEN-aligned.
+      type: simm<<4
     - name: grs1_inc
       type: option(++)
       doc: |
@@ -816,6 +816,7 @@
       doc: |
         Offset value.
         Must be WLEN-aligned.
+      type: simm<<4
     - name: grs1_inc
       type: option(++)
       doc: |
