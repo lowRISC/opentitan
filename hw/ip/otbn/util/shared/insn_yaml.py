@@ -5,10 +5,9 @@
 '''Support code for reading the instruction database in insns.yml'''
 
 import itertools
+import os
 import re
 from typing import Dict, List, Optional, Tuple, cast
-
-import yaml
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
@@ -16,7 +15,8 @@ from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
 from .yaml_parse_helpers import (check_keys, check_str, check_bool,
-                                 check_list, index_list, get_optional_str)
+                                 check_list, index_list, get_optional_str,
+                                 load_yaml)
 
 
 class InsnGroup:
@@ -46,7 +46,7 @@ class Insn:
     def __init__(self,
                  yml: object,
                  groups: InsnGroups,
-                 encoding_schemes: EncSchemes) -> None:
+                 encoding_schemes: Optional[EncSchemes]) -> None:
         yd = check_keys(yml, 'instruction',
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
@@ -109,6 +109,11 @@ class Insn:
         encoding_yml = yd.get('encoding')
         self.encoding = None
         if encoding_yml is not None:
+            if encoding_schemes is None:
+                raise ValueError('{} specifies an encoding, but the file '
+                                 'didn\'t specify any encoding schemes.'
+                                 .format(what))
+
             self.encoding = Encoding(encoding_yml, encoding_schemes,
                                      self.name_to_operand, self.mnemonic)
             self._update_widths_from_encoding(self.encoding)
@@ -203,13 +208,26 @@ def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:
 
 
 class InsnsFile:
-    def __init__(self, yml: object) -> None:
+    def __init__(self, path: str, yml: object) -> None:
         yd = check_keys(yml, 'top-level',
-                        ['insn-groups', 'encoding-schemes', 'insns'],
-                        [])
+                        ['insn-groups', 'insns'],
+                        ['encoding-schemes'])
 
         self.groups = InsnGroups(yd['insn-groups'])
-        self.encoding_schemes = EncSchemes(yd['encoding-schemes'])
+
+        enc_scheme_path = get_optional_str(yd, 'encoding-schemes', 'top-level')
+        if enc_scheme_path is None:
+            self.encoding_schemes = None
+        else:
+            src_dir = os.path.dirname(path)
+            es_path = os.path.normpath(os.path.join(src_dir, enc_scheme_path))
+            es_yaml = load_yaml(es_path, 'encoding schemes')
+            try:
+                self.encoding_schemes = EncSchemes(es_yaml)
+            except ValueError as err:
+                raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
+                                   .format(es_path, err)) from None
+
         self.insns = [Insn(i, self.groups, self.encoding_schemes)
                       for i in check_list(yd['insns'], 'insns')]
         self.mnemonic_to_insn = index_list('insns', self.insns,
@@ -252,14 +270,7 @@ def load_file(path: str) -> InsnsFile:
 
     '''
     try:
-        with open(path, 'r') as handle:
-            return InsnsFile(yaml.load(handle, Loader=yaml.SafeLoader))
-    except FileNotFoundError:
-        raise RuntimeError('Cannot find YAML file at {!r}.'
-                           .format(path)) from None
-    except yaml.YAMLError as err:
-        raise RuntimeError('Failed to parse YAML file at {!r}: {}'
-                           .format(path, err)) from None
+        return InsnsFile(path, load_yaml(path, None))
     except ValueError as err:
         raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
                            .format(path, err)) from None
