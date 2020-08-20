@@ -7,14 +7,15 @@
 
 import argparse
 import struct
+import sys
 
-from riscvmodel.sim import Simulator
-from riscvmodel.model import Model
-from riscvmodel.variant import RV32I
-from riscvmodel.code import read_from_binary
+from riscvmodel.sim import Simulator  # type: ignore
+from riscvmodel.model import Model  # type: ignore
+from riscvmodel.variant import RV32I  # type: ignore
+from riscvmodel.code import read_from_binary  # type: ignore
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("imem_words", type=int)
     parser.add_argument("imem_file")
@@ -37,6 +38,8 @@ def main():
     with open(args.cycles_file, "wb") as f:
         f.write(struct.pack("<L", cycles))
 
+    return 0
+
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
