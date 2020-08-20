@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:prim_dom_and_2share
       - lowrisc:prim:assert
     files:
+      - rtl/keccak_round.sv
       - rtl/keccak_2share.sv
     file_type: systemVerilogSource
 
