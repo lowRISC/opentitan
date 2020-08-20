@@ -13,11 +13,11 @@ const device_type_t kDeviceType = kDeviceSimVerilator;
 
 const uint64_t kClockFreqCpuHz = 500 * 1000;  // 500kHz
 
-const uint64_t kClockFreqPeripheralHz = 500 * 1000;  // 500kHz
+const uint64_t kClockFreqPeripheralHz = 125 * 1000;  // 125kHz
 
 const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
 
-const uint64_t kUartBaudrate = 9600;
+const uint64_t kUartBaudrate = 7200;
 
 // Defined in `hw/top_earlgrey/top_earlgrey_verilator.core`
 const uintptr_t kDeviceStopAddress = 0x10008000;
