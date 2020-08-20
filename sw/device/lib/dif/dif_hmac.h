@@ -10,9 +10,9 @@
  * @brief <a href="/hw/ip/hmac/doc/">HMAC</a> Device Interface Functions
  */
 
-#include "sw/device/lib/base/mmio.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "sw/device/lib/base/mmio.h"
 
 /**
  * HMAC interrupt configuration.

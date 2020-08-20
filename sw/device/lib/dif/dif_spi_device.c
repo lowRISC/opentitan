@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/dif/dif_spi_device.h"
 
-#include "spi_device_regs.h"  // Generated.
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "spi_device_regs.h"  // Generated.
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 

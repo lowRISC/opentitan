@@ -10,10 +10,10 @@
  * @brief <a href="/hw/ip/usbdev/doc/">USB Device</a> Device Interface Functions
  */
 
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_warn_unused_result.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_warn_unused_result.h"
 
 /**
  * Hardware constants.

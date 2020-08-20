@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/pinmux.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/common.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #include "pinmux_regs.h"  // Generated.
 
