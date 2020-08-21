@@ -159,8 +159,8 @@ module uart_reg_top (
   logic [1:0] ctrl_rxblvl_qs;
   logic [1:0] ctrl_rxblvl_wd;
   logic ctrl_rxblvl_we;
-  logic [15:0] ctrl_nco_qs;
-  logic [15:0] ctrl_nco_wd;
+  logic [19:0] ctrl_nco_qs;
+  logic [19:0] ctrl_nco_wd;
   logic ctrl_nco_we;
   logic status_txfull_qs;
   logic status_txfull_re;
@@ -960,11 +960,11 @@ module uart_reg_top (
   );
 
 
-  //   F[nco]: 31:16
+  //   F[nco]: 31:12
   prim_subreg #(
-    .DW      (16),
+    .DW      (20),
     .SWACCESS("RW"),
-    .RESVAL  (16'h0)
+    .RESVAL  (20'h0)
   ) u_ctrl_nco (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -1515,7 +1515,7 @@ module uart_reg_top (
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
   assign ctrl_nco_we = addr_hit[3] & reg_we & ~wr_err;
-  assign ctrl_nco_wd = reg_wdata[31:16];
+  assign ctrl_nco_wd = reg_wdata[31:12];
 
   assign status_txfull_re = addr_hit[4] && reg_re;
 
@@ -1610,7 +1610,7 @@ module uart_reg_top (
         reg_rdata_next[6] = ctrl_parity_en_qs;
         reg_rdata_next[7] = ctrl_parity_odd_qs;
         reg_rdata_next[9:8] = ctrl_rxblvl_qs;
-        reg_rdata_next[31:16] = ctrl_nco_qs;
+        reg_rdata_next[31:12] = ctrl_nco_qs;
       end
 
       addr_hit[4]: begin

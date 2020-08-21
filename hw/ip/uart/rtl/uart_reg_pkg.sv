@@ -124,7 +124,7 @@ package uart_reg_pkg;
       logic [1:0]  q;
     } rxblvl;
     struct packed {
-      logic [15:0] q;
+      logic [19:0] q;
     } nco;
   } uart_reg2hw_ctrl_reg_t;
 
@@ -292,10 +292,10 @@ package uart_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    uart_reg2hw_intr_state_reg_t intr_state; // [124:117]
-    uart_reg2hw_intr_enable_reg_t intr_enable; // [116:109]
-    uart_reg2hw_intr_test_reg_t intr_test; // [108:93]
-    uart_reg2hw_ctrl_reg_t ctrl; // [92:68]
+    uart_reg2hw_intr_state_reg_t intr_state; // [128:121]
+    uart_reg2hw_intr_enable_reg_t intr_enable; // [120:113]
+    uart_reg2hw_intr_test_reg_t intr_test; // [112:97]
+    uart_reg2hw_ctrl_reg_t ctrl; // [96:68]
     uart_reg2hw_status_reg_t status; // [67:56]
     uart_reg2hw_rdata_reg_t rdata; // [55:47]
     uart_reg2hw_wdata_reg_t wdata; // [46:38]

@@ -105,7 +105,7 @@
             }
           ]
         }
-        { bits: "31:16",
+        { bits: "31:12",
           name: "NCO",
           desc: "BAUD clock rate control."
         }
