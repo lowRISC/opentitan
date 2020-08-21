@@ -530,19 +530,20 @@ typedef enum top_earlgrey_alert_peripheral {
  * the same peripheral are guaranteed to be consecutive.
  */
 typedef enum top_earlgrey_alert_id {
-  kTopEarlgreyAlertIdAesCtrlErr = 0, /**< aes_ctrl_err */
-  kTopEarlgreyAlertIdHmacMsgPushShaDisabled = 1, /**< hmac_msg_push_sha_disabled */
-  kTopEarlgreyAlertIdOtbnImemUncorrectable = 2, /**< otbn_imem_uncorrectable */
-  kTopEarlgreyAlertIdOtbnDmemUncorrectable = 3, /**< otbn_dmem_uncorrectable */
-  kTopEarlgreyAlertIdOtbnRegUncorrectable = 4, /**< otbn_reg_uncorrectable */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts0 = 5, /**< sensor_ctrl_ast_alerts 0 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts1 = 6, /**< sensor_ctrl_ast_alerts 1 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts2 = 7, /**< sensor_ctrl_ast_alerts 2 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts3 = 8, /**< sensor_ctrl_ast_alerts 3 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts4 = 9, /**< sensor_ctrl_ast_alerts 4 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 10, /**< sensor_ctrl_ast_alerts 5 */
-  kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 11, /**< sensor_ctrl_ast_alerts 6 */
-  kTopEarlgreyAlertIdLast = 11, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdAesCtrlErrUpdate = 0, /**< aes_ctrl_err_update */
+  kTopEarlgreyAlertIdAesCtrlErrStorage = 1, /**< aes_ctrl_err_storage */
+  kTopEarlgreyAlertIdHmacMsgPushShaDisabled = 2, /**< hmac_msg_push_sha_disabled */
+  kTopEarlgreyAlertIdOtbnImemUncorrectable = 3, /**< otbn_imem_uncorrectable */
+  kTopEarlgreyAlertIdOtbnDmemUncorrectable = 4, /**< otbn_dmem_uncorrectable */
+  kTopEarlgreyAlertIdOtbnRegUncorrectable = 5, /**< otbn_reg_uncorrectable */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts0 = 6, /**< sensor_ctrl_ast_alerts 0 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts1 = 7, /**< sensor_ctrl_ast_alerts 1 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts2 = 8, /**< sensor_ctrl_ast_alerts 2 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts3 = 9, /**< sensor_ctrl_ast_alerts 3 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts4 = 10, /**< sensor_ctrl_ast_alerts 4 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 11, /**< sensor_ctrl_ast_alerts 5 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 12, /**< sensor_ctrl_ast_alerts 6 */
+  kTopEarlgreyAlertIdLast = 12, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -552,7 +553,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[12];
+    top_earlgrey_alert_for_peripheral[13];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 
