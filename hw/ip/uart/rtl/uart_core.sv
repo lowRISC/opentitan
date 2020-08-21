@@ -27,6 +27,8 @@ module uart_core (
 
   import uart_reg_pkg::*;
 
+  localparam int NcoWidth = $bits(reg2hw.ctrl.nco.q);
+
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
@@ -148,16 +150,14 @@ module uart_core (
 
   //              NCO 16x Baud Generator
   // output clock rate is:
-  //      Fin * (NCO/2**16)
-  // So, with a 16 bit accumulator, the output clock is
-  //      Fin * (NCO/65536)
-  logic   [16:0]     nco_sum_q; // extra bit to get the carry
+  //      Fin * (NCO/2**NcoWidth)
+  logic   [NcoWidth:0]     nco_sum_q; // extra bit to get the carry
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       nco_sum_q <= 17'h0;
     end else if (tx_enable || rx_enable) begin
-      nco_sum_q <= {1'b0,nco_sum_q[15:0]} + {1'b0,reg2hw.ctrl.nco.q};
+      nco_sum_q <= {1'b0,nco_sum_q[NcoWidth-1:0]} + {1'b0,reg2hw.ctrl.nco.q[NcoWidth-1:0]};
     end
   end
 
