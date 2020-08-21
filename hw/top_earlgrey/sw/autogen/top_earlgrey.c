@@ -104,8 +104,9 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[12] = {
-  [kTopEarlgreyAlertIdAesCtrlErr] = kTopEarlgreyAlertPeripheralAes,
+    top_earlgrey_alert_for_peripheral[13] = {
+  [kTopEarlgreyAlertIdAesCtrlErrUpdate] = kTopEarlgreyAlertPeripheralAes,
+  [kTopEarlgreyAlertIdAesCtrlErrStorage] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdHmacMsgPushShaDisabled] = kTopEarlgreyAlertPeripheralHmac,
   [kTopEarlgreyAlertIdOtbnImemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdOtbnDmemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
