@@ -79,7 +79,6 @@ class Updater {
    */
   bool Run();
 
- private:
   /**
    * Generates `frames` from `code` image.
    *
@@ -88,8 +87,10 @@ class Updater {
    *
    * @return true on success, false otherwise.
    */
-  bool GenerateFrames(const std::string &code, std::vector<Frame> *frames);
+  static bool GenerateFrames(const std::string &code,
+                             std::vector<Frame> *frames);
 
+ private:
   Options options_;
   std::unique_ptr<SpiInterface> spi_;
 };
