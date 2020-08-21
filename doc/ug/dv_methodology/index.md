@@ -257,7 +257,7 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 
 ## Assertions
 
-In DV, we follow the same assertion methodology as indicated in the [design methodology]({{< relref "./design.md#assertion-methodology" >}}).
+In DV, we follow the same assertion methodology as indicated in the [design methodology]({{< relref "../design.md#assertion-methodology" >}}).
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
 An example of this is the [TLUL Protocol Checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
 
