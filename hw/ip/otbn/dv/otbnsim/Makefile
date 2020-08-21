@@ -13,11 +13,15 @@ build-dir := $(repo-top)/build-bin/otbn/otbnsim
 $(build-dir):
 	mkdir -p $@
 
-pycode := $(wildcard *.py)
+py-scripts := otbnsim.py
+py-files   := $(wildcard *.py otbnsim/*.py)
+py-libs    := $(filter-out $(py-scripts),$(py-files))
 
-$(build-dir)/lint.stamp: $(pycode) | $(build-dir)
-	mypy --strict $(pycode)
+lint-stamps := $(foreach scr,$(py-scripts),$(build-dir)/$(scr).stamp)
+
+$(lint-stamps): $(build-dir)/%.stamp: % $(py-libs)
+	env MYPYPATH="$$MYPYPATH:../../util" mypy --strict $< $(py-libs)
 	touch $@
 
 .PHONY: lint
-lint: $(build-dir)/lint.stamp
+lint: $(lint-stamps)
