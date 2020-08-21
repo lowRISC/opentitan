@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+
 #include "uart_regs.h"  // Generated.
 
 #define UART_INTR_STATE_MASK 0xffffffffu
@@ -105,8 +106,22 @@ static dif_uart_config_result_t uart_configure(
     return kDifUartConfigBadConfig;
   }
 
-  // Calculation formula: NCO = 2^20 * baud / fclk.
-  uint64_t nco = ((uint64_t)config->baudrate << 20) / config->clk_freq_hz;
+  // Calculation formula: NCO = 16 * 2^nco_width * baud / fclk.
+
+  // Compute NCO register bit width
+  uint32_t nco_width = 0;
+
+  for (int i = 0; i < 32; i++) {
+    nco_width += (UART_CTRL_NCO_MASK >> i) & 1;
+  }
+
+  _Static_assert((UART_CTRL_NCO_MASK >> 28) == 0,
+                 "NCO bit width exceeds 28 bits.");
+
+  // NCO creates 16x of baudrate. So, in addition to the nco_width,
+  // 2^4 should be multiplied.
+  uint64_t nco =
+      ((uint64_t)config->baudrate << (nco_width + 4)) / config->clk_freq_hz;
   uint32_t nco_masked = nco & UART_CTRL_NCO_MASK;
 
   // Requested baudrate is too high for the given clock frequency.
@@ -513,8 +528,7 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
   }
 
   bitfield_field32_t field = {
-      .mask = 0x1,
-      .index = loopback ? UART_CTRL_LLPBK : UART_CTRL_SLPBK,
+      .mask = 0x1, .index = loopback ? UART_CTRL_LLPBK : UART_CTRL_SLPBK,
   };
 
   uint32_t reg = mmio_region_read32(uart->base_addr, UART_CTRL_REG_OFFSET);
