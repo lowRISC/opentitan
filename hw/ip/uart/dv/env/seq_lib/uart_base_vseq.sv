@@ -27,8 +27,8 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   constraint baud_rate_c {
     // constrain nco not over nco.get_n_bits
-    `CALC_NCO(baud_rate, p_sequencer.cfg.clk_freq_mhz) <
-        2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();
+    `CALC_NCO(baud_rate, p_sequencer.cfg.ral.ctrl.nco.get_n_bits(),
+        p_sequencer.cfg.clk_freq_mhz) < 2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();
   }
 
   constraint dly_to_access_fifo_c {

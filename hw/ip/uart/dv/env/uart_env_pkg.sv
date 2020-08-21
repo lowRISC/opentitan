@@ -64,20 +64,19 @@ package uart_env_pkg;
     endcase
   endfunction
 
-  // nco = (2 ** 20) * freq_baud / freq_core, and truncate the factional number
-  // 2 ** 20 = 1048576
-  `define CALC_NCO(baud_rate, clk_freq_mhz) \
-    (longint'(baud_rate) * 1048576) / (clk_freq_mhz * 1000_000)
+  // nco = 16*(2 ** nco_width) * freq_baud / freq_core, and truncate the factional number
+  `define CALC_NCO(baud_rate, nco_width, clk_freq_mhz) \
+    (longint'(baud_rate) * (2**(nco_width+4))) / (clk_freq_mhz * 1000_000)
 
   // calculate the nco
-  function automatic int get_nco(baud_rate_e baud_rate, int clk_freq_mhz, int max_bits);
+  function automatic int get_nco(baud_rate_e baud_rate, int clk_freq_mhz, int nco_width);
     int nco;
-    nco = `CALC_NCO(baud_rate, clk_freq_mhz);
-    if (nco >= (2 ** max_bits)) begin
+    nco = `CALC_NCO(baud_rate, nco_width, clk_freq_mhz);
+    if (nco >= (2 ** nco_width)) begin
       `uvm_fatal("uart_agent_pkg::get_nco", $sformatf(
-                 "nco (%0d) can't bigger than (2 ** 16) - 1, it's only 16 bits \
+                 "nco (%0d) can't bigger than (2 ** %0d) - 1, it's only %0d bits \
                  baud_rate = %0d, clk_freq_mhz = %0d",
-                 nco, baud_rate, clk_freq_mhz))
+                 nco, nco_width, nco_width, baud_rate, clk_freq_mhz))
     end
     return nco;
   endfunction
