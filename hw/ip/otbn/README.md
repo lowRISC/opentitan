@@ -101,8 +101,9 @@ and check the results are as expected.
 
 The default behaviour is that the OTBN block contains the RTL design.
 If you wish to run system-level testing against the Python-based
-simulator instead of the RTL, you need to pass the `OTBN_MODEL` flag.
-For example, to compile the Verilator simulation, use:
+instruction set simulator instead of the RTL (hereafter called the
+ISS), you need to pass the `OTBN_MODEL` flag. For example, to compile
+the Verilator simulation, use:
 
 ```sh
 fusesoc --cores-root=. run \
@@ -110,14 +111,30 @@ fusesoc --cores-root=. run \
   lowrisc:systems:top_earlgrey_verilator --OTBN_MODEL
 ```
 
-### Update the OTBN model (the instruction-set simulator, ISS)
+### Run the ISS on its own
+
+There are currently two versions of the ISS and they can be found in
+`dv/otbnsim`. The easiest to use is `dv/otbnsim/standalone.py`. This
+takes an OTBN binary as an ELF file (as produced by the standard
+linker script for `otbn-ld`) and can dump the resulting DMEM if given
+the `--dmem-dump` argument. To see an instruction trace, pass the
+`--verbose` flag.
+
+There is also `dv/otbnsim/otbnsim.py`. This takes flat binary files
+with the contents of IMEM and DMEM and, when finished, generates a
+cycle count and dumps DMEM contents. This is used to implement the
+model inside of simulation, but is probably not very convenient for
+command-line use otherwise.
+
+
+### Update the RISC-V part of the ISS
 
 The OTBN model is an instruction set simulator written in Python. It lives
 in the `opentitan` repository in the `util/otbnsim` directory, but builds on top
 of the `riscv-model` Python package. The code for this package can be found at
 https://github.com/wallento/riscv-python-model.
 
-To update the model to the latest recommended version run `pip`.
+To update the model to the latest recommended version, run `pip`.
 
 ```sh
 # Ensure you have the latest Python dependencies installed
