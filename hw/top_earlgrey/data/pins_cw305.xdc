@@ -3,12 +3,9 @@
 
 ## Clock Signal
 set_property -dict { PACKAGE_PIN N13 IOSTANDARD LVCMOS33 } [get_ports { IO_CLK }]
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_CLK]
 
-## Clock Domain Crossings
-create_generated_clock -name clk_50_unbuf -source [get_pin clkgen/pll/CLKIN1] [get_pin clkgen/pll/CLKOUT0]
-create_generated_clock -name clk_48_unbuf -source [get_pin clkgen/pll/CLKIN1] [get_pin clkgen/pll/CLKOUT1]
-set_clock_groups -group clk_50_unbuf -group clk_48_unbuf -asynchronous
+## Clock constraints
+## set via clocks.xdc
 
 ## LEDs
 set_property -dict { PACKAGE_PIN T2  DRIVE 8 IOSTANDARD LVCMOS33 } [get_ports { IO_GP8 }]

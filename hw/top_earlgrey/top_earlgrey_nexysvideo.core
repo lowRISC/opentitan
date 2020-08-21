@@ -15,6 +15,7 @@ filesets:
 
   files_constraints:
     files:
+      - data/clocks.xdc
       - data/pins_nexysvideo.xdc
       - data/placement.xdc
     file_type: xdc
