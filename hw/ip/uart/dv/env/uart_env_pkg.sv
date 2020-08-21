@@ -75,9 +75,9 @@ package uart_env_pkg;
     nco = `CALC_NCO(baud_rate, clk_freq_mhz);
     if (nco >= (2 ** max_bits)) begin
       `uvm_fatal("uart_agent_pkg::get_nco", $sformatf(
-                 "nco (%0d) can't bigger than (2 ** 16) - 1, it's only 16 bits \
+                 "nco (%0d) can't bigger than (2 ** (%0d)) - 1, it's only %0d bits \
                  baud_rate = %0d, clk_freq_mhz = %0d",
-                 nco, baud_rate, clk_freq_mhz))
+                 nco, max_bits, max_bits, baud_rate, clk_freq_mhz))
     end
     return nco;
   endfunction
