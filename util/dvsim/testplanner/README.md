@@ -171,7 +171,7 @@ a starting point.
 In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document.
-The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
+The [UART testplan in HJson](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
 imports the shared testplans located at `hw/dv/tools/testplans` area.
 
 ### Limitations
@@ -188,23 +188,26 @@ The following limitations currently hold:
 
 Generate the testplan table in HTML to stdout:
 ```console
-$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson
+$ util/dvsim/testplanner.py util/dvsim/testplanner/examples/foo_testplan.hjson
 ```
 
 Generate the testplan table in HTML to a file:
 ```console
-$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson -o /tmp/foo_testplan_table.html
+$ util/dvsim/testplanner.py util/dvsim/testplanner/examples/foo_testplan.hjson \
+    -o /tmp/foo_testplan_table.html
 ```
 
 Generate regression results table in HTML to stdout:
 ```console
-$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson -r testplanner/examples/foo_regr_results.hjson
+$ util/dvsim/testplanner.py util/dvsim/testplanner/examples/foo_testplan.hjson \
+    -r util/dvsim/testplanner/examples/foo_regr_results.hjson
 ```
 
 Generate regression results table in HTML to a file:
 ```console
-$ util/dvsim/testplanner.py testplanner/examples/foo_testplan.hjson \
-    -r testplanner/examples/foo_regr_results.hjson -o /tmp/foo_regr_results.html
+$ util/dvsim/testplanner.py util/dvsim/testplanner/examples/foo_testplan.hjson \
+    -r util/dvsim/testplanner/examples/foo_regr_results.hjson \
+    -o /tmp/foo_regr_results.html
 ```
 
 ### APIs for external tools
@@ -216,7 +219,8 @@ plan document. This is done by invoking:
 $ ./util/build_docs.py
 ```
 The output for each testplan will be saved into `build/docs-generated`.
-For example the path to the GPIO IP testplan is `build/docs-generated/hw/ip/gpio/data/gpio_testplan.hjson.testplan`.
+For example the path to the GPIO IP testplan is
+`build/docs-generated/hw/ip/gpio/data/gpio_testplan.hjson.testplan`.
 
 See following snippet of code for the APIs in use:
 ```python
@@ -232,5 +236,3 @@ from testplanner import class_defs, testplan_utils
 * Allow DUT and imported testplans have the same name for the planned test as
   long as they are in separate files
   * If the same name exists, then append the list of tests together
-* Split the regression results table generation into a separate `dashboard_gen`
-  script which will also cater to generating results table for `lint` and `fpv`
