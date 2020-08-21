@@ -10,7 +10,7 @@
 
 /**
  * When the linker finds a definition of this symbol, it knows to skip loading
- * the object which contains the profiling runtime’s static initializer. See
+ * the object which contains the profiling runtime's static initializer. See
  * https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#using-the-profiling-runtime-without-static-initializers
  * for more information.
  */
