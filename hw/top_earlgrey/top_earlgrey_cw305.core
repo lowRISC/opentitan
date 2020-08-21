@@ -18,6 +18,7 @@ filesets:
   files_constraints:
     files:
       - data/pins_cw305.xdc
+      - data/clocks.xdc
     file_type: xdc
 
 parameters:
