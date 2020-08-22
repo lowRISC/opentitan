@@ -58,8 +58,8 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
     // Wait until we receive at least 1 byte from the DUT (SW test).
     wait(uart_tx_data_q.size() > 0);
 
-    // Start sending uart_rx_data in over RX.
-    fork send_uart_rx_data(); join_none
+    // Start sending uart_rx_data over RX.
+    send_uart_rx_data();
 
     // Wait until we receive all bytes over TX.
     wait(uart_tx_data_q.size() == exp_uart_tx_data.size());
