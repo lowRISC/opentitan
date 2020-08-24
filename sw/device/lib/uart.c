@@ -16,7 +16,7 @@ static dif_uart_t uart0;
 void uart_init(unsigned int baud) {
   dif_uart_config_t config = {
       .baudrate = baud,
-      .clk_freq_hz = kClockFreqHz,
+      .clk_freq_hz = kClockFreqPeripheralHz,
       .parity_enable = kDifUartDisable,
       .parity = kDifUartParityEven,
   };

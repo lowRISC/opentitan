@@ -66,8 +66,8 @@ bool test_main(void) {
             &timer) == kDifRvTimerOk);
 
   dif_rv_timer_tick_params_t tick_params;
-  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqHz, kTickFreqHz,
-                                             &tick_params) ==
+  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
+                                             kTickFreqHz, &tick_params) ==
         kDifRvTimerApproximateTickParamsOk);
   CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
         kDifRvTimerOk);
