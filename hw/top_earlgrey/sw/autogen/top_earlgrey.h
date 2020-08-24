@@ -5,6 +5,22 @@
 #ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 #define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 
+/**
+ * @file
+ * @brief Top-specific Definitions
+ *
+ * This file contains preprocessor and type definitions for use within the
+ * device C/C++ codebase.
+ *
+ * These definitions are for information that depends on the top-specific chip
+ * configuration, which includes:
+ * - Device Memory Information (for Peripherals and Memory)
+ * - PLIC Interrupt ID Names and Source Mappings
+ * - Alert ID Names and Source Mappings
+ * - Pinmux Pin/Select Names
+ * - Power Manager Wakeups
+ */
+
 // Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
