@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/testing/test_status.h"
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define UART_DATASET_SIZE 128
@@ -417,7 +418,12 @@ static bool execute_test(const dif_uart_t *uart) {
     }
 
     // Wait for the next interrupt to arrive.
-    wait_for_interrupt();
+    // This check here is necessary as rx interrupts may sometimes occur ahead
+    // of tx interrupts.  When this happens, the tx handling code above is not
+    // triggerd and as a result an unexpected tx_empty interrupt is fired later.
+    if (!uart_irq_rx_watermark_fired && !uart_irq_tx_watermark_fired) {
+      wait_for_interrupt();
+    }
   }
 
   // Check data consistency.
