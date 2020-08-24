@@ -490,6 +490,51 @@ package csr_utils_pkg;
     foreach (ral_csrs[i]) csr_rd_check(.ptr(ral_csrs[i]), .compare_vs_ral(1));
   endtask
 
+  // Checks the csr value against predicted value by reading the whole CSR or individual CSR
+  // fields.
+  // This task will skip read check if the CSR field is excluded.
+  task automatic do_check_csr_or_field_rd(input uvm_reg         csr,
+                                          input bit             do_csr_field_rd_check = $urandom(),
+                                          input bit             blocking = 0,
+                                          input bit             compare = 1,
+                                          input bit             compare_vs_ral = 1,
+                                          input csr_excl_type_e csr_excl_type = CsrNoExcl,
+                                          input csr_test_type_e csr_test_type = CsrRwTest,
+                                          input csr_excl_item   csr_excl_item = null);
+    uvm_reg_data_t compare_mask;
+
+    // Check if parent block or register is excluded from read-check
+    if (csr_excl_item != null && csr_excl_item.is_excl(csr, csr_excl_type, csr_test_type)) begin
+      `uvm_info(msg_id, $sformatf("Skipping register %0s due to CsrExclWriteCheck exclusion",
+                                  csr.get_full_name()), UVM_MEDIUM)
+      return;
+    end
+
+    compare_mask = get_mask_excl_fields(csr, csr_excl_type, csr_test_type, csr_excl_item);
+
+    if (!do_csr_field_rd_check) begin
+      csr_rd_check(.ptr           (csr),
+                   .blocking      (blocking),
+                   .compare       (compare),
+                   .compare_vs_ral(compare_vs_ral),
+                   .compare_mask  (compare_mask));
+    end else begin
+      uvm_reg_field test_fields[$];
+      csr.get_fields(test_fields);
+      test_fields.shuffle();
+      foreach (test_fields[i]) begin
+        bit field_compare = 1;
+        if (csr_excl_item != null) begin
+          field_compare = !csr_excl_item.is_excl(test_fields[i], csr_excl_type, csr_test_type);
+        end
+        csr_rd_check(.ptr           (test_fields[i]),
+                     .blocking      (blocking),
+                     .compare       (field_compare && compare),
+                     .compare_vs_ral(compare_vs_ral));
+      end
+    end
+   endtask
+
   // poll a csr or csr field continuously until it reads the expected value.
   task automatic csr_spinwait(input uvm_object      ptr,
                               input uvm_reg_data_t  exp_data,
@@ -646,12 +691,14 @@ package csr_utils_pkg;
     uvm_reg_field flds[$];
     csr.get_fields(flds);
     get_mask_excl_fields = '1;
-    foreach (flds[i]) begin
-      if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
-        csr_field_t fld_params = decode_csr_or_field(flds[i]);
-        `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
-                                  flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
-        get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
+    if (m_csr_excl_item != null) begin
+      foreach (flds[i]) begin
+        if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
+          csr_field_t fld_params = decode_csr_or_field(flds[i]);
+          `uvm_info(msg_id, $sformatf("Skipping field %0s due to %0s exclusion",
+                                    flds[i].get_full_name(), csr_excl_type.name()), UVM_MEDIUM)
+          get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
+        end
       end
     end
   endfunction

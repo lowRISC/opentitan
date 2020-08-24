@@ -562,28 +562,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         // reading shadow registers after their first write will clear the phase tracker
         if ($urandom_range(0, 1)) begin
           test_csrs = {shadowed_csrs, non_shadowed_csrs};
+          test_csrs.shuffle();
           foreach (test_csrs[i]) begin
-            uvm_reg_data_t compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck,
-                                                               CsrRwTest, csr_excl);
-            // check if parent block or register is excluded from read
-            if (csr_excl.is_excl(test_csrs[i], CsrExclCheck, CsrRwTest)) begin
-              `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclCheck exclusion",
-                                        test_csrs[i].get_full_name()), UVM_MEDIUM)
-              continue;
-            end
-            // randomly decided to read a register or a field
-            if ($urandom_range(0, 1)) begin
-              csr_rd_check(.ptr(test_csrs[i]), .blocking(0), .compare(1'b1), .compare_vs_ral(1'b1),
-                           .compare_mask(compare_mask));
-            end else begin
-              uvm_reg_field test_fields[$];
-              bit compare;
-              test_csrs[i].get_fields(test_fields);
-              test_fields.shuffle();
-              compare = !csr_excl.is_excl(test_fields[0], CsrExclCheck, CsrRwTest);
-              csr_rd_check(.ptr(test_fields[0]), .blocking(0), .compare(compare),
-                           .compare_vs_ral(1'b1));
-            end
+            do_check_csr_or_field_rd(.csr(test_csrs[i]),
+                                     .blocking(0),
+                                     .compare(1),
+                                     .compare_vs_ral(1),
+                                     .csr_excl_type(CsrExclWriteCheck),
+                                     .csr_test_type(CsrRwTest),
+                                     .csr_excl_item(csr_excl));
             csr_utils_pkg::wait_if_max_outstanding_accesses_reached();
           end
           csr_utils_pkg::wait_no_outstanding_access();

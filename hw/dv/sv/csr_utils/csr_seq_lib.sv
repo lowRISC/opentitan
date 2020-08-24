@@ -219,14 +219,6 @@ class csr_rw_seq extends csr_base_seq;
 
   `uvm_object_new
 
-  rand bit do_csr_rd_check;
-  rand bit do_csr_field_rd_check;
-
-  constraint csr_or_field_rd_check_c {
-    // at least one of them should be set
-    do_csr_rd_check || do_csr_field_rd_check;
-  }
-
   virtual task body();
     foreach (test_csrs[i]) begin
       uvm_reg_data_t wdata;
@@ -243,7 +235,6 @@ class csr_rw_seq extends csr_base_seq;
       `uvm_info(`gtn, $sformatf("Verifying register read/write for %0s",
                                 test_csrs[i].get_full_name()), UVM_MEDIUM)
 
-      `DV_CHECK_FATAL(randomize(do_csr_rd_check, do_csr_field_rd_check))
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrRwTest, m_csr_excl_item);
 
@@ -254,33 +245,14 @@ class csr_rw_seq extends csr_base_seq;
       // register is getting the updated access information.
       csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
-      // check if parent block or register is excluded from read-check
-      if (m_csr_excl_item.is_excl(test_csrs[i], CsrExclWriteCheck, CsrRwTest)) begin
-        `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclWriteCheck exclusion",
-                                  test_csrs[i].get_full_name()), UVM_MEDIUM)
-        continue;
-      end
+      do_check_csr_or_field_rd(.csr(test_csrs[i]),
+                              .blocking(0),
+                              .compare(!external_checker),
+                              .compare_vs_ral(1),
+                              .csr_excl_type(CsrExclWriteCheck),
+                              .csr_test_type(CsrRwTest),
+                              .csr_excl_item(m_csr_excl_item));
 
-      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, CsrRwTest,
-                                          m_csr_excl_item);
-      if (do_csr_rd_check) begin
-        csr_rd_check(.ptr           (test_csrs[i]),
-                     .blocking      (0),
-                     .compare       (!external_checker),
-                     .compare_vs_ral(1'b1),
-                     .compare_mask  (compare_mask));
-      end
-      if (do_csr_field_rd_check) begin
-        test_csrs[i].get_fields(test_fields);
-        test_fields.shuffle();
-        foreach (test_fields[j]) begin
-          bit compare = !m_csr_excl_item.is_excl(test_fields[j], CsrExclWriteCheck, CsrRwTest);
-          csr_rd_check(.ptr           (test_fields[j]),
-                       .blocking      (0),
-                       .compare       (!external_checker && compare),
-                       .compare_vs_ral(1'b1));
-        end
-      end
       wait_if_max_outstanding_accesses_reached();
     end
   endtask
