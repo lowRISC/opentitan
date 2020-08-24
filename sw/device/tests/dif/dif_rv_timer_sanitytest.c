@@ -28,7 +28,7 @@ static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
-static const uint64_t kDeadline = 0x10000;        // 10 ms.
+static const uint64_t kDeadline = 30000;          // 30 ms.
 
 static void test_handler(void) {
   CHECK(!irq_fired, "Entered IRQ handler, but `irq_fired` was not false!");
