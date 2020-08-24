@@ -138,7 +138,7 @@
       sw_test: sw/device/tests/uart_tx_rx_test
     }
     {
-      name: chip_aes_test
+      name: chip_aes_encr
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/aes_test
     }
@@ -153,19 +153,20 @@
       sw_test: sw/device/tests/dif_plic_sanitytest
     }
     {
-      name: chip_flash_ctrl_test
+      name: chip_flash_ctrl_access
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/flash_ctrl_test
     }
     {
-      name: chip_sha256_test
+      name: chip_hmac_sha256_encr
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/sha256_test
     }
     {
-      name: chip_rv_timer_test
+      name: chip_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/rv_timer_test
+      sw_test: sw/device/tests/dif_rv_timer_sanitytest
+      run_opts: ["+sw_test_timeout_ns=12000000"]
     }
     {
       name: chip_coremark
