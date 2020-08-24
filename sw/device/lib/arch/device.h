@@ -51,9 +51,24 @@ typedef enum device_type {
 extern const device_type_t kDeviceType;
 
 /**
- * The clock frequency of the device, in hertz.
+ * The CPU clock frequency of the device, in hertz.
+ * This is the operating clock for the main processing host.
  */
-extern const uint64_t kClockFreqHz;
+extern const uint64_t kClockFreqCpuHz;
+
+/**
+ * The peripheral clock frequency of the device, in hertz.
+ * This is the operating clock used by timers, uarts,
+ * other peripheral interfaces and the software interface
+ * to the USB controller.
+ */
+extern const uint64_t kClockFreqPeripheralHz;
+
+/**
+ * The USB clock frequency of the device, in hertz.
+ * This is the operating clock used by the USB phy interface.
+ */
+extern const uint64_t kClockFreqUsbHz;
 
 /**
  * The baudrate of the UART peripheral (if such a thing is present).

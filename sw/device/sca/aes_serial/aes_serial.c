@@ -280,8 +280,8 @@ int main(int argc, char **argv) {
             (dif_rv_timer_config_t){.hart_count = 1, .comparator_count = 1},
             &timer) == kDifRvTimerOk);
   dif_rv_timer_tick_params_t tick_params;
-  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqHz, kTickFreqHz,
-                                             &tick_params) ==
+  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
+                                             kTickFreqHz, &tick_params) ==
         kDifRvTimerApproximateTickParamsOk);
   CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
         kDifRvTimerOk);

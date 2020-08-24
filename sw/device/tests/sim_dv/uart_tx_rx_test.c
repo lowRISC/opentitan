@@ -168,7 +168,7 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
 
   dif_uart_config_t config = {
       .baudrate = kUartBaudrate,
-      .clk_freq_hz = kClockFreqHz,
+      .clk_freq_hz = kClockFreqPeripheralHz,
       .parity_enable = kDifUartDisable,
       .parity = kDifUartParityEven,
   };

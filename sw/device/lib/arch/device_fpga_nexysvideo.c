@@ -11,7 +11,11 @@
 
 const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
 
-const uint64_t kClockFreqHz = 50 * 1000 * 1000;  // 50MHz
+const uint64_t kClockFreqCpuHz = 50 * 1000 * 1000;  // 50MHz
+
+const uint64_t kClockFreqPeripheralHz = 50 * 1000 * 1000;  // 50MHz
+
+const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
 
 const uint64_t kUartBaudrate = 230400;
 

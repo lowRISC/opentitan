@@ -13,7 +13,7 @@
 extern void wait_for_interrupt(void);
 
 void usleep(uint32_t usec) {
-  uint64_t cycles = kClockFreqHz * usec / 1000000;
+  uint64_t cycles = kClockFreqCpuHz * usec / 1000000;
   uint64_t start = ibex_mcycle_read();
   while ((ibex_mcycle_read() - start) < cycles) {
   }
