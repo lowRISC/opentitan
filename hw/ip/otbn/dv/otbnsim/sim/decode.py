@@ -33,9 +33,12 @@ class IllegalInsn(Instruction):  # type: ignore
     we know this doesn't match any real instruction.
 
     '''
+    def __init__(self, word: int):
+        self.word = word
+
     def execute(self, model: Model) -> None:
-        raise RuntimeError('Illegal instruction at PC {:#010x}.'
-                           .format(model.state.pc))
+        raise RuntimeError('Illegal instruction at {:#x}: encoding {:#010x}.'
+                           .format(int(model.state.pc), self.word))
 
 
 def _decode_word(word_off: int,
@@ -52,7 +55,7 @@ def _decode_word(word_off: int,
         insn.decode(word)
         return insn
 
-    return IllegalInsn()
+    return IllegalInsn(word)
 
 
 def decode_bytes(data: bytes, variant: Variant) -> List[Instruction]:
