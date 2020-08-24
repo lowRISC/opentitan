@@ -44,7 +44,7 @@ GENERATE_BUGLIST       = NO
 SHOW_USED_FILES        = NO
 SHOW_NAMESPACES        = NO
 
-FILE_VERSION_FILTER    = "git log --format='%h' -1 --"
+FILE_VERSION_FILTER    = "git -C '$(SRCTREE_TOP)' log --format='%h' -1 --"
 
 LAYOUT_FILE            = "$(SRCTREE_TOP)/site/docs/doxygen/layout.xml"
 
