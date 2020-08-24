@@ -244,10 +244,10 @@ module top_earlgrey_asic (
   top_earlgrey top_earlgrey (
     .rst_ni          ( rst_n         ),
     // ast connections
-    .clk_main_i      ( clk           ),
-    .clk_io_i        ( clk           ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
+    .clk_main_i      ( ast_base_clks.clk_sys ),
+    .clk_io_i        ( ast_base_clks.clk_io  ),
+    .clk_usb_i       ( ast_base_clks.clk_usb ),
+    .clk_aon_i       ( ast_base_clks.clk_aon ),
     .clks_ast_o      ( clks_ast      ),
     .rstmgr_ast_i                ( ast_base_rst          ),
     .rsts_ast_o                  ( rsts_ast              ),
