@@ -7,13 +7,13 @@
 
 /**
  * @file
- * @brief Assembler-only Generated Definitions.
+ * @brief Assembler-only Top-Specific Definitions.
  *
  * This file contains preprocessor definitions for use within assembly code.
- * These are not shared with C/C++ code because these are only allowed to be
- * preprocessor definitions, no data or type declarations are allowed.
  *
- * The assembler is also stricter about literals (not allowing suffixes for
+ * These are not shared with C/C++ code because these are only allowed to be
+ * preprocessor definitions, no data or type declarations are allowed. The
+ * assembler is also stricter about literals (not allowing suffixes for
  * signed/unsigned which are sensible to use for unsigned values in C/C++).
  */
 

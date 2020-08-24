@@ -61,6 +61,7 @@ WARN_LOGFILE           = "$(DOXYGEN_OUT)/doxygen_warnings.log"
 
 # Absolute path using $(SRCTREE_TOP)
 INPUT                  = "$(SRCTREE_TOP)/sw" \
+                         "$(SRCTREE_TOP)/hw/top_earlgrey/sw" \
                          "$(SRCTREE_TOP)/site/docs/doxygen/main_page.md"
 
 USE_MDFILE_AS_MAINPAGE = "$(SRCTREE_TOP)/site/docs/doxygen/main_page.md"
