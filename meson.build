@@ -91,6 +91,14 @@ add_project_link_arguments(
   c_cpp_cross_link_args,
   language: ['c', 'cpp'], native: false)
 
+# The following flags are applied only to native builds
+c_cpp_native_args = [
+  # Use a define to exclude libc redefinitions.
+  '-DHOST_BUILD',
+]
+add_project_arguments(
+  c_cpp_native_args,
+  language: ['c', 'cpp'], native: true)
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
