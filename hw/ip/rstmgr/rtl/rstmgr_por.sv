@@ -13,8 +13,6 @@ module rstmgr_por #(
 ) (
   input clk_i,
   input rst_ni,
-  input pok_i, // TODO: This should not be an actual separate port but the POR itself
-               // However, this cannot be done until AST integration is done.
   output logic rst_no
 );
   localparam int CtrWidth = $clog2(StretchCount+1);
@@ -41,7 +39,7 @@ module rstmgr_por #(
   always_ff @(posedge clk_i or negedge rst_root_n) begin
     if (!rst_root_n) begin
       rst_filter_n <= '0;
-    end else if (pok_i) begin // once AST is in, this conditional should not be here.
+    end else begin
       rst_filter_n <= {rst_filter_n[0 +: FilterStages-1], 1'b1};
     end
   end
