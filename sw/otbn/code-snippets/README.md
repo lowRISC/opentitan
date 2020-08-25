@@ -9,3 +9,5 @@ to do various tasks in OTBN code.
     instruction.
   - `mul384.S`: An example of a 384x384 bit multiply using the MULQACC
     instruction.
+  - `barrett384.S`: An example of a modular multiplication kernel based on
+    Barrett reduction.
