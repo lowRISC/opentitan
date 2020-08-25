@@ -333,7 +333,7 @@ class InstructionBNLID(InstructionBNIType):
         assert self.rs is not None
         assert self.rd is not None
 
-        addr = int(model.state.intreg[self.rs] + int(self.imm) * 32)
+        addr = int(model.state.intreg[self.rs] + int(self.imm))
         wrd = int(model.state.intreg[self.rd])
         word = model.load_wlen_word_from_memory(addr)
         model.state.wreg[wrd] = word
@@ -359,7 +359,7 @@ class InstructionBNSID(InstructionBNISType):
         assert self.rs2 is not None
         assert self.rs1 is not None
 
-        addr = int(model.state.intreg[self.rs2] + int(self.imm) * 32)
+        addr = int(model.state.intreg[self.rs2] + int(self.imm))
         wrs = int(model.state.intreg[self.rs1])
         word = int(model.state.wreg[wrs])
         model.store_wlen_word_to_memory(addr, word)

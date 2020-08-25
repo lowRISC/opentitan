@@ -421,7 +421,7 @@ class InstructionBNIType(InstructionFunct3Type):  # type: ignore
 
     field_rd = Field(name="rd", base=7, size=5)
     field_rs = Field(name="rs", base=15, size=5)
-    field_imm = Field(name="imm", base=22, size=10)
+    field_imm = Field(name="imm", base=[25, 22], size=[7, 3], offset=4)
     field_rd_inc = Field(name="rd_inc", base=20, size=1)
     field_rs_inc = Field(name="rs_inc", base=21, size=1)
 
