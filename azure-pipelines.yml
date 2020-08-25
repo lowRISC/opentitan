@@ -214,9 +214,9 @@ jobs:
           echo "PR contains non doc changes"
         fi
 
+        # Check if any changes were made to OTBN-related files (hardware, software or tooling)
         echo "Checking if any OTBN changes are in this pull request"
-        # Check if any changes were made to OTBN
-        has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep 'hw/ip/otbn/' -q; echo $?)"
+        has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep '/otbn/' -q; echo $?)"
 
         if [[ $has_otbn_changes -eq 1 ]]; then
           echo "PR contains OTBN changes"
@@ -385,6 +385,7 @@ jobs:
         --target-dir="$TOOLCHAIN_PATH" \
         --release-version="$TOOLCHAIN_VERSION" \
         --update
+      echo "##vso[task.prependpath]$TOOLCHAIN_PATH/bin"
     displayName: Install toolchain
   - bash: |
       python3 --version
@@ -392,9 +393,11 @@ jobs:
       verilator --version
     displayName: Display environment
   - bash: |
-      export PATH="/opt/buildcache/riscv/bin:$PATH"
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
+  - bash: |
+      make -C hw/ip/otbn/util asm-sanity
+    displayName: Assemble and link code snippets
 
 - job: top_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
