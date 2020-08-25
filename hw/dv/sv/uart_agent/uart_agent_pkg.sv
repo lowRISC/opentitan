@@ -29,13 +29,6 @@ package uart_agent_pkg;
     BaudRate2Mbps   = 2097152
   } baud_rate_e;
 
-  typedef enum {
-    UartIdle,
-    UartStart,
-    UartData,
-    UartStop
-  } uart_state_e;
-
   // functions
   function automatic real get_baud_rate_period_ns(baud_rate_e baud_rate);
     // return 10^9 / baud_rate ns upto 3 decimal places
