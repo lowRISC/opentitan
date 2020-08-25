@@ -75,6 +75,7 @@ module top_earlgrey_verilator (
 
   // dummy ast connections
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
   ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
   ast_wrapper_pkg::ast_status_t ast_base_status;
 
@@ -87,6 +88,10 @@ module top_earlgrey_verilator (
   assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
   assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
 
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  assign ast_base_rst.aon_pok      = rst_ni;
   // Top-level design
   top_earlgrey top_earlgrey (
     .rst_ni                     (rst_ni),
@@ -94,7 +99,7 @@ module top_earlgrey_verilator (
     .clk_io_i                   (clk_i),
     .clk_usb_i                  (clk_i),
     .clk_aon_i                  (clk_i),
-    .rstmgr_ast_i                 (1'b1),
+    .rstmgr_ast_i                 (ast_base_rst),
     .pwrmgr_pwr_ast_req_o         (),
     .pwrmgr_pwr_ast_rsp_i         (ast_base_pwr),
     .sensor_ctrl_ast_alert_req_i  (ast_base_alerts),
