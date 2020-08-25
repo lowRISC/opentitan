@@ -745,7 +745,7 @@
       doc: |
         Offset value.
         Must be WLEN-aligned.
-      type: simm<<4
+      type: simm<<5
     - name: grs1_inc
       type: option(++)
       doc: |
@@ -816,7 +816,7 @@
       doc: |
         Offset value.
         Must be WLEN-aligned.
-      type: simm<<4
+      type: simm<<5
     - name: grs1_inc
       type: option(++)
       doc: |
