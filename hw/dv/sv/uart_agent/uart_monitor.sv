@@ -139,7 +139,12 @@ class uart_monitor extends dv_base_monitor#(
       if (cfg.vif.uart_tx_clk_pulses > 0) begin
         #(cfg.vif.uart_clk_period_ns / 2);
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
-        #(cfg.vif.uart_clk_period_ns / 2);
+        // last cycle only use 0.5 period as design and agent aren't using same clock. If agent freq
+        // is slower and design continues sending tx item, the freq diff will be accumulated.
+        // Ending current item after latch STOP bit to allow agent to re-establish clock to sample
+        // the START bit of next item
+        if (cfg.vif.uart_tx_clk_pulses == 1) #1ns;
+        else                                 #(cfg.vif.uart_clk_period_ns / 2);
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         cfg.vif.uart_tx_clk_pulses--;
       end else begin
