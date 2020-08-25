@@ -140,7 +140,7 @@ def load_yaml(path: str, what: Optional[str]) -> object:
     a RuntimeError. If what is not None, it will be used in the error message.
 
     '''
-    for_msg = 'for ' + what if what is not None else ''
+    for_msg = ' for ' + what if what is not None else ''
     try:
         with open(path, 'r') as handle:
             return yaml.load(handle, Loader=yaml.SafeLoader)
