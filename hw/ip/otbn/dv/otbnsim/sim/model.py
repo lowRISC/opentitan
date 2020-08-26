@@ -166,9 +166,8 @@ class LoopStack:
 
         return None
 
-    def step(self, cur_pc: int) -> int:
-        '''Calculate the next PC and update loop stack'''
-        next_pc = cur_pc + 4
+    def step(self, next_pc: int) -> Optional[int]:
+        '''Update loop stack. If we should loop, return new PC'''
         if self.stack:
             top = self.stack[-1]
             if next_pc == top.match_addr:
@@ -267,7 +266,9 @@ class OTBNState(State):  # type: ignore
             self.pc_update.set(skip_pc)
 
     def loop_step(self) -> None:
-        self.pc_update.set(self.loop_stack.step(int(self.pc)))
+        back_pc = self.loop_stack.step(int(self.pc_update))
+        if back_pc is not None:
+            self.pc = back_pc
 
     def changes(self) -> List[Trace]:
         c = cast(List[Trace], super().changes())
