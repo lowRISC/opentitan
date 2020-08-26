@@ -105,7 +105,7 @@
       doc: Immediate value
     - *bn-flag-group-operand
   syntax: |
-    <wrd>, <wrs>, <imm> [, FG<flag_group>]
+    <wrd>, <wrs>, <imm>[, FG<flag_group>]
   doc: |
     Adds a zero-extended unsigned immediate to the value of a WDR, writes the
     result to the destination WDR, and updates the flags.
@@ -420,7 +420,7 @@
       type: uimm
       doc: Immediate value
     - *bn-flag-group-operand
-  syntax: <wrd>, <wrs>, <imm> [, FG<flag_group>]
+  syntax: <wrd>, <wrs>, <imm>[, FG<flag_group>]
   doc: |
     Subtracts a zero-extended unsigned immediate from the value of a WDR,
     writes the result to the destination WDR, and updates the flags.
@@ -485,7 +485,7 @@
     - *bn-shift-type-operand
     - *bn-shift-bytes-operand
   syntax: &bn-and-syntax |
-    <wrd>, <wrs1>, <wrs2> [, <shift_type> <shift_bytes>B]
+    <wrd>, <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B]
   doc: |
     Performs a bitwise and operation.
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
@@ -548,7 +548,7 @@
     - *bn-shift-type-operand
     - *bn-shift-bytes-operand
   syntax: |
-    <wrd>, <wrs> [, <shift_type> <shift_bytes>B]
+    <wrd>, <wrs>[, <shift_type> <shift_bytes>B]
   doc: |
     Negates the value in `<wrs>`, storing the result into `<wrd>`.
     The source value can be shifted by an immediate before it is consumed by the operation.
