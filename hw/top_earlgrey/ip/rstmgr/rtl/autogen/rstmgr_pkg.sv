@@ -60,6 +60,13 @@ package rstmgr_pkg;
     logic ndmreset_req;
   } rstmgr_cpu_t;
 
+  // exported resets
+  typedef struct packed {
+    logic rst_ast_usbdev_sys_io_n;
+    logic rst_ast_usbdev_usb_n;
+    logic rst_ast_sensor_ctrl_sys_io_n;
+  } rstmgr_ast_out_t;
+
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{
     rst_cpu_n: 1'b1,

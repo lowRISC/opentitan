@@ -37,7 +37,7 @@ module top_earlgrey #(
   input  logic       clk_io_i,
   input  logic       clk_usb_i,
   input  logic       clk_aon_i,
-  input  ast_wrapper_pkg::ast_rst_t       rstmgr_ast_i,
+  input  rstmgr_pkg::rstmgr_ast_t       rstmgr_ast_i,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_pwr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_pwr_ast_rsp_i,
   input  ast_wrapper_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
@@ -47,6 +47,8 @@ module top_earlgrey #(
   output logic       usbdev_usb_ref_pulse_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
+  output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
+  output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -812,6 +814,7 @@ module top_earlgrey #(
       .ast_i(rstmgr_ast_i),
       .cpu_i(rstmgr_cpu),
       .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
+      .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_powerup),
@@ -820,6 +823,7 @@ module top_earlgrey #(
       .clk_io_i (clkmgr_clocks.clk_io_powerup),
       .clk_usb_i (clkmgr_clocks.clk_usb_powerup),
       .clk_io_div2_i (clkmgr_clocks.clk_io_div2_powerup),
+      .clk_io_div4_i (clkmgr_clocks.clk_io_div4_powerup),
       .rst_ni (rst_ni)
   );
 
@@ -831,6 +835,7 @@ module top_earlgrey #(
       .clk_io_i(clk_io_i),
       .clk_usb_i(clk_usb_i),
       .clk_aon_i(clk_aon_i),
+      .clocks_ast_o(clks_ast_o),
       .pwr_i(pwrmgr_pwr_clk_req),
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
