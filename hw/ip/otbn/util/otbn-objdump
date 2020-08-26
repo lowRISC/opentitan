@@ -137,11 +137,12 @@ def main() -> int:
     has_disasm = snoop_disasm_flags(args)
 
     objdump = find_tool('objdump')
-    cmd = [objdump] + args
     try:
         if not has_disasm:
+            cmd = [objdump] + args
             return subprocess.run(cmd).returncode
         else:
+            cmd = [objdump, '-M', 'numeric,no-aliases'] + args
             proc = subprocess.run(cmd, capture_output=True, text=True)
             if proc.returncode:
                 # Dump any lines that objdump wrote before it died
