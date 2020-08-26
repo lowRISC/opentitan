@@ -71,12 +71,42 @@ coverage_test_lib = declare_dependency(
   ),
 )
 
+pmp_sanitytest_napot_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_sanitytest_napot_lib',
+    sources: ['pmp_sanitytest_napot.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
+pmp_sanitytest_tor_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_sanitytest_tor_lib',
+    sources: ['pmp_sanitytest_tor.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_base_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
 sw_tests += {
   'aes_test': aes_test_lib,
   'flash_ctrl_test': flash_ctrl_test_lib,
   'sha256_test': sha256_test_lib,
   'usbdev_test': usbdev_test_lib,
   'coverage_test': coverage_test_lib,
+  'pmp_sanitytest_napot': pmp_sanitytest_napot_lib,
+  'pmp_sanitytest_tor': pmp_sanitytest_tor_lib,
 }
 
 foreach sw_test_name, sw_test_lib : sw_tests

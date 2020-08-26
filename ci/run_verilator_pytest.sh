@@ -21,6 +21,8 @@ TEST_TARGETS=(
   "tests/dif_rv_timer_sanitytest_sim_verilator.elf"
   "tests/dif_uart_sanitytest_sim_verilator.elf"
   "tests/flash_ctrl_test_sim_verilator.elf"
+  "tests/pmp_sanitytest_napot_sim_verilator.elf"
+  "tests/pmp_sanitytest_tor_sim_verilator.elf"
   "tests/sha256_test_sim_verilator.elf"
   "tests/usbdev_test_sim_verilator.elf"
 )
