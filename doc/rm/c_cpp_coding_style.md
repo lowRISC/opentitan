@@ -343,22 +343,29 @@ __attribute__((section(".crt"))) void _crt(void);
 
 ### Nonstandard Compiler Builtins
 
-All nonstandard builtins must be supported by both GCC and Clang.
+In order to avoid a total reliance on one single compiler, any nonstandard compiler builtins (also known as intrinsics) should be used via a single canonical definition.
+This ensures changes to add compatibilty for other compilers are less invasive, as we already have a function to include a full implementation within.
+
+All nonstandard builtins should be supported by both GCC and Clang.
 Compiler builtin usage is complex, and it is recommended that a compiler engineer reviews any code that adds new builtins.
 
-In the following, `__builtin_foo` is the "prefixed" name and `foo` is the corresponding "unprefixed" name.
+In the following, `__builtin_foo` is the *builtin name* and `foo` is the corresponding *general name*.
 
-***The use of nonstandard compiler builtins must have an unprefixed compatible definition.***
+***The use of nonstandard compiler builtins must be hidden using a canonical, compatible definition.***
 
-There are two ways of doing this, depending on what the builtin does.
+There are two ways of providing this canonical definition, depending on what the builtin does.
 
-For builtins that correspond to a C library function, the unprefixed function must be available to the linker, as the compiler may still insert a call to this function.
+For builtins that correspond to a C library function, the general name must be available to the linker, as the compiler may still insert a call to this function.
 Unfortunately, older versions of GCC do not support the `__has_builtin()` preprocessor function, so compiler detection of support for these builtins is next to impossible.
-In this case, a standards-compliant implementation of the unprefixed name must be provided, and the compilation unit should be compiled with `-fno-builtins`.
+In this case, a standards-compliant implementation of the general name must be provided, and the compilation unit should be compiled with `-fno-builtins`.
 
-For builtins that correspond to low-level byte and integer manipulations, an [inline function](#inline-functions) must be provided with the unprefixed name, which contains only a call to the prefixed builtin.
-Only the unprefixed name may be called by users: for instance, `uint32_t __builtin_bswap32(uint32_t)` should not be called, instead users should use `inline uint32_t bswap32(uint32_t x)`.
-This ensures changes to add compatibilty for other compilers are less invasive, as we already have a function to include a full implementation within.
+For builtins that correspond to low-level byte and integer manipulations, an [inline function](#inline-functions) should be provided with a general name, which contains a call to the builtin name itself, or an equivalent implementation.
+Only the general name may be called by users: for instance, `uint32_t __builtin_bswap32(uint32_t)` must not be called, instead users should use `inline uint32_t bswap32(uint32_t x)`.
+Where the general name is already taken by an incompatible host or device library symbol, the general name can be prefixed with the current C namespace prefix, for instance `inline uint32_t bitfield_bswap32(uint32_t x)` for a function in `bitfield.h`.
+Where the general name is a short acronym, the name may be expanded for clarity, for instance `__builtin_ffs` may have a canonical definition named `bitfield_find_first_set`.
+Where there are compatible typedefs that convey additional meaning (e.g. `uint32_t` vs `unsigned int`), these may be written instead of the official builtin types.
+
+For builtins that cannot be used via a compatible function definition (e.g. if an argument is a type or identifier), there should be a single canonical preprocessor definition with the general name, which expands to the builtin.
 
 ## Code Lint
 
