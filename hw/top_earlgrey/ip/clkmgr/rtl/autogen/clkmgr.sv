@@ -50,6 +50,7 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_hint_status_t status_i,
 
   // clock output interface
+  output clkmgr_ast_out_t clocks_ast_o,
   output clkmgr_out_t clocks_o
 
 );
@@ -104,6 +105,7 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_main_powerup = clk_main_i;
   assign clocks_o.clk_usb_powerup = clk_usb_i;
   assign clocks_o.clk_io_div2_powerup = clk_io_div2_i;
+  assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -324,6 +326,13 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
 
+  ////////////////////////////////////////////////////
+  // Exported clocks
+  ////////////////////////////////////////////////////
+
+  assign clocks_ast_o.clk_ast_usbdev_io_peri = clocks_o.clk_io_peri;
+  assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+  assign clocks_ast_o.clk_ast_sensor_ctrl_io_secure = clocks_o.clk_io_secure;
 
   ////////////////////////////////////////////////////
   // Assertions

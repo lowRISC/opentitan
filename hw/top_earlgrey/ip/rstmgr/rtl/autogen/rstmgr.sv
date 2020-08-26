@@ -44,7 +44,9 @@ module rstmgr import rstmgr_pkg::*; (
   input rstmgr_peri_t peri_i,
 
   // Interface to alert handler
-  // always on resets
+
+  // reset outputs
+  output rstmgr_ast_out_t resets_ast_o,
   output rstmgr_out_t resets_o
 
 );
@@ -279,6 +281,13 @@ module rstmgr import rstmgr_pkg::*; (
     .data_i(reg2hw.reset_info.q),
     .rst_reasons_o(hw2reg.reset_info)
   );
+
+  ////////////////////////////////////////////////////
+  // Exported resets                                //
+  ////////////////////////////////////////////////////
+  assign resets_ast_o.rst_ast_usbdev_sys_io_n = resets_o.rst_sys_io_n;
+  assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
+  assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_n = resets_o.rst_sys_io_n;
 
   ////////////////////////////////////////////////////
   // Assertions                                     //

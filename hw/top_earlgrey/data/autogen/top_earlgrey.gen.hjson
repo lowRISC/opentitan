@@ -78,6 +78,7 @@
           clk_main_powerup: main
           clk_usb_powerup: usb
           clk_io_div2_powerup: io_div2
+          clk_io_div4_powerup: io_div4
         }
       }
       {
@@ -284,6 +285,7 @@
         rst_ni: sys_io
       }
       base_addr: 0x40000000
+      clock_reset_export: []
       clock_group: secure
       clock_connections:
       {
@@ -441,6 +443,7 @@
         rst_ni: sys_io
       }
       base_addr: 0x40010000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -506,6 +509,7 @@
         rst_ni: spi_device
       }
       base_addr: 0x40020000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_peri
@@ -648,6 +652,7 @@
         rst_ni: lc
       }
       base_addr: 0x40030000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -787,6 +792,7 @@
         rst_ni: sys_io
       }
       base_addr: 0x40080000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_timers
@@ -838,6 +844,7 @@
         rst_ni: sys
       }
       base_addr: 0x40110000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_aes
@@ -908,6 +915,7 @@
         rst_ni: sys
       }
       base_addr: 0x40120000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_hmac
@@ -999,6 +1007,7 @@
       }
       base_addr: 0x40090000
       generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1047,6 +1056,7 @@
       }
       base_addr: 0x40070000
       generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1151,6 +1161,7 @@
       }
       base_addr: 0x40160000
       generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1202,6 +1213,7 @@
         AccuCntDw: 16
         LfsrSeed: 0x7FFFFFFF
       }
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1299,6 +1311,7 @@
       }
       base_addr: 0x400A0000
       generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_powerup
@@ -1455,6 +1468,7 @@
         clk_io_i: io
         clk_usb_i: usb
         clk_io_div2_i: io_div2
+        clk_io_div4_i: io_div4
       }
       clock_group: powerup
       reset_connections:
@@ -1462,6 +1476,8 @@
         rst_ni: rst_ni
       }
       base_addr: 0x400B0000
+      generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_powerup
@@ -1470,6 +1486,7 @@
         clk_io_i: clkmgr_clocks.clk_io_powerup
         clk_usb_i: clkmgr_clocks.clk_usb_powerup
         clk_io_div2_i: clkmgr_clocks.clk_io_div2_powerup
+        clk_io_div4_i: clkmgr_clocks.clk_io_div4_powerup
       }
       size: 0x1000
       bus_device: tlul
@@ -1509,11 +1526,11 @@
           index: -1
         }
         {
-          struct: ast_rst
+          struct: rstmgr_ast
           type: uni
           name: ast
           act: rcv
-          package: ast_wrapper_pkg
+          package: rstmgr_pkg
           inst_name: rstmgr
           width: 1
           default: ""
@@ -1540,6 +1557,19 @@
           act: rcv
           package: rstmgr_pkg
           inst_name: rstmgr
+          index: -1
+        }
+        {
+          struct: rstmgr_ast_out
+          type: uni
+          name: resets_ast
+          act: req
+          package: rstmgr_pkg
+          inst_name: rstmgr
+          width: 1
+          default: ""
+          external: true
+          top_signame: rsts_ast
           index: -1
         }
         {
@@ -1575,6 +1605,7 @@
       }
       base_addr: 0x400C0000
       generated: "true"
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_powerup
@@ -1657,6 +1688,19 @@
           index: -1
         }
         {
+          struct: clkmgr_ast_out
+          type: uni
+          name: clocks_ast
+          act: req
+          package: clkmgr_pkg
+          inst_name: clkmgr
+          width: 1
+          default: ""
+          external: true
+          top_signame: clks_ast
+          index: -1
+        }
+        {
           struct: pwr_clk
           type: req_rsp
           name: pwr
@@ -1716,6 +1760,7 @@
         rst_ni: sys
       }
       base_addr: 0x40140000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -1794,6 +1839,10 @@
         clk_usb_48mhz_i: usb
       }
       clock_group: peri
+      clock_reset_export:
+      [
+        ast
+      ]
       reset_connections:
       {
         rst_ni: sys_io
@@ -2111,6 +2160,10 @@
         clk_i: io
       }
       clock_group: secure
+      clock_reset_export:
+      [
+        ast
+      ]
       reset_connections:
       {
         rst_ni: sys_io
@@ -2195,6 +2248,7 @@
         rst_ni: sys
       }
       base_addr: 0x50000000
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_otbn
@@ -2314,6 +2368,7 @@
           index: -1
         }
       ]
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -2348,6 +2403,7 @@
           index: -1
         }
       ]
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -2382,6 +2438,7 @@
           index: -1
         }
       ]
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_infra
@@ -2429,6 +2486,7 @@
           index: -1
         }
       ]
+      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -2574,6 +2632,8 @@
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
       peri.tl_ast_wrapper: ast_tl
+      clkmgr.clocks_ast: clks_ast
+      rstmgr.resets_ast: rsts_ast
     }
   }
   xbar:
@@ -2592,6 +2652,7 @@
         rst_main_ni: sys
         rst_fixed_ni: sys_io
       }
+      clock_reset_export: []
       clock_connections:
       {
         clk_main_i: clkmgr_clocks.clk_main_infra
@@ -3167,6 +3228,7 @@
       {
         rst_peri_ni: sys_io
       }
+      clock_reset_export: []
       clock_connections:
       {
         clk_peri_i: clkmgr_clocks.clk_io_infra
@@ -4560,6 +4622,21 @@
       }
     ]
   }
+  exported_clks:
+  {
+    ast:
+    {
+      usbdev:
+      [
+        io_peri
+        usb_peri
+      ]
+      sensor_ctrl:
+      [
+        io_secure
+      ]
+    }
+  }
   reset_paths:
   {
     rst_ni: rst_ni
@@ -4575,6 +4652,21 @@
     sys_aon: rstmgr_resets.rst_sys_aon_n
     spi_device: rstmgr_resets.rst_spi_device_n
     usb: rstmgr_resets.rst_usb_n
+  }
+  exported_rsts:
+  {
+    ast:
+    {
+      usbdev:
+      [
+        sys_io
+        usb
+      ]
+      sensor_ctrl:
+      [
+        sys_io
+      ]
+    }
   }
   wakeups:
   [
@@ -4940,11 +5032,11 @@
         index: -1
       }
       {
-        struct: ast_rst
+        struct: rstmgr_ast
         type: uni
         name: ast
         act: rcv
-        package: ast_wrapper_pkg
+        package: rstmgr_pkg
         inst_name: rstmgr
         width: 1
         default: ""
@@ -4971,6 +5063,19 @@
         act: rcv
         package: rstmgr_pkg
         inst_name: rstmgr
+        index: -1
+      }
+      {
+        struct: rstmgr_ast_out
+        type: uni
+        name: resets_ast
+        act: req
+        package: rstmgr_pkg
+        inst_name: rstmgr
+        width: 1
+        default: ""
+        external: true
+        top_signame: rsts_ast
         index: -1
       }
       {
@@ -5047,6 +5152,19 @@
         default: ""
         external: true
         top_signame: clk_aon
+        index: -1
+      }
+      {
+        struct: clkmgr_ast_out
+        type: uni
+        name: clocks_ast
+        act: req
+        package: clkmgr_pkg
+        inst_name: clkmgr
+        width: 1
+        default: ""
+        external: true
+        top_signame: clks_ast
         index: -1
       }
       {
@@ -5652,8 +5770,8 @@
         direction: in
       }
       {
-        package: ast_wrapper_pkg
-        struct: ast_rst
+        package: rstmgr_pkg
+        struct: rstmgr_ast
         signame: rstmgr_ast_i
         width: 1
         type: uni
@@ -5740,6 +5858,24 @@
         type: req_rsp
         default: ""
         direction: in
+      }
+      {
+        package: clkmgr_pkg
+        struct: clkmgr_ast_out
+        signame: clks_ast_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+      }
+      {
+        package: rstmgr_pkg
+        struct: rstmgr_ast_out
+        signame: rsts_ast_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
       }
     ]
     definitions:

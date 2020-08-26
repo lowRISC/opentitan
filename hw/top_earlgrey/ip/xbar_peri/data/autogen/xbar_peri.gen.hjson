@@ -18,6 +18,7 @@
   {
     rst_peri_ni: sys_io
   }
+  clock_reset_export: []
   clock_connections:
   {
     clk_peri_i: clkmgr_clocks.clk_io_infra

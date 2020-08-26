@@ -20,6 +20,7 @@
     rst_main_ni: sys
     rst_fixed_ni: sys_io
   }
+  clock_reset_export: []
   clock_connections:
   {
     clk_main_i: clkmgr_clocks.clk_main_infra
