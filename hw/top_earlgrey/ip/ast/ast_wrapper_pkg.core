@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:top_earlgrey:clkmgr
       - lowrisc:constants:top_pkg
     files:
       - rtl/ast_wrapper_pkg.sv

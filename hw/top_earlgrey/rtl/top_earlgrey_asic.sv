@@ -204,6 +204,8 @@ module top_earlgrey_asic (
   ast_wrapper_pkg::ast_eflash_t ast_base_eflash;
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  clkmgr_pkg::clkmgr_ast_out_t clks_ast;
+  rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
   //ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -219,7 +221,8 @@ module top_earlgrey_asic (
     .clks_o(ast_base_clks),
     .usb_ref_pulse_i(usb_ref_pulse),
     .usb_ref_val_i(usb_ref_val),
-    .aux_i('0), // need a hardwired solution until rstmgr/clkmgr update
+    .clks_ast_i(clks_ast),
+    .rsts_ast_i(rsts_ast),
     .adc_i('0),
     .adc_o(),
     .es_i('0), // not in top_earlgrey
@@ -245,7 +248,9 @@ module top_earlgrey_asic (
     .clk_io_i        ( clk           ),
     .clk_usb_i       ( clk_usb_48mhz ),
     .clk_aon_i       ( clk           ),
+    .clks_ast_o      ( clks_ast      ),
     .rstmgr_ast_i                ( ast_base_rst          ),
+    .rsts_ast_o                  ( rsts_ast              ),
     .pwrmgr_pwr_ast_req_o        ( base_ast_pwr          ),
     .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr          ),
     .sensor_ctrl_ast_alert_req_i ( ast_base_alerts       ),

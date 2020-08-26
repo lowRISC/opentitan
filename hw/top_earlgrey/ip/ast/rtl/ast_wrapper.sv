@@ -31,7 +31,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
   input usb_ref_val_i,
 
   // synchronization clocks / rests
-  input ast_func_clks_rsts_t aux_i,
+  input clkmgr_pkg::clkmgr_ast_out_t clks_ast_i,
+  input rstmgr_pkg::rstmgr_ast_out_t rsts_ast_i,
 
   // adc
   // The adc package definition should eventually be moved to the adc module
@@ -78,18 +79,19 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .UsbCalibWidth(UsbCalibWidth)
   ) i_ast (
     // ast interface and sync clocks / rests
-    .clk_ast_adc_i(aux_i.clk_ast_adc),
-    .clk_ast_rng_i(aux_i.clk_ast_rng),
-    .clk_ast_usb_i(aux_i.clk_ast_usb),
-    .clk_ast_es_i(aux_i.clk_ast_es),
-    .clk_ast_alert_i(aux_i.clk_ast_alert),
-    .clk_ast_tlul_i(aux_i.clk_ast_tlul),
-    .rst_ast_adc_ni(aux_i.rst_ast_adc_n),
-    .rst_ast_rng_ni(aux_i.rst_ast_rng_n),
-    .rst_ast_usb_ni(aux_i.rst_ast_usb_n),
-    .rst_ast_es_ni(aux_i.rst_ast_es_n),
-    .rst_ast_alert_ni(aux_i.rst_ast_alert_n),
-    .rst_ast_tlul_ni(aux_i.rst_ast_tlul_n),
+    .clk_ast_adc_i(1'b0),  // not yet in design
+    .clk_ast_rng_i(1'b0),  // not yet in design
+    .clk_ast_usb_i(clks_ast_i.clk_ast_usbdev_usb_peri),
+    .clk_ast_es_i(1'b0),   // not yet in design
+    // sensor control acts as both the alert interface and the tlul     // front-end
+    .clk_ast_alert_i(clks_ast_i.clk_ast_sensor_ctrl_io_secure),
+    .clk_ast_tlul_i(clks_ast_i.clk_ast_sensor_ctrl_io_secure),
+    .rst_ast_adc_ni(1'b0), // not yet in design
+    .rst_ast_rng_ni(1'b0), // not yet in design
+    .rst_ast_usb_ni(rsts_ast_i.rst_ast_usbdev_usb_n),
+    .rst_ast_es_ni(1'b0),
+    .rst_ast_alert_ni(rsts_ast_i.rst_ast_sensor_ctrl_sys_io_n),
+    .rst_ast_tlul_ni(rsts_ast_i.rst_ast_sensor_ctrl_sys_io_n),
 
     // tlul if
     .tl_i(bus_i),
