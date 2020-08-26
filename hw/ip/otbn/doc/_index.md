@@ -741,3 +741,5 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
     </tr>
   </tbody>
 </table>
+
+Code snippets giving examples of 256x256 and 384x384 multiplies can be found in `sw/otbn/code-snippets/mul256.S` and `sw/otbn/code-snippets/mul384.S` 
