@@ -35,6 +35,16 @@ all_clocks.update(sw_clks)
 
   } clkmgr_out_t;
 
+% for intf, eps in export_clks.items():
+  typedef struct packed {
+  % for ep, clks in eps.items():
+    % for clk in clks:
+    logic clk_${intf}_${ep}_${clk};
+    % endfor
+  % endfor
+  } clkmgr_${intf}_out_t;
+% endfor
+
   typedef struct packed {
     logic [${num_hints}-1:0] idle;
   } clk_hint_status_t;

@@ -57,6 +57,16 @@ num_grps = len(grps)
     },
 % endfor
 
+  // Exported clocks
+% for intf in export_clks:
+    { struct:  "clkmgr_${intf}_out",
+      type:    "uni",
+      name:    "clocks_${intf}",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+% endfor
+
     { struct:  "pwr_clk",
       type:    "req_rsp",
       name:    "pwr",

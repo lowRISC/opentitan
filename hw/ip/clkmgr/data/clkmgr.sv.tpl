@@ -47,6 +47,9 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_hint_status_t status_i,
 
   // clock output interface
+% for intf in export_clks:
+  output clkmgr_${intf}_out_t clocks_${intf}_o,
+% endfor
   output clkmgr_out_t clocks_o
 
 );
@@ -227,6 +230,17 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
 % endfor
 
+  ////////////////////////////////////////////////////
+  // Exported clocks
+  ////////////////////////////////////////////////////
+
+% for intf, eps in export_clks.items():
+  % for ep, clks in eps.items():
+    % for clk in clks:
+  assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
+    % endfor
+  % endfor
+% endfor
 
   ////////////////////////////////////////////////////
   // Assertions

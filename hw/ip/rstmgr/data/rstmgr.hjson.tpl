@@ -56,6 +56,16 @@
       act:     "rcv",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     }
+
+    // Exported resets
+% for intf in export_rsts:
+    { struct:  "rstmgr_${intf}_out",
+      type:    "uni",
+      name:    "resets_${intf}",
+      act:     "req",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
+    }
+% endfor
   ],
 
   registers: [

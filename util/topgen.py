@@ -556,6 +556,7 @@ def generate_clkmgr(top, cfg_path, out_path):
                                  ft_clks=ft_clks,
                                  rg_clks=rg_clks,
                                  sw_clks=sw_clks,
+                                 export_clks=top['exported_clks'],
                                  hint_clks=hint_clks)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
@@ -683,7 +684,8 @@ def generate_rstmgr(topcfg, out_path):
                 out = tpl.render(clks=clks,
                                  sw_rsts=sw_rsts,
                                  output_rsts=output_rsts,
-                                 leaf_rsts=leaf_rsts)
+                                 leaf_rsts=leaf_rsts,
+                                 export_rsts=topcfg['exported_rsts'])
 
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
