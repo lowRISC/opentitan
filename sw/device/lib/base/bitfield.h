@@ -142,6 +142,143 @@ inline uint32_t bitfield_bit32_write(uint32_t bitfield,
                                 value ? 0x1u : 0x0u);
 }
 
+/**
+ * Find First Set Bit
+ *
+ * Returns one plus the index of the least-significant 1-bit of a 32-bit word.
+ *
+ * For instance, `bitfield_find_first_set32(field)` of the below 32-bit value
+ * returns `5`.
+ *
+ *     field:  0b00000000'00000000'11111111'00010000
+ *     index:   31                                 0
+ *
+ * This is the canonical definition for the GCC/Clang builtin `__builtin_ffs`,
+ * and hence takes and returns a signed integer.
+ *
+ * @param bitfield Bitfield to find the first set bit in.
+ * @return One plus the index of the least-significant 1-bit of `bitfield`.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline int32_t bitfield_find_first_set32(int32_t bitfield) {
+  return __builtin_ffs(bitfield);
+}
+
+/**
+ * Count Leading Zeroes
+ *
+ * Returns the number of leading 0-bits in `bitfield`, starting at the most
+ * significant bit position. If `bitfield` is 0, the result is 32, to match the
+ * RISC-V B Extension.
+ *
+ * For instance, `bitfield_count_leading_zeroes32(field)` of the below 32-bit
+ * value returns `16`.
+ *
+ *     field:  0b00000000'00000000'11111111'00010000
+ *     index:   31                                 0
+ *
+ * This is the canonical definition for the GCC/Clang builtin `__builtin_clz`,
+ * and hence returns a signed integer.
+ *
+ * @param bitfield Bitfield to count leading 0-bits from.
+ * @return The number of leading 0-bits in `bitfield`.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline int32_t bitfield_count_leading_zeroes32(uint32_t bitfield) {
+  return (bitfield != 0) ? __builtin_clz(bitfield) : 32;
+}
+
+/**
+ * Count Trailing Zeroes
+ *
+ * Returns the number of trailing 0-bits in `bitfield`, starting at the least
+ * significant bit position. If `bitfield` is 0, the result is 32, to match the
+ * RISC-V B Extension.
+ *
+ * For instance, `bitfield_count_trailing_zeroes32(field)` of the below 32-bit
+ * value returns `4`.
+ *
+ *     field:  0b00000000'00000000'11111111'00010000
+ *     index:   31                                 0
+ *
+ * This is the canonical definition for the GCC/Clang builtin `__builtin_ctz`,
+ * and hence returns a signed integer.
+ *
+ * @param bitfield Bitfield to count trailing 0-bits from.
+ * @return The number of trailing 0-bits in `bitfield`.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline int32_t bitfield_count_trailing_zeroes32(uint32_t bitfield) {
+  return (bitfield != 0) ? __builtin_ctz(bitfield) : 32;
+}
+
+/**
+ * Count Set Bits
+ *
+ * Returns the number of 1-bits in `bitfield`.
+ *
+ * For instance, `bitfield_popcount32(field)` of the below 32-bit value returns
+ * `9`.
+ *
+ *     field:  0b00000000'00000000'11111111'00010000
+ *     index:   31                                 0
+ *
+ * This is the canonical definition for the GCC/Clang builtin
+ * `__builtin_popcount`, and hence returns a signed integer.
+ *
+ * @param bitfield Bitfield to count 1-bits from.
+ * @return The number of 1-bits in `bitfield`.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline int32_t bitfield_popcount32(uint32_t bitfield) {
+  return __builtin_popcount(bitfield);
+}
+
+/**
+ * Parity
+ *
+ * Returns the number of 1-bits in `bitfield`, modulo 2.
+ *
+ * For instance, `bitfield_parity32(field)` of the below 32-bit value returns
+ * `1`.
+ *
+ *     field:  0b00000000'00000000'11111111'00010000
+ *     index:   31                                 0
+ *
+ * This is the canonical definition for the GCC/Clang builtin
+ * `__builtin_parity`, and hence returns a signed integer.
+ *
+ * @param bitfield Bitfield to count 1-bits from.
+ * @return The number of 1-bits in `bitfield`, modulo 2.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline int32_t bitfield_parity32(uint32_t bitfield) {
+  return __builtin_parity(bitfield);
+}
+
+/**
+ * Byte Swap
+ *
+ * Returns `field` with the order of the bytes reversed. Bytes here always means
+ * exactly 8 bits.
+ *
+ * For instance, `byteswap(field)` of the below 32-bit value returns `1`.
+ *
+ *     field:  0bAAAAAAAA'BBBBBBBB'CCCCCCCC'DDDDDDDD
+ *     index:   31                                 0
+ *    returns: 0bDDDDDDDD'CCCCCCCC'BBBBBBBB'AAAAAAAA
+ *
+ * This is the canonical definition for the GCC/Clang builtin
+ * `__builtin_bswap32`.
+ *
+ * @param bitfield Bitfield to reverse bytes of.
+ * @return `bitfield` with the order of bytes reversed.
+ */
+BITFIELD_WARN_UNUSED_RESULT
+inline uint32_t bitfield_byteswap32(uint32_t bitfield) {
+  return __builtin_bswap32(bitfield);
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
