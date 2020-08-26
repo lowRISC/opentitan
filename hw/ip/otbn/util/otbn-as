@@ -949,7 +949,7 @@ class Transformer:
         # glued operands) as a string.
         operands_str = self.key_sym[len(insn.mnemonic):] + ''.join(self.acc)
 
-        match = insn.asm_pattern.match(operands_str.strip())
+        match = insn.asm_pattern.match(operands_str.rstrip())
         if match is None:
             raise RuntimeError('{}:{}: Cannot match syntax for {!r} ({!r}).'
                                .format(self.in_path, self.line_number,
