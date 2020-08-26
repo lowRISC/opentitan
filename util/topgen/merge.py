@@ -472,6 +472,15 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
+# Check if the export field already exists
+# If yes, return it
+# If no, set a default and return that
+def check_clk_rst_export(module):
+    if 'clock_reset_export' not in module:
+        module['clock_reset_export'] = []
+    return module['clock_reset_export']
+
+
 def amend_clocks(top: OrderedDict):
     """Add a list of clocks to each clock group
        Amend the clock connections of each entry to reflect the actual gated clock
@@ -479,6 +488,7 @@ def amend_clocks(top: OrderedDict):
     clks_attr = top['clocks']
     clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
+    exported_clks = OrderedDict()
 
     # Assign default parameters to source clocks
     for src in clks_attr['srcs']:
@@ -501,6 +511,9 @@ def amend_clocks(top: OrderedDict):
 
         clock_connections = OrderedDict()
 
+        # Ensure each module has a default case
+        export_if = check_clk_rst_export(ep)
+
         # if no clock group assigned, default is unique
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
             'clock_group']
@@ -522,22 +535,25 @@ def amend_clocks(top: OrderedDict):
         for port, clk in ep['clock_srcs'].items():
             ep_clks.append(clk)
 
+            name = ''
             hier_name = clk_paths[src]
 
             if src == 'ext':
                 # clock comes from top ports
                 if clk == 'main':
-                    clk_name = "clk_i"
+                    name = "i"
                 else:
-                    clk_name = "clk_{}_i".format(clk)
+                    name = "{}_i".format(clk)
 
             elif unique == "yes":
                 # new unqiue clock name
-                clk_name = "clk_{}_{}".format(clk, ep_name)
+                name = "{}_{}".format(clk, ep_name)
 
             else:
                 # new group clock name
-                clk_name = "clk_{}_{}".format(clk, ep_grp)
+                name = "{}_{}".format(clk, ep_grp)
+
+            clk_name = "clk_" + name
 
             # add clock to a particular group
             clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
@@ -545,8 +561,30 @@ def amend_clocks(top: OrderedDict):
             # add clock connections
             clock_connections[port] = hier_name + clk_name
 
+            # clocks for this module are exported
+            for intf in export_if:
+                log.info("{} export clock name is {}".format(ep_name, name))
+
+                # create dict entry if it does not exit
+                if intf not in exported_clks:
+                    exported_clks[intf] = OrderedDict()
+
+                # if first time encounter end point, declare
+                if ep_name not in exported_clks[intf]:
+                    exported_clks[intf][ep_name] = []
+
+                # append clocks
+                exported_clks[intf][ep_name].append(name)
+
         # Add to endpoint structure
         ep['clock_connections'] = clock_connections
+
+    # add entry to top level json
+    top['exported_clks'] = exported_clks
+
+    # add entry to inter_module automatically
+    for intf in top['exported_clks']:
+        top['inter_module']['external']['clkmgr.clocks_{}'.format(intf)] = "clks_{}".format(intf)
 
 
 def amend_resets(top):
@@ -572,6 +610,32 @@ def amend_resets(top):
             log.error("{} type is invalid".format(reset["type"]))
 
     top["reset_paths"] = reset_paths
+
+    # Generate exported reset list
+    exported_rsts = OrderedDict()
+    for module in top["module"]:
+
+        # This code is here to ensure if amend_clocks/resets switched order
+        # everything would still work
+        export_if = check_clk_rst_export(module)
+
+        # There may be multiple export interfaces
+        for intf in export_if:
+            # create dict entry if it does not exit
+            if intf not in exported_rsts:
+                exported_rsts[intf] = OrderedDict()
+
+            # grab directly from reset_connections definition
+            rsts = [rst for rst in module['reset_connections'].values()]
+            exported_rsts[intf][module['name']] = rsts
+
+    # add entry to top level json
+    top['exported_rsts'] = exported_rsts
+
+    # add entry to inter_module automatically
+    for intf in top['exported_rsts']:
+        top['inter_module']['external']['rstmgr.resets_{}'.format(intf)] = "rsts_{}".format(intf)
+
     return
 
 

@@ -35,7 +35,11 @@ module rstmgr import rstmgr_pkg::*; (
   input rstmgr_peri_t peri_i,
 
   // Interface to alert handler
-  // always on resets
+
+  // reset outputs
+% for intf in export_rsts:
+  output rstmgr_${intf}_out_t resets_${intf}_o,
+% endfor
   output rstmgr_out_t resets_o
 
 );
@@ -180,6 +184,17 @@ module rstmgr import rstmgr_pkg::*; (
     .data_i(reg2hw.reset_info.q),
     .rst_reasons_o(hw2reg.reset_info)
   );
+
+  ////////////////////////////////////////////////////
+  // Exported resets                                //
+  ////////////////////////////////////////////////////
+% for intf, eps in export_rsts.items():
+  % for ep, rsts in eps.items():
+    % for rst in rsts:
+  assign resets_${intf}_o.rst_${intf}_${ep}_${rst}_n = resets_o.rst_${rst}_n;
+    % endfor
+  % endfor
+% endfor
 
   ////////////////////////////////////////////////////
   // Assertions                                     //

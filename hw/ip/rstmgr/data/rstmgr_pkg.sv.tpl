@@ -45,6 +45,17 @@ package rstmgr_pkg;
     logic ndmreset_req;
   } rstmgr_cpu_t;
 
+  // exported resets
+% for intf, eps in export_rsts.items():
+  typedef struct packed {
+  % for ep, rsts in eps.items():
+    % for rst in rsts:
+    logic rst_${intf}_${ep}_${rst}_n;
+    % endfor
+  % endfor
+  } rstmgr_${intf}_out_t;
+% endfor
+
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{
     rst_cpu_n: 1'b1,
