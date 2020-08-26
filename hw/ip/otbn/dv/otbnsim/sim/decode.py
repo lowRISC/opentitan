@@ -9,7 +9,7 @@
 # afterwards.
 
 import struct
-from typing import List, TypeVar
+from typing import List, Optional, TypeVar
 
 from riscvmodel.insn import get_insns  # type: ignore
 from riscvmodel.isa import Instruction, isa  # type: ignore
@@ -39,10 +39,14 @@ class IllegalInsn(Instruction):  # type: ignore
     we know this doesn't match any real instruction.
 
     '''
-    def __init__(self, word: int):
+    def __init__(self) -> None:
+        self.word = None  # type: Optional[int]
+
+    def decode(self, word: int) -> None:
         self.word = word
 
     def execute(self, model: Model) -> None:
+        assert self.word is not None
         raise RuntimeError('Illegal instruction at {:#x}: encoding {:#010x}.'
                            .format(int(model.state.pc), self.word))
 
@@ -51,6 +55,7 @@ def _decode_word(word_off: int,
                  word: int,
                  insn_classes: List[_InsnSubclass]) -> Instruction:
     opcode = word & 0x7f
+    insn = None
     for cls in insn_classes:
         if cls.field_opcode.value != opcode:
             continue
@@ -58,10 +63,12 @@ def _decode_word(word_off: int,
             continue
 
         insn = cls()
-        insn.decode(word)
-        return insn
+        break
 
-    return IllegalInsn(word)
+    if insn is None:
+        insn = IllegalInsn()
+    insn.decode(word)
+    return insn
 
 
 def decode_bytes(data: bytes, variant: Variant) -> List[Instruction]:
