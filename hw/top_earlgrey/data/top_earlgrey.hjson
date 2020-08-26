@@ -260,10 +260,11 @@
     { name: "rstmgr",
       type: "rstmgr",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
-                   clk_io_div2_i: "io_div2"},
+                   clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
       base_addr: "0x400B0000",
+      generated: "true"         // Indicate this module is generated in the topgen
     },
     { name: "clkmgr",
       type: "clkmgr",
@@ -413,11 +414,11 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr.clk_main': 'clk_main',
-        'clkmgr.clk_io': 'clk_io',
-        'clkmgr.clk_usb': 'clk_usb',
-        'clkmgr.clk_aon': 'clk_aon',
-        'rstmgr.ast': '',
+        'clkmgr.clk_main': 'clk_main',   // clock inputs
+        'clkmgr.clk_io': 'clk_io',       // clock inputs
+        'clkmgr.clk_usb': 'clk_usb',     // clock inputs
+        'clkmgr.clk_aon': 'clk_aon',     // clock inputs
+        'rstmgr.ast': '',                // ast reset input
         'pwrmgr.pwr_ast': '',
         'sensor_ctrl.ast_alert': '',
         'sensor_ctrl.ast_status': '',
