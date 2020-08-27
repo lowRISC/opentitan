@@ -148,10 +148,12 @@ class InstructionBNMULQACC(InstructionBNAQType):
 
         if self.wb_variant > 0:
             if self.wb_variant == 1:
-                model.set_wr_halfword(self.wrd, acc, self.wrd_hwsel)
-                acc = acc >> 128
-            elif self.wb_variant == 2:
                 model.state.wreg[self.wrd].set(acc)
+            elif self.wb_variant >= 2:
+                # set_wr_halfword expects 0 in upper 128 bits
+                acc_lower = acc & ((1 << 128) - 1)
+                model.set_wr_halfword(self.wrd, acc_lower, self.wrd_hwsel)
+                acc = acc >> 128
 
         model.state.single_regs['acc'].update(acc)
 
