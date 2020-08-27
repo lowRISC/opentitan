@@ -27,6 +27,7 @@ package chip_env_pkg;
 
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
+  parameter uint SPI_FRAME_BYTE_SIZE = 1024;
 
   // SW constants
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR = 32'h1000fffc;

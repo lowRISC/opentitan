@@ -23,11 +23,13 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
   // enable randomly injecting extra delay between 2 sck/word
   bit  en_extra_dly_btw_sck;
+  uint min_extra_dly_ns_btw_sck     = 1;
   uint max_extra_dly_ns_btw_sck     = 100;  // small delay to avoid transfer timeout
   uint extra_dly_chance_pc_btw_sck  = 5;    // percentage of extra delay btw each spi clock edge
   // Note: can't handle word delay, if a word is splitted into multiple csb.
   // In that case, control delay in seq level
   bit  en_extra_dly_btw_word;
+  uint min_extra_dly_ns_btw_word    = 1;
   uint max_extra_dly_ns_btw_word    = 1000; // no timeout btw word
   uint extra_dly_chance_pc_btw_word = 5;    // percentage of extra delay btw each word
 

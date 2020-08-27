@@ -76,6 +76,15 @@ else
 	# Compile the sw test code and generate the image.
 	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out \
 		${sw_test}_export_${sw_build_device}"
+	# Convert sw image to frame format
+	# TODO only needed for loading sw image through SPI. Can enhance this later
+	${LOCK_SW_BUILD} "ninja -C ${sw_build_dir}/build-out sw/host/spiflash/spiflash_export"
+	${LOCK_SW_BUILD} "${sw_build_dir}/build-bin/sw/host/spiflash/spiflash --input \
+		${sw_build_dir}/build-bin/${sw_test}_${sw_build_device}.bin \
+		--dump-frames=${run_dir}/sw.frames.bin"
+	${LOCK_SW_BUILD} "srec_cat ${run_dir}/sw.frames.bin --binary \
+		--offset 0x0 --byte-swap 4 --fill 0xff -within ${run_dir}/sw.frames.bin -binary -range-pad 4 \
+		--output ${run_dir}/sw.frames.vmem --vmem"
 	# Extract the sw test logs.
 	${proj_root}/util/device_sw_utils/extract_sw_logs.py \
 		-e "${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.elf" \

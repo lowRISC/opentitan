@@ -14,6 +14,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   // Write logs from sw test to separate log file as well, in addition to the simulator log file.
   bit                 write_sw_logs_to_file = 1'b1;
 
+  // use spi or backdoor to load bootstrap
+  bit                 use_spi_load_bootstrap = 0;
+
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;
@@ -28,6 +31,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_logger_vif             sw_logger_vif;
   int sw_image_widths[]     = '{32, 64};
   string                    sw_images[string];
+  string                    sw_frame_image = "sw.frames.vmem";
   virtual sw_test_status_if sw_test_status_vif;
   uint                      sw_test_timeout_ns = 5_000_000; // 5ms
 
