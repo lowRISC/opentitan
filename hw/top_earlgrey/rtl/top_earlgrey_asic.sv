@@ -253,6 +253,8 @@ module top_earlgrey_asic (
     .sensor_ctrl_ast_status_i    ( ast_base_status       ),
     .usbdev_usb_ref_val_o        ( usb_ref_pulse         ),
     .usbdev_usb_ref_pulse_o      ( usb_ref_val           ),
+    .ast_tl_req_o                ( base_ast_bus          ),
+    .ast_tl_rsp_i                ( ast_base_bus          ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

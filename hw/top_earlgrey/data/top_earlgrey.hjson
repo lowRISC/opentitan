@@ -406,6 +406,7 @@
 
         // Xbars
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'
+
     ],
 
     // ext is to create port in the top.
@@ -420,6 +421,7 @@
         'sensor_ctrl.ast_status': '',
         'usbdev.usb_ref_val': '',
         'usbdev.usb_ref_pulse': '',
+        'peri.tl_ast_wrapper': 'ast_tl'
     },
   },
 

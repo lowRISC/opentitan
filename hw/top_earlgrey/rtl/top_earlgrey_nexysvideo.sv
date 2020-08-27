@@ -240,6 +240,8 @@ module top_earlgrey_nexysvideo #(
     .sensor_ctrl_ast_status_i    ( ast_base_status ),
     .usbdev_usb_ref_val_o        (                 ),
     .usbdev_usb_ref_pulse_o      (                 ),
+    .ast_tl_req_o                (                 ),
+    .ast_tl_rsp_i                ( '0              ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

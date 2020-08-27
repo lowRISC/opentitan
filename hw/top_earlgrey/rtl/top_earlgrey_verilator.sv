@@ -107,6 +107,8 @@ module top_earlgrey_verilator (
     .sensor_ctrl_ast_status_i     (ast_base_status),
     .usbdev_usb_ref_val_o         (),
     .usbdev_usb_ref_pulse_o       (),
+    .ast_tl_req_o                 (),
+    .ast_tl_rsp_i                 ('0),
 
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),
