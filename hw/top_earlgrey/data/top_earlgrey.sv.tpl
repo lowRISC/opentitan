@@ -189,8 +189,8 @@ module top_${top["name"]} #(
     .PMPEnable                (1),
     .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
     .PMPNumRegions            (16),
-    .MHPMCounterNum           (8),
-    .MHPMCounterWidth         (40),
+    .MHPMCounterNum           (10),
+    .MHPMCounterWidth         (32),
     .RV32E                    (0),
     .RV32M                    (ibex_pkg::RV32MSingleCycle),
     .RV32B                    (ibex_pkg::RV32BNone),
