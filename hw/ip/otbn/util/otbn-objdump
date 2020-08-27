@@ -76,7 +76,7 @@ def extract_operands(raw: int, encoding: Encoding) -> Dict[str, int]:
 #
 #   6d0:   0000418b                0x418b
 #
-_RAW_INSN_RE = re.compile(r'([\s]*[0-9a-f]+:[\s]+([0-9a-f]{8})[\s]+)'
+_RAW_INSN_RE = re.compile(r'([\s]*([0-9a-f]+):[\s]+([0-9a-f]{8})[\s]+)'
                           r'0x[0-9a-f]+\s*$')
 
 
@@ -87,15 +87,18 @@ def transform_disasm_line(line: str,
     if match is None:
         return line
 
-    # Parse match.group(2) as an integer. It was exactly 8 hex characters, so
-    # will fit in a u32.
-    raw = int(match.group(2), 16)
+    # match.group(3) is the raw instruction word. Parse it as an integer. It
+    # was exactly 8 hex characters, so will fit in a u32.
+    raw = int(match.group(3), 16)
     assert 0 <= raw < (1 << 32)
 
     insn = get_insn(raw, masks)
     if insn is None:
         # No match for this instruction pattern. Leave as-is.
         return line
+
+    # match.group(2) is the PC in hex.
+    pc = int(match.group(2), 16)
 
     # Extract operand values. We know we have an encoding (otherwise
     # get_insn_masks wouldn't have added the instruction to the masks list).
@@ -108,7 +111,8 @@ def transform_disasm_line(line: str,
     return('{}{:7}{}{}'.format(match.group(1), insn.mnemonic,
                                '' if insn.glued_ops else ' ',
                                insn.syntax.render_vals(op_vals,
-                                                       insn.name_to_operand)))
+                                                       insn.name_to_operand,
+                                                       pc)))
 
 
 def get_insn_masks(insns_file: InsnsFile) -> List[Tuple[int, int, Insn]]:

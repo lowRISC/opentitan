@@ -96,6 +96,10 @@ encoding-schemes: enc-schemes.yml
 #
 #  doc:       A fragment of markdown that documents the operand
 #
+#  pc-rel:    Only valid for immediate operands. If true, this operand is
+#             encoded relative to the current PC. Optional boolean,
+#             defaults to false.
+#
 # The valid operand types are as follows:
 #
 #  gpr:       The name of a general purpose register. Syntax "grs" for a

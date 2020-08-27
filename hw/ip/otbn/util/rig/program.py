@@ -37,7 +37,7 @@ class ProgInsn:
         self.operands = operands
         self.lsu_info = lsu_info
 
-    def to_asm(self) -> str:
+    def to_asm(self, cur_pc: int) -> str:
         '''Return an assembly representation of the instruction'''
         insn = self.insn
         # We should never try to generate an instruction without syntax
@@ -51,7 +51,9 @@ class ProgInsn:
         for operand, op_val in zip(insn.operands, self.operands):
             op_vals[operand.name] = op_val
 
-        rendered_ops = insn.syntax.render_vals(op_vals, insn.name_to_operand)
+        rendered_ops = insn.syntax.render_vals(op_vals,
+                                               insn.name_to_operand,
+                                               cur_pc)
         if insn.glued_ops and rendered_ops:
             mnem = insn.mnemonic + rendered_ops[0]
             rendered_ops = rendered_ops[1:]
@@ -277,8 +279,9 @@ class Program:
             comment = Program._get_section_comment(idx, addr, insns)
             out_file.write('{}{}\n'.format('\n' if idx else '', comment))
             out_file.write('.section .text.sec{:04}\n'.format(idx))
-            for pi in insns:
-                out_file.write(pi.to_asm() + '\n')
+            for insn_off, pi in enumerate(insns):
+                cur_pc = addr + 4 * insn_off
+                out_file.write(pi.to_asm(cur_pc) + '\n')
 
     def dump_linker_script(self, out_file: TextIO) -> None:
         '''Write a linker script to link the program
