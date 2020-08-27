@@ -311,8 +311,6 @@ class EnumOperandType(ImmOperandType):
                                          len(items), min_width))
             width = scheme_field.bits.width
 
-            # TODO  shift check  
-
         super().__init__(width, 0, False)
         self.items = items
 
@@ -366,8 +364,6 @@ class OptionOperandType(ImmOperandType):
         if scheme_field is not None:
             assert width <= scheme_field.bits.width
             width = scheme_field.bits.width
-
-        # todo shift check  
 
         super().__init__(width, 0, False)
         self.option = option
