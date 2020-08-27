@@ -230,6 +230,7 @@ module top_earlgrey_cw305 #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(40),
+    .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
