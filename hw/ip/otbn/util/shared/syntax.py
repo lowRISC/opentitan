@@ -78,7 +78,8 @@ class SyntaxToken:
 
     def render_vals(self,
                     op_vals: Dict[str, int],
-                    operands: Dict[str, Operand]) -> str:
+                    operands: Dict[str, Operand],
+                    cur_pc: int) -> str:
         '''Return an assembly listing for the given operand fields
 
         '''
@@ -88,7 +89,8 @@ class SyntaxToken:
         assert self.text in op_vals
         assert self.text in operands
 
-        return operands[self.text].op_type.render_val(op_vals[self.text])
+        op_type = operands[self.text].op_type
+        return op_type.render_val(op_vals[self.text], cur_pc)
 
 
 class SyntaxHunk:
@@ -186,7 +188,8 @@ class SyntaxHunk:
 
     def render_vals(self,
                     op_vals: Dict[str, int],
-                    operands: Dict[str, Operand]) -> str:
+                    operands: Dict[str, Operand],
+                    cur_pc: int) -> str:
         '''Return an assembly listing for the hunk given operand values
 
         If this hunk is optional and all its operands are zero, the hunk is
@@ -203,7 +206,7 @@ class SyntaxHunk:
             if not required:
                 return ''
 
-        return ''.join(token.render_vals(op_vals, operands)
+        return ''.join(token.render_vals(op_vals, operands, cur_pc)
                        for token in self.tokens)
 
 
@@ -346,9 +349,10 @@ class InsnSyntax:
 
     def render_vals(self,
                     op_vals: Dict[str, int],
-                    operands: Dict[str, Operand]) -> str:
+                    operands: Dict[str, Operand],
+                    cur_pc: int) -> str:
         '''Return an assembly listing for the given operand fields'''
         parts = []
         for hunk in self.hunks:
-            parts.append(hunk.render_vals(op_vals, operands))
+            parts.append(hunk.render_vals(op_vals, operands, cur_pc))
         return ''.join(parts)

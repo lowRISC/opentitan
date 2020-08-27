@@ -288,6 +288,7 @@
     - grs2
     - &branch-offset-operand
       name: offset
+      pc-rel: true
       type: simm<<1
   straight-line: false
   encoding:
