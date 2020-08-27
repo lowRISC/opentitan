@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import logging
-from enum import Enum, auto
+from enum import Enum, IntEnum, auto
 from bitstring import BitArray
-from pygen_src.target.rv32i import riscv_core_setting as rcs
+from pygen.pygen_src.target.rv32i import riscv_core_setting as rcs
 
 
 class mem_region_t:
@@ -24,7 +24,7 @@ class mem_region_t:
     xwr = auto()
 
 
-class satp_mode_t(Enum):
+class satp_mode_t(IntEnum):
     BARE = 0b0000
     SV32 = 0b0001
     SV39 = 0b1000
@@ -33,7 +33,7 @@ class satp_mode_t(Enum):
     SV64 = 0b1011
 
 
-class f_rounding_mode_t(Enum):
+class f_rounding_mode_t(IntEnum):
     RNE = 0b000
     RTZ = 0b001
     RDN = 0b010
@@ -41,26 +41,26 @@ class f_rounding_mode_t(Enum):
     RMM = 0b100
 
 
-class mtvec_mode_t(Enum):
+class mtvec_mode_t(IntEnum):
     DIRECT = 0b00
     VECTORED = 0b01
 
 
-class imm_t(Enum):
+class imm_t(IntEnum):
     IMM = 0
     UIMM = auto()
     NZUIMM = auto()
     NZIMM = auto()
 
 
-class privileged_mode_t(Enum):
+class privileged_mode_t(IntEnum):
     USER_MODE = 0b00
     SUPERVISOR_MODE = 0b01
     RESERVED_MODE = 0b10
     MACHINE_MODE = 0b11
 
 
-class riscv_instr_group_t(Enum):
+class riscv_instr_group_t(IntEnum):
     RV32I = 0
     RV64I = auto()
     RV32M = auto()
@@ -85,7 +85,7 @@ class riscv_instr_group_t(Enum):
     RV64X = auto()
 
 
-class riscv_instr_name_t(Enum):
+class riscv_instr_name_t(IntEnum):
     LUI = 0
     AUIPC = auto()
     JAL = auto()
@@ -560,7 +560,7 @@ class riscv_instr_name_t(Enum):
     INVALID_INSTR = auto()
 
 
-class riscv_reg_t(Enum):
+class riscv_reg_t(IntEnum):
     ZERO = 0
     RA = auto()
     SP = auto()
@@ -595,7 +595,7 @@ class riscv_reg_t(Enum):
     T6 = auto()
 
 
-class riscv_fpr_t(Enum):
+class riscv_fpr_t(IntEnum):
     FT0 = 0
     FT1 = auto()
     FT2 = auto()
@@ -630,7 +630,7 @@ class riscv_fpr_t(Enum):
     FT11 = auto()
 
 
-class riscv_vreg_t(Enum):
+class riscv_vreg_t(IntEnum):
     V0 = 0
     V1 = auto()
     V2 = auto()
@@ -665,7 +665,7 @@ class riscv_vreg_t(Enum):
     V31 = auto()
 
 
-class riscv_instr_format_t(Enum):
+class riscv_instr_format_t(IntEnum):
     J_FORMAT = 0
     U_FORMAT = auto()
     I_FORMAT = auto()
@@ -689,7 +689,7 @@ class riscv_instr_format_t(Enum):
     VS_FORMAT = auto()
 
 
-class va_variant_t(Enum):
+class va_variant_t(IntEnum):
     VV = 0
     VI = auto()
     VX = auto()
@@ -705,7 +705,7 @@ class va_variant_t(Enum):
     VM = auto()
 
 
-class riscv_instr_category_t(Enum):
+class riscv_instr_category_t(IntEnum):
     LOAD = 0
     STORE = auto()
     SHIFT = auto()
@@ -722,10 +722,12 @@ class riscv_instr_category_t(Enum):
     TRAP = auto()
     INTERRUPT = auto()
     AMO = auto()
+
+
 # typedef bit[11:0] riscv_csr_t;
 
 
-class privileged_reg_t(Enum):
+class privileged_reg_t(IntEnum):
     USTATUS = 0x000
     UIE = 0x004
     UTVEC = 0x005
@@ -956,7 +958,7 @@ class privileged_reg_t(Enum):
     VLENB = 0xC22
 
 
-class privileged_reg_fld_t(Enum):
+class privileged_reg_fld_t(IntEnum):
     RSVD = 0
     MXL = auto()
     EXTENSION = auto()
@@ -965,30 +967,30 @@ class privileged_reg_fld_t(Enum):
     PPN = auto()
 
 
-class privileged_level_t(Enum):
+class privileged_level_t(IntEnum):
     M_LEVEL = 0b11
     S_LEVEL = 0b01
     U_LEVEL = 0b00
 
 
-class reg_field_access_t(Enum):
+class reg_field_access_t(IntEnum):
     WPRI = 0
     WLRL = auto()
     WARL = auto()
 
 
-class riscv_pseudo_instr_name_t(Enum):
+class riscv_pseudo_instr_name_t(IntEnum):
     LI = 0
     LA = auto()
 
 
-class data_pattern_t(Enum):
+class data_pattern_t(IntEnum):
     RAND_DATA = 0
     ALL_ZERO = auto()
     INCR_VAL = auto()
 
 
-class pte_permission_t(Enum):
+class pte_permission_t(IntEnum):
     NEXT_LEVEL_PAGE = 0b000
     READ_ONLY_PAGE = 0b001
     READ_WRITE_PAGE = 0b011
@@ -997,7 +999,7 @@ class pte_permission_t(Enum):
     R_W_EXECUTE_PAGE = 0b111
 
 
-class interrupt_cause_t(Enum):
+class interrupt_cause_t(IntEnum):
     U_SOFTWARE_INTR = 0x0
     S_SOFTWARE_INTR = 0x1
     M_SOFTWARE_INTR = 0x3
@@ -1009,7 +1011,7 @@ class interrupt_cause_t(Enum):
     M_EXTERNAL_INTR = 0xB
 
 
-class exception_cause_t(Enum):
+class exception_cause_t(IntEnum):
     INSTRUCTION_ADDRESS_MISALIGNED = 0x0
     INSTRUCTION_ACCESS_FAULT = 0x1
     ILLEGAL_INSTRUCTION = 0x2
@@ -1026,7 +1028,7 @@ class exception_cause_t(Enum):
     STORE_AMO_PAGE_FAULT = 0xF
 
 
-class misa_ext_t(Enum):
+class misa_ext_t(IntEnum):
     MISA_EXT_A = 0
     MISA_EXT_B = auto()
     MISA_EXT_C = auto()
@@ -1055,11 +1057,75 @@ class misa_ext_t(Enum):
     MISA_EXT_Z = auto()
 
 
-class hazard_e(Enum):
+class hazard_e(IntEnum):
     NO_HAZARD = 0
     RAW_HAZARD = auto()
     WAR_HAZARD = auto()
     WAW_HAZARD = auto()
+
+
+# TODO: ignore bins is not yet supported in pyvsc; extra enums will be removed
+#  once support is added
+# Ignore WAR/WAW_HAZARD for branch instructions
+class branch_hazard_e(IntEnum):
+    NO_HAZARD = 0
+    RAW_HAZARD = auto()
+
+
+# RV32I_MISC covergroup instructions
+class rv32i_misc_instrs(IntEnum):
+    FENCE = 0
+    FENCE_I = auto()
+    EBREAK = auto()
+    ECALL = auto()
+    MRET = auto()
+
+# Ignore RAW_HAZARD for store lsu hazard
+class store_lsu_hazard_e(IntEnum):
+    NO_HAZARD = 0
+    WAR_HAZARD = auto()
+    WAW_HAZARD = auto()
+
+
+# RA/T1 for rs1/rd_link in jalr instruction
+class jalr_riscv_reg_t(IntEnum):
+    RA = 0
+    T1 = auto()
+
+
+# Ignore ZERO as src1 of load instructions
+class riscv_reg_ex_zero_t(IntEnum):
+    RA = 0
+    SP = auto()
+    GP = auto()
+    TP = auto()
+    T0 = auto()
+    T1 = auto()
+    T2 = auto()
+    S0 = auto()
+    S1 = auto()
+    A0 = auto()
+    A1 = auto()
+    A2 = auto()
+    A3 = auto()
+    A4 = auto()
+    A5 = auto()
+    A6 = auto()
+    A7 = auto()
+    S2 = auto()
+    S3 = auto()
+    S4 = auto()
+    S5 = auto()
+    S6 = auto()
+    S7 = auto()
+    S8 = auto()
+    S9 = auto()
+    S10 = auto()
+    S11 = auto()
+    T3 = auto()
+    T4 = auto()
+    T5 = auto()
+    T6 = auto()
 
 
 class pmp_addr_mode_t(Enum):
@@ -1161,29 +1227,215 @@ class all_categories(Enum):
     INTERRUPT = auto()
     AMO = auto()
 
+
 def get_val(in_string, hexa=0):
     if len(in_string) > 2:
         if "0x" in in_string:
-            out_val = hex(int(in_string, base=16))
+            out_val = int(in_string, base=16)
             return out_val
-        if hexa:
-            out_val = hex(int(in_string, base=16))
-        else:
-            out_val = int(in_string)
-            logging.info("riscv_instr_pkg: imm: {} -> {}".format(in_string, out_val))
-        return out_val
+    if hexa:
+        out_val = int(in_string, base=16)
+    else:
+        out_val = int(in_string)
+    logging.info("imm: {} -> {}".format(in_string, out_val))
+    return out_val
 
-class hazard_e(Enum):
-    NO_HAZARD = 0
-    RAW_HAZARD = auto()
-    WAR_HAZARD = auto()
-    WAW_HAZARD = auto()
+
+def get_attr_list(instr_name):
+    switcher = {
+        # LOAD instructions
+        riscv_instr_name_t.LB: [riscv_instr_format_t.I_FORMAT,
+                                riscv_instr_category_t.LOAD,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.LH: [riscv_instr_format_t.I_FORMAT,
+                                riscv_instr_category_t.LOAD,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.LW: [riscv_instr_format_t.I_FORMAT,
+                                riscv_instr_category_t.LOAD,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.LBU: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.LOAD,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.LHU: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.LOAD,
+                                 riscv_instr_group_t.RV32I],
+        # STORE instructions
+        riscv_instr_name_t.SB: [riscv_instr_format_t.S_FORMAT,
+                                riscv_instr_category_t.STORE,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SH: [riscv_instr_format_t.S_FORMAT,
+                                riscv_instr_category_t.STORE,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SW: [riscv_instr_format_t.S_FORMAT,
+                                riscv_instr_category_t.STORE,
+                                riscv_instr_group_t.RV32I],
+        # SHIFT intructions
+        riscv_instr_name_t.SLL: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SLLI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SHIFT,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SRL: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SRLI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SHIFT,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SRA: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.SHIFT,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SRAI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SHIFT,
+                                  riscv_instr_group_t.RV32I],
+        # ARITHMETIC intructions
+        riscv_instr_name_t.ADD: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.ADDI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.ARITHMETIC,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.NOP: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SUB: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.LUI: [riscv_instr_format_t.U_FORMAT,
+                                 riscv_instr_category_t.ARITHMETIC,
+                                 riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.AUIPC: [riscv_instr_format_t.U_FORMAT,
+                                   riscv_instr_category_t.ARITHMETIC,
+                                   riscv_instr_group_t.RV32I, imm_t.UIMM],
+        # LOGICAL instructions
+        riscv_instr_name_t.XOR: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.LOGICAL,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.XORI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.LOGICAL,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.OR: [riscv_instr_format_t.R_FORMAT,
+                                riscv_instr_category_t.LOGICAL,
+                                riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.ORI: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.LOGICAL,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.AND: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.LOGICAL,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.ANDI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.LOGICAL,
+                                  riscv_instr_group_t.RV32I],
+        # COMPARE instructions
+        riscv_instr_name_t.SLT: [riscv_instr_format_t.R_FORMAT,
+                                 riscv_instr_category_t.COMPARE,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SLTI: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.COMPARE,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SLTU: [riscv_instr_format_t.R_FORMAT,
+                                  riscv_instr_category_t.COMPARE,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SLTIU: [riscv_instr_format_t.I_FORMAT,
+                                   riscv_instr_category_t.COMPARE,
+                                   riscv_instr_group_t.RV32I],
+        # BRANCH instructions
+        riscv_instr_name_t.BEQ: [riscv_instr_format_t.B_FORMAT,
+                                 riscv_instr_category_t.BRANCH,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.BNE: [riscv_instr_format_t.B_FORMAT,
+                                 riscv_instr_category_t.BRANCH,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.BLT: [riscv_instr_format_t.B_FORMAT,
+                                 riscv_instr_category_t.BRANCH,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.BGE: [riscv_instr_format_t.B_FORMAT,
+                                 riscv_instr_category_t.BRANCH,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.BLTU: [riscv_instr_format_t.B_FORMAT,
+                                  riscv_instr_category_t.BRANCH,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.BGEU: [riscv_instr_format_t.B_FORMAT,
+                                  riscv_instr_category_t.BRANCH,
+                                  riscv_instr_group_t.RV32I],
+        # JUMP instructions
+        riscv_instr_name_t.JAL: [riscv_instr_format_t.J_FORMAT,
+                                 riscv_instr_category_t.JUMP,
+                                 riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.JALR: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.JUMP,
+                                  riscv_instr_group_t.RV32I],
+        # SYNCH instructions
+        riscv_instr_name_t.FENCE: [riscv_instr_format_t.I_FORMAT,
+                                   riscv_instr_category_t.SYNCH,
+                                   riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.FENCE_I: [riscv_instr_format_t.I_FORMAT,
+                                     riscv_instr_category_t.SYNCH,
+                                     riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SFENCE_VMA: [riscv_instr_format_t.R_FORMAT,
+                                        riscv_instr_category_t.SYNCH,
+                                        riscv_instr_group_t.RV32I],
+        # SYSTEM instructions
+        riscv_instr_name_t.ECALL: [riscv_instr_format_t.I_FORMAT,
+                                   riscv_instr_category_t.SYSTEM,
+                                   riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.EBREAK: [riscv_instr_format_t.I_FORMAT,
+                                    riscv_instr_category_t.SYSTEM,
+                                    riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.URET: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SYSTEM,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.SRET: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SYSTEM,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.MRET: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SYSTEM,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.DRET: [riscv_instr_format_t.I_FORMAT,
+                                  riscv_instr_category_t.SYSTEM,
+                                  riscv_instr_group_t.RV32I],
+        riscv_instr_name_t.WFI: [riscv_instr_format_t.I_FORMAT,
+                                 riscv_instr_category_t.INTERRUPT,
+                                 riscv_instr_group_t.RV32I],
+        # CSR instructions
+        riscv_instr_name_t.CSRRW: [riscv_instr_format_t.R_FORMAT,
+                                   riscv_instr_category_t.CSR,
+                                   riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.CSRRS: [riscv_instr_format_t.R_FORMAT,
+                                   riscv_instr_category_t.CSR,
+                                   riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.CSRRC: [riscv_instr_format_t.R_FORMAT,
+                                   riscv_instr_category_t.CSR,
+                                   riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.CSRRWI: [riscv_instr_format_t.I_FORMAT,
+                                    riscv_instr_category_t.CSR,
+                                    riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.CSRRSI: [riscv_instr_format_t.I_FORMAT,
+                                    riscv_instr_category_t.CSR,
+                                    riscv_instr_group_t.RV32I, imm_t.UIMM],
+        riscv_instr_name_t.CSRRCI: [riscv_instr_format_t.I_FORMAT,
+                                    riscv_instr_category_t.CSR,
+                                    riscv_instr_group_t.RV32I, imm_t.UIMM],
+    }
+    # if instruction is not present in the dictionary,second argument well
+    # be assigned as default value of passed argument
+    attr_list = switcher.get(instr_name, "Cannot find instruction")
+    return attr_list
+
+
+def add_functions_as_methods(function):
+    def decorator(Class):
+        setattr(Class, function.__name__, function)
+        return Class
+
+    return decorator
+
 
 class riscv_instr_pkg:
     def __init__(self):
-        self.MPRV_BIT_MASK = BitArray(uint= 0x1 << 0x17, length = rcs.XLEN)
-        self.SUM_BIT_MASK = BitArray(uint = 0x1 << 0x18, length = rcs.XLEN)
-        self.MPP_BIT_MASK = BitArray(uint = 0x3 << 0x11, length = rcs.XLEN)
+        self.MPRV_BIT_MASK = BitArray(uint=0x1 << 0x17, length=rcs.XLEN)
+        self.SUM_BIT_MASK = BitArray(uint=0x1 << 0x18, length=rcs.XLEN)
+        self.MPP_BIT_MASK = BitArray(uint=0x3 << 0x11, length=rcs.XLEN)
         self.MAX_USED_VADDR_BITS = 30
         self.IMM25_WIDTH = 25
         self.IMM12_WIDTH = 12
@@ -1196,8 +1448,8 @@ class riscv_instr_pkg:
         self.MAX_CALL_PER_FUNC = 5
         self.indent = self.LABEL_STR_LEN * " "
 
-    def hart_prefix(self, hart = 0):
-        if(rcs.NUM_HARTS <= 1):
+    def hart_prefix(self, hart=0):
+        if (rcs.NUM_HARTS <= 1):
             return ""
         else:
             return f"h{hart}_"
@@ -1205,17 +1457,18 @@ class riscv_instr_pkg:
     def get_label(self, label, hart=0):
         return (self.hart_prefix(hart) + label)
 
-    def format_string(self, string, length = 10):
+    def format_string(self, string, length=10):
         formatted_str = length * " "
         if (int(length) < len(string)):
             return string
         formatted_str = string + formatted_str[0: (int(length) - len(string))]
         return formatted_str
 
-    def format_data(self, data, byte_per_group = 4):
+    def format_data(self, data, byte_per_group=4):
         string = "0x"
         for i in range(len(data)):
-            if ((i % byte_per_group == 0) and (i != len(data) - 1) and (i != 0)):
+            if ((i % byte_per_group == 0) and (i != len(data) - 1) and (
+                    i != 0)):
                 string = string + ", 0x"
             string = string + f"{hex(data[i])}"
         return string

@@ -12,6 +12,8 @@ pyyaml
 mako
 
 # Needed by dvsim.py (not actually used in Ibex)
+hjson
+mistletoe>=0.7.2
 premailer
 
 # Recurse to get any requirements from riscv-dv

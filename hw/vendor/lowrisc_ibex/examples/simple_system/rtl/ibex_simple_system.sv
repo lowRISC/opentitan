@@ -2,8 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// VCS does not support overriding enum and string parameters via command line. Instead, a `define
+// is used that can be set from the command line. If no value has been specified, this gives a
+// default. Other simulators don't take the detour via `define and can override the corresponding
+// parameters directly.
+`ifndef RV32M
+  `define RV32M ibex_pkg::RV32MFast
+`endif
+
 `ifndef RV32B
   `define RV32B ibex_pkg::RV32BNone
+`endif
+
+`ifndef RegFile
+  `define RegFile ibex_pkg::RegFileFF
 `endif
 
 /**
@@ -23,17 +35,18 @@ module ibex_simple_system (
   input IO_RST_N
 );
 
-  parameter bit               SecureIbex               = 1'b0;
-  parameter bit               PMPEnable                = 1'b0;
-  parameter int unsigned      PMPGranularity           = 0;
-  parameter int unsigned      PMPNumRegions            = 4;
-  parameter bit               RV32E                    = 1'b0;
-  parameter bit               RV32M                    = 1'b1;
-  parameter ibex_pkg::rv32b_e RV32B                    = `RV32B;
-  parameter bit               BranchTargetALU          = 1'b0;
-  parameter bit               WritebackStage           = 1'b0;
-  parameter                   MultiplierImplementation = "fast";
-  parameter                   SRAMInitFile             = "";
+  parameter bit                 SecureIbex               = 1'b0;
+  parameter bit                 PMPEnable                = 1'b0;
+  parameter int unsigned        PMPGranularity           = 0;
+  parameter int unsigned        PMPNumRegions            = 4;
+  parameter bit                 RV32E                    = 1'b0;
+  parameter ibex_pkg::rv32m_e   RV32M                    = `RV32M;
+  parameter ibex_pkg::rv32b_e   RV32B                    = `RV32B;
+  parameter ibex_pkg::regfile_e RegFile                  = `RegFile;
+  parameter bit                 BranchTargetALU          = 1'b0;
+  parameter bit                 WritebackStage           = 1'b0;
+  parameter bit                 BranchPredictor          = 1'b0;
+  parameter                     SRAMInitFile             = "";
 
   logic clk_sys = 1'b0, rst_sys_n;
 
@@ -147,19 +160,20 @@ module ibex_simple_system (
   );
 
   ibex_core_tracing #(
-      .SecureIbex               ( SecureIbex               ),
-      .PMPEnable                ( PMPEnable                ),
-      .PMPGranularity           ( PMPGranularity           ),
-      .PMPNumRegions            ( PMPNumRegions            ),
-      .MHPMCounterNum           ( 29                       ),
-      .RV32E                    ( RV32E                    ),
-      .RV32M                    ( RV32M                    ),
-      .RV32B                    ( RV32B                    ),
-      .BranchTargetALU          ( BranchTargetALU          ),
-      .WritebackStage           ( WritebackStage           ),
-      .MultiplierImplementation ( MultiplierImplementation ),
-      .DmHaltAddr               ( 32'h00100000             ),
-      .DmExceptionAddr          ( 32'h00100000             )
+      .SecureIbex      ( SecureIbex      ),
+      .PMPEnable       ( PMPEnable       ),
+      .PMPGranularity  ( PMPGranularity  ),
+      .PMPNumRegions   ( PMPNumRegions   ),
+      .MHPMCounterNum  ( 29              ),
+      .RV32E           ( RV32E           ),
+      .RV32M           ( RV32M           ),
+      .RV32B           ( RV32B           ),
+      .RegFile         ( RegFile         ),
+      .BranchTargetALU ( BranchTargetALU ),
+      .WritebackStage  ( WritebackStage  ),
+      .BranchPredictor ( BranchPredictor ),
+      .DmHaltAddr      ( 32'h00100000    ),
+      .DmExceptionAddr ( 32'h00100000    )
     ) u_core (
       .clk_i                 (clk_sys),
       .rst_ni                (rst_sys_n),

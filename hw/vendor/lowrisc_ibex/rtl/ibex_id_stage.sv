@@ -18,12 +18,13 @@
 
 module ibex_id_stage #(
     parameter bit               RV32E           = 0,
-    parameter bit               RV32M           = 1,
+    parameter ibex_pkg::rv32m_e RV32M           = ibex_pkg::RV32MFast,
     parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
     parameter bit               DataIndTiming   = 1'b0,
     parameter bit               BranchTargetALU = 0,
     parameter bit               SpecBranch      = 0,
-    parameter bit               WritebackStage  = 0
+    parameter bit               WritebackStage  = 0,
+    parameter bit               BranchPredictor = 0
 ) (
     input  logic                      clk_i,
     input  logic                      rst_ni,
@@ -37,6 +38,7 @@ module ibex_id_stage #(
     input  logic [31:0]               instr_rdata_alu_i,     // from IF-ID pipeline registers
     input  logic [15:0]               instr_rdata_c_i,       // from IF-ID pipeline registers
     input  logic                      instr_is_compressed_i,
+    input  logic                      instr_bp_taken_i,
     output logic                      instr_req_o,
     output logic                      instr_first_cycle_id_o,
     output logic                      instr_valid_clear_o,   // kill instr in IF-ID reg
@@ -50,6 +52,7 @@ module ibex_id_stage #(
     output logic                      pc_set_o,
     output logic                      pc_set_spec_o,
     output ibex_pkg::pc_sel_e         pc_mux_o,
+    output logic                      nt_branch_mispredict_o,
     output ibex_pkg::exc_pc_sel_e     exc_pc_mux_o,
     output ibex_pkg::exc_cause_e      exc_cause_o,
 
@@ -195,6 +198,7 @@ module ibex_id_stage #(
   logic        branch_in_dec;
   logic        branch_spec, branch_set_spec;
   logic        branch_set, branch_set_d;
+  logic        branch_not_set;
   logic        branch_taken;
   logic        jump_in_dec;
   logic        jump_set_dec;
@@ -519,7 +523,8 @@ module ibex_id_stage #(
   assign illegal_insn_o = instr_valid_i & (illegal_insn_dec | illegal_csr_insn_i);
 
   ibex_controller #(
-    .WritebackStage ( WritebackStage )
+    .WritebackStage  ( WritebackStage  ),
+    .BranchPredictor ( BranchPredictor )
   ) controller_i (
       .clk_i                          ( clk_i                   ),
       .rst_ni                         ( rst_ni                  ),
@@ -540,6 +545,7 @@ module ibex_id_stage #(
       .instr_i                        ( instr_rdata_i           ),
       .instr_compressed_i             ( instr_rdata_c_i         ),
       .instr_is_compressed_i          ( instr_is_compressed_i   ),
+      .instr_bp_taken_i               ( instr_bp_taken_i        ),
       .instr_fetch_err_i              ( instr_fetch_err_i       ),
       .instr_fetch_err_plus2_i        ( instr_fetch_err_plus2_i ),
       .pc_id_i                        ( pc_id_i                 ),
@@ -554,6 +560,7 @@ module ibex_id_stage #(
       .pc_set_o                       ( pc_set_o                ),
       .pc_set_spec_o                  ( pc_set_spec_o           ),
       .pc_mux_o                       ( pc_mux_o                ),
+      .nt_branch_mispredict_o         ( nt_branch_mispredict_o  ),
       .exc_pc_mux_o                   ( exc_pc_mux_o            ),
       .exc_cause_o                    ( exc_cause_o             ),
 
@@ -566,6 +573,7 @@ module ibex_id_stage #(
       // jump/branch control
       .branch_set_i                   ( branch_set              ),
       .branch_set_spec_i              ( branch_set_spec         ),
+      .branch_not_set_i               ( branch_not_set          ),
       .jump_set_i                     ( jump_set                ),
 
       // interrupt signals
@@ -687,11 +695,11 @@ module ibex_id_stage #(
 
   end
 
-  // Holding branch_set/jump_set high for more than one cycle may not cause a functional issue but
-  // could generate needless prefetch buffer flushes and instruction fetches. ID/EX is designed such
-  // that this shouldn't ever happen.
-  `ASSERT(NeverDoubleBranch, branch_set |=> ~branch_set)
-  `ASSERT(NeverDoubleJump, jump_set |=> ~jump_set)
+  // Holding branch_set/jump_set high for more than one cycle should not cause a functional issue.
+  // However it could generate needless prefetch buffer flushes and instruction fetches. The ID/EX
+  // designs ensures that this never happens for non-predicted branches.
+  `ASSERT(NeverDoubleBranch, branch_set & ~instr_bp_taken_i |=> ~branch_set)
+  `ASSERT(NeverDoubleJump, jump_set & ~instr_bp_taken_i |=> ~jump_set)
 
   ///////////////
   // ID-EX FSM //
@@ -722,6 +730,7 @@ module ibex_id_stage #(
     stall_alu               = 1'b0;
     branch_set_d            = 1'b0;
     branch_spec             = 1'b0;
+    branch_not_set          = 1'b0;
     jump_set                = 1'b0;
     perf_branch_o           = 1'b0;
 
@@ -757,6 +766,11 @@ module ibex_id_stage #(
                                   MULTI_CYCLE : FIRST_CYCLE;
               stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
               branch_set_d  = branch_decision_i | data_ind_timing_i;
+
+              if (BranchPredictor) begin
+                branch_not_set = ~branch_decision_i;
+              end
+
               // Speculative branch (excludes branch_decision_i)
               branch_spec   = SpecBranch ? 1'b1 : branch_decision_i;
               perf_branch_o = 1'b1;

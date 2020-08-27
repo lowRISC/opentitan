@@ -42,7 +42,7 @@ The decoder takes uncompressed instruction data and issues appropriate control s
 
 Register File
 -------------
-Source Files: :file:`rtl/ibex_register_file_ff.sv` :file:`rtl/ibex_register_file_latch.sv`
+Source Files: :file:`rtl/ibex_register_file_ff.sv` :file:`rtl/ibex_register_file_fpga.sv` :file:`rtl/ibex_register_file_latch.sv`
 
 See :ref:`register-file` for more details.
 
@@ -67,10 +67,13 @@ Other blocks use the ALU for the following tasks:
 Bit Manipulation Extension
   Support for the `RISC-V Bit Manipulation Extension (draft version 0.92 from November 8, 2019) <https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.92.pdf>`_ is optional. [#B_draft]_
   It can be enabled via the enumerated parameter ``RV32B`` defined in :file:`rtl/ibex_pkg.sv`.
+  By default, this parameter is set to "ibex_pkg::RV32BNone" to disable the bit manipulation extension.
 
   There are two versions of the bit manipulation extension available:
   The balanced implementation comprises a set of sub-extensions aiming for good benefits at a reasonable area overhead.
+  It can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BBalanced".
   The full implementation comprises all 32 bit instructions defined in the extension.
+  This version can be selected by setting the ``RV32B`` parameter to "ibex_pkg::RV32BFull".
   The following table lists the implemented instructions in each version.
   Multi-cycle instructions are completed in 2 cycles.
   All remaining instructions complete in a single cycle.
@@ -84,7 +87,7 @@ Bit Manipulation Extension
   +---------------------------------+---------------+--------------------------+
   | Zbp (Permutation)               | Full          | None                     |
   +---------------------------------+---------------+--------------------------+
-  | Zbp (Bit extract/deposit)       | Full          | All                      |
+  | Zbe (Bit extract/deposit)       | Full          | All                      |
   +---------------------------------+---------------+--------------------------+
   | Zbf (Bit-field place)           | Balanced/Full | All                      |
   +---------------------------------+---------------+--------------------------+
@@ -113,10 +116,12 @@ The Multiplier/Divider (MULT/DIV) is a state machine driven block to perform mul
 The fast and slow versions differ in multiplier only. All versions implement the same form of long division algorithm. The ALU block is used by the long division algorithm in all versions.
 
 Multiplier
-  The multiplier can be implemented in three variants controlled via the parameter ``MultiplierImplementation``.
+  The multiplier can be implemented in three variants controlled via the enumerated parameter ``RV32M`` defined in :file:`rtl/ibex_pkg.sv`.
 
   Single-Cycle Multiplier
-    This implementation is chosen by setting the ``MultiplierImplementation`` parameter to "single-cycle". The single-cycle multiplier makes use of three parallel multiplier units, designed to be mapped to hardware multiplier primitives on FPGAs. It is therefore the **first choice for FPGA synthesis**.
+    This implementation is chosen by setting the ``RV32M`` parameter to "ibex_pkg::RV32MSingleCycle".
+    The single-cycle multiplier makes use of three parallel multiplier units, designed to be mapped to hardware multiplier primitives on FPGAs.
+    It is therefore the **first choice for FPGA synthesis**.
 
     - Using three parallel 17-bit x 17-bit multiplication units and a 34-bit accumulator, it completes a MUL instruction in 1 cycle. MULH is completed in 2 cycles.
     - This MAC is internal to the mult/div block (no external ALU use).
@@ -124,7 +129,8 @@ Multiplier
     - ASIC synthesis has not yet been tested but is expected to consume 3-4x the area of the fast multiplier for ASIC.
 
   Fast Multi-Cycle Multiplier
-    This implementation is chosen by setting the ``MultiplierImplementation`` parameter to "fast". The fast multi-cycle multiplier provides a reasonable trade-off between area and performance. It is the **first choice for ASIC synthesis**.
+    This implementation is chosen by setting the ``RV32M`` parameter to "ibex_pkg::RV32MFast".
+    The fast multi-cycle multiplier provides a reasonable trade-off between area and performance. It is the **first choice for ASIC synthesis**.
 
     - Completes multiply in 3-4 cycles using a MAC (multiply accumulate) which is capable of a 17-bit x 17-bit multiplication with a 34-bit accumulator.
     - A MUL instruction takes 3 cycles, MULH takes 4.
@@ -133,7 +139,7 @@ Multiplier
     - In some cases it may be desirable to replace this with a specific implementation such as an explicit gate level implementation.
 
   Slow Multi-Cycle Multiplier
-    To select the slow multi-cycle multiplier, set the ``MultiplierImplementation`` parameter to "slow".
+    To select the slow multi-cycle multiplier, set the ``RV32M`` parameter to "ibex_pkg::RV32MSlow".
 
     - Completes multiply in clog2(``op_b``) + 1 cycles (for MUL) or 33 cycles (for MULH) using a Baugh-Wooley multiplier.
     - The ALU block is used to compute additions.
@@ -145,6 +151,8 @@ Divider
     - Cycle 1: Compute absolute value of operand A (or return result on divide by 0)
     - Cycle 2: Compute absolute value of operand B
     - Cycles 4 - 36: Perform long division as described here: https://en.wikipedia.org/wiki/Division_algorithm#Integer_division_(unsigned)_with_remainder.
+
+By setting the ``RV32M`` parameter to "ibex_pkg::RV32MNone", the M-extension can be disabled completely.
 
 Control and Status Register Block (CSR)
 ---------------------------------------

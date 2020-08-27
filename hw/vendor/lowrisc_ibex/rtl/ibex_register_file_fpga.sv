@@ -11,7 +11,7 @@
  * This register file is designed to make FPGA synthesis tools infer RAM primitives. For Xilinx
  * FPGA architectures, it will produce RAM32M primitives. Other vendors have not yet been tested.
  */
-module ibex_register_file #(
+module ibex_register_file_fpga #(
   parameter bit          RV32E             = 0,
   parameter int unsigned DataWidth         = 32,
   parameter bit          DummyInstructions = 0
@@ -64,4 +64,4 @@ module ibex_register_file #(
   logic unused_dummy_instr;
   assign unused_dummy_instr = dummy_instr_id_i;
 
-endmodule : ibex_register_file
+endmodule

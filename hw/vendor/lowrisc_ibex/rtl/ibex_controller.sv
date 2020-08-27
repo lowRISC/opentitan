@@ -10,7 +10,8 @@
 `include "prim_assert.sv"
 
 module ibex_controller #(
-    parameter bit WritebackStage = 0
+    parameter bit WritebackStage  = 0,
+    parameter bit BranchPredictor = 0
  ) (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -26,14 +27,15 @@ module ibex_controller #(
     input  logic                  ebrk_insn_i,             // decoder has EBREAK instr
     input  logic                  csr_pipe_flush_i,        // do CSR-related pipeline flush
 
-    // from IF-ID pipeline stage
-    input  logic                  instr_valid_i,           // instr from IF-ID reg is valid
-    input  logic [31:0]           instr_i,                 // instr from IF-ID reg, for mtval
-    input  logic [15:0]           instr_compressed_i,      // instr from IF-ID reg, for mtval
-    input  logic                  instr_is_compressed_i,   // instr from IF-ID reg is compressed
-    input  logic                  instr_fetch_err_i,       // instr from IF-ID reg has error
-    input  logic                  instr_fetch_err_plus2_i, // instr from IF-ID reg error is x32
-    input  logic [31:0]           pc_id_i,                 // instr from IF-ID reg address
+    // instr from IF-ID pipeline stage
+    input  logic                  instr_valid_i,           // instr is valid
+    input  logic [31:0]           instr_i,                 // uncompressed instr data for mtval
+    input  logic [15:0]           instr_compressed_i,      // instr compressed data for mtval
+    input  logic                  instr_is_compressed_i,   // instr is compressed
+    input  logic                  instr_bp_taken_i,        // instr was predicted taken branch
+    input  logic                  instr_fetch_err_i,       // instr has error
+    input  logic                  instr_fetch_err_plus2_i, // instr error is x32
+    input  logic [31:0]           pc_id_i,                 // instr address
 
     // to IF-ID pipeline stage
     output logic                  instr_valid_clear_o,     // kill instr in IF-ID reg
@@ -47,6 +49,8 @@ module ibex_controller #(
     output logic                  pc_set_spec_o,           // speculative branch
     output ibex_pkg::pc_sel_e     pc_mux_o,                // IF stage fetch address selector
                                                            // (boot, normal, exception...)
+    output logic                  nt_branch_mispredict_o,  // Not-taken branch in ID/EX was
+                                                           // mispredicted (predicted taken)
     output ibex_pkg::exc_pc_sel_e exc_pc_mux_o,            // IF stage selector for exception PC
     output ibex_pkg::exc_cause_e  exc_cause_o,             // for IF stage, CSRs
 
@@ -57,8 +61,11 @@ module ibex_controller #(
     output logic                  wb_exception_o,          // Instruction in WB taking an exception
 
     // jump/branch signals
-    input  logic                  branch_set_i,            // branch taken set signal
-    input  logic                  branch_set_spec_i,       // speculative branch signal
+    input  logic                  branch_set_i,            // branch set signal (branch definitely
+                                                           // taken)
+    input  logic                  branch_set_spec_i,       // speculative branch signal (branch
+                                                           // may be taken)
+    input  logic                  branch_not_set_i,        // branch is definitely not taken
     input  logic                  jump_set_i,              // jump taken set signal
 
     // interrupt signals
@@ -337,7 +344,6 @@ module ibex_controller #(
     else if (irqs_i.irq_fast[ 7]) mfip_id = 4'd7;
     else if (irqs_i.irq_fast[ 6]) mfip_id = 4'd6;
     else if (irqs_i.irq_fast[ 5]) mfip_id = 4'd5;
-    else if (irqs_i.irq_fast[ 5]) mfip_id = 4'd5;
     else if (irqs_i.irq_fast[ 4]) mfip_id = 4'd4;
     else if (irqs_i.irq_fast[ 3]) mfip_id = 4'd3;
     else if (irqs_i.irq_fast[ 2]) mfip_id = 4'd2;
@@ -367,30 +373,31 @@ module ibex_controller #(
     // below always set pc_mux and exc_pc_mux but only set pc_set if certain conditions are met.
     // This avoid having to factor those conditions into the pc_mux and exc_pc_mux select signals
     // helping timing.
-    pc_mux_o              = PC_BOOT;
-    pc_set_o              = 1'b0;
-    pc_set_spec_o         = 1'b0;
+    pc_mux_o               = PC_BOOT;
+    pc_set_o               = 1'b0;
+    pc_set_spec_o          = 1'b0;
+    nt_branch_mispredict_o = 1'b0;
 
-    exc_pc_mux_o          = EXC_PC_IRQ;
-    exc_cause_o           = EXC_CAUSE_INSN_ADDR_MISA; // = 6'h00
+    exc_pc_mux_o           = EXC_PC_IRQ;
+    exc_cause_o            = EXC_CAUSE_INSN_ADDR_MISA; // = 6'h00
 
-    ctrl_fsm_ns           = ctrl_fsm_cs;
+    ctrl_fsm_ns            = ctrl_fsm_cs;
 
-    ctrl_busy_o           = 1'b1;
+    ctrl_busy_o            = 1'b1;
 
-    halt_if               = 1'b0;
-    retain_id             = 1'b0;
-    flush_id              = 1'b0;
+    halt_if                = 1'b0;
+    retain_id              = 1'b0;
+    flush_id               = 1'b0;
 
-    debug_csr_save_o      = 1'b0;
-    debug_cause_o         = DBG_CAUSE_EBREAK;
-    debug_mode_d          = debug_mode_q;
-    nmi_mode_d            = nmi_mode_q;
+    debug_csr_save_o       = 1'b0;
+    debug_cause_o          = DBG_CAUSE_EBREAK;
+    debug_mode_d           = debug_mode_q;
+    nmi_mode_d             = nmi_mode_q;
 
-    perf_tbranch_o        = 1'b0;
-    perf_jump_o           = 1'b0;
+    perf_tbranch_o         = 1'b0;
+    perf_jump_o            = 1'b0;
 
-    controller_run_o      = 1'b0;
+    controller_run_o       = 1'b0;
 
     unique case (ctrl_fsm_cs)
       RESET: begin
@@ -494,16 +501,29 @@ module ibex_controller #(
           end
         end
 
-        if ((branch_set_i || jump_set_i) && !special_req_branch) begin
-          pc_set_o       = 1'b1;
+        if (!special_req_branch) begin
+          if (branch_set_i || jump_set_i) begin
+            // Only set the PC if the branch predictor hasn't already done the branch for us
+            pc_set_o       = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
 
-          perf_tbranch_o = branch_set_i;
-          perf_jump_o    = jump_set_i;
+            perf_tbranch_o = branch_set_i;
+            perf_jump_o    = jump_set_i;
+          end
+
+          if (BranchPredictor) begin
+            if (instr_bp_taken_i & branch_not_set_i) begin
+              // If the instruction is a branch that was predicted to be taken but was not taken
+              // signal a mispredict.
+              nt_branch_mispredict_o = 1'b1;
+            end
+          end
         end
 
         // pc_set signal excluding branch taken condition
         if ((branch_set_spec_i || jump_set_i) && !special_req_branch) begin
-          pc_set_spec_o = 1'b1;
+          // Only speculatively set the PC if the branch predictor hasn't already done the branch
+          // for us
+          pc_set_spec_o = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
         end
 
         // If entering debug mode or handling an IRQ the core needs to wait
@@ -809,6 +829,8 @@ module ibex_controller #(
   ////////////////
   // Assertions //
   ////////////////
+
+  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o -> instr_valid_clear_o);
 
   // Selectors must be known/valid.
   `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {

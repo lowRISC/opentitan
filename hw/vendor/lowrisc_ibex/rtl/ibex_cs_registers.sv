@@ -13,17 +13,17 @@
 `include "prim_assert.sv"
 
 module ibex_cs_registers #(
-    parameter bit          DbgTriggerEn      = 0,
-    parameter bit          DataIndTiming     = 1'b0,
-    parameter bit          DummyInstructions = 1'b0,
-    parameter bit          ICache            = 1'b0,
-    parameter int unsigned MHPMCounterNum    = 10,
-    parameter int unsigned MHPMCounterWidth  = 40,
-    parameter bit          PMPEnable         = 0,
-    parameter int unsigned PMPGranularity    = 0,
-    parameter int unsigned PMPNumRegions     = 4,
-    parameter bit          RV32E             = 0,
-    parameter bit          RV32M             = 0
+    parameter bit               DbgTriggerEn      = 0,
+    parameter bit               DataIndTiming     = 1'b0,
+    parameter bit               DummyInstructions = 1'b0,
+    parameter bit               ICache            = 1'b0,
+    parameter int unsigned      MHPMCounterNum    = 10,
+    parameter int unsigned      MHPMCounterWidth  = 40,
+    parameter bit               PMPEnable         = 0,
+    parameter int unsigned      PMPGranularity    = 0,
+    parameter int unsigned      PMPNumRegions     = 4,
+    parameter bit               RV32E             = 0,
+    parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast
 ) (
     // Clock and Reset
     input  logic                 clk_i,
@@ -116,6 +116,8 @@ module ibex_cs_registers #(
 
   import ibex_pkg::*;
 
+  localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
+
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                 <<  0)  // A - Atomic Instructions extension
@@ -124,7 +126,7 @@ module ibex_cs_registers #(
     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
     | (0                 <<  5)  // F - Single precision floating-point extension
     | (32'(!RV32E)       <<  8)  // I - RV32I/64I/128I base ISA
-    | (32'(RV32M)        << 12)  // M - Integer Multiply/Divide extension
+    | (RV32MEnabled      << 12)  // M - Integer Multiply/Divide extension
     | (0                 << 13)  // N - User level interrupts supported
     | (0                 << 18)  // S - Supervisor mode implemented
     | (1                 << 20)  // U - User mode implemented

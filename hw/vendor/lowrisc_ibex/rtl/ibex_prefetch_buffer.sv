@@ -9,7 +9,9 @@
  * Prefetch Buffer that caches instructions. This cuts overly long critical
  * paths to the instruction cache.
  */
-module ibex_prefetch_buffer (
+module ibex_prefetch_buffer #(
+  parameter bit BranchPredictor = 1'b0
+) (
     input  logic        clk_i,
     input  logic        rst_ni,
 
@@ -17,6 +19,8 @@ module ibex_prefetch_buffer (
 
     input  logic        branch_i,
     input  logic        branch_spec_i,
+    input  logic        predicted_branch_i,
+    input  logic        branch_mispredict_i,
     input  logic [31:0] addr_i,
 
 
@@ -57,19 +61,29 @@ module ibex_prefetch_buffer (
   logic                stored_addr_en;
   logic [31:0]         fetch_addr_d, fetch_addr_q;
   logic                fetch_addr_en;
+  logic [31:0]         branch_mispredict_addr;
   logic [31:0]         instr_addr, instr_addr_w_aligned;
   logic                instr_or_pmp_err;
 
   logic                fifo_valid;
+  logic [31:0]         fifo_addr;
   logic                fifo_ready;
   logic                fifo_clear;
   logic [NUM_REQS-1:0] fifo_busy;
+
+  logic                valid_raw;
+
+  logic [31:0]         addr_next;
+
+  logic                branch_or_mispredict;
 
   ////////////////////////////
   // Prefetch buffer status //
   ////////////////////////////
 
   assign busy_o = (|rdata_outstanding_q) | instr_req_o;
+
+  assign branch_or_mispredict = branch_i | branch_mispredict_i;
 
   //////////////////////////////////////////////
   // Fetch fifo - consumes addresses and data //
@@ -82,7 +96,7 @@ module ibex_prefetch_buffer (
   // A branch will invalidate any previously fetched instructions.
   // Note that the FENCE.I instruction relies on this flushing behaviour on branch. If it is
   // altered the FENCE.I implementation may require changes.
-  assign fifo_clear = branch_i;
+  assign fifo_clear = branch_or_mispredict;
 
   // Reversed version of rdata_outstanding_q which can be overlaid with fifo fill state
   for (genvar i = 0; i < NUM_REQS; i++) begin : gen_rd_rev
@@ -104,14 +118,15 @@ module ibex_prefetch_buffer (
       .busy_o                ( fifo_busy         ),
 
       .in_valid_i            ( fifo_valid        ),
-      .in_addr_i             ( addr_i            ),
+      .in_addr_i             ( fifo_addr         ),
       .in_rdata_i            ( instr_rdata_i     ),
       .in_err_i              ( instr_or_pmp_err  ),
 
-      .out_valid_o           ( valid_o           ),
+      .out_valid_o           ( valid_raw         ),
       .out_ready_i           ( ready_i           ),
       .out_rdata_o           ( rdata_o           ),
       .out_addr_o            ( addr_o            ),
+      .out_addr_next_o       ( addr_next         ),
       .out_err_o             ( err_o             ),
       .out_err_plus2_o       ( err_plus2_o       )
   );
@@ -124,7 +139,7 @@ module ibex_prefetch_buffer (
   assign branch_suppress = branch_spec_i & ~branch_i;
 
   // Make a new request any time there is space in the FIFO, and space in the request queue
-  assign valid_new_req = ~branch_suppress & req_i & (fifo_ready | branch_i) &
+  assign valid_new_req = ~branch_suppress & req_i & (fifo_ready | branch_or_mispredict) &
                          ~rdata_outstanding_q[NUM_REQS-1];
 
   assign valid_req = valid_req_q | valid_new_req;
@@ -141,7 +156,7 @@ module ibex_prefetch_buffer (
   assign valid_req_d = valid_req & ~gnt_or_pmp_err;
 
   // Record whether an outstanding bus request is cancelled by a branch
-  assign discard_req_d = valid_req_q & (branch_i | discard_req_q);
+  assign discard_req_d = valid_req_q & (branch_or_mispredict | discard_req_q);
 
   ////////////////
   // Fetch addr //
@@ -172,13 +187,40 @@ module ibex_prefetch_buffer (
     end
   end
 
+  if (BranchPredictor) begin : g_branch_predictor
+    // Where the branch predictor is present record what address followed a predicted branch.  If
+    // that branch is predicted taken but mispredicted (so not-taken) this is used to resume on
+    // the not-taken code path.
+    logic [31:0] branch_mispredict_addr_q;
+    logic        branch_mispredict_addr_en;
+
+    assign branch_mispredict_addr_en = branch_i & predicted_branch_i;
+
+    always_ff @(posedge clk_i) begin
+      if (branch_mispredict_addr_en) begin
+        branch_mispredict_addr_q <= addr_next;
+      end
+    end
+
+    assign branch_mispredict_addr = branch_mispredict_addr_q;
+  end else begin : g_no_branch_predictor
+    logic        unused_predicted_branch;
+    logic [31:0] unused_addr_next;
+
+    assign unused_predicted_branch = predicted_branch_i;
+    assign unused_addr_next        = addr_next;
+
+    assign branch_mispredict_addr = '0;
+  end
+
   // 2. fetch_addr_q
 
   // Update on a branch or as soon as a request is issued
-  assign fetch_addr_en = branch_i | (valid_new_req & ~valid_req_q);
+  assign fetch_addr_en = branch_or_mispredict | (valid_new_req & ~valid_req_q);
 
-  assign fetch_addr_d = (branch_i ? addr_i :
-                                    {fetch_addr_q[31:2], 2'b00}) +
+  assign fetch_addr_d = (branch_i            ? addr_i :
+                         branch_mispredict_i ? {branch_mispredict_addr[31:2], 2'b00} :
+                                               {fetch_addr_q[31:2], 2'b00}) +
                         // Current address + 4
                         {{29{1'b0}},(valid_new_req & ~valid_req_q),2'b00};
 
@@ -189,9 +231,10 @@ module ibex_prefetch_buffer (
   end
 
   // Address mux
-  assign instr_addr = valid_req_q   ? stored_addr_q :
-                      branch_spec_i ? addr_i :
-                                      fetch_addr_q;
+  assign instr_addr = valid_req_q         ? stored_addr_q :
+                      branch_spec_i       ? addr_i :
+                      branch_mispredict_i ? branch_mispredict_addr :
+                                            fetch_addr_q;
 
   assign instr_addr_w_aligned = {instr_addr[31:2], 2'b00};
 
@@ -209,7 +252,8 @@ module ibex_prefetch_buffer (
       // If a branch is received at any point while a request is outstanding, it must be tracked
       // to ensure we discard the data once received
       assign branch_discard_n[i]    = (valid_req & gnt_or_pmp_err & discard_req_d) |
-                                      (branch_i & rdata_outstanding_q[i]) | branch_discard_q[i];
+                                      (branch_or_mispredict & rdata_outstanding_q[i]) |
+                                      branch_discard_q[i];
       // Record whether this request received a PMP error
       assign rdata_pmp_err_n[i]     = (valid_req & ~rdata_outstanding_q[i] & instr_pmp_err_i) |
                                       rdata_pmp_err_q[i];
@@ -223,7 +267,8 @@ module ibex_prefetch_buffer (
                                       rdata_outstanding_q[i];
       assign branch_discard_n[i]    = (valid_req & gnt_or_pmp_err & discard_req_d &
                                        rdata_outstanding_q[i-1]) |
-                                      (branch_i & rdata_outstanding_q[i]) | branch_discard_q[i];
+                                      (branch_or_mispredict & rdata_outstanding_q[i]) |
+                                      branch_discard_q[i];
       assign rdata_pmp_err_n[i]     = (valid_req & ~rdata_outstanding_q[i] & instr_pmp_err_i &
                                        rdata_outstanding_q[i-1]) |
                                       rdata_pmp_err_q[i];
@@ -240,6 +285,8 @@ module ibex_prefetch_buffer (
 
   // Push a new entry to the FIFO once complete (and not cancelled by a branch)
   assign fifo_valid = rvalid_or_pmp_err & ~branch_discard_q[0];
+
+  assign fifo_addr = branch_mispredict_i ? branch_mispredict_addr : addr_i;
 
   ///////////////
   // Registers //
@@ -267,5 +314,7 @@ module ibex_prefetch_buffer (
 
   assign instr_req_o  = valid_req;
   assign instr_addr_o = instr_addr_w_aligned;
+
+  assign valid_o = valid_raw & ~branch_mispredict_i;
 
 endmodule

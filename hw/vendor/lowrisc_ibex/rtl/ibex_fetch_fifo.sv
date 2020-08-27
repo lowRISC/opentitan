@@ -32,6 +32,7 @@ module ibex_fetch_fifo #(
     output logic                out_valid_o,
     input  logic                out_ready_i,
     output logic [31:0]         out_addr_o,
+    output logic [31:0]         out_addr_next_o,
     output logic [31:0]         out_rdata_o,
     output logic                out_err_o,
     output logic                out_err_plus2_o
@@ -55,6 +56,7 @@ module ibex_fetch_fifo #(
   logic                     aligned_is_compressed, unaligned_is_compressed;
 
   logic                     addr_incr_two;
+  logic [31:1]              instr_addr_next;
   logic [31:1]              instr_addr_d, instr_addr_q;
   logic                     instr_addr_en;
   logic                     unused_addr_in;
@@ -140,10 +142,12 @@ module ibex_fetch_fifo #(
   assign addr_incr_two = instr_addr_q[1] ? unaligned_is_compressed :
                                            aligned_is_compressed;
 
+  assign instr_addr_next = (instr_addr_q[31:1] +
+                            // Increment address by 4 or 2
+                            {29'd0,~addr_incr_two,addr_incr_two});
+
   assign instr_addr_d = clear_i ? in_addr_i[31:1] :
-                                  (instr_addr_q[31:1] +
-                                   // Increment address by 4 or 2
-                                   {29'd0,~addr_incr_two,addr_incr_two});
+                                  instr_addr_next;
 
   always_ff @(posedge clk_i) begin
     if (instr_addr_en) begin
@@ -151,8 +155,11 @@ module ibex_fetch_fifo #(
     end
   end
 
-  assign out_addr_o[31:1] = instr_addr_q[31:1];
-  assign out_addr_o[0]    = 1'b0;
+  // Output both PC of current instruction and instruction following. PC of instruction following is
+  // required for the branch predictor. It's used to fetch the instruction following a branch that
+  // was not-taken but (mis)predicted taken.
+  assign out_addr_next_o = {instr_addr_next, 1'b0};
+  assign out_addr_o      = {instr_addr_q, 1'b0};
 
   // The LSB of the address is unused, since all addresses are halfword aligned
   assign unused_addr_in = in_addr_i[0];
