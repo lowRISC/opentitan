@@ -39,7 +39,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Backdoor load memories with sw images.
     cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
     // TODO: the location of the main execution image should be randomized for either bank in future
-    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
+    if (cfg.use_spi_load_bootstrap) begin
+      spi_device_load_bootstrap();
+    end else begin
+      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
+    end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
 
@@ -82,4 +86,60 @@ class chip_sw_base_vseq extends chip_base_vseq;
     endcase
   endfunction
 
+  virtual task spi_device_load_bootstrap();
+    spi_host_seq m_spi_host_seq;
+    byte sw_byte_q[$];
+    uint byte_cnt;
+
+    // wait until spi init is done
+    // TODO, in some cases though, we might use UART logger instead of SW logger - need to keep that
+    // in mind
+    wait(cfg.sw_logger_vif.printed_log == "HW initialisation completed, waiting for SPI input...");
+    cfg.jtag_spi_n_vif.drive(0); // Select SPI
+
+    // for the first frame of data, sdo from chip is unknown, ignore checking that
+    cfg.m_spi_agent_cfg.en_monitor_checks = 0;
+
+    read_sw_frames(sw_byte_q);
+
+    `DV_CHECK_EQ_FATAL((sw_byte_q.size % SPI_FRAME_BYTE_SIZE), 0,
+                       "SPI data isn't aligned with frame size")
+
+    while (sw_byte_q.size > byte_cnt) begin
+      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                     data.size() == SPI_FRAME_BYTE_SIZE;
+                                     foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
+      `uvm_send(m_spi_host_seq)
+      if (byte_cnt == 0) begin
+        // SW erase flash after receiving 1st frame
+        wait(cfg.sw_logger_vif.printed_log == "Flash erase successful");
+        // sdo for next frame shouldn't be unknown
+        cfg.m_spi_agent_cfg.en_monitor_checks = 1;
+      end
+
+      cfg.clk_rst_vif.wait_clks(20_000);
+      byte_cnt += SPI_FRAME_BYTE_SIZE;
+    end
+  endtask
+
+  virtual function void read_sw_frames(ref byte sw_byte_q[$]);
+    int num_returns;
+    int mem_fd = $fopen(cfg.sw_frame_image, "r");
+    bit [31:0] word_data[7];
+    string addr;
+
+    while (!$feof(mem_fd)) begin
+      num_returns = $fscanf(mem_fd, "%s %h %h %h %h %h %h %h", addr, word_data[0], word_data[1],
+                            word_data[2], word_data[3], word_data[4], word_data[5], word_data[6]);
+      if (num_returns <= 1) continue;
+      for (int i = 0; i < num_returns - 1; i++) begin
+        repeat (4) begin
+          sw_byte_q.push_back(word_data[i][7:0]);
+          word_data[i] = word_data[i] >> 8;
+        end
+      end
+    end
+    $fclose(mem_fd);
+  endfunction
 endclass : chip_sw_base_vseq

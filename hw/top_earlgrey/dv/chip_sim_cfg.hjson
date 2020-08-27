@@ -138,6 +138,12 @@
       sw_test: sw/device/tests/uart_tx_rx_test
     }
     {
+      name: chip_uart_tx_rx_bootstrap
+      uvm_test_seq: chip_sw_uart_tx_rx_vseq
+      sw_test: sw/device/tests/uart_tx_rx_test
+      run_opts: ["+use_spi_load_bootstrap=1"]
+    }
+    {
       name: chip_aes_encr
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/aes_test

@@ -128,7 +128,7 @@ class spi_host_driver extends spi_driver;
 
   function uint get_rand_extra_delay_ns_btw_sck();
     if (cfg.en_extra_dly_btw_sck && ($urandom % 100) < cfg.extra_dly_chance_pc_btw_sck) begin
-      return $urandom_range(1, cfg.max_extra_dly_ns_btw_sck);
+      return $urandom_range(cfg.min_extra_dly_ns_btw_sck, cfg.max_extra_dly_ns_btw_sck);
     end else begin
       return 0;
     end
@@ -136,7 +136,7 @@ class spi_host_driver extends spi_driver;
 
   function uint get_rand_extra_delay_ns_btw_word();
     if (cfg.en_extra_dly_btw_word && ($urandom % 100) < cfg.extra_dly_chance_pc_btw_word) begin
-      return $urandom_range(1, cfg.max_extra_dly_ns_btw_word);
+      return $urandom_range(cfg.min_extra_dly_ns_btw_word, cfg.max_extra_dly_ns_btw_word);
     end else begin
       return 0;
     end

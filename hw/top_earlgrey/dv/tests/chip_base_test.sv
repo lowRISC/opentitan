@@ -39,6 +39,10 @@ class chip_base_test extends cip_base_test #(
 
     // Knob to pre-initialize RAM to 0s (disabled by default).
     void'($value$plusargs("initialize_ram=%0b", cfg.initialize_ram));
+
+    // Knob to use spi or backdoor to load bootstrap
+    void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
+
   endfunction : build_phase
 
 endclass : chip_base_test
