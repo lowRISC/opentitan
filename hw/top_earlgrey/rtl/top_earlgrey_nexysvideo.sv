@@ -226,6 +226,7 @@ module top_earlgrey_nexysvideo #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(0),
+    .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (

@@ -38,6 +38,7 @@ module top_${top["name"]} #(
 % endfor
 
   // Manually defined parameters
+  parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
@@ -202,7 +203,7 @@ module top_${top["name"]} #(
     .RV32E                    (0),
     .RV32M                    (ibex_pkg::RV32MSingleCycle),
     .RV32B                    (ibex_pkg::RV32BNone),
-    .RegFile                  (ibex_pkg::RegFileFF),
+    .RegFile                  (IbexRegFile),
     .BranchTargetALU          (1),
     .WritebackStage           (1),
     .ICache                   (0),
