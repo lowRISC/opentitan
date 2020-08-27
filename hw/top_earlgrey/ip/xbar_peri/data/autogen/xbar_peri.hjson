@@ -79,5 +79,11 @@
       act:    "req"
       package: "tlul_pkg"
     }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_ast_wrapper"
+      act:    "req"
+      package: "tlul_pkg"
+    }
   ]
 }
