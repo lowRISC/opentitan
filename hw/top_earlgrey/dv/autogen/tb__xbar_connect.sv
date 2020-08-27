@@ -16,6 +16,12 @@
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
+`define DRIVE_TL_EXT_DEVICE_IF(tl_name, port_name) \
+     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.``port_name``_req_o; \
+     force dut.top_earlgrey.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; \
+     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
+                                        ``tl_name``_tl_if);
+
 wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
 wire clk_io;
@@ -48,6 +54,7 @@ tl_if rstmgr_tl_if(clk_io, rst_n);
 tl_if clkmgr_tl_if(clk_io, rst_n);
 tl_if ram_ret_tl_if(clk_io, rst_n);
 tl_if sensor_ctrl_tl_if(clk_io, rst_n);
+tl_if ast_wrapper_tl_if(clk_io, rst_n);
 
 initial begin
   bit xbar_mode;
@@ -99,6 +106,7 @@ initial begin
     `DRIVE_TL_DEVICE_IF(clkmgr, clkmgr, tl)
     `DRIVE_TL_DEVICE_IF(ram_ret, tl_adapter_ram_ret, tl)
     `DRIVE_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl)
+    `DRIVE_TL_EXT_DEVICE_IF(ast_wrapper, ast_tl)
   end
 end
 

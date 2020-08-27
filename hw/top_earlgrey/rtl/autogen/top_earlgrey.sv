@@ -45,6 +45,8 @@ module top_earlgrey #(
   input  ast_wrapper_pkg::ast_status_t       sensor_ctrl_ast_status_i,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
+  output tlul_pkg::tl_h2d_t       ast_tl_req_o,
+  input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i   // 1 for Scan
 );
@@ -1138,6 +1140,10 @@ module top_earlgrey #(
     // port: tl_sensor_ctrl
     .tl_sensor_ctrl_o(sensor_ctrl_tl_req),
     .tl_sensor_ctrl_i(sensor_ctrl_tl_rsp),
+
+    // port: tl_ast_wrapper
+    .tl_ast_wrapper_o(ast_tl_req_o),
+    .tl_ast_wrapper_i(ast_tl_rsp_i),
 
 
     .scanmode_i
