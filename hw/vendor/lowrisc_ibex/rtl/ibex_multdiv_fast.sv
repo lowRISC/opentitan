@@ -15,7 +15,7 @@
 `include "prim_assert.sv"
 
 module ibex_multdiv_fast #(
-    parameter bit SingleCycleMultiply = 0
+    parameter ibex_pkg::rv32m_e RV32M = ibex_pkg::RV32MFast
   ) (
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -132,7 +132,7 @@ module ibex_multdiv_fast #(
 
   // The single cycle multiplier uses three 17 bit multipliers to compute MUL instructions in a
   // single cycle and MULH instructions in two cycles.
-  if (SingleCycleMultiply) begin : gen_multiv_single_cycle
+  if (RV32M == RV32MSingleCycle) begin : gen_mult_single_cycle
 
     typedef enum logic {
       MULL, MULH
@@ -249,7 +249,7 @@ module ibex_multdiv_fast #(
 
   // The fast multiplier uses one 17 bit multiplier to compute MUL instructions in 3 cycles
   // and MULH instructions in 4 cycles.
-  end else begin : gen_multdiv_fast
+  end else begin : gen_mult_fast
     logic [15:0] mult_op_a;
     logic [15:0] mult_op_b;
 
@@ -365,7 +365,7 @@ module ibex_multdiv_fast #(
     // States must be knwon/valid.
     `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
-  end // gen_multdiv_fast
+  end // gen_mult_fast
 
   // Divider
   assign res_adder_h    = alu_adder_ext_i[33:1];

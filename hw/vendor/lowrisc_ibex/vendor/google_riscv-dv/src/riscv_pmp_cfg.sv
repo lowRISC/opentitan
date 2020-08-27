@@ -97,7 +97,7 @@ class riscv_pmp_cfg extends uvm_object;
       // Offset of pmp_cfg[0] does not matter, since it will be set to <main>,
       // so we do not constrain it here, as it will be overridden during generation
       if (i != 0) {
-        pmp_cfg[i].offset inside {[1 : pmp_max_offset + 1]};
+        pmp_cfg[i].offset inside {[1 : pmp_max_offset]};
       } else {
         pmp_cfg[i].offset == 0;
       }
@@ -622,7 +622,7 @@ class riscv_pmp_cfg extends uvm_object;
     for (int i = 0; i < pmp_num_regions; i++) begin
       pmp_addr = base_pmp_addr + i;
       pmpcfg_addr = base_pmpcfg_addr + (i / cfg_per_csr);
-      // We randomize the upper 31 bits of pmp_val and then add this to the
+      // We randomize the lower 31 bits of pmp_val and then add this to the
       // address of <main>, guaranteeing that the random value written to
       // pmpaddr[i] doesn't interfere with the safe region.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pmp_val, pmp_val[31] == 1'b0;)
@@ -642,11 +642,14 @@ class riscv_pmp_cfg extends uvm_object;
       //
       // TODO: support rv64.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pmp_val,
-                                         // Need to constrain pmp_val[7], pmp_val[15], ... to 1'b0
-                                         // to ensure that the random config regions aren't locked
                                          foreach (pmp_val[i]) {
+                                           // constrain each Lock bit to 0
                                            if ((i+1) % 8 == 0) {
                                              pmp_val[i] == 1'b0;
+                                           }
+                                           // prevent W=1/R=0 combination
+                                           if (i % 8 == 0) { // this is an R bit
+                                             !((pmp_val[i] == 0) && (pmp_val[i+1] == 1'b1));
                                            }
                                          }
                                         )

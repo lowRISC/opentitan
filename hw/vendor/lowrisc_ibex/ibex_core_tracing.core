@@ -30,21 +30,22 @@ parameters:
     paramtype: vlogparam
 
   RV32M:
-    datatype: int
-    default: 1
-    paramtype: vlogparam
+    datatype: str
+    default: ibex_pkg::RV32MFast
+    paramtype: vlogdefine
+    description: "RV32M implementation parameter enum. See the ibex_pkg::rv32m_e enum in ibex_pkg.sv for permitted values."
 
   RV32B:
     datatype: str
     default: ibex_pkg::RV32BNone
     paramtype: vlogdefine
-    description: "Bitmanip implementation parameter enum. See ibex_pkg.sv (EXPERIMENTAL)"
+    description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
 
-  MultiplierImplementation:
+  RegFile:
     datatype: str
-    paramtype: vlogparam
-    description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
-    default: "fast"
+    default: ibex_pkg::RegFileFF
+    paramtype: vlogdefine
+    description: "Register file implementation parameter enum. See the ibex_pkg::regfile_e enum in ibex_pkg.sv for permitted values."
 
   ICache:
     datatype: int
@@ -69,6 +70,12 @@ parameters:
     default: 0
     paramtype: vlogparam
     description: "Enables third pipeline stage (EXPERIMENTAL) [0/1]"
+
+  BranchPredictor:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables static branch prediction (EXPERIMENTAL)"
 
   SecureIbex:
     datatype: int
@@ -107,12 +114,13 @@ targets:
     parameters:
       - RVFI=true
       - SYNTHESIS=true
-      - RV32M
       - RV32E
+      - RV32M
       - RV32B
+      - RegFile
       - BranchTargetALU
       - WritebackStage
-      - MultiplierImplementation
+      - BranchPredictor
       - SecureIbex
       - PMPEnable
       - PMPGranularity

@@ -28,7 +28,7 @@ The Simple System simulator binary can be built via FuseSoC. From the Ibex
 repository root run:
 
 ```
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0
+fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system --RV32E=0 --RV32M=ibex_pkg::RV32MFast
 ```
 
 ## Building Software
@@ -103,7 +103,7 @@ The simulator produces several output files
 Similar to the Verilator flow the Simple System simulator binary can be built using:
 
 ```
-fusesoc --cores-root=. run --target=sim --tool=vcs --setup --build lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0 --SRAMInitFile=`<sw_vmem_file>`
+fusesoc --cores-root=. run --target=sim --tool=vcs --setup --build lowrisc:ibex:ibex_simple_system --RV32E=0 --RV32M=ibex_pkg::RV32MFast --SRAMInitFile=`<sw_vmem_file>`
 ```
 
 `<sw_vmem_file>` should be a path to a vmem file built as described above, use
@@ -123,7 +123,7 @@ Pass `-gui` to use the DVE GUI.
 To build and run Simple System run:
 
 ```
-fusesoc --cores-root=. run --target=sim --tool=rivierapro lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0 --SRAMInitFile=\"$(readlink -f <sw_vmem_file>)\"
+fusesoc --cores-root=. run --target=sim --tool=rivierapro lowrisc:ibex:ibex_simple_system --RV32E=0 --RV32M=ibex_pkg::RV32MFast --SRAMInitFile=\"$(readlink -f <sw_vmem_file>)\"
 ```
 
 `<sw_vmem_file>` should be a path to a vmem file built as described above, use

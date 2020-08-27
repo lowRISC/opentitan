@@ -26,7 +26,9 @@ if { $lr_synth_ibex_writeback_stage } {
 
 yosys "chparam -set RV32B $lr_synth_ibex_bitmanip ibex_core"
 
-yosys "chparam -set MultiplierImplementation \"$lr_synth_ibex_multiplier\" ibex_core"
+yosys "chparam -set RV32M $lr_synth_ibex_multiplier ibex_core"
+
+yosys "chparam -set RegFile $lr_synth_ibex_regfile ibex_core"
 
 yosys "synth $flatten_opt -top $lr_synth_top_module"
 yosys "opt -purge"

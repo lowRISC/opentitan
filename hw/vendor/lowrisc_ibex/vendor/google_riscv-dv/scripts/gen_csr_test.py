@@ -109,9 +109,9 @@ def get_rs1_val(iteration, xlen):
       3) A randomly generated number
   """
   if iteration == 0:
-    return bitarray(hex=f"0x{'a5'*int(xlen/8)}")
+    return bitarray(hex="0x{}".format('a5'*int(xlen/8)))
   elif iteration == 1:
-    return bitarray(hex=f"0x{'5a'*int(xlen/8)}")
+    return bitarray(hex="0x{}".format('5a'*int(xlen/8)))
   elif iteration == 2:
     val = bitarray(uint=0, length=xlen)
     # Must randomize all 32 bits, due to randomization library limitations
@@ -193,7 +193,7 @@ def predict_csr_val(csr_op, rs1_val, csr_val, csr_write_mask, csr_read_mask):
   elif csr_op == 'csrrci':
     zero.append(rs1_val[-5:])
     csr_write((~zero) & prediction, csr_val, csr_write_mask)
-  return f"0x{prediction.hex}"
+  return "0x{}".format(prediction.hex)
 
 
 def gen_setup(test_file):
@@ -203,12 +203,12 @@ def gen_setup(test_file):
   Args:
     test_file: the file containing the generated assembly code.
   """
-  test_file.write(f".macro init\n")
-  test_file.write(f".endm\n")
-  test_file.write(f".section .text.init\n")
-  test_file.write(f".globl _start\n")
-  test_file.write(f".option norvc\n")
-  test_file.write(f"_start:\n")
+  test_file.write(".macro init\n")
+  test_file.write(".endm\n")
+  test_file.write(".section .text.init\n")
+  test_file.write(".globl _start\n")
+  test_file.write(".option norvc\n")
+  test_file.write("_start:\n")
 
 
 def gen_csr_test_fail(test_file, end_addr):
@@ -221,13 +221,13 @@ def gen_csr_test_fail(test_file, end_addr):
     test_file: the file containing the generated assembly test code.
     end_addr: address that should be written to at end of test
   """
-  test_file.write(f"csr_fail:\n")
-  test_file.write(f"\tli x1, {TEST_FAIL}\n")
-  test_file.write(f"\tslli x1, x1, 8\n")
-  test_file.write(f"\taddi x1, x1, {TEST_RESULT}\n")
-  test_file.write(f"\tli x2, 0x{end_addr}\n")
-  test_file.write(f"\tsw x1, 0(x2)\n")
-  test_file.write(f"\tj csr_fail\n")
+  test_file.write("csr_fail:\n")
+  test_file.write("\tli x1, {}\n".format(TEST_FAIL))
+  test_file.write("\tslli x1, x1, 8\n")
+  test_file.write("\taddi x1, x1, {}\n".format(TEST_RESULT))
+  test_file.write("\tli x2, 0x{}\n".format(end_addr))
+  test_file.write("\tsw x1, 0(x2)\n")
+  test_file.write("\tj csr_fail\n")
 
 
 def gen_csr_test_pass(test_file, end_addr):
@@ -240,13 +240,13 @@ def gen_csr_test_pass(test_file, end_addr):
     test_file: the file containing the generated assembly test code.
     end_addr: address that should be written to at end of test
   """
-  test_file.write(f"csr_pass:\n")
-  test_file.write(f"\tli x1, {TEST_PASS}\n")
-  test_file.write(f"\tslli x1, x1, 8\n")
-  test_file.write(f"\taddi x1, x1, {TEST_RESULT}\n")
-  test_file.write(f"\tli x2, 0x{end_addr}\n")
-  test_file.write(f"\tsw x1, 0(x2)\n")
-  test_file.write(f"\tj csr_pass\n")
+  test_file.write("csr_pass:\n")
+  test_file.write("\tli x1, {}\n".format(TEST_PASS))
+  test_file.write("\tslli x1, x1, 8\n")
+  test_file.write("\taddi x1, x1, {}\n".format(TEST_RESULT))
+  test_file.write("\tli x2, 0x{}\n".format(end_addr))
+  test_file.write("\tsw x1, 0(x2)\n")
+  test_file.write("\tj csr_pass\n")
 
 
 def gen_csr_instr(original_csr_map, csr_instructions, xlen,
@@ -271,13 +271,13 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
     # pick two GPRs at random to act as source and destination registers
     # for CSR operations
     csr_map = copy.deepcopy(original_csr_map)
-    source_reg, dest_reg = [f"x{i}" for i in random.sample(range(1, 16), 2)]
+    source_reg, dest_reg = ["x{}".format(i) for i in random.sample(range(1, 16), 2)]
     csr_list = list(csr_map.keys())
-    with open(f"{out}/riscv_csr_test_{i}.S", "w") as csr_test_file:
+    with open("{}/riscv_csr_test_{}.S".format(out, i), "w") as csr_test_file:
       gen_setup(csr_test_file)
       for csr in csr_list:
         csr_address, csr_val, csr_write_mask, csr_read_mask = csr_map.get(csr)
-        csr_test_file.write(f"\t# {csr}\n")
+        csr_test_file.write("\t# {}\n".format(csr))
         for op in csr_instructions:
           for i in range(3):
             # hex string
@@ -286,17 +286,17 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
             first_li = ""
             if op[-1] == "i":
               imm = rand_rs1_val[-5:]
-              csr_inst = f"\t{op} {dest_reg}, {csr_address}, 0b{imm.bin}\n"
+              csr_inst = "\t{} {}, {}, 0b{}\n".format(op, dest_reg, csr_address, imm.bin)
               imm_val = bitarray(uint=0, length=xlen-5)
               imm_val.append(imm)
-              predict_li = (f"\tli {source_reg}, "
-                f"{predict_csr_val(op, imm_val, csr_val, csr_write_mask, csr_read_mask)}\n")
+              predict_li = ("\tli {}, "
+                "{}\n".format(source_reg, predict_csr_val(op, imm_val, csr_val, csr_write_mask, csr_read_mask)))
             else:
-              first_li = f"\tli {source_reg}, 0x{rand_rs1_val.hex}\n"
-              csr_inst = f"\t{op} {dest_reg}, {csr_address}, {source_reg}\n"
-              predict_li = (f"\tli {source_reg}, "
-                f"{predict_csr_val(op, rand_rs1_val, csr_val, csr_write_mask, csr_read_mask)}\n")
-            branch_check = f"\tbne {source_reg}, {dest_reg}, csr_fail\n"
+              first_li = "\tli {}, 0x{}\n".format(source_reg, rand_rs1_val.hex)
+              csr_inst = "\t{} {}, {}, {}\n".format(op, dest_reg, csr_address, source_reg)
+              predict_li = ("\tli {}, "
+                "{}\n".format(source_reg, predict_csr_val(op, rand_rs1_val, csr_val, csr_write_mask, csr_read_mask)))
+            branch_check = "\tbne {}, {}, csr_fail\n".format(source_reg, dest_reg)
             csr_test_file.write(first_li)
             csr_test_file.write(csr_inst)
             csr_test_file.write(predict_li)
@@ -306,11 +306,11 @@ def gen_csr_instr(original_csr_map, csr_instructions, xlen,
             been written to the CSR has not been tested.
             """
             if csr == csr_list[-1] and op == csr_instructions[-1] and i == 2:
-              final_csr_read = f"\tcsrr {dest_reg}, {csr_address}\n"
+              final_csr_read = "\tcsrr {}, {}\n".format(dest_reg, csr_address)
               csrrs_read_mask = bitarray(uint=0, length=xlen)
-              final_li = (f"\tli {source_reg}, "
-                f"{predict_csr_val('csrrs', csrrs_read_mask, csr_val, csr_write_mask, csr_read_mask)}\n")
-              final_branch_check = f"\tbne {source_reg}, {dest_reg}, csr_fail\n"
+              final_li = ("\tli {}, "
+                "{}\n".format(source_reg, predict_csr_val('csrrs', csrrs_read_mask, csr_val, csr_write_mask, csr_read_mask)))
+              final_branch_check = "\tbne {}, {}, csr_fail\n".format(source_reg, dest_reg)
               csr_test_file.write(final_csr_read)
               csr_test_file.write(final_li)
               csr_test_file.write(final_branch_check)

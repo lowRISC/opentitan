@@ -1,0 +1,1 @@
+waive --rule=macro-name-style --location="ibex_simple_system.sv" --regex="RegFile"

@@ -8,14 +8,27 @@
  */
 package ibex_pkg;
 
-/////////////////////////
-// RV32B Paramter Enum //
-/////////////////////////
+/////////////////////
+// Parameter Enums //
+/////////////////////
 
 typedef enum integer {
-  RV32BNone,
-  RV32BBalanced,
-  RV32BFull
+  RegFileFF    = 0,
+  RegFileFPGA  = 1,
+  RegFileLatch = 2
+} regfile_e;
+
+typedef enum integer {
+  RV32MNone        = 0,
+  RV32MSlow        = 1,
+  RV32MFast        = 2,
+  RV32MSingleCycle = 3
+} rv32m_e;
+
+typedef enum integer {
+  RV32BNone     = 0,
+  RV32BBalanced = 1,
+  RV32BFull     = 2
 } rv32b_e;
 
 /////////////
@@ -239,7 +252,8 @@ typedef enum logic [2:0] {
   PC_JUMP,
   PC_EXC,
   PC_ERET,
-  PC_DRET
+  PC_DRET,
+  PC_BP
 } pc_sel_e;
 
 // Exception PC mux selection

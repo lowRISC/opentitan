@@ -12,22 +12,24 @@
 `verilator_config
 lint_off -rule PINCONNECTEMPTY
 
-// Operator expects 1 bit on initial value but initial value's CONST generates
-// 32 bits
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32M'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32E'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32B'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'BranchTargetALU'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'WritebackStage'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'SecureIbex'*"
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'PMPEnable'*"
+// We have some boolean top-level parameters in e.g. ibex_core_tracing.sv.
+// When building with fusesoc, these get set with defines like
+// -GRV32M=1 (rather than -GRV32M=1'b1), leading to warnings like:
+//
+//   Operator VAR '<varname>' expects 1 bits on the Initial value, but
+//   Initial value's CONST '32'h1' generates 32 bits.
+//
+// This signoff rule ignores errors like this. Note that it only
+// matches when you set a 1-bit value to a literal 1, so it won't hide
+// silly mistakes like setting it to 2.
+//
+lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv"
+         -match "*expects 1 bits*Initial value's CONST '32'h1'*"
 
-// Filename 'ibex_register_file_ff' does not match MODULE name: ibex_register_file
-// ibex_register_file_ff and ibex_register_file_latch provide two
-// implementation choices for the same module.
-lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_ff.sv"
-lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_latch.sv"
-lint_off -rule DECLFILENAME -file "*/rtl/ibex_register_file_fpga.sv"
+// Operator expects 1 bit on initial value but initial value's CONST generates
+// 32 bits, need a specific RV32B waiver as it uses enums so the above catch-all
+// waiver doesn't work.
+lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32B'*"
 
 // Bits of signal are not used: shift_amt_compl[5]
 // cleaner to write all bits even if not all are used
@@ -141,12 +143,14 @@ lint_off -rule UNUSED -file "*/rtl/ibex_register_file_fpga.sv" -match "*test_en_
 lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*clk_i*"
 lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*clk_i*"
 lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*clk_i*"
 
 // Signal is not used: rst_ni
 // leaving clk and reset connected in-case we want to add assertions
 lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*rst_ni*"
 
 // Bits of signal are not used: instr_alu[24:15,11:7]
 // instr flops are duplicated to reduce fan-out, neater to just leave unused

@@ -111,10 +111,22 @@ class riscv_instr_gen_config:
         self.num_of_harts = argv.num_of_harts
         self.fix_sp = argv.fix_sp
         self.use_push_data_section = argv.use_push_data_section
-        self.boot_mode_opts = ""
+        self.boot_mode_opts = argv.boot_mode_opts
+
+        if(self.boot_mode_opts):
+            logging.info("Got boot mode option - %0s", self.boot_mode_opts)
+            if(self.boot_mode_opts == "m"):
+                self.init_privileged_mode = privileged_mode_t.MACHINE_MODE.name
+            elif(self.boot_mode_opts == "s"):
+                self.init_privileged_mode = privileged_mode_t.SUPERVISOR_MODE.name
+            elif(self.boot_mode_opts == "u"):
+                self.init_privileged_mode = privileged_mode_t.USER_MODE.name
+            else:
+                logging.error("Illegal boot mode option - %0s", self.boot_mode_opts)
+
         self.enable_page_table_exception = argv.enable_page_table_exception
         self.no_directed_instr = argv.no_directed_instr
-        self.asm_test_suffix = ""
+        self.asm_test_suffix = argv.asm_test_suffix
         self.enable_interrupt = argv.enable_interrupt
         self.enable_nested_interrupt = argv.enable_nested_interrupt
         self.enable_timer_irq = argv.enable_timer_irq
@@ -153,11 +165,16 @@ class riscv_instr_gen_config:
         self.enable_floating_point = argv.enable_floating_point
         self.enable_vector_extension = argv.enable_vector_extension
         self.enable_b_extension = argv.enable_b_extension
-        # Commenting out for now
-        # self.enable_bitmanip_groups = ['ZBB', 'ZBS', 'ZBP', 'ZBE', 'ZBF',
-        # 'ZBC', 'ZBR', 'ZBM', 'ZBT', 'ZB_TMP']
+        self.enable_bitmanip_groups = argv.enable_bitmanip_groups
         self.dist_control_mode = 0
         self.category_dist = {}
+        self.march_isa = argv.march_isa
+
+        if(len(self.march_isa) != 0):
+            rcs.supported_isa = self.march_isa
+
+        if(rcs.supported_isa != 'RV32C'):
+            self.disable_compressed_instr = 1
 
     @vsc.constraint
     def gpr_c(self):
@@ -317,9 +334,8 @@ def parse_args():
     parse.add_argument('--no_dret', help = 'no_dret', choices = [0, 1], type = int, default = 1)
     parse.add_argument('--no_wfi', help = 'no_wfi', choices = [0, 1], type = int, default = 1)
 
-    # TODO : Enabling no_branch_jump default to 1 for now.
     parse.add_argument('--no_branch_jump', help = 'no_branch_jump',
-                       choices = [0, 1], type = int, default = 1)
+                       choices = [0, 1], type = int, default = 0)
     parse.add_argument('--no_load_store', help = 'no_load_store',
                        choices = [0, 1], type = int, default = 0)
     parse.add_argument('--no_csr_instr', help = 'no_csr_instr',
@@ -387,35 +403,35 @@ def parse_args():
                        choices = [0, 1], type = int, default = 0)
     parse.add_argument('--enable_b_extension', help = 'enable_b_extension',
                        choices = [0, 1], type = int, default = 0)
-
+    parse.add_argument('--enable_bitmanip_groups', help = 'enable_bitmanip_groups',
+                       default = ['ZBB', 'ZBS', 'ZBP', 'ZBE', 'ZBF',
+                                  'ZBC', 'ZBR', 'ZBM', 'ZBT', 'ZB_TMP'], nargs = '*')
+    parse.add_argument('--boot_mode_opts', help = 'boot_mode_opts', default = "")
+    parse.add_argument('--asm_test_suffix', help = 'asm_test_suffix', default = "")
+    parse.add_argument('--march_isa', help = 'march_isa', default = [],
+                       choices = [i.name for i in riscv_instr_group_t], nargs = '*')
+    parse.add_argument('--directed_instr_0', help = 'directed_instr_0',
+                       default = "riscv_int_numeric_corner_stream,4")
+    parse.add_argument('--stream_name_opts', help = 'stream_name_0',
+                       default = "riscv_load_store_rand_instr_stream")
+    parse.add_argument('--stream_freq_opts', help = 'stream_freq_0', default = 4)
     # TODO
     '''
-    cmdline_enum_processor #(b_ext_group_t)::get_array_values("+enable_bitmanip_groups=",
-                                                              enable_bitmanip_groups);
-    if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
-      `uvm_info(get_full_name(), $sformatf(
-                "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
-      case(boot_mode_opts)
-        "m" : init_privileged_mode = MACHINE_MODE;
-        "s" : init_privileged_mode = SUPERVISOR_MODE;
-        "u" : init_privileged_mode = USER_MODE;
-        default: `uvm_fatal(get_full_name(),
-                  $sformatf("Illegal boot mode option - %0s", boot_mode_opts))
-      endcase
-      init_privileged_mode.rand_mode(0);
-      addr_translaction_rnd_order_c.constraint_mode(0);
+    if ($value$plusargs("tvec_alignment=%0d", tvec_alignment)) begin
+        tvec_alignment.rand_mode(0);
     end
-    `uvm_info(`gfn, $sformatf("riscv_instr_pkg::supported_privileged_mode = %0d",
-                   riscv_instr_pkg::supported_privileged_mode.size()), UVM_LOW)
-    void'(inst.get_arg_value("+asm_test_suffix=", asm_test_suffix));
-    // Directed march list from the runtime options, ex. RV32I, RV32M etc.
-    cmdline_enum_processor #(riscv_instr_group_t)::get_array_values("+march=", march_isa);
-    if (march_isa.size != 0) riscv_instr_pkg::supported_isa = march_isa;
-    '''
 
+    vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
+    pmp_cfg = riscv_pmp_cfg::type_id::create("pmp_cfg");
+    pmp_cfg.rand_mode(pmp_cfg.pmp_randomize);
+    pmp_cfg.initialize(require_signature_addr);
+    setup_instr_distribution();
+    get_invalid_priv_lvl_csr();
+    '''
     args = parse.parse_args()
     return args
 
 
 args = parse_args()
+args_dict = vars(args)
 cfg = riscv_instr_gen_config(args)

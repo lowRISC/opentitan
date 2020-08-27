@@ -1,0 +1,12 @@
+diff --git a/dv_lib/dv_lib.core b/dv_lib/dv_lib.core
+index e6e3f9e8..ad1b98ff 100644
+--- a/dv_lib.core
++++ b/dv_lib.core
+@@ -11,6 +11,6 @@ filesets:
+       - lowrisc:dv:dv_utils
+       - lowrisc:dv:csr_utils
+       - lowrisc:dv:dv_base_reg
+-      - lowrisc:opentitan:bus_params_pkg
++      - lowrisc:ibex:bus_params_pkg
+     files:
+       - dv_lib_pkg.sv
