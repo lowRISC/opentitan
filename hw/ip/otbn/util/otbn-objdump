@@ -150,6 +150,7 @@ def main() -> int:
             proc = subprocess.run(cmd, capture_output=True, text=True)
             if proc.returncode:
                 # Dump any lines that objdump wrote before it died
+                sys.stderr.write(proc.stderr)
                 sys.stdout.write(proc.stdout)
                 return proc.returncode
     except FileNotFoundError:
