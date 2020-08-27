@@ -314,7 +314,7 @@ class OTBNModel(Model):  # type: ignore
         mask = ((1 << 128) - 1) << (0 if hwsel else 128)
         curr = int(self.state.wreg[wridx]) & mask
         valpos = value << 128 if hwsel else value
-        self.state.wreg[wridx].set(curr | valpos)
+        self.state.wreg[wridx] = curr | valpos
 
     def load_wlen_word_from_memory(self, addr: int) -> int:
         assert 0 <= addr
