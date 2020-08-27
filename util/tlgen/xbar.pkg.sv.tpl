@@ -16,7 +16,7 @@ package tl_${xbar.name}_pkg;
   % else:
   ## Xbar device
   localparam logic [${len(device.addr_range)-1}:0][31:0] ADDR_SPACE_${device.name.upper().ljust(name_len)} = {
-    % for addr in device.addr_range:
+    % for addr in list(reversed(device.addr_range)):
     32'h ${"%08x" % addr[0]}${"," if not loop.last else ""}
     % endfor
   };
@@ -30,7 +30,7 @@ package tl_${xbar.name}_pkg;
   % else:
   ## Xbar
   localparam logic [${len(device.addr_range)-1}:0][31:0] ADDR_MASK_${device.name.upper().ljust(name_len)} = {
-    % for addr in device.addr_range:
+    % for addr in list(reversed(device.addr_range)):
     32'h ${"%08x" % (addr[1] - addr[0])}${"," if not loop.last else ""}
     % endfor
   };

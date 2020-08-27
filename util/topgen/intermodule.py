@@ -534,7 +534,8 @@ def find_otherside_modules(topcfg: OrderedDict, m,
         ('main', 'tl_corei'): ('rv_core_ibex', 'tl_i'),
         ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
         ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
-        ('main', 'tl_debug_mem'): ('dm_top', 'tl_d')
+        ('main', 'tl_debug_mem'): ('dm_top', 'tl_d'),
+        ('peri', 'tl_ast_wrapper'): ('ast', 'tl')
     }
     for pair in special_inst_names:
         if pair == (m, s):

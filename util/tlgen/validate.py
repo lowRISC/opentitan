@@ -59,6 +59,7 @@ Crossbar node description. It can be host, device, or internal nodes.
 ''',
     'required': {
         'name': ['s', 'Module instance name'],
+        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges'],
         'type': [
             's',
             'Module type: {"host", "device", "async", "socket_1n", "socket_m1"}'

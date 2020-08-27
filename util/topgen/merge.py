@@ -180,6 +180,7 @@ def xbar_addhost(top, xbar, host):
             ("reset", xbar['reset']),
             ("type", "host"),
             ("inst_type", ""),
+            ("stub", False),
             # The default matches RTL default
             # pipeline_byp is don't care if pipeline is false
             ("pipeline", "true"),
@@ -200,6 +201,7 @@ def xbar_addhost(top, xbar, host):
     if 'reset' not in obj[0]:
         obj[0]["reset"] = xbar["reset"]
 
+    obj[0]["stub"] = False
     obj[0]["inst_type"] = predefined_modules[
         host] if host in predefined_modules else ""
     obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[0] else "true"
@@ -226,6 +228,8 @@ def xbar_adddevice(top, xbar, device):
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
     - xbar: bool, true if the device port is another xbar
+    - stub: There is no backing module / memory, instead a tlul port
+            is created and forwarded above the current hierarchy
     """
     deviceobj = list(
         filter(lambda node: node["name"] == device,
@@ -235,6 +239,9 @@ def xbar_adddevice(top, xbar, device):
     xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
 
     # case 1: another xbar --> check in xbar list
+    log.info("Handling xbar device {}, devlen {}, nodelen {}".format(device,
+                                                                     len(deviceobj),
+                                                                     len(nodeobj)))
     if device in xbar_list and len(nodeobj) == 0:
         log.error(
             "Another crossbar %s needs to be specified in the 'nodes' list" %
@@ -251,6 +258,7 @@ def xbar_adddevice(top, xbar, device):
                     device, xbar["name"]))
             assert len(nodeobj) == 1
             nodeobj[0]["xbar"] = True
+            nodeobj[0]["stub"] = False
             process_pipeline_var(nodeobj[0])
             return
 
@@ -271,6 +279,7 @@ def xbar_adddevice(top, xbar, device):
                             ("size_byte", "0x1000"),
                         ])],
                         "xbar": False,
+                        "stub": False,
                         "pipeline": "true",
                         "pipeline_byp": "true"
                     })  # yapf: disable
@@ -283,6 +292,7 @@ def xbar_adddevice(top, xbar, device):
                                      ("size_byte", "0x1000")])
                     ]
                     node["xbar"] = False
+                    node["stub"] = False
                     process_pipeline_var(node)
             else:
                 log.error("device %s shouldn't be host type" % device)
@@ -290,9 +300,32 @@ def xbar_adddevice(top, xbar, device):
         # case 3: not defined
         else:
             # Crossbar check
-            log.error(
-                "device %s doesn't exist in 'module', 'memory', or predefined"
-                % device)
+            if len(nodeobj) == 0:
+                log.error(
+                    """
+                    Device %s doesn't exist in 'module', 'memory', predefined,
+                    or as a node object
+                    """
+                    % device)
+            else:
+                node = nodeobj[0]
+                node["xbar"] = False
+                required_keys = ["addr_range"]
+                if "stub" in node and node["stub"]:
+                    log.info(
+                        """
+                        Device %s definition is a stub and does not exist in
+                        'module', 'memory' or predefined
+                        """
+                        % device)
+
+                    if all(key in required_keys for key in node.keys()):
+                        log.error("{}, The xbar only node is missing fields, see {}".format(
+                            node['name'], required_keys))
+                    process_pipeline_var(node)
+                else:
+                    log.error("Device {} definition is not a stub!")
+
             return
 
     # Search object from module or memory
@@ -309,7 +342,8 @@ def xbar_adddevice(top, xbar, device):
                 ("size_byte", deviceobj[0]["size"])])],
             "pipeline": "true",
             "pipeline_byp": "true",
-            "xbar": True if device in xbar_list else False
+            "xbar": True if device in xbar_list else False,
+            "stub": False
         })  # yapf: disable
 
     else:
@@ -321,6 +355,7 @@ def xbar_adddevice(top, xbar, device):
                          ("size_byte", deviceobj[0]["size"])])
         ]
         node["xbar"] = True if device in xbar_list else False
+        node["stub"] = False
         process_pipeline_var(node)
 
 
