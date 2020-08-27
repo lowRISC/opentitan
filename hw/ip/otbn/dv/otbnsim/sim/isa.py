@@ -291,11 +291,11 @@ Zero the accumulator before accumulating the multiply result.
 
 To specify, use the literal syntax .Z""")
     field_wrd_hwsel = Field(name="wrd_hwsel", base=29, size=1, description="")
-    field_wrs1_qwsel = Field(name="wrs1_qwsel",
+    field_wrs2_qwsel = Field(name="wrs2_qwsel",
                              base=27,
                              size=2,
                              description="")
-    field_wrs2_qwsel = Field(name="wrs2_qwsel",
+    field_wrs1_qwsel = Field(name="wrs1_qwsel",
                              base=25,
                              size=2,
                              description="")
@@ -327,13 +327,13 @@ To specify, use the literal syntax .Z""")
     def __str__(self) -> str:
         istr = cast(str, self.mnemonic)
         if self.wb_variant > 0:
-            istr += ".so" if self.wb_variant == 1 else ".wo"
+            istr += ".wo" if self.wb_variant == 1 else ".so"
         if self.zero_acc:
             istr += ".z"
         istr += " "
         if self.wb_variant > 0:
             istr += "w{}".format(self.wrd)
-            if self.wb_variant == 1:
+            if self.wb_variant >= 2:
                 istr += ".u" if self.wrd_hwsel == 1 else ".l"
             istr += ", "
         istr += "w{}.{}, ".format(self.wrs1, self.wrs1_qwsel)
