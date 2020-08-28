@@ -7,8 +7,10 @@
     design_spec:        "hw/ip/otbn/doc",
 //    dv_plan:            "hw/ip/otbn/doc/dv_plan",
 //    hw_checklist:       "hw/ip/otbn/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_otbn"
     version:            "0.1",
     life_stage:         "L0",
     design_stage:       "D0",
     verification_stage: "V0",
+    dif_stage:          "S0",
 }
