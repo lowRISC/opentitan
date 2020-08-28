@@ -1074,6 +1074,7 @@
       [
         {
           name: aon_wkup_req
+          width: "1"
         }
       ]
       scan: "false"
@@ -4672,6 +4673,7 @@
   [
     {
       name: aon_wkup_req
+      width: "1"
       module: pinmux
     }
   ]

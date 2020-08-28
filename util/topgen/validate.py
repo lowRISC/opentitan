@@ -95,6 +95,11 @@ clock_srcs_required = {
     'freq': ['s', 'frequency of clock in Hz'],
 }
 
+clock_srcs_optional = {
+    'derived': ['s', 'whether clock is derived'],
+    'params': ['s', 'extra clock parameters']
+}
+
 derived_clock_srcs_required = {
     'name': ['s', 'name of clock group'],
     'aon': ['s', 'yes, no. aon attribute of a clock'],
@@ -222,7 +227,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # check clock fields are all there
     ext_srcs = []
     for src in top['clocks']['srcs']:
-        check_keys(src, clock_srcs_required, {}, {}, "Clock source")
+        check_keys(src, clock_srcs_required, clock_srcs_optional, {}, "Clock source")
         ext_srcs.append(src['name'])
 
     # check derived clock sources
