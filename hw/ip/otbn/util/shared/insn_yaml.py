@@ -315,12 +315,20 @@ def load_file(path: str) -> InsnsFile:
                            .format(path, err)) from None
 
 
+_DEFAULT_INSNS_FILE = None  # type: Optional[InsnsFile]
+
+
 def load_insns_yaml() -> InsnsFile:
     '''Load the insns.yml file from its default location.
 
-    Raises a RuntimeError on syntax or schema error.
+    Caches its result. Raises a RuntimeError on syntax or schema error.
 
     '''
-    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', '..', 'data', 'insns.yml'))
-    return load_file(insns_yml)
+    global _DEFAULT_INSNS_FILE
+    if _DEFAULT_INSNS_FILE is None:
+        dirname = os.path.dirname(__file__)
+        rel_path = os.path.join('..', '..', 'data', 'insns.yml')
+        insns_yml = os.path.normpath(os.path.join(dirname, rel_path))
+        _DEFAULT_INSNS_FILE = load_file(insns_yml)
+
+    return _DEFAULT_INSNS_FILE

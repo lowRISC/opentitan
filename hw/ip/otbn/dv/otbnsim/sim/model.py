@@ -9,7 +9,6 @@ from attrdict import AttrDict  # type: ignore
 
 from riscvmodel.model import (Model, State,  # type: ignore
                               Environment, TerminateException)
-from riscvmodel.isa import Instruction  # type: ignore
 from riscvmodel.types import (RegisterFile, Register,  # type: ignore
                               SingleRegister, Trace, BitflagRegister)
 
@@ -69,12 +68,12 @@ class OTBNIntRegisterFile(RegisterFile):  # type: ignore
         # Otherwise, use the base class implementation
         super().__setitem__(key, value)
 
-    def __getitem__(self, key: int) -> int:
+    def __getitem__(self, key: int) -> Register:
         # Special handling for the callstack in x1
         if key == 1:
             self.have_read_callstack = True
 
-        return cast(int, super().__getitem__(key))
+        return cast(Register, super().__getitem__(key))
 
     def post_insn(self) -> None:
         '''Update the x1 call stack after an instruction executes
@@ -347,23 +346,13 @@ class OTBNModel(Model):  # type: ignore
 
         return (result & ((1 << 256) - 1), flags_out)
 
-    def issue(self, insn: Instruction) -> List[Trace]:
-        '''An overridden version of riscvmodel's Model.issue
-
-        We have to override this to allow the loop stack to jump in between
-        instruction execution and calculating the trace of changes.
-
-        '''
-        self.state.pc += 4
-        insn.execute(self)
-
+    def post_insn(self) -> None:
+        '''Update state after running an instruction but before commit'''
         self.state.loop_step()
         self.state.intreg.post_insn()
 
-        trace = self.state.changes()
-        if self.verbose is not False:
-            self.verbose_file.write(self.asm_tpl.
-                                    format(str(insn),
-                                           ", ".join([str(t) for t in trace])))
-        self.state.commit()
-        return trace
+    def print_trace(self, disasm: str) -> None:
+        '''Print a trace of the current instruction to verbose_file'''
+        assert self.verbose
+        changes_str = ', '.join([str(t) for t in self.state.changes()])
+        self.verbose_file.write(self.asm_tpl.format(disasm, changes_str))

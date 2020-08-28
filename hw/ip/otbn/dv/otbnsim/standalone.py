@@ -6,10 +6,9 @@
 import argparse
 import sys
 
-from riscvmodel.sim import Simulator  # type: ignore
-
 from sim.elf import load_elf
 from sim.model import OTBNModel
+from sim.sim import OTBNSim
 
 
 def main() -> int:
@@ -21,10 +20,10 @@ def main() -> int:
     args = parser.parse_args()
 
     model = OTBNModel(verbose=args.verbose)
-    sim = Simulator(model)
+    sim = OTBNSim(model)
     load_elf(sim, args.elf)
 
-    sim.run()
+    sim.run(start_addr=0)
 
     if args.dmem_dump is not None:
         try:
