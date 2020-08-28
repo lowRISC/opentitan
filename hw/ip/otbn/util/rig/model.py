@@ -228,19 +228,15 @@ class Model:
         if isinstance(op_type, RegOperandType):
             return self.pick_reg_operand_value(op_type)
 
-        if isinstance(op_type, ImmOperandType):
-            rng = op_type.get_range()
-            if rng is None:
-                # If we don't know the width, the only immediate that we *know*
-                # is valid is 0.
-                return 0
+        op_rng = op_type.get_op_val_range(self.pc)
+        if op_rng is None:
+            # If we don't know the width, the only immediate that we *know*
+            # is going to be valid is 0.
+            return 0
 
-            lo, hi = rng
-            value = random.randrange(lo, hi + 1)
-            return op_type.encode_val(value)
-
-        raise NotImplementedError('Unknown operand type in '
-                                  'Model.pick_operand_value')
+        lo, hi = op_rng
+        op_val = random.randrange(lo, hi + 1)
+        return op_type.op_val_to_enc_val(op_val, self.pc)
 
     def pick_reg_operand_value(self, op_type: RegOperandType) -> Optional[int]:
         '''Pick a random value for a register operand

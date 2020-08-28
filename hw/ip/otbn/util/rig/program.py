@@ -13,10 +13,8 @@ class ProgInsn:
 
     self.insn is the instruction (as defined in insns.yml).
 
-    self.operands has an integer value for each operand. Register operands are
-    represented by number, so x3 is 3, for example. Immediate operands are
-    represented unsigned. So an 8-bit signed immediate with value -1 would be
-    passed as 0xff.
+    self.operands has the encoded value for each operand (see the documentation
+    for OperandType for more information).
 
     self.lsu_info is non-None if (and only if) the instruction is an LSU
     instruction. In this case, it's a pair (mem_type, addr). mem_type is the
@@ -39,28 +37,16 @@ class ProgInsn:
 
     def to_asm(self, cur_pc: int) -> str:
         '''Return an assembly representation of the instruction'''
-        insn = self.insn
-        # We should never try to generate an instruction without syntax
-        # (ensuring this is the job of the snippet generators)
-        assert insn.syntax is not None
-
         # Build a dictionary from operand name to value from self.operands,
         # which is a list of operand values in the same order as insn.operands.
         op_vals = {}
-        assert len(insn.operands) == len(self.operands)
-        for operand, op_val in zip(insn.operands, self.operands):
+        assert len(self.insn.operands) == len(self.operands)
+        for operand, enc_val in zip(self.insn.operands, self.operands):
+            op_val = operand.op_type.enc_val_to_op_val(enc_val, cur_pc)
+            assert op_val is not None
             op_vals[operand.name] = op_val
 
-        rendered_ops = insn.syntax.render_vals(op_vals,
-                                               insn.name_to_operand,
-                                               cur_pc)
-        if insn.glued_ops and rendered_ops:
-            mnem = insn.mnemonic + rendered_ops[0]
-            rendered_ops = rendered_ops[1:]
-        else:
-            mnem = insn.mnemonic
-
-        return '{:14}{}'.format(mnem, rendered_ops)
+        return self.insn.disassemble(op_vals, 14)
 
     def to_json(self) -> object:
         '''Serialize to an object that can be written as JSON'''

@@ -476,13 +476,14 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
 
     try:
         gpr_type = RegOperandType('gpr', True)
-        grd_int = gpr_type.read_index(grd)
+        grd_op_val = gpr_type.str_to_op_val(grd)
+        assert grd_op_val is not None
     except ValueError as err:
         raise RuntimeError('{}: When parsing LI instruction, <grd> '
                            'operand is wrong: {}'
                            .format(where, err))
 
-    grd_txt = gpr_type.render_val(grd_int, None)
+    grd_txt = gpr_type.op_val_to_str(grd_op_val)
 
     try:
         imm_int = int(imm, 0)
@@ -625,27 +626,42 @@ class Transformer:
         '''
         assert insn.encoding is not None
 
-        # Generate a mapping from operand name to an integer value. Note that
+        # Generate a mapping from operand name to an encoded value. Note that
         # read_index checks that the value fits in the operand type and
         # converts to the value that should be encoded.
         op_to_idx = {}
         for op_name, expr in op_to_expr.items():
-            op = insn.name_to_operand[op_name]
+            op_type = insn.name_to_operand[op_name].op_type
             try:
-                idx = (0 if expr is None
-                       else op.op_type.read_index(expr.strip()))
+                op_val = (0 if expr is None
+                          else op_type.str_to_op_val(expr.strip()))
             except ValueError as err:
                 raise RuntimeError('{}:{}: {}'
                                    .format(self.in_path,
                                            self.line_number, err)) from None
-            if idx is None:
+            if op_val is None:
                 raise RuntimeError('{}:{}: Cannot resolve operand expression '
                                    '{!r} to an index and the instruction {!r} '
                                    'has an encoding incompatible with rv32i '
                                    '.insn lines.'
                                    .format(self.in_path, self.line_number,
                                            expr, insn.mnemonic)) from None
-            op_to_idx[op_name] = idx
+
+            try:
+                enc_val = op_type.op_val_to_enc_val(op_val, None)
+            except ValueError as err:
+                raise RuntimeError('{}:{}: {}'
+                                   .format(self.in_path,
+                                           self.line_number, err)) from None
+
+            if enc_val is None:
+                raise RuntimeError('{}:{}: Cannot encode {!r} operand for '
+                                   '{!r} instruction without a current PC '
+                                   '(which is not known to otbn-as).'
+                                   .format(self.in_path, self.line_number,
+                                           expr, insn.mnemonic)) from None
+
+            op_to_idx[op_name] = enc_val
 
         try:
             word_val = insn.encoding.assemble(op_to_idx)
@@ -675,9 +691,12 @@ class Transformer:
             if expr is None:
                 continue
 
-            op = insn.name_to_operand[field.value]
+            op_type = insn.name_to_operand[field.value].op_type
             try:
-                field_value = op.op_type.read_index(expr.strip())
+                op_val = op_type.str_to_op_val(expr.strip())
+                assert op_val is not None
+                enc_val = op_type.op_val_to_enc_val(op_val, None)
+                assert enc_val is not None
             except ValueError as err:
                 raise RuntimeError('{}:{}: {}'
                                    .format(self.in_path,
@@ -685,11 +704,11 @@ class Transformer:
 
             # read_index should always return a non-None result if
             # syntax_determines_value() returned false.
-            assert field_value is not None
+            assert enc_val is not None
 
             for (field_msb, field_lsb), rv_name, rv_lsb in pfe:
                 part_field_mask = (1 << (field_msb - field_lsb + 1)) - 1
-                part_field_value = (field_value >> field_lsb) & part_field_mask
+                part_field_value = (enc_val >> field_lsb) & part_field_mask
                 assert 0 == ((rv_nums[rv_name] >> rv_lsb) & part_field_mask)
                 rv_nums[rv_name] |= part_field_value << rv_lsb
 
