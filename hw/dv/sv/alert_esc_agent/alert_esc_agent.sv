@@ -58,6 +58,9 @@ class alert_esc_agent extends dv_base_agent#(
         `uvm_fatal(`gfn, "failed to get probe_vif handle from uvm_config_db")
       end
     end
+
+    // set async mode to alert_esc interface
+    cfg.vif.is_async = cfg.is_async;
     // set async alert clock frequency
     if (cfg.is_alert && cfg.is_async) begin
       cfg.vif.clk_rst_async_if.set_active(.drive_rst_n_val(0));

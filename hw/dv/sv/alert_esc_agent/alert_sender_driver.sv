@@ -179,43 +179,23 @@ class alert_sender_driver extends alert_esc_base_driver;
   endtask : random_drive_int_fail
 
   virtual task set_alert();
-    if (cfg.is_async) begin
-      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b1;
-      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b0;
-    end else begin
-      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
-    end
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
   endtask
 
   virtual task reset_alert();
-    if (cfg.is_async) begin
-      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b0;
-      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b1;
-    end else begin
-      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
-    end
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
   endtask
 
   virtual task drive_alerts_high();
-    if (cfg.is_async) begin
-      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b1;
-      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b1;
-    end else begin
-      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
-    end
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
   endtask
 
   virtual task drive_alerts_low();
-    if (cfg.is_async) begin
-      cfg.vif.sender_async_cb.alert_tx.alert_p <= 1'b0;
-      cfg.vif.sender_async_cb.alert_tx.alert_n <= 1'b0;
-    end else begin
-      cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-      cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
-    end
+    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
   endtask
 
   virtual task wait_ping();
@@ -227,8 +207,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   endtask : wait_ping
 
   virtual task wait_sender_clk();
-    if (cfg.is_async) @(cfg.vif.sender_async_cb);
-    else @(cfg.vif.sender_cb);
+    @(cfg.vif.sender_cb);
   endtask
 
 endclass : alert_sender_driver
