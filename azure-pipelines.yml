@@ -234,10 +234,10 @@ jobs:
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
-      licence_checker=util/lowrisc_misc-linters/licence-checker/licence-checker.py
+      licence_checker="util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson"
       if [[ -n "$changed_files" ]]; then
         set -o pipefail
-        xargs "$licence_checker" --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
+        xargs $licence_checker <<< "$changed_files" | tee licence-checker-output
         if [[ $? != 0 ]]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Licence header check failed. Please check output of $licence_checker on the noted failures."
