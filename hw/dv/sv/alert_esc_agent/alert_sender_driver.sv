@@ -16,12 +16,13 @@ class alert_sender_driver extends alert_esc_base_driver;
   semaphore alert_atomic = new(1);
 
   virtual task reset_signals();
+    do_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
       void'(alert_atomic.try_get(1));
       alert_atomic.put(1);
-      reset_alert();
+      do_reset();
       @(posedge cfg.vif.rst_n);
       under_reset = 0;
     end
@@ -179,23 +180,23 @@ class alert_sender_driver extends alert_esc_base_driver;
   endtask : random_drive_int_fail
 
   virtual task set_alert();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    cfg.vif.sender_cb.alert_tx_int.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx_int.alert_n <= 1'b0;
   endtask
 
   virtual task reset_alert();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    cfg.vif.sender_cb.alert_tx_int.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx_int.alert_n <= 1'b1;
   endtask
 
   virtual task drive_alerts_high();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b1;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b1;
+    cfg.vif.sender_cb.alert_tx_int.alert_p <= 1'b1;
+    cfg.vif.sender_cb.alert_tx_int.alert_n <= 1'b1;
   endtask
 
   virtual task drive_alerts_low();
-    cfg.vif.sender_cb.alert_tx.alert_p <= 1'b0;
-    cfg.vif.sender_cb.alert_tx.alert_n <= 1'b0;
+    cfg.vif.sender_cb.alert_tx_int.alert_p <= 1'b0;
+    cfg.vif.sender_cb.alert_tx_int.alert_n <= 1'b0;
   endtask
 
   virtual task wait_ping();
@@ -208,6 +209,11 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   virtual task wait_sender_clk();
     @(cfg.vif.sender_cb);
+  endtask
+
+  virtual task do_reset();
+    cfg.vif.alert_tx_int.alert_p <= 1'b0;
+    cfg.vif.alert_tx_int.alert_n <= 1'b1;
   endtask
 
 endclass : alert_sender_driver

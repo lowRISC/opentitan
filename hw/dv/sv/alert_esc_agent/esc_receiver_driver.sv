@@ -14,10 +14,11 @@ class esc_receiver_driver extends alert_esc_base_driver;
   bit is_ping;
 
   virtual task reset_signals();
+    do_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
-      reset_resp();
+      do_reset();
       is_ping = 0;
       @(posedge cfg.vif.rst_n);
       under_reset = 0;
@@ -160,23 +161,23 @@ class esc_receiver_driver extends alert_esc_base_driver;
   endtask
 
   virtual task set_resp();
-    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b1;
-    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx_int.resp_p <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx_int.resp_n <= 1'b0;
   endtask
 
   virtual task reset_resp();
-    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b0;
-    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx_int.resp_p <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx_int.resp_n <= 1'b1;
   endtask
 
   virtual task set_resp_both_high();
-    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b1;
-    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx_int.resp_p <= 1'b1;
+    cfg.vif.receiver_cb.esc_rx_int.resp_n <= 1'b1;
   endtask
 
   virtual task set_resp_both_low();
-    cfg.vif.receiver_cb.esc_rx.resp_p <= 1'b0;
-    cfg.vif.receiver_cb.esc_rx.resp_n <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx_int.resp_p <= 1'b0;
+    cfg.vif.receiver_cb.esc_rx_int.resp_n <= 1'b0;
   endtask
 
   virtual function bit get_esc();
@@ -190,5 +191,10 @@ class esc_receiver_driver extends alert_esc_base_driver;
   virtual task wait_esc();
     while (cfg.vif.esc_tx.esc_p === 1'b0 && cfg.vif.esc_tx.esc_n === 1'b1) @(cfg.vif.receiver_cb);
   endtask : wait_esc
+
+  virtual task do_reset();
+    cfg.vif.esc_rx_int.resp_p <= 1'b0;
+    cfg.vif.esc_rx_int.resp_n <= 1'b1;
+  endtask
 
 endclass : esc_receiver_driver
