@@ -12,7 +12,7 @@ import sys
 from typing import Dict, List, Optional, Tuple
 
 from shared.encoding import Encoding
-from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
 from shared.toolchain import find_tool
 
 
@@ -158,10 +158,8 @@ def main() -> int:
                          .format(objdump))
         return 127
 
-    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', 'data', 'insns.yml'))
     try:
-        insns_file = load_file(insns_yml)
+        insns_file = load_insns_yaml()
     except RuntimeError as err:
         sys.stderr.write('{}\n'.format(err))
         return 1

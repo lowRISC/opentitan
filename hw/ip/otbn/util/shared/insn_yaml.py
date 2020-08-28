@@ -271,3 +271,14 @@ def load_file(path: str) -> InsnsFile:
     except ValueError as err:
         raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
                            .format(path, err)) from None
+
+
+def load_insns_yaml() -> InsnsFile:
+    '''Load the insns.yml file from its default location.
+
+    Raises a RuntimeError on syntax or schema error.
+
+    '''
+    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                              '..', '..', 'data', 'insns.yml'))
+    return load_file(insns_yml)
