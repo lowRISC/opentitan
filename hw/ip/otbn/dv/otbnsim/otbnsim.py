@@ -9,11 +9,9 @@ import argparse
 import struct
 import sys
 
-from riscvmodel.sim import Simulator  # type: ignore
-
 from sim.decode import decode_file
 from sim.model import OTBNModel
-from sim.variant import RV32IXotbn
+from sim.sim import OTBNSim
 
 
 def main() -> int:
@@ -26,13 +24,13 @@ def main() -> int:
     parser.add_argument("trace_file")
 
     args = parser.parse_args()
-    sim = Simulator(OTBNModel(verbose=args.trace_file))
+    sim = OTBNSim(OTBNModel(verbose=args.trace_file))
 
-    sim.load_program(decode_file(args.imem_file, RV32IXotbn))
+    sim.load_program(decode_file(args.imem_file))
     with open(args.dmem_file, "rb") as f:
         sim.load_data(f.read())
 
-    cycles = sim.run()
+    cycles = sim.run(start_addr=0)
 
     with open(args.dmem_file, "wb") as f:
         f.write(sim.dump_data())

@@ -9,25 +9,19 @@
 # afterwards.
 
 import struct
-from typing import List, Optional, TypeVar
+from typing import List, Optional, Tuple, Type
 
-from riscvmodel.insn import get_insns  # type: ignore
-from riscvmodel.isa import Instruction, isa  # type: ignore
-from riscvmodel.model import Model  # type: ignore
-from riscvmodel.variant import Variant, RV32I  # type: ignore
+from .isa import OTBNInsn
+from .insn import INSN_CLASSES
+from .model import OTBNModel
 
-# The riscvmodel decoder works by introspection, checking all the instruction
-# classes that have been defined so far. This implicit approach only works if
-# we make absolutely sure that we *have* loaded the instruction definitions we
-# use. So we do this useless import to ensure it.
-from .insn import InstructionLOOP  # noqa: F401
-
-# A subclass of Instruction
-_InsnSubclass = TypeVar('_InsnSubclass', bound=Instruction)
+# A tuple as returned by get_insn_masks: an element (m0, m1, cls) means "if a
+# word has all the bits in m0 clear and all the bits in m1 set, then you should
+# decode it with the given class".
+_MaskTuple = Tuple[int, int, Type[OTBNInsn]]
 
 
-@isa(".bogus-insn", RV32I, opcode=0)
-class IllegalInsn(Instruction):  # type: ignore
+class IllegalInsn(OTBNInsn):
     '''A catch-all subclass of Instruction for bad data
 
     This handles anything that doesn't decode correctly. Doing so for OTBN is
@@ -39,46 +33,78 @@ class IllegalInsn(Instruction):  # type: ignore
     we know this doesn't match any real instruction.
 
     '''
-    def __init__(self) -> None:
-        self.word = None  # type: Optional[int]
-
-    def decode(self, word: int) -> None:
+    def __init__(self, word: int) -> None:
         self.word = word
 
-    def execute(self, model: Model) -> None:
-        assert self.word is not None
+    def execute(self, model: OTBNModel) -> None:
         raise RuntimeError('Illegal instruction at {:#x}: encoding {:#010x}.'
                            .format(int(model.state.pc), self.word))
 
 
-def _decode_word(word_off: int,
-                 word: int,
-                 insn_classes: List[_InsnSubclass]) -> Instruction:
-    opcode = word & 0x7f
-    insn = None
-    for cls in insn_classes:
-        if cls.field_opcode.value != opcode:
-            continue
-        if not cls.match(word):
+MASK_TUPLES = None  # type: Optional[List[_MaskTuple]]
+
+
+def get_insn_masks() -> List[_MaskTuple]:
+    '''Generate a list of zeros/ones masks for known instructions
+
+    The result is memoized.
+
+    '''
+    global MASK_TUPLES
+    if MASK_TUPLES is None:
+        tuples = []
+        for cls in INSN_CLASSES:
+            # cls is the class for some OTBNInsn: an object that represents a
+            # decoded instruction. It has a class variable called "insn", which is
+            # the subclass of insn_yaml.Insn that represents that instruction
+            # (without operand values).
+            insn = cls.insn
+            if insn.encoding is None:
+                continue
+
+            m0, m1 = insn.encoding.get_masks()
+
+            # Encoding.get_masks sets bits that are 'x', so we have to do a
+            # difference operation too.
+            tuples.append((m0 & ~m1, m1 & ~m0, cls))
+        MASK_TUPLES = tuples
+
+    return MASK_TUPLES
+
+
+def _decode_word(word_off: int, word: int) -> OTBNInsn:
+    found_cls = None
+    for m0, m1, cls in get_insn_masks():
+        # If any bit is set that should be zero or if any bit is clear that
+        # should be one, ignore this instruction.
+        if word & m0 or (~ word) & m1:
             continue
 
-        insn = cls()
+        found_cls = cls
         break
 
-    if insn is None:
-        insn = IllegalInsn()
-    insn.decode(word)
-    return insn
+    if found_cls is None:
+        return IllegalInsn(word)
+
+    # Decode the instruction. We know that we have an encoding (we checked in
+    # get_insn_masks).
+    assert cls.insn.encoding is not None
+    enc_vals = cls.insn.encoding.extract_operands(word)
+
+    # Make sense of these encoded values as "operand values" (doing any
+    # shifting, sign interpretation etc.)
+    op_vals = cls.insn.enc_vals_to_op_vals(4 * word_off, enc_vals)
+
+    return cls(op_vals)
 
 
-def decode_bytes(data: bytes, variant: Variant) -> List[Instruction]:
+def decode_bytes(data: bytes) -> List[OTBNInsn]:
     '''Decode instruction bytes as instructions'''
-    insn_classes = get_insns(variant=variant)
     assert len(data) & 3 == 0
-    return [_decode_word(offset, int_val[0], insn_classes)
+    return [_decode_word(offset, int_val[0])
             for offset, int_val in enumerate(struct.iter_unpack('<I', data))]
 
 
-def decode_file(path: str, variant: Variant) -> List[Instruction]:
+def decode_file(path: str) -> List[OTBNInsn]:
     with open(path, 'rb') as handle:
-        return decode_bytes(handle.read(), variant)
+        return decode_bytes(handle.read())

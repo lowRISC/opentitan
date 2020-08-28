@@ -226,12 +226,12 @@
 - mnemonic: xori
   rv32i: true
   synopsis: Bitwise XOR with Immediate
-  operands: [grd, grs, imm]
+  operands: [grd, grs1, imm]
   encoding:
     scheme: I
     mapping:
       imm: imm
-      rs1: grs
+      rs1: grs1
       funct3: b100
       rd: grd
       opcode: b00100
