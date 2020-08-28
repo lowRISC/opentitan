@@ -295,6 +295,8 @@ top_required = {
      "offset control groups"]
 }
 top_optional = {
+    'reset_primary': ['s', "primary reset used by the module"],
+    'other_reset_list': ['l', "list of other resets"],
     'bus_host': ['s', "name of the bus interface as host"],
     'other_clock_list': ['l', "list of other chip clocks needed"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
@@ -308,6 +310,7 @@ top_optional = {
         "Defaults to false if not present."
     ],
     'alert_list': ['lnw', "list of peripheral alerts"],
+    'wakeup_list': ['lnw', "list of peripheral wakeups"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'param_list': ['lp', "list of parameters of the IP"],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
