@@ -12,7 +12,7 @@ from typing import Dict, List
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_file
-from shared.operand import Operand
+from shared.operand import ImmOperandType, Operand
 
 
 def render_operand_row(operand: Operand) -> str:
@@ -101,7 +101,8 @@ def render_encoding(mnemonic: str,
         operand_name = field.value
 
         # Figure out whether there's any shifting going on.
-        shift = name_to_operand[operand_name].op_type.get_shift()
+        op_type = name_to_operand[operand_name].op_type
+        shift = op_type.shift if isinstance(op_type, ImmOperandType) else 0
 
         # If there is only one range (and no shifting), that's easy.
         if len(scheme_field.bits.ranges) == 1 and shift == 0:

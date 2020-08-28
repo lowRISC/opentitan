@@ -126,7 +126,7 @@ class StraightLineInsn(SnippetGen):
                                        .format(insn.mnemonic))
                 lsu_imm_op = tgt_op_name
 
-                imm_op_range = tgt_op.op_type.get_range()
+                imm_op_range = tgt_op.op_type.get_op_val_range(model.pc)
                 if imm_op_range is None:
                     assert tgt_op.op_type.width is None
                     raise RuntimeError('The {!r} immediate operand for the '
@@ -181,28 +181,29 @@ class StraightLineInsn(SnippetGen):
         addr, imm_val, reg_indices = tgt
         assert imm_op_min <= imm_val <= imm_op_max
 
-        op_vals = []
+        enc_vals = []
         for operand in insn.operands:
             # Is this the immediate? If the immediate operand is signed then
             # note that imm_op_min < 0 and we might have that imm_val < 0.
-            # However, we store everything unsigned in op_vals, so we have to
-            # reverse the 2s complement here.
+            # However, we store everything as an enc_val, so we have to
+            # "re-encode" here.
             if operand.name == lsu_imm_op:
-                assert isinstance(operand.op_type, ImmOperandType)
-                op_vals.append(operand.op_type.encode_val(imm_val))
+                enc_val = operand.op_type.op_val_to_enc_val(imm_val, model.pc)
+                assert enc_val is not None
+                enc_vals.append(enc_val)
                 continue
 
             # Or is it a register operand contributing to the target address?
             reg_val = reg_indices.get(operand.name)
             if reg_val is not None:
-                op_vals.append(reg_val)
+                enc_vals.append(reg_val)
                 continue
 
             # Otherwise it's some other operand. Pick any old value.
             val = model.pick_operand_value(operand.op_type)
             if val is None:
                 return None
-            op_vals.append(val)
+            enc_vals.append(val)
 
-        assert len(op_vals) == len(insn.operands)
-        return ProgInsn(insn, op_vals, (mem_type, addr))
+        assert len(enc_vals) == len(insn.operands)
+        return ProgInsn(insn, enc_vals, (mem_type, addr))

@@ -76,11 +76,13 @@ class SyntaxToken:
         # parsing.
         return r'(-?[^ ,+\-]+|[+\-]+)\s*'
 
-    def render_vals(self,
-                    op_vals: Dict[str, int],
-                    operands: Dict[str, Operand],
-                    cur_pc: int) -> str:
-        '''Return an assembly listing for the given operand fields
+    def render(self,
+               op_vals: Dict[str, int],
+               operands: Dict[str, Operand]) -> str:
+        '''Generate an assembly listing for this syntax token
+
+        If the syntax token is an operand, that operand is retrieved from
+        op_vals and rendered.
 
         '''
         if self.is_literal:
@@ -90,7 +92,7 @@ class SyntaxToken:
         assert self.text in operands
 
         op_type = operands[self.text].op_type
-        return op_type.render_val(op_vals[self.text], cur_pc)
+        return op_type.op_val_to_str(op_vals[self.text])
 
 
 class SyntaxHunk:
@@ -186,10 +188,9 @@ class SyntaxHunk:
         # (one-or-more) to it.
         return '(?:{})?'.format(body) if self.is_optional else body
 
-    def render_vals(self,
-                    op_vals: Dict[str, int],
-                    operands: Dict[str, Operand],
-                    cur_pc: int) -> str:
+    def render(self,
+               op_vals: Dict[str, int],
+               operands: Dict[str, Operand]) -> str:
         '''Return an assembly listing for the hunk given operand values
 
         If this hunk is optional and all its operands are zero, the hunk is
@@ -206,7 +207,7 @@ class SyntaxHunk:
             if not required:
                 return ''
 
-        return ''.join(token.render_vals(op_vals, operands, cur_pc)
+        return ''.join(token.render(op_vals, operands)
                        for token in self.tokens)
 
 
@@ -347,12 +348,11 @@ class InsnSyntax:
 
         return (pattern, op_to_grp)
 
-    def render_vals(self,
-                    op_vals: Dict[str, int],
-                    operands: Dict[str, Operand],
-                    cur_pc: int) -> str:
+    def render(self,
+               op_vals: Dict[str, int],
+               operands: Dict[str, Operand]) -> str:
         '''Return an assembly listing for the given operand fields'''
         parts = []
         for hunk in self.hunks:
-            parts.append(hunk.render_vals(op_vals, operands, cur_pc))
+            parts.append(hunk.render(op_vals, operands))
         return ''.join(parts)

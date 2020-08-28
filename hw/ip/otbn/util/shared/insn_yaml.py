@@ -7,7 +7,7 @@
 import itertools
 import os
 import re
-from typing import List, Optional, Tuple, cast
+from typing import Dict, List, Optional, Tuple, cast
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
@@ -139,6 +139,48 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
+
+    def enc_vals_to_op_vals(self,
+                            cur_pc: int,
+                            enc_vals: Dict[str, int]) -> Dict[str, int]:
+        '''Convert values extracted from an encoding to their logical values
+
+        This converts between "encoded values" and "operand values" (as defined
+        in the OperandType class).
+
+        The enc_vals dictionary should be keyed by the instruction's operand
+        names (guaranteed by Encoding.extract_operands). This function should
+        only be called when every operand has a width (which will definitely be
+        the case if we just decoded these values from an instruction word).
+
+        '''
+        op_vals = {}
+        for op_name, enc_val in enc_vals.items():
+            op_type = self.name_to_operand[op_name].op_type
+            op_val = op_type.enc_val_to_op_val(enc_val, cur_pc)
+            # This assertion should hold because OperandType.enc_val_to_op_val
+            # doesn't return None if the operand type has a width and the
+            # function is given a PC.
+            assert op_val is not None
+            op_vals[op_name] = op_val
+        return op_vals
+
+    def disassemble(self,
+                    op_vals: Dict[str, int],
+                    mnem_width: int) -> str:
+        '''Return disassembly for this instruction
+
+        op_vals should be a dictionary mapping operand names to operand values
+        (not encoded values). mnem_width is the width to pad the mnemonic to.
+
+        '''
+        padded_mnem = self.mnemonic
+        if len(padded_mnem) < mnem_width:
+            padded_mnem += ' ' * (mnem_width - len(padded_mnem))
+
+        return (padded_mnem +
+                ('' if self.glued_ops else ' ') +
+                self.syntax.render(op_vals, self.name_to_operand))
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:

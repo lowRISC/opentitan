@@ -92,12 +92,9 @@ class Jump(SnippetGen):
         # We can assume that get_range() returns something, because it only
         # returns None if the operand has no width: not possible because we
         # know we have an encoding for the instruction.
-        offset_range = imm_optype.get_range()
-        assert offset_range
-
-        offset_min, offset_max = offset_range
-        tgt_min = base_addr + offset_min
-        tgt_max = base_addr + offset_max
+        tgt_rng = imm_optype.get_op_val_range(base_addr)
+        assert tgt_rng is not None
+        tgt_min, tgt_max = tgt_rng
 
         # Pick a branch target. "1" here is the minimum number of instructions
         # that must fit. One is enough (we'll just end up generating another
@@ -106,9 +103,9 @@ class Jump(SnippetGen):
         if tgt is None:
             return None
 
-        offset = tgt - base_addr
-        assert offset_min <= offset <= offset_max
-        enc_offset = imm_optype.encode_val(offset)
+        assert tgt_min <= tgt <= tgt_max
+        enc_offset = imm_optype.op_val_to_enc_val(tgt, base_addr)
+        assert enc_offset is not None
 
         # Pick a link register, not preferring any in particular. This should
         # never fail (it's a destination, not a source).

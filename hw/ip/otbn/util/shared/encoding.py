@@ -180,3 +180,16 @@ class Encoding:
             val |= field.scheme_field.bits.encode(field_val)
 
         return val
+
+    def extract_operands(self, word: int) -> Dict[str, int]:
+        '''Extract the encoded operand values from an encoded instruction'''
+        ret = {}
+        for field in self.fields.values():
+            # The operand fields (rather than fixed ones) have the operand name as
+            # their value.
+            if not isinstance(field.value, str):
+                continue
+
+            ret[field.value] = field.scheme_field.bits.decode(word)
+
+        return ret
