@@ -45,7 +45,7 @@ void hmac_update(const void *data, size_t size_in_bytes);
 /**
  * Poll for hmac done and read out digest.
  *
- * @param digest pointer to output digest buffer.
+ * @param[out] digest pointer to output digest buffer.
  */
 void hmac_done(uint32_t *digest);
 

@@ -125,7 +125,7 @@ typedef enum dif_otbn_enable {
  * before calling other functions of this library.
  *
  * @param config Configuration for initializing an OTBN device.
- * @param otbn OTBN instance that will store the internal state of the
+ * @param[out] otbn OTBN instance that will store the internal state of the
  *             initialized OTBN device.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL`, `kDifOtbnOk` otherwise.
  */
@@ -150,7 +150,7 @@ dif_otbn_result_t dif_otbn_reset(const dif_otbn_t *otbn);
  *
  * @param otbn OTBN state data.
  * @param irq_type IRQ to get the state of.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL`, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_irq_state_get(const dif_otbn_t *otbn,
@@ -177,7 +177,7 @@ dif_otbn_result_t dif_otbn_irq_state_clear(const dif_otbn_t *otbn,
  * in `state` back to the caller. Parameter `state` is ignored if NULL.
  *
  * @param otbn OTBN state data.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state for use with `dif_otbn_irqs_restore`.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL`, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_irqs_disable(const dif_otbn_t *otbn,
@@ -273,7 +273,7 @@ dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
  *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in IMEM the first word is read from
- * @param dest the main memory location to copy the data to (preallocated)
+ * @param[out] dest the main memory location to copy the data to (preallocated)
  * @param len_bytes number of bytes to copy.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL` or len_bytes or size are
  * invalid, `kDifOtbnOk` otherwise.
@@ -301,7 +301,7 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
  *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in DMEM the first word is read from
- * @param dest the main memory location to copy the data to (preallocated)
+ * @param[out] dest the main memory location to copy the data to (preallocated)
  * @param len_bytes number of bytes to copy.
  * @return `kDifOtbnBadArg` if `otbn` is `NULL` or len_bytes or size are
  * invalid, `kDifOtbnOk` otherwise.

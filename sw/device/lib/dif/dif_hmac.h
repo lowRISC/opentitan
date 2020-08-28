@@ -166,7 +166,7 @@ typedef struct dif_hmac { mmio_region_t base_addr; } dif_hmac_t;
  * any other functions in this header with that `mmio_region_t`.
  *
  * @param config Configuration supplied for initializing a particular device.
- * @param hmac_out The location at which to write HMAC state. This location
+ * @param[out] hmac_out The location at which to write HMAC state. This location
  *                 must be valid to write to.
  * @return `kDifHmacBadArg` if `config` is null or contains illegal
  *          arguments or `hmac_out` is null, `kDifHmacOk` otherwise.
@@ -181,7 +181,7 @@ dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
  *
  * @param hmac HMAC state data.
  * @param irq_type IRQ to get the state of.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state passed back to the caller.
  * @return `dif_hmac_result_t`.
  */
 dif_hmac_result_t dif_hmac_irq_state_get(const dif_hmac_t *hmac,
@@ -207,7 +207,7 @@ dif_hmac_result_t dif_hmac_irq_state_clear(const dif_hmac_t *hmac,
  * in `state` back to the caller. Parameter `state` is ignored if NULL.
  *
  * @param hmac HMAC state data.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state passed back to the caller.
  * @return 'dif_hmac_result_t'.
  */
 dif_hmac_result_t dif_hmac_irqs_disable(const dif_hmac_t *hmac,
@@ -300,7 +300,7 @@ dif_hmac_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac);
  * @param hmac The HMAC device to send to.
  * @param data A contiguous buffer to copy from.
  * @param len The length of the buffer to copy from.
- * @param bytes_sent The number of bytes sent to the FIFO (optional).
+ * @param[out] bytes_sent The number of bytes sent to the FIFO (optional).
  * @return `kDifHmacFifoFull` if the FIFO fills up, `kDifHmacFifoBadArg` if
  *         `hmac` or `data` is null, and `kDifHmacFifoOk` otherwise.
  */
@@ -314,7 +314,7 @@ dif_hmac_fifo_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac,
  * message length.
  *
  * @param hmac The HMAC device to get the FIFO depth for.
- * @param num_entries The number of entries in the FIFO.
+ * @param[out] num_entries The number of entries in the FIFO.
  * @return `kDifHmacBadArg` if `hmac` or `num_entries` is null, `kDifHmacOk`
  *         otherwise.
  */
@@ -328,7 +328,7 @@ dif_hmac_result_t dif_hmac_fifo_count_entries(const dif_hmac_t *hmac,
  * `msg_len`.
  *
  * @param hmac The HMAC device to get the message length for.
- * @param msg_len The number of bits in the HMAC message.
+ * @param[out] msg_len The number of bits in the HMAC message.
  * @return `kDifHmacBadArg` if `hmac` or `msg_len` is null, `kDifHmacOk`
  *         otherwise.
  */
@@ -358,7 +358,8 @@ dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac);
  * requirements for size and alignment requirements of `dif_hmac_digest_t`.
  *
  * @param hmac The HMAC device to read the digest from.
- * @param digest A contiguous 32-byte, 4-byte aligned buffer for the digest.
+ * @param[out] digest A contiguous 32-byte, 4-byte aligned buffer for the
+ * digest.
  * @return `kDifHmacBadArg` if `hmac` or `digest` is null,
  *         `kDifHmacDigestProcessing` if HMAC is still processing, and
  *         `kDifHmacOk` otherwise.

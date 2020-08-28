@@ -113,7 +113,7 @@ typedef struct dif_spi_device {
  *
  * @param base_addr The start of the SPI device register.
  * @param config The configuration to initialize with.
- * @param spi Out param for the initialized device.
+ * @param[out] spi The initialized device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -125,7 +125,7 @@ dif_spi_device_result_t dif_spi_device_init(
  * Issues an "abort" to the given SPI device, causing all in-progress IO to
  * halt.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -135,7 +135,7 @@ dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
  * Resets all interrupt-related state on the given SPI device, such as enabled
  * interrupts and set RX/TX levels.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -144,9 +144,9 @@ dif_spi_device_result_t dif_spi_device_irq_reset(const dif_spi_device_t *spi);
 /**
  * Returns whether the given IRQ is currently being serviced.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @param type Which IRQ type to check.
- * @param flag Out param for whether the IRQ is active..
+ * @param[out] flag Whether the IRQ is active.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -157,7 +157,7 @@ dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
 /**
  * Clears all active interrupt bits.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -167,7 +167,7 @@ dif_spi_device_result_t dif_spi_device_irq_clear_all(
 /**
  * Enable or disable a particular interrupt.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @param type Which IRQ type to toggle.
  * @param state The state to update the bit to.
  * @return The result of the operation.
@@ -180,7 +180,7 @@ dif_spi_device_result_t dif_spi_device_irq_enable(
 /**
  * Forces a particular IRQ type to fire.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @param type Which IRQ type to fire.
  * @return The result of the operation.
  */
@@ -202,7 +202,7 @@ dif_spi_device_result_t dif_spi_device_irq_force(
  * to detect that there is free space to write more data to the TX FIFO.
  * This is the `Main Memory -> Spi Buffer` case.
  *
- * @param spi A SPI device.
+ * @param spi An SPI device.
  * @param rx_level The new RX level, as described above.
  * @param tx_level The new TX level, as described above.
  * @return The result of the operation.
@@ -214,8 +214,8 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
 /**
  * Returns the number of bytes still pending receipt by software in the RX FIFO.
  *
- * @param spi A SPI device.
- * @param bytes_pending Out param for the number of bytes pending
+ * @param spi An SPI device.
+ * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -226,8 +226,8 @@ dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
  * Returns the number of bytes still pending transmission by hardware in the TX
  * FIFO.
  *
- * @param spi A SPI device.
- * @param bytes_pending Out param for the number of bytes pending
+ * @param spi An SPI device.
+ * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -239,10 +239,10 @@ dif_spi_device_result_t dif_spi_device_tx_pending(const dif_spi_device_t *spi,
  * will be written to `bytes_received`.
  *
  * @param spi A SPI device.
- * @param buf A pointer to valid memory.
+ * @param[out] buf A pointer to valid memory.
  * @param buf_len The length of the buffer `buf` points to.
- * @param bytes_received Out param for the number of bytes successfully read;
- * may be null.
+ * @param[out] bytes_received The number of bytes successfully read; may be
+ * null.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -257,8 +257,7 @@ dif_spi_device_result_t dif_spi_device_recv(const dif_spi_device_t *spi,
  * @param spi A SPI device.
  * @param buf A pointer to bytes to be written.
  * @param buf_len The length of the buffer `buf` points to.
- * @param bytes_sent Out param for the number of bytes successfully written;
- * may be null.
+ * @param[out] bytes_sent The number of bytes successfully written; may be null.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

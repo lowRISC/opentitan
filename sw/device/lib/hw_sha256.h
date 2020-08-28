@@ -43,7 +43,7 @@ const uint8_t *hw_SHA256_final(HW_SHA256_CTX *ctx);
  *
  * @param data Input buffer.
  * @param len Number of bytes to add.
- * @param digest Output buffer.
+ * @param[out] digest Output buffer.
  */
 const uint8_t *hw_SHA256_hash(const void *data, size_t len, uint8_t *digest);
 

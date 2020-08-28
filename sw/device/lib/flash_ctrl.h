@@ -86,7 +86,7 @@ int flash_write(uint32_t addr, part_type_t part, const uint32_t *data,
  * @param addr Read start address.
  * @param part Flash parittion to access.
  * @param size Number of 4B words to read.
- * @param data Output buffer.
+ * @param[out] data Output buffer.
  * @return Non zero on failure.
  */
 int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data);

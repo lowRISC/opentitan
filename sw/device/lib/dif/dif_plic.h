@@ -101,7 +101,7 @@ typedef enum dif_plic_result {
  * be stored in `plic`.
  *
  * @param base_addr Base address of an instance of the PLIC IP block.
- * @param plic PLIC state data.
+ * @param[out] plic PLIC state data.
  * @return `dif_plic_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -179,7 +179,8 @@ dif_plic_result_t dif_plic_target_threshold_set(const dif_plic_t *plic,
  * source.
  * @param plic PLIC state data.
  * @param irq Interrupt source ID.
- * @param status Flag indicating whether the IRQ pending bit is set in PLIC.
+ * @param[out] status Flag indicating whether the IRQ pending bit is set in
+ * PLIC.
  * @return `dif_plic_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -196,7 +197,7 @@ dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
  *
  * @param plic PLIC state data.
  * @param target Target that claimed the IRQ.
- * @param claim_data Data that describes the origin of the IRQ.
+ * @param[out] claim_data Data that describes the origin of the IRQ.
  * @return `dif_plic_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -213,8 +214,8 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
  *
  * @param plic PLIC state data.
  * @param target Target that claimed the IRQ.
- * @param complete_data Previously claimed IRQ data that is used to signal PLIC
- *                      of the IRQ servicing completion.
+ * @param[out] complete_data Previously claimed IRQ data that is used to signal
+ *                      PLIC of the IRQ servicing completion.
  * @return `dif_plic_result_t`.
  */
 DIF_WARN_UNUSED_RESULT

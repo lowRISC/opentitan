@@ -150,7 +150,7 @@ typedef enum dif_uart_config_result {
  * stored in `uart`.
  * @param base_addr Base address of an instance of UART IP block.
  * @param config UART configuration data.
- * @param uart UART state data.
+ * @param[out] uart UART state data.
  * @return `dif_uart_config_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -214,7 +214,7 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
  * @param uart UART state data.
  * @param data Data to be written.
  * @param bytes_requested Number of bytes requested to be written by the caller.
- * @param bytes_written Number of bytes written (optional).
+ * @param[out] bytes_written Number of bytes written (optional).
  * @return `dif_uart_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -234,8 +234,8 @@ dif_uart_result_t dif_uart_bytes_send(const dif_uart_t *uart,
  *
  * @param uart UART state data.
  * @param bytes_requested Number of bytes requested to be read by the caller.
- * @param data Data to be read.
- * @param bytes_read Number of bytes read (optional).
+ * @param[out] data Buffer for up to `bytes_requested` bytes of read data.
+ * @param[out] bytes_read Number of bytes read (optional).
  * @return `dif_uart_result_t`
  */
 DIF_WARN_UNUSED_RESULT
@@ -265,7 +265,7 @@ dif_uart_result_t dif_uart_byte_send_polled(const dif_uart_t *uart,
  * ISR.
  *
  * @param uart UART state data.
- * @param byte Received byte.
+ * @param[out] byte Received byte.
  * @return `dif_uart_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -279,7 +279,7 @@ dif_uart_result_t dif_uart_byte_receive_polled(const dif_uart_t *uart,
  *
  * @param uart UART state data.
  * @param irq_type IRQ to get the state of.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state.
  * @return `dif_uart_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -307,7 +307,7 @@ dif_uart_result_t dif_uart_irq_state_clear(const dif_uart_t *uart,
  * in `state` back to the caller. Parameter `state` is ignored if NULL.
  *
  * @param uart UART state data.
- * @param state IRQ state passed back to the caller.
+ * @param[out] state IRQ state, for use with `dif_uart_irqs_restore`.
  * @return 'dif_uart_result_t'.
  */
 DIF_WARN_UNUSED_RESULT
@@ -362,7 +362,7 @@ dif_uart_result_t dif_uart_irq_force(const dif_uart_t *uart,
  * function can be used to check FIFO full and empty conditions.
  *
  * @param uart UART state data.
- * @param num_bytes Number of bytes available to be read.
+ * @param[out] num_bytes Number of bytes available to be read.
  * @return `dif_uart_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
@@ -376,7 +376,7 @@ dif_uart_result_t dif_uart_rx_bytes_available(const dif_uart_t *uart,
  * function can be used to check FIFO full and empty conditions.
  *
  * @param uart UART state data.
- * @param num_bytes Number of bytes available to be written.
+ * @param[out] num_bytes Number of bytes available to be written.
  * @return `dif_uart_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
