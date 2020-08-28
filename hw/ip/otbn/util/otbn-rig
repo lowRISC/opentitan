@@ -12,7 +12,7 @@ import random
 import sys
 from typing import Optional, cast
 
-from shared.insn_yaml import InsnsFile, load_file
+from shared.insn_yaml import InsnsFile, load_insns_yaml
 
 # Ensure that the OTBN utils directory is on sys.path. This means that RIG code
 # can import modules like "shared.foo" and get the OTBN shared code.
@@ -24,10 +24,8 @@ from rig.snippet import Snippet  # noqa: E402
 
 def get_insns_file() -> Optional[InsnsFile]:
     '''Load up insns.yml'''
-    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', 'data', 'insns.yml'))
     try:
-        return load_file(insns_yml)
+        return load_insns_yaml()
     except RuntimeError as err:
         print(err, file=sys.stderr)
         return None

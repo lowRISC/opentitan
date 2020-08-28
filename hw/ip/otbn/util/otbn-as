@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Set, TextIO, Tuple
 
 from shared.bit_ranges import BitRanges
 from shared.encoding import Encoding
-from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
 from shared.operand import ImmOperandType, RegOperandType, Operand
 from shared.toolchain import find_tool
 
@@ -1144,10 +1144,8 @@ def main() -> int:
     # files is now a nonempty list of input files. Rather unusually, '--'
     # (rather than '-') denotes standard input.
 
-    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', 'data', 'insns.yml'))
     try:
-        insns_file = load_file(insns_yml)
+        insns_file = load_insns_yaml()
     except RuntimeError as err:
         sys.stderr.write('{}\n'.format(err))
         return 1
