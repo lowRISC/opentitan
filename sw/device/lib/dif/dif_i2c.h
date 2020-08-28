@@ -189,7 +189,7 @@ typedef enum dif_i2c_enable {
  * period.
  *
  * @param config Configuration values for producing timing parameters.
- * @param out Out-param for the actual timing parameters.
+ * @param[out] out The computed timing parameters.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -204,7 +204,7 @@ dif_i2c_result_t dif_i2c_compute_timing(const dif_i2c_timing_config_t *config,
  *
  * @oaram base_addr The start of the I2C device register.
  * @param timing Timing parameters to initialize with.
- * @param i2c Out param for the initialized device.
+ * @param[out] i2c The initialized I2C device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -253,7 +253,7 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
  *
  * @param i2c An I2C device.
  * @param type An interrupt type.
- * @param flag_out Out-param for whether the interrupt is pending.
+ * @param[out] flag_out Whether the interrupt is pending.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -341,8 +341,8 @@ dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
  * zeroth bit being the most recent.
  *
  * @param i2c An I2C device.
- * @param scl_samples Out-param for SCL sample bits; may be null.
- * @param sda_samples Out-param for SDA sample bits; may be null.
+ * @param[out] scl_samples SCL sample bits; may be null.
+ * @param[out] sda_samples SDA sample bits; may be null.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -356,10 +356,8 @@ dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
  * and entries pending for read by software, respectively.
  *
  * @param i2c An I2C device.
- * @param fmt_fifo_level Out-param for the number of unsent FMT bytes; may be
- *        null.
- * @param rx_fifo_level Out-param for the number of unread RX bytes; may be
- *        null.
+ * @param[out] fmt_fifo_level The number of unsent FMT bytes; may be null.
+ * @param[out] rx_fifo_level The number of unread RX bytes; may be null.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -372,7 +370,7 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
  * will still trigger a byte pop.
  *
  * @param i2c An I2C device.
- * @param byte Out-param for the popped byte; may be null.
+ * @param[out] byte The popped byte; may be null.
  * @return The result of the opeartion.
  */
 DIF_WARN_UNUSED_RESULT

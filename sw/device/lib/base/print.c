@@ -118,7 +118,7 @@ size_t base_fprintf(buffer_sink_t out, const char *format, ...) {
  *
  * @param out the sink to write bytes to.
  * @param format a pointer to the format string to consume a prefix of.
- * @param bytes_written out param for the number of bytes writen to `out`.
+ * @param[out] bytes_written out param for the number of bytes writen to `out`.
  * @return true if an unprocessed '%' was found.
  */
 static bool consume_until_percent(buffer_sink_t out, const char **format,
@@ -151,7 +151,7 @@ typedef struct format_specifier {
  *
  * @param out the sink to write bytes to.
  * @param format a pointer to the format string to consume a prefix of.
- * @param spec out param for the specifier.
+ * @param[out] spec out param for the specifier.
  * @return whether the parse succeeded.
  */
 static bool consume_format_specifier(buffer_sink_t out, const char **format,
@@ -235,7 +235,7 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
  *
  * @param out the sink to write bytes to.
  * @param spec the specifier to use for stringifying.
- * @param bytes_written out param for the number of bytes writen to `out`.
+ * @param[out] bytes_written out param for the number of bytes writen to `out`.
  * @param va_list the list to pull an entry from.
  */
 static void process_specifier(buffer_sink_t out, format_specifier_t spec,

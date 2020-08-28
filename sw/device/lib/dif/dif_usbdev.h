@@ -151,7 +151,7 @@ typedef enum dif_usbdev_result {
  * functions in this library.
  *
  * @param config Configuration for initializing a USB device.
- * @param usbdev Internal state of the initialized USB device.
+ * @param[out] usbdev Internal state of the initialized USB device.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -217,7 +217,7 @@ dif_usbdev_result_t dif_usbdev_endpoint_stall_enable(
  *
  * @param usbdev A USB device.
  * @param endpoint An endpoint.
- * @param state Current STALL state.
+ * @param[out] state Current STALL state.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -336,6 +336,7 @@ typedef enum dif_usbdev_rx_packet_get_info_result {
  * operation.
  *
  * @param usbdev A USB device.
+ * @param[out] packet Information for current incoming packet.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -385,6 +386,9 @@ typedef enum dif_usbdev_rx_packet_read_bytes_result {
  * See also: `dif_usbdev_rx_packet_get_info`.
  *
  * @param usbdev A USB device.
+ * @param[out] dst Buffer to read bytes into.
+ * @param dst_len Length of `dst`, in bytes.
+ * @param[out] bytes_written Number of bytes written into `dst`.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -506,7 +510,7 @@ typedef enum dif_usbdev_tx_packet_write_bytes_result {
  * @param endpoint An endpoint.
  * @param src Source buffer.
  * @param src_len Length of the source buffer.
- * @bytes_written Number of bytes written to the USB device buffer.
+ * @param[out] bytes_written Number of bytes written to the USB device buffer.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -584,7 +588,7 @@ typedef enum dif_usbdev_tx_packet_status {
  *
  * @param usbdev A USB device.
  * @param endpoint An endpoint.
- * @param status Status of the packet.
+ * @param[out] status Status of the packet.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -606,7 +610,7 @@ dif_usbdev_result_t dif_usbdev_address_set(dif_usbdev_t *usbdev, uint8_t addr);
  * Get the address of a USB device.
  *
  * @param usbdev A USB device.
- * @param addr Current address.
+ * @param[out] addr Current address.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -616,7 +620,7 @@ dif_usbdev_result_t dif_usbdev_address_get(dif_usbdev_t *usbdev, uint8_t *addr);
  * Get USB frame index.
  *
  * @param usbdev A USB device.
- * @param frame_index USB frame index.
+ * @param[out] frame_index USB frame index.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -630,7 +634,7 @@ dif_usbdev_result_t dif_usbdev_status_get_frame(dif_usbdev_t *usbdev,
  * not been received in the last 4.096ms.
  *
  * @param usbdev A USB device.
- * @param host_lost Status of the host. `true` if the host is lost, `false`
+ * @param[out] host_lost Status of the host. `true` if the host is lost, `false`
  * otherwise.
  * @return The result of the operation.
  */
@@ -653,7 +657,7 @@ typedef enum dif_usbdev_link_state {
  * Get USB link state.
  *
  * @param usbdev A USB device.
- * @param link_state USB link state.
+ * @param[out] link_state USB link state.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -664,8 +668,8 @@ dif_usbdev_result_t dif_usbdev_status_get_link_state(
  * Get the state of the sense pin.
  *
  * @param usbdev A USB device.
- * @param sense State of the sense pin. `true` if the host is providing VBUS,
- * `false` otherwise.
+ * @param[out] sense State of the sense pin. `true` if the host is providing
+ * VBUS, `false` otherwise.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -678,7 +682,7 @@ dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
  * See also: `dif_usbdev_fill_available_fifo`.
  *
  * @param usbdev A USB device.
- * @param depth Depth of the AV FIFO.
+ * @param[out] depth Depth of the AV FIFO.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -690,7 +694,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_depth(
  * See also: `dif_usbdev_fill_available_fifo`.
  *
  * @param usbdev A USB device.
- * @param is_full State of the AV FIFO. `true` if full, false otherwise.
+ * @param[out] is_full State of the AV FIFO. `true` if full, false otherwise.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -702,7 +706,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
  * See also: `dif_usbdev_rx_packet_get_info`.
  *
  * @param usbdev A USB device.
- * @param depth Depth of the RX FIFO.
+ * @param[out] depth Depth of the RX FIFO.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -715,7 +719,8 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_depth(dif_usbdev_t *usbdev,
  * See also: `dif_usbdev_rx_packet_get_info`.
  *
  * @param usbdev A USB device.
- * @param is_empty State of the RX FIFO. `true` if empty, `false` otherwise.
+ * @param[out] is_empty State of the RX FIFO. `true` if empty, `false`
+ * otherwise.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -820,7 +825,7 @@ dif_usbdev_result_t dif_usbdev_irq_enable(dif_usbdev_t *usbdev,
  *
  * @param usbdev A USB device.
  * @param irq An interrupt.
- * @param state State of the interrupt.
+ * @param[out] state State of the interrupt.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -852,7 +857,7 @@ dif_usbdev_result_t dif_usbdev_irq_clear_all(dif_usbdev_t *usbdev);
  * configuration.
  *
  * @param usbdev A USB device.
- * @param cur_config Current interrupt configuration.
+ * @param[out] cur_config Current interrupt configuration.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -863,7 +868,7 @@ dif_usbdev_result_t dif_usbdev_irq_disable_all(dif_usbdev_t *usbdev,
  * Restore interrupt configuration.
  *
  * @param usbdev A USB device.
- * @param new_config New interrupt configuration.
+ * @param[out] new_config New interrupt configuration.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

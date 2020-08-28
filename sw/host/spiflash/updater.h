@@ -83,7 +83,7 @@ class Updater {
    * Generates `frames` from `code` image.
    *
    * @param code   software image in binary format.
-   * @param frames output SPI frames.
+   * @param[out] frames output SPI frames.
    *
    * @return true on success, false otherwise.
    */

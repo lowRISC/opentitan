@@ -80,7 +80,7 @@ typedef enum dif_gpio_irq {
  * before calling other functions of this library.
  *
  * @param config Configuration for initializing a GPIO device.
- * @param gpio GPIO instance that will store the internal state of the
+ * @param[out] gpio GPIO instance that will store the internal state of the
  * initialized GPIO device.
  * @return `kDifGpioBadArg` if `config` or `gpio` is `NULL`,
  * `kDifGpioOk` otherwise.
@@ -110,7 +110,7 @@ dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
  * the pins.
  *
  * @param gpio GPIO instance.
- * @param pin_values Pin values.
+ * @param[out] pin_values Pin values.
  * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
@@ -127,7 +127,7 @@ dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
  *
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin to read from.
- * @param pin_value Pin value.
+ * @param[out] pin_value Pin value.
  * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
  * `kDifGpioOk` otherwise.
  */
@@ -241,7 +241,7 @@ dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
  * Read the interrupt states of all pins.
  *
  * @param gpio GPIO instance.
- * @param interrupt_states Interrupt states of all pins.
+ * @param[out] interrupt_states Interrupt states of all pins.
  * @return `kDifGpioBadArg` if `gpio` or `interrupt_states` is
  * `NULL`, `kDifGpioOk` otherwise.
  */
@@ -254,8 +254,8 @@ dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
  *
  * @param gpio GPIO instance.
  * @param index Zero-based index of the pin.
- * @param interrupt_state Interrupt state of the pin. True if there is a pending
- * interrupt, false otherwise.
+ * @param[out] interrupt_state Interrupt state of the pin. True if there is a
+ * pending interrupt, false otherwise.
  * @return `kDifGpioBadArg` if `gpio` or `interrupt_state` is
  * `NULL`, `kDifGpioOk` otherwise.
  */

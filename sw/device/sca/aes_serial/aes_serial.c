@@ -80,7 +80,7 @@ static const uint64_t kDeadline = 500;            //  500us.
  * Convert `from` binary `to` hex.
  *
  * @param from input value in binary format.
- * @param to   output value in hex format.
+ * @param[out] to   output value in hex format.
  *
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
@@ -103,8 +103,8 @@ static simple_serial_result_t hex_value(char from, char *to) {
  * `from` size is expected to by twice as big as `to`.
  *
  * @param from input buffer for hex formatted characters.
- * @param to   output binary buffer.
- * @param num  number of characters in output buffer.
+ * @param[out] to output buffer for binary.
+ * @param num  length of output buffer.
  *
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */

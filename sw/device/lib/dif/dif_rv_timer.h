@@ -104,7 +104,7 @@ typedef enum dif_rv_timer_approximate_tick_params_result {
  *
  * @param clock_freq The device clock frequency, in Hertz.
  * @param counter_freq The desired counter frequency, in Hertz.
- * @param out Tick parameters that will approximately produce the desired
+ * @param[out] out Tick parameters that will approximately produce the desired
  *         counter frequency.
  * @return The result of the operation.
  */
@@ -151,7 +151,7 @@ typedef struct dif_rv_timer {
  *
  * @param base_addr MMIO region for the device hardware registers.
  * @param config Configuration for initializing a particular timer.
- * @param timer_out Out param for the timer device.
+ * @param[out] timer_out The timer device.
  * @return The result of the operation.
  */
 dif_rv_timer_result_t dif_rv_timer_init(mmio_region_t base_addr,
@@ -204,7 +204,7 @@ dif_rv_timer_result_t dif_rv_timer_counter_set_enabled(
  *
  * @param timer A timer device.
  * @param hart_id The hart counter to read.
- * @param out Out param for the counter value.
+ * @param[out] out The counter value.
  * @return The result of the operation.
  */
 dif_rv_timer_result_t dif_rv_timer_counter_read(const dif_rv_timer_t *timer,
@@ -265,7 +265,7 @@ dif_rv_timer_result_t dif_rv_timer_irq_enable(const dif_rv_timer_t *timer,
  * @param timer A timer device.
  * @param hart_id The hart counter associated with the timer.
  * @param comp_id The comparator associated with the timer.
- * @param flag_out Out-param for the interrupt status.
+ * @param[out] flag_out The interrupt status.
  * @return the result of the operation.
  */
 dif_rv_timer_result_t dif_rv_timer_irq_get(const dif_rv_timer_t *timer,
@@ -303,7 +303,8 @@ dif_rv_timer_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *timer,
  * `state` may be NULL. See `dif_rv_timer_irq_restore()`.
  *
  * @param timer a timer device.
- * @param state out param for IRQ state information.
+ * @param[out] state IRQ state information for use with
+ *                   `dif_rv_timer_irq_restore`.
  * @return the result of the operation.
  */
 dif_rv_timer_result_t dif_rv_timer_irq_disable(const dif_rv_timer_t *timer,
