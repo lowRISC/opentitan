@@ -20,11 +20,11 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask : drive_req
 
   virtual task reset_signals();
+    do_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
-      reset_ping();
-      reset_ack();
+      do_reset();
       @(posedge cfg.vif.rst_n);
       under_reset = 0;
     end
@@ -148,18 +148,18 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask : set_ack_pins
 
   virtual task set_ack();
-    cfg.vif.receiver_cb.alert_rx.ack_p <= 1'b1;
-    cfg.vif.receiver_cb.alert_rx.ack_n <= 1'b0;
+    cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b1;
+    cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b0;
   endtask
 
   virtual task reset_ack();
-    cfg.vif.receiver_cb.alert_rx.ack_p <= 1'b0;
-    cfg.vif.receiver_cb.alert_rx.ack_n <= 1'b1;
+    cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b0;
+    cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b1;
   endtask
 
   virtual task set_ping();
-    cfg.vif.receiver_cb.alert_rx.ping_p <= !cfg.vif.alert_rx.ping_p;
-    cfg.vif.receiver_cb.alert_rx.ping_n <= !cfg.vif.alert_rx.ping_n;
+    cfg.vif.receiver_cb.alert_rx_int.ping_p <= !cfg.vif.alert_rx.ping_p;
+    cfg.vif.receiver_cb.alert_rx_int.ping_n <= !cfg.vif.alert_rx.ping_n;
   endtask
 
   virtual task wait_alert();
@@ -167,7 +167,15 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask : wait_alert
 
   virtual task reset_ping();
-    cfg.vif.receiver_cb.alert_rx.ping_p <= 1'b0;
-    cfg.vif.receiver_cb.alert_rx.ping_n <= 1'b1;
+    cfg.vif.receiver_cb.alert_rx_int.ping_p <= 1'b0;
+    cfg.vif.receiver_cb.alert_rx_int.ping_n <= 1'b1;
   endtask
+
+  virtual task do_reset();
+    cfg.vif.alert_rx_int.ping_p <= 1'b0;
+    cfg.vif.alert_rx_int.ping_n <= 1'b1;
+    cfg.vif.alert_rx_int.ack_p <= 1'b0;
+    cfg.vif.alert_rx_int.ack_n <= 1'b1;
+  endtask
+
 endclass : alert_receiver_driver
