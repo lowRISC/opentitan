@@ -21,18 +21,19 @@ package i2c_agent_pkg;
   // register values
   typedef struct {
     // derived parameters
-    bit [31:0]  tSetupStart;
-    bit [31:0]  tHoldStart;
-    bit [31:0]  tClockStart;
-    bit [31:0]  tClockLow;
-    bit [31:0]  tSetupBit;
-    bit [31:0]  tClockPulse;
-    bit [31:0]  tHoldBit;
-    bit [31:0]  tClockStop;
-    bit [31:0]  tSetupStop;
-    bit [31:0]  tHoldStop;
-    bit         enbTimeOut;
-    bit [30:0]  tTimeOut;
+    bit  [31:0]  tSetupStart;
+    bit  [31:0]  tHoldStart;
+    bit  [31:0]  tClockStart;
+    bit  [31:0]  tClockLow;
+    bit  [31:0]  tSetupBit;
+    bit  [31:0]  tClockPulse;
+    bit  [31:0]  tHoldBit;
+    bit  [31:0]  tClockStop;
+    bit  [31:0]  tSetupStop;
+    bit  [31:0]  tHoldStop;
+    bit          enbTimeOut;
+    bit  [30:0]  tTimeOut;
+    uint         tStretchHostClock;
   } timing_cfg_t;
 
   typedef enum int {

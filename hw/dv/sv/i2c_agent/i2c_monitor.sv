@@ -97,40 +97,32 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.ack    = 1'b0;
     mon_dut_item.nack   = 1'b0;
     while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
-      fork
-        begin : iso_fork_read
-          fork
-            begin
-              // ask driver response read data
-              mon_dut_item.drv_type = RdData;
-              `downcast(clone_item, mon_dut_item.clone());
-              mon_item_port.write(clone_item);
-              // sample read data
-              for (int i = 7; i >= 0; i--) begin
-                cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
-                `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d, bit[%0d] %0b",
-                    mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_DEBUG)
-              end
-              mon_dut_item.data_q.push_back(mon_data);
-              mon_dut_item.num_data++;
-              // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
-              cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
-              `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
-              `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST %s",
-                  (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_DEBUG)
-            end
-            begin
-              cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
-                                                   mon_dut_item.rstart,
-                                                   mon_dut_item.stop);
-              `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
-              `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, detect HOST %s",
-                  (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_DEBUG)
-            end
-          join_any
-          disable fork;
-        end : iso_fork_read
-      join
+      // ask driver response read data
+      mon_dut_item.drv_type = RdData;
+      `downcast(clone_item, mon_dut_item.clone());
+      mon_item_port.write(clone_item);
+      // sample read data
+      for (int i = 7; i >= 0; i--) begin
+        cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
+        `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d, bit[%0d] %0b",
+            mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_DEBUG)
+      end
+      mon_dut_item.data_q.push_back(mon_data);
+      mon_dut_item.num_data++;
+      // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
+      cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
+      `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
+      `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST %s",
+          (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_DEBUG)
+      // if nack is issued, next bit must be stop or rstart
+      if (mon_dut_item.nack) begin
+        cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+                                             mon_dut_item.rstart,
+                                             mon_dut_item.stop);
+        `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
+        `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, detect HOST %s",
+            (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_DEBUG)
+      end
     end
   endtask : read_thread
 
