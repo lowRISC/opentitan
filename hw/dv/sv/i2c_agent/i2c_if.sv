@@ -144,6 +144,9 @@ interface i2c_if;
     wait_for_dly(tc.tSetupBit);
     @(posedge scl_i);
     wait_for_dly(tc.tClockPulse + tc.tHoldBit);
+    if (tc.enbTimeOut) begin
+      wait_for_dly(tc.tStretchHostClock);
+    end
     sda_o = 1'b1;
   endtask: device_send_ack
 
@@ -158,12 +161,13 @@ interface i2c_if;
     sda_o = 1'b1;
   endtask: device_send_bit
 
-  task automatic device_stretch_host_clk(ref timing_cfg_t tc,
-                                         input int num_stretch_host_clks);
-    wait_for_dly(tc.tClockLow + tc.tSetupBit);
-    scl_o = 1'b0;
-    wait_for_dly(num_stretch_host_clks);
-    scl_o = 1'b1;
+  task automatic device_stretch_host_clk(ref timing_cfg_t tc);
+    if (tc.enbTimeOut) begin
+      wait_for_dly(tc.tClockLow + tc.tSetupBit);
+      scl_o = 1'b0;
+      wait_for_dly(tc.tStretchHostClock);
+      scl_o = 1'b1;
+    end
   endtask : device_stretch_host_clk
 
   task automatic get_bit_data(string src = "host",
