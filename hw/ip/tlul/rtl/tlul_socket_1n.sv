@@ -94,6 +94,7 @@ module tlul_socket_1n #(
   // stall until that number is zero.
 
   logic [7:0]     num_req_outstanding;
+  logic [NWD-1:0] dev_select_outstanding_q;
   logic [NWD-1:0] dev_select_outstanding;
   logic           hold_all_requests;
   logic           accept_t_req, accept_t_rsp;
@@ -101,24 +102,46 @@ module tlul_socket_1n #(
   assign  accept_t_req = tl_t_o.a_valid & tl_t_i.a_ready;
   assign  accept_t_rsp = tl_t_i.d_valid & tl_t_o.d_ready;
 
+  //always_ff @(posedge clk_i or negedge rst_ni) begin
+  //  if (!rst_ni) begin
+  //    num_req_outstanding <= 8'h0;
+  //    dev_select_outstanding <= '0;
+  //  end else if (accept_t_req) begin
+  //    if (!accept_t_rsp) begin
+  //      `ASSERT_I(NotOverflowed_A, num_req_outstanding != '1)
+  //      num_req_outstanding <= num_req_outstanding + 8'h1;
+  //    end
+  //    dev_select_outstanding <= dev_select_t;
+  //  end else if (accept_t_rsp) begin
+  //    num_req_outstanding <= num_req_outstanding - 8'h1;
+  //  end
+  //end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       num_req_outstanding <= 8'h0;
-      dev_select_outstanding <= '0;
-    end else if (accept_t_req) begin
+      dev_select_outstanding_q <= '0;
+    end else if (accept_t_req && !accept_t_rsp) begin
       if (!accept_t_rsp) begin
         `ASSERT_I(NotOverflowed_A, num_req_outstanding != '1)
         num_req_outstanding <= num_req_outstanding + 8'h1;
       end
-      dev_select_outstanding <= dev_select_t;
-    end else if (accept_t_rsp) begin
+      dev_select_outstanding_q <= dev_select_t;
+    end else if (!accept_t_req && accept_t_rsp) begin
       num_req_outstanding <= num_req_outstanding - 8'h1;
     end
   end
 
+  // if there are no outstanding entries, select based on request channel
+  // if there are outstanding, select based on last accepted request
+  assign dev_select_outstanding = (num_req_outstanding == '0) ?
+                                  dev_select_t :
+                                  dev_select_outstanding_q;
+
+
   assign hold_all_requests =
       (num_req_outstanding != 8'h0) &
-      (dev_select_t != dev_select_outstanding);
+      (dev_select_t != dev_select_outstanding_q);
 
   // Make N copies of 't' request side with modified reqvalid, call
   // them 'u[0]' .. 'u[n-1]'.
@@ -156,10 +179,11 @@ module tlul_socket_1n #(
   // when the address is unknown and the Host TL-UL FIFO is bypass mode.
   assign tl_t_i.a_ready = tl_t_o.a_valid & hfifo_reqready;
 
+
   always_comb begin
     tl_t_p = tl_u_i[N];
     for (int idx = 0 ; idx < N ; idx++) begin
-      if (dev_select_outstanding == NWD'(idx)) tl_t_p = tl_u_i[idx];
+      if (tl_u_i[idx].d_valid && dev_select_outstanding == NWD'(idx)) tl_t_p = tl_u_i[idx];
     end
   end
   assign tl_t_i.d_valid  = tl_t_p.d_valid ;
