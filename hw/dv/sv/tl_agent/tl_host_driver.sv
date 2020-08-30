@@ -133,7 +133,7 @@ class tl_host_driver extends tl_base_driver;
           end
         end
 
-        if (!req_found) begin
+        if (!req_found && !reset_asserted) begin
           `uvm_error(get_full_name(), $sformatf(
                      "Cannot find request matching d_source 0x%0x", cfg.vif.host_cb.d2h.d_source))
         end

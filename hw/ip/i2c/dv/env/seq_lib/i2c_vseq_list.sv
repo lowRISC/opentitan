@@ -13,4 +13,5 @@
 `include "i2c_fifo_full_vseq.sv"
 `include "i2c_perf_vseq.sv"
 `include "i2c_stretch_timeout_vseq.sv"
+`include "i2c_error_intr_vseq.sv"
 

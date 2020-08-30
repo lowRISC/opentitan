@@ -28,19 +28,26 @@
       tests: ["i2c_sanity"]
     }
     {
-      name: error
+      name: error_intr
       desc: '''
-            Test if the host receives interference and unstable scl and sda.
+            Test error interrupts are asserted by the host due to interference and unstable signals on bus.
 
             Stimulus:
-              - Within the clock pulse of the host scl, the device randomly asserts/deasserts its scl and sda
-
+              - In host transmit mode, device (target/host) forces sda or scl signal low within the
+                clock pulse of host scl that asserts `sda_interference` or `scl_interference` interrupts
+              - In host receiving mode (data or ack bits), SDA signal is changed with the
+                clock pulse of host scl that asserts `intr_sda_unstable` interrupts
+              - When error interrupt assertions are detected, dut, agent, and scoreboard will be reset on-the-fly
+                then new transaction can be continue programming
             Checking:
-              - Ensure all intr_scl_interference, intr_sda_interference, and intr_sda_unstable interrupts are asserted
-              - Ensure all intr_scl_interference, intr_sda_interference, and intr_sda_unstable interrupts stay asserted until cleared
+              - Ensure all intr_scl_interference, intr_sda_interference, and
+                intr_sda_unstable interrupts are asserted
+              - Ensure all intr_scl_interference, intr_sda_interference, and
+                intr_sda_unstable interrupts stay asserted until cleared
+              - Ensure IP operation get back normal after on-the-fly reset finished
             '''
       milestone: V2
-      tests: ["i2c_error"]
+      tests: ["i2c_error_intr"]
     }
     {
       name: stress_all_with_reset
@@ -80,7 +87,8 @@
             Test multiple interrupts asserted.
 
             Stimulus:
-              - Do combinations of multiple of above scenarios to get multiple interrupts asserted at the same time
+              - Do combinations of multiple of above scenarios to get
+                multiple interrupts asserted at the same time
               - Scoreboard should be robust enough to deal with all scenarios
 
             Checking:

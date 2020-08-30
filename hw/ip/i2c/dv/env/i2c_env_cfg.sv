@@ -4,16 +4,30 @@
 
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
+  // i2c address mode (only support 7-bit address for targets)
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
+
+  // drained time of phase_ready_to_end
   uint ok_to_end_delay_ns = 5000;
+
+  // set start_dev_seq at the first time m_dev_seq is started
+  bit start_dev_seq       = 1'b0;
 
   // bits to control fifos access
   // set en_fmt_overflow to ensure fmt_overflow irq is triggered
-  bit en_fmt_overflow = 1'b0;
+  bit en_fmt_overflow     = 1'b0;
   // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
-  bit en_rx_overflow = 1'b0;
+  bit en_rx_overflow      = 1'b0;
   // set en_rx_watermark to ensure rx_watermark irq is triggered
-  bit en_rx_watermark = 1'b0;
+  bit en_rx_watermark     = 1'b0;
+
+  // bits to control interference and unstable interrupts
+  // set en_sda_unstable to allow sda_unstable irq is triggered
+  bit en_sda_unstable     = 1'b0;
+  // set en_scl_interference to allow scl_interference irq is triggered
+  bit en_scl_interference = 1'b0;
+  // set en_sda_interference to allow sda_interference irq is triggered
+  bit en_sda_interference = 1'b0;
 
   // i2c_agent cfg
   rand i2c_agent_cfg m_i2c_agent_cfg;

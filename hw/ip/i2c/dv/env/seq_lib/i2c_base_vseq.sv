@@ -46,6 +46,15 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit [15:0]             t_buf;      // bus free time between STOP and START in clock units
   rand bit [30:0]             t_timeout;  // max time target may stretch the clock
   rand bit                    e_timeout;  // max time target may stretch the clock
+  rand uint                   t_sda_unstable;     // sda unstable time during the posedge_clock
+  rand uint                   t_sda_interference; // sda interference time during the posedge_clock
+  rand uint                   t_scl_interference; // scl interference time during the posedge_clock
+
+  // error intrs probability
+  rand uint                   prob_sda_unstable;
+  rand uint                   prob_sda_interference;
+  rand uint                   prob_scl_interference;
+  rand uint                   num_resets; // the max. num. of on-the-fly reset if error irq occurs
 
   // constraints
   constraint addr_c {
@@ -55,7 +64,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     fmtilvl inside {[0 : cfg.seq_cfg.i2c_max_fmtilvl]};
   }
   constraint num_trans_c {
-    num_trans inside {[cfg.seq_cfg.min_num_trans : cfg.seq_cfg.max_num_trans]};
+    num_trans inside {[cfg.seq_cfg.i2c_min_num_trans : cfg.seq_cfg.i2c_max_num_trans]};
   }
 
   // get an array with unique write data
@@ -98,7 +107,21 @@ class i2c_base_vseq extends cip_base_vseq #(
       32      :/ 1
     };
   }
+  constraint num_reset_max_c {
+    num_resets inside {[cfg.seq_cfg.i2c_min_num_resets : cfg.seq_cfg.i2c_max_num_resets]};
+  }
 
+  // use this prob_dist value to make interrupt assertion more discrepancy
+  constraint prob_error_intr_c {
+    prob_sda_unstable     dist {0 :/ (100 - cfg.seq_cfg.i2c_prob_sda_unstable),
+                                1 :/ cfg.seq_cfg.i2c_prob_sda_unstable};
+    prob_sda_interference dist {0 :/ (100 - cfg.seq_cfg.i2c_prob_sda_interference),
+                                1 :/ cfg.seq_cfg.i2c_prob_sda_interference};
+    prob_scl_interference dist {0 :/ (100 - cfg.seq_cfg.i2c_prob_scl_interference),
+                                1 :/ cfg.seq_cfg.i2c_prob_scl_interference};
+  }
+
+  // contraints for fifo access delay
   constraint clear_intr_dly_c {
     clear_intr_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
@@ -109,6 +132,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     rx_fifo_access_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
 
+  // constraints for i2c timing registers
   constraint t_timeout_c {
     t_timeout inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
   }
@@ -124,18 +148,25 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
+    solve t_f, thigh            before t_sda_unstable, t_sda_interference;
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
       tlow    == 2;                // negative tClockLow
       t_buf   == 2;
+      t_sda_unstable     == 0;
+      t_sda_interference == 0;
+      t_scl_interference == 0;
     } else {
-      tsu_sta   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+      tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)
-      tlow     inside {[(t_r + tsu_dat + thd_dat + 1) :
-                        (t_r + tsu_dat + thd_dat + 1) + cfg.seq_cfg.i2c_time_range]};
-      t_buf    inside {[(tsu_sta - t_r + 1) :
-                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
+      tlow    inside {[(t_r + tsu_dat + thd_dat + 1) :
+                       (t_r + tsu_dat + thd_dat + 1) + cfg.seq_cfg.i2c_time_range]};
+      t_buf   inside {[(tsu_sta - t_r + 1) :
+                       (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
+      t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
+      t_sda_interference inside {[0 : t_r + thigh + t_f - 1]};
+      t_scl_interference inside {[0 : t_r + thigh + t_f - 1]};
     }
   }
 
@@ -144,21 +175,22 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task device_init();
     i2c_device_seq m_dev_seq;
 
-    m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
-    `uvm_info(`gfn, "\nstart i2c_device sequence", UVM_DEBUG)
-    fork
-      m_dev_seq.start(p_sequencer.i2c_sequencer_h);
-    join_none
+    if (!cfg.start_dev_seq) begin
+      m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
+      `uvm_info(`gfn, "\nstart i2c_device sequence", UVM_DEBUG)
+      fork
+        m_dev_seq.start(p_sequencer.i2c_sequencer_h);
+      join_none
+      // prevent multiple starts of m_dev_seq 
+      cfg.start_dev_seq = 1'b1; 
+    end
   endtask : device_init
 
   virtual task host_init();
     bit [TL_DW-1:0] intr_state;
 
-    `uvm_info(`gfn, "\ninitialize i2c host registers", UVM_DEBUG)
-    ral.ctrl.enablehost.set(1'b1);
-    csr_update(ral.ctrl);
-
-    // enable host
+    `uvm_info(`gfn, "\ninitialize host", UVM_DEBUG)
+    // enable host/target
     ral.ctrl.enablehost.set(1'b1);
     ral.ctrl.enabletarget.set(1'b0);
     csr_update(ral.ctrl);
@@ -185,6 +217,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
       hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
     end while (!fmtempty || !hostidle);
+    `uvm_info(`gfn, $sformatf("\nhost is in idle status"), UVM_DEBUG);
   endtask : check_host_idle
 
   function automatic void get_timing_values();
@@ -201,6 +234,18 @@ class i2c_base_vseq extends cip_base_vseq #(
     timing_cfg.tClockStop  = t_f + tlow - thd_dat;
     timing_cfg.tSetupStop  = t_r + tsu_sto;
     timing_cfg.tHoldStop   = t_r + t_buf - tsu_sta;
+
+    // control interference and unstable interrupts
+    timing_cfg.tSclInterference = (cfg.en_scl_interference) ?
+                                  prob_scl_interference * t_scl_interference : 0;
+    timing_cfg.tSdaInterference = (cfg.en_sda_interference) ?
+                                  prob_sda_interference * t_sda_interference : 0;
+    timing_cfg.tSdaUnstable     = (cfg.en_sda_unstable) ?
+                                  prob_sda_unstable * t_sda_unstable : 0;
+    `uvm_info(`gfn, $sformatf("\ntSclItf = %0d, tSdaItf = %0d, tSdaUnstable = %0d",
+        timing_cfg.tSclInterference,
+        timing_cfg.tSdaInterference,
+        timing_cfg.tSdaUnstable), UVM_DEBUG)
     // ensure these parameter must be greater than zeros
     if (!program_incorrect_regs) begin
       `DV_CHECK_GT_FATAL(timing_cfg.tClockLow, 0)
@@ -231,6 +276,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.timeout_ctrl));
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
+    `uvm_info(`gfn, $sformatf("\ncfg.m_i2c_agent_cfg.timing_cfg\n%p",
+        cfg.m_i2c_agent_cfg.timing_cfg), UVM_DEBUG)
     // set time to stop test
     cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = cfg.ok_to_end_delay_ns;
     // config target address mode of agent to the same

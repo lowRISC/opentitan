@@ -8,10 +8,20 @@ class i2c_device_driver extends i2c_driver;
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
 
+  bit [7:0] wr_data;
+  bit [7:0] address;
+
   // get an array with unique read data
   constraint rd_data_c {
     unique { rd_data };
   }
+
+  virtual task process_reset();
+    @(negedge cfg.vif.rst_ni);
+    cfg.vif.scl_o = 1'b1;
+    cfg.vif.sda_o = 1'b1;
+    `uvm_info(`gfn, "\ndevice driver is reset", UVM_DEBUG)
+  endtask : process_reset
 
   virtual task get_and_drive();
     bit [7:0] rd_data_cnt = 8'd0;
@@ -23,34 +33,48 @@ class i2c_device_driver extends i2c_driver;
       cfg.vif.sda_o = 1'b1;
       // device driver responses to dut
       seq_item_port.get_next_item(rsp_item);
-      unique case (rsp_item.drv_type)
-        DevAck: begin
-          cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
-          fork
-            // host clock stretching allows a high-speed host to communicate
-            // with a low-speed device by setting TIMEOUT_CTRL.EN bit
-            // the device ask host clock stretching its clock scl_i by pulling down scl_o
-            // the host clock pulse is extended until device scl_o is pulled up
-            // once scl_o is pulled down longer than TIMEOUT_CTRL.VAL field,
-            // intr_stretch_timeout_o is asserted (ref. https://www.i2c-bus.org/clock-stretching)
-            cfg.vif.device_stretch_host_clk(cfg.timing_cfg);
-            cfg.vif.device_send_ack(cfg.timing_cfg);
-          join
-        end
-        RdData: begin
-          if (rd_data_cnt == 8'd0) `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
-          for (int i = 7; i >= 0; i--) begin
-            cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
+      fork
+        unique case (rsp_item.drv_type)
+          DevAck: begin
+            cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
+            fork
+              // host clock stretching allows a high-speed host to communicate
+              // with a low-speed device by setting TIMEOUT_CTRL.EN bit
+              // the device asks host stretching its scl_i by pulling down scl_o
+              // the host clock pulse is extended until device scl_o is pulled up
+              // once scl_o is pulled down longer than TIMEOUT_CTRL.VAL field,
+              // intr_stretch_timeout_o is asserted (ref. https://www.i2c-bus.org/clock-stretching)
+              cfg.vif.device_stretch_host_clk(cfg.timing_cfg);
+              cfg.vif.device_send_ack(cfg.timing_cfg);
+            join
           end
-          // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
-          rd_data_cnt++;
-          `uvm_info(`gfn, $sformatf("driver, trans %0d, byte %0d  %0x",
-              rsp_item.tran_id, rsp_item.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
+          RdData: begin
+            if (rd_data_cnt == 8'd0) `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+            for (int i = 7; i >= 0; i--) begin
+              cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
+            end
+            `uvm_info(`gfn, $sformatf("\ndriver, trans %0d, byte %0d  %0x",
+                rsp_item.tran_id, rsp_item.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
+            // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
+            rd_data_cnt++;
+          end
+          WrData:
+            // TODO: consider adding memory (associative array) in device_driver
+            for (int i = 7; i >= 0; i--) begin
+              cfg.vif.get_bit_data("host", cfg.timing_cfg, wr_data[i]);
+            end
+          default: begin
+            `uvm_fatal(`gfn, $sformatf("\ndriver, received invalid request from monitor/seq"))
+          end
+        endcase
+
+        // handle on-the-fly reset
+        begin
+          process_reset();
+          rsp_item.clear_all();
         end
-        default: begin
-          `uvm_fatal(`gfn, $sformatf("driver, received invalid request from monitor/seq"))
-        end
-      endcase
+      join_any
+      disable fork;
       seq_item_port.item_done();
     end
   endtask : get_and_drive

@@ -80,6 +80,12 @@
       name: i2c_stretch_timeout
       uvm_test_seq: i2c_stretch_timeout_vseq
     }
+
+    {
+      name: i2c_error_intr
+      reseed: 10
+      uvm_test_seq: i2c_error_intr_vseq
+    }
   ]
 
   // List of regressions.

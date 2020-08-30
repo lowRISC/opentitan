@@ -80,20 +80,24 @@ class i2c_fifo_overflow_vseq extends i2c_fifo_watermark_vseq;
   task process_fmt_overflow_intr();
     bit fmt_overflow;
 
-    @(posedge cfg.clk_rst_vif.clk);
-    if (cfg.intr_vif.pins[FmtOverflow]) begin
+    csr_rd(.ptr(ral.intr_state.fmt_overflow), .value(fmt_overflow), .backdoor(1'b1));
+    if (fmt_overflow) begin
       clear_interrupt(FmtOverflow);
       cnt_fmt_overflow++;
+    end else begin
+      cfg.clk_rst_vif.wait_clks(1);
     end
   endtask : process_fmt_overflow_intr
 
   task process_rx_overflow_intr();
     bit rx_overflow;
 
-    @(posedge cfg.clk_rst_vif.clk);
-    if (cfg.intr_vif.pins[RxOverflow]) begin
+    csr_rd(.ptr(ral.intr_state.rx_overflow), .value(rx_overflow), .backdoor(1'b1));
+    if (rx_overflow) begin
       clear_interrupt(RxOverflow);
       cnt_rx_overflow++;
+    end else begin
+      cfg.clk_rst_vif.wait_clks(1);
     end
   endtask : process_rx_overflow_intr
 

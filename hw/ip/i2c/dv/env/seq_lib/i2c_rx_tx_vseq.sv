@@ -15,11 +15,15 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
     fmt_item = new("fmt_item");
     total_rd_bytes = 0;
-
     fork
       begin
         complete_program_fmt_fifo = 1'b0;
         for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
+          // randomize knobs for error interrupts
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_unstable)
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_interference)
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_scl_interference)
+
           // re-programming timing registers for the first transaction
           // or when the previous transaction is completed
           if (fmt_item.stop || cur_tran == 1) begin

@@ -14,8 +14,9 @@ package i2c_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // TODO: optimize later
   typedef enum logic [3:0] {
-    None, DevAck, RdData
+    None, DevAck, RdData, WrData
   } drv_type_e;
 
   // register values
@@ -34,6 +35,16 @@ package i2c_agent_pkg;
     bit          enbTimeOut;
     bit  [30:0]  tTimeOut;
     uint         tStretchHostClock;
+
+    // sda_unstable interrupt will be asserted if
+    // tSdaUnstable is set to a non-zero value, otherwise
+    uint         tSdaUnstable;
+    // scl_interference interrupt will be asserted if
+    // tSclInterference is set to a zero value, otherwise
+    uint         tSclInterference;
+    // sda_interference interrupt will be asserted if
+    // tSdaInterference is set to a zero value, otherwise
+    uint         tSdaInterference;
   } timing_cfg_t;
 
   typedef enum int {
