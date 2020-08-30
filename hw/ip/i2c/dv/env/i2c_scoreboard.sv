@@ -57,8 +57,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     uvm_reg   csr;
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;
-    bit do_read_check = 1'b0;    // TODO: Enable this bit later
-    bit write = item.is_write();
+    bit       fmt_overflow;
+    bit       do_read_check = 1'b0;    // TODO: Enable this bit later
+    bit       write = item.is_write();
 
     uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
@@ -127,12 +128,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end else begin // transaction begins with started/rstarted
               // write transaction
               if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
-                cfg.clk_rst_vif.wait_clks(1); // irq appears with one cycle latency
+                // irq is asserted with 2 latency cycles (#3422)
+                cfg.clk_rst_vif.wait_clks(2);
                 // TODO: Gather all irq verification in SCB instead of distribute in vseq
                 if (cfg.intr_vif.pins[FmtOverflow]) begin
-                  // fmt_fifo is overflow, capture dropped data
                   exp_wr_item.fmt_ovf_data_q.push_back(fbyte);
-                  wait(!cfg.intr_vif.pins[FmtOverflow]);
+                  //wait(!cfg.intr_vif.pins[FmtOverflow]);
                 end else begin
                   // fmt_fifo is underflow then collect data, otherwise drop data
                   exp_wr_item.data_q.push_back(fbyte);
@@ -180,7 +181,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
-        "fifo_ctrl": begin 
+        "fifo_ctrl": begin
           // these fields are WO
           bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
           bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
@@ -212,10 +213,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       if (host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
         exp_wr_q.push_back(sb_exp_wr_item);
         num_exp_tran++;
-        `uvm_info(`gfn, $sformatf("\nscoreboard, exp_wr_item\n\%s",
+        `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_wr_item\n\%s",
             sb_exp_wr_item.sprint()), UVM_DEBUG)
       end
-    end
+    end // end of write address phase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
@@ -229,9 +230,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         "rdata": begin
           if (host_init) begin
             if (rdata_cnt == 0) begin
-              // TODO: Weicai's comment in PR #3128: better not having any time consuming
-              // function here as it may block the other csr predict value update.
-              wait(rd_pending_q.size() > 0);
+              // for on-the-fly reset, immediately finish task to avoid blocking
+              wait(rd_pending_q.size() > 0 || cfg.under_reset);              
+              if (cfg.under_reset) return; 
               rd_pending_item = rd_pending_q.pop_front();
             end
             rd_pending_item.data_q.push_back(ral.rdata.get_mirrored_value());
@@ -244,14 +245,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
               exp_rd_q.push_back(sb_exp_rd_item);
               num_exp_tran++;
-              `uvm_info(`gfn, $sformatf("\nscoreboard exp_rd_item\n\%s",
+              `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_rd_item\n\%s",
                   sb_exp_rd_item.sprint()), UVM_DEBUG)
               rdata_cnt = 0;
             end
           end
         end
       endcase
-    end
+    end // end of read data phase
   endtask : process_tl_access
 
   task compare_trans(bus_op_e dir = BusOpWrite);
@@ -304,10 +305,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     exp_rd_q.delete();
     exp_wr_q.delete();
     rd_pending_q.delete();
-    host_init  = 1'b0;
-    tran_id    = 0;
-    rdata_cnt  = 0;
+    rd_pending_item.clear_all();
+    exp_rd_item.clear_all();
+    exp_wr_item.clear_all();
+    host_init    = 1'b0;
+    tran_id      = 0;
+    rdata_cnt    = 0;
     num_exp_tran = 0;
+    `uvm_info(`gfn, "\n>>> scoreboard is reset", UVM_DEBUG)
   endfunction : reset
 
   function void report_phase(uvm_phase phase);
