@@ -12,7 +12,8 @@
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/uart.h"
 
-#define HMAC0_BASE_ADDR 0x40120000
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 #define MAX_FIFO_FILL 10
 
 const test_config_t kTestConfig = {
@@ -181,7 +182,7 @@ bool test_main() {
   LOG_INFO("Running HMAC DIF test...");
 
   dif_hmac_config_t hmac_config = {
-      .base_addr = mmio_region_from_addr(HMAC0_BASE_ADDR),
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
       .digest_endianness = kDifHmacEndiannessBig,
       .message_endianness = kDifHmacEndiannessBig,
   };
