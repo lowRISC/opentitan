@@ -10,6 +10,7 @@ package flash_ctrl_pkg;
   // design constants
   parameter int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
   parameter int NumBanks        = top_pkg::FLASH_BANKS;
+  parameter int InfoTypes       = 1; // How many types of info per bank
   parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  // Info pages per bank
   parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; // Data pages per bank
   parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of flash words per page
@@ -43,13 +44,25 @@ package flash_ctrl_pkg;
   // fifo parameters
   parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
+  // partition sizes per bank
+  // total number of partitions is always Data + different types of info
+  parameter int TotalPartitions = 1 + InfoTypes;
+  parameter int TotalPartitionsWidth = $clog2(TotalPartitions);
+
+  // The end address in bus words for each kind of partition in each bank
+  parameter logic [BusBankAddrW-1:0] PartitionEndAddr [0:TotalPartitions-1] =
+    {
+      PagesPerBank * BusWordsPerPage - 1,
+      InfosPerBank * BusWordsPerPage - 1
+    };
+
   // flash life cycle / key manager management constants
   // One page for creator seeds
   // One page for owner seeds
   parameter int NumSeeds = 2;
   parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
-  parameter logic [NumSeeds-1:0][InfoPageW-1:0] SeedInfoPageSel =
+  parameter logic [InfoPageW-1:0] SeedInfoPageSel [0:NumSeeds-1] =
     {
       CreatorInfoPage,
       OwnerInfoPage
@@ -85,7 +98,7 @@ package flash_ctrl_pkg;
   } flash_flfo_dir_e;
 
   // Flash partition type
-  typedef enum logic {
+  typedef enum logic [TotalPartitionsWidth-1:0] {
     FlashPartData = 1'b0,
     FlashPartInfo = 1'b1
   } flash_part_e;
