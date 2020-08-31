@@ -44,11 +44,9 @@ Once done, these documents are to be reviewed with the designer(s) and other pro
 Before running any test, the [UVM RAL model]({{< relref "dv_methodology/index.md#uvm-register-abstraction-layer-ral-model" >}}) needs to exist (if the design contains CSRs).
 The [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) has been updated to generate the RAL model automatically at the start of the simulation.
 As such, nothing extra needs to be done.
-A hook for generating it is already provided in the generated `dv/Makefile`.
-It can be created manually by simply navigating to the `dv` directory and invoking the command:
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 ```console
-$ cd path-to-dv
-$ make ral
+util/regtool.py -s -t /path-to-dv /path-to-module/data/<dut>.hjson
 ```
 
 The generated file is placed in the simulation build scratch area instead of being checked in.
@@ -61,11 +59,10 @@ There is support for Cadence Xcelium as well, which is being slowly ramped up.
 
 ## Building and Running Tests
 
-The `uvmdvgen` tool provides an empty shell sequence at `dv/env/seq_lib/<ip>_sanity_vseq.sv` for developing the sanity test.
-The sanity test can be run as-is by invoking `make`, as a "hello world" step to bring the DUT out of reset.
+The `uvmdvgen` tool provides an empty shell sequence at `dv/env/seq_lib/<dut>_sanity_vseq.sv` for developing the sanity test.
+The sanity test can be run as-is by invoking `dvsim.py`, as a "hello world" step to bring the DUT out of reset.
 ```console
-$ cd path-to-dv
-$ make [SIMULATOR=xcelium] [WAVES=1]
+$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_sanity [--waves] [--tool xcelium]
 ```
 
 The generated initial testbench is not expected to compile and elaborate successfully right away.
@@ -73,16 +70,14 @@ There may be additional fixes required, which can be hopefully be identified eas
 Once the testbench compiles and elaborates without any errors or warnings, the sanity sequence can be developed further to access a major datapath and test the basic functionality of the DUT.
 
 VCS is used as the default simulator.
-It can be switched to Xcelium by setting `SIMULATOR=xcelium` on the command line.
-The `WAVES=1` switch will cause an `fsdb` dump to be created from the test.
-The Synopsys Verdi tool can be invoked (separately) to debug the waves.
+It can be switched to Xcelium by setting `--tool xcelium` on the command line.
+To dump waves from the simulation, pass the `--waves` argument to `dvsim.py`.
 Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/README.md" >}}) for additional details.
 
-The `uvmdvgen` script also provides a CSR suite of tests which can be run right out of the box.
+The `uvmdvgen` script also enables the user to run the full suite of CSR tests, if the DUT does have CSRs in it.
 The most basic CSR power-on-reset check test can be run by invoking:
 ```console
-$ cd path-to-dv
-$ make TEST_NAME=<dut>_csr_hw_reset [WAVES=1]
+$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves] [--tool xcelium]
 ```
 Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}}) for more information on how to add exclusions for the CSR tests.
 
