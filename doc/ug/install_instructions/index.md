@@ -118,6 +118,7 @@ Alternatively, manually download the file starting with `lowrisc-toolchain-rv32i
     objdump = '/tools/riscv/bin/riscv32-unknown-elf-objdump'
     objcopy = '/tools/riscv/bin/riscv32-unknown-elf-objcopy'
     strip = '/tools/riscv/bin/riscv32-unknown-elf-strip'
+    as = '/tools/riscv/bin/riscv32-unknown-elf-as'
 
     [properties]
     needs_exe_wrapper = true
