@@ -21,9 +21,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // interface signals to/from *_ctrl
   input req_i,
   input [AllPagesW-1:0] req_addr_i,
-  input req_part_i,
+  input flash_part_e req_part_i,
   input addr_ovfl_i,
-  input [BankW-1:0] req_bk_i,
   input rd_i,
   input prog_i,
   input pg_erase_i,
@@ -33,7 +32,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic erase_done_o,
   output logic error_o,
   output logic [AllPagesW-1:0] err_addr_o,
-  output logic [BankW-1:0] err_bank_o,
 
   // interface signals to/from flash_phy
   output logic req_o,
@@ -44,14 +42,21 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input rd_done_i,
   input prog_done_i,
   input erase_done_i
-
 );
 
   // Total number of regions including default region
   localparam int TotalRegions = MpRegions+1;
 
-  // Address range checks
-  localparam int LastValidInfoPage = InfosPerBank - 1;
+  // bank + page address
+  logic [AllPagesW-1:0] bank_page_addr;
+  // bank address
+  logic [BankW-1:0] bank_addr;
+  // page address
+  logic [PageW-1:0] page_addr;
+
+  assign bank_page_addr = req_addr_i;
+  assign bank_addr = req_addr_i[AllPagesW-1 -: BankW];
+  assign page_addr = req_addr_i[PageW-1:0];
 
   // There could be multiple region matches due to region overlap
   // region_end is +1 bit from however bits are needed to address regions
@@ -67,6 +72,29 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   logic final_pg_erase_en;
   logic final_bk_erase_en;
 
+  // Check address out of bounds
+  logic addr_invalid;
+  logic bank_invalid;
+  logic [PageW-1:0] end_addr;
+
+  // when number of banks are power of 2, invalid bank is handled by addr_ovfl_i
+  if (NumBanks % 2 > 0) begin : gen_bank_check
+    assign bank_invalid = bank_addr > NumBanks;
+  end else begin : gen_no_bank_check
+    logic [BankW-1:0] unused_bank_addr;
+    assign unused_bank_addr = bank_addr;
+    assign bank_invalid = '0;
+  end
+
+  // address is invalid if:
+  // the address extends beyond the end of the partition in question
+  // the bank selection is invalid
+  // if the address overflowed the control counters
+  assign end_addr = PartitionEndAddr[req_part_i];
+  assign addr_invalid = page_addr > end_addr |
+                        bank_invalid |
+                        addr_ovfl_i;
+
   // Lower indices always have priority
   assign region_sel[0] = region_match[0];
   for (genvar i = 1; i < TotalRegions; i++) begin: gen_region_priority
@@ -79,8 +107,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
       region_end[i] = {1'b0, region_cfgs_i[i].base.q} + region_cfgs_i[i].size.q;
 
       // region matches if address within range and if the partition matches
-      region_match[i] = req_addr_i >= region_cfgs_i[i].base.q &
-                        {1'b0, req_addr_i} < region_end[i] &
+      region_match[i] = bank_page_addr >= region_cfgs_i[i].base.q &
+                        {1'b0, bank_page_addr} < region_end[i] &
                         req_part_i == region_cfgs_i[i].partition.q &
                         region_cfgs_i[i].en.q &
                         req_i;
@@ -95,24 +123,18 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // bank erase allowed for only data partition
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
-      bk_erase_en[i] = (req_bk_i == i) & bank_cfgs_i[i].q &
+      bk_erase_en[i] = (bank_addr == i) & bank_cfgs_i[i].q &
                        (req_part_i == FlashPartData);
     end
   end
 
-  logic invalid_info_access, invalid_info_erase, invalid_info_txn;
+  logic invalid_info_erase, invalid_info_txn;
 
-  // invalid info page access
-  assign invalid_info_access = req_i &
-                               (req_part_i == FlashPartInfo) &
-                               (rd_i | prog_i | pg_erase_i) &
-                               (req_addr_i[0 +: PageW] > LastValidInfoPage);
-
-  // invalid info page erase
+  // bank erase cannot be issued to info page
   assign invalid_info_erase  = req_i & bk_erase_i &
                                (req_part_i == FlashPartInfo);
 
-  assign invalid_info_txn    = invalid_info_access | invalid_info_erase;
+  assign invalid_info_txn    = invalid_info_erase;
 
 
   assign final_rd_en = rd_i & |rd_en;
@@ -142,20 +164,18 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // if incoming address overflowed or is invalid or no transaction enables, error back
   // TBD: for now, when if_sel == HwSel, then transaction attributes are not checked.
   // This should eventually be updated to hw interface specific checks.
-  assign no_allowed_txn = req_i & (addr_ovfl_i | invalid_info_txn | ~txn_ens & ~hw_sel);
+  assign no_allowed_txn = req_i & (addr_invalid | invalid_info_txn | ~txn_ens & ~hw_sel);
 
   // return done and error the next cycle
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       txn_err <= 1'b0;
       err_addr_o <= '0;
-      err_bank_o <= '0;
     end else if (txn_err) begin
       txn_err <= 1'b0;
     end else if (no_allowed_txn) begin
       txn_err <= 1'b1;
-      err_addr_o <= req_addr_i;
-      err_bank_o <= req_bk_i;
+      err_addr_o <= bank_page_addr;
     end
   end
 

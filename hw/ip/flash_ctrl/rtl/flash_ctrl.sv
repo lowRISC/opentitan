@@ -106,8 +106,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic rd_op;
   logic prog_op;
   logic erase_op;
-  logic [AllPagesW-1:0] err_page;
-  logic [BankW-1:0] err_bank;
+  logic [AllPagesW-1:0] err_addr;
 
   // Flash control arbitration connections to hardware interface
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
@@ -474,7 +473,6 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .req_addr_i(flash_addr[BusAddrW-1 -: AllPagesW]),
     .req_part_i(flash_part_sel),
     .addr_ovfl_i(rd_flash_ovfl | prog_flash_ovfl),
-    .req_bk_i(flash_addr[BusAddrW-1 -: BankW]),
     .rd_i(rd_op),
     .prog_i(prog_op),
     .pg_erase_i(erase_op & (erase_flash_type == FlashErasePage)),
@@ -483,8 +481,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
     .error_o(flash_error),
-    .err_addr_o(err_page),
-    .err_bank_o(err_bank),
+    .err_addr_o(err_addr),
 
     // flash phy interface
     .req_o(flash_o.req),
@@ -515,10 +512,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign hw2reg.status.prog_empty.de = sw_sel;
   assign hw2reg.status.init_wip.d    = flash_phy_busy | ctrl_init_busy;
   assign hw2reg.status.init_wip.de   = 1'b1;
-  assign hw2reg.status.error_page.d  = err_page;
-  assign hw2reg.status.error_page.de = sw_sel;
-  assign hw2reg.status.error_bank.d  = err_bank;
-  assign hw2reg.status.error_bank.de = sw_sel;
+  assign hw2reg.status.error_addr.d  = err_addr;
+  assign hw2reg.status.error_addr.de = sw_sel;
   assign hw2reg.control.start.d      = 1'b0;
   assign hw2reg.control.start.de     = sw_ctrl_done;
   // if software operation selected, based on transaction start
