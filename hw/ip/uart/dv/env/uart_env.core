@@ -34,6 +34,7 @@ filesets:
       - seq_lib/uart_rx_start_bit_filter_vseq.sv: {is_include_file: true}
       - seq_lib/uart_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/uart_tx_ovrd_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_long_xfer_wo_dly_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

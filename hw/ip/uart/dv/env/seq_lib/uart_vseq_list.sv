@@ -17,4 +17,5 @@
 `include "uart_rx_parity_err_vseq.sv"
 `include "uart_loopback_vseq.sv"
 `include "uart_perf_vseq.sv"
+`include "uart_long_xfer_wo_dly_vseq.sv"
 `include "uart_stress_all_vseq.sv"

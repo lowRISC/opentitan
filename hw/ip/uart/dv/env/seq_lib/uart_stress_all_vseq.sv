@@ -23,6 +23,7 @@ class uart_stress_all_vseq extends uart_base_vseq;
                           "uart_rx_parity_err_vseq",
                           "uart_tx_ovrd_vseq",
                           "uart_perf_vseq",
+                          "uart_long_xfer_wo_dly_vseq",
                           "uart_loopback_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
