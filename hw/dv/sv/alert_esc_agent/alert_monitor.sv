@@ -70,6 +70,8 @@ class alert_monitor extends alert_esc_base_monitor;
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) begin
           alert_esc_port.write(req);
+          if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+
           // spurious alert error, can only happen one clock after timeout. Detail please see
           // discussion on Issue #2321
           if (req.timeout && req.alert_handshake_sta == AlertReceived) begin
@@ -126,6 +128,10 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
+        if (cfg.en_cov) begin
+          cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
+          if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+        end
       end
       alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
     end

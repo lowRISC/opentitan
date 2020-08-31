@@ -50,6 +50,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
       cfg.m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
       cfg.m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
+      // seq won't send ping request because they are covered in alert_handler testbench
+      cfg.m_alert_agent_cfg[alert_name].en_ping_cov = 0;
       if (cfg.zero_delays) begin
         cfg.m_alert_agent_cfg[alert_name].alert_delay_min = 0;
         cfg.m_alert_agent_cfg[alert_name].alert_delay_max = 0;
