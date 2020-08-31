@@ -119,8 +119,8 @@ dif_plic_sanitytest_lib = declare_dependency(
     'dif_plic_sanitytest_lib',
     sources: ['dif_plic_sanitytest.c'],
     dependencies: [
-      dif_uart,
-      dif_plic,
+      sw_lib_dif_uart,
+      sw_lib_dif_plic,
       sw_lib_irq,
       sw_lib_mmio,
       sw_lib_base_log,
@@ -136,7 +136,7 @@ dif_uart_sanitytest_lib = declare_dependency(
     'dif_uart_sanitytest_lib',
     sources: ['dif_uart_sanitytest.c'],
     dependencies: [
-      dif_uart,
+      sw_lib_dif_uart,
       sw_lib_mmio,
       sw_lib_runtime_hart,
     ],
@@ -149,7 +149,7 @@ dif_rv_timer_sanitytest_lib = declare_dependency(
     'dif_rv_timer_sanitytest_lib',
     sources: ['dif_rv_timer_sanitytest.c'],
     dependencies: [
-      dif_rv_timer,
+      sw_lib_dif_rv_timer,
       sw_lib_base_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
@@ -164,7 +164,7 @@ dif_hmac_sanitytest_lib = declare_dependency(
     'dif_hmac_sanitytest_lib',
     sources: ['dif_hmac_sanitytest.c'],
     dependencies: [
-      sw_dif_hmac,
+      sw_lib_dif_hmac,
       sw_lib_base_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
