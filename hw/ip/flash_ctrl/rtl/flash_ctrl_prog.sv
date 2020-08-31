@@ -5,7 +5,7 @@
 // Faux Flash Prog Control
 //
 
-module flash_prog_ctrl #(
+module flash_ctrl_prog #(
   parameter int AddrW = 10,
   parameter int DataW = 32
 ) (
@@ -107,4 +107,4 @@ module flash_prog_ctrl #(
   assign flash_ovfl_o = int_addr[AddrW];
   assign flash_last_o = flash_req_o & cnt_hit;
 
-endmodule // flash_prog_ctrl
+endmodule // flash_ctrl_prog
