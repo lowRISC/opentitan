@@ -15,7 +15,7 @@ sw_lib_uart = declare_dependency(
     dependencies: [
       sw_lib_base_print,
       sw_lib_runtime_ibex,
-      dif_uart,
+      sw_lib_dif_uart,
       top_earlgrey,
     ],
   )

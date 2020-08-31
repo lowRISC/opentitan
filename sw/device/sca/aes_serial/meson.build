@@ -9,7 +9,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     name_suffix: 'elf',
     dependencies: [
       device_lib,
-      dif_rv_timer,
+      sw_lib_dif_rv_timer,
       riscv_crt,
       sw_lib_aes,
       sw_lib_base_log,

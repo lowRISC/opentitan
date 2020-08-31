@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # UART DIF library (dif_uart)
-dif_uart = declare_dependency(
+sw_lib_dif_uart = declare_dependency(
   link_with: static_library(
     'uart_ot',
     sources: [
@@ -17,7 +17,7 @@ dif_uart = declare_dependency(
 )
 
 # PLIC DIF library (dif_plic)
-dif_plic = declare_dependency(
+sw_lib_dif_plic = declare_dependency(
   link_with: static_library(
     'dif_plic_ot',
     sources: [
@@ -57,7 +57,7 @@ sw_lib_dif_spi_device = declare_dependency(
 )
 
 # RISC-V Timer DIF library (dif_rv_timer)
-dif_rv_timer = declare_dependency(
+sw_lib_dif_rv_timer = declare_dependency(
   link_with: static_library(
     'dif_rv_timer_ot',
     sources: [
@@ -100,7 +100,7 @@ sw_lib_dif_usbdev = declare_dependency(
 )
 
 # HMAC device DIF library
-sw_dif_hmac = declare_dependency(
+sw_lib_dif_hmac = declare_dependency(
   link_with: static_library(
     'sw_dif_hmac',
     sources: [
