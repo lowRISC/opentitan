@@ -5,22 +5,17 @@
 // Faux Flash Erase Control
 //
 
-module flash_ctrl_erase #(
-  parameter int AddrW = 10,
-  parameter int WordsPerPage = 256,
-  parameter int PagesPerBank = 256,
-  parameter int EraseBitWidth = 1
-) (
+module flash_ctrl_erase import flash_ctrl_pkg::*; (
   // Software Interface
   input                     op_start_i,
   input [EraseBitWidth-1:0] op_type_i,
-  input [AddrW-1:0]         op_addr_i,
+  input [BusAddrW-1:0]         op_addr_i,
   output logic              op_done_o,
   output logic              op_err_o,
 
   // Flash Macro Interface
   output logic             flash_req_o,
-  output logic [AddrW-1:0] flash_addr_o,
+  output logic [BusAddrW-1:0] flash_addr_o,
   output logic [EraseBitWidth-1:0] flash_op_o,
   input                    flash_done_i,
   input                    flash_error_i
@@ -28,7 +23,7 @@ module flash_ctrl_erase #(
 
   import flash_ctrl_pkg::*;
 
-  localparam int WordsBitWidth = $clog2(WordsPerPage);
+  localparam int WordsBitWidth = $clog2(BusWordsPerPage);
   localparam int PagesBitWidth = $clog2(PagesPerBank);
 
   // The *AddrMask below masks out the bits that are not required
@@ -38,8 +33,8 @@ module flash_ctrl_erase #(
   // PageAddrMask would be 0xF_FFFF_0000
   // BankAddrMask would be 0xF_0000_0000
   //
-  localparam logic[AddrW-1:0] PageAddrMask = ~(('h1 << WordsBitWidth) - 1'b1);
-  localparam logic[AddrW-1:0] BankAddrMask = ~(('h1 << (PagesBitWidth + WordsBitWidth)) - 1'b1);
+  localparam logic[BusAddrW-1:0] PageAddrMask = ~(('h1 << WordsBitWidth) - 1'b1);
+  localparam logic[BusAddrW-1:0] BankAddrMask = ~(('h1 << (PagesBitWidth + WordsBitWidth)) - 1'b1);
 
   // IO assignments
   assign op_done_o = flash_req_o & flash_done_i;

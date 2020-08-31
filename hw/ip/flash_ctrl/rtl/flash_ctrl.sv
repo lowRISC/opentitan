@@ -296,10 +296,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Program handler is consumer of prog_fifo
-  flash_ctrl_prog #(
-    .DataW(BusWidth),
-    .AddrW(BusAddrW)
-  ) u_flash_ctrl_prog (
+  flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
 
@@ -375,10 +372,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Read handler is consumer of rd_fifo
-  flash_ctrl_rd #(
-    .DataW(BusWidth),
-    .AddrW(BusAddrW)
-  ) u_flash_ctrl_rd (
+  flash_ctrl_rd  u_flash_ctrl_rd (
     .clk_i,
     .rst_ni,
 
@@ -404,12 +398,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Erase handler does not consume fifo
-  flash_ctrl_erase #(
-    .AddrW(BusAddrW),
-    .PagesPerBank(PagesPerBank),
-    .WordsPerPage(BusWordsPerPage),
-    .EraseBitWidth(EraseBitWidth)
-  ) u_flash_ctrl_erase (
+  flash_ctrl_erase u_flash_ctrl_erase (
     // Software Interface
     .op_start_i     (op_start & erase_op),
     .op_type_i      (op_erase_type),
@@ -469,11 +458,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Flash memory protection
   // Memory protection is page based and thus should use phy addressing
   // This should move to flash_phy long term
-  flash_mp #(
-    .MpRegions(MpRegions),
-    .NumBanks(NumBanks),
-    .AllPagesW(AllPagesW)
-  ) u_flash_mp (
+  flash_mp u_flash_mp (
     .clk_i,
     .rst_ni,
 

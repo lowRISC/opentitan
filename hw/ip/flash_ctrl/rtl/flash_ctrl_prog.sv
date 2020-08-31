@@ -5,10 +5,7 @@
 // Faux Flash Prog Control
 //
 
-module flash_ctrl_prog #(
-  parameter int AddrW = 10,
-  parameter int DataW = 32
-) (
+module flash_ctrl_prog import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -17,18 +14,18 @@ module flash_ctrl_prog #(
   input  [11:0]            op_num_words_i,
   output logic             op_done_o,
   output logic             op_err_o,
-  input [AddrW-1:0]        op_addr_i,
+  input [BusAddrW-1:0]        op_addr_i,
 
   // FIFO Interface
   input                    data_rdy_i,
-  input  [DataW-1:0]       data_i,
+  input  [BusWidth-1:0]       data_i,
   output logic             data_rd_o,
 
   // Flash Macro Interface
   output logic             flash_req_o,
-  output logic [AddrW-1:0] flash_addr_o,
+  output logic [BusAddrW-1:0] flash_addr_o,
   output logic             flash_ovfl_o,
-  output logic [DataW-1:0] flash_data_o,
+  output logic [BusWidth-1:0] flash_data_o,
   output logic             flash_last_o, // last beat of prog data
   input                    flash_done_i,
   input                    flash_error_i
@@ -42,7 +39,7 @@ module flash_ctrl_prog #(
   state_e st, st_nxt;
   logic [11:0] cnt, cnt_nxt;
   logic cnt_hit;
-  logic [AddrW:0] int_addr;
+  logic [BusAddrW:0] int_addr;
   logic txn_done;
 
 
@@ -102,9 +99,9 @@ module flash_ctrl_prog #(
   end
 
   assign flash_data_o = data_i;
-  assign int_addr = op_addr_i + AddrW'(cnt);
-  assign flash_addr_o = int_addr[0 +: AddrW];
-  assign flash_ovfl_o = int_addr[AddrW];
+  assign int_addr = op_addr_i + BusAddrW'(cnt);
+  assign flash_addr_o = int_addr[0 +: BusAddrW];
+  assign flash_ovfl_o = int_addr[BusAddrW];
   assign flash_last_o = flash_req_o & cnt_hit;
 
 endmodule // flash_ctrl_prog
