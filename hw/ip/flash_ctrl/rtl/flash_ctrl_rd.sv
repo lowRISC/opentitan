@@ -5,10 +5,7 @@
 // Faux Flash Read Control
 //
 
-module flash_ctrl_rd #(
-  parameter int AddrW = 10,
-  parameter int DataW = 32
-) (
+module flash_ctrl_rd import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -17,18 +14,18 @@ module flash_ctrl_rd #(
   input  [11:0]            op_num_words_i,
   output logic             op_done_o,
   output logic             op_err_o,
-  input [AddrW-1:0]        op_addr_i,
+  input [BusAddrW-1:0]        op_addr_i,
 
   // FIFO Interface
   input                    data_rdy_i,
-  output logic [DataW-1:0] data_o,
+  output logic [BusWidth-1:0] data_o,
   output logic             data_wr_o,
 
   // Flash Macro Interface
   output logic             flash_req_o,
-  output logic [AddrW-1:0] flash_addr_o,
+  output logic [BusAddrW-1:0] flash_addr_o,
   output logic             flash_ovfl_o,
-  input [DataW-1:0]        flash_data_i,
+  input [BusWidth-1:0]        flash_data_i,
   input                    flash_done_i,
   input                    flash_error_i
 );
@@ -41,7 +38,7 @@ module flash_ctrl_rd #(
   state_e st, st_nxt;
   logic [11:0] cnt, cnt_nxt;
   logic cnt_hit;
-  logic [AddrW:0] int_addr;
+  logic [BusAddrW:0] int_addr;
   logic txn_done;
   logic err_sel; //1 selects error data, 0 selects normal data
 
@@ -105,11 +102,11 @@ module flash_ctrl_rd #(
   end
 
   // overflow error detection is not here, but instead handled at memory protection
-  assign int_addr = op_addr_i + AddrW'(cnt);
-  assign flash_addr_o = int_addr[0 +: AddrW];
-  assign flash_ovfl_o = int_addr[AddrW];
+  assign int_addr = op_addr_i + BusAddrW'(cnt);
+  assign flash_addr_o = int_addr[0 +: BusAddrW];
+  assign flash_ovfl_o = int_addr[BusAddrW];
   // if error, return "empty" data
-  assign data_o = err_sel ? {DataW{1'b1}} : flash_data_i;
+  assign data_o = err_sel ? {BusWidth{1'b1}} : flash_data_i;
 
 
 endmodule // flash_ctrl_rd

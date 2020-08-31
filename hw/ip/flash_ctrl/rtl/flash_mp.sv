@@ -7,13 +7,7 @@
 
 `include "prim_assert.sv"
 
-module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
-  parameter int MpRegions = 8,
-  parameter int NumBanks = 2,
-  parameter int AllPagesW = 16,
-  localparam int TotalRegions = MpRegions+1,
-  localparam int BankW = $clog2(NumBanks)
-) (
+module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -21,7 +15,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
   input flash_sel_e if_sel_i,
 
   // configuration from sw
-  input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [TotalRegions-1:0] region_cfgs_i,
+  input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs_i,
   input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
 
   // interface signals to/from *_ctrl
@@ -53,6 +47,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; #(
 
 );
 
+  // Total number of regions including default region
+  localparam int TotalRegions = MpRegions+1;
 
   // Address range checks
   localparam int LastValidInfoPage = InfosPerBank - 1;
