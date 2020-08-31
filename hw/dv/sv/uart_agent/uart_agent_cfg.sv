@@ -28,6 +28,13 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer
   virtual uart_if vif;
 
+  // The actual UART clock is not perfectly aligned to the baud rate. The clock btw transmitter and
+  // receiver can have certain difference
+  // driver is using perfect baud rate. Here is the max allowed clock drift for design comparing the
+  // ideal baud rate, This number must be less than 50
+  // if set 20 here, received data must be ready to sample and stable at 30%-70% of the cycle
+  local uint max_drift_cycle_pct = 25;
+
   `uvm_object_utils_begin(uart_agent_cfg)
     `uvm_field_int(is_active,     UVM_DEFAULT)
     `uvm_field_int(en_cov,        UVM_DEFAULT)
@@ -50,6 +57,15 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   function void set_parity(bit en_parity, bit odd_parity);
     this.en_parity = en_parity;
     this.odd_parity = odd_parity;
+  endfunction
+
+  function void set_max_drift_cycle_pct(uint pct);
+    `DV_CHECK_LT_FATAL(pct, 50)
+    max_drift_cycle_pct = pct;
+  endfunction
+
+  function int get_max_drift_cycle_pct();
+    return max_drift_cycle_pct;
   endfunction
 
   virtual function void reset_asserted();

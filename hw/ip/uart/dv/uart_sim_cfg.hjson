@@ -125,6 +125,12 @@
     }
 
     {
+      name: uart_long_xfer_wo_dly
+      uvm_test_seq: uart_long_xfer_wo_dly_vseq
+      run_opts: ["+zero_delays=1"]
+    }
+
+    {
       name: uart_stress_all_with_rand_reset
       // need more seeds to cover uart_agent_cov::uart_reset_cg
       reseed: 100
