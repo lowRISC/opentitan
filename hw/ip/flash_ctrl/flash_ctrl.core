@@ -17,9 +17,9 @@ filesets:
       - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_reg_top.sv
       - rtl/flash_ctrl.sv
-      - rtl/flash_erase_ctrl.sv
-      - rtl/flash_prog_ctrl.sv
-      - rtl/flash_rd_ctrl.sv
+      - rtl/flash_ctrl_erase.sv
+      - rtl/flash_ctrl_prog.sv
+      - rtl/flash_ctrl_rd.sv
       - rtl/flash_ctrl_arb.sv
       - rtl/flash_ctrl_lcmgr.sv
       - rtl/flash_mp.sv

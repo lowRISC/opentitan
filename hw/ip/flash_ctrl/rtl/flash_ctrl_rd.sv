@@ -5,7 +5,7 @@
 // Faux Flash Read Control
 //
 
-module flash_rd_ctrl #(
+module flash_ctrl_rd #(
   parameter int AddrW = 10,
   parameter int DataW = 32
 ) (
@@ -112,4 +112,4 @@ module flash_rd_ctrl #(
   assign data_o = err_sel ? {DataW{1'b1}} : flash_data_i;
 
 
-endmodule // flash_rd_ctrl
+endmodule // flash_ctrl_rd

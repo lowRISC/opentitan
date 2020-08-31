@@ -5,7 +5,7 @@
 // Faux Flash Erase Control
 //
 
-module flash_erase_ctrl #(
+module flash_ctrl_erase #(
   parameter int AddrW = 10,
   parameter int WordsPerPage = 256,
   parameter int PagesPerBank = 256,
@@ -56,4 +56,4 @@ module flash_erase_ctrl #(
   logic [WordsBitWidth-1:0] unused_addr_i;
   assign unused_addr_i = op_addr_i[WordsBitWidth-1:0];
 
-endmodule // flash_erase_ctrl
+endmodule // flash_ctrl_erase

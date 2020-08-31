@@ -294,10 +294,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Program handler is consumer of prog_fifo
-  flash_prog_ctrl #(
+  flash_ctrl_prog #(
     .DataW(BusWidth),
     .AddrW(BusAddrW)
-  ) u_flash_prog_ctrl (
+  ) u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
 
@@ -373,10 +373,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Read handler is consumer of rd_fifo
-  flash_rd_ctrl #(
+  flash_ctrl_rd #(
     .DataW(BusWidth),
     .AddrW(BusAddrW)
-  ) u_flash_rd_ctrl (
+  ) u_flash_ctrl_rd (
     .clk_i,
     .rst_ni,
 
@@ -402,12 +402,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Erase handler does not consume fifo
-  flash_erase_ctrl #(
+  flash_ctrl_erase #(
     .AddrW(BusAddrW),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(BusWordsPerPage),
     .EraseBitWidth(EraseBitWidth)
-  ) u_flash_erase_ctrl (
+  ) u_flash_ctrl_erase (
     // Software Interface
     .op_start_i     (op_start & erase_op),
     .op_type_i      (op_erase_type),
