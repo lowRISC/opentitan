@@ -50,10 +50,10 @@ package flash_ctrl_pkg;
   parameter int TotalPartitionsWidth = $clog2(TotalPartitions);
 
   // The end address in bus words for each kind of partition in each bank
-  parameter logic [BusBankAddrW-1:0] PartitionEndAddr [0:TotalPartitions-1] =
+  parameter logic [PageW-1:0] PartitionEndAddr [0:TotalPartitions-1] =
     {
-      PagesPerBank * BusWordsPerPage - 1,
-      InfosPerBank * BusWordsPerPage - 1
+      PagesPerBank - 1,
+      InfosPerBank - 1
     };
 
   // flash life cycle / key manager management constants
