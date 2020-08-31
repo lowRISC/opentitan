@@ -112,7 +112,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Flash control arbitration connections to hardware interface
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
   logic hw_req;
-  logic [BusAddrW-1:0] hw_addr;
+  logic [top_pkg::TL_AW-1:0] hw_addr;
   logic hw_done;
   logic hw_err;
   logic hw_rvalid;
@@ -126,7 +126,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   // Flash control muxed connections
   flash_ctrl_reg2hw_control_reg_t muxed_ctrl;
-  logic [31:0] muxed_addr;
+  logic [top_pkg::TL_AW-1:0] muxed_addr;
   logic op_start;
   logic [11:0] op_num_words;
   logic [BusAddrW-1:0] op_addr;
@@ -166,7 +166,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     // hardware interface to rd_ctrl / erase_ctrl
     .hw_req_i(hw_req),
     .hw_ctrl_i(hw_ctrl),
-    .hw_addr_i(top_pkg::TL_AW'(hw_addr)),
+
+    // hardware works on word address, however software expects byte address
+    .hw_addr_i(hw_addr),
     .hw_ack_o(hw_done),
     .hw_err_o(hw_err),
 
@@ -614,13 +616,13 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   // Unused bits
   logic [BusByteWidth-1:0] unused_byte_sel;
-  logic [31-BusAddrW:0] unused_higher_addr_bits;
-  logic [31:0] unused_scratch;
+  logic [top_pkg::TL_AW-1-BusAddrW:0] unused_higher_addr_bits;
+  logic [top_pkg::TL_AW-1:0] unused_scratch;
 
 
   // Unused signals
   assign unused_byte_sel = muxed_addr[BusByteWidth-1:0];
-  assign unused_higher_addr_bits = muxed_addr[31:BusAddrW];
+  assign unused_higher_addr_bits = muxed_addr[top_pkg::TL_AW-1:BusAddrW];
   assign unused_scratch = reg2hw.scratch;
 
 

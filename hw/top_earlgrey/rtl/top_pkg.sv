@@ -15,7 +15,6 @@ localparam int TL_SZW=$clog2($clog2(TL_DBW)+1);
 localparam int FLASH_BANKS=2;
 localparam int FLASH_PAGES_PER_BANK=256;
 localparam int FLASH_WORDS_PER_PAGE=128;
-localparam int FLASH_BYTES_PER_WORD=TL_DBW;
 localparam int FLASH_INFO_PER_BANK=4;
 localparam int FLASH_DATA_WIDTH=64;
 localparam int NUM_AST_ALERTS=7;
