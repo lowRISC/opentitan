@@ -14,6 +14,8 @@ class aes_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
+    
   endfunction
 
   function void connect_phase(uvm_phase phase);
