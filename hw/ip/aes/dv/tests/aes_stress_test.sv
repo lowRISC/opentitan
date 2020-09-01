@@ -9,6 +9,8 @@ class aes_stress_test extends aes_base_test;
    virtual function void build_phase(uvm_phase phase);
      super.build_phase(phase);
      configure_env();
+     configure_tl_ul();     
+     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 
   virtual function void configure_env();
@@ -42,7 +44,18 @@ class aes_stress_test extends aes_base_test;
     cfg.random_data_key_iv_order = 1;
 
     cfg.manual_operation_pct     = 30;
+  endfunction // configure_env
 
-    `DV_CHECK_RANDOMIZE_FATAL(cfg)
-  endfunction
+  virtual function void configure_tl_ul();
+
+    cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+    cfg.m_tl_agent_cfg.d_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.d_valid_delay_max = 0;
+    cfg.m_tl_agent_cfg.a_ready_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_ready_delay_max = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+  endfunction // configure_env
+  
 endclass : aes_stress_test
