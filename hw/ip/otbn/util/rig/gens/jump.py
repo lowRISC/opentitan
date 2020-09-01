@@ -77,9 +77,10 @@ class Jump(SnippetGen):
                    program: Program) -> Optional[Tuple[int, int, int]]:
         '''Pick target and link register for a jump instruction
 
-        base_addr is the starting address (either the current PC for a JAL or
-        the value of a register for a JALR). imm_optype is the OperandType for
-        the immediate operand that we are generating.
+        For a JALR instruction, base_addr is the address stored in the register
+        that we'll branch through. For a JAL instruction, it is zero: the
+        PC-relative offset is encoded on the operand type itself. imm_optype is
+        the OperandType for the immediate operand that we are generating.
 
         Returns (tgt, enc_offset, link_idx) where tgt is the target address,
         enc_offset is the offset (encoded as 2's complement if necessary for
@@ -87,14 +88,19 @@ class Jump(SnippetGen):
         register.
 
         '''
-        # Calculate the range of addresses we can hit, starting at base_addr.
+        # Calculate the range of offsets we can encode (this includes any
+        # PC-relative adjustment)
         #
         # We can assume that get_range() returns something, because it only
         # returns None if the operand has no width: not possible because we
         # know we have an encoding for the instruction.
-        tgt_rng = imm_optype.get_op_val_range(base_addr)
-        assert tgt_rng is not None
-        tgt_min, tgt_max = tgt_rng
+        imm_rng = imm_optype.get_op_val_range(model.pc)
+        assert imm_rng is not None
+        imm_min, imm_max = imm_rng
+
+        # Adjust for base_addr
+        tgt_min = imm_min + base_addr
+        tgt_max = imm_max + base_addr
 
         # Pick a branch target. "1" here is the minimum number of instructions
         # that must fit. One is enough (we'll just end up generating another
@@ -102,9 +108,12 @@ class Jump(SnippetGen):
         tgt = program.pick_branch_target(1, tgt_min, tgt_max)
         if tgt is None:
             return None
-
         assert tgt_min <= tgt <= tgt_max
-        enc_offset = imm_optype.op_val_to_enc_val(tgt, base_addr)
+
+        # Adjust again for base_addr: we pick the offset from there
+        op_val = tgt - base_addr
+
+        enc_offset = imm_optype.op_val_to_enc_val(op_val, model.pc)
         assert enc_offset is not None
 
         # Pick a link register, not preferring any in particular. This should
@@ -150,7 +159,7 @@ class Jump(SnippetGen):
         offset_optype = self.jal.operands[1].op_type
         assert isinstance(offset_optype, ImmOperandType)
 
-        jmp_data = self._pick_jump(model.pc, offset_optype, model, program)
+        jmp_data = self._pick_jump(0, offset_optype, model, program)
         if jmp_data is None:
             return None
 
