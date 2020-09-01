@@ -2,24 +2,25 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class aes_stress_test extends aes_base_test;
-  `uvm_component_utils(aes_stress_test)
+
+class aes_b2b_test extends aes_base_test;
+  `uvm_component_utils(aes_b2b_test)
   `uvm_component_new
 
    virtual function void build_phase(uvm_phase phase);
      super.build_phase(phase);
      configure_env();
-     // TODO fix manual mode so we can randomize speeds
-     `DV_CHECK_RANDOMIZE_WITH_FATAL(cfg, cfg.host_resp_speed  == VeryFast;)
+     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 
   virtual function void configure_env();
     //   cfg.ref_model          = OpenSSL;
     // env related knobs
 
+    // TODO fix manual mode so we can randomize speeds
     cfg.errors_en                = 0;
     cfg.num_messages_min         = 1;
-    cfg.num_messages_max         = 50;
+    cfg.num_messages_max         = 5;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;
@@ -43,6 +44,6 @@ class aes_stress_test extends aes_base_test;
 
     cfg.random_data_key_iv_order = 1;
 
-    cfg.manual_operation_pct     = 30;
+    cfg.manual_operation_pct     = 0;
   endfunction // configure_env
-endclass : aes_stress_test
+endclass : aes_b2b_test

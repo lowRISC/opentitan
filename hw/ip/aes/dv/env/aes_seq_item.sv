@@ -36,6 +36,8 @@ class aes_seq_item extends uvm_sequence_item;
   bit [3:0]       iv_vld;
   aes_mode_e      mode;
 
+  bit             en_b2b_transactions = 1;
+
 
   ///////////////////////////////////////
   // Fixed variables                   //
@@ -52,7 +54,7 @@ class aes_seq_item extends uvm_sequence_item;
   // set if data should be fixed and not randomized
   bit             fixed_data          = 0;
   // if set unused key bytes will be forced to 0 - controlled from test
-  bit             key_mask            = 0;
+  bit             key_mask            = 1;
 
 
   ///////////////////////////////////////
@@ -61,6 +63,9 @@ class aes_seq_item extends uvm_sequence_item;
 
   // used by the checker
   rand  bit [3:0][31:0] data_in;
+
+  // back to back
+  rand bit              do_b2b;
 
 
   function new( string name="aes_sequence_item");
@@ -82,7 +87,9 @@ class aes_seq_item extends uvm_sequence_item;
         end
         default: begin
         end
-      endcase
+      endcase // case (key_len)
+
+      if (!en_b2b_transactions) do_b2b = 0;
     end
 
     // mask unused data bits

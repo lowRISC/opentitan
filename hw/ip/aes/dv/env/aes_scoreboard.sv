@@ -456,22 +456,21 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 , UVM_MEDIUM)
       txt = "";
       foreach(msg.input_msg[i]) begin
-        txt = { txt, $sformatf("\n\t  %h \t %h \t %h",
-                               msg.input_msg[i],msg.output_msg[i], msg.predicted_msg[i])};
+        txt = { txt, $sformatf("\n\t %d %h \t %h \t %h",
+                              i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i])};
       end
-
 
       for( int n =0 ; n < msg.input_msg.size(); n++) begin
         if( msg.output_msg[n] != msg.predicted_msg[n]) begin
-          txt = "\t TEST FAILED MESSAGES DID NOT MATCH";
+          txt = {"\t TEST FAILED MESSAGES DID NOT MATCH \n ", txt};
 
-          txt = {txt,  $sformatf("\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
-          txt = {txt, $sformatf("\n\t ----| FAILED AT BLOCK #%d \t ACTUAL: %h \t PREDICTED: %h, ",
+          txt = {txt,  $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
+          txt = {txt, $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h, ",
                                 n, msg.output_msg[n], msg.predicted_msg[n] )};
-          `uvm_fatal(`gfn, $sformatf(" # %d  \n\t %s \n",message_cnt, txt))
+          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", message_cnt, txt))
         end
       end
-      `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----",message_cnt), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----",message_cnt), UVM_LOW)
       message_cnt++;
     end
   endtask

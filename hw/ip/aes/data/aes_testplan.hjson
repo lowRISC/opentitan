@@ -48,7 +48,7 @@
            Randomly select the spacing between consecutive messages and blocks from 0 - n clock cycles.
            The distribution will be weighted toward no and small gaps (0-10 cycles) but will also cover larger gaps.'''
       milestone: V2
-      tests: []
+      tests: ["aes_b2b", "aes_stress"]
     }
     {
       name: backpressure
