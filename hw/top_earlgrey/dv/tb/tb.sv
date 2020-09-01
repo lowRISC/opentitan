@@ -48,10 +48,12 @@ module tb;
   // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
   wire cpu_clk = `CLKMGR_HIER.clocks_o.clk_proc_main;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
+  wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
+  alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
@@ -173,6 +175,15 @@ module tb;
   assign usb_dn0    = 1'b0;
   assign usb_sense0 = 1'b0;
 
+  // connect alert rx/tx to alert_if
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+    assign alert_if[k].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[k];
+    initial begin
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
+          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
+    end
+  end
+
   initial begin
     // Set clk_rst_vifs
     // drive rst_n from clk_if
@@ -245,5 +256,6 @@ module tb;
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
   `include "../autogen/tb__xbar_connect.sv"
+  `include "../autogen/tb__alert_handler_connect.sv"
 
 endmodule

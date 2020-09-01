@@ -22,6 +22,9 @@ package chip_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // include auto-generated alert related parameters
+  `include "autogen/alert_handler_env_pkg__params.sv"
+
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
 
