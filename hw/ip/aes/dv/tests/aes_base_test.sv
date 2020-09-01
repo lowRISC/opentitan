@@ -73,6 +73,5 @@ class aes_base_test extends cip_base_test #(
     cfg.error_types                 = 3'b111;
 
     cfg.config_error_pct            = 0;           // percentage of configuration errors
- `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 endclass : aes_base_test

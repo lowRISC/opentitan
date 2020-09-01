@@ -19,6 +19,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
   bit [3:0] [31:0]    decrypted_text;
   logic [3:0] [31:0]  read_text;
   string              str="";
+  bit                 do_b2b = 0;
 
 
   task body();
@@ -33,12 +34,12 @@ class aes_wake_up_vseq extends aes_base_vseq;
     set_operation(ENCRYPT);
 
     `uvm_info(`gfn, $sformatf(" \n\t ---| WRITING INIT KEY \n\t ----| SHARE0 %02h \n\t ---| SHARE1 %02h ", init_key[0], init_key[1]), UVM_HIGH)
-    write_key(init_key);
+    write_key(init_key, do_b2b);
     cfg.clk_rst_vif.wait_clks(20);
 
     `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_HIGH)
 
-    add_data(plain_text);
+    add_data(plain_text, do_b2b);
 
     cfg.clk_rst_vif.wait_clks(20);
     // poll status register
@@ -47,7 +48,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
                               ral.status.convert2string()), UVM_DEBUG)
 
     csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));
-    read_data(cypher_text);
+    read_data(cypher_text, do_b2b);
     // read output
     `uvm_info(`gfn, $sformatf("\n\t ------|WAIT 0 |-------"), UVM_HIGH)
     cfg.clk_rst_vif.wait_clks(20);
@@ -56,10 +57,10 @@ class aes_wake_up_vseq extends aes_base_vseq;
     set_operation(DECRYPT);
     cfg.clk_rst_vif.wait_clks(20);
     `uvm_info(`gfn, $sformatf("\n\t ---| WRITING INIT KEY \n\t ----| SHARE0 %02h \n\t ---| SHARE1 %02h ", init_key[0], init_key[1]), UVM_HIGH)
-    write_key(init_key);
+    write_key(init_key, do_b2b);
     cfg.clk_rst_vif.wait_clks(20);
     `uvm_info(`gfn, $sformatf("\n\t ---| WRITING CYPHER TEXT"), UVM_HIGH)
-    add_data(cypher_text);
+    add_data(cypher_text, do_b2b);
 
 
     `uvm_info(`gfn, $sformatf("\n\t ---| Polling for data %s", ral.status.convert2string()),
@@ -67,7 +68,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
 
     cfg.clk_rst_vif.wait_clks(20);
     csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));
-    read_data(decrypted_text);
+    read_data(decrypted_text, do_b2b);
     //need scoreboard disable
     foreach(plain_text[i]) begin
       if(plain_text[i] != decrypted_text[i]) begin

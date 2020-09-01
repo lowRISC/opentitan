@@ -13,6 +13,7 @@ class aes_wake_up_test extends aes_base_test;
   endfunction
 
   virtual function void configure_env();
+     cfg.en_scb             = 0;
      cfg.ecb_weight         = 100;
      cfg.cbc_weight         = 0;
      cfg.ctr_weight         = 0;

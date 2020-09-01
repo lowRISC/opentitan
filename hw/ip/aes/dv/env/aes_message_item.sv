@@ -55,6 +55,7 @@ class aes_message_item extends uvm_sequence_item;
   int    cfb_weight           = 10;
   int    ofb_weight           = 10;
   int    ctr_weight           = 10;
+
   // KEYLEN weights
   int    key_128b_weight      = 10;
   int    key_192b_weight      = 10;

@@ -12,6 +12,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // TODO sort knobs into test/SEQUENCE/message/item
 
   // test environment constraints //
+  typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
 
 
     //  Message Knobs //
@@ -76,14 +77,37 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // number of messages to encrypt/decrypt
   rand int     num_messages;
 
+  // TL UL contraints //
+  rand tl_ul_access_e host_resp_speed;
 
-   // constraints
+
+  // constraints
   constraint c_num_messages { num_messages inside {[num_messages_min : num_messages_max] };}
   constraint c_ref_model    { ref_model    dist   { 0 :/ use_c_model_pct,
-                                                    1 :/ (100-use_c_model_pct) }; }
+                                                    1 :/ (100 - use_c_model_pct) }; }
+
 
   function void post_randomize();
     if(use_key_mask) key_mask = 1;
+
+    case(host_resp_speed)
+      VerySlow: begin
+        m_tl_agent_cfg.d_ready_delay_min = 10;
+        m_tl_agent_cfg.d_ready_delay_max = 10;
+      end
+      Slow: begin
+        m_tl_agent_cfg.d_ready_delay_min = 4;
+        m_tl_agent_cfg.d_ready_delay_max = 10;
+      end
+      Fast: begin
+        m_tl_agent_cfg.d_ready_delay_min = 0;
+        m_tl_agent_cfg.d_ready_delay_max = 5;
+      end
+      VeryFast: begin
+        m_tl_agent_cfg.d_ready_delay_min = 0;
+        m_tl_agent_cfg.d_ready_delay_max = 0;
+      end
+    endcase // case (host_resp_speed)
   endfunction
 
 
@@ -95,6 +119,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min) };
     str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max) };
     str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min) };
+    str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name()) };
     str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
          (ref_model==0) ? "C-MODEL" : "OPEN_SSL" ) };
     str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages) };

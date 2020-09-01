@@ -67,6 +67,11 @@
       uvm_test: aes_stress_test
       uvm_test_seq: aes_stress_vseq
     }
+    {
+      name: aes_b2b
+      uvm_test: aes_b2b_test
+      uvm_test_seq: aes_stress_vseq
+    }
   ]
 
   // List of regressions.
@@ -77,7 +82,7 @@
     }
      {
       name: stress
-      tests: ["aes_stress"]
+      tests: ["aes_stress","aes_b2b"]
     }
   ]
 }
