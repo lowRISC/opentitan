@@ -44,7 +44,7 @@ class FtdiSpiInterface : public SpiInterface {
 
     /** FTDI Configuration. This can be made configurable later on if needed.
      * Default value is 1MHz. */
-    int32_t spi_frequency = 1000000;
+    int32_t spi_frequency = 400000;
   };
 
   explicit FtdiSpiInterface(Options options);
