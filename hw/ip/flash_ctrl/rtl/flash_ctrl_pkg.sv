@@ -50,11 +50,11 @@ package flash_ctrl_pkg;
   parameter int TotalPartitionsWidth = $clog2(TotalPartitions);
 
   // The end address in bus words for each kind of partition in each bank
-  parameter logic [PageW-1:0] PartitionEndAddr [0:TotalPartitions-1] =
-    {
+  parameter logic [PageW-1:0] PartitionEndAddr [TotalPartitions] =
+    '{
       PagesPerBank - 1,
       InfosPerBank - 1
-    };
+     };
 
   // flash life cycle / key manager management constants
   // One page for creator seeds
@@ -62,11 +62,14 @@ package flash_ctrl_pkg;
   parameter int NumSeeds = 2;
   parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
-  parameter logic [InfoPageW-1:0] SeedInfoPageSel [0:NumSeeds-1] =
-    {
+  parameter logic [InfoPageW-1:0] SeedInfoPageSel [NumSeeds] =
+    '{
       CreatorInfoPage,
       OwnerInfoPage
-    };
+     };
+
+  // alias for super long reg_pkg typedef
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
 
   // Flash Operations Supported
   typedef enum logic [1:0] {

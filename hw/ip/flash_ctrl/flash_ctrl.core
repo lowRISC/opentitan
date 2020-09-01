@@ -14,7 +14,6 @@ filesets:
       - lowrisc:prim:gf_mult
       - lowrisc:ip:flash_ctrl_pkg
     files:
-      - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_reg_top.sv
       - rtl/flash_ctrl.sv
       - rtl/flash_ctrl_erase.sv
