@@ -1072,8 +1072,9 @@ def main():
                        check=True,
                        cwd=str(SRCTREE_TOP))  # yapf: disable
 
-        # generate chip level xbar TB
-        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv"]
+        # generate chip level xbar and alert_handler TB
+        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
+                    "tb__alert_handler_connect.sv"]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = tpl_path / tpl_fname
@@ -1086,6 +1087,19 @@ def main():
 
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
+
+        # generate chip level alert_handler pkg
+        tpl_fname = 'alert_handler_env_pkg__params.sv.tpl'
+        alert_handler_chip_data_path = tpl_path / tpl_fname
+        template_contents = generate_top(completecfg,
+                                         str(alert_handler_chip_data_path))
+
+        rendered_dir = tpl_path / '../dv/env/autogen'
+        rendered_dir.mkdir(parents=True, exist_ok=True)
+        rendered_path = rendered_dir / 'alert_handler_env_pkg__params.sv'
+
+        with rendered_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(template_contents)
 
 
 if __name__ == "__main__":

@@ -75,6 +75,10 @@ class chip_env extends cip_base_env #(
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
 
+    // disable alert_esc_agent's driver and only use its monitor
+    foreach (LIST_OF_ALERTS[i]) begin
+      cfg.m_alert_agent_cfg[LIST_OF_ALERTS[i]].is_active = 0;
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

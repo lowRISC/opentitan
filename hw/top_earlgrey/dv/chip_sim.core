@@ -21,6 +21,7 @@ filesets:
       - tb/chip_hier_macros.svh: {is_include_file: true}
       - autogen/tb__xbar_connect.sv: {is_include_file: true}
       - autogen/xbar_env_pkg__params.sv: {is_include_file: true}
+      - autogen/tb__alert_handler_connect.sv: {is_include_file: true}
       - tb/tb.sv
     file_type: systemVerilogSource
 

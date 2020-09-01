@@ -669,24 +669,26 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_alert_rsp_seq_nonblocking();
     foreach (cfg.list_of_alerts[i]) begin
-      automatic string alert_name = cfg.list_of_alerts[i];
-      fork
-        begin
-          fork
-            forever begin
-              alert_receiver_alert_rsp_seq ack_seq =
-                  alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
-              `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
-              ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
-            end
-            begin
-              wait(!en_auto_alerts_response || cfg.under_reset);
-              cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
-            end
-          join_any
-          disable fork;
-        end
-      join_none
+      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
+        automatic string alert_name = cfg.list_of_alerts[i];
+        fork
+          begin
+            fork
+              forever begin
+                alert_receiver_alert_rsp_seq ack_seq =
+                    alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
+                `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
+                ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
+              end
+              begin
+                wait(!en_auto_alerts_response || cfg.under_reset);
+                cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+              end
+            join_any
+            disable fork;
+          end
+        join_none
+      end
     end
   endtask
 
