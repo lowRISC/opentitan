@@ -6,12 +6,13 @@
 '''Generate Markdown documentation for the instructions in insns.yml'''
 
 import argparse
+import os
 import sys
-from typing import Dict, List
+from typing import Dict, List, TextIO
 
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
-from shared.insn_yaml import Insn, InsnsFile, load_file
+from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
 from shared.operand import ImmOperandType, Operand
 
 
@@ -240,37 +241,52 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     return ''.join(parts)
 
 
-def render_insns(insns: InsnsFile, heading_level: int) -> str:
+def render_insn_group(group: InsnGroup,
+                      heading_level: int,
+                      out_file: TextIO) -> None:
+    # We don't print the group heading: that's done in the top-level
+    # documentation so it makes it into the TOC.
+
+    out_file.write(group.doc + '\n\n')
+
+    if not group.insns:
+        out_file.write('No instructions in group.\n\n')
+        return
+
+    for insn in group.insns:
+        out_file.write(render_insn(insn, heading_level))
+
+
+def render_insns(insns: InsnsFile,
+                 heading_level: int,
+                 out_dir: str) -> None:
     '''Render documentation for all instructions'''
-    parts = []
-    for group, group_insns in insns.grouped_insns():
-        parts.append('{} {}\n\n'.format('#' * heading_level, group.title))
-        parts.append(group.doc)
-        parts.append('\n\n')
-
-        if not group_insns:
-            parts.append('No instructions in group.\n\n')
-            continue
-
-        for insn in group_insns:
-            parts.append(render_insn(insn, heading_level + 1))
-
-    return ''.join(parts)
+    for group in insns.groups.groups:
+        group_path = os.path.join(out_dir, group.key + '.md')
+        with open(group_path, 'w') as group_file:
+            render_insn_group(group, heading_level, group_file)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('yaml_file')
+    parser.add_argument('out_dir')
 
     args = parser.parse_args()
 
     try:
         insns = load_file(args.yaml_file)
     except RuntimeError as err:
-        sys.stderr.write('{}\n'.format(err))
+        print(err, file=sys.stderr)
         return 1
 
-    print(render_insns(insns, 2))
+    try:
+        os.makedirs(args.out_dir, exist_ok=True)
+    except OSError as err:
+        print('Failed to create output directory {!r}: {}.'
+              .format(args.out_dir, err))
+
+    render_insns(insns, 3, args.out_dir)
     return 0
 
 
