@@ -48,8 +48,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.prog_en_0, data, region_cfg.program_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.erase_en_0, data, region_cfg.erase_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.partition_0, data, region_cfg.partition);
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages);
     csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
     csr_wr(.csr(csr), .value(data));
   endtask

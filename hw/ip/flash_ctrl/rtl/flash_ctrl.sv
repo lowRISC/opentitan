@@ -435,6 +435,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     endcase // unique case (op_type)
   end
 
+  //////////////////////////////////////
+  // Data partition protection configuration
+  //////////////////////////////////////
   // extra region is the default region
   flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs;
   assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
@@ -446,10 +449,21 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
   assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
-  // we are allowed to set default accessibility of data partitions
-  // however info partitions default to inaccessible
-  assign region_cfgs[MpRegions].partition.q = FlashPartData;
 
+  //////////////////////////////////////
+  // Info partition protection configuration
+  //////////////////////////////////////
+  info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] info_page_cfgs;
+
+  // TBD this code below should really be templated
+  for(genvar i = 0; i < InfosPerBank; i++) begin : gen_info_pg_assignments
+    assign info_page_cfgs[0][i] = reg2hw.bank0_info_page_cfg[i];
+    assign info_page_cfgs[1][i] = reg2hw.bank1_info_page_cfg[i];
+  end
+
+  //////////////////////////////////////
+  // flash memory protection
+  //////////////////////////////////////
   // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
   assign flash_part_sel = op_part;
@@ -464,9 +478,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     // arbiter interface selection
     .if_sel_i(if_sel),
 
-    // sw configuration
+    // sw configuration for data partition
     .region_cfgs_i(region_cfgs),
     .bank_cfgs_i(reg2hw.mp_bank_cfg),
+
+    // sw configuration for info partition
+    .info_page_cfgs_i(info_page_cfgs),
 
     // read / prog / erase controls
     .req_i(flash_req),
