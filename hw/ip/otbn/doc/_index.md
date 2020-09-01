@@ -339,7 +339,11 @@ All instructions are a fixed 32b in length and must be aligned on a four byte-bo
 </div>
 
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
-{{< otbn_isa >}}
+## Base Instruction Subset
+{{< otbn_isa base >}}
+
+## Big Number Instruction Subset
+{{< otbn_isa bignum >}}
 
 ## Pseudo-Code Functions for BN Instructions
 

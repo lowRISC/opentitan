@@ -305,9 +305,8 @@ def generate_otbn_isa():
     script = otbn_dir / 'util/yaml_to_doc.py'
     yaml_file = otbn_dir / 'data/insns.yml'
 
-    out_path = config['outdir-generated'].joinpath('otbn-isa.md')
-    with open(str(out_path), 'w') as handle:
-        subprocess.run([str(script), str(yaml_file)], stdout=handle, check=True)
+    out_dir = config['outdir-generated'].joinpath('otbn-isa')
+    subprocess.run([str(script), str(yaml_file), str(out_dir)], check=True)
 
 
 def hugo_match_version(hugo_bin_path, version):
