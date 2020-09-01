@@ -23,7 +23,7 @@ class ADDI(RV32RegImm):
     insn = insn_for_mnemonic('addi', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 + self.imm
 
 
@@ -61,7 +61,7 @@ class SLLI(RV32ImmShift):
     insn = insn_for_mnemonic('slli', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 << self.shamt
 
 
@@ -78,7 +78,7 @@ class SRLI(RV32ImmShift):
     insn = insn_for_mnemonic('srli', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 >> self.shamt
 
 
@@ -101,7 +101,7 @@ class SRAI(RV32ImmShift):
     insn = insn_for_mnemonic('srai', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        usrc = model.state.intreg[self.grs1].unsigned()
+        usrc = model.state.intreg[self.grs].unsigned()
         shift = self.shamt
         if usrc >> 31:
             to_clear = 32 - shift
@@ -125,7 +125,7 @@ class ANDI(RV32RegImm):
     insn = insn_for_mnemonic('andi', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 & self.imm
 
 
@@ -142,7 +142,7 @@ class ORI(RV32RegImm):
     insn = insn_for_mnemonic('ori', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 | self.imm
 
 
@@ -159,7 +159,7 @@ class XORI(RV32RegImm):
     insn = insn_for_mnemonic('xori', 3)
 
     def execute(self, model: OTBNModel) -> None:
-        val1 = model.state.intreg[self.grs1]
+        val1 = model.state.intreg[self.grs]
         model.state.intreg[self.grd] = val1 | self.imm
 
 
@@ -170,10 +170,10 @@ class LW(OTBNInsn):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
         self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
+        self.grs = op_vals['grs']
 
     def execute(self, model: OTBNModel) -> None:
-        addr = (model.state.intreg[self.grs1] + self.offset).unsigned()
+        addr = (model.state.intreg[self.grs] + self.offset).unsigned()
         data = model.state.memory.lw(addr)
         model.state.intreg[self.grd] = data
 
@@ -244,12 +244,12 @@ class JALR(OTBNInsn):
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
+        self.grs = op_vals['grs']
         self.offset = op_vals['offset']
 
     def execute(self, model: OTBNModel) -> None:
         model.state.intreg[self.grd] = model.state.pc + 4
-        model.state.pc = model.state.intreg[self.grs1] + self.offset
+        model.state.pc = model.state.intreg[self.grs] + self.offset
 
 
 class CSRRS(OTBNInsn):
@@ -720,19 +720,19 @@ class BNLID(OTBNInsn):
         self.grd = op_vals['grd']
         self.grd_inc = op_vals['grd_inc']
         self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
-        self.grs1_inc = op_vals['grs1_inc']
+        self.grs = op_vals['grs']
+        self.grs_inc = op_vals['grs_inc']
 
     def execute(self, model: OTBNModel) -> None:
-        addr = int(model.state.intreg[self.grs1] + int(self.offset))
+        addr = int(model.state.intreg[self.grs] + int(self.offset))
         wrd = int(model.state.intreg[self.grd])
         word = model.load_wlen_word_from_memory(addr)
         model.state.wreg[wrd] = word
 
         if self.grd_inc:
             model.state.intreg[self.grd] += 1
-        if self.grs1_inc:
-            model.state.intreg[self.grs1] += 32
+        if self.grs_inc:
+            model.state.intreg[self.grs] += 32
 
 
 class BNSID(OTBNInsn):

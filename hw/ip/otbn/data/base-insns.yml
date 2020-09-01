@@ -22,12 +22,12 @@
 - mnemonic: addi
   rv32i: true
   synopsis: Add Immediate
-  operands: [grd, grs1, imm]
+  operands: [grd, grs, imm]
   encoding:
     scheme: I
     mapping:
       imm: imm
-      rs1: grs1
+      rs1: grs
       funct3: b000
       rd: grd
       opcode: b00100
@@ -77,18 +77,17 @@
 - mnemonic: slli
   rv32i: true
   synopsis: Logical left shift with Immediate
-  operands:
+  operands: &shifti-operands
     - grd
-    - grs1
-    - &shamt-operand
-      name: shamt
+    - grs
+    - name: shamt
       type: uimm
   encoding:
     scheme: Is
     mapping:
       arithmetic: b0
       shamt: shamt
-      rs1: grs1
+      rs1: grs
       funct3: b001
       rd: grd
       opcode: b00100
@@ -110,16 +109,13 @@
 - mnemonic: srli
   rv32i: true
   synopsis: Logical right shift with Immediate
-  operands:
-    - grd
-    - grs1
-    - *shamt-operand
+  operands: *shifti-operands
   encoding:
     scheme: Is
     mapping:
       arithmetic: b0
       shamt: shamt
-      rs1: grs1
+      rs1: grs
       funct3: b101
       rd: grd
       opcode: b00100
@@ -141,16 +137,13 @@
 - mnemonic: srai
   rv32i: true
   synopsis: Arithmetic right shift with Immediate
-  operands:
-    - grd
-    - grs1
-    - *shamt-operand
+  operands: *shifti-operands
   encoding:
     scheme: Is
     mapping:
       arithmetic: b1
       shamt: shamt
-      rs1: grs1
+      rs1: grs
       funct3: b101
       rd: grd
       opcode: b00100
@@ -172,12 +165,12 @@
 - mnemonic: andi
   rv32i: true
   synopsis: Bitwise AND with Immediate
-  operands: [grd, grs1, imm]
+  operands: [grd, grs, imm]
   encoding:
     scheme: I
     mapping:
       imm: imm
-      rs1: grs1
+      rs1: grs
       funct3: b111
       rd: grd
       opcode: b00100
@@ -199,12 +192,12 @@
 - mnemonic: ori
   rv32i: true
   synopsis: Bitwise OR with Immediate
-  operands: [grd, grs1, imm]
+  operands: [grd, grs, imm]
   encoding:
     scheme: I
     mapping:
       imm: imm
-      rs1: grs1
+      rs1: grs
       funct3: b110
       rd: grd
       opcode: b00100
@@ -226,12 +219,12 @@
 - mnemonic: xori
   rv32i: true
   synopsis: Bitwise XOR with Immediate
-  operands: [grd, grs1, imm]
+  operands: [grd, grs, imm]
   encoding:
     scheme: I
     mapping:
       imm: imm
-      rs1: grs1
+      rs1: grs
       funct3: b100
       rd: grd
       opcode: b00100
@@ -239,23 +232,23 @@
 - mnemonic: lw
   rv32i: true
   synopsis: Load Word
-  operands: [grd, offset, grs1]
-  syntax: <grd>, <offset>(<grs1>)
+  operands: [grd, offset, grs]
+  syntax: <grd>, <offset>(<grs>)
   encoding:
     scheme: I
     mapping:
       imm: offset
-      rs1: grs1
+      rs1: grs
       funct3: b010
       rd: grd
       opcode: b00000
   doc: |
-    Load a 32b word from address `<offset> + <grs1>` in data memory, writing the result to `<grd>`.
+    Load a 32b word from address `<offset> + <grs>` in data memory, writing the result to `<grd>`.
     Unaligned loads are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   lsu:
     type: mem-load
-    target: [offset, grs1]
+    target: [offset, grs]
     bytes: 4
 
 - mnemonic: sw
@@ -335,20 +328,20 @@
 - mnemonic: jalr
   rv32i: true
   synopsis: Jump And Link Register
-  operands: [grd, grs1, offset]
+  operands: [grd, grs, offset]
   straight-line: false
   trailing-doc: |
-    The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
+    The JALR instruction has the same behavior as in RV32I, jumping by `<grs> + <offset>` and writing `PC+4` as a link address to the destination register.
     OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
     To return from a subroutine, use `jalr x0, x1, 0`.
     This pops a link address from the call stack and branches to it.
-    To call a subroutine through a function pointer, use `jalr x1, <grs1>, 0`.
-    This jumps to the address in `<grs1>` and pushes the link address onto the call stack.
+    To call a subroutine through a function pointer, use `jalr x1, <grs>, 0`.
+    This jumps to the address in `<grs>` and pushes the link address onto the call stack.
   encoding:
     scheme: I
     mapping:
       imm: offset
-      rs1: grs1
+      rs1: grs
       funct3: b000
       rd: grd
       opcode: b11001

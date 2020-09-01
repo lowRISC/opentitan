@@ -737,7 +737,7 @@
   operands:
     - name: grd
       doc: Name of the GPR referencing the destination WDR
-    - name: grs1
+    - name: grs
       doc: |
         Name of the GPR containing the memory byte address.
         The value contained in the referenced GPR must be WLEN-aligned.
@@ -746,38 +746,38 @@
         Offset value.
         Must be WLEN-aligned.
       type: simm<<5
-    - name: grs1_inc
+    - name: grs_inc
       type: option(++)
       doc: |
-        Increment the value in `<grs1>` by WLEN/8 (one word).
+        Increment the value in `<grs>` by WLEN/8 (one word).
         Cannot be specified together with `grd_inc`.
     - name: grd_inc
       type: option(++)
       doc: |
         Increment the value in `<grd>` by one.
-        Cannot be specified together with `grs1_inc`.
+        Cannot be specified together with `grs_inc`.
   syntax: |
-    <grd>[<grd_inc>], <offset>(<grs1>[<grs1_inc>])
+    <grd>[<grd_inc>], <offset>(<grs>[<grs_inc>])
   doc: |
-    Calculates a byte memory address by adding the offset to the value in the GPR `grs1`.
+    Calculates a byte memory address by adding the offset to the value in the GPR `grs`.
     The value from this memory address is then copied into the WDR pointed to by the value in GPR `grd`.
 
-    After the operation, either the value in the GPR `grs1`, or the value in `grd` can be optionally incremented.
+    After the operation, either the value in the GPR `grs`, or the value in `grd` can be optionally incremented.
 
-    - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
+    - If `grs_inc` is set, the value in `grs` is incremented by the value WLEN/8 (one word).
     - If `grd_inc` is set, the value in `grd` is incremented by the value 1.
 
     The memory address must be aligned to WLEN bytes.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   decode: |
     rd = UInt(grd)
-    rs1 = UInt(grs1)
+    rs1 = UInt(grs)
     offset = UInt(offset)
   operation: |
     mem_addr = GPR[rs1] + offset
     wdr_dest = GPR[rd]
 
-    assert not (grs1_inc and grd_inc)  # prevented in encoding
+    assert not (grs_inc and grd_inc)  # prevented in encoding
     if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
         raise BadDataAddr()
 
@@ -785,21 +785,21 @@
 
     WDR[wdr_dest] = LoadWlenWordFromMemory(mem_index)
 
-    if grs1_inc:
+    if grs_inc:
         GPR[rs1] = GPR[rs1] + (WLEN / 8)
     if grd_inc:
         GPR[rd] = GPR[rd] + 1
   lsu:
     type: mem-load
-    target: [offset, grs1]
+    target: [offset, grs]
     bytes: 32
   encoding:
     scheme: bnxid
     mapping:
       imm: offset
-      spp: grs1_inc
+      spp: grs_inc
       dpp: grd_inc
-      rs: grs1
+      rs: grs
       funct3: b100
       rd: grd
 

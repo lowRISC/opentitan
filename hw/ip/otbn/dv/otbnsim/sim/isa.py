@@ -96,7 +96,7 @@ class RV32RegImm(OTBNInsn):
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
+        self.grs = op_vals['grs']
         self.imm = op_vals['imm']
 
 
@@ -105,7 +105,7 @@ class RV32ImmShift(OTBNInsn):
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
+        self.grs = op_vals['grs']
         self.shamt = op_vals['shamt']
 
 
