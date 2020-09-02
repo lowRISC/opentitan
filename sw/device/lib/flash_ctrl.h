@@ -31,9 +31,12 @@ typedef enum partition_type {
 
 /**
  * Memory protection configuration options.
+ * Data partitions and Info partitions are handled differently.
  */
 typedef struct mp_region {
-  /** Which region to program. */
+  /** Which region to program for data partition.
+      Which page to program for info partition.
+   */
   uint32_t num;
   /** Region offset. */
   uint32_t base;
