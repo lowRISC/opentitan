@@ -215,9 +215,10 @@ module otbn_decoder
       //////////////////
 
       InsnOpcodeBaseLoad: begin
-        insn_subset = InsnSubsetBase;
-        rf_ren_a    = 1'b1;
-        ld_insn     = 1'b1;
+        insn_subset  = InsnSubsetBase;
+        ld_insn      = 1'b1;
+        rf_ren_a     = 1'b1;
+        rf_we        = 1'b1;
 
         if (insn[14:12] != 3'b010) begin
           illegal_insn = 1'b1;
@@ -226,9 +227,9 @@ module otbn_decoder
 
       InsnOpcodeBaseStore: begin
         insn_subset = InsnSubsetBase;
+        st_insn     = 1'b1;
         rf_ren_a    = 1'b1;
         rf_ren_b    = 1'b1;
-        st_insn     = 1'b1;
 
         if (insn[14:12] != 3'b010) begin
           illegal_insn = 1'b1;
