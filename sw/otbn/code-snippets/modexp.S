@@ -68,13 +68,13 @@ BN.XOR w31, w31, w31
 ADDI x3, x0, 0
 BN.LID x3, 0(x0)
 LW x16, 0(x0)
-LW x17, 1(x0)
-LW x18, 2(x0)
-LW x19, 3(x0)
-LW x20, 4(x0)
-LW x21, 5(x0)
-LW x22, 6(x0)
-LW x23, 7(x0)
+LW x17, 4(x0)
+LW x18, 8(x0)
+LW x19, 12(x0)
+LW x20, 16(x0)
+LW x21, 20(x0)
+LW x22, 24(x0)
+LW x23, 28(x0)
 BN.XOR w3, w3, w3
 SLLI x24, x22, 8
 ADDI x8, x0, 5
@@ -212,7 +212,7 @@ BN.ADDC w28, w26, w31, FG1
 BN.ADDC w24, w29, w28, FG1
 BN.MOVR x10++, x13
 LW x16, 0(x0)
-LW x19, 3(x0)
+LW x19, 12(x0)
 ADDI x8, x0, 4
 ADDI x10, x0, 4
 ADDI x12, x0, 30
@@ -223,21 +223,21 @@ JALR x0, x1, 0
 
 setupPtrs:
 LW x16, 0(x0)
-LW x17, 1(x0)
-LW x18, 2(x0)
-LW x19, 3(x0)
-LW x20, 4(x0)
-LW x21, 5(x0)
-LW x22, 6(x0)
-LW x23, 7(x0)
+LW x17, 4(x0)
+LW x18, 8(x0)
+LW x19, 12(x0)
+LW x20, 16(x0)
+LW x21, 20(x0)
+LW x22, 24(x0)
+LW x23, 28(x0)
 LW x24, 0(x0)
-LW x25, 1(x0)
-LW x26, 2(x0)
-LW x27, 3(x0)
-LW x28, 4(x0)
-LW x29, 5(x0)
-LW x30, 6(x0)
-LW x31, 7(x0)
+LW x25, 4(x0)
+LW x26, 8(x0)
+LW x27, 12(x0)
+LW x28, 16(x0)
+LW x29, 20(x0)
+LW x30, 24(x0)
+LW x31, 28(x0)
 BN.MOV w1, w31
 ADDI x8, x0, 4
 ADDI x9, x0, 3
@@ -333,22 +333,22 @@ ADDI x3, x0, 0
 BN.LID x3, 0(x0)
 JAL x1, setupPtrs
 JAL x1, mul1_exp
-JALR x0, x1, 0
+ECALL
 
 sqrx_exp:
-LW x16, 8(x0)
-LW x17, 9(x0)
-LW x18, 10(x0)
-LW x19, 11(x0)
-LW x20, 12(x0)
-LW x21, 13(x0)
-LW x22, 14(x0)
-LW x23, 15(x0)
+LW x16, 24(x0)
+LW x17, 36(x0)
+LW x18, 40(x0)
+LW x19, 44(x0)
+LW x20, 48(x0)
+LW x21, 52(x0)
+LW x22, 56(x0)
+LW x23, 60(x0)
 BN.LID x9, 0(x17)
 BN.MOV w2, w31
 LOOP x30, 1
 BN.MOVR x10++, x11
-LW x10, 2(x0)
+LW x10, 8(x0)
 LOOP x30, 8
 BN.LID x11, 0(x20++)
 ADDI x5, x20, 0
@@ -365,27 +365,27 @@ BN.SID x8, 0(x21++)
 ADDI x8, x8, 1
 ADDI x8, x0, 4
 ADDI x10, x0, 4
-LW x12, 4(x0)
-LW x13, 5(x0)
+LW x12, 16(x0)
+LW x13, 20(x0)
 JALR x0, x1, 0
 
 mulx_exp:
-LW x16, 16(x0)
-LW x17, 17(x0)
-LW x18, 18(x0)
-LW x19, 19(x0)
-LW x20, 20(x0)
-LW x21, 21(x0)
-LW x22, 22(x0)
-LW x23, 23(x0)
+LW x16, 64(x0)
+LW x17, 68(x0)
+LW x18, 72(x0)
+LW x19, 76(x0)
+LW x20, 80(x0)
+LW x21, 84(x0)
+LW x22, 88(x0)
+LW x23, 92(x0)
 BN.LID x9, 0(x17)
 BN.MOV w2, w31
 LOOP x30, 1
 BN.MOVR x10++, x11
 ADDI x8, x0, 4
 ADDI x10, x0, 4
-LW x12, 4(x0)
-LW x13, 5(x0)
+LW x12, 16(x0)
+LW x13, 20(x0)
 LOOP x30, 8
 BN.LID x11, 0(x20++)
 ADDI x5, x20, 0
@@ -397,8 +397,8 @@ ADDI x16, x6, 0
 ADDI x19, x7, 0
 ADDI x8, x0, 4
 ADDI x10, x0, 4
-LW x12, 4(x0)
-LW x13, 5(x0)
+LW x12, 16(x0)
+LW x13, 20(x0)
 JALR x0, x1, 0
 
 selOutOrC:
@@ -439,14 +439,14 @@ JALR x0, x1, 0
 
 modexp:
 JAL x1, mulx
-LW x16, 24(x0)
-LW x17, 25(x0)
-LW x18, 26(x0)
-LW x19, 27(x0)
-LW x20, 28(x0)
-LW x21, 29(x0)
-LW x22, 30(x0)
-LW x23, 31(x0)
+LW x16, 96(x0)
+LW x17, 100(x0)
+LW x18, 104(x0)
+LW x19, 108(x0)
+LW x20, 112(x0)
+LW x21, 116(x0)
+LW x22, 120(x0)
+LW x23, 124(x0)
 BN.SUB w2, w2, w2
 LOOP x30, 4
 ADDI x0, x0, 0
@@ -458,14 +458,14 @@ SLLI x24, x22, 8
 LOOP x24, 19
 JAL x1, sqrx_exp
 JAL x1, mulx_exp
-LW x16, 24(x0)
-LW x17, 25(x0)
-LW x18, 26(x0)
-LW x19, 27(x0)
-LW x20, 28(x0)
-LW x21, 29(x0)
-LW x22, 30(x0)
-LW x23, 31(x0)
+LW x16, 96(x0)
+LW x17, 100(x0)
+LW x18, 104(x0)
+LW x19, 108(x0)
+LW x20, 112(x0)
+LW x21, 116(x0)
+LW x22, 120(x0)
+LW x23, 124(x0)
 BN.WSRRW w2, 1, w2
 BN.ADD w2, w2, w2
 LOOP x30, 4
@@ -477,47 +477,47 @@ JAL x1, selOutOrC
 ADDI x0, x0, 0
 ADDI x3, x0, 0
 BN.LID x3, 96(x0)
-LW x16, 24(x0)
-LW x17, 25(x0)
-LW x18, 26(x0)
-LW x19, 27(x0)
-LW x20, 28(x0)
-LW x21, 29(x0)
-LW x22, 30(x0)
-LW x23, 31(x0)
+LW x16, 96(x0)
+LW x17, 100(x0)
+LW x18, 104(x0)
+LW x19, 108(x0)
+LW x20, 112(x0)
+LW x21, 116(x0)
+LW x22, 120(x0)
+LW x23, 124(x0)
 JAL x1, mul1_exp
-JALR x0, x1, 0
+ECALL
 
 modload:
 BN.XOR w31, w31, w31
 ADDI x3, x0, 0
 BN.LID x3, 0(x0)
 LW x16, 0(x0)
-LW x17, 1(x0)
-LW x18, 2(x0)
-LW x19, 3(x0)
-LW x20, 4(x0)
-LW x21, 5(x0)
-LW x22, 6(x0)
-LW x23, 7(x0)
+LW x17, 4(x0)
+LW x18, 8(x0)
+LW x19, 12(x0)
+LW x20, 16(x0)
+LW x21, 20(x0)
+LW x22, 24(x0)
+LW x23, 28(x0)
 LW x24, 0(x0)
-LW x25, 1(x0)
-LW x26, 2(x0)
-LW x27, 3(x0)
-LW x28, 4(x0)
-LW x29, 5(x0)
-LW x30, 6(x0)
-LW x31, 7(x0)
+LW x25, 4(x0)
+LW x26, 8(x0)
+LW x27, 12(x0)
+LW x28, 16(x0)
+LW x29, 20(x0)
+LW x30, 24(x0)
+LW x31, 28(x0)
 ADDI x8, x0, 28
 ADDI x9, x0, 29
-LW x10, 2(x0)
-LW x11, 3(x0)
-LW x12, 4(x0)
-LW x13, 5(x0)
-LW x14, 6(x0)
-LW x15, 7(x0)
+LW x10, 8(x0)
+LW x11, 12(x0)
+LW x12, 16(x0)
+LW x13, 20(x0)
+LW x14, 24(x0)
+LW x15, 28(x0)
 BN.LID x8, 0(x16)
 JAL x1, d0inv
 BN.SID x9, 0(x17)
 JAL x1, computeRR
-JALR x0, x1, 0
+ECALL
