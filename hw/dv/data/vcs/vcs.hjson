@@ -25,14 +25,19 @@
                // and final value of the selection input at the end of a simulation timestep.
                // See https://github.com/lowRISC/ibex/issues/845.
                "-xlrm uniq_prior_final",
-               // Force DPI-C compilation in C99 mode
-               "-CFLAGS \"--std=c99\"",
+               // Force DPI-C compilation in C99 mode. The -fno-extended-identifiers flag tells g++
+               // not to worry about unicode. For some bizarre reason, the VCS DPI code contains
+               // preprocessor macros with smart quotes, which causes GCC 10.2 and later to choke
+               // otherwise. The double-escaped quotes are because this needs to go inside a string
+               // that gets passed to Make (stripping one level of quotes), and then needs to
+               // result in an argument with an embedded space (the other one).
+               "-CFLAGS \\\"--std=c99 -fno-extended-identifiers\\\"",
                // Without this magic LDFLAGS argument below, we get compile time errors with
                // VCS on Google Linux machines that look like this:
                // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
                // .../libvcsnew.so: undefined reference to `snpsCheckStrdupFunc'
                // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
-               "-LDFLAGS \"-Wl,--no-as-needed\"",
+               "-LDFLAGS -Wl,--no-as-needed",
                // This option enables the following: (needed for uvm_hdl_*)
                //  - Read capability on registers, variables, and nets
                //  - Write (deposit) capability on registers and variables
