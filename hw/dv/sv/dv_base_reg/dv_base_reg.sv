@@ -112,7 +112,12 @@ class dv_base_reg extends uvm_reg;
   endfunction
 
   function bit get_shadow_storage_err();
-    return (~shadowed_val != committed_val);
+    uvm_reg_data_t mask = (1'b1 << (get_msb_pos() + 1)) - 1;
+    uvm_reg_data_t shadowed_val_temp = (~shadowed_val) & mask;
+    uvm_reg_data_t committed_val_temp = committed_val & mask;
+    `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
+                              committed_val_temp), UVM_DEBUG)
+    return shadowed_val_temp != committed_val_temp;
   endfunction
 
   virtual function void clear_shadow_update_err();
@@ -145,7 +150,7 @@ class dv_base_reg extends uvm_reg;
           return;
         end
         committed_val = staged_shadow_val;
-        shadowed_val = ~committed_val;
+        shadowed_val  = ~committed_val;
       end
     end
     if (is_enable_reg()) begin
@@ -214,16 +219,37 @@ class dv_base_reg extends uvm_reg;
                      input uvm_object        extension = null,
                      input string            fname = "",
                      input int               lineno = 0);
-    if (kind == "BkdrRegPathRtlShadow") committed_val = value;
-    else if (kind == "BkdrRegPathRtlCommitted") shadowed_val = value;
+    if (kind == "BkdrRegPathRtlShadow") shadowed_val = value;
+    else if (kind == "BkdrRegPathRtlCommitted") committed_val = value;
     super.poke(status, value, kind, parent, extension, fname, lineno);
   endtask
+
+  // callback function to update shadowed values according to specific design
+  // should only be called after post-write
+  virtual function void update_shadowed_val(uvm_reg_data_t val, bit do_predict = 1);
+    if (shadow_wr_staged) begin
+      // update value after first write
+      staged_shadow_val = val;
+    end else begin
+      // update value after second write
+      if (staged_shadow_val != val) begin
+        shadow_update_err = 1;
+      end else begin
+        shadow_update_err = 0;
+        committed_val     = staged_shadow_val;
+        shadowed_val      = ~committed_val;
+      end
+    end
+    if (do_predict) void'(predict(val));
+  endfunction
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     if (is_shadowed) begin
       shadow_update_err = 0;
       shadow_wr_staged  = 0;
+      committed_val     = get_mirrored_value();
+      shadowed_val      = ~committed_val;
       // in case reset is issued during shadowed writes
       void'(atomic_shadow_wr.try_get(1));
       void'(atomic_en_shadow_wr.try_get(1));

@@ -49,12 +49,17 @@ interface alert_esc_if(input clk, input rst_n);
   endclocking
 
   task automatic wait_ack_complete();
-    while (alert_rx.ack_p !== 1'b0) @(monitor_cb);
+    while (alert_tx.alert_p === 1'b1) @(monitor_cb);
+    while (alert_rx.ack_p === 1'b1) @(monitor_cb);
   endtask : wait_ack_complete
 
   task automatic wait_esc_complete();
     while (esc_tx.esc_p === 1'b1 && esc_tx.esc_n === 1'b0) @(monitor_cb);
   endtask : wait_esc_complete
+
+  function automatic bit get_alert();
+    get_alert = (alert_tx.alert_p === 1'b1 && alert_tx.alert_n === 1'b0);
+  endfunction : get_alert
 
   assign alert_tx = (if_mode == dv_utils_pkg::Host && is_alert)    ? alert_tx_int : 'z;
   assign alert_rx = (if_mode == dv_utils_pkg::Device && is_alert)  ? alert_rx_int : 'z;
