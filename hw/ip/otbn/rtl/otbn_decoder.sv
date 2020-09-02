@@ -66,6 +66,8 @@ module otbn_decoder
   op_a_sel_e  alu_op_a_mux_sel;    // operand a selection: reg value, PC, immediate or zero
   op_b_sel_e  alu_op_b_mux_sel;    // operand b selection: reg value or immediate
 
+  comparison_op_e comparison_operator;
+
   logic rf_ren_a;
   logic rf_ren_b;
 
@@ -89,15 +91,19 @@ module otbn_decoder
   logic ecall_insn;
   logic ld_insn;
   logic st_insn;
+  logic branch_insn;
+  logic jump_insn;
 
   // Reduced main ALU immediate MUX for Operand B
   logic [31:0] imm_b;
   always_comb begin : immediate_b_mux
     unique case (imm_b_mux_sel)
-      ImmBI:         imm_b = imm_i_type;
-      ImmBS:         imm_b = imm_s_type;
-      ImmBU:         imm_b = imm_u_type;
-      default:       imm_b = 32'h4;
+      ImmBI:   imm_b = imm_i_type;
+      ImmBS:   imm_b = imm_s_type;
+      ImmBU:   imm_b = imm_u_type;
+      ImmBB:   imm_b = imm_b_type;
+      ImmBJ:   imm_b = imm_j_type;
+      default: imm_b = imm_i_type;
     endcase
   end
 
@@ -112,15 +118,18 @@ module otbn_decoder
   };
 
   assign insn_dec_ctrl_o = '{
-    subset:       insn_subset,
-    op_a_sel:     alu_op_a_mux_sel,
-    op_b_sel:     alu_op_b_mux_sel,
-    alu_op:       alu_operator,
-    rf_we:        rf_we,
-    rf_wdata_sel: rf_wdata_sel,
-    ecall_insn:   ecall_insn,
-    ld_insn:      ld_insn,
-    st_insn:      st_insn
+    subset:        insn_subset,
+    op_a_sel:      alu_op_a_mux_sel,
+    op_b_sel:      alu_op_b_mux_sel,
+    alu_op:        alu_operator,
+    comparison_op: comparison_operator,
+    rf_we:         rf_we,
+    rf_wdata_sel:  rf_wdata_sel,
+    ecall_insn:    ecall_insn,
+    ld_insn:       ld_insn,
+    st_insn:       st_insn,
+    branch_insn:   branch_insn,
+    jump_insn:     jump_insn
   };
 
   /////////////
@@ -137,6 +146,8 @@ module otbn_decoder
     ecall_insn            = 1'b0;
     ld_insn               = 1'b0;
     st_insn               = 1'b0;
+    branch_insn           = 1'b0;
+    jump_insn             = 1'b0;
 
     opcode                = insn_opcode_e'(insn[6:0]);
 
@@ -219,6 +230,7 @@ module otbn_decoder
         ld_insn      = 1'b1;
         rf_ren_a     = 1'b1;
         rf_we        = 1'b1;
+        rf_wdata_sel = RfWdSelLsu;
 
         if (insn[14:12] != 3'b010) begin
           illegal_insn = 1'b1;
@@ -232,6 +244,41 @@ module otbn_decoder
         rf_ren_b    = 1'b1;
 
         if (insn[14:12] != 3'b010) begin
+          illegal_insn = 1'b1;
+        end
+      end
+
+      /////////////////
+      // Branch/Jump //
+      /////////////////
+
+      InsnOpcodeBaseBranch: begin
+        insn_subset = InsnSubsetBase;
+        branch_insn = 1'b1;
+        rf_ren_a    = 1'b1;
+        rf_ren_b    = 1'b1;
+
+        // Only EQ & NE comparisons allowed
+        if (insn[14:13] != 2'b00) begin
+          illegal_insn = 1'b1;
+        end
+      end
+
+      InsnOpcodeBaseJal: begin
+        insn_subset  = InsnSubsetBase;
+        jump_insn    = 1'b1;
+        rf_we        = 1'b1;
+        rf_wdata_sel = RfWdSelNextPc;
+      end
+
+      InsnOpcodeBaseJalr: begin
+        insn_subset  = InsnSubsetBase;
+        jump_insn    = 1'b1;
+        rf_ren_a     = 1'b1;
+        rf_we        = 1'b1;
+        rf_wdata_sel = RfWdSelNextPc;
+
+        if (insn[14:12] != 3'b000) begin
           illegal_insn = 1'b1;
         end
       end
@@ -278,14 +325,15 @@ module otbn_decoder
   /////////////////////////////
 
   always_comb begin
-    alu_operator     = AluOpAdd;
-    alu_op_a_mux_sel = OpASelImmediate;
-    alu_op_b_mux_sel = OpBSelImmediate;
+    alu_operator        = AluOpAdd;
+    comparison_operator = ComparisonOpEq;
+    alu_op_a_mux_sel    = OpASelImmediate;
+    alu_op_b_mux_sel    = OpBSelImmediate;
 
-    imm_a_mux_sel    = ImmAZero;
-    imm_b_mux_sel    = ImmBI;
+    imm_a_mux_sel       = ImmAZero;
+    imm_b_mux_sel       = ImmBI;
 
-    opcode_alu         = insn_opcode_e'(insn_alu[6:0]);
+    opcode_alu          = insn_opcode_e'(insn_alu[6:0]);
 
     unique case (opcode_alu)
       /////////
@@ -370,6 +418,32 @@ module otbn_decoder
         alu_op_b_mux_sel = OpBSelImmediate;
         alu_operator     = AluOpAdd;
         imm_b_mux_sel    = ImmBS;
+      end
+
+      /////////////////
+      // Branch/Jump //
+      /////////////////
+
+      InsnOpcodeBaseBranch: begin
+        alu_op_a_mux_sel    = OpASelCurrPc;
+        alu_op_b_mux_sel    = OpBSelImmediate;
+        alu_operator        = AluOpAdd;
+        imm_b_mux_sel       = ImmBB;
+        comparison_operator = insn_alu[12] ? ComparisonOpNeq : ComparisonOpEq;
+      end
+
+      InsnOpcodeBaseJal: begin
+        alu_op_a_mux_sel = OpASelCurrPc;
+        alu_op_b_mux_sel = OpBSelImmediate;
+        alu_operator     = AluOpAdd;
+        imm_b_mux_sel    = ImmBJ;
+      end
+
+      InsnOpcodeBaseJalr: begin
+        alu_op_a_mux_sel = OpASelRegister;
+        alu_op_b_mux_sel = OpBSelImmediate;
+        alu_operator     = AluOpAdd;
+        imm_b_mux_sel    = ImmBI;
       end
 
       /////////////

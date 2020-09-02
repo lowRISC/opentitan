@@ -111,8 +111,10 @@ package otbn_pkg;
   } imm_b_sel_e;
 
   // Regfile write data selection
-  typedef enum logic {
-    RfWdSelEx
+  typedef enum logic [1:0] {
+    RfWdSelEx,
+    RfWdSelNextPc,
+    RfWdSelLsu
   } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
@@ -156,15 +158,18 @@ package otbn_pkg;
   // Control signals from decoder to controller: additional information about the decoded
   // instruction influencing the operation.
   typedef struct packed {
-    insn_subset_e subset;
-    op_a_sel_e    op_a_sel;
-    op_b_sel_e    op_b_sel;
-    alu_op_e      alu_op;
-    logic         rf_we;
-    rf_wd_sel_e   rf_wdata_sel;
-    logic         ecall_insn;
-    logic         ld_insn;
-    logic         st_insn;
+    insn_subset_e   subset;
+    op_a_sel_e      op_a_sel;
+    op_b_sel_e      op_b_sel;
+    alu_op_e        alu_op;
+    comparison_op_e comparison_op;
+    logic           rf_we;
+    rf_wd_sel_e     rf_wdata_sel;
+    logic           ecall_insn;
+    logic           ld_insn;
+    logic           st_insn;
+    logic           branch_insn;
+    logic           jump_insn;
   } insn_dec_ctrl_t;
 
   typedef struct packed {
