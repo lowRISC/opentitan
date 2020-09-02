@@ -315,7 +315,12 @@ class ImmOperandType(OperandType):
 
 
 class EnumOperandType(ImmOperandType):
-    '''A class representing an enum operand type'''
+    '''A class representing an enum operand type
+
+    Enum operands are case-insensitive: the names are stored lower case, and
+    are matched with case-folding in read_index.
+
+    '''
     def __init__(self,
                  items: List[str],
                  what: str,
@@ -339,7 +344,7 @@ class EnumOperandType(ImmOperandType):
             width = scheme_field.bits.width
 
         super().__init__(width, 0, False, False)
-        self.items = items
+        self.items = [item.lower() for item in items]
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
@@ -355,8 +360,9 @@ class EnumOperandType(ImmOperandType):
         return True
 
     def read_index(self, as_str: str) -> Optional[int]:
+        low_str = as_str.lower()
         for idx, item in enumerate(self.items):
-            if as_str == item:
+            if low_str == item:
                 return idx
 
         known_vals = ', '.join(repr(item) for item in self.items)
@@ -381,7 +387,12 @@ class EnumOperandType(ImmOperandType):
 
 
 class OptionOperandType(ImmOperandType):
-    '''A class representing an option operand type'''
+    '''A class representing an option operand type
+
+    Option operands are case-insensitive: the option name is stored lower case,
+    and is matched with case-folding in read_index.
+
+    '''
     def __init__(self,
                  option: str,
                  what: str,
@@ -393,7 +404,7 @@ class OptionOperandType(ImmOperandType):
             width = scheme_field.bits.width
 
         super().__init__(width, 0, False, False)
-        self.option = option
+        self.option = option.lower()
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
@@ -403,7 +414,7 @@ class OptionOperandType(ImmOperandType):
         return True
 
     def read_index(self, as_str: str) -> Optional[int]:
-        if as_str == self.option:
+        if as_str.lower() == self.option:
             return 1
 
         raise ValueError('Invalid option value, {!r}. '
