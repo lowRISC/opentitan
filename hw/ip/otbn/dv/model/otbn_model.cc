@@ -224,9 +224,11 @@ static std::string find_otbn_model() {
 }
 
 extern "C" int run_model(const char *imem_scope, int imem_words,
-                         const char *dmem_scope, int dmem_words) {
+                         const char *dmem_scope, int dmem_words,
+                         int start_addr) {
   assert(imem_words >= 0);
   assert(dmem_words >= 0);
+  assert(start_addr >= 0 && start_addr < (imem_words * 4));
 
   char dir[] = "/tmp/otbn_XXXXXX";
   char ifname[] = "/tmp/otbn_XXXXXX/imem";
@@ -262,7 +264,7 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
 
   std::ostringstream cmd;
   cmd << model_path << " " << imem_words << " " << ifname << " " << dmem_words
-      << " " << dfname << " " << cfname << " " << tfname;
+      << " " << dfname << " " << cfname << " " << tfname << " " << start_addr;
 
   if (std::system(cmd.str().c_str()) != 0) {
     std::cerr << "Failed to execute model (cmd was: '" << cmd.str() << "').\n";
