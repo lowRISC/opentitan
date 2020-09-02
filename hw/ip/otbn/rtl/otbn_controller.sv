@@ -172,9 +172,10 @@ module otbn_controller
   assign alu_base_comparison_o.op = ComparisonOpEq;
 
   // Register file write MUX
-  // TODO: Switch between CSR/ALU/LSU writeback.
+  // Suppress write for loads when controller isn't in stall state as load data for writeback is
+  // only available in the stall state.
   assign rf_base_wr_en_o =
-   insn_dec_ctrl_i.rf_we | (insn_dec_ctrl_i.ld_insn & (state_q == OtbnStateStall));
+   insn_dec_ctrl_i.rf_we & ~(insn_dec_ctrl_i.ld_insn & (state_q != OtbnStateStall));
 
   assign rf_base_wr_addr_o = insn_dec_base_i.d;
 
