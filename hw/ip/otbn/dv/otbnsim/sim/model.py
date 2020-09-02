@@ -99,7 +99,7 @@ class OTBNIntRegisterFile(RegisterFile):  # type: ignore
         if cs_changed:
             cs_val = 0
             if self.callstack:
-                cs_val = self.callstack[0]
+                cs_val = self.callstack[-1]
 
             super().__setitem__(1, cs_val)
 
