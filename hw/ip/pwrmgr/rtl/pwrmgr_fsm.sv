@@ -35,6 +35,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
   // clkmgr
   output logic ips_clk_en_o,
+  input clk_en_status_i,
 
   // otp
   output logic otp_init_o,
@@ -108,7 +109,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
                        reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
 
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StLowPower;
@@ -161,7 +161,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StEnableClocks: begin
         ip_clk_en_d = 1'b1;
 
-        if (1'b1) begin // TODO, add a feedback signal to check clocks are enabled
+        if (clk_en_status_i) begin
           state_d = StReleaseLcRst;
         end
       end
@@ -218,7 +218,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StDisClks: begin
         ip_clk_en_d = 1'b0;
 
-        if (1'b1) begin // TODO, add something to check that clocks are disabled
+        if (!clk_en_status_i) begin
           state_d = reset_req_i ? StNvmShutDown : StFallThrough;
           wkup_record_o = !reset_req_i;
         end

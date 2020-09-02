@@ -83,7 +83,7 @@ package pwrmgr_pkg;
 
   // clkmgr to powrmgr
   typedef struct packed {
-    logic roots_en;
+    logic clk_status;
   } pwr_clk_rsp_t;
 
   // pwrmgr to otp
