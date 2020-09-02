@@ -55,7 +55,8 @@ module otbn_core_model
   import "DPI-C" context function int run_model(string imem_scope,
                                                 int    imem_size,
                                                 string dmem_scope,
-                                                int    dmem_size);
+                                                int    dmem_size,
+                                                int    start_addr);
 
   localparam ImemSizeWords = ImemSizeByte / 4;
   localparam DmemSizeWords = DmemSizeByte / (WLEN / 8);
@@ -68,7 +69,7 @@ module otbn_core_model
       count <= -1;
     end else begin
       if (start_i) begin
-        count <= run_model(ImemScope, ImemSizeWords, DmemScope, DmemSizeWords);
+        count <= run_model(ImemScope, ImemSizeWords, DmemScope, DmemSizeWords, start_addr_i);
         done_o <= 1'b0;
       end else begin
         if (count == 0) begin

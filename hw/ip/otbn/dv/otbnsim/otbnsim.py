@@ -22,6 +22,7 @@ def main() -> int:
     parser.add_argument("dmem_file")
     parser.add_argument("cycles_file")
     parser.add_argument("trace_file")
+    parser.add_argument("start_addr", type=int)
 
     args = parser.parse_args()
     sim = OTBNSim(OTBNModel(verbose=args.trace_file))
@@ -30,7 +31,7 @@ def main() -> int:
     with open(args.dmem_file, "rb") as f:
         sim.load_data(f.read())
 
-    cycles = sim.run(start_addr=0)
+    cycles = sim.run(start_addr=args.start_addr)
 
     with open(args.dmem_file, "wb") as f:
         f.write(sim.dump_data())
