@@ -24,9 +24,6 @@ class FlowCfg():
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
-    def __repr__(self):
-        return pprint.pformat(self.__dict__)
-
     def __init__(self, flow_cfg_file, proj_root, args):
         # Options set from command line
         self.items = args.items
