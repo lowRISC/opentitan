@@ -50,10 +50,10 @@ class tl_host_seq extends dv_base_seq #(.REQ        (tl_seq_item),
           pre_start_item(req);
           start_item(req);
           randomize_req(req, i);
+          pending_req.push_back(req); // in case of device same cycle response
           finish_item(req);
           `uvm_info(`gfn, $sformatf("Sent req[%0d] : %0s",
                                      i, req.convert2string()), UVM_HIGH)
-          pending_req.push_back(req);
         end
       end : request_thread
     join

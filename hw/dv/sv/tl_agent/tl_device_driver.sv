@@ -63,15 +63,15 @@ class tl_device_driver extends tl_base_driver;
         else @(cfg.vif.device_cb);
       end
       if (cfg.vif.rst_n) begin
-        cfg.vif.device_cb.d2h_int.d_valid  <= 1'b1;
-        cfg.vif.device_cb.d2h_int.d_opcode <= tl_d_op_e'(rsp.d_opcode);
-        cfg.vif.device_cb.d2h_int.d_data   <= rsp.d_data;
-        cfg.vif.device_cb.d2h_int.d_source <= rsp.d_source;
-        cfg.vif.device_cb.d2h_int.d_param  <= rsp.d_param;
-        cfg.vif.device_cb.d2h_int.d_error  <= rsp.d_error;
-        cfg.vif.device_cb.d2h_int.d_sink   <= rsp.d_sink;
-        cfg.vif.device_cb.d2h_int.d_user   <= rsp.d_user;
-        cfg.vif.device_cb.d2h_int.d_size   <= rsp.d_size;
+        cfg.vif.d2h_int.d_valid  <= 1'b1;
+        cfg.vif.d2h_int.d_opcode <= tl_d_op_e'(rsp.d_opcode);
+        cfg.vif.d2h_int.d_data   <= rsp.d_data;
+        cfg.vif.d2h_int.d_source <= rsp.d_source;
+        cfg.vif.d2h_int.d_param  <= rsp.d_param;
+        cfg.vif.d2h_int.d_error  <= rsp.d_error;
+        cfg.vif.d2h_int.d_sink   <= rsp.d_sink;
+        cfg.vif.d2h_int.d_user   <= rsp.d_user;
+        cfg.vif.d2h_int.d_size   <= rsp.d_size;
         // bypass delay in case of reset
         @(cfg.vif.device_cb);
       end

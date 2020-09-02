@@ -20,6 +20,8 @@ class tl_monitor extends dv_base_monitor#(
 
   uvm_analysis_port #(tl_seq_item) d_chan_port;
   uvm_analysis_port #(tl_seq_item) a_chan_port;
+  // send back a chan info ASAP for device to support same cycle response
+  uvm_analysis_port #(tl_seq_item) a_chan_same_cycle_rsp_port;
 
   `uvm_component_utils(tl_monitor)
 
@@ -29,6 +31,7 @@ class tl_monitor extends dv_base_monitor#(
     super.build_phase(phase);
     d_chan_port = new("d_chan_port", this);
     a_chan_port = new("a_chan_port", this);
+    a_chan_same_cycle_rsp_port = new("a_chan_same_cycle_rsp_port", this);
   endfunction : build_phase
 
   virtual task run_phase(uvm_phase phase);
@@ -58,20 +61,32 @@ class tl_monitor extends dv_base_monitor#(
 
   virtual task a_channel_thread();
     tl_seq_item req;
+    bit item_done = 0;
     forever begin
-      if (cfg.vif.mon_cb.h2d.a_valid && cfg.vif.mon_cb.d2h.a_ready) begin
+      bit valid_req_with_same_cycle_rsp;
+      bit valid_req_with_diff_cycle_rsp;
+      // Qualify req with same cycle rsp from device enabled.
+      valid_req_with_same_cycle_rsp = cfg.device_can_rsp_on_same_cycle &&
+                                      cfg.vif.h2d.a_valid && cfg.vif.d2h.a_ready;
+
+      // Qualify req with same cycle rsp from device disabled.
+      valid_req_with_diff_cycle_rsp = !cfg.device_can_rsp_on_same_cycle &&
+                                      cfg.vif.mon_cb.h2d.a_valid && cfg.vif.mon_cb.d2h.a_ready;
+
+      if (valid_req_with_same_cycle_rsp || valid_req_with_diff_cycle_rsp) begin
+        tlul_pkg::tl_h2d_t h2d = valid_req_with_same_cycle_rsp ? cfg.vif.h2d : cfg.vif.mon_cb.h2d;
+
         req = tl_seq_item::type_id::create("req");
-        req.a_addr   = cfg.vif.mon_cb.h2d.a_address;
-        req.a_opcode = cfg.vif.mon_cb.h2d.a_opcode;
-        req.a_size   = cfg.vif.mon_cb.h2d.a_size;
-        req.a_param  = cfg.vif.mon_cb.h2d.a_param;
-        req.a_data   = cfg.vif.mon_cb.h2d.a_data;
-        req.a_mask   = cfg.vif.mon_cb.h2d.a_mask;
-        req.a_source = cfg.vif.mon_cb.h2d.a_source;
+        req.a_addr   = h2d.a_address;
+        req.a_opcode = h2d.a_opcode;
+        req.a_size   = h2d.a_size;
+        req.a_param  = h2d.a_param;
+        req.a_data   = h2d.a_data;
+        req.a_mask   = h2d.a_mask;
+        req.a_source = h2d.a_source;
         `uvm_info("tl_logging", $sformatf("[%0s][a_chan] : %0s",
                    agent_name, req.convert2string()), UVM_HIGH)
-        a_chan_port.write(req);
-        pending_a_req.push_back(req);
+        pending_a_req.push_back(req.clone());
         if (cfg.max_outstanding_req > 0 && cfg.vif.rst_n === 1) begin
           if (pending_a_req.size() > cfg.max_outstanding_req) begin
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
@@ -79,8 +94,32 @@ class tl_monitor extends dv_base_monitor#(
           end
           if (cfg.en_cov) cov.m_max_outstanding_cg.sample(pending_a_req.size());
         end
+
+        // when device_can_rsp_on_same_cycle=1, write item to a_chan_same_cycle_rsp_port in the same
+        // cycle a_valid & a_ready is high, then write to a_chan_port at the sample edge
+        // when !device_can_rsp_on_same_cycle, only write to a_chan_port at the sample edge
+        if (cfg.device_can_rsp_on_same_cycle) begin
+          a_chan_same_cycle_rsp_port.write(req);
+          // write to a_chan_port at the sample edge
+          item_done = 1;
+        end else begin
+          a_chan_port.write(req);
+        end
       end
       @(cfg.vif.mon_cb);
+      if (cfg.device_can_rsp_on_same_cycle) begin
+        if (item_done) begin
+          a_chan_port.write(req);
+          item_done = 0;
+        end
+
+        // sample within a cycle to allow device to respond in same cycle
+        `DV_SPINWAIT_EXIT(
+            #(cfg.time_a_valid_avail_after_sample_edge);,
+            @(cfg.vif.mon_cb) `uvm_fatal(`gfn, $sformatf(
+                "time_a_valid_avail_after_sample_edge (%0t) is over one cycle",
+                cfg.time_a_valid_avail_after_sample_edge)))
+      end
     end
   endtask : a_channel_thread
 

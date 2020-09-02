@@ -40,6 +40,16 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   int unsigned d_valid_delay_min = 0;
   int unsigned d_valid_delay_max = 10;
 
+  // TL spec requires host to set d_ready = 1 when a_valid = 1, but some design may not follow this
+  // rule. Details at #3208. Use below knob to control
+  bit host_can_stall_rsp_when_a_valid_high = 0;
+  // knob for device to enable/disable same cycle response
+  bit device_can_rsp_on_same_cycle = 0;
+  // for same cycle response, need to know when a_valid and other data/control are available, so
+  // that monitor can sample it, then send to sequence to get data for response in the same cycle
+  // 10 means 10% of TL clock period. This var is only use when device_can_rsp_on_same_cycle = 1
+  time time_a_valid_avail_after_sample_edge = 1ns;
+
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
     `uvm_field_enum(tl_level_e, tl_level, UVM_DEFAULT)

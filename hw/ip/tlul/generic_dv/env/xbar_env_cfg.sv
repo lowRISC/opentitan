@@ -45,6 +45,7 @@ class xbar_env_cfg extends dv_base_env_cfg;
                           create($sformatf("%0s_agent_cfg", xbar_hosts[i].host_name));
       host_agent_cfg[i].if_mode = dv_utils_pkg::Host;
       host_agent_cfg[i].max_outstanding_req = 1 << valid_host_id_width;
+      host_agent_cfg[i].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
     end
     // Device TL agent cfg
     num_devices      = xbar_devices.size();

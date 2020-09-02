@@ -32,6 +32,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     // create tl agent config obj
     m_tl_agent_cfg = tl_agent_cfg::type_id::create("m_tl_agent_cfg");
     m_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
+    // host can't support device same cycle response and host may drive d_ready=0 when a_valid=1
+    m_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
   endfunction
 
 endclass
