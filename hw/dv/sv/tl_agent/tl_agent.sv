@@ -31,7 +31,11 @@ class tl_agent extends dv_base_agent#(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      monitor.a_chan_port.connect(sequencer.a_chan_req_fifo.analysis_export);
+      if (cfg.device_can_rsp_on_same_cycle) begin
+        monitor.a_chan_same_cycle_rsp_port.connect(sequencer.a_chan_req_fifo.analysis_export);
+      end else begin
+        monitor.a_chan_port.connect(sequencer.a_chan_req_fifo.analysis_export);
+      end
     end
   endfunction
 endclass : tl_agent

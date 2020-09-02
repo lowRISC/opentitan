@@ -33,6 +33,7 @@ class tl_host_driver extends tl_base_driver;
         end
       end
       d_channel_thread();
+      d_ready_rsp();
     join_none
   endtask
 
@@ -67,6 +68,7 @@ class tl_host_driver extends tl_base_driver;
                       wait(reset_asserted);)
 
     if (!reset_asserted) begin
+      pending_a_req.push_back(req);
       cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
       cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
       cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
@@ -79,6 +81,8 @@ class tl_host_driver extends tl_base_driver;
       // bypass delay in case of reset
       `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
                         wait(reset_asserted);)
+    end else begin
+      seq_item_port.put_response(req); // if reset, skip data phase
     end
     `DV_SPINWAIT_EXIT(while(!cfg.vif.host_cb.d2h.a_ready) @(cfg.vif.host_cb);,
                       wait(reset_asserted);)
@@ -88,10 +92,26 @@ class tl_host_driver extends tl_base_driver;
     if (reset_asserted) cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
     invalidate_a_channel();
     seq_item_port.item_done();
-    if (reset_asserted) seq_item_port.put_response(req); // if reset, skip data phase
-    else                pending_a_req.push_back(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
+
+  // host responds d_ready
+  virtual task d_ready_rsp();
+    int unsigned d_ready_delay;
+    tl_seq_item rsp;
+
+    forever begin
+      bit req_found;
+      d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
+      // if a_valid high then d_ready must be high, exit the delay when a_valid is set
+      `DV_SPINWAIT_EXIT(repeat (d_ready_delay) @(cfg.vif.host_cb);,
+         wait(!cfg.host_can_stall_rsp_when_a_valid_high && cfg.vif.h2d_int.a_valid))
+
+      cfg.vif.host_cb.h2d_int.d_ready <= 1'b1;
+      @(cfg.vif.host_cb);
+      cfg.vif.host_cb.h2d_int.d_ready <= 1'b0;
+    end
+  endtask : d_ready_rsp
 
   // Collect ack from D channel
   virtual task d_channel_thread();
@@ -100,16 +120,9 @@ class tl_host_driver extends tl_base_driver;
 
     forever begin
       bit req_found;
-      d_ready_delay = $urandom_range(cfg.d_ready_delay_min, cfg.d_ready_delay_max);
-      // break delay loop if reset asserted to release blocking
-      `DV_SPINWAIT_EXIT(repeat (d_ready_delay) @(cfg.vif.host_cb);,
-                        wait(reset_asserted & (pending_a_req.size() != 0));)
 
-      cfg.vif.host_cb.h2d_int.d_ready <= 1'b1;
-      `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                        wait(reset_asserted & (pending_a_req.size() != 0));)
-
-      if (cfg.vif.host_cb.d2h.d_valid | ((pending_a_req.size() != 0) & reset_asserted)) begin
+      if ((cfg.vif.host_cb.d2h.d_valid && cfg.vif.h2d_int.d_ready && !reset_asserted) ||
+          ((pending_a_req.size() != 0) & reset_asserted)) begin
         // Use the source ID to find the matching request
         foreach (pending_a_req[i]) begin
           if ((pending_a_req[i].a_source == cfg.vif.host_cb.d2h.d_source) | reset_asserted) begin
@@ -137,8 +150,11 @@ class tl_host_driver extends tl_base_driver;
           `uvm_error(get_full_name(), $sformatf(
                      "Cannot find request matching d_source 0x%0x", cfg.vif.host_cb.d2h.d_source))
         end
+      end else if (reset_asserted) begin
+        wait(!reset_asserted);
       end
-      cfg.vif.host_cb.h2d_int.d_ready <= 1'b0;
+      `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                        wait(reset_asserted);)
     end
   endtask : d_channel_thread
 
