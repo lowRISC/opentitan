@@ -828,7 +828,7 @@
         Increment the value in `<grs2>` by one.
         Cannot be specified together with `grs1_inc`.
   syntax: |
-    <grs1>[<grs1_inc>], <offset>(<grs2>[<grs2_inc>])
+    <grs2>[<grs2_inc>], <offset>(<grs1>[<grs1_inc>])
   doc: |
     Calculates a byte memory address by adding the offset to the value in the GPR `grs1`.
     The value from the WDR pointed to by `grs2` is then copied into the memory.
