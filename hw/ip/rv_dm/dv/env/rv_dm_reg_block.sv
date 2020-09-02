@@ -9,7 +9,7 @@ class rv_dm_reg_block extends dv_base_reg_block;
     super.new(name, has_coverage);
   endfunction : new
 
-  virtual function void build(uvm_reg_addr_t base_addr);
+  virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl);
     `uvm_info(`gfn, "no-ral", UVM_LOW)
   endfunction : build
 

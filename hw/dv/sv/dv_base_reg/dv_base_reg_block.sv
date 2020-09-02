@@ -13,8 +13,7 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   // provide build function to supply base addr
-  virtual function void build(uvm_reg_addr_t base_addr,
-                              csr_excl_item csr_excl = null);
+  virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endfunction
 

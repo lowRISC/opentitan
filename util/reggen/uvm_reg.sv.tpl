@@ -193,8 +193,7 @@ package ${block.name}_ral_pkg;
       super.new(name, has_coverage);
     endfunction : new
 
-    virtual function void build(uvm_reg_addr_t base_addr,
-                                csr_excl_item csr_excl = null);
+    virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl);
       // create default map
       this.default_map = create_map(.name("default_map"),
                                     .base_addr(base_addr),
