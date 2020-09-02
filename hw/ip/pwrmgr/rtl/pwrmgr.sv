@@ -278,6 +278,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
     // clkmgr
     .ips_clk_en_o      (pwr_clk_o.ip_clk_en),
+    .clk_en_status_i   (pwr_clk_i.clk_status),
 
     // otp
     .otp_init_o        (pwr_otp_o.otp_init),
