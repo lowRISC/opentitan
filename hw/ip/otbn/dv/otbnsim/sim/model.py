@@ -339,12 +339,13 @@ class OTBNModel(Model):  # type: ignore
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, int]:
         result = a + b + carry_in
 
+        carryless_result = result & ((1 << 256) - 1)
         flags_out = AttrDict({"C": (result >> 256) & 1,
                               "L": result & 1,
                               "M": (result >> 255) & 1,
-                              "Z": 1 if result == 0 else 0})
+                              "Z": 1 if carryless_result == 0 else 0})
 
-        return (result & ((1 << 256) - 1), flags_out)
+        return (carryless_result, flags_out)
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
