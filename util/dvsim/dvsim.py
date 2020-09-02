@@ -146,11 +146,11 @@ def make_config(args, proj_root):
     # the tool by reading the config file. At the moment, this forces a
     # simulation target (TODO?)
     factories = {
-        'ascentlint'  : LintCfg.LintCfg,
-        'veriblelint' : LintCfg.LintCfg,
-        'verilator'   : LintCfg.LintCfg,
-        'dc'          : SynCfg.SynCfg,
-        'jaspergold'  : FpvCfg.FpvCfg
+        'ascentlint': LintCfg.LintCfg,
+        'veriblelint': LintCfg.LintCfg,
+        'verilator': LintCfg.LintCfg,
+        'dc': SynCfg.SynCfg,
+        'jaspergold': FpvCfg.FpvCfg
     }
 
     factory = factories.get(args.tool, SimCfg.SimCfg)
