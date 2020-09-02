@@ -77,6 +77,9 @@ module otbn_controller
 
   logic stall;
   logic mem_stall;
+  logic branch_taken;
+  logic [ImemAddrWidth-1:0] branch_target;
+  logic [ImemAddrWidth-1:0] next_insn_addr;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -86,6 +89,16 @@ module otbn_controller
 
   assign stall = mem_stall;
   assign done_o = insn_valid_i && insn_dec_ctrl_i.ecall_insn;
+
+  // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
+  // instruction (which is always taken)
+  assign branch_taken = insn_valid_i & ((insn_dec_ctrl_i.branch_insn & alu_base_comparison_result_i) |
+                                        insn_dec_ctrl_i.jump_insn);
+  // Branch target computed by base ALU (PC + imm)
+  // TODO: Implement error on branch out of range
+  assign branch_target = alu_base_operation_result_i[ImemAddrWidth-1:0];
+
+  assign next_insn_addr = insn_addr_i + 'd4;
 
   always_comb begin
     state_d                = state_q;
@@ -111,10 +124,14 @@ module otbn_controller
         end else begin
           // When stalling refetch the same instruction to keep decode inputs constant
           if (stall) begin
-            state_d = OtbnStateStall;
+            state_d               = OtbnStateStall;
             insn_fetch_req_addr_o = insn_addr_i;
           end else begin
-            insn_fetch_req_addr_o = insn_addr_i + 'd4;
+            if (branch_taken) begin
+              insn_fetch_req_addr_o = branch_target;
+            end else begin
+              insn_fetch_req_addr_o = next_insn_addr;
+            end
           end
         end
       end
@@ -122,7 +139,7 @@ module otbn_controller
         // Only ever stall for a single cycle
         // TODO: Any more than one cycle stall cases?
         insn_fetch_req_valid_o = 1'b1;
-        insn_fetch_req_addr_o  = insn_addr_i + 'd4;
+        insn_fetch_req_addr_o  = next_insn_addr;
         state_d = OtbnStateRun;
       end
       default: ;
@@ -130,6 +147,9 @@ module otbn_controller
   end
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall});
+  // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
+  // instructions.
+  `ASSERT(NoStallOnBranch, insn_valid_i & insn_dec_ctrl_i.branch_insn |-> state_q != OtbnStateStall);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -147,6 +167,8 @@ module otbn_controller
     unique case (insn_dec_ctrl_i.op_a_sel)
       OpASelRegister:
         alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
+      OpASelCurrPc:
+        alu_base_operation_o.operand_a = {{(32 - ImemAddrWidth){1'b0}}, insn_addr_i};
       default:
         alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
     endcase
@@ -168,8 +190,7 @@ module otbn_controller
 
   assign alu_base_comparison_o.operand_a = rf_base_rd_data_a_i;
   assign alu_base_comparison_o.operand_b = rf_base_rd_data_b_i;
-  // TODO: Choose comparison required for branch
-  assign alu_base_comparison_o.op = ComparisonOpEq;
+  assign alu_base_comparison_o.op = insn_dec_ctrl_i.comparison_op;
 
   // Register file write MUX
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
@@ -180,11 +201,15 @@ module otbn_controller
   assign rf_base_wr_addr_o = insn_dec_base_i.d;
 
   always_comb begin
-    rf_base_wr_data_o = alu_base_operation_result_i;
-
-    unique case (1'b1)
-      insn_dec_ctrl_i.ld_insn: rf_base_wr_data_o = lsu_base_rdata_i;
-      default: ;
+    unique case (insn_dec_ctrl_i.rf_wdata_sel)
+      RfWdSelEx:
+        rf_base_wr_data_o = alu_base_operation_result_i;
+      RfWdSelLsu:
+        rf_base_wr_data_o = lsu_base_rdata_i;
+      RfWdSelNextPc:
+        rf_base_wr_data_o = {{(32-ImemAddrWidth){1'b0}}, next_insn_addr};
+      default:
+        rf_base_wr_data_o = alu_base_operation_result_i;
     endcase
   end
 
