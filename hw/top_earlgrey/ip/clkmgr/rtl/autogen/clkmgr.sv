@@ -112,8 +112,13 @@ module clkmgr import clkmgr_pkg::*; (
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic async_roots_en;
-  logic roots_en_q2, roots_en_q1, roots_en_d;
+  logic wait_enable;
+  logic wait_disable;
+  logic en_status_d;
+  logic dis_status_d;
+  logic [1:0] en_status_q;
+  logic [1:0] dis_status_q;
+  logic clk_status;
   logic clk_main_root;
   logic clk_main_en;
   logic clk_io_root;
@@ -166,40 +171,63 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clk_io_div4_root)
   );
 
+  // an async AND of all the synchronized enables
+  // return feedback to pwrmgr only when all clocks are enabled
+  assign wait_enable =
+    clk_main_en &
+    clk_io_en &
+    clk_usb_en &
+    clk_io_div2_en &
+    clk_io_div4_en;
+
   // an async OR of all the synchronized enables
-  assign async_roots_en =
+  // return feedback to pwrmgr only when all clocks are disabled
+  assign wait_disable =
     clk_main_en |
     clk_io_en |
     clk_usb_en |
     clk_io_div2_en |
     clk_io_div4_en;
 
-  // Sync the OR back into clkmgr domain for feedback to pwrmgr.
+  // Sync clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
   // the signal prior to output
   prim_flop_2sync #(
     .Width(1)
-  ) u_roots_en_sync (
+  ) u_roots_en_status_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_roots_en),
-    .q_o(roots_en_d)
+    .d_i(wait_enable),
+    .q_o(en_status_d)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_roots_or_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(wait_disable),
+    .q_o(dis_status_d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      roots_en_q1 <= 1'b0;
-      roots_en_q2 <= 1'b0;
+      en_status_q <= '0;
+      dis_status_q <= '0;
+      clk_status <= '0;
     end else begin
-      roots_en_q1 <= roots_en_d;
+      en_status_q <= {en_status_q[0], en_status_d};
+      dis_status_q <= {dis_status_q[0], dis_status_d};
 
-      if (roots_en_q1 == roots_en_d) begin
-        roots_en_q2 <= roots_en_q1;
+      if (&en_status_q) begin
+        clk_status <= 1'b1;
+      end else if (|dis_status_q == '0) begin
+        clk_status <= 1'b0;
       end
     end
   end
 
-  assign pwr_o.roots_en = roots_en_q2;
+  assign pwr_o.clk_status = clk_status;
 
   ////////////////////////////////////////////////////
   // Clocks with only root gate
