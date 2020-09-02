@@ -21,6 +21,11 @@ package cip_base_pkg;
   // package variables
   string msg_id = "cip_base_pkg";
 
+  typedef enum {
+    err_update,
+    err_storage
+  } shadow_reg_alert_e;
+
   // functions
 
   // package sources
