@@ -165,7 +165,7 @@ def process_pipeline(xbar):
                      .format(dnode.name, dnode.hpass, dnode.hdepth))
 
         elif dnode.node_type == NodeType.SOCKET_M1:
-            idx = dnode.us.index(host.ds)
+            idx = dnode.us.index(host.ds[0])
             if full_fifo:
                 log.info("fifo present no bypass")
                 dnode.hpass = dnode.hpass & ~(1 << idx)
