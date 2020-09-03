@@ -60,7 +60,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           bit [7:0] bytes[4];
           bit [7:0] msg[$];
           {<<byte{bytes}} = item.a_data;
-          // do endian swap in the word according to the mask, then push to the queue of msgs
+          // do endian swap in the word according to the mask, then push to the msg queue
           foreach (item.a_mask[i]) begin
             if (item.a_mask[i]) begin
               // endian_swap bit 0 operates at big endian data
@@ -76,12 +76,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             if (sha_en && !(hmac_start && item.a_data[HashStart])) begin
               if (item.a_data[HashProcess] && hmac_start) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
-                // check if msg all streamed in, could happen during wr msg or trigger process
                 predict_digest(msg_q);
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
-                msg_q.delete(); // make sure did not include previous msg
-                update_wr_msg_length(msg_q.size());
+                msg_q.delete(); // make sure next transaction won't include this msg_q
+                update_wr_msg_length(0);
               end
             end else if (item.a_data[HashStart] == 1) begin
               if (!sha_en) begin
@@ -96,18 +95,14 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
             intr_test = item.a_data;
           end
-          "intr_state": begin
+          "intr_state": begin // wr intr_state.fifo_empty to 1 will clear the fifo_empty bit
             if (item.a_data[HmacMsgFifoEmpty]) fifo_empty = 0;
           end
           "cfg": begin
             if (hmac_start) return; // won't update configs if hash start
             if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
             sha_en = item.a_data[ShaEn];
-            if (!sha_en) begin
-              void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-              predict_digest(msg_q);
-              return;
-            end
+            if (!sha_en) predict_digest(msg_q, item.a_data[ShaEn], item.a_data[HmacEn]);
           end
           "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7": begin
             string str_index;
@@ -169,20 +164,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               intr = intr.next;
             end while (intr != intr.first);
           end
-          // intr_test is WO, every time after write for a clk cycle, RTL will reset it, but for
-          // coverage purpose, we will reset intr_test after collected the coverage
+          // intr_test is WO, so the value will be cleared one clk cycle after setting it to 1
+          // but for coverage purpose, we will reset intr_test after collected the coverage
           intr_test = 0;
-          // void'(ral.intr_test.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
           if (item.d_data[HmacDone] == 1) begin
-            hmac_wr_cnt = 0;
-            hmac_rd_cnt = 0;
             // here sanity check DUT should only trigger hmac_done when sha is enabled, and
             // previously triggered hash_process.
             // future throughput test should check the accurate cycles
             if (sha_en && hmac_process) begin
               void'(ral.intr_state.hmac_done.predict(.value(1), .kind(UVM_PREDICT_READ)));
-              hmac_process = 0;
             end
+            flush();
           end
         end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6", "digest_7":
@@ -227,19 +219,19 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     flush();
-    sha_en      = 0;
-    hmac_wr_cnt = 0;
-    hmac_rd_cnt = 0;
-    intr_test   = 0;
-    key         = '{default:0};
-    fifo_empty  = 0;
+    sha_en     = 0;
+    intr_test  = 0;
+    fifo_empty = 0;
+    hmac_start = 0;
+    key        = '{default:0};
+    msg_q.delete();
   endfunction
 
-  // clear variables after expected digest is calculated
+  // clear variables after hmac_done
   virtual function void flush();
-    hmac_start = 1'b0;
-    hmac_process = 1'b0;
-    msg_q.delete();
+    hmac_wr_cnt  = 0;
+    hmac_rd_cnt  = 0;
+    hmac_process = 0;
   endfunction
 
   // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
@@ -375,10 +367,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   // query the sha / hmac c model to get expected digest
   // update predicted digest to ral mirrored value
-  virtual function void predict_digest(bit [7:0] msg_q[]);
+  virtual function void predict_digest(bit [7:0] msg_q[],
+                                       bit       sha_en  = ral.cfg.sha_en.get_mirrored_value(),
+                                       bit       hmac_en = ral.cfg.hmac_en.get_mirrored_value());
     int unsigned exp_digest[8];
-    bit          hmac_en = ral.cfg.hmac_en.get_mirrored_value();
-    bit          sha_en  = ral.cfg.sha_en.get_mirrored_value();
     case ({hmac_en, sha_en})
       2'b11: begin
         cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
