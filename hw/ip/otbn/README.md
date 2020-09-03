@@ -111,6 +111,13 @@ fusesoc --cores-root=. run \
   lowrisc:systems:top_earlgrey_verilator --OTBN_MODEL
 ```
 
+The simulation communicates with the model by creating a directory in
+the temporary directory (/tmp or TMPDIR) and filling it with files.
+Normally, it cleans up after itself. If something goes wrong and you'd
+like to look at these files, set the `OTBN_MODEL_KEEP_TMP` environment
+variable to `1`.
+
+
 ### Run the ISS on its own
 
 There are currently two versions of the ISS and they can be found in

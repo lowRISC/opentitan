@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <ftw.h>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -47,10 +48,10 @@ extern "C" int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 // scope, writing it to a file at path. Each word is word_size bytes long.
 //
 // Raises a runtime_error on failure.
-static void dump_memory(const char *path, const char *scope, size_t num_words,
-                        size_t word_size) {
+static void dump_memory(const std::string &path, const char *scope,
+                        size_t num_words, size_t word_size) {
   std::filebuf fb;
-  if (!fb.open(path, std::ios::out | std::ios::binary)) {
+  if (!fb.open(path.c_str(), std::ios::out | std::ios::binary)) {
     std::ostringstream oss;
     oss << "Cannot open the file '" << path << "'.";
     throw std::runtime_error(oss.str());
@@ -89,10 +90,10 @@ static void dump_memory(const char *path, const char *scope, size_t num_words,
 // bytes long.
 //
 // Raises a runtime_error on failure.
-static void load_memory(const char *path, const char *scope, size_t num_words,
-                        size_t word_size) {
+static void load_memory(const std::string &path, const char *scope,
+                        size_t num_words, size_t word_size) {
   std::filebuf fb;
-  if (!fb.open(path, std::ios::in | std::ios::binary)) {
+  if (!fb.open(path.c_str(), std::ios::in | std::ios::binary)) {
     std::ostringstream oss;
     oss << "Cannot open the file '" << path << "'.";
     throw std::runtime_error(oss.str());
@@ -128,9 +129,9 @@ static void load_memory(const char *path, const char *scope, size_t num_words,
 // return it.
 //
 // Raises a runtime_error on failure.
-static uint32_t load_cycles(const char *path) {
+static uint32_t load_cycles(const std::string &path) {
   std::filebuf fb;
-  if (!fb.open(path, std::ios::in | std::ios::binary)) {
+  if (!fb.open(path.c_str(), std::ios::in | std::ios::binary)) {
     std::ostringstream oss;
     oss << "Cannot open the file '" << path << "'.";
     throw std::runtime_error(oss.str());
@@ -223,6 +224,88 @@ static std::string find_otbn_model() {
   return std::string(model_path);
 }
 
+// Guard class to create (and possibly delete) temporary directories.
+struct TmpDir {
+  std::string path;
+
+  ~TmpDir() { cleanup(); }
+
+  // Construct a temporary directory. Throw a runtime_error if something goes
+  // wrong.
+  void make() {
+    // Clean up anything we had already.
+    cleanup();
+    path = TmpDir::make_tmp_dir();
+  }
+
+ private:
+  // A wrapper around mkdtemp that respects TMPDIR
+  static std::string make_tmp_dir() {
+    const char *tmpdir = getenv("TMPDIR");
+    if (!tmpdir)
+      tmpdir = "/tmp";
+
+    std::string tmp_template(tmpdir);
+    tmp_template += "/otbn_XXXXXX";
+
+    if (!mkdtemp(&tmp_template.at(0))) {
+      std::ostringstream oss;
+      oss << ("Cannot create temporary directory for OTBN simulation "
+              "with template ")
+          << tmp_template << ": " << strerror(errno);
+      throw std::runtime_error(oss.str());
+    }
+
+    // The backing string for tmp_template will have been populated by mkdtemp.
+    return tmp_template;
+  }
+
+  // Return true if the OTBN_MODEL_KEEP_TMP environment variable is set to 1.
+  static bool should_keep_tmp() {
+    const char *keep_str = getenv("OTBN_MODEL_KEEP_TMP");
+    if (!keep_str)
+      return false;
+    return (strcmp(keep_str, "1") == 0) ? true : false;
+  }
+
+  // Called by nftw when we're deleting the temporary directory
+  static int ftw_callback(const char *fpath, const struct stat *sb,
+                          int typeflag, struct FTW *ftwbuf) {
+    // The libc remove() function calls unlink or rmdir as necessary. Ignore
+    // any failures: we'll check that we managed to delete the directory when
+    // nftw finishes.
+    remove(fpath);
+
+    // Tell nftw to keep going
+    return 0;
+  }
+
+  // Recursively delete the temporary directory
+  void cleanup() {
+    if (path.empty())
+      return;
+
+    if (TmpDir::should_keep_tmp()) {
+      std::cerr << "Keeping temporary directory at " << path
+                << " because OTBN_MODEL_KEEP_TMP=1.\n";
+      return;
+    }
+
+    // We're not supposed to keep the directory. Try to delete it and its
+    // contents. Ignore any failures: we'll just check whether it's gone
+    // afterwards.
+    nftw(path.c_str(), TmpDir::ftw_callback, 4, FTW_DEPTH | FTW_PHYS);
+
+    // Is there still anything at path? If so, we failed. Print something to
+    // stderr to tell the user what's going on.
+    struct stat statbuf;
+    if (stat(path.c_str(), &statbuf) == 0) {
+      std::cerr << "ERROR: Failed to delete OTBN temporary directory at "
+                << path << ".\n";
+    }
+  }
+};
+
 extern "C" int run_model(const char *imem_scope, int imem_words,
                          const char *dmem_scope, int dmem_words,
                          int start_addr) {
@@ -230,35 +313,32 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
   assert(dmem_words >= 0);
   assert(start_addr >= 0 && start_addr < (imem_words * 4));
 
-  char dir[] = "/tmp/otbn_XXXXXX";
-  char ifname[] = "/tmp/otbn_XXXXXX/imem";
-  char dfname[] = "/tmp/otbn_XXXXXX/dmem";
-  char cfname[] = "/tmp/otbn_XXXXXX/cycles";
-  char tfname[] = "/tmp/otbn_XXXXXX/trace";
-
-  if (mkdtemp(dir) == nullptr) {
-    std::cerr << "Cannot create temporary directory" << std::endl;
+  std::string model_path;
+  try {
+    model_path = find_otbn_model();
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when searching for OTBN model: " << err.what() << "\n";
     return 0;
   }
 
-  std::memcpy(ifname, dir, strlen(dir));
-  std::memcpy(dfname, dir, strlen(dir));
-  std::memcpy(cfname, dir, strlen(dir));
-  std::memcpy(tfname, dir, strlen(dir));
+  TmpDir tmpdir;
+  try {
+    tmpdir.make();
+  } catch (const std::runtime_error &err) {
+    std::cerr << err.what() << "\n";
+    return 0;
+  }
+
+  std::string ifname(tmpdir.path + "/imem");
+  std::string dfname(tmpdir.path + "/dmem");
+  std::string cfname(tmpdir.path + "/cycles");
+  std::string tfname(tmpdir.path + "/trace");
 
   try {
     dump_memory(dfname, dmem_scope, dmem_words, 32);
     dump_memory(ifname, imem_scope, imem_words, 4);
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when dumping memory contents: " << err.what() << "\n";
-    return 0;
-  }
-
-  std::string model_path;
-  try {
-    model_path = find_otbn_model();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when searching for OTBN model: " << err.what() << "\n";
     return 0;
   }
 
