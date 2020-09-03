@@ -307,6 +307,8 @@ Each flag is a single bit.
 - `Z` (Zero Flag)
   Set to 1 if the result of the last operation was zero; otherwise 0.
 
+The `L`, `M`, and `Z` flags are determined based on the result of the operation as it is written back into the result register, without considering the overflow bit.
+
 ### Loop Stack
 
 The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
@@ -436,7 +438,7 @@ def AddWithCarry(a: Bits(WLEN), b: Bits(WLEN), carry_in: Bits(1)) -> (Bits(WLEN)
   flags_out.C = result[WLEN]
   flags_out.L = result[0]
   flags_out.M = result[WLEN-1]
-  flags_out.Z = (result == 0)
+  flags_out.Z = (result[WLEN-1:0] == 0)
 
   return (result[WLEN-1:0], flags_out)
 
