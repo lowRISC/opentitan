@@ -107,6 +107,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic prog_op;
   logic erase_op;
   logic [AllPagesW-1:0] err_addr;
+  flash_lcmgr_phase_e phase;
 
   // Flash control arbitration connections to hardware interface
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
@@ -118,6 +119,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic hw_rready;
   flash_sel_e if_sel;
   logic sw_sel;
+  flash_lcmgr_phase_e hw_phase;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -166,6 +168,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .hw_req_i(hw_req),
     .hw_ctrl_i(hw_ctrl),
 
+    // hardware interface indicating operation phase
+    .hw_phase_i(hw_phase),
+
     // hardware works on word address, however software expects byte address
     .hw_addr_i(hw_addr),
     .hw_ack_o(hw_done),
@@ -200,6 +205,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // clear fifos
     .fifo_clr_o(fifo_clr),
+
+    // phase indication
+    .phase_o(phase),
 
     // indication that sw has been selected
     .sel_o(if_sel)
@@ -246,6 +254,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // outgoing seeds
     .seeds_o(),
+    .seed_err_o(), // TBD hook-up to Err code register
+
+    // phase indication
+    .phase_o(hw_phase),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -487,6 +499,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // read / prog / erase controls
     .req_i(flash_req),
+    .phase_i(phase),
     .req_addr_i(flash_addr[BusAddrW-1 -: AllPagesW]),
     .req_part_i(flash_part_sel),
     .addr_ovfl_i(rd_flash_ovfl | prog_flash_ovfl),

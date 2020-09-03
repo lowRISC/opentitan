@@ -68,8 +68,13 @@ package flash_ctrl_pkg;
       OwnerInfoPage
      };
 
-  // alias for super long reg_pkg typedef
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
+  // lcmgr phase enum
+  typedef enum logic [1:0] {
+    PhaseSeed,
+    PhaseRma,
+    PhaseNone,
+    PhaseInvalid
+  } flash_lcmgr_phase_e;
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
@@ -105,6 +110,24 @@ package flash_ctrl_pkg;
     FlashPartData = 1'b0,
     FlashPartInfo = 1'b1
   } flash_part_e;
+
+  // memory protection specific structs
+
+  // alias for super long reg_pkg typedef
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t mp_region_cfg_t;
+
+  typedef struct packed {
+    logic [AllPagesW-1:0] page;
+    flash_lcmgr_phase_e   phase;
+    info_page_cfg_t       cfg;
+  } info_page_attr_t;
+
+  typedef struct packed {
+    flash_lcmgr_phase_e   phase;
+    mp_region_cfg_t cfg;
+  } data_region_attr_t;
+
 
   // Flash controller to memory
   typedef struct packed {
