@@ -33,6 +33,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   // hardware interface to rd_ctrl / erase_ctrl
   input hw_req_i,
   input flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t hw_ctrl_i,
+  input flash_lcmgr_phase_e hw_phase_i,
   input [31:0] hw_addr_i,
   output logic hw_ack_o,
   output logic hw_err_o,
@@ -64,6 +65,9 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
   // clear fifo contents
   output logic fifo_clr_o,
+
+  // output to memory protection
+  output flash_lcmgr_phase_e phase_o,
 
   // indication that sw has been selected
   output flash_sel_e sel_o
@@ -206,5 +210,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   end
 
   assign sel_o = func_sel;
+
+  // At the moment there is no software control indicating phase.
+  assign phase_o = func_sel == SwSel ? PhaseInvalid : hw_phase_i;
 
 endmodule // flash_ctrl_rd_arb

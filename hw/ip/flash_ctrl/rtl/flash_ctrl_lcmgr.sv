@@ -35,6 +35,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // seeds to the outside world,
   output logic [NumSeeds-1:0][SeedWidth-1:0] seeds_o,
 
+  // indicate to memory protection what phase the hw interface is in
+  output flash_lcmgr_phase_e phase_o,
+
+  // error status to registers
+  output logic seed_err_o,
+
   // init ongoing
   output logic init_busy_o
 );
@@ -62,7 +68,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     StWait,
     StWipeOwner,
     StWipeDataPart,
-    StRmaRsp
+    StRmaRsp,
+    StInvalid
   } state_e;
 
   state_e state_q, state_d;
@@ -71,8 +78,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   logic [CntWidth-1:0] addr_cnt_q;
   logic seed_cnt_en, seed_cnt_clr;
   logic addr_cnt_en, addr_cnt_clr;
+  flash_lcmgr_phase_e phase;
   logic seed_phase;
   logic rma_phase;
+
+  assign seed_phase = phase == PhaseSeed;
+  assign rma_phase = phase == PhaseRma;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -158,8 +169,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   always_comb begin
 
     // phases of the hardware interface
-    seed_phase = 1'b0;
-    rma_phase = 1'b0;
+    phase = PhaseNone;
 
     // timer controls
     seed_cnt_en = 1'b0;
@@ -177,6 +187,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     rma_rsp_o = 1'b0;
     rsp_mask = {BusWidth{1'b1}};
 
+    // seed status
+    seed_err_o = 1'b0;
+
     state_d = state_q;
     validate_d = validate_q;
 
@@ -185,7 +198,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
       // read seeds
       StReadSeeds: begin
         // seeds can be updated in this state
-        seed_phase = 1'b1;
+        phase = PhaseSeed;
 
         // kick off flash transaction
         start = 1'b1;
@@ -203,9 +216,11 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
         // current seed reading is complete
         // error is intentionally not used here, as we do not want read seed
         // failures to stop the software from using flash
-        // TBD add handling of seeds for error conditions
+        // When there are upstream failures, the data returned in simply all 1's.
+        // So instead of doing anything explicit, a status is indicated for software.
         end else if (done_i) begin
           addr_cnt_clr = 1'b1;
+          seed_err_o = 1'b1;
 
           // we move to the next seed only if current seed is read and validated
           // if not, flip to validate phase and read seed again
@@ -227,7 +242,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
       // wipe away owner seed partition
       StWipeOwner: begin
-        rma_phase = 1'b1;
+        phase = PhaseRma;
         start = 1'b1;
         addr = BusAddrW'(owner_page_addr);
         num_words = BusWordsPerPage - 1'b1;
@@ -241,12 +256,15 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
           end else begin
             validate_d = 1'b1;
           end
+        end else if (done_i && err_i) begin
+          state_d = StInvalid;
         end
       end
 
       // wipe away data partitions
+      // TBD: Add an alert if not address counts are seen
       StWipeDataPart: begin
-        rma_phase = 1'b1;
+        phase = PhaseRma;
         part_sel = FlashPartData;
         start = 1'b1;
         addr = BusAddrW'({addr_cnt_q, BusWordW'(0)});
@@ -274,12 +292,19 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
       // response to rma request
       StRmaRsp: begin
-        rma_phase = 1'b1;
+        phase = PhaseRma;
         rma_rsp_o = 1'b1;
         rsp_mask = BusWidth'(StRmaRsp);
+        state_d = StInvalid;
+      end
+
+      StInvalid: begin
+        phase = PhaseInvalid;
+        state_d = StInvalid;
       end
 
       default:;
+
     endcase // unique case (state_q)
 
   end // always_comb
@@ -296,5 +321,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   assign req_o = seed_phase | rma_phase;
   assign rready_o = 1'b1;
   assign seeds_o = seeds_q;
+  assign phase_o = phase;
 
 endmodule // flash_ctrl_lcmgr
