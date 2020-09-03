@@ -120,7 +120,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
           begin : isolation_fork
             fork
               repeat (toggle_cycle) toggle_resp_signal(req);
-              wait(cfg.probe_vif.get_esc_en());
+              cfg.probe_vif.wait_esc_en();
             join_any
             disable fork;
           end
