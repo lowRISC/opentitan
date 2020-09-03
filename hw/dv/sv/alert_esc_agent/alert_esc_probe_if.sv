@@ -21,4 +21,8 @@ interface alert_esc_probe_if(input clk, input rst_n);
     return monitor_cb.esc_en;
   endfunction
 
+  task automatic wait_esc_en();
+    while (esc_en !== 1'b1) @(monitor_cb);
+  endtask
+
 endinterface
