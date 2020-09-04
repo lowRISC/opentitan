@@ -42,7 +42,8 @@ OTBN is designed as a self-contained co-processor with its own instruction and d
 ## Compatibility
 
 OTBN is not designed to be compatible with other cryptographic accelerators.
-Its design is inspired by dcrypto, the cryptographic accelerator used in Google’s Titan chips, which itself is inspired by the [Fiat Crypto Machine](http://adam.chlipala.net/papers/FiatCryptoSP19/FiatCryptoSP19.pdf).
+It received some inspiration from assembly code available from the [Chromium EC project](https://chromium.googlesource.com/chromiumos/platform/ec/),
+which has been formally verified within the [Fiat Crypto project](http://adam.chlipala.net/papers/FiatCryptoSP19/FiatCryptoSP19.pdf).
 
 # Instruction Set
 
