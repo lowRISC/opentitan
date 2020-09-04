@@ -118,7 +118,7 @@ module prim_ram_1p_adv #(
   if (EnableParity == 0 && EnableECC) begin : gen_secded
 
     // check supported widths
-    `ASSERT_INIT(SecDecWidth_A, Width inside {32})
+    `ASSERT_INIT(SecDecWidth_A, Width inside {16, 32})
 
     // the wmask is constantly set to 1 in this case
     `ASSERT(OnlyWordWritePossibleWithEccPortA_A, req_i |->
@@ -126,7 +126,15 @@ module prim_ram_1p_adv #(
 
     assign wmask_d = {TotalWidth{1'b1}};
 
-    if (Width == 32) begin : gen_secded_39_32
+    if (Width == 16) begin : gen_secded_22_16
+      prim_secded_22_16_enc u_enc (.in(wdata_i), .out(wdata_d));
+      prim_secded_22_16_dec u_dec (
+        .in         (rdata_sram),
+        .d_o        (rdata_d[0+:Width]),
+        .syndrome_o ( ),
+        .err_o      (rerror_d)
+      );
+    end else if (Width == 32) begin : gen_secded_39_32
       prim_secded_39_32_enc u_enc (.in(wdata_i), .out(wdata_d));
       prim_secded_39_32_dec u_dec (
         .in         (rdata_sram),
@@ -135,6 +143,7 @@ module prim_ram_1p_adv #(
         .err_o      (rerror_d)
       );
     end
+
   end else if (EnableParity) begin : gen_byte_parity
 
     `ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
