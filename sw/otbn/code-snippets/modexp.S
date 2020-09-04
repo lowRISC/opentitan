@@ -336,7 +336,7 @@ JAL x1, mul1_exp
 ECALL
 
 sqrx_exp:
-LW x16, 24(x0)
+LW x16, 32(x0)
 LW x17, 36(x0)
 LW x18, 40(x0)
 LW x19, 44(x0)
