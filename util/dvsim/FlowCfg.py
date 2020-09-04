@@ -16,7 +16,7 @@ from Deploy import Deploy
 from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
 
 # A set of fields that can be overridden on the command line.
-_CMDLINE_FIELDS = {'tool'}
+_CMDLINE_FIELDS = {'tool', 'verbosity'}
 
 
 # Interface class for extensions.

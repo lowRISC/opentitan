@@ -41,11 +41,15 @@
   tl_dbw: 4
 
   // Default UVM verbosity settings
-  n: UVM_NONE
-  l: UVM_LOW
-  m: UVM_MEDIUM
-  h: UVM_HIGH
-  d: UVM_DEBUG
+  expand_uvm_verbosity_n: UVM_NONE
+  expand_uvm_verbosity_l: UVM_LOW
+  expand_uvm_verbosity_m: UVM_MEDIUM
+  expand_uvm_verbosity_h: UVM_HIGH
+  expand_uvm_verbosity_d: UVM_DEBUG
+
+  // Default simulation verbosity (l => UVM_LOW). Can be overridden by
+  // the --verbosity command-line argument.
+  verbosity: l
 
   // Path to the dut instance (this is used in a couple of places such as coverage cfg
   // file, xprop cfg file etc. If this is different for your block, then override it with
@@ -67,7 +71,7 @@
                "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
 
   run_opts: ["+UVM_NO_RELNOTES",
-             "+UVM_VERBOSITY={verbosity}"]
+             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
 
   // Default list of things to export to shell
   exports: [
