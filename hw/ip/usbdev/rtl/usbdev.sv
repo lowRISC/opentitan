@@ -141,7 +141,7 @@ module usbdev (
 
 
   /////////////////////////////////
-  // USB IO after muxing (async) //
+  // USB RX after CDC & muxing   //
   /////////////////////////////////
   logic usb_rx_d;
   logic usb_rx_dp;

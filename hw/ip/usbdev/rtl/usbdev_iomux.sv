@@ -6,8 +6,8 @@
 // USB IO Mux
 //
 // Muxes the USB IO signals from register access, differential signaling, single-ended signaling
-// and swaps D+/D- if configured. The incomming signals are also muxed but
-// remain async because the clock recovery is done in the usb_fs_rx logic
+// and swaps D+/D- if configured. The incomming signals are also muxed and synchronized to the
+// corresponding clock domain.
 
 module usbdev_iomux
   import usbdev_reg_pkg::*;
@@ -38,11 +38,10 @@ module usbdev_iomux
   output logic                          cio_usb_dn_pullup_en_o,
   output logic                          cio_usb_suspend_o,
 
-  // Internal USB Interface (async, clock recovered in usb_fs_rx)
+  // Internal USB Interface (usb clk)
   output logic                          usb_rx_d_o,
   output logic                          usb_rx_dp_o,
   output logic                          usb_rx_dn_o,
-  // Internal USB Interface (usb clk)
   input  logic                          usb_tx_d_i,
   input  logic                          usb_tx_se0_i,
   input  logic                          usb_tx_oe_i,
@@ -52,6 +51,8 @@ module usbdev_iomux
 );
 
   logic async_pwr_sense, sys_usb_sense;
+  logic cio_usb_dp, cio_usb_dn, cio_usb_d;
+  logic usb_rx_dp, usb_rx_dn, usb_rx_d;
   logic pinflip;
   logic unused_eop_single_bit;
   logic unused_rx_differential_mode;
@@ -77,14 +78,20 @@ module usbdev_iomux
 
   assign sys_usb_sense_o = sys_usb_sense;
 
-  // USB sense pin or overidden value (to usbclk)
+  // USB input pins (to usbclk)
   prim_flop_2sync #(
-    .Width (1)
+    .Width (4)
   ) cdc_io_to_usb (
     .clk_i  (clk_usb_48mhz_i),
     .rst_ni (rst_usb_48mhz_ni),
-    .d      (async_pwr_sense),
-    .q      (usb_pwr_sense_o)
+    .d      ({cio_usb_dp_i,
+              cio_usb_dn_i,
+              cio_usb_d_i,
+              async_pwr_sense}),
+    .q      ({cio_usb_dp,
+              cio_usb_dn,
+              cio_usb_d,
+              usb_pwr_sense_o})
   );
 
   ////////////////////////
@@ -132,11 +139,10 @@ module usbdev_iomux
   // USB input pin mux //
   ///////////////////////
 
-  // Note: fixing rx to J moved to fs_rx since that is what needs it
   // D+/D- can be swapped based on a config register.
-  assign usb_rx_dp_o = pinflip ?  cio_usb_dn_i : cio_usb_dp_i;
-  assign usb_rx_dn_o = pinflip ?  cio_usb_dp_i : cio_usb_dn_i;
-  assign usb_rx_d_o  = pinflip ? ~cio_usb_d_i  : cio_usb_d_i;
+  assign usb_rx_dp_o = pinflip ?  cio_usb_dn : cio_usb_dp;
+  assign usb_rx_dn_o = pinflip ?  cio_usb_dp : cio_usb_dn;
+  assign usb_rx_d_o  = pinflip ? ~cio_usb_d  : cio_usb_d;
 
   // Power sense mux
   always_comb begin : proc_mux_pwr_sense

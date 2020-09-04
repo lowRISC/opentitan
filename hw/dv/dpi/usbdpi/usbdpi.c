@@ -21,7 +21,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// Define this if the simulation starts too fast to connect to fifo
+// Historically the simulation started too fast to connect to all
+// the fifos and terminals without loss of output. So a delay was added.
+// Today the startup is slow enough this does not seem to be needed.
+// In case things change again Im going to leave this behind a define
+// for now, but if this continues not to be needed the code can be deleted.
+// Uncomment next line if you need the delay
 // #define NEED_SLEEP
 
 static const char *st_states[] = {"ST_IDLE 0", "ST_SEND 1", "ST_GET 2",
@@ -100,7 +105,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
   {
     int i;
     for (i = 0; i < D2P_BITS; i++) {
-      raw_str[D2P_BITS - i - 1] = !!(d2p & (1 << i)) + '0';
+      raw_str[D2P_BITS - i - 1] = d2p & (1 << i) ? '1' : '0';
     }
   }
   raw_str[D2P_BITS] = 0;
@@ -127,7 +132,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 		 ctx->frame, ctx->tick,
                  (d2p & D2P_DPPU) ? "DP Pulled up " : "",
                  (d2p & D2P_DNPU) ? "DN Pulled up " : "",
-		 (d2p & D2P_TXMODE_SE) ? "Standard" : "Differential");
+		 (d2p & D2P_TXMODE_SE) ? "SingleEnded" : "Differential");
     ssize_t written = write(ctx->fifo_fd, obuf, n);
     assert(written == n);
     ctx->last_pu = d2p & D2P_PU;
@@ -591,17 +596,17 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
 int set_driving(struct usbdpi_ctx *ctx, int d2p, int newval) {
   if (d2p & D2P_DNPU) {
     if (d2p & D2P_TXMODE_SE) {
-      return ((ctx->driving & P2D_SENSE) |
-	      ((newval & P2D_DP) ? P2D_DN : 0) |
-	      ((newval & P2D_DN) ? P2D_DP : 0));
+      return (ctx->driving & P2D_SENSE) |
+	     ((newval & P2D_DP) ? P2D_DN : 0) |
+	     ((newval & P2D_DN) ? P2D_DP : 0);
     } else {
       if (newval & (P2D_DP | P2D_DN)) {
 	// sets single ended lines to K after swapping
-	return ((ctx->driving & P2D_SENSE) | P2D_DP |
-		((newval & P2D_DN) ? P2D_D : 0));
+	return (ctx->driving & P2D_SENSE) | P2D_DP |
+	       ((newval & P2D_DN) ? P2D_D : 0);
       } else {
 	// SE0 so D could be anything (make it 1 after swapping)
-	return (ctx->driving & P2D_SENSE);
+	return ctx->driving & P2D_SENSE;
       }
     }
   } else {
@@ -610,8 +615,8 @@ int set_driving(struct usbdpi_ctx *ctx, int d2p, int newval) {
     } else {
       if (newval & (P2D_DP | P2D_DN)) {
 	// sets single ended lines to K
-	return ((ctx->driving & P2D_SENSE) | P2D_DN |
-		((newval & P2D_DP) ? P2D_D : 0));
+	return (ctx->driving & P2D_SENSE) | P2D_DN |
+	       ((newval & P2D_DP) ? P2D_D : 0);
       } else {
 	// SE0 so D could be anything (make it 1)
 	return (ctx->driving & P2D_SENSE) | P2D_D;
@@ -794,9 +799,8 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->driving = set_driving(ctx, d2p, P2D_DP);  // J
       }
       if (ctx->bit == 8) {
-        ctx->driving = (d2p & D2P_PU) ? set_driving(ctx, d2p, P2D_DP)
-                                     :               // Z + pullup
-                          set_driving(ctx, d2p, 0);  // z without pullup = SE0
+	// Stop driving: host pulldown to SE0 unless there is a pullup on DP
+	ctx->driving = set_driving(ctx, d2p, (d2p & D2P_PU) ? P2D_DP : 0);
         if (ctx->byte == ctx->datastart) {
           ctx->bit = 1;
           ctx->state = ST_SYNC;

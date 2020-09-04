@@ -14,7 +14,7 @@ module usb_fs_rx (
   input  logic cfg_eop_single_bit_i,
   input  logic cfg_rx_differential_i,
 
-  // USB data+ and data- lines (asynchronous from pin)
+  // USB data+ and data- lines (synchronous)
   input  logic usb_d_i,
   input  logic usb_dp_i,
   input  logic usb_dn_i,
@@ -170,7 +170,7 @@ module usb_fs_rx (
   //
   // Transition where single ended happens to see SE0 look like (driven by diff DT)
   // line_state    D? DT D?...
-  // diff_state    Dx DT Dy
+  // diff_state    Dx DT Dy         (expect Dy to be inverse of Dx since diff changed)
   // Transition to SE0 will look like:
   // line_state    D? DT SE0 SE0... (DT is the first sample at SE0)
   // diff_state    Dx DT ??  ??...  (diff saw transition as line went SE0)
@@ -277,7 +277,7 @@ module usb_fs_rx (
     end
   end
 
-  // mask out jjj detection when tranmitting (because rx is forced to J)
+  // mask out jjj detection when transmitting (because rx is forced to J)
   assign rx_se0_det_o = line_history_q[5:0] == 6'b000000; // three SE0s
   assign rx_jjj_det_o = ~tx_en_i & (line_history_q[5:0] == 6'b101010); // three Js
 

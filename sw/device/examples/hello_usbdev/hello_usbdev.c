@@ -75,19 +75,26 @@ static void usb_receipt_callback_1(uint8_t c) {
   ++usb_chars_recved_total;
 }
 
-static void usb_send_str(char *s, usb_ss_ctx_t *ss) {
-  while (*s) usb_simpleserial_send_byte(ss, *s++);
+/**
+ * USB Send String
+ *
+ * Send a 0 terminated string to the USB one byte at a time.
+ * The send byte code will flush the endpoint if needed.
+ *
+ * @param string Zero terminated string to send.
+ * @param ss_ctx Pointer to simple string endpoint context to send through.
+ */
+static void usb_send_str(char *string, usb_ss_ctx_t *ss_ctx) {
+  for (int i = 0; string[i] != 0; ++i) {
+    usb_simpleserial_send_byte(ss_ctx, string[i]);
+  }
 }
 
 static dif_gpio_t gpio;
 
-#define PINFLIP 0
-#define DIFFIO 0
-
-// pre-processor magic, MKSTR will put arg in quotes
-// (Can't just use #p in PHY because it does not expand the define)
-#define MKSTR(s) #s
-#define PHY(p, d) "pinflip=" MKSTR(p) " differential io = " MKSTR(d)
+// These GPIO bits control USB PHY configuration
+static const uint32_t kPinflipMask = 1;
+static const uint32_t kDiffMask = 2;
 
 int main(int argc, char **argv) {
   uart_init(kUartBaudrate);
@@ -103,14 +110,19 @@ int main(int argc, char **argv) {
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
-  LOG_INFO("PHY settings: " PHY(PINFLIP, DIFFIO));
 
   demo_gpio_startup(&gpio);
 
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev, PINFLIP, DIFFIO, DIFFIO);
+  uint32_t gpio_state;
+  dif_gpio_all_read(&gpio, &gpio_state);
+  LOG_INFO("PHY settings: pinflip=%d differential=%d\n",
+	   gpio_state & kPinflipMask, gpio_state & kDiffMask);
+  
+  usbdev_init(&usbdev, gpio_state & kPinflipMask, gpio_state & kDiffMask,
+	      gpio_state & kDiffMask);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
   usb_simpleserial_init(&simple_serial0, &usbdev, 1, usb_receipt_callback_0);
@@ -118,8 +130,7 @@ int main(int argc, char **argv) {
 
   spid_send("SPI!", 4);
 
-  uint32_t gpio_state = 0;
-  bool say_hello = 1;
+  bool say_hello = true;
   bool pass_signaled = false;
   while (true) {
     usbdev_poll(&usbdev);

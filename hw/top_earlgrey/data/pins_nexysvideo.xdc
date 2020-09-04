@@ -121,24 +121,12 @@ set_property -dict { PACKAGE_PIN M17  IOSTANDARD LVCMOS12 } [get_ports { IO_GP7 
 #set_property -dict { PACKAGE_PIN AA18  IOSTANDARD LVCMOS33 } [get_ports { IO_GP7 }]; #IO_L17P_T2_A14_D30_14 Sch=ja[10]
 
 
-## Pmod header JB -- NORMAL USE
+## Pmod header JB
 set_property -dict { PACKAGE_PIN V9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP0 }]; #IO_L21P_T3_DQS_34 Sch=jb_p[1]
 set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN0 }]; #IO_L21N_T3_DQS_34 Sch=jb_n[1]
 set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #IO_L19P_T3_34 Sch=jb_p[2]
 set_property -dict { PACKAGE_PIN W7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #IO_L19N_T3_VREF_34 Sch=jb_n[2]
 set_property -dict { PACKAGE_PIN Y8    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #IO_L23P_T3_34 Sch=jb_p[4]
-
-############### DEBUG ONLY ########################
-## Pmod header JB -- USE TO TEST PINFLIP         ##
-## This has D+, D-, DPPULLUP, DNPULLUP swapped   ##
-## Comment out the normal use and uncomment this ##
-## for testing                                   ##
-###################################################
-#set_property -dict { PACKAGE_PIN V9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN0 }]; #IO_L21P_T3_DQS_34 Sch=jb_p[1]
-#set_property -dict { PACKAGE_PIN V8    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP0 }]; #IO_L21N_T3_DQS_34 Sch=jb_n[1]
-#set_property -dict { PACKAGE_PIN V7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #IO_L19P_T3_34 Sch=jb_p[2]
-#set_property -dict { PACKAGE_PIN W7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #IO_L19N_T3_VREF_34 Sch=jb_n[2]
-#set_property -dict { PACKAGE_PIN Y8    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DPPULLUP0 }]; #IO_L23P_T3_34 Sch=jb_p[4]
 
 ## Pmod header JB UNUSED pins (used for testing 2 USB interfaces)
 #set_property -dict { PACKAGE_PIN W9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DP1 }]; #IO_L24P_T3_34 Sch=jb_p[3]

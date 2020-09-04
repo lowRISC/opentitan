@@ -22,12 +22,11 @@ module usbdev_usbif  #(
   input  logic                     clk_48mhz_i, // 48MHz USB clock
   input  logic                     rst_ni,
 
-  // Pins (asynchronous)
+  // Pins (synchronous)
   input  logic                     usb_d_i,
   input  logic                     usb_dp_i,
   input  logic                     usb_dn_i,
 
-  // Pins (synchronous)
   output logic                     usb_d_o,
   output logic                     usb_se0_o,
   output logic                     usb_oe_o,

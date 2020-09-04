@@ -127,7 +127,10 @@ module usbdev_linkstate (
           end
         end
 
-        // Active (USB spec: Default / Address / Configured)
+        // Active but not yet seen a frame
+	// One reason for getting stuck here is the host thinks it is a LS link
+	// which could happen if the flipped bit does not match the actual pins
+	// Annother is the SI is bad so good data is not recovered from the link
         LinkActiveNoSOF: begin
           if (ev_bus_inactive) begin
             link_state_d = LinkSuspend;

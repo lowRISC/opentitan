@@ -60,10 +60,11 @@ module top_earlgrey_nexysvideo #(
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
-
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring, diom_out_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring, diom_oe_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring, diom_in_padring;
+  logic 				dnpullup;
+   
   padring #(
     // MIOs 31:20 are currently not
     // connected to pads and hence tied off
@@ -107,6 +108,7 @@ module top_earlgrey_nexysvideo #(
                              IO_GP1,
                              IO_GP0 } ),
     // DIO Pads
+    // NOTE if the order changes here then also adjust the flip code below
     .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
                              IO_DPS3, // CSB, JTAG_TMS
                              IO_DPS1, // MOSI, JTAG_TDI
@@ -127,13 +129,32 @@ module top_earlgrey_nexysvideo #(
     .mio_out_i           ( mio_out_padring  ),
     .mio_oe_i            ( mio_oe_padring   ),
     // Dedicated IOs
-    .dio_in_o            ( dio_in_padring   ),
-    .dio_out_i           ( dio_out_padring  ),
-    .dio_oe_i            ( dio_oe_padring   ),
+    .dio_in_o            ( diom_in_padring   ),
+    .dio_out_i           ( diom_out_padring  ),
+    .dio_oe_i            ( diom_oe_padring   ),
     // Pad Attributes
     .mio_attr_i          ( mio_attr         ),
     .dio_attr_i          ( dio_attr         )
   );
+
+  // Use the DN pullup to fake swapping the D+/D-
+  // This relies on the order of the signal list and matches the dio_pad_io above
+  // The code swaps IO_USB_DP0 and IO_USB_DN0 in/out/oe
+  // and swaps IO_USB_DPPULLUP with IO_USB_DNPULLUP for out/oe
+  // So if DNPULLUP is asserted the effect is as if the pins were swapped on the pcb
+  // (could do the same in the pin file but then two FPGA images would be needed for testing)   
+  assign dnpullup = dio_oe_padring[5];
+  assign dio_in_padring = dnpullup   ? { diom_in_padring[padctrl_reg_pkg::NDioPads-1:2],
+					 diom_in_padring[0],diom_in_padring[1]} : diom_in_padring;
+  assign diom_out_padring = dnpullup ? { dio_out_padring[padctrl_reg_pkg::NDioPads-1:7],
+					 dio_out_padring[5],dio_out_padring[6],
+					 dio_out_padring[4:2],
+					 dio_out_padring[0], dio_out_padring[1]} : dio_out_padring;
+  assign diom_oe_padring = dnpullup  ? { dio_oe_padring[padctrl_reg_pkg::NDioPads-1:7],
+					 dio_oe_padring[5],dio_oe_padring[6],
+					 dio_oe_padring[4:2],
+					 dio_oe_padring[0], dio_oe_padring[1]} : dio_oe_padring;
+   
 
   //////////////////////
   // JTAG Overlay Mux //

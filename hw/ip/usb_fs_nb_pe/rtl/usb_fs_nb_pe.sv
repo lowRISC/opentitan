@@ -77,7 +77,7 @@ module usb_fs_nb_pe #(
   output logic                   rx_bitstuff_err_o,
 
   ///////////////////////////////////////
-  // USB RX Interface (asynchronous)   //
+  // USB RX Interface (synchronous)    //
   ///////////////////////////////////////
   input  logic                   usb_d_i,
   input  logic                   usb_dp_i,
