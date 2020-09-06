@@ -170,6 +170,11 @@ bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
   while (true) {
     int c = getopt_long(argc, argv, "i:d:n:s:x:h?", long_options, nullptr);
     if (c == -1) {
+      // if only input file was given default to using FTDI
+      if (!options->input.empty() &&
+          options->action == SpiFlashAction::kInvalid) {
+        options->action = SpiFlashAction::kFtdi;
+      }
       return true;
     }
 
