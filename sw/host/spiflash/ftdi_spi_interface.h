@@ -28,10 +28,10 @@ class FtdiSpiInterface : public SpiInterface {
   /** FTDI SPI configuration options. */
   struct Options {
     /** USB device vendor ID. */
-    int32_t device_vendor_id;
+    int32_t device_vendor_id = 0;
 
     /** USB device product ID. */
-    int32_t device_product_id;
+    int32_t device_product_id = 0;
 
     /** USB device serial number. */
     std::string device_serial_number;
