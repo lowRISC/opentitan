@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // Where to find DV code
-  dv_root:          "{proj_root}/hw/dv"
-
   flow:             sim
   flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
+
+  // Where to find DV code
+  dv_root:          "{proj_root}/hw/dv"
 
   import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
                      "{dv_root}/tools/dvsim/common_modes.hjson",

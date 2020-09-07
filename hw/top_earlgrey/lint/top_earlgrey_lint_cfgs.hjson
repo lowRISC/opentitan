@@ -8,6 +8,8 @@
   // them all as a regression in one shot.
   name: top_earlgrey_batch
 
+  flow: lint
+
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
                      // tool-specific configuration

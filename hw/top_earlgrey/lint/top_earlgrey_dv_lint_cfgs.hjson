@@ -13,6 +13,8 @@
                      // tool-specific configuration
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
+  flow: "lint"
+
   // Different dashboard output path for each tool
   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
 

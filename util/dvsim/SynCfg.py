@@ -18,11 +18,11 @@ from utils import VERBOSE, print_msg_list, subst_wildcards
 class SynCfg(OneShotCfg):
     """Derivative class for synthesis purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
-        super().__init__(flow_cfg_file, proj_root, args)
 
-    def __post_init__(self):
-        super().__post_init__()
+    flow = 'syn'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         # Set the title for synthesis results.
         self.results_title = self.name.upper() + " Synthesis Results"
 

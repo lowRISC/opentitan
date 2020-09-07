@@ -15,14 +15,14 @@ from utils import VERBOSE, subst_wildcards
 class FpvCfg(OneShotCfg):
     """Derivative class for FPV purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
-        super().__init__(flow_cfg_file, proj_root, args)
+
+    flow = 'fpv'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
                        "covered", "unreachable", "pass_rate", "cov_rate"]
         self.summary_header = ["name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"]
-
-    def __post_init__(self):
-        super().__post_init__()
         self.results_title = self.name.upper() + " FPV Results"
 
     def parse_dict_to_str(self, input_dict, excl_keys = []):

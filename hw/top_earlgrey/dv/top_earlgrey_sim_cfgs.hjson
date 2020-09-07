@@ -10,6 +10,8 @@
   import_cfgs: [// Project wide common cfg file
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
 
+  flow: sim
+
   use_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
              "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
