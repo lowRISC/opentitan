@@ -357,6 +357,11 @@
   rv32i: true
   synopsis: Atomic Read and Set bits in CSR
   operands: [grd, csr, grs1]
+  doc: |
+    Reads the value of the CSR `csr`, and writes it to the destination GPR `grd`.
+    The initial value in `grs1` is treated as a bit mask that specifies bit positions to be set in the CSR.
+    Any bit that is high in `grs1` will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
+    Other bits in the CSR are unaffected (though CSRs might have side effects when written).
   encoding:
     scheme: I
     mapping:
@@ -368,11 +373,24 @@
   lsu:
     type: csr
     target: [csr]
+  decode: |
+    csr_num = UInt(csr)
+    d = UInt(grd)
+    s = UInt(grs1)
+  operation: |
+    gpr_s_val = GPR[s]
+    GPR[d] = CSR[csr_num]
+    CSR[csr_num] |= gpr_s_val
 
 - mnemonic: csrrw
   rv32i: true
   synopsis: Atomic Read/Write CSR
   operands: [grd, csr, grs1]
+  doc: |
+    Atomically swaps values in the CSR `csr` with the value in the GPR `grs1`.
+    Reads the old value of the CSR, and writes it to the GPR `grd`.
+    Writes the initial value in `grs1` to the CSR `csr`.
+    If `grd == x0` the instruction does not read the CSR or cause any read-related side-effects.
   encoding:
     scheme: I
     mapping:
@@ -384,6 +402,17 @@
   lsu:
     type: csr
     target: [csr]
+  decode: |
+    csr_num = UInt(csr)
+    d = UInt(grd)
+    s = UInt(grs1)
+  operation: |
+    gpr_s_val = GPR[s]
+
+    if d != 0:
+      GPR[d] = CSR[csr_num]
+
+    CSR[csr_num] = gpr_s_val
 
 - mnemonic: ecall
   rv32i: true
