@@ -12,25 +12,39 @@ import sys
 
 import hjson
 
+from CfgJson import set_target_attribute
 from Deploy import Deploy
-from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
-
-# A set of fields that can be overridden on the command line.
-_CMDLINE_FIELDS = {'tool', 'verbosity'}
+from utils import (VERBOSE, md_results_to_html,
+                   subst_wildcards, find_and_substitute_wildcards)
 
 
 # Interface class for extensions.
 class FlowCfg():
+    '''Base class for the different flows supported by dvsim.py
+
+    The constructor expects some parsed hjson data. Create these objects with
+    the factory function in CfgFactory.py, which loads the hjson data and picks
+    a subclass of FlowCfg based on its contents.
+
+    '''
+
+    # Set in subclasses. This is the key that must be used in an hjson file to
+    # tell dvsim.py which subclass to use.
+    flow = None
+
+    # Can be overridden in subclasses to configure which wildcards to ignore
+    # when expanding hjson.
+    ignored_wildcards = []
+
     def __str__(self):
         return pprint.pformat(self.__dict__)
 
-    def __init__(self, flow_cfg_file, proj_root, args):
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # Options set from command line
         self.items = args.items
         self.list_items = args.list
         self.select_cfgs = args.select_cfgs
         self.flow_cfg_file = flow_cfg_file
-        self.proj_root = proj_root
         self.args = args
         self.scratch_root = args.scratch_root
         self.branch = args.branch
@@ -39,9 +53,6 @@ class FlowCfg():
         # Options set from hjson cfg.
         self.project = ""
         self.scratch_path = ""
-
-        # Imported cfg files using 'import_cfgs' keyword
-        self.imported_cfg_files = [flow_cfg_file]
 
         # Add exports using 'exports' keyword - these are exported to the child
         # process' environment.
@@ -95,7 +106,68 @@ class FlowCfg():
         self.email_summary_md = ""
         self.results_summary_md = ""
 
-    def __post_init__(self):
+        # Merge in the values from the loaded hjson file. If subclasses want to
+        # add other default parameters that depend on the parameters above,
+        # they can override _merge_hjson and add their parameters at the start
+        # of that.
+        self._merge_hjson(hjson_data)
+
+        # Is this a primary config? If so, we need to load up all the child
+        # configurations at this point. If not, we place ourselves into
+        # self.cfgs and consider ourselves a sort of "degenerate primary
+        # configuration".
+        self.is_primary_cfg = 'use_cfgs' in hjson_data
+
+        if not self.is_primary_cfg:
+            self.cfgs.append(self)
+        else:
+            for entry in self.use_cfgs:
+                self._load_child_cfg(entry, mk_config)
+
+        # Process overrides before substituting wildcards
+        self._process_overrides()
+
+        # Expand wildcards. If subclasses need to mess around with parameters
+        # after merging the hjson but before expansion, they can override
+        # _expand and add the code at the start.
+        self._expand()
+
+        if self.rel_path == "":
+            self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
+                self.proj_root + '/', '')
+
+        # Run any final checks
+        self._post_init()
+
+    def _merge_hjson(self, hjson_data):
+        '''Take hjson data and merge it into self.__dict__
+
+        Subclasses that need to do something just before the merge should
+        override this method and call super()._merge_hjson(..) at the end.
+
+        '''
+        for key, value in hjson_data.items():
+            set_target_attribute(self.flow_cfg_file,
+                                 self.__dict__,
+                                 key,
+                                 value)
+
+    def _expand(self):
+        '''Called to expand wildcards after merging hjson
+
+        Subclasses can override this to do something just before expansion.
+
+        '''
+        # If this is a primary configuration, it doesn't matter if we don't
+        # manage to expand everything.
+        partial = self.is_primary_cfg
+
+        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
+                                                      self.__dict__,
+                                                      self.ignored_wildcards,
+                                                      ignore_error=partial)
+
+    def _post_init(self):
         # Run some post init checks
         if not self.is_primary_cfg:
             # Check if self.cfgs is a list of exactly 1 item (self)
@@ -103,11 +175,27 @@ class FlowCfg():
                 log.error("Parse error!\n%s", self.cfgs)
                 sys.exit(1)
 
-    def create_instance(self, flow_cfg_file):
+    def create_instance(self, mk_config, flow_cfg_file):
         '''Create a new instance of this class for the given config file.
 
+        mk_config is a factory method (passed explicitly to avoid a circular
+        dependency between this file and CfgFactory.py).
+
         '''
-        return type(self)(flow_cfg_file, self.proj_root, self.args)
+        new_instance = mk_config(flow_cfg_file)
+
+        # Sanity check to make sure the new object is the same class as us: we
+        # don't yet support heterogeneous primary configurations.
+        if type(self) is not type(new_instance):
+            log.error("{}: Loading child configuration at {!r}, but the "
+                      "resulting flow types don't match: ({} vs. {})."
+                      .format(self.flow_cfg_file,
+                              flow_cfg_file,
+                              type(self).__name__,
+                              type(new_instance).__name__))
+            sys.exit(1)
+
+        return new_instance
 
     def kill(self):
         '''kill running processes and jobs gracefully
@@ -115,186 +203,37 @@ class FlowCfg():
         for item in self.deploy:
             item.kill()
 
-    def _parse_cfg(self, path, is_entry_point):
-        '''Load an hjson config file at path and update self accordingly.
+    def _load_child_cfg(self, entry, mk_config):
+        '''Load a child configuration for a primary cfg'''
+        if type(entry) is str:
+            # Treat this as a file entry. Substitute wildcards in cfg_file
+            # files since we need to process them right away.
+            cfg_file = subst_wildcards(entry,
+                                       self.__dict__,
+                                       ignore_error=True)
+            self.cfgs.append(self.create_instance(mk_config, cfg_file))
 
-        If is_entry_point is true, this is the top-level configuration file, so
-        it's possible that this is a primary config.
+        elif type(entry) is dict:
+            # Treat this as a cfg expanded in-line
+            temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
+            if not temp_cfg_file:
+                return
+            self.cfgs.append(self.create_instance(mk_config, temp_cfg_file))
 
-        '''
-        hjson_dict = parse_hjson(path)
+            # Delete the temp_cfg_file once the instance is created
+            try:
+                log.log(VERBOSE, "Deleting temp cfg file:\n%s",
+                        temp_cfg_file)
+                os.system("/bin/rm -rf " + temp_cfg_file)
+            except IOError:
+                log.error("Failed to remove temp cfg file:\n%s",
+                          temp_cfg_file)
 
-        # Check if this is the primary cfg, if this is the entry point cfg file
-        if is_entry_point:
-            self.is_primary_cfg = self.check_if_primary_cfg(hjson_dict)
-
-            # If not a primary cfg, then register self with self.cfgs
-            if self.is_primary_cfg is False:
-                self.cfgs.append(self)
-
-        # Resolve the raw hjson dict to build this object
-        self.resolve_hjson_raw(path, hjson_dict)
-
-    def _parse_flow_cfg(self, path):
-        '''Parse the flow's hjson configuration.
-
-        This is a private API which should be called by the __init__ method of
-        each subclass.
-
-        '''
-        self._parse_cfg(path, True)
-        if self.rel_path == "":
-            self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
-                self.proj_root + '/', '')
-
-    def check_if_primary_cfg(self, hjson_dict):
-        # This is a primary cfg only if it has a single key called "use_cfgs"
-        # which contains a list of actual flow cfgs.
-        hjson_cfg_dict_keys = hjson_dict.keys()
-        return ("use_cfgs" in hjson_cfg_dict_keys and type(hjson_dict["use_cfgs"]) is list)
-
-    def _set_attribute(self, path, key, dict_val):
-        '''Set an attribute from an hjson file
-
-        The path argument is the path for the hjson file that we're reading.
-
-        '''
-        # Is this value overridden on the command line? If so, use the override
-        # instead.
-        args_val = None
-        if key in _CMDLINE_FIELDS:
-            args_val = getattr(self.args, key, None)
-        override_msg = ''
-        if args_val is not None:
-            dict_val = args_val
-            override_msg = ' from command-line override'
-
-        self_val = getattr(self, key, None)
-        if self_val is None:
-            # A new attribute (or the old value was None, in which case it's
-            # just a placeholder and needs writing). Set it and return.
-            setattr(self, key, dict_val)
-            return
-
-        # This is already an attribute. Firstly, we need to make sure the types
-        # are compatible.
-        if type(dict_val) != type(self_val):
-            log.error("Conflicting types for key {!r} when loading {!r}. "
-                      "Cannot override value {!r} with {!r} (which is of "
-                      "type {}{})."
-                      .format(key, path, self_val, dict_val,
-                              type(dict_val).__name__, override_msg))
+        else:
+            log.error(
+                "Type of entry \"%s\" in the \"use_cfgs\" key is invalid: %s",
+                entry, str(type(entry)))
             sys.exit(1)
-
-        # Looks like the types are compatible. If they are lists, concatenate
-        # them.
-        if isinstance(self_val, list):
-            setattr(self, key, self_val + dict_val)
-            return
-
-        # Otherwise, check whether this is a type we know how to deal with.
-        scalar_types = {str: [""], int: [0, -1], bool: [False]}
-
-        defaults = scalar_types.get(type(dict_val))
-        if defaults is None:
-            log.error("When loading {!r} and setting key {!r}, found a value "
-                      "of {!r}{} with unsupported type {}."
-                      .format(path, key, dict_val,
-                              override_msg, type(dict_val).__name__))
-            sys.exit(1)
-
-        # If the values are equal, there's nothing more to do
-        if self_val == dict_val:
-            return
-
-        old_is_default = self_val in defaults
-        new_is_default = dict_val in defaults
-
-        # Similarly, if new value looks like a default, ignore it (regardless
-        # of whether the current value looks like a default).
-        if new_is_default:
-            return
-
-        # If the existing value looks like a default and the new value doesn't,
-        # take the new value.
-        if old_is_default:
-            setattr(self, key, dict_val)
-            return
-
-        # Neither value looks like a default. Raise an error.
-        log.error("When loading {!r}, key {!r} is given a value of "
-                  "{!r}{}, but the key is already set to {!r}."
-                  .format(path, key, dict_val, override_msg, self_val))
-        sys.exit(1)
-
-    def resolve_hjson_raw(self, path, hjson_dict):
-        import_cfgs = []
-        use_cfgs = []
-        for key, dict_val in hjson_dict.items():
-            # If key is 'import_cfgs' then add to the list of cfgs to process
-            if key == 'import_cfgs':
-                import_cfgs.extend(dict_val)
-                continue
-
-            # If the key is 'use_cfgs', we're only allowed to take effect for a
-            # primary config list. If we are in a primary config list, add it.
-            if key == 'use_cfgs':
-                if not self.is_primary_cfg:
-                    log.error("Key 'use_cfgs' encountered in the non-primary "
-                              "cfg file list {!r}."
-                              .format(path))
-                    sys.exit(1)
-
-                use_cfgs.extend(dict_val)
-                continue
-
-            # Otherwise, set an attribute on self.
-            self._set_attribute(path, key, dict_val)
-
-        # Parse imported cfgs
-        for cfg_file in import_cfgs:
-            if cfg_file not in self.imported_cfg_files:
-                self.imported_cfg_files.append(cfg_file)
-                # Substitute wildcards in cfg_file files since we need to process
-                # them right away.
-                cfg_file = subst_wildcards(cfg_file, self.__dict__)
-                self._parse_cfg(cfg_file, False)
-            else:
-                log.error("Cfg file \"%s\" has already been parsed", cfg_file)
-
-        # Parse primary cfg files
-        if self.is_primary_cfg:
-            for entry in use_cfgs:
-                if type(entry) is str:
-                    # Treat this as a file entry
-                    # Substitute wildcards in cfg_file files since we need to process
-                    # them right away.
-                    cfg_file = subst_wildcards(entry,
-                                               self.__dict__,
-                                               ignore_error=True)
-                    self.cfgs.append(self.create_instance(cfg_file))
-
-                elif type(entry) is dict:
-                    # Treat this as a cfg expanded in-line
-                    temp_cfg_file = self._conv_inline_cfg_to_hjson(entry)
-                    if not temp_cfg_file:
-                        continue
-                    self.cfgs.append(self.create_instance(temp_cfg_file))
-
-                    # Delete the temp_cfg_file once the instance is created
-                    try:
-                        log.log(VERBOSE, "Deleting temp cfg file:\n%s",
-                                temp_cfg_file)
-                        os.system("/bin/rm -rf " + temp_cfg_file)
-                    except IOError:
-                        log.error("Failed to remove temp cfg file:\n%s",
-                                  temp_cfg_file)
-
-                else:
-                    log.error(
-                        "Type of entry \"%s\" in the \"use_cfgs\" key is invalid: %s",
-                        entry, str(type(entry)))
-                    sys.exit(1)
 
     def _conv_inline_cfg_to_hjson(self, idict):
         '''Dump a temp hjson file in the scratch space from input dict.

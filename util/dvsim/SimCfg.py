@@ -17,7 +17,7 @@ from Deploy import (CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr,
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
-from utils import VERBOSE, find_and_substitute_wildcards
+from utils import VERBOSE
 
 from testplanner import class_defs, testplan_utils
 
@@ -48,8 +48,16 @@ class SimCfg(FlowCfg):
     A simulation configuration class holds key information required for building a DV
     regression framework.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
-        super().__init__(flow_cfg_file, proj_root, args)
+
+    flow = 'sim'
+
+    # TODO: Find a way to set these in sim cfg instead
+    ignored_wildcards = [
+        "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
+        "cov_db_dirs", "sw_images", "sw_build_device"
+    ]
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # Options set from command line
         self.tool = args.tool
         self.build_opts = []
@@ -73,10 +81,7 @@ class SimCfg(FlowCfg):
         self.profile = args.profile or '(cfg uses profile without --profile)'
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
-        # Single-character verbosity setting (n, l, m, h, d). args.verbosity
-        # might be None, in which case we'll pick up a default value from
-        # configuration files.
-        self.verbosity = args.verbosity
+        self.verbosity = None  # set in _expand
         self.verbose = args.verbose
         self.dry_run = args.dry_run
         self.map_full_testplan = args.map_full_testplan
@@ -139,9 +144,9 @@ class SimCfg(FlowCfg):
         # Maintain an array of those in cov_deploys.
         self.cov_deploys = []
 
-        # Parse the cfg_file file tree
-        self._parse_flow_cfg(flow_cfg_file)
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
+    def _expand(self):
         # Choose a wave format now. Note that this has to happen after parsing
         # the configuration format because our choice might depend on the
         # chosen tool.
@@ -151,19 +156,15 @@ class SimCfg(FlowCfg):
         if self.build_unique:
             self.build_dir += "_" + self.timestamp
 
-        # Process overrides before substituting the wildcards.
-        self._process_overrides()
+        # If the user specified a verbosity on the command line then
+        # self.args.verbosity will be n, l, m, h or d. Set self.verbosity now.
+        # We will actually have loaded some other verbosity level from the
+        # config file, but that won't have any effect until expansion so we can
+        # safely switch it out now.
+        if self.args.verbosity is not None:
+            self.verbosity = self.args.verbosity
 
-        # Make substitutions, while ignoring the following wildcards
-        # TODO: Find a way to set these in sim cfg instead
-        ignored_wildcards = [
-            "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
-            "cov_db_dirs", "sw_images", "sw_build_device"
-        ]
-        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
-                                                      self.__dict__,
-                                                      ignored_wildcards,
-                                                      self.is_primary_cfg)
+        super()._expand()
 
         # Set the title for simulation results.
         self.results_title = self.name.upper() + " Simulation Results"
@@ -201,13 +202,6 @@ class SimCfg(FlowCfg):
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a primary cfg obj
             self._create_objects()
-
-        # Post init checks
-        self.__post_init__()
-
-    def __post_init__(self):
-        # Run some post init checks
-        super().__post_init__()
 
     def _resolve_waves(self):
         '''Choose and return a wave format, if waves are enabled.

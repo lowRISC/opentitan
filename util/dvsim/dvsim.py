@@ -28,11 +28,8 @@ import sys
 import textwrap
 from signal import SIGINT, signal
 
+from CfgFactory import make_cfg
 import Deploy
-import FpvCfg
-import LintCfg
-import SimCfg
-import SynCfg
 import utils
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
@@ -134,26 +131,6 @@ def resolve_branch(branch):
         branch = "default"
 
     return branch
-
-
-def make_config(args, proj_root):
-    '''A factory method for FlowCfg objects'''
-
-    # Look up the tool in a dictionary, defaulting to SimCfg.
-    #
-    # If --tool was not passed (so args.tool is None), we have to figure out
-    # the tool by reading the config file. At the moment, this forces a
-    # simulation target (TODO?)
-    factories = {
-        'ascentlint': LintCfg.LintCfg,
-        'veriblelint': LintCfg.LintCfg,
-        'verilator': LintCfg.LintCfg,
-        'dc': SynCfg.SynCfg,
-        'jaspergold': FpvCfg.FpvCfg
-    }
-
-    factory = factories.get(args.tool, SimCfg.SimCfg)
-    return factory(args.cfg, proj_root, args)
 
 
 # Get the project root directory path - this is used to construct the full paths
@@ -590,7 +567,7 @@ def main():
         proj_root = get_proj_root()
 
     global cfg
-    cfg = make_config(args, proj_root)
+    cfg = make_cfg(args.cfg, args, proj_root)
 
     # Handle Ctrl-C exit.
     signal(SIGINT, sigint_handler)

@@ -11,6 +11,8 @@
   import_cfgs: [// common server configuration for results upload
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
 
+  flow: "fpv"
+
   use_cfgs: [// TODO: implement some switch to only select "_fpv" testbenches
              // TODO: if we default "_fpv" cov to be on, and the rest of the tbs cov off, need a
              // command-line switch to disable cov.

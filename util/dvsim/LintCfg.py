@@ -18,13 +18,13 @@ from utils import VERBOSE, print_msg_list, subst_wildcards
 class LintCfg(OneShotCfg):
     """Derivative class for linting purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
+
+    flow = 'lint'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # This is a lint-specific attribute
         self.is_style_lint = ""
-        super().__init__(flow_cfg_file, proj_root, args)
-
-    def __post_init__(self):
-        super().__post_init__()
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
         # Convert to boolean
         if self.is_style_lint == "True":
@@ -52,7 +52,6 @@ class LintCfg(OneShotCfg):
             results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
-
 
         header = [
             "Name", "Tool Warnings", "Tool Errors", "Lint Warnings",
@@ -185,7 +184,6 @@ class LintCfg(OneShotCfg):
                              ("Tool Errors", "errors"),
                              ("Lint Warnings", "lint_warnings"),
                              ("Lint Errors", "lint_errors")]
-
 
             # Lint fails if any warning or error message has occurred
             self.errors_seen = False
