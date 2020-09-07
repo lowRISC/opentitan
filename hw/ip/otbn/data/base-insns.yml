@@ -356,12 +356,12 @@
 - mnemonic: csrrs
   rv32i: true
   synopsis: Atomic Read and Set bits in CSR
-  operands: [grd, csr, grs]
+  operands: [grd, csr, grs1]
   encoding:
     scheme: I
     mapping:
       imm: csr
-      rs1: grs
+      rs1: grs1
       funct3: b010
       rd: grd
       opcode: b11100
@@ -372,12 +372,12 @@
 - mnemonic: csrrw
   rv32i: true
   synopsis: Atomic Read/Write CSR
-  operands: [grd, csr, grs]
+  operands: [grd, csr, grs1]
   encoding:
     scheme: I
     mapping:
       imm: csr
-      rs1: grs
+      rs1: grs1
       funct3: b001
       rd: grd
       opcode: b11100
