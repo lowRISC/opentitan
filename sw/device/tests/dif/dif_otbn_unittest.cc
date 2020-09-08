@@ -332,19 +332,19 @@ TEST_F(GetErrCodeTest, NullArgs) {
   result = dif_otbn_get_err_code(&dif_otbn_, nullptr);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  err_code = kDifOtbnErrCodeNoError;
+  err_code = kDifOtbnErrCodeBadDataAddr;
   result = dif_otbn_get_err_code(nullptr, &err_code);
   EXPECT_EQ(result, kDifOtbnBadArg);
-  EXPECT_EQ(err_code, kDifOtbnErrCodeNoError);
+  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
 }
 
 TEST_F(GetErrCodeTest, Success) {
-  EXPECT_READ32(OTBN_ERR_CODE_REG_OFFSET, kDifOtbnErrCodeNoError);
+  EXPECT_READ32(OTBN_ERR_CODE_REG_OFFSET, kDifOtbnErrCodeBadDataAddr);
 
   dif_otbn_err_code_t err_code;
   dif_otbn_result_t result = dif_otbn_get_err_code(&dif_otbn_, &err_code);
   EXPECT_EQ(result, kDifOtbnOk);
-  EXPECT_EQ(err_code, kDifOtbnErrCodeNoError);
+  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
 }
 
 TEST_F(GetErrCodeTest, HardwareReturnsUnknownErrorCode) {
@@ -352,12 +352,12 @@ TEST_F(GetErrCodeTest, HardwareReturnsUnknownErrorCode) {
   // error code.
   EXPECT_READ32(OTBN_ERR_CODE_REG_OFFSET, 1234);
 
-  dif_otbn_err_code_t err_code = kDifOtbnErrCodeNoError;
+  dif_otbn_err_code_t err_code = kDifOtbnErrCodeBadDataAddr;
   dif_otbn_result_t result = dif_otbn_get_err_code(&dif_otbn_, &err_code);
   EXPECT_EQ(result, kDifOtbnUnexpectedData);
 
   // Should stay unchanged.
-  EXPECT_EQ(err_code, kDifOtbnErrCodeNoError);
+  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
 }
 
 class ImemWriteTest : public OtbnTest {};
