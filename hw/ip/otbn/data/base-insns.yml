@@ -453,7 +453,7 @@
   operands: []
   doc: A pseudo-operation that has no effect.
   literal-pseudo-op:
-    - addi x0, x0, 0
+    - ADDI x0, x0, 0
 
 - mnemonic: li
   synopsis: Load Immediate
