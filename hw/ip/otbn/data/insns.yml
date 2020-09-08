@@ -169,7 +169,6 @@ insn-groups:
       Refer to the [RISC-V Unprivileged Specification](https://riscv.org/specifications/isa-spec-pdf/) for a detailed instruction specification.
       Not all RV32 instructions are implemented.
       The implemented subset is shown below.
-      Many instructions in the base instruction set have an equivalent in the big number instruction subset, enabling processor logic to be shared between the instruction subsets.
     insns: base-insns.yml
 
   - key: bignum
