@@ -216,7 +216,7 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
   // Ensure that all values returned from hardware match explicitly defined
   // values in the DIF.
   switch (err_code_raw) {
-    case 0:  // kDifOtbnErrorCodeNoError
+    case kDifOtbnErrCodeNoError:
       *err_code = (dif_otbn_err_code_t)err_code_raw;
       return kDifOtbnOk;
 
