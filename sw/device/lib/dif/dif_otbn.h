@@ -78,7 +78,7 @@ typedef enum dif_otbn_result {
 typedef enum dif_otbn_err_code {
   // Keep error codes in sync with the hardware!
   /** No error occurred. */
-  kDifOtbnErrorCodeNoError = 0x0,
+  kDifOtbnErrCodeNoError = 0x0,
 } dif_otbn_err_code_t;
 
 /**
