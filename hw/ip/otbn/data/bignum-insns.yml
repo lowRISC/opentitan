@@ -203,7 +203,7 @@
     [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
   glued-ops: true
   doc: |
-    Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
 
     For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
   decode: |
@@ -266,8 +266,8 @@
     [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
   glued-ops: true
   doc: |
-    Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
-    Writes the resulting accumulator to `<wrd>`.
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
+    Writes the resulting accumulator to `wrd`.
   decode: |
     writeback_variant = 'writeout'
     zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
@@ -549,7 +549,7 @@
   syntax: |
     <wrd>, <wrs>[, <shift_type> <shift_bytes>B]
   doc: |
-    Negates the value in `<wrs>`, storing the result into `<wrd>`.
+    Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
   decode: |
     d = UInt(wrd)
@@ -614,7 +614,7 @@
   syntax: |
     <wrd>, <wrs1>, <wrs2> >> <imm>
   doc: |
-    The concatenation of the content from the WDRs referenced by `wrs1` and `wrs2` (`wrs1` forms the upper part) is right shifted by an immediate value and truncated to WLEN bit.
+    Concatenates the content of WDRs referenced by `wrs1` and `wrs2` (`wrs1` forms the upper part), shifts it right by an immediate value and truncates to WLEN bit.
     The result is stored in the WDR referenced by `wrd`.
   decode: |
     d = UInt(wrd)
@@ -910,7 +910,7 @@
   syntax: |
     <grd>[<grd_inc>], <grs>[<grs_inc>]
   doc: |
-    Copy WDR contents between registers with indirect addressing.
+    Copies WDR contents between registers with indirect addressing.
     Optionally, either the source or the destination register address can be incremented by 1.
   decode: |
     s = UInt(grs)
