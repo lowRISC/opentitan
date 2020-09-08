@@ -327,17 +327,6 @@ Writing to `x1` pushes to the call stack, reading from it pops an item.
 
 A WLEN bit wide accumulator used by the BN.MULQACC instruction.
 
-## Instruction Format
-
-All instructions are a fixed 32b in length and must be aligned on a four byte-boundary in memory.
-
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
-
-  The instruction encoding has not been finalized yet.
-  See [issue #2391](https://github.com/lowRISC/opentitan/issues/2391) for the current status.
-</div>
-
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
 ## Base Instruction Subset
 {{< otbn_isa base >}}
