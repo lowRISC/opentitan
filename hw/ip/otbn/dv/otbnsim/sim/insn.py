@@ -747,10 +747,14 @@ class BNSID(OTBNInsn):
         self.grs1_inc = op_vals['grs1_inc']
 
     def execute(self, model: OTBNModel) -> None:
-        wrs = int(model.state.intreg[self.grs2])
+        idx = int(model.state.intreg[self.grs2])
         addr = int(model.state.intreg[self.grs1] + int(self.offset))
-        word = int(model.state.wreg[wrs])
-        model.store_wlen_word_to_memory(addr, word)
+
+        wrs = model.state.wreg[idx]
+        uval = wrs.unsigned()
+        value = bytes((uval >> (8 * idx)) & 255
+                      for idx in range(wrs.bits // 8))
+        model.store_bytes_to_memory(addr, value)
 
         if self.grs2_inc:
             model.state.intreg[self.grs2] += 1
