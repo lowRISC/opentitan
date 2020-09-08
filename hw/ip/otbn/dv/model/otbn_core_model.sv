@@ -31,25 +31,7 @@ module otbn_core_model
   input  logic  start_i, // start the operation
   output logic  done_o,  // operation done
 
-  input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
-
-  // Instruction memory (IMEM)
-  output logic                     imem_req_o,
-  output logic [ImemAddrWidth-1:0] imem_addr_o,
-  output logic [31:0]              imem_wdata_o,
-  input  logic [31:0]              imem_rdata_i,
-  input  logic                     imem_rvalid_i,
-  input  logic [1:0]               imem_rerror_i,
-
-  // Data memory (DMEM)
-  output logic                     dmem_req_o,
-  output logic                     dmem_write_o,
-  output logic [DmemAddrWidth-1:0] dmem_addr_o,
-  output logic [WLEN-1:0]          dmem_wdata_o,
-  output logic [WLEN-1:0]          dmem_wmask_o,
-  input  logic [WLEN-1:0]          dmem_rdata_i,
-  input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i
+  input  logic [ImemAddrWidth-1:0] start_addr_i // start byte address in IMEM
 );
 
   import "DPI-C" context function int run_model(string imem_scope,
