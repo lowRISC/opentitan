@@ -27,7 +27,6 @@ module entropy_src_shtests (
   logic rct_fail;
   logic rct_pass;
   logic apt_reset_test;
-  logic apt_samples_match;
   logic apt_fail;
   logic apt_pass;
 
@@ -35,9 +34,9 @@ module entropy_src_shtests (
   // flops
   logic        rct_prev_sample_q, rct_prev_sample_d;
   logic [15:0] rct_rep_cntr_q, rct_rep_cntr_d;
-  logic        apt_initial_sample_q, apt_initial_sample_d;
   logic [15:0] apt_sample_cntr_q, apt_sample_cntr_d;
-  logic [15:0] apt_match_cntr_q, apt_match_cntr_d;
+  logic [15:0] apt_match0_cntr_q, apt_match0_cntr_d;
+  logic [15:0] apt_match1_cntr_q, apt_match1_cntr_d;
   logic        rct_passing_q, rct_passing_d;
   logic        apt_passing_q, apt_passing_d;
 
@@ -45,17 +44,17 @@ module entropy_src_shtests (
     if (!rst_ni) begin
       rct_prev_sample_q     <= '0;
       rct_rep_cntr_q        <= '0;
-      apt_initial_sample_q  <= '0;
       apt_sample_cntr_q     <= '0;
-      apt_match_cntr_q      <= '0;
+      apt_match0_cntr_q     <= '0;
+      apt_match1_cntr_q     <= '0;
       rct_passing_q    <= '0;
       apt_passing_q    <= '0;
     end else begin
       rct_prev_sample_q     <= rct_prev_sample_d;
       rct_rep_cntr_q        <= rct_rep_cntr_d;
-      apt_initial_sample_q  <= apt_initial_sample_d;
       apt_sample_cntr_q     <= apt_sample_cntr_d;
-      apt_match_cntr_q      <= apt_match_cntr_d;
+      apt_match0_cntr_q     <= apt_match0_cntr_d;
+      apt_match1_cntr_q     <= apt_match1_cntr_d;
       rct_passing_q    <= rct_passing_d;
       apt_passing_q    <= apt_passing_d;
     end
@@ -105,25 +104,21 @@ module entropy_src_shtests (
   // NIST N value
   assign apt_reset_test = ~apt_active_i | apt_fail | (apt_sample_cntr_q >= apt_window_i);
 
-  // NIST A counter
-  assign apt_initial_sample_d =
-         ((apt_sample_cntr_q == 16'h0000) & entropy_bit_vld_i) ? entropy_bit_i :
-         apt_initial_sample_q;
-
   // NIST S counter
   assign apt_sample_cntr_d = apt_reset_test ? 16'b0 :
          entropy_bit_vld_i ? (apt_sample_cntr_q+1) :
          apt_sample_cntr_q;
 
-  assign apt_samples_match = entropy_bit_vld_i & (apt_initial_sample_q == entropy_bit_i);
+  assign apt_match0_cntr_d = apt_reset_test ? 16'b0 :
+         (entropy_bit_vld_i & (entropy_bit_i == 1'b0)) ? (apt_match0_cntr_q + 1) :
+         apt_match0_cntr_q;
 
-  // NIST B counter
-  assign apt_match_cntr_d = apt_reset_test ? 16'b0 :
-         (entropy_bit_vld_i & apt_samples_match) ? (apt_match_cntr_q+1) :
-         apt_match_cntr_q;
+  assign apt_match1_cntr_d = apt_reset_test ? 16'b0 :
+         (entropy_bit_vld_i & (entropy_bit_i == 1'b1)) ? (apt_match1_cntr_q + 1) :
+         apt_match1_cntr_q;
 
   assign apt_pass = (apt_sample_cntr_q >= apt_window_i);
-  assign apt_fail = apt_active_i & (apt_match_cntr_q >= apt_max_cnt_i);
+  assign apt_fail = apt_active_i & ((apt_match0_cntr_q >= apt_max_cnt_i) || (apt_match1_cntr_q >= apt_max_cnt_i));
   assign apt_fail_pls_o = apt_fail;
 
   assign apt_passing_d =
