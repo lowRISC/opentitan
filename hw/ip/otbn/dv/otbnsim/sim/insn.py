@@ -559,8 +559,8 @@ class BNSUBM(OTBNInsn):
         a = int(model.state.wreg[self.wrs1])
         b = int(model.state.wreg[self.wrs2])
         result, _ = model.add_with_carry(a, -b, 0)
-        if result >= model.state.mod:
-            result -= model.state.mod
+        if result < 0:
+            result += model.state.mod
         model.state.wreg[self.wrd] = result
 
 

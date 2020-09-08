@@ -459,8 +459,8 @@
   operation: |
     (result, ) = AddWithCarry(a, -b, "0")
 
-    if result >= MOD:
-      result = result - MOD
+    if result < 0:
+      result = MOD + result
 
     WDR[d] = result
   encoding:
