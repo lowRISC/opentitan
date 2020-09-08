@@ -14,6 +14,16 @@ rom_link_args = [
 ]
 rom_link_deps = [rom_linkfile]
 
+# Mask ROM Lockdown Module.
+mask_rom_lockdown = declare_dependency(
+  link_with: static_library(
+    'mask_rom_lockdown',
+    sources: [
+      'mask_rom_lockdown.c',
+    ],
+  )
+)
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_elf = executable(
     'mask_rom_' + device_name,
@@ -27,6 +37,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       chip_info_h,
       device_lib,
+      mask_rom_lockdown,
     ],
   )
 
