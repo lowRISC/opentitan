@@ -329,9 +329,11 @@ A WLEN bit wide accumulator used by the BN.MULQACC instruction.
 
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
 ## Base Instruction Subset
+
 {{< otbn_isa base >}}
 
 ## Big Number Instruction Subset
+
 {{< otbn_isa bignum >}}
 
 ## Pseudo-Code Functions for BN Instructions
