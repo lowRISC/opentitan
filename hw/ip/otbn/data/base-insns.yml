@@ -250,7 +250,7 @@
       rd: grd
       opcode: b00000
   doc: |
-    Load a 32b word from address `<offset> + <grs1>` in data memory, writing the result to `<grd>`.
+    Loads a 32b word from address `offset + grs1` in data memory, writing the result to `grd`.
     Unaligned loads are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   lsu:
@@ -272,7 +272,7 @@
       funct3: b010
       opcode: b01000
   doc: |
-    Store a 32b word in `<grs2>` to address `<offset> + <grs1>` in data memory.
+    Stores a 32b word in `grs2` to address `offset + grs1` in data memory.
     Unaligned stores are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   lsu:
@@ -418,9 +418,9 @@
     https://github.com/lowRISC/opentitan/issues/2496 for up-to-date
     information.
   doc: |
-    Repeat a sequence of code multiple times. The number of iterations is
-    read from `<grs>`, treated as an unsigned value. The number of
-    instructions in the loop is given in the `<bodysize>` immediate.
+    Repeats a sequence of code multiple times. The number of iterations is
+    read from `grs`, treated as an unsigned value. The number of
+    instructions in the loop is given in the `bodysize` immediate.
   encoding:
     scheme: loop
     mapping:
@@ -437,9 +437,9 @@
   straight-line: false
   note: *loop-note
   doc: |
-    Repeat a sequence of code multiple times. The `<iterations>`
+    Repeats a sequence of code multiple times. The `iterations`
     unsigned immediate operand gives the number of iterations and
-    the `<bodysize>` unsigned immediate operand gives the number of
+    the `bodysize` unsigned immediate operand gives the number of
     instructions in the body.
   encoding:
     scheme: loopi
@@ -460,7 +460,7 @@
   rv32i: true
   operands: [grd, imm]
   doc: |
-    Load a 32b signed immediate value into a GPR. This uses ADDI and LUI,
+    Loads a 32b signed immediate value into a GPR. This uses ADDI and LUI,
     expanding to one or two instructions, depending on the immediate (small
     non-negative immediates or immediates with all lower bits zero can be
     loaded with just ADDI or LUI, respectively; general immediates need a LUI
