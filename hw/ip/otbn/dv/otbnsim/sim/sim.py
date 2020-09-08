@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import struct
-from typing import List
+from typing import List, Tuple
 
 from riscvmodel.model import TerminateException  # type: ignore
 
@@ -38,13 +38,18 @@ class OTBNSim:
         insn_count = 0
         done = False
         while not done:
-            done = self.step()
+            done, _ = self.step()
             insn_count += 1
 
         return insn_count
 
-    def step(self) -> bool:
-        '''Run a single instruction. Return True if done.'''
+    def step(self) -> Tuple[bool, List[str]]:
+        '''Run a single instruction.
+
+        Returns (done, changes). done is true if the simulation has stopped.
+        changes is a list of the architectural changes that have happened.
+
+        '''
         word_pc = int(self.model.state.pc) >> 2
 
         if word_pc >= len(self.program):
@@ -67,14 +72,13 @@ class OTBNSim:
             done = True
         self.model.post_insn()
 
-        # If verbose, gather up the changes that have happened before
-        # committing them.
+        changes = self.model.state.changes()
         if self.model.verbose:
             disasm = insn.disassemble(int(self.model.state.pc))
             self.model.print_trace(disasm)
 
         self.model.state.commit()
-        return done
+        return (done, changes)
 
     def dump_data(self) -> bytes:
         data = b""
