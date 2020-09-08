@@ -79,6 +79,8 @@ typedef enum dif_otbn_err_code {
   // Keep error codes in sync with the hardware!
   /** No error occurred. */
   kDifOtbnErrCodeNoError = 0x0,
+  /** Load or store to invalid address. */
+  kDifOtbnErrCodeBadDataAddr = 0x1,
 } dif_otbn_err_code_t;
 
 /**

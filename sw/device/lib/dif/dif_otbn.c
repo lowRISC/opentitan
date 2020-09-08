@@ -217,6 +217,7 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
   // values in the DIF.
   switch (err_code_raw) {
     case kDifOtbnErrCodeNoError:
+    case kDifOtbnErrCodeBadDataAddr:
       *err_code = (dif_otbn_err_code_t)err_code_raw;
       return kDifOtbnOk;
 
