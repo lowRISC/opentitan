@@ -359,7 +359,7 @@
   operands: [grd, csr, grs1]
   doc: |
     Reads the value of the CSR `csr`, and writes it to the destination GPR `grd`.
-    The initial value in `grs1` is treated as a bit mask that specifies bit positions to be set in the CSR.
+    The initial value in `grs1` is treated as a bit mask that specifies bits to be set in the CSR.
     Any bit that is high in `grs1` will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
     Other bits in the CSR are unaffected (though CSRs might have side effects when written).
   encoding:
