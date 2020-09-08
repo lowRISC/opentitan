@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from random import getrandbits
+import struct
 from typing import List, Optional, Tuple, cast
 
 from attrdict import AttrDict  # type: ignore
@@ -325,15 +326,12 @@ class OTBNModel(Model):  # type: ignore
             word += cast(int, self.state.memory.lw(addr + byte_off)) << bit_off
         return word
 
-    def store_wlen_word_to_memory(self, addr: int, word: int) -> None:
+    def store_bytes_to_memory(self, addr: int, value: bytes) -> None:
         assert 0 <= addr
-        assert 0 <= word
-        assert (word >> 256) == 0
+        assert 0 == len(value) & 3
 
-        mask32 = (1 << 32) - 1
-        for byte_off in range(0, 32, 4):
-            bit_off = byte_off * 8
-            self.state.memory.sw(addr + byte_off, (word >> bit_off) & mask32)
+        for word_idx, word in enumerate(struct.iter_unpack('<I', value)):
+            self.state.memory.sw(addr + 4 * word_idx, word[0])
 
     @staticmethod
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, int]:
