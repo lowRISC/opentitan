@@ -435,23 +435,7 @@ module otbn
       .start_i (start),
       .done_o  (done),
 
-      .start_addr_i  (start_addr),
-
-      .imem_req_o    (imem_req_core),
-      .imem_addr_o   (imem_addr_core),
-      .imem_wdata_o  (imem_wdata_core),
-      .imem_rdata_i  (imem_rdata_core),
-      .imem_rvalid_i (imem_rvalid_core),
-      .imem_rerror_i (imem_rerror_core),
-
-      .dmem_req_o    (dmem_req_core),
-      .dmem_write_o  (dmem_write_core),
-      .dmem_addr_o   (dmem_addr_core),
-      .dmem_wdata_o  (dmem_wdata_core),
-      .dmem_wmask_o  (dmem_wmask_core),
-      .dmem_rdata_i  (dmem_rdata_core),
-      .dmem_rvalid_i (dmem_rvalid_core),
-      .dmem_rerror_i (dmem_rerror_core)
+      .start_addr_i  (start_addr)
     );
   end else begin : gen_impl_rtl
     otbn_core #(
