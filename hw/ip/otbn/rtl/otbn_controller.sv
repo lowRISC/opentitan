@@ -188,11 +188,11 @@ module otbn_controller
     endcase
   end
 
-  assign alu_base_operation_o.op = insn_dec_ctrl_i.alu_op;
+  assign alu_base_operation_o.op = insn_dec_base_i.alu_op;
 
   assign alu_base_comparison_o.operand_a = rf_base_rd_data_a_i;
   assign alu_base_comparison_o.operand_b = rf_base_rd_data_b_i;
-  assign alu_base_comparison_o.op = insn_dec_ctrl_i.comparison_op;
+  assign alu_base_comparison_o.op = insn_dec_base_i.comparison_op;
 
   // Register file write MUX
   // Suppress write for loads when controller isn't in stall state as load data for writeback is

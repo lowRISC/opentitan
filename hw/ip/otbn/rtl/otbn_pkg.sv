@@ -63,23 +63,23 @@ package otbn_pkg;
   } insn_opcode_e;
 
   typedef enum logic [3:0] {
-    AluOpAdd,
-    AluOpSub,
+    AluOpBaseAdd,
+    AluOpBaseSub,
 
-    AluOpXor,
-    AluOpOr,
-    AluOpAnd,
-    AluOpNot,
+    AluOpBaseXor,
+    AluOpBaseOr,
+    AluOpBaseAnd,
+    AluOpBaseNot,
 
-    AluOpSra,
-    AluOpSrl,
-    AluOpSll
-  } alu_op_e;
+    AluOpBaseSra,
+    AluOpBaseSrl,
+    AluOpBaseSll
+  } alu_op_base_e;
 
   typedef enum logic {
-    ComparisonOpEq,
-    ComparisonOpNeq
-  } comparison_op_e;
+    ComparisonOpBaseEq,
+    ComparisonOpBaseNeq
+  } comparison_op_base_e;
 
   // Operand a source selection
   typedef enum logic [1:0] {
@@ -149,10 +149,12 @@ package otbn_pkg;
   // TODO: The variable names are rather short, especially "i" is confusing. Think about renaming.
 
   typedef struct packed {
-    logic [4:0]  d;  // Destination register
-    logic [4:0]  a;  // First source register
-    logic [4:0]  b;  // Second source register
-    logic [31:0] i;  // Immediate
+    logic [4:0]     d;  // Destination register
+    logic [4:0]     a;  // First source register
+    logic [4:0]     b;  // Second source register
+    logic [31:0]    i;  // Immediate
+    alu_op_base_e        alu_op;
+    comparison_op_base_e comparison_op;
   } insn_dec_base_t;
 
   // Control signals from decoder to controller: additional information about the decoded
@@ -161,8 +163,6 @@ package otbn_pkg;
     insn_subset_e   subset;
     op_a_sel_e      op_a_sel;
     op_b_sel_e      op_b_sel;
-    alu_op_e        alu_op;
-    comparison_op_e comparison_op;
     logic           rf_we;
     rf_wd_sel_e     rf_wdata_sel;
     logic           ecall_insn;
@@ -173,13 +173,13 @@ package otbn_pkg;
   } insn_dec_ctrl_t;
 
   typedef struct packed {
-    alu_op_e     op;
+    alu_op_base_e     op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_operation_t;
 
   typedef struct packed {
-    comparison_op_e op;
+    comparison_op_base_e op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_comparison_t;
