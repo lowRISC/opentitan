@@ -353,9 +353,9 @@ jobs:
   - template: ci/download-artifacts-template.yml
   - bash: |
       . util/build_consts.sh
-      export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
       pytest --version
-      ci/run_verilator_pytest.sh
+      pytest test/systemtest/earlgrey/test_sim_verilator.py \
+        --log-cli-level=DEBUG
     displayName: Execute tests
 
 - template: ci/run-riscv-compliance.yml

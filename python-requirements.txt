@@ -19,6 +19,7 @@ mistletoe>=0.7.2
 premailer
 pyelftools
 pyftdi
+pyserial
 pygments
 pytest
 pytest-timeout
