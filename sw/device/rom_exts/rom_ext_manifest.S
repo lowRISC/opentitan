@@ -7,7 +7,6 @@
  */
   .section .rom_ext_manifest, "a"
 
-  .globl rom_ext_image_start
 rom_ext_image_start:
 
 // Constant
@@ -25,12 +24,11 @@ image_signature:
 
 // Everything beyond this point is signed.
 
-  .extern rom_ext_full_image_size
 // Calculated by linker
 image_length:
   // This should be the whole image length (of the flash part, including the
   // manifest).
-  .word rom_ext_full_image_size
+  .word (rom_ext_image_end - rom_ext_image_start)
 
 // Overriden by signing script
 image_version:
@@ -80,6 +78,41 @@ extensions:
   .word 0x0
   .endr
 
-  .globl image_code_contents
 // Code Image starts here
 image_code_contents:
+
+
+/**
+ * ROM_EXT Image End Section.
+ *
+ * We're having trouble with `objcopy` not honouring the FileSiz and MemSiz as
+ * given in the final elf, and we want the files to be produced as rounded to
+ * the next word-size up.
+ *
+ * The ELF Segments correctly reflect the FileSiz and MemSiz are rounded up by
+ * the ALIGN(4) directives in the linker script. However, in some cases, objcopy
+ * produces a binary file that is shorter than the segment FileSiz (this seems
+ * to happen when the last section that contains data does not have a size
+ * rounded to the next word-size). This is confusing and we don't want to have
+ * to pad the binary in post-processing, so instead we added this dummy section.
+ *
+ * The idea behind this section is that it must be word-sized, and word-aligned.
+ * It also provides a local symbol which can be used to calculate the whole
+ * image length. This symbol must come after some data in the section, or the
+ * padding word will not have the intended effect.
+ *
+ * We cannot do this in the linker script, as an output section in the linker
+ * script with only symbol and data definitions (and no input section
+ * inclusions) gets weird flags that we have no control over, which can lead to
+ * strange segment assignments. In an assembly file, we can specify section
+ * flags that will propagate in the linker script from the input section to the
+ * output section.
+ *
+ * The particular value of the dummy `.word` does not matter, but is included in
+ * the signed part of the image so will be validated by the signature.
+ */
+  .section .rom_ext_end, "a"
+  .p2align 2
+  .word 0x0
+
+rom_ext_image_end:
