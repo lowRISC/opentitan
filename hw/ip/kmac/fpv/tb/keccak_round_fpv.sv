@@ -34,6 +34,7 @@ module keccak_round_fpv #(
   logic                msg_valid;
   logic [DInAddr-1:0]  msg_addr;
   logic [DInWidth-1:0] msg_data;
+  logic                msg_ready_masked, msg_ready_unmasked;
 
   logic run, clear, masked_complete, unmasked_complete;
 
@@ -50,6 +51,7 @@ module keccak_round_fpv #(
     .valid_i (msg_valid),
     .addr_i  (msg_addr),
     .data_i  ({'0, msg_data}),
+    .ready_o (msg_ready_masked),
 
     .run_i   (run),
     .rand_valid_i (1'b1),
@@ -71,6 +73,7 @@ module keccak_round_fpv #(
     .valid_i (msg_valid),
     .addr_i  (msg_addr),
     .data_i  ('{msg_data}),
+    .ready_o (msg_ready_unmasked),
 
     .run_i   (run),
     .rand_valid_i (1'b1),

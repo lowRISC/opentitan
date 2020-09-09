@@ -38,6 +38,7 @@ module keccak_round #(
   input                valid_i,
   input [DInAddr-1:0]  addr_i,
   input [DInWidth-1:0] data_i [Share],
+  output               ready_o,
 
   // In-process control
   input                    run_i,  // Pulse signal to initiates Keccak full round
@@ -274,6 +275,11 @@ module keccak_round #(
       end
     endcase
   end
+
+  // Ready indicates the keccak_round is able to receive new message.
+  // While keccak_round is processing the data, it blocks the new message to be
+  // XORed into the current state.
+  assign ready_o = (keccak_st == StIdle) ? 1'b 1 : 1'b 0;
 
   ////////////////////////////
   // Keccak state registers //
