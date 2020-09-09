@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 import pytest
+import yaml
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -24,6 +25,25 @@ def pytest_exception_interact(node, call, report):
         return
 
     utils.dump_temp_files(node.funcargs['tmp_path_factory'].getbasetemp())
+
+
+@pytest.fixture(scope="session")
+def localconf():
+    """Host-local configuration."""
+    if 'OPENTITAN_TEST_LOCALCONF' in os.environ:
+        localconf_yaml_file = Path(os.environ['OPENTITAN_TEST_LOCALCONF'])
+        log.info("Attempting to use configuration file set in "
+            "OPENTITAN_TEST_LOCALCONF.")
+    else:
+        XDG_CONFIG_HOME = Path(os.getenv(
+            'XDG_CONFIG_HOME', os.path.join(os.environ['HOME'], '.config')))
+        localconf_yaml_file = XDG_CONFIG_HOME / 'opentitan' / 'test-localconf.yaml'
+
+    log.info('Reading configuration from ' + str(localconf_yaml_file))
+
+    with open(str(localconf_yaml_file), 'r') as fp:
+        return yaml.load(fp, Loader=yaml.SafeLoader)
+
 
 @pytest.fixture(scope="session")
 def topsrcdir():

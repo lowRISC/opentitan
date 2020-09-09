@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenTitan test local configuration
+#
+# This file contains settings for the machine on which the tests are being
+# executed.
+#
+# Adjust this file to your system and move it to a searched location.
+# We look for this config file in
+# - $OPENTITAN_TEST_LOCALCONF
+# - ~/.config/opentitan/test-localconf.yaml
+#
+
+# connected FPGA boards
+boards:
+  nexysvideo:
+    uart_device: /dev/ttyUSB0
+    uart_speed: 115200
+    # hw_server_url: "hw-server-host:3121"

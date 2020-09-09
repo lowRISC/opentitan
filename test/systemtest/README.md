@@ -12,6 +12,8 @@ the moment.
 
 * `earlgrey/test_sim_verilator.py`: Run various software tests against a
   Verilator-built simulation of the Earl Grey design.
+* `earlgrey/test_fpga_nexysvideo.py`: Run various software tests against the
+  Earl Grey design running on a Nexys Video FPGA board.
 
 ## Run the tests
 
@@ -40,6 +42,17 @@ To test build artifacts from CI follow these steps:
   tar -xf opentitan-snapshot-20191101-1-2462-g3ad4fd1b.tar.xz
   export BIN_DIR=$PWD/opentitan-snapshot-20191101-1-2462-g3ad4fd1b
   ```
+
+### Configuration
+
+Tests running on FPGA boards need some configuration to help with the discovery
+of things like the UART port. To configure these settings, copy the
+configuration file example from `test/systemtest/test-localconf.yaml.example`
+to one of the supported configuration file locations:
+
+* `$OPENTITAN_TEST_LOCALCONF`
+* `$XDG_CONFIG_HOME/opentitan/test-localconf.yaml`
+* `$HOME/.config/opentitan/test-localconf.yaml`
 
 ### Test execution
 

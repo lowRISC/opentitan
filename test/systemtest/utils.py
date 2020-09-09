@@ -193,6 +193,23 @@ class Process:
                              wait_func=wait_func)
 
 
+
+def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, ftdi_dev_id):
+    """ Use the spiflash utility to load software onto a device. """
+
+    log.info("Flashing device software from {} over SPI".format(str(sw_test_bin)))
+
+    cmd_flash = [
+        spiflash_path,
+        '--input', sw_test_bin,
+        '--dev-id', ftdi_dev_id]
+    p_flash = Process(cmd_flash, logdir=tmp_path, cwd=tmp_path)
+    p_flash.run()
+    p_flash.proc.wait(timeout=30)
+    assert p_flash.proc.returncode == 0
+
+    log.info("Device software flashed.")
+
 class LoggingSerial(serial.Serial):
     """ Acess to a serial console which logs all read/written data to file. """
     def __init__(self,
@@ -242,6 +259,39 @@ class LoggingSerial(serial.Serial):
             self._log_from_device_fp.close()
 
         super().close()
+
+    def log_add_marker(self, text: str):
+        """ Write a marker text into the UART send and receive log files """
+        text_b = text.encode('UTF-8')
+        self._log_to_device_fp.write(text_b)
+        self._log_from_device_fp.write(text_b)
+
+    def drain_in(self, timeout=None, silence_time=.5):
+        """ Read all available input data
+
+        Args:
+            timeout: Maximum time this function blocks, in seconds.
+            silence_time: Consider the input drained if no new data can be read
+                after this time, in seconds.
+        Returns:
+            The data read from the device.
+        """
+        t_end = None
+        if timeout is not None:
+            t_end = time.time() + timeout
+
+        read_data = b''
+
+        first_iteration = True
+        while first_iteration or self.in_waiting != 0:
+            if timeout is not None and time.time() >= t_end:
+                break
+
+            read_data += self.read(self.in_waiting)
+            first_iteration = False
+            time.sleep(silence_time)
+
+        return read_data
 
     def find_in_output(self, pattern, timeout=None, filter_func=None):
         """ Expect a pattern to appear in one of the output lines.

@@ -150,7 +150,7 @@ class VerilatorSimEarlgrey:
                                    from_start=from_start)
 
 
-@pytest.fixture(params=config.TEST_APPS_SELFCHECKING)
+@pytest.fixture(params=config.TEST_APPS_SELFCHECKING_SIM_VERILATOR)
 def app_selfchecking_elf(request, bin_dir):
     """ A self-checking device application as ELF for Verilator simulation """
 
