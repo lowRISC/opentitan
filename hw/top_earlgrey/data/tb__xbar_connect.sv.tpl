@@ -66,6 +66,8 @@ initial begin
   bit xbar_mode;
   void'($value$plusargs("xbar_mode=%0b", xbar_mode));
   if (xbar_mode) begin
+    // disable ibex clock to avoid printting too much useless log from ibex
+    force `CPU_HIER.clk_i = 1'b0;
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
 % for xbar in top["xbar"]:
