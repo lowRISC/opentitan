@@ -37,21 +37,21 @@ static volatile bool uart_tx_empty_handled;
 static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
   // NOTE: This initialization is superfluous, since the `default` case below
   // is effectively noreturn, but the compiler is unable to prove this.
-  dif_uart_interrupt_t uart_irq = 0;
+  dif_uart_irq_t uart_irq = 0;
 
   switch (interrupt_id) {
     case kTopEarlgreyPlicIrqIdUartRxOverflow:
       CHECK(!uart_rx_overflow_handled,
             "UART RX overflow IRQ asserted more than once");
 
-      uart_irq = kDifUartInterruptRxOverflow;
+      uart_irq = kDifUartIrqRxOverflow;
       uart_rx_overflow_handled = true;
       break;
     case kTopEarlgreyPlicIrqIdUartTxEmpty:
       CHECK(!uart_tx_empty_handled,
             "UART TX empty IRQ asserted more than once");
 
-      uart_irq = kDifUartInterruptTxEmpty;
+      uart_irq = kDifUartIrqTxEmpty;
       uart_tx_empty_handled = true;
       break;
     default:
@@ -59,7 +59,7 @@ static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
       test_status_set(kTestStatusFailed);
   }
 
-  CHECK(dif_uart_irq_state_clear(&uart0, uart_irq) == kDifUartOk,
+  CHECK(dif_uart_irq_acknowledge(&uart0, uart_irq) == kDifUartOk,
         "ISR failed to clear IRQ!");
 }
 
@@ -91,16 +91,19 @@ void handler_irq_external(void) {
 }
 
 static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
-  dif_uart_config_t config = {
-      .baudrate = kUartBaudrate,
-      .clk_freq_hz = kClockFreqPeripheralHz,
-      .parity_enable = kDifUartDisable,
-      .parity = kDifUartParityEven,
-  };
-
-  // No debug output in case of UART initialisation failure.
-  CHECK(dif_uart_init(base_addr, &config, uart) == kDifUartConfigOk,
-        "UART init failed!");
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = base_addr,
+            },
+            uart) == kDifUartOk);
+  CHECK(dif_uart_configure(uart,
+                           (dif_uart_config_t){
+                               .baudrate = kUartBaudrate,
+                               .clk_freq_hz = kClockFreqPeripheralHz,
+                               .parity_enable = kDifUartToggleDisabled,
+                               .parity = kDifUartParityEven,
+                           }) == kDifUartConfigOk,
+        "UART config failed!");
 }
 
 static void plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
@@ -111,11 +114,11 @@ static void plic_initialise(mmio_region_t base_addr, dif_plic_t *plic) {
  * Configures all the relevant interrupts in UART.
  */
 static void uart_configure_irqs(dif_uart_t *uart) {
-  CHECK(dif_uart_irq_enable(&uart0, kDifUartInterruptRxOverflow,
-                            kDifUartEnable) == kDifUartOk,
+  CHECK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqRxOverflow,
+                                 kDifUartToggleEnabled) == kDifUartOk,
         "RX overflow IRQ enable failed!");
-  CHECK(dif_uart_irq_enable(&uart0, kDifUartInterruptTxEmpty, kDifUartEnable) ==
-            kDifUartOk,
+  CHECK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxEmpty,
+                                 kDifUartToggleEnabled) == kDifUartOk,
         "TX empty IRQ enable failed!");
 }
 
@@ -158,7 +161,7 @@ static void plic_configure_irqs(dif_plic_t *plic) {
 static void execute_test(dif_uart_t *uart) {
   // Force UART RX overflow interrupt.
   uart_rx_overflow_handled = false;
-  CHECK(dif_uart_irq_force(uart, kDifUartInterruptRxOverflow) == kDifUartOk,
+  CHECK(dif_uart_irq_force(uart, kDifUartIrqRxOverflow) == kDifUartOk,
         "failed to force RX overflow IRQ!");
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_rx_overflow_handled) {
@@ -168,7 +171,7 @@ static void execute_test(dif_uart_t *uart) {
 
   // Force UART TX empty interrupt.
   uart_tx_empty_handled = false;
-  CHECK(dif_uart_irq_force(uart, kDifUartInterruptTxEmpty) == kDifUartOk,
+  CHECK(dif_uart_irq_force(uart, kDifUartIrqTxEmpty) == kDifUartOk,
         "failed to force TX empty IRQ!");
   // Check if the IRQ has occured and has been handled appropriately.
   if (!uart_tx_empty_handled) {
