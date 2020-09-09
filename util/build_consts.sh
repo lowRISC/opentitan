@@ -25,31 +25,35 @@
 # bearings. However, the bash-specific $BASH_SOURCE works perfectly fine.
 if [[ -n "$BASH_SOURCE" ]]; then
   readonly REPO_TOP="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  export REPO_TOP
 else
   echo "Non-bash shells are currently not supported." >&2
   exit 1
 fi
 
-OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
+export OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
 if [[ -n "$OT_GIT_VERSION" ]]; then
   readonly OT_VERSION="opentitan-$OT_GIT_VERSION"
 else
   readonly OT_VERSION="opentitan-<unknown>"
 fi
+export OT_VERSION
 
-BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
+export BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 readonly OBJ_DIR="$BUILD_ROOT/build-out"
+export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
+export BIN_DIR
 
 # $DEV_BIN_DIR is a subdirectory of $BIN_DIR where device build outputs (i.e.,
 # compiled programs that should run on the OpenTitan SoC) should be written.
-DEV_BIN_DIR="$BIN_DIR/sw/device"
+export DEV_BIN_DIR="$BIN_DIR/sw/device"
 
 # $HOST_BIN_DIR is a subdirectory of $BIN_DIR where host build outputs (i.e.,
 # compiled programs that should run on a host workstation or server) should be
 # written.
-HOST_BIN_DIR="$BIN_DIR/sw/host"
+export HOST_BIN_DIR="$BIN_DIR/sw/host"
 
 # $TOCK_SYMLINK is the symlink used when referencing a local checkout of tock to
 # build from.
-TOCK_SYMLINK="$REPO_TOP/sw/device/tock/tock_local"
+export TOCK_SYMLINK="$REPO_TOP/sw/device/tock/tock_local"
