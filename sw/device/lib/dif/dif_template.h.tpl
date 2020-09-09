@@ -64,14 +64,14 @@ typedef enum dif_<ip>_toggle {
  * not determined until the hardware design is used as part of a top-level
  * design.
  */
-typedef struct dif_<ip>_param {
+typedef struct dif_<ip>_params {
   /**
    * The base address for the <peripheral> hardware registers.
    */
   mmio_region_t base_addr;
 
   // Other fields, if necessary.
-} dif_<ip>_param_t;
+} dif_<ip>_params_t;
 
 /**
  * Runtime configuration for <peripheral>.
@@ -89,7 +89,7 @@ typedef struct dif_<ip>_config {
  * This type should be treated as opaque by users.
  */
 typedef struct dif_<ip> {
-  dif_param_<ip>_t params;
+  dif_<ip>_params_t params;
 
   // Other fields, if necessary.
 } dif_<ip>_t;
@@ -173,7 +173,7 @@ dif_<ip>_result_t dif_<ip>_init(dif_<ip>_params_t params, dif_<ip>_t *handle);
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_<ip>_result_t dif_<ip>_configure(const dif_<ip>_t* handle,
+dif_<ip>_result_t dif_<ip>_configure(const dif_<ip>_t *handle,
                                      dif_<ip>_config_t config);
 
 /**
@@ -187,7 +187,7 @@ dif_<ip>_result_t dif_<ip>_configure(const dif_<ip>_t* handle,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_<ip>_result_t dif_<ip>_start(const dif_<ip>_t* handle,
+dif_<ip>_result_t dif_<ip>_start(const dif_<ip>_t *handle,
                                  dif_<ip>_transaction_t transaction);
 
 /** Ends a <peripheral> transaction, writing the results to the given output..
@@ -197,7 +197,7 @@ dif_<ip>_result_t dif_<ip>_start(const dif_<ip>_t* handle,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_<ip>_result_t dif_<ip>_end(const dif_<ip>_t* handle,
+dif_<ip>_result_t dif_<ip>_end(const dif_<ip>_t *handle,
                                dif_<ip>_output_t output);
 
 /**
@@ -210,7 +210,7 @@ dif_<ip>_result_t dif_<ip>_end(const dif_<ip>_t* handle,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_<ip>_result_t dif_<ip>_lock(const dif_<ip>_t* handle);
+dif_<ip>_result_t dif_<ip>_lock(const dif_<ip>_t *handle);
 
 /**
  * Checks whether this <peripheral> is locked.
@@ -220,7 +220,7 @@ dif_<ip>_result_t dif_<ip>_lock(const dif_<ip>_t* handle);
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_<ip>_result_t dif_<ip>_is_locked(const dif_<ip>_t* handle, bool *is_locked);
+dif_<ip>_result_t dif_<ip>_is_locked(const dif_<ip>_t *handle, bool *is_locked);
 
 /**
  * Returns whether a particular interrupt is currently pending.
