@@ -42,7 +42,7 @@ module otbn_alu_base
   // setting addr_op_b_negate will cause a carry-in into bit 1. Combined with an inversion of
   // operation_i.operand_b this gives a two's-complement negation (~b + 1)
 
-  assign adder_op_b_negate = operation_i.op == AluOpSub;
+  assign adder_op_b_negate = operation_i.op == AluOpBaseSub;
 
   assign adder_op_a = {operation_i.operand_a, 1'b1};
   assign adder_op_b = adder_op_b_negate ? {~operation_i.operand_b, 1'b1} : {operation_i.operand_b, 1'b0};
@@ -77,8 +77,8 @@ module otbn_alu_base
   // Shifter performs right arithmetic 33-bit shifts. Force top bit to 0 to get logical shifting
   // otherwise replicate top bit of shift_in. Left shifts performed by reversing the input and
   // output.
-  assign shift_in[31:0] = (operation_i.op == AluOpSll) ? operand_a_reverse : operation_i.operand_a;
-  assign shift_in[32] = (operation_i.op == AluOpSra) ? operation_i.operand_a[31] : 1'b0;
+  assign shift_in[31:0] = (operation_i.op == AluOpBaseSll) ? operand_a_reverse : operation_i.operand_a;
+  assign shift_in[32] = (operation_i.op == AluOpBaseSra) ? operation_i.operand_a[31] : 1'b0;
 
   assign shift_out = signed'(shift_in) >>> shift_amt;
 
@@ -90,13 +90,13 @@ module otbn_alu_base
     operation_result_o = adder_result[32:1];
 
     unique case (operation_i.op)
-      AluOpAnd: operation_result_o = and_result;
-      AluOpOr:  operation_result_o = or_result;
-      AluOpXor: operation_result_o = xor_result;
-      AluOpNot: operation_result_o = not_result;
-      AluOpSra: operation_result_o = shift_out[31:0];
-      AluOpSrl: operation_result_o = shift_out[31:0];
-      AluOpSll: operation_result_o = shift_out_reverse;
+      AluOpBaseAnd: operation_result_o = and_result;
+      AluOpBaseOr:  operation_result_o = or_result;
+      AluOpBaseXor: operation_result_o = xor_result;
+      AluOpBaseNot: operation_result_o = not_result;
+      AluOpBaseSra: operation_result_o = shift_out[31:0];
+      AluOpBaseSrl: operation_result_o = shift_out[31:0];
+      AluOpBaseSll: operation_result_o = shift_out_reverse;
       default: ;
     endcase
   end
@@ -111,5 +111,5 @@ module otbn_alu_base
   // avoiding an dedicated comparator.
   assign is_equal = comparison_i.operand_a == comparison_i.operand_b;
 
-  assign comparison_result_o = (comparison_i.op == ComparisonOpEq) ? is_equal : ~is_equal;
+  assign comparison_result_o = (comparison_i.op == ComparisonOpBaseEq) ? is_equal : ~is_equal;
 endmodule

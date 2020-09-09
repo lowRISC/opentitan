@@ -62,11 +62,11 @@ module otbn_decoder
   logic [31:0] imm_u_type;
   logic [31:0] imm_j_type;
 
-  alu_op_e    alu_operator;        // ALU operation selection
-  op_a_sel_e  alu_op_a_mux_sel;    // operand a selection: reg value, PC, immediate or zero
-  op_b_sel_e  alu_op_b_mux_sel;    // operand b selection: reg value or immediate
+  alu_op_base_e alu_operator_base;   // ALU operation selection for base ISA
+  op_a_sel_e    alu_op_a_mux_sel;    // operand a selection: reg value, PC, immediate or zero
+  op_b_sel_e    alu_op_b_mux_sel;    // operand b selection: reg value or immediate
 
-  comparison_op_e comparison_operator;
+  comparison_op_base_e comparison_operator_base;
 
   logic rf_ren_a;
   logic rf_ren_b;
@@ -111,18 +111,18 @@ module otbn_decoder
   assign insn_illegal_o = insn_fetch_resp_valid_i & illegal_insn;
 
   assign insn_dec_base_o = '{
-    a: insn_rs1,
-    b: insn_rs2,
-    d: insn_rd,
-    i: imm_b
+    a:             insn_rs1,
+    b:             insn_rs2,
+    d:             insn_rd,
+    i:             imm_b,
+    alu_op:        alu_operator_base,
+    comparison_op: comparison_operator_base
   };
 
   assign insn_dec_ctrl_o = '{
     subset:        insn_subset,
     op_a_sel:      alu_op_a_mux_sel,
     op_b_sel:      alu_op_b_mux_sel,
-    alu_op:        alu_operator,
-    comparison_op: comparison_operator,
     rf_we:         rf_we,
     rf_wdata_sel:  rf_wdata_sel,
     ecall_insn:    ecall_insn,
@@ -176,7 +176,7 @@ module otbn_decoder
 
           3'b001: begin
             unique case (insn[31:27])
-              5'b0_0000: illegal_insn = 1'b0;                                         // slli
+              5'b0_0000: illegal_insn = 1'b0;   // slli
               default: illegal_insn = 1'b1;
             endcase
           end
@@ -184,8 +184,8 @@ module otbn_decoder
           3'b101: begin
             if (!insn[26]) begin
               unique case (insn[31:27])
-                5'b0_0000,                                                             // srli
-                5'b0_1000: illegal_insn = 1'b0;                                        // srai
+                5'b0_0000,                      // srli
+                5'b0_1000: illegal_insn = 1'b0; // srai
 
                 default: illegal_insn = 1'b1;
               endcase
@@ -325,15 +325,15 @@ module otbn_decoder
   /////////////////////////////
 
   always_comb begin
-    alu_operator        = AluOpAdd;
-    comparison_operator = ComparisonOpEq;
-    alu_op_a_mux_sel    = OpASelRegister;
-    alu_op_b_mux_sel    = OpBSelImmediate;
+    alu_operator_base        = AluOpBaseAdd;
+    comparison_operator_base = ComparisonOpBaseEq;
+    alu_op_a_mux_sel         = OpASelRegister;
+    alu_op_b_mux_sel         = OpBSelImmediate;
 
-    imm_a_mux_sel       = ImmAZero;
-    imm_b_mux_sel       = ImmBI;
+    imm_a_mux_sel            = ImmAZero;
+    imm_b_mux_sel            = ImmBI;
 
-    opcode_alu          = insn_opcode_e'(insn_alu[6:0]);
+    opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
 
     unique case (opcode_alu)
       /////////
@@ -345,14 +345,14 @@ module otbn_decoder
         alu_op_b_mux_sel  = OpBSelImmediate;
         imm_a_mux_sel     = ImmAZero;
         imm_b_mux_sel     = ImmBU;
-        alu_operator      = AluOpAdd;
+        alu_operator_base = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseAuipc: begin  // Add Upper Immediate to PC
         alu_op_a_mux_sel  = OpASelCurrPc;
         alu_op_b_mux_sel  = OpBSelImmediate;
         imm_b_mux_sel     = ImmBU;
-        alu_operator      = AluOpAdd;
+        alu_operator_base = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
@@ -361,20 +361,20 @@ module otbn_decoder
         imm_b_mux_sel     = ImmBI;
 
         unique case (insn_alu[14:12])
-          3'b000: alu_operator = AluOpAdd;  // Add Immediate
-          3'b100: alu_operator = AluOpXor;  // Exclusive Or with Immediate
-          3'b110: alu_operator = AluOpOr;   // Or with Immediate
-          3'b111: alu_operator = AluOpAnd;  // And with Immediate
+          3'b000: alu_operator_base = AluOpBaseAdd;  // Add Immediate
+          3'b100: alu_operator_base = AluOpBaseXor;  // Exclusive Or with Immediate
+          3'b110: alu_operator_base = AluOpBaseOr;   // Or with Immediate
+          3'b111: alu_operator_base = AluOpBaseAnd;  // And with Immediate
 
           3'b001: begin
-            alu_operator = AluOpSll; // Shift Left Logical by Immediate
+            alu_operator_base = AluOpBaseSll; // Shift Left Logical by Immediate
           end
 
           3'b101: begin
             if (insn_alu[31:27] == 5'b0_0000) begin
-              alu_operator = AluOpSrl;               // Shift Right Logical by Immediate
+              alu_operator_base = AluOpBaseSrl;               // Shift Right Logical by Immediate
             end else if (insn_alu[31:27] == 5'b0_1000) begin
-              alu_operator = AluOpSra;               // Shift Right Arithmetically by Immediate
+              alu_operator_base = AluOpBaseSra;               // Shift Right Arithmetically by Immediate
             end
           end
 
@@ -389,14 +389,14 @@ module otbn_decoder
         if (!insn_alu[26]) begin
           unique case ({insn_alu[31:25], insn_alu[14:12]})
             // RV32I ALU operations
-            {7'b000_0000, 3'b000}: alu_operator = AluOpAdd;   // Add
-            {7'b010_0000, 3'b000}: alu_operator = AluOpSub;   // Sub
-            {7'b000_0000, 3'b100}: alu_operator = AluOpXor;   // Xor
-            {7'b000_0000, 3'b110}: alu_operator = AluOpOr;    // Or
-            {7'b000_0000, 3'b111}: alu_operator = AluOpAnd;   // And
-            {7'b000_0000, 3'b001}: alu_operator = AluOpSll;   // Shift Left Logical
-            {7'b000_0000, 3'b101}: alu_operator = AluOpSrl;   // Shift Right Logical
-            {7'b010_0000, 3'b101}: alu_operator = AluOpSra;   // Shift Right Arithmetic
+            {7'b000_0000, 3'b000}: alu_operator_base = AluOpBaseAdd;   // Add
+            {7'b010_0000, 3'b000}: alu_operator_base = AluOpBaseSub;   // Sub
+            {7'b000_0000, 3'b100}: alu_operator_base = AluOpBaseXor;   // Xor
+            {7'b000_0000, 3'b110}: alu_operator_base = AluOpBaseOr;    // Or
+            {7'b000_0000, 3'b111}: alu_operator_base = AluOpBaseAnd;   // And
+            {7'b000_0000, 3'b001}: alu_operator_base = AluOpBaseSll;   // Shift Left Logical
+            {7'b000_0000, 3'b101}: alu_operator_base = AluOpBaseSrl;   // Shift Right Logical
+            {7'b010_0000, 3'b101}: alu_operator_base = AluOpBaseSra;   // Shift Right Arithmetic
             default: ;
           endcase
         end
@@ -407,17 +407,17 @@ module otbn_decoder
       //////////////////
 
       InsnOpcodeBaseLoad: begin
-        alu_op_a_mux_sel = OpASelRegister;
-        alu_op_b_mux_sel = OpBSelImmediate;
-        alu_operator     = AluOpAdd;
-        imm_b_mux_sel    = ImmBI;
+        alu_op_a_mux_sel  = OpASelRegister;
+        alu_op_b_mux_sel  = OpBSelImmediate;
+        alu_operator_base = AluOpBaseAdd;
+        imm_b_mux_sel     = ImmBI;
       end
 
       InsnOpcodeBaseStore: begin
-        alu_op_a_mux_sel = OpASelRegister;
-        alu_op_b_mux_sel = OpBSelImmediate;
-        alu_operator     = AluOpAdd;
-        imm_b_mux_sel    = ImmBS;
+        alu_op_a_mux_sel  = OpASelRegister;
+        alu_op_b_mux_sel  = OpBSelImmediate;
+        alu_operator_base = AluOpBaseAdd;
+        imm_b_mux_sel     = ImmBS;
       end
 
       /////////////////
@@ -425,25 +425,25 @@ module otbn_decoder
       /////////////////
 
       InsnOpcodeBaseBranch: begin
-        alu_op_a_mux_sel    = OpASelCurrPc;
-        alu_op_b_mux_sel    = OpBSelImmediate;
-        alu_operator        = AluOpAdd;
-        imm_b_mux_sel       = ImmBB;
-        comparison_operator = insn_alu[12] ? ComparisonOpNeq : ComparisonOpEq;
+        alu_op_a_mux_sel         = OpASelCurrPc;
+        alu_op_b_mux_sel         = OpBSelImmediate;
+        alu_operator_base        = AluOpBaseAdd;
+        imm_b_mux_sel            = ImmBB;
+        comparison_operator_base = insn_alu[12] ? ComparisonOpBaseNeq : ComparisonOpBaseEq;
       end
 
       InsnOpcodeBaseJal: begin
-        alu_op_a_mux_sel = OpASelCurrPc;
-        alu_op_b_mux_sel = OpBSelImmediate;
-        alu_operator     = AluOpAdd;
-        imm_b_mux_sel    = ImmBJ;
+        alu_op_a_mux_sel  = OpASelCurrPc;
+        alu_op_b_mux_sel  = OpBSelImmediate;
+        alu_operator_base = AluOpBaseAdd;
+        imm_b_mux_sel     = ImmBJ;
       end
 
       InsnOpcodeBaseJalr: begin
-        alu_op_a_mux_sel = OpASelRegister;
-        alu_op_b_mux_sel = OpBSelImmediate;
-        alu_operator     = AluOpAdd;
-        imm_b_mux_sel    = ImmBI;
+        alu_op_a_mux_sel  = OpASelRegister;
+        alu_op_b_mux_sel  = OpBSelImmediate;
+        alu_operator_base = AluOpBaseAdd;
+        imm_b_mux_sel     = ImmBI;
       end
 
       /////////////
@@ -467,6 +467,6 @@ module otbn_decoder
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT(IbexRegImmAluOpKnown, (opcode == InsnOpcodeBaseOpImm) |->
+  `ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |->
       !$isunknown(insn[14:12]))
 endmodule
