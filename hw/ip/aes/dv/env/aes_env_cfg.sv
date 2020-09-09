@@ -12,7 +12,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // TODO sort knobs into test/SEQUENCE/message/item
 
   // test environment constraints //
-
+   typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
+  
 
     //  Message Knobs //
   int            num_messages_min            = 1;
@@ -76,6 +77,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // number of messages to encrypt/decrypt
   rand int     num_messages;
 
+  // TL UL contraints //
+
+   
+  rand tl_ul_access_e host_resp_speed;
+  rand tl_ul_access_e device_resp_speed;
+
+  
+
 
    // constraints
   constraint c_num_messages { num_messages inside {[num_messages_min : num_messages_max] };}
@@ -84,6 +93,42 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   function void post_randomize();
     if(use_key_mask) key_mask = 1;
+
+    m_tl_agent_cfg.a_valid_delay_min = 0;
+    m_tl_agent_cfg.a_valid_delay_max = 0;
+ 
+    
+    zero_delays = 1; // disable the CIP constraining
+    
+    case(host_resp_speed)
+      VerySlow: begin      
+        m_tl_agent_cfg.d_ready_delay_min = 10;
+        m_tl_agent_cfg.d_ready_delay_max = 10;
+      end
+      Slow: begin
+        m_tl_agent_cfg.d_ready_delay_min = 4;
+        m_tl_agent_cfg.d_ready_delay_max = 10;
+      end      
+      Fast: begin
+        m_tl_agent_cfg.d_ready_delay_min = 0;
+        m_tl_agent_cfg.d_ready_delay_max = 5;
+      end      
+      VeryFast: begin
+        m_tl_agent_cfg.d_ready_delay_min = 0;
+        m_tl_agent_cfg.d_ready_delay_max = 0;
+      end
+      
+    endcase // case (host_resp_speed)
+
+ //   case(device_resp_speed)
+ //     VerySlow:begin
+ //       
+ //     end
+ //     
+ //     Slow:
+ //     Fast:
+ //     VeryFast:
+ //   endcase
   endfunction
 
 
@@ -95,6 +140,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min) };
     str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max) };
     str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min) };
+    str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name()) };
     str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
          (ref_model==0) ? "C-MODEL" : "OPEN_SSL" ) };
     str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages) };

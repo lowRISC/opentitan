@@ -26,6 +26,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (do_aes_init) aes_init();
     aes_item = new();
     aes_message_init();
+    `uvm_info(`gfn, $sformatf("\n TL delay: [%d:%d] \n zero delay %d", cfg.m_tl_agent_cfg.d_ready_delay_min,cfg.m_tl_agent_cfg.d_ready_delay_max, cfg.zero_delays  ), UVM_LOW)
   endtask
 
   virtual task dut_shutdown();
@@ -47,7 +48,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[0]    = 0;        // set to encryption
     aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
-    csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1));
+    csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
   endtask // aes_init
 
 
@@ -58,47 +59,47 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task set_operation(bit operation);
     ral.ctrl_shadowed.operation.set(operation);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask // set_operation
 
 
   virtual task set_mode(bit [5:0] mode);
     ral.ctrl_shadowed.mode.set(mode);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
 
   virtual task set_key_len(bit [2:0] key_len);
     ral.ctrl_shadowed.key_len.set(key_len);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
 
   virtual task set_manual_operation(bit manual_operation);
     ral.ctrl_shadowed.manual_operation.set(manual_operation);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1));
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
 
   virtual task write_key(bit [7:0][31:0] key [2]);
     // Share 0 (the masked key share = key ^ mask)
-    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]));
-    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]));
-    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]));
-    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]));
-    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]));
-    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]));
-    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]));
-    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]));
+    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]), .blocking(1));
+    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]), .blocking(1));
     // Share 1 (the mask share)
-    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]));
-    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]));
-    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]));
-    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]));
-    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]));
-    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]));
-    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]));
-    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]));
+    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]), .blocking(1));
+    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]), .blocking(1));
   endtask // write_key
 
 
