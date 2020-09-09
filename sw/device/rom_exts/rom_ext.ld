@@ -49,9 +49,6 @@ ENTRY(_rom_ext_start_boot)
  */
 SECTIONS {
   .rom_ext_manifest ORIGIN(eflash) : {
-    /* This is used to calculate the full image size, including the manifest. */
-    rom_ext_full_image_start = .;
-
     KEEP(*(.rom_ext_manifest))
   } > eflash
 
@@ -161,13 +158,19 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
+  /**
+   * ROM_EXT Image End Section.
+   *
+   * This is a dummy section required for correctly calculating the ROM_EXT
+   * image length, for the manifest. See the comments in `rom_ext_manifest.S`
+   * for more information.
+   *
+   * If you add more sections to eflash, ensure they come before this section.
+   *
+   * This section must be LOAD, or the image size won't be calculated correctly.
+   */
   .rom_ext_end : ALIGN(4) {
-    /* This is the last part of the image that resides in flash, so we need to
-     * set `rom_ext_image_end` for the ROM_EXT manifest.
-     *
-     * If you add more sections to eflash, ensure they come before this section.
-     */
-    rom_ext_full_image_size = ABSOLUTE(. - rom_ext_image_start);
+    KEEP(*(.rom_ext_end))
   } > eflash
 
   /**
