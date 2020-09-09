@@ -1,0 +1,79 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:keymgr:0.1"
+description: "Key Manager"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:lfsr
+      - lowrisc:ip:keymgr_pkg
+    files:
+      - rtl/keymgr_reg_pkg.sv
+      - rtl/keymgr_reg_top.sv
+      - rtl/keymgr_sideload_key.sv
+      - rtl/keymgr_ctrl.sv
+      - rtl/keymgr_cfg_en.sv
+      - rtl/keymgr_kmac_if.sv
+      - rtl/keymgr_input_checks.sv
+      - rtl/keymgr.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/keymgr.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/keymgr.waiver
+    file_type: waiver
+
+  files_formal:
+    files:
+      - dv/tb/keymgr_bind.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - target_formal   ? (files_formal)
+      - files_rtl
+    toplevel: keymgr
+
+  formal:
+    filesets:
+      - files_rtl
+      - files_formal
+    toplevel: keymgr
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
