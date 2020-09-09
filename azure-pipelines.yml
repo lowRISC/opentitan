@@ -352,10 +352,15 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
   - bash: |
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
       . util/build_consts.sh
       pytest --version
       pytest test/systemtest/earlgrey/test_sim_verilator.py \
-        --log-cli-level=DEBUG
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests with Verilator simulation" \
+        --napoleon-docstrings
     displayName: Execute tests
 
 - template: ci/run-riscv-compliance.yml
