@@ -112,7 +112,8 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         // If the last two fifo_rds are not back-to-back, then there won't be any delay for the
         // last fifo_rd
         // the wait_clk below is implemented to avoid checking intr_state during this corner case
-        cfg.clk_rst_vif.wait_clks((msg.size() % 4) ? HMAC_KEY_PROCESS_CYCLES * 2 :
+        cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
+                                  HMAC_KEY_PROCESS_CYCLES * 2 :
                                   $urandom_range(0, HMAC_KEY_PROCESS_CYCLES * 2));
 
         if (do_hash_start) begin
