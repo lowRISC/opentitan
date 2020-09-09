@@ -51,6 +51,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/i2c/lint/{tool}"
              },
+             {    name: keymgr
+                  fusesoc_core: lowrisc:ip:keymgr
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/keymgr/lint/{tool}"
+             },
              {    name: nmi_gen
                   fusesoc_core: lowrisc:ip:nmi_gen
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]

@@ -17,6 +17,7 @@ IPS ?= aes           \
        gpio          \
        hmac          \
        i2c           \
+       keymgr        \
        nmi_gen       \
        otp_ctrl      \
        padctrl       \
