@@ -20,10 +20,10 @@
   ],
 
   alert_list: [
-    { name: "otp_integrity_mismatch",
+    { name: "otp_fatal_error",
       desc: "This alert triggers if hardware detects a parity bit or digest error in the buffered partitions.",
     }
-    { name: "otp_consistency_mismatch",
+    { name: "otp_check_failed",
       desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
     }
   ],
@@ -32,58 +32,52 @@
   // Parameters //
   ////////////////
   param_list: [
-    { name: "OtpByteAddressWidth",
+    { name: "OtpByteAddrWidth",
       desc: "Width of the OTP Byte address.",
       type: "int",
       default: "11",
       local: "true"
     },
-    { name: "NumCreatorSwCfgPartitionWords",
-      desc: "Number of 32bit words in the software config partitions.",
+    { name: "NumErrorEntries",
+      desc: "Number of error register entries.",
       type: "int",
-      default: "192",
+      default: "9", // 7 partitions + DAI/LCI
       local: "true"
     },
-    { name: "NumOwnerSwCfgPartitionWords",
-      desc: "Number of 32bit words in the software config partitions.",
+    { name: "NumDaiWords",
+      desc: "Number of 32bit words in the DAI.",
       type: "int",
-      default: "192",
+      default: "2",
       local: "true"
     },
-    { name: "NumHwCfgWords",
-      desc: "Number of 32bit words in the hardware config partition.",
+    { name: "NumDigestWords",
+      desc: "Size of the digest fields in 32bit words.",
       type: "int",
-      default: "50",
+      default: "2",
       local: "true"
     },
-    { name: "NumLcPartitionWords",
-      desc: "Number of 32bit words in the life cycle partition.",
+    { name: "NumLcHalfwords",
+      desc: "Number of 16bit life cycle fields.",
       type: "int",
-      default: "22",
+      default: "12",
       local: "true"
     },
-    { name: "NumSecret0PartitionWords",
-      desc: "Number of 32bit words in the secret0 partition.",
+    { name: "NumCreatorSwCfgWindowWords",
+      desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "10",
+      default: "256",
       local: "true"
     },
-    { name: "NumSecret1PartitionWords",
-      desc: "Number of 32bit words in the secret1 partition.",
+    { name: "NumOwnerSwCfgWindowWords",
+      desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "14",
-      local: "true"
-    },
-    { name: "NumSecret2PartitionWords",
-      desc: "Number of 32bit words in the secret2 partition.",
-      type: "int",
-      default: "32",
+      default: "256",
       local: "true"
     },
     { name: "NumDebugWindowWords",
-      desc: "Number of 32bit words in the debug window.",
+      desc: "Size of the TL-UL window in 32bit words.",
       type: "int",
-      default: "500",
+      default: "512",
       local: "true"
     },
   ]
@@ -129,6 +123,12 @@
       package: "otp_ctrl_pkg"
     }
     // Broadcast from LC
+    { struct: "lc_tx"
+      type:   "uni"
+      name:   "lc_escalate_en"
+      act:    "rcv"
+      package: "lifecycle_pkg" // TODO: move to LC package?
+    }
     { struct: "lc_tx"
       type:   "uni"
       name:   "lc_provision_en"
@@ -184,134 +184,245 @@
     ////////////////////////
     // Ctrl / Status CSRs //
     ////////////////////////
-    // TODO: this may have to be refined during implementation.
+
     { name: "STATUS",
       desc: "OTP status register.",
       swaccess: "ro",
       hwaccess: "hwo",
+      hwext:    "true",
       fields: [
-        { bits: "2:0"
-          enum: [
-            { value: "0",
-              name: "IDLE",
-              desc: '''
-              OTP is in IDLE state and ready to accept commands.
-              '''
-            },
-            { value: "1",
-              name: "INIT",
-              desc: '''
-              OTP is initializing.
-              '''
-            },
-            { value: "2",
-              name: "ERROR",
-              desc: '''
-              An error condition has occurred.
-              Please check the ERR_CODE register for specifics.
-              '''
-            },
-            { value: "3",
-              name: "READ_PENDING",
-              desc: '''
-              A read operation is pending.
-              '''
-            },
-            { value: "4",
-              name: "WRITE_PENDING",
-              desc: '''
-              A write operation is pending.
-              '''
-            },
-          ]
+        { bits: "0"
+          name: "CREATOR_SW_CFG_ERROR"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "1"
+          name: "OWNER_SW_CFG_ERROR"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "2"
+          name: "HW_CFG_ERROR"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "3"
+          name: "SECRET0"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "4"
+          name: "SECRET1"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "5"
+          name: "SECRET2"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "6"
+          name: "LIFE_CYCLE"
+          desc: '''
+                Set to 1 if an error occurred in this partition. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "7"
+          name: "DAI_ERROR"
+          desc: '''
+                Set to 1 if an error occurred in the DAI. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "8"
+          name: "LCI_ERROR"
+          desc: '''
+                Set to 1 if an error occurred in the LCI. If set to 1, SW should
+                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                '''
+        }
+        { bits: "9"
+          name: "DAI_IDLE"
+          desc: "Set to 1 if the DAI is idle and ready to accept commands."
         }
       ]
     }
-    // TODO: need to define error codes for errors during background operations (or add alerts for them)
-    { name: "ERR_CODE",
-      desc: '''This register holds information on error conditions and should be
-            checked when !!STATUS indicates that an error has occurred, or when
-            an !!INTR_STATE.otp_error has been triggered.
-            '''
-      swaccess: "ro",
-      hwaccess: "hwo",
-      fields: [
-        {
-          bits: "2:0"
-          enum: [
-            { value: "0",
-              name: "NONE",
-              desc: '''
-              No error condition has occurred.
-              '''
-            },
-            { value: "1",
-              name: "MISSING_INIT",
-              desc: '''
-              Read or write operation attempted before initialization.
-              The OTP controller automatically recovers from this error when initializing.
-              '''
-            },
-            { value: "2",
-              name: "INVALID_CMD",
-              desc: '''
-              Invalid command has been written to !!DIRECT_ACCESS_CMD or the digest calculation registers.
-              The OTP controller automatically recovers from this error when issuing a new command.
-              '''
-            },
-            { value: "3",
-              name: "READ_CORR",
-              desc: '''
-              A correctable error has occured during a read operation.
-              The OTP controller automatically recovers from this error when issuing a new command.
-              '''
-            },
-            { value: "4",
-              name: "READ_UNCORR",
-              desc: '''
-              An uncorrectable error has occurred during a read operation.
-              The OTP controller automatically recovers from this error when issuing a new command.
-              '''
-            },
-            { value: "5",
-              name: "READ_ERR",
-              desc: '''
-              An error has occurred during a read operation.
-              The OTP controller may not be able to automatically recover from this error and has to be reset.
-              '''
-            },
-            { value: "6",
-              name: "WRITE_ERR",
-              desc: '''
-              An error has occurred during a programming operation.
-              The OTP controller may not be able to automatically recover from this error and has to be reset.
-              '''
-            },
-            { value: "7",
-              name: "ESCALATED",
-              desc: '''
-              OTP has been rendered unusable due to an escalation.
-              This is a terminal state.
-              '''
-            },
-          ]
-        }
-      ]
+    { multireg: {
+        name:     "ERR_CODE",
+        desc:     '''
+                  This register holds information on error conditions and should be
+                  checked when any of the partitions or the DAI flags an error in the
+                  !!STATUS registers, or when an !!INTR_STATE.otp_error has been triggered.
+                  Note that all errors trigger an otp_error interrupt, and in addition some
+                  errors may trigger either an otp_fatal_error or an otp_check_failed alert.
+                  ''',
+        count:     "NumErrorEntries",
+        swaccess:  "ro",
+        hwaccess:  "hwo",
+        hwext:     "true",
+        cname:     "MODULE",
+        fields: [
+          {
+            bits: "3:0"
+            enum: [
+              { value: "0",
+                name: "NO_ERR",
+                desc: '''
+                No error condition has occurred.
+                '''
+              },
+              { value: "1",
+                name: "OTP_CMD_INV_ERR",
+                desc: '''
+                An invalid command has been written to the OTP macro.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_fatal_error alert.
+                '''
+              },
+              { value: "2",
+                name: "OTP_INIT_ERR",
+                desc: '''
+                The OTP macro initialization sequence has failed.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_fatal_error alert.
+                '''
+              },
+              { value: "3",
+                name: "OTP_READ_CORR_ERR",
+                desc: '''
+                A correctable error has occured during an OTP read operation.
+                The corresponding controller automatically recover from this error when
+                issuing a new command.
+                '''
+              },
+              { value: "4",
+                name: "OTP_READ_UNCORR_ERR",
+                desc: '''
+                An uncorrectable error has occurred during an OTP read operation.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_fatal_error alert.
+                '''
+              },
+              { value: "5",
+                name: "OTP_READ_ERR",
+                desc: '''
+                A unspecified error has occurred during an OTP read operation.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_fatal_error alert.
+                '''
+              },
+              { value: "6",
+                name: "OTP_WRITE_BLANK_ERR",
+                desc: '''
+                A blank write check has failed during an OTP write operation.
+                This effectively aborts the write operation such that no harm is done to the OTP.
+                The corresponding controller automatically recovers from this error when issuing
+                a new command.
+                '''
+              },
+              { value: "7",
+                name: "OTP_WRITE_ERR",
+                desc: '''
+                A unspecified error has occurred during an OTP write operation.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_fatal_error alert.
+                '''
+              },
+              { value: "8",
+                name: "CMD_INV_ERR",
+                desc: '''
+                This error indicates that an invalid command has been written to the DAI.
+                The DAI controller automatically recovers from this error when issuing
+                a new command.
+                '''
+              },
+              { value: "9",
+                name: "ACCESS_ERR",
+                desc: '''
+                This error indicates that a locked memory region has been accessed.
+                The corresponding controller automatically recovers from this error when
+                issuing a new command.
+                '''
+              },
+              { value: "10",
+                name: "PARITY_ERROR",
+                desc: '''
+                A parity mismatch has been detected in the buffer registers.
+                This error should never occur during normal operation and is not recoverable.
+                This error triggers an otp_check_failed alert.
+                '''
+              },
+              { value: "11",
+                name: "INTEG_ERR",
+                desc: '''
+                An integrity check mismatch has been detected in the buffer registers.
+                This error should never occur during normal operation and is not recoverable.
+                This error triggers an otp_check_failed alert.
+                '''
+              },
+              { value: "12",
+                name: "CNSTY_ERR",
+                desc: '''
+                A consistency check mismatch has been detected in the buffer registers.
+                This error should never occur during normal operation and is not recoverable.
+                This error triggers an otp_check_failed alert.
+                '''
+              },
+              { value: "13",
+                name: "FSM_ERR",
+                desc: '''
+                The FSM of the corresponding controller has reached a parasitic state.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present, this is a sign that the device has fallen victim to
+                a glitch attack.
+                This error triggers an otp_check_failed alert.
+                '''
+              },
+              { value: "14",
+                name: "ESC_ERR",
+                desc: '''
+                This error is the result of an escalation action in the alert subsystem, and
+                indicates that the corresponding controller FSM has been moved into a terminal
+                state due to escalation via the alert subsystem.
+                '''
+              },
+            ]
+          }
+        ]
+      }
     }
     { name: "DIRECT_ACCESS_REGWEN",
       desc: '''
             Register write enable for all direct access interface registers.
             ''',
-      swaccess: "rw",
-      hwaccess: "hrw",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
       fields: [
         {
             bits:   "0",
-            desc: ''' When true, the direct access interface registers become writable.
-            Otherwise, all direct access interface registers are write protected.
-            Note that the DAI hardware will temporarily set this to 0 when a transaction is in progress.
+            desc: ''' This bit is hardware-managed and only readable by software. The DAI sets this bit temporarily to 0 during an OTP operation such that the corresponding address and data
+            registers cannot be modified while the operation is pending.
             '''
-            resval: 0,
+            resval: 1,
         },
       ]
     },
@@ -351,9 +462,10 @@
       desc: "Address register for direct accesses.",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe:     "false",
       regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
-        { bits: "OtpByteAddressWidth-1:0",
+        { bits: "OtpByteAddrWidth-1:0",
           desc: '''
                 This is the address for the OTP word to be read or written through
                 the direct access interface. Note that the address is aligned to the access size
@@ -372,9 +484,10 @@
                   Hardware automatically determines the access granule (32bit or 64bit) based on which
                   partition is being written to.
                   ''',
-        count:    "2", // 2 x 32bit = 64bit
+        count:    "NumDaiWords", // 2 x 32bit = 64bit
         swaccess: "rw",
         hwaccess: "hro",
+        hwqe:     "false",
         regwen:   "DIRECT_ACCESS_REGWEN",
         cname:    "WORD",
         fields: [
@@ -389,9 +502,10 @@
                   Hardware automatically determines the access granule (32bit or 64bit) based on which
                   partition is read from.
                   ''',
-        count:    "2", // 2 x 32bit = 64bit
+        count:    "NumDaiWords", // 2 x 32bit = 64bit
         swaccess: "ro",
         hwaccess: "hwo",
+        hwext:    "true",
         cname:    "WORD",
         fields: [
           { bits: "31:0"
@@ -501,7 +615,7 @@
                   After a reset, write access to the !!OWNER_SW_CFG partition is locked and
                   the digest becomes visible in this CSR.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -521,7 +635,7 @@
                   After a reset, write access to the !!OWNER_SW_CFG partition is locked and
                   the digest becomes visible in this CSR.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -539,7 +653,7 @@
                   The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                   After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -557,7 +671,7 @@
                   The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                   After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -575,7 +689,7 @@
                   The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                   After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -593,7 +707,7 @@
                   The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                   After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                   ''',
-        count:     "2",
+        count:     "NumDigestWords",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
@@ -605,19 +719,9 @@
       }
     },
 
-    ///////////////////////////////
-    // Hardware Config Partition //
-    ///////////////////////////////
-    { skipto: "0x100" }
-
-    // TODO: there is likely more collateral that needs to be stored in the HW_CFG partition.
-    // add them as they become apparent.
-
-    //////////////////////////
-    // Life Cycle Partition //
-    //////////////////////////
-    { skipto: "0x200" }
-
+    //////////////////////
+    // Life Cycle State //
+    //////////////////////
     { multireg: {
         name:     "LC_STATE",
         desc:     '''
@@ -625,7 +729,7 @@
                   TODO: add link to LC controller spec.
                   Other values than specified below are invalid.
                   ''',
-        count:    "12",
+        count:    "NumLcHalfwords",
         swaccess: "ro",
         hwaccess: "hwo",
         cname:    "HALFWORD",
@@ -649,7 +753,7 @@
         ]
       }
     },
-    { name: "TRANSITION_CNT",
+    { name: "LC_TRANSITION_CNT",
       desc: "Counter for total amount of state transition attempts.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -663,14 +767,14 @@
       ]
     }
 
-    ///////////////////////////////
-    // Software Config Partition //
-    ///////////////////////////////
-    { skipto: "0x300" }
+    ////////////////////////////////
+    // Software Config Partitions //
+    ////////////////////////////////
+    { skipto: "0x400" }
 
     { window: {
         name: "CREATOR_SW_CFG"
-        items: "NumCreatorSwCfgPartitionWords"
+        items: "NumCreatorSwCfgWindowWords"
         swaccess: "ro",
         desc: '''
         Any read to this window directly maps to the corresponding offset in the creator software
@@ -680,11 +784,11 @@
       }
     }
 
-    { skipto: "0x700" }
+    { skipto: "0x800" }
 
     { window: {
         name: "OWNER_SW_CFG"
-        items: "NumOwnerSwCfgPartitionWords"
+        items: "NumOwnerSwCfgWindowWords"
         swaccess: "ro",
         desc: '''
         Any read to this window directly maps to the corresponding offset in the owner software
@@ -697,7 +801,7 @@
     //////////////////////
     // Test Access Port //
     //////////////////////
-    { skipto: "0xB00" }
+    { skipto: "0xC00" }
 
     // TODO: may have to update description, once it is known how RAW unlock is handled.
     { window: {
