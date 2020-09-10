@@ -22,7 +22,7 @@ pyftdi
 pygments
 pytest
 pytest-timeout
-pyyaml
+pyyaml >= 5.1
 tabulate
 yapf
 
