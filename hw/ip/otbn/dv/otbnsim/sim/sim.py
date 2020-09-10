@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import struct
-from typing import List, Tuple
-
-from riscvmodel.model import TerminateException  # type: ignore
+from typing import List
 
 from .isa import OTBNInsn
 from .model import OTBNModel
@@ -34,22 +32,24 @@ class OTBNSim:
         Return the number of instructions executed.
 
         '''
-        self.model.reset(pc=start_addr)
+        self.model.state.reset(pc=start_addr)
+        self.model.state.start()
         insn_count = 0
-        done = False
-        while not done:
-            done, _ = self.step()
+        while self.model.state.running:
+            self.step()
             insn_count += 1
 
         return insn_count
 
-    def step(self) -> Tuple[bool, List[str]]:
+    def step(self) -> List[str]:
         '''Run a single instruction.
 
-        Returns (done, changes). done is true if the simulation has stopped.
-        changes is a list of the architectural changes that have happened.
+        Returns a list of the architectural changes that have happened.
 
         '''
+        if not self.model.state.running:
+            return []
+
         word_pc = int(self.model.state.pc) >> 2
 
         if word_pc >= len(self.program):
@@ -63,13 +63,8 @@ class OTBNSim:
                                        len(self.program)))
         insn = self.program[word_pc]
 
-        done = False
         self.model.state.pc += 4
-        try:
-            insn.execute(self.model)
-        except TerminateException:
-            # Raised by environment on ECALL instruction
-            done = True
+        insn.execute(self.model)
         self.model.post_insn()
 
         changes = self.model.state.changes()
@@ -78,7 +73,7 @@ class OTBNSim:
             self.model.print_trace(disasm)
 
         self.model.state.commit()
-        return (done, changes)
+        return changes
 
     def dump_data(self) -> bytes:
         data = b""

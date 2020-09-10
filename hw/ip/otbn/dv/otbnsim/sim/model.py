@@ -8,8 +8,7 @@ from typing import List, Optional, Tuple, cast
 
 from attrdict import AttrDict  # type: ignore
 
-from riscvmodel.model import (Model, State,  # type: ignore
-                              Environment, TerminateException)
+from riscvmodel.model import State  # type: ignore
 from riscvmodel.types import (RegisterFile, Register,  # type: ignore
                               SingleRegister, Trace, BitflagRegister)
 
@@ -235,6 +234,7 @@ class OTBNState(State):  # type: ignore
         self.flags = FlagGroups()
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
+        self.running = False
 
     def csr_read(self, index: int) -> int:
         if index == 0x7C0:
@@ -291,19 +291,16 @@ class OTBNState(State):  # type: ignore
         for reg in self.single_regs.values():
             reg.commit()
 
+    def start(self) -> None:
+        '''Set the running flag and the ext_reg busy flag'''
+        self.ext_regs.set_bits('STATUS', 1 << 0)
+        self.running = True
 
-class OTBNEnvironment(Environment):  # type: ignore
-    def call(self, state: OTBNState) -> None:
-        raise TerminateException(0)
 
-
-class OTBNModel(Model):  # type: ignore
+class OTBNModel:
     def __init__(self, verbose: bool):
-        super().__init__(RV32IXotbn,
-                         environment=OTBNEnvironment(),
-                         verbose=verbose,
-                         asm_width=35)
         self.state = OTBNState()
+        self.verbose = verbose
 
     def get_wr_quarterword(self, wridx: int, qwsel: int) -> int:
         assert 0 <= wridx <= 31
@@ -358,4 +355,4 @@ class OTBNModel(Model):  # type: ignore
         '''Print a trace of the current instruction to verbose_file'''
         assert self.verbose
         changes_str = ', '.join([str(t) for t in self.state.changes()])
-        self.verbose_file.write(self.asm_tpl.format(disasm, changes_str))
+        print('{:35} | [{}]'.format(disasm, changes_str))
