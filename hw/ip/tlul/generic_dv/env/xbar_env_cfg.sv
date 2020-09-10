@@ -45,6 +45,8 @@ class xbar_env_cfg extends dv_base_env_cfg;
                           create($sformatf("%0s_agent_cfg", xbar_hosts[i].host_name));
       host_agent_cfg[i].if_mode = dv_utils_pkg::Host;
       host_agent_cfg[i].max_outstanding_req = 1 << valid_host_id_width;
+      host_agent_cfg[i].randomize_addr_when_ready_low = 0;
+      host_agent_cfg[i].a_source_randomize_mask_when_ready_low = (1 << valid_host_id_width) - 1;
     end
     // Device TL agent cfg
     num_devices      = xbar_devices.size();
@@ -56,6 +58,7 @@ class xbar_env_cfg extends dv_base_env_cfg;
       // the max_outstanding_req depends on how many hosts can access the device
       // device.max_outstanding_req = sum(all its hosts max_outstanding_req)
       device_agent_cfg[i].max_outstanding_req = 0; // clear default value
+      device_agent_cfg[i].d_source_randomize_mask_when_ready_low = 0;
       foreach (xbar_hosts[j]) begin
         if (xbar_devices[i].device_name inside {xbar_hosts[j].valid_devices}) begin
           device_agent_cfg[i].max_outstanding_req += host_agent_cfg[j].max_outstanding_req;

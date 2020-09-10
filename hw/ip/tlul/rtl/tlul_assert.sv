@@ -46,7 +46,11 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
+  // disable sva to verify all kinds of TLUL error cases
   bit disable_sva;
+  // only when valid & ready == 1, data/control info are accepted, disable sva check when ready is
+  // low to allow driver to send illegal value when ready is low
+  bit disable_sva_when_ready_low;
 
   logic [7:0]  a_mask, d_mask;
   logic [63:0] a_data, d_data;
@@ -90,7 +94,11 @@ module tlul_assert #(
   /////////////////////////////////////////
 
   sequence h2d_pre_S;
-    h2d.a_valid;
+    h2d.a_valid & (!disable_sva_when_ready_low | d2h.a_ready);
+  endsequence
+
+  sequence req_accept_S;
+    h2d.a_valid & d2h.a_ready;
   endsequence
 
   // a_opcode: only 3 opcodes are legal for requests
@@ -164,7 +172,11 @@ module tlul_assert #(
   /////////////////////////////////////////
 
   sequence d2h_pre_S;
-    d2h.d_valid;
+    d2h.d_valid & (!disable_sva_when_ready_low | h2d.d_ready);
+  endsequence
+
+  sequence rsp_accept_S;
+    d2h.d_valid & h2d.d_ready;
   endsequence
 
   // d_opcode: if request was Get, then response must be AccessAckData
@@ -210,6 +222,7 @@ module tlul_assert #(
 
   // note: use negedge clk to avoid possible race conditions
   // in this case all signals coming from the device side have an assumed property
+  // for assume, data/control is only meaningful at the cycle when req/rsp is accepted
   if (EndpointType == "Host") begin : gen_host
     // h2d
     `ASSERT(legalAOpcode_A,     h2d_pre_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
@@ -222,24 +235,24 @@ module tlul_assert #(
           !clk_i, !rst_ni || disable_sva)
     `ASSERT(aDataKnown_A,       h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
     // d2h
-    `ASSUME(respOpcode_M,       d2h_pre_S |-> respOpcode_S,       !clk_i, !rst_ni)
-    `ASSUME(legalDParam_M,      d2h_pre_S |-> legalDParam_S,      !clk_i, !rst_ni)
-    `ASSUME(respSzEqReqSz_M,    d2h_pre_S |-> respSzEqReqSz_S,    !clk_i, !rst_ni)
-    `ASSUME(respMustHaveReq_M,  d2h_pre_S |-> respMustHaveReq_S,  !clk_i, !rst_ni)
-    `ASSUME(dDataKnown_M,       d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S,
+    `ASSUME(respOpcode_M,       rsp_accept_S |-> respOpcode_S,       !clk_i, !rst_ni)
+    `ASSUME(legalDParam_M,      rsp_accept_S |-> legalDParam_S,      !clk_i, !rst_ni)
+    `ASSUME(respSzEqReqSz_M,    rsp_accept_S |-> respSzEqReqSz_S,    !clk_i, !rst_ni)
+    `ASSUME(respMustHaveReq_M,  rsp_accept_S |-> respMustHaveReq_S,  !clk_i, !rst_ni)
+    `ASSUME(dDataKnown_M,       rsp_accept_S and dDataKnown_pre_S |-> dDataKnown_S,
           !clk_i, !rst_ni || disable_sva)
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
-    `ASSUME(legalAOpcode_M,      h2d_pre_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
-    `ASSUME(legalAParam_M,       h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
-    `ASSUME(sizeGTEMask_M,       h2d_pre_S |-> sizeGTEMask_S,      !clk_i, !rst_ni || disable_sva)
-    `ASSUME(sizeMatchesMask_M,   h2d_pre_S |-> sizeMatchesMask_S,  !clk_i, !rst_ni || disable_sva)
-    `ASSUME(pendingReqPerSrc_M,  h2d_pre_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
-    `ASSUME(addrSizeAligned_M,   h2d_pre_S |-> addrSizeAligned_S,  !clk_i, !rst_ni || disable_sva)
-    `ASSUME(contigMask_M,        h2d_pre_S and contigMask_pre_S |-> contigMask_S,
+    `ASSUME(legalAOpcode_M,     req_accept_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
+    `ASSUME(legalAParam_M,      req_accept_S |-> legalAParam_S,      !clk_i, !rst_ni)
+    `ASSUME(sizeGTEMask_M,      req_accept_S |-> sizeGTEMask_S,      !clk_i, !rst_ni || disable_sva)
+    `ASSUME(sizeMatchesMask_M,  req_accept_S |-> sizeMatchesMask_S,  !clk_i, !rst_ni || disable_sva)
+    `ASSUME(pendingReqPerSrc_M, req_accept_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
+    `ASSUME(addrSizeAligned_M,  req_accept_S |-> addrSizeAligned_S,  !clk_i, !rst_ni || disable_sva)
+    `ASSUME(contigMask_M,       req_accept_S and contigMask_pre_S |-> contigMask_S,
           !clk_i, !rst_ni || disable_sva)
-    `ASSUME(aDataKnown_M,        h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
+    `ASSUME(aDataKnown_M,       req_accept_S and aDataKnown_pre_S |-> aDataKnown_S, !clk_i, !rst_ni)
     // d2h
     `ASSERT(respOpcode_A,        d2h_pre_S |-> respOpcode_S,       !clk_i, !rst_ni)
     `ASSERT(legalDParam_A,       d2h_pre_S |-> legalDParam_S,      !clk_i, !rst_ni)
@@ -288,6 +301,14 @@ module tlul_assert #(
         `uvm_fatal("tlul_assert", "Can't find tlul_assert_en")
       end
       disable_sva = !tlul_assert_en;
+    end
+
+    initial forever begin
+      uvm_config_db#(bit)::wait_modified(null, "%m", "disable_tlul_assert_when_ready_low");
+      if (!uvm_config_db#(bit)::get(null, "%m", "disable_tlul_assert_when_ready_low",
+                                    disable_sva_when_ready_low)) begin
+        `uvm_fatal("tlul_assert", "Can't find disable_tlul_assert_when_ready_low")
+      end
     end
   `endif
 `endif

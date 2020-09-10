@@ -40,6 +40,12 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   int unsigned d_valid_delay_min = 0;
   int unsigned d_valid_delay_max = 10;
 
+  // use random data when valid = 1 and ready = 0
+  bit randomize_data_ctrl_when_ready_low = 1;
+  bit randomize_addr_when_ready_low = 1;
+  bit [bus_params_pkg::BUS_AIW-1:0] a_source_randomize_mask_when_ready_low = '1;
+  bit [bus_params_pkg::BUS_AIW-1:0] d_source_randomize_mask_when_ready_low = '1;
+
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
     `uvm_field_enum(tl_level_e, tl_level, UVM_DEFAULT)

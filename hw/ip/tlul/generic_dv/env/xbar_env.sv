@@ -60,6 +60,10 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
       scoreboard.add_item_queue({"d_chan_", xbar_devices[i].device_name},
                          scoreboard_pkg::kOutOfOrderCheck);
     end
+
+    // when driver sends illegal data during ready=0, these data will be passed to the other side
+    // of the xbar. Need to disable checking when ready is low
+    uvm_config_db#(bit)::set(null, "*", "disable_tlul_assert_when_ready_low", 1);
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);

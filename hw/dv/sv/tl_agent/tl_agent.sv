@@ -26,6 +26,10 @@ class tl_agent extends dv_base_agent#(
       `uvm_fatal(`gfn, "failed to get tl_if handle from uvm_config_db")
     end
     cfg.vif.if_mode = cfg.if_mode;
+    cfg.vif.randomize_data_ctrl_when_ready_low = cfg.randomize_data_ctrl_when_ready_low;
+    cfg.vif.randomize_addr_when_ready_low = cfg.randomize_addr_when_ready_low;
+    cfg.vif.a_source_randomize_mask_when_ready_low = cfg.a_source_randomize_mask_when_ready_low;
+    cfg.vif.d_source_randomize_mask_when_ready_low = cfg.d_source_randomize_mask_when_ready_low;
   endfunction
 
   function void connect_phase(uvm_phase phase);
