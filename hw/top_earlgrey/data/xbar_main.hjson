@@ -131,11 +131,17 @@
       reset:     "rst_main_ni"
       pipeline_byp: "false"
     },
+    { name:      "keymgr",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
   ],
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn"],
+    "aes", "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "keymgr"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "flash_ctrl",
     "aes", "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn"],
   },
