@@ -469,3 +469,31 @@ jobs:
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
+
+
+- job: build_docker_containers
+  displayName: "Build Docker Containers"
+  pool:
+    vmImage: ubuntu-16.04
+  dependsOn:
+    - lint
+  steps:
+  - task: Docker@2
+    displayName: Build Developer Utility Container
+    inputs:
+      command: build
+      Dockerfile: ./util/container/Dockerfile
+      buildContext: .
+  - task: Docker@2
+    displayName: Build Documentation Builder Container
+    inputs:
+      command: build
+      tags: gcr.io/active-premise-257318/builder
+      Dockerfile: ./site/docs/builder.Dockerfile
+      buildContext: .
+  - task: Docker@2
+    displayName: Build Documentation Redirector Container
+    inputs:
+      command: build
+      Dockerfile: ./site/redirector/Dockerfile
+      buildContext: ./site/redirector
