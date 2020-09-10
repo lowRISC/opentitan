@@ -306,6 +306,13 @@
       base_addr: "0x40170000",
       top_only: "true"
     },
+    { name: "keymgr",
+      type: "keymgr",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys"},
+      base_addr: "0x401a0000",
+    },
     { name: "otbn",
       type: "otbn",
       clock_srcs: {clk_i: "main"},
@@ -460,7 +467,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
                      "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
-                     "otbn" ]
+                     "otbn", "keymgr" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -473,7 +480,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "hmac", "otbn", "sensor_ctrl" ]
+  alert_module: [ "aes", "hmac", "otbn", "sensor_ctrl", "keymgr" ]
 
   // generated list of alerts:
   alert: [
