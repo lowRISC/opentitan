@@ -21,11 +21,6 @@ module sha3pad_fpv
   // N, S: Used in cSHAKE mode only
   input [NSRegisterSize*8-1:0] ns_data_i, // See kmac_pkg for details
 
-  // Entropy source
-  input                       entropy_valid_i,
-  input        [MsgWidth-1:0] entropy_data_i,
-  output logic                entropy_consumed_o,
-
   // configurations
   input sha3_mode_e       mode_i,
   // strength_i is used in bytepad operation. bytepad() is used in cSHAKE only.
@@ -37,18 +32,14 @@ module sha3pad_fpv
   input process_i,
   input done_i,
 
-  // Indicate one block is pushed via keccak_* signal
-  // For cSHAKE, even keccak_addr_o doesn't reach to the block size,
-  // block_pushed_o can be asserted at first.
-  // `bytepad(encode_string(N) || encode_string(S), {168 or 136})` can be done
-  // earlier and rely on keccak stroage initial value `0`
-  output logic block_pushed_o
+  // Indicator: Status
+  output logic absorbed_o
 );
 
   logic                      keccak_valid;
   logic                      keccak_ready;
   logic [KeccakMsgAddrW-1:0] keccak_addr;
-  logic [MsgWidth-1:0]          keccak_data [Share];
+  logic [MsgWidth-1:0]       keccak_data [Share];
 
   logic keccak_run, keccak_complete;
 
@@ -60,6 +51,16 @@ module sha3pad_fpv
   sha3pad #(
     .EnMasking(EnMasking)
   ) u_pad (
+    .clk_i,
+    .rst_ni,
+
+    .msg_valid_i,
+    .msg_data_i,
+    .msg_mask_i,
+    .msg_ready_o,
+
+    .ns_data_i,
+
     .keccak_valid_o (keccak_valid),
     .keccak_ready_i (keccak_ready),
     .keccak_addr_o  (keccak_addr),
@@ -68,7 +69,14 @@ module sha3pad_fpv
     .keccak_run_o      (keccak_run),
     .keccak_complete_i (keccak_complete),
 
-    .*
+    .mode_i,
+    .strength_i,
+
+    .start_i,
+    .process_i,
+    .done_i ,
+
+    .absorbed_o
   );
 
   keccak_round #(
@@ -90,7 +98,7 @@ module sha3pad_fpv
 
     .state_o    (state),
 
-    .clear_i    (1'b 0),
+    .clear_i    (done_i),
 
     .*
   );
@@ -123,13 +131,19 @@ module sha3pad_fpv
   `ASSUME(Sha3Mode_A, mode_i == Sha3)
   `ASSUME(KeccakStrength_A, strength_i == L256)
 
-  //property empty_vector;
-  //endproperty
-  // `ASSUME(EmptyInputVector_A, start_i |=> !start_i ##2 process_i ##1 !process_i)
-  // `ASSUME(EmptyInputVectorData_A, msg_valid_i == 1'b 0)
+  // If absorbed signal is asserted, sw can complete by asserting `done_o`.
 
-  // `ASSERT(EmptyVector_A, keccak_complete |->
-  //   state[0][255:0] == 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7)
+  //`ASSUME(DoneStayZero_A, $rose(absorbed_o) |=> ##3 done_i ##1 !done_i)
+  //`ASSUME(DoneStayZeroEnd_A, done_i == 0 throughout (start_i ##[1:$] absorbed_o))
+  `ASSUME(DoneControl_a, absorbed_o |=> ##5 done_i )
+
+  // Empty Vector check
+  //`ASSUME(EmptyInputVector_A, start_i |=> ##3 process_i , clk_i, !rst_ni)
+  //`ASSUME(EmptyInputVectorData_A, msg_valid_i == 1'b 0, clk_i, !rst_ni)
+
+  //`ASSERT(EmptyVector_A, absorbed_o |->
+  //  state[0][255:0] == 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7,
+  //  clk_i, !rst_ni)
 
   // "abcdefgh"
   //`ASSUME(AbcdefghInputVector_A, start_i |=> !start_i ##2 (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h
@@ -140,12 +154,14 @@ module sha3pad_fpv
   //256'({<<8{state[0][255:0]}}) == 256'h 3e2020725a38a48e_b3bbf75767f03a22_c6b3f41f459c8313_09b06433ec649779)
 
   // "abc"
-  `ASSUME(AbcInputVector_A, start_i |=> !start_i ##2 (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h
-  68676665_64636261 ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i) ##1 !process_i &&
-$stable(msg_valid_i) ##[0:$] $stable(msg_valid_i))
+  `ASSUME(AbcInputVector_A, start_i |=> !process_i ##2
+    (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h 68676665_64636261
+    ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i)
+    ##1 !process_i && $stable(msg_valid_i)
+    ##[0:$] $stable(msg_valid_i))
   `ASSUME(AbcInputMask_A, msg_mask_i == 8'b 0000_0111)
 
-  `ASSERT(AbcVector_A, keccak_complete |->
+  `ASSERT(AbcVector_A, absorbed_o |->
   256'({<<8{state[0][255:0]}}) == 256'h 3a985da74fe225b2_045c172d6bd390bd_855f086e3e9d525b_46bfe24511431532)
 
 endmodule

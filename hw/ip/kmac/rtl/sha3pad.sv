@@ -24,11 +24,6 @@ module sha3pad
   // N, S: Used in cSHAKE mode only
   input [NSRegisterSize*8-1:0] ns_data_i, // See kmac_pkg for details
 
-  // Entropy source
-  input                       entropy_valid_i,
-  input        [MsgWidth-1:0] entropy_data_i,
-  output logic                entropy_consumed_o,
-
   // output to keccak_round: message path
   output logic                       keccak_valid_o,
   output logic [KeccakMsgAddrW-1:0]  keccak_addr_o,
@@ -62,12 +57,10 @@ module sha3pad
   // done_i may not needed if sw controls the keccak_round directly.
   input done_i,
 
-  // Indicate one block is pushed via keccak_* signal
-  // For cSHAKE, even keccak_addr_o doesn't reach to the block size,
-  // block_pushed_o can be asserted at first.
-  // `bytepad(encode_string(N) || encode_string(S), {168 or 136})` can be done
-  // earlier and rely on keccak stroage initial value `0`
-  output logic block_pushed_o
+  // Indication of the Keccak Sponge Absorbing is complete, it is time for SW to
+  // control the Keccak-round if it needs more digest, or complete by asserting
+  // `done_i`
+  output logic absorbed_o
 );
 
   /////////////////
@@ -250,6 +243,12 @@ module sha3pad
   end
 
   // Next logic and output logic ==============================================
+  logic absorbed_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) absorbed_o <= 1'b 0;
+    else         absorbed_o <= absorbed_d;
+  end
+
   always_comb begin
     st_d = StIdle;
 
@@ -264,6 +263,8 @@ module sha3pad
 
     en_msgbuf = 1'b 0;
     clr_msgbuf = 1'b 0;
+
+    absorbed_d = 1'b 0;
 
     unique case (st)
 
@@ -371,6 +372,7 @@ module sha3pad
 
           // always clear the latched msgbuf
           clr_msgbuf = 1'b 1;
+          clr_sentmsg = 1'b 1;
         end else if (keccak_ack) begin
           st_d = StPad01;
           clr_msgbuf = 1'b 1;
@@ -394,25 +396,31 @@ module sha3pad
       StPad01: begin
         sel_mux = MuxZeroEnd;
 
-        fsm_keccak_valid = 1'b 1;
-
         // There's no chance StPad01 can be a start of the block. So can be
         // discard that the sent_blocksize is set at the beginning.
         if (sent_blocksize) begin
           st_d = StFlush;
 
+          fsm_keccak_valid = 1'b 0;
           // TODO: Trigger keccak_round
           keccak_run_o = 1'b 1;
           clr_sentmsg = 1'b 1;
         end else begin
           st_d = StPad01;
+
+          fsm_keccak_valid = 1'b 1;
         end
       end
 
       StFlush: begin
         // Wait completion from keccak_round or wait SW indicator.
+        clr_sentmsg = 1'b 1;
+        clr_msgbuf = 1'b 1;
+
         if (keccak_complete_i) begin
           st_d = StIdle;
+
+          absorbed_d = 1'b 1;
           // TODO: Clear internal variables to fresh start
         end else begin
           st_d = StFlush;
@@ -696,19 +704,86 @@ module sha3pad
   // can be {16, 32, 64} even funcpad_data mux is fully flexible.
   `ASSERT_INIT(MsgWidthidth_A, MsgWidth == 64)
 
+  // Assume pulse signals: start, process, done
+  `ASSUME(StartPulse_A, start_i |=> !start_i)
+  `ASSUME(ProcessPulse_A, process_i |=> !process_i)
+  `ASSUME(DonePulse_A, done_i |=> !done_i)
+
+  // ASSERT output pulse signals: absorbed_o, keccak_run_o
+  `ASSERT(AbsorbedPulse_A, absorbed_o |=> !absorbed_o)
+  `ASSERT(KeccakRunPulse_A, keccak_run_o |=> !keccak_run_o)
+
+  // start_i, done_i, process_i cannot set high at the same time
+  `ASSUME(StartProcessDoneMutex_a, $onehot0({start_i, process_i, done_i}))
+
+  // Sequence, start_i --> process_i --> absorbed_o --> done_i
+  //`ASSUME(Sequence_a, start_i ##[1:$] process_i ##[1:$] ##[1:$] absorbed_o ##[1:$] done_i)
+
+  // Process only asserts after start and all message are fed.
+  // These valid signals are qualifier of FPV to trigger the control signal
+  // It is a little bit hard to specify these criteria in SVA property so creating
+  // qualifiers in RTL form is easier.
+`ifdef FPV_ON
+  logic start_valid, process_valid, absorb_valid, done_valid;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      start_valid <= 1'b 1;
+    end else if (start_i) begin
+      start_valid <= 1'b 0;
+    end else if (done_i) begin
+      start_valid <= 1'b 1;
+    end
+  end
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      process_valid <= 1'b 0;
+    end else if (start_i) begin
+      process_valid <= 1'b 1;
+    end else if (process_i) begin
+      process_valid <= 1'b 0;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      done_valid <= 1'b 0;
+    end else if (absorbed_o) begin
+      done_valid <= 1'b 1;
+    end else if (done_i) begin
+      done_valid <= 1'b 0;
+    end
+  end
+`endif
+
+  `ASSUME(MessageCondition_a, msg_valid_i && msg_ready_o |-> process_valid)
+  `ASSUME(ProcessCondition_a, process_i |-> process_valid)
+  `ASSUME(StartCondition_a, start_i |-> start_valid)
+  `ASSUME(DoneCondition_a, done_i |-> done_valid)
+
+  // If not full block is written, the pad shall send message to keccak_round
+  `ASSERT(CompleteBlockWhenProcess_A, process_i && !sent_blocksize &&
+    !(st inside {StPrefixWait, StMessageWait}) |=> ##[1:5] keccak_valid_o)
+  // If `process_i` is asserted, eventually sha3pad trigger run signal
+  `ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o))
+
+  // If process_i asserted, completion shall be asserted shall be asserted
+  //`ASSERT(ProcessToAbsorbed_A, process_i |=> strong(##[24*Share:$] absorbed_o))
+
+
   // Assumption of input mode_i and strength_i
   // SHA3 variants: SHA3-224, SHA3-256, SHA3-384, SHA3-512
   // SHAKE, cSHAKE variants: SHAKE128, SHAKE256, cSHAKE128, cSHAKE256
-  `ASSUME(ModeStrengthCombinations_A,
-    $changed(mode_i) || $changed(strength_i) |->
-      (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
-      ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
-    clk_i, !rst_ni)
+  //`ASSUME(ModeStrengthCombinations_A,
+  //  start_i |->
+  //    (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
+  //    ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
+  //  clk_i, !rst_ni)
 
   // Keccak control interface
   // Keccak run triggered -> completion should come
   `ASSUME(RunThenComplete_A,
-    keccak_run_o |=> ##[1:$] keccak_complete_i, clk_i, !rst_ni)
+    keccak_run_o |-> strong(##[24*Share:$] keccak_complete_i))
 
   // No partial write is allowed for Message FIFO interface
   `ASSUME(NoPartialMsgFifo_A,
@@ -737,5 +812,15 @@ module sha3pad
     keccak_valid_o |-> keccak_addr_o < KeccakRate[strength_i],
     clk_i, !rst_ni)
 
+  // NS data shall be stable during the operation.
+  //`ASSUME(NsStableInProcess_A,
+  //  $stable(ns_data_i) throughout(start_i ##[1:$] process_i ##[1:$] absorbed_o),
+  //  clk_i, !rst_ni)
+
+  // Functional Coverage
+  `COVER(StMessageFeed_C, st == StMessage)
+  `COVER(StPad_C, st == StPad01 && sent_blocksize)
+  `COVER(StPadSendMsg_C, st == StPad01 && keccak_ack)
+  `COVER(StComplete_C, st == StFlush)
 endmodule
 
