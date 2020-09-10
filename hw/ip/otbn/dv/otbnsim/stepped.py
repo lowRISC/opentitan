@@ -12,7 +12,7 @@ The valid commands are as follows. All arguments are shown here as <argname>.
 The integer arguments are read with Python's int() function, so should be
 prefixed with "0x" if they are hexadecimal.
 
-    jump <addr>          Set the PC to <addr>
+    start <addr>         Set the PC to <addr> and start OTBN
 
     step                 Run one instruction. Print trace information to
                          stdout.
@@ -57,19 +57,20 @@ def end_command() -> None:
     sys.stdout.flush()
 
 
-def on_jump(sim: OTBNSim, args: List[str]) -> None:
-    '''Jump to an address given as the (only) argument'''
+def on_start(sim: OTBNSim, args: List[str]) -> None:
+    '''Jump to an address given as the (only) argument and start running'''
     if len(args) != 1:
-        raise ValueError('jump expects exactly 1 argument. Got {}.'
+        raise ValueError('start expects exactly 1 argument. Got {}.'
                          .format(args))
 
     addr = read_word('addr', args[0])
     if addr & 3:
-        raise ValueError('jump address must be word-aligned. Got {:#08x}.'
+        raise ValueError('start address must be word-aligned. Got {:#08x}.'
                          .format(addr))
 
-    print('JUMP {:#08x}'.format(addr))
-    sim.model.state.pc = addr
+    print('START {:#08x}'.format(addr))
+    sim.model.state.reset(pc=addr)
+    sim.model.state.start()
 
 
 def on_step(sim: OTBNSim, args: List[str]) -> None:
@@ -82,7 +83,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
 
     assert 0 == pc & 3
     print('EXEC {:#08x}'.format(pc))
-    done, changes = sim.step()
+    changes = sim.step()
     for trace in changes:
         print('  {}'.format(trace))
 
@@ -137,7 +138,7 @@ def on_dump_d(sim: OTBNSim, args: List[str]) -> None:
 
 
 _HANDLERS = {
-    'jump': on_jump,
+    'start': on_start,
     'step': on_step,
     'load_d': on_load_d,
     'load_i': on_load_i,

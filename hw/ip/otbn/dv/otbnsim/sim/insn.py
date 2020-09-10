@@ -286,7 +286,15 @@ class ECALL(OTBNInsn):
         pass
 
     def execute(self, model: OTBNModel) -> None:
-        model.environment.call(model.state)
+        # INTR_STATE is the interrupt state register. Bit 0 (which is being
+        # set) is the 'done' flag.
+        model.state.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
+        model.state.ext_regs.clear_bits('STATUS', 1 << 0)
+
+        # As well as the external register, clear an internal 'running' flag to
+        # tell the simulation to stop.
+        model.state.running = False
 
 
 class LOOP(OTBNInsn):

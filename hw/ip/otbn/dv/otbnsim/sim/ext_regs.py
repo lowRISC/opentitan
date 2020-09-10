@@ -205,3 +205,4 @@ class OTBNExtRegs:
     def commit(self) -> None:
         for reg in self.regs.values():
             reg.commit()
+        self.trace = []
