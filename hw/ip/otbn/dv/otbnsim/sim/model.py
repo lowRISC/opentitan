@@ -14,6 +14,7 @@ from riscvmodel.types import (RegisterFile, Register,  # type: ignore
                               SingleRegister, Trace, BitflagRegister)
 
 from .variant import RV32IXotbn
+from .ext_regs import OTBNExtRegs
 
 
 class TraceCallStackPush(Trace):  # type: ignore
@@ -233,6 +234,7 @@ class OTBNState(State):  # type: ignore
         }
         self.flags = FlagGroups()
         self.loop_stack = LoopStack()
+        self.ext_regs = OTBNExtRegs()
 
     def csr_read(self, index: int) -> int:
         if index == 0x7C0:
@@ -273,6 +275,7 @@ class OTBNState(State):  # type: ignore
     def changes(self) -> List[Trace]:
         c = cast(List[Trace], super().changes())
         c += self.loop_stack.changes()
+        c += self.ext_regs.changes()
         c += self.wreg.changes()
         c += self.flags.changes()
         for name, reg in sorted(self.single_regs.items()):
@@ -282,6 +285,7 @@ class OTBNState(State):  # type: ignore
     def commit(self) -> None:
         super().commit()
         self.loop_stack.commit()
+        self.ext_regs.commit()
         self.wreg.commit()
         self.flags.commit()
         for reg in self.single_regs.values():
