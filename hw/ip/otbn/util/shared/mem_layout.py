@@ -18,69 +18,16 @@ block).
 
 '''
 
-import os
-import sys
-from typing import Dict, List, Mapping, Tuple
+from typing import Dict, List, Tuple
 
-import hjson  # type: ignore
-
-# We use reggen to read the hjson file. Since that lives somewhere completely
-# different from this script (and there aren't __init__.py files scattered all
-# over the OpenTitan repository), we have to do sys.path hacks to find it.
-_OLD_SYS_PATH = sys.path
-try:
-    _UTIL_PATH = os.path.join(os.path.dirname(__file__),
-                              '..', '..', '..', '..', '..', 'util')
-    sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
-    from reggen.validate import checking_dict, validate   # type: ignore
-finally:
-    sys.path = _OLD_SYS_PATH
-
-
-# An hjson dict is actually an OrderedDict, but typing/mypy support for that is
-# a little spotty, so we'll use a generic Mapping type.
-_HjsonDict = Mapping[str, object]
+from .otbn_reggen import HjsonDict, load_registers
 
 # A window is represented as (offset, size)
 _Window = Tuple[int, int]
 
 
-def load_registers(path: str) -> Tuple[int, List[_HjsonDict]]:
-    '''Load hjson file at path with reggen
-
-    Return its register width and list of registers.
-
-    '''
-    try:
-        with open(path, 'r') as handle:
-            obj = hjson.loads(handle.read(),
-                              use_decimal=True,
-                              object_pairs_hook=checking_dict)
-    except ValueError as err:
-        raise RuntimeError('Failed to parse {!r}: {}'.format(path, err))
-
-    # Unconditionally run second validation pass
-    num_errs = validate(obj)
-    if num_errs:
-        raise RuntimeError('Reggen second validation pass failed for {!r} '
-                           '({} errors).'
-                           .format(path, num_errs))
-
-    reg_bit_width = int(obj.get('regwidth', 32))
-    assert isinstance(reg_bit_width, int) and reg_bit_width >= 0
-    reg_byte_width = reg_bit_width // 8
-
-    # obj should be an OrderedDict and should contain a registers entry
-    # (checked by validate). This is a list of registers which we'll return.
-    # The validation code would also have exploded if it wasn't a list of
-    # dictionaries, so we can assert the type safely.
-    registers = obj['registers']
-    assert isinstance(registers, list)
-    return (reg_byte_width, registers)
-
-
 def extract_windows(reg_byte_width: int,
-                    registers: List[_HjsonDict]) -> Dict[str, _Window]:
+                    registers: List[HjsonDict]) -> Dict[str, _Window]:
     '''Make sense of the list of register definitions and extract memories'''
 
     # Conveniently, reggen's validate method stores 'genoffset' (the offset to
@@ -117,9 +64,7 @@ def get_memory_layout() -> Dict[str, Tuple[int, int]]:
     at each entry is a pair (offset, size_in_bytes).
 
     '''
-    hjson_path = os.path.join(os.path.dirname(__file__),
-                              '..', '..', 'data', 'otbn.hjson')
-    reg_byte_width, registers = load_registers(hjson_path)
+    reg_byte_width, registers = load_registers()
     windows = extract_windows(reg_byte_width, registers)
 
     xmem_names = {'IMEM', 'DMEM'}
