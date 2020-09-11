@@ -3,16 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from random import getrandbits
-import struct
 from typing import List, Optional, Tuple, cast
 
 from attrdict import AttrDict  # type: ignore
 
-from riscvmodel.model import State  # type: ignore
 from riscvmodel.types import (RegisterFile, Register,  # type: ignore
-                              SingleRegister, Trace, BitflagRegister)
+                              SingleRegister, Trace, TracePC, BitflagRegister)
 
-from .variant import RV32IXotbn
+from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
 
 
@@ -183,7 +181,7 @@ class LoopStack:
 
                 return top.start_addr
 
-        return next_pc
+        return None
 
     def changes(self) -> List[Trace]:
         return self.trace
@@ -216,15 +214,8 @@ class FlagGroups:
         self.groups[1].commit()
 
 
-class OTBNState(State):  # type: ignore
+class OTBNState:
     def __init__(self) -> None:
-        super().__init__(RV32IXotbn)
-
-        # Hack: this matches the superclass constructor, but you need it to
-        # explain to mypy what self.pc is (because mypy can't peek into
-        # riscvmodel without throwing up lots of errors)
-        self.pc = Register(32)
-
         self.intreg = OTBNIntRegisterFile()
         self.wreg = RegisterFile(num=32, bits=256, immutable={}, prefix="w")
         self.single_regs = {
@@ -232,6 +223,11 @@ class OTBNState(State):  # type: ignore
             'mod': SingleRegister(256, "MOD")
         }
         self.flags = FlagGroups()
+
+        self.pc = Register(32)
+        self.pc_next = None  # type: Optional[int]
+        self.dmem = Dmem()
+
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
         self.running = False
@@ -245,7 +241,9 @@ class OTBNState(State):  # type: ignore
             return (int(self.mod) >> bit_shift) & mask32
         elif index == 0xFC0:
             return getrandbits(32)
-        return cast(int, super().csr_read(self, index))
+
+        # Unimplemented CSR
+        raise ValueError('Unknown CSR index: {}'.format(index))
 
     def wcsr_read(self, index: int) -> int:
         assert 0 <= index <= 2
@@ -265,15 +263,18 @@ class OTBNState(State):  # type: ignore
         next_pc = int(self.pc) + 4
         skip_pc = self.loop_stack.start_loop(next_pc, bodysize, iterations)
         if skip_pc is not None:
-            self.pc_update.set(skip_pc)
+            self.pc_next = skip_pc
 
     def loop_step(self) -> None:
-        back_pc = self.loop_stack.step(int(self.pc_update))
+        back_pc = self.loop_stack.step(self.pc.unsigned() + 4)
         if back_pc is not None:
-            self.pc = back_pc
+            self.pc_next = back_pc
 
     def changes(self) -> List[Trace]:
-        c = cast(List[Trace], super().changes())
+        c = cast(List[Trace], self.intreg.changes())
+        if self.pc_next is not None:
+            c.append(TracePC(self.pc_next))
+        c += self.dmem.changes()
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wreg.changes()
@@ -283,7 +284,12 @@ class OTBNState(State):  # type: ignore
         return c
 
     def commit(self) -> None:
-        super().commit()
+        self.intreg.commit()
+        self.pc.set(self.pc_next
+                    if self.pc_next is not None
+                    else self.pc.value + 4)
+        self.pc_next = None
+        self.dmem.commit()
         self.loop_stack.commit()
         self.ext_regs.commit()
         self.wreg.commit()
@@ -317,22 +323,6 @@ class OTBNModel:
         curr = int(self.state.wreg[wridx]) & mask
         valpos = value << 128 if hwsel else value
         self.state.wreg[wridx] = curr | valpos
-
-    def load_wlen_word_from_memory(self, addr: int) -> int:
-        assert 0 <= addr
-
-        word = 0
-        for byte_off in range(0, 32, 4):
-            bit_off = byte_off * 8
-            word += cast(int, self.state.memory.lw(addr + byte_off)) << bit_off
-        return word
-
-    def store_bytes_to_memory(self, addr: int, value: bytes) -> None:
-        assert 0 <= addr
-        assert 0 == len(value) & 3
-
-        for word_idx, word in enumerate(struct.iter_unpack('<I', value)):
-            self.state.memory.sw(addr + 4 * word_idx, word[0])
 
     @staticmethod
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, int]:

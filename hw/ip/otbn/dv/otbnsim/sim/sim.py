@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import struct
 from typing import List
 
 from .isa import OTBNInsn
@@ -18,21 +17,15 @@ class OTBNSim:
         self.program = program.copy()
 
     def load_data(self, data: bytes) -> None:
-        # Explicitly zero-pad data to a multiple of 4 bytes if necessary
-        if len(data) & 3:
-            data += b'0' * (4 - (len(data) & 3))
-
-        mem = self.model.state.memory.memory
-        for word_idx, int_val in enumerate(struct.iter_unpack('<I', data)):
-            mem[word_idx] = int_val[0]
+        self.model.state.dmem.load_le_words(data)
 
     def run(self, start_addr: int) -> int:
-        '''Start a simulation at reset_addr and run until ECALL.
+        '''Start a simulation at start_addr and run until ECALL.
 
         Return the number of instructions executed.
 
         '''
-        self.model.state.reset(pc=start_addr)
+        self.model.state.pc.set(start_addr)
         self.model.state.start()
         insn_count = 0
         while self.model.state.running:
@@ -63,7 +56,6 @@ class OTBNSim:
                                        len(self.program)))
         insn = self.program[word_pc]
 
-        self.model.state.pc += 4
         insn.execute(self.model)
         self.model.post_insn()
 
@@ -76,8 +68,4 @@ class OTBNSim:
         return changes
 
     def dump_data(self) -> bytes:
-        data = b""
-        mem = self.model.state.memory.memory
-        for a in mem:
-            data += struct.pack("<L", mem[a])
-        return data
+        return self.model.state.dmem.dump_le_words()

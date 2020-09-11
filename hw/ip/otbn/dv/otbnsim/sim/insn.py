@@ -174,8 +174,7 @@ class LW(OTBNInsn):
 
     def execute(self, model: OTBNModel) -> None:
         addr = (model.state.intreg[self.grs1] + self.offset).unsigned()
-        data = model.state.memory.lw(addr)
-        model.state.intreg[self.grd] = data
+        model.state.intreg[self.grd] = model.state.dmem.load_i32(addr)
 
 
 class SW(OTBNInsn):
@@ -189,8 +188,8 @@ class SW(OTBNInsn):
 
     def execute(self, model: OTBNModel) -> None:
         addr = (model.state.intreg[self.grs1] + self.offset).unsigned()
-        value = model.state.intreg[self.grs2]
-        model.state.memory.sw(addr, value)
+        value = int(model.state.intreg[self.grs2])
+        model.state.dmem.store_i32(addr, value)
 
 
 class BEQ(OTBNInsn):
@@ -206,7 +205,7 @@ class BEQ(OTBNInsn):
         val1 = model.state.intreg[self.grs1].value
         val2 = model.state.intreg[self.grs2].value
         if val1 == val2:
-            model.state.pc = model.state.pc + self.offset
+            model.state.pc_next = model.state.pc.unsigned() + self.offset
 
 
 class BNE(OTBNInsn):
@@ -222,7 +221,7 @@ class BNE(OTBNInsn):
         val1 = model.state.intreg[self.grs1].value
         val2 = model.state.intreg[self.grs2].value
         if val1 != val2:
-            model.state.pc = model.state.pc + self.offset
+            model.state.pc_next = model.state.pc.unsigned() + self.offset
 
 
 class JAL(OTBNInsn):
@@ -235,7 +234,7 @@ class JAL(OTBNInsn):
 
     def execute(self, model: OTBNModel) -> None:
         model.state.intreg[self.grd] = model.state.pc + 4
-        model.state.pc = self.offset
+        model.state.pc_next = self.offset
 
 
 class JALR(OTBNInsn):
@@ -249,7 +248,7 @@ class JALR(OTBNInsn):
 
     def execute(self, model: OTBNModel) -> None:
         model.state.intreg[self.grd] = model.state.pc + 4
-        model.state.pc = model.state.intreg[self.grs1] + self.offset
+        model.state.pc_next = model.state.intreg[self.grs1] + self.offset
 
 
 class CSRRS(OTBNInsn):
@@ -734,8 +733,7 @@ class BNLID(OTBNInsn):
     def execute(self, model: OTBNModel) -> None:
         addr = int(model.state.intreg[self.grs1] + int(self.offset))
         wrd = int(model.state.intreg[self.grd])
-        word = model.load_wlen_word_from_memory(addr)
-        model.state.wreg[wrd] = word
+        model.state.wreg[wrd] = model.state.dmem.load_i256(addr)
 
         if self.grd_inc:
             model.state.intreg[self.grd] += 1
@@ -759,10 +757,7 @@ class BNSID(OTBNInsn):
         addr = int(model.state.intreg[self.grs1] + int(self.offset))
 
         wrs = model.state.wreg[idx]
-        uval = wrs.unsigned()
-        value = bytes((uval >> (8 * idx)) & 255
-                      for idx in range(wrs.bits // 8))
-        model.store_bytes_to_memory(addr, value)
+        model.state.dmem.store_i256(addr, int(wrs))
 
         if self.grs2_inc:
             model.state.intreg[self.grs2] += 1
