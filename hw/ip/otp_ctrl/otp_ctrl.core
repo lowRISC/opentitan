@@ -10,11 +10,17 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:ram_1p
       - lowrisc:prim:otp
       - lowrisc:ip:otp_ctrl_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
+      - rtl/otp_ctrl_parity_reg.sv
       - rtl/otp_ctrl_scrmbl.sv
+      - rtl/otp_ctrl_dai.sv
+      - rtl/otp_ctrl_lci.sv
+      - rtl/otp_ctrl_part_unbuf.sv
+      - rtl/otp_ctrl_part_buf.sv
       - rtl/otp_ctrl.sv
     file_type: systemVerilogSource
 
