@@ -22,7 +22,6 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Then compare this value with designers to check if it meets their expectation
   int unsigned max_outstanding_req = 16;
 
-
   // TileLink channel valid delay (host mode)
   bit use_seq_item_a_valid_delay;
   int unsigned a_valid_delay_min = 0;
