@@ -95,7 +95,7 @@ package ${block.name}_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["q","qe","re"]) - 1
+nbits = block.get_n_bits(["q","qe","re"])
 packbit = 0
 %>\
 % if nbits > 0:
@@ -108,12 +108,12 @@ packbit = 0
   for d in r.get_nested_dims():
     array_dims += "[%d:0]" % (d-1)
 %>\
-    ${block.name + "_reg2hw_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]) - 1)}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
+    ${block.name + "_reg2hw_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
 
   ######################## register ###########################
   % elif r.get_n_bits(["q"]):
     ## Only one field, should use register name as it is
-    ${block.name + "_reg2hw_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]) - 1)}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
+    ${block.name + "_reg2hw_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
 
   % endif
 % endfor
@@ -124,7 +124,7 @@ packbit = 0
   // Internal design logic to register //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["d","de"]) - 1
+nbits = block.get_n_bits(["d","de"])
 packbit = 0
 %>\
 % if nbits > 0:
@@ -137,12 +137,12 @@ packbit = 0
   for d in r.get_nested_dims():
     array_dims += "[%d:0]" % (d-1)
 %>\
-    ${block.name + "_hw2reg_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["d", "de"]) - 1)}]<% packbit += r.get_n_bits(["d", "de"]) %>\
+    ${block.name + "_hw2reg_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["d", "de"]))}]<% packbit += r.get_n_bits(["d", "de"]) %>\
 
   ######################## register with single field ###########################
   % elif r.get_n_bits(["d"]):
     ## Only one field, should use register name as it is
-    ${block.name + "_hw2reg_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]) - 1)}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
+    ${block.name + "_hw2reg_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
 
   % endif
 % endfor
