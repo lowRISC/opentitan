@@ -12,9 +12,10 @@ filesets:
       - lowrisc:prim:assert
     files:
       - rtl/kmac_pkg.sv
-      - rtl/sha3pad.sv
       - rtl/keccak_round.sv
       - rtl/keccak_2share.sv
+      - rtl/sha3pad.sv
+      - rtl/sha3core.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -6,6 +6,12 @@
 
 package kmac_pkg;
 
+  // StateW represents the width of Keccak state variable.
+  // As Sha3 assume the state value as 1600, this shouldn't be modified.
+  // Note that keccak_round is flexible. It can have any values defined in SHA3
+  // specification. But sha3pad logic assumes the value as 1600.
+  parameter int StateW = 1600;
+
   // Function Name (N) and Customzation String (S) shall be
   // smaller than 2**256 bits and integer divisiable by 8.
   parameter int FnWidth = 32;  // up to 32bit Function Name
@@ -101,5 +107,23 @@ package kmac_pkg;
   parameter int KeccakMsgAddrW = $clog2(KeccakEntries);
 
   parameter int KeccakCountW = $clog2(KeccakEntries+1);
+
+  //////////////////
+  // Error Report //
+  //////////////////
+  typedef enum logic [7:0] {
+    ErrNone = 8'h 00,
+
+    // ErrSha3SwControl occurs when software sent wrong flow signal.
+    // e.g) Sw set `process_i` without `start_i`. The state machine ignores
+    //      the signal and report through the error FIFO.
+    ErrSha3SwControl = 8'h 80
+  } err_code_e;
+
+  typedef struct packed {
+    logic        valid;
+    err_code_e   code; // Type of error
+    logic [23:0] info; // Additional Debug info
+  } err_t;
 
 endpackage : kmac_pkg
