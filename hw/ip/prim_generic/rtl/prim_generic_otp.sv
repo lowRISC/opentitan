@@ -46,15 +46,33 @@ module prim_generic_otp #(
   // Control logic //
   ///////////////////
 
-  typedef enum logic [2:0] {
-    ResetSt,
-    InitSt,
-    IdleSt,
-    ReadSt,
-    ReadWaitSt,
-    WriteCheckSt,
-    WriteWaitSt,
-    WriteSt
+  // Encoding generated with ./sparse-fsm-encode -d 5 -m 8 -n 10
+  // Hamming distance histogram:
+  //
+  // 0: --
+  // 1: --
+  // 2: --
+  // 3: --
+  // 4: --
+  // 5: |||||||||||||||||||| (53.57%)
+  // 6: ||||||||||||| (35.71%)
+  // 7: | (3.57%)
+  // 8: || (7.14%)
+  // 9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 8
+  //
+  typedef enum logic [9:0] {
+    ResetSt      = 10'b1100000011,
+    InitSt       = 10'b1100110100,
+    IdleSt       = 10'b1010111010,
+    ReadSt       = 10'b0011100000,
+    ReadWaitSt   = 10'b1001011111,
+    WriteCheckSt = 10'b0111010101,
+    WriteWaitSt  = 10'b0000001100,
+    WriteSt      = 10'b0110101111
   } state_e;
 
   state_e state_d, state_q;
@@ -80,8 +98,8 @@ module prim_generic_otp #(
     // Default
     state_d = state_q;
     ready_o = 1'b0;
-    valid_d = 1'b1;
-    err_d   = otp_ctrl_pkg::None;
+    valid_d = 1'b0;
+    err_d   = otp_ctrl_pkg::NoErr;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -92,14 +110,13 @@ module prim_generic_otp #(
       ResetSt: begin
         ready_o = 1'b1;
         if (valid_i) begin
-          unique case (cmd_i)
-            otp_ctrl_pkg::OtpInit:  state_d = InitSt;
-            default:  begin
-              // Invalid commands get caught here
-              valid_d = 1'b1;
-              err_d = otp_ctrl_pkg::OtpCmdInvErr;
-            end
-          endcase // cmd_i
+          if (cmd_i == otp_ctrl_pkg::OtpInit) begin
+            state_d = InitSt;
+          end else begin
+            // Invalid commands get caught here
+            valid_d = 1'b1;
+            err_d = otp_ctrl_pkg::OtpCmdInvErr;
+          end
         end
       end
       // Wait for some time until the OTP macro is ready.
@@ -113,7 +130,7 @@ module prim_generic_otp #(
         ready_o = 1'b1;
         if (valid_i) begin
           cnt_clr = 1'b1;
-          err_d = otp_ctrl_pkg::None;
+          err_d = otp_ctrl_pkg::NoErr;
           unique case (cmd_i)
             otp_ctrl_pkg::OtpRead:  state_d = ReadSt;
             otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
@@ -139,7 +156,7 @@ module prim_generic_otp #(
           if (rerror[1]) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpReadErrEccUncorr;
+            err_d = otp_ctrl_pkg::OtpReadUncorrErr;
           end else begin
             if (cnt_q == size_q) begin
               state_d = IdleSt;
@@ -149,7 +166,7 @@ module prim_generic_otp #(
             end
             // Correctable error, carry on but signal back.
             if (rerror[0]) begin
-              err_d = otp_ctrl_pkg::OtpReadErrEccCorr;
+              err_d = otp_ctrl_pkg::OtpReadCorrErr;
             end
           end
         end
@@ -169,7 +186,7 @@ module prim_generic_otp #(
           if (rerror[1] || rdata_d != '0) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpWriteErrNotBlank;
+            err_d = otp_ctrl_pkg::OtpWriteBlankErr;
           end else begin
             if (cnt_q == size_q) begin
               cnt_clr = 1'b1;

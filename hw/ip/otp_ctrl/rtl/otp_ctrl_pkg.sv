@@ -6,6 +6,36 @@
 package otp_ctrl_pkg;
 
   import prim_util_pkg::vbits;
+  import otp_ctrl_reg_pkg::*;
+
+  ////////////////////////
+  // General Parameters //
+  ////////////////////////
+
+  parameter int NumPart = 7;
+  parameter int NumPartWidth = vbits(NumPart);
+
+  // TODO: may need to tune this and make sure that this encoding not optimized away.
+  // Redundantly encoded and complementary values are used to for signalling to the partition
+  // controller FSMs and the DAI whether a partition is locked or not. Any other value than
+  // "Unlocked" is interpreted as "Locked" in those FSMs.
+  typedef enum logic [7:0] {
+    Unlocked = 8'h5A,
+    Locked   = 8'hA5
+  } access_e;
+
+  // Partition access type
+  typedef struct packed {
+    access_e read_lock;
+    access_e write_lock;
+  } part_access_t;
+
+  parameter int DaiCmdWidth = 3;
+  typedef enum logic [DaiCmdWidth-1:0] {
+    DaiRead   = 3'b001,
+    DaiWrite  = 3'b010,
+    DaiDigest = 3'b100
+  } dai_cmd_e;
 
   //////////////////////////////////////
   // Typedefs for OTP Macro Interface //
@@ -13,12 +43,11 @@ package otp_ctrl_pkg;
 
   // OTP-macro specific
   parameter int OtpWidth         = 16;
-  parameter int OtpDepth         = 1024;
+  parameter int OtpAddrWidth     = OtpByteAddrWidth - $clog2(OtpWidth/8);
+  parameter int OtpDepth         = 2**OtpAddrWidth;
   parameter int OtpCmdWidth      = 2;
   parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
   parameter int OtpErrWidth      = 4;
-  parameter int OtpAddrWidth     = vbits(OtpDepth);
-  parameter int OtpByteAddrWidth = vbits(OtpWidth/8 * OtpDepth);
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
   parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
@@ -30,22 +59,21 @@ package otp_ctrl_pkg;
   } prim_otp_cmd_e;
 
   typedef enum logic [OtpErrWidth-1:0] {
-    None                 = 4'h0,
-    OtpCmdInvErr         = 4'h1,
-    OtpSizeInvErr        = 4'h2,
-    OtpInitErr           = 4'h3,
-    OtpReadErrEccCorr    = 4'h4,
-    OtpReadErrEccUncorr  = 4'h5,
-    OtpReadErrOther      = 4'h6,
-    OtpWriteErrNotBlank  = 4'h7,
-    OtpWriteErrOther     = 4'h8,
-    ParityErr            = 4'h9,
-    IntegErr             = 4'hA,
-    CnstyErr             = 4'hB,
-    FsmErr               = 4'hC,
-    CmdInvErr            = 4'hD,
-    AccessErr            = 4'hE
-    // TODO: populate with error codes
+    NoErr            = 4'h0,
+    OtpCmdInvErr     = 4'h1,
+    OtpInitErr       = 4'h2,
+    OtpReadCorrErr   = 4'h3,
+    OtpReadUncorrErr = 4'h4,
+    OtpReadErr       = 4'h5,
+    OtpWriteBlankErr = 4'h6,
+    OtpWriteErr      = 4'h7,
+    CmdInvErr        = 4'h8,
+    AccessErr        = 4'h9,
+    ParityErr        = 4'hA,
+    IntegErr         = 4'hB,
+    CnstyErr         = 4'hC,
+    FsmErr           = 4'hD,
+    EscErr           = 4'hE
   } otp_err_e;
 
   /////////////////////////////////
@@ -104,11 +132,65 @@ package otp_ctrl_pkg;
     ChainedMode
   } otp_digest_mode_e;
 
+  ////////////////////////
+  // Partition Metadata //
+  ////////////////////////
+
+  typedef enum logic {
+    Unbuffered,
+    Buffered
+  } part_variant_e;
+
+  typedef struct packed {
+    part_variant_e variant;
+    // Offset and size within the OTP array, in Bytes.
+    logic [OtpByteAddrWidth-1:0] offset;
+    logic [OtpByteAddrWidth-1:0] size;
+    // Key index to use for scrambling.
+    logic [ConstSelWidth-1:0] key_idx;
+    // Attributes
+    logic scrambled;  // Whether the partition is scrambled
+    logic hw_digest;  // Whether the partition has a hardware digest
+    logic write_lock; // Whether the partition is write lockable (via digest)
+    logic read_lock;  // Whether the partition is read lockable (via digest)
+  } part_info_t;
+
+  // TODO: need to parse this somehow from an hjson
+  localparam part_info_t PartInfo [NumPart] = '{
+    // Variant    | offset | size | key_idx | scrambled | HW digest | write_lock | read_lock
+    // CREATOR_SW_CFG
+    '{Unbuffered,   32'h0,   768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    // OWNER_SW_CFG
+    '{Unbuffered,   32'h300, 768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    // HW_CFG
+    '{Buffered,     32'h600, 176,      0,       1'b0,      1'b1,      1'b1,       1'b0},
+    // SECRET0
+    '{Buffered,     32'h6B0, 40,       0,       1'b1,      1'b1,      1'b1,       1'b1},
+    // SECRET1
+    '{Buffered,     32'h6D8, 88,       1,       1'b1,      1'b1,      1'b1,       1'b1},
+    // SECRET2
+    '{Buffered,     32'h730, 120,      2,       1'b1,      1'b1,      1'b1,       1'b1},
+    // LIFE_CYCLE
+    '{Buffered,     32'h7A8, 88,       0,       1'b0,      1'b0,      1'b0,       1'b0}
+  };
+
+  parameter int CreatorSwCfgIdx = 0;
+  parameter int OwnerSwCfgIdx   = 1;
+  parameter int HwCfgIdx        = 2;
+  parameter int Secret0Idx      = 3;
+  parameter int Secret1Idx      = 4;
+  parameter int Secret2Idx      = 5;
+  parameter int LifeCycleIdx    = 6;
+  // These are not "real partitions", but in terms of implementation it is convenient to
+  // add these at the end of certain arrays.
+  parameter int DaiIdx = 7;
+  parameter int LciIdx = 8;
+
   ///////////////////////////////
   // Typedefs for LC Interface //
   ///////////////////////////////
 
-  // TODO: move to lc_ctrl_pkg
+  // TODO: update this encoding and move to lc_ctrl_pkg
   typedef enum logic [7:0] {
     Value0 = 8'h 00,
     Value1 = 8'h 6D,
@@ -207,21 +289,15 @@ package otp_ctrl_pkg;
   ////////////////////////////////
 
   typedef struct packed {
-    logic  init;
+    logic init;
   } pwr_otp_init_req_t;
 
   typedef struct packed {
-    logic  done;
+    logic done;
   } pwr_otp_init_rsp_t;
 
-  typedef enum logic [1:0] {
-    Idle    = 2'b00,
-    Reading = 2'b01,
-    Writing = 2'b10
-  } otp_pwr_state_e;
-
   typedef struct packed {
-    otp_pwr_state_e  state;
+    logic idle;
   } otp_pwr_state_t;
 
 endpackage : otp_ctrl_pkg
