@@ -151,7 +151,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   assign seed_page_addr = BusAddrW'({SeedInfoPageSel[seed_idx], BusWordW'(0)});
 
   logic [BusAddrW-1:0] owner_page_addr;
-  assign owner_page_addr = BusAddrW'({logic'(OwnerInfoPage), BusWordW'(0)});
+  assign owner_page_addr = BusAddrW'({SeedInfoPageSel[OwnerSeedIdx], BusWordW'(0)});
 
   logic start;
   flash_op_e op;

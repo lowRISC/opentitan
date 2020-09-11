@@ -90,12 +90,16 @@ package flash_ctrl_pkg;
   // One page for creator seeds
   // One page for owner seeds
   parameter int NumSeeds = 2;
+  parameter int SeedBank = 0;
+  parameter int CreatorSeedIdx = 0;
+  parameter int OwnerSeedIdx = 1;
   parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
-  parameter logic [InfoPageW-1:0] SeedInfoPageSel [NumSeeds] =
+  // which page of which bank
+  parameter logic [AllPagesW-1:0] SeedInfoPageSel [NumSeeds] =
     '{
-      CreatorInfoPage,
-      OwnerInfoPage
+      {SeedBank, CreatorInfoPage},
+      {SeedBank, OwnerInfoPage}
      };
 
   // hardware interface memory protection rules
@@ -259,19 +263,28 @@ package flash_ctrl_pkg;
   };
 
   ////////////////////////////
-  // The following inter-module should be moved to OTP
+  // The following inter-module should be moved to OTP/LC
   ////////////////////////////
 
   // otp to flash_phy
   typedef struct packed {
     logic [127:0] addr_key;
     logic [127:0] data_key;
+    // TBD: this signal will become multi-bit in the future
+    logic creator_seed_valid;
   } otp_flash_t;
+
+  // lc to flash_phy
+  typedef struct packed {
+    // TBD: this signal will become multi-bit in the future
+    logic provision_en;
+  } lc_flash_t;
 
   // default value of otp_flash_t
   parameter otp_flash_t OTP_FLASH_DEFAULT = '{
     addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
+    creator_seed_valid: '0
   };
 
 
