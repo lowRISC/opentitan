@@ -329,6 +329,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // This interrupt is asserted whenever the fast FSM transitions
   // into active state.  However, it does not assert during POR
   prim_intr_hw #(.Width(1)) intr_wakeup (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (wkup),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),

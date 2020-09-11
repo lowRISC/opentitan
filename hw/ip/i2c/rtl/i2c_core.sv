@@ -418,6 +418,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_fmt_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_watermark.q),
@@ -429,6 +431,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_watermark.q),
@@ -440,6 +444,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_fmt_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_overflow.q),
@@ -451,6 +457,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_overflow.q),
@@ -462,6 +470,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_nak (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_nak),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.nak.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.nak.q),
@@ -473,6 +483,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_scl_interference (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_scl_interference),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.scl_interference.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.scl_interference.q),
@@ -484,6 +496,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_sda_interference (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_sda_interference),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.sda_interference.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.sda_interference.q),
@@ -495,6 +509,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_stretch_timeout (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_stretch_timeout),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.stretch_timeout.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.stretch_timeout.q),
@@ -506,6 +522,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_sda_unstable (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_sda_unstable),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.sda_unstable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.sda_unstable.q),
@@ -517,6 +535,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_trans_complete (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_trans_complete),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.trans_complete.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.trans_complete.q),
@@ -528,6 +548,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_empty.q),
@@ -539,6 +561,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_nonempty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_nonempty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_nonempty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_nonempty.q),
@@ -550,6 +574,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_overflow.q),
@@ -561,6 +587,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_acq_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_acq_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_overflow.q),
@@ -572,6 +600,8 @@ module  i2c_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_ack_stop (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_ack_stop),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.ack_stop.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.ack_stop.q),
