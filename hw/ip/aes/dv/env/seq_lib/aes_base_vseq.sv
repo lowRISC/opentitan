@@ -82,31 +82,31 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task write_key(bit [7:0][31:0] key [2]);
     // Share 0 (the masked key share = key ^ mask)
-    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]));
-    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]));
-    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]));
-    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]));
-    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]));
-    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]));
-    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]));
-    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]));
+    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]), .blocking(0));
+    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]), .blocking(0));
     // Share 1 (the mask share)
-    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]));
-    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]));
-    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]));
-    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]));
-    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]));
-    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]));
-    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]));
-    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]));
+    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]), .blocking(0));
+    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]), .blocking(0));
   endtask // write_key
 
 
   virtual task write_iv(bit  [3:0][31:0] iv);
-    csr_wr(.csr(ral.iv_0), .value(iv[0]));
-    csr_wr(.csr(ral.iv_1), .value(iv[1]));
-    csr_wr(.csr(ral.iv_2), .value(iv[2]));
-    csr_wr(.csr(ral.iv_3), .value(iv[3]));
+    csr_wr(.csr(ral.iv_0), .value(iv[0]), .blocking(0) );
+    csr_wr(.csr(ral.iv_1), .value(iv[1]), .blocking(0) );
+    csr_wr(.csr(ral.iv_2), .value(iv[2]), .blocking(0) );
+    csr_wr(.csr(ral.iv_3), .value(iv[3]), .blocking(0) );
   endtask
 
 
@@ -116,20 +116,19 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1][31:0]), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2][31:0]), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3][31:0]), UVM_MEDIUM)
-    csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]) );
-    csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]) );
-    csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]) );
-    csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]) );
+    csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(0) );
+    csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(0) );
+    csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(0) );
+    csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(0) );
   endtask
 
   virtual task read_data(ref bit [3:0] [31:0] cypher_txt);
-    csr_rd(.ptr(ral.data_out_0), .value(cypher_txt[0][31:0]));
-    csr_rd(.ptr(ral.data_out_1), .value(cypher_txt[1][31:0]));
-    csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2][31:0]));
-    csr_rd(.ptr(ral.data_out_3), .value(cypher_txt[3][31:0]));
+    csr_rd(.ptr(ral.data_out_0), .value(cypher_txt[0][31:0]), .blocking(1));
+    csr_rd(.ptr(ral.data_out_1), .value(cypher_txt[1][31:0]), .blocking(1));
+    csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2][31:0]), .blocking(1));
+    csr_rd(.ptr(ral.data_out_3), .value(cypher_txt[3][31:0]), .blocking(1));
 
     `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", cypher_txt),   UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)

@@ -22,6 +22,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Then compare this value with designers to check if it meets their expectation
   int unsigned max_outstanding_req = 16;
 
+
   // TileLink channel valid delay (host mode)
   bit use_seq_item_a_valid_delay;
   int unsigned a_valid_delay_min = 0;
@@ -40,6 +41,16 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   int unsigned d_valid_delay_min = 0;
   int unsigned d_valid_delay_max = 10;
 
+  // make a fifo with available req IDs
+  rand int unsigned outstanding_req_fifo[$];
+
+  constraint c_outstanding_req_fifo {
+    outstanding_req_fifo.size() == max_outstanding_req;
+    unique{outstanding_req_fifo};
+    foreach(outstanding_req_fifo[i])
+       outstanding_req_fifo[i] inside {[0:max_outstanding_req-1]};
+  };
+
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
     `uvm_field_enum(tl_level_e, tl_level, UVM_DEFAULT)
@@ -47,6 +58,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(a_ready_delay_max,     UVM_DEFAULT)
     `uvm_field_int(d_ready_delay_min,     UVM_DEFAULT)
     `uvm_field_int(d_ready_delay_max,     UVM_DEFAULT)
+    `uvm_field_queue_int(outstanding_req_fifo,  UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 

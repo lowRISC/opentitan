@@ -18,6 +18,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
     if (cfg.zero_delays) begin
       cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
       cfg.m_tl_agent_cfg.a_valid_delay_max = 0;

@@ -53,6 +53,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t Enable scoreboard: %d", cfg.en_scb), UVM_MEDIUM)
     if(cfg.en_scb) begin
       fork
         compare();

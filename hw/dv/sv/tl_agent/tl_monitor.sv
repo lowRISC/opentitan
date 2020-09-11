@@ -108,6 +108,8 @@ class tl_monitor extends dv_base_monitor#(
             d_chan_port.write(rsp);
             pending_a_req.delete(i);
             req_found = 1'b1;
+            cfg.outstanding_req_fifo.push_back(rsp.d_source);
+            
             break;
           end
         end

@@ -54,6 +54,8 @@ class tl_host_driver extends tl_base_driver;
   // Send request on A channel
   virtual task send_a_channel_request(tl_seq_item req);
     int unsigned a_valid_delay;
+    int unsigned req_id;
+
     if (cfg.use_seq_item_a_valid_delay) begin
       a_valid_delay = req.a_valid_delay;
     end else begin
@@ -63,8 +65,15 @@ class tl_host_driver extends tl_base_driver;
     `DV_SPINWAIT_EXIT(repeat (a_valid_delay) @(cfg.vif.host_cb);,
                       wait(reset_asserted);)
     // wait until no outstanding transaction with same source id
-    `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    //  `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
+    //                   wait(reset_asserted);)
+
+    // wait until ID is available
+   `DV_SPINWAIT_EXIT(while(cfg.outstanding_req_fifo.size() == 0) @(cfg.vif.host_cb);,
+                   wait(reset_asserted);)
+    cfg.outstanding_req_fifo.shuffle();
+    req_id = cfg.outstanding_req_fifo.pop_front();
+    req.a_source = req_id;
 
     if (!reset_asserted) begin
       cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
