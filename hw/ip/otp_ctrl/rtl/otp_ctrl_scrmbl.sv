@@ -84,9 +84,15 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // Decryption Key LUT //
   ////////////////////////
 
+  logic [NumPresentRounds-1:0][4:0] present_round_lut;
   logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
 
   // This pre-calculates the inverse scrambling keys at elab time.
+  for (genvar k = 0; k < NumPresentRounds; k++) begin : gen_round_lut
+    assign present_round_lut[k] = 5'(unsigned'(k+1));
+  end
+  `ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
+
   always_comb begin : p_inv_keys
     for (int k = 0; k < NumScrmblKeys; k++) begin
       // Initialize with encryption key
@@ -94,11 +100,12 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
       for (int j = 0; j < NumPresentRounds; j++) begin
         // Due to the PRESENT key schedule, we have to step the key schedule function by
         // NumPresentRounds forwards to get the decryption key.
-        otp_dec_key_lut[k] = prim_cipher_pkg::present_update_key128(otp_dec_key_lut[k], 5'(j + 1));
+        otp_dec_key_lut[k] = prim_cipher_pkg::present_update_key128(otp_dec_key_lut[k],
+                                                                    present_round_lut[j]);
       end
     end
   end
-  `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut);
+  `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
 
   //////////////
   // Datapath //
@@ -129,7 +136,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   data_state_sel_e  data_state_sel;
   key_state_sel_e   key_state_sel;
   logic data_state_en, data_shadow_copy, data_shadow_load, digest_state_en, key_state_en;
-  logic sel_d, sel_q;
+  logic [ConstSelWidth-1:0] sel_d, sel_q;
   otp_digest_mode_e digest_mode_d, digest_mode_q;
 
   assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ? OtpKey[sel_d]          : '0;
@@ -151,7 +158,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
 
   assign key_state_d     = (key_state_sel == SelDecKeyOut)      ? dec_key_out          :
                            (key_state_sel == SelEncKeyOut)      ? enc_key_out          :
-                           (key_state_sel == SelDecKeyInit)     ? otp_dec_key_lut      :
+                           (key_state_sel == SelDecKeyInit)     ? otp_dec_key_mux      :
                            (key_state_sel == SelEncKeyInit)     ? otp_enc_key_mux      :
                            (key_state_sel == SelDigestConst)    ? otp_digest_const_mux :
                            (key_state_sel == SelDigestChained)  ? {data_state_q, data_shadow_q} :
@@ -165,11 +172,27 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // FSM //
   /////////
 
-  typedef enum logic [1:0] {
-    IdleSt,
-    DecryptSt,
-    EncryptSt,
-    DigestSt
+  // Encoding generated with ./sparse-fsm-encode -d 5 -m 4 -n 8
+  // Hamming distance histogram:
+  //
+  // 0: --
+  // 1: --
+  // 2: --
+  // 3: --
+  // 4: --
+  // 5: |||||||||||||||||||| (66.67%)
+  // 6: |||||||||| (33.33%)
+  // 7: --
+  // 8: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  //
+  typedef enum logic [7:0] {
+    IdleSt    = 8'b11100001,
+    DecryptSt = 8'b01011010,
+    EncryptSt = 8'b10010100,
+    DigestSt  = 8'b00101111
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
@@ -218,12 +241,14 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
               key_state_sel = SelDecKeyInit;
               data_state_en = 1'b1;
               key_state_en  = 1'b1;
+              sel_d         = sel_i;
             end
             Encrypt: begin
               state_d       = EncryptSt;
               key_state_sel = SelEncKeyInit;
               data_state_en = 1'b1;
               key_state_en  = 1'b1;
+              sel_d         = sel_i;
             end
             LoadShadow: begin
               if (digest_mode_q == ChainedMode) begin
@@ -239,6 +264,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
               data_state_en  = 1'b1;
               key_state_en   = 1'b1;
               is_first_d     = 1'b0;
+              sel_d          = sel_i;
             end
             DigestInit: begin
               digest_mode_d  = otp_digest_mode_e'(sel_i);
@@ -252,6 +278,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
               key_state_en   = 1'b1;
               is_first_d     = 1'b1;
               digest_mode_d  = StandardMode;
+              sel_d          = sel_i;
             end
             default: ; // ignore
           endcase // cmd_i
