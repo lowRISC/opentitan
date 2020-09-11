@@ -7,14 +7,14 @@ NOTE: This is a template checklist document that is required to be copied over t
 directory for a new design that transitions from L0 (Specification) to L1 (Development)
 stage, and updated as needed. Once done, please remove this comment before checking it in.
 -->
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [KEYMGR peripheral.]()
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [KEYMGR peripheral.](../)
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 
 
 Type          | Item                  | Resolution  | Note/Collaterals
 --------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Not Started | [KEYMGR Design Spec]()
+Documentation | [SPEC_COMPLETE][]     | Not Started | [KEYMGR Design Spec](../)
 Documentation | [CSR_DEFINED][]       | Not Started |
 RTL           | [CLKRST_CONNECTED][]  | Not Started |
 RTL           | [IP_TOP][]            | Not Started |
