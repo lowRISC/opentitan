@@ -266,25 +266,48 @@ package flash_ctrl_pkg;
   // The following inter-module should be moved to OTP/LC
   ////////////////////////////
 
-  // otp to flash_phy
+  // otp to flash_ctrl
   typedef struct packed {
     logic [127:0] addr_key;
     logic [127:0] data_key;
     // TBD: this signal will become multi-bit in the future
-    logic creator_seed_valid;
+    logic seed_valid;
   } otp_flash_t;
 
-  // lc to flash_phy
+  // lc to flash_ctrl
   typedef struct packed {
     // TBD: this signal will become multi-bit in the future
+    logic rma_req;
+    logic [BusWidth-1:0] rma_req_token;
     logic provision_en;
-  } lc_flash_t;
+  } lc_flash_req_t;
+
+  // flash_ctrl to lc
+  typedef struct packed {
+    logic rma_ack;
+    logic [BusWidth-1:0] rma_ack_token;
+  } lc_flash_rsp_t;
+
+  // pwrmgr to flash_ctrl
+  typedef struct packed {
+    logic init;
+  } pwrmgr_flash_t;
 
   // default value of otp_flash_t
   parameter otp_flash_t OTP_FLASH_DEFAULT = '{
     addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
     data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    creator_seed_valid: '0
+    seed_valid: 1'b1
+  };
+
+  parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
+    rma_req: 1'b0,
+    rma_req_token: '0,
+    provision_en: 1'b1
+  };
+
+  parameter pwrmgr_flash_t PWRMGR_FLASH_DEFAULT = '{
+    init: 1'b1
   };
 
 

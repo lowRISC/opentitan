@@ -20,8 +20,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        flash_rsp_t flash_i,
   output       flash_req_t flash_o,
 
-  // OTP Interface
+  // otp/lc/pwrmgr Interface
   input        otp_flash_t otp_i,
+  input        lc_flash_req_t lc_i,
+  output       lc_flash_rsp_t lc_o,
+  input        pwrmgr_flash_t pwrmgr_i,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -120,6 +123,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   flash_sel_e if_sel;
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
+  logic creator_seed_priv;
+  logic owner_seed_priv;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -225,9 +230,20 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign sw_sel        = if_sel == SwSel;
 
   // hardware interface
+
+  // software only has privilege to change creator seed when provision enable is set and
+  // before the the seed is set as valid in otp
+  assign creator_seed_priv = lc_i.provision_en & ~otp_i.seed_valid;
+
+  // owner seed is under software control and can be modided whenever provision enable is set
+  assign owner_seed_priv = lc_i.provision_en;
+
   flash_ctrl_lcmgr u_flash_hw_if (
     .clk_i,
     .rst_ni,
+
+    .init_i(pwrmgr_i.init),
+    .provision_en_i(lc_i.provision_en),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -244,10 +260,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rdata_i(rd_fifo_rdata),
 
     // external rma request
-    .rma_i('0),
-    .rma_token_i('0), // just a random string
-    .rma_token_o(),
-    .rma_rsp_o(),
+    .rma_i(lc_i.rma_req),
+    .rma_token_i(lc_i.rma_req_token),
+    .rma_token_o(lc_o.rma_ack_token),
+    .rma_rsp_o(lc_o.rma_ack),
 
     // random value
     .rand_i('0),
@@ -465,12 +481,25 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   //////////////////////////////////////
   // Info partition protection configuration
   //////////////////////////////////////
+  info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] info_page_cfgs;
 
-  // TBD this code below should really be templated
-  for(genvar i = 0; i < InfosPerBank; i++) begin : gen_info_pg_assignments
-    assign info_page_cfgs[0][i] = reg2hw.bank0_info_page_cfg[i];
-    assign info_page_cfgs[1][i] = reg2hw.bank1_info_page_cfg[i];
+  // TBD this code below should really be templated.
+  // Since reg does not supported nested multiregs, the multi-reg of each
+  // bank ends up with unique naming.
+  assign reg2hw_info_page_cfgs[0] = reg2hw.bank0_info_page_cfg;
+  assign reg2hw_info_page_cfgs[1] = reg2hw.bank1_info_page_cfg;
+
+  // qualify reg2hw settings with creator / owner privileges
+  for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv
+    flash_ctrl_info_cfg # (
+      .Bank(i)
+    ) u_info_cfg (
+      .cfgs_i(reg2hw_info_page_cfgs[i]),
+      .creator_seed_priv_i(creator_seed_priv),
+      .owner_seed_priv_i(owner_seed_priv),
+      .cfgs_o(info_page_cfgs[i])
+    );
   end
 
   //////////////////////////////////////

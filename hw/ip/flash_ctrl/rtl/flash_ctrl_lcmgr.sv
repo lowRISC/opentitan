@@ -9,6 +9,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
+  // initialization command
+  input init_i,
+
+  // only access seeds when provisioned
+  input provision_en_i,
+
   // interface to ctrl arb control ports
   output flash_ctrl_reg_pkg::flash_ctrl_reg2hw_control_reg_t ctrl_o,
   output logic req_o,
@@ -24,6 +30,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   input [BusWidth-1:0] rdata_i,
 
   // external rma request
+  // This should be simplified to just multi-bit request and multi-bit response
   input rma_i,
   input [BusWidth-1:0] rma_token_i, // just a random string
   output logic [BusWidth-1:0] rma_token_o,
@@ -64,6 +71,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // progress through and read out the various pieces of content
   // This FSM should become sparse, especially for StRmaRsp
   typedef enum logic [3:0] {
+    StIdle,
     StReadSeeds,
     StWait,
     StWipeOwner,
@@ -87,7 +95,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= StReadSeeds;
+      state_q <= StIdle;
       validate_q <= 1'b0;
     end else begin
       state_q <= state_d;
@@ -146,7 +154,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     end
   end
 
-
   logic [BusAddrW-1:0] seed_page_addr;
   assign seed_page_addr = BusAddrW'({SeedInfoPageSel[seed_idx], BusWordW'(0)});
 
@@ -194,6 +201,19 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     validate_d = validate_q;
 
     unique case (state_q)
+
+      StIdle: begin
+        phase = PhaseSeed;
+        // TBD: provision_en is only a "good" value after otp initilization
+        // Need to qualify this statement with some notion that otp init has
+        // finished.  Since power manager will kick off otp init, it should
+        // also be able to kick off flash_init
+        if (init_i) begin
+          // if provisioning is not enabled, do not read seeds and skip directly
+          // to wait state.
+          state_d = provision_en_i ? StReadSeeds : StWait;
+        end
+      end
 
       // read seeds
       StReadSeeds: begin

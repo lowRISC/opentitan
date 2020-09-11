@@ -27,7 +27,21 @@
       name: "otp",
       act:  "rcv",
       package: "flash_ctrl_pkg"
-    }
+    },
+
+    { struct: "lc_flash",
+      type: "req_rsp",
+      name: "lc",
+      act:  "rsp",
+      package: "flash_ctrl_pkg"
+    },
+
+    { struct: "pwrmgr_flash",
+      type: "uni",
+      name: "pwrmgr",
+      act:  "rcv",
+      package: "flash_ctrl_pkg"
+    },
 
   ],
 
