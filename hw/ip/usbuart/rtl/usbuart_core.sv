@@ -328,6 +328,8 @@ module usbuart_core (
   // instantiate interrupt hardware primitives
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_watermark.q),
@@ -339,6 +341,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_watermark.q),
@@ -350,6 +354,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_overflow.q),
@@ -361,6 +367,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_overflow.q),
@@ -372,6 +380,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_frame_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_frame_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_frame_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_frame_err.q),
@@ -383,6 +393,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_break_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_break_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_break_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_break_err.q),
@@ -394,6 +406,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_timeout (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_timeout),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_timeout.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_timeout.q),
@@ -405,6 +419,8 @@ module usbuart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_parity_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_parity_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_parity_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_parity_err.q),

@@ -85,6 +85,8 @@ module otbn
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_done (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (done),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.done.q),
@@ -97,6 +99,8 @@ module otbn
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (err_valid),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.err.q),

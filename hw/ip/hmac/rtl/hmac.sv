@@ -209,6 +209,8 @@ module hmac
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[0]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
@@ -219,6 +221,8 @@ module hmac
     .intr_o                 (intr_hmac_done_o)
   );
   prim_intr_hw #(.Width(1)) intr_hw_fifo_empty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[1]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
@@ -229,6 +233,8 @@ module hmac
     .intr_o                 (intr_fifo_empty_o)
   );
   prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[2]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_err.q),

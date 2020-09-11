@@ -151,6 +151,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   prim_intr_hw #(.Width(1)) intr_hw_es_entropy_valid (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_es_entropy_valid),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_entropy_valid.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_entropy_valid.q),
@@ -162,6 +164,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_es_rct_failed (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_es_rct_failed),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_rct_failed.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_rct_failed.q),
@@ -173,6 +177,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_es_apt_failed (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_es_apt_failed),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_apt_failed.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_apt_failed.q),
@@ -185,6 +191,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   prim_intr_hw #(.Width(1)) intr_hw_es_fifo_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_es_fifo_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_fifo_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_fifo_err.q),

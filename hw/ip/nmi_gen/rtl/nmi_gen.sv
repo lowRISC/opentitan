@@ -51,6 +51,8 @@ module nmi_gen
   prim_intr_hw #(
     .Width(1)
   ) i_intr_esc0 (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           ( esc_en[0]                  ),
     .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.esc0.q  ),
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.esc0.q    ),
@@ -64,6 +66,8 @@ module nmi_gen
   prim_intr_hw #(
     .Width(1)
   ) i_intr_esc1 (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           ( esc_en[1]                  ),
     .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.esc1.q  ),
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.esc1.q    ),
@@ -77,6 +81,8 @@ module nmi_gen
   prim_intr_hw #(
     .Width(1)
   ) i_intr_esc2 (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           ( esc_en[2]                  ),
     .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.esc2.q  ),
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.esc2.q    ),

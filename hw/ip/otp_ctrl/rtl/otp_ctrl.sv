@@ -78,6 +78,8 @@ module otp_ctrl
   prim_intr_hw #(
     .Width(1)
   ) i_intr_esc0 (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           ( otp_access_done                       ),
     .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.otp_access_done.q  ),
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.otp_access_done.q    ),
@@ -91,6 +93,8 @@ module otp_ctrl
   prim_intr_hw #(
     .Width(1)
   ) i_intr_esc1 (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           ( otp_ctrl_err                       ),
     .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.otp_ctrl_err.q  ),
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.otp_ctrl_err.q    ),
