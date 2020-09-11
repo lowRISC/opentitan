@@ -783,6 +783,24 @@
           index: -1
         }
         {
+          struct: lc_flash
+          type: req_rsp
+          name: lc
+          act: rsp
+          package: flash_ctrl_pkg
+          inst_name: flash_ctrl
+          index: -1
+        }
+        {
+          struct: pwrmgr_flash
+          type: uni
+          name: pwrmgr
+          act: rcv
+          package: flash_ctrl_pkg
+          inst_name: flash_ctrl
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -4752,6 +4770,24 @@
         struct: otp_flash
         type: uni
         name: otp
+        act: rcv
+        package: flash_ctrl_pkg
+        inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: lc_flash
+        type: req_rsp
+        name: lc
+        act: rsp
+        package: flash_ctrl_pkg
+        inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: pwrmgr_flash
+        type: uni
+        name: pwrmgr
         act: rcv
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
