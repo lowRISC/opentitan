@@ -43,9 +43,11 @@ filesets:
 
   files_model:
     files:
-      - dv/model/otbn_model.cc: { file_type: cppSource }
-      - dv/model/otbn_core_model.sv
-    file_type: systemVerilogSource
+      - dv/model/otbn_model.cc
+      - dv/model/iss_wrapper.cc
+      - dv/model/iss_wrapper.h: { is_include_file: true }
+      - dv/model/otbn_core_model.sv: { file_type: systemVerilogSource }
+    file_type: cppSource
 
   files_verilator_waiver:
     depend:

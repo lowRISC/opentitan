@@ -14,6 +14,8 @@
 #include <svdpi.h>
 #include <sys/stat.h>
 
+#include "iss_wrapper.h"
+
 // Candidate for hw/dv/verilator/cpp
 /**
  * Guard class for SV Scope
@@ -34,12 +36,6 @@ class SVScoped {
   SVScoped(svScope scope) { prev_scope_ = svSetScope(scope); }
   ~SVScoped() { svSetScope(prev_scope_); }
 };
-
-// Guard class to safely delete C strings
-struct CStrDeleter {
-  void operator()(char *p) const { std::free(p); }
-};
-typedef std::unique_ptr<char, CStrDeleter> c_str_ptr;
 
 extern "C" int simutil_verilator_get_mem(int index, const svBitVecVal *val);
 extern "C" int simutil_verilator_set_mem(int index, const svBitVecVal *val);
@@ -122,106 +118,6 @@ static void load_memory(const std::string &path, const char *scope,
       throw std::runtime_error(oss.str());
     }
   }
-}
-
-// Read a 4-byte little-endian unsigned value from the given file which is
-// supposed to represent the number of cycles taken by the simulation and
-// return it.
-//
-// Raises a runtime_error on failure.
-static uint32_t load_cycles(const std::string &path) {
-  std::filebuf fb;
-  if (!fb.open(path.c_str(), std::ios::in | std::ios::binary)) {
-    std::ostringstream oss;
-    oss << "Cannot open the file '" << path << "'.";
-    throw std::runtime_error(oss.str());
-  }
-
-  char buf[4];
-  if (fb.sgetn(buf, 4) != 4) {
-    std::ostringstream oss;
-    oss << "Failed to read 4 bytes from '" << path << "'.";
-    throw std::runtime_error(oss.str());
-  }
-
-  // Re-pack the little-endian value we just read.
-  uint32_t ret = 0;
-  for (int i = 0; i < 4; ++i) {
-    ret += (uint32_t)buf[i] << 8 * i;
-  }
-  return ret;
-}
-
-// Find the otbn Python model, based on our executable path, and
-// return it. On failure, throw a std::runtime_error with a
-// description of what went wrong.
-//
-// This works by searching upwards from the binary location to find a git
-// directory (which is assumed to be the OpenTitan toplevel). It won't work if
-// you copy the binary somewhere else: if we need to support that sort of
-// thing, we'll have to figure out a "proper" installation procedure.
-static std::string find_otbn_model() {
-  c_str_ptr self_path(realpath("/proc/self/exe", NULL));
-  if (!self_path) {
-    std::ostringstream oss;
-    oss << "Cannot resolve /proc/self/exe: " << strerror(errno);
-    throw std::runtime_error(oss.str());
-  }
-
-  // Take a copy of self_path as a std::string and modify it, walking backwards
-  // over '/' characters and appending .git each time. After the first
-  // iteration, last_pos is the position of the character before the final
-  // slash (where the path looks something like "/path/to/check/.git")
-  std::string path_buf(self_path.get());
-
-  struct stat git_dir_stat;
-
-  size_t last_pos = std::string::npos;
-  for (;;) {
-    size_t last_slash = path_buf.find_last_of('/', last_pos);
-
-    // self_path was absolute, so there should always be a '/' at position
-    // zero.
-    assert(last_slash != std::string::npos);
-    if (last_slash == 0) {
-      // We've got to the slash at the start of an absolute path (and "/.git"
-      // is probably not the path we want!). Give up.
-      std::ostringstream oss;
-      oss << "Cannot find a git top-level directory containing "
-          << self_path.get() << ".\n";
-      throw std::runtime_error(oss.str());
-    }
-
-    // Replace everything after last_slash with ".git". The first time around,
-    // this will turn "/path/to/elf-file" to "/path/to/.git". After that, it
-    // will turn "/path/to/check/.git" to "/path/to/.git". Note that last_slash
-    // is strictly less than the string length (because it's an element index),
-    // so last_slash + 1 won't fall off the end.
-    path_buf.replace(last_slash + 1, std::string::npos, ".git");
-    last_pos = last_slash - 1;
-
-    // Does path_buf name a directory? If so, we've found the enclosing git
-    // directory.
-    if (stat(path_buf.c_str(), &git_dir_stat) == 0 &&
-        S_ISDIR(git_dir_stat.st_mode)) {
-      break;
-    }
-  }
-
-  // If we get here, path_buf points at a .git directory. Resolve from there to
-  // the expected model name, then use realpath to canonicalise the path. If it
-  // fails, there was no script there.
-  path_buf += "/../hw/ip/otbn/dv/otbnsim/otbnsim.py";
-  char *model_path = realpath(path_buf.c_str(), NULL);
-  if (!model_path) {
-    std::ostringstream oss;
-    oss << "Cannot find otbnsim.py, at '" << path_buf
-        << "' (guessed by searching upwards from '" << self_path.get()
-        << "').\n";
-    throw std::runtime_error(oss.str());
-  }
-
-  return std::string(model_path);
 }
 
 // Guard class to create (and possibly delete) temporary directories.
@@ -313,11 +209,11 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
   assert(dmem_words >= 0);
   assert(start_addr >= 0 && start_addr < (imem_words * 4));
 
-  std::string model_path;
+  std::unique_ptr<ISSWrapper> wrapper;
   try {
-    model_path = find_otbn_model();
+    wrapper.reset(new ISSWrapper());
   } catch (const std::runtime_error &err) {
-    std::cerr << "Error when searching for OTBN model: " << err.what() << "\n";
+    std::cerr << "Error when constructing ISS wrapper: " << err.what() << "\n";
     return 0;
   }
 
@@ -331,7 +227,6 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
 
   std::string ifname(tmpdir.path + "/imem");
   std::string dfname(tmpdir.path + "/dmem");
-  std::string cfname(tmpdir.path + "/cycles");
   std::string tfname(tmpdir.path + "/trace");
 
   try {
@@ -342,20 +237,18 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
     return 0;
   }
 
-  std::ostringstream cmd;
-  cmd << model_path << " " << imem_words << " " << ifname << " " << dmem_words
-      << " " << dfname << " " << cfname << " " << tfname << " " << start_addr;
-
-  if (std::system(cmd.str().c_str()) != 0) {
-    std::cerr << "Failed to execute model (cmd was: '" << cmd.str() << "').\n";
-    return 0;
-  }
-
   try {
+    wrapper->load_d(dfname.c_str());
+    wrapper->load_i(ifname.c_str());
+    wrapper->start(start_addr);
+    unsigned cycles = wrapper->run();
+    wrapper->dump_d(dfname.c_str());
+
     load_memory(dfname, dmem_scope, dmem_words, 32);
-    return load_cycles(cfname);
+    return cycles;
+
   } catch (const std::runtime_error &err) {
-    std::cerr << "Error when loading sim results: " << err.what() << "\n";
+    std::cerr << "Error when running ISS: " << err.what() << "\n";
     return 0;
   }
 }
