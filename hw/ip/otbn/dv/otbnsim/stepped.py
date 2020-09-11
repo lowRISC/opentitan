@@ -148,6 +148,7 @@ def on_input(sim: OTBNSim, line: str) -> None:
 
     handler(sim, words[1:])
     print('.')
+    sys.stdout.flush()
 
 
 def main() -> int:
