@@ -52,31 +52,57 @@ package otp_ctrl_pkg;
   // Typedefs for OTP Scrambling //
   /////////////////////////////////
 
-  parameter int PresentKeySize    = 128;
-  parameter int PresentBlockSize  = 64;
-  parameter int PresentDigestSize = 64;
+  parameter int ScrmblKeyWidth   = 128;
+  parameter int ScrmblBlockWidth = 64;
+  parameter int DigestBlockWidth = 64;
 
   parameter int NumPresentRounds = 31;
-  parameter int NumDigestRounds  = 4;
-
-  // global netlist constants for OTP scrambling
-  // from random.org
-  parameter logic [PresentKeySize-1:0]   OtpEncKey      = 128'h047288e1a65c839dae610bbbdf8c4525;
-  // TODO: the inverse key can be computed at compile time using the key schedule function
-  parameter logic [PresentKeySize-1:0]   OtpDecKey      = 128'hb101e34ba8665f3b785d80927730bdc1;
-  parameter logic [PresentKeySize-1:0]   OtpDigestConst = 128'hbad54428a1b587434e1dfdda898a1624;
-  parameter logic [PresentBlockSize-1:0] OtpDigestIV    =  64'h43862458b34a5942;
+  parameter int ScrmblBlockHalfWords = ScrmblBlockWidth / OtpWidth;
 
   typedef enum logic [2:0] {
     Decrypt,
     Encrypt,
-    LoadHigh,
-    LoadLow,
-    DigestFirst,
-    DigestUpdate,
+    LoadShadow,
+    Digest,
+    DigestInit,
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
+  // NOTE: THESE CONSTANTS HAVE TO BE REPLACED BEFORE TAPING OUT.
+  // TODO(#2229): need to put mechanism in place to manage these constants.
+  // Global netlist constants for OTP scrambling and digest calculation.
+  // Sample values below have been obtained from random.org
+  parameter int NumScrmblKeys = 3;
+  parameter int NumDigestSets = 5;
+  parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
+                               vbits(NumScrmblKeys) :
+                               vbits(NumDigestSets);
+  parameter logic [ScrmblKeyWidth-1:0] OtpKey [NumScrmblKeys] = '{
+    128'h047288e1a65c839dae610bbbdf8c4525,
+    128'h38fe59a71a91a65636573a6513784e3b,
+    128'h4f48dcc45ace0770e9135bda73e56344
+  };
+  // Note: digest set 0 is used for computing the partition digests. Constants at
+  // higher indices are used to compute the scrambling keys.
+  parameter logic [ScrmblKeyWidth-1:0] OtpDigestConst [NumDigestSets] = '{
+    128'h9d40106e2dc2346ec96d61f0cc5295c7,
+    128'hafed2aa5c3284c01d71103edab1d8953,
+    128'h8a14fe0c08f8a3a190dd32c05f208474,
+    128'h9e6fac4ba15a3bce29d05a3e9e2d0846,
+    128'h3a0c6051392e00ef24073627319555b8
+  };
+  parameter logic [ScrmblBlockWidth-1:0] OtpDigestIV [NumDigestSets] = '{
+    64'ha5af72c1b813aec4,
+    64'h5d7aacd1db316407,
+    64'hd0ec83b7fe6ae2ae,
+    64'hc2993a0ea64e312d,
+    64'h899aac2ab7d91479
+  };
+
+  typedef enum logic [ConstSelWidth-1:0] {
+    StandardMode,
+    ChainedMode
+  } otp_digest_mode_e;
 
   ///////////////////////////////
   // Typedefs for LC Interface //
