@@ -167,11 +167,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           intr_state_field = intr_state_fields[class_i];
           void'(intr_state_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
           intr_en = ral.intr_enable.get_mirrored_value();
-          `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
-                            $sformatf("Interrupt class_%s, is_local_err %0b, local_alert_type %s",
-                            class_name[class_i],is_int_err, local_alert_type));
 
-          if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
           // calculate escalation
           class_ctrl = get_class_ctrl(class_i);
           `uvm_info(`gfn, $sformatf("class %0d is triggered, class ctrl=%0h, under_esc=%0b",
@@ -180,6 +176,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           if (class_ctrl[AlertClassCtrlEn] &&
               (class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0)) begin
             alert_accum_cal(class_i);
+          end
+
+          // according to issue #841, interrupt will have one clock cycle delay
+          cfg.clk_rst_vif.wait_n_clks(1);
+          if (!under_reset) begin
+            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
+                            $sformatf("Interrupt class_%s, is_local_err %0b, local_alert_type %s",
+                            class_name[class_i],is_int_err, local_alert_type));
+            if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
           end
         end
       end
