@@ -42,6 +42,9 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
   virtual task pre_start();
     super.pre_start();
     num_ping_trans.rand_mode(0);
+    // disable alert/esc build-in coverage, because this test forced original design variable
+    for (int i = 0; i < NUM_ALERTS; i++) cfg.alert_host_cfg[i].en_cov = 0;
+    for (int i = 0; i < NUM_ESCS; i++)   cfg.esc_device_cfg[i].en_cov = 0;
   endtask
 
   virtual task body();
