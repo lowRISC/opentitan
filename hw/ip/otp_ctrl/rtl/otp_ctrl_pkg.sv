@@ -5,6 +5,49 @@
 
 package otp_ctrl_pkg;
 
+  import prim_util_pkg::vbits;
+
+  //////////////////////////////////////
+  // Typedefs for OTP Macro Interface //
+  //////////////////////////////////////
+
+  // OTP-macro specific
+  parameter int OtpWidth         = 16;
+  parameter int OtpDepth         = 1024;
+  parameter int OtpCmdWidth      = 2;
+  parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
+  parameter int OtpErrWidth      = 4;
+  parameter int OtpAddrWidth     = vbits(OtpDepth);
+  parameter int OtpByteAddrWidth = vbits(OtpWidth/8 * OtpDepth);
+  parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
+  // Number of Byte address bits to cut off in order to get the native OTP word address.
+  parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
+
+  typedef enum logic [OtpCmdWidth-1:0] {
+    OtpRead  = 2'b00,
+    OtpWrite = 2'b01,
+    OtpInit  = 2'b11
+  } prim_otp_cmd_e;
+
+  typedef enum logic [OtpErrWidth-1:0] {
+    None                 = 4'h0,
+    OtpCmdInvErr         = 4'h1,
+    OtpSizeInvErr        = 4'h2,
+    OtpInitErr           = 4'h3,
+    OtpReadErrEccCorr    = 4'h4,
+    OtpReadErrEccUncorr  = 4'h5,
+    OtpReadErrOther      = 4'h6,
+    OtpWriteErrNotBlank  = 4'h7,
+    OtpWriteErrOther     = 4'h8,
+    ParityErr            = 4'h9,
+    IntegErr             = 4'hA,
+    CnstyErr             = 4'hB,
+    FsmErr               = 4'hC,
+    CmdInvErr            = 4'hD,
+    AccessErr            = 4'hE
+    // TODO: populate with error codes
+  } otp_err_e;
+
   /////////////////////////////////
   // Typedefs for OTP Scrambling //
   /////////////////////////////////
