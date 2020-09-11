@@ -18,7 +18,7 @@ block).
 
 '''
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from .otbn_reggen import HjsonDict, load_registers
 
@@ -57,6 +57,9 @@ def extract_windows(reg_byte_width: int,
     return windows
 
 
+_LAYOUT = None  # type: Optional[Dict[str, Tuple[int, int]]]
+
+
 def get_memory_layout() -> Dict[str, Tuple[int, int]]:
     '''Read otbn.hjson to get IMEM / DMEM layout
 
@@ -64,6 +67,10 @@ def get_memory_layout() -> Dict[str, Tuple[int, int]]:
     at each entry is a pair (offset, size_in_bytes).
 
     '''
+    global _LAYOUT
+    if _LAYOUT is not None:
+        return _LAYOUT
+
     reg_byte_width, registers = load_registers()
     windows = extract_windows(reg_byte_width, registers)
 
@@ -76,7 +83,8 @@ def get_memory_layout() -> Dict[str, Tuple[int, int]]:
         raise RuntimeError("Unexpected windows in otbn.hjson: {}"
                            .format(list(set(windows.keys()) - xmem_names)))
 
-    return windows
+    _LAYOUT = windows
+    return _LAYOUT
 
 
 if __name__ == '__main__':

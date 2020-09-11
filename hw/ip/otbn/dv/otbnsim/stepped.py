@@ -69,7 +69,7 @@ def on_start(sim: OTBNSim, args: List[str]) -> None:
                          .format(addr))
 
     print('START {:#08x}'.format(addr))
-    sim.model.state.reset(pc=addr)
+    sim.model.state.pc.set(addr)
     sim.model.state.start()
 
 
@@ -120,21 +120,8 @@ def on_dump_d(sim: OTBNSim, args: List[str]) -> None:
 
     print('DUMP_D {!r}'.format(path))
 
-    memory = sim.model.state.memory
-
-    # Sanity check to make sure we don't accidentally dump 4GiB to disk. We
-    # happen to know that OTBN has a memory of less than 1MiB, so check that
-    # here.
-    max_word_addr = max(memory.memory.keys()) if memory.memory else 0
-    if max_word_addr > 1024 * 1024 / 4:
-        raise RuntimeError('Trying to dump data memory, but the maximum '
-                           'address is {:#x}, which is implausibly large.'
-                           .format(max_word_addr * 4))
-
     with open(path, 'wb') as handle:
-        for word_addr in range(max_word_addr):
-            mem_val = memory.memory.get(word_addr, 0xfeedbeef)
-            handle.write(int.to_bytes(mem_val, 4, 'little'))
+        handle.write(sim.model.state.dmem.dump_le_words())
 
 
 _HANDLERS = {
