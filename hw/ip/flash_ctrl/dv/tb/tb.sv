@@ -45,6 +45,8 @@ module tb;
 
     // TODO: create and hook this up to an interface.
     .otp_i              (flash_ctrl_pkg::OTP_FLASH_DEFAULT),
+    .lc_i               (flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
+    .pwrmgr_i           (flash_ctrl_pkg::PWRMGR_FLASH_DEFAULT),
 
     .intr_prog_empty_o  (intr_prog_empty),
     .intr_prog_lvl_o    (intr_prog_lvl  ),

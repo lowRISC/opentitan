@@ -39,7 +39,9 @@ The protocol controller currently supports the following features:
 *  Parameterized support for burst program / read, up to 64B.
    *  Longer programs / reads are supported, however the protocol controller will directly back-pressure the bus if software supplies more data than can be consumed, or if software reads more than there is data available.
    *  Software can also choose to operate by polling the current state of the FIFO or through FIFO interrupts (empty / full / level).
-*  Flash memory protection at page boundaries
+*  Flash memory protection at page boundaries.
+*  Life cycle RMA entry.
+*  Key manager secret seeds that are inaccessible to software.
 *  Features to be added if required
    *  Program verification
       *  may not be required if flash memory supports alternative mechanisms of verification.
@@ -50,14 +52,6 @@ The protocol controller currently supports the following features:
       *  The storage, loading and security of redundant pages may also be implemented in the physical controller or flash memory.
 
 Features to be implemented
-
-*  Enhanced memory protection
-   * This may take the form of sub-page protection or additional memory protection regions.
-   * This feature is pending software discussions.
-*  Life cycle feature support
-   * The flash protocol controller interfaces directly with the life cycle controller to support life cycle operations such as RMA
-*  Key manager feature support
-   * The flash protocol controller supplies seed material to the key manager after power-up
 *  Ability to access multiple types of information partition.
    * This feature is pending software / vendor  discussions.
 *  Ability to access flash metadata bits (see flash ECC)
@@ -72,7 +66,7 @@ The physical controller supports the following features
 *  Multiple banks of flash memory
 *  For each flash bank, parameterized support for number of flash pages (default to 256)
 *  For each flash page, parameterized support for number of words and word size (default to 128 words of 8-bytes each)
-*  Data and informational paritions within each bank of flash memory
+*  Data and informational partitions within each bank of flash memory
 *  Arbitration between host requests and controller requests at the bank level
    *  Host requests are always favored, however the controller priority can escalate if it repeatedly loses arbitration
    *  Since banks are arbitrated independently and transactions may take different amounts of times to complete, the physical controller is also responsible for ensuring in-order response to both the controller and host.
@@ -101,11 +95,12 @@ Unlike sram, flash memory is not typically organized as a contiguous block of ge
 Instead it is organized into data partitions and information partitions.
 
 The data partition holds generic data like a generic memory would.
-The information partition typically holds metadata about the data partition.
+The information partition holds metadata about the data partition as well design specific secret data.
 This includes but is not limited to:
 *  Redundancy information.
 *  Manufacturer specific information.
 *  Manufacturer flash timing information.
+*  Design specific unique seeds.
 
 Note, there **can** be more than one information partition, and none of them are required to be the same size as the data partition.
 See the diagram below for an illustrative example.
@@ -124,6 +119,16 @@ Lastly, while the different partitions may be identical in some attributes, they
 
 By default, this design assumes 1 type of information partition and 4 pages per type of information partition.
 
+#### Secret Information Partitions
+
+Two information partition pages in the design hold secret seeds for the key manager.
+These pages, when enabled by life cycle and otp, are read upon flash controller initialization (no software configuration is required).
+The read values are then fed to the key manager for later processing.
+There is a page for creator and a page for the owner.
+
+The seed pages are read under the following initialization conditions:
+*  life cycle sets provision enable
+
 
 # Theory of Operation
 
@@ -138,8 +143,8 @@ Its primary functions are two fold
 *  Translate software program, erase and read requests into a high level protocol for the actual flash physical controller
 *  Act as communication interface between flash and other components in the system, such as life cycle and key manager.
 
-Importantly, the flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as parity and ECC.
-Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls as well as error handling.
+The flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as parity and ECC.
+Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls and error handling.
 
 The flash controller selects requests between the software and hardware interfaces.
 By default, the hardware interfaces have precendence and are used to read out seed materials from flash.
@@ -154,6 +159,35 @@ Software can then read / program / erase the flash as needed.
 When an RMA entry request is received from the life cycle manager, the flash controller waits for any pending flash transaction to complete, then switches priority to the hardware interface.
 The flash controller then initiates RMA entry process and notifies the life cycle controller when it is complete.
 Unlike the seed phase, after the RMA phase, the flash controller does not grant control back to software as the system is expected to reboot after an RMA attempt.
+
+#### Memory Protection
+
+Flash memory protection is handled differently depending on what type of partition is accessed.
+
+For data partitions, software can configure a number of memory protection regions such as {{< regref "MP_REGION_CFG0" >}}.
+For each region, software specifies both the beginning page and the number of pages that belong to that region.
+Software then configures the access privileges for that region.
+Subsequent accesses are then allowed or denied based on the defined rule set.
+Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
+
+For information partitions, the protection is done per indvidual page.
+Each page can be configured with access privileges.
+As a result, software does not need to define a start and end page for information partitions.
+See {{< regref "BANK0_INFO_PAGE_CFG0" >}} as an example.
+
+#### Memory Protection for Key Manager and Life Cycle
+
+While memory protection is largely under software control, certain behavior is hardwired to support key manager secret partitions and life cycle functions.
+
+Software can only control the accessibility of the creator secret seed page under the following condition(s):
+*  life cycle sets provision enable.
+*  otp indicates the seeds are not locked.
+
+Software can only control the accessibility of the owner secret seed page under the following condition(s):
+*  life cycle sets provision enable.
+
+During life cycle RMA transition, the software configured memory protection for both data and information partitions is ignored.
+Instead, the flash controller assumes a default accessibility setting that allows it to secure the chip and transition to RMA.
 
 
 ### Flash Physical Controller
@@ -183,6 +217,7 @@ Note, at the moment scrambling is enabled on the entire 2nd bank of flash, but i
 
 
 #### Scrambling Consistency
+
 The flash physical controller does not keep a history of when a particular memory location has scrambling enabled or disabled.
 This means if a memory locaiton was programmed while scrambled, disabling scrambling and then reading it back will result in garbage.
 Similarly, if a location was programmed while non-scrambled, enabling scrambling and then reading it back will also result in gargabe.
@@ -239,8 +274,11 @@ In addition to the interrupts and bus signals, the tables below lists the flash 
 
 Signal                  | Direction | Description
 ------------------------|-----------|---------------
-`flash_i`               | `input`   | Inputs from physical controller, connects to `flash_ctrl_o` of physical controller
-`flash_o`               | `output`  | Outputs to physical controller, connects to `flash_ctrl_i` of physical controller
+`flash_i`               | `input`   | Inputs from physical controller, connects to `flash_ctrl_o` of physical controller.
+`flash_o`               | `output`  | Outputs to physical controller, connects to `flash_ctrl_i` of physical controller.
+`otp_i`                 | `input`   | Inputs from OTP, indicates the locked state of the creator seed page.
+`lc_i`                  | `input`   | Inputs from life cycle, indicates RMA intent and provisioning enable.
+`pwrmgr_i`              | `input`   | Inputs from power manager, flash controller initialization request.
 
 Each of `flash_i` and `flash_o` is a struct that packs together additional signals, as shown below
 

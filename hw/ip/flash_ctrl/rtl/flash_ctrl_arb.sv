@@ -102,9 +102,11 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
     unique case (state_q)
       StReset: begin
+        // until the flash phy is done with its own iniitlization,
+        // no flash controller activity is allowed to commence
         if (!flash_phy_busy_i) begin
           // after flash is ready, the HW interface always takes
-          // precedence for flash controll initiliazation
+          // precedence for flash control initiliazation
           state_d = StHw;
         end
       end
