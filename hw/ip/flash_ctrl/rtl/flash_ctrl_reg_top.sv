@@ -88,10 +88,10 @@ module flash_ctrl_reg_top (
     reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 128 && tl_i.a_address[AW-1:0] < 132) begin
+    if (tl_i.a_address[AW-1:0] >= 132 && tl_i.a_address[AW-1:0] < 136) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 132 && tl_i.a_address[AW-1:0] < 136) begin
+    if (tl_i.a_address[AW-1:0] >= 136 && tl_i.a_address[AW-1:0] < 140) begin
       reg_steer = 1;
     end
   end
@@ -177,6 +177,9 @@ module flash_ctrl_reg_top (
   logic [1:0] control_op_qs;
   logic [1:0] control_op_wd;
   logic control_op_we;
+  logic control_prog_sel_qs;
+  logic control_prog_sel_wd;
+  logic control_prog_sel_we;
   logic control_erase_sel_qs;
   logic control_erase_sel_wd;
   logic control_erase_sel_we;
@@ -465,6 +468,9 @@ module flash_ctrl_reg_top (
   logic status_prog_empty_qs;
   logic status_init_wip_qs;
   logic [8:0] status_error_addr_qs;
+  logic phy_status_init_wip_qs;
+  logic phy_status_prog_normal_avail_qs;
+  logic phy_status_prog_repair_avail_qs;
   logic [31:0] scratch_qs;
   logic [31:0] scratch_wd;
   logic scratch_we;
@@ -957,7 +963,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  //   F[erase_sel]: 6:6
+  //   F[prog_sel]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_control_prog_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (control_prog_sel_we & ctrl_regwen_qs),
+    .wd     (control_prog_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.prog_sel.q ),
+
+    // to register interface (read)
+    .qs     (control_prog_sel_qs)
+  );
+
+
+  //   F[erase_sel]: 7:7
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -983,7 +1015,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  //   F[partition_sel]: 7:7
+  //   F[partition_sel]: 8:8
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -3620,6 +3652,83 @@ module flash_ctrl_reg_top (
   );
 
 
+  // R[phy_status]: V(False)
+
+  //   F[init_wip]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_phy_status_init_wip (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.init_wip.de),
+    .d      (hw2reg.phy_status.init_wip.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (phy_status_init_wip_qs)
+  );
+
+
+  //   F[prog_normal_avail]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_phy_status_prog_normal_avail (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.prog_normal_avail.de),
+    .d      (hw2reg.phy_status.prog_normal_avail.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (phy_status_prog_normal_avail_qs)
+  );
+
+
+  //   F[prog_repair_avail]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_phy_status_prog_repair_avail (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.prog_repair_avail.de),
+    .d      (hw2reg.phy_status.prog_repair_avail.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (phy_status_prog_repair_avail_qs)
+  );
+
+
   // R[scratch]: V(False)
 
   prim_subreg #(
@@ -3730,7 +3839,7 @@ module flash_ctrl_reg_top (
 
 
 
-  logic [31:0] addr_hit;
+  logic [32:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
@@ -3762,9 +3871,10 @@ module flash_ctrl_reg_top (
     addr_hit[26] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_OFFSET);
     addr_hit[27] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
     addr_hit[28] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
-    addr_hit[29] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
-    addr_hit[30] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[31] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[29] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[30] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
+    addr_hit[31] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[32] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3804,6 +3914,7 @@ module flash_ctrl_reg_top (
     if (addr_hit[29] && reg_we && (FLASH_CTRL_PERMIT[29] != (FLASH_CTRL_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[30] && reg_we && (FLASH_CTRL_PERMIT[30] != (FLASH_CTRL_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[31] && reg_we && (FLASH_CTRL_PERMIT[31] != (FLASH_CTRL_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[32] && reg_we && (FLASH_CTRL_PERMIT[32] != (FLASH_CTRL_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_prog_empty_we = addr_hit[0] & reg_we & ~wr_err;
@@ -3868,11 +3979,14 @@ module flash_ctrl_reg_top (
   assign control_op_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_op_wd = reg_wdata[5:4];
 
+  assign control_prog_sel_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_prog_sel_wd = reg_wdata[6];
+
   assign control_erase_sel_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_erase_sel_wd = reg_wdata[6];
+  assign control_erase_sel_wd = reg_wdata[7];
 
   assign control_partition_sel_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_partition_sel_wd = reg_wdata[7];
+  assign control_partition_sel_wd = reg_wdata[8];
 
   assign control_num_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_num_wd = reg_wdata[27:16];
@@ -4156,16 +4270,19 @@ module flash_ctrl_reg_top (
 
 
 
-  assign scratch_we = addr_hit[29] & reg_we & ~wr_err;
+
+
+
+  assign scratch_we = addr_hit[30] & reg_we & ~wr_err;
   assign scratch_wd = reg_wdata[31:0];
 
-  assign fifo_lvl_prog_we = addr_hit[30] & reg_we & ~wr_err;
+  assign fifo_lvl_prog_we = addr_hit[31] & reg_we & ~wr_err;
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
-  assign fifo_lvl_rd_we = addr_hit[30] & reg_we & ~wr_err;
+  assign fifo_lvl_rd_we = addr_hit[31] & reg_we & ~wr_err;
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
 
-  assign fifo_rst_we = addr_hit[31] & reg_we & ~wr_err;
+  assign fifo_rst_we = addr_hit[32] & reg_we & ~wr_err;
   assign fifo_rst_wd = reg_wdata[0];
 
   // Read data return
@@ -4206,8 +4323,9 @@ module flash_ctrl_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[0] = control_start_qs;
         reg_rdata_next[5:4] = control_op_qs;
-        reg_rdata_next[6] = control_erase_sel_qs;
-        reg_rdata_next[7] = control_partition_sel_qs;
+        reg_rdata_next[6] = control_prog_sel_qs;
+        reg_rdata_next[7] = control_erase_sel_qs;
+        reg_rdata_next[8] = control_partition_sel_qs;
         reg_rdata_next[27:16] = control_num_qs;
       end
 
@@ -4381,15 +4499,21 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = scratch_qs;
+        reg_rdata_next[0] = phy_status_init_wip_qs;
+        reg_rdata_next[1] = phy_status_prog_normal_avail_qs;
+        reg_rdata_next[2] = phy_status_prog_repair_avail_qs;
       end
 
       addr_hit[30]: begin
+        reg_rdata_next[31:0] = scratch_qs;
+      end
+
+      addr_hit[31]: begin
         reg_rdata_next[4:0] = fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[0] = fifo_rst_qs;
       end
 
