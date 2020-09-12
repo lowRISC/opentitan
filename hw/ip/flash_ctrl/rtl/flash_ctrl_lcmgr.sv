@@ -162,12 +162,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
   logic start;
   flash_op_e op;
+  flash_prog_e prog_type;
   flash_erase_e erase_type;
   flash_part_e part_sel;
   logic [11:0] num_words;
   logic [BusAddrW-1:0] addr;
   logic [BusWidth-1:0] rsp_mask;
 
+  assign prog_type = FlashProgNormal;
   assign erase_type = FlashErasePage;
   // seed phase is always read
   // rma phase is erase unless we are validating
@@ -332,6 +334,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   assign rma_token_o = rsp_token[0] ^ rsp_token[1] ^ rsp_mask;
   assign ctrl_o.start.q = start;
   assign ctrl_o.op.q = op;
+  assign ctrl_o.prog_sel.q = prog_type;
   assign ctrl_o.erase_sel.q = erase_type;
   assign ctrl_o.partition_sel.q = part_sel;
   assign ctrl_o.num = num_words;

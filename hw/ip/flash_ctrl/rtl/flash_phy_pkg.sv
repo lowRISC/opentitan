@@ -23,9 +23,10 @@ package flash_phy_pkg;
                                    // will switch to this after bus widening
 
   // flash ctrl / bus parameters
-  parameter int BusWidth      = flash_ctrl_pkg::BusWidth;
-  parameter int BusBankAddrW  = flash_ctrl_pkg::BusBankAddrW;
-  parameter int BusWordW      = flash_ctrl_pkg::BusWordW;
+  parameter int BusWidth       = flash_ctrl_pkg::BusWidth;
+  parameter int BusBankAddrW   = flash_ctrl_pkg::BusBankAddrW;
+  parameter int BusWordW       = flash_ctrl_pkg::BusWordW;
+  parameter int ProgTypes      = flash_ctrl_pkg::ProgTypes;
 
   // address bits remain must be 0
   parameter int AddrBitsRemain = DataWidth % BusWidth;

@@ -167,13 +167,18 @@ package flash_ctrl_pkg;
     FlashOpInvalid  = 2'h3
   } flash_op_e;
 
+  // Flash Program Operations Supported
+  typedef enum logic {
+    FlashProgNormal = 0,
+    FlashProgRepair = 1
+  } flash_prog_e;
+  parameter int ProgTypes = 2;
+
   // Flash Erase Operations Supported
   typedef enum logic  {
     FlashErasePage  = 0,
     FlashEraseBank  = 1
   } flash_erase_e;
-
-  parameter int EraseBitWidth = $bits(flash_erase_e);
 
   // Flash function select
   typedef enum logic [1:0] {
@@ -205,6 +210,7 @@ package flash_ctrl_pkg;
     logic [BusAddrW-1:0]  addr;
     logic [BusWidth-1:0]  prog_data;
     logic                 prog_last;
+    flash_prog_e          prog_type;
     logic                 scramble_en;
     logic [127:0]         addr_key;
     logic [127:0]         data_key;
@@ -221,6 +227,7 @@ package flash_ctrl_pkg;
     addr:      '0,
     prog_data: '0,
     prog_last: '0,
+    prog_type: FlashProgNormal,
     scramble_en: '0,
     addr_key:  128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
     data_key:  128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
@@ -228,6 +235,7 @@ package flash_ctrl_pkg;
 
   // memory to flash controller
   typedef struct packed {
+    logic [ProgTypes-1:0] prog_type_avail;
     logic                rd_done;
     logic                prog_done;
     logic                erase_done;
@@ -237,6 +245,7 @@ package flash_ctrl_pkg;
 
   // default value of flash_rsp_t (for dangling ports)
   parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
+    prog_type_avail: '{default: '1},
     rd_done:    1'b0,
     prog_done:  1'b0,
     erase_done: 1'b0,
@@ -254,6 +263,7 @@ package flash_ctrl_pkg;
     logic [127:0] data_key;
     // TBD: this signal will become multi-bit in the future
     logic seed_valid;
+    logic prog_repair_en;
   } otp_flash_t;
 
   // lc to flash_ctrl
@@ -281,7 +291,8 @@ package flash_ctrl_pkg;
   parameter otp_flash_t OTP_FLASH_DEFAULT = '{
     addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
     data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    seed_valid: 1'b1
+    seed_valid: 1'b1,
+    prog_repair_en: 1'b1
   };
 
   parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{

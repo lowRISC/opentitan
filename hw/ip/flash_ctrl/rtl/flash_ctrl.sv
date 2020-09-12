@@ -91,7 +91,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Erase Control Connections
   logic erase_flash_req;
   logic [BusAddrW-1:0] erase_flash_addr;
-  logic [EraseBitWidth-1:0] erase_flash_type;
+  flash_erase_e erase_flash_type;
 
   // Done / Error signaling from ctrl modules
   logic prog_done, rd_done, erase_done;
@@ -104,6 +104,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic flash_error;
   logic [BusWidth-1:0] flash_prog_data;
   logic flash_prog_last;
+  flash_prog_e flash_prog_type;
   logic [BusWidth-1:0] flash_rd_data;
   logic flash_phy_busy;
   logic rd_op;
@@ -138,7 +139,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [BusAddrW-1:0] op_addr;
   flash_op_e op_type;
   flash_part_e op_part;
-  logic [EraseBitWidth-1:0] op_erase_type;
+  flash_erase_e op_erase_type;
+  flash_prog_e op_prog_type;
 
   logic ctrl_init_busy;
   logic fifo_clr;
@@ -220,7 +222,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   assign op_start      = muxed_ctrl.start.q;
   assign op_num_words  = muxed_ctrl.num.q;
-  assign op_erase_type = muxed_ctrl.erase_sel.q;
+  assign op_erase_type = flash_erase_e'(muxed_ctrl.erase_sel.q);
+  assign op_prog_type  = flash_prog_e'(muxed_ctrl.prog_sel.q);
   assign op_addr       = muxed_addr[BusByteWidth +: BusAddrW];
   assign op_type       = flash_op_e'(muxed_ctrl.op.q);
   assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
@@ -323,16 +326,24 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Program handler is consumer of prog_fifo
+
+  // OTP control bits can be used to explicitly disable repair
+  logic [ProgTypes-1:0] otp_en;
+  assign otp_en[FlashProgNormal] = 1'b1;
+  assign otp_en[FlashProgRepair] = otp_i.prog_repair_en;
+
   flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
 
-    // Software Interface
+    // Control interface
     .op_start_i     (prog_op_valid),
     .op_num_words_i (op_num_words),
     .op_done_o      (prog_done),
     .op_err_o       (prog_err),
     .op_addr_i      (op_addr),
+    .op_type_i      (op_prog_type),
+    .type_avail_i   (flash_i.prog_type_avail & otp_en),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -345,6 +356,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_ovfl_o   (prog_flash_ovfl),
     .flash_data_o   (flash_prog_data),
     .flash_last_o   (flash_prog_last),
+    .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
     .flash_error_i  (flash_error)
   );
@@ -579,9 +591,18 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // if software operation not selected, software is free to change contents
   assign hw2reg.ctrl_regwen.d        = sw_sel ? !op_start : 1'b1;
 
+  // phy status
+  assign hw2reg.phy_status.init_wip.d  = flash_phy_busy;
+  assign hw2reg.phy_status.init_wip.de = 1'b1;
+  assign hw2reg.phy_status.prog_normal_avail.d  = flash_i.prog_type_avail[FlashProgNormal];
+  assign hw2reg.phy_status.prog_normal_avail.de = 1'b1;
+  assign hw2reg.phy_status.prog_repair_avail.d  = flash_i.prog_type_avail[FlashProgRepair];
+  assign hw2reg.phy_status.prog_repair_avail.de = 1'b1;
+
   // Flash Interface
   assign flash_o.addr = flash_addr;
   assign flash_o.part = flash_part_sel;
+  assign flash_o.prog_type = flash_prog_type;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;
   assign flash_o.scramble_en = reg2hw.scramble_en.q;

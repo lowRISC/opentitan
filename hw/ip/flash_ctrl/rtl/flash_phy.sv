@@ -57,6 +57,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
   logic [NumBanks-1:0]  init_busy;
+  logic [ProgTypes-1:0] prog_type_avail [NumBanks];
 
   // common interface
   logic [BusWidth-1:0] rd_data [NumBanks];
@@ -72,6 +73,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign host_req_done_o = seq_fifo_pending & host_rsp_vld[rsp_bank_sel];
   assign host_rdata_o = host_rsp_data[rsp_bank_sel];
 
+  // all banks are assumed to be the same in terms of prog_type support
+  assign flash_ctrl_o.prog_type_avail = prog_type_avail[0];
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
@@ -148,8 +151,10 @@ module flash_phy import flash_ctrl_pkg::*; (
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .prog_last_i(flash_ctrl_i.prog_last),
+      .prog_type_i(flash_ctrl_i.prog_type),
       .addr_key_i(flash_ctrl_i.addr_key),
       .data_key_i(flash_ctrl_i.data_key),
+      .prog_type_avail_o(prog_type_avail[bank]),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
       .rd_done_o(rd_done[bank]),
@@ -159,5 +164,20 @@ module flash_phy import flash_ctrl_pkg::*; (
       .init_busy_o(init_busy[bank])
     );
   end
+
+  //////////////////////////////////////////////
+  // Assertions, Assumptions, and Coverpoints //
+  /////////////////////////////////////////////
+  logic [ProgTypes-1:0] unused_prog_type;
+
+  always_comb begin
+    unused_prog_type = '0;
+    for (int i = 0; i < NumBanks; i++) begin : gen_prog_type_xor
+      unused_prog_type ^= prog_type_avail[i];
+    end
+  end
+
+  // all banks must support the same kinds of programs
+  `ASSERT(homogenousProg_a,  unused_prog_type == '0)
 
 endmodule // flash_phy
