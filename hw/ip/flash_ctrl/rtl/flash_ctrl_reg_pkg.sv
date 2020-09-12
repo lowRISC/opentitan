@@ -92,6 +92,9 @@ package flash_ctrl_reg_pkg;
     } op;
     struct packed {
       logic        q;
+    } prog_sel;
+    struct packed {
+      logic        q;
     } erase_sel;
     struct packed {
       logic        q;
@@ -270,15 +273,30 @@ package flash_ctrl_reg_pkg;
     } error_addr;
   } flash_ctrl_hw2reg_status_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } init_wip;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_normal_avail;
+    struct packed {
+      logic        d;
+      logic        de;
+    } prog_repair_avail;
+  } flash_ctrl_hw2reg_phy_status_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [337:332]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [331:326]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [325:314]
-    flash_ctrl_reg2hw_control_reg_t control; // [313:297]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [338:333]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [332:327]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [326:315]
+    flash_ctrl_reg2hw_control_reg_t control; // [314:297]
     flash_ctrl_reg2hw_addr_reg_t addr; // [296:265]
     flash_ctrl_reg2hw_scramble_en_reg_t scramble_en; // [264:264]
     flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [263:80]
@@ -295,11 +313,12 @@ package flash_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [38:33]
-    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [32:33]
-    flash_ctrl_hw2reg_control_reg_t control; // [32:16]
-    flash_ctrl_hw2reg_op_status_reg_t op_status; // [15:16]
-    flash_ctrl_hw2reg_status_reg_t status; // [15:16]
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [44:39]
+    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [38:39]
+    flash_ctrl_hw2reg_control_reg_t control; // [38:21]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [20:21]
+    flash_ctrl_hw2reg_status_reg_t status; // [20:21]
+    flash_ctrl_hw2reg_phy_status_reg_t phy_status; // [20:21]
   } flash_ctrl_hw2reg_t;
 
   // Register Address
@@ -332,14 +351,15 @@ package flash_ctrl_reg_pkg;
   parameter logic [7:0] FLASH_CTRL_MP_BANK_CFG_OFFSET = 8'h 68;
   parameter logic [7:0] FLASH_CTRL_OP_STATUS_OFFSET = 8'h 6c;
   parameter logic [7:0] FLASH_CTRL_STATUS_OFFSET = 8'h 70;
-  parameter logic [7:0] FLASH_CTRL_SCRATCH_OFFSET = 8'h 74;
-  parameter logic [7:0] FLASH_CTRL_FIFO_LVL_OFFSET = 8'h 78;
-  parameter logic [7:0] FLASH_CTRL_FIFO_RST_OFFSET = 8'h 7c;
+  parameter logic [7:0] FLASH_CTRL_PHY_STATUS_OFFSET = 8'h 74;
+  parameter logic [7:0] FLASH_CTRL_SCRATCH_OFFSET = 8'h 78;
+  parameter logic [7:0] FLASH_CTRL_FIFO_LVL_OFFSET = 8'h 7c;
+  parameter logic [7:0] FLASH_CTRL_FIFO_RST_OFFSET = 8'h 80;
 
   // Window parameter
-  parameter logic [7:0] FLASH_CTRL_PROG_FIFO_OFFSET = 8'h 80;
+  parameter logic [7:0] FLASH_CTRL_PROG_FIFO_OFFSET = 8'h 84;
   parameter logic [7:0] FLASH_CTRL_PROG_FIFO_SIZE   = 8'h 4;
-  parameter logic [7:0] FLASH_CTRL_RD_FIFO_OFFSET = 8'h 84;
+  parameter logic [7:0] FLASH_CTRL_RD_FIFO_OFFSET = 8'h 88;
   parameter logic [7:0] FLASH_CTRL_RD_FIFO_SIZE   = 8'h 4;
 
   // Register Index
@@ -373,13 +393,14 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_MP_BANK_CFG,
     FLASH_CTRL_OP_STATUS,
     FLASH_CTRL_STATUS,
+    FLASH_CTRL_PHY_STATUS,
     FLASH_CTRL_SCRATCH,
     FLASH_CTRL_FIFO_LVL,
     FLASH_CTRL_FIFO_RST
   } flash_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] FLASH_CTRL_PERMIT [32] = '{
+  parameter logic [3:0] FLASH_CTRL_PERMIT [33] = '{
     4'b 0001, // index[ 0] FLASH_CTRL_INTR_STATE
     4'b 0001, // index[ 1] FLASH_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] FLASH_CTRL_INTR_TEST
@@ -409,9 +430,10 @@ package flash_ctrl_reg_pkg;
     4'b 0001, // index[26] FLASH_CTRL_MP_BANK_CFG
     4'b 0001, // index[27] FLASH_CTRL_OP_STATUS
     4'b 0111, // index[28] FLASH_CTRL_STATUS
-    4'b 1111, // index[29] FLASH_CTRL_SCRATCH
-    4'b 0011, // index[30] FLASH_CTRL_FIFO_LVL
-    4'b 0001  // index[31] FLASH_CTRL_FIFO_RST
+    4'b 0001, // index[29] FLASH_CTRL_PHY_STATUS
+    4'b 1111, // index[30] FLASH_CTRL_SCRATCH
+    4'b 0011, // index[31] FLASH_CTRL_FIFO_LVL
+    4'b 0001  // index[32] FLASH_CTRL_FIFO_RST
   };
 endpackage
 
