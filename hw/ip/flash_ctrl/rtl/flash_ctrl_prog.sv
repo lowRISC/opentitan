@@ -9,12 +9,14 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  // Software Interface
+  // Control Interface
   input                    op_start_i,
   input  [11:0]            op_num_words_i,
   output logic             op_done_o,
   output logic             op_err_o,
-  input [BusAddrW-1:0]        op_addr_i,
+  input [BusAddrW-1:0]     op_addr_i,
+  input flash_prog_e       op_type_i,
+  input [ProgTypes-1:0]    type_avail_i,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -27,6 +29,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   output logic             flash_ovfl_o,
   output logic [BusWidth-1:0] flash_data_o,
   output logic             flash_last_o, // last beat of prog data
+  output flash_prog_e      flash_type_o,
   input                    flash_done_i,
   input                    flash_error_i
 );
@@ -56,6 +59,10 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   assign txn_done = flash_req_o && flash_done_i;
   assign cnt_hit = (cnt == op_num_words_i);
 
+  // if the requested prog type is available
+  logic prog_type_avail;
+  assign prog_type_avail = type_avail_i[op_type_i];
+
   // when error'd, continue to drain all program fifo contents like normal operation
   // if this is not done, software may fill up the fifo without anyone
   // draining the contents, leading to a lockup
@@ -69,17 +76,22 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
 
     unique case (st)
       StNorm: begin
-        flash_req_o = op_start_i & data_rdy_i;
+        // if the select operation type is not available, error
+        if (op_start_i && prog_type_avail) begin
+          flash_req_o = data_rdy_i;
 
-        if(txn_done && cnt_hit) begin
-          cnt_nxt = '0;
-          data_rd_o = 1'b1;
-          op_done_o = 1'b1;
-          op_err_o = flash_error_i;
-        end else if(txn_done) begin
-          cnt_nxt = cnt + 1'b1;
-          data_rd_o = 1'b1;
-          st_nxt = flash_error_i ? StErr : StNorm;
+          if(txn_done && cnt_hit) begin
+            cnt_nxt = '0;
+            data_rd_o = 1'b1;
+            op_done_o = 1'b1;
+            op_err_o = flash_error_i;
+          end else if(txn_done) begin
+            cnt_nxt = cnt + 1'b1;
+            data_rd_o = 1'b1;
+            st_nxt = flash_error_i ? StErr : StNorm;
+          end
+        end else if (op_start_i && !prog_type_avail) begin
+          st_nxt = StErr;
         end
       end
       StErr: begin
@@ -103,5 +115,6 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   assign flash_addr_o = int_addr[0 +: BusAddrW];
   assign flash_ovfl_o = int_addr[BusAddrW];
   assign flash_last_o = flash_req_o & cnt_hit;
+  assign flash_type_o = op_type_i;
 
 endmodule // flash_ctrl_prog

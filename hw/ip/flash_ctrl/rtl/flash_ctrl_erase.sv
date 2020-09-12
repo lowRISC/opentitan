@@ -7,18 +7,18 @@
 
 module flash_ctrl_erase import flash_ctrl_pkg::*; (
   // Software Interface
-  input                     op_start_i,
-  input [EraseBitWidth-1:0] op_type_i,
-  input [BusAddrW-1:0]         op_addr_i,
-  output logic              op_done_o,
-  output logic              op_err_o,
+  input                       op_start_i,
+  input flash_erase_e         op_type_i,
+  input [BusAddrW-1:0]        op_addr_i,
+  output logic                op_done_o,
+  output logic                op_err_o,
 
   // Flash Macro Interface
-  output logic             flash_req_o,
+  output logic                flash_req_o,
   output logic [BusAddrW-1:0] flash_addr_o,
-  output logic [EraseBitWidth-1:0] flash_op_o,
-  input                    flash_done_i,
-  input                    flash_error_i
+  output flash_erase_e        flash_op_o,
+  input                       flash_done_i,
+  input                       flash_error_i
 );
 
   import flash_ctrl_pkg::*;

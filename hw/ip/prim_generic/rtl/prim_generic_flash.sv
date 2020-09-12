@@ -21,14 +21,18 @@ module prim_generic_flash #(
   input                              rst_ni,
   input                              rd_i,
   input                              prog_i,
+  // the generic model does not make use of program types
+  input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
   input [AddrW-1:0]                  addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
   input [DataWidth-1:0]              prog_data_i,
+  output logic [flash_ctrl_pkg::ProgTypes-1:0] prog_type_avail_o,
   output logic                       ack_o,
   output logic [DataWidth-1:0]       rd_data_o,
   output logic                       init_busy_o,
+
   input                              tck_i,
   input                              tdi_i,
   input                              tms_i,
@@ -327,5 +331,9 @@ module prim_generic_flash #(
 
   // hard-wire assignment for now
   assign tdo_o = 1'b0;
+
+  // this represents the type of program operations that are supported
+  assign prog_type_avail_o[flash_ctrl_pkg::FlashProgNormal] = 1'b1;
+  assign prog_type_avail_o[flash_ctrl_pkg::FlashProgRepair] = 1'b1;
 
 endmodule // prim_generic_flash

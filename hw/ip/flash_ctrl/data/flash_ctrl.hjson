@@ -149,9 +149,31 @@
             },
           ]
         },
+
         { bits: "6",
+          name: "PROG_SEL",
+          desc: "Flash program operation type selection",
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "Normal program",
+              desc: '''
+                Normal program operation to the flash
+                '''
+            },
+            { value: "1",
+              name: "Program repair",
+              desc: '''
+                Repair program operation to the flash.  Whether this is actually
+                supported depends on the underlying flash memory.
+                '''
+            },
+          ]
+        },
+
+        { bits: "7",
           name: "ERASE_SEL",
-          desc: "Flash operation selection",
+          desc: "Flash erase operation type selection",
           resval: "0"
           enum: [
             { value: "0",
@@ -168,7 +190,7 @@
             },
           ]
         },
-        { bits: "7",
+        { bits: "8",
           name: "PARTITION_SEL",
           desc: '''
             Selects either info or data partition for operation.
@@ -537,10 +559,33 @@
         { bits: "1",    name: "rd_empty",   desc: "Flash read FIFO empty", resval: "1"},
         { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
         { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
-        { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init"},
+        { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
         { bits: "16:8", name: "error_addr", desc: "Flash controller error address."},
       ]
     },
+
+    { name: "PHY_STATUS",
+      desc: "Flash Phy Status",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "init_wip",
+          desc: "Flash phy controller initializing"
+        },
+        { bits: "1",
+          name: "prog_normal_avail",
+          resval: "0x1",
+          desc: "Normal program supported"
+        },
+        { bits: "2",
+          name: "prog_repair_avail",
+          resval: "0x1",
+          desc: "Program repair supported"
+        },
+      ]
+    },
+
     { name: "Scratch",
       desc: "Flash Controller Scratch",
       swaccess: "rw",
