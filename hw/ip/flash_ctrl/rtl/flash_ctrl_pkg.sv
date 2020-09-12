@@ -38,9 +38,6 @@ package flash_ctrl_pkg;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
-  // parameters for connected components
-  parameter int SeedWidth       = 256;
-
   // fifo parameters
   parameter int FifoDepthW      = $clog2(FifoDepth+1);
 
@@ -56,6 +53,39 @@ package flash_ctrl_pkg;
       InfosPerBank - 1
      };
 
+
+  ////////////////////////////
+  // All memory protection, seed related parameters
+  // Those related for seed pages should be template candidates
+  ////////////////////////////
+
+  // parameters for connected components
+  parameter int SeedWidth       = 256;
+
+  // lcmgr phase enum
+  typedef enum logic [1:0] {
+    PhaseSeed,
+    PhaseRma,
+    PhaseNone,
+    PhaseInvalid
+  } flash_lcmgr_phase_e;
+
+  // alias for super long reg_pkg typedef
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t mp_region_cfg_t;
+
+  // memory protection specific structs
+  typedef struct packed {
+    logic [AllPagesW-1:0] page;
+    flash_lcmgr_phase_e   phase;
+    info_page_cfg_t       cfg;
+  } info_page_attr_t;
+
+  typedef struct packed {
+    flash_lcmgr_phase_e   phase;
+    mp_region_cfg_t cfg;
+  } data_region_attr_t;
+
   // flash life cycle / key manager management constants
   // One page for creator seeds
   // One page for owner seeds
@@ -68,13 +98,62 @@ package flash_ctrl_pkg;
       OwnerInfoPage
      };
 
-  // lcmgr phase enum
-  typedef enum logic [1:0] {
-    PhaseSeed,
-    PhaseRma,
-    PhaseNone,
-    PhaseInvalid
-  } flash_lcmgr_phase_e;
+  // hardware interface memory protection rules
+  parameter int HwInfoRules = 3;
+  parameter int HwDataRules = 1;
+
+  parameter info_page_cfg_t CfgAllowRead = '{
+    en: 1'b1,
+    rd_en: 1'b1,
+    prog_en: 1'b0,
+    erase_en: 1'b0
+  };
+
+  parameter info_page_cfg_t CfgAllowReadErase = '{
+    en: 1'b1,
+    rd_en: 1'b1,
+    prog_en: 1'b0,
+    erase_en: 1'b1
+  };
+
+  parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
+    '{
+       page:  CreatorInfoPage,
+       phase: PhaseSeed,
+       cfg:   CfgAllowRead
+     },
+
+    '{
+       page:  OwnerInfoPage,
+       phase: PhaseSeed,
+       cfg:   CfgAllowRead
+     },
+
+    '{
+       page:  OwnerInfoPage,
+       phase: PhaseRma,
+       cfg:   CfgAllowReadErase
+     }
+  };
+
+  parameter data_region_attr_t HwDataAttr[HwDataRules] = '{
+    '{
+       phase: PhaseRma,
+       cfg:   '{
+                 en:       1'b1,
+                 rd_en:    1'b1,
+                 prog_en:  1'b0,
+                 erase_en: 1'b1,
+                 base:     '0,
+                 size:     '{default:'1}
+                }
+     }
+  };
+
+
+  ////////////////////////////
+  // Flash operation related enums
+  ////////////////////////////
 
   // Flash Operations Supported
   typedef enum logic [1:0] {
@@ -110,24 +189,6 @@ package flash_ctrl_pkg;
     FlashPartData = 1'b0,
     FlashPartInfo = 1'b1
   } flash_part_e;
-
-  // memory protection specific structs
-
-  // alias for super long reg_pkg typedef
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t mp_region_cfg_t;
-
-  typedef struct packed {
-    logic [AllPagesW-1:0] page;
-    flash_lcmgr_phase_e   phase;
-    info_page_cfg_t       cfg;
-  } info_page_attr_t;
-
-  typedef struct packed {
-    flash_lcmgr_phase_e   phase;
-    mp_region_cfg_t cfg;
-  } data_region_attr_t;
-
 
   // Flash controller to memory
   typedef struct packed {

@@ -49,9 +49,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // Total number of regions including default region
   localparam int TotalRegions = MpRegions+1;
 
-  // Hardware interface permission table
-  localparam int HwInfoRules = 3;
-
   // bank + page address
   logic [AllPagesW-1:0] bank_page_addr;
   // bank address
@@ -75,51 +72,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // Memory protection handling for hardware interface
   logic hw_sel;
   assign hw_sel = if_sel_i == HwSel;
-
-  ////////////////////////////////////////
-  // Hardware permission table
-  // Move to parameter inside pkg.sv?
-  // Should consider templating below
-  ////////////////////////////////////////
-  // only define 3 permitted rules for info partition
-  info_page_attr_t [HwInfoRules-1:0] hw_info_page_attr;
-  info_page_cfg_t allow_read, allow_read_erase;
-
-  // only 1 rule for data partition
-  data_region_attr_t hw_data_attr;
-
-  assign allow_read.en.q = 1'b1;
-  assign allow_read.rd_en.q = 1'b1;
-  assign allow_read.prog_en.q = 1'b0;
-  assign allow_read.erase_en.q = 1'b0;
-
-  assign allow_read_erase.en.q = 1'b1;
-  assign allow_read_erase.rd_en.q = 1'b1;
-  assign allow_read_erase.prog_en.q = 1'b0;
-  assign allow_read_erase.erase_en.q = 1'b1;
-
-  // creator seed
-  assign hw_info_page_attr[0].phase = PhaseSeed;
-  assign hw_info_page_attr[0].page  = CreatorInfoPage;
-  assign hw_info_page_attr[0].cfg   = allow_read;
-
-  // owner seed
-  assign hw_info_page_attr[1].page  = OwnerInfoPage;
-  assign hw_info_page_attr[1].phase = PhaseSeed;
-  assign hw_info_page_attr[1].cfg   = allow_read;
-
-  assign hw_info_page_attr[2].page  = OwnerInfoPage;
-  assign hw_info_page_attr[2].phase = PhaseRma;
-  assign hw_info_page_attr[2].cfg   = allow_read_erase;
-
-  // data partition rules during RMA phase
-  assign hw_data_attr.phase = PhaseRma;
-  assign hw_data_attr.cfg.en = 1'b1;
-  assign hw_data_attr.cfg.rd_en = 1'b1;
-  assign hw_data_attr.cfg.prog_en = 1'b0;
-  assign hw_data_attr.cfg.erase_en = 1'b1;
-  assign hw_data_attr.cfg.base = '0;
-  assign hw_data_attr.cfg.size = '{default:'1};
 
   ////////////////////////////////////////
   // Check address out of bounds
@@ -153,7 +105,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // Check data partition access
   ////////////////////////////////////////
   logic invalid_data_txn;
-  data_region_attr_t [TotalRegions-1:0] sw_data_attrs;
+  data_region_attr_t sw_data_attrs [TotalRegions];
   mp_region_cfg_t sw_sel_cfg;
   mp_region_cfg_t hw_sel_cfg;
 
@@ -174,12 +126,12 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   );
 
   flash_mp_data_region_sel #(
-    .Regions(1)
+    .Regions(HwDataRules)
   ) u_hw_sel (
     .req_i(req_i & hw_sel),
     .phase_i(phase_i),
     .addr_i(bank_page_addr),
-    .region_attrs_i(hw_data_attr),
+    .region_attrs_i(HwDataAttr),
     .sel_cfg_o(hw_sel_cfg)
   );
 
@@ -238,10 +190,10 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
     if (hw_sel && req_i) begin
       for (int unsigned i = 0; i < HwInfoRules; i++) begin: hw_info_region_comps
         // select the appropriate hardware page
-        if (bank_page_addr == hw_info_page_attr[i].page &&
-                            phase_i == hw_info_page_attr[i].phase) begin
+        if (bank_page_addr == HwInfoPageAttr[i].page &&
+                            phase_i == HwInfoPageAttr[i].phase) begin
           unused_rule_match[i] = 1'b1;
-          hw_page_cfg = hw_info_page_attr[i].cfg;
+          hw_page_cfg = HwInfoPageAttr[i].cfg;
         end
       end
     end

@@ -13,7 +13,7 @@ module flash_mp_data_region_sel import flash_ctrl_pkg::*; # (
   input req_i,
   input flash_lcmgr_phase_e phase_i,
   input [AllPagesW-1:0] addr_i,
-  input data_region_attr_t[Regions-1:0] region_attrs_i,
+  input data_region_attr_t region_attrs_i [Regions] ,
   output mp_region_cfg_t sel_cfg_o
 );
 
