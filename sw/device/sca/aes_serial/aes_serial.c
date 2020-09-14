@@ -210,12 +210,12 @@ static simple_serial_result_t simple_serial_trigger_encryption(
                &timer, kHart, kDifRvTimerEnabled) == kDifRvTimerOk);
 
   aes_data_put_wait(plain_text);
-  SS_CHECK(dif_gpio_all_write(&gpio, kGpioCaptureTriggerHigh) == kDifGpioOk);
+  SS_CHECK(dif_gpio_write_all(&gpio, kGpioCaptureTriggerHigh) == kDifGpioOk);
 
   aes_manual_trigger();
   wait_for_interrupt();
 
-  SS_CHECK(dif_gpio_all_write(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
+  SS_CHECK(dif_gpio_write_all(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
   aes_data_get_wait(cipher_text);
 
   print_cmd_response('r', cipher_text, plain_text_len);
@@ -288,11 +288,11 @@ int main(int argc, char **argv) {
   CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
                                 kDifRvTimerEnabled) == kDifRvTimerOk);
 
-  dif_gpio_config_t gpio_config = {.base_addr =
+  dif_gpio_params_t gpio_params = {.base_addr =
                                        mmio_region_from_addr(0x40010000)};
-  CHECK(dif_gpio_init(&gpio_config, &gpio) == kDifGpioOk);
-  CHECK(dif_gpio_output_mode_all_set(&gpio, 0x08200) == kDifGpioOk);
-  CHECK(dif_gpio_all_write(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
+  CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
+  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x08200) == kDifGpioOk);
+  CHECK(dif_gpio_write_all(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
 
   aes_cfg_t aes_cfg;
   aes_cfg.key_len = kAes128;

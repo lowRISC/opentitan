@@ -98,12 +98,12 @@ int main(int argc, char **argv) {
   CHECK(dif_spi_device_init(spi_reg, &spi_config, &spi) ==
         kDifSpiDeviceResultOk);
 
-  dif_gpio_config_t gpio_config = {
+  dif_gpio_params_t gpio_params = {
       .base_addr = mmio_region_from_addr(0x40010000),
   };
-  CHECK(dif_gpio_init(&gpio_config, &gpio) == kDifGpioOk);
+  CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK(dif_gpio_output_mode_all_set(&gpio, 0x0ff00) == kDifGpioOk);
+  CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x0ff00) == kDifGpioOk);
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     char rcv_char;
     while (uart_rcv_char(&rcv_char) != -1) {
       uart_send_char(rcv_char);
-      CHECK(dif_gpio_all_write(&gpio, rcv_char << 8) == kDifGpioOk);
+      CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifGpioOk);
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state = REG32(USBDEV_INTR_STATE());
