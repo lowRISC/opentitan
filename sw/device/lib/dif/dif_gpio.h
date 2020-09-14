@@ -22,357 +22,415 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Configuration for initializing a GPIO device.
- */
-typedef struct dif_gpio_config { mmio_region_t base_addr; } dif_gpio_config_t;
-
-/**
- * Internal state of a GPIO device.
+ * A toggle state: enabled, or disabled.
  *
- * Instances of this struct must be initialized by `dif_gpio_init()` before
- * being passed to other functions.
+ * This enum may be used instead of a `bool` when describing an enabled/disabled
+ * state.
+ *
+ * This enum may be used with `dif_gpio_toggle_vec_t` to set individual bits
+ * within it; `dif_gpio_toggle_t`'s variants are guaranteed to be compatible
+ * with `dif_gpio_toggle_vec_t`.
  */
-typedef struct dif_gpio { mmio_region_t base_addr; } dif_gpio_t;
+typedef enum dif_gpio_toggle {
+  /*
+   * The "enabled" state.
+   */
+  kDifGpioToggleEnabled = true,
+  /**
+   * The "disabled" state.
+   */
+  kDifGpioToggleDisabled = false,
+} dif_gpio_toggle_t;
 
 /**
- * Generic return codes for the functions in this library.
+ * Hardware instantiation parameters for GPIO.
+ *
+ * This struct describes information about the underlying hardware that is
+ * not determined until the hardware design is used as part of a top-level
+ * design.
+ */
+typedef struct dif_gpio_params {
+  /**
+   * The base address for the GPIO hardware registers.
+   */
+  mmio_region_t base_addr;
+} dif_gpio_params_t;
+
+/**
+ * A handle to GPIO.
+ *
+ * This type should be treated as opaque by users.
+ */
+typedef struct dif_gpio { dif_gpio_params_t params; } dif_gpio_t;
+
+/**
+ * The result of a GPIO operation.
  */
 typedef enum dif_gpio_result {
   /**
-   * The function succeeded.
+   * Indicates that the operation succeeded.
    */
-  kDifGpioOk,
+  kDifGpioOk = 0,
   /**
-   * The function failed a non-specific assertion.
-   *
-   * This error is not recoverable.
+   * Indicates some unspecified failure.
    */
-  kDifGpioError,
+  kDifGpioError = 1,
   /**
-   * There is a problem with the argument(s) to the function.
+   * Indicates that some parameter passed into a function failed a
+   * precondition.
    *
-   * This return code is only returned before the function has any side effects.
-   *
-   * This error is recoverable and the operation can be retried after correcting
-   * the problem with the argument(s).
+   * When this value is returned, no hardware operations occured.
    */
-  kDifGpioBadArg,
-
+  kDifGpioBadArg = 2,
 } dif_gpio_result_t;
 
 /**
- * Set of allowed interrupt trigger configurations.
+ * A GPIO interrupt request trigger.
+ *
+ * Each GPIO pin has an associated interrupt that can be independently
+ * configured
+ * to be edge and/or level sensitive. This enum defines supported configurations
+ * for
+ * these interrupts.
  */
-typedef enum dif_gpio_irq {
-  kDifGpioIrqEdgeRising,
-  kDifGpioIrqEdgeFalling,
-  kDifGpioIrqLevelLow,
-  kDifGpioIrqLevelHigh,
-  kDifGpioIrqEdgeRisingFalling,
-  kDifGpioIrqEdgeRisingLevelLow,
-  kDifGpioIrqEdgeFallingLevelHigh,
-} dif_gpio_irq_t;
+typedef enum dif_gpio_irq_trigger {
+  /**
+   * Trigger on rising edge.
+   */
+  kDifGpioIrqTriggerEdgeRising,
+  /**
+   * Trigger on falling edge.
+   */
+  kDifGpioIrqTriggerEdgeFalling,
+  /**
+   * Trigger when input is low.
+   */
+  kDifGpioIrqTriggerLevelLow,
+  /**
+   * Trigger when input is high.
+   */
+  kDifGpioIrqTriggerLevelHigh,
+  /**
+   * Trigger on rising and falling edges.
+   */
+  kDifGpioIrqTriggerEdgeRisingFalling,
+  /**
+   * Trigger on rising edge or when the input is low.
+   */
+  kDifGpioIrqTriggerEdgeRisingLevelLow,
+  /**
+   * Trigger on falling edge or when the input is high.
+   */
+  kDifGpioIrqTriggerEdgeFallingLevelHigh,
+} dif_gpio_irq_trigger_t;
 
 /**
- * Initialize a GPIO device using `config` and return its internal state.
+ * A GPIO pin index, ranging from 0 to 31.
  *
- * A particular GPIO device must first be initialized by this function
- * before calling other functions of this library.
+ * This type serves as the GPIO interrupt request type.
+ */
+typedef uint32_t dif_gpio_pin_t;
+
+/**
+ * State for all 32 GPIO pins, given as bit fields.
  *
- * @param config Configuration for initializing a GPIO device.
- * @param[out] gpio GPIO instance that will store the internal state of the
- * initialized GPIO device.
- * @return `kDifGpioBadArg` if `config` or `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * The Nth bit represents the state of the Nth pin.
+ *
+ * This type is also used as a vector of `dif_gpio_toggle_t`s, to indicate
+ * toggle state across all 32 pins. A set bit corresponds to
+ * `kDifGpioToggleEnabled`.
+ *
+ * It is also used with `dif_gpio_irq_disable_all()` and
+ * `dif_gpio_irq_restore_all()`.
+ */
+typedef uint32_t dif_gpio_state_t;
+
+/**
+ * A mask for selecting GPIO pins.
+ *
+ * If the Nth bit is enabled, then the Nth pin is selected by the mask.
+ */
+typedef uint32_t dif_gpio_mask_t;
+
+/**
+ * Creates a new handle for GPIO.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param params Hardware instantiation parameters.
+ * @param[out] gpio Out param for the initialized handle.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_init(const dif_gpio_config_t *config,
-                                dif_gpio_t *gpio);
+dif_gpio_result_t dif_gpio_init(dif_gpio_params_t params, dif_gpio_t *gpio);
 
 /**
- * Reset GPIO device.
+ * Resets a GPIO device.
  *
  * Resets the given GPIO device by setting its configuration registers to
  * reset values. Disables interrupts, output, and input filter.
  *
- * @param gpio GPIO instance
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_gpio_result_t dif_gpio_reset(const dif_gpio_t *gpio);
 
 /**
- * Read from all pins.
+ * Returns whether a particular pin's interrupt is currently pending.
  *
- * The value returned by this function is independent of the output enable
- * setting and includes the effects of the input noise filter and the load on
- * the pins.
- *
- * @param gpio GPIO instance.
- * @param[out] pin_values Pin values.
- * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param[out] is_pending Out-param for whether the interrupt is pending.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_all_read(const dif_gpio_t *gpio,
-                                    uint32_t *pin_values);
+dif_gpio_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio,
+                                          dif_gpio_pin_t pin, bool *is_pending);
 
 /**
- * Read from a pin.
+ * Returns a GPIO state representing which pins have interrupts enabled.
  *
- * The value returned by this function is independent of the output enable
- * setting and includes the effects of the input noise filter and the load on
- * the pin.
- *
- * @param gpio GPIO instance.
- * @param index Zero-based index of the pin to read from.
- * @param[out] pin_value Pin value.
- * @return `kDifGpioBadArg` if `gpio` or `pin_values` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param[out] is_pending Out-param for which interrupts are pending.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_pin_read(const dif_gpio_t *gpio, uint32_t index,
-                                    bool *pin_value);
+dif_gpio_result_t dif_gpio_irq_is_pending_all(const dif_gpio_t *gpio,
+                                              dif_gpio_state_t *is_pending);
 
 /**
- * Write to all pins.
+ * Acknowledges a particular pin's interrupt, indicating to the hardware that it
+ * has
+ * been successfully serviced.
  *
- * The actual values on the pins depend on the output enable setting.
- *
- * @param gpio GPIO instance.
- * @param val Value to write.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_all_write(const dif_gpio_t *gpio, uint32_t val);
+dif_gpio_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
+                                           dif_gpio_pin_t pin);
 
 /**
- * Write to a pin.
+ * Checks whether a particular pin's interrupt is currently enabled or disabled.
  *
- * The actual value on the pin depends on the output enable setting.
- *
- * @param gpio GPIO instance.
- * @param index Zero-based index of the pin to write to.
- * @param val Value to write.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param[out] state Out-param toggle state of the interrupt.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_pin_write(const dif_gpio_t *gpio, uint32_t index,
-                                     bool val);
+dif_gpio_result_t dif_gpio_irq_get_enabled(const dif_gpio_t *gpio,
+                                           dif_gpio_pin_t pin,
+                                           dif_gpio_toggle_t *state);
 
 /**
- * Write to the pins identified by a mask.
+ * Sets whether a particular pin's interrupt is currently enabled or disabled.
  *
- * The actual values on the pins depend on the output enable setting.
- *
- * @param gpio GPIO instance
- * @param mask Mask that identifies the pins to write to.
- * @param val Value to write.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param state The new toggle state for the interrupt.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_masked_write(const dif_gpio_t *gpio, uint32_t mask,
-                                        uint32_t val);
+dif_gpio_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
+                                           dif_gpio_pin_t pin,
+                                           dif_gpio_toggle_t state);
 
 /**
- * Set output modes of all pins.
+ * Sets whether a particular pin's interrupt is currently enabled or disabled.
  *
- * Setting `val[i]` to 1 enables output mode for pin `i`.
- *
- * @param gpio GPIO instance.
- * @param val Output modes of the pins.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param state The new toggle state for the interrupt.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_output_mode_all_set(const dif_gpio_t *gpio,
-                                               uint32_t val);
+dif_gpio_result_t dif_gpio_irq_set_enabled_masked(const dif_gpio_t *gpio,
+                                                  dif_gpio_mask_t mask,
+                                                  dif_gpio_toggle_t state);
 
 /**
- * Set output mode of a pin.
+ * Forces a particular pin's interrupt, causing it to be serviced as if hardware
+ * had asserted it.
  *
- * Setting `val` to `true` enables output mode for the pin.
- *
- * @param gpio GPIO instance
- * @param index Zero-based index of the pin.
- * @param val Output mode of the pin.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_output_mode_pin_set(const dif_gpio_t *gpio,
-                                               uint32_t index, bool val);
+dif_gpio_result_t dif_gpio_irq_force(const dif_gpio_t *gpio,
+                                     dif_gpio_pin_t pin);
 
 /**
- * Set the output modes of the pins identified by a mask.
+ * Disables all interrupts, optionally snapshotting all toggle state for later
+ * restoration.
  *
- * Setting `val[i]` to 1 enables output mode for pin `i`.
- *
- * @param gpio GPIO instance
- * @param mask Mask that identifies the pins whose output modes will be set.
- * @param val Output modes of the pins.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_output_mode_masked_set(const dif_gpio_t *gpio,
-                                                  uint32_t mask, uint32_t val);
+dif_gpio_result_t dif_gpio_irq_disable_all(const dif_gpio_t *gpio,
+                                           dif_gpio_state_t *snapshot);
 
 /**
- * Test the reporting of the interrupt of a pin.
+ * Restores interrupts from the given snapshot.
  *
- * Sets the corresponding bit in the interrupt state register. The level of
- * the interrupt output to the processor depends on the interrupt enable
- * register.
+ * This function can be used with `dif_gpio_irq_disable_all()` to temporary
+ * interrupt save-and-restore.
  *
- * @param gpio GPIO instance.
- * @param index Zero-based index of the pin.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
+ * @param gpio A GPIO handle.
+ * @param snapshot A snapshot to restore from.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_pin_test(const dif_gpio_t *gpio, uint32_t index);
+dif_gpio_result_t dif_gpio_irq_restore_all(const dif_gpio_t *gpio,
+                                           const dif_gpio_state_t *snapshot);
 
 /**
- * Read the interrupt states of all pins.
- *
- * @param gpio GPIO instance.
- * @param[out] interrupt_states Interrupt states of all pins.
- * @return `kDifGpioBadArg` if `gpio` or `interrupt_states` is
- * `NULL`, `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_all_read(const dif_gpio_t *gpio,
-                                        uint32_t *interrupt_states);
-
-/**
- * Read the interrupt state of a pin.
- *
- * @param gpio GPIO instance.
- * @param index Zero-based index of the pin.
- * @param[out] interrupt_state Interrupt state of the pin. True if there is a
- * pending interrupt, false otherwise.
- * @return `kDifGpioBadArg` if `gpio` or `interrupt_state` is
- * `NULL`, `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_pin_read(const dif_gpio_t *gpio, uint32_t index,
-                                        bool *interrupt_state);
-
-/**
- * Clear the interrupt of a pin.
- *
- * @param gpio GPIO instance.
- * @param index Zero-based index of the pin.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_pin_clear(const dif_gpio_t *gpio,
-                                         uint32_t index);
-
-/**
- * Enable noise filter for GPIO inputs.
- *
- * Setting `mask[i]` to 1 enables input noise filter for pin `i`. If enabled,
- * changes in the pin value will be ignored unless stable for 16 cycles.
- *
- * @param gpio GPIO instance.
- * @param mask Mask that identifies the pins for which input noise filter will
- * be enabled.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_input_noise_filter_masked_enable(
-    const dif_gpio_t *gpio, uint32_t mask);
-
-/**
- * Disable noise filter for GPIO inputs.
- *
- * Setting `mask[i]` to 1 disables input noise filter for pin `i`.
- *
- * @param gpio GPIO instance.
- * @param mask Mask that identifies the pins for which input noise filter will
- * be disabled.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_input_noise_filter_masked_disable(
-    const dif_gpio_t *gpio, uint32_t mask);
-
-/**
- * Enable interrupts for GPIO inputs.
- *
- * Setting `mask[i]` to 1 enables detection of interrupt events for pin `i`.
- * There are four types of interrupts per pin: rising-edge, falling-edge,
- * high-level, and low-level. At least one of them must be enabled to generate
- * interrupts.
- *
- * @param gpio GPIO instance.
- * @param mask Mask that identifies the pins for which interrupts will be
- * enabled.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_masked_enable(const dif_gpio_t *gpio,
-                                             uint32_t mask);
-
-/**
- * Disable interrupts for GPIO inputs.
- *
- * Setting `mask[i]` to 1 disables detection of interrupt events for pin `i`.
- *
- * @param gpio GPIO instance.
- * @param mask Mask that identifies the pins for which interrupts will be
- * disabled.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_masked_disable(const dif_gpio_t *gpio,
-                                              uint32_t mask);
-
-/**
- * Disable all interrupt triggers for GPIO inputs.
- *
- * This function disables all interrupt triggers, i.e. rising-edge,
- * falling-edge, level-high, and level-low, for the pins given by the mask.
- *
- * @param gpio GPIO instance.
- * @param mask Mask that identifies the pins whose interrupt triggers will be
- * disabled.
- * @return `kDifGpioBadArg` if `gpio` is `NULL`,
- * `kDifGpioOk` otherwise.
- */
-DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_trigger_masked_disable(const dif_gpio_t *gpio,
-                                                      uint32_t mask);
-
-/**
- * Configure interrupt triggers for GPIO inputs.
+ * Configures interrupt triggers for a set of pins.
  *
  * This function configures interrupt triggers, i.e. rising-edge, falling-edge,
  * level-high, and level-low, for the pins given by the mask. Note that
  * interrupt of the pin must also be enabled to generate interrupts.
  *
- * @param gpio GPIO instance.
+ * @param gpio A GPIO handle.
  * @param mask Mask that identifies the pins whose interrupt triggers will be
  * configured.
- * @param config New configuration of interrupt triggers.
- * @return `kDifGpioOk` if the function is successful,
- * `kDifGpioBadArg` otherwise.
+ * @param trigger New configuration of interrupt triggers.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_gpio_result_t dif_gpio_irq_trigger_masked_config(const dif_gpio_t *gpio,
-                                                     uint32_t mask,
-                                                     dif_gpio_irq_t config);
+dif_gpio_result_t dif_gpio_irq_set_trigger(const dif_gpio_t *gpio,
+                                           dif_gpio_mask_t mask,
+                                           dif_gpio_irq_trigger_t trigger);
+
+/**
+ * Reads from a pin.
+ *
+ * The value returned by this function is independent of the output enable
+ * setting and includes the effects of the input noise filter and the load on
+ * the pin.
+ *
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param[out] state Pin value.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_read(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
+                                bool *state);
+
+/**
+ * Reads from all pins.
+ *
+ * The value returned by this function is independent of the output enable
+ * setting and includes the effects of the input noise filter and the load on
+ * the pins.
+ *
+ * @param gpio A GPIO handle.
+ * @param[out] state Pin values.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_read_all(const dif_gpio_t *gpio,
+                                    dif_gpio_state_t *state);
+
+/**
+ * Writes to a pin.
+ *
+ * The actual value on the pin depends on the output enable setting.
+ *
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param state Value to write.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_write(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
+                                 bool state);
+
+/**
+ * Writes to all pins.
+ *
+ * The actual values on the pins depend on the output enable setting.
+ *
+ * @param gpio A GPIO handle.
+ * @param val Value to write.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_write_all(const dif_gpio_t *gpio,
+                                     dif_gpio_state_t state);
+
+/**
+ * Writes to the pins identified by a mask.
+ *
+ * The actual values on the pins depend on the output enable setting.
+ *
+ * @param gpio A GPIO handle.
+ * @param mask Mask that identifies the pins to write to.
+ * @param state Value to write.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_write_masked(const dif_gpio_t *gpio,
+                                        dif_gpio_mask_t mask,
+                                        dif_gpio_state_t state);
+
+/**
+ * Sets output enable mode of a pin.
+ *
+ * @param gpio A GPIO handle.
+ * @param pin A GPIO pin.
+ * @param state Output mode of the pin.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_output_set_enabled(const dif_gpio_t *gpio,
+                                              dif_gpio_pin_t pin,
+                                              dif_gpio_toggle_t state);
+
+/**
+ * Sets output modes of all pins.
+ *
+ * @param gpio A GPIO handle.
+ * @param state Output modes of the pins.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_output_set_enabled_all(const dif_gpio_t *gpio,
+                                                  dif_gpio_state_t state);
+
+/**
+ * Sets the output modes of the pins identified by a mask.
+ *
+ * @param gpio A GPIO handle.
+ * @param mask Mask that identifies the pins whose output modes will be set.
+ * @param state Output modes of the pins.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_output_set_enabled_masked(const dif_gpio_t *gpio,
+                                                     dif_gpio_mask_t mask,
+                                                     dif_gpio_state_t state);
+
+/**
+ * Enable noise filter for GPIO inputs.
+ *
+ * When enabled, changes in the pin value will be ignored unless stable
+ * for 16 cycles.
+ *
+ * @param gpio A GPIO handle.
+ * @param mask Mask that identifies pins to set the filter state of.
+ * @param state The new toggle state for the filter.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_gpio_result_t dif_gpio_input_noise_filter_set_enabled(
+    const dif_gpio_t *gpio, dif_gpio_mask_t mask, dif_gpio_toggle_t state);
 
 #ifdef __cplusplus
 }  // extern "C"
