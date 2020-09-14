@@ -212,7 +212,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                                          csr.get_mirrored_value();
             bit [TL_DW-1:0] pred_val_intr_pins = intr_state &
                                                  ral.intr_enable.get_mirrored_value();
-            `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins)
+            // according to issue #841, interrupt is a flop and the value will be updated after one
+            // clock cycle. Because the `pred_val_intr_pins` might be updated during the one clk
+            // cycle, we store the predicted intr val into a temp automatic variable.
+            fork
+              begin
+                automatic bit [TL_DW-1:0] pred_val_intr_pins_temp = pred_val_intr_pins;
+                cfg.clk_rst_vif.wait_clks(1);
+                if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins_temp)
+              end
+            join_none
           end
         end
       end // if (write == 0)
