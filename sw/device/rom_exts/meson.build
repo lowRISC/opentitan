@@ -14,6 +14,19 @@ rom_ext_link_args = [
 ]
 rom_ext_link_deps = [rom_ext_linkfile]
 
+# ROM_EXT manifest parser.
+rom_ext_manifest_parser = declare_dependency(
+  link_with: static_library(
+    'rom_ext_manifest_parser',
+    sources: [
+      'rom_ext_manifest_parser.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
   rom_ext_elf = executable(
     'rom_ext_' + device_name,
