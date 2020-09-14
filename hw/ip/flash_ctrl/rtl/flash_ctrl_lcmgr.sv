@@ -216,7 +216,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
         // current seed reading is complete
         // error is intentionally not used here, as we do not want read seed
         // failures to stop the software from using flash
-        // When there are upstream failures, the data returned in simply all 1's.
+        // When there are upstream failures, the data returned is simply all 1's.
         // So instead of doing anything explicit, a status is indicated for software.
         end else if (done_i) begin
           addr_cnt_clr = 1'b1;
