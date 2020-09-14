@@ -22,9 +22,10 @@ filesets:
       - rtl/otbn_decoder.sv
       - rtl/otbn_instruction_fetch.sv
       - rtl/otbn_rf_base.sv
-      - rtl/otbn_status_registers.sv
+      - rtl/otbn_rf_bignum.sv
       - rtl/otbn_lsu.sv
       - rtl/otbn_alu_base.sv
+      - rtl/otbn_alu_bignum.sv
       - rtl/otbn_core.sv
     file_type: systemVerilogSource
 
