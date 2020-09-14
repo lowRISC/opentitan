@@ -341,16 +341,21 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
   task check_interrupt_pin();
     fork
       begin
+        // store the `intr_status_exp` and `en_interrupt` values into an automatic local variable
+        // in case the values are being updated during the one clock cycle wait.
+        automatic uint stored_intr_status_exp[NUM_HARTS] = intr_status_exp;
+        automatic bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] stored_en_interrupt = en_interrupt;
         cfg.clk_rst_vif.wait_clks(1);
         if (!under_reset) begin
           for (int i = 0; i < NUM_HARTS; i++) begin
             for (int j = 0; j < NUM_TIMERS; j++) begin
               int intr_pin_idx = i * NUM_TIMERS + j;
               `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)),
-                                (intr_status_exp[i][j] & en_interrupt[i][j]))
+                                (stored_intr_status_exp[i][j] & stored_en_interrupt[i][j]))
               // Sample interrupt and interrupt pin coverage for each timer
               if (cfg.en_cov) begin
-                cov.intr_cg.sample(intr_pin_idx, en_interrupt[i][j], intr_status_exp[i][j]);
+                cov.intr_cg.sample(intr_pin_idx, stored_en_interrupt[i][j],
+                                   stored_intr_status_exp[i][j]);
                 cov.intr_pins_cg.sample(intr_pin_idx, cfg.intr_vif.sample_pin(.idx(intr_pin_idx)));
               end
             end
