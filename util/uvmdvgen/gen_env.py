@@ -5,6 +5,7 @@
 """
 
 import os
+import logging as log
 
 from mako.template import Template
 from pkg_resources import resource_filename
@@ -12,7 +13,7 @@ from uvmdvgen import VENDOR_DEFAULT
 
 
 def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
-            root_dir, add_makefile, vendor):
+            root_dir, vendor):
     # yapf: disable
     # 4-tuple - sub-path, ip name, class name, file ext
     env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
@@ -28,12 +29,11 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
                 ('dv/env/seq_lib',  name + '_', 'vseq_list',          '.sv'),
                 ('dv',              '',         'tb',                 '.sv'),
                 ('dv/sva',          name + '_', 'bind',               '.sv'),
-                ('dv/sva',          name + '_', 'sva',               '.core'),
+                ('dv/sva',          name + '_', 'sva',                '.core'),
                 ('dv/tests',        name + '_', 'base_test',          '.sv'),
                 ('dv/tests',        name + '_', 'test_pkg',           '.sv'),
                 ('dv/tests',        name + '_', 'test',               '.core'),
                 ('dv/cov',          '',         '',                   ''),
-                ('dv',              '',         'Makefile',           ''),
                 ('dv',              name + '_', 'sim_cfg',            '.hjson'),
                 ('doc/dv_plan',     '',         'index',              '.md'),
                 ('doc',             '',         'checklist',          '.md'),
@@ -54,18 +54,18 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
         src = tup[2]
         src_suffix = tup[3]
 
-        # Skip Makefile
-        if src == 'Makefile' and not add_makefile: continue
-
         ftpl = src + src_suffix + '.tpl'
         file_name = src_prefix + src + src_suffix
 
-        if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
-        if file_name == "": continue
+        if not os.path.exists(path_dir):
+            os.system("mkdir -p " + path_dir)
+        if file_name == "":
+            continue
 
         # Skip the checklist if it already exists.
         file_path = os.path.join(path_dir, file_name)
-        if src == 'checklist' and os.path.exists(file_path): continue
+        if src == 'checklist' and os.path.exists(file_path):
+            continue
 
         # read template
         tpl = Template(filename=resource_filename('uvmdvgen', ftpl))
@@ -81,5 +81,5 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
                                has_alerts=has_alerts,
                                env_agents=env_agents,
                                vendor=vendor))
-            except:
-                log.error(exceptions.text_error_template().render())
+            except Exception as e:
+                log.error(e.text_error_template().render())

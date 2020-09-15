@@ -5,8 +5,6 @@
 r"""Command-line tool to autogenerate boilerplate DV testbench code extended from dv_lib / cip_lib
 """
 import argparse
-import os
-import sys
 
 import gen_agent
 import gen_env
@@ -107,17 +105,6 @@ def main():
     )
 
     parser.add_argument(
-        "-m",
-        "--add-makefile",
-        default=False,
-        action='store_true',
-        help=
-        """Tests are now run with dvsim.py tool that requires a hjson based sim cfg.
-             Setting this option will also result in the Makefile to be auto-generated (which is
-             the older way of building and running sims going through deprecation)."""
-    )
-
-    parser.add_argument(
         "-v",
         "--vendor",
         default=VENDOR_DEFAULT,
@@ -126,8 +113,10 @@ def main():
         of the FuesSoC core files.""")
 
     args = parser.parse_args()
-    if not args.agent_outdir: args.agent_outdir = args.name
-    if not args.env_outdir: args.env_outdir = args.name
+    if not args.agent_outdir:
+        args.agent_outdir = args.name
+    if not args.env_outdir:
+        args.env_outdir = args.name
 
     # The has_ral option must be set if either is_cip or has_interrupts is set,
     # as both require use of a RAL model. As such, it is disallowed to not have
@@ -142,10 +131,11 @@ def main():
                             args.agent_outdir, args.vendor)
 
     if args.gen_env:
-        if not args.env_agents: args.env_agents = []
+        if not args.env_agents:
+            args.env_agents = []
         gen_env.gen_env(args.name, args.is_cip, args.has_ral,
                         args.has_interrupts, args.has_alerts, args.env_agents,
-                        args.env_outdir, args.add_makefile, args.vendor)
+                        args.env_outdir, args.vendor)
 
 
 if __name__ == '__main__':
