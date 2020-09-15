@@ -287,6 +287,12 @@ package flash_ctrl_pkg;
     logic init;
   } pwrmgr_flash_t;
 
+  // place holder for interface to EDN, replace with real one later
+  typedef struct packed {
+    logic valid;
+    logic [3:0] entropy;
+  } edn_entropy_t;
+
   // default value of otp_flash_t
   // These are hardwired default values that should never be used.
   // Real values are individualized and supplied from OTP.
@@ -307,6 +313,9 @@ package flash_ctrl_pkg;
     init: 1'b1
   };
 
-
+  parameter edn_entropy_t EDN_ENTROPY_DEFAULT = '{
+    valid: 1'b1,
+    entropy: '0
+  };
 
 endpackage : flash_ctrl_pkg
