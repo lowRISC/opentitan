@@ -32,16 +32,16 @@
       tests: []
     }
     {
-      name: lfsr_entropy
+      name: lfsr
       desc: '''Verify digital entropy for all fifo depths.'''
       milestone: V2
       tests: []
     }
     {
-      name: rng_entropy
+      name: rng
       desc: '''Verify rng entropy for various clk speeds, fifo_depths.'''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: rng_single_bit

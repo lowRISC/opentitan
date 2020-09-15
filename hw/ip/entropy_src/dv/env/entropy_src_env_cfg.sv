@@ -5,7 +5,8 @@
 class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_block));
 
   // ext component cfgs
-
+  rand rng_agent_cfg   m_rng_agent_cfg;
+  
   `uvm_object_utils_begin(entropy_src_env_cfg)
   `uvm_object_utils_end
 
@@ -15,6 +16,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
+
+    // create uart agent config obj
+    m_rng_agent_cfg = rng_agent_cfg::type_id::create("m_rng_agent_cfg");
 
     // set num_interrupts & num_alerts
     begin

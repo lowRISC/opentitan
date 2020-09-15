@@ -12,6 +12,7 @@ package entropy_src_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import entropy_src_ral_pkg::*;
+  import rng_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

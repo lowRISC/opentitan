@@ -10,10 +10,15 @@ class entropy_src_env extends cip_base_env #(
   );
   `uvm_component_utils(entropy_src_env)
 
+   rng_agent              m_rng_agent;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    m_rng_agent = rng_agent::type_id::create("m_rng_agent", this);
+    uvm_config_db#(rng_agent_cfg)::set(this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
 
     if (!uvm_config_db#(virtual pins_if)::get(this, "", "efuse_es_sw_reg_en_vif", cfg.efuse_es_sw_reg_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get efuse_es_sw_reg_en_vif from uvm_config_db")

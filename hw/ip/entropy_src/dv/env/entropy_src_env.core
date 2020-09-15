@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
+      - lowrisc:dv:rng_agent
       - lowrisc:dv:cip_lib
     files:
       - entropy_src_env_pkg.sv
@@ -20,6 +21,7 @@ filesets:
       - seq_lib/entropy_src_base_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_common_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_rng_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
     
 generate:

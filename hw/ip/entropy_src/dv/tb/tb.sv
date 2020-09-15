@@ -28,6 +28,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   pins_if #(1) efuse_es_sw_reg_en_if(efuse_es_sw_reg_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  rng_if rng_if();
 
   // dut
   entropy_src dut (
@@ -40,10 +41,10 @@ module tb;
     .efuse_es_sw_reg_en_i (efuse_es_sw_reg_en),
 
     .entropy_src_hw_if_o  (),
-    .entropy_src_hw_if_i  (),
+    .entropy_src_hw_if_i  (1'b0),
 
-    .entropy_src_rng_o    (),
-    .entropy_src_rng_i    (),
+    .entropy_src_rng_o    (rng_if.enable),
+    .entropy_src_rng_i    ({rng_if.entropy_ok, rng_if.entropy}),
 
     .es_entropy_valid_o   (intr_entropy_valid),
     .es_rct_failed_o      (intr_rct_failed),
@@ -51,6 +52,8 @@ module tb;
     .es_fifo_err_o        (intr_fifo_err)
   );
 
+  assign rng_if.clk      = clk;
+  assign rng_if.rst_n    = rst_n;
 
   assign interrupts[EntropyValid] = intr_entropy_valid;
   assign interrupts[RctFailed]    = intr_rct_failed;
@@ -65,6 +68,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual pins_if)::set(null, "*.env", "efuse_es_sw_reg_en_vif", efuse_es_sw_reg_en_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual rng_if)::set(null, "*.env.m_rng_agent*", "vif", rng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

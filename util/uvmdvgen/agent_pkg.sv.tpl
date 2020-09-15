@@ -26,7 +26,7 @@ package ${name}_agent_pkg;
                            .CFG_T (${name}_agent_cfg)) ${name}_driver;
 
 % endif
-  // reuse dv_base_seqeuencer as is with the right parameter set
+  // reuse dv_base_sequencer as is with the right parameter set
   typedef dv_base_sequencer #(.ITEM_T(${name}_item),
                               .CFG_T (${name}_agent_cfg)) ${name}_sequencer;
 
