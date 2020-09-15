@@ -25,6 +25,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        lc_flash_req_t lc_i,
   output       lc_flash_rsp_t lc_o,
   input        pwrmgr_flash_t pwrmgr_i,
+  input        edn_entropy_t edn_i,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -153,6 +154,25 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic sw_wen;
   logic sw_wready;
 
+  // lfsr for local entropy usage
+  logic [31:0] rand_val;
+  logic lfsr_en;
+
+  prim_lfsr #(
+    .DefaultSeed(),
+    .EntropyDw(4),
+    .LfsrDw(32),
+    .StateOutDw(32)
+  ) u_lfsr (
+    .clk_i,
+    .rst_ni,
+    .seed_en_i('0),
+    .seed_i('0),
+    .lfsr_en_i(lfsr_en),
+    .entropy_i(edn_i.valid ? edn_i.entropy : '0),
+    .state_o(rand_val)
+  );
+
   // flash control arbitration between softawre / harware interfaces
   flash_ctrl_arb u_ctrl_arb (
     .clk_i,
@@ -218,7 +238,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .phase_o(phase),
 
     // indication that sw has been selected
-    .sel_o(if_sel)
+    .sel_o(if_sel),
+
+    // enable lfsr
+    .lfsr_en_o(lfsr_en)
   );
 
   assign op_start      = muxed_ctrl.start.q;
@@ -270,7 +293,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rma_rsp_o(lc_o.rma_ack),
 
     // random value
-    .rand_i('0),
+    .rand_i(rand_val),
 
     // outgoing seeds
     .seeds_o(),
