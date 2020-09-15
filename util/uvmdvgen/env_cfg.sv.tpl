@@ -23,12 +23,6 @@ class ${name}_env_cfg extends dv_base_env_cfg;
 
   `uvm_object_new
 
-% if has_ral:
-  virtual function void initialize_csr_addr_map_size();
-    this.csr_addr_map_size = ${name.upper()}_ADDR_MAP_SIZE;
-  endfunction : initialize_csr_addr_map_size
-% endif
-
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
 % if has_ral:
     super.initialize(csr_base_addr);

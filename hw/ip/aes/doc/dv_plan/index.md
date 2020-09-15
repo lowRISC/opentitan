@@ -41,7 +41,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in `aes_env_pkg`.
 Some of them in use are:
 ```systemverilog
-parameter uint AES_ADDR_MAP_SIZE   = 128;
+parameter uint NUM_ALERTS = 2;
 ```
 
 ### TL_agent

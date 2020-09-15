@@ -43,9 +43,8 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `spi_device_env_pkg`. Some of them in use are:
 ```systemverilog
-parameter uint SPI_DEVICE_ADDR_MAP_SIZE = 4096;
-parameter uint SRAM_OFFSET              = 'h800;
-parameter uint SRAM_SIZE                = 2048;
+parameter uint SRAM_OFFSET = 'h800;
+parameter uint SRAM_SIZE   = 2048;
 ```
 
 ### TL_agent

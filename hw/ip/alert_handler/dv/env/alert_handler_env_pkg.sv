@@ -24,7 +24,6 @@ package alert_handler_env_pkg;
 
   // parameters
   parameter uint NUM_ESCS                    = 4;
-  parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
   parameter uint NUM_MAX_ESC_SEV             = 8;
   parameter uint NUM_ESC_SIGNALS             = 4;
   parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;

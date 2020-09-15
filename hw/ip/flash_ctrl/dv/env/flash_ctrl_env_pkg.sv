@@ -20,7 +20,6 @@ package flash_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint FLASH_CTRL_ADDR_MAP_SIZE = 256;
 
   parameter uint FlashNumPages            = top_pkg::FLASH_BANKS * top_pkg::FLASH_PAGES_PER_BANK;
   parameter uint FlashSizeBytes           = FlashNumPages * top_pkg::FLASH_WORDS_PER_PAGE *

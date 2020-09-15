@@ -25,10 +25,6 @@ package ${name}_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-% if has_ral:
-  // TODO update below, or compile error occurs
-  parameter uint ${name.upper()}_ADDR_MAP_SIZE = ;
-% endif
 
   // types
 % if not has_ral:

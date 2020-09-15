@@ -19,10 +19,6 @@ class rv_dm_env_cfg extends dv_base_env_cfg #(.RAL_T(rv_dm_reg_block));
 
   `uvm_object_new
 
-  virtual function void initialize_csr_addr_map_size();
-    this.csr_addr_map_size = RV_DM_ADDR_MAP_SIZE;
-  endfunction : initialize_csr_addr_map_size
-
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
     // create jtag agent config obj

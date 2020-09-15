@@ -18,7 +18,6 @@ package entropy_src_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint            ENTROPY_SRC_ADDR_MAP_SIZE = 64;
   parameter bit [3:0]       POR_SEED = 4'hb;
   parameter bit [TL_DW-1:0] POR_ENTROPY = 32'h124836cb;
 

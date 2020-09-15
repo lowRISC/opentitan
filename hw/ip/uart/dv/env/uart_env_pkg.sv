@@ -19,8 +19,6 @@ package uart_env_pkg;
   `include "dv_macros.svh"
 
   // local types
-  // csr and mem total size for IP
-  parameter uint UART_ADDR_MAP_SIZE   = 64;
   parameter uint UART_FIFO_DEPTH = 32;
 
   typedef enum int {
