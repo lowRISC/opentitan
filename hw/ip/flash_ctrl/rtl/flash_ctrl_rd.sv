@@ -14,7 +14,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   input  [11:0]            op_num_words_i,
   output logic             op_done_o,
   output logic             op_err_o,
-  input [BusAddrW-1:0]        op_addr_i,
+  input [BusAddrW-1:0]     op_addr_i,
 
   // FIFO Interface
   input                    data_rdy_i,
@@ -25,7 +25,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   output logic             flash_req_o,
   output logic [BusAddrW-1:0] flash_addr_o,
   output logic             flash_ovfl_o,
-  input [BusWidth-1:0]        flash_data_i,
+  input [BusWidth-1:0]     flash_data_i,
   input                    flash_done_i,
   input                    flash_error_i
 );

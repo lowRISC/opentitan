@@ -17,10 +17,14 @@ package flash_phy_pkg;
   parameter int WordW         = flash_ctrl_pkg::WordW;
   parameter int BankAddrW     = flash_ctrl_pkg::BankAddrW;
   parameter int DataWidth     = flash_ctrl_pkg::DataWidth;
+  parameter int EccWidth      = 8;
+  parameter int MetaDataWidth = top_pkg::FLASH_METADATA_WIDTH;
   parameter int WidthMultiple = flash_ctrl_pkg::WidthMultiple;
   parameter int NumBuf        = 4; // number of flash read buffers
   parameter int RspOrderDepth = 2; // this should be DataWidth / BusWidth
                                    // will switch to this after bus widening
+  parameter int ScrDataWidth  = DataWidth + EccWidth;
+  parameter int FullDataWidth = DataWidth + MetaDataWidth;
 
   // flash ctrl / bus parameters
   parameter int BusWidth       = flash_ctrl_pkg::BusWidth;

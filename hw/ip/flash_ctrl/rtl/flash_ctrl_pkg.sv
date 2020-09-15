@@ -239,6 +239,7 @@ package flash_ctrl_pkg;
     logic                rd_done;
     logic                prog_done;
     logic                erase_done;
+    logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
   } flash_rsp_t;
@@ -249,6 +250,7 @@ package flash_ctrl_pkg;
     rd_done:    1'b0,
     prog_done:  1'b0,
     erase_done: 1'b0,
+    rd_err:     '0,
     rd_data:    '0,
     init_busy:  1'b0
   };

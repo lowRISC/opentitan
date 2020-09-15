@@ -39,7 +39,9 @@ module flash_phy_prog import flash_phy_pkg::*; (
   output logic scramble_req_o,
   output logic req_o,
   output logic ack_o,
-  output logic [DataWidth-1:0] data_o
+  // block data does not contain ecc / metadata portion
+  output logic [DataWidth-1:0] block_data_o,
+  output logic [FullDataWidth-1:0] data_o
 );
 
   typedef enum logic [2:0] {
@@ -49,7 +51,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
     StPostPack,
     StWaitFlash,
     StCalcMask,
-    StScrambleData
+    StScrambleData,
+    StCalcEcc
   } prog_state_e;
 
   typedef enum logic [1:0] {
@@ -167,8 +170,12 @@ module flash_phy_prog import flash_phy_pkg::*; (
         scramble_req_o = 1'b1;
 
         if (scramble_ack_i) begin
-          state_d = StWaitFlash;
+          state_d = StCalcEcc;
         end
+      end
+
+      StCalcEcc: begin
+        state_d = StWaitFlash;
       end
 
       StWaitFlash: begin
@@ -196,16 +203,24 @@ module flash_phy_prog import flash_phy_pkg::*; (
       packed_data <= packed_data ^ mask_i;
       mask_q <= mask_i;
     end else if (scramble_req_o && scramble_ack_i) begin
-      packed_data <= scrambled_data_i ^ mask_q;
+      packed_data <= scrambled_data_i[DataWidth-1:0] ^ mask_q;
     end else if (pack_valid) begin
       packed_data[idx] <= pack_data;
     end
   end
 
+  assign block_data_o = packed_data;
 
+  // ECC handling
+  logic [ScrDataWidth-1:0] ecc_data;
 
+  prim_secded_72_64_enc u_enc (
+    .in(packed_data),
+    .out(ecc_data)
+  );
 
-  assign data_o = packed_data;
+  // pad the remaining bits to '0', this effectively "programs" them.
+  assign data_o = scramble_i ? FullDataWidth'(ecc_data) : FullDataWidth'(packed_data);
 
 
   /////////////////////////////////

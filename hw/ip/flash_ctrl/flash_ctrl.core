@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:secded
       - lowrisc:prim:flash
       - lowrisc:prim:gf_mult
       - lowrisc:ip:flash_ctrl_pkg
