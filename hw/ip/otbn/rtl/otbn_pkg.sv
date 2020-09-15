@@ -96,19 +96,19 @@ package otbn_pkg;
   } op_b_sel_e;
 
 
-  // Immediate a selection
+  // Immediate a selection for base ISA
   typedef enum logic {
-    ImmAZero
-  } imm_a_sel_e;
+    ImmBaseAZero
+  } imm_a_sel_base_e;
 
-  // Immediate b selection
+  // Immediate b selection for base ISA
   typedef enum logic [2:0] {
-    ImmBI,
-    ImmBS,
-    ImmBB,
-    ImmBU,
-    ImmBJ
-  } imm_b_sel_e;
+    ImmBaseBI,
+    ImmBaseBS,
+    ImmBaseBB,
+    ImmBaseBU,
+    ImmBaseBJ
+  } imm_b_sel_base_e;
 
   // Regfile write data selection
   typedef enum logic [1:0] {

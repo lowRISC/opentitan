@@ -53,14 +53,14 @@ module otbn_decoder
   //////////////////////////////////////
   // Register and immediate selection //
   //////////////////////////////////////
-  imm_a_sel_e  imm_a_mux_sel;       // immediate selection for operand a
-  imm_b_sel_e  imm_b_mux_sel;       // immediate selection for operand b
+  imm_a_sel_base_e  imm_a_mux_sel_base; // immediate selection for operand a in base ISA
+  imm_b_sel_base_e  imm_b_mux_sel_base; // immediate selection for operand b in base ISA
 
-  logic [31:0] imm_i_type;
-  logic [31:0] imm_s_type;
-  logic [31:0] imm_b_type;
-  logic [31:0] imm_u_type;
-  logic [31:0] imm_j_type;
+  logic [31:0] imm_i_type_base;
+  logic [31:0] imm_s_type_base;
+  logic [31:0] imm_b_type_base;
+  logic [31:0] imm_u_type_base;
+  logic [31:0] imm_j_type_base;
 
   alu_op_base_e alu_operator_base;   // ALU operation selection for base ISA
   op_a_sel_e    alu_op_a_mux_sel;    // operand a selection: reg value, PC, immediate or zero
@@ -72,11 +72,11 @@ module otbn_decoder
   logic rf_ren_b;
 
   // immediate extraction and sign extension
-  assign imm_i_type = { {20{insn[31]}}, insn[31:20] };
-  assign imm_s_type = { {20{insn[31]}}, insn[31:25], insn[11:7] };
-  assign imm_b_type = { {19{insn[31]}}, insn[31], insn[7], insn[30:25], insn[11:8], 1'b0 };
-  assign imm_u_type = { insn[31:12], 12'b0 };
-  assign imm_j_type = { {12{insn[31]}}, insn[19:12], insn[20], insn[30:21], 1'b0 };
+  assign imm_i_type_base = { {20{insn[31]}}, insn[31:20] };
+  assign imm_s_type_base = { {20{insn[31]}}, insn[31:25], insn[11:7] };
+  assign imm_b_type_base = { {19{insn[31]}}, insn[31], insn[7], insn[30:25], insn[11:8], 1'b0 };
+  assign imm_u_type_base = { insn[31:12], 12'b0 };
+  assign imm_j_type_base = { {12{insn[31]}}, insn[19:12], insn[20], insn[30:21], 1'b0 };
 
   // source registers
   assign insn_rs1 = insn[19:15];
@@ -95,15 +95,15 @@ module otbn_decoder
   logic jump_insn;
 
   // Reduced main ALU immediate MUX for Operand B
-  logic [31:0] imm_b;
+  logic [31:0] imm_b_base;
   always_comb begin : immediate_b_mux
-    unique case (imm_b_mux_sel)
-      ImmBI:   imm_b = imm_i_type;
-      ImmBS:   imm_b = imm_s_type;
-      ImmBU:   imm_b = imm_u_type;
-      ImmBB:   imm_b = imm_b_type;
-      ImmBJ:   imm_b = imm_j_type;
-      default: imm_b = imm_i_type;
+    unique case (imm_b_mux_sel_base)
+      ImmBaseBI:   imm_b_base = imm_i_type_base;
+      ImmBaseBS:   imm_b_base = imm_s_type_base;
+      ImmBaseBU:   imm_b_base = imm_u_type_base;
+      ImmBaseBB:   imm_b_base = imm_b_type_base;
+      ImmBaseBJ:   imm_b_base = imm_j_type_base;
+      default: imm_b_base = imm_i_type_base;
     endcase
   end
 
@@ -114,7 +114,7 @@ module otbn_decoder
     a:             insn_rs1,
     b:             insn_rs2,
     d:             insn_rd,
-    i:             imm_b,
+    i:             imm_b_base,
     alu_op:        alu_operator_base,
     comparison_op: comparison_operator_base
   };
@@ -330,8 +330,8 @@ module otbn_decoder
     alu_op_a_mux_sel         = OpASelRegister;
     alu_op_b_mux_sel         = OpBSelImmediate;
 
-    imm_a_mux_sel            = ImmAZero;
-    imm_b_mux_sel            = ImmBI;
+    imm_a_mux_sel_base       = ImmBaseAZero;
+    imm_b_mux_sel_base       = ImmBaseBI;
 
     opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
 
@@ -341,24 +341,24 @@ module otbn_decoder
       /////////
 
       InsnOpcodeBaseLui: begin  // Load Upper Immediate
-        alu_op_a_mux_sel  = OpASelZero;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        imm_a_mux_sel     = ImmAZero;
-        imm_b_mux_sel     = ImmBU;
-        alu_operator_base = AluOpBaseAdd;
+        alu_op_a_mux_sel   = OpASelZero;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        imm_a_mux_sel_base = ImmBaseAZero;
+        imm_b_mux_sel_base = ImmBaseBU;
+        alu_operator_base  = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseAuipc: begin  // Add Upper Immediate to PC
-        alu_op_a_mux_sel  = OpASelCurrPc;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        imm_b_mux_sel     = ImmBU;
-        alu_operator_base = AluOpBaseAdd;
+        alu_op_a_mux_sel   = OpASelCurrPc;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        imm_b_mux_sel_base = ImmBaseBU;
+        alu_operator_base  = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
-        alu_op_a_mux_sel  = OpASelRegister;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        imm_b_mux_sel     = ImmBI;
+        alu_op_a_mux_sel   = OpASelRegister;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        imm_b_mux_sel_base = ImmBaseBI;
 
         unique case (insn_alu[14:12])
           3'b000: alu_operator_base = AluOpBaseAdd;  // Add Immediate
@@ -407,17 +407,17 @@ module otbn_decoder
       //////////////////
 
       InsnOpcodeBaseLoad: begin
-        alu_op_a_mux_sel  = OpASelRegister;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        alu_operator_base = AluOpBaseAdd;
-        imm_b_mux_sel     = ImmBI;
+        alu_op_a_mux_sel   = OpASelRegister;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        alu_operator_base  = AluOpBaseAdd;
+        imm_b_mux_sel_base = ImmBaseBI;
       end
 
       InsnOpcodeBaseStore: begin
-        alu_op_a_mux_sel  = OpASelRegister;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        alu_operator_base = AluOpBaseAdd;
-        imm_b_mux_sel     = ImmBS;
+        alu_op_a_mux_sel   = OpASelRegister;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        alu_operator_base  = AluOpBaseAdd;
+        imm_b_mux_sel_base = ImmBaseBS;
       end
 
       /////////////////
@@ -428,22 +428,22 @@ module otbn_decoder
         alu_op_a_mux_sel         = OpASelCurrPc;
         alu_op_b_mux_sel         = OpBSelImmediate;
         alu_operator_base        = AluOpBaseAdd;
-        imm_b_mux_sel            = ImmBB;
+        imm_b_mux_sel_base       = ImmBaseBB;
         comparison_operator_base = insn_alu[12] ? ComparisonOpBaseNeq : ComparisonOpBaseEq;
       end
 
       InsnOpcodeBaseJal: begin
-        alu_op_a_mux_sel  = OpASelCurrPc;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        alu_operator_base = AluOpBaseAdd;
-        imm_b_mux_sel     = ImmBJ;
+        alu_op_a_mux_sel   = OpASelCurrPc;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        alu_operator_base  = AluOpBaseAdd;
+        imm_b_mux_sel_base = ImmBaseBJ;
       end
 
       InsnOpcodeBaseJalr: begin
-        alu_op_a_mux_sel  = OpASelRegister;
-        alu_op_b_mux_sel  = OpBSelImmediate;
-        alu_operator_base = AluOpBaseAdd;
-        imm_b_mux_sel     = ImmBI;
+        alu_op_a_mux_sel   = OpASelRegister;
+        alu_op_b_mux_sel   = OpBSelImmediate;
+        alu_operator_base  = AluOpBaseAdd;
+        imm_b_mux_sel_base = ImmBaseBI;
       end
 
       /////////////
