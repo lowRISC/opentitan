@@ -279,14 +279,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           end
           // disable intr_enable or clear intr_state will clear the interrupt timeout cnter
           "intr_state": begin
-            foreach (under_intr_classes[i]) begin
-              if (item.a_data[i]) begin
-                under_intr_classes[i] = 0;
-                clr_esc_under_intr[i] = 0;
-                if (!under_esc_classes[i]) state_per_class[i] = EscStateIdle;
+            fork
+              begin
+                // after interrupt is set, it needs one clock cycle to update the value and stop
+                // the intr_timeout counter
+                cfg.clk_rst_vif.wait_clks(1);
+                if (!cfg.under_reset) begin
+                  foreach (under_intr_classes[i]) begin
+                    if (item.a_data[i]) begin
+                      under_intr_classes[i] = 0;
+                      clr_esc_under_intr[i] = 0;
+                      if (!under_esc_classes[i]) state_per_class[i] = EscStateIdle;
+                    end
+                  end
+                  void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE),
+                                    .be(item.a_mask)));
+                end
               end
-            end
-            void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+            join_none
           end
           "intr_enable": begin
             foreach (under_intr_classes[i]) begin
