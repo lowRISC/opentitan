@@ -6,4 +6,4 @@
 
 # All leaf resets have a reset multiplex
 waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
-      -comment "StRmaRsp is intended to be a terminal state"
+      -comment "StInvalid is intended to be a terminal state"

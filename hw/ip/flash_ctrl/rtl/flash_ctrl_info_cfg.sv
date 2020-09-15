@@ -24,7 +24,7 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
     if (SeedBank == Bank && i == CreatorInfoPage) begin : gen_creator
       assign cfgs_o[i] = cfgs_i[i] & {CfgBitWidth{creator_seed_priv_i}};
 
-    // if match owner, only allow access when owner priviledge is set
+    // if match owner, only allow access when owner privilege is set
     end else if (SeedBank == Bank && i == OwnerInfoPage) begin : gen_owner
       assign cfgs_o[i] = cfgs_i[i] & {CfgBitWidth{owner_seed_priv_i}};
 
