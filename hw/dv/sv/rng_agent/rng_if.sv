@@ -2,7 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`include "entropy_src_base_vseq.sv"
-`include "entropy_src_sanity_vseq.sv"
-`include "entropy_src_common_vseq.sv"
-`include "entropy_src_rng_vseq.sv"
+interface rng_if ();
+
+  logic clk;
+  logic rst_n;
+
+  // interface pins
+  logic enable;
+  logic entropy_ok;
+  logic [3:0] entropy;
+
+endinterface
