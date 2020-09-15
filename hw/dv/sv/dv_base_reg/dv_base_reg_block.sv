@@ -18,6 +18,42 @@ class dv_base_reg_block extends uvm_reg_block;
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endfunction
 
+  // use below to get the addr map size #3317
+  // max2(biggest_reg_offset+reg_size, biggest_mem_offset+mem_size) and then round up to 2**N
+  virtual function bit[`UVM_REG_ADDR_WIDTH:0] get_addr_map_size();
+    uvm_reg_addr_t mem_biggest_offset;
+    uvm_reg_addr_t reg_biggest_offset;
+    uvm_reg_addr_t biggest_offset;
+    uvm_reg_block  blocks[$];
+    uvm_reg        regs[$];
+    uvm_mem        mems[$];
+
+    // TODO: assume IP only contains 1 reg block, find a better way to handle chip-level and IP
+    // with multiple reg blocks
+    this.get_blocks(blocks);
+    if (blocks.size > 0) return 1 << `UVM_REG_ADDR_WIDTH;
+
+    this.get_registers(regs);
+    this.get_memories(mems);
+    `DV_CHECK_GT_FATAL(regs.size + mems.size, 0)
+
+    foreach (regs[i]) begin
+      biggest_offset = max2(regs[i].get_offset() + regs[i].get_n_bytes() - 1, biggest_offset);
+    end
+
+    foreach (mems[i]) begin
+      biggest_offset = max2(mems[i].get_offset() + mems[i].get_size() * mems[i].get_n_bytes() - 1,
+                            biggest_offset);
+    end
+
+    get_addr_map_size = 1;
+    while (biggest_offset > 0) begin
+      biggest_offset = biggest_offset >> 1;
+      get_addr_map_size = get_addr_map_size << 1;
+    end
+    return get_addr_map_size;
+  endfunction
+
   function void get_dv_base_reg_blocks(ref dv_base_reg_block blks[$]);
     uvm_reg_block uvm_blks[$];
     this.get_blocks(uvm_blks);

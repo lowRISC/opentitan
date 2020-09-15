@@ -44,8 +44,6 @@ package i2c_env_pkg;
     ReadWrite = 2
   } tran_type_e;
 
-  // csr and mem total size for IP, TODO confirm below value with spec
-  parameter uint I2C_ADDR_MAP_SIZE  = 128;
   parameter uint I2C_FMT_FIFO_DEPTH = 32;
   parameter uint I2C_RX_FIFO_DEPTH  = 32;
 

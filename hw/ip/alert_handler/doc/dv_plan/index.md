@@ -43,8 +43,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `alert_handler_env_pkg`. Some of them in use are:
 ```systemverilog
-  parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 2048;
-  parameter uint NUM_MAX_ESC_SEV             = 8;
+  parameter uint NUM_MAX_ESC_SEV = 8;
 ```
 
 ### TL_agent

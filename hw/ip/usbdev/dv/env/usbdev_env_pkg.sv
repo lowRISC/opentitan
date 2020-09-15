@@ -19,7 +19,6 @@ package usbdev_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint USBDEV_ADDR_MAP_SIZE = 4096;
 
   // types
   typedef enum {

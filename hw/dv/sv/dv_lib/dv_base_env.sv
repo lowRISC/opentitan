@@ -46,15 +46,4 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     scoreboard.cov = cov;
   endfunction
 
-  virtual function void end_of_elaboration_phase(uvm_phase phase);
-    super.end_of_elaboration_phase(phase);
-    if (cfg.has_ral) begin
-      // Lock the ral model
-      cfg.ral.lock_model();
-      // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
-      get_csr_addrs(cfg.ral, cfg.csr_addrs);
-      get_mem_addr_ranges(cfg.ral, cfg.mem_ranges);
-    end
-  endfunction : end_of_elaboration_phase
-
 endclass

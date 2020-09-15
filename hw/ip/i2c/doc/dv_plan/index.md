@@ -45,7 +45,6 @@ All common types and methods defined at the package level can be found in
 ```systemverilog
 parameter uint I2C_FMT_FIFO_DEPTH = 32;
 parameter uint I2C_RX_FIFO_DEPTH  = 32;
-parameter uint I2C_ADDR_MAP_SIZE  = 128;
 ```
 
 ### TL_agent

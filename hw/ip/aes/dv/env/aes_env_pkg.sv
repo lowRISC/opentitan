@@ -23,7 +23,6 @@ package aes_env_pkg;
   // parameters
   parameter string LIST_OF_ALERTS[] = {"ctrl_err_update", "ctrl_err_storage"};
   parameter uint NUM_ALERTS = 2;
-  parameter uint AES_ADDR_MAP_SIZE  = 128;
 
   typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
 
