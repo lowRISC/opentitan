@@ -101,11 +101,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
-  logic flash_error;
+  logic flash_mp_error;
   logic [BusWidth-1:0] flash_prog_data;
   logic flash_prog_last;
   flash_prog_e flash_prog_type;
   logic [BusWidth-1:0] flash_rd_data;
+  logic flash_rd_err;
   logic flash_phy_busy;
   logic rd_op;
   logic prog_op;
@@ -358,7 +359,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_last_o   (flash_prog_last),
     .flash_type_o   (flash_prog_type),
     .flash_done_i   (flash_prog_done),
-    .flash_error_i  (flash_error)
+    .flash_error_i  (flash_mp_error)
   );
 
   // Read FIFO
@@ -433,7 +434,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_ovfl_o   (rd_flash_ovfl),
     .flash_data_i   (flash_rd_data),
     .flash_done_i   (flash_rd_done),
-    .flash_error_i  (flash_error)
+    .flash_error_i  (flash_mp_error | flash_rd_err)
   );
 
   // Erase handler does not consume fifo
@@ -450,7 +451,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_addr_o   (erase_flash_addr),
     .flash_op_o     (erase_flash_type),
     .flash_done_i   (flash_erase_done),
-    .flash_error_i  (flash_error)
+    .flash_error_i  (flash_mp_error)
   );
 
   // Final muxing to flash macro module
@@ -551,7 +552,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rd_done_o(flash_rd_done),
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
-    .error_o(flash_error),
+    .error_o(flash_mp_error),
     .err_addr_o(err_addr),
 
     // flash phy interface
@@ -608,6 +609,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.scramble_en = reg2hw.scramble_en.q;
   assign flash_o.addr_key = otp_i.addr_key;
   assign flash_o.data_key = otp_i.data_key;
+  assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
 

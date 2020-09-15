@@ -10,6 +10,7 @@ module prim_generic_flash #(
   parameter int PagesPerBank = 256, // data pages per bank
   parameter int WordsPerPage = 256, // words per page
   parameter int DataWidth   = 32,   // bits per word
+  parameter int MetaDataWidth = 12, // this is a temporary parameter to work around ECC issues
   parameter bit SkipInit = 1,       // this is an option to reset flash to all F's at reset
 
   // Derived parameters
@@ -297,36 +298,70 @@ module prim_generic_flash #(
     endcase // unique case (st_q)
   end // always_comb
 
+  localparam int MemWidth = DataWidth - MetaDataWidth;
+
   logic [DataWidth-1:0] rd_data_main, rd_data_info;
+  logic [MemWidth-1:0] rd_nom_data_main, rd_nom_data_info;
+  logic [MetaDataWidth-1:0] rd_meta_data_main, rd_meta_data_info;
 
   prim_ram_1p #(
-    .Width(DataWidth),
+    .Width(MemWidth),
     .Depth(WordsPerBank),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(MemWidth)
   ) u_mem (
     .clk_i,
     .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartData)),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
-    .wdata_i  (mem_wdata),
-    .wmask_i  ({DataWidth{1'b1}}),
-    .rdata_o  (rd_data_main)
+    .wdata_i  (mem_wdata[MemWidth-1:0]),
+    .wmask_i  ({MemWidth{1'b1}}),
+    .rdata_o  (rd_nom_data_main)
   );
 
   prim_ram_1p #(
-    .Width(DataWidth),
+    .Width(MetaDataWidth),
+    .Depth(WordsPerBank),
+    .DataBitsPerMask(MetaDataWidth)
+  ) u_mem_meta (
+    .clk_i,
+    .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartData)),
+    .write_i  (mem_wr),
+    .addr_i   (mem_addr),
+    .wdata_i  (mem_wdata[MemWidth +: MetaDataWidth]),
+    .wmask_i  ({MetaDataWidth{1'b1}}),
+    .rdata_o  (rd_meta_data_main)
+  );
+
+  prim_ram_1p #(
+    .Width(MemWidth),
     .Depth(WordsPerInfoBank),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(MemWidth)
   ) u_info_mem (
     .clk_i,
     .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartInfo)),
     .write_i  (mem_wr),
     .addr_i   (mem_addr[0 +: InfoAddrW]),
-    .wdata_i  (mem_wdata),
-    .wmask_i  ({DataWidth{1'b1}}),
-    .rdata_o  (rd_data_info)
+    .wdata_i  (mem_wdata[MemWidth-1:0]),
+    .wmask_i  ({MemWidth{1'b1}}),
+    .rdata_o  (rd_nom_data_info)
   );
 
+  prim_ram_1p #(
+    .Width(MetaDataWidth),
+    .Depth(WordsPerInfoBank),
+    .DataBitsPerMask(MetaDataWidth)
+  ) u_info_mem_meta (
+    .clk_i,
+    .req_i    (mem_req & (mem_part == flash_ctrl_pkg::FlashPartInfo)),
+    .write_i  (mem_wr),
+    .addr_i   (mem_addr[0 +: InfoAddrW]),
+    .wdata_i  (mem_wdata[MemWidth +: MetaDataWidth]),
+    .wmask_i  ({MetaDataWidth{1'b1}}),
+    .rdata_o  (rd_meta_data_info)
+  );
+
+  assign rd_data_main = {rd_meta_data_main, rd_nom_data_main};
+  assign rd_data_info = {rd_meta_data_info, rd_nom_data_info};
   assign rd_data_o = held_part == flash_ctrl_pkg::FlashPartData ? rd_data_main : rd_data_info;
 
   // hard-wire assignment for now

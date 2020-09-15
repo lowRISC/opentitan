@@ -37,6 +37,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       prog_done_o,
   output logic                       erase_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
+  output logic                       rd_err_o,
   output logic                       init_busy_o
 );
 
@@ -81,7 +82,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // the read stage is ready to accept a new transaction
   logic rd_stage_rdy;
 
-  // the read stage has valid data return
+  // the read stage has valid response
   logic rd_stage_data_valid;
 
   // arbitration counter
@@ -220,7 +221,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   ////////////////////////
 
   logic flash_rd_req;
-  logic [DataWidth-1:0] flash_rdata;
+  logic [FullDataWidth-1:0] flash_rdata;
   logic rd_calc_req;
   logic [BankAddrW-1:0] rd_calc_addr;
   logic rd_op_req;
@@ -239,6 +240,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .part_i(muxed_part),
     .rdy_o(rd_stage_rdy),
     .data_valid_o(rd_stage_data_valid),
+    .data_err_o(rd_err_o),
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
@@ -259,7 +261,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // program pipeline
   ////////////////////////
 
-  logic [DataWidth-1:0] prog_data, prog_scrambled_data;
+  logic [FullDataWidth-1:0] prog_full_data;
+  logic [DataWidth-1:0] prog_scrambled_data;
+  logic [DataWidth-1:0] prog_data;
   logic flash_prog_req;
   logic prog_calc_req;
   logic prog_op_req;
@@ -286,7 +290,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
       .scramble_req_o(prog_op_req),
       .req_o(flash_prog_req),
       .ack_o(prog_ack),
-      .data_o(prog_data)
+      .block_data_o(prog_data),
+      .data_o(prog_full_data)
     );
 
   end
@@ -335,7 +340,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .InfosPerBank(InfosPerBank),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
-    .DataWidth(DataWidth),
+    .DataWidth(FullDataWidth),
+    .MetaDataWidth(MetaDataWidth),
     .SkipInit(SkipInit)
   ) i_flash (
     .clk_i,
@@ -347,7 +353,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .bk_erase_i(reqs[PhyBkErase]),
     .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
     .part_i(muxed_part),
-    .prog_data_i(prog_data),
+    .prog_data_i(prog_full_data),
     .prog_type_avail_o(prog_type_avail_o),
     .ack_o(ack),
     .rd_data_o(flash_rdata),

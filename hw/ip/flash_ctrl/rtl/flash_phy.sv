@@ -18,6 +18,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   output logic host_req_rdy_o,
   output logic host_req_done_o,
   output logic [BusWidth-1:0] host_rdata_o,
+  output logic host_rderr_o,
   input flash_req_t flash_ctrl_i,
   output flash_rsp_t flash_ctrl_o
 );
@@ -47,6 +48,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [NumBanks-1:0]  host_rsp_vld;
   logic [NumBanks-1:0]  host_rsp_ack;
   logic [BusWidth-1:0]  host_rsp_data [NumBanks];
+  logic [NumBanks-1:0]  host_rsp_err;
   logic                 seq_fifo_rdy;
   logic                 seq_fifo_pending;
 
@@ -61,6 +63,7 @@ module flash_phy import flash_ctrl_pkg::*; (
 
   // common interface
   logic [BusWidth-1:0] rd_data [NumBanks];
+  logic [NumBanks-1:0] rd_err;
 
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
@@ -71,6 +74,7 @@ module flash_phy import flash_ctrl_pkg::*; (
                           seq_fifo_rdy;
 
   assign host_req_done_o = seq_fifo_pending & host_rsp_vld[rsp_bank_sel];
+  assign host_rderr_o = host_rsp_err[rsp_bank_sel];
   assign host_rdata_o = host_rsp_data[rsp_bank_sel];
 
   // all banks are assumed to be the same in terms of prog_type support
@@ -79,6 +83,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
+  assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = |init_busy;
 
   // This fifo holds the expected return order
@@ -105,7 +110,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
 
     prim_fifo_sync #(
-      .Width   (BusWidth),
+      .Width   (BusWidth + 1),
       .Pass    (1'b1),
       .Depth   (FlashMacroOustanding)
     ) i_host_rsp_fifo (
@@ -114,11 +119,11 @@ module flash_phy import flash_ctrl_pkg::*; (
       .clr_i   (1'b0),
       .wvalid_i(host_req_done[bank]),
       .wready_o(host_rsp_avail[bank]),
-      .wdata_i (rd_data[bank]),
+      .wdata_i ({rd_err[bank], rd_data[bank]}),
       .depth_o (),
       .rvalid_o(host_rsp_vld[bank]),
       .rready_i(host_rsp_ack[bank]),
-      .rdata_o (host_rsp_data[bank])
+      .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]})
     );
 
     logic host_req;
@@ -161,6 +166,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_done_o(prog_done[bank]),
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
+      .rd_err_o(rd_err[bank]),
       .init_busy_o(init_busy[bank])
     );
   end

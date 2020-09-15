@@ -75,27 +75,27 @@ module prim_secded_72_64_enc (
   assign out[63] = in[63] ;
   assign out[64] = in[0] ^ in[1] ^ in[2] ^ in[3] ^ in[4] ^ in[5] ^ in[6] ^ in[7] ^ in[8] ^ in[9]
                  ^ in[10] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[15] ^ in[16] ^ in[17] ^ in[18]
-                 ^ in[19] ^ in[20] ^ in[57] ^ in[58] ^ in[61] ^ in[62] ^ in[63];
+                 ^ in[19] ^ in[20] ^ in[57] ^ in[59] ^ in[60] ^ in[61] ^ in[62];
   assign out[65] = in[0] ^ in[1] ^ in[2] ^ in[3] ^ in[4] ^ in[5] ^ in[21] ^ in[22] ^ in[23] ^ in[24]
                  ^ in[25] ^ in[26] ^ in[27] ^ in[28] ^ in[29] ^ in[30] ^ in[31] ^ in[32] ^ in[33]
-                 ^ in[34] ^ in[35] ^ in[58] ^ in[59] ^ in[60] ^ in[62] ^ in[63];
+                 ^ in[34] ^ in[35] ^ in[56] ^ in[57] ^ in[60] ^ in[62] ^ in[63];
   assign out[66] = in[0] ^ in[6] ^ in[7] ^ in[8] ^ in[9] ^ in[10] ^ in[21] ^ in[22] ^ in[23]
                  ^ in[24] ^ in[25] ^ in[36] ^ in[37] ^ in[38] ^ in[39] ^ in[40] ^ in[41] ^ in[42]
-                 ^ in[43] ^ in[44] ^ in[45] ^ in[56] ^ in[57] ^ in[59] ^ in[60] ^ in[63];
+                 ^ in[43] ^ in[44] ^ in[45] ^ in[56] ^ in[57] ^ in[58] ^ in[61] ^ in[62];
   assign out[67] = in[1] ^ in[6] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[21] ^ in[26] ^ in[27]
                  ^ in[28] ^ in[29] ^ in[36] ^ in[37] ^ in[38] ^ in[39] ^ in[46] ^ in[47] ^ in[48]
-                 ^ in[49] ^ in[50] ^ in[51] ^ in[56] ^ in[57] ^ in[58] ^ in[61] ^ in[63];
+                 ^ in[49] ^ in[50] ^ in[51] ^ in[56] ^ in[58] ^ in[59] ^ in[62] ^ in[63];
   assign out[68] = in[2] ^ in[7] ^ in[11] ^ in[15] ^ in[16] ^ in[17] ^ in[22] ^ in[26] ^ in[30]
                  ^ in[31] ^ in[32] ^ in[36] ^ in[40] ^ in[41] ^ in[42] ^ in[46] ^ in[47] ^ in[48]
-                 ^ in[52] ^ in[53] ^ in[54] ^ in[56] ^ in[58] ^ in[59] ^ in[61] ^ in[62];
+                 ^ in[52] ^ in[53] ^ in[54] ^ in[58] ^ in[59] ^ in[60] ^ in[61] ^ in[63];
   assign out[69] = in[3] ^ in[8] ^ in[12] ^ in[15] ^ in[18] ^ in[19] ^ in[23] ^ in[27] ^ in[30]
                  ^ in[33] ^ in[34] ^ in[37] ^ in[40] ^ in[43] ^ in[44] ^ in[46] ^ in[49] ^ in[50]
-                 ^ in[52] ^ in[53] ^ in[55] ^ in[56] ^ in[57] ^ in[59] ^ in[60] ^ in[61];
+                 ^ in[52] ^ in[53] ^ in[55] ^ in[56] ^ in[57] ^ in[58] ^ in[60] ^ in[63];
   assign out[70] = in[4] ^ in[9] ^ in[13] ^ in[16] ^ in[18] ^ in[20] ^ in[24] ^ in[28] ^ in[31]
                  ^ in[33] ^ in[35] ^ in[38] ^ in[41] ^ in[43] ^ in[45] ^ in[47] ^ in[49] ^ in[51]
-                 ^ in[52] ^ in[54] ^ in[55] ^ in[56] ^ in[59] ^ in[60] ^ in[61] ^ in[62];
+                 ^ in[52] ^ in[54] ^ in[55] ^ in[56] ^ in[57] ^ in[59] ^ in[61] ^ in[63];
   assign out[71] = in[5] ^ in[10] ^ in[14] ^ in[17] ^ in[19] ^ in[20] ^ in[25] ^ in[29] ^ in[32]
                  ^ in[34] ^ in[35] ^ in[39] ^ in[42] ^ in[44] ^ in[45] ^ in[48] ^ in[50] ^ in[51]
-                 ^ in[53] ^ in[54] ^ in[55] ^ in[57] ^ in[58] ^ in[60] ^ in[62] ^ in[63];
+                 ^ in[53] ^ in[54] ^ in[55] ^ in[58] ^ in[59] ^ in[60] ^ in[61] ^ in[62];
 endmodule
 

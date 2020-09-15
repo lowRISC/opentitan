@@ -406,6 +406,7 @@ module top_${top["name"]} #(
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
+  logic flash_host_rderr;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
@@ -434,7 +435,7 @@ module top_${top["name"]} #(
     .wmask_o  (),
     .rdata_i  (flash_host_rdata),
     .rvalid_i (flash_host_req_done),
-    .rerror_i (2'b00)
+    .rerror_i ({flash_host_rderr,1'b0})
   );
 
   flash_phy u_flash_${m["name"]} (
@@ -448,6 +449,7 @@ module top_${top["name"]} #(
     .host_addr_i     (flash_host_addr),
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
+    .host_rderr_o    (flash_host_rderr),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
     .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp)

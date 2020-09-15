@@ -17,6 +17,7 @@ localparam int FLASH_PAGES_PER_BANK=256;
 localparam int FLASH_WORDS_PER_PAGE=128;
 localparam int FLASH_INFO_PER_BANK=4;
 localparam int FLASH_DATA_WIDTH=64;
+localparam int FLASH_METADATA_WIDTH=12;
 localparam int NUM_AST_ALERTS=7;
 localparam int NUM_IO_RAILS=2;
 localparam int ENTROPY_STREAM=4;
