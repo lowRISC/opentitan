@@ -50,7 +50,8 @@ def check_count(top, mreg, err_prefix):
             "type": "int",
             "default": mcount,
             "desc": "auto added parameter",
-            "local": "true"
+            "local": "true",
+            "expose": "false",
         })
         log.info("Parameter {} is added".format(mreg["name"]))
         # Replace count integer to parameter
@@ -145,6 +146,18 @@ def check_lp(obj, x, err_prefix):
             error += 1
             y["local"] = "true"
 
+        y.setdefault('expose', 'false')
+        local, ierr = check_bool(y["expose"], err_prefix + " expose")
+        if ierr:
+            error += 1
+            y["expose"] = "false"
+
+        if y["local"] == "true" and y["expose"] == "true":
+            log.error(
+                err_prefix + ' element ' + x + '["' + y["name"] +
+                '"]' + ' cannot be local and exposed to top level')
+            return error + 1
+
         if "default" in y:
             if y["type"][:3] == "int":
                 default, ierr = check_int(y["default"],
@@ -153,13 +166,20 @@ def check_lp(obj, x, err_prefix):
                     error += 1
                     y["default"] = "1"
         else:
-            if y["type"][:3] == "int":
+            # Don't make assumptions for exposed parameters. These must have
+            # a default.
+            if y["expose"] == "true":
+                log.error(
+                    err_prefix + ' element ' + x + '["' + y["name"] + '"]' +
+                    ' has no defined default value')
+            elif y["type"][:3] == "int":
                 y["default"] = "1"
             elif y["type"] == "string":
                 y["default"] = ""
             else:
-                log.err(err_prefix + ' element ' + x + '["' + y["name"] +
-                        '"]' + ' type is not supported')
+                log.error(
+                    err_prefix + ' element ' + x + '["' + y["name"] + '"]' +
+                    ' type is not supported')
                 return error + 1
 
     return error
@@ -352,6 +372,7 @@ lp_optional = {
     'type': ['s', "item type. int by default"],
     'default': ['s', "item default value"],
     'local': ['pb', "to be localparam"],
+    'expose': ['pb', "to be exposed to top"],
 }
 
 # Registers list may have embedded keys
@@ -1541,7 +1562,8 @@ def validate(regs, **kwargs):
                     'type': 'int',
                     'default': str(num_alerts),
                     'desc': 'Number of alerts',
-                    'local': 'true'
+                    'local': 'true',
+                    'expose': 'false',
                 })
 
     # Change default param value if exists.
