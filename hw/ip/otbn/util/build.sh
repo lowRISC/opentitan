@@ -27,6 +27,6 @@ OTBN_UTIL_DIR=$(dirname "$SCRIPT_FILE")
 
 $OTBN_UTIL_DIR/otbn-as $1 -o $2.o
 $OTBN_UTIL_DIR/otbn-ld $2.o -o $2.elf
-$OTBN_UTIL_DIR/otbn-objdump -fhSD $2.elf > $2.dis
+$OTBN_UTIL_DIR/otbn-objdump -f -h -S -D $2.elf > $2.dis
 riscv32-unknown-elf-objcopy -j .text $2.elf $2_imem.elf
 riscv32-unknown-elf-objcopy -j .data $2.elf $2_dmem.elf
