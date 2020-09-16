@@ -30,6 +30,14 @@ cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
 %>\
 module top_${top["name"]} #(
+  // Auto-inferred parameters
+% for m in top["module"]:
+  % for p in m["param_list"]:
+  parameter ${p["type"]} ${p["name_top"]} = ${p["default"]},
+  % endfor
+% endfor
+
+  // Manually defined parameters
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
@@ -477,14 +485,10 @@ else:
     max_intrwidth = max([len(x["name"]) for x
         in m["interrupt_list"]])
 %>\
-  % if "parameter" in m:
+  % if m["param_list"]:
   ${m["type"]} #(
-    % for k, v in m["parameter"].items():
-        % if loop.last:
-    .${k}(${v | lib.parameterize})
-        % else:
-    .${k}(${v | lib.parameterize}),
-        % endif
+    % for i in m["param_list"]:
+    .${i["name"]}(${i["name_top"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:

@@ -21,6 +21,7 @@ def amend_ip(top, ip):
         - available_input_list: empty list if doesn't exist
         - available_output_list: empty list if doesn't exist
         - available_inout_list: empty list if doesn't exist
+        - param_list: empty list if doesn't exist
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
         - wakeup_list: empty list if doesn't exist
@@ -41,13 +42,15 @@ def amend_ip(top, ip):
         filter(lambda module: module["type"] == ipname, top["module"]))
 
     for ip_module in ip_modules:
+        mod_name = ip_module["name"]
+
         # Size
         if "size" not in ip_module:
             ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
         elif int(ip_module["size"], 0) < ip["gensize"]:
             log.error(
                 "given 'size' field in IP %s is smaller than the required space"
-                % ip_module["name"])
+                % mod_name)
 
         # bus_device
         ip_module["bus_device"] = ip["bus_device"]
@@ -86,6 +89,27 @@ def amend_ip(top, ip):
                 i["width"] = int(i["width"])
         else:
             ip_module["available_inout_list"] = []
+
+        # param_list
+        if "param_list" in ip:
+            ip_module["param_list"] = deepcopy(ip["param_list"])
+            # Removing parameters that aren't exposed at the top level.
+            for i in ip["param_list"]:
+                if i["expose"] == "false":
+                    ip_module["param_list"].remove(i)
+                    if i["name"].lower().startswith("sec"):
+                        log.warning(
+                            mod_name + " has security-critical" +
+                            " parameter " + i["name"] + " not exposed to top")
+            # Removing descriptors and adding a top-level name.
+            for i in ip_module["param_list"]:
+                i.pop("desc", None)
+                par_name = i["name"]
+                i["name_top"] = ("Sec" + mod_name.capitalize() + par_name[3:]
+                                 if par_name.lower().startswith("sec")
+                                 else mod_name.capitalize() + par_name)
+        else:
+            ip_module["param_list"] = []
 
         # interrupt_list
         if "interrupt_list" in ip:
