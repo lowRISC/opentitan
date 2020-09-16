@@ -45,13 +45,17 @@ module otbn_core_model
 
   int count;
 
+  `ASSERT_INIT(StartAddr32_A, ImemAddrWidth <= 32);
+  logic [31:0] start_addr_32;
+  assign start_addr_32 = {{32 - ImemAddrWidth{1'b0}}, start_addr_i};
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : model_run
     if (!rst_ni) begin
       done_o <= 1'b0;
       count <= -1;
     end else begin
       if (start_i) begin
-        count <= run_model(ImemScope, ImemSizeWords, DmemScope, DmemSizeWords, start_addr_i);
+        count <= run_model(ImemScope, ImemSizeWords, DmemScope, DmemSizeWords, start_addr_32);
         done_o <= 1'b0;
       end else begin
         if (count == 0) begin
