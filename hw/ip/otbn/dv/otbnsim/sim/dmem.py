@@ -129,7 +129,7 @@ class Dmem:
         words are themselves packed little-endian into 256-bit words.
 
         '''
-        u32s = []
+        u32s = []  # type: List[int]
         for idx in range(len(self.data)):
             # As in load_le_words, we also have to reverse each set of 8 words
             # because we're little-endian at this scale too.

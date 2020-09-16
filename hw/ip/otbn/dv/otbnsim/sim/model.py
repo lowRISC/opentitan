@@ -345,9 +345,8 @@ class OTBNState:
 
 
 class OTBNModel:
-    def __init__(self, verbose: bool):
+    def __init__(self) -> None:
         self.state = OTBNState()
-        self.verbose = verbose
 
     def get_wr_quarterword(self, wridx: int, qwsel: int) -> int:
         assert 0 <= wridx <= 31
@@ -381,9 +380,3 @@ class OTBNModel:
         '''Update state after running an instruction but before commit'''
         self.state.loop_step()
         self.state.intreg.post_insn()
-
-    def print_trace(self, disasm: str) -> None:
-        '''Print a trace of the current instruction to verbose_file'''
-        assert self.verbose
-        changes_str = ', '.join([str(t) for t in self.state.changes()])
-        print('{:35} | [{}]'.format(disasm, changes_str))
