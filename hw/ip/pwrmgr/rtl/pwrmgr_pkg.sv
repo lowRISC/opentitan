@@ -12,7 +12,7 @@ package pwrmgr_pkg;
 
   // variables referenced by other modules / packages
   parameter int HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
-  parameter int PowerDomains = 2; // this maybe needs to be a topgen populated number, or from topcfg?
+  parameter int PowerDomains = 2; // this needs to be a topgen populated number, or from topcfg?
 
   // variables referenced only by pwrmgr
   // pwrmgr_reg_pkg::NumWkups; // should this be coming from top_pkg instead?
@@ -122,11 +122,21 @@ package pwrmgr_pkg;
 
   // flash to pwrmgr
   typedef struct packed {
+    logic flash_init;
+  } pwr_flash_req_t;
+
+  typedef struct packed {
+    logic flash_done;
     logic flash_idle;
-  } pwr_flash_t;
+  } pwr_flash_rsp_t;
 
   // default value (for dangling ports)
-  parameter pwr_flash_t PWR_FLASH_DEFAULT = '{
+  parameter pwr_flash_req_t PWR_FLASH_REQ_DEFAULT = '{
+    flash_init: 1'b1
+  };
+
+  parameter pwr_flash_rsp_t PWR_FLASH_RSP_DEFAULT = '{
+    flash_done: 1'b1,
     flash_idle: 1'b1
   };
 

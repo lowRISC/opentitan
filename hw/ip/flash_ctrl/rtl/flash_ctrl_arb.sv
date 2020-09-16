@@ -60,7 +60,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output logic prog_fifo_wvalid_o,
   input logic prog_fifo_wready_i,
 
-  // flash phy initilization ongoing
+  // flash phy initialization ongoing
   input logic flash_phy_busy_i,
 
   // clear fifo contents

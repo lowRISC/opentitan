@@ -40,7 +40,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_lc_req_t pwr_lc_o,
 
   // flash interface
-  input  pwr_flash_t pwr_flash_i,
+  output pwr_flash_req_t pwr_flash_o,
+  input  pwr_flash_rsp_t pwr_flash_i,
 
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
@@ -78,6 +79,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic capture_en_pulse; // begin capture wakeup causes
   logic low_power_fall_through;
   logic low_power_abort;
+
+  pwr_flash_rsp_t flash_rsp;
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -182,7 +185,11 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .ast_i(pwr_ast_i),
 
     // peripheral signals
-    .peri_i(peri_reqs_raw)
+    .peri_i(peri_reqs_raw),
+
+    // flash handshake
+    .flash_i(pwr_flash_i),
+    .flash_o(flash_rsp)
   );
 
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
@@ -291,7 +298,9 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .lc_idle_i         (pwr_lc_i.lc_idle),
 
     // flash
-    .flash_idle_i       (pwr_flash_i.flash_idle)
+    .flash_init_o      (pwr_flash_o.flash_init),
+    .flash_done_i      (flash_rsp.flash_done),
+    .flash_idle_i      (flash_rsp.flash_idle)
   );
 
   ////////////////////////////

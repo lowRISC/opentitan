@@ -24,7 +24,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        otp_flash_t otp_i,
   input        lc_flash_req_t lc_i,
   output       lc_flash_rsp_t lc_o,
-  input        pwrmgr_flash_t pwrmgr_i,
+  input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
+  output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        edn_entropy_t edn_i,
 
   // Interrupts
@@ -269,7 +270,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .clk_i,
     .rst_ni,
 
-    .init_i(pwrmgr_i.init),
+    .init_i(pwrmgr_i.flash_init),
+    .init_done_o(pwrmgr_o.flash_done),
     .provision_en_i(lc_i.provision_en),
 
     // interface to ctrl arb control ports
@@ -384,9 +386,6 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .flash_done_i   (flash_prog_done),
     .flash_error_i  (flash_mp_error)
   );
-
-  // Read FIFO
-
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -635,6 +634,23 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
+
+  // Interface to pwrmgr
+  // flash is not idle as long as there is a stateful operation ongoing
+  logic flash_idle_d;
+  assign flash_idle_d = ~(flash_o.req &
+                          (flash_o.prog | flash_o.pg_erase | flash_o.bk_erase));
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_reg_idle (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_idle_d),
+    .q_o(pwrmgr_o.flash_idle)
+  );
+
 
   // Interrupts
   // Generate edge triggered signals for sources that are level

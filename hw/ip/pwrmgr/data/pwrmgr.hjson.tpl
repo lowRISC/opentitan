@@ -49,9 +49,9 @@
     },
 
     { struct:  "pwr_flash",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "pwr_flash",
-      act:     "rcv",
+      act:     "req",
       package: "pwrmgr_pkg",
     },
 
