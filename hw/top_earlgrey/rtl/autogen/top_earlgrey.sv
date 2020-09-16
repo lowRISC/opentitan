@@ -3,6 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_earlgrey #(
+  // Auto-inferred parameters
+  parameter bit AesMasking = 1'b0,
+  parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplLut,
+  parameter int unsigned SecAesStartTriggerDelay = 0,
+
+  // Manually defined parameters
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
@@ -676,7 +682,11 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
-  aes u_aes (
+  aes #(
+    .Masking(AesMasking),
+    .SBoxImpl(AesSBoxImpl),
+    .SecStartTriggerDelay(SecAesStartTriggerDelay)
+  ) u_aes (
 
       // [0]: ctrl_err_update
       // [1]: ctrl_err_storage

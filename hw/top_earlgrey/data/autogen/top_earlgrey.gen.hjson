@@ -328,6 +328,7 @@
         }
       ]
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -478,6 +479,7 @@
           type: inout
         }
       ]
+      param_list: []
       interrupt_list:
       [
         {
@@ -561,6 +563,7 @@
         }
       ]
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -680,6 +683,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -863,6 +867,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -915,6 +920,33 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list:
+      [
+        {
+          name: Masking
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: AesMasking
+        }
+        {
+          name: SBoxImpl
+          type: aes_pkg::sbox_impl_e
+          default: aes_pkg::SBoxImplLut
+          local: "false"
+          expose: "true"
+          name_top: AesSBoxImpl
+        }
+        {
+          name: SecStartTriggerDelay
+          type: int unsigned
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SecAesStartTriggerDelay
+        }
+      ]
       interrupt_list: []
       alert_list:
       [
@@ -986,6 +1018,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -1078,6 +1111,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list: []
       wakeup_list: []
@@ -1128,6 +1162,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list: []
       wakeup_list:
@@ -1233,6 +1268,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list: []
       wakeup_list: []
@@ -1285,6 +1321,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -1384,6 +1421,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -1558,6 +1596,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list: []
       wakeup_list: []
@@ -1680,6 +1719,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list: []
       wakeup_list: []
@@ -1835,6 +1875,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
@@ -1975,6 +2016,7 @@
           type: inout
         }
       ]
+      param_list: []
       interrupt_list:
       [
         {
@@ -2244,6 +2286,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list: []
       alert_list:
       [
@@ -2468,6 +2511,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
