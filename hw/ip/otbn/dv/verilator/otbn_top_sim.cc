@@ -13,6 +13,7 @@
 
 extern "C" {
 extern unsigned int otbn_base_reg_get(int index);
+extern unsigned int otbn_bignum_reg_get(int index, int quarter);
 }
 
 int main(int argc, char **argv) {
@@ -50,13 +51,51 @@ int main(int argc, char **argv) {
   }
 
   svSetScope(svGetScopeFromName("TOP.otbn_top_sim"));
-  std::cout << "Final Register Values:" << std::endl;
+  std::cout << "Final Base Register Values:" << std::endl;
   std::cout << "Reg | Value" << std::endl;
   std::cout << "----------------" << std::endl;
   for (int i = 1; i < 32; ++i) {
-    std::cout << std::dec << std::setw(2) << std::setfill(' ') << i << "  | 0x"
-              << std::hex << std::setw(8) << std::setfill('0')
-              << otbn_base_reg_get(i) << std::endl;
+    std::cout << "x" << std::left << std::dec << std::setw(2)
+              << std::setfill(' ') << i << " | 0x" << std::hex << std::setw(8)
+              << std::setfill('0') << std::right << otbn_base_reg_get(i)
+              << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  std::cout << "Final Bignum Register Values:" << std::endl;
+  std::cout << "Reg | Value" << std::endl;
+  std::cout << "---------------------------------------------------------------"
+               "----------------"
+            << std::endl;
+
+  for (int i = 0; i < 32; ++i) {
+    std::cout << "w" << std::left << std::dec << std::setw(2)
+              << std::setfill(' ') << i << " | 0x" << std::hex;
+
+    std::cout << std::setw(8) << std::setfill('0') << std::right
+              << otbn_bignum_reg_get(i, 7) << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 6)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 5)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 4)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 3)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 2)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 1)
+              << "_";
+
+    std::cout << std::setw(8) << std::setfill('0') << otbn_bignum_reg_get(i, 0)
+              << std::endl;
   }
 
   return 0;
