@@ -338,7 +338,7 @@
                 name: "OTP_READ_CORR_ERR",
                 desc: '''
                 A correctable error has occured during an OTP read operation.
-                The corresponding controller automatically recover from this error when
+                The corresponding controller automatically recovers from this error when
                 issuing a new command.
                 '''
               },
@@ -451,8 +451,10 @@
       fields: [
         {
             bits:   "0",
-            desc: ''' This bit is hardware-managed and only readable by software. The DAI sets this bit temporarily to 0 during an OTP operation such that the corresponding address and data
-            registers cannot be modified while the operation is pending.
+            desc: ''' This bit is hardware-managed and only readable by software.
+            The DAI sets this bit temporarily to 0 during an OTP operation such that
+            the corresponding address and data registers cannot be modified while
+            the operation is pending.
             '''
             resval: 1,
         },
@@ -505,8 +507,7 @@
                 internally, hence bits 1:0 are ignored for 32bit accesses, and bits 2:0 are ignored
                 for 64bit accesses.
 
-                For the digest calculation command, set this register to the appropriate partition index
-                (0x2: !!HW_CFG_DIGEST, 0x4: !!SECRET0_DIGEST, 0x5: !!SECRET1_DIGEST and 0x6: !!SECRET2_DIGEST).
+                For the digest calculation command, set this register to the partition base offset.
                 '''
         }
       ]
