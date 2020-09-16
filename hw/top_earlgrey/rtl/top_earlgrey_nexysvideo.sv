@@ -223,6 +223,9 @@ module top_earlgrey_nexysvideo #(
   // for verilator purposes, make these two the same.
   assign ast_base_rst.aon_pok      = rst_n;
   top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesStartTriggerDelay(0),
     .IbexPipeLine(1),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (

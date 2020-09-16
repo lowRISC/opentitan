@@ -241,7 +241,11 @@ module top_earlgrey_asic (
   // Top-level design //
   //////////////////////
 
-  top_earlgrey top_earlgrey (
+  top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplCanright),
+    .SecAesStartTriggerDelay(0)
+  ) top_earlgrey (
     .rst_ni          ( rst_n         ),
     // ast connections
     .clk_main_i      ( ast_base_clks.clk_sys ),

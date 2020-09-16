@@ -165,6 +165,9 @@ module top_earlgrey_artys7  #(
   //////////////////////
 
   top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesStartTriggerDelay(0),
     .IbexPipeLine(1),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
