@@ -84,7 +84,7 @@ package otbn_pkg;
   // Operand a source selection
   typedef enum logic [1:0] {
     OpASelRegister  = 'd0,
-    OpASelImmediate = 'd1,
+    OpASelZero = 'd1,
     OpASelFwd = 'd2,
     OpASelCurrPc = 'd3
   } op_a_sel_e;
