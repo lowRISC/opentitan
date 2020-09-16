@@ -202,6 +202,8 @@ module top_earlgrey #(
   // define inter-module signals
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
+  pwrmgr_pkg::pwr_flash_req_t       pwrmgr_pwr_flash_req;
+  pwrmgr_pkg::pwr_flash_rsp_t       pwrmgr_pwr_flash_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
@@ -646,7 +648,9 @@ module top_earlgrey #(
       .otp_i(flash_ctrl_pkg::OTP_FLASH_DEFAULT),
       .lc_i(flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
       .lc_o(),
-      .pwrmgr_i(flash_ctrl_pkg::PWRMGR_FLASH_DEFAULT),
+      .edn_i(flash_ctrl_pkg::EDN_ENTROPY_DEFAULT),
+      .pwrmgr_i(pwrmgr_pwr_flash_req),
+      .pwrmgr_o(pwrmgr_pwr_flash_rsp),
       .tl_i(flash_ctrl_tl_req),
       .tl_o(flash_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_infra),
@@ -798,7 +802,8 @@ module top_earlgrey #(
       .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
       .pwr_lc_o(),
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
-      .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
+      .pwr_flash_o(pwrmgr_pwr_flash_req),
+      .pwr_flash_i(pwrmgr_pwr_flash_rsp),
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .wakeups_i(pwrmgr_wakeups),
       .rstreqs_i('0),

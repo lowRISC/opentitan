@@ -792,12 +792,24 @@
           index: -1
         }
         {
-          struct: pwrmgr_flash
+          struct: edn_entropy
           type: uni
-          name: pwrmgr
+          name: edn
           act: rcv
           package: flash_ctrl_pkg
           inst_name: flash_ctrl
+          index: -1
+        }
+        {
+          struct: pwr_flash
+          type: req_rsp
+          name: pwrmgr
+          act: rsp
+          package: pwrmgr_pkg
+          inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: pwrmgr_pwr_flash
           index: -1
         }
         {
@@ -1437,11 +1449,14 @@
         }
         {
           struct: pwr_flash
-          type: uni
+          type: req_rsp
           name: pwr_flash
-          act: rcv
+          act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          default: ""
+          top_signame: pwrmgr_pwr_flash
           index: -1
         }
         {
@@ -2536,6 +2551,10 @@
       flash_ctrl.flash:
       [
         eflash.flash_ctrl
+      ]
+      pwrmgr.pwr_flash:
+      [
+        flash_ctrl.pwrmgr
       ]
       pwrmgr.pwr_rst:
       [
@@ -4785,12 +4804,24 @@
         index: -1
       }
       {
-        struct: pwrmgr_flash
+        struct: edn_entropy
         type: uni
-        name: pwrmgr
+        name: edn
         act: rcv
         package: flash_ctrl_pkg
         inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: pwr_flash
+        type: req_rsp
+        name: pwrmgr
+        act: rsp
+        package: pwrmgr_pkg
+        inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: pwrmgr_pwr_flash
         index: -1
       }
       {
@@ -5010,11 +5041,14 @@
       }
       {
         struct: pwr_flash
-        type: uni
+        type: req_rsp
         name: pwr_flash
-        act: rcv
+        act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        default: ""
+        top_signame: pwrmgr_pwr_flash
         index: -1
       }
       {
@@ -5949,6 +5983,22 @@
         package: flash_ctrl_pkg
         struct: flash_rsp
         signame: flash_ctrl_flash_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_flash_req
+        signame: pwrmgr_pwr_flash_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_flash_rsp
+        signame: pwrmgr_pwr_flash_rsp
         width: 1
         type: req_rsp
         default: ""
