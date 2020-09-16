@@ -48,6 +48,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
+  input pwr_flash_rsp_t flash_i,
+  output pwr_flash_rsp_t flash_o,
 
   // AST inputs, unknown domain
   input pwr_ast_rsp_t ast_i
@@ -212,13 +214,34 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     end
   end
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(HwRstReqs + NumWkups)
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_peri_reqs_masked_i),
     .q_o(peri_reqs_o)
+  );
+
+  // synchronize inputs from flash
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_sync_flash_done (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_i.flash_done),
+    .q_o(flash_o.flash_done)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_sync_flash_idle (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_i.flash_idle),
+    .q_o(flash_o.flash_idle)
   );
 
 

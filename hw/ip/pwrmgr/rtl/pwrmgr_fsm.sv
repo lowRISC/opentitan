@@ -48,6 +48,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   input lc_idle_i,
 
   // flash
+  output logic flash_init_o,
+  input flash_done_i,
   input flash_idle_i
 );
 
@@ -58,6 +60,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     StReleaseLcRst,
     StOtpInit,
     StLcInit,
+    StFlashInit,
     StAckPwrUp,
     StActive,
     StDisClks,
@@ -96,6 +99,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   logic [PowerDomains-1:0] rst_lc_req_d, rst_sys_req_d;
   logic otp_init;
   logic lc_init;
+  logic flash_init_d;
 
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
                               pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
@@ -149,6 +153,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     rst_lc_req_d = rst_lc_req_q;
     rst_sys_req_d = rst_sys_req_q;
     reset_cause_d = reset_cause_q;
+    flash_init_d = 1'b0;
 
     unique case(state_q)
 
@@ -186,11 +191,19 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         lc_init = 1'b1;
 
         if (lc_done_i) begin
-          state_d = StAckPwrUp;
-
+          state_d = StFlashInit;
 
         end
       end
+
+      StFlashInit: begin
+        flash_init_d = 1'b1;
+
+        if (flash_done_i) begin
+          state_d = StAckPwrUp;
+        end
+      end
+
 
       StAckPwrUp: begin
         // only ack the slow_fsm if we actually transitioned through it
@@ -314,6 +327,16 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   assign otp_init_o = otp_init;
   assign lc_init_o = lc_init;
   assign ips_clk_en_o = ip_clk_en_q;
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_reg_idle (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_init_d),
+    .q_o(flash_init_o)
+  );
 
 
 endmodule

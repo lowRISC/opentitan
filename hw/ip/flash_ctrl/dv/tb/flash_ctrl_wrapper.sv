@@ -17,7 +17,8 @@ module flash_ctrl_wrapper (
   // OTP interface
   input        flash_ctrl_pkg::otp_flash_t otp_i,
   input        flash_ctrl_pkg::lc_flash_req_t lc_i,
-  input        flash_ctrl_pkg::pwrmgr_flash_t pwrmgr_i,
+  output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
+  input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   input        flash_ctrl_pkg::edn_entropy_t edn_i,
 
   // Interrupts
@@ -51,6 +52,7 @@ module flash_ctrl_wrapper (
     .otp_i    (otp_i),
     .lc_i     (lc_i),
     .pwrmgr_i (pwrmgr_i),
+    .pwrmgr_o (pwrmgr_o),
     .edn_i    (edn_i),
 
     .clk_i    (clk_i),

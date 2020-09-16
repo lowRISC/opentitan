@@ -11,6 +11,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
   // initialization command
   input init_i,
+  output logic init_done_o,
 
   // only access seeds when provisioned
   input provision_en_i,
@@ -81,6 +82,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   } state_e;
 
   state_e state_q, state_d;
+  logic init_done_d;
   logic validate_q, validate_d;
   logic [SeedCntWidth-1:0] seed_cnt_q;
   logic [CntWidth-1:0] addr_cnt_q;
@@ -97,9 +99,11 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     if (!rst_ni) begin
       state_q <= StIdle;
       validate_q <= 1'b0;
+      init_done_o <= 1'b0;
     end else begin
       state_q <= state_d;
       validate_q <= validate_d;
+      init_done_o <= init_done_d;
     end
   end
 
@@ -175,6 +179,19 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // rma phase is erase unless we are validating
   assign op = seed_phase || validate_q ? FlashOpRead : FlashOpErase;
 
+  // synchronize inputs
+  logic init_q;
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_sync_flash_init (
+    .clk_i,
+    .rst_ni,
+    .d_i(init_i),
+    .q_o(init_q)
+  );
+
   always_comb begin
 
     // phases of the hardware interface
@@ -202,15 +219,20 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     state_d = state_q;
     validate_d = validate_q;
 
+    // init status
+    // flash_ctrl handles its own arbitration between hardware and software.
+    // So once the init kicks off it is safe to ack.  The done signal is still
+    // to give a chance to hold off further power up progression in the future
+    // if required.
+    init_done_d = 1'b1;
+
     unique case (state_q)
 
       StIdle: begin
+        init_done_d = 1'b0;
         phase = PhaseSeed;
-        // TBD: provision_en is only a "good" value after otp initilization
-        // Need to qualify this statement with some notion that otp init has
-        // finished.  Since power manager will kick off otp init, it should
-        // also be able to kick off flash_init
-        if (init_i) begin
+        // provision_en is only a "good" value after otp/lc initialization
+        if (init_q) begin
           // if provisioning is not enabled, do not read seeds and skip directly
           // to wait state.
           state_d = provision_en_i ? StReadSeeds : StWait;

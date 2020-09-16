@@ -282,11 +282,6 @@ package flash_ctrl_pkg;
     logic [BusWidth-1:0] rma_ack_token;
   } lc_flash_rsp_t;
 
-  // pwrmgr to flash_ctrl
-  typedef struct packed {
-    logic init;
-  } pwrmgr_flash_t;
-
   // place holder for interface to EDN, replace with real one later
   typedef struct packed {
     logic valid;
@@ -307,10 +302,6 @@ package flash_ctrl_pkg;
     rma_req: 1'b0,
     rma_req_token: '0,
     provision_en: 1'b1
-  };
-
-  parameter pwrmgr_flash_t PWRMGR_FLASH_DEFAULT = '{
-    init: 1'b1
   };
 
   parameter edn_entropy_t EDN_ENTROPY_DEFAULT = '{

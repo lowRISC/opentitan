@@ -36,11 +36,18 @@
       package: "flash_ctrl_pkg"
     },
 
-    { struct: "pwrmgr_flash",
+    { struct: "edn_entropy",
       type: "uni",
-      name: "pwrmgr",
+      name: "edn",
       act:  "rcv",
       package: "flash_ctrl_pkg"
+    },
+
+    { struct: "pwr_flash",
+      type: "req_rsp",
+      name: "pwrmgr",
+      act:  "rsp",
+      package: "pwrmgr_pkg"
     },
 
   ],
