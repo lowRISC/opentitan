@@ -14,7 +14,7 @@ The OTP functionality is constructed through an open-source OTP controller and a
 
 The OTP controller provides:
 - An open-source abstraction interface that software can use to interact with a proprietary OTP block underneath.
-- An open-source abstraction interface that hardware components (for example life cycle controller and key manager (**TODO: add links here**)) can use to interact with a proprietary OTP block underneath.
+- An open-source abstraction interface that hardware components (for example [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}) and [key manager]({{< relref "hw/ip/keymgr/doc" >}})) can use to interact with a proprietary OTP block underneath.
 - High level logical security protection, such as integrity checks and scrambling of sensitive content.
 - Software isolation for when OTP contents are readable and programmable.
 
@@ -24,7 +24,7 @@ The proprietary OTP IP provides:
 - Physical defensive features such as SCA and FI resistance.
 - Visual and electrical probing resistance.
 
-Together, the OTP controller and IP provide secure one-time-programming functionality that is used throughout the life cycle of a device.
+Together, the OTP controller and IP provide secure one-time-programming functionality that is used throughout the life cycle (LC) of a device.
 
 ## Features
 
@@ -45,7 +45,7 @@ Together, the OTP controller and IP provide secure one-time-programming function
 
 The functionality of OTP is split into an open-source and a closed-source part, with a clearly defined boundary in between, as illustrated in the simplified high-level block diagram below.
 
-![OTP Controller Overview](otp_controller_overview.svg)
+![OTP Controller Overview](otp_ctrl_overview.svg)
 
 It is the task of the open-source controller to provide a common, non-technology specific interface to OTP users with a common register interface and a clearly defined I/O interface to hardware.
 The open-source controller implements logical isolation and partitioning of OTP storage that enables users to separate different functions of the OTP into "partitions" with different properties.
@@ -67,7 +67,7 @@ The "front-end" contains the logical partitions that feed the hardware and softw
 The "back-end" represents the programming interface used by hardware and software components to stage the upcoming values.
 The diagram below illustrates this behavioral model.
 
-![OTP Controller Block Diagram](otp_behavioral_model.svg)
+![OTP Controller Block Diagram](otp_ctrl_behavioral_model.svg)
 
 Note that the front-end contains both buffered and unbuffered partitions.
 Buffered partitions are sensed once per power cycle and their contents are stored in registers, whereas unbuffered partitions are read on-demand.
@@ -109,11 +109,11 @@ Partititon     | Secret | Buffered | WR Lockable  | RD Lockable  | Description
 ---------------|--------|----------|--------------|--------------|----------------------------------------------------------------
 CREATOR_SW_CFG | no     | no       | yes (digest) |   yes (CSR)  | Software configuration partition for device-specific calibration data (Clock, LDO, RNG, device identity).
 OWNER_SW_CFG   | no     | no       | yes (digest) |   yes (CSR)  | Software configuration partition for data that changes software behavior, specifically in the ROM. <br> E.g., enabling defensive features in ROM or selecting failure modes if verification fails.
-HW_CFG         | no     | yes      | yes (digest) |      no      | Hardware configuration bits used to hardwire specific hardware functionality. <br> E.g., raw entropy accessibility or flash scrambling bypass range.
-LIFE_CYCLE     | no     | yes      |     no       |      no      | Life-cycle related bits (**TODO ADD link**). **Note**, this partition cannot be locked as the life-cycle state needs to be able to advance to RMA in-field.
+HW_CFG         | no     | yes      | yes (digest) |      no      | Hardware configuration bits used to hardwire specific hardware functionality. <br> E.g., raw entropy accessibility or FLASH scrambling bypass range.
 SECRET0        | yes    | yes      | yes (digest) | yes (digest) | Test unlock tokens.
-SECRET1        | yes    | yes      | yes (digest) | yes (digest) | SRAM and FLASH scrambling keys.
+SECRET1        | yes    | yes      | yes (digest) | yes (digest) | SRAM and FLASH scrambling key roots used for scrambling key derivation.
 SECRET2        | yes    | yes      | yes (digest) | yes (digest) | RMA unlock token and creator root key.
+LIFE_CYCLE     | no     | yes      |     no       |      no      | [Life-cycle]({{< relref "hw/ip/lc_ctrl/doc" >}}) related bits. **Note**, this partition cannot be locked as the life cycle state needs to be able to advance to RMA in-field.
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
@@ -139,7 +139,7 @@ As part of injecting the final firmware, the stock-keeping-unit-specific hardwar
 The life cycle partition is active throughout all stages and hence it is the **ONLY** partition that cannot be locked.
 After the device finishes provisioning and goes into production, it must retain the ability to transition back to RMA in case of unexpected failures.
 
-In order to support this transition, the life-cycle state and counters must always be update-able (**TODO: add link to life-cycle docs for more info**).
+In order to support this transition, the [life cycle state]({{< relref "hw/ip/lc_ctrl/doc" >}}) and counters must always be update-able.
 
 ## Locking a Partition
 
@@ -182,7 +182,7 @@ Non-secret OTP partitions hold data that can be public; or data that has no impa
 For example, the current value of lock bits, life cycle state or clock calibration value.
 These values are stored in OTP as plaintext.
 
-Secret partitions contain data that are critical to security, for example flash scrambling keys, device root secret and unlock tokens.
+Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
 The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive]({{< relref "hw/ip/prim/doc/prim_present.md" >}}).
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
@@ -204,7 +204,9 @@ Once the appropriate partitions have been locked, the hardware integrity checker
 The purpose of this check is NOT to check between the storage flops and the OTP, but whether the buffer register contents remain consistent with the calculated digest.
 This verification is primarily concerned with whether the storage flops have experienced fault attacks.
 This check applies to only the HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_integrity_mismatch` alert and reset all of its hardware outputs to their defaults (**TBD do we need an LFSR clearing mechanism here for the secret partitions?**)
+If a failure is encountered, the OTP controller will send out an `otp_integrity_mismatch` alert and reset all of its hardware outputs to their defaults.
+
+**TBD do we need an LFSR clearing mechanism here for the secret partitions?**
 
 ### Storage Consistency
 
@@ -215,7 +217,9 @@ If there is an integrity digest, only the digest needs to be read; otherwise, al
 
 
 This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_consistency_mismatch` alert and reset all of its hardware outputs to their defaults (**TBD do we need an LFSR clearing mechanism here for the secret partitions?**)
+If a failure is encountered, the OTP controller will send out an `otp_consistency_mismatch` alert and reset all of its hardware outputs to their defaults.
+
+**TBD do we need an LFSR clearing mechanism here for the secret partitions?**
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
 The controller hence detects this condition and makes sure that the buffer registers are kept up to date in order to prevent false positives.
@@ -287,7 +291,7 @@ The functional interface is used to update all partitions except for life cycle.
 As mentioned previously, any updates made during the current power cycle are **NOT** reflected in the buffered partitions until the next reboot.
 
 The life cycle interface is used to update the life cycle state and transition counter only.
-The commands are issued from the life cycle controller, and similarly, successful or failed indications are also sent back to the life cycle controller. (**TODO add link to the LC spec**).
+The commands are issued from the [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
 For more details on how the software programs the OTP, please refer to the [Programmer's Guide]({{< relref "#programmers-guide" >}})) further below.
@@ -297,41 +301,46 @@ For more details on how the software programs the OTP, please refer to the [Prog
 
 ### Parameters
 
-The following table lists the main parameters used throughout the OTP controller design.
+The following table lists the instantiation parameters of OTP.
 
-Localparam     | Default (Max)         | Top Earlgrey | Description
----------------|-----------------------|--------------|---------------
-**TODO add**   |                       |              |
+Parameter                   | Default (Max)         | Top Earlgrey | Description
+----------------------------|-----------------------|--------------|---------------
+`AlertAsyncOn`              | 2'b11                 | 2'b11        |
+`NumSramKeyReqSlots`        | 2 (-)                 | 2            | Number of 32bit SRAM scrambling devices attached to OTP.
+`TimerLfsrSeed`             | 1                     | 1            | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
+`TimerLfsrPerm`             | (see RTL)             | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
 
+**TODO: add more**
 
 ### Signals
 
 {{< hwcfg "hw/ip/otp_ctrl/data/otp_ctrl.hjson" >}}
 
 The table below lists other OTP controller signals.
-**TODO: this will likely have to be adjusted as the implementation progresses**
 
-Signal                   | Direction        | Type                        | Description
--------------------------|------------------|-----------------------------|---------------
-`otp_csrng_o`            | `output`         | `otp_csrng_req_t`           | Entropy request to [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
-`otp_csrng_i`            | `input`          | `otp_csrng_rsp_t`           | Entropy acknowledgement from [CSRNG]({{< relref "hw/ip/csrng/doc" >}}).
-`pwr_otp_init_i`         | `input`          | `pwrmgr_pkg::pwr_otp_req_t` | Initialization request coming from power manager  **TODO: link to power manager docs**
-`pwr_otp_init_o`         | `output`         | `pwrmgr_pkg::pwr_otp_rsp_t` | Initialization response going to power manager  **TODO: link to power manager docs**
-`otp_pwr_state_o`        | `output`         | `otp_pwr_state_t`           | Current OTP state, used by power manager in order to determine whether a shutdown needs to be aborted due to an ongoing OTP operation. **TODO: need to discuss with OTP vendor whether this is needed**
-`lc_otp_program_i`       | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request. See also **TODO: link to life cycle docs**
-`lc_otp_program_o`       | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition request. See also **TODO: link to life cycle docs**
-`lc_provision_en_i`      | `input`          | `lifecycle_pkg::lc_tx_t`    | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1. **TODO: link to life cycle docs**
-`lc_test_en_i`           | `input`          | `lifecycle_pkg::lc_tx_t`    | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP. **TODO: link to life cycle docs**
-`otp_lc_data_o`          | `output`         | `otp_lc_data_t`             | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
-`otp_keymgr_key_o`       | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`otp_flash_key_i`        | `input`          | `flash_key_req_t`           | Key output to the key flash controller holding FLASH_DATA_KEY and FLASH_ADDR_KEY.
-`otp_flash_key_o`        | `output`         | `flash_key_rsp_t`           | Key output holding static key for FLASH scrambling (derived using FLASH_DATA_KEY and FLASH_ADDR_KEY).
-`otp_ram_main_key_i`     | `input`          | `ram_main_key_req_t`        | Key request from SRAM scrambling device.
-`otp_ram_main_key_o`     | `output`         | `ram_main_key_rsp_t`        | Key output holding ephemeral key for SRAM scrambling (derived using SRAM_DATA_KEY).
-`otp_ram_ret_aon_key_i`  | `input`          | `ram_ret_aon_key_req_t`     | Key request from SRAM scrambling device.
-`otp_ram_ret_aon_key_o`  | `output`         | `ram_ret_aon_key_rsp_t`     | Key output holding ephemeral key for SRAM scrambling (derived using SRAM_DATA_KEY).
-`otp_otbn_ram_key_i`     | `input`          | `otbn_ram_key_t`            | Key request from SRAM scrambling device.
-`otp_otbn_ram_key_o`     | `output`         | `otbn_ram_key_t`            | Key output holding ephemeral key for SRAM scrambling (derived using SRAM_DATA_KEY).
+Signal                     | Direction        | Type                        | Description
+---------------------------|------------------|-----------------------------|---------------
+`otp_ast_pwr_seq_o`        | `output`         | `otp_ast_req_t `            | Power sequencing signals going to AST (VDD domain).
+`otp_ast_pwr_seq_h_i`      | `input`          | `otp_ast_rsp_t `            | Power sequencing signals coming from AST (VCC domain).
+`otp_edn_req_o`            | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`otp_edn_rsp_i`            | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`pwr_otp_req_i`            | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
+`pwr_otp_rsp_o`            | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
+`lc_otp_program_req_i`     | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
+`lc_otp_program_rsp_o`     | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
+`lc_otp_token_req_i`       | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
+`lc_otp_token_rsp_o`       | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
+`lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
+`lc_provision_en_i`        | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`lc_dft_en_i`              | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
+`otp_lc_data_o`            | `output`         | `otp_lc_data_t`             | life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
+`otp_keymgr_key_o`         | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`flash_otp_key_req_i`      | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
+`flash_otp_key_rsp_o`      | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
+`sram_otp_key_req_i`       | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
+`sram_otp_key_rsp_o`       | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
+`otbn_otp_key_req_i`       | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
+`otbn_otp_key_rsp_o`       | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
@@ -339,6 +348,10 @@ The OTP controller contains various interfaces that connect to other comportable
 
 The entropy request interface that talks to CSRNG in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
 It is comprised of the `otp_csrng_o` and `otp_csrng_i` signals and follows a req / ack protocol.
+
+See also [CSRNG documentation]({{< relref "hw/ip/csrng/doc" >}}).
+
+**TODO: clock synchronization needed?**
 
 #### Power Manager Interfaces
 
@@ -349,31 +362,131 @@ The power manager asserts `pwr_otp_init_i` in order to signal to the OTP control
 
 Second, the OTP controller always outputs its state to the power manager via `otp_pwr_state_o`, such that the power manager can determine whether a shutdown needs to be aborted due to an ongoing OTP operation.
 
-#### Life Cycle Interface
+Since the power manager may run in a different clock domain, the `pwr_otp_init_i` signal is synchronized within the OTP controller.
+The power manager is responsible for synchronizing the `pwr_otp_init_o` and `otp_pwr_state_o` signals.
 
-**TODO: need expand this more**
-The token counters are maintained in the OTP.
-To ensure the security of token limits cannot be bypassed, each request for a conditional transition FIRST increments the token count, and THEN checks for the validity of the token.
+See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
+
+#### Life Cycle Interfaces
+
+The interface to the life cycle controller can be split into three functional sub-interfaces (state output, state transitions, token hashing), and these are explained in more detail below.
+Note that the OTP and life cycle controllers are supposed to be in the same clock domain, hence no additional signal synchronization is required.
+See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
+
+##### State, Counter and Token Ouput
+
+After initialization, the life cycle partition contents, as well as the tokens and personalization status is output to the life cycle controller via the `otp_lc_data_o` struct.
+The life cycle controller uses this information to determine the life cycle state, and steer the appropriate qualifier signals.
+Some of these qualifier signals (`lc_dft_en_i`, `lc_provision_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable write access to the `SECRET2` partition; or to push the OTP controller into escalation state.
+
+A possible sequence for the signals described is illustrated below.
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i', wave: 'p.................'},
+  {name: 'otp_lc_data_o.valid',             wave: '0.|...|.1.|...|...'},
+  {name: 'otp_lc_data_o.state',             wave: '03|...|...|...|...'},
+  {name: 'otp_lc_data_o.count',             wave: '03|...|...|...|...'},
+  {name: 'otp_lc_data_o.test_unlock_token', wave: '0.|...|.3.|...|...'},
+  {name: 'otp_lc_data_o.test_exit_token',   wave: '0.|...|.3.|...|...'},
+  {name: 'otp_lc_data_o.id_state',          wave: '0.|.3.|...|...|...'},
+  {name: 'otp_lc_data_o.rma_token',         wave: '0.|.3.|...|...|...'},
+  {},
+  {name: 'lc_provision_en_i',               wave: '0.|...|...|.4.|...'},
+  {name: 'lc_dft_en_i',                     wave: '0.|...|...|.4.|...'},
+  {},
+  {name: 'lc_escalate_en_i',                wave: '0.|...|...|...|.5.'},
+]}
+{{< /wavejson >}}
+
+Note that the `otp_lc_data_o.valid` signal is only asserted after the `LIFE_CYCLE`, `SECRET0` and `SECRET2` partitions have successfully initialized, since the life cycle collateral contains information from all three partitions.
+The `otp_lc_data_o.id_state` signal is set to `lc_ctrl_pkg::Set` iff the `SECRET2` partition containing the root keys has been locked with a digest.
+
+
+##### State Transitions
+
+In order to perform life cycle state transitions, the life cycle controller can present the **incremental** value of the life cycle state and counter with respect to the current status via the programming interface as shown below:
+
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i', wave: 'p.......'},
+  {name: 'lc_otp_program_req_i.req',             wave: '01.|..0.'},
+  {name: 'lc_otp_program_req_i.state_delta',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_req_i.count_delta',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_rsp_o.ack',             wave: '0..|.10.'},
+  {name: 'lc_otp_program_rsp_o.err',             wave: '0..|.40.'},
+]}
+{{< /wavejson >}}
+
+Note that the request must remain asserted until the life cycle controller has responded.
+An error is fatal and indicates that the OTP programming operation has failed.
+
+##### Token Hashing
+
+The OTP controller implements a [PRESENT-based one-way function]({{< relref "#scrambling-datapath" >}}) on 128bit to compute the partition digests.
+This function is reused for the RAW unlock process (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more info), and can be accessed via `lc_otp_token_req_i`, `lc_otp_token_rsp_o`.
+The expected timining is illustrated below:
+
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i', wave: 'p.......'},
+  {name: 'lc_otp_token_req_i.req',             wave: '01.|..0.'},
+  {name: 'lc_otp_token_req_i.token_input',     wave: '03.|..0.'},
+  {name: 'lc_otp_token_rsp_o.ack',             wave: '0..|.10.'},
+  {name: 'lc_otp_token_rsp_o.hashed_token',    wave: '0..|.40.'},
+]}
+{{< /wavejson >}}
 
 #### Interface to Key Manager
 
 The interface to the key manager is a simple struct that outputs the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 keys via `otp_keymgr_key_o` if these secrets have been provisioned and locked (via CREATOR_KEY_LOCK).
-Otherwise, this signal is tied to all-zeroes.
+Otherwise, this signal is tied to all-zeros.
 
-#### Interfaces to Flash
+**TODO: talk about clock synchronization**
 
-The interface to the flash scrambling device is similar to the key manager interface and outputs the FLASH_DATA_KEY and FLASH_ADDR_KEY via the `otp_flash_key_o` signal, if the secrets have been provisioned and locked (via FLASH_KEYS_LOCK).
-Otherwise, this signal is tied to all-zeroes.
+#### Interface to Flash Scrambler
 
-#### Interfaces to SRAM Scramblers
+The interface to the FLASH scrambling device is a simple req/ack interface that provides the flash controller with the two 128bit keys for data and address scrambling.
+The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive]({{< relref "#scrambling-datapath" >}}).
+If the key seeds have not yet been provisioned, the keys are derived from all-zero constants.
 
-The interfaces to the FLASH and SRAM scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (e.g. `otp_ram_main_key_i`).
-The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY and the PRESENT scrambling data path as described further below.
-Finally, the OTP controller returns a fresh ephemeral key via the `otp_ram_main_key_o` struct, which completest the req / ack handshake.
+The keys can be requested as illustrated below:
 
-Note that this mechanism always works - even if the SRAM_DATA_KEY has not yet been provisioned and locked (via SRAM_KEY_LOCK).
-If SRAM_DATA_KEY has not been locked, an all-zeros value is used to derive the ephemeral key.
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',                        wave: 'p...........'},
+  {name: 'flash_otp_key_req_i.data_req', wave: '01.|..0.|...'},
+  {name: 'flash_otp_key_req_i.addr_req', wave: '01.|....|..0'},
+  {name: 'flash_otp_key_rsp_o.data_ack', wave: '0..|.10.|...'},
+  {name: 'flash_otp_key_rsp_o.addr_ack', wave: '0..|....|.10'},
+  {name: 'flash_otp_key_rsp_o.key',      wave: '0..|.30.|.40'},
+]}
+{{< /wavejson >}}
 
+The request signals shall remain asserted until both keys have been transferred.
+
+**TODO: talk about clock synchronization**
+
+#### Interfaces to SRAM and OTBN Scramblers
+
+The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_req_i[*]`, `otbn_otp_key_req_i`).
+The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path]({{< relref "#scrambling-datapath" >}}).
+Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_rsp_o[*]`, `otbn_otp_key_rsp_o`), which complete the req / ack handshake.
+The wave diagram below illustrates this process for the OTBN scrambling device.
+
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',                    wave: 'p.......'},
+  {name: 'otbn_otp_key_req_i.req',   wave: '01.|..0.'},
+  {name: 'otbn_otp_key_rsp_o.ack',   wave: '0..|.10.'},
+  {name: 'otbn_otp_key_rsp_o.nonce', wave: '0..|.30.'},
+  {name: 'otbn_otp_key_rsp_o.key',   wave: '0..|.30.'},
+]}
+{{< /wavejson >}}
+
+Note that this mechanism always works - even if the SRAM_DATA_KEY_SEED has not yet been provisioned and locked (via SRAM_KEY_LOCK).
+If SRAM_DATA_KEY_SEED has not been locked, an all-zeros value is used to derive the ephemeral key.
+
+**TODO: talk about clock synchronization**
 
 ## Design Details
 
@@ -381,20 +494,24 @@ If SRAM_DATA_KEY has not been locked, an all-zeros value is used to derive the e
 
 The following is a high-level block diagram that illustrates everything that has been discussed.
 
-![OTP Controller Block Diagram](otp_controller_blockdiag.svg)
+![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each partition has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
-Access to the OTP wrapper and the scrambling datapath are both round-robin arbitrated, where the former arbitration occurs at the granularity of 16bit OTP memory accesses, and the latter occurs at the level of complete transactions (i.e., digest or encryption).
-Each partition P0-P6 exposes the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
-
+Each of the partitions P0-P6 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
+The partitions expose the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
+Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
+The partitions  can only issue read transactions to the OTP macro.
+Note that the access ranges of the DAI and the LCI are mutually exclusive.
+I.e., the DAI can read the life cycle partition but it is not allowed to write to it.
+The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
 The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P6) and the OTP wrapper through a gated TL-UL interface.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
+The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the CSRNG and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for FLASH and SRAM scrambling.
 
-The key derivation block on the bottom right side interacts with the scrambling datapath, the CSRNG and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for FLASH and SRAM scrambling.
-
+The test access gate shown at the top of the block diagram is governed by the life cycle qualification signal `dft_en_i`, which is only enabled during the TEST_UNLOCKED* life cycle states.
+Otherwise, test access via this TL-UL window is locked down.
 
 In addition to the blocks mentioned so far, the OTP controller also contains an LFSR timer that creates pseudo-randomly distributed partition check requests, and provides pseudo random data at high bandwidth in the event of a secure erase request due to chip-wide alert escalation.
 For security reasons, the LFSR is periodically reseeded with entropy coming from CSRNG.
@@ -414,44 +531,97 @@ Since the life cycle partition is the only partition that needs live updates in-
 The life cycle state is hence encoded such that incremental updates to the state are always carried out at the granularity of a 16bit word.
 Further, the life cycle transition counter is encoded such that each stroke consumes a full 16bit word for the same reason.
 
-See [**TODO: add link to lifecycle spec and state encoding**] for more details on the life cycle encoding.
+See [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details on the life cycle encoding.
 
-### Partition Implementations
+### Partition Controllers
 
-There are three different partition types that are reused throughout the implementation:
-
-1. Unbuffered partition
-2. Buffered partition
-3. Life cycle partition
-
-Each partition type has a different RTL implementation, but what they have in common is that each partition has its own controller and set of local buffer registers (if required).
+In RTL, we distinguish between buffered and unbuffered partition modules.
+These are parameterized, such that we can assemble the array of OTP partitions with these two modules only.
+The corresponding controller FSMs are explained in more detail below.
 
 #### Unbuffered Partition
 
-**TODO: add FSM details**
+![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
+
+As shown above, the unbuffered partition module has a relatively simple controller FSM that only reads out the digest value of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
+
+Write access through the DAI will be locked in case the digest is set to a non-zero value.
+Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
+Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
+
+Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}) or parity failures in the digest register will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
-**TODO: add FSM details**
+![Buffered Partition FSM](otp_ctrl_buf_part_fsm.svg)
 
-#### Life-Cycle Partition
+The controller FSM of the buffered partition module is more complex than the unbuffered counterpart, since it has to account for scrambling and digest calculation.
 
-**TODO: add FSM details**
+Upon initialization, the controller reads out the whole partition and descrambles it on the fly if needed.
+
+Then, right after the initial readout, the partition controller jumps into the first integrity check, which behaves somewhat differently, depending on whether the partition is digest protected (or not) and/or scrambled (or not).
+If the partition is not digest protected, or if the digest has not yet been computed, the check completes right away, and the buffered values are released for hardware broadcast.
+Otherwise, the partition contents in the buffer registers are re-scrambled if needed, and a digest is computed on the fly.
+If the computed digest matches with the one that has been read out before, the buffered registers are released for hardware broadcast.
+Otherwise, the buffered values are gated to their default, and an alert is triggered through the error handling logic.
+
+After initialization, the integrity check (as described above) and the consistency check can be triggered by the LFSR timer mechanism on a periodic basis.
+
+The consistency check behaves differently, depending on whether the partition is digest protected or not.
+If it is, the consistency check will read out the digest stored in OTP and compare it with the value stored in the buffer register.
+Otherwise, if no digest is available, the controller will read out the whole partition from OTP, and compare it to the contents stored in the buffer registers.
+In case of a mismatch, the buffered values are gated to their default, and an alert is triggered through the error handling logic.
+
+Note that in case of unrecoverable OTP errors or parity failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
+
+### Direct Access Interface Control
+
+![Direct Access Interface FSM](otp_ctrl_dai_fsm.svg)
+
+Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
+Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
+The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands (see [here]({{< relref "#direct-access-interface" >}}) for more information about how to interact with the DAI through the CSRs).
+
+Read and write commands transfer either 32bit or 64bit of data from the OTP to the corresponding CSR and vice versa. The access size is determined automatically, depending on whether the partition is scrambled or not. Also, (de)scrambling is performed transparently, depending on whether the partition is scrambled or not.
+
+Digest calculation commands read out the complete contents of a particular partition, compute a digest and write that digest value to the predefined location at the end of the partition.
+
+Note that any unrecoverable OTP error will move the DAI into a terminal error state, where all access through the DAI will be locked.
+Also, the DAI consumes the read and write access information provided by the partition controller, and if a certain read or write access is not permitted, a recoverable error will be flagged in the status / error CSRs.
+
+### Life Cycle Interface Control
+
+![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
+
+Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
+Once it is in the idle state, incremental life cycle state updates can be initiated via the life cycle interface as [described here]({{< relref "#state-transitions" >}}).
+The LCI controller takes the life cycle state delta to be programmed and writes all non-blank 16bit words to OTP.
+In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
+
+### Key Derivation Interface
+
+![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
+
+Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
+Once it is in the idle state, key derivation and token hashing can be requested via the [token hashing]({{< relref "#token-hashing" >}}), [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scrambles" >}}) interfaces.
+Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
 
-![OTP Digest Mechanism](otp_digest_mechanism.svg)
+![OTP Digest Mechanism](otp_ctrl_digest_mechanism.svg)
 
-The scrambling datapath is built around a single-round implementation of the [PRESENT lightweight cipher]({{< relref "hw/ip/prim/doc/prim_present" >}}) and contains some additional multiplexing circuitry to enable multiple modes of operation that are explained in more detail further below.
+The scrambling datapath is built around an iterative implementation of the [PRESENT lightweight cipher]({{< relref "hw/ip/prim/doc/prim_present" >}}) that performs one round per cycle.
+The datapath contains some additional multiplexing circuitry to enable the DAI, KDI and partition controllers to evaluate different functions with the same datapath.
+The algorithmic steps of these functions are explained in more detail below.
 
-#### Scrambling Mode
+#### Scrambling
 
 As illustrated in subfigure a) in the diagram above, the standard 128bit-key PRESENT configuration with 31 rounds is used for scrambling operations.
 The key used for scrambling is a global netlist constant chosen by the silicon creator, and all secret partitions are encrypted using the their own distinct netlist constant.
 Note that the amount of data that is being scrambled is small (160byte = 20 x 64bit blocks) and the scrambled data remains constant.
 Hence, no additional masking or diversification scheme is applied since only a very limited amount of information can be gathered by observing the scrambling operation via side-channels.
 
-#### Digest Calculation Mode
+#### Digest Calculation
 
 The integrity digests used in the [partition checks]({{< relref "#partition-checks" >}}) are computed using a custom [Merkle-Damgard](https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction) construction as illustrated in subfigure b).
 At the beginning of the digest calculation the 64bit state is initialized with an initialization vector (IV).
@@ -459,26 +629,52 @@ Then, the data to be digested is split into 128bit chunks, each of which is used
 Chunks that are not aligned with 128bit are padded with zero, and the finalization operation consists of another 31-round encryption pass with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
-#### Scrambling Key Derivation Mode
+#### Unlock Token Hashing
 
-The key derivation modes for ephemeral SRAM and static FLASH scrambling keys leverages the digest mechanism as illustrated in subfigure c).
-In particular, the keys for are derived by repeatedly reducing a semi-random 512bit block of data into a 64bit digest.
+The unlock hashing function is used by the life cycle controller to pass the RAW unlock token through a one-way function before performing the actual token comparison with the netlist constant.
+This makes it harder to reverse engineer and break the RAW unlock process since in addition to extracting the hashed RAW unlock token, an attacker would have to invert the one-way function (or find a collision).
+The hash process is similar to the digest calculation, and uses the PRESENT primitive in a Merkle-Damgard construction to reduce the 128bit token into two 64bit hash-halves as illustrated in subfigure c).
 
 
-For ephemeral SRAM scrambling keys, the 512bit block is composed of the 128bit SRAM_DATA_KEY stored in OTP, as well as 384bit of fresh entropy fetched from the CSRNG.
-Depending on the ephemeral key width (128bit for SRAM, or 512bit for OTBN), this process has to be repeated 2 or 8 times.
-Note that each of these passes uses a separate, 64bit IV netlist constant chosen by the silicon creator.
-The IV and finalization constants for this key derivation are different from the ones used for the digest mode.
+Due the PRESENT primitive being a 64bit cipher, the hash produced in this manner is essentially 64bit in strength, which would make the two 64bit halves susceptible to brute-force collision attacks if they where computed completely independently.
+To that end, the second 64bit halve is computed in a chained way by using the first 64bit halve as IV input.
 
-For static FLASH scrambling keys, the 512bit block is composed of 4 replicas of the FLASH_DATA_KEY or FLASH_ADDR_KEY stored in OTP.
-Since both the data and address scrambling keys for FLASH are 128bit in size, that makes for a total of four digest passes that are needed to produce these static keys.
-Note that each of these passes uses a separate, 64bit IV netlist constant chosen by the silicon creator.
+#### Scrambling Key Derivation
 
-**TODO: need to align the scrambling key sizes in OTP for this to be correct**
+The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation and token hashing functions.
+In particular, the keys are derived by repeatedly reducing a (partially random) block of data into a 64bit block, as illustrated in subfigures d) and e).
+
+For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the CSRNG.
+This process is repeated twice in order to produce a 128bit key.
+
+For static FLASH scrambling keys, the data block is composed of a 128bit part of either the FLASH_DATA_KEY_SEED or the FLASH_ADDR_KEY_SEED stored in OTP.
+These key seeds are 256bit in size, allowing to use a unique chunk of 128bit of key seed data to derive a 64bit halve of a particular scrambling key.
+
+Note that the IV and finalization constants are distinct for SRAM and FLASH data and FLASH address scrambling keys.
+These constants are chosen by the silicon creator prior to the tapeout.
+
+### Access Arbitration
+
+Access to the OTP wrapper and the scrambling datapath are both round-robin arbitrated, where the former arbitration occurs at cycle level (i.e., individual OTP memory accesses), and the latter occurs at the level of complete transactions (i.e., full digest or encryption).
+Arbitration at transaction level is implemented similarly to cycle-based arbitration, with the difference that the grant signals remain asserted until the requestor deasserts the request (thereby releasing the arbiter, which acts as a mutex in this case).
+This is behavior illustrated in the example below.
+
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i', wave: 'p............'},
+  {name: 'part_scrmbl_mtx_req[0]', wave: '01....0.1....'},
+  {name: 'part_scrmbl_mtx_req[1]', wave: '0.1......0...'},
+  {name: 'part_scrmbl_mtx_req[2]', wave: '0.1........0.'},
+  {},
+  {name: 'part_scrmbl_mtx_gnt[0]', wave: '01....0....1.'},
+  {name: 'part_scrmbl_mtx_gnt[1]', wave: '0.....1..0...'},
+  {name: 'part_scrmbl_mtx_gnt[2]', wave: '0........1.0.'},
+]}
+{{< /wavejson >}}
 
 ### Primitive Wrapper and FPGA Emulation
 
-![OTP Wrapper Block Diagram](otp_wrapper_blockdiag.svg)
+![OTP Wrapper Block Diagram](otp_ctrl_prim_otp.svg)
 
 The OTP IP is wrapped up in a primitive wrapper that exposes a TL-UL interface for testing purposes, and a generalized open-source interface for functional operation (described below).
 Any OTP redundancy mechanism like per-word ECC is assumed to be handled inside the wrapper, which means that the word width exposed as part of the generalized interface is the effective word width.
@@ -489,44 +685,47 @@ Note that the register space exposed via the TL-UL interface is dependent on the
 
 The generalized open-source interface uses a couple of parameters (defaults set for Earlgrey configuration).
 
-Parameter      | Default | Top Earlgrey | Description
----------------|---------|--------------|---------------
-`Width`        | 16      | 16           | Payload data width.
-`Depth`        | 1024    | 1024         | Depth of OTP macro.
-`CmdWidth`     | 2       | 2            | Width of the OTP command.
-`ErrWidth`     | 4       | 4            | Width of error code output signal.
+Parameter      | Default | Top Earlgrey  | Description
+---------------|---------|---------------|---------------
+`Width`        | 16      | 16            | Native OTP word width.
+`Depth`        | 1024    | 1024          | Depth of OTP macro.
+`CmdWidth`     | 2       | 2             | Width of the OTP command.
+`ErrWidth`     | 4       | 4             | Width of error code output signal.
+`PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
+`SizeWidth`    | 2       | 2             | Width of the size field.
+`IfWidth`      | 2^`SizeWidth` * `Width` | 2^`SizeWidth` * `Width` | Data interface width.
 
 The generalized open-source interface is a simple command interface with a ready / valid handshake that makes it possible to introduce back pressure if the OTP macro is not able to accept a command due to an ongoing operation.
 
-Signal                  | Direction        | Type                        | Description
-------------------------|------------------|-----------------------------|---------------
-`ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
-`valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
-`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `2'b00 = read`, `2'b01 = write`, `2'b11 = initialize`
-`addr_i`                | `input`          | `logic [$clog2(Depth)-1:0]` | OTP word address.
-`wdata_i`               | `input`          | `logic [Width-1:0]`         | Write data for write commands.
-`valid_o`               | `output`         | `logic`                     | Valid signal for command response.
-`rdata_o`               | `output`         | `logic [Width-1:0]`         | Read data from read commands.
-`err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
+In order to facilitate the scrambling and digest operations, the data width has been sized such that data blocks up to the PRESENT block size (64bit) can be transferred across the generalized interface. The actual size of a transfer is determined via the size_i field. Transfer sizes are specified in multiples of the native OTP block size, as listed below.
+
+Value of `size_i` | #Native OTP Words | Bit Slice
+------------------|-------------------|------------
+2'b00             |                 1 | `{word0} = data[15:0]`
+2'b01             |                 2 | `{word1, word0} = data[31:0]`
+2'b10             |                 3 | `{word2, word1, word0} = data[47:0]`
+2'b11             |                 4 | `{word3, word2, word1, word0} = data[63:0]`
 
 Responses are returned in-order via an unidirectional response interface (i.e., without back pressure capability).
-Downstream logic must be able to sink the response in any case. The response optionally carries read data, depending on whether the operation that took place was a read or not.
+Downstream logic must be able to sink the response in any case.
+The response optionally carries read data, depending on whether the operation that took place was a read or not.
 Also, an error signal returns a non-zero error code in case an error occurred while carrying out the OTP command.
-The error codes are defined further below.
 
-**TODO: fine tune these error codes once it is clear how the inner workings of the OTP wrapper look like.**
+Signal                  | Direction        | Type                        | Description
+------------------------|------------------|-----------------------------|---------------
+`pwr_seq_o`             | `output`         | `logic`                     | Power sequencing signals to AST (on VDD domain).
+`pwr_seq_h_i`           | `input`          | `logic`                     | Power sequencing signals from AST (on VCC domain).
+`ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
+`valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
+`size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
+`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `2'b00 = read`, `2'b01 = write`, `2'b11 = initialize`
+`addr_i`                | `input`          | `logic [$clog2(Depth)-1:0]` | OTP word address.
+`wdata_i`               | `input`          | `logic [IfWidth-1:0]`       | Write data for write commands.
+`valid_o`               | `output`         | `logic`                     | Valid signal for command response.
+`rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
+`err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-Error Code | Description
------------|-------------
-0x0        | Command completed successfully.
-0x1        | Invalid command.
-0x2        | Read or write attempted before initialization.
-0x3        | Failure during OTP initialization.
-0x4        | Correctable read error occurred.
-0x5        | Uncorrectable read error occurred.
-0x6        | Other read errors (TBD).
-0x7        | Programming error occurred (TBD).
-others     | Reserved.
+The `prim_otp` wrappers implements the error codes 0x0 - 0x7 defined in the [OTP error handling]({{< relref "#error-handling" >}}).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
@@ -539,11 +738,12 @@ The returned values depend on the command type and whether an error occurred or 
     { name: 'clk_i',    wave: 'p...........' },
     { name: 'ready_o',  wave: '0...10|.....' , node: '....a'},
     { name: 'valid_i',  wave: '0.1..0|.....' },
-    { name: 'cmd_i',    wave: '0.3..0|.....' },
-    { name: 'wdata_i',  wave: '0.4..0|.....' },
+    { name: 'size_i',   wave: '0.3..0|.....' },
+    { name: 'cmd_i',    wave: '0.4..0|.....' },
+    { name: 'wdata_i',  wave: '0.5..0|.....' },
     { name: 'valid_o',  wave: '0.....|..10.' , node: '.........b'},
-    { name: 'rdata_o',  wave: '0.....|..40.' },
-    { name: 'err_o',    wave: '0.....|..50.' },
+    { name: 'rdata_o',  wave: '0.....|..50.' },
+    { name: 'err_o',    wave: '0.....|..40.' },
   ],
   edge: [
    'a~>b',
@@ -582,13 +782,17 @@ Typical programming sequences are explained at the end of the Programmer's guide
 The OTP controller initializes automatically upon power-up and is fully operational by the time the processor boots.
 The only initialization steps that SW should perform are:
 
-1. Check that the OTP controller has successfully initialized by making sure that {{< regref STATUS >}} is IDLE and not in an ERROR state.
-2. Program and lock down the frequency of periodic background checks in HW.
+1. Check that the OTP controller has successfully initialized by reading {{< regref STATUS >}}. I.e., make sure that none of the ERROR bits are set, and that the DAI is idle ({{< regref STATUS.DAI_IDLE >}}).
+2. Set up the periodic background checks:
+    - Choose whether to enable periodic [background checks]({{< relref "#partition-checks" >}}) by programming nonzero mask values to {{< regref INTEGRITY_CHECK_PERIOD >}} and {{< regref CONSISTENCY_CHECK_PERIOD >}}.
+    - Choose whether such checks shall be subject to a timeout by programming a nonzero timeout cycle count to {{< regref CHECK_TIMEOUT >}}.
+    - It is recommended to lock down the background check registers via {{< regref CHECK_REGWEN >}}, once the background checks have been set up.
 
-Step 2. can be achieved by adjusting the MSB indices for the pseudo-randomly drawn periods via {{< regref INTEGRITY_CHECK_PERIOD_MSB >}} and {{< regref CONSISTENCY_CHECK_PERIOD_MSB >}}.
-It is recommended to leave this configuration at the default setting, but SW must under all circumstances write to the {{< regref CHECK_PERIOD_REGEN >}} register in order to lock write access to these CSRs.
+If needed, one-off integrity and consistency checks can be triggered via {{< regref CHECK_TRIGGER >}}.
+If this functionality is not needed, it is recommended to lock down the trigger register via {{< regref CHECK_TRIGGER_REGWEN >}}.
 
 Later on during the boot process, SW may also choose to block read access to the {{< regref CREATOR_SW_CFG >}} or {{< regref OWNER_SW_CFG >}} partitions at runtime via {{< regref CREATOR_SW_CFG_READ_LOCK >}} and {{< regref OWNER_SW_CFG_READ_LOCK >}}.
+
 
 ### Reset Considerations
 
@@ -621,50 +825,80 @@ See further below for a detailed [Memory Map]({{< relref "#direct-access-memory-
 
 A typical readout sequence looks as follows:
 
-1. Unprotect the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x1.
+1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
 2. Write the byte address for the access to {{< regref DIRECT_ACCESS_ADDRESS >}}.
 Note that the address is aligned with the granule, meaning that either 2 or 3 LSBs of the address are ignored, depending on whether the access granule is 32 or 64bit.
 3. Trigger a read command by writing 0x1 to {{< regref DIRECT_ACCESS_CMD >}}.
-4. Poll the {{< regref STATUS >}} until the state goes back to IDLE or ERROR.
+4. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-5. If the operation has finished with ERROR status, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+5. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
 6. If the region accessed has a 32bit access granule, the 32bit chunk of read data can be read from {{< regref DIRECT_ACCESS_RDATA_0 >}}.
 If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the {{< regref DIRECT_ACCESS_RDATA_0 >}} and {{< regref DIRECT_ACCESS_RDATA_1 >}} registers.
 7. Go back to 1. and repeat until all data has been read.
-8. Enable write protection of the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0.
+
+Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 ### Programming Sequence
 
 A typical programming sequence looks as follows:
 
-1. Unprotect the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x1.
+1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
 2. If the region to be accessed has a 32bit access granule, place a 32bit chunk of data into {{< regref DIRECT_ACCESS_WDATA_0 >}}.
 If the region to be accessed has a 64bit access granule, both the {{< regref DIRECT_ACCESS_WDATA_0 >}} and {{< regref DIRECT_ACCESS_WDATA_1 >}} registers have to be used.
 3. Write the byte address for the access to {{< regref DIRECT_ACCESS_ADDRESS >}}.
 Note that the address is aligned with the granule, meaning that either 2 or 3 LSBs of the address are ignored, depending on whether the access granule is 32 or 64bit.
 4. Trigger a write command by writing 0x2 to {{< regref DIRECT_ACCESS_CMD >}}.
-5. Poll the {{< regref STATUS >}} until the state goes back to IDLE or ERROR.
+5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the operation has finished with ERROR status, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
 7. Go back to 1. and repeat until all data has been written.
-8. Enable write protection of the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0.
+
+Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 ### Digest Calculation Sequence
 
 The hardware digest computation for the hardware and secret partitions can be triggered as follows:
 
-1. Unprotect the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x1.
-3. Write the correct partition index to {{< regref DIRECT_ACCESS_ADDRESS >}}.
-4. Trigger a digest calculation command by writing 0x3 to {{< regref DIRECT_ACCESS_CMD >}}.
-5. Poll the {{< regref STATUS >}} until the state goes back to IDLE or ERROR.
+1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
+3. Write the partition base address to {{< regref DIRECT_ACCESS_ADDRESS >}}.
+4. Trigger a digest calculation command by writing 0x4 to {{< regref DIRECT_ACCESS_CMD >}}.
+5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the operation has finished with ERROR status, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
-7. Enable write protection of the DAI by setting {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0.
+6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+
+Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 ## Error Handling
 
-**TODO: need to define error codes**
-Associated interrupt is `otp_error`.
+The agents that can access the OTP macro (DAI, LCI, buffered/unbuffered partitions) expose detailed error codes that can be used to root cause any failure.
+The error codes are defined in the table below, and the corresponding `otp_err_e` enum type can be found in the `otp_ctrl_pkg`.
+The table also lists which error codes are supported by which agent.
+
+
+Errors that are not "recoverable" are severe errors that move the corresponding partition or DAI/LCI FSM into a terminal error state, where no more commands can be accepted (a system reset is required to restore functionality in that case).
+Errors that are "recoverable" are less severe and do not cause the FSM to jump into a terminal error state.
+
+Error Code | Enum Name        | Recoverable | DAI | LCI | Unbuf | Buf   | Description
+-----------|------------------|-------------|-----|-----|-------|-------|-------------
+0x0        | NoErr            | -           |  x  |  x  |   x   |  x    | Command completed successfully.
+0x1        | OtpCmdInvErr     | no          |  x  |  x  |   x   |  x    | Invalid OTP macro command. This error is returned if the command encoding is incorrect, or if a read or write command is issued to an uninitialized OTP wrapper.
+0x2        | OtpInitErr       | no          |  x  |  x  |   x   |  x    | Failure during OTP macro initialization. Asserted in case OTP initialization does not complete successfully.
+0x3        | OtpReadCorrErr   | yes         |  x  |  -  |   x   |  x    | Correctable ECC error occurred during a read in the OTP macro.
+0x4        | OtpReadUncorrErr | no          |  x  |  -  |   x   |  x    | Uncorrectable ECC error occurred during a read in the OTP macro.
+0x5        | OtpReadErr       | no          |  x  |  -  |   x   |  x    | An unrecoverable error occurred during a read operation in the OTP macro.
+0x6        | OtpWriteBlankErr | yes         |  x  |  x  |   -   |  -    | OTP macro blank check failed. The location to be programmed is not all-zero.
+0x7        | OtpWriteErr      | no          |  x  |  x  |   -   |  -    | An unrecoverable error occurred during a program operation in the OTP macro.
+0x8        | CmdInvErr        | yes         |  x  |  -  |   -   |  -    | An invalid command has been issued.
+0x9        | AccessErr        | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
+0xA        | ParityErr        | no          |  -  |  -  |   x   |  x    | A parity error has been detected.
+0xB        | IntegErr         | no          |  -  |  -  |   -   |  x    | An integrity error has been detected.
+0xC        | CnstyErr         | no          |  -  |  -  |   -   |  x    | A consistency error has been detected.
+0xD        | FsmErr           | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into a parasitic state.
+0xE        | EscErr           | no          |  x  |  x  |   x   |  x    | Escalation has been triggered and the FSM has been moved into a terminal error state.
+0xF        | -                | -           |  -  |  -  |   -   |  -    | Reserved.
+
+All non-zero error codes listed above trigger an `otp_error` interrupt.
+In addition, all unrecoverable OTP macro errors (codes <= 0x7) trigger an `otp_fatal_error` alert, while all remaining unrecoverable errors trigger an `otp_check_failed` alert.
 
 ## Direct Access Memory Map
 
@@ -686,19 +920,19 @@ Sizes below are specified in multiples of 32bit words.
 |       |                                 |             |                | {{< regref "OWNER_SW_CFG_DIGEST_0" >}}   | 0x5F8        | 8
 | 2     | HW_CFG                          | 176         | 32bit          | **TODO: TBD**                            | 0x600        | 168
 |       |                                 |             |                | {{< regref "HW_CFG_DIGEST_0" >}}         | 0x6A8        | 8
-| 3     | LIFE_CYCLE                      | 88          | 32bit          | {{< regref "LC_STATE_0" >}}              | 0x6BC        | 24
-|       |                                 |             |                | {{< regref "TRANSITION_CNT" >}}          | 0x6C8        | 64
-| 4     | SECRET0                         | 40          | 64bit          | TEST_UNLOCK_TOKEN                        | 0x708        | 16
-|       |                                 |             |                | TEST_EXIT_TOKEN                          | 0x718        | 16
-|       |                                 |             |                | {{< regref "SECRET0_DIGEST_0" >}}        | 0x728        | 8
-| 5     | SECRET1                         | 88          | 64bit          | FLASH_ADDR_KEY                           | 0x730        | 32
-|       |                                 |             |                | FLASH_DATA_KEY                           | 0x750        | 32
-|       |                                 |             |                | SRAM_DATA_KEY                            | 0x770        | 16
-|       |                                 |             |                | {{< regref "SECRET1_DIGEST_0" >}}        | 0x780        | 8
-| 6     | SECRET2                         | 120         | 64bit          | RMA_TOKEN                                | 0x788        | 16
-|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE0                  | 0x798        | 32
-|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE1                  | 0x7B8        | 32
-|       |                                 |             |                | {{< regref "SECRET2_DIGEST_0" >}}        | 0x7F8        | 8
+| 3     | SECRET0                         | 40          | 64bit          | TEST_UNLOCK_TOKEN                        | 0x6B0        | 16
+|       |                                 |             |                | TEST_EXIT_TOKEN                          | 0x6C0        | 16
+|       |                                 |             |                | {{< regref "SECRET0_DIGEST_0" >}}        | 0x6D0        | 8
+| 4     | SECRET1                         | 88          | 64bit          | FLASH_ADDR_KEY_SEED                      | 0x6D8        | 32
+|       |                                 |             |                | FLASH_DATA_KEY_SEED                      | 0x6F8        | 32
+|       |                                 |             |                | SRAM_DATA_KEY_SEED                       | 0x718        | 16
+|       |                                 |             |                | {{< regref "SECRET1_DIGEST_0" >}}        | 0x728        | 8
+| 5     | SECRET2                         | 120         | 64bit          | RMA_TOKEN                                | 0x730        | 16
+|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE0                  | 0x740        | 32
+|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE1                  | 0x760        | 32
+|       |                                 |             |                | {{< regref "SECRET2_DIGEST_0" >}}        | 0x7A0        | 8
+| 6     | LIFE_CYCLE                      | 88          | 32bit          | {{< regref "LC_STATE_0" >}}              | 0x7A8        | 24
+|       |                                 |             |                | {{< regref "TRANSITION_CNT" >}}          | 0x7C0        | 64
 
 Note that since the content in the SECRET* partitions are scrambled using a 64bit PRESENT cipher, read and write access through the DAI needs to occur at a 64bit granularity.
 
@@ -715,14 +949,14 @@ The table below lists digests locations, and the corresponding locked partitions
 
 Write access to the affected partition will be locked if the digest has a nonzero value.
 
-For the software partition digests, it is entirely up to software to decide on the digest to be used.
+For the software partition digests, it is entirely up to software to decide on the digest algorithm to be used.
 Hardware will determine the lock condition only based on whether a non-zero value is present at that location or not.
 
 For the hardware partitions, hardware calculates this digest and uses it for [background verification]({{< relref "#partition-checks" >}}).
 Digest calculation can be triggered via the DAI.
 
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.
-Please consult the (**TODO: add link to LC docs**) documentation for more information.
+Please consult the [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) documentation for more information.
 
 ## Examples
 
@@ -770,7 +1004,7 @@ Note some properties are worded with "SHALL" and others with "SHOULD".
 "SHALL" refers to features that must be present, while "SHOULD" refers to features that are ideal, but optional.
 
 - The contents shall not be observable via optical microscopy (for example anti-fuse technology).
-- The IP shall support a read life time of > XX million read cycles (**TODO check with Vendor/Nuvoton**).
+- The IP lifetime shall not be limited by the amount of read cycles performed.
 - If the IP contains field programmability (internal charge pumps and LDOs), there shall be mechanisms in place to selectively disable this function based on device context.
 - If the IP contains redundant columns, rows, pages or banks for yield improvement, it shall provide a mechanism to lock down arbitrary manipulation of page / bank swapping during run-time.
 - The IP shall be clear on what bits must be manipulated by the user, what bits are automatically manipulated by hardware (for example ECC or redundancy) and what areas the user can influence.
