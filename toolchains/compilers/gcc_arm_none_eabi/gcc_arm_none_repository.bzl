@@ -25,11 +25,12 @@ load("//toolchains/tools/include_tools:include_tools.bzl", "include_tools")
 
 def _com_gcc_arm_none_repository_impl(repository_ctx):
     version = repository_ctx.attr.version
-    remote_toolchain_info = GetRemoteToolchainInfo(version, "@bazel_tools//platforms:host_platform")
+    remote_toolchain_info = GetRemoteToolchainInfo(version, repository_ctx.os.name)
+
     repository_ctx.download_and_extract(
-        url = remote_toolchain_info.linux_remote_compiler.url,
-        sha256 = remote_toolchain_info.linux_remote_compiler.sha256,
-        stripPrefix = remote_toolchain_info.linux_remote_compiler.strip_prefix,
+        url = remote_toolchain_info.remote_compiler.url,
+        sha256 = remote_toolchain_info.remote_compiler.sha256,
+        stripPrefix = remote_toolchain_info.remote_compiler.strip_prefix,
     )
     response = repository_ctx.execute(include_tools.ShellCommand(
         "bin/arm-none-eabi-cpp",
