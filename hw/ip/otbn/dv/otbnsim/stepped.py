@@ -32,7 +32,6 @@ import sys
 from typing import List
 
 from sim.decode import decode_file
-from sim.model import OTBNModel
 from sim.sim import OTBNSim
 
 
@@ -82,8 +81,9 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
     pc = int(sim.model.state.pc)
 
     assert 0 == pc & 3
-    print('EXEC {:#08x}'.format(pc))
-    changes = sim.step()
+    insn, changes = sim.step(verbose=False)
+    disasm = '(not running)' if insn is None else insn.disassemble(pc)
+    print('EXEC {:#08x}:     {}'.format(pc, disasm))
     for trace in changes:
         print('  {}'.format(trace))
 
@@ -152,7 +152,7 @@ def on_input(sim: OTBNSim, line: str) -> None:
 
 
 def main() -> int:
-    sim = OTBNSim(OTBNModel(verbose=False))
+    sim = OTBNSim()
     for line in sys.stdin:
         on_input(sim, line)
     return 0

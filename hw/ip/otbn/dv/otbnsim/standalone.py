@@ -7,7 +7,6 @@ import argparse
 import sys
 
 from sim.elf import load_elf
-from sim.model import OTBNModel
 from sim.sim import OTBNSim
 
 
@@ -19,11 +18,10 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    model = OTBNModel(verbose=args.verbose)
-    sim = OTBNSim(model)
+    sim = OTBNSim()
     load_elf(sim, args.elf)
 
-    sim.run(start_addr=0)
+    sim.run(start_addr=0, verbose=args.verbose)
 
     if args.dmem_dump is not None:
         try:

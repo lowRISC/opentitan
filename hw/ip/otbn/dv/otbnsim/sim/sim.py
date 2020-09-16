@@ -2,15 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import List, Optional, Tuple
 
 from .isa import OTBNInsn
 from .model import OTBNModel
 
 
 class OTBNSim:
-    def __init__(self, model: OTBNModel):
-        self.model = model
+    def __init__(self) -> None:
+        self.model = OTBNModel()
         self.program = []  # type: List[OTBNInsn]
 
     def load_program(self, program: List[OTBNInsn]) -> None:
@@ -19,7 +19,7 @@ class OTBNSim:
     def load_data(self, data: bytes) -> None:
         self.model.state.dmem.load_le_words(data)
 
-    def run(self, start_addr: int) -> int:
+    def run(self, start_addr: int, verbose: bool) -> int:
         '''Start a simulation at start_addr and run until ECALL.
 
         Return the number of instructions executed.
@@ -29,19 +29,21 @@ class OTBNSim:
         self.model.state.start()
         insn_count = 0
         while self.model.state.running:
-            self.step()
+            self.step(verbose)
             insn_count += 1
 
         return insn_count
 
-    def step(self) -> List[str]:
+    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[str]]:
         '''Run a single instruction.
 
-        Returns a list of the architectural changes that have happened.
+        Returns the instruction, together with a list of the architectural
+        changes that have happened. If the model isn't currently running,
+        returns no instruction and no changes.
 
         '''
         if not self.model.state.running:
-            return []
+            return (None, [])
 
         word_pc = int(self.model.state.pc) >> 2
 
@@ -60,12 +62,17 @@ class OTBNSim:
         self.model.post_insn()
 
         changes = self.model.state.changes()
-        if self.model.verbose:
+        if verbose:
             disasm = insn.disassemble(int(self.model.state.pc))
-            self.model.print_trace(disasm)
+            self._print_trace(disasm, changes)
 
         self.model.state.commit()
-        return changes
+        return (insn, changes)
 
     def dump_data(self) -> bytes:
         return self.model.state.dmem.dump_le_words()
+
+    def _print_trace(self, disasm: str, changes: List[str]) -> None:
+        '''Print a trace of the current instruction to verbose_file'''
+        changes_str = ', '.join([str(t) for t in changes])
+        print('{:35} | [{}]'.format(disasm, changes_str))
