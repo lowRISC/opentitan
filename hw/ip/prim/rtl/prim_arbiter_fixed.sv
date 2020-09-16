@@ -53,7 +53,6 @@ module prim_arbiter_fixed #(
     // align to powers of 2 for simplicity
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
     logic [2**(IdxW+1)-2:0]           req_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
     logic [2**(IdxW+1)-2:0]           gnt_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;
     logic [2**(IdxW+1)-2:0][DW-1:0]   data_tree;

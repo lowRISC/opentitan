@@ -75,7 +75,6 @@ module prim_arbiter_tree #(
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
     logic [2**(IdxW+1)-2:0]           req_tree;
     logic [2**(IdxW+1)-2:0]           prio_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
     logic [2**(IdxW+1)-2:0]           sel_tree;
     logic [2**(IdxW+1)-2:0]           mask_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;

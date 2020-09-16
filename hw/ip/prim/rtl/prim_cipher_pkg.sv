@@ -208,7 +208,7 @@ package prim_cipher_pkg;
                                                        logic [4:0]  round_idx);
     logic [63:0] key_out;
     // rotate by 61 to the left
-    key_out = 64'(key_in << 61) | 64'(key_in >> (64-61));
+    key_out = {key_in[63-61:0], key_in[63:64-61]};
     // sbox on uppermost 4 bits
     key_out[63 -: 4] = PRESENT_SBOX4[key_out[63 -: 4]];
     // xor in round counter on bits 19 to 15
@@ -220,7 +220,7 @@ package prim_cipher_pkg;
                                                        logic [4:0]  round_idx);
     logic [79:0] key_out;
     // rotate by 61 to the left
-    key_out = 80'(key_in << 61) | 80'(key_in >> (80-61));
+    key_out = {key_in[79-61:0], key_in[79:80-61]};
     // sbox on uppermost 4 bits
     key_out[79 -: 4] = PRESENT_SBOX4[key_out[79 -: 4]];
     // xor in round counter on bits 19 to 15
@@ -232,7 +232,7 @@ package prim_cipher_pkg;
                                                          logic [4:0]   round_idx);
     logic [127:0] key_out;
     // rotate by 61 to the left
-    key_out = 128'(key_in << 61) | 128'(key_in >> (128-61));
+    key_out = {key_in[127-61:0], key_in[127:128-61]};
     // sbox on uppermost 4 bits
     key_out[127 -: 4] = PRESENT_SBOX4[key_out[127 -: 4]];
     // sbox on second nibble from top
@@ -254,7 +254,7 @@ package prim_cipher_pkg;
     // sbox on uppermost 4 bits
     key_out[63 -: 4] = PRESENT_SBOX4_INV[key_out[63 -: 4]];
     // rotate by 61 to the right
-    key_out = 64'(key_out >> 61) | 64'(key_out << (64-61));
+    key_out = {key_out[60:0], key_out[63:61]};
     return key_out;
   endfunction : present_inv_update_key64
 
@@ -268,7 +268,7 @@ package prim_cipher_pkg;
     // sbox on uppermost 4 bits
     key_out[79 -: 4] = PRESENT_SBOX4_INV[key_out[79 -: 4]];
     // rotate by 61 to the right
-    key_out = 80'(key_out >> 61) | 80'(key_out << (80-61));
+    key_out = {key_out[60:0], key_out[79:61]};
     return key_out;
   endfunction : present_inv_update_key80
 
@@ -284,7 +284,7 @@ package prim_cipher_pkg;
     // sbox on uppermost 4 bits
     key_out[127 -: 4] = PRESENT_SBOX4_INV[key_out[127 -: 4]];
     // rotate by 61 to the right
-    key_out = 128'(key_out >> 61) | 128'(key_out << (128-61));
+    key_out = {key_out[60:0], key_out[127:61]};
     return key_out;
   endfunction : present_inv_update_key128
 

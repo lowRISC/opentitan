@@ -18,7 +18,8 @@
 //             - https://en.wikipedia.org/wiki/Prince_(cipher)
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //             - https://eprint.iacr.org/2012/529.pdf
-//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/documents/papers/session7-maene-paper.pdf
+//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/
+//               documents/papers/session7-maene-paper.pdf
 
 // TODO: this module has not been verified yet, and has only been used in
 // synthesis experiments.
