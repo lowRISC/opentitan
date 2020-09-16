@@ -168,6 +168,12 @@ module otbn_top_sim (
     return u_otbn_core.u_otbn_rf_base.rf_reg[index];
   endfunction
 
+  export "DPI-C" function otbn_bignum_reg_get;
+
+  function automatic int unsigned otbn_bignum_reg_get(int index, int word);
+    return u_otbn_core.u_otbn_rf_bignum.rf[index][word*32+:32];
+  endfunction
+
   // The model
   //
   // This runs in parallel with the real core above. Eventually, we'll have strong consistency
@@ -204,5 +210,4 @@ module otbn_top_sim (
       end
     end
   end
-
 endmodule
