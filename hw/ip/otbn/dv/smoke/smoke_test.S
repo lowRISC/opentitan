@@ -95,6 +95,107 @@ add x21, x21, 0x123
 
 test_label_3:
 
+# until LID/SID implemented use mod WSR to load bignum registers with base li
+# psuedo-instruction
+# mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
+li x23, 0x78fccc06
+csrrw x0, 0x7d7, x23
+li x23, 0x2228e9d6
+csrrw x0, 0x7d6, x23
+li x23, 0x89c9b54f
+csrrw x0, 0x7d5, x23
+li x23, 0x887cf14e
+csrrw x0, 0x7d4, x23
+li x23, 0xc79af825
+csrrw x0, 0x7d3, x23
+li x23, 0x69be586e
+csrrw x0, 0x7d2, x23
+li x23, 0x9866bb3b
+csrrw x0, 0x7d1, x23
+li x23, 0x53769ada
+csrrw x0, 0x7d0, x23
+
+# x22 = 0x89c9b54f
+csrrs x23, 0x7d5, x0
+
+# Note that some instructions used the fixed inputs (from w1 and w2) others use
+# results from previous instructions. When debugging an failure it is recommened
+# you first look at the failure from the lowest numbered register as failures
+# can cascade into later instructions.
+
+# w1 = mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
+bn.wsrrs w1, 0, w0
+
+# rnd WSR gives fixed value for now
+# w2 = rnd = 0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
+bn.wsrrs w2, 1, w0
+
+# w3 = w1 + w2 = 0x1296659f_bbc28370_23634ee9_22168ae8_613491bf_0357f208_320054d4_ed103473
+bn.add w3, w1, w2
+
+# w4 = w1 - w2 = 0xdf63326c_888f503c_f0301bb5_eee357b5_2e015e8b_d024bed4_fecd21a1_b9dd0141
+bn.sub w4, w1, w2
+
+# w5 = w1 | w2 = 0xf9fddd9f_bbb9f9df_99d9bddf_99fdf9df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
+bn.or w5, w1, w2
+
+# w6 = x1 & w2 = 0x18988800_00088990_89899109_88189108_81989801_09981808_98009919_11109898
+bn.and w6, w1, w2
+
+# w7 = w1 ^ w2 = 0xe165559f_bbb1704f_10502cd6_11e568d7_5e0361bc_f027c1f7_01ff22a2_caef0343
+bn.xor w7, w1, w2
+
+# w8 = ~w1 = 0x870333f9_ddd71629_76364ab0_77830eb1_386507da_9641a791_679944c4_ac896525
+bn.not w8, w1
+
+# w9 = {w1, w2} >> 117 = 0xd7c12b4d_f2c374c3_35d9da9b_b4d6d4cc_cccccccc_cccccccc_cccccccc_cccccccc
+bn.rshi w9, w1, w2 >> 117
+
+# mod = w4 = 0xdf63326c_888f503c_f0301bb5_eee357b5_2e015e8b_d024bed4_fecd21a1_b9dd0141
+bn.wsrrw w0, 0, w4
+
+# w0 = 0
+bn.xor w0, w0, w0
+
+# w10 = w6 + w2 = 0xb2322199_99a2232a_23232aa3_21b22aa2_1b32319a_a331b1a2_319a32b2_aaaa3231
+bn.addm w10, w6, w2
+
+# w11 = w5 + w2 - mod = 0xb43444cc_ccc4433c_43433bc3_44b43bc4_4b3434cb_c334b4c4_34cc33b3_bbbc3433
+bn.addm w11, w5, w2
+
+# w12 = w11 - w2 = 0x1a9aab33_332aa9a2_a9a9a229_ab1aa22a_b19a9b32_299b1b2a_9b329a1a_22229a9a
+bn.subm w12, w11, w2
+
+# w13 = (w2 - w11) + mod = 0xc4c88739_5564a69a_4686798c_43c8b58a_7c66c359_a689a3aa_639a8787_97ba66a7
+bn.subm w13, w2, w11
+
+# w14 = w8 + w9 = 0x5ec45f47_d09a8aec_ac10254c_2c59e37e_0531d4a7_630e745e_34661191_795631f1
+bn.add  w14, w8, w9, FG0
+
+# w16 = w1 - w2 = 0xdf63326c_888f503c_f0301bb5_eee357b5_2e015e8b_d024bed4_fecd21a1_b9dd0141 (with borrow = 1)
+bn.sub  w16, w1, w2, FG1
+
+# w15 = w10 + w11 + 1 (carry) = 0x66666666_66666666_66666666_66666666_66666666_66666666_66666666_66666665
+bn.addc w15, w10, w11, FG0
+
+# x17 - w3 - w4 - 1 (borrow) = 0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333331
+bn.subb w17, w3, w4, FG1
+
+# x23 = {fg1, fg0} = 0x62
+csrrs x24, 0x7c0, x0
+
+# w18 = w1 + (w2 << 17B) = 0x1296659f_bbc28370_23634ee9_22168a4e_c79af825_69be586e_9866bb3b_53769ada
+bn.add w18, w1, w2 << 17B
+
+# w19 = w1 & (w2 << 9B) = 0x18988800_00088990_89899109_88189108_81989801_09981800_00000000_00000000
+bn.and w19, w1, w2, << 9B
+
+# w20 = w1 - (w2 >> 23B) = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be57d4_fecd21a1_b9dd0141
+bn.sub w20, w1, w2 >> 23B
+
+# w21 = w1 | (w2 >> 15B) = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
+bn.or  w21, w1, w2, >> 15B
+
 jal x0, end
 
 # Place end at fixed address so write to x31 by jal doesn't have changing value
