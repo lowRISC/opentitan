@@ -10,7 +10,7 @@
 
 module aes_control
 #(
-  parameter int unsigned NumDelayCyclesStartTrigger = 0
+  parameter int unsigned SecStartTriggerDelay = 0
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -147,15 +147,15 @@ module aes_control
   logic       ctrl_we_q;
   logic       clear_in_out_status;
 
-  if (NumDelayCyclesStartTrigger > 0) begin : gen_start_delay
+  if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
-    localparam int unsigned WidthCounter = $clog2(NumDelayCyclesStartTrigger+1);
+    localparam int unsigned WidthCounter = $clog2(SecStartTriggerDelay+1);
     logic [WidthCounter-1:0] count_d, count_q;
 
     // Clear counter when input goes low. Keep value if the specified delay is reached.
     assign count_d = !start_i       ? '0      :
                       start_trigger ? count_q : count_q + 1'b1;
-    assign start_trigger = (count_q == NumDelayCyclesStartTrigger[WidthCounter-1:0]) ? 1'b1 : 1'b0;
+    assign start_trigger = (count_q == SecStartTriggerDelay[WidthCounter-1:0]) ? 1'b1 : 1'b0;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
