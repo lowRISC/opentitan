@@ -13,7 +13,7 @@ build-dir := $(repo-top)/build-bin/otbn/otbnsim
 $(build-dir):
 	mkdir -p $@
 
-py-scripts := otbnsim.py standalone.py stepped.py
+py-scripts := standalone.py stepped.py
 py-files   := $(wildcard *.py sim/*.py)
 py-libs    := $(filter-out $(py-scripts),$(py-files))
 
