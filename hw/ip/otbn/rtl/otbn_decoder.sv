@@ -327,7 +327,7 @@ module otbn_decoder
   always_comb begin
     alu_operator        = AluOpAdd;
     comparison_operator = ComparisonOpEq;
-    alu_op_a_mux_sel    = OpASelImmediate;
+    alu_op_a_mux_sel    = OpASelRegister;
     alu_op_b_mux_sel    = OpBSelImmediate;
 
     imm_a_mux_sel       = ImmAZero;
@@ -341,7 +341,7 @@ module otbn_decoder
       /////////
 
       InsnOpcodeBaseLui: begin  // Load Upper Immediate
-        alu_op_a_mux_sel  = OpASelImmediate;
+        alu_op_a_mux_sel  = OpASelZero;
         alu_op_b_mux_sel  = OpBSelImmediate;
         imm_a_mux_sel     = ImmAZero;
         imm_b_mux_sel     = ImmBU;

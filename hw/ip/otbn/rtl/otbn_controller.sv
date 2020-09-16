@@ -167,6 +167,8 @@ module otbn_controller
     unique case (insn_dec_ctrl_i.op_a_sel)
       OpASelRegister:
         alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
+      OpASelZero:
+        alu_base_operation_o.operand_a = '0;
       OpASelCurrPc:
         alu_base_operation_o.operand_a = {{(32 - ImemAddrWidth){1'b0}}, insn_addr_i};
       default:
