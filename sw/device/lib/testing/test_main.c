@@ -34,3 +34,27 @@ int main(int argc, char **argv) {
   // Unreachable code.
   return 1;
 }
+
+// !!!! TODO - quick proof of concept copy + paste. !!!!
+void mask_rom_exception_handler(void) {}
+void mask_rom_nmi_handler(void) {}
+void mask_rom_boot(void) {
+  test_status_set(kTestStatusInTest);
+
+  // Initialize the UART to enable logging for non-DV simulation platforms.
+  if (kDeviceType != kDeviceSimDV) {
+    uart_init(kUartBaudrate);
+    base_set_stdout(uart_stdout);
+  }
+
+  // Run the SW test which is fully contained within `test_main()`.
+  bool result = test_main();
+
+  // Must happen before any debug output.
+  if (kTestConfig.can_clobber_uart) {
+    uart_init(kUartBaudrate);
+  }
+
+  test_coverage_send_buffer();
+  test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
+}
