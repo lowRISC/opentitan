@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04]
+        os: [ubuntu-16.04, ubuntu-18.04, macos-10.15]
         target_cpus:
           - "@local_config_platform//:host"
           - "@bazel_embedded//platforms:cortex_m0"
