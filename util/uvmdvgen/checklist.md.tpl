@@ -25,8 +25,6 @@ RTL           | [MEM_INSTANCED_80][]  | Not Started |
 RTL           | [FUNC_IMPLEMENTED][]  | Not Started |
 RTL           | [ASSERT_KNOWN_ADDED][]| Not Started |
 Code Quality  | [LINT_SETUP][]        | Not Started |
-Review        | Reviewer(s)           | Not Started |
-Review        | Signoff date          | Not Started |
 
 [SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec-complete" >}}
 [CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
@@ -60,8 +58,6 @@ Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
 Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Review        | Reviewer(s)             | Not Started |
-Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new-features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block-diagram" >}}
@@ -138,8 +134,6 @@ Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
-Review        | Reviewer(s)                           | Not Started |
-Review        | Signoff date                          | Not Started |
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
 [TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan-completed" >}}
@@ -185,8 +179,6 @@ Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not started |
-Review        | Reviewer(s)                             | Not started |
-Review        | Signoff date                            | Not started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design-deltas-captured-v2" >}}
 [DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
