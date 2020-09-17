@@ -52,7 +52,7 @@ warnings at this stage.
 ### NEW_FEATURES
 
 Any new features added since D1 are documented, reviewed with DV/SW/FPGA.
-Github Issue for RFC should be linked in `Notes` section.
+The GitHub Issue, Pull Request, or RFC where the feature was discussed should be linked in the `Notes` section.
 
 ### BLOCK_DIAGRAM
 
