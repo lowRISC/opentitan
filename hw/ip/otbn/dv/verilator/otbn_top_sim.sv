@@ -167,4 +167,41 @@ module otbn_top_sim (
   function automatic int unsigned otbn_base_reg_get(int index);
     return u_otbn_core.u_otbn_rf_base.rf_reg[index];
   endfunction
+
+  // The model
+  //
+  // This runs in parallel with the real core above. Eventually, we'll have strong consistency
+  // checks between the two. For now, we just check that they have the same "done" signals.
+
+  localparam string ImemScope = "TOP.otbn_top_sim.u_imem.u_mem.gen_generic.u_impl_generic";
+  localparam string DmemScope = "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic";
+
+  logic otbn_model_done;
+
+  otbn_core_model #(
+    .DmemSizeByte ( DmemSizeByte ),
+    .ImemSizeByte ( ImemSizeByte ),
+    .DmemScope    ( DmemScope ),
+    .ImemScope    ( ImemScope )
+  ) u_otbn_core_model (
+    .clk_i        ( IO_CLK ),
+    .rst_ni       ( IO_RST_N ),
+
+    .start_i      ( otbn_start ),
+    .done_o       ( otbn_model_done ),
+
+    .start_addr_i ( ImemStartAddr )
+  );
+
+  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      // Check is disabled in reset
+    end else begin
+      if (otbn_done != otbn_model_done) begin
+        $display("ERROR: At time %0t, otbn_done != otbn_model_done (%0d != %0d).",
+                 $time, otbn_done, otbn_model_done);
+      end
+    end
+  end
+
 endmodule
