@@ -2,21 +2,21 @@
 title: "Device Interface Functions (DIFs)"
 ---
 
-# Motivation
+## Motivation
 
 Every hardware peripheral needs some form of higher-level software to actuate it to perform its intended function.
 Device Interface Functions (DIFs) aim to make it easy to use hardware for its intended purposes while making it difficult, or impossible, to misuse.
 DIFs can be seen as a living best-practices document for interacting with a given piece of hardware.
 
-# Objectives
+## Objectives
 
 DIFs provide extensively reviewed APIs for actuating hardware for three separate use cases: design verification, FPGA + post-silicon validation, and reference firmware including end-consumer applications.
 
-# Requirements
+## Requirements
 
-## Common Requirements
+### Common Requirements
 
-### Language
+#### Language
 
 DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)]({{< relref "doc/rm/c_cpp_coding_style.md#c-style-guide" >}}).
 DIFs **must** conform to the style guide in [`sw/device/lib/dif/README.md`]({{< relref "sw/device/lib/dif/README.md" >}}).
@@ -34,7 +34,7 @@ DIFs **must not** depend on DIFs for other IP blocks, or other external librarie
 
 This decision is motivated by the requirement that DIFs must be extremely flexible in their possible execution environments, including being hosted in bare metal, or being called from other languages such as Rust through Foreign Function Interface.
 
-### Runtime Independence
+#### Runtime Independence
 
 DIFs **must not** depend on runtime services provided by an operating system.
 If functions must be called in response to system stimulus such as interrupts then the DIF must make these requirements explicit in their documentation.
@@ -47,22 +47,22 @@ As a concrete example: a SPI DIF must not depend on a pinmux or clock control DI
 This highlights a clear separation of concern: making a pin on the package driven from the SPI block involves multiple systems.
 By design, a DIF cannot coordinate cross-functional control.
 
-### Coverage Requirements
+#### Coverage Requirements
 
 DIFs *must* actuate all of the specification-required functionality of the hardware that they are written for, and no more.
 A DIF cannot be declared complete until it provides an API for accessing all of the functionality that is expected of the hardware.
 This is distinct from mandating that a DIF be required to cover all of the functionality of a given piece of hardware.
 
-# Details
+## Details
 
-## Verification Stage Allowances
+### Verification Stage Allowances
 
 DV, FPGA, and early silicon validation have unique requirements in their use of hardware.
 They might actuate hardware on vastly different timescales, use verification-specific registers, or otherwise manipulate aspects of the hardware that “production"-level code would not (or cannot) do.
 To this end, verification-only functionality may be added to a DIF **only** in modules that are included in verification.
 This functionality **must not** be made accessible outside of verification environments, and is enforced by not including DV-specific code in non-DV builds.
 
-## Separation of Concerns and Stateful Information
+### Separation of Concerns and Stateful Information
 
 In addition to the interface functions themselves, DIFs are expected to usually take the form of a structure that contains instance-specific information such as base register addresses and non-hardware-backed state required to actuate the hardware.
 DIFs **should not** track hardware-backed state in their own state machine.
@@ -88,7 +88,7 @@ suggests that the timer DIF knows about the number and placement of timers in th
 DIFs **must not** store or provide information in their implementation or state that is outside of their area of concern.
 The number of timers in a system is the concern of the system, not the timer DIF.
 
-## Naming
+### Naming
 
 All DIF functions **must** have clear direct objects and verbs, be written in the imperative mood, and follow the format of `dif_<object>_<verb_phrase>`.
 The object in the name must be common to the DIF it appears it, and unique among DIFs.
@@ -109,7 +109,7 @@ The following are bad names:
 Prefer common names: `init` is more commonly written than `initialize`, but `reset` is more commonly written than `rst`, for example.
 This is a subjective call on the DIF author and reviewers' parts, so common agreement will be more useful than strict prescription.
 
-## Documentation
+### Documentation
 
 All DIF exported types and functions **must** have associated API documentation.
 All function parameters **must** be documented.
@@ -126,7 +126,7 @@ The software API documentation includes full source code of the respective DIFs,
 
 The programmers' guide must also include a list of DIF functions which relate to it, along with a brief description of each, and a link to further API documentation.
 
-## Source Layout
+### Source Layout
 
 DIFs **must** live in the `sw/device/lib/dif` folder.
 They **must** comprise at least one header unique to the hardware in question, and **may** contain more than one C file providing the implementation, if the complexity of the implementation warrants it (this is subjective).
@@ -136,7 +136,7 @@ Verification-specific extensions and logic **must not** live in `sw/device/lib/d
 This code must be placed in the directory belonging to the verification domain which the extension is applicable to.
 Verification-specific extensions must not be built and included in production firmware builds.
 
-## Testing
+### Testing
 
 Tests **must** live in the `sw/device/tests/dif` folder.
 
@@ -149,7 +149,7 @@ DIFs **should** also have other tests, including standalone C sanity tests---whi
 DIFs are also being used by DV for chip-level tests, which should help catch any issues with the DIFs not corresponding to the hardware implementation exactly.
 These tests may not live in `sw/device/tests/dif`.
 
-## DIF Development Stages
+### DIF Development Stages
 
 As part of the DIF Standardisation process, we've decided to establish more concrete DIF lifecycle stages.
 These are documented with the [Development Stages]({{< relref "doc/project/development_stages.md" >}}).
@@ -162,7 +162,7 @@ It makes sense to have some kind of review process, but this should be much more
 The current proposal only covers a DIF being written against a single version of its respective hardware IP block.
 This specifically excludes how to disambiguate DIFs in the repository that are written against different versions of the same IP block, or writing a single DIF that is compatible with multiple versions of an IP block.
 
-## Signoff Review
+### Signoff Review
 
 The DIF lead author is expected to participate in the hardware IP block's L2 signoff review.
 This review can only happen once hardware design and verification are complete, and the DIF itself has reached stage S3.

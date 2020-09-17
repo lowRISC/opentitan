@@ -1,4 +1,6 @@
-# Getting started with Verilator
+---
+title: Getting started with Verilator
+---
 
 ## About Verilator
 

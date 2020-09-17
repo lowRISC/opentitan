@@ -1,4 +1,6 @@
-# OpenTitan RFC Process
+---
+title: OpenTitan RFC Process
+---
 
 ## Introduction
 
