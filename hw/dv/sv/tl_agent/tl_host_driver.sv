@@ -54,46 +54,79 @@ class tl_host_driver extends tl_base_driver;
 
   // Send request on A channel
   virtual task send_a_channel_request(tl_seq_item req);
-    int unsigned a_valid_delay;
-    if (cfg.use_seq_item_a_valid_delay) begin
-      a_valid_delay = req.a_valid_delay;
-    end else begin
-      a_valid_delay = $urandom_range(cfg.a_valid_delay_min, cfg.a_valid_delay_max);
-    end
-    // break delay loop if reset asserted to release blocking
-    `DV_SPINWAIT_EXIT(repeat (a_valid_delay) @(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    int unsigned a_valid_delay, a_valid_len;
+    bit req_done;
+
     // wait until no outstanding transaction with same source id
     `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
                       wait(reset_asserted);)
 
-    if (!reset_asserted) begin
-      pending_a_req.push_back(req);
-      cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
-      cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
-      cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
-      cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
-      cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
-      cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
-      cfg.vif.host_cb.h2d_int.a_user    <= '0;
-      cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
-      cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
-      // bypass delay in case of reset
-      `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                        wait(reset_asserted);)
-    end else begin
-      seq_item_port.put_response(req); // if reset, skip data phase
-    end
-    `DV_SPINWAIT_EXIT(while(!cfg.vif.host_cb.d2h.a_ready) @(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    while (!req_done) begin
+      if (cfg.use_seq_item_a_valid_delay) begin
+        a_valid_delay = req.a_valid_delay;
+      end else begin
+        a_valid_delay = $urandom_range(cfg.a_valid_delay_min, cfg.a_valid_delay_max);
+      end
 
-    // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
-    // there is a race condition and invalidate_a_channel can't clear a_valid.
-    if (reset_asserted) cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
-    invalidate_a_channel();
+      if (cfg.allow_a_valid_drop_wo_a_ready) begin
+        if (cfg.use_seq_item_a_valid_len) begin
+          a_valid_len = req.a_valid_len;
+        end else begin
+          a_valid_len = $urandom_range(cfg.a_valid_len_min, cfg.a_valid_len_max);
+        end
+      end
+
+      // break delay loop if reset asserted to release blocking
+      `DV_SPINWAIT_EXIT(repeat (a_valid_delay) @(cfg.vif.host_cb);,
+                        wait(reset_asserted);)
+
+      if (!reset_asserted) begin
+        pending_a_req.push_back(req);
+        cfg.vif.host_cb.h2d_int.a_address <= req.a_addr;
+        cfg.vif.host_cb.h2d_int.a_opcode  <= tl_a_op_e'(req.a_opcode);
+        cfg.vif.host_cb.h2d_int.a_size    <= req.a_size;
+        cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
+        cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
+        cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
+        cfg.vif.host_cb.h2d_int.a_user    <= '0;
+        cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
+        cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
+      end else begin
+        seq_item_port.put_response(req); // if reset, skip data phase
+        req_done = 1;
+      end
+      // drop valid if it lasts for a_valid_len, even there is no a_ready
+      `DV_SPINWAIT_EXIT(send_a_request_body(a_valid_len, req_done);,
+                        wait(reset_asserted);)
+
+      // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
+      // there is a race condition and invalidate_a_channel can't clear a_valid.
+      if (reset_asserted) cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
+      invalidate_a_channel();
+    end
     seq_item_port.item_done();
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
+
+  virtual task send_a_request_body(input int a_valid_len, output bit req_done);
+    int unsigned a_valid_cnt;
+    while(1) begin
+      @(cfg.vif.host_cb);
+      a_valid_cnt++;
+      if (cfg.vif.host_cb.d2h.a_ready) begin
+        req_done = 1;
+        break;
+      end else if (cfg.allow_a_valid_drop_wo_a_ready &&
+                   a_valid_cnt >= a_valid_len) begin
+        cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
+        // remove unaccepted item
+        void'(pending_a_req.pop_back());
+        invalidate_a_channel();
+        @(cfg.vif.host_cb);
+        break;
+      end
+    end
+  endtask : send_a_request_body
 
   // host responds d_ready
   virtual task d_ready_rsp();

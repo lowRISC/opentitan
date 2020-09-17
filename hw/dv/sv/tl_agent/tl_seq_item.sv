@@ -56,9 +56,11 @@ class tl_seq_item extends uvm_sequence_item;
 
   // host mode delays
   rand int unsigned               a_valid_delay;
+  rand int unsigned               a_valid_len;
 
   // device mode delays
   rand int unsigned               d_valid_delay;
+  rand int unsigned               d_valid_len;
 
   // param is reserved for future use, must be zero
   constraint param_c {
@@ -68,6 +70,14 @@ class tl_seq_item extends uvm_sequence_item;
 
   constraint no_d_error_c {
     soft d_error == 0;
+  }
+
+  constraint a_valid_len_c {
+    soft a_valid_len inside {[1:10]};
+  }
+
+  constraint d_valid_len_c {
+    soft d_valid_len inside {[1:10]};
   }
 
   constraint valid_delay_c {
