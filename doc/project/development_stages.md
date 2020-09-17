@@ -16,11 +16,11 @@ Proper versioning of RTL designs is a complex topic.
 This document proposes a sensible path forwards, but this may be revisited as we gain further experience and get more feedback.
 
 
-## Life Stages
+## Life Stages (L)
 
-The stages listed here are created to give insight into where a design is in its life from specification to silicon-ready signoff.
+The stages listed here are created to give insight into where a design is in its life from specification to silicon-ready sign-off.
 At the moment, this is strictly limited to a hardware design, but could be expanded to other components of development within OpenTitan.
-Transitions between these stages are decided by the Technical Committee via the RFC process.
+Transitions between these stages are decided by the Technical Committee via the [RFC process]({{< relref "doc/project/rfc_process" >}}).
 
 The first life stage is **Specification**.
 The proposed design is written up and submitted through the [RFC process]({{< relref "doc/project/rfc_process" >}}).
@@ -33,34 +33,34 @@ Once the specification has been shared with the OpenTitan audience and sufficien
 
 The next life stage is **Development**.
 The hardware IP is being developed in GitHub, the specification is converted to Markdown, and design and verification planning is underway.
-This is a long phase expected to last until a more formal review is requested for full completion signoff.
+This is a long phase expected to last until a more formal review is requested for full completion sign-off.
 When in Development phase, the stage tracking of the design and verification milestones are valid.
 See those sections that follow for details there.
-To exit this stage, a signoff process review must occur.
-See the section on signoff for details.
+To exit this stage, a sign-off review must occur.
+See the section on sign-off for details.
 
-The final life stage is **Signed Off**.
+The final life stage is **Signed-Off**.
 At this point, a design is frozen and not expected to be updated.
-There are exceptions if post-signoff bugs are found, in which case the stage returns to Development and the version number is not updated.
+There are exceptions if post-sign-off bugs are found, in which case the stage returns to Development and the version number is not updated.
 Feature requests towards a signed-off design requires review and approval by the Technical Committee.
 Once accepted, it results in creating a new version and return a design to the appropriate life stage, based upon the size of the change.
 See the _Versioning_ section of the document for more discussion.
-Signed off fully-functioning (read: not buggy) designs stay in the Signoff stage as an available complete IP, with an associated revision ID.
+Signed-off fully-functioning (read: not buggy) designs stay in the "Signed-Off" life stage as an available complete IP, with an associated revision ID.
 
 There exists a [template for IP checklists](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl).
 The DIF stages use a separate, [software-specific checklist](https://github.com/lowRISC/opentitan/blob/master/doc/project/sw_checklist.md.tpl).
-All the checklist items are listed in the [Signoff Checklist]({{< relref "doc/project/checklist.md" >}}).
+All the checklist items are listed in the [Sign-off Checklist]({{< relref "doc/project/checklist.md" >}}).
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | L0 | Specification | Specification is being written, is in review process |
 | L1 | Development | Design is in development in GitHub, possibly integrated in top level |
-| L2 | Signed Off | Design has been frozen at version number, signed off, available for tapeout |
+| L2 | Signed-Off | Design has been frozen at version number, signed-off, available for tapeout |
 
 We may later evaluate adding a **Silicon Proven** stage, after deciding criteria for a tapeout to qualify as proven.
 
 
-## Hardware Design Stages
+## Hardware Design Stages (D)
 
 The following development milestones are for hardware peripheral designs, i.e. SystemVerilog RTL development.
 They are similar to typical chip design milestones, but less rigid in the movement from one stage to the next.
@@ -86,7 +86,7 @@ Once all bugs have fixed, lint and CDC violations cleaned up, the design moves i
 | D2 | Feature Complete | <ul> <li> Full Feature Complete: all features implemented.  <li> Feature frozen </ul> |
 | D3 | Design Complete | <ul> <li> Lint/CDC clean, waivers reviewed <li> Design optimization for power and/or performance complete </ul> |
 
-## Hardware Verification Stages
+## Hardware Verification Stages (V)
 
 The following development milestones are for hardware peripheral verification work.
 They are similar to typical chip verification milestones, but less rigid in the movement from one stage to the next.
@@ -124,7 +124,7 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV plan completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li> Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
-## Device Interface Function Stages
+## Device Interface Function Stages (S)
 
 The following development stages are for [Device Interface Function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) work.
 These milestones have a slightly different emphasis to the hardware design and verification milestones, because software is much easier to change if bugs are found.
@@ -153,7 +153,7 @@ Once testing is complete, and we are satisfied that the interface will not chang
 | S2 | Complete | <ul> <li> DIF API is now Complete <li> The respective IP block is feature complete (at least D2) <li> DIF matches HW designer's agreed IP block usage <li> DIF covers all specified functionality of the IP block <li> DIF is used for chip-level DV <li> DIF documented in IP documentation <li> DIF has initial Tock integration </ul> |
 | S3 | Stable | <ul> <li> DIF API Reviewed and Stable <li> The respective IP block is at D3/V3 <li> DIF tested fully (DV + Unit tests, full functional coverage) <li> Complete and Stable Tock interface to DIF </ul> |
 
-## Signoff Review
+## Sign-off Review
 
 At the end of the final design and verification phase, the IP block should be proposed to the Technical Committee as ready for sign-off.
 This will be done by submitting an RFC (possibly following a suggested template).
@@ -197,7 +197,7 @@ For example, `file: gpio.prj.hjson`:
 ### Commit ID
 
 When a design transitions from one stage to another, the project file can optionally provide a commit ID for the transition to be able to recreate the repository at the point of that transition.
-This is optional for all transitions except for signoff, where it is required.
+This is optional for all transitions except for sign-off, where it is required.
 The commit ID has its own entry in the project Hjson file, as shown below.
 
 ```hjson
@@ -236,25 +236,26 @@ Designs which have a specification that defines an _intermediate goal_ are indic
 There are many times where this is useful: when the intermediate goal is a beneficial subset of functionality to enable other development; when the final feature set is not known but a sufficient set is ready for development; when the final feature set is postponed until a future date, but owners are keen to get the design started; etc.
 In essence, the sub-1.0 designation indicates that it is understood that the stage metrics are temporary pending a final feature set.
 Rarely will a sub-1.0 design be taken past Feature Complete and Testing Complete stages.
-An exception is as proof of concept to show what a signoff process looks like for a design that has modifications expected in the future.
-This was the case with public launch, where we took five designs to completion to test out the signoff process, the verification methodology, and the checklist system.
+An exception is a proof of concept to show what a sign-off process looks like for a design that has modifications expected in the future.
+This was the case with public launch, where we took five designs to completion to test out the sign-off process, the verification methodology, and the checklist system.
 In several of these cases, the feature set was not final product complete.
 
-Once a design has completed all stages for a product feature set, the Signoff process intends to end all development for that design.
-Its Life Stage should transition to Signoff after the review process, and no more modifications should be made.
+Once a design has completed all stages for a product feature set, the sign-off process intends to end all development for that design.
+Its Life Stage should transition to sign-off after the review process, and no more modifications should be made.
 The commit ID of the version that was signed off is recorded in the `commit_id` field of the `.prj.hjson` file.
 
-After signoff, three events could cause a change.
-Possibility 1: If a bug is found in top-level testing, software development, etc., the design should stay in its current revision (assumedly 1.0) but revert in design and/or verification staging until the bug is fixed and a new signoff process occurs, followed by a new tag to replace the previous one.
-Possibility 2: if a small collection of new features are requested, a new version increment of 0.1 would be created, and the design and verification stages would be reset.
+After sign-off, three events could cause a change.
+
+* Possibility 1: If a bug is found in top-level testing, software development, etc., the design should stay in its current revision (assumedly 1.0) but revert in design and/or verification staging until the bug is fixed and a new sign-off process occurs, followed by a new tag to replace the previous one.
+* Possibility 2: if a small collection of new features are requested, a new version increment of 0.1 would be created, and the design and verification stages would be reset.
 The expectation is that this would create its life as a newly tracked revision number, while the previous (assumedly 1.0) version retains its status.
-Possibility 3: if enough new features are requested to greatly change the spirit of the design, a new version increment of 1.0 would be created in a fashion similar to above.
+* Possibility 3: if enough new features are requested to greatly change the spirit of the design, a new version increment of 1.0 would be created in a fashion similar to above.
 This would require a new RFC process, and thus the Life Stage would start again as L0 - Specification.
 
 ### Multiple versions of a design
 
-Over the course of the project, designs may *regress* from signed off to "opened" when new features are added.
-When regressing a signed off design, the old signed off version should remain in the project file as a retrievable version.
+Over the course of the project, designs may *regress* from signed-off to an earlier stage when new features are added.
+When regressing a signed-off design, the old signed-off version should remain in the project file as a retrievable version.
 This is indicated as two versions as shown in this example.
 
 ```hjson
@@ -283,7 +284,7 @@ This is indicated as two versions as shown in this example.
 }
 ```
 
-One may choose to commemorate a non-signed off version of a design if it reached enough maturity to be a useful version to checkpoint before regressing.
+One may choose to commemorate a non-signed-off version of a design if it reached enough maturity to be a useful version to checkpoint before regressing.
 In this case the version number should also be incremented.
 
 No hard rules for version numbering are mandated at this stage.
