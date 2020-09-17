@@ -139,6 +139,10 @@ module aes_sim import aes_pkg::*;
   assign alert_rx[0].ping_n = 1'b1;
   assign alert_rx[0].ack_p  = 1'b0;
   assign alert_rx[0].ack_n  = 1'b1;
+  assign alert_rx[1].ping_p = 1'b0;
+  assign alert_rx[1].ping_n = 1'b1;
+  assign alert_rx[1].ack_p  = 1'b0;
+  assign alert_rx[1].ack_n  = 1'b1;
   assign unused_alert_tx = alert_tx;
 
 endmodule
