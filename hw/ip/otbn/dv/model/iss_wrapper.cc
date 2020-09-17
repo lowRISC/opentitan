@@ -83,7 +83,7 @@ static std::string find_otbn_model() {
   // the expected model name, then use realpath to canonicalise the path. If it
   // fails, there was no script there.
   path_buf += "/../hw/ip/otbn/dv/otbnsim/stepped.py";
-  char *model_path = realpath(path_buf.c_str(), NULL);
+  c_str_ptr model_path(realpath(path_buf.c_str(), NULL));
   if (!model_path) {
     std::ostringstream oss;
     oss << "Cannot find otbnsim.py, at '" << path_buf
@@ -92,7 +92,7 @@ static std::string find_otbn_model() {
     throw std::runtime_error(oss.str());
   }
 
-  return std::string(model_path);
+  return std::string(model_path.get());
 }
 
 ISSWrapper::ISSWrapper() {
