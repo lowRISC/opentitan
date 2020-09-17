@@ -490,5 +490,6 @@ module otbn
   `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
   `ASSERT_KNOWN(IntrErrOKnown_A, intr_err_o)
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(IdleOKnown_A, idle_o)
 
 endmodule
