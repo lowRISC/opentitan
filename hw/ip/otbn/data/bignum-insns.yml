@@ -368,7 +368,7 @@
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
-    (result, flags_out) = AddWithCarry(a, -b_shifted, "0")
+    (result, flags_out) = SubtractWithBorrow(a, b_shifted, 0)
 
     WDR[d] = result
     FLAGS[flag_group] = flags_out
@@ -393,7 +393,7 @@
   decode: *bn-sub-decode
   operation: |
     b_shifted = ShiftReg(b, st, sb)
-    (result, flags_out) = AddWithCarry(a, -b_shifted, ~FLAGS[flag_group].C)
+    (result, flags_out) = SubtractWithBorrow(a, b_shifted, FLAGS[flag_group].C)
 
     WDR[d] = result
     FLAGS[flag_group] = flags_out
@@ -430,7 +430,7 @@
     fg = DecodeFlagGroup(flag_group)
     i = ZeroExtend(imm, WLEN)
   operation: |
-    (result, flags_out) = AddWithCarry(a, -i, "0")
+    (result, flags_out) = SubtractWithBorrow(a, i, 0)
 
     WDR[d] = result
     FLAGS[flag_group] = flags_out
@@ -457,7 +457,7 @@
     a = UInt(wrs1)
     b = UInt(wrs2)
   operation: |
-    (result, ) = AddWithCarry(a, -b, "0")
+    (result, ) = SubtractWithBorrow(a, b, 0)
 
     if result < 0:
       result = MOD + result
@@ -709,7 +709,7 @@
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
-    (, flags_out) = AddWithCarry(a, -b_shifted, "0")
+    (, flags_out) = SubtractWithBorrow(a, b_shifted, 0)
 
     FLAGS[flag_group] = flags_out
   encoding:
@@ -731,7 +731,7 @@
     This instruction is identical to BN.SUBB, except that no result register is written.
   decode: *bn-cmp-decode
   operation: |
-    (, flags_out) = AddWithCarry(a, -b, ~FLAGS[flag_group].C)
+    (, flags_out) = SubtractWithBorrow(a, b, FLAGS[flag_group].C)
 
     FLAGS[flag_group] = flags_out
   encoding:
