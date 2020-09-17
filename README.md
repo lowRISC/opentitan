@@ -162,7 +162,7 @@ From here you may use each feature from the command line, the following example 
 bazel build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m0 --features=all_warnings_as_errors,opt
 ```
 ## Caveats
-If your repository contains platform independant you will not be able to automatically exclude platform dependant code. For example;
+If your repository contains platform independent you will not be able to automatically exclude platform dependant code. For example;
 package/BUILD
 ```py
 cc_library(
