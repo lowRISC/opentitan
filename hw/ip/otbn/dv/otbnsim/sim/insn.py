@@ -205,7 +205,7 @@ class BEQ(OTBNInsn):
         val1 = model.state.intreg[self.grs1].value
         val2 = model.state.intreg[self.grs2].value
         if val1 == val2:
-            model.state.pc_next = model.state.pc.unsigned() + self.offset
+            model.state.pc_next = self.offset
 
 
 class BNE(OTBNInsn):
@@ -221,7 +221,7 @@ class BNE(OTBNInsn):
         val1 = model.state.intreg[self.grs1].value
         val2 = model.state.intreg[self.grs2].value
         if val1 != val2:
-            model.state.pc_next = model.state.pc.unsigned() + self.offset
+            model.state.pc_next = self.offset
 
 
 class JAL(OTBNInsn):
