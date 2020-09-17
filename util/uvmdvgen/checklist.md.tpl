@@ -10,9 +10,9 @@ stage, and updated as needed. Once done, please remove this comment before check
 This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [${name.upper()} peripheral.]({{< relref "hw/ip/${name}/doc" >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
-## Design Checklist
+<%text>## Design Checklist</%text>
 
-### D1
+<%text>### D1</%text>
 
 Type          | Item                  | Resolution  | Note/Collaterals
 --------------|-----------------------|-------------|------------------
@@ -38,7 +38,7 @@ Review        | Signoff date          | Not Started |
 [ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
 [LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint-setup" >}}
 
-### D2
+<%text>### D2</%text>
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
@@ -82,7 +82,7 @@ Review        | Signoff date            | Not Started |
 [SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec-non-reset-flops" >}}
 [SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec-shadow-regs" >}}
 
-### D3
+<%text>### D3</%text>
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
@@ -111,9 +111,9 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
 
-## Verification Checklist
+<%text>## Verification Checklist</%text>
 
-### V1
+<%text>### V1</%text>
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
@@ -163,7 +163,7 @@ Review        | Signoff date                          | Not Started |
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std-test-categories-planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2-checklist-scoped" >}}
 
-### V2
+<%text>### V2</%text>
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
@@ -207,7 +207,7 @@ Review        | Signoff date                            | Not started |
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v2" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3-checklist-scoped" >}}
 
-### V3
+<%text>### V3</%text>
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
