@@ -11,15 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04]
-        target_cpus:
-          - "@local_config_platform//:host"
-          - "@bazel_embedded//platforms:cortex_m0"
-          - "@bazel_embedded//platforms:cortex_m3"
-          - "@bazel_embedded//platforms:cortex_m4"
-          - "@bazel_embedded//platforms:cortex_m4_fpu"
-          - "@bazel_embedded//platforms:cortex_m7"
-          - "@bazel_embedded//platforms:cortex_m7_fpu"
+        os: [ubuntu-18.04]
+
     steps:
       - uses: actions/checkout@v1
 
@@ -42,4 +35,10 @@ jobs:
 
       - name: Build
         run: |
-          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=${{ matrix.target_cpus }} -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@local_config_platform//:host -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m0 -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m3 -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m4 -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m4_fpu -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m7 -- //... -//tools/...
+          "${GITHUB_WORKSPACE}/bin/bazel" build  --platforms=@bazel_embedded//platforms:cortex_m7_fpu -- //... -//tools/...
