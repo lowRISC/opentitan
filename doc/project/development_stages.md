@@ -185,7 +185,7 @@ For example, `file: gpio.prj.hjson`:
 ```hjson
 {
     name:               "gpio"
-    version:            1.0
+    version:            "1.0"
     life_stage:         "L1"
     design_stage:       "D2"
     verification_stage: "V1"
@@ -203,7 +203,7 @@ The commit ID has its own entry in the project Hjson file, as shown below.
 ```hjson
 {
     name:               "gpio"
-    version:            1.0
+    version:            "1.0"
     life_stage:         "L1"
     design_stage:       "D2"
     verification_stage: "V1"
