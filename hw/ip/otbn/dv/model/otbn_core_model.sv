@@ -34,11 +34,27 @@ module otbn_core_model
   input  logic [ImemAddrWidth-1:0] start_addr_i // start byte address in IMEM
 );
 
-  import "DPI-C" context function int run_model(string imem_scope,
-                                                int    imem_size,
-                                                string dmem_scope,
-                                                int    dmem_size,
-                                                int    start_addr);
+
+  import "DPI-C" function chandle otbn_model_init();
+  import "DPI-C" function void otbn_model_destroy(chandle handle);
+
+  chandle model_handle;
+  initial begin
+    model_handle = otbn_model_init();
+    assert(model_handle != 0);
+  end
+  final begin
+    otbn_model_destroy(model_handle);
+    model_handle = 0;
+  end
+
+  import "DPI-C" context function
+    int otbn_model_run(chandle model,
+                       string  imem_scope,
+                       int     imem_size,
+                       string  dmem_scope,
+                       int     dmem_size,
+                       int     start_addr);
 
   localparam ImemSizeWords = ImemSizeByte / 4;
   localparam DmemSizeWords = DmemSizeByte / (WLEN / 8);
@@ -55,7 +71,10 @@ module otbn_core_model
       count <= -1;
     end else begin
       if (start_i) begin
-        count <= run_model(ImemScope, ImemSizeWords, DmemScope, DmemSizeWords, start_addr_32);
+        count <= otbn_model_run(model_handle,
+                                ImemScope, ImemSizeWords,
+                                DmemScope, DmemSizeWords,
+                                start_addr_32);
         done_o <= 1'b0;
       end else begin
         if (count == 0) begin

@@ -202,20 +202,24 @@ struct TmpDir {
   }
 };
 
-extern "C" int run_model(const char *imem_scope, int imem_words,
-                         const char *dmem_scope, int dmem_words,
-                         int start_addr) {
+extern "C" ISSWrapper *otbn_model_init() {
+  try {
+    return new ISSWrapper();
+  } catch (const std::runtime_error &err) {
+    std::cerr << "Error when constructing ISS wrapper: " << err.what() << "\n";
+    return nullptr;
+  }
+}
+
+extern "C" void otbn_model_destroy(ISSWrapper *model) { delete model; }
+
+extern "C" int otbn_model_run(ISSWrapper *model, const char *imem_scope,
+                              int imem_words, const char *dmem_scope,
+                              int dmem_words, int start_addr) {
+  assert(model);
   assert(imem_words >= 0);
   assert(dmem_words >= 0);
   assert(start_addr >= 0 && start_addr < (imem_words * 4));
-
-  std::unique_ptr<ISSWrapper> wrapper;
-  try {
-    wrapper.reset(new ISSWrapper());
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when constructing ISS wrapper: " << err.what() << "\n";
-    return 0;
-  }
 
   TmpDir tmpdir;
   try {
@@ -238,11 +242,11 @@ extern "C" int run_model(const char *imem_scope, int imem_words,
   }
 
   try {
-    wrapper->load_d(dfname.c_str());
-    wrapper->load_i(ifname.c_str());
-    wrapper->start(start_addr);
-    unsigned cycles = wrapper->run();
-    wrapper->dump_d(dfname.c_str());
+    model->load_d(dfname.c_str());
+    model->load_i(ifname.c_str());
+    model->start(start_addr);
+    unsigned cycles = model->run();
+    model->dump_d(dfname.c_str());
 
     load_memory(dfname, dmem_scope, dmem_words, 32);
     return cycles;
