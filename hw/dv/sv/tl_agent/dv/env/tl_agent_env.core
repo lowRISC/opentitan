@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:tl_agent_env:0.1"
+description: "tl_agent DV UVM environmnt"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:tl_agent
+      - lowrisc:dv:scoreboard
+    files:
+      - tl_agent_env_pkg.sv
+      - tl_agent_env_cfg.sv: {is_include_file: true}
+      - tl_agent_virtual_sequencer.sv: {is_include_file: true}
+      - tl_agent_env.sv: {is_include_file: true}
+      - tl_agent_scoreboard.sv: {is_include_file: true}
+      - seq_lib/tl_agent_vseq_list.sv: {is_include_file: true}
+      - seq_lib/tl_agent_base_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
