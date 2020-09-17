@@ -18,7 +18,7 @@ module sha3pad
   // Message interface (FIFO)
   input                       msg_valid_i,
   input        [MsgWidth-1:0] msg_data_i [Share],
-  input        [MsgStrbW-1:0] msg_mask_i,         // one masking for shares
+  input        [MsgStrbW-1:0] msg_strb_i,         // one strobe for shares
   output logic                msg_ready_o,
 
   // N, S: Used in cSHAKE mode only
@@ -209,7 +209,7 @@ module sha3pad
   // there will be no msg_valid_i till process_latched.
   // Shall be used with msg_valid_i together.
   logic msg_partial;
-  assign msg_partial = (&msg_mask_i != 1'b 1);
+  assign msg_partial = (&msg_strb_i != 1'b 1);
 
 
   // `process_latched` latches the `process_i` input before it is seen in the
@@ -603,7 +603,7 @@ module sha3pad
   //
   // For custom logic, it could be implemented by the 8 mux selection.
   // for instance: (subject to be changed)
-  //   unique case (sent_byte[2:0]) // generated from msg_mask_i
+  //   unique case (sent_byte[2:0]) // generated from msg_strb_i
   //     3'b 000: funcpad_merged = {end_of_block, 63'(function_pad)                  };
   //     3'b 001: funcpad_merged = {end_of_block, 55'(function_pad), msg_data_i[ 7:0]};
   //     3'b 010: funcpad_merged = {end_of_block, 47'(function_pad), msg_data_i[15:0]};
@@ -618,26 +618,26 @@ module sha3pad
   // internal buffer to store partial write. It doesn't have to store last byte as it
   // stores only when partial write.
   logic [MsgWidth-8-1:0] msg_buf [Share];
-  logic [MsgStrbW-1-1:0] msg_mask;
+  logic [MsgStrbW-1-1:0] msg_strb;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       msg_buf  <= '{default:'0};
-      msg_mask <= '0;
+      msg_strb <= '0;
     end else if (en_msgbuf) begin
       for (int i = 0 ; i < Share ; i++) begin
         msg_buf[i]  <= msg_data_i[i][0+:(MsgWidth-8)];
       end
-      msg_mask <= msg_mask_i[0+:(MsgStrbW-1)];
+      msg_strb <= msg_strb_i[0+:(MsgStrbW-1)];
     end else if (clr_msgbuf) begin
       msg_buf  <= '{default:'0};
-      msg_mask <= '0;
+      msg_strb <= '0;
     end
   end
 
   if (EnMasking) begin : gen_funcpad_data_masked
     always_comb begin
-      unique case (msg_mask)
+      unique case (msg_strb)
         7'b 000_0000: begin
           funcpad_data[0] = '0;
           funcpad_data[1] = {end_of_block, 63'(funcpad)                  };
@@ -676,7 +676,7 @@ module sha3pad
     end
   end else begin : gen_funcpad_data_unmasked
     always_comb begin
-      unique case (msg_mask)
+      unique case (msg_strb)
         7'b 000_0000: funcpad_data[0] = {end_of_block, 63'(funcpad)                  };
         7'b 000_0001: funcpad_data[0] = {end_of_block, 55'(funcpad), msg_buf[0][ 7:0]};
         7'b 000_0011: funcpad_data[0] = {end_of_block, 47'(funcpad), msg_buf[0][15:0]};
@@ -756,14 +756,18 @@ module sha3pad
   end
 `endif
 
-  `ASSUME(MessageCondition_a, msg_valid_i && msg_ready_o |-> process_valid)
+  // Message can be fed in between start_i and process_i.
+  `ASSUME(MessageCondition_a, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
+
   `ASSUME(ProcessCondition_a, process_i |-> process_valid)
   `ASSUME(StartCondition_a, start_i |-> start_valid)
   `ASSUME(DoneCondition_a, done_i |-> done_valid)
 
   // If not full block is written, the pad shall send message to keccak_round
-  `ASSERT(CompleteBlockWhenProcess_A, process_i && !sent_blocksize &&
-    !(st inside {StPrefixWait, StMessageWait}) |=> ##[1:5] keccak_valid_o)
+  // If it is end of the message, the state moves to StPad and send the request
+  `ASSERT(CompleteBlockWhenProcess_A,
+    $rose(process_latched) && (!end_of_block || !sent_blocksize )
+    && !(st inside {StPrefixWait, StMessageWait}) |-> ##[1:5] keccak_valid_o)
   // If `process_i` is asserted, eventually sha3pad trigger run signal
   `ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o))
 
@@ -774,11 +778,18 @@ module sha3pad
   // Assumption of input mode_i and strength_i
   // SHA3 variants: SHA3-224, SHA3-256, SHA3-384, SHA3-512
   // SHAKE, cSHAKE variants: SHAKE128, SHAKE256, cSHAKE128, cSHAKE256
-  //`ASSUME(ModeStrengthCombinations_A,
-  //  start_i |->
-  //    (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
-  //    ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
-  //  clk_i, !rst_ni)
+  `ASSUME(ModeStrengthCombinations_A,
+    start_i |->
+      (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
+      ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
+    clk_i, !rst_ni)
+
+  // Assume mode_i and strength_i are stable during the operation
+  // This will be guarded at the kmac top level
+  `ASSUME(ModeStableDuringOp_a,
+    $changed(mode_i) |-> start_valid)
+  `ASSUME(StrengthStableDuringOp_a,
+    $changed(strength_i) |-> start_valid)
 
   // Keccak control interface
   // Keccak run triggered -> completion should come
@@ -787,12 +798,12 @@ module sha3pad
 
   // No partial write is allowed for Message FIFO interface
   `ASSUME(NoPartialMsgFifo_A,
-    keccak_valid_o && (sel_mux == MuxFifo) |-> (&msg_mask_i) == 1'b1,
+    keccak_valid_o && (sel_mux == MuxFifo) |-> (&msg_strb_i) == 1'b1,
     clk_i, !rst_ni)
 
   // When transaction is stored into msg_buf, it shall be partial write.
   `ASSUME(AlwaysPartialMsgBuf_A,
-    en_msgbuf |-> msg_valid_i && (msg_mask_i[MsgStrbW-1] == 1'b0),
+    en_msgbuf |-> msg_valid_i && (msg_strb_i[MsgStrbW-1] == 1'b0),
     clk_i, !rst_ni)
 
   // if partial write comes and is acked, then no more msg_valid_i until
