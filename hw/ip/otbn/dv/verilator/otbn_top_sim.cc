@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
   memutil.RegisterMemoryArea(
-      "dmem", "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic");
+      "dmem", "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic", 256);
   memutil.RegisterMemoryArea(
       "imem", "TOP.otbn_top_sim.u_imem.u_mem.gen_generic.u_impl_generic");
   simctrl.RegisterExtension(&memutil);
