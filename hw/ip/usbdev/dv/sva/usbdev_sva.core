@@ -24,5 +24,5 @@ targets:
   default:
     filesets:
       - files_dv
-    # generate:
-    #   - csr_assert_gen
+    generate:
+      - csr_assert_gen
