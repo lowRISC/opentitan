@@ -437,13 +437,23 @@ bool VerilatorMemUtil::WriteElfToMem(const svScope &scope,
   uint8_t *buf = nullptr;
   size_t len_bytes;
 
+  // This "mini buffer" is used to transfer each write to Verilator. It's not
+  // massively efficient, but doing so ensures that we pass 256 bits (32 bytes)
+  // of initialised data each time. This is for simutil_verilator_set_mem
+  // (defined in prim_util_memload.svh), whose "val" argument has SystemVerilog
+  // type bit [255:0].
+  uint8_t minibuf[32];
+  memset(minibuf, 0, sizeof minibuf);
+  assert(size_byte <= sizeof minibuf);
+
   if (!ElfFileToBinary(filepath, &buf, len_bytes)) {
     std::cerr << "ERROR: Could not load: " << filepath << std::endl;
     retcode = false;
     goto ret;
   }
   for (int i = 0; i < (len_bytes + size_byte - 1) / size_byte; ++i) {
-    if (!simutil_verilator_set_mem(i, (svBitVecVal *)&buf[size_byte * i])) {
+    memcpy(minibuf, &buf[size_byte * i], size_byte);
+    if (!simutil_verilator_set_mem(i, (svBitVecVal *)minibuf)) {
       std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
                 << len_bytes << "" << std::endl;
 
