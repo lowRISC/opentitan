@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstring>
 #include <fcntl.h>
+#include <ftw.h>
 #include <iostream>
 #include <memory>
 #include <regex>
@@ -20,8 +21,83 @@ namespace {
 struct CStrDeleter {
   void operator()(char *p) const { std::free(p); }
 };
-}
+}  // namespace
 typedef std::unique_ptr<char, CStrDeleter> c_str_ptr;
+
+// Guard class to create (and possibly delete) temporary directories.
+struct TmpDir {
+  std::string path;
+
+  TmpDir() : path(TmpDir::make_tmp_dir()) {}
+  ~TmpDir() { cleanup(); }
+
+ private:
+  // A wrapper around mkdtemp that respects TMPDIR
+  static std::string make_tmp_dir() {
+    const char *tmpdir = getenv("TMPDIR");
+    if (!tmpdir)
+      tmpdir = "/tmp";
+
+    std::string tmp_template(tmpdir);
+    tmp_template += "/otbn_XXXXXX";
+
+    if (!mkdtemp(&tmp_template.at(0))) {
+      std::ostringstream oss;
+      oss << ("Cannot create temporary directory for OTBN simulation "
+              "with template ")
+          << tmp_template << ": " << strerror(errno);
+      throw std::runtime_error(oss.str());
+    }
+
+    // The backing string for tmp_template will have been populated by mkdtemp.
+    return tmp_template;
+  }
+
+  // Return true if the OTBN_MODEL_KEEP_TMP environment variable is set to 1.
+  static bool should_keep_tmp() {
+    const char *keep_str = getenv("OTBN_MODEL_KEEP_TMP");
+    if (!keep_str)
+      return false;
+    return (strcmp(keep_str, "1") == 0) ? true : false;
+  }
+
+  // Called by nftw when we're deleting the temporary directory
+  static int ftw_callback(const char *fpath, const struct stat *sb,
+                          int typeflag, struct FTW *ftwbuf) {
+    // The libc remove() function calls unlink or rmdir as necessary. Ignore
+    // any failures: we'll check that we managed to delete the directory when
+    // nftw finishes.
+    remove(fpath);
+
+    // Tell nftw to keep going
+    return 0;
+  }
+
+  // Recursively delete the temporary directory
+  void cleanup() {
+    if (path.empty())
+      return;
+
+    if (TmpDir::should_keep_tmp()) {
+      std::cerr << "Keeping temporary directory at " << path
+                << " because OTBN_MODEL_KEEP_TMP=1.\n";
+      return;
+    }
+
+    // We're not supposed to keep the directory. Try to delete it and its
+    // contents. Ignore any failures: we'll just check whether it's gone
+    // afterwards.
+    nftw(path.c_str(), TmpDir::ftw_callback, 4, FTW_DEPTH | FTW_PHYS);
+
+    // Is there still anything at path? If so, we failed. Print something to
+    // stderr to tell the user what's going on.
+    struct stat statbuf;
+    if (stat(path.c_str(), &statbuf) == 0) {
+      std::cerr << "ERROR: Failed to delete OTBN temporary directory at "
+                << path << ".\n";
+    }
+  }
+};
 
 // Find the otbn Python model, based on our executable path, and
 // return it. On failure, throw a std::runtime_error with a
@@ -95,7 +171,7 @@ static std::string find_otbn_model() {
   return std::string(model_path.get());
 }
 
-ISSWrapper::ISSWrapper() {
+ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
   // We want two pipes: one for writing to the child process, and the other for
@@ -175,19 +251,19 @@ ISSWrapper::~ISSWrapper() {
   fclose(child_read_file);
 }
 
-void ISSWrapper::load_d(const char *path) {
+void ISSWrapper::load_d(const std::string &path) {
   std::ostringstream oss;
   oss << "load_d " << path << "\n";
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::load_i(const char *path) {
+void ISSWrapper::load_i(const std::string &path) {
   std::ostringstream oss;
   oss << "load_i " << path << "\n";
   run_command(oss.str(), nullptr);
 }
 
-void ISSWrapper::dump_d(const char *path) const {
+void ISSWrapper::dump_d(const std::string &path) const {
   std::ostringstream oss;
   oss << "dump_d " << path << "\n";
   run_command(oss.str(), nullptr);
@@ -211,6 +287,10 @@ size_t ISSWrapper::run() {
       break;
   }
   return cycles;
+}
+
+std::string ISSWrapper::make_tmp_path(const std::string &relative) const {
+  return tmpdir->path + "/" + relative;
 }
 
 bool ISSWrapper::read_child_response(std::vector<std::string> *dst) const {

@@ -6,25 +6,25 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <unistd.h>
 #include <vector>
+
+// Forward declaration (the implementation is private in iss_wrapper.cc)
+struct TmpDir;
 
 // An object wrapping the ISS subprocess.
 struct ISSWrapper {
   ISSWrapper();
   ~ISSWrapper();
 
-  // No copy constructor or assignments: we're wrapping a child process.
-  ISSWrapper(const ISSWrapper &) = delete;
-  ISSWrapper &operator=(const ISSWrapper &) = delete;
-
   // Load new contents of DMEM / IMEM
-  void load_d(const char *path);
-  void load_i(const char *path);
+  void load_d(const std::string &path);
+  void load_i(const std::string &path);
 
   // Dump the contents of DMEM to a file
-  void dump_d(const char *path) const;
+  void dump_d(const std::string &path) const;
 
   // Jump to a new address and start running
   void start(uint32_t addr);
@@ -32,6 +32,11 @@ struct ISSWrapper {
   // Run simulation until ECALL or error. Return the number of cycles
   // until that happened.
   size_t run();
+
+  // Resolve a path relative to the convenience temporary directory.
+  // relative should be a relative path (it is just appended to the
+  // path of the temporary directory).
+  std::string make_tmp_path(const std::string &relative) const;
 
  private:
   // Read line by line from the child process until we get ".\n".
@@ -50,4 +55,7 @@ struct ISSWrapper {
   pid_t child_pid;
   FILE *child_write_file;
   FILE *child_read_file;
+
+  // A temporary directory for communicating with the child process
+  std::unique_ptr<TmpDir> tmpdir;
 };
