@@ -12,6 +12,8 @@ class xbar_base_test extends dv_base_test #(.ENV_T(xbar_env), .CFG_T(xbar_env_cf
     super.build_phase(phase);
 
     if (cfg.zero_delays) begin
+      cfg.allow_host_drop_valid_wo_ready = 0;
+      cfg.allow_device_drop_valid_wo_ready = 0;
       cfg.min_host_req_delay   = 0;
       cfg.max_host_req_delay   = 0;
       cfg.min_host_rsp_delay   = 0;
@@ -21,7 +23,14 @@ class xbar_base_test extends dv_base_test #(.ENV_T(xbar_env), .CFG_T(xbar_env_cf
       cfg.min_device_rsp_delay = 0;
       cfg.max_device_rsp_delay = 0;
     end
-    void'($value$plusargs("min_host_req_delay=%d",   cfg.min_host_req_delay));
+    void'($value$plusargs("allow_host_drop_valid_wo_ready=%d",
+                          cfg.allow_host_drop_valid_wo_ready));
+    void'($value$plusargs("allow_device_drop_valid_wo_ready=%d",
+                          cfg.allow_device_drop_valid_wo_ready));
+    void'($value$plusargs("min_host_valid_len=%d",   cfg.min_host_valid_len));
+    void'($value$plusargs("max_host_valid_len=%d",   cfg.max_host_valid_len));
+    void'($value$plusargs("min_device_valid_len=%d", cfg.min_device_valid_len));
+    void'($value$plusargs("max_device_valid_len=%d", cfg.max_device_valid_len));
     void'($value$plusargs("max_host_req_delay=%d",   cfg.max_host_req_delay));
     void'($value$plusargs("min_host_rsp_delay=%d",   cfg.min_host_rsp_delay));
     void'($value$plusargs("max_host_rsp_delay=%d",   cfg.max_host_rsp_delay));
@@ -30,18 +39,7 @@ class xbar_base_test extends dv_base_test #(.ENV_T(xbar_env), .CFG_T(xbar_env_cf
     void'($value$plusargs("min_device_rsp_delay=%d", cfg.min_device_rsp_delay));
     void'($value$plusargs("max_device_rsp_delay=%d", cfg.max_device_rsp_delay));
     void'($value$plusargs("num_enabled_hosts=%d",    cfg.num_enabled_hosts));
-    foreach (cfg.host_agent_cfg[i]) begin
-      cfg.host_agent_cfg[i].a_valid_delay_min = cfg.min_host_req_delay;
-      cfg.host_agent_cfg[i].a_valid_delay_max = cfg.max_host_req_delay;
-      cfg.host_agent_cfg[i].d_ready_delay_min = cfg.min_host_rsp_delay;
-      cfg.host_agent_cfg[i].d_ready_delay_max = cfg.max_host_rsp_delay;
-    end
-    foreach (cfg.device_agent_cfg[i]) begin
-      cfg.device_agent_cfg[i].d_valid_delay_min = cfg.min_device_req_delay;
-      cfg.device_agent_cfg[i].d_valid_delay_max = cfg.max_device_req_delay;
-      cfg.device_agent_cfg[i].a_ready_delay_min = cfg.min_device_rsp_delay;
-      cfg.device_agent_cfg[i].a_ready_delay_max = cfg.max_device_rsp_delay;
-    end
+    cfg.update_agent_cfg();
   endfunction : build_phase
 
 endclass : xbar_base_test

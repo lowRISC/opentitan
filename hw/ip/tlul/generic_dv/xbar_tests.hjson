@@ -34,7 +34,9 @@
       run_opts: ["+max_host_req_delay=1000",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=1000"]
+                 "+max_device_rsp_delay=1000",
+                 "+max_host_valid_len=2000",
+                 "+max_device_valid_len=2000"]
     }
 
     {
@@ -45,7 +47,9 @@
       run_opts: ["+max_host_req_delay=10",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
+                 "+max_device_rsp_delay=10",
+                 "+max_host_valid_len=2000",
+                 "+max_device_valid_len=2000"]
     }
 
     {
@@ -71,7 +75,9 @@
       run_opts: ["+max_host_req_delay=1000",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=1000"]
+                 "+max_device_rsp_delay=1000",
+                 "+max_host_valid_len=2000",
+                 "+max_device_valid_len=2000"]
     }
 
     {
@@ -82,7 +88,9 @@
       run_opts: ["+max_host_req_delay=10",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
+                 "+max_device_rsp_delay=10",
+                 "+max_host_valid_len=2000",
+                 "+max_device_valid_len=2000"]
     }
 
     {
@@ -100,7 +108,9 @@
       run_opts: ["+max_host_req_delay=10",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
-                 "+max_device_rsp_delay=10"]
+                 "+max_device_rsp_delay=10",
+                 "+max_host_valid_len=2000",
+                 "+max_device_valid_len=2000"]
     }
 
     {
