@@ -258,7 +258,7 @@ typedef enum dif_alert_handler_class_state {
 /**
  * Runtime configuration for responding to a given escalation phase.
  *
- * See `dif_alert_manager_class_config_t`.
+ * See `dif_alert_handler_class_config_t`.
  */
 typedef struct dif_alert_handler_class_phase_signal {
   /**
@@ -277,7 +277,7 @@ typedef struct dif_alert_handler_class_phase_signal {
 /**
  * Runtime configuration for the duration of an escalation phase.
  *
- * See `dif_alert_manager_class_config_t`.
+ * See `dif_alert_handler_class_config_t`.
  */
 typedef struct dif_alert_handler_class_phase_duration {
   /**
@@ -396,15 +396,16 @@ typedef struct dif_alert_handler_config {
   /**
    * The alert ping timeout, in cycles.
    *
-   * An alert handler handle.will regularly, at random intervals, ping alert
-   * sources.
-   * If a source fails to respond, a local alert will be raised.
+   * The alert handler will regularly, at random intervals, ping alert
+   * sources. If a source fails to respond, a local alert will be raised.
    *
    * The appropriate value will be dependent on all of the clocks involved on
    * a chip.
    *
    * Note that the ping timer won't start until `dif_alert_handler_lock()` is
    * successfully called.
+   *
+   * This value must fit in 24 bits.
    */
   uint32_t ping_timeout;
 
@@ -572,6 +573,8 @@ dif_alert_handler_result_t dif_alert_handler_irq_restore_all(
 /**
  * Checks whether an alert is one of the causes for an alert IRQ.
  *
+ * Note that multiple alerts may be causes at the same time.
+ *
  * @param handler An alert handler handle.
  * @param alert The alert to check.
  * @param is_cause Out-param for whether this alert is a cause.
@@ -592,6 +595,33 @@ dif_alert_handler_result_t dif_alert_handler_alert_is_cause(
 DIF_WARN_UNUSED_RESULT
 dif_alert_handler_result_t dif_alert_handler_alert_acknowledge(
     const dif_alert_handler_t *handler, dif_alert_handler_alert_t alert);
+
+/**
+ * Checks whether a local alert is one of the causes for an alert IRQ.
+ *
+ * Note that multiple alerts may be causes at the same time.
+ *
+ * @param handler An alert handler handle.
+ * @param alert The alert to check.
+ * @param is_cause Out-param for whether this alert is a cause.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_alert_handler_result_t dif_alert_handler_local_alert_is_cause(
+    const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert,
+    bool *is_cause);
+
+/**
+ * Clears a local alert from the cause vector, similar to an IRQ
+ * acknowledgement.
+ *
+ * @param handler An alert handler handle.
+ * @param alert The alert to acknowledge.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_alert_handler_result_t dif_alert_handler_local_alert_acknowledge(
+    const dif_alert_handler_t *handler, dif_alert_handler_local_alert_t alert);
 
 /**
  * Checks whether software can clear escalations for this class.
