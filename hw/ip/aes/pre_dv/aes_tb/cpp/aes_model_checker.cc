@@ -7,7 +7,8 @@
 #include "aes.h"
 #include "crypto.h"
 
-AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
+AESModelChecker::AESModelChecker(Vaes_sim *rtl)
+    : rtl_(rtl), state_model_{0}, state_rtl_{0} {
   state_model_.op = false;
   state_model_.mode = kCryptoAesEcb;
   state_model_.cipher_op = false;
@@ -20,19 +21,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_model_.stall = false;
   state_model_.round = 0;
   state_model_.num_rounds = 0;
-  state_model_.key_init[32] = {0};
-  state_model_.iv[16] = {0};
-  state_model_.data_in[16] = {0};
-  state_model_.state_d[16] = {0};
-  state_model_.state_q[16] = {0};
-  state_model_.sub_bytes_out[16] = {0};
-  state_model_.shift_rows_out[16] = {0};
-  state_model_.mix_columns_out[16] = {0};
-  state_model_.add_round_key_out[16] = {0};
-  state_model_.full_key[32] = {0};
-  state_model_.round_key[16] = {0};
   state_model_.rcon = 0;
-  state_model_.data_out[16] = {0};
   state_rtl_.op = false;
   state_rtl_.mode = kCryptoAesEcb;
   state_rtl_.cipher_op = false;
@@ -45,19 +34,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl) : rtl_(rtl) {
   state_rtl_.stall = false;
   state_rtl_.round = 0;
   state_rtl_.num_rounds = 0;
-  state_rtl_.key_init[32] = {0};
-  state_rtl_.iv[16] = {0};
-  state_rtl_.data_in[16] = {0};
-  state_rtl_.state_d[16] = {0};
-  state_rtl_.state_q[16] = {0};
-  state_rtl_.sub_bytes_out[16] = {0};
-  state_rtl_.shift_rows_out[16] = {0};
-  state_rtl_.mix_columns_out[16] = {0};
-  state_rtl_.add_round_key_out[16] = {0};
-  state_rtl_.full_key[32] = {0};
-  state_rtl_.round_key[16] = {0};
   state_rtl_.rcon = 0;
-  state_rtl_.data_out[16] = {0};
 }
 
 int AESModelChecker::CheckModel() {
