@@ -507,7 +507,7 @@ class BNSUB(OTBNInsn):
         a = int(state.wreg[self.wrs1])
         b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
                              self.shift_bytes)
-        (result, flags) = state.add_with_carry(a, -b_shifted, 0)
+        (result, flags) = state.subtract_with_borrow(a, b_shifted, 0)
         state.wreg[self.wrd] = result
         state.flags[self.flag_group] = flags
 
@@ -525,12 +525,14 @@ class BNSUBB(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
+        assert (state.flags[self.flag_group].C == 0 or
+                state.flags[self.flag_group].C == 1)
+
         a = int(state.wreg[self.wrs1])
         b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
                              self.shift_bytes)
-        (result,
-         flags) = state.add_with_carry(a, -b_shifted,
-                                       1 - state.flags[self.flag_group].C)
+        flag_c = state.flags[self.flag_group].C
+        (result, flags) = state.subtract_with_borrow(a, b_shifted, flag_c)
         state.wreg[self.wrd] = result
         state.flags[self.flag_group] = flags
 
@@ -548,7 +550,7 @@ class BNSUBI(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         a = int(state.wreg[self.wrs])
         b = int(self.imm)
-        (result, flags) = state.add_with_carry(a, -b, 0)
+        (result, flags) = state.subtract_with_borrow(a, b, 0)
         state.wreg[self.wrd] = result
         state.flags[self.flag_group] = flags
 
@@ -565,7 +567,7 @@ class BNSUBM(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         a = int(state.wreg[self.wrs1])
         b = int(state.wreg[self.wrs2])
-        result, _ = state.add_with_carry(a, -b, 0)
+        result, _ = state.subtract_with_borrow(a, b, 0)
         if result < 0:
             result += state.mod
         state.wreg[self.wrd] = result
@@ -698,7 +700,7 @@ class BNCMP(OTBNInsn):
         a = int(state.wreg[self.wrs1])
         b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
                              self.shift_bytes)
-        (_, flags) = state.add_with_carry(a, -b_shifted, 0)
+        (_, flags) = state.subtract_with_borrow(a, b_shifted, 0)
         state.flags[self.flag_group] = flags
 
 
@@ -714,11 +716,13 @@ class BNCMPB(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
+        assert (state.flags[self.flag_group].C == 0 or
+                state.flags[self.flag_group].C == 1)
         a = int(state.wreg[self.wrs1])
         b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
                              self.shift_bytes)
-        carry_flag = 1 - state.flags[self.flag_group].C
-        (_, flags) = state.add_with_carry(a, -b_shifted, carry_flag)
+        flag_c = state.flags[self.flag_group].C
+        (_, flags) = state.subtract_with_borrow(a, b_shifted, flag_c)
         state.flags[self.flag_group] = flags
 
 

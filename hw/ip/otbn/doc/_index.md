@@ -437,6 +437,17 @@ def AddWithCarry(a: Bits(WLEN), b: Bits(WLEN), carry_in: Bits(1)) -> (Bits(WLEN)
 
   return (result[WLEN-1:0], flags_out)
 
+def SubtractWithBorrow(a: Bits(WLEN), b: Bits(WLEN), borrow_in: Bits(1)) -> (Bits(WLEN), FlagGroup):
+  result: Bits[WLEN+1] = a - b - borrow_in
+
+  flags_out = FlagGroup()
+  flags_out.C = result[WLEN]
+  flags_out.L = result[0]
+  flags_out.M = result[WLEN-1]
+  flags_out.Z = (result[WLEN-1:0] == 0)
+
+  return (result[WLEN-1:0], flags_out)
+
 def DecodeHalfWordSelect(hwsel: Bits(1)) -> HalfWord:
   if hwsel == 0:
     return HalfWord.LOWER

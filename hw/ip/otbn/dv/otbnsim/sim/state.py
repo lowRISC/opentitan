@@ -407,6 +407,14 @@ class OTBNState:
 
         return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
 
+    @staticmethod
+    def subtract_with_borrow(a: int, b: int, borrow_in: int) -> Tuple[int, FlagReg]:
+        result = a - b - borrow_in
+        carryless_result = result & ((1 << 256) - 1)
+        C = bool((result >> 256) & 1)
+
+        return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
+
     def update_mlz_flags(self, fg: int, result: int) -> None:
         '''Update M, L, Z flags for the given result'''
         self.flags[fg] = FlagReg.mlz_for_result(self.flags[fg].C, result)
