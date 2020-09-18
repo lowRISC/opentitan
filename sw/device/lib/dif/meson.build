@@ -172,3 +172,18 @@ sw_lib_dif_pwrmgr = declare_dependency(
     ],
   )
 )
+
+# OTP controller library
+sw_lib_dif_otp_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_otp_ctrl',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      'dif_otp_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
