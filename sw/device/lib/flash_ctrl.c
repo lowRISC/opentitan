@@ -163,17 +163,17 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
         0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
   } else if (region_cfg->part == kInfoPartition) {
     reg_value =
-        region_cfg->rd_en << FLASH_CTRL_BANK0_INFO_PAGE_CFG_0_RD_EN_0 |
-        region_cfg->prog_en << FLASH_CTRL_BANK0_INFO_PAGE_CFG_0_PROG_EN_0 |
-        region_cfg->erase_en << FLASH_CTRL_BANK0_INFO_PAGE_CFG_0_ERASE_EN_0 |
-        0x1 << FLASH_CTRL_BANK0_INFO_PAGE_CFG_0_EN_0;
+        region_cfg->rd_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0 |
+        region_cfg->prog_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0 |
+        region_cfg->erase_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0 |
+        0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0;
 
     bank_sel = region_cfg->base / FLASH_PAGES_PER_BANK;
     if (bank_sel == FLASH_BANK_0) {
-      REG32(FLASH_CTRL_BANK0_INFO_PAGE_CFG_0(0) + region_cfg->num * 4) =
+      REG32(FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0(0) + region_cfg->num * 4) =
           reg_value;
     } else {
-      REG32(FLASH_CTRL_BANK1_INFO_PAGE_CFG_0(0) + region_cfg->num * 4) =
+      REG32(FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0(0) + region_cfg->num * 4) =
           reg_value;
     }
   }
