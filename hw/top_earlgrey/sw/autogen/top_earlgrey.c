@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[82] = {
+    top_earlgrey_plic_interrupt_for_peripheral[84] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -94,6 +94,8 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdPwrmgrWakeup] = kTopEarlgreyPlicPeripheralPwrmgr,
   [kTopEarlgreyPlicIrqIdOtbnDone] = kTopEarlgreyPlicPeripheralOtbn,
   [kTopEarlgreyPlicIrqIdOtbnErr] = kTopEarlgreyPlicPeripheralOtbn,
+  [kTopEarlgreyPlicIrqIdKeymgrOpDone] = kTopEarlgreyPlicPeripheralKeymgr,
+  [kTopEarlgreyPlicIrqIdKeymgrErr] = kTopEarlgreyPlicPeripheralKeymgr,
 };
 
 
@@ -104,7 +106,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[13] = {
+    top_earlgrey_alert_for_peripheral[14] = {
   [kTopEarlgreyAlertIdAesCtrlErrUpdate] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdAesCtrlErrStorage] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdHmacMsgPushShaDisabled] = kTopEarlgreyAlertPeripheralHmac,
@@ -118,5 +120,6 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdSensorCtrlAstAlerts4] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlAstAlerts5] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlAstAlerts6] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdKeymgrErr] = kTopEarlgreyAlertPeripheralKeymgr,
 };
 

@@ -813,6 +813,19 @@
           index: -1
         }
         {
+          struct: keymgr_flash
+          type: uni
+          name: keymgr
+          act: req
+          package: flash_ctrl_pkg
+          inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: flash_ctrl_keymgr
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -2287,6 +2300,151 @@
       ]
     }
     {
+      name: keymgr
+      type: keymgr
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x401a0000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      interrupt_list:
+      [
+        {
+          name: op_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: err
+          width: 1
+          type: alert
+          async: 0
+        }
+      ]
+      wakeup_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: hw_key
+          type: uni
+          name: aes_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: hw_key
+          type: uni
+          name: hmac_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: hw_key
+          type: uni
+          name: kmac_key
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: kmac_data
+          type: req_rsp
+          name: kmac_data
+          act: req
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: lc_data
+          type: uni
+          name: lc
+          act: rcv
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: otp_data
+          type: uni
+          name: otp
+          act: rcv
+          package: keymgr_pkg
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: keymgr_flash
+          type: uni
+          name: flash
+          act: rcv
+          package: flash_ctrl_pkg
+          inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: flash_ctrl_keymgr
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: keymgr_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: otbn
       type: otbn
       clock_srcs:
@@ -2564,6 +2722,10 @@
       [
         clkmgr.pwr
       ]
+      flash_ctrl.keymgr:
+      [
+        keymgr.flash
+      ]
       pwrmgr.wakeups:
       [
         pinmux.aon_wkup_req
@@ -2619,6 +2781,10 @@
       otbn.tl:
       [
         main.tl_otbn
+      ]
+      keymgr.tl:
+      [
+        main.tl_keymgr
       ]
       uart.tl:
       [
@@ -2738,6 +2904,7 @@
           alert_handler
           nmi_gen
           otbn
+          keymgr
         ]
         dm_sba:
         [
@@ -3060,6 +3227,24 @@
           stub: false
           pipeline: "true"
         }
+        {
+          name: keymgr
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: keymgr
+          addr_range:
+          [
+            {
+              base_addr: 0x401a0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
       ]
       clock: clk_main_i
       type: xbar
@@ -3267,6 +3452,18 @@
           width: 1
           default: ""
           top_signame: otbn_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_keymgr
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: keymgr_tl
           index: -1
         }
       ]
@@ -3680,6 +3877,7 @@
     usbdev
     pwrmgr
     otbn
+    keymgr
   ]
   interrupt:
   [
@@ -4333,6 +4531,32 @@
       type: interrupt
       module_name: otbn
     }
+    {
+      name: keymgr_op_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: keymgr
+    }
+    {
+      name: keymgr_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: keymgr
+    }
   ]
   alert_module:
   [
@@ -4340,6 +4564,7 @@
     hmac
     otbn
     sensor_ctrl
+    keymgr
   ]
   alert:
   [
@@ -4391,6 +4616,13 @@
       type: alert
       async: 1
       module_name: sensor_ctrl
+    }
+    {
+      name: keymgr_err
+      width: 1
+      type: alert
+      async: 0
+      module_name: keymgr
     }
   ]
   pinmux:
@@ -4822,6 +5054,19 @@
         width: 1
         default: ""
         top_signame: pwrmgr_pwr_flash
+        index: -1
+      }
+      {
+        struct: keymgr_flash
+        type: uni
+        name: keymgr
+        act: req
+        package: flash_ctrl_pkg
+        inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: flash_ctrl_keymgr
         index: -1
       }
       {
@@ -5392,6 +5637,84 @@
         index: -1
       }
       {
+        struct: hw_key
+        type: uni
+        name: aes_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: hw_key
+        type: uni
+        name: hmac_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: hw_key
+        type: uni
+        name: kmac_key
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: kmac_data
+        type: req_rsp
+        name: kmac_data
+        act: req
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: lc_data
+        type: uni
+        name: lc
+        act: rcv
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: otp_data
+        type: uni
+        name: otp
+        act: rcv
+        package: keymgr_pkg
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: keymgr_flash
+        type: uni
+        name: flash
+        act: rcv
+        package: flash_ctrl_pkg
+        inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: flash_ctrl_keymgr
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: keymgr_tl
+        index: -1
+      }
+      {
         name: idle
         type: uni
         struct: logic
@@ -5674,6 +5997,18 @@
         width: 1
         default: ""
         top_signame: otbn_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_keymgr
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: keymgr_tl
         index: -1
       }
       {
@@ -6036,6 +6371,14 @@
         default: ""
       }
       {
+        package: flash_ctrl_pkg
+        struct: keymgr_flash
+        signame: flash_ctrl_keymgr
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
         package: ""
         struct: logic
         signame: pwrmgr_wakeups
@@ -6247,6 +6590,22 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: otbn_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: keymgr_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: keymgr_tl_rsp
         width: 1
         type: req_rsp
         default: ""

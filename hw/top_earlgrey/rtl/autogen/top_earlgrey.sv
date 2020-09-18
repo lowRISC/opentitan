@@ -124,10 +124,11 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_d2p;
   logic        cio_usbdev_dn_en_d2p;
   // sensor_ctrl
+  // keymgr
   // otbn
 
 
-  logic [81:0]  intr_vector;
+  logic [83:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -178,6 +179,8 @@ module top_earlgrey #(
   logic intr_usbdev_rx_bitstuff_err;
   logic intr_usbdev_frame;
   logic intr_usbdev_connected;
+  logic intr_keymgr_op_done;
+  logic intr_keymgr_err;
   logic intr_otbn_done;
   logic intr_otbn_err;
 
@@ -208,6 +211,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   logic       pwrmgr_wakeups;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
@@ -235,6 +239,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       nmi_gen_tl_rsp;
   tlul_pkg::tl_h2d_t       otbn_tl_req;
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
+  tlul_pkg::tl_h2d_t       keymgr_tl_req;
+  tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
   tlul_pkg::tl_h2d_t       uart_tl_req;
   tlul_pkg::tl_d2h_t       uart_tl_rsp;
   tlul_pkg::tl_h2d_t       gpio_tl_req;
@@ -651,6 +657,7 @@ module top_earlgrey #(
       .edn_i(flash_ctrl_pkg::EDN_ENTROPY_DEFAULT),
       .pwrmgr_i(pwrmgr_pwr_flash_req),
       .pwrmgr_o(pwrmgr_pwr_flash_rsp),
+      .keymgr_o(flash_ctrl_keymgr),
       .tl_i(flash_ctrl_tl_req),
       .tl_o(flash_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_infra),
@@ -955,17 +962,42 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
   );
 
+  keymgr u_keymgr (
+
+      // Interrupt
+      .intr_op_done_o (intr_keymgr_op_done),
+      .intr_err_o     (intr_keymgr_err),
+
+      // [10]: err
+      .alert_tx_o  ( alert_tx[10:10] ),
+      .alert_rx_i  ( alert_rx[10:10] ),
+
+      // Inter-module signals
+      .aes_key_o(),
+      .hmac_key_o(),
+      .kmac_key_o(),
+      .kmac_data_o(),
+      .kmac_data_i(keymgr_pkg::KMAC_DATA_RSP_DEFAULT),
+      .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
+      .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
+      .flash_i(flash_ctrl_keymgr),
+      .tl_i(keymgr_tl_req),
+      .tl_o(keymgr_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
   otbn u_otbn (
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [10]: imem_uncorrectable
-      // [11]: dmem_uncorrectable
-      // [12]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[12:10] ),
-      .alert_rx_i  ( alert_rx[12:10] ),
+      // [11]: imem_uncorrectable
+      // [12]: dmem_uncorrectable
+      // [13]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[13:11] ),
+      .alert_rx_i  ( alert_rx[13:11] ),
 
       // Inter-module signals
       .idle_o(),
@@ -977,6 +1009,8 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_keymgr_err,
+      intr_keymgr_op_done,
       intr_otbn_err,
       intr_otbn_done,
       intr_pwrmgr_wakeup,
@@ -1104,6 +1138,10 @@ module top_earlgrey #(
     // port: tl_otbn
     .tl_otbn_o(otbn_tl_req),
     .tl_otbn_i(otbn_tl_rsp),
+
+    // port: tl_keymgr
+    .tl_keymgr_o(keymgr_tl_req),
+    .tl_keymgr_i(keymgr_tl_rsp),
 
 
     .scanmode_i

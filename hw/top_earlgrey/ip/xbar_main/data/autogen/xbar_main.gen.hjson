@@ -51,6 +51,7 @@
       alert_handler
       nmi_gen
       otbn
+      keymgr
     ]
     dm_sba:
     [
@@ -367,6 +368,24 @@
         {
           base_addr: 0x50000000
           size_byte: 0x400000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: keymgr
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: keymgr
+      addr_range:
+      [
+        {
+          base_addr: 0x401a0000
+          size_byte: 0x1000
         }
       ]
       xbar: false
