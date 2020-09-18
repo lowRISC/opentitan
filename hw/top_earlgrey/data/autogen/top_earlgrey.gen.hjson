@@ -960,6 +960,22 @@
           name_top: SecAesStartTriggerDelay
         }
         {
+          name: SeedClearing
+          type: logic [aes_pkg::WidthPRDClearing-1:0]
+          default: aes_pkg::DefaultSeedClearing
+          local: "false"
+          expose: "false"
+          name_top: AesSeedClearing
+        }
+        {
+          name: SeedMasking
+          type: logic [aes_pkg::WidthPRDMasking-1:0]
+          default: aes_pkg::DefaultSeedMasking
+          local: "false"
+          expose: "false"
+          name_top: AesSeedMasking
+        }
+        {
           name: AlertAsyncOn
           type: logic [aes_reg_pkg::NumAlerts-1:0]
           default: "{aes_reg_pkg::NumAlerts{1'b1}}"

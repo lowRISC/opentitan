@@ -6,6 +6,16 @@
 
 package aes_pkg;
 
+// Widths of signals carrying pseudo-random data for clearing and masking and purposes
+parameter int unsigned WidthPRDClearing = 64;
+parameter int unsigned WidthPRDData     = 128;
+parameter int unsigned WidthPRDKey      = 32;
+parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
+
+// Default seeds for pseudo-random number generators
+parameter logic [WidthPRDClearing-1:0] DefaultSeedClearing = 64'hFEDCBA9876543210;
+parameter logic  [WidthPRDMasking-1:0] DefaultSeedMasking  = {32'h5, 32'h4, 32'h3, 32'h2, 32'h1};
+
 typedef enum integer {
   SBoxImplLut,                  // Unmasked LUT-based S-Box
   SBoxImplCanright,             // Unmasked Canright S-Box, see aes_sbox_canright.sv
