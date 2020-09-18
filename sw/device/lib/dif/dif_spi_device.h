@@ -68,74 +68,6 @@ typedef enum dif_spi_device_toggle {
 } dif_spi_device_toggle_t;
 
 /**
- * A SPI interrupt request type.
- */
-typedef enum dif_spi_device_irq {
-  /**
-   * Indicates that the RX FIFO is full.
-   */
-  kDifSpiDeviceIrqRxFull,
-  /**
-   * Indicates that the RX FIFO is above the configured level.
-   */
-  kDifSpiDeviceIrqRxAboveLevel,
-  /**
-   * Indicates that the TX FIFO is below the configured level.
-   */
-  kDifSpiDeviceIrqTxBelowLevel,
-  /**
-   * Indicates an error in the RX FIFO.
-   */
-  kDifSpiDeviceIrqRxError,
-  /**
-   * Indicates that overflow has occured in the RX FIFO.
-   */
-  kDifSpiDeviceIrqRxOverflow,
-  /**
-   * Indicates that underflow has occured in the RX FIFO.
-   */
-  kDifSpiDeviceIrqTxUnderflow,
-} dif_spi_device_irq_t;
-
-/**
- * A snapshot of the enablement state of the interrupts for SPI.
- *
- * This is an opaque type, to be used with the
- * `dif_spi_device_irq_disable_all()` and
- * `dif_spi_device_irq_restore_all()` functions.
- */
-typedef uint32_t dif_spi_device_irq_snapshot_t;
-
-/**
- * The result of a SPI operation.
- */
-typedef enum dif_spi_device_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifSpiDeviceOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifSpiDeviceError = 1,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occured.
-   */
-  kDifSpiDeviceBadArg = 2,
-} dif_spi_device_result_t;
-
-/**
- * The length of the SPI device FIFO buffer, in bytes.
- *
- * Useful for initializing FIFO lengths: for example, for equally-sized FIFOs,
- * `rx_fifo_len` and `tx_fifo_len` would be set to `kDifSpiDeviceBufferLen / 2`.
- */
-extern const uint16_t kDifSpiDeviceBufferLen;
-
-/**
  * Hardware instantiation parameters for SPI.
  *
  * This struct describes information about the underlying hardware that is
@@ -185,6 +117,74 @@ typedef struct dif_spi_device {
   uint16_t rx_fifo_len;
   uint16_t tx_fifo_len;
 } dif_spi_device_t;
+
+/**
+ * The result of a SPI operation.
+ */
+typedef enum dif_spi_device_result {
+  /**
+   * Indicates that the operation succeeded.
+   */
+  kDifSpiDeviceOk = 0,
+  /**
+   * Indicates some unspecified failure.
+   */
+  kDifSpiDeviceError = 1,
+  /**
+   * Indicates that some parameter passed into a function failed a
+   * precondition.
+   *
+   * When this value is returned, no hardware operations occured.
+   */
+  kDifSpiDeviceBadArg = 2,
+} dif_spi_device_result_t;
+
+/**
+ * A SPI interrupt request type.
+ */
+typedef enum dif_spi_device_irq {
+  /**
+   * Indicates that the RX FIFO is full.
+   */
+  kDifSpiDeviceIrqRxFull,
+  /**
+   * Indicates that the RX FIFO is above the configured level.
+   */
+  kDifSpiDeviceIrqRxAboveLevel,
+  /**
+   * Indicates that the TX FIFO is below the configured level.
+   */
+  kDifSpiDeviceIrqTxBelowLevel,
+  /**
+   * Indicates an error in the RX FIFO.
+   */
+  kDifSpiDeviceIrqRxError,
+  /**
+   * Indicates that overflow has occured in the RX FIFO.
+   */
+  kDifSpiDeviceIrqRxOverflow,
+  /**
+   * Indicates that underflow has occured in the RX FIFO.
+   */
+  kDifSpiDeviceIrqTxUnderflow,
+} dif_spi_device_irq_t;
+
+/**
+ * A snapshot of the enablement state of the interrupts for SPI.
+ *
+ * This is an opaque type, to be used with the
+ * `dif_spi_device_irq_disable_all()` and
+ * `dif_spi_device_irq_restore_all()` functions.
+ */
+typedef uint32_t dif_spi_device_irq_snapshot_t;
+
+/**
+ * The length of the SPI device FIFO buffer, in bytes.
+ *
+ * Useful for initializing FIFO lengths: for example, for equally-sized FIFOs,
+ * `rx_fifo_len` and `tx_fifo_len` would be set to `kDifSpiDeviceBufferLen / 2`.
+ */
+extern const uint16_t kDifSpiDeviceBufferLen;
 
 /**
  * Creates a new handle for SPI.
