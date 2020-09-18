@@ -148,20 +148,24 @@ module otp_ctrl_reg_top (
   logic status_owner_sw_cfg_error_re;
   logic status_hw_cfg_error_qs;
   logic status_hw_cfg_error_re;
-  logic status_secret0_qs;
-  logic status_secret0_re;
-  logic status_secret1_qs;
-  logic status_secret1_re;
-  logic status_secret2_qs;
-  logic status_secret2_re;
-  logic status_life_cycle_qs;
-  logic status_life_cycle_re;
+  logic status_secret0_error_qs;
+  logic status_secret0_error_re;
+  logic status_secret1_error_qs;
+  logic status_secret1_error_re;
+  logic status_secret2_error_qs;
+  logic status_secret2_error_re;
+  logic status_life_cycle_error_qs;
+  logic status_life_cycle_error_re;
   logic status_dai_error_qs;
   logic status_dai_error_re;
   logic status_lci_error_qs;
   logic status_lci_error_re;
+  logic status_timeout_error_qs;
+  logic status_timeout_error_re;
   logic status_dai_idle_qs;
   logic status_dai_idle_re;
+  logic status_check_pending_qs;
+  logic status_check_pending_re;
   logic [3:0] err_code_0_err_code_0_qs;
   logic err_code_0_err_code_0_re;
   logic [3:0] err_code_0_err_code_1_qs;
@@ -201,15 +205,25 @@ module otp_ctrl_reg_top (
   logic direct_access_rdata_0_re;
   logic [31:0] direct_access_rdata_1_qs;
   logic direct_access_rdata_1_re;
-  logic check_period_regen_qs;
-  logic check_period_regen_wd;
-  logic check_period_regen_we;
-  logic [5:0] integrity_check_period_msb_qs;
-  logic [5:0] integrity_check_period_msb_wd;
-  logic integrity_check_period_msb_we;
-  logic [5:0] consistency_check_period_msb_qs;
-  logic [5:0] consistency_check_period_msb_wd;
-  logic consistency_check_period_msb_we;
+  logic check_trigger_regwen_qs;
+  logic check_trigger_regwen_wd;
+  logic check_trigger_regwen_we;
+  logic check_trigger_integrity_wd;
+  logic check_trigger_integrity_we;
+  logic check_trigger_consistency_wd;
+  logic check_trigger_consistency_we;
+  logic check_regwen_qs;
+  logic check_regwen_wd;
+  logic check_regwen_we;
+  logic [31:0] check_timeout_qs;
+  logic [31:0] check_timeout_wd;
+  logic check_timeout_we;
+  logic [31:0] integrity_check_period_qs;
+  logic [31:0] integrity_check_period_wd;
+  logic integrity_check_period_we;
+  logic [31:0] consistency_check_period_qs;
+  logic [31:0] consistency_check_period_wd;
+  logic consistency_check_period_we;
   logic creator_sw_cfg_read_lock_qs;
   logic creator_sw_cfg_read_lock_wd;
   logic creator_sw_cfg_read_lock_we;
@@ -442,63 +456,63 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[secret0]: 3:3
+  //   F[secret0_error]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_secret0 (
-    .re     (status_secret0_re),
+  ) u_status_secret0_error (
+    .re     (status_secret0_error_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.secret0.d),
+    .d      (hw2reg.status.secret0_error.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_secret0_qs)
+    .qs     (status_secret0_error_qs)
   );
 
 
-  //   F[secret1]: 4:4
+  //   F[secret1_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_secret1 (
-    .re     (status_secret1_re),
+  ) u_status_secret1_error (
+    .re     (status_secret1_error_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.secret1.d),
+    .d      (hw2reg.status.secret1_error.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_secret1_qs)
+    .qs     (status_secret1_error_qs)
   );
 
 
-  //   F[secret2]: 5:5
+  //   F[secret2_error]: 5:5
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_secret2 (
-    .re     (status_secret2_re),
+  ) u_status_secret2_error (
+    .re     (status_secret2_error_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.secret2.d),
+    .d      (hw2reg.status.secret2_error.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_secret2_qs)
+    .qs     (status_secret2_error_qs)
   );
 
 
-  //   F[life_cycle]: 6:6
+  //   F[life_cycle_error]: 6:6
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_life_cycle (
-    .re     (status_life_cycle_re),
+  ) u_status_life_cycle_error (
+    .re     (status_life_cycle_error_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.life_cycle.d),
+    .d      (hw2reg.status.life_cycle_error.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_life_cycle_qs)
+    .qs     (status_life_cycle_error_qs)
   );
 
 
@@ -532,7 +546,22 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[dai_idle]: 9:9
+  //   F[timeout_error]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_timeout_error (
+    .re     (status_timeout_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.timeout_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_timeout_error_qs)
+  );
+
+
+  //   F[dai_idle]: 10:10
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_dai_idle (
@@ -544,6 +573,21 @@ module otp_ctrl_reg_top (
     .qe     (),
     .q      (),
     .qs     (status_dai_idle_qs)
+  );
+
+
+  //   F[check_pending]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_check_pending (
+    .re     (status_check_pending_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.check_pending.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_check_pending_qs)
   );
 
 
@@ -898,19 +942,19 @@ module otp_ctrl_reg_top (
   );
 
 
-  // R[check_period_regen]: V(False)
+  // R[check_trigger_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h1)
-  ) u_check_period_regen (
+  ) u_check_trigger_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (check_period_regen_we),
-    .wd     (check_period_regen_wd),
+    .we     (check_trigger_regwen_we),
+    .wd     (check_trigger_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -918,53 +962,78 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.check_period_regen.q ),
+    .q      (reg2hw.check_trigger_regwen.q ),
 
     // to register interface (read)
-    .qs     (check_period_regen_qs)
+    .qs     (check_trigger_regwen_qs)
   );
 
 
-  // R[integrity_check_period_msb]: V(False)
+  // R[check_trigger]: V(False)
 
+  //   F[integrity]: 0:0
   prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h19)
-  ) u_integrity_check_period_msb (
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_check_trigger_integrity (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (integrity_check_period_msb_we & check_period_regen_qs),
-    .wd     (integrity_check_period_msb_wd),
+    .we     (check_trigger_integrity_we & check_trigger_regwen_qs),
+    .wd     (check_trigger_integrity_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.integrity_check_period_msb.q ),
+    .qe     (reg2hw.check_trigger.integrity.qe),
+    .q      (reg2hw.check_trigger.integrity.q ),
 
-    // to register interface (read)
-    .qs     (integrity_check_period_msb_qs)
+    .qs     ()
   );
 
 
-  // R[consistency_check_period_msb]: V(False)
-
+  //   F[consistency]: 1:1
   prim_subreg #(
-    .DW      (6),
-    .SWACCESS("RW"),
-    .RESVAL  (6'h22)
-  ) u_consistency_check_period_msb (
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_check_trigger_consistency (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (consistency_check_period_msb_we & check_period_regen_qs),
-    .wd     (consistency_check_period_msb_wd),
+    .we     (check_trigger_consistency_we & check_trigger_regwen_qs),
+    .wd     (check_trigger_consistency_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.check_trigger.consistency.qe),
+    .q      (reg2hw.check_trigger.consistency.q ),
+
+    .qs     ()
+  );
+
+
+  // R[check_regwen]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_check_regwen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (check_regwen_we),
+    .wd     (check_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -972,10 +1041,91 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.consistency_check_period_msb.q ),
+    .q      (reg2hw.check_regwen.q ),
 
     // to register interface (read)
-    .qs     (consistency_check_period_msb_qs)
+    .qs     (check_regwen_qs)
+  );
+
+
+  // R[check_timeout]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_check_timeout (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (check_timeout_we & check_regwen_qs),
+    .wd     (check_timeout_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.check_timeout.q ),
+
+    // to register interface (read)
+    .qs     (check_timeout_qs)
+  );
+
+
+  // R[integrity_check_period]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_integrity_check_period (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (integrity_check_period_we & check_regwen_qs),
+    .wd     (integrity_check_period_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.integrity_check_period.q ),
+
+    // to register interface (read)
+    .qs     (integrity_check_period_qs)
+  );
+
+
+  // R[consistency_check_period]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_consistency_check_period (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (consistency_check_period_we & check_regwen_qs),
+    .wd     (consistency_check_period_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.consistency_check_period.q ),
+
+    // to register interface (read)
+    .qs     (consistency_check_period_qs)
   );
 
 
@@ -1585,7 +1735,7 @@ module otp_ctrl_reg_top (
 
 
 
-  logic [36:0] addr_hit;
+  logic [39:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == OTP_CTRL_INTR_STATE_OFFSET);
@@ -1601,30 +1751,33 @@ module otp_ctrl_reg_top (
     addr_hit[10] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET);
     addr_hit[11] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET);
     addr_hit[12] = (reg_addr == OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET);
-    addr_hit[13] = (reg_addr == OTP_CTRL_CHECK_PERIOD_REGEN_OFFSET);
-    addr_hit[14] = (reg_addr == OTP_CTRL_INTEGRITY_CHECK_PERIOD_MSB_OFFSET);
-    addr_hit[15] = (reg_addr == OTP_CTRL_CONSISTENCY_CHECK_PERIOD_MSB_OFFSET);
-    addr_hit[16] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET);
-    addr_hit[17] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET);
-    addr_hit[18] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET);
-    addr_hit[19] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET);
-    addr_hit[20] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET);
-    addr_hit[21] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET);
-    addr_hit[22] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_0_OFFSET);
-    addr_hit[23] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_1_OFFSET);
-    addr_hit[24] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_0_OFFSET);
-    addr_hit[25] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_1_OFFSET);
-    addr_hit[26] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_0_OFFSET);
-    addr_hit[27] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_1_OFFSET);
-    addr_hit[28] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_0_OFFSET);
-    addr_hit[29] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_1_OFFSET);
-    addr_hit[30] = (reg_addr == OTP_CTRL_LC_STATE_0_OFFSET);
-    addr_hit[31] = (reg_addr == OTP_CTRL_LC_STATE_1_OFFSET);
-    addr_hit[32] = (reg_addr == OTP_CTRL_LC_STATE_2_OFFSET);
-    addr_hit[33] = (reg_addr == OTP_CTRL_LC_STATE_3_OFFSET);
-    addr_hit[34] = (reg_addr == OTP_CTRL_LC_STATE_4_OFFSET);
-    addr_hit[35] = (reg_addr == OTP_CTRL_LC_STATE_5_OFFSET);
-    addr_hit[36] = (reg_addr == OTP_CTRL_LC_TRANSITION_CNT_OFFSET);
+    addr_hit[13] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET);
+    addr_hit[14] = (reg_addr == OTP_CTRL_CHECK_TRIGGER_OFFSET);
+    addr_hit[15] = (reg_addr == OTP_CTRL_CHECK_REGWEN_OFFSET);
+    addr_hit[16] = (reg_addr == OTP_CTRL_CHECK_TIMEOUT_OFFSET);
+    addr_hit[17] = (reg_addr == OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET);
+    addr_hit[18] = (reg_addr == OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET);
+    addr_hit[19] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[20] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET);
+    addr_hit[21] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET);
+    addr_hit[22] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET);
+    addr_hit[23] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET);
+    addr_hit[24] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET);
+    addr_hit[25] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_0_OFFSET);
+    addr_hit[26] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_1_OFFSET);
+    addr_hit[27] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_0_OFFSET);
+    addr_hit[28] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_1_OFFSET);
+    addr_hit[29] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_0_OFFSET);
+    addr_hit[30] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_1_OFFSET);
+    addr_hit[31] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_0_OFFSET);
+    addr_hit[32] = (reg_addr == OTP_CTRL_SECRET2_DIGEST_1_OFFSET);
+    addr_hit[33] = (reg_addr == OTP_CTRL_LC_STATE_0_OFFSET);
+    addr_hit[34] = (reg_addr == OTP_CTRL_LC_STATE_1_OFFSET);
+    addr_hit[35] = (reg_addr == OTP_CTRL_LC_STATE_2_OFFSET);
+    addr_hit[36] = (reg_addr == OTP_CTRL_LC_STATE_3_OFFSET);
+    addr_hit[37] = (reg_addr == OTP_CTRL_LC_STATE_4_OFFSET);
+    addr_hit[38] = (reg_addr == OTP_CTRL_LC_STATE_5_OFFSET);
+    addr_hit[39] = (reg_addr == OTP_CTRL_LC_TRANSITION_CNT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1669,6 +1822,9 @@ module otp_ctrl_reg_top (
     if (addr_hit[34] && reg_we && (OTP_CTRL_PERMIT[34] != (OTP_CTRL_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[35] && reg_we && (OTP_CTRL_PERMIT[35] != (OTP_CTRL_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[36] && reg_we && (OTP_CTRL_PERMIT[36] != (OTP_CTRL_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[37] && reg_we && (OTP_CTRL_PERMIT[37] != (OTP_CTRL_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[38] && reg_we && (OTP_CTRL_PERMIT[38] != (OTP_CTRL_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[39] && reg_we && (OTP_CTRL_PERMIT[39] != (OTP_CTRL_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_otp_operation_done_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1695,19 +1851,23 @@ module otp_ctrl_reg_top (
 
   assign status_hw_cfg_error_re = addr_hit[3] && reg_re;
 
-  assign status_secret0_re = addr_hit[3] && reg_re;
+  assign status_secret0_error_re = addr_hit[3] && reg_re;
 
-  assign status_secret1_re = addr_hit[3] && reg_re;
+  assign status_secret1_error_re = addr_hit[3] && reg_re;
 
-  assign status_secret2_re = addr_hit[3] && reg_re;
+  assign status_secret2_error_re = addr_hit[3] && reg_re;
 
-  assign status_life_cycle_re = addr_hit[3] && reg_re;
+  assign status_life_cycle_error_re = addr_hit[3] && reg_re;
 
   assign status_dai_error_re = addr_hit[3] && reg_re;
 
   assign status_lci_error_re = addr_hit[3] && reg_re;
 
+  assign status_timeout_error_re = addr_hit[3] && reg_re;
+
   assign status_dai_idle_re = addr_hit[3] && reg_re;
+
+  assign status_check_pending_re = addr_hit[3] && reg_re;
 
   assign err_code_0_err_code_0_re = addr_hit[4] && reg_re;
 
@@ -1751,44 +1911,56 @@ module otp_ctrl_reg_top (
 
   assign direct_access_rdata_1_re = addr_hit[12] && reg_re;
 
-  assign check_period_regen_we = addr_hit[13] & reg_we & ~wr_err;
-  assign check_period_regen_wd = reg_wdata[0];
+  assign check_trigger_regwen_we = addr_hit[13] & reg_we & ~wr_err;
+  assign check_trigger_regwen_wd = reg_wdata[0];
 
-  assign integrity_check_period_msb_we = addr_hit[14] & reg_we & ~wr_err;
-  assign integrity_check_period_msb_wd = reg_wdata[5:0];
+  assign check_trigger_integrity_we = addr_hit[14] & reg_we & ~wr_err;
+  assign check_trigger_integrity_wd = reg_wdata[0];
 
-  assign consistency_check_period_msb_we = addr_hit[15] & reg_we & ~wr_err;
-  assign consistency_check_period_msb_wd = reg_wdata[5:0];
+  assign check_trigger_consistency_we = addr_hit[14] & reg_we & ~wr_err;
+  assign check_trigger_consistency_wd = reg_wdata[1];
 
-  assign creator_sw_cfg_read_lock_we = addr_hit[16] & reg_we & ~wr_err;
+  assign check_regwen_we = addr_hit[15] & reg_we & ~wr_err;
+  assign check_regwen_wd = reg_wdata[0];
+
+  assign check_timeout_we = addr_hit[16] & reg_we & ~wr_err;
+  assign check_timeout_wd = reg_wdata[31:0];
+
+  assign integrity_check_period_we = addr_hit[17] & reg_we & ~wr_err;
+  assign integrity_check_period_wd = reg_wdata[31:0];
+
+  assign consistency_check_period_we = addr_hit[18] & reg_we & ~wr_err;
+  assign consistency_check_period_wd = reg_wdata[31:0];
+
+  assign creator_sw_cfg_read_lock_we = addr_hit[19] & reg_we & ~wr_err;
   assign creator_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign owner_sw_cfg_read_lock_we = addr_hit[17] & reg_we & ~wr_err;
+  assign owner_sw_cfg_read_lock_we = addr_hit[20] & reg_we & ~wr_err;
   assign owner_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign creator_sw_cfg_digest_0_re = addr_hit[18] && reg_re;
+  assign creator_sw_cfg_digest_0_re = addr_hit[21] && reg_re;
 
-  assign creator_sw_cfg_digest_1_re = addr_hit[19] && reg_re;
+  assign creator_sw_cfg_digest_1_re = addr_hit[22] && reg_re;
 
-  assign owner_sw_cfg_digest_0_re = addr_hit[20] && reg_re;
+  assign owner_sw_cfg_digest_0_re = addr_hit[23] && reg_re;
 
-  assign owner_sw_cfg_digest_1_re = addr_hit[21] && reg_re;
+  assign owner_sw_cfg_digest_1_re = addr_hit[24] && reg_re;
 
-  assign hw_cfg_digest_0_re = addr_hit[22] && reg_re;
+  assign hw_cfg_digest_0_re = addr_hit[25] && reg_re;
 
-  assign hw_cfg_digest_1_re = addr_hit[23] && reg_re;
+  assign hw_cfg_digest_1_re = addr_hit[26] && reg_re;
 
-  assign secret0_digest_0_re = addr_hit[24] && reg_re;
+  assign secret0_digest_0_re = addr_hit[27] && reg_re;
 
-  assign secret0_digest_1_re = addr_hit[25] && reg_re;
+  assign secret0_digest_1_re = addr_hit[28] && reg_re;
 
-  assign secret1_digest_0_re = addr_hit[26] && reg_re;
+  assign secret1_digest_0_re = addr_hit[29] && reg_re;
 
-  assign secret1_digest_1_re = addr_hit[27] && reg_re;
+  assign secret1_digest_1_re = addr_hit[30] && reg_re;
 
-  assign secret2_digest_0_re = addr_hit[28] && reg_re;
+  assign secret2_digest_0_re = addr_hit[31] && reg_re;
 
-  assign secret2_digest_1_re = addr_hit[29] && reg_re;
+  assign secret2_digest_1_re = addr_hit[32] && reg_re;
 
 
 
@@ -1826,13 +1998,15 @@ module otp_ctrl_reg_top (
         reg_rdata_next[0] = status_creator_sw_cfg_error_qs;
         reg_rdata_next[1] = status_owner_sw_cfg_error_qs;
         reg_rdata_next[2] = status_hw_cfg_error_qs;
-        reg_rdata_next[3] = status_secret0_qs;
-        reg_rdata_next[4] = status_secret1_qs;
-        reg_rdata_next[5] = status_secret2_qs;
-        reg_rdata_next[6] = status_life_cycle_qs;
+        reg_rdata_next[3] = status_secret0_error_qs;
+        reg_rdata_next[4] = status_secret1_error_qs;
+        reg_rdata_next[5] = status_secret2_error_qs;
+        reg_rdata_next[6] = status_life_cycle_error_qs;
         reg_rdata_next[7] = status_dai_error_qs;
         reg_rdata_next[8] = status_lci_error_qs;
-        reg_rdata_next[9] = status_dai_idle_qs;
+        reg_rdata_next[9] = status_timeout_error_qs;
+        reg_rdata_next[10] = status_dai_idle_qs;
+        reg_rdata_next[11] = status_check_pending_qs;
       end
 
       addr_hit[4]: begin
@@ -1881,104 +2055,117 @@ module otp_ctrl_reg_top (
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[0] = check_period_regen_qs;
+        reg_rdata_next[0] = check_trigger_regwen_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[5:0] = integrity_check_period_msb_qs;
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[5:0] = consistency_check_period_msb_qs;
+        reg_rdata_next[0] = check_regwen_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[0] = creator_sw_cfg_read_lock_qs;
+        reg_rdata_next[31:0] = check_timeout_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[0] = owner_sw_cfg_read_lock_qs;
+        reg_rdata_next[31:0] = integrity_check_period_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = creator_sw_cfg_digest_0_qs;
+        reg_rdata_next[31:0] = consistency_check_period_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = creator_sw_cfg_digest_1_qs;
+        reg_rdata_next[0] = creator_sw_cfg_read_lock_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = owner_sw_cfg_digest_0_qs;
+        reg_rdata_next[0] = owner_sw_cfg_read_lock_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[31:0] = owner_sw_cfg_digest_1_qs;
+        reg_rdata_next[31:0] = creator_sw_cfg_digest_0_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = hw_cfg_digest_0_qs;
+        reg_rdata_next[31:0] = creator_sw_cfg_digest_1_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = hw_cfg_digest_1_qs;
+        reg_rdata_next[31:0] = owner_sw_cfg_digest_0_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = secret0_digest_0_qs;
+        reg_rdata_next[31:0] = owner_sw_cfg_digest_1_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = secret0_digest_1_qs;
+        reg_rdata_next[31:0] = hw_cfg_digest_0_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = secret1_digest_0_qs;
+        reg_rdata_next[31:0] = hw_cfg_digest_1_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = secret1_digest_1_qs;
+        reg_rdata_next[31:0] = secret0_digest_0_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = secret2_digest_0_qs;
+        reg_rdata_next[31:0] = secret0_digest_1_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = secret2_digest_1_qs;
+        reg_rdata_next[31:0] = secret1_digest_0_qs;
       end
 
       addr_hit[30]: begin
+        reg_rdata_next[31:0] = secret1_digest_1_qs;
+      end
+
+      addr_hit[31]: begin
+        reg_rdata_next[31:0] = secret2_digest_0_qs;
+      end
+
+      addr_hit[32]: begin
+        reg_rdata_next[31:0] = secret2_digest_1_qs;
+      end
+
+      addr_hit[33]: begin
         reg_rdata_next[15:0] = lc_state_0_lc_state_0_qs;
         reg_rdata_next[31:16] = lc_state_0_lc_state_1_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[34]: begin
         reg_rdata_next[15:0] = lc_state_1_lc_state_2_qs;
         reg_rdata_next[31:16] = lc_state_1_lc_state_3_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[35]: begin
         reg_rdata_next[15:0] = lc_state_2_lc_state_4_qs;
         reg_rdata_next[31:16] = lc_state_2_lc_state_5_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[36]: begin
         reg_rdata_next[15:0] = lc_state_3_lc_state_6_qs;
         reg_rdata_next[31:16] = lc_state_3_lc_state_7_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[37]: begin
         reg_rdata_next[15:0] = lc_state_4_lc_state_8_qs;
         reg_rdata_next[31:16] = lc_state_4_lc_state_9_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[38]: begin
         reg_rdata_next[15:0] = lc_state_5_lc_state_10_qs;
         reg_rdata_next[31:16] = lc_state_5_lc_state_11_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[39]: begin
         reg_rdata_next[31:0] = lc_transition_cnt_qs;
       end
 
