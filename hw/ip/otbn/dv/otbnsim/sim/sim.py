@@ -45,28 +45,37 @@ class OTBNSim:
         if not self.state.running:
             return (None, [])
 
-        word_pc = int(self.state.pc) >> 2
+        if self.state.stalled:
+            insn = None
+            changes = []
+            disasm = '(stall)'
+        else:
+            word_pc = int(self.state.pc) >> 2
+            if word_pc >= len(self.program):
+                raise RuntimeError('Trying to execute instruction at address '
+                                   '{:#x}, but the program is only {:#x} '
+                                   'bytes ({} instructions) long. Since there '
+                                   'are no architectural contents of the '
+                                   'memory here, we have to stop.'
+                                   .format(int(self.state.pc),
+                                           4 * len(self.program),
+                                           len(self.program)))
+            insn = self.program[word_pc]
 
-        if word_pc >= len(self.program):
-            raise RuntimeError('Trying to execute instruction at address '
-                               '{:#x}, but the program is only {:#x} bytes '
-                               '({} instructions) long. Since there is no '
-                               'architectural contents of the memory here, we '
-                               'have to stop.'
-                               .format(int(self.state.pc),
-                                       4 * len(self.program),
-                                       len(self.program)))
-        insn = self.program[word_pc]
+            if insn.insn.cycles > 1:
+                self.state.add_stall_cycles(insn.insn.cycles - 1)
 
-        insn.execute(self.state)
-        self.state.post_insn()
+            insn.execute(self.state)
+            self.state.post_insn()
 
-        changes = self.state.changes()
-        if verbose:
+            changes = self.state.changes()
             disasm = insn.disassemble(int(self.state.pc))
-            self._print_trace(disasm, changes)
 
         self.state.commit()
+
+        if verbose:
+            self._print_trace(disasm, changes)
+
         return (insn, changes)
 
     def dump_data(self) -> bytes:
