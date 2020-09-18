@@ -280,6 +280,92 @@ module tlul_assert #(
   `ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready)
   `ASSERT_KNOWN(dReadyKnown_A, h2d.d_ready)
 
+  ////////////////////////////////////
+  // SVA coverage //
+  ////////////////////////////////////
+  `define TLUL_COVER(SEQ) `COVER(``SEQ``_C, ``SEQ``_S, !clk_i, !rst_ni || disable_sva)
+
+  // host sends back2back requests
+  sequence b2bReq_S;
+    h2d.a_valid && d2h.a_ready ##1 h2d.a_valid;
+  endsequence
+
+  // device sends back2back responses
+  sequence b2bRsp_S;
+    d2h.d_valid && h2d.d_ready ##1 d2h.d_valid;
+  endsequence
+
+  // host sends back2back requests with same address
+  // UVM RAL can't issue this scenario, add this cover to make sure it's tested in some other seq
+  sequence b2bReqWithSameAddr_S;
+    bit [top_pkg::TL_AW-1:0] pre_addr;
+    (h2d.a_valid && d2h.a_ready, pre_addr = h2d.a_address)
+        ##1 h2d.a_valid && pre_addr == h2d.a_address;
+  endsequence
+
+  // a_valid is dropped without a_ready
+  sequence aValidNotAccepted_S;
+    h2d.a_valid && !d2h.a_ready ##1 !h2d.a_valid;
+  endsequence
+
+  // d_valid is dropped without a_ready
+  sequence dValidNotAccepted_S;
+    d2h.d_valid && !h2d.d_ready ##1 !d2h.d_valid;
+  endsequence
+
+  // host uses same source for back2back items
+  sequence b2bSameSource_S;
+    bit [top_pkg::TL_AIW-1:0] pre_source;
+    (h2d.a_valid && d2h.a_ready, pre_source = h2d.a_source) ##1 h2d.a_valid[->1]
+        ##0 pre_source == h2d.a_source;
+  endsequence
+
+  // a channal content is changed without being accepted
+  `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
+    sequence a_``NAME``ChangedNotAccepted_S; \
+      int pre; \
+      (h2d.a_valid && !d2h.a_ready, pre = h2d.a_``NAME``) ##1 h2d.a_valid[->1] \
+          ##0 pre != h2d.a_``NAME``; \
+    endsequence \
+    `TLUL_COVER(a_``NAME``ChangedNotAccepted)
+
+  // d channal content is changed without being accepted
+  `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
+    sequence d_``NAME``ChangedNotAccepted_S; \
+      int pre; \
+      (d2h.d_valid && !h2d.d_ready, pre = d2h.d_``NAME``) ##1 d2h.d_valid[->1] \
+          ##0 pre != d2h.d_``NAME``; \
+    endsequence \
+    `TLUL_COVER(d_``NAME``ChangedNotAccepted)
+
+  if (EndpointType == "Host") begin : gen_host_cov // DUT is host
+    `TLUL_COVER(b2bRsp)
+    `TLUL_COVER(dValidNotAccepted)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(data)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(opcode)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(param)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(size)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(source)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(sink)
+    `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(error)
+  end else if (EndpointType == "Device") begin : gen_device_cov // DUT is device
+    `TLUL_COVER(b2bReq)
+    `TLUL_COVER(b2bReqWithSameAddr)
+    `TLUL_COVER(aValidNotAccepted)
+    `TLUL_COVER(b2bSameSource)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(address)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(data)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(opcode)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(param)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(size)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(source)
+    `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(mask)
+  end else begin : gen_unknown_cov
+    initial begin : p_unknonw_cov
+      `ASSERT_I(unknownConfig_A, 0 == 1)
+    end
+  end
+
   `ifdef UVM
     initial forever begin
       bit tlul_assert_en;
@@ -290,6 +376,10 @@ module tlul_assert #(
       disable_sva = !tlul_assert_en;
     end
   `endif
+
+  `undef TLUL_COVER
+  `undef TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED
+  `undef TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED
 `endif
 `endif
 endmodule : tlul_assert
