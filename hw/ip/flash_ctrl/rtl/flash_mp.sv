@@ -15,7 +15,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input flash_sel_e if_sel_i,
 
   // configuration from sw
-  input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs_i,
+  input mp_region_cfg_t [MpRegions:0] region_cfgs_i,
   input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
   input info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_i,
 
@@ -40,6 +40,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic req_o,
   output logic rd_o,
   output logic prog_o,
+  output logic scramble_en_o,
   output logic pg_erase_o,
   output logic bk_erase_o,
   input rd_done_i,
@@ -69,13 +70,21 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   logic data_prog_en;
   logic data_pg_erase_en;
   logic data_bk_erase_en;
+  logic data_scramble_en;
   logic info_rd_en;
   logic info_prog_en;
   logic info_erase_en;
+  logic info_scramble_en;
 
   // Memory protection handling for hardware interface
   logic hw_sel;
   assign hw_sel = if_sel_i == HwSel;
+
+  logic data_part_sel;
+  logic info_part_sel;
+  assign data_part_sel = req_part_i == FlashPartData;
+  assign info_part_sel = req_part_i == FlashPartInfo;
+
 
   ////////////////////////////////////////
   // Check address out of bounds
@@ -98,8 +107,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // the address extends beyond the end of the partition in question
   // the bank selection is invalid
   // if the address overflowed the control counters
-  assign end_addr = (req_part_i == FlashPartData) ? DataPartitionEndAddr :
-                                                    InfoPartitionEndAddr[info_sel_i];
+  assign end_addr = data_part_sel ? DataPartitionEndAddr :
+                                    InfoPartitionEndAddr[info_sel_i];
+
   assign addr_invalid = req_i &
                         (page_addr > end_addr |
                          bank_invalid |
@@ -159,13 +169,15 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   end
 
   logic data_en;
-  assign data_en = data_region_cfg.en.q;
-  assign data_rd_en = rd_i & data_en & data_region_cfg.rd_en.q;
-  assign data_prog_en = prog_i & data_en & data_region_cfg.prog_en.q;
-  assign data_pg_erase_en = pg_erase_i & data_en & data_region_cfg.erase_en.q;
-  assign data_bk_erase_en = bk_erase_i & data_en & |bk_erase_en;
+  assign data_en          = data_part_sel             & data_region_cfg.en.q;
+  assign data_rd_en       = data_en & rd_i            & data_region_cfg.rd_en.q;
+  assign data_prog_en     = data_en & prog_i          & data_region_cfg.prog_en.q;
+  assign data_pg_erase_en = data_en & pg_erase_i      & data_region_cfg.erase_en.q;
+  assign data_bk_erase_en = data_en & bk_erase_i      & |bk_erase_en;
+  assign data_scramble_en = data_en & (rd_i | prog_i) & data_region_cfg.scramble_en.q;
 
-  assign invalid_data_txn = req_i & req_part_i == FlashPartData &
+
+  assign invalid_data_txn = req_i & data_part_sel &
                             ~(data_rd_en |
                               data_prog_en |
                               data_pg_erase_en |
@@ -210,24 +222,26 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign page_cfg = hw_sel ? hw_page_cfg : info_page_cfgs_i[bank_addr][info_sel_i][info_page_addr];
 
   // final operation
-  assign info_en = page_cfg.en.q;
-  assign info_rd_en = info_en & rd_i & page_cfg.rd_en.q;
-  assign info_prog_en = info_en & prog_i & page_cfg.prog_en.q;
-  assign info_erase_en = info_en & pg_erase_i & page_cfg.erase_en.q;
+  assign info_en          = info_part_sel             & page_cfg.en.q;
+  assign info_rd_en       = info_en & rd_i            & page_cfg.rd_en.q;
+  assign info_prog_en     = info_en & prog_i          & page_cfg.prog_en.q;
+  assign info_erase_en    = info_en & pg_erase_i      & page_cfg.erase_en.q;
+  assign info_scramble_en = info_en & (rd_i | prog_i) & page_cfg.scramble_en.q;
 
   // check for invalid transactions
-  assign invalid_info_txn = req_i & req_part_i == FlashPartInfo &
+  assign invalid_info_txn = req_i & info_part_sel &
                             ~(info_rd_en | info_prog_en | info_erase_en);
 
 
   ////////////////////////////////////////
   // Combine all check results
   ////////////////////////////////////////
-  assign rd_o = req_i & (data_rd_en | info_rd_en);
-  assign prog_o = req_i & data_prog_en;
-  assign pg_erase_o = req_i & (data_pg_erase_en | info_erase_en);
-  assign bk_erase_o = req_i & data_bk_erase_en;
-  assign req_o = rd_o | prog_o | pg_erase_o | bk_erase_o;
+  assign rd_o          = req_i & (data_rd_en | info_rd_en);
+  assign prog_o        = req_i & (data_prog_en | info_prog_en);
+  assign pg_erase_o    = req_i & (data_pg_erase_en | info_erase_en);
+  assign bk_erase_o    = req_i & data_bk_erase_en;
+  assign scramble_en_o = req_i & (data_scramble_en | info_scramble_en);
+  assign req_o         = rd_o | prog_o | pg_erase_o | bk_erase_o;
 
   logic txn_err;
   logic no_allowed_txn;
@@ -264,5 +278,18 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   `ASSERT(invalidReqOnehot_a, req_o |-> $onehot0({invalid_data_txn, invalid_info_txn}))
   // Cannot match more than one info rule at a time
   `ASSERT(hwInfoRuleOnehot_a, req_i & hw_sel |-> $onehot0(unused_rule_match))
+  // An input request should lead to an output request if there are no errors
+  `ASSERT(InReqOutReq_a, req_i |-> req_o | no_allowed_txn)
+  // An Info request should not lead to data requests
+  `ASSERT(InfoReqToData_a, req_i & info_part_sel |-> ~|{data_en,
+                                                        data_rd_en,
+                                                        data_prog_en,
+                                                        data_pg_erase_en,
+                                                        data_bk_erase_en})
+  // A data request should not lead to info requests
+  `ASSERT(DataReqToInfo_a, req_i & data_part_sel |-> ~|{info_en,
+                                                        info_rd_en,
+                                                        info_prog_en,
+                                                        info_erase_en})
 
 endmodule // flash_erase_ctrl

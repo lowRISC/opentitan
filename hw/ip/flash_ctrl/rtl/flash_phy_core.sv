@@ -15,10 +15,11 @@ module flash_phy_core import flash_phy_pkg::*; #(
 ) (
   input                              clk_i,
   input                              rst_ni,
-  input                              scramble_en_i,// temporary signal
   input                              host_req_i,   // host request - read only
+  input                              host_scramble_en_i,
   input [BusBankAddrW-1:0]           host_addr_i,
   input                              req_i,        // controller request
+  input                              scramble_en_i,
   input                              rd_i,
   input                              prog_i,
   input                              pg_erase_i,
@@ -75,6 +76,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // interface with flash macro
   logic [BusBankAddrW-1:0] muxed_addr;
   flash_ctrl_pkg::flash_part_e muxed_part;
+  logic muxed_scramble_en;
 
   // entire read stage is idle, inclusive of all stages
   logic rd_stage_idle;
@@ -212,6 +214,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
+  assign muxed_scramble_en = host_sel ? host_scramble_en_i : scramble_en_i;
   assign rd_done_o = ctrl_rsp_vld & rd_i;
   assign prog_done_o = ctrl_rsp_vld & prog_i;
   assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i);
@@ -232,7 +235,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .clk_i,
     .rst_ni,
     .req_i(reqs[PhyRead]),
-    .descramble_i(scramble_en_i),
+    .descramble_i(muxed_scramble_en),
     .prog_i(reqs[PhyProg]),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
@@ -277,7 +280,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       .clk_i,
       .rst_ni,
       .req_i(reqs[PhyProg]),
-      .scramble_i(scramble_en_i),
+      .scramble_i(muxed_scramble_en),
       .sel_i(addr_i[0 +: WordSelW]),
       .data_i(prog_data_i),
       .last_i(prog_last_i),

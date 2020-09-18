@@ -505,7 +505,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Data partition protection configuration
   //////////////////////////////////////
   // extra region is the default region
-  flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs;
+  mp_region_cfg_t [MpRegions:0] region_cfgs;
   assign region_cfgs[MpRegions-1:0] = reg2hw.mp_region_cfg[MpRegions-1:0];
 
   //default region
@@ -515,6 +515,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].rd_en.q = reg2hw.default_region.rd_en.q;
   assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
+  assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
 
   //////////////////////////////////////
   // Info partition protection configuration
@@ -590,6 +591,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // flash phy interface
     .req_o(flash_o.req),
+    .scramble_en_o(flash_o.scramble_en),
     .rd_o(flash_o.rd),
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
@@ -639,7 +641,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.prog_type = flash_prog_type;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;
-  assign flash_o.scramble_en = reg2hw.scramble_en.q;
+  assign flash_o.region_cfgs = region_cfgs;
   assign flash_o.addr_key = otp_i.addr_key;
   assign flash_o.data_key = otp_i.data_key;
   assign flash_rd_err = flash_i.rd_err;
