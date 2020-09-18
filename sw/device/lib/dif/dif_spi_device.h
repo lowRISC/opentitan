@@ -23,54 +23,108 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Represents a signal edge type.
+ * A signal edge type: positive or negative.
  */
 typedef enum dif_spi_device_edge {
+  /**
+   * Represents a positive edge (i.e., from low to high).
+   */
   kDifSpiDeviceEdgePositive,
+  /**
+   * Represents a negative edge (i.e., from high to low).
+   */
   kDifSpiDeviceEdgeNegative,
 } dif_spi_device_edge_t;
 
 /**
- * Represents a bit ordering.
+ * A bit ordering within a byte.
  */
 typedef enum dif_spi_device_bit_order {
+  /**
+   * Represents the most-significant-bit to least-significant-bit order.
+   */
   kDifSpiDeviceBitOrderMsbToLsb,
+  /**
+   * Represents the least-significant-bit to most-significant-bit order.
+   */
   kDifSpiDeviceBitOrderLsbToMsb,
 } dif_spi_device_bit_order_t;
 
 /**
- * Represents the enablement state of a particular SPI IRQ.
+ * A toggle state: enabled, or disabled.
+ *
+ * This enum may be used instead of a `bool` when describing an enabled/disabled
+ * state.
  */
-typedef enum dif_spi_device_irq_state {
-  kDifSpiDeviceIrqStateEnabled = true,
-  kDifSpiDeviceIrqStateDisabled = false,
-} dif_spi_device_irq_state_t;
+typedef enum dif_spi_device_toggle {
+  /*
+   * The "enabled" state.
+   */
+  kDifSpiDeviceToggleEnabled,
+  /**
+   * The "disabled" state.
+   */
+  kDifSpiDeviceToggleDisabled,
+} dif_spi_device_toggle_t;
 
 /**
- * Represents the types of interrupts that the SPI device will
- * fire to signal state.
+ * A SPI interrupt request type.
  */
-typedef enum dif_spi_device_irq_type {
-  kDifSpiDeviceIrqTypeRxFull,
-  kDifSpiDeviceIrqTypeRxAboveLevel,
-  kDifSpiDeviceIrqTypeTxBelowLevel,
-  kDifSpiDeviceIrqTypeRxError,
-  kDifSpiDeviceIrqTypeRxOverflow,
-  kDifSpiDeviceIrqTypeTxUnderflow,
-} dif_spi_device_irq_type_t;
+typedef enum dif_spi_device_irq {
+  /**
+   * Indicates that the RX FIFO is full.
+   */
+  kDifSpiDeviceIrqRxFull,
+  /**
+   * Indicates that the RX FIFO is above the configured level.
+   */
+  kDifSpiDeviceIrqRxAboveLevel,
+  /**
+   * Indicates that the TX FIFO is below the configured level.
+   */
+  kDifSpiDeviceIrqTxBelowLevel,
+  /**
+   * Indicates an error in the RX FIFO.
+   */
+  kDifSpiDeviceIrqRxError,
+  /**
+   * Indicates that overflow has occured in the RX FIFO.
+   */
+  kDifSpiDeviceIrqRxOverflow,
+  /**
+   * Indicates that underflow has occured in the RX FIFO.
+   */
+  kDifSpiDeviceIrqTxUnderflow,
+} dif_spi_device_irq_t;
 
 /**
- * Errors returned by SPI DIF functions.
+ * A snapshot of the enablement state of the interrupts for SPI.
+ *
+ * This is an opaque type, to be used with the
+ * `dif_spi_device_irq_disable_all()` and
+ * `dif_spi_device_irq_restore_all()` functions.
+ */
+typedef uint32_t dif_spi_device_irq_snapshot_t;
+
+/**
+ * The result of a SPI operation.
  */
 typedef enum dif_spi_device_result {
   /**
-   * Indicates a successful operation.
+   * Indicates that the operation succeeded.
    */
-  kDifSpiDeviceResultOk = 0,
+  kDifSpiDeviceOk = 0,
   /**
-   * Indicates a failed precondition on the function arguments.
+   * Indicates some unspecified failure.
    */
-  kDifSpiDeviceResultBadArg,
+  kDifSpiDeviceError = 1,
+  /**
+   * Indicates that some parameter passed into a function failed a
+   * precondition.
+   *
+   * When this value is returned, no hardware operations occured.
+   */
+  kDifSpiDeviceBadArg = 2,
 } dif_spi_device_result_t;
 
 /**
@@ -82,7 +136,24 @@ typedef enum dif_spi_device_result {
 extern const uint16_t kDifSpiDeviceBufferLen;
 
 /**
- * Configuration for initializing a SPI device.
+ * Hardware instantiation parameters for SPI.
+ *
+ * This struct describes information about the underlying hardware that is
+ * not determined until the hardware design is used as part of a top-level
+ * design.
+ */
+typedef struct dif_spi_device_params {
+  /**
+   * The base address for the SPI hardware registers.
+   */
+  mmio_region_t base_addr;
+} dif_spi_device_params_t;
+
+/**
+ * Runtime configuration for SPI.
+ *
+ * This struct describes runtime information for one-time configuration of the
+ * hardware.
  */
 typedef struct dif_spi_device_config {
   dif_spi_device_edge_t clock_polarity;
@@ -90,103 +161,155 @@ typedef struct dif_spi_device_config {
   dif_spi_device_bit_order_t tx_order;
   dif_spi_device_bit_order_t rx_order;
   uint8_t rx_fifo_timeout;
+  /**
+   * The length, in bytes, that should be reserved for the RX FIFO.
+   *
+   * `kDifSpiDeviceBufferLen / 2` is a good default for this value.
+   */
   uint16_t rx_fifo_len;
+  /**
+   * The length, in bytes, that should be reserved for the TX FIFO.
+   *
+   * `kDifSpiDeviceBufferLen / 2` is a good default for this value.
+   */
   uint16_t tx_fifo_len;
 } dif_spi_device_config_t;
 
 /**
- * State for a particular SPI device.
+ * A handle to a SPI device.
  *
- * Its member variables should be considered private, and are only provided so
- * that callers can allocate it.
+ * This type should be treated as opaque by users.
  */
 typedef struct dif_spi_device {
-  mmio_region_t base_addr;
-  uint16_t rx_fifo_base;
+  dif_spi_device_params_t params;
   uint16_t rx_fifo_len;
-  uint16_t tx_fifo_base;
   uint16_t tx_fifo_len;
 } dif_spi_device_t;
 
 /**
- * Initializes a SPI device with the given configuration.
+ * Creates a new handle for SPI.
  *
- * @param base_addr The start of the SPI device register.
- * @param config The configuration to initialize with.
- * @param[out] spi The initialized device.
+ * This function does not actuate the hardware.
+ *
+ * @param params Hardware instantiation parameters.
+ * @param[out] spi Out param for the initialized handle.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_init(
-    mmio_region_t base_addr, const dif_spi_device_config_t *config,
-    dif_spi_device_t *spi);
+dif_spi_device_result_t dif_spi_device_init(dif_spi_device_params_t params,
+                                            dif_spi_device_t *spi);
+
+/**
+ * Configures SPI with runtime information.
+ *
+ * This function should need to be called once for the lifetime of `handle`.
+ *
+ * @param spi A SPI handle.
+ * @param config Runtime configuration parameters.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_spi_device_result_t dif_spi_device_configure(
+    dif_spi_device_t *spi, dif_spi_device_config_t config);
 
 /**
  * Issues an "abort" to the given SPI device, causing all in-progress IO to
  * halt.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi);
 
 /**
- * Resets all interrupt-related state on the given SPI device, such as enabled
- * interrupts and set RX/TX levels.
+ * Returns whether a particular interrupt is currently pending.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
+ * @param irq An interrupt type.
+ * @param[out] is_pending Out-param for whether the interrupt is pending.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_irq_reset(const dif_spi_device_t *spi);
+dif_spi_device_result_t dif_spi_device_irq_is_pending(
+    const dif_spi_device_t *spi, dif_spi_device_irq_t irq, bool *is_pending);
 
 /**
- * Returns whether the given IRQ is currently being serviced.
+ * Acknowledges a particular interrupt, indicating to the hardware that it has
+ * been successfully serviced.
  *
- * @param spi An SPI device.
- * @param type Which IRQ type to check.
- * @param[out] flag Whether the IRQ is active.
+ * @param spi A SPI handle.
+ * @param irq An interrupt type.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_irq_get(const dif_spi_device_t *spi,
-                                               dif_spi_device_irq_type_t type,
-                                               bool *flag_out);
+dif_spi_device_result_t dif_spi_device_irq_acknowledge(
+    const dif_spi_device_t *spi, dif_spi_device_irq_t irq);
 
 /**
- * Clears all active interrupt bits.
+ * Checks whether a particular interrupt is currently enabled or disabled.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
+ * @param irq An interrupt type.
+ * @param[out] state Out-param toggle state of the interrupt.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_irq_clear_all(
-    const dif_spi_device_t *spi);
+dif_spi_device_result_t dif_spi_device_irq_get_enabled(
+    const dif_spi_device_t *spi, dif_spi_device_irq_t irq,
+    dif_spi_device_toggle_t *state);
 
 /**
- * Enable or disable a particular interrupt.
+ * Sets whether a particular interrupt is currently enabled or disabled.
  *
- * @param spi An SPI device.
- * @param type Which IRQ type to toggle.
- * @param state The state to update the bit to.
+ * @param spi A SPI handle.
+ * @param irq An interrupt type.
+ * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_irq_enable(
-    const dif_spi_device_t *spi, dif_spi_device_irq_type_t type,
-    dif_spi_device_irq_state_t state);
+dif_spi_device_result_t dif_spi_device_irq_set_enabled(
+    const dif_spi_device_t *spi, dif_spi_device_irq_t irq,
+    dif_spi_device_toggle_t state);
 
 /**
- * Forces a particular IRQ type to fire.
+ * Forces a particular interrupt, causing it to be serviced as if hardware had
+ * asserted it.
  *
- * @param spi An SPI device.
- * @param type Which IRQ type to fire.
+ * @param spi A SPI handle.
+ * @param irq An interrupt type.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_spi_device_result_t dif_spi_device_irq_force(
-    const dif_spi_device_t *spi, dif_spi_device_irq_type_t type);
+dif_spi_device_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi,
+                                                 dif_spi_device_irq_t irq);
+
+/**
+ * Disables all interrupts, optionally snapshotting all toggle state for later
+ * restoration.
+ *
+ * @param spi A SPI handle.
+ * @param[out] snapshot Out-param for the snapshot; may be `NULL`.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_spi_device_result_t dif_spi_device_irq_disable_all(
+    const dif_spi_device_t *spi, dif_spi_device_irq_snapshot_t *snapshot);
+
+/**
+ * Restores interrupts from the given snapshot.
+ *
+ * This function can be used with `dif_spi_device_irq_disable_all()` to
+ * temporary
+ * interrupt save-and-restore.
+ *
+ * @param spi A SPI handle.
+ * @param snapshot A snapshot to restore from.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_spi_device_result_t dif_spi_device_irq_restore_all(
+    const dif_spi_device_t *spi, const dif_spi_device_irq_snapshot_t *snapshot);
 
 /**
  * Sets up the "FIFO level" (that is, number of bytes present in a particular
@@ -202,7 +325,7 @@ dif_spi_device_result_t dif_spi_device_irq_force(
  * to detect that there is free space to write more data to the TX FIFO.
  * This is the `Main Memory -> Spi Buffer` case.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
  * @param rx_level The new RX level, as described above.
  * @param tx_level The new TX level, as described above.
  * @return The result of the operation.
@@ -214,7 +337,7 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
 /**
  * Returns the number of bytes still pending receipt by software in the RX FIFO.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
  * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */
@@ -226,7 +349,7 @@ dif_spi_device_result_t dif_spi_device_rx_pending(const dif_spi_device_t *spi,
  * Returns the number of bytes still pending transmission by hardware in the TX
  * FIFO.
  *
- * @param spi An SPI device.
+ * @param spi A SPI handle.
  * @param[out] bytes_pending The number of bytes pending
  * @return The result of the operation.
  */

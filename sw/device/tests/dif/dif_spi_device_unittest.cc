@@ -40,11 +40,9 @@ class SpiTest : public testing::Test, public MmioTest {
   static const uint16_t kFifoLen = 0x400;
 
   dif_spi_device_t spi_ = {
-      /*base_addr=*/dev().region(),
-      /*rx_fifo_base=*/0x0000,
-      /*rx_fifo_len=*/kFifoLen,
-      /*tx_fifo_base=*/kFifoLen,
-      /*tx_fifo_len=*/kFifoLen,
+      .params = {.base_addr = dev().region()},
+      .rx_fifo_len = kFifoLen,
+      .tx_fifo_len = kFifoLen,
   };
 
   dif_spi_device_config_t config_ = {
@@ -66,7 +64,7 @@ TEST_F(AbortTest, Immediate) {
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
                 {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
 
-  EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceOk);
 }
 
 TEST_F(AbortTest, Delayed) {
@@ -81,30 +79,16 @@ TEST_F(AbortTest, Delayed) {
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
                 {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
 
-  EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceOk);
 }
 
 TEST_F(AbortTest, NullArgs) {
-  EXPECT_EQ(dif_spi_device_abort(nullptr), kDifSpiDeviceResultBadArg);
+  EXPECT_EQ(dif_spi_device_abort(nullptr), kDifSpiDeviceBadArg);
 }
 
-class InitTest : public SpiTest {};
+class ConfigTest : public SpiTest {};
 
-TEST_F(InitTest, BasicInit) {
-  EXPECT_MASK32(SPI_DEVICE_CONTROL_REG_OFFSET,
-                {{SPI_DEVICE_CONTROL_ABORT, 0x1, 0x1}});
-  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
-                {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
-
-  EXPECT_WRITE32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                 std::numeric_limits<uint32_t>::max());
-
-  EXPECT_WRITE32(SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
-                 {{SPI_DEVICE_FIFO_LEVEL_RXLVL_OFFSET, 0x80},
-                  {SPI_DEVICE_FIFO_LEVEL_TXLVL_OFFSET, 0x00}});
-
-  EXPECT_WRITE32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET, 0x0);
-
+TEST_F(ConfigTest, BasicInit) {
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
                      {SPI_DEVICE_CFG_CPOL, 0},
@@ -124,30 +108,15 @@ TEST_F(InitTest, BasicInit) {
                      {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x800 - 1},
                  });
 
-  EXPECT_EQ(dif_spi_device_init(dev().region(), &config_, &spi_),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_configure(&spi_, config_), kDifSpiDeviceOk);
 }
 
-TEST_F(InitTest, ComplexInit) {
+TEST_F(ConfigTest, ComplexInit) {
   config_.clock_polarity = kDifSpiDeviceEdgeNegative;
   config_.data_phase = kDifSpiDeviceEdgePositive;
   config_.tx_order = kDifSpiDeviceBitOrderLsbToMsb;
   config_.rx_fifo_timeout = 42;
   config_.rx_fifo_len = 0x24;
-
-  EXPECT_MASK32(SPI_DEVICE_CONTROL_REG_OFFSET,
-                {{SPI_DEVICE_CONTROL_ABORT, 0x1, 0x1}});
-  EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
-                {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
-
-  EXPECT_WRITE32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                 std::numeric_limits<uint32_t>::max());
-
-  EXPECT_WRITE32(SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
-                 {{SPI_DEVICE_FIFO_LEVEL_RXLVL_OFFSET, 0x80},
-                  {SPI_DEVICE_FIFO_LEVEL_TXLVL_OFFSET, 0x00}});
-
-  EXPECT_WRITE32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET, 0x0);
 
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
@@ -168,21 +137,16 @@ TEST_F(InitTest, ComplexInit) {
                      {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x423},
                  });
 
-  EXPECT_EQ(dif_spi_device_init(dev().region(), &config_, &spi_),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_configure(&spi_, config_), kDifSpiDeviceOk);
 }
 
-TEST_F(InitTest, NullArgs) {
-  EXPECT_EQ(dif_spi_device_init(dev().region(), &config_, nullptr),
-            kDifSpiDeviceResultBadArg);
-  EXPECT_EQ(dif_spi_device_init(dev().region(), nullptr, &spi_),
-            kDifSpiDeviceResultBadArg);
+TEST_F(ConfigTest, NullArgs) {
+  EXPECT_EQ(dif_spi_device_configure(nullptr, config_), kDifSpiDeviceBadArg);
 }
 
-TEST_F(InitTest, InitSramOverflow) {
+TEST_F(ConfigTest, InitSramOverflow) {
   config_.rx_fifo_len = 0x1000;
-  EXPECT_EQ(dif_spi_device_init(dev().region(), &config_, &spi_),
-            kDifSpiDeviceResultBadArg);
+  EXPECT_EQ(dif_spi_device_configure(&spi_, config_), kDifSpiDeviceBadArg);
 }
 
 class IrqTest : public SpiTest {};
@@ -192,110 +156,111 @@ TEST_F(IrqTest, Get) {
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_STATE_RXF, 1}});
-  EXPECT_EQ(dif_spi_device_irq_get(&spi_, kDifSpiDeviceIrqTypeRxFull, &out),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqRxFull, &out),
+            kDifSpiDeviceOk);
   EXPECT_TRUE(out);
 
   EXPECT_READ32(
       SPI_DEVICE_INTR_STATE_REG_OFFSET,
       {{SPI_DEVICE_INTR_STATE_RXERR, 0}, {SPI_DEVICE_INTR_STATE_RXF, 1}});
-  EXPECT_EQ(dif_spi_device_irq_get(&spi_, kDifSpiDeviceIrqTypeRxError, &out),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqRxError, &out),
+            kDifSpiDeviceOk);
   EXPECT_FALSE(out);
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_STATE_TXUNDERFLOW, 1}});
   EXPECT_EQ(
-      dif_spi_device_irq_get(&spi_, kDifSpiDeviceIrqTypeTxUnderflow, &out),
-      kDifSpiDeviceResultOk);
+      dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqTxUnderflow, &out),
+      kDifSpiDeviceOk);
   EXPECT_TRUE(out);
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_STATE_TXLVL, 0}});
   EXPECT_EQ(
-      dif_spi_device_irq_get(&spi_, kDifSpiDeviceIrqTypeTxBelowLevel, &out),
-      kDifSpiDeviceResultOk);
+      dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqTxBelowLevel, &out),
+      kDifSpiDeviceOk);
   EXPECT_FALSE(out);
 }
 
 TEST_F(IrqTest, GetNull) {
   bool out;
-  EXPECT_EQ(dif_spi_device_irq_get(nullptr, kDifSpiDeviceIrqTypeRxFull, &out),
-            kDifSpiDeviceResultBadArg);
-  EXPECT_EQ(dif_spi_device_irq_get(&spi_, kDifSpiDeviceIrqTypeRxFull, nullptr),
-            kDifSpiDeviceResultBadArg);
+  EXPECT_EQ(
+      dif_spi_device_irq_is_pending(nullptr, kDifSpiDeviceIrqRxFull, &out),
+      kDifSpiDeviceBadArg);
+  EXPECT_EQ(
+      dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqRxFull, nullptr),
+      kDifSpiDeviceBadArg);
 }
 
 TEST_F(IrqTest, Enable) {
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_ENABLE_RXF, 0x1, 1}});
-  EXPECT_EQ(dif_spi_device_irq_enable(&spi_, kDifSpiDeviceIrqTypeRxFull,
-                                      kDifSpiDeviceIrqStateEnabled),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqRxFull,
+                                           kDifSpiDeviceToggleEnabled),
+            kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_ENABLE_RXERR, 0x1, 0}});
-  EXPECT_EQ(dif_spi_device_irq_enable(&spi_, kDifSpiDeviceIrqTypeRxError,
-                                      kDifSpiDeviceIrqStateDisabled),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqRxError,
+                                           kDifSpiDeviceToggleDisabled),
+            kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_ENABLE_TXUNDERFLOW, 0x1, 1}});
-  EXPECT_EQ(dif_spi_device_irq_enable(&spi_, kDifSpiDeviceIrqTypeTxUnderflow,
-                                      kDifSpiDeviceIrqStateEnabled),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqTxUnderflow,
+                                           kDifSpiDeviceToggleEnabled),
+            kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
                 {{SPI_DEVICE_INTR_ENABLE_TXLVL, 0x1, 0}});
-  EXPECT_EQ(dif_spi_device_irq_enable(&spi_, kDifSpiDeviceIrqTypeTxBelowLevel,
-                                      kDifSpiDeviceIrqStateDisabled),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqTxBelowLevel,
+                                           kDifSpiDeviceToggleDisabled),
+            kDifSpiDeviceOk);
 }
 
 TEST_F(IrqTest, EnableNull) {
-  EXPECT_EQ(dif_spi_device_irq_enable(nullptr, kDifSpiDeviceIrqTypeRxFull,
-                                      kDifSpiDeviceIrqStateEnabled),
-            kDifSpiDeviceResultBadArg);
+  EXPECT_EQ(dif_spi_device_irq_set_enabled(nullptr, kDifSpiDeviceIrqRxFull,
+                                           kDifSpiDeviceToggleEnabled),
+            kDifSpiDeviceBadArg);
 }
 
 TEST_F(IrqTest, Force) {
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
                  {{SPI_DEVICE_INTR_TEST_RXF, 1}});
-  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTypeRxFull),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqRxFull),
+            kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
                  {{SPI_DEVICE_INTR_TEST_RXERR, 1}});
-  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTypeRxError),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqRxError),
+            kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
                  {{SPI_DEVICE_INTR_TEST_TXUNDERFLOW, 1}});
-  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTypeTxUnderflow),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTxUnderflow),
+            kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
                  {{SPI_DEVICE_INTR_TEST_TXLVL, 1}});
-  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTypeTxBelowLevel),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTxBelowLevel),
+            kDifSpiDeviceOk);
 }
 
 TEST_F(IrqTest, ForceNull) {
-  EXPECT_EQ(dif_spi_device_irq_force(nullptr, kDifSpiDeviceIrqTypeRxFull),
-            kDifSpiDeviceResultBadArg);
+  EXPECT_EQ(dif_spi_device_irq_force(nullptr, kDifSpiDeviceIrqRxFull),
+            kDifSpiDeviceBadArg);
 }
 
 TEST_F(IrqTest, Levels) {
   EXPECT_WRITE32(SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
                  {{SPI_DEVICE_FIFO_LEVEL_RXLVL_OFFSET, 42},
                   {SPI_DEVICE_FIFO_LEVEL_TXLVL_OFFSET, 123}});
-  EXPECT_EQ(dif_spi_device_set_irq_levels(&spi_, 42, 123),
-            kDifSpiDeviceResultOk);
+  EXPECT_EQ(dif_spi_device_set_irq_levels(&spi_, 42, 123), kDifSpiDeviceOk);
 }
 
 TEST_F(IrqTest, LevelsNull) {
   EXPECT_EQ(dif_spi_device_set_irq_levels(nullptr, 123, 456),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
 }
 
 class RxPendingTest : public SpiTest {};
@@ -306,7 +271,7 @@ TEST_F(RxPendingTest, BothZero) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, 0x0}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0);
 }
 
@@ -316,7 +281,7 @@ TEST_F(RxPendingTest, InPhaseEmpty) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0);
 }
 
@@ -326,7 +291,7 @@ TEST_F(RxPendingTest, InPhase) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x15);
 }
 
@@ -336,7 +301,7 @@ TEST_F(RxPendingTest, OutOfPhaseFull) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x400);
 }
 
@@ -346,16 +311,15 @@ TEST_F(RxPendingTest, OutOfPhase) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x57, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x3eb);
 }
 
 TEST_F(RxPendingTest, NullArgs) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(nullptr, &bytes_remaining),
-            kDifSpiDeviceResultBadArg);
-  EXPECT_EQ(dif_spi_device_rx_pending(&spi_, nullptr),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
+  EXPECT_EQ(dif_spi_device_rx_pending(&spi_, nullptr), kDifSpiDeviceBadArg);
 }
 
 class TxPendingTest : public SpiTest {};
@@ -366,7 +330,7 @@ TEST_F(TxPendingTest, BothZero) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, 0x0}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0);
 }
 
@@ -376,7 +340,7 @@ TEST_F(TxPendingTest, InPhaseEmpty) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0);
 }
 
@@ -386,7 +350,7 @@ TEST_F(TxPendingTest, InPhase) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x15);
 }
 
@@ -396,7 +360,7 @@ TEST_F(TxPendingTest, OutOfPhaseFull) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x42, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x400);
 }
 
@@ -406,16 +370,15 @@ TEST_F(TxPendingTest, OutOfPhase) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x57, true)}});
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(bytes_remaining, 0x3eb);
 }
 
 TEST_F(TxPendingTest, NullArgs) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(nullptr, &bytes_remaining),
-            kDifSpiDeviceResultBadArg);
-  EXPECT_EQ(dif_spi_device_tx_pending(&spi_, nullptr),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
+  EXPECT_EQ(dif_spi_device_tx_pending(&spi_, nullptr), kDifSpiDeviceBadArg);
 }
 
 class RecvTest : public SpiTest {};
@@ -429,7 +392,7 @@ TEST_F(RecvTest, EmptyFifo) {
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, 0);
   buf.resize(recv_len);
   EXPECT_EQ(buf, "");
@@ -441,7 +404,7 @@ TEST_F(RecvTest, FullFifoAligned) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x50, false)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   for (int i = 0; i < kFifoLen; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_READ32(idx, LeInt(&message[i]));
@@ -455,7 +418,7 @@ TEST_F(RecvTest, FullFifoAligned) {
   buf.resize(message.size() * 2);
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, buf.data(), buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, message.size());
   buf.resize(recv_len);
   EXPECT_EQ(buf, message);
@@ -469,7 +432,7 @@ TEST_F(RecvTest, FullFifoSmallBuf) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x50, false)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   for (size_t i = 0; i < buf_len; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_READ32(idx, LeInt(&message[i]));
@@ -484,7 +447,7 @@ TEST_F(RecvTest, FullFifoSmallBuf) {
   buf.resize(buf_len);
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, buf.data(), buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, buf_len);
   buf.resize(recv_len);
   message.resize(recv_len);
@@ -500,7 +463,7 @@ TEST_F(RecvTest, FullyAligned) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(message.size(), false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -514,7 +477,7 @@ TEST_F(RecvTest, FullyAligned) {
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, message.size());
   buf.resize(recv_len);
   EXPECT_EQ(buf, message);
@@ -529,7 +492,7 @@ TEST_F(RecvTest, UnalignedMessage) {
                 {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -543,7 +506,7 @@ TEST_F(RecvTest, UnalignedMessage) {
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, cropped_len);
 
   buf.resize(message.size());
@@ -564,7 +527,7 @@ TEST_F(RecvTest, UnalignedStart) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -578,7 +541,7 @@ TEST_F(RecvTest, UnalignedStart) {
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, cropped_len - cropped_start);
 
   buf.resize(message.size());
@@ -599,7 +562,7 @@ TEST_F(RecvTest, UnalignedSmall) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
 
   EXPECT_WRITE32(
@@ -611,7 +574,7 @@ TEST_F(RecvTest, UnalignedSmall) {
   size_t recv_len = 0;
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(recv_len, cropped_len - cropped_start);
 
   buf.resize(message.size());
@@ -627,16 +590,16 @@ TEST_F(RecvTest, NullArgs) {
 
   EXPECT_EQ(dif_spi_device_recv(nullptr, const_cast<char *>(buf.data()),
                                 buf.size(), &recv_len),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
   EXPECT_EQ(dif_spi_device_recv(&spi_, nullptr, buf.size(), &recv_len),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
 
   EXPECT_READ32(SPI_DEVICE_RXF_PTR_REG_OFFSET,
                 {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(0x5a, false)},
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x5a, false)}});
   EXPECT_EQ(dif_spi_device_recv(&spi_, const_cast<char *>(buf.data()),
                                 buf.size(), nullptr),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
 }
 
 class SendTest : public SpiTest {};
@@ -650,7 +613,7 @@ TEST_F(SendTest, FullFifo) {
   size_t send_len = 0;
   EXPECT_EQ(
       dif_spi_device_send(&spi_, message.data(), message.size(), &send_len),
-      kDifSpiDeviceResultOk);
+      kDifSpiDeviceOk);
   EXPECT_EQ(send_len, 0);
 }
 
@@ -660,7 +623,7 @@ TEST_F(SendTest, EmptyToFull) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x50, true)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
   for (int i = 0; i < kFifoLen; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_WRITE32(idx, LeInt(&message[i]));
@@ -673,7 +636,7 @@ TEST_F(SendTest, EmptyToFull) {
   size_t sent_len = 0;
   EXPECT_EQ(
       dif_spi_device_send(&spi_, message.data(), message.size(), &sent_len),
-      kDifSpiDeviceResultOk);
+      kDifSpiDeviceOk);
   EXPECT_EQ(sent_len, message.size());
 }
 
@@ -686,7 +649,7 @@ TEST_F(SendTest, AlmostFull) {
   uintptr_t value = 0;
   memcpy(&value, message.data(), 2);
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
   EXPECT_MASK32(fifo_base + 0x4c, {{0x10, 0xffff, value}});
 
   EXPECT_WRITE32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
@@ -696,7 +659,7 @@ TEST_F(SendTest, AlmostFull) {
   size_t sent_len = 0;
   EXPECT_EQ(
       dif_spi_device_send(&spi_, message.data(), message.size(), &sent_len),
-      kDifSpiDeviceResultOk);
+      kDifSpiDeviceOk);
   EXPECT_EQ(sent_len, 2);
 }
 
@@ -708,7 +671,7 @@ TEST_F(SendTest, FullyAligned) {
                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x00, false)},
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
   EXPECT_WRITE32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_WRITE32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_WRITE32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -721,7 +684,7 @@ TEST_F(SendTest, FullyAligned) {
   size_t send_len = 0;
   EXPECT_EQ(
       dif_spi_device_send(&spi_, message.data(), message.size(), &send_len),
-      kDifSpiDeviceResultOk);
+      kDifSpiDeviceOk);
   EXPECT_EQ(send_len, message.size());
 }
 
@@ -734,7 +697,7 @@ TEST_F(SendTest, UnalignedMessage) {
                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x00, false)},
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
   EXPECT_WRITE32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_WRITE32(fifo_base + 0x4, LeInt(&message[0x4]));
 
@@ -748,7 +711,7 @@ TEST_F(SendTest, UnalignedMessage) {
 
   size_t send_len = 0;
   EXPECT_EQ(dif_spi_device_send(&spi_, message.data(), cropped_len, &send_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(send_len, cropped_len);
 }
 
@@ -763,7 +726,7 @@ TEST_F(SendTest, UnalignedStart) {
       {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(cropped_start, false)},
        {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
 
   uintptr_t start_value = 0;
   memcpy(&start_value, &message[0x0], 3);
@@ -782,7 +745,7 @@ TEST_F(SendTest, UnalignedStart) {
 
   size_t send_len = 0;
   EXPECT_EQ(dif_spi_device_send(&spi_, message.data(), cropped_len, &send_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(send_len, cropped_len);
 }
 
@@ -797,7 +760,7 @@ TEST_F(SendTest, UnalignedSmall) {
       {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(cropped_start, false)},
        {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.tx_fifo_base;
+  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET + spi_.rx_fifo_len;
 
   uintptr_t start_value = 0;
   memcpy(&start_value, &message[0x0], 2);
@@ -811,7 +774,7 @@ TEST_F(SendTest, UnalignedSmall) {
 
   size_t send_len = 0;
   EXPECT_EQ(dif_spi_device_send(&spi_, message.data(), cropped_len, &send_len),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
   EXPECT_EQ(send_len, cropped_len);
 }
 
@@ -820,15 +783,15 @@ TEST_F(SendTest, NullArgs) {
   size_t recv_len;
 
   EXPECT_EQ(dif_spi_device_send(nullptr, buf.data(), buf.size(), &recv_len),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
   EXPECT_EQ(dif_spi_device_send(&spi_, nullptr, buf.size(), &recv_len),
-            kDifSpiDeviceResultBadArg);
+            kDifSpiDeviceBadArg);
 
   EXPECT_READ32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x5a, true)},
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x5a, false)}});
   EXPECT_EQ(dif_spi_device_send(&spi_, buf.data(), buf.size(), nullptr),
-            kDifSpiDeviceResultOk);
+            kDifSpiDeviceOk);
 }
 }  // namespace
 }  // namespace dif_spi_device_unittest
