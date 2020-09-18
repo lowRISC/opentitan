@@ -43,19 +43,11 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
 
-    // create alert agents and cfgs
+    // create alert agents and set cfgs
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       string agent_name = {"m_alert_agent_", alert_name};
       m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
-      cfg.m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
-      cfg.m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
-      // seq won't send ping request because they are covered in alert_handler testbench
-      cfg.m_alert_agent_cfg[alert_name].en_ping_cov = 0;
-      if (cfg.zero_delays) begin
-        cfg.m_alert_agent_cfg[alert_name].alert_delay_min = 0;
-        cfg.m_alert_agent_cfg[alert_name].alert_delay_max = 0;
-      end
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfg[alert_name]);
     end
