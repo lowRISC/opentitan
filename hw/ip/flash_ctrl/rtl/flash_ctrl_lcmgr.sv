@@ -158,17 +158,27 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     end
   end
 
+  page_addr_t seed_page;
+  logic [InfoTypesWidth-1:0] seed_info_sel;
   logic [BusAddrW-1:0] seed_page_addr;
-  assign seed_page_addr = BusAddrW'({SeedInfoPageSel[seed_idx], BusWordW'(0)});
+  assign seed_page = SeedInfoPageSel[seed_idx];
+  assign seed_info_sel = seed_page.sel;
+  assign seed_page_addr = BusAddrW'({seed_page.addr, BusWordW'(0)});
 
+  page_addr_t owner_page;
+  logic [InfoTypesWidth-1:0] owner_info_sel;
   logic [BusAddrW-1:0] owner_page_addr;
-  assign owner_page_addr = BusAddrW'({SeedInfoPageSel[OwnerSeedIdx], BusWordW'(0)});
+  assign owner_page = SeedInfoPageSel[OwnerSeedIdx];
+  assign owner_info_sel = owner_page.sel;
+  assign owner_page_addr = BusAddrW'({owner_page.addr, BusWordW'(0)});
+
 
   logic start;
   flash_op_e op;
   flash_prog_e prog_type;
   flash_erase_e erase_type;
   flash_part_e part_sel;
+  logic [InfoTypesWidth-1:0] info_sel;
   logic [11:0] num_words;
   logic [BusAddrW-1:0] addr;
   logic [BusWidth-1:0] rsp_mask;
@@ -207,6 +217,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     start = 1'b0;
     addr = '0;
     part_sel = FlashPartInfo;
+    info_sel = 0;
     num_words = SeedReads - 1'b1;
 
     // rma responses
@@ -247,6 +258,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
         // kick off flash transaction
         start = 1'b1;
         addr = BusAddrW'(seed_page_addr);
+        info_sel = seed_info_sel;
 
         // we have checked all seeds, proceed
         if (seed_cnt_q == NumSeeds) begin
@@ -289,6 +301,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
         phase = PhaseRma;
         start = 1'b1;
         addr = BusAddrW'(owner_page_addr);
+        info_sel = owner_info_sel;
         num_words = BusWordsPerPage - 1'b1;
 
         if (done_i && !err_i) begin
@@ -359,6 +372,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   assign ctrl_o.prog_sel.q = prog_type;
   assign ctrl_o.erase_sel.q = erase_type;
   assign ctrl_o.partition_sel.q = part_sel;
+  assign ctrl_o.info_sel.q = info_sel;
   assign ctrl_o.num = num_words;
   // address is consistent with software width format (full bus)
   assign addr_o = top_pkg::TL_AW'({addr, {BusByteWidth{1'b0}}});

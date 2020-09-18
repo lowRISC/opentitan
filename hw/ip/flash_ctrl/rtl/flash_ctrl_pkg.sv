@@ -7,52 +7,49 @@
 
 package flash_ctrl_pkg;
 
+
   // design constants
   parameter int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
   parameter int NumBanks        = top_pkg::FLASH_BANKS;
-  parameter int InfoTypes       = 1; // How many types of info per bank
-  parameter int InfosPerBank    = top_pkg::FLASH_INFO_PER_BANK;  // Info pages per bank
+  parameter int InfoTypes       = top_pkg::FLASH_INFO_TYPES; // How many types of info per bank
+  parameter int InfoTypeSize [InfoTypes] = top_pkg::FLASH_INFO_PER_BANK; // size per bank
+  parameter int InfosPerBank    = max_info_pages(InfoTypeSize);
   parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; // Data pages per bank
   parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
+  parameter int InfoTypesWidth  = prim_util_pkg::vbits(InfoTypes);
 
   // flash phy parameters
-  parameter int DataByteWidth   = $clog2(DataWidth / 8);
-  parameter int BankW           = $clog2(NumBanks);
-  parameter int InfoPageW       = $clog2(InfosPerBank);
-  parameter int PageW           = $clog2(PagesPerBank);
-  parameter int WordW           = $clog2(WordsPerPage);
+  parameter int DataByteWidth   = prim_util_pkg::vbits(DataWidth / 8);
+  parameter int BankW           = prim_util_pkg::vbits(NumBanks);
+  parameter int InfoPageW       = prim_util_pkg::vbits((InfosPerBank));
+  parameter int PageW           = prim_util_pkg::vbits(PagesPerBank);
+  parameter int WordW           = prim_util_pkg::vbits(WordsPerPage);
   parameter int AddrW           = BankW + PageW + WordW; // all flash range
   parameter int BankAddrW       = PageW + WordW;         // 1 bank of flash range
   parameter int AllPagesW       = BankW + PageW;
 
   // flash ctrl / bus parameters
   // flash / bus width may be different from actual flash word width
-  parameter int BusByteWidth    = $clog2(BusWidth / 8);
+  parameter int BusByteWidth    = prim_util_pkg::vbits(BusWidth / 8);
   parameter int WidthMultiple   = DataWidth / BusWidth;
   parameter int BusWordsPerPage = WordsPerPage * WidthMultiple;
-  parameter int BusWordW        = $clog2(BusWordsPerPage);
+  parameter int BusWordW        = prim_util_pkg::vbits(BusWordsPerPage);
   parameter int BusAddrW        = BankW + PageW + BusWordW;
   parameter int BusBankAddrW    = PageW + BusWordW;
   parameter int PhyAddrStart    = BusWordW - WordW;
 
   // fifo parameters
-  parameter int FifoDepthW      = $clog2(FifoDepth+1);
-
-  // partition sizes per bank
-  // total number of partitions is always Data + different types of info
-  parameter int TotalPartitions = 1 + InfoTypes;
-  parameter int TotalPartitionsWidth = $clog2(TotalPartitions);
+  parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
 
   // The end address in bus words for each kind of partition in each bank
-  parameter logic [PageW-1:0] PartitionEndAddr [TotalPartitions] =
-    '{
-      PagesPerBank - 1,
-      InfosPerBank - 1
-     };
-
+  parameter logic [PageW-1:0] DataPartitionEndAddr = PagesPerBank - 1;
+  parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
+    InfoTypeSize[0] - 1,
+    InfoTypeSize[1] - 1
+  };
 
   ////////////////////////////
   // All memory protection, seed related parameters
@@ -60,7 +57,7 @@ package flash_ctrl_pkg;
   ////////////////////////////
 
   // parameters for connected components
-  parameter int SeedWidth       = 256;
+  parameter int SeedWidth = 256;
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
@@ -71,12 +68,17 @@ package flash_ctrl_pkg;
   } flash_lcmgr_phase_e;
 
   // alias for super long reg_pkg typedef
-  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info_page_cfg_mreg_t info_page_cfg_t;
+  typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t info_page_cfg_t;
   typedef flash_ctrl_reg_pkg::flash_ctrl_reg2hw_mp_region_cfg_mreg_t mp_region_cfg_t;
 
   // memory protection specific structs
   typedef struct packed {
-    logic [AllPagesW-1:0] page;
+    logic [InfoTypesWidth-1:0] sel;
+    logic [AllPagesW-1:0] addr;
+  } page_addr_t;
+
+  typedef struct packed {
+    page_addr_t           page;
     flash_lcmgr_phase_e   phase;
     info_page_cfg_t       cfg;
   } info_page_attr_t;
@@ -91,16 +93,24 @@ package flash_ctrl_pkg;
   // One page for owner seeds
   parameter int NumSeeds = 2;
   parameter int SeedBank = 0;
+  parameter int SeedInfoSel = 0;
   parameter int CreatorSeedIdx = 0;
   parameter int OwnerSeedIdx = 1;
   parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
-  // which page of which bank
-  parameter logic [AllPagesW-1:0] SeedInfoPageSel [NumSeeds] =
+
+  // which page of which info type of which bank
+  parameter page_addr_t SeedInfoPageSel [NumSeeds] = '{
     '{
-      {SeedBank, CreatorInfoPage},
-      {SeedBank, OwnerInfoPage}
-     };
+      sel:  SeedInfoSel,
+      addr: {SeedBank, CreatorInfoPage}
+     },
+
+    '{
+      sel:  SeedInfoSel,
+      addr: {SeedBank, OwnerInfoPage}
+     }
+  };
 
   // hardware interface memory protection rules
   parameter int HwInfoRules = 3;
@@ -122,19 +132,19 @@ package flash_ctrl_pkg;
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
     '{
-       page:  CreatorInfoPage,
+       page:  SeedInfoPageSel[CreatorSeedIdx],
        phase: PhaseSeed,
        cfg:   CfgAllowRead
      },
 
     '{
-       page:  OwnerInfoPage,
+       page:  SeedInfoPageSel[OwnerSeedIdx],
        phase: PhaseSeed,
        cfg:   CfgAllowRead
      },
 
     '{
-       page:  OwnerInfoPage,
+       page:  SeedInfoPageSel[OwnerSeedIdx],
        phase: PhaseRma,
        cfg:   CfgAllowReadErase
      }
@@ -194,7 +204,7 @@ package flash_ctrl_pkg;
   } flash_flfo_dir_e;
 
   // Flash partition type
-  typedef enum logic [TotalPartitionsWidth-1:0] {
+  typedef enum logic {
     FlashPartData = 1'b0,
     FlashPartInfo = 1'b1
   } flash_part_e;
@@ -308,5 +318,18 @@ package flash_ctrl_pkg;
     valid: 1'b1,
     entropy: '0
   };
+
+
+  // find the max number pages among info types
+  function automatic integer max_info_pages(int infos[InfoTypes]);
+    int current_max = 0;
+    for (int i = 0; i < InfoTypes; i++) begin
+      if (infos[i] > current_max) begin
+        current_max = infos[i];
+      end
+    end
+    return current_max;
+  endfunction // max_info_banks
+
 
 endpackage : flash_ctrl_pkg

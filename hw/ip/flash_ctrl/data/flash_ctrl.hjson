@@ -211,6 +211,15 @@
           '''
           resval: "0"
         },
+        { bits: "9",
+          name: "INFO_SEL",
+          desc: '''
+            Informational partions can have multiple types.
+
+            This field selects the info type to be accessed.
+          '''
+          resval: "0"
+        },
         { bits: "27:16",
           name: "NUM",
           desc: "Number of bus words the flash operation should read or program.",
@@ -383,7 +392,7 @@
 
     { multireg: {
         cname: "FLASH_CTRL",
-        name: "BANK0_INFO_PAGE_CFG",
+        name: "BANK0_INFO0_PAGE_CFG",
         desc: '''
                 Memory protection configuration for info partition in bank0,
                 Unlike data partition, each page is individually protected.
@@ -427,7 +436,95 @@
 
     { multireg: {
         cname: "FLASH_CTRL",
-        name: "BANK1_INFO_PAGE_CFG",
+        name: "BANK0_INFO1_PAGE_CFG",
+        desc: '''
+                Memory protection configuration for info partition in bank0,
+                Unlike data partition, each page is individually protected.
+              '''
+        count: "NumInfos",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "REGION_CFG_REGWEN",
+        fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: "0"
+            },
+            { bits: "1",
+              name: "RD_EN",
+              desc: '''
+                Region can be read
+              ''',
+              resval: "0"
+            },
+            { bits: "2",
+              name: "PROG_EN",
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: "0"
+            }
+            { bits: "3",
+              name: "ERASE_EN",
+              desc: '''
+                Region can be erased
+              ''',
+              resval: "0"
+            }
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO0_PAGE_CFG",
+        desc: '''
+                Memory protection configuration for info partition in bank1,
+                Unlike data partition, each page is individually protected.
+              '''
+        count: "NumInfos",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "REGION_CFG_REGWEN",
+        fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: "0"
+            },
+            { bits: "1",
+              name: "RD_EN",
+              desc: '''
+                Region can be read
+              ''',
+              resval: "0"
+            },
+            { bits: "2",
+              name: "PROG_EN",
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: "0"
+            }
+            { bits: "3",
+              name: "ERASE_EN",
+              desc: '''
+                Region can be erased
+              ''',
+              resval: "0"
+            }
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO1_PAGE_CFG",
         desc: '''
                 Memory protection configuration for info partition in bank1,
                 Unlike data partition, each page is individually protected.
