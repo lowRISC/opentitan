@@ -738,7 +738,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
 
   // Assertions
-
+  `ASSERT_INIT(TopIpParamMatch_A, InfoTypeSize == top_pkg::FLASH_INFO_PER_BANK)
   `ASSERT_KNOWN(TlDValidKnownO_A,       tl_o.d_valid     )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       tl_o.a_ready     )
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
