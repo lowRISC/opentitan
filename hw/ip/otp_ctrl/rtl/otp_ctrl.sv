@@ -11,7 +11,9 @@ module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0]  AlertAsyncOn = {NumAlerts{1'b1}},
+  // TODO: need to override this during build time randomization
+  parameter logic [TimerWidth-1:0] LfsrSeed    = TimerWidth'(546532468)
 ) (
   input                             clk_i,
   input                             rst_ni,
@@ -25,6 +27,8 @@ module otp_ctrl
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+  // TODO: Complete entropy interface
+  input  otp_entropy_t              entropy_i,
   // Power manager interface
   input  pwr_otp_init_req_t         pwr_otp_init_req_i,
   output pwr_otp_init_rsp_t         pwr_otp_init_rsp_o,
@@ -153,6 +157,7 @@ module otp_ctrl
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
   logic otp_fatal_error, otp_check_failed;
+  logic chk_pending, chk_timeout;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
     otp_fatal_error = 1'b0;
@@ -174,14 +179,17 @@ module otp_ctrl
       otp_check_failed |= part_error[k] inside {ParityErr,
                                                 IntegErr,
                                                 CnstyErr,
-                                                FsmErr};
+                                                FsmErr} | chk_timeout;
     end
   end
 
   // Assign these to the status register.
-  assign hw2reg.status = {part_errors_reduced, dai_idle};
+  assign hw2reg.status = {chk_pending,
+                          dai_idle,
+                          chk_timeout,
+                          part_errors_reduced};
   // If we got an error, we trigger an interrupt.
-  assign otp_error = |part_errors_reduced;
+  assign otp_error = |part_errors_reduced | chk_timeout;
 
   //////////////////////////////////
   // Interrupts and Alert Senders //
@@ -237,17 +245,42 @@ module otp_ctrl
     .alert_tx_o ( alert_tx_o[1] )
   );
 
-  ////////////////
-  // LFSR Timer //
-  ////////////////
+  ////////////////////////////////
+  // LFSR Timer and CSR mapping //
+  ////////////////////////////////
 
-  // TBD: should we incorporate a timeout in the LFSR counter to cover the case where a
-  // partition check never completes due to wedged arbitration (or some other condition
-  // induced due to a tampering attempt)? This will likely be constructed in a similar
-  // way as the ping timer inside the alert handler.
-
+  logic integ_chk_trig, cnsty_chk_trig;
   logic [NumPart-1:0] integ_chk_req, integ_chk_ack;
   logic [NumPart-1:0] cnsty_chk_req, cnsty_chk_ack;
+
+  assign integ_chk_trig   = reg2hw.check_trigger.integrity.q &
+                            reg2hw.check_trigger.integrity.qe;
+  assign cnsty_chk_trig   = reg2hw.check_trigger.consistency.q &
+                            reg2hw.check_trigger.consistency.qe;
+
+  otp_ctrl_lfsr_timer #(
+    .LfsrSeed(LfsrSeed),
+    .EntropyWidth(4)
+  ) u_otp_ctrl_lfsr_timer (
+    .clk_i,
+    .rst_ni,
+    .entropy_en_i       ( entropy_i.en            ),
+    // Lower entropy bits are used for reseeding secure erase LFSRs
+    .entropy_i          ( entropy_i.data[31:28]   ),
+    // We can enable the timer once OTP has initialized.
+    .timer_en_i         ( pwr_otp_init_rsp_o.done ),
+    .integ_chk_trig_i   ( integ_chk_trig          ),
+    .cnsty_chk_trig_i   ( cnsty_chk_trig          ),
+    .chk_pending_o      ( chk_pending             ),
+    .timeout_i          ( reg2hw.check_timeout.q  ),
+    .integ_period_msk_i ( reg2hw.integrity_check_period.q   ),
+    .cnsty_period_msk_i ( reg2hw.consistency_check_period.q ),
+    .integ_chk_req_o    ( integ_chk_req           ),
+    .cnsty_chk_req_o    ( cnsty_chk_req           ),
+    .integ_chk_ack_i    ( integ_chk_ack           ),
+    .cnsty_chk_ack_i    ( cnsty_chk_ack           ),
+    .chk_timeout_o      ( chk_timeout             )
+  );
 
   ///////////////////////////////
   // OTP Macro and Arbitration //
@@ -545,9 +578,13 @@ module otp_ctrl
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k])
+        // TODO:  .EntropyWidth(8)
       ) u_part_buf (
         .clk_i,
         .rst_ni,
+        // TODO: Entropy for clearing LFSRs
+        // .entropy_en_i     ( entropy_i.en                    ),
+        // .entropy_i        ( entropy_i.data[(k-NumUnbuffered) * 2 +: 2] ),
         .init_req_i       ( part_init_req                   ),
         .init_done_o      ( part_init_done[k]               ),
         .integ_chk_req_i  ( integ_chk_req[k]                ),

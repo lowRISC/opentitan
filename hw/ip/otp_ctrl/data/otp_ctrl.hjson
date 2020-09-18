@@ -194,69 +194,77 @@
         { bits: "0"
           name: "CREATOR_SW_CFG_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "1"
           name: "OWNER_SW_CFG_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "2"
           name: "HW_CFG_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "3"
-          name: "SECRET0"
+          name: "SECRET0_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "4"
-          name: "SECRET1"
+          name: "SECRET1_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "5"
-          name: "SECRET2"
+          name: "SECRET2_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "6"
-          name: "LIFE_CYCLE"
+          name: "LIFE_CYCLE_ERROR"
           desc: '''
-                Set to 1 if an error occurred in this partition. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in this partition.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "7"
           name: "DAI_ERROR"
           desc: '''
-                Set to 1 if an error occurred in the DAI. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in the DAI.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "8"
           name: "LCI_ERROR"
           desc: '''
-                Set to 1 if an error occurred in the LCI. If set to 1, SW should
-                check the !!ERR_CODE register at the corresponding index to root-cause the error.
+                Set to 1 if an error occurred in the LCI.
+                If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                 '''
         }
         { bits: "9"
+          name: "TIMEOUT_ERROR"
+          desc: "Set to 1 if an integrity or consistency check times out. This raises an otp_check_failed alert and is an unrecoverable error condition."
+        }
+        { bits: "10"
           name: "DAI_IDLE"
           desc: "Set to 1 if the DAI is idle and ready to accept commands."
+        }
+        { bits: "11"
+          name: "CHECK_PENDING"
+          desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
         }
       ]
     }
@@ -513,58 +521,130 @@
         ]
       }
     },
-    { name: "CHECK_PERIOD_REGEN",
+
+    //////////////////////////////////////
+    // Integrity and Consistency Checks //
+    //////////////////////////////////////
+    { name: "CHECK_TRIGGER_REGWEN",
       desc: '''
-            Register write enable for !!INTEGRITY_CHECK_PERIOD_MSB and !!CONSISTENCY_CHECK_PERIOD_MSB.
+            Register write enable for !!CHECK_TRIGGER.
             ''',
       swaccess: "rw1c",
       hwaccess: "hro",
       fields: [
         { bits:   "0",
           desc: '''
-          When true, !!INTEGRITY_CHECK_PERIOD_MSB and !!CONSISTENCY_CHECK_PERIOD_MSB registers cannot be written anymore.
+          When cleared to 0, the !!CHECK_TRIGGER register cannot be written anymore.
+          Write 1 to clear this bit.
           '''
           resval: 1,
         },
       ]
     },
-    { name: "INTEGRITY_CHECK_PERIOD_MSB",
+    { name: "CHECK_TRIGGER",
+      desc: "Command register for direct accesses.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwqe:     "true",
+      regwen:   "CHECK_TRIGGER_REGWEN",
+      fields: [
+        { bits: "0",
+          name: "INTEGRITY",
+          desc: '''
+          Writing 1 to this bit triggers an integrity check. SW should monitor !!STATUS.CHECK_PENDING
+          and wait until the check has been completed. If there are any errors, those will be flagged
+          in the !!STATUS and !!ERR_CODE registers, and via the interrupts and alerts.
+          '''
+        }
+        { bits: "1",
+          name: "CONSISTENCY",
+          desc: '''
+          Writing 1 to this bit triggers a consistency check. SW should monitor !!STATUS.CHECK_PENDING
+          and wait until the check has been completed. If there are any errors, those will be flagged
+          in the !!STATUS and !!ERR_CODE registers, and via interrupts and alerts.
+          '''
+        }
+      ]
+    },
+    { name: "CHECK_REGWEN",
+      desc: '''
+            Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
+            ''',
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        { bits:   "0",
+          desc: '''
+          When cleared to 0, !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD registers cannot be written anymore.
+          Write 1 to clear this bit.
+          '''
+          resval: 1,
+        },
+      ]
+    },
+    { name: "CHECK_TIMEOUT",
+      desc: '''
+            Timeout value for the integrity and consistency checks.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "CHECK_REGWEN",
+      fields: [
+        { bits: "31:0",
+          desc: '''
+          Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
+          check does not complete within the timeout window, an error will be flagged in the !!STATUS register,
+          an otp_error interrupt will be raised, and an otp_check_failed alert will be sent out. The timeout should
+          be set to a large value to stay on the safe side. The maximum check time can be upper bounded by the
+          number of cycles it takes to readout, scramble and digest the entire OTP array. Since this amounts to
+          roughly 25k cycles, it is recommended to set this value to at least 100'000 cycles in order to stay on the
+          safe side. A value of zero disables the timeout mechanism (default).
+          '''
+          resval: 0,
+        },
+      ]
+    },
+    { name: "INTEGRITY_CHECK_PERIOD",
       desc: '''
             This value specifies the maximum period that can be generated pseudo-randomly.
-            Only applies to the HW_CFG and SECRET partitions if they are locked.
+            Only applies to the HW_CFG and SECRET* partitions, once they are locked.
             '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "CHECK_PERIOD_REGEN",
+      regwen:   "CHECK_REGWEN",
       fields: [
-        { bits: "5:0",
+        { bits: "31:0",
           desc: '''
-          The pseudo-random period is generated using a 40bit LFSR internally, and this value defines
-          the bit mask to be applied to the LFSR output in order to limit its range. A value of N will generate
-          an internal mask of 2^N-1. So for N=16 this would allow the maximum pseudo-random period to be 0xFFFF cycles.
-          The default value has been set to 25, which corresponds to a maximum period of a bit more than 1.3s at 25MHz.
+          The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
+          the bit mask to be applied to the LFSR output in order to limit its range. The value of this
+          register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
+          A recommended value is 0x3_FFFF, corresponding to a maximum period of ~2.8s at 24MHz.
+          A value of zero disables the timer (default). Note that a one-off check can always be triggered via
+          !!CHECK_TRIGGER.INTEGRITY.
           '''
-          resval: "25"
+          resval: "0"
         }
       ]
     }
-    { name: "CONSISTENCY_CHECK_PERIOD_MSB",
+    { name: "CONSISTENCY_CHECK_PERIOD",
       desc: '''
             This value specifies the maximum period that can be generated pseudo-randomly.
-            This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET partitions (but only if they are locked).
+            This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions, once they are locked.
             '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "CHECK_PERIOD_REGEN",
+      regwen:   "CHECK_REGWEN",
       fields: [
-        { bits: "5:0",
+        { bits: "31:0",
           desc: '''
-          The pseudo-random period is generated using a 40bit LFSR internally, and this value defines
-          the bit mask to be applied to the LFSR output in order to limit its range. A value of N will generate
-          an internal mask of 2^N-1. So for N=16 this would allow the maximum pseudo-random period to be 0xFFFF cycles.
-          The default value has been set to 34, which corresponds to a maximum period of a bit more than 687s at 25MHz.
+          The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
+          the bit mask to be applied to the LFSR output in order to limit its range. The value of this
+          register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
+          A recommended value is 0x3FF_FFFF, corresponding to a maximum period of ~716s at 24MHz.
+          A value of zero disables the timer (default). Note that a one-off check can always be triggered via
+          !!CHECK_TRIGGER.CONSISTENCY.
           '''
-          resval: "34"
+          resval: "0"
         }
       ]
     }
@@ -581,7 +661,8 @@
       fields: [
         { bits:   "0",
           desc: '''
-          When true, read access to the !!CREATOR_SW_CFG partition is locked.
+          When cleared to 0, read access to the !!CREATOR_SW_CFG partition is locked.
+          Write 1 to clear this bit.
           '''
           resval: 1,
         },
@@ -596,7 +677,8 @@
       fields: [
         { bits:   "0",
           desc: '''
-          When true, read access to the !!OWNER_SW_CFG partition is locked.
+          When cleared to 0, read access to the !!OWNER_SW_CFG partition is locked.
+          Write 1 to clear this bit.
           '''
           resval: 1,
         },

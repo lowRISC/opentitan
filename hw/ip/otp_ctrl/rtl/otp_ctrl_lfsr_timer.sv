@@ -1,0 +1,278 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This module implements the LFSR timer for triggering periodic consistency and integrity checks in
+// OTP. In particular, this module contains two 40bit counters (one for the consistency and one
+// for the integrity checks) and a 40bit LFSR to draw pseudo random wait counts.
+//
+// The integ_period_msk_i and cnsty_period_msk_i mask signals are used to mask off the LFSR outputs
+// and hence determine the maximum wait count that can be drawn. If these values are set to
+// zero, the corresponding timer is disabled.
+//
+// Once a particular check timer has expired, the module will send out a check request to all
+// partitions and wait for an acknowledgment. If a particular partition encounters an integrity or
+// consistency mismatch, this will be directly reported via the error and alert logic.
+//
+// In order to guard against wedged partition controllers or arbitration lock ups due to tampering
+// attempts, this check timer module also supports a 32bit timeout that can optionally be
+// programmed. If a particular check times out, chk_timeout_o will be asserted, which will raise
+// an alert via the error logic.
+//
+// If needed, the LFSR can be reseeded with fresh entropy from the CSRNG via entropy_i.
+//
+// It is also possible to trigger one-off checks via integ_chk_trig_i and cnsty_chk_trig_i.
+// This can be useful if SW chooses to leave the periodic checks disabled.
+//
+
+`include "prim_assert.sv"
+
+module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
+  parameter logic [TimerWidth-1:0] LfsrSeed     = TimerWidth'(1'b1),
+  parameter int                    EntropyWidth = 8
+) (
+  input                            clk_i,
+  input                            rst_ni,
+  input                            entropy_en_i,       // entropy update pulse from CSRNG
+  input        [EntropyWidth-1:0]  entropy_i,          // from CSRNG
+  input                            timer_en_i,         // enable timer
+  input                            integ_chk_trig_i,   // one-off trigger for integrity check
+  input                            cnsty_chk_trig_i,   // one-off trigger for consistency check
+  output logic                     chk_pending_o,      // indicates whether there are pending checks
+  input        [31:0]              timeout_i,          // check timeout
+  input        [31:0]              integ_period_msk_i, // maximum integrity check mask
+  input        [31:0]              cnsty_period_msk_i, // maximum consistency check mask
+  output logic [NumPart-1:0]       integ_chk_req_o,    // request to all partitions
+  output logic [NumPart-1:0]       cnsty_chk_req_o,    // request to all partitions
+  input        [NumPart-1:0]       integ_chk_ack_i,    // response from partitions
+  input        [NumPart-1:0]       cnsty_chk_ack_i,    // response from partitions
+  output logic                     chk_timeout_o       // a check has timed out
+);
+
+  //////////
+  // PRNG //
+  //////////
+
+  logic lfsr_en;
+  logic [TimerWidth-1:0] lfsr_state, perm_state;
+
+  prim_lfsr #(
+    .LfsrDw      ( TimerWidth   ),
+    .EntropyDw   ( EntropyWidth ),
+    .StateOutDw  ( TimerWidth   ),
+    .DefaultSeed ( LfsrSeed     ),
+    .ExtSeedSVA  ( 1'b0         ) // ext seed is unused
+  ) i_prim_lfsr (
+    .clk_i,
+    .rst_ni,
+    .seed_en_i  ( 1'b0       ),
+    .seed_i     ( '0         ),
+    .lfsr_en_i  ( lfsr_en | entropy_en_i ),
+    .entropy_i  ( entropy_i & {EntropyWidth{entropy_en_i}} ),
+    .state_o    ( lfsr_state )
+  );
+
+  // This random permutation is meant to break the linear
+  // shifting pattern of the LFSR.
+  localparam int unsigned Perm [TimerWidth] = '{
+    13, 17, 29, 11, 28, 12, 33, 27,
+     5, 39, 31, 21, 15,  1, 24, 37,
+    32, 38, 26, 34,  8, 10,  4,  2,
+    19,  0, 20,  6, 25, 22,  3, 35,
+    16, 14, 23,  7, 30,  9, 18, 36
+  };
+
+  for (genvar k = 0; k < 32; k++) begin : gen_perm
+    assign perm_state[k] = lfsr_state[Perm[k]];
+  end
+
+
+  //////////////
+  // Counters //
+  //////////////
+
+  logic [TimerWidth-1:0] integ_cnt_d, integ_cnt_q;
+  logic [TimerWidth-1:0] cnsty_cnt_d, cnsty_cnt_q;
+  logic [TimerWidth-1:0] integ_mask, cnsty_mask;
+  logic integ_load_period, integ_load_timeout, integ_cnt_zero;
+  logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
+  logic timeout_zero, integ_msk_zero, cnsty_msk_zero;
+
+  assign integ_mask  = {integ_period_msk_i, {TimerWidth-32{1'b1}}};
+  assign cnsty_mask  = {cnsty_period_msk_i, {TimerWidth-32{1'b1}}};
+
+  assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
+                       (integ_load_timeout) ? timeout_i               :
+                       (integ_cnt_zero)     ? '0                      :
+                                              integ_cnt_q - 1'b1;
+
+
+  assign cnsty_cnt_d = (cnsty_load_period)  ? lfsr_state & cnsty_mask :
+                       (cnsty_load_timeout) ? timeout_i               :
+                       (cnsty_cnt_zero)     ? '0                      :
+                                              cnsty_cnt_q - 1'b1;
+
+  assign timeout_zero   = (timeout_i == '0);
+  assign integ_msk_zero = (integ_period_msk_i == '0);
+  assign cnsty_msk_zero = (cnsty_period_msk_i == '0);
+  assign integ_cnt_zero = (integ_cnt_q == '0);
+  assign cnsty_cnt_zero = (cnsty_cnt_q == '0);
+
+  /////////////////////
+  // Request signals //
+  /////////////////////
+
+  logic set_all_integ_reqs, set_all_cnsty_reqs;
+  logic [NumPart-1:0] integ_chk_req_d, integ_chk_req_q;
+  logic [NumPart-1:0] cnsty_chk_req_d, cnsty_chk_req_q;
+  assign integ_chk_req_o = integ_chk_req_q;
+  assign cnsty_chk_req_o = cnsty_chk_req_q;
+  assign integ_chk_req_d = (set_all_integ_reqs) ? {NumPart{1'b1}} :
+                                                  integ_chk_req_q & ~integ_chk_ack_i;
+  assign cnsty_chk_req_d = (set_all_cnsty_reqs) ? {NumPart{1'b1}} :
+                                                  cnsty_chk_req_q & ~cnsty_chk_ack_i;
+
+
+  ////////////////////////////
+  // Ping and Timeout Logic //
+  ////////////////////////////
+
+  // Encoding generated with ./sparse-fsm-encode -d 5 -m 5 -n 9
+  // Hamming distance histogram:
+  //
+  // 0: --
+  // 1: --
+  // 2: --
+  // 3: --
+  // 4: --
+  // 5: |||||||||||||||||||| (60.00%)
+  // 6: ||||||||||||| (40.00%)
+  // 7: --
+  // 8: --
+  // 9: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  //
+  typedef enum logic [8:0] {
+    ResetSt     = 9'b110010010,
+    IdleSt      = 9'b011011101,
+    IntegWaitSt = 9'b100111111,
+    CnstyWaitSt = 9'b001000110,
+    ErrSt       = 9'b101101000
+  } state_e;
+  state_e state_d, state_q;
+
+  always_comb begin : p_fsm
+    state_d = state_q;
+
+    // LFSR and counter signals
+    lfsr_en = 1'b0;
+    integ_load_period  = 1'b0;
+    cnsty_load_period  = 1'b0;
+    integ_load_timeout = 1'b0;
+    cnsty_load_timeout = 1'b0;
+
+    // Requests going to partitions.
+    set_all_integ_reqs = '0;
+    set_all_cnsty_reqs = '0;
+
+    // Status signals going to CSRs and error logic.
+    chk_timeout_o = 1'b0;
+    chk_pending_o = 1'b0;
+
+    unique case (state_q)
+      ///////////////////////////////////////////////////////////////////
+      // Wait until enabled. We never return to this state
+      // once enabled!
+      ResetSt: begin
+        if (timer_en_i) begin
+          state_d = IdleSt;
+          lfsr_en = 1'b1;
+        end
+      end
+      ///////////////////////////////////////////////////////////////////
+      // Wait here until one of the two timers expires (if enabled) or if
+      // a check is triggered externally.
+      IdleSt: begin
+        if ((!integ_msk_zero && integ_cnt_zero) || integ_chk_trig_i) begin
+          state_d = IntegWaitSt;
+          integ_load_timeout = 1'b1;
+          set_all_integ_reqs = 1'b1;
+        end else if ((!cnsty_msk_zero && cnsty_cnt_zero) || cnsty_chk_trig_i) begin
+          state_d = CnstyWaitSt;
+          cnsty_load_timeout = 1'b1;
+          set_all_cnsty_reqs = 1'b1;
+        end
+      end
+      ///////////////////////////////////////////////////////////////////
+      // Wait for all the partitions to respond and go back to idle.
+      // If the timeout is enabled, bail out into terminal error state
+      // if the timeout counter expires (this will raise an alert).
+      IntegWaitSt: begin
+        chk_pending_o = 1'b1;
+        if (!timeout_zero && integ_cnt_zero) begin
+          state_d = ErrSt;
+        end else if (integ_chk_req_q == '0) begin
+          state_d = IdleSt;
+          // This draws the next wait period.
+          integ_load_period = 1'b1;
+          lfsr_en = 1'b1;
+        end
+      end
+      ///////////////////////////////////////////////////////////////////
+      // Wait for all the partitions to respond and go back to idle.
+      // If the timeout is enabled, bail out into terminal error state
+      // if the timeout counter expires (this will raise an alert).
+      CnstyWaitSt: begin
+        chk_pending_o = 1'b1;
+        if (!timeout_zero && cnsty_cnt_zero) begin
+          state_d = ErrSt;
+        end else if (cnsty_chk_req_q == '0) begin
+          state_d = IdleSt;
+          // This draws the next wait period.
+          cnsty_load_period = 1'b1;
+          lfsr_en = 1'b1;
+        end
+      end
+      ///////////////////////////////////////////////////////////////////
+      // Terminal error state. This raises an alert.
+      ErrSt: begin
+        chk_timeout_o = 1'b1;
+      end
+      ///////////////////////////////////////////////////////////////////
+      // This should never happen, hence we directly jump into the
+      // error state, where an alert will be triggered.
+      default: begin
+        state_d = ErrSt;
+      end
+      ///////////////////////////////////////////////////////////////////
+    endcase
+  end
+
+  ///////////////
+  // Registers //
+  ///////////////
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      state_q     <= ResetSt;
+      integ_cnt_q <= '0;
+      cnsty_cnt_q <= '0;
+      integ_chk_req_q <= '0;
+      cnsty_chk_req_q <= '0;
+    end else begin
+      state_q     <= state_d;
+      integ_cnt_q <= integ_cnt_d;
+      cnsty_cnt_q <= cnsty_cnt_d;
+      integ_chk_req_q <= integ_chk_req_d;
+      cnsty_chk_req_q <= cnsty_chk_req_d;
+    end
+  end
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+
+endmodule : otp_ctrl_lfsr_timer

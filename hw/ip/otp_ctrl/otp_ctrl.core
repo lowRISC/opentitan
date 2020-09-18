@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p
       - lowrisc:prim:otp
+      - lowrisc:prim:lfsr
       - lowrisc:ip:otp_ctrl_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
@@ -21,6 +22,7 @@ filesets:
       - rtl/otp_ctrl_lci.sv
       - rtl/otp_ctrl_part_unbuf.sv
       - rtl/otp_ctrl_part_buf.sv
+      - rtl/otp_ctrl_lfsr_timer.sv
       - rtl/otp_ctrl.sv
     file_type: systemVerilogSource
 
