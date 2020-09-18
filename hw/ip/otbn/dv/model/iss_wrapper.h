@@ -29,9 +29,9 @@ struct ISSWrapper {
   // Jump to a new address and start running
   void start(uint32_t addr);
 
-  // Run simulation until ECALL or error. Return the number of cycles
-  // until that happened.
-  size_t run();
+  // Run simulation for a single cycle. Return true if it is now
+  // finished (ECALL or error).
+  bool step();
 
   // Resolve a path relative to the convenience temporary directory.
   // relative should be a relative path (it is just appended to the

@@ -431,7 +431,8 @@ module otbn
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
       .DmemScope(DmemScope),
-      .ImemScope(ImemScope)
+      .ImemScope(ImemScope),
+      .StandaloneModel(1'b1)
     ) u_otbn_core_model (
       .clk_i,
       .rst_ni,
