@@ -14,6 +14,7 @@ struct uartdpi_ctx {
 };
 
 void *uartdpi_create(const char *name);
+void uartdpi_close(void *ctx_void);
 int uartdpi_can_read(void *ctx_void);
 char uartdpi_read(void *ctx_void);
 void uartdpi_write(void *ctx_void, char c);
