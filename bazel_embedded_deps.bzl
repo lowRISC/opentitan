@@ -32,9 +32,9 @@ def bazel_embedded_deps():
     if not native.existing_rule("com_github_wjwwood_serial"):
         http_archive(
             name = "com_github_wjwwood_serial",
-            sha256 = "9f8e80d3f3776862468bafaa0773e3d281f4f980dcbdfc72ddb0e9f619a6544f",
-            strip_prefix = "serial-abba176643a7a141bc6d3d81ce8f304363830af6",
-            urls = ["https://github.com/silvergasp/serial/archive/abba176643a7a141bc6d3d81ce8f304363830af6.zip"],
+            sha256 = "55381e43ddf0920c955994fa5f519f95e867ea4e4280a2cf55c4dfd3266b19c0",
+            strip_prefix = "serial-8068164faa1a48e18deaf6a15db7950a09b30b9e",
+            urls = ["https://github.com/silvergasp/serial/archive/8068164faa1a48e18deaf6a15db7950a09b30b9e.zip"],
         )
     if not native.existing_rule("com_github_jarro_cxxopts"):
         http_archive(
