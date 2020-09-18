@@ -14,7 +14,7 @@ module uartdpi #(
   input  logic rx_i
 );
 
-  localparam CYCLES_PER_SYMBOL = FREQ/BAUD;
+  localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
     chandle uartdpi_create(input string name);
@@ -53,7 +53,7 @@ module uartdpi #(
   reg [9:0] txsymbol;
 
   always_ff @(negedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
+    if (!rst_ni) begin
       tx_o <= 1;
       txactive <= 0;
     end else begin
@@ -89,7 +89,7 @@ module uartdpi #(
   always_ff @(negedge clk_i or negedge rst_ni) begin
     rxcyccount <= rxcyccount + 1;
 
-    if (~rst_ni) begin
+    if (!rst_ni) begin
       rxactive <= 0;
     end else begin
       if (!rxactive) begin
@@ -124,7 +124,7 @@ module uartdpi #(
           end
         end
       end
-    end // else: !if(rst)
+    end
   end
 
 endmodule
