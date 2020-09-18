@@ -61,15 +61,15 @@ class Dmem:
         self.trace = []  # type: List[Trace]
 
     def _get_u32s(self, idx: int) -> List[int]:
-        '''Return the value at idx as 8 32-bit unsigned integers'''
+        '''Return the value at idx as 8 uint32's in little-endian order'''
         assert 0 <= idx < len(self.data)
 
         word = self.data[idx]
         assert 0 <= word <= 1 << 256
 
         # Pack this unsigned word into w32s as 8 32-bit numbers. Note that
-        # this packing is "big-endian": the first unsigned word contains
-        # the MSB of the value (as its LSB).
+        # this packing is "little-endian": the first unsigned word contains
+        # the LSB of the value.
         ret = []
         w32_mask = (1 << 32) - 1
         for subidx in range(8):
@@ -77,14 +77,14 @@ class Dmem:
         return ret
 
     def _set_u32s(self, idx: int, u32s: List[int]) -> None:
-        '''Set the value at idx with 8 32-bit unsigned integers'''
+        '''Set the value at idx with 8 uint32's in little-endian order'''
         assert 0 <= idx < len(self.data)
         assert len(u32s) == 8
 
-        # Accumulate the u32s into a 256-bit unsigned number (in a big-endian
-        # fashion)
+        # Accumulate the u32s into a 256-bit unsigned number (in a
+        # little-endian fashion)
         u256 = 0
-        for u32 in u32s:
+        for u32 in reversed(u32s):
             assert 0 <= u32 <= (1 << 32) - 1
             u256 = (u256 << 32) | u32
 
@@ -166,9 +166,8 @@ class Dmem:
         idxW = idx32 // 8
         offW = idx32 % 8
 
-        uword = self.data[idxW]
-        # Extract the right 32-bit unsigned value
-        u32 = (uword >> 8 * offW) & ((1 << 32) - 1)
+        u32 = self._get_u32s(idxW)[offW]
+
         # Now convert back to signed and return
         return u32 - (1 << 32) if u32 >> 31 else u32
 
