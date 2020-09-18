@@ -343,16 +343,11 @@ class OTBNState:
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
 
-
-class OTBNModel:
-    def __init__(self) -> None:
-        self.state = OTBNState()
-
     def get_wr_quarterword(self, wridx: int, qwsel: int) -> int:
         assert 0 <= wridx <= 31
         assert 0 <= qwsel <= 3
         mask = (1 << 64) - 1
-        return (int(self.state.wreg[wridx]) >> (qwsel * 64)) & mask
+        return (int(self.wreg[wridx]) >> (qwsel * 64)) & mask
 
     def set_wr_halfword(self, wridx: int, value: int, hwsel: int) -> None:
         assert 0 <= wridx <= 31
@@ -360,9 +355,9 @@ class OTBNModel:
         assert 0 <= hwsel <= 1
 
         mask = ((1 << 128) - 1) << (0 if hwsel else 128)
-        curr = int(self.state.wreg[wridx]) & mask
+        curr = int(self.wreg[wridx]) & mask
         valpos = value << 128 if hwsel else value
-        self.state.wreg[wridx] = curr | valpos
+        self.wreg[wridx] = curr | valpos
 
     @staticmethod
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, FlagReg]:
@@ -378,5 +373,5 @@ class OTBNModel:
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
-        self.state.loop_step()
-        self.state.intreg.post_insn()
+        self.loop_step()
+        self.intreg.post_insn()

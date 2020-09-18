@@ -10,7 +10,7 @@ from riscvmodel.types import Immediate  # type: ignore
 
 from shared.insn_yaml import Insn, load_insns_yaml
 
-from .model import OTBNModel
+from .state import OTBNState
 
 
 # Load the insns.yml file at module load time: we'll use its data while
@@ -74,7 +74,7 @@ class OTBNInsn:
     def __init__(self, op_vals: Dict[str, int]):
         self.op_vals = op_vals
 
-    def execute(self, model: OTBNModel) -> None:
+    def execute(self, state: OTBNState) -> None:
         raise NotImplementedError('OTBNInsn.execute')
 
     def disassemble(self, pc: int) -> str:

@@ -13,7 +13,7 @@ from typing import List, Optional, Tuple, Type
 
 from .isa import OTBNInsn
 from .insn import INSN_CLASSES
-from .model import OTBNModel
+from .state import OTBNState
 
 # A tuple as returned by get_insn_masks: an element (m0, m1, cls) means "if a
 # word has all the bits in m0 clear and all the bits in m1 set, then you should
@@ -36,9 +36,9 @@ class IllegalInsn(OTBNInsn):
     def __init__(self, word: int) -> None:
         self.word = word
 
-    def execute(self, model: OTBNModel) -> None:
+    def execute(self, state: OTBNState) -> None:
         raise RuntimeError('Illegal instruction at {:#x}: encoding {:#010x}.'
-                           .format(int(model.state.pc), self.word))
+                           .format(int(state.pc), self.word))
 
 
 MASK_TUPLES = None  # type: Optional[List[_MaskTuple]]
