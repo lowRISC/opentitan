@@ -60,7 +60,7 @@ class tl_monitor extends dv_base_monitor#(
   endtask : reset_thread
 
   virtual task a_channel_thread();
-    tl_seq_item req;
+    tl_seq_item req, cloned_req;
     bit item_done = 0;
     forever begin
       bit valid_req_with_same_cycle_rsp;
@@ -86,7 +86,8 @@ class tl_monitor extends dv_base_monitor#(
         req.a_source = h2d.a_source;
         `uvm_info("tl_logging", $sformatf("[%0s][a_chan] : %0s",
                    agent_name, req.convert2string()), UVM_HIGH)
-        pending_a_req.push_back(req.clone());
+        `downcast(cloned_req, req.clone());
+        pending_a_req.push_back(cloned_req);
         if (cfg.max_outstanding_req > 0 && cfg.vif.rst_n === 1) begin
           if (pending_a_req.size() > cfg.max_outstanding_req) begin
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
