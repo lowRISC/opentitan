@@ -14,6 +14,8 @@ package otp_ctrl_pkg;
 
   parameter int NumPart = 7;
   parameter int NumPartWidth = vbits(NumPart);
+  // This defines the width of the check timers and LFSR
+  parameter int TimerWidth = 40;
 
   // TODO: may need to tune this and make sure that this encoding not optimized away.
   // Redundantly encoded and complementary values are used to for signalling to the partition
@@ -185,6 +187,17 @@ package otp_ctrl_pkg;
   // add these at the end of certain arrays.
   parameter int DaiIdx = 7;
   parameter int LciIdx = 8;
+
+  parameter int NumUnbuffered = 2;
+
+  ////////////////////////
+  // Typedefs for CSRNG //
+  ////////////////////////
+
+  typedef struct packed {
+    logic        en;
+    logic [31:0] data;
+  } otp_entropy_t;
 
   ///////////////////////////////
   // Typedefs for LC Interface //
