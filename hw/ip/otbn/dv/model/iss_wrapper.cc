@@ -275,18 +275,10 @@ void ISSWrapper::start(uint32_t addr) {
   run_command(oss.str(), nullptr);
 }
 
-size_t ISSWrapper::run() {
-  size_t cycles = 0;
+bool ISSWrapper::step() {
   std::vector<std::string> lines;
-
-  for (;;) {
-    ++cycles;
-    lines.clear();
-    run_command("step\n", &lines);
-    if (saw_busy_cleared(lines))
-      break;
-  }
-  return cycles;
+  run_command("step\n", &lines);
+  return saw_busy_cleared(lines);
 }
 
 std::string ISSWrapper::make_tmp_path(const std::string &relative) const {

@@ -179,10 +179,11 @@ module otbn_top_sim (
   logic otbn_model_done;
 
   otbn_core_model #(
-    .DmemSizeByte ( DmemSizeByte ),
-    .ImemSizeByte ( ImemSizeByte ),
-    .DmemScope    ( DmemScope ),
-    .ImemScope    ( ImemScope )
+    .DmemSizeByte    ( DmemSizeByte ),
+    .ImemSizeByte    ( ImemSizeByte ),
+    .DmemScope       ( DmemScope ),
+    .ImemScope       ( ImemScope ),
+    .StandaloneModel ( 1'b0 )
   ) u_otbn_core_model (
     .clk_i        ( IO_CLK ),
     .rst_ni       ( IO_RST_N ),
