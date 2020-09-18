@@ -17,13 +17,14 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // configuration from sw
   input flash_ctrl_reg2hw_mp_region_cfg_mreg_t [MpRegions:0] region_cfgs_i,
   input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
-  input info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] info_page_cfgs_i,
+  input info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_i,
 
   // interface signals to/from *_ctrl
   input req_i,
   input flash_lcmgr_phase_e phase_i,
   input [AllPagesW-1:0] req_addr_i,
   input flash_part_e req_part_i,
+  input [InfoTypesWidth-1:0] info_sel_i,
   input addr_ovfl_i,
   input rd_i,
   input prog_i,
@@ -97,7 +98,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // the address extends beyond the end of the partition in question
   // the bank selection is invalid
   // if the address overflowed the control counters
-  assign end_addr = PartitionEndAddr[req_part_i];
+  assign end_addr = (req_part_i == FlashPartData) ? DataPartitionEndAddr :
+                                                    InfoPartitionEndAddr[info_sel_i];
   assign addr_invalid = req_i &
                         (page_addr > end_addr |
                          bank_invalid |
@@ -193,8 +195,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
     if (hw_sel && req_i) begin
       for (int unsigned i = 0; i < HwInfoRules; i++) begin: hw_info_region_comps
         // select the appropriate hardware page
-        if (bank_page_addr == HwInfoPageAttr[i].page &&
-                            phase_i == HwInfoPageAttr[i].phase) begin
+        if (bank_page_addr == HwInfoPageAttr[i].page.addr &&
+            info_sel_i == HwInfoPageAttr[i].page.sel &&
+            phase_i == HwInfoPageAttr[i].phase) begin
           unused_rule_match[i] = 1'b1;
           hw_page_cfg = HwInfoPageAttr[i].cfg;
         end
@@ -204,7 +207,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   // select appropriate page configuration
   assign info_page_addr = req_addr_i[InfoPageW-1:0];
-  assign page_cfg = hw_sel ? hw_page_cfg : info_page_cfgs_i[bank_addr][info_page_addr];
+  assign page_cfg = hw_sel ? hw_page_cfg : info_page_cfgs_i[bank_addr][info_sel_i][info_page_addr];
 
   // final operation
   assign info_en = page_cfg.en.q;

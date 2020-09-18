@@ -142,6 +142,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [BusAddrW-1:0] op_addr;
   flash_op_e op_type;
   flash_part_e op_part;
+  logic [InfoTypesWidth-1:0] op_info_sel;
   flash_erase_e op_erase_type;
   flash_prog_e op_prog_type;
 
@@ -252,6 +253,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign op_addr       = muxed_addr[BusByteWidth +: BusAddrW];
   assign op_type       = flash_op_e'(muxed_ctrl.op.q);
   assign op_part       = flash_part_e'(muxed_ctrl.partition_sel.q);
+  assign op_info_sel   = muxed_ctrl.info_sel.q;
   assign rd_op         = op_type == FlashOpRead;
   assign prog_op       = op_type == FlashOpProgram;
   assign erase_op      = op_type == FlashOpErase;
@@ -516,25 +518,30 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   //////////////////////////////////////
   // Info partition protection configuration
   //////////////////////////////////////
-  info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
-  info_page_cfg_t [NumBanks-1:0][InfosPerBank-1:0] info_page_cfgs;
+  info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
+  info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
 
   // TBD this code below should really be templated.
   // Since reg does not supported nested multiregs, the multi-reg of each
   // bank ends up with unique naming.
-  assign reg2hw_info_page_cfgs[0] = reg2hw.bank0_info_page_cfg;
-  assign reg2hw_info_page_cfgs[1] = reg2hw.bank1_info_page_cfg;
+  assign reg2hw_info_page_cfgs[0][0] = reg2hw.bank0_info0_page_cfg;
+  assign reg2hw_info_page_cfgs[0][1] = reg2hw.bank0_info1_page_cfg;
+  assign reg2hw_info_page_cfgs[1][0] = reg2hw.bank1_info0_page_cfg;
+  assign reg2hw_info_page_cfgs[1][1] = reg2hw.bank1_info1_page_cfg;
 
   // qualify reg2hw settings with creator / owner privileges
-  for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv
-    flash_ctrl_info_cfg # (
-      .Bank(i)
-    ) u_info_cfg (
-      .cfgs_i(reg2hw_info_page_cfgs[i]),
-      .creator_seed_priv_i(creator_seed_priv),
-      .owner_seed_priv_i(owner_seed_priv),
-      .cfgs_o(info_page_cfgs[i])
-    );
+  for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
+    for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_priv_type
+      flash_ctrl_info_cfg # (
+        .Bank(i),
+        .InfoSel(j)
+      ) u_info_cfg (
+        .cfgs_i(reg2hw_info_page_cfgs[i][j]),
+        .creator_seed_priv_i(creator_seed_priv),
+        .owner_seed_priv_i(owner_seed_priv),
+        .cfgs_o(info_page_cfgs[i][j])
+      );
+    end
   end
 
   //////////////////////////////////////
@@ -542,7 +549,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   //////////////////////////////////////
   // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
+  logic [InfoTypesWidth-1:0] flash_info_sel;
   assign flash_part_sel = op_part;
+  assign flash_info_sel = op_info_sel;
 
   // Flash memory protection
   // Memory protection is page based and thus should use phy addressing
@@ -566,6 +575,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .phase_i(phase),
     .req_addr_i(flash_addr[BusAddrW-1 -: AllPagesW]),
     .req_part_i(flash_part_sel),
+    .info_sel_i(flash_info_sel),
     .addr_ovfl_i(rd_flash_ovfl | prog_flash_ovfl),
     .rd_i(rd_op),
     .prog_i(prog_op),
