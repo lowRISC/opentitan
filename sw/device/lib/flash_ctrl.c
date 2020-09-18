@@ -132,10 +132,6 @@ int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data) {
   return get_clr_err();
 }
 
-void flash_cfg_scramble_enable(bool en) {
-  REG32(FLASH_CTRL_SCRAMBLE_EN(0)) = en & 1;
-}
-
 void flash_cfg_bank_erase(bank_index_t bank, bool erase_en) {
   REG32(FLASH_CTRL_MP_BANK_CFG(0)) =
       (erase_en) ? SETBIT(REG32(FLASH_CTRL_MP_BANK_CFG(0)), bank)
@@ -160,12 +156,15 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
         region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0 |
         region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0 |
         region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0 |
+        region_cfg->scramble_en << FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0 |
         0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
   } else if (region_cfg->part == kInfoPartition) {
     reg_value =
         region_cfg->rd_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0 |
         region_cfg->prog_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0 |
         region_cfg->erase_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0 |
+        region_cfg->scramble_en
+            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0 |
         0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0;
 
     bank_sel = region_cfg->base / FLASH_PAGES_PER_BANK;
