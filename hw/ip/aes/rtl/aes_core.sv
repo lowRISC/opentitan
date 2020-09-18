@@ -6,113 +6,151 @@
 
 `include "prim_assert.sv"
 
-module aes_core import aes_pkg::*;
+module aes_core
+  import aes_pkg::*;
+  import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
   parameter bit          Masking              = 0,
   parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
   parameter int unsigned SecStartTriggerDelay = 0,
 
-  localparam int         NumShares            = Masking ? 2 : 1 // derived parameter
+  localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
+
+  parameter logic [WidthPRDClearing-1:0] SeedClearing = DefaultSeedClearing,
+  parameter logic  [WidthPRDMasking-1:0] SeedMasking  = DefaultSeedMasking
 ) (
-  input  logic                     clk_i,
-  input  logic                     rst_ni,
+  input  logic                        clk_i,
+  input  logic                        rst_ni,
 
-  // PRNG Interface
-  output logic                     prng_data_req_o,
-  input  logic                     prng_data_ack_i,
-  input  logic [63:0]              prng_data_i,
-
-  output logic                     prng_reseed_req_o,
-  input  logic                     prng_reseed_ack_i,
+  // Entropy request interfaces for clearing and masking PRNGs
+  output logic                        entropy_clearing_req_o,
+  input  logic                        entropy_clearing_ack_i,
+  input  logic [WidthPRDClearing-1:0] entropy_clearing_i,
+  output logic                        entropy_masking_req_o,
+  input  logic                        entropy_masking_ack_i,
+  input  logic  [WidthPRDMasking-1:0] entropy_masking_i,
 
   // Alerts
-  output logic                     ctrl_err_update_o,
-  output logic                     ctrl_err_storage_o,
+  output logic                        ctrl_err_update_o,
+  output logic                        ctrl_err_storage_o,
 
   // Bus Interface
-  input  aes_reg_pkg::aes_reg2hw_t reg2hw,
-  output aes_reg_pkg::aes_hw2reg_t hw2reg
+  input  aes_reg2hw_t                 reg2hw,
+  output aes_hw2reg_t                 hw2reg
 );
 
-  import aes_reg_pkg::*;
-
   // Signals
-  logic                 ctrl_re;
-  logic                 ctrl_qe;
-  logic                 ctrl_we;
-  aes_op_e              aes_op_q;
-  aes_mode_e            mode;
-  aes_mode_e            aes_mode_q;
-  ciph_op_e             cipher_op;
-  key_len_e             key_len;
-  key_len_e             key_len_q;
-  logic                 manual_operation_q;
-  ctrl_reg_t            ctrl_d, ctrl_q;
+  logic                        ctrl_re;
+  logic                        ctrl_qe;
+  logic                        ctrl_we;
+  aes_op_e                     aes_op_q;
+  aes_mode_e                   mode;
+  aes_mode_e                   aes_mode_q;
+  ciph_op_e                    cipher_op;
+  key_len_e                    key_len;
+  key_len_e                    key_len_q;
+  logic                        manual_operation_q;
+  ctrl_reg_t                   ctrl_d, ctrl_q;
 
-  logic [3:0][3:0][7:0] state_in;
-  si_sel_e              state_in_sel;
-  logic [3:0][3:0][7:0] add_state_in;
-  add_si_sel_e          add_state_in_sel;
+  logic        [3:0][3:0][7:0] state_in;
+  si_sel_e                     state_in_sel;
+  logic        [3:0][3:0][7:0] add_state_in;
+  add_si_sel_e                 add_state_in_sel;
 
-  logic [3:0][3:0][7:0] state_init [NumShares];
-  logic [3:0][3:0][7:0] state_done [NumShares];
-  logic [3:0][3:0][7:0] state_out;
+  logic        [3:0][3:0][7:0] state_mask;
+  logic        [3:0][3:0][7:0] state_init [NumShares];
+  logic        [3:0][3:0][7:0] state_done [NumShares];
+  logic        [3:0][3:0][7:0] state_out;
 
-  logic     [7:0][31:0] key_init [2];
-  logic     [7:0]       key_init_qe [2];
-  logic     [7:0][31:0] key_init_d [2];
-  logic     [7:0][31:0] key_init_q [2];
-  logic     [7:0][31:0] key_init_cipher [NumShares];
-  logic     [7:0]       key_init_we [2];
-  key_init_sel_e        key_init_sel;
+  logic            [7:0][31:0] key_init [2];
+  logic            [7:0]       key_init_qe [2];
+  logic            [7:0][31:0] key_init_d [2];
+  logic            [7:0][31:0] key_init_q [2];
+  logic            [7:0][31:0] key_init_cipher [NumShares];
+  logic            [7:0]       key_init_we [2];
+  key_init_sel_e               key_init_sel;
 
-  logic     [3:0][31:0] iv;
-  logic     [3:0]       iv_qe;
-  logic     [7:0][15:0] iv_d;
-  logic     [7:0][15:0] iv_q;
-  logic     [7:0]       iv_we;
-  iv_sel_e              iv_sel;
+  logic            [3:0][31:0] iv;
+  logic            [3:0]       iv_qe;
+  logic            [7:0][15:0] iv_d;
+  logic            [7:0][15:0] iv_q;
+  logic            [7:0]       iv_we;
+  iv_sel_e                     iv_sel;
 
-  logic     [7:0][15:0] ctr;
-  logic     [7:0]       ctr_we;
-  logic                 ctr_incr;
-  logic                 ctr_ready;
+  logic            [7:0][15:0] ctr;
+  logic            [7:0]       ctr_we;
+  logic                        ctr_incr;
+  logic                        ctr_ready;
 
-  logic     [3:0][31:0] data_in_prev_d;
-  logic     [3:0][31:0] data_in_prev_q;
-  logic                 data_in_prev_we;
-  dip_sel_e             data_in_prev_sel;
+  logic            [3:0][31:0] data_in_prev_d;
+  logic            [3:0][31:0] data_in_prev_q;
+  logic                        data_in_prev_we;
+  dip_sel_e                    data_in_prev_sel;
 
-  logic     [3:0][31:0] data_in;
-  logic     [3:0]       data_in_qe;
-  logic                 data_in_we;
+  logic            [3:0][31:0] data_in;
+  logic            [3:0]       data_in_qe;
+  logic                        data_in_we;
 
-  logic [3:0][3:0][7:0] add_state_out;
-  add_so_sel_e          add_state_out_sel;
+  logic        [3:0][3:0][7:0] add_state_out;
+  add_so_sel_e                 add_state_out_sel;
 
-  logic     [3:0][31:0] data_out_d;
-  logic     [3:0][31:0] data_out_q;
-  logic                 data_out_we;
-  logic           [3:0] data_out_re;
+  logic            [3:0][31:0] data_out_d;
+  logic            [3:0][31:0] data_out_q;
+  logic                        data_out_we;
+  logic                  [3:0] data_out_re;
 
-  logic                 cipher_in_valid;
-  logic                 cipher_in_ready;
-  logic                 cipher_out_valid;
-  logic                 cipher_out_ready;
-  logic                 cipher_crypt;
-  logic                 cipher_crypt_busy;
-  logic                 cipher_dec_key_gen;
-  logic                 cipher_dec_key_gen_busy;
-  logic                 cipher_key_clear;
-  logic                 cipher_key_clear_busy;
-  logic                 cipher_data_out_clear;
-  logic                 cipher_data_out_clear_busy;
+  logic                        cipher_in_valid;
+  logic                        cipher_in_ready;
+  logic                        cipher_out_valid;
+  logic                        cipher_out_ready;
+  logic                        cipher_crypt;
+  logic                        cipher_crypt_busy;
+  logic                        cipher_dec_key_gen;
+  logic                        cipher_dec_key_gen_busy;
+  logic                        cipher_key_clear;
+  logic                        cipher_key_clear_busy;
+  logic                        cipher_data_out_clear;
+  logic                        cipher_data_out_clear_busy;
 
-  logic         [255:0] prng_data_256;
+  // Pseudo-random data for clearing purposes
+  logic [WidthPRDClearing-1:0] prd_clearing;
+  logic                        prd_clearing_upd_req;
+  logic                        prd_clearing_upd_ack;
+  logic                        prd_clearing_rsd_req;
+  logic                        prd_clearing_rsd_ack;
+  logic                [127:0] prd_clearing_128;
+  logic                [255:0] prd_clearing_256;
 
   // Unused signals
-  logic     [3:0][31:0] unused_data_out_q;
+  logic            [3:0][31:0] unused_data_out_q;
+
+  // The clearing PRNG provides pseudo-random data for register clearing purposes.
+  aes_prng_clearing #(
+    .Width       ( WidthPRDClearing ),
+    .DefaultSeed ( SeedClearing     )
+  ) u_aes_prng_clearing (
+    .clk_i         ( clk_i                  ),
+    .rst_ni        ( rst_ni                 ),
+
+    .data_req_i    ( prd_clearing_upd_req   ),
+    .data_ack_o    ( prd_clearing_upd_ack   ),
+    .data_o        ( prd_clearing           ),
+    .reseed_req_i  ( prd_clearing_rsd_req   ),
+    .reseed_ack_o  ( prd_clearing_rsd_ack   ),
+
+    .entropy_req_o ( entropy_clearing_req_o ),
+    .entropy_ack_i ( entropy_clearing_ack_i ),
+    .entropy_i     ( entropy_clearing_i     )
+  );
+
+  // Generate clearing signals of appropriate widths.
+  localparam int unsigned NumChunks = 128/WidthPRDClearing;
+  for (genvar c = 0; c < NumChunks; c++) begin : gen_prd_clearing
+    assign prd_clearing_128[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing;
+    assign prd_clearing_256[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing;
+    assign prd_clearing_256[c * WidthPRDClearing + 128 +: WidthPRDClearing] = prd_clearing;
+  end
 
   ////////////
   // Inputs //
@@ -152,14 +190,13 @@ module aes_core import aes_pkg::*;
   //////////////////////
   // Key, IV and Data //
   //////////////////////
-  assign prng_data_256 = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
 
   // Initial Key registers
   always_comb begin : key_init_mux
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
-      KEY_INIT_CLEAR: key_init_d = '{default: prng_data_256};
-      default:        key_init_d = '{default: prng_data_256};
+      KEY_INIT_CLEAR: key_init_d = '{default: prd_clearing_256};
+      default:        key_init_d = '{default: prd_clearing_256};
     endcase
   end
 
@@ -181,8 +218,8 @@ module aes_core import aes_pkg::*;
       IV_DATA_OUT_RAW: iv_d = aes_transpose(state_out);
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
-      IV_CLEAR:        iv_d = {prng_data_i, prng_data_i};
-      default:         iv_d = {prng_data_i, prng_data_i};
+      IV_CLEAR:        iv_d = prd_clearing_128;
+      default:         iv_d = prd_clearing_128;
     endcase
   end
 
@@ -198,8 +235,8 @@ module aes_core import aes_pkg::*;
   always_comb begin : data_in_prev_mux
     unique case (data_in_prev_sel)
       DIP_DATA_IN: data_in_prev_d = data_in;
-      DIP_CLEAR:   data_in_prev_d = {prng_data_i, prng_data_i};
-      default:     data_in_prev_d = {prng_data_i, prng_data_i};
+      DIP_CLEAR:   data_in_prev_d = prd_clearing_128;
+      default:     data_in_prev_d = prd_clearing_128;
     endcase
   end
 
@@ -260,13 +297,10 @@ module aes_core import aes_pkg::*;
   if (!Masking) begin : gen_state_init_unmasked
     assign state_init[0] = state_in ^ add_state_in;
 
-  end else begin : gen_state_init_masked
-    // TODO: Use non-constant input masks + remove corresponding comment in aes.sv.
-    // See https://github.com/lowRISC/opentitan/issues/1005
-    logic [3:0][3:0][7:0] state_mask;
-    assign state_mask = {8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA,
-                         8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA, 8'hAA};
+    logic [3:0][3:0][7:0] unused_state_mask;
+    assign unused_state_mask = state_mask;
 
+  end else begin : gen_state_init_masked
     assign state_init[0] = (state_in ^ add_state_in) ^ state_mask; // Masked data share
     assign state_init[1] = state_mask;                             // Mask share
   end
@@ -285,7 +319,8 @@ module aes_core import aes_pkg::*;
   aes_cipher_core #(
     .AES192Enable ( AES192Enable ),
     .Masking      ( Masking      ),
-    .SBoxImpl     ( SBoxImpl     )
+    .SBoxImpl     ( SBoxImpl     ),
+    .SeedMasking  ( SeedMasking  )
   ) u_aes_cipher_core (
     .clk_i            ( clk_i                      ),
     .rst_ni           ( rst_ni                     ),
@@ -308,7 +343,12 @@ module aes_core import aes_pkg::*;
     .data_out_clear_i ( cipher_data_out_clear      ),
     .data_out_clear_o ( cipher_data_out_clear_busy ),
 
-    .prng_data_i      ( prng_data_i                ),
+    .prd_clearing_i   ( prd_clearing               ),
+
+    .data_in_mask_o   ( state_mask                 ),
+    .entropy_req_o    ( entropy_masking_req_o      ),
+    .entropy_ack_i    ( entropy_masking_ack_i      ),
+    .entropy_i        ( entropy_masking_i          ),
 
     .state_init_i     ( state_init                 ),
     .key_init_i       ( key_init_cipher            ),
@@ -464,10 +504,10 @@ module aes_core import aes_pkg::*;
     .iv_sel_o                ( iv_sel                           ),
     .iv_we_o                 ( iv_we                            ),
 
-    .prng_data_req_o         ( prng_data_req_o                  ),
-    .prng_data_ack_i         ( prng_data_ack_i                  ),
-    .prng_reseed_req_o       ( prng_reseed_req_o                ),
-    .prng_reseed_ack_i       ( prng_reseed_ack_i                ),
+    .prng_data_req_o         ( prd_clearing_upd_req             ),
+    .prng_data_ack_i         ( prd_clearing_upd_ack             ),
+    .prng_reseed_req_o       ( prd_clearing_rsd_req             ),
+    .prng_reseed_ack_i       ( prd_clearing_rsd_ack             ),
 
     .start_o                 ( hw2reg.trigger.start.d           ),
     .start_we_o              ( hw2reg.trigger.start.de          ),

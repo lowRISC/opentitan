@@ -14,16 +14,17 @@ module aes_key_expand import aes_pkg::*;
 
   localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              cfg_valid_i,
-  input  ciph_op_e          op_i,
-  input  logic              step_i,
-  input  logic              clear_i,
-  input  logic        [3:0] round_i,
-  input  key_len_e          key_len_i,
-  input  logic  [7:0][31:0] key_i [NumShares],
-  output logic  [7:0][31:0] key_o [NumShares]
+  input  logic                   clk_i,
+  input  logic                   rst_ni,
+  input  logic                   cfg_valid_i,
+  input  ciph_op_e               op_i,
+  input  logic                   step_i,
+  input  logic                   clear_i,
+  input  logic             [3:0] round_i,
+  input  key_len_e               key_len_i,
+  input  logic       [7:0][31:0] key_i [NumShares],
+  output logic       [7:0][31:0] key_o [NumShares],
+  input  logic [WidthPRDKey-1:0] prd_masking_i
 );
 
   logic       [7:0] rcon_d, rcon_q;
@@ -188,9 +189,7 @@ module aes_key_expand import aes_pkg::*;
     assign sw_in_mask = use_rot_word ? rot_word_out[1] : rot_word_in[1];
   end
 
-  // TODO: Use non-constant output masks for SubWord + remove corresponding comment in aes.sv.
-  // See https://github.com/lowRISC/opentitan/issues/1005
-  assign sw_out_mask = 32'h5555_5555;
+  assign sw_out_mask = prd_masking_i;
 
   // SubWord - individually substitute bytes
   for (genvar i = 0; i < 4; i++) begin : gen_sbox

@@ -46,6 +46,24 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "SeedClearing",
+      type:    "logic [aes_pkg::WidthPRDClearing-1:0]",
+      default: "aes_pkg::DefaultSeedClearing",
+      desc:    '''
+        Default seed of the PRNG used for register clearing.
+      '''
+      local:   "false",
+      expose:  "false"
+    },
+    { name:    "SeedMasking",
+      type:    "logic [aes_pkg::WidthPRDMasking-1:0]",
+      default: "aes_pkg::DefaultSeedMasking",
+      desc:    '''
+        Default seed of the PRNG used for masking.
+      '''
+      local:   "false",
+      expose:  "false"
+    },
     { name:    "AlertAsyncOn",
       type:    "logic [aes_reg_pkg::NumAlerts-1:0]",
       default: "{aes_reg_pkg::NumAlerts{1'b1}}",
@@ -404,7 +422,7 @@
         name: "PRNG_RESEED",
         resval: "1"
         desc:  '''
-          Keep continuing with the current internal state of the internal pseudo-random number generator (0) or perform a reseed of the internal state from the connected entropy source (1).
+          Keep continuing with the current internal state of the internal pseudo-random number generator used for register clearing (0) or perform a reseed of the internal state from the connected entropy source (1).
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }

@@ -685,6 +685,8 @@ module top_earlgrey #(
     .Masking(AesMasking),
     .SBoxImpl(AesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
+    .SeedClearing(aes_pkg::DefaultSeedClearing),
+    .SeedMasking(aes_pkg::DefaultSeedMasking),
     .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}})
   ) u_aes (
 

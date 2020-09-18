@@ -8,7 +8,10 @@
 
 `include "prim_assert.sv"
 
-module aes_cipher_control (
+module aes_cipher_control
+#(
+  parameter bit Masking = 0
+) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
 
@@ -32,6 +35,11 @@ module aes_cipher_control (
   output logic                    key_clear_o,
   input  logic                    data_out_clear_i,
   output logic                    data_out_clear_o,
+
+  // Control signals for masking PRNG
+  output logic                    prng_update_o,
+  output logic                    prng_reseed_req_o,
+  input  logic                    prng_reseed_ack_i,
 
   // Control outputs cipher data path
   output aes_pkg::state_sel_e     state_sel_o,
@@ -68,6 +76,7 @@ module aes_cipher_control (
   logic       dec_key_gen_d, dec_key_gen_q;
   logic       key_clear_d, key_clear_q;
   logic       data_out_clear_d, data_out_clear_q;
+  logic       prng_reseed_done_d, prng_reseed_done_q;
 
   // cfg_valid_i is used for gating assertions only.
   logic       unused_cfg_valid;
@@ -79,6 +88,10 @@ module aes_cipher_control (
     // Handshake signals
     in_ready_o         = 1'b0;
     out_valid_o        = 1'b0;
+
+    // Masking PRNG signals
+    prng_update_o      = 1'b0;
+    prng_reseed_req_o  = 1'b0;
 
     // Cipher data path
     state_sel_o        = STATE_ROUND;
@@ -103,6 +116,7 @@ module aes_cipher_control (
     dec_key_gen_d      = dec_key_gen_q;
     key_clear_d        = key_clear_q;
     data_out_clear_d   = data_out_clear_q;
+    prng_reseed_done_d = prng_reseed_done_q | prng_reseed_ack_i;
 
     unique case (aes_cipher_ctrl_cs)
 
@@ -129,6 +143,10 @@ module aes_cipher_control (
             // Load input data to state
             state_sel_o = dec_key_gen_d ? STATE_CLEAR : STATE_INIT;
             state_we_o  = 1'b1;
+
+            // Make the masking PRNG advance. The current pseudo-random data is used to mask the
+            // input data.
+            prng_update_o = dec_key_gen_d ? 1'b0 : Masking;
 
             // Init key expand
             key_expand_clear_o = 1'b1;
@@ -163,10 +181,15 @@ module aes_cipher_control (
             (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_4567 : KEY_WORDS_ZERO;
 
         // Make key expand advance - AES-256 has two round keys available right from beginning.
+        // Key expand requires pseudo-random data only, and only if it is actually advancing.
         if (key_len_i != AES_256) begin
           key_expand_step_o = 1'b1;
           key_full_we_o     = 1'b1;
+          prng_update_o     = Masking;
         end
+
+        // Clear masking PRNG reseed status.
+        prng_reseed_done_d = 1'b0;
 
         aes_cipher_ctrl_ns = ROUND;
       end
@@ -182,6 +205,12 @@ module aes_cipher_control (
             (key_len_i == AES_192 && op_i == CIPH_INV) ? KEY_WORDS_0123 :
             (key_len_i == AES_256 && op_i == CIPH_FWD) ? KEY_WORDS_4567 :
             (key_len_i == AES_256 && op_i == CIPH_INV) ? KEY_WORDS_0123 : KEY_WORDS_ZERO;
+
+        // Make the masking PRNG advance. Keep using fresh pseudo-random data.
+        prng_update_o = Masking;
+
+        // Keep requesting PRNG reseeding until it is acknowledged.
+        prng_reseed_req_o = Masking & ~prng_reseed_done_q;
 
         // Make key expand advance
         key_expand_step_o = 1'b1;
@@ -203,8 +232,9 @@ module aes_cipher_control (
 
             // Indicate that we are done, try to perform the handshake. But we don't wait here
             // as the decryption key is valid only during one cycle. If we don't get the
-            // handshake now, we will wait in the finish state.
-            out_valid_o = 1'b1;
+            // handshake now, we will wait in the finish state. When using masking, we only
+            // finish if the masking PRNG has been reseeded.
+            out_valid_o = Masking ? prng_reseed_done_q : 1'b1;
             if (out_ready_i) begin
               // Go to idle state directly.
               dec_key_gen_d      = 1'b0;
@@ -228,13 +258,17 @@ module aes_cipher_control (
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
 
-        // Indicate that we are done, wait for handshake.
-        out_valid_o = 1'b1;
+        // Indicate that we are done, wait for handshake. When using masking, we only finish
+        // if the masking PRNG has been reseeded.
+        out_valid_o = Masking ? prng_reseed_done_q : 1'b1;
         if (out_ready_i) begin
           // We don't need the state anymore, clear it.
           state_we_o         = 1'b1;
           state_sel_o        = STATE_CLEAR;
           crypt_d            = 1'b0;
+          // Make the masking PRNG advance once only. Updating it while being stalled would
+          // cause the SBoxes to be re-evaluated, thereby creating additional SCA leakage.
+          prng_update_o      = Masking;
           // If we were generating the decryption key and didn't get the handshake in the last
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d      = 1'b0;
@@ -285,6 +319,7 @@ module aes_cipher_control (
       dec_key_gen_q      <= 1'b0;
       key_clear_q        <= 1'b0;
       data_out_clear_q   <= 1'b0;
+      prng_reseed_done_q <= 1'b0;
     end else begin
       aes_cipher_ctrl_cs <= aes_cipher_ctrl_ns;
       round_q            <= round_d;
@@ -293,6 +328,7 @@ module aes_cipher_control (
       dec_key_gen_q      <= dec_key_gen_d;
       key_clear_q        <= key_clear_d;
       data_out_clear_q   <= data_out_clear_d;
+      prng_reseed_done_q <= prng_reseed_done_d;
     end
   end
 

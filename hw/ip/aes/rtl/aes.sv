@@ -22,24 +22,29 @@ module aes
                                                     // SCA measurements. A value of e.g. 40
                                                     // allows the processor to go into sleep
                                                     // before AES starts operation.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [WidthPRDClearing-1:0] SeedClearing = DefaultSeedClearing,
+  parameter logic  [WidthPRDMasking-1:0] SeedMasking  = DefaultSeedMasking,
+  parameter logic        [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
-  input                     clk_i,
-  input                     rst_ni,
+  input  logic                                      clk_i,
+  input  logic                                      rst_ni,
 
-  // Entropy source interface
-  // TODO: This still needs to be connected.
+  // Entropy source interfaces
+  // TODO: This still needs to be connected to the entropy source.
   // See https://github.com/lowRISC/opentitan/issues/1005
-  //output logic              entropy_req_o,
-  //input  logic              entropy_ack_i,
-  //input  logic [63:0]       entropy_i,
+  //output logic                                    entropy_clearing_req_o,
+  //input  logic                                    entropy_clearing_ack_i,
+  //input  logic             [WidthPRDClearing-1:0] entropy_clearing_i,
+  //output logic                                    entropy_masking_req_o,
+  //input  logic                                    entropy_masking_ack_i,
+  //input  logic              [WidthPRDMasking-1:0] entropy_masking_i,
 
   // Idle indicator for clock manager
-  output logic              idle_o,
+  output logic                                      idle_o,
 
   // Bus interface
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_pkg::tl_h2d_t                         tl_i,
+  output tlul_pkg::tl_d2h_t                         tl_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -48,12 +53,6 @@ module aes
 
   aes_reg2hw_t reg2hw;
   aes_hw2reg_t hw2reg;
-
-  logic        prng_data_req;
-  logic        prng_data_ack;
-  logic [63:0] prng_data;
-  logic        prng_reseed_req;
-  logic        prng_reseed_ack;
 
   logic [NumAlerts-1:0] alert;
 
@@ -71,39 +70,27 @@ module aes
     .AES192Enable         ( AES192Enable         ),
     .Masking              ( Masking              ),
     .SBoxImpl             ( SBoxImpl             ),
-    .SecStartTriggerDelay ( SecStartTriggerDelay )
+    .SecStartTriggerDelay ( SecStartTriggerDelay ),
+    .SeedClearing         ( SeedClearing         ),
+    .SeedMasking          ( SeedMasking          )
   ) u_aes_core (
-    .clk_i,
-    .rst_ni,
-
-    .prng_data_req_o    ( prng_data_req   ),
-    .prng_data_ack_i    ( prng_data_ack   ),
-    .prng_data_i        ( prng_data       ),
-    .prng_reseed_req_o  ( prng_reseed_req ),
-    .prng_reseed_ack_i  ( prng_reseed_ack ),
-
-    .ctrl_err_update_o  ( alert[0]        ),
-    .ctrl_err_storage_o ( alert[1]        ),
-
-    .reg2hw,
-    .hw2reg
-  );
-
-  aes_prng u_aes_prng (
-    .clk_i,
-    .rst_ni,
-
-    .data_req_i   ( prng_data_req   ),
-    .data_ack_o   ( prng_data_ack   ),
-    .data_o       ( prng_data       ),
-    .reseed_req_i ( prng_reseed_req ),
-    .reseed_ack_o ( prng_reseed_ack ),
+    .clk_i                  ( clk_i               ),
+    .rst_ni                 ( rst_ni              ),
 
     // TODO: This still needs to be connected to the entropy source.
     // See https://github.com/lowRISC/opentitan/issues/1005
-    .entropy_req_o(                      ),
-    .entropy_ack_i(                 1'b1 ),
-    .entropy_i    ( 64'hFEDCBA9876543210 )
+    .entropy_clearing_req_o (                     ),
+    .entropy_clearing_ack_i ( 1'b1                ),
+    .entropy_clearing_i     ( DefaultSeedClearing ),
+    .entropy_masking_req_o  (                     ),
+    .entropy_masking_ack_i  ( 1'b1                ),
+    .entropy_masking_i      ( DefaultSeedMasking  ),
+
+    .ctrl_err_update_o      ( alert[0]            ),
+    .ctrl_err_storage_o     ( alert[1]            ),
+
+    .reg2hw                 ( reg2hw              ),
+    .hw2reg                 ( hw2reg              )
   );
 
   assign idle_o = hw2reg.status.idle.d;

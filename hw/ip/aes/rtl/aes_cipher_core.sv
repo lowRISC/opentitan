@@ -98,78 +98,102 @@ module aes_cipher_core import aes_pkg::*;
   parameter bit         Masking      = 0,
   parameter sbox_impl_e SBoxImpl     = SBoxImplLut,
 
-  localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
+  localparam int        NumShares    = Masking ? 2 : 1, // derived parameter
+
+  parameter logic [WidthPRDMasking-1:0] SeedMasking = DefaultSeedMasking
 ) (
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
+  input  logic                        clk_i,
+  input  logic                        rst_ni,
 
   // Input handshake signals
-  input  logic                 in_valid_i,
-  output logic                 in_ready_o,
+  input  logic                        in_valid_i,
+  output logic                        in_ready_o,
 
   // Output handshake signals
-  output logic                 out_valid_o,
-  input  logic                 out_ready_i,
+  output logic                        out_valid_o,
+  input  logic                        out_ready_i,
 
   // Control and sync signals
-  input  logic                 cfg_valid_i, // Used for gating assertions only.
-  input  ciph_op_e             op_i,
-  input  key_len_e             key_len_i,
-  input  logic                 crypt_i,
-  output logic                 crypt_o,
-  input  logic                 dec_key_gen_i,
-  output logic                 dec_key_gen_o,
-  input  logic                 key_clear_i,
-  output logic                 key_clear_o,
-  input  logic                 data_out_clear_i, // Re-use the cipher core muxes.
-  output logic                 data_out_clear_o,
+  input  logic                        cfg_valid_i, // Used for gating assertions only.
+  input  ciph_op_e                    op_i,
+  input  key_len_e                    key_len_i,
+  input  logic                        crypt_i,
+  output logic                        crypt_o,
+  input  logic                        dec_key_gen_i,
+  output logic                        dec_key_gen_o,
+  input  logic                        key_clear_i,
+  output logic                        key_clear_o,
+  input  logic                        data_out_clear_i, // Re-use the cipher core muxes.
+  output logic                        data_out_clear_o,
 
-  // Pseudo-random data
-  input  logic          [63:0] prng_data_i,
+  // Pseudo-random data for register clearing
+  input  logic [WidthPRDClearing-1:0] prd_clearing_i,
+
+  // Masking PRNG
+  output logic        [3:0][3:0][7:0] data_in_mask_o,
+  output logic                        entropy_req_o,
+  input  logic                        entropy_ack_i,
+  input  logic  [WidthPRDMasking-1:0] entropy_i,
 
   // I/O data & initial key
-  input  logic [3:0][3:0][7:0] state_init_i [NumShares],
-  input  logic     [7:0][31:0] key_init_i [NumShares],
-  output logic [3:0][3:0][7:0] state_o [NumShares]
+  input  logic        [3:0][3:0][7:0] state_init_i [NumShares],
+  input  logic            [7:0][31:0] key_init_i [NumShares],
+  output logic        [3:0][3:0][7:0] state_o [NumShares]
 );
 
   // Signals
-  logic [3:0][3:0][7:0] state_d [NumShares];
-  logic [3:0][3:0][7:0] state_q [NumShares];
-  logic                 state_we;
-  state_sel_e           state_sel;
+  logic       [3:0][3:0][7:0] state_d [NumShares];
+  logic       [3:0][3:0][7:0] state_q [NumShares];
+  logic                       state_we;
+  state_sel_e                 state_sel;
 
-  logic [3:0][3:0][7:0] sub_bytes_out;
-  logic [3:0][3:0][7:0] sb_in_mask;
-  logic [3:0][3:0][7:0] sb_out_mask;
-  logic [3:0][3:0][7:0] shift_rows_in [NumShares];
-  logic [3:0][3:0][7:0] shift_rows_out [NumShares];
-  logic [3:0][3:0][7:0] mix_columns_out [NumShares];
-  logic [3:0][3:0][7:0] add_round_key_in [NumShares];
-  logic [3:0][3:0][7:0] add_round_key_out [NumShares];
-  add_rk_sel_e          add_round_key_in_sel;
+  logic       [3:0][3:0][7:0] sub_bytes_out;
+  logic       [3:0][3:0][7:0] sb_in_mask;
+  logic       [3:0][3:0][7:0] sb_out_mask;
+  logic       [3:0][3:0][7:0] shift_rows_in [NumShares];
+  logic       [3:0][3:0][7:0] shift_rows_out [NumShares];
+  logic       [3:0][3:0][7:0] mix_columns_out [NumShares];
+  logic       [3:0][3:0][7:0] add_round_key_in [NumShares];
+  logic       [3:0][3:0][7:0] add_round_key_out [NumShares];
+  add_rk_sel_e                add_round_key_in_sel;
 
-  logic     [7:0][31:0] key_full_d [NumShares];
-  logic     [7:0][31:0] key_full_q [NumShares];
-  logic                 key_full_we;
-  key_full_sel_e        key_full_sel;
-  logic     [7:0][31:0] key_dec_d [NumShares];
-  logic     [7:0][31:0] key_dec_q [NumShares];
-  logic                 key_dec_we;
-  key_dec_sel_e         key_dec_sel;
-  logic     [7:0][31:0] key_expand_out [NumShares];
-  ciph_op_e             key_expand_op;
-  logic                 key_expand_step;
-  logic                 key_expand_clear;
-  logic           [3:0] key_expand_round;
-  key_words_sel_e       key_words_sel;
-  logic     [3:0][31:0] key_words [NumShares];
-  logic [3:0][3:0][7:0] key_bytes [NumShares];
-  logic [3:0][3:0][7:0] key_mix_columns_out [NumShares];
-  logic [3:0][3:0][7:0] round_key [NumShares];
-  round_key_sel_e       round_key_sel;
+  logic           [7:0][31:0] key_full_d [NumShares];
+  logic           [7:0][31:0] key_full_q [NumShares];
+  logic                       key_full_we;
+  key_full_sel_e              key_full_sel;
+  logic           [7:0][31:0] key_dec_d [NumShares];
+  logic           [7:0][31:0] key_dec_q [NumShares];
+  logic                       key_dec_we;
+  key_dec_sel_e               key_dec_sel;
+  logic           [7:0][31:0] key_expand_out [NumShares];
+  ciph_op_e                   key_expand_op;
+  logic                       key_expand_step;
+  logic                       key_expand_clear;
+  logic                 [3:0] key_expand_round;
+  key_words_sel_e             key_words_sel;
+  logic           [3:0][31:0] key_words [NumShares];
+  logic       [3:0][3:0][7:0] key_bytes [NumShares];
+  logic       [3:0][3:0][7:0] key_mix_columns_out [NumShares];
+  logic       [3:0][3:0][7:0] round_key [NumShares];
+  round_key_sel_e             round_key_sel;
 
-  logic         [255:0] prng_data_256;
+  // Pseudo-random data for clearing and masking purposes
+  logic               [127:0] prd_clearing_128;
+  logic               [255:0] prd_clearing_256;
+
+  logic [WidthPRDMasking-1:0] prd_masking;
+  logic     [WidthPRDKey-1:0] prd_key_expand;
+  logic                       prd_masking_upd;
+  logic                       prd_masking_rsd_req;
+  logic                       prd_masking_rsd_ack;
+
+  // Generate clearing signals of appropriate widths.
+  localparam int unsigned NumChunks = 128/WidthPRDClearing;
+  for (genvar c = 0; c < NumChunks; c++) begin : gen_prd_clearing
+    assign prd_clearing_128[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing_i;
+    assign prd_clearing_256[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing_i;
+    assign prd_clearing_256[c * WidthPRDClearing + 128 +: WidthPRDClearing] = prd_clearing_i;
+  end
 
   //////////
   // Data //
@@ -180,8 +204,8 @@ module aes_cipher_core import aes_pkg::*;
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
-      STATE_CLEAR: state_d = '{default: {prng_data_i, prng_data_i}};
-      default:     state_d = '{default: {prng_data_i, prng_data_i}};
+      STATE_CLEAR: state_d = '{default: prd_clearing_128};
+      default:     state_d = '{default: prd_clearing_128};
     endcase
   end
 
@@ -192,18 +216,50 @@ module aes_cipher_core import aes_pkg::*;
   end
 
   // Masking
-  if (!Masking) begin : gen_no_sb_in_mask
-    // The mask is ignored anyway, it can be 0.
-    assign sb_in_mask = '0;
-  end else begin : gen_sb_in_mask
+  if (!Masking) begin : gen_no_masks
+    // The masks are ignored anyway, they can be 0.
+    assign sb_in_mask  = '0;
+    assign prd_masking = '0;
+
+    // Tie-off unused signals.
+    logic unused_entropy_ack;
+    logic [WidthPRDMasking-1:0] unused_entropy;
+    assign unused_entropy_ack = entropy_ack_i;
+    assign unused_entropy     = entropy_i;
+    assign entropy_req_o      = 1'b0;
+
+    logic unused_prd_masking_upd;
+    logic unused_prd_masking_rsd_req;
+    assign unused_prd_masking_upd     = prd_masking_upd;
+    assign unused_prd_masking_rsd_req = prd_masking_rsd_req;
+    assign prd_masking_rsd_ack        = 1'b0;
+
+  end else begin : gen_masks
     // The input mask is the mask share of the state.
-    assign sb_in_mask = state_q[1];
+    assign sb_in_mask  = state_q[1];
+
+    // The masking PRNG generates:
+    // - the output mask, as well as
+    // - the randomness required by the key expand module.
+    aes_prng_masking #(
+      .Width       ( WidthPRDMasking ),
+      .DefaultSeed ( SeedMasking     )
+    ) u_aes_prng_masking (
+      .clk_i         ( clk_i               ),
+      .rst_ni        ( rst_ni              ),
+      .data_update_i ( prd_masking_upd     ),
+      .data_o        ( prd_masking         ),
+      .reseed_req_i  ( prd_masking_rsd_req ),
+      .reseed_ack_o  ( prd_masking_rsd_ack ),
+      .entropy_req_o ( entropy_req_o       ),
+      .entropy_ack_i ( entropy_ack_i       ),
+      .entropy_i     ( entropy_i           )
+    );
   end
 
-  // TODO: Use non-constant output masks for SubBytes + remove corresponding comment in aes.sv.
-  // See https://github.com/lowRISC/opentitan/issues/1005
-  assign sb_out_mask = {8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55,
-                        8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55, 8'h55};
+  assign sb_out_mask    = prd_masking[WidthPRDMasking-1:WidthPRDKey];
+  assign data_in_mask_o = prd_masking[WidthPRDMasking-1 -: 128];
+  assign prd_key_expand = prd_masking[WidthPRDKey-1:0];
 
   // Cipher data path
   aes_sub_bytes #(
@@ -254,7 +310,6 @@ module aes_cipher_core import aes_pkg::*;
   /////////
   // Key //
   /////////
-  assign prng_data_256 = {prng_data_i, prng_data_i, prng_data_i, prng_data_i};
 
   // Full Key registers
   always_comb begin : key_full_mux
@@ -262,8 +317,8 @@ module aes_cipher_core import aes_pkg::*;
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d ='{default: prng_data_256};
-      default:           key_full_d ='{default: prng_data_256};
+      KEY_FULL_CLEAR:    key_full_d ='{default: prd_clearing_256};
+      default:           key_full_d ='{default: prd_clearing_256};
     endcase
   end
 
@@ -277,8 +332,8 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = '{default: prng_data_256};
-      default:        key_dec_d = '{default: prng_data_256};
+      KEY_DEC_CLEAR:  key_dec_d = '{default: prd_clearing_256};
+      default:        key_dec_d = '{default: prd_clearing_256};
     endcase
   end
 
@@ -294,16 +349,17 @@ module aes_cipher_core import aes_pkg::*;
     .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
   ) u_aes_key_expand (
-    .clk_i       ( clk_i            ),
-    .rst_ni      ( rst_ni           ),
-    .cfg_valid_i ( cfg_valid_i      ),
-    .op_i        ( key_expand_op    ),
-    .step_i      ( key_expand_step  ),
-    .clear_i     ( key_expand_clear ),
-    .round_i     ( key_expand_round ),
-    .key_len_i   ( key_len_i        ),
-    .key_i       ( key_full_q       ),
-    .key_o       ( key_expand_out   )
+    .clk_i         ( clk_i            ),
+    .rst_ni        ( rst_ni           ),
+    .cfg_valid_i   ( cfg_valid_i      ),
+    .op_i          ( key_expand_op    ),
+    .step_i        ( key_expand_step  ),
+    .clear_i       ( key_expand_clear ),
+    .round_i       ( key_expand_round ),
+    .key_len_i     ( key_len_i        ),
+    .key_i         ( key_full_q       ),
+    .key_o         ( key_expand_out   ),
+    .prd_masking_i ( prd_key_expand   )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
@@ -340,7 +396,9 @@ module aes_cipher_core import aes_pkg::*;
   /////////////
 
   // Control
-  aes_cipher_control u_aes_cipher_control (
+  aes_cipher_control #(
+    .Masking ( Masking )
+  ) u_aes_cipher_control (
     .clk_i                  ( clk_i                ),
     .rst_ni                 ( rst_ni               ),
 
@@ -361,6 +419,10 @@ module aes_cipher_core import aes_pkg::*;
     .key_clear_o            ( key_clear_o          ),
     .data_out_clear_i       ( data_out_clear_i     ),
     .data_out_clear_o       ( data_out_clear_o     ),
+
+    .prng_update_o          ( prd_masking_upd      ),
+    .prng_reseed_req_o      ( prd_masking_rsd_req  ),
+    .prng_reseed_ack_i      ( prd_masking_rsd_ack  ),
 
     .state_sel_o            ( state_sel            ),
     .state_we_o             ( state_we             ),

@@ -15,7 +15,6 @@ filesets:
       - rtl/aes_reg_pkg.sv
       - rtl/aes_reg_top.sv
       - rtl/aes_core.sv
-      - rtl/aes_prng.sv
       - rtl/aes_ctr.sv
       - rtl/aes_control.sv
       - rtl/aes_reg_status.sv
@@ -32,6 +31,8 @@ filesets:
       - rtl/aes_mix_columns.sv
       - rtl/aes_mix_single_column.sv
       - rtl/aes_key_expand.sv
+      - rtl/aes_prng_clearing.sv
+      - rtl/aes_prng_masking.sv
       - rtl/aes.sv
     file_type: systemVerilogSource
 
