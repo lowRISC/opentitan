@@ -46,13 +46,13 @@ class SpiTest : public testing::Test, public MmioTest {
   };
 
   dif_spi_device_config_t config_ = {
-      /*clock_polarity=*/kDifSpiDeviceEdgePositive,
-      /*data_phase=*/kDifSpiDeviceEdgeNegative,
-      /*tx_order=*/kDifSpiDeviceBitOrderMsbToLsb,
-      /*rx_order=*/kDifSpiDeviceBitOrderMsbToLsb,
-      /*rx_fifo_timeout=*/63,
-      /*rx_fifo_len=*/kFifoLen,
-      /*tx_fifo_len=*/kFifoLen,
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_fifo_timeout = 63,
+      .rx_fifo_len = kFifoLen,
+      .tx_fifo_len = kFifoLen,
   };
 };
 
@@ -112,11 +112,15 @@ TEST_F(ConfigTest, BasicInit) {
 }
 
 TEST_F(ConfigTest, ComplexInit) {
-  config_.clock_polarity = kDifSpiDeviceEdgeNegative;
-  config_.data_phase = kDifSpiDeviceEdgePositive;
-  config_.tx_order = kDifSpiDeviceBitOrderLsbToMsb;
-  config_.rx_fifo_timeout = 42;
-  config_.rx_fifo_len = 0x24;
+  config_ = {
+      .clock_polarity = kDifSpiDeviceEdgeNegative,
+      .data_phase = kDifSpiDeviceEdgePositive,
+      .tx_order = kDifSpiDeviceBitOrderLsbToMsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_fifo_timeout = 42,
+      .rx_fifo_len = 0x24,
+      .tx_fifo_len = kFifoLen,
+  };
 
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
