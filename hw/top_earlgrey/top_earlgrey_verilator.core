@@ -57,6 +57,10 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
     description: Use the OTBN model instead of the RTL implementation (development only)
+  UART_LOG_uart0:
+    datatype: string
+    paramtype: plusarg
+    description: Write a log of output from uart0 to the given log file. Use "-" for stdout.
 
 targets:
   default: &default_target

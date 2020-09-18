@@ -13,11 +13,13 @@ module uartdpi #(
   output logic tx_o,
   input  logic rx_i
 );
+  // Path to a log file. Used if none is specified through the `UARTDPI_LOG_<name>` plusarg.
+  localparam string DEFAULT_LOG_FILE = {NAME, ".log"};
 
   localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
-    chandle uartdpi_create(input string name);
+    chandle uartdpi_create(input string name, input string log_file_path);
 
   import "DPI-C" function
     void uartdpi_close(input chandle ctx);
@@ -32,13 +34,11 @@ module uartdpi #(
     void uartdpi_write(input chandle ctx, int data);
 
   chandle ctx;
-  int file_handle;
-  string file_name;
+  string log_file_path = DEFAULT_LOG_FILE;
 
   initial begin
-    ctx = uartdpi_create(NAME);
-    $sformat(file_name, "%s.log", NAME);
-    file_handle = $fopen(file_name, "w");
+    $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
+    ctx = uartdpi_create(NAME, log_file_path);
   end
 
   final begin
@@ -119,7 +119,6 @@ module uartdpi #(
             rxactive <= 0;
             if (rx_i) begin
               uartdpi_write(ctx, rxsymbol);
-              $fwrite(file_handle, "%c", rxsymbol);
             end
           end
         end
