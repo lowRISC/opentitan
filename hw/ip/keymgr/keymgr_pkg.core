@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/keymgr_pkg.sv
     file_type: systemVerilogSource

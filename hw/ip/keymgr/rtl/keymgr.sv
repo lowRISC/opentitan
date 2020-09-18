@@ -29,7 +29,7 @@ module keymgr import keymgr_pkg::*; #(
   // the following signals should eventually be wrapped into structs from other modules
   input lc_data_t lc_i,
   input otp_data_t otp_i,
-  input flash_key_t flash_i,
+  input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
   // interrupts and alerts
   output logic intr_op_done_o,
@@ -184,14 +184,18 @@ module keymgr import keymgr_pkg::*; #(
   end
 
   // Advance to creator_root_key
+  logic [KeyWidth-1:0] creator_seed;
+  assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.rom_ext_desc,
                                               RevisionSecret,
                                               otp_i.devid,
                                               lc_i.health_state,
-                                              flash_i.div_key});
+                                              creator_seed});
 
   // Advance to owner_intermediate_key
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.software_binding,flash_i.owner_secret});
+  logic [KeyWidth-1:0] owner_seed;
+  assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.software_binding,owner_seed});
 
   // Advance to owner_key
   assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.software_binding);
@@ -326,6 +330,8 @@ module keymgr import keymgr_pkg::*; #(
   /////////////////////////////////////
 
   prim_intr_hw #(.Width(1)) u_intr_op_done (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (op_done),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.op_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.op_done.q),
@@ -356,6 +362,8 @@ module keymgr import keymgr_pkg::*; #(
 
   // interrupts are only generated on changes to avoid interrupt storms
   prim_intr_hw #(.Width(1)) u_err_code (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (err_code != err_code_q),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.err.q),

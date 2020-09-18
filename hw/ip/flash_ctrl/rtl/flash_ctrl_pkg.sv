@@ -300,6 +300,11 @@ package flash_ctrl_pkg;
     logic [BusWidth-1:0] rma_ack_token;
   } lc_flash_rsp_t;
 
+  // flash_ctrl to keymgr
+  typedef struct packed {
+    logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
+  } keymgr_flash_t;
+
   // place holder for interface to EDN, replace with real one later
   typedef struct packed {
     logic valid;

@@ -50,6 +50,13 @@
       package: "pwrmgr_pkg"
     },
 
+    { struct: "keymgr_flash",
+      type: "uni",
+      name: "keymgr",
+      act: "req",
+      package: "flash_ctrl_pkg"
+    }
+
   ],
 
   param_list: [

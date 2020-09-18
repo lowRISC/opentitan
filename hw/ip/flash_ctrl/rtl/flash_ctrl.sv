@@ -20,13 +20,14 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        flash_rsp_t flash_i,
   output       flash_req_t flash_o,
 
-  // otp/lc/pwrmgr Interface
+  // otp/lc/pwrmgr/keymgr Interface
   input        otp_flash_t otp_i,
   input        lc_flash_req_t lc_i,
   output       lc_flash_rsp_t lc_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        edn_entropy_t edn_i,
+  output       keymgr_flash_t keymgr_o,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -300,7 +301,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .rand_i(rand_val),
 
     // outgoing seeds
-    .seeds_o(),
+    .seeds_o(keymgr_o.seeds),
     .seed_err_o(), // TBD hook-up to Err code register
 
     // phase indication

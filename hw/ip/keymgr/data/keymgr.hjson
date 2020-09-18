@@ -52,11 +52,11 @@
       act:     "rcv",
       package: "keymgr_pkg",
     },
-    { struct:  "flash_key",
+    { struct:  "keymgr_flash",
       type:    "uni",
       name:    "flash",
       act:     "rcv",
-      package: "keymgr_pkg",
+      package: "flash_ctrl_pkg",
     },
   ],
 
