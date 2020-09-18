@@ -88,15 +88,13 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
   uint32_t expected_frame_num = 0;
   while (true) {
     size_t bytes_available;
-    CHECK(dif_spi_device_rx_pending(spi, &bytes_available) ==
-              kDifSpiDeviceResultOk,
+    CHECK(dif_spi_device_rx_pending(spi, &bytes_available) == kDifSpiDeviceOk,
           "Failed to check pending bytes.");
     if (bytes_available >= sizeof(spiflash_frame_t)) {
       spiflash_frame_t frame;
-      CHECK(
-          dif_spi_device_recv(spi, &frame, sizeof(spiflash_frame_t),
-                              /*bytes_received=*/NULL) == kDifSpiDeviceResultOk,
-          "Failed to recieve bytes from SPI.");
+      CHECK(dif_spi_device_recv(spi, &frame, sizeof(spiflash_frame_t),
+                                /*bytes_received=*/NULL) == kDifSpiDeviceOk,
+            "Failed to recieve bytes from SPI.");
 
       uint32_t frame_num = SPIFLASH_FRAME_NUM(frame.header.frame_num);
       LOG_INFO("Processing frame #%d, expecting #%d", frame_num,
@@ -106,16 +104,14 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
         if (!check_frame_hash(&frame)) {
           LOG_ERROR("Detected hash mismatch on frame #%d", frame_num);
           CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
-                                    /*bytes_received=*/NULL) ==
-                    kDifSpiDeviceResultOk,
+                                    /*bytes_received=*/NULL) == kDifSpiDeviceOk,
                 "Failed to send bytes to SPI.");
           continue;
         }
 
         hw_SHA256_hash(&frame, sizeof(spiflash_frame_t), ack);
         CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
-                                  /*bytes_received=*/NULL) ==
-                  kDifSpiDeviceResultOk,
+                                  /*bytes_received=*/NULL) == kDifSpiDeviceOk,
               "Failed to send bytes to SPI.");
 
         if (expected_frame_num == 0) {
@@ -141,8 +137,7 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
       } else {
         // Send previous ack if unable to verify current frame.
         CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
-                                  /*bytes_received=*/NULL) ==
-                  kDifSpiDeviceResultOk,
+                                  /*bytes_received=*/NULL) == kDifSpiDeviceOk,
               "Failed to send bytes to SPI.");
       }
     }
@@ -158,19 +153,25 @@ int bootstrap(void) {
   LOG_INFO("Bootstrap requested, initialising HW...");
   flash_init_block();
 
-  mmio_region_t spi_reg = mmio_region_from_addr(0x40020000);
-  dif_spi_device_config_t config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
-      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_fifo_timeout = 63,
-      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
-  };
   dif_spi_device_t spi;
-  CHECK(dif_spi_device_init(spi_reg, &config, &spi) == kDifSpiDeviceResultOk,
+  CHECK(dif_spi_device_init(
+            (dif_spi_device_params_t){
+                .base_addr = mmio_region_from_addr(0x40020000),
+            },
+            &spi),
         "Failed to initialize SPI.");
+  CHECK(
+      dif_spi_device_configure(&spi,
+                               (dif_spi_device_config_t){
+                                   .clock_polarity = kDifSpiDeviceEdgePositive,
+                                   .data_phase = kDifSpiDeviceEdgeNegative,
+                                   .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+                                   .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+                                   .rx_fifo_timeout = 63,
+                                   .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                                   .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                               }) == kDifSpiDeviceOk,
+      "Failed to configure SPI.");
 
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
   int error = bootstrap_flash(&spi);
