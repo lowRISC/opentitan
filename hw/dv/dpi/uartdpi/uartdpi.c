@@ -11,18 +11,21 @@
 #endif
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-void *uartdpi_create(const char *name) {
+void *uartdpi_create(const char *name, const char *log_file_path) {
   struct uartdpi_ctx *ctx =
       (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));
   assert(ctx);
 
   int rv;
 
+  // Initialize UART pseudo-terminal
   struct termios tty;
   cfmakeraw(&tty);
 
@@ -43,6 +46,28 @@ void *uartdpi_create(const char *name) {
       "$ screen %s\n",
       ctx->ptyname, name, ctx->ptyname);
 
+  // Open log file (if requested)
+  ctx->log_file = NULL;
+  bool write_log_file = strlen(log_file_path) != 0;
+  if (write_log_file) {
+    if (strcmp(log_file_path, "-") == 0) {
+      ctx->log_file = stdout;
+      printf("UART: Additionally writing all UART output to STDOUT.\n");
+
+    } else {
+      FILE *log_file;
+      log_file = fopen(log_file_path, "w");
+      if (!log_file) {
+        fprintf(stderr, "UART: Unable to open log file at %s: %s\n",
+                log_file_path, strerror(errno));
+      } else {
+        ctx->log_file = log_file;
+        printf("UART: Additionally writing all UART output to '%s'.\n",
+               log_file_path);
+      }
+    }
+  }
+
   return (void *)ctx;
 }
 
@@ -54,6 +79,15 @@ void uartdpi_close(void *ctx_void) {
 
   close(ctx->host);
   close(ctx->device);
+
+  if (ctx->log_file) {
+    // Always ensure the log file is flushed (most important when writing
+    // to STDOUT)
+    fflush(ctx->log_file);
+    if (ctx->log_file != stdout) {
+      fclose(ctx->log_file);
+    }
+  }
 
   free(ctx);
 }
@@ -72,8 +106,15 @@ char uartdpi_read(void *ctx_void) {
 }
 
 void uartdpi_write(void *ctx_void, char c) {
+  int rv;
+
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
-  int rv = write(ctx->host, &c, 1);
-  assert(rv == 1 && "write() failed.");
+  rv = write(ctx->host, &c, 1);
+  assert(rv == 1 && "Write to pseudo-terminal failed.");
+
+  if (ctx->log_file) {
+    rv = fwrite(&c, sizeof(char), 1, ctx->log_file);
+    assert(rv == 1 && "Write to log file failed.");
+  }
 }

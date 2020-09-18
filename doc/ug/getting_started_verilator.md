@@ -93,6 +93,20 @@ I00004 hello_world.c:45] or type anything into the console window.
 I00005 hello_world.c:46] The LEDs show the ASCII code of the last character.
 ```
 
+Instead of interacting with the UART through a pseudo-terminal, the UART output can be written to a log file, or to STDOUT.
+This is done by passing the `UARTDPI_LOG_uart0` plus argument ("plusarg") to the verilated simulation at runtime.
+To write all UART output to STDOUT, pass `+UARTDPI_LOG_uart0=-` to the simulation.
+To write all UART output to a file called `your-log-file.log`, pass `+UARTDPI_LOG_uart0=your-log-file.log`.
+
+A full command-line invocation of the simulation could then look like that:
+```console
+$ cd $REPO_TOP
+$ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  +UARTDPI_LOG_uart0=-
+```
+
 ## Interact with GPIO
 
 The simulation includes a DPI module to map general-purpose I/O (GPIO) pins to two POSIX FIFO files: one for input, and one for output.
