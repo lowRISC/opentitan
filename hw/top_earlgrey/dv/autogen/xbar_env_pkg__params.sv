@@ -46,6 +46,9 @@ tl_device_t xbar_devices[$] = '{
     '{"otbn", '{
         '{32'h50000000, 32'h503fffff}
     }},
+    '{"keymgr", '{
+        '{32'h401a0000, 32'h401a0fff}
+    }},
     '{"uart", '{
         '{32'h40000000, 32'h40000fff}
     }},
@@ -112,7 +115,8 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "alert_handler",
         "nmi_gen",
-        "otbn"}}
+        "otbn",
+        "keymgr"}}
     ,
     '{"dm_sba", 2, '{
         "rom",

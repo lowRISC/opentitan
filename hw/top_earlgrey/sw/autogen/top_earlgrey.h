@@ -333,6 +333,24 @@ extern "C" {
 #define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for keymgr in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x401a0000u
+
+/**
+ * Peripheral size for keymgr in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_KEYMGR_BASE_ADDR and
+ * `TOP_EARLGREY_KEYMGR_BASE_ADDR + TOP_EARLGREY_KEYMGR_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for otbn in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -410,7 +428,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUsbdev = 8, /**< usbdev */
   kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
   kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
-  kTopEarlgreyPlicPeripheralLast = 10, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
+  kTopEarlgreyPlicPeripheralLast = 11, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -502,7 +521,9 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdPwrmgrWakeup = 79, /**< pwrmgr_wakeup */
   kTopEarlgreyPlicIrqIdOtbnDone = 80, /**< otbn_done */
   kTopEarlgreyPlicIrqIdOtbnErr = 81, /**< otbn_err */
-  kTopEarlgreyPlicIrqIdLast = 81, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 82, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdKeymgrErr = 83, /**< keymgr_err */
+  kTopEarlgreyPlicIrqIdLast = 83, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -512,7 +533,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[82];
+    top_earlgrey_plic_interrupt_for_peripheral[84];
 
 /**
  * PLIC Interrupt Target.
@@ -536,7 +557,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralHmac = 1, /**< hmac */
   kTopEarlgreyAlertPeripheralOtbn = 2, /**< otbn */
   kTopEarlgreyAlertPeripheralSensorCtrl = 3, /**< sensor_ctrl */
-  kTopEarlgreyAlertPeripheralLast = 3, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralKeymgr = 4, /**< keymgr */
+  kTopEarlgreyAlertPeripheralLast = 4, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -559,7 +581,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAstAlerts4 = 10, /**< sensor_ctrl_ast_alerts 4 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 11, /**< sensor_ctrl_ast_alerts 5 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 12, /**< sensor_ctrl_ast_alerts 6 */
-  kTopEarlgreyAlertIdLast = 12, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdKeymgrErr = 13, /**< keymgr_err */
+  kTopEarlgreyAlertIdLast = 13, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -569,7 +592,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[13];
+    top_earlgrey_alert_for_peripheral[14];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 

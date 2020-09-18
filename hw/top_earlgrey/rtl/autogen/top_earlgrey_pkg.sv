@@ -22,6 +22,7 @@ package top_earlgrey_pkg;
   parameter logic [31:0] TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h40140000;
   parameter logic [31:0] TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40150000;
   parameter logic [31:0] TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR = 32'h40170000;
+  parameter logic [31:0] TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h401a0000;
   parameter logic [31:0] TOP_EARLGREY_OTBN_BASE_ADDR = 32'h50000000;
 
   // Enumeration for DIO pins.

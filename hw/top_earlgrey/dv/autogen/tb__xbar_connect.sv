@@ -44,6 +44,7 @@ tl_if padctrl_tl_if(clk_main, rst_n);
 tl_if alert_handler_tl_if(clk_main, rst_n);
 tl_if nmi_gen_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
+tl_if keymgr_tl_if(clk_main, rst_n);
 tl_if uart_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
@@ -98,6 +99,7 @@ initial begin
     `DRIVE_TL_DEVICE_IF(alert_handler, alert_handler, tl)
     `DRIVE_TL_DEVICE_IF(nmi_gen, nmi_gen, tl)
     `DRIVE_TL_DEVICE_IF(otbn, otbn, tl)
+    `DRIVE_TL_DEVICE_IF(keymgr, keymgr, tl)
     `DRIVE_TL_DEVICE_IF(uart, uart, tl)
     `DRIVE_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_TL_DEVICE_IF(spi_device, spi_device, tl)
