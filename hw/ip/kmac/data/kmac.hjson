@@ -1,0 +1,403 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{ name: "kmac"
+  clock_primary: "clk_i"
+  bus_device: "tlul"
+  bus_host: "none"
+
+  interrupt_list: [
+    { name: "kmac_done"
+      desc: "KMAC/SHA3 absorbing has been completed"
+    }
+    { name: "fifo_empty"
+      desc: "Message FIFO empty condition"
+    }
+    { name: "kmac_err"
+      desc: "KMAC/SHA3 error occurred. ERR_CODE register shows the details"
+    }
+  ]
+  alert_list: []
+  param_list: [
+    { name:    "EnMasking"
+      type:    "int"
+      default: "0"
+      desc:    '''
+        Disable(0) or enable(1) first-order masking of Keccak round.
+
+        If masking is enabled, ReuseShare parameter will impact the design.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
+    { name:    "ReuseShare"
+      type:    "int"
+      default: "0"
+      desc:    '''
+        If enabled (1), the internal Keccak round logic will re-use the
+        adjacent shares as entropy in Domain-Oriented Masking AND logic.
+        It improves the throughput of Keccak, as it only requires small
+        amount of entropy rather than 1600 bit per round.
+
+        This feature is not implemented yet.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
+    { name:    "NumWordsKey"
+      type:    "int"
+      default: "16"
+      desc:    "Number of words for the secret key"
+      local:   "true"
+    }
+    { name:    "NumWordsPrefix"
+      type:    "int"
+      default: "11"
+      desc:    "Number of words for Encoded NsPrefix."
+      local:   "true"
+    }
+  ]
+  regwidth: "32"
+  registers: [
+    { name: "CFG"
+      desc: '''KMAC Configuration register.
+
+            This register is  updated when the hashing engine is in Idle.
+            If the software updates the register while the engine computes, the
+            updated value will be discarded.
+            '''
+      regwen: "CFG_REGWEN"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "kmac_en"
+          desc: '''KMAC datapath enable.
+
+                If this bit is 1, the incoming message is processed in KMAC
+                with the secret key.
+                '''
+          tags: [// don't enable kmac and sha data paths - we will do that in functional tests
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        } // f: kmac_en
+        { bits: "3:1"
+          name: "strength"
+          desc: '''Hashing Strength
+
+                3 bit field to select the security strength of SHA3 hashing
+                engine. If mode field is set to SHAKE or cSHAKE, only 128 and
+                256 strength can be selected. Other value will result error
+                when hashing starts.
+                '''
+          enum: [
+            { value: "0"
+              name:  "L128"
+              desc: "128 bit strength. Keccak rate is 1344 bit"
+            }
+            { value: "1"
+              name:  "L224"
+              desc: "224 bit strength. Keccak rate is 1152 bit"
+            }
+            { value: "2"
+              name:  "L256"
+              desc: "256 bit strength. Keccak rate is 1088 bit"
+            }
+            { value: "3"
+              name:  "L384"
+              desc: "384 bit strength. Keccak rate is 832 bit"
+            }
+            { value: "4"
+              name:  "L512"
+              desc: "512 bit strength. Keccak rate is 576 bit"
+            }
+          ]
+        } // f: strength
+        { bits: "5:4"
+          name: "mode"
+          desc: '''Keccak hashing mode.
+
+                This module supports SHA3 main hashing algorithm and the part
+                of its derived functions, SHAKE and cSHAKE with limitations.
+                This field is to select the mode.
+                '''
+          enum: [
+            { value: "0"
+              name: "SHA3"
+              desc: "SHA3 hashing mode. It appends `2'b 10` to the end of msg"
+            }
+            { value: "2"
+              name: "SHAKE"
+              desc: "SHAKE hashing mode. It appends `1111` to the end of msg"
+            }
+            { value: "3"
+              name: "cSHAKE"
+              desc: "cSHAKE hashing mode. It appends `00` to the end of msg"
+            }
+          ]
+        } // f: mode
+        { bits: "8"
+          name: "msg_endianness"
+          desc: '''Message and Secret Key Endianness.
+
+                Convert TL-UL write data[31:0] to big-endian style
+                {d[7:0], d[15:8], ...}
+
+                0: Little-endian. Keep input value as it is
+                1: Big-endian. Convert incoming value
+                '''
+          resval: "1"
+        } // f: msg_endianness
+        { bits: "9"
+          name: "state_endianness"
+          desc: '''Output state (Digest) Endianness.
+
+                Convert read-out state register to big-endian style.
+                If 0, keep the internal value as it is when SW reads.
+                If 1, convert the internal state value.
+                '''
+        } // f: state_endianness
+      ]
+    } // R: CFG
+    { name: "CMD"
+      desc: '''KMAC/ SHA3 command register.
+
+            This register is to control the KMAC to start accepting message,
+            to process the message, and to manually run additional keccak
+            rounds at the end. Only at certain stage, the CMD affects to the
+            control logic. It follows the sequence of
+
+            `start` --> `process` --> {`run` if needed --> } `done`
+            '''
+      swaccess: "r0w1c"
+      hwaccess: "hro"
+      hwext: "true"
+      hwqe:  "true"
+      tags: [// design assertion : after start sets, can only wr msg or set process
+             // design assertion : process can be set only after start is set
+             "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "0"
+          name: "start"
+          desc: '''If writes 1 into this field when KMAC/SHA3 is in idle,
+                KMAC/SHA3 begins its operation.
+
+                If the mode is cSHAKE, before receiving the message, the
+                hashing logic processes Function name string N and
+                customization input string S first. If KMAC mode is enabled,
+                additionally it processes secret key block.
+                '''
+        } // f: start
+        { bits: "1"
+          name: "process"
+          desc: '''If writes 1 into this field when KMAC/SHA3 began its
+                operation and received the entire message, it computes the
+                digest or signing.
+                '''
+        } // f: process
+        { bits: "2"
+          name: "run"
+          desc: '''The `run` field is used in the sponge squeezing stage.
+                It triggers the keccak round logic to run full 24 rounds.
+                This is optional and used when software needs more digest bits
+                than the keccak rate.
+
+                It only affects when the kmac/sha3 operation is completed.
+                '''
+        } // f: run
+        { bits: "3"
+          name: "done"
+          desc: '''If writes 1 into this field when KMAC/SHA3 squeezing is
+                completed. KMAC/SHA3 hashing engine clears internal varaibles
+                and goes back to Idle state for next command.
+                '''
+        } // f: done
+      ]
+    } // R: CMD
+    { name: "STATUS"
+      desc: '''KMAC/SHA3 Status register.'''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "0"
+          name: "sha3_idle"
+          desc: "If 1, SHA3 hashing engine is in idle state."
+          resval: "1"
+        }
+        { bits: "1"
+          name: "sha3_absorb"
+          desc: "If 1, SHA3 is receiving message stream and processing it"
+        }
+        { bits: "2"
+          name: "sha3_squeeze"
+          desc: '''If 1, SHA3 completes sponge absorbing stage.
+                In this stage, SW can manually run the hashing engine.
+                '''
+        }
+        { bits: "12:8"
+          name: "fifo_depth"
+          desc: "Message FIFO entry count"
+        }
+        { bits: "14"
+          name: "fifo_empty"
+          desc: "Message FIFO Empty indicator"
+          resval: "1"
+        }
+        { bits: "15"
+          name: "fifo_full"
+          desc: "Message FIFO Full indicator"
+        }
+      ]
+    } // R: STATUS
+    { multireg: {
+        name: "KEY"
+        desc: '''KMAC Secret Key
+
+              KMAC secret key can be up to 512 bit.
+              Order of the secret key is:
+              key[512:0] = {KEY0, KEY1, KEY2, ... , KEY15};
+
+              The registers are allowed to be updated when the engine is in Idle state.
+              If the engine computes the hash, it discards any attempts to update the secret keys
+              and report an error.
+
+              Current KMAC supports up to 512 bit secret key. It is the sw
+              responsibility to keep upper bits of the secret key to 0.
+              '''
+        count: "NumWordsKey"
+        cname: "KMAC"
+        hwext: "true"
+        hwqe : "true"
+        swaccess: "wo"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "key"
+            desc: "32-bit chunk of up-to 512-bit Secret Key"
+          }
+        ]
+      } // R: KEY
+    } // multireg: KEY
+    { name: "KEY_LEN"
+      desc: '''Secret Key length in bit.
+
+            This value is used to make encoded secret key in KMAC.
+            '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwext: "false"
+      fields: [
+        { bits: "9:0"
+          name: "len"
+          desc: "Length in bits"
+        } // f : len
+      ]
+    } // R : KEY_LEN
+    { multireg: {
+        name: "PREFIX"
+        desc: '''cSHAKE Prefix register.
+
+              Prefix including Function Name N and Customization String S.
+              The SHA3 assumes this register value is encoded as:
+              `encode_string(N) || encode_string(S) || 0`. It means that the
+              software can freely decide the length of N or S based on the
+              given Prefix register size 320bit. 320bit is determined to have
+              32-bit of N and up to 256-bit of S + encode of their length.
+
+              It is SW responsibility to fill the register with encoded value
+              that is described at Section 2.3.2 String Encoding in NIST SP
+              800-185 specification.
+
+              Order of Prefix is:
+              prefix[end:0] := {PREFIX0, PREFIX1, ... }
+
+              The registers are allowed to be updated when the engine is in Idle state.
+              If the engine computes the hash, it discards any attempts to update the secret keys
+              and report an error.
+              '''
+        count: "NumWordsPrefix"
+        cname: "KMAC"
+        hwext: "false"
+        hwqe : "true"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "prefix"
+            desc: "32-bit chunk of Encoded NS Prefix"
+          }
+        ]
+      } // R: PREFIX
+    } // multireg: PREFIX
+    { name: "ERR_CODE"
+      desc: "KMAC/SHA3 Error Code",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: '''If error interrupt occurs, this register has information of error cause.
+                Please take a look at `hw/ip/kmac/rtl/kmac_pkg.sv:err_code_e enum type.
+                '''
+          tags: [// Randomly write mem will cause this reg updated by design
+                 "excl:CsrNonInitTests:CsrExclCheck"]
+        }
+      ]
+    } // R: ERR_CODE
+    { name: "CFG_REGWEN"
+      desc: '''Controls the configurability of !!CFG register.
+
+            This register ensures the contents of !!CFG register cannot be
+            changed by the software while the KMAC/SHA3 is in operation mode.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "0"
+          name: "en"
+          desc: "Configuration enable."
+          resval: "1"
+        } // f : en 
+      ]
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
+    } // R : CFG_REGWEN
+
+    { skipto: "0x400"}
+    { window: {
+        name: "STATE"
+        items: "128"  // 512B address space
+        swaccess: "ro"
+        desc: '''Keccak State (1600 bit) memory.
+
+              The software can get the processed digest by reading this memory
+              region. Unlike MSG_FIFO, STATE memory space sees the addr[9:0].
+              If Masking feature is enabled, the software reads two shares from
+              this memory space.
+
+              0x400 - 0x4C7: STATE or first share of STATE if Masking = 1
+              0x500 - 0x5C7: 0 or second share of STATE if Masking = 1
+              '''
+      }
+    } // W: STATE
+
+    { skipto: "0x800"}
+
+    { window: {
+        name: "MSG_FIFO"
+        items: "512"     // 2kB range
+        swaccess: "wo"
+        byte-write: "true"
+        desc: '''Message FIFO.
+
+              Any write to this window will be appended to the FIFO. Only lower
+              2 bits `[1:0]` of the address matter to writes within the window
+              in order to handle with sub-word writes.
+              '''
+      }
+    } // W: MSG_FIFO
+  ]
+}

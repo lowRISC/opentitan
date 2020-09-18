@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "kmac",
+    design_spec:        "hw/ip/kmac/doc",
+    dv_plan:            "hw/ip/kmac/doc/dv_plan",
+    hw_checklist:       "hw/ip/kmac/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_kmac",
+    revisions: [
+      {
+        version:            "1.0",
+        life_stage:         "L0",
+        design_stage:       "D0",
+        verification_stage: "V0",
+        commit_id:          "",
+        notes:              ""
+      }
+    ]
+}
