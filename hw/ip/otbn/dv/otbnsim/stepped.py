@@ -68,8 +68,8 @@ def on_start(sim: OTBNSim, args: List[str]) -> None:
                          .format(addr))
 
     print('START {:#08x}'.format(addr))
-    sim.model.state.pc.set(addr)
-    sim.model.state.start()
+    sim.state.pc.set(addr)
+    sim.state.start()
 
 
 def on_step(sim: OTBNSim, args: List[str]) -> None:
@@ -78,7 +78,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
         raise ValueError('step expects zero arguments. Got {}.'
                          .format(args))
 
-    pc = int(sim.model.state.pc)
+    pc = int(sim.state.pc)
 
     assert 0 == pc & 3
     insn, changes = sim.step(verbose=False)
@@ -121,7 +121,7 @@ def on_dump_d(sim: OTBNSim, args: List[str]) -> None:
     print('DUMP_D {!r}'.format(path))
 
     with open(path, 'wb') as handle:
-        handle.write(sim.model.state.dmem.dump_le_words())
+        handle.write(sim.state.dmem.dump_le_words())
 
 
 _HANDLERS = {
