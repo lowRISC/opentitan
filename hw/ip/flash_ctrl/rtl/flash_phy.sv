@@ -52,7 +52,6 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic                 seq_fifo_rdy;
   logic                 seq_fifo_pending;
 
-
   // flash_ctrl to flash_phy interface
   logic [BankW-1:0]     ctrl_bank_sel;
   logic [NumBanks-1:0]  rd_done;
@@ -104,6 +103,34 @@ module flash_phy import flash_ctrl_pkg::*; (
     .rdata_o (rsp_bank_sel)
   );
 
+  // Generate host scramble_en indication, broadcasted to all banks
+  localparam int TotalRegions = MpRegions + 1;
+  logic host_scramble_en;
+  data_region_attr_t region_attrs [TotalRegions];
+  mp_region_cfg_t region_cfg, unused_cfg;
+
+  for(genvar i = 0; i < TotalRegions; i++) begin : gen_region_attrs
+    assign region_attrs[i].phase = PhaseInvalid;
+    assign region_attrs[i].cfg = flash_ctrl_i.region_cfgs[i];
+  end
+
+  // the region decode only accepts page address
+  flash_mp_data_region_sel #(
+    .Regions(TotalRegions)
+  ) u_region_sel (
+    .req_i(host_req_i),
+    .phase_i(PhaseInvalid),
+    .addr_i(host_addr_i[BusAddrW-1 -: AllPagesW]),
+    .region_attrs_i(region_attrs),
+    .sel_cfg_o(region_cfg)
+  );
+
+  // most attributes are unused
+  assign unused_cfg = region_cfg;
+
+  // only scramble attributes are looked at
+  assign host_scramble_en = region_cfg.scramble_en.q;
+
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
 
     // pop if the response came from the appropriate fifo
@@ -128,25 +155,18 @@ module flash_phy import flash_ctrl_pkg::*; (
 
     logic host_req;
     logic ctrl_req;
-    logic host_scramble_en;
-    logic ctrl_scramble_en;
-
     assign host_req = host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank];
     assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
-
-    // #2630: Temporary scramble enable logic on one of the banks until register configuration
-    // is setup.
-    assign host_scramble_en = host_req & host_addr_i[BusAddrW-1 -: BankW] == 1;
-    assign ctrl_scramble_en = ctrl_req & flash_ctrl_i.addr[BusAddrW-1 -: BankW] == 1;
 
     flash_phy_core i_core (
       .clk_i,
       .rst_ni,
-      .scramble_en_i(flash_ctrl_i.scramble_en & (host_scramble_en | ctrl_scramble_en)),
       .req_i(ctrl_req),
+      .scramble_en_i(flash_ctrl_i.scramble_en),
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req),
+      .host_scramble_en_i(host_scramble_en),
       .host_addr_i(host_addr_i[0 +: BusBankAddrW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),

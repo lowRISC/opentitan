@@ -125,17 +125,19 @@ package flash_ctrl_pkg;
   parameter int HwDataRules = 1;
 
   parameter info_page_cfg_t CfgAllowRead = '{
-    en: 1'b1,
-    rd_en: 1'b1,
-    prog_en: 1'b0,
-    erase_en: 1'b0
+    en:          1'b1,
+    rd_en:       1'b1,
+    prog_en:     1'b0,
+    erase_en:    1'b0,
+    scramble_en: 1'b0  // TBD, update to 1 once tb supports ECC
   };
 
   parameter info_page_cfg_t CfgAllowReadErase = '{
-    en: 1'b1,
-    rd_en: 1'b1,
-    prog_en: 1'b0,
-    erase_en: 1'b1
+    en:          1'b1,
+    rd_en:       1'b1,
+    prog_en:     1'b0,
+    erase_en:    1'b1,
+    scramble_en: 1'b0  // TBD, update to 1 once tb supports ECC
   };
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
@@ -162,12 +164,13 @@ package flash_ctrl_pkg;
     '{
        phase: PhaseRma,
        cfg:   '{
-                 en:       1'b1,
-                 rd_en:    1'b1,
-                 prog_en:  1'b0,
-                 erase_en: 1'b1,
-                 base:     '0,
-                 size:     '{default:'1}
+                 en:          1'b1,
+                 rd_en:       1'b1,
+                 prog_en:     1'b0,
+                 erase_en:    1'b1,
+                 scramble_en: 1'b0,
+                 base:        '0,
+                 size:        '{default:'1}
                 }
      }
   };
@@ -220,6 +223,7 @@ package flash_ctrl_pkg;
   // Flash controller to memory
   typedef struct packed {
     logic                 req;
+    logic                 scramble_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
@@ -229,26 +233,27 @@ package flash_ctrl_pkg;
     logic [BusWidth-1:0]  prog_data;
     logic                 prog_last;
     flash_prog_e          prog_type;
-    logic                 scramble_en;
+    mp_region_cfg_t [MpRegions:0] region_cfgs;
     logic [127:0]         addr_key;
     logic [127:0]         data_key;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:       1'b0,
-    rd:        1'b0,
-    prog:      1'b0,
-    pg_erase:  1'b0,
-    bk_erase:  1'b0,
-    part:      FlashPartData,
-    addr:      '0,
-    prog_data: '0,
-    prog_last: '0,
-    prog_type: FlashProgNormal,
-    scramble_en: '0,
-    addr_key:  128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key:  128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+    req:         1'b0,
+    scramble_en: 1'b0,
+    rd:          1'b0,
+    prog:        1'b0,
+    pg_erase:    1'b0,
+    bk_erase:    1'b0,
+    part:        FlashPartData,
+    addr:        '0,
+    prog_data:   '0,
+    prog_last:   '0,
+    prog_type:   FlashProgNormal,
+    region_cfgs: '0,
+    addr_key:    128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
+    data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
   };
 
   // memory to flash controller
