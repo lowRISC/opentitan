@@ -7,13 +7,21 @@
 
 package flash_ctrl_pkg;
 
-
   // design constants
   parameter int DataWidth       = top_pkg::FLASH_DATA_WIDTH;
   parameter int NumBanks        = top_pkg::FLASH_BANKS;
   parameter int InfoTypes       = top_pkg::FLASH_INFO_TYPES; // How many types of info per bank
+
+// TBD, the following hard-wired values are there to work-around verilator.
+// For some reason if the values are assigned through parameters verilator thinks
+// they are not constant
+`ifdef VERILATOR
+  parameter int InfoTypeSize [InfoTypes] = '{4, 4}; // size per bank
+  parameter int InfosPerBank    = max_info_pages('{4, 4});
+`else
   parameter int InfoTypeSize [InfoTypes] = top_pkg::FLASH_INFO_PER_BANK; // size per bank
   parameter int InfosPerBank    = max_info_pages(InfoTypeSize);
+`endif
   parameter int PagesPerBank    = top_pkg::FLASH_PAGES_PER_BANK; // Data pages per bank
   parameter int WordsPerPage    = top_pkg::FLASH_WORDS_PER_PAGE; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
