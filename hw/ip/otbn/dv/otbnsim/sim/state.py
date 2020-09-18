@@ -269,6 +269,14 @@ class OTBNState:
         self.pc_next = None  # type: Optional[int]
         self.dmem = Dmem()
 
+        # Stall cycle support: if an instruction causes one or more stall
+        # cycles, we call add_stall_cycles. This increments self._stalls (a
+        # non-negative count of the number of stall cycles to wait). On
+        # self.commit(), the self.stalled flag gets set if necessary and
+        # self._stalls is decremented.
+        self.stalled = False
+        self._stalls = 0
+
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
         self.running = False
@@ -300,6 +308,11 @@ class OTBNState:
         if index == 0:
             self.mod = value
 
+    def add_stall_cycles(self, num_cycles: int) -> None:
+        '''Add a single stall cycle before the next insn completes'''
+        assert num_cycles >= 0
+        self._stalls += num_cycles
+
     def loop_start(self, iterations: int, bodysize: int) -> None:
         next_pc = int(self.pc) + 4
         skip_pc = self.loop_stack.start_loop(next_pc, bodysize, iterations)
@@ -325,6 +338,20 @@ class OTBNState:
         return c
 
     def commit(self) -> None:
+        # Update self.stalled. If the instruction we just ran stalled us then
+        # self._stalls will be positive but self.stalled will be false.
+        assert self._stalls >= 0
+        if self._stalls > 0:
+            self.stalled = True
+            self._stalls -= 1
+        else:
+            self.stalled = False
+
+        # If we're stalled, there's nothing more to do: we only commit when we
+        # finish our stall cycles.
+        if self.stalled:
+            return
+
         self.intreg.commit()
         self.pc.set(self.pc_next
                     if self.pc_next is not None

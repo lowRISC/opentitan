@@ -14,7 +14,7 @@ from .encoding_scheme import EncSchemes
 from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
-from .yaml_parse_helpers import (check_keys, check_str, check_bool,
+from .yaml_parse_helpers import (check_keys, check_str, check_bool, check_int,
                                  check_list, index_list, get_optional_str,
                                  load_yaml)
 
@@ -29,7 +29,7 @@ class Insn:
                          'syntax', 'doc', 'note', 'trailing-doc',
                          'decode', 'operation', 'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
-                         'straight-line'])
+                         'straight-line', 'cycles'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -139,6 +139,12 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
+
+        self.cycles = check_int(yd.get('cycles', 1),
+                                'cycles field for ' + what)
+        if self.cycles <= 0:
+            raise ValueError('cycles field for {} is not positive.'
+                             .format(what))
 
     def enc_vals_to_op_vals(self,
                             cur_pc: int,

@@ -769,6 +769,7 @@
 
     The memory address must be aligned to WLEN bytes.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+  cycles: 2
   decode: |
     rd = UInt(grd)
     rs1 = UInt(grs1)

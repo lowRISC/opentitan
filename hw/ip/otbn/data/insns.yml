@@ -82,6 +82,9 @@ encoding-schemes: enc-schemes.yml
 #  straight-line: A boolean. If true, this instruction has no effect on control
 #                 flow. Optional, default true.
 #
+#  insn-cycles: A positive integer, giving the number of cycles that the
+#               instruction takes to execute. Optional, default 1.
+#
 # The operands field should be a list, corresponding to the operands in the
 # order they will appear in the syntax. Each operand is either a string (the
 # operand name) or a dictionary. In the latter case, it has the following
