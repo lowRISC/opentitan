@@ -5,13 +5,21 @@
 from random import getrandbits
 from typing import List, Optional, Tuple, cast
 
-from attrdict import AttrDict  # type: ignore
-
 from riscvmodel.types import (RegisterFile, Register,  # type: ignore
-                              SingleRegister, Trace, TracePC, BitflagRegister)
+                              SingleRegister, Trace, TracePC)
 
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
+
+
+class TraceFlag(Trace):  # type: ignore
+    def __init__(self, group_name: str, flag_name: str, value: bool):
+        self.group_name = group_name
+        self.flag_name = flag_name
+        self.value = value
+
+    def __str__(self) -> str:
+        return '{}.{} = {}'.format(self.group_name, self.flag_name, int(self.value))
 
 
 class TraceCallStackPush(Trace):  # type: ignore
@@ -190,24 +198,57 @@ class LoopStack:
         self.trace = []
 
 
+class FlagReg:
+    FLAG_NAMES = ['C', 'L', 'M', 'Z']
+
+    def __init__(self, C: bool, L: bool, M: bool, Z: bool):
+        self.C = C
+        self.L = L
+        self.M = M
+        self.Z = Z
+
+        self._new_val = None  # type: Optional['FlagReg']
+
+    def set_flags(self, other: 'FlagReg') -> None:
+        self._new_val = other
+
+    def get_by_name(self, flag_name: str) -> bool:
+        assert flag_name in FlagReg.FLAG_NAMES
+        return cast(bool, getattr(self, flag_name))
+
+    def get_by_idx(self, flag_idx: int) -> bool:
+        assert 0 <= flag_idx <= 3
+        flag_name = ['C', 'L', 'M', 'Z'][flag_idx]
+        return self.get_by_name(flag_name)
+
+    def changes(self, group_name: str) -> List[TraceFlag]:
+        if self._new_val is None:
+            return []
+        return [TraceFlag(group_name, n, self._new_val.get_by_name(n))
+                for n in FlagReg.FLAG_NAMES]
+
+    def commit(self) -> None:
+        if self._new_val is not None:
+            for n in FlagReg.FLAG_NAMES:
+                setattr(self, n, getattr(self._new_val, n))
+        self._new_val = None
+
+
 class FlagGroups:
     def __init__(self) -> None:
-        self.groups = {
-            0: BitflagRegister(["C", "L", "M", "Z"], prefix = "FG0."),
-            1: BitflagRegister(["C", "L", "M", "Z"], prefix = "FG1.")
-        }
+        self.groups = {0: FlagReg(False, False, False, False),
+                       1: FlagReg(False, False, False, False)}
 
-    def __getitem__(self, key: int) -> BitflagRegister:
+    def __getitem__(self, key: int) -> FlagReg:
         assert 0 <= key <= 1
         return self.groups[key]
 
-    def __setitem__(self, key: int, value: int) -> None:
+    def __setitem__(self, key: int, value: FlagReg) -> None:
         assert 0 <= key <= 1
-        self.groups[key].set(value)
+        self.groups[key].set_flags(value)
 
     def changes(self) -> List[Trace]:
-        return cast(List[Trace],
-                    self.groups[0].changes() + self.groups[1].changes())
+        return self.groups[0].changes('FG0') + self.groups[1].changes('FG1')
 
     def commit(self) -> None:
         self.groups[0].commit()
@@ -325,14 +366,14 @@ class OTBNModel:
         self.state.wreg[wridx] = curr | valpos
 
     @staticmethod
-    def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, int]:
+    def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, FlagReg]:
         result = a + b + carry_in
 
         carryless_result = result & ((1 << 256) - 1)
-        flags_out = AttrDict({"C": (result >> 256) & 1,
-                              "L": result & 1,
-                              "M": (result >> 255) & 1,
-                              "Z": 1 if carryless_result == 0 else 0})
+        flags_out = FlagReg(C=bool((result >> 256) & 1),
+                            L=bool(result & 1),
+                            M=bool((result >> 255) & 1),
+                            Z=bool(1 if carryless_result == 0 else 0))
 
         return (carryless_result, flags_out)
 

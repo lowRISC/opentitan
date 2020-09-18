@@ -670,12 +670,7 @@ class BNRSEL(OTBNInsn):
         self.flag = op_vals['flag']
 
     def execute(self, model: OTBNModel) -> None:
-        # self.flag gives a number (0-3), which we need to convert to a flag
-        # name for use with BitflagRegister.
-        assert 0 <= self.flag <= 3
-        flag_name = ['C', 'L', 'M', 'Z'][self.flag]
-
-        flag_is_set = model.state.flags[self.flag_group].get(flag_name)
+        flag_is_set = model.state.flags[self.flag_group].get_by_idx(self.flag)
         val = model.state.wreg[self.wrs1 if flag_is_set else self.wrs2]
         model.state.wreg[self.wrd] = val
 
