@@ -20,6 +20,9 @@ module uartdpi #(
     chandle uartdpi_create(input string name);
 
   import "DPI-C" function
+    void uartdpi_close(input chandle ctx);
+
+  import "DPI-C" function
     byte uartdpi_read(input chandle ctx);
 
   import "DPI-C" function
@@ -36,6 +39,11 @@ module uartdpi #(
     ctx = uartdpi_create(NAME);
     $sformat(file_name, "%s.log", NAME);
     file_handle = $fopen(file_name, "w");
+  end
+
+  final begin
+    uartdpi_close(ctx);
+    ctx = 0;
   end
 
   // TX

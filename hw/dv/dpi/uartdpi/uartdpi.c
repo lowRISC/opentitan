@@ -46,6 +46,18 @@ void *uartdpi_create(const char *name) {
   return (void *)ctx;
 }
 
+void uartdpi_close(void *ctx_void) {
+  struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
+  if (!ctx) {
+    return;
+  }
+
+  close(ctx->host);
+  close(ctx->device);
+
+  free(ctx);
+}
+
 int uartdpi_can_read(void *ctx_void) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
 
