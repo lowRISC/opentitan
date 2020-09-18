@@ -122,7 +122,7 @@ package keymgr_pkg;
     logic [KeyWidth-1:0] digest_share1;
   } kmac_data_rsp_t;
 
-  parameter kmac_data_rsp_t KMAC_DATA_RSP_DEFAULT = ' {
+  parameter kmac_data_rsp_t KMAC_DATA_RSP_DEFAULT = '{
     ready: 1'b1,
     done:  1'b1,
     digest_share0: KeyWidth'(32'hDEADBEEF),
@@ -136,7 +136,7 @@ package keymgr_pkg;
     logic keymgr_en;
   } lc_data_t;
 
-  parameter lc_data_t LC_DATA_DEFAULT = ' {
+  parameter lc_data_t LC_DATA_DEFAULT = '{
     health_state: '0,
     keymgr_en:    1'b1
   };
@@ -146,7 +146,7 @@ package keymgr_pkg;
     logic [KeyWidth-1:0] root_key;
   } otp_data_t;
 
-  parameter otp_data_t OTP_DATA_DEFAULT = ' {
+  parameter otp_data_t OTP_DATA_DEFAULT = '{
     devid:    '0,
     root_key: '0
   };
@@ -156,7 +156,7 @@ package keymgr_pkg;
     logic [KeyWidth-1:0] owner_secret;
   } flash_key_t;
 
-  parameter flash_key_t FLASH_KEY_DEFAULT = ' {
+  parameter flash_key_t FLASH_KEY_DEFAULT = '{
     div_key:      '0,
     owner_secret: '0
   };

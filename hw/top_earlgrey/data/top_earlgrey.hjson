@@ -406,10 +406,11 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'flash_ctrl.flash': ['eflash.flash_ctrl'],
-      'pwrmgr.pwr_flash': ['flash_ctrl.pwrmgr'],
-      'pwrmgr.pwr_rst'  : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'  : ['clkmgr.pwr'],
+      'flash_ctrl.flash' : ['eflash.flash_ctrl'],
+      'pwrmgr.pwr_flash' : ['flash_ctrl.pwrmgr'],
+      'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
+      'flash_ctrl.keymgr': ['keymgr.flash']
     }
 
     // top is to connect to top net/struct.
