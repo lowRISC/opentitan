@@ -630,4 +630,19 @@ module otp_ctrl
     end
   end
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  `ASSERT_KNOWN(TlOutKnown_A,                tl_o)
+  `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
+  `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
+  `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
+  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_init_rsp_o)
+  `ASSERT_KNOWN(OtpPwrStateKnown_A,          otp_pwr_state_o)
+  `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_rsp_o)
+  `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
+  `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
+  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          otp_flash_key_o)
+
 endmodule : otp_ctrl
