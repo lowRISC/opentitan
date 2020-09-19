@@ -43,6 +43,9 @@ module otp_ctrl
   // Lifecycle transition command interface
   input  lc_otp_program_req_t       lc_otp_program_req_i,
   output lc_otp_program_rsp_t       lc_otp_program_rsp_o,
+  // Lifecycle hashing interface for raw unlock
+  input  lc_otp_token_req_t         lc_otp_token_req_i,
+  output lc_otp_token_rsp_t         lc_otp_token_rsp_o,
   // Lifecycle broadcast inputs
   input  lc_tx_t                    lc_escalate_en_i,
   input  lc_tx_t                    lc_provision_en_i,
@@ -518,19 +521,24 @@ module otp_ctrl
   ) u_otp_ctrl_lci (
     .clk_i,
     .rst_ni,
-    .escalate_en_i ( lc_escalate_en_i                  ),
-    .error_o       ( part_error[LciIdx]                ),
-    .lci_idle_o    ( lci_idle                          ),
-    // TODO: add LC interface
-    .otp_req_o     ( part_otp_arb_req[LciIdx]          ),
-    .otp_cmd_o     ( part_otp_arb_bundle[LciIdx].cmd   ),
-    .otp_size_o    ( part_otp_arb_bundle[LciIdx].size  ),
-    .otp_wdata_o   ( part_otp_arb_bundle[LciIdx].wdata ),
-    .otp_addr_o    ( part_otp_arb_bundle[LciIdx].addr  ),
-    .otp_gnt_i     ( part_otp_arb_gnt[LciIdx]          ),
-    .otp_rvalid_i  ( part_otp_rvalid[LciIdx]           ),
-    .otp_rdata_i   ( part_otp_rdata                    ),
-    .otp_err_i     ( part_otp_err                      )
+    .init_req_i      ( part_init_req                     ),
+    .escalate_en_i   ( lc_escalate_en_i                  ),
+    .error_o         ( part_error[LciIdx]                ),
+    .lci_idle_o      ( lci_idle                          ),
+    .lc_req_i        ( lc_otp_program_req_i.req          ),
+    .lc_state_diff_i ( lc_otp_program_req_i.state_diff   ),
+    .lc_count_diff_i ( lc_otp_program_req_i.count_diff   ),
+    .lc_ack_o        ( lc_otp_program_rsp_o.ack          ),
+    .lc_err_o        ( lc_otp_program_rsp_o.err          ),
+    .otp_req_o       ( part_otp_arb_req[LciIdx]          ),
+    .otp_cmd_o       ( part_otp_arb_bundle[LciIdx].cmd   ),
+    .otp_size_o      ( part_otp_arb_bundle[LciIdx].size  ),
+    .otp_wdata_o     ( part_otp_arb_bundle[LciIdx].wdata ),
+    .otp_addr_o      ( part_otp_arb_bundle[LciIdx].addr  ),
+    .otp_gnt_i       ( part_otp_arb_gnt[LciIdx]          ),
+    .otp_rvalid_i    ( part_otp_rvalid[LciIdx]           ),
+    .otp_rdata_i     ( part_otp_rdata                    ),
+    .otp_err_i       ( part_otp_err                      )
   );
 
   ///////////////////////////////
@@ -544,6 +552,8 @@ module otp_ctrl
 
   // TODO: add all key outputs
   assign otp_flash_key_o = '0;
+  // TODO: hashed raw unlock token
+  assign lc_otp_token_rsp_o = '0;
 
   /////////////////////////
   // Partition Instances //
@@ -683,10 +693,10 @@ module otp_ctrl
   assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? Set : Blk;
 
   // Lifecycle state
-  assign otp_lc_data_o.state_valid        = part_init_done[LifeCycleIdx];
-  assign {otp_lc_data_o.transition_count,
-          otp_lc_data_o.state}            = part_buf_data[PartInfo[LifeCycleIdx].offset +:
-                                                          PartInfo[LifeCycleIdx].size];
+  assign otp_lc_data_o.state_valid    = part_init_done[LifeCycleIdx];
+  assign {otp_lc_data_o.count,
+          otp_lc_data_o.state}        = part_buf_data[PartInfo[LifeCycleIdx].offset +:
+                                                      PartInfo[LifeCycleIdx].size];
 
   ////////////////
   // Assertions //

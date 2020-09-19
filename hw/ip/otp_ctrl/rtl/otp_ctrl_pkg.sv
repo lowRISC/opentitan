@@ -204,17 +204,20 @@ package otp_ctrl_pkg;
   // Typedefs for LC Interface //
   ///////////////////////////////
 
-  parameter logic [127:0] LcTokenWidth = 128;
+  // TODO: move all these definitions to the lc_ctrl_pkg
+  parameter int LcValueWidth = OtpWidth;
+  parameter int LcTokenWidth = 128;
+  parameter int NumLcStateValues = 12;
+  parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
+  parameter int NumLcCountValues = 32;
 
-  // TODO: update this encoding and move to lc_ctrl_pkg
-  typedef enum logic [15:0] {
+  typedef enum logic [LcValueWidth-1:0] {
     Blk = 16'h0000,
     Set = 16'hF5FA
   } lc_value_e;
 
-  // TODO: move to lc_ctrl_pkg
-  typedef enum lc_value_e [11:0] {
-    LcStRaw           = {12{Blk}},
+  typedef enum logic [LcStateWidth-1:0] {
+    LcStRaw           = {NumLcStateValues{Blk}},
     LcStTestUnlocked0 = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set},
     LcStTestLocked0   = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set},
     LcStTestUnlocked1 = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set, Set},
@@ -226,32 +229,44 @@ package otp_ctrl_pkg;
     LcStProd          = {Blk, Blk, Blk, Set, Blk, Set, Set, Set, Set, Set, Set, Set},
     LcStProdEnd       = {Blk, Blk, Set, Blk, Blk, Set, Set, Set, Set, Set, Set, Set},
     LcStRma           = {Set, Set, Blk, Set, Set, Set, Set, Set, Set, Set, Set, Set},
-    LcStScrap         = {12{Set}}
+    LcStScrap         = {NumLcStateValues{Set}}
   } lc_state_e;
 
   typedef struct packed {
-    logic                    state_valid;
-    logic                    test_token_valid;
-    logic                    rma_token_valid;
-    logic                    id_state_valid;
-    lc_state_e               state;
-    lc_value_e [31:0]        transition_count;
-    logic [LcTokenWidth-1:0] test_unlock_token;
-    logic [LcTokenWidth-1:0] test_exit_token;
-    logic [LcTokenWidth-1:0] rma_token;
-    lc_value_e               id_state;
-  } otp_lc_data_t;  // broadcast
+    logic                             state_valid;
+    logic                             test_token_valid;
+    logic                             rma_token_valid;
+    logic                             id_state_valid;
+    lc_state_e                        state;
+    lc_value_e [NumLcCountValues-1:0] count;
+    logic [LcTokenWidth-1:0]          test_unlock_token;
+    logic [LcTokenWidth-1:0]          test_exit_token;
+    logic [LcTokenWidth-1:0]          rma_token;
+    lc_value_e                        id_state;
+  } otp_lc_data_t;
 
   typedef struct packed {
-    // The LC controller signals the differential
-    // with respect to the current state.
     logic         req;
-    otp_lc_data_t diff;
+    otp_lc_data_t state_diff;
+    lc_value_e [NumLcCountValues-1:0] count_diff;
   } lc_otp_program_req_t;
 
   typedef struct packed {
-    logic  ack;
+    logic err;
+    logic ack;
   } lc_otp_program_rsp_t;
+
+  // RAW unlock token hashing request.
+  typedef struct packed {
+    logic                    req;
+    logic [LcTokenWidth-1:0] token_input;
+  } lc_otp_token_req_t;
+
+  typedef struct packed {
+    logic  ack;
+    logic [LcTokenWidth-1:0] hashed_token;
+  } lc_otp_token_rsp_t;
+
 
   // TODO: move this to the LC ctrl package
   typedef enum logic [2:0] {
