@@ -268,5 +268,9 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Assertions //
   ////////////////
 
+  `ASSERT_KNOWN(ChkPendingKnown_A,  chk_pending_o)
+  `ASSERT_KNOWN(IntegChkReqKnown_A, integ_chk_req_o)
+  `ASSERT_KNOWN(CnstyChkReqKnown_A, cnsty_chk_req_o)
+  `ASSERT_KNOWN(ChkTimeoutKnown_A,  chk_timeout_o)
 
 endmodule : otp_ctrl_lfsr_timer
