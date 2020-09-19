@@ -11,11 +11,9 @@ package pwrmgr_pkg;
   parameter int ALWAYS_ON_DOMAIN = 0;
 
   // variables referenced by other modules / packages
-  parameter int HwRstReqs = 2;    // this needs to be a topgen populated number, or from topcfg?
   parameter int PowerDomains = 2; // this needs to be a topgen populated number, or from topcfg?
 
   // variables referenced only by pwrmgr
-  // pwrmgr_reg_pkg::NumWkups; // should this be coming from top_pkg instead?
   localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
   // pwrmgr to ast
@@ -61,6 +59,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] rst_lc_req;
     logic [PowerDomains-1:0] rst_sys_req;
+    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs;
     reset_cause_e reset_cause;
   } pwr_rst_req_t;
 
@@ -157,7 +156,7 @@ package pwrmgr_pkg;
   // peripherals to pwrmgr
   typedef struct packed {
     logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
-    logic [HwRstReqs-1:0] rstreqs;
+    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs;
   } pwr_peri_t;
 
   // power-up causes

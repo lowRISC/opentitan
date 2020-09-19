@@ -21,7 +21,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input slow_pwrup_cause_toggle_i,
   input pwrup_cause_e slow_pwrup_cause_i,
   output logic [NumWkups-1:0] slow_wakeup_en_o,
-  output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
+  output logic [NumRstReqs-1:0] slow_reset_en_o,
   output logic slow_main_pd_no,
   output logic slow_io_clk_en_o,
   output logic slow_core_clk_en_o,
@@ -36,7 +36,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input ack_pwrup_i,
   input cfg_cdc_sync_i,
   input [NumWkups-1:0] wakeup_en_i,
-  input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
+  input logic [NumRstReqs-1:0] reset_en_i,
   input main_pd_ni,
   input io_clk_en_i,
   input core_clk_en_i,
@@ -94,7 +94,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
   prim_flop_2sync # (
-    .Width(HwRstReqs + NumWkups)
+    .Width(NumRstReqs + NumWkups)
   ) i_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
@@ -215,7 +215,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   end
 
   prim_flop_2sync #(
-    .Width(HwRstReqs + NumWkups)
+    .Width(NumRstReqs + NumWkups)
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,

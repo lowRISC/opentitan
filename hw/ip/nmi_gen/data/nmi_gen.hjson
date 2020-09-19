@@ -8,6 +8,13 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   regwidth: "32",
+
+  reset_request_list: [
+    { name: "nmi_rst_req",
+      desc: "escalation reset requestt"
+    },
+  ]
+
   interrupt_list: [
     { name: "esc0",
       desc: '''
@@ -25,7 +32,17 @@
             ''',
     },
   ],
+
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "nmi_rst_req",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
+  ],
+
   registers: [
   ],
 }
-

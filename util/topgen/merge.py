@@ -145,6 +145,14 @@ def amend_ip(top, ip):
         else:
             ip_module["wakeup_list"] = []
 
+        # reset request
+        if "reset_request_list" in ip:
+            ip_module["reset_request_list"] = deepcopy(ip["reset_request_list"])
+            for i in ip_module["reset_request_list"]:
+                i.pop('desc', None)
+        else:
+            ip_module["reset_request_list"] = []
+
         # scan
         if "scan" in ip:
             ip_module["scan"] = ip["scan"]
@@ -731,6 +739,31 @@ def amend_wkup(topcfg: OrderedDict):
         topcfg["inter_module"]["connect"]))
 
 
+# Handle reset requests from modules
+def amend_reset_request(topcfg: OrderedDict):
+
+    if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
+        topcfg["reset_requests"] = []
+
+    # create list of reset signals
+    for m in topcfg["module"]:
+        log.info("Adding reset requests from module %s" % m["name"])
+        for entry in m["reset_request_list"]:
+            log.info("Adding singal %s" % entry["name"])
+            signal = deepcopy(entry)
+            signal["module"] = m["name"]
+            topcfg["reset_requests"].append(signal)
+
+    # add reset requests to pwrmgr connections
+    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
+                    for s in topcfg["reset_requests"]]
+    # TBD: What's the best way to not hardcode this signal below?
+    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
+    topcfg["inter_module"]["connect"]["pwrmgr.rstreqs"] = signal_names
+    log.info("Intermodule signals: {}".format(
+        topcfg["inter_module"]["connect"]))
+
+
 def amend_pinmux_io(top):
     """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
     """
@@ -872,6 +905,7 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
 
     # Combine the wakeups
     amend_wkup(gencfg)
+    amend_reset_request(gencfg)
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)

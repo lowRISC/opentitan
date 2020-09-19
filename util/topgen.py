@@ -574,9 +574,13 @@ def generate_clkmgr(top, cfg_path, out_path):
 def generate_pwrmgr(top, out_path):
     log.info("Generating pwrmgr")
 
-    # Count number of interrupts
+    # Count number of wakeups
     n_wkups = len(top["wakeups"])
     log.info("Found {} wakeup signals".format(n_wkups))
+
+    # Count number of reset requests
+    n_rstreqs = len(top["reset_requests"])
+    log.info("Found {} reset request signals".format(n_rstreqs))
 
     if n_wkups < 1:
         n_wkups = 1
@@ -598,7 +602,7 @@ def generate_pwrmgr(top, out_path):
     with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            out = hjson_tpl.render(NumWkups=n_wkups)
+            out = hjson_tpl.render(NumWkups=n_wkups, NumRstReqs=n_rstreqs)
 
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
@@ -668,6 +672,9 @@ def generate_rstmgr(topcfg, out_path):
     log.info("software resets {}".format(sw_rsts))
     log.info("leaf resets {}".format(leaf_rsts))
 
+    # Number of reset requests
+    n_rstreqs = len(topcfg["reset_requests"])
+
     # Generate templated files
     for idx, t in enumerate(tpls):
         out = StringIO()
@@ -675,6 +682,7 @@ def generate_rstmgr(topcfg, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(clks=clks,
+                                 num_rstreqs=n_rstreqs,
                                  sw_rsts=sw_rsts,
                                  output_rsts=output_rsts,
                                  leaf_rsts=leaf_rsts,
