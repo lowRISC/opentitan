@@ -48,7 +48,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0] wakeups_i,
-  input  [HwRstReqs-1:0] rstreqs_i,
+  input  [NumRstReqs-1:0] rstreqs_i,
 
   output intr_wakeup_o
 
@@ -89,7 +89,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // Captured signals
   // These signals, though on clk_i domain, are safe for clk_slow_i to use
   logic [NumWkups-1:0] slow_wakeup_en;
-  pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
+  logic [NumRstReqs-1:0] slow_reset_en;
 
   pwr_ast_rsp_t slow_ast;
   pwr_peri_t slow_peri_reqs, slow_peri_reqs_masked;
@@ -172,7 +172,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .cfg_cdc_sync_i(reg2hw.cfg_cdc_sync.qe & reg2hw.cfg_cdc_sync.q),
     .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
     .wakeup_en_i(reg2hw.wakeup_en),
-    .reset_en_i(reg2hw.reset_en.q),
+    .reset_en_i(reg2hw.reset_en),
     .main_pd_ni(reg2hw.control.main_pd_n.q),
     .io_clk_en_i(reg2hw.control.io_clk_en.q),
     .core_clk_en_i(reg2hw.control.core_clk_en.q),
@@ -219,6 +219,15 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   assign slow_peri_reqs_masked.wakeups = slow_peri_reqs.wakeups & slow_wakeup_en;
   assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs & slow_reset_en;
 
+  for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
+    assign hw2reg.wake_status[i].de = 1'b1;
+    assign hw2reg.wake_status[i].d  = peri_reqs_masked.wakeups[i];
+  end
+
+  for (genvar i = 0; i < NumRstReqs; i++) begin : gen_reset_status
+    assign hw2reg.reset_status[i].de = 1'b1;
+    assign hw2reg.reset_status[i].d  = peri_reqs_masked.rstreqs[i];
+  end
 
 
 
@@ -266,7 +275,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .req_pwrdn_o       (req_pwrdn),
     .ack_pwrdn_i       (ack_pwrdn),
     .low_power_entry_i (pwr_cpu_i.core_sleeping & low_power_hint),
-    .reset_req_i       (|peri_reqs_masked.rstreqs),
+    .reset_reqs_i      (peri_reqs_masked.rstreqs),
 
     // cfg
     .main_pd_ni        (reg2hw.control.main_pd_n.q),

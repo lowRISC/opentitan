@@ -13,7 +13,6 @@ filesets:
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
-      - rtl/rstmgr_info.sv
     file_type: systemVerilogSource
 
 targets:

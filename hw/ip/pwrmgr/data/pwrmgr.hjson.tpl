@@ -71,7 +71,7 @@
     },
 
     { struct:  "logic",
-      width:   2,
+      width:   ${NumRstReqs},
       type:    "uni",
       name:    "rstreqs",
       act:     "rcv",
@@ -85,6 +85,12 @@
       desc: "Number of wakeups",
       type: "int",
       default: "${NumWkups}",
+      local: "true"
+    },
+    { name: "NumRstReqs",
+      desc: "Number of reset requets",
+      type: "int",
+      default: "${NumRstReqs}",
       local: "true"
     },
   ],
@@ -294,7 +300,7 @@
       { name: "WAKE_STATUS",
         desc: "A read only register of all current wake requests post enable mask",
         swaccess: "ro",
-        hwaccess: "none",
+        hwaccess: "hwo",
         resval: "0"
         cname: "wake_status",
         count: "NumWkups",
@@ -325,36 +331,44 @@
       ]
     },
 
-    { name: "RESET_EN",
-      desc: "Bit mask for enabled resets",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "RESET_EN_REGWEN",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "EN",
-          desc: '''
-            Whenever a particular bit is set to 1, that reset request is enabled.
-            Whenever a particular bit is set to 0, that reset request cannot reset the device.
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "RESET_EN",
+        desc: "Bit mask for enabled reset requests",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "RESET_EN_REGWEN",
+        resval: "0"
+        cname: "rstreq_en",
+        count: "NumRstReqs"
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+              Whenever a particular bit is set to 1, that reset request is enabled.
+              Whenever a particular bit is set to 0, that reset request cannot reset the device.
+            ''',
+          },
+        ]
+      },
     },
 
-    { name: "RESET_STATUS",
-      desc: "A read only register of all current reset requests post enable mask",
-      swaccess: "ro",
-      hwaccess: "none",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "VAL",
-          desc: '''
-            Current value of reset request
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "RESET_STATUS",
+        desc: "A read only register of all current reset requests post enable mask",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        resval: "0"
+        cname: "reset_status",
+        count: "NumRstReqs",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+              Current value of reset request
+            ''',
+          },
+        ]
+      },
     },
 
     { name: "WAKE_INFO_CAPTURE_DIS",

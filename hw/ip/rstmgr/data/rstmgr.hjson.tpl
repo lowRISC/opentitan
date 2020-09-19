@@ -50,13 +50,6 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
-    { struct:  "rstmgr_peri",
-      type:    "uni",
-      name:    "peri",
-      act:     "rcv",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
-    }
-
     // Exported resets
 % for intf in export_rsts:
     { struct:  "rstmgr_${intf}_out",
@@ -69,29 +62,48 @@
   ],
 
   registers: [
+
     { name: "RESET_INFO",
       desc: '''
             Device reset reason.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hrw",
-      hwext: "true",
-      hwqe: "true",
+      hwaccess: "hwo",
       fields: [
-        {
-            bits: "4:0",
-            name: "CAUSE",
-            resval: 1,
-            desc: '''Indicates reset cause.  The bits below are not mutually exclusive, and multiple
-            bits can be set at the same time.'''
-            enum: [
-             {value: "0x1",  name: "por",              desc: "Indicates when a device has reset due to power up"},
-             {value: "0x2",  name: "low_power_exit",   desc: "Indicates when a device has reset due low power exit"},
-             {value: "0x4",  name: "watchdog",         desc: "Indicates when a device has reset due to watchdog"},
-             {value: "0x8",  name: "escalation",       desc: "Indicates when a device has reset due to security escalation"},
-             {value: "0x10", name: "Non-debug-module", desc: "Indicates when a device has reset due to non-debug-module request"},
-            ]
-        }
+        { bits: "0",
+          hwaccess: "none",
+          name: "POR",
+          desc: '''
+            Indicates when a device has reset due to power up.
+            '''
+          resval: "1"
+        },
+
+        { bits: "1",
+          name: "LOW_POWER_EXIT",
+          desc: '''
+            Indicates when a device has reset due low power exit.
+            '''
+          resval: "0"
+        },
+
+        { bits: "2",
+          name: "NDM_RESET",
+          desc: '''
+            Indicates when a device has reset due to non-debug-module request.
+            '''
+          resval: "0"
+        },
+
+        { bits: "${3 + num_rstreqs - 1}:3",
+          hwaccess: "hrw",
+          name: "HW_REQ",
+          desc: '''
+            Indicates when a device has reset due to a peripheral request.
+            This can be an alert escalation, watchdog or anything else.
+            '''
+          resval: "0"
+        },
       ]
     },
 

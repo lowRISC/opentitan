@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; (
+module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,
   input rst_ni,
 
@@ -19,7 +19,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   input ack_pwrdn_i,
   input low_power_entry_i,
   input main_pd_ni,
-  input reset_req_i,
+  input [NumRstReqs-1:0] reset_reqs_i,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -90,6 +90,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   // reset hint to rstmgr
   reset_cause_e reset_cause_q, reset_cause_d;
 
+  // reset request
+  logic reset_req;
+
   state_e state_d, state_q;
   logic reset_ongoing_q, reset_ongoing_d;
   logic req_pwrdn_q, req_pwrdn_d;
@@ -106,6 +109,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
   assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
                              pwr_rst_i.rst_sys_src_n == '0;
+
+  assign reset_req = |reset_reqs_i;
 
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
@@ -222,7 +227,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
-        if (reset_req_i || low_power_entry_i) begin
+        if (reset_req || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
           state_d = StDisClks;
         end
@@ -232,8 +237,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         ip_clk_en_d = 1'b0;
 
         if (!clk_en_status_i) begin
-          state_d = reset_req_i ? StNvmShutDown : StFallThrough;
-          wkup_record_o = !reset_req_i;
+          state_d = reset_req ? StNvmShutDown : StFallThrough;
+          wkup_record_o = ~reset_req;
         end
       end
 
@@ -323,6 +328,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   assign pwr_rst_o.rst_lc_req = rst_lc_req_q;
   assign pwr_rst_o.rst_sys_req = rst_sys_req_q;
   assign pwr_rst_o.reset_cause = reset_cause_q;
+  assign pwr_rst_o.rstreqs = reset_reqs_i;
 
   assign otp_init_o = otp_init;
   assign lc_init_o = lc_init;

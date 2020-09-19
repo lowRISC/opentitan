@@ -21,6 +21,8 @@ module nmi_gen
   output logic                    intr_esc0_o,
   output logic                    intr_esc1_o,
   output logic                    intr_esc2_o,
+  // Reset Requests
+  output logic                    nmi_rst_req_o,
   // Escalation outputs
   input  esc_tx_t [N_ESC_SEV-1:0] esc_tx_i,
   output esc_rx_t [N_ESC_SEV-1:0] esc_rx_o
@@ -62,6 +64,9 @@ module nmi_gen
     .hw2reg_intr_state_d_o  ( hw2reg.intr_state.esc0.d   ),
     .intr_o                 ( intr_esc0_o                )
   );
+
+  assign nmi_rst_req_o = esc_en[0];
+
 
   prim_intr_hw #(
     .Width(1)
