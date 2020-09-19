@@ -50,8 +50,9 @@ module otp_ctrl
   // OTP broadcast outputs
   output otp_lc_data_t              otp_lc_data_o,
   output keymgr_key_t               otp_keymgr_key_o,
-  output flash_key_t                otp_flash_key_o
-  // TODO: other hardware broadcast outputs
+  output flash_key_t                otp_flash_key_o,
+  // Hardware config bits
+  output logic [NumHwCfgBits-1:0]   hw_cfg_o
 );
 
   import prim_util_pkg::vbits;
@@ -532,9 +533,23 @@ module otp_ctrl
     .otp_err_i     ( part_otp_err                      )
   );
 
+  ///////////////////////////////
+  // Scrambling Key Derivation //
+  ///////////////////////////////
+
+  // TODO: scrambling key derivation datapath
+  logic scrambling_keys_valid;
+  logic [SramKeySeedWidth-1:0] sram_data_key;
+  logic [FlashKeySeedWidth-1:0] flash_data_key, flash_addr_key;
+
+  // TODO: add all key outputs
+  assign otp_flash_key_o = '0;
+
   /////////////////////////
   // Partition Instances //
   /////////////////////////
+
+  logic [2**OtpByteAddrWidth-1:0][7:0] part_buf_data;
 
   for (genvar k = 0; k < NumPart; k ++) begin : gen_partitions
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -573,6 +588,9 @@ module otp_ctrl
       assign integ_chk_ack[k]          = 1'b1;
       assign cnsty_chk_ack[k]          = 1'b1;
 
+      // No buffered data to expose.
+      assign part_buf_data[PartInfo[k].offset +: PartInfo[k].size] = '0;
+
       // This stops lint from complaining about unused signals.
       logic unused_part_scrmbl_req_ready, unused_part_scrmbl_rsp_valid, unused_part_scrmbl_mtx_gnt;
       logic unused_integ_chk_req, unused_cnsty_chk_req;
@@ -604,7 +622,7 @@ module otp_ctrl
         .access_i         ( part_access_csrs[k]             ),
         .access_o         ( part_access_dai[k]              ),
         .digest_o         ( part_digest[k]                  ),
-        .data_o           (                                 ), // TODO: make breakout connections
+        .data_o           ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
         .otp_req_o        ( part_otp_arb_req[k]             ),
         .otp_cmd_o        ( part_otp_arb_bundle[k].cmd      ),
         .otp_size_o       ( part_otp_arb_bundle[k].size     ),
@@ -630,6 +648,46 @@ module otp_ctrl
     end
   end
 
+  //////////////////////////////////
+  // Buffered Data Output Mapping //
+  //////////////////////////////////
+
+  // Output complete hardware config partition.
+  // Actual mapping to other IPs can occur at the top-level.
+  assign hw_cfg_o = part_buf_data[PartInfo[HwCfgIdx].offset +:
+                                  PartInfo[HwCfgIdx].size];
+
+  // Root keys
+  assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
+  assign {otp_keymgr_key_o.key_share1,
+          otp_keymgr_key_o.key_share0} = part_buf_data[PartInfo[Secret2Idx].offset +:
+                                                       2*KeyMgrKeyWidth/8];
+  // Scrambling Keys
+  assign scrambling_keys_valid = part_init_done[Secret1Idx];
+  assign {sram_data_key,
+          flash_data_key,
+          flash_addr_key} = part_buf_data[PartInfo[Secret1Idx].offset +:
+                                          2*FlashKeySeedWidth/8 +
+                                          SramKeySeedWidth/8];
+  // Test unlock and exit tokens
+  assign otp_lc_data_o.test_token_valid = part_init_done[Secret0Idx];
+  assign {otp_lc_data_o.test_exit_token,
+          otp_lc_data_o.test_unlock_token} = part_buf_data[PartInfo[Secret0Idx].offset +:
+                                                           2*LcTokenWidth/8];
+  // RMA token
+  assign otp_lc_data_o.rma_token_valid  = part_init_done[Secret2Idx];
+  assign otp_lc_data_o.rma_token        = part_buf_data[PartInfo[Secret2Idx].offset +:
+                                                        LcTokenWidth/8];
+  // The device is personalized if the root key has been provisioned and locked
+  assign otp_lc_data_o.id_state_valid = part_init_done[Secret2Idx];
+  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? Set : Blk;
+
+  // Lifecycle state
+  assign otp_lc_data_o.state_valid        = part_init_done[LifeCycleIdx];
+  assign {otp_lc_data_o.transition_count,
+          otp_lc_data_o.state}            = part_buf_data[PartInfo[LifeCycleIdx].offset +:
+                                                          PartInfo[LifeCycleIdx].size];
+
   ////////////////
   // Assertions //
   ////////////////
@@ -644,5 +702,6 @@ module otp_ctrl
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
   `ASSERT_KNOWN(OtpFlashKeyKnown_A,          otp_flash_key_o)
+  `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
 
 endmodule : otp_ctrl

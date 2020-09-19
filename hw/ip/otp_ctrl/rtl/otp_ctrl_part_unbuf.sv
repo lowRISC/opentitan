@@ -251,7 +251,7 @@ module otp_ctrl_part_unbuf
     endcase // state_q
 
     if (state_q != ErrorSt) begin
-      // Unconditionally jump into the termninal error state in case of
+      // Unconditionally jump into the terminal error state in case of
       // a parity error or escalation, and lock access to the partition down.
       if (parity_err) begin
         state_d = ErrorSt;
