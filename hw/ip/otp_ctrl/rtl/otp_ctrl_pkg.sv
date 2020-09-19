@@ -161,19 +161,19 @@ package otp_ctrl_pkg;
   localparam part_info_t PartInfo [NumPart] = '{
     // Variant    | offset | size | key_idx | scrambled | HW digest | write_lock | read_lock
     // CREATOR_SW_CFG
-    '{Unbuffered,   32'h0,   768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    '{Unbuffered,   11'h0,   768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
     // OWNER_SW_CFG
-    '{Unbuffered,   32'h300, 768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    '{Unbuffered,   11'h300, 768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
     // HW_CFG
-    '{Buffered,     32'h600, 176,      0,       1'b0,      1'b1,      1'b1,       1'b0},
+    '{Buffered,     11'h600, 176,      0,       1'b0,      1'b1,      1'b1,       1'b0},
     // SECRET0
-    '{Buffered,     32'h6B0, 40,       0,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h6B0, 40,       0,       1'b1,      1'b1,      1'b1,       1'b1},
     // SECRET1
-    '{Buffered,     32'h6D8, 88,       1,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h6D8, 88,       1,       1'b1,      1'b1,      1'b1,       1'b1},
     // SECRET2
-    '{Buffered,     32'h730, 120,      2,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h730, 120,      2,       1'b1,      1'b1,      1'b1,       1'b1},
     // LIFE_CYCLE
-    '{Buffered,     32'h7A8, 88,       0,       1'b0,      1'b0,      1'b0,       1'b0}
+    '{Buffered,     11'h7A8, 88,       0,       1'b0,      1'b0,      1'b0,       1'b0}
   };
 
   parameter int CreatorSwCfgIdx = 0;
@@ -189,6 +189,7 @@ package otp_ctrl_pkg;
   parameter int LciIdx = 8;
 
   parameter int NumUnbuffered = 2;
+  parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
   ////////////////////////
   // Typedefs for CSRNG //
@@ -203,66 +204,53 @@ package otp_ctrl_pkg;
   // Typedefs for LC Interface //
   ///////////////////////////////
 
+  parameter logic [127:0] LcTokenWidth = 128;
+
   // TODO: update this encoding and move to lc_ctrl_pkg
-  typedef enum logic [7:0] {
-    Value0 = 8'h 00,
-    Value1 = 8'h 6D,
-    Value2 = 8'h 94,
-    ValueF = 8'h FF
+  typedef enum logic [15:0] {
+    Blk = 16'h0000,
+    Set = 16'hF5FA
   } lc_value_e;
 
   // TODO: move to lc_ctrl_pkg
-  typedef enum logic [47:0] {
-    //                GRP5    GRP4    GRP3    GRP2    GRP1    GRP0
-    LcStateRaw     = {6{Value0}},
-    LcStateTest    = {Value0, Value0, Value0, Value0, Value0, Value1},
-    LcStateDev     = {Value0, Value0, Value2, Value2, Value1, Value1},
-    LcStateProd    = {Value0, Value0, Value2, Value1, Value2, Value1},
-    LcStateProdEnd = {Value0, Value0, Value1, Value2, Value2, Value1},
-    LcStateRma     = {Value1, Value1, Value2, ValueF, ValueF, Value1},
-    LcStateScrap   = {6{ValueF}}
+  typedef enum lc_value_e [11:0] {
+    LcStRaw           = {12{Blk}},
+    LcStTestUnlocked0 = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set},
+    LcStTestLocked0   = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set},
+    LcStTestUnlocked1 = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set, Set},
+    LcStTestLocked1   = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set, Set, Set},
+    LcStTestUnlocked2 = {Blk, Blk, Blk, Blk, Blk, Blk, Blk, Set, Set, Set, Set, Set},
+    LcStTestLocked2   = {Blk, Blk, Blk, Blk, Blk, Blk, Set, Set, Set, Set, Set, Set},
+    LcStTestUnlocked3 = {Blk, Blk, Blk, Blk, Blk, Set, Set, Set, Set, Set, Set, Set},
+    LcStDev           = {Blk, Blk, Blk, Blk, Set, Set, Set, Set, Set, Set, Set, Set},
+    LcStProd          = {Blk, Blk, Blk, Set, Blk, Set, Set, Set, Set, Set, Set, Set},
+    LcStProdEnd       = {Blk, Blk, Set, Blk, Blk, Set, Set, Set, Set, Set, Set, Set},
+    LcStRma           = {Set, Set, Blk, Set, Set, Set, Set, Set, Set, Set, Set, Set},
+    LcStScrap         = {12{Set}}
   } lc_state_e;
 
   typedef struct packed {
-    logic             lc_state_valid;
-    lc_value_e [5:0]  lc_state;
-    logic      [7:0]  id_state;
-    logic      [7:0]  test_state_cnt;
-    logic      [31:0] test_unlock_token;
-    logic      [31:0] test_exit_token;
-    logic      [63:0] rma_unlock_token;
-    logic      [7:0]  test_unlock_cnt;
-    logic      [7:0]  test_exit_cnt;
-    logic      [7:0]  rma_unlock_cnt;
-    // this must be incremented upon each state change
-    // also, each invalid otp_program_cmd_e command will increment
-    // this counter.
-    logic      [15:0] transition_cnt;
+    logic                    state_valid;
+    logic                    test_token_valid;
+    logic                    rma_token_valid;
+    logic                    id_state_valid;
+    lc_state_e               state;
+    lc_value_e [31:0]        transition_count;
+    logic [LcTokenWidth-1:0] test_unlock_token;
+    logic [LcTokenWidth-1:0] test_exit_token;
+    logic [LcTokenWidth-1:0] rma_token;
+    lc_value_e               id_state;
   } otp_lc_data_t;  // broadcast
 
-  // TODO: this should have maximum Hamming distance encoding
-  typedef enum logic [15:0] {
-    // state transitions
-    CmdGoToTestState      = 16'h0001,
-    CmdGoToDevState       = 16'h0002,
-    CmdGoToProdState      = 16'h0003,
-    CmdGoToProdEndState   = 16'h0004,
-    CmdGoToRmaState       = 16'h0005,
-    CmdGoToScrapState     = 16'h0006,
-    // counters
-    CmdIncrTestStateCnt   = 16'h0007,
-    CmdIncrTestUnlockCnt  = 16'h0008,
-    CmdIncrRmaUnlockCnt   = 16'h0009,
-    CmdIncrTransitionCnt  = 16'h000A
-  } otp_program_cmd_e;
-
   typedef struct packed {
-    logic             update;
-    otp_program_cmd_e command;
+    // The LC controller signals the differential
+    // with respect to the current state.
+    logic         req;
+    otp_lc_data_t diff;
   } lc_otp_program_req_t;
 
   typedef struct packed {
-    logic  done;
+    logic  ack;
   } lc_otp_program_rsp_t;
 
   // TODO: move this to the LC ctrl package
@@ -283,6 +271,10 @@ package otp_ctrl_pkg;
 
   parameter int KeyMgrKeyWidth = 256;
   parameter int FlashKeyWidth  = 128;
+  parameter int SramKeyWidth  = 128;
+
+  parameter int FlashKeySeedWidth = 256;
+  parameter int SramKeySeedWidth  = 128;
 
   typedef struct packed {
     logic valid;
@@ -295,6 +287,12 @@ package otp_ctrl_pkg;
     logic [FlashKeyWidth-1:0] addr_key;
     logic [FlashKeyWidth-1:0] data_key;
   } flash_key_t;
+
+  typedef struct packed {
+    logic valid;
+    logic [SramKeyWidth-1:0] addr_key;
+    logic [SramKeyWidth-1:0] data_key;
+  } sram_key_t;
 
 
   ////////////////////////////////

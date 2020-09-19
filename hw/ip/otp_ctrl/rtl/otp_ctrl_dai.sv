@@ -546,7 +546,7 @@ module otp_ctrl_dai
     endcase // state_q
 
     if (state_q != ErrorSt) begin
-      // Unconditionally jump into the termninal error state in case of
+      // Unconditionally jump into the terminal error state in case of
       // escalation, and lock access to the DAI down.
       if (escalate_en_i != Off) begin
         state_d = ErrorSt;
