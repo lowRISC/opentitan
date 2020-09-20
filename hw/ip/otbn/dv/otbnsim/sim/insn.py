@@ -810,7 +810,7 @@ class BNWSRRS(OTBNInsn):
     def execute(self, model: OTBNModel) -> None:
         idx = self.wsr
         old_val = model.state.wcsr_read(idx)
-        new_val = old_val | model.state.wreg[self.wrs]
+        new_val = model.state.wreg[self.wrs] | old_val
 
         model.state.wreg[self.wrd] = old_val
         model.state.wcsr_write(idx, new_val)
