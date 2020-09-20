@@ -193,8 +193,8 @@ class LoopStack:
 class FlagGroups:
     def __init__(self) -> None:
         self.groups = {
-            0: BitflagRegister(["C", "L", "M", "Z"], prefix = "FG0."),
-            1: BitflagRegister(["C", "L", "M", "Z"], prefix = "FG1.")
+            0: BitflagRegister(["C", "M", "L", "Z"], prefix = "FG0."),
+            1: BitflagRegister(["C", "M", "L", "Z"], prefix = "FG1.")
         }
 
     def __getitem__(self, key: int) -> BitflagRegister:
