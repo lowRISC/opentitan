@@ -34,10 +34,11 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     device_init();
     host_init();
 
-    // config rx_watermark test (fmt_watermark test is auto configed)
+    // config rx_watermark test
     cfg.en_rx_watermark = 1'b1;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
+    `uvm_info(`gfn, "\n--> start i2c_fifo_watermark_vseq", UVM_DEBUG)
     for (int i = 0; i < num_trans; i++) begin
       check_fmt_watermark = 1'b1;
       check_rx_watermark  = 1'b1;
@@ -58,10 +59,12 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // (timing regsisters), cnt_fmt_watermark could be
             //   1: fmtilvl is crossed one   when data drains from fmt_fifo
             //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
-            `DV_CHECK_GT(cnt_fmt_watermark, 0)
-            `DV_CHECK_LE(cnt_fmt_watermark, 2)
-            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d",
-                i, cnt_fmt_watermark), UVM_DEBUG)
+            if (cfg.en_dv_check_vseq) begin
+              `DV_CHECK_GT(cnt_fmt_watermark, 0)
+              `DV_CHECK_LE(cnt_fmt_watermark, 2)
+              `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d",
+                  i, cnt_fmt_watermark), UVM_DEBUG)
+            end
           end
 
           //*** verify rx_watermark irq:
@@ -77,10 +80,12 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
-            if ( rxilvl <= 4) begin
-              `DV_CHECK_EQ(cnt_rx_watermark, 1)
-            end else begin
-              `DV_CHECK_EQ(cnt_rx_watermark, 0)
+            if (cfg.en_dv_check_vseq) begin
+              if ( rxilvl <= 4) begin
+                `DV_CHECK_EQ(cnt_rx_watermark, 1)
+              end else begin
+                `DV_CHECK_EQ(cnt_rx_watermark, 0)
+              end
             end
             // during a read transaction, fmt_watermark could be triggered since read address
             // and control byte are programmed to fmt_fifo and possibly cross fmtilvl
@@ -98,6 +103,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
+    reset_env_config();
+    `uvm_info(`gfn, "\n--> end i2c_fifo_watermark_vseq", UVM_DEBUG)
   endtask : body
 
   task process_fmt_watermark_intr();

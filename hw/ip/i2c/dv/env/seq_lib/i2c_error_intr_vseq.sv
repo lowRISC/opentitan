@@ -11,10 +11,7 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
   `uvm_object_utils(i2c_error_intr_vseq)
   `uvm_object_new
 
-  bit do_reset = 1'b0;
-
-  // increase num_trans to cover error interrupts
-  constraint num_trans_c { num_trans inside {[50 : 100]}; }
+  local bit do_reset = 1'b0;
 
   virtual task body();
     // allow agent/target creating interference and unstable signals so
@@ -25,9 +22,13 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
 
     device_init();
     host_init();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_resets)
-    for (int run = 0; run < num_resets; run++) begin
-      `uvm_info(`gfn, $sformatf("\n****** RUN %0d ******", run), UVM_DEBUG)
+
+    // no need to randomize the upper bound of outer loop since
+    // num_trans has been randomized in host_send_trans task (inner loop)
+    `uvm_info(`gfn, "\n--> start i2c_error_intr_vseq", UVM_DEBUG)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_runs)
+    for (int run = 0; run < num_runs; run++) begin
+      `uvm_info(`gfn, $sformatf("\nstart running %0d/%0d", run, num_runs), UVM_DEBUG)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
       fork
         begin
@@ -36,7 +37,7 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
             begin
               process_error_interrupts();
               apply_reset("HARD");
-              `uvm_info(`gfn, $sformatf("\n>>>Reset ended"), UVM_DEBUG)
+              `uvm_info(`gfn, "\n  reset ended", UVM_DEBUG)
             end
             host_send_trans(num_trans);
           join_any
@@ -54,6 +55,8 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
         end
       join
     end
+    reset_env_config();
+    `uvm_info(`gfn, "\n--> end i2c_error_intr_vseq", UVM_DEBUG)
   endtask : body
 
   virtual task process_error_interrupts();
@@ -63,7 +66,7 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
         if (cfg.intr_vif.pins[SclInference] ||
             cfg.intr_vif.pins[SdaInference] ||
             cfg.intr_vif.pins[SdaUnstable]) begin
-          `uvm_info(`gfn, $sformatf("\n>>>Get error interrupts SclIrf %b, SdaIrf %b, SdaUns %b",
+          `uvm_info(`gfn, $sformatf("\n  get error interrupts SclIrf %b, SdaIrf %b, SdaUns %b",
               cfg.intr_vif.pins[SclInference], cfg.intr_vif.pins[SdaInference],
               cfg.intr_vif.pins[SdaUnstable]), UVM_DEBUG)
           do_reset = 1'b1;

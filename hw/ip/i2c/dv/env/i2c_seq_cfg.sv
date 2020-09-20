@@ -6,12 +6,13 @@
 class i2c_seq_cfg extends uvm_object;
   `uvm_object_utils(i2c_seq_cfg)
 
-  // Randomization weights in percentages, and other related settings.
-
-  // TODO: This should move to `dv_base_seq_cfg`.
-  // maximun number of times the vseq is randomized and rerun.
+  // the range of number of requests
   uint i2c_min_num_trans         = 10;
   uint i2c_max_num_trans         = 20;
+
+  // the range of number of running vseq in stress_all_vseq, error_intr_vseq
+  uint i2c_min_num_runs          = 10;
+  uint i2c_max_num_runs          = 20;
 
   // parameters configured at test level for *_vseq
   uint i2c_min_addr              = 0;
@@ -33,8 +34,6 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_prob_sda_unstable     = 10;
   uint i2c_prob_sda_interference = 10;
   uint i2c_prob_scl_interference = 50;
-  uint i2c_min_num_resets        = 30;
-  uint i2c_max_num_resets        = 50;
 
   `uvm_object_new
 

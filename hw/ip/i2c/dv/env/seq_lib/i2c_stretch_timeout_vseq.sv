@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic stretch_timeout test vseq
-class i2c_stretch_timeout_vseq extends i2c_sanity_vseq;
+class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_stretch_timeout_vseq)
   `uvm_object_new
 
@@ -24,12 +24,13 @@ class i2c_stretch_timeout_vseq extends i2c_sanity_vseq;
     device_init();
     host_init();
 
+    `uvm_info(`gfn, "\n--> start i2c_stretch_timeout_vseq", UVM_DEBUG)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     for (int i = 0; i < num_trans; i++) begin
       num_wr_st = 0;
       num_rd_st = 0;
       check_wr_st = 1'b0;
       check_rd_st = 1'b0;
-
       fork
         begin
           check_wr_st = 1'b1;
@@ -40,7 +41,7 @@ class i2c_stretch_timeout_vseq extends i2c_sanity_vseq;
           // host clock is stretched for every target's ACK thus
           // num_wr_st must be equal to (num_wr_bytes + 1)
           // adding 1 is for the target's ACK to the response address byte sent by host
-          `DV_CHECK_EQ(num_wr_st, (num_wr_bytes + 1))
+          if (cfg.en_dv_check_vseq) `DV_CHECK_EQ(num_wr_st, (num_wr_bytes + 1))
 
           check_rd_st = 1'b1;
           host_send_trans(.num_trans(1), .trans_type(ReadOnly));
@@ -49,19 +50,21 @@ class i2c_stretch_timeout_vseq extends i2c_sanity_vseq;
           `uvm_info(`gfn, $sformatf("\ncheck_rd_st %0d", check_rd_st), UVM_DEBUG)
           // check_rd_stretch_timeout must be equal to 1
           // that is the target's ACK to response the address byte sent by host
-          `DV_CHECK_EQ(num_rd_st, 1)
+          if (cfg.en_dv_check_vseq) `DV_CHECK_EQ(num_rd_st, 1)
         end
         begin
           while (check_wr_st || check_rd_st) check_wr_st_intr();
         end
       join
     end
+    reset_env_config();
+    `uvm_info(`gfn, "\n--> start i2c_stretch_timeout_vseq", UVM_DEBUG)
   endtask : body
 
   task check_wr_st_intr();
     bit stretch_timeout;
 
-    csr_rd(.ptr(ral.intr_state.stretch_timeout), .value(stretch_timeout));
+    csr_rd(.ptr(ral.intr_state.stretch_timeout), .value(stretch_timeout), .backdoor(1));
     if (stretch_timeout) begin
       if (check_wr_st) num_wr_st++;
       if (check_rd_st) num_rd_st++;
@@ -73,6 +76,8 @@ class i2c_stretch_timeout_vseq extends i2c_sanity_vseq;
       clear_interrupt(StretchTimeout);
       `uvm_info(`gfn, $sformatf("\ncheck_wr_st %0d, check_rd_st %0d",
           num_wr_st, num_rd_st), UVM_DEBUG)
+    end else begin
+      cfg.clk_rst_vif.wait_clks(1);
     end
   endtask : check_wr_st_intr
 

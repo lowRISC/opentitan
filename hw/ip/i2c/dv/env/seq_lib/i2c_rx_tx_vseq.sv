@@ -7,8 +7,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
   `uvm_object_new
 
-  int total_rd_bytes;
-  bit complete_program_fmt_fifo;
+  local int total_rd_bytes;
+  local bit complete_program_fmt_fifo;
 
   virtual task host_send_trans(int num_trans, tran_type_e trans_type = ReadWrite);
     bit last_tran, chained_read;
@@ -51,7 +51,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           end
 
           last_tran = (cur_tran == num_trans);
-          `uvm_info(`gfn, $sformatf("\nstart sending %s transaction %0d/%0d",
+          `uvm_info(`gfn, $sformatf("\nstart sending %s transaction %0d / %0d",
               (rw_bit) ? "READ" : "WRITE", cur_tran, num_trans), UVM_DEBUG)
           if (chained_read) begin
             // keep programming chained read transaction
@@ -67,9 +67,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
           // check a completed transaction is programmed to the host/dut (stop bit must be issued)
           // and check if the host/dut is in idle before allow re-programming the timing registers
-          if (fmt_item.stop) begin
-            check_host_idle();
-          end
+          check_host_idle(fmt_item.stop);
         end
         complete_program_fmt_fifo = 1'b1;
       end

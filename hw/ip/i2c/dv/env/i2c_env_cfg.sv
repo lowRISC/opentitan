@@ -29,6 +29,10 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // set en_sda_interference to allow sda_interference irq is triggered
   bit en_sda_interference = 1'b0;
 
+  // bit to control dv_checks for stress_all_with_rand_reset test
+  // set to enable dv_checks inside some vseqs
+  bit en_dv_check_vseq    = 1'b1;
+
   // i2c_agent cfg
   rand i2c_agent_cfg m_i2c_agent_cfg;
 

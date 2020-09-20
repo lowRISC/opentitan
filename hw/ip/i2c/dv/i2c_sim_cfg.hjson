@@ -29,7 +29,7 @@
                 // Common CIP test lists
                 "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/intr_test.hjson",
-                //TODO: enable later in V2
+                // TODO: Temporally comment out to debug stress_all_with_rand_reset
                 //"{proj_root}/hw/dv/data/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson"]
 
@@ -72,7 +72,6 @@
 
     {
       name: i2c_perf
-      reseed: 10
       uvm_test_seq: i2c_perf_vseq
     }
 
@@ -83,8 +82,14 @@
 
     {
       name: i2c_error_intr
-      reseed: 10
       uvm_test_seq: i2c_error_intr_vseq
+    }
+
+    {
+      name: i2c_stress_all
+      uvm_test_seq: i2c_stress_all_vseq
+      // 10ms
+      run_opts: ["+test_timeout_ns=10000000000"]
     }
   ]
 

@@ -11,9 +11,11 @@ class i2c_sanity_vseq extends i2c_rx_tx_vseq;
   constraint num_trans_c { num_trans inside {[50 : 100]}; }
 
   virtual task body();
+    bit do_interrupt = 1'b1;
+
     device_init();
     host_init();
-
+    `uvm_info(`gfn, "\n--> start i2c_sanity_vseq", UVM_DEBUG)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     fork
       begin
@@ -24,6 +26,8 @@ class i2c_sanity_vseq extends i2c_rx_tx_vseq;
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
+    reset_env_config();
+    `uvm_info(`gfn, "\n--> end i2c_sanity_vseq", UVM_DEBUG)
   endtask : body
 
 endclass : i2c_sanity_vseq

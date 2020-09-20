@@ -7,6 +7,11 @@ class i2c_perf_vseq extends i2c_sanity_vseq;
   `uvm_object_utils(i2c_perf_vseq)
   `uvm_object_new
 
+  // derive this constraint from the i2c_base_vseq instead of i2c_sanity_vseq
+  constraint num_trans_c {
+    num_trans inside {[cfg.seq_cfg.i2c_min_num_trans : cfg.seq_cfg.i2c_max_num_trans]};
+  }
+
   // should have few long transactions
   constraint num_wr_bytes_c {
     num_wr_bytes dist {

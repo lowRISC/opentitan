@@ -11,7 +11,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(i2c_base_vseq)
 
   // class property
-  bit                         do_interrupt = 1'b1;
   bit                         program_incorrect_regs = 1'b0;
 
   local timing_cfg_t          timing_cfg;
@@ -24,6 +23,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   clear_intr_dly;
 
   rand uint                   num_trans;
+  rand uint                   num_runs;
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
   rand uint                   num_data_ovf;
@@ -54,7 +54,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   prob_sda_unstable;
   rand uint                   prob_sda_interference;
   rand uint                   prob_scl_interference;
-  rand uint                   num_resets; // the max. num. of on-the-fly reset if error irq occurs
+  rand uint                   num_error_intr_runs;
 
   // constraints
   constraint addr_c {
@@ -65,6 +65,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.i2c_min_num_trans : cfg.seq_cfg.i2c_max_num_trans]};
+  }
+  constraint num_runs_c {
+    num_runs inside {[cfg.seq_cfg.i2c_min_num_runs : cfg.seq_cfg.i2c_max_num_runs]};
   }
 
   // get an array with unique write data
@@ -106,9 +109,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       [17:31] :/ 1,
       32      :/ 1
     };
-  }
-  constraint num_reset_max_c {
-    num_resets inside {[cfg.seq_cfg.i2c_min_num_resets : cfg.seq_cfg.i2c_max_num_resets]};
   }
 
   // use this prob_dist value to make interrupt assertion more discrepancy
@@ -172,6 +172,11 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  virtual task pre_start();
+    do_dut_init = 1'b1;
+    super.pre_start();
+  endtask
+
   virtual task device_init();
     i2c_device_seq m_dev_seq;
 
@@ -195,7 +200,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.ctrl.enabletarget.set(1'b0);
     csr_update(ral.ctrl);
 
-    // diable override
+    // disable override
     ral.ovrd.txovrden.set(1'b0);
     csr_update(ral.ovrd);
 
@@ -209,15 +214,18 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.intr_state), .value({TL_DW{1'b0}}));
   endtask : host_init
 
-  virtual task check_host_idle();
+  virtual task check_host_idle(bit trans_stop);
     bit fmtempty, hostidle;
     bit [TL_DW-1:0] reg_val;
-    do begin
-      csr_rd(.ptr(ral.status), .value(reg_val));
-      fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
-      hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
-    end while (!fmtempty || !hostidle);
-    `uvm_info(`gfn, $sformatf("\nhost is in idle status"), UVM_DEBUG);
+    if (trans_stop) begin
+      `uvm_info(`gfn, $sformatf("\nstop bit is issued"), UVM_DEBUG);
+      do begin
+        csr_rd(.ptr(ral.status), .value(reg_val));
+        fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
+        hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
+      end while (!fmtempty || !hostidle);
+      `uvm_info(`gfn, $sformatf("\nhost is in idle status"), UVM_DEBUG);
+    end
   endtask : check_host_idle
 
   function automatic void get_timing_values();
@@ -336,6 +344,22 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     if (en_print) `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
   endtask : print_format_flag
+
+  // this function must be called at the end of a vseq to reset env_cfg variables
+  // in order to support sequential vseq excution in stress_all test
+  function automatic reset_env_config();
+    // agent config
+    cfg.m_i2c_agent_cfg.en_monitor = 1'b1;
+    // test config
+    cfg.en_scb              = 1'b1; // reset due to disabling by i2c_common_vseq
+    cfg.en_fmt_overflow     = 1'b0;
+    cfg.en_rx_overflow      = 1'b0;
+    cfg.en_rx_watermark     = 1'b0;
+    cfg.en_sda_unstable     = 1'b0;
+    cfg.en_scl_interference = 1'b0;
+    cfg.en_sda_interference = 1'b0;
+    `uvm_info(`gfn, "\n   Configuration parameters are reset", UVM_DEBUG)
+  endfunction : reset_env_config
 
   //TODO: reserved for future purpose
   function automatic int get_byte_latency();
