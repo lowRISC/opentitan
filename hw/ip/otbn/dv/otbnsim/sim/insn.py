@@ -258,7 +258,7 @@ class CSRRS(OTBNInsn):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
         self.csr = op_vals['csr']
-        self.grs = op_vals['grs']
+        self.grs = op_vals['grs1']
 
     def execute(self, model: OTBNModel) -> None:
         raise NotImplementedError('csrrs.execute')
@@ -271,7 +271,7 @@ class CSRRW(OTBNInsn):
         super().__init__(op_vals)
         self.grd = op_vals['grd']
         self.csr = op_vals['csr']
-        self.grs = op_vals['grs']
+        self.grs = op_vals['grs1']
 
     def execute(self, model: OTBNModel) -> None:
         raise NotImplementedError('csrrw.execute')
