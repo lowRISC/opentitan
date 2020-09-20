@@ -168,7 +168,7 @@ class Dmem:
 
         uword = self.data[idxW]
         # Extract the right 32-bit unsigned value
-        u32 = (uword >> 8 * offW) & ((1 << 32) - 1)
+        u32 = (uword >> 32 * offW) & ((1 << 32) - 1)
         # Now convert back to signed and return
         return u32 - (1 << 32) if u32 >> 31 else u32
 
