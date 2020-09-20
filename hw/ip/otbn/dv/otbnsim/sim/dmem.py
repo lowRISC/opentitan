@@ -204,7 +204,7 @@ class Dmem:
 
         # Replace the word we're setting
         assert 0 <= item.value <= (1 << 32) - 1
-        u32s[offW] = item.value
+        u32s[7-offW] = item.value
 
         # And write back
         self._set_u32s(idxW, u32s)
