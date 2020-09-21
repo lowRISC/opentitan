@@ -53,12 +53,6 @@ image_usage_constraints:
 // Reserved
   .word 0x0
 
-// Overriden by signing script
-image_software_binding_tag:
-  .rept 16
-  .byte 0x0
-  .endr
-
 // Maybe: Overriden by signing script?
 image_peripheral_lockdown_info:
   .rept 16
