@@ -10,23 +10,17 @@ To run on Verilator, set the variables below
 ```console
 $ export RISCV_TARGET=opentitan
 $ export RISCV_DEVICE=rv32imc
-$ export OT_TARGET=verilator
+$ export OT_TARGET=sim_verilator
 ```
 
-To run on FPGA, set the variables below.  The `FPGA_UART` variable must be set
-to wherever a valid device is connected.
+To run on FPGA, set the variables below.  The `OT_FPGA_UART` variable must be
+set to wherever a valid device is connected.
 
 ```console
 $ export RISCV_TARGET=opentitan
 $ export RISCV_DEVICE=rv32imc
-$ export OT_TARGET=fpga
+$ export OT_TARGET=fpga_nexysvideo
 $ export OT_FPGA_UART=/dev/tty*
-```
-
-In addition the UART device must be appropriately configured.
-
-```console
-$ stty -F $OT_FPGA_UART 230400 raw
 ```
 
 By default, the test assumes there exists a valid Verilator build at
@@ -39,10 +33,9 @@ $ export TARGET_SIM=${PATH_TO_VERILATOR_BUILD}
 ```
 
 When running against FPGA, the test assumes the FPGA is already programmed and
-ready to go with spiflash available at
-`${REPO_TOP}/build-bin/sw/host/spiflash/spiflash_export` To quickly get started
-with a verilator binary or FPGA bitfile, please see the [OpenTitan quick start
-guide](https://docs.opentitan.org/doc/ug/quickstart/).
+ready to go with spiflash available at `$BIN_DIR/sw/host/spiflash/spiflash`.
+To quickly get started with a verilator binary or FPGA bitfile, please see the
+[OpenTitan quick start guide](https://docs.opentitan.org/doc/ug/quickstart/).
 
 Finally the support software must be built, including the boot_rom when using
 the verilator target.
@@ -132,7 +125,7 @@ $ rm -rf ./work
 ```
 
 ## Parallel runs
-When running against the `verilator` target parallel make jobs are used (via
+When running against the `sim_verilator` target parallel make jobs are used (via
 passing `-j4` to make internally).  Parallel runs can be disabled by passing
 `PARALLEL=0` to the `make` command or the `-j` used can be altered with the
 `JOBS` argument.
@@ -157,4 +150,3 @@ which can't be done.
 * I-MISALIGN_JMP-01
 * I-MISALIGN_LDST-01
 * I-FENCE.I-01
-

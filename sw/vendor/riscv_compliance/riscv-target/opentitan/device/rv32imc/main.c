@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/uart.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 
 extern void run_rvc_test(void);
@@ -26,14 +27,6 @@ int main(int argc, char **argv) {
   for (uint32_t i = 0; i < size; ++i) {
     base_printf("SIG: %08x\r\n", REG32(begin_signature + i));
   }
-
-  base_printf("PASS!\r\n");
-
-  // The "End" string here is a workaround to pytest console parsing.
-  // Without additional characters, the "\n" from above is not always
-  // detected, and this causes pytest to register the test as a false failure.
-  // This needs to be debugged further to see if it's a setup or hw issue.
-  base_printf("End");
 
   return 0;
 }

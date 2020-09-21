@@ -3,51 +3,47 @@
 # SPDX-License-Identifier: Apache-2.0
 
 OPENTITAN     = $(ROOTDIR)/riscv-target/$(RISCV_TARGET)/device/rv32imc
-OT_SW         = $(ROOTDIR)/../../device
-OT_ROOT       = $(OT_SW)/../../
+OT_ROOT      ?= $(ROOTDIR)/../../../
+OT_SW         = $(OT_ROOT)/sw/device
 OT_BIN       ?= $(OT_ROOT)/build-bin
-OT_BUILD      = $(OT_ROOT)/build-out
 OT_TOOLS     ?= /tools/riscv/bin
 OT_FPGA_UART ?=
-OT_TARGET    ?= fpga
+OT_TARGET    ?= fpga_nexysvideo
 LDSCRIPT      = $(OT_ROOT)/sw/device/exts/common/flash_link.ld
 DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
 TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
 
-ifeq ($(OT_TARGET),fpga)
-    CARG =
-    MAKEARG =
-    PYTEST_OPT = --fpga_uart $(OT_FPGA_UART) --spiflash $(OT_BIN)/sw/host/spiflash/spiflash \
-        --test_bin $(<).bin
-    OT_SW_TARGET = fpga_nexysvideo
-else
-    CARG = -DSIMULATION=1
-    MAKEARG = SIM=1
-    # Verilator can be run in parallel mode so alter log output to prepend with
-    # test name, also increase uart_timeout as with parallel runs on CI individual
-    # test execution can take greater than 60 seconds.
-    PYTEST_OPT = --verilator_model $(TARGET_SIM) --test_bin $(<) \
-        --rom_bin $(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf \
-        --log-cli-format "$(notdir $(basename $(<))): %(message)s" --log-cli-level DEBUG \
-        --uart_timeout 240
-    OT_SW_TARGET = sim_verilator
-endif
-
-COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_SW_TARGET)
-COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_SW_TARGET)
+COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_TARGET)
+COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_TARGET)
 
 # The run target recipe does the following things:
 # Invoke pytest to run the test
 # Parse the resulting log for the output signatures
 # Convert all signatures to lower case since the reference is in all lower case
-RUN_TARGET=\
-    pytest -s -v $(OT_ROOT)/test/systemtest/functional_$(OT_TARGET)_test.py \
-        $(PYTEST_OPT) \
-        --log $(<).uart.log; \
-        grep -o 'SIG: [a-zA-Z0-9_]*' $(<).uart.log | sed 's/SIG: //' \
-        > $(*).signature.temp.output; \
-        tr '[:upper:]' '[:lower:]' < $(*).signature.temp.output > $(*).signature.output;
-
+ifeq ($(OT_TARGET),sim_verilator)
+    MAKEARG = SIM=1
+    CARG = -DSIMULATION=1
+    RUN_TARGET = \
+        $(TARGET_SIM) \
+            --meminit="rom,$(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf" \
+            --meminit="flash,$(<)" \
+            +UARTDPI_LOG_uart0="$(*).uart.log" > $@ 2>&1 \
+        && sed -e 's/^/[UART $(shell basename $(*))] /' "$(*).uart.log" $(REDIR) \
+        && grep -o 'SIG: [a-zA-Z0-9_]*' "$(*).uart.log" \
+            | sed 's/SIG: //' > $(*).signature.output
+else ifeq ($(OT_TARGET),fpga_nexysvideo)
+    MAKEARG =
+    CARG =
+    RUN_TARGET = \
+        ( test -e "$(OT_FPGA_UART)" || ( echo "UART device '$(OT_FPGA_UART)' not available. Set OT_FPGA_UART." >&2 && exit 1 ) ) \
+        && echo "Writing '$(<).bin' to device." \
+        && $(OT_BIN)/sw/host/spiflash/spiflash --input="$(<).bin" \
+        && stty -F "$(OT_FPGA_UART)" speed 230400 cs8 -cstopb -parenb \
+        && grep -o 'SIG: [a-zA-Z0-9_]*' "$(OT_FPGA_UART)" \
+            | sed 's/SIG: //' > $(*).signature.output
+else
+    $(error Unsupported target $(OT_TARGET))
+endif
 
 RISCV_PREFIX   ?= ${OT_TOOLS}/riscv32-unknown-elf-
 RISCV_GCC      ?= ${OT_TOOLS}/riscv32-unknown-elf-gcc
