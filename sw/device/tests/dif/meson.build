@@ -130,6 +130,22 @@ test('dif_pwrmgr_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
+test('dif_rstmgr_unittest', executable(
+  'dif_rstmgr_unittest',
+  sources: [
+    'dif_rstmgr_unittest.cc',
+    meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+    hw_ip_rstmgr_reg_h,
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
 dif_plic_sanitytest_lib = declare_dependency(
   link_with: static_library(
     'dif_plic_sanitytest_lib',
