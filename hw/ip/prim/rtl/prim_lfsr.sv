@@ -39,6 +39,10 @@ module prim_lfsr #(
   parameter logic [LfsrDw-1:0] DefaultSeed  = LfsrDw'(1),
   // Custom polynomial coeffs
   parameter logic [LfsrDw-1:0] CustomCoeffs = '0,
+  // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied
+  // to the state output, in order to break linear shifting patterns of the LFSR.
+  parameter bit                      StatePermEn = 1'b0,
+  parameter logic [LfsrDw-1:0][31:0] StatePerm   = '0,
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA    = 1'b1,
   // Can be disabled in cases where seed and entropy
@@ -363,7 +367,13 @@ module prim_lfsr #(
                   (lfsr_en_i)           ? next_lfsr_state :
                                           lfsr_q;
 
-  assign state_o  = lfsr_q[StateOutDw-1:0];
+  if (StatePermEn) begin : gen_state_perm
+    for (genvar k = 0; k < StateOutDw; k++) begin : gen_perm_loop
+      assign state_o[k] = lfsr_q[StatePerm[k]];
+    end
+  end else begin : gen_no_state_perm
+    assign state_o  = lfsr_q[StateOutDw-1:0];
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
@@ -418,6 +428,21 @@ module prim_lfsr #(
   // check whether next state is computed correctly
   `ASSERT(NextStateCheck_A, lfsr_en_i && !seed_en_i |=> lfsr_q ==
     compute_next_state(coeffs, $past(entropy_i,1), $past(lfsr_q,1)))
+
+  // Only check this if enabled.
+  if (StatePermEn) begin : gen_perm_check
+    // Check that the supplied permutation is valid.
+    logic [LfsrDw-1:0] lfsr_perm_test;
+    initial begin : p_perm_check
+      lfsr_perm_test = '0;
+      for (int k = 0; k < LfsrDw; k++) begin
+        lfsr_perm_test[StatePerm[k]] = 1'b1;
+      end
+      // All bit positions must be marked with 1.
+      `ASSERT_I(PermutationCheck_A, &lfsr_perm_test)
+    end
+  end
+
 `endif
 
   `ASSERT_INIT(InputWidth_A, LfsrDw >= EntropyDw)
@@ -428,8 +453,9 @@ module prim_lfsr #(
 
   // output check
   `ASSERT_KNOWN(OutputKnown_A, state_o)
-  `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
-
+  if (!StatePermEn) begin : gen_output_sva
+    `ASSERT(OutputCheck_A, state_o == StateOutDw'(lfsr_q))
+  end
   // if no external input changes the lfsr state, a lockup must not occur (by design)
   //`ASSERT(NoLockups_A, (!entropy_i) && (!seed_en_i) |=> !lockup, clk_i, !rst_ni)
   `ASSERT(NoLockups_A, lfsr_en_i && !entropy_i && !seed_en_i |=> !lockup)
