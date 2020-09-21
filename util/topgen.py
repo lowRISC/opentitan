@@ -104,7 +104,6 @@ def generate_alert_handler(top, out_path):
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
-    lfsr_seed = 2**31 - 1
     async_on = "'0"
     # leave this constant
     n_classes = 4
@@ -120,15 +119,11 @@ def generate_alert_handler(top, out_path):
             esc_cnt_dw = int(top['module'][ah_idx]['localparam']['EscCntDw'])
         if 'AccuCntDw' in top['module'][ah_idx]['localparam']:
             accu_cnt_dw = int(top['module'][ah_idx]['localparam']['AccuCntDw'])
-        if 'LfsrSeed' in top['module'][ah_idx]['localparam']:
-            lfsr_seed = int(top['module'][ah_idx]['localparam']['LfsrSeed'], 0)
 
     if esc_cnt_dw < 1:
         log.error("EscCntDw must be larger than 0")
     if accu_cnt_dw < 1:
         log.error("AccuCntDw must be larger than 0")
-    if (lfsr_seed & 0xFFFFFFFF) == 0 or lfsr_seed > 2**32:
-        log.error("LFSR seed out of range or zero")
 
     # Count number of interrupts
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
@@ -149,7 +144,6 @@ def generate_alert_handler(top, out_path):
     log.info("NAlerts   = %d" % n_alerts)
     log.info("EscCntDw  = %d" % esc_cnt_dw)
     log.info("AccuCntDw = %d" % accu_cnt_dw)
-    log.info("LfsrSeed  = %d" % lfsr_seed)
     log.info("AsyncOn   = %s" % async_on)
 
     # Define target path
@@ -174,7 +168,6 @@ def generate_alert_handler(top, out_path):
             out = hjson_tpl.render(n_alerts=n_alerts,
                                    esc_cnt_dw=esc_cnt_dw,
                                    accu_cnt_dw=accu_cnt_dw,
-                                   lfsr_seed=lfsr_seed,
                                    async_on=async_on,
                                    n_classes=n_classes)
         except:  # noqa: E722
