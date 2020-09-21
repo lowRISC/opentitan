@@ -8,6 +8,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#include "sw/device/lib/dif/dif_uart.h"
+
 /**
  * @file
  * @brief Libc-like printing facilities.
@@ -174,5 +176,15 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args);
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
+
+/**
+ * Configures UART stdout for `base_print.h` to use.
+ *
+ * Note that this function will save `uart` in a global variable, so the pointer
+ * must have static storage duration.
+ *
+ * @param uart The UART handle to use for stdout.
+ */
+void base_uart_stdout(const dif_uart_t *uart);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_

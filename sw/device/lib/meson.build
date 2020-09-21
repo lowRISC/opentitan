@@ -4,8 +4,8 @@
 
 subdir('base')
 subdir('arch')
-subdir('runtime')
 subdir('dif')
+subdir('runtime')
 
 # UART library (sw_lib_uart)
 sw_lib_uart = declare_dependency(
