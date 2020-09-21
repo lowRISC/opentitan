@@ -27,16 +27,21 @@ define_design_lib WORK -path $WORKLIB
 ##  DESIGN SOURCES  ###
 #######################
 
-set DUT "rv_plic_target"
+set DUT "otp_ctrl_lfsr_timer"
 
 lappend search_path "../../../ip/prim/rtl/"
-set SRC {  "../../../ip/rv_plic/rtl/rv_plic_target.sv" }
+set SRC {  "../../../ip/prim/rtl/prim_util_pkg.sv"           \
+           "../../../ip/prim/rtl/prim_assert.sv"             \
+           "../../../ip/prim/rtl/prim_lfsr.sv"               \
+           "../../../ip/otp_ctrl/rtl/otp_ctrl_reg_pkg.sv"    \
+           "../../../ip/otp_ctrl/rtl/otp_ctrl_pkg.sv"        \
+           "../../../ip/otp_ctrl/rtl/otp_ctrl_lfsr_timer.sv" }
 
 # additional defines
 set DEFINE ""
 
 # additional parameters
-set PARAMS "N_SOURCE=128"
+set PARAMS ""
 
 ###########################
 ##   ELABORATE DESIGN    ##
@@ -52,7 +57,6 @@ link                                           > "${REPDIR}/${DUT}_link.rpt"
 check_design                                   > "${REPDIR}/${DUT}_check.rpt"
 
 write_file -format ddc -hierarchy -output "${DDCDIR}/${DUT}_elab.ddc"
-write_file -format verilog -hierarchy -output "${DDCDIR}/${DUT}_elab.v"
 
 ###########################
 ##   APPLY CONSTRAINTS   ##
@@ -77,8 +81,10 @@ set_max_delay ${DELAY} -from [all_inputs] -to [all_outputs]
 set_input_delay ${IN_DEL} [remove_from_collection [all_inputs] {${CLK_PIN}}] -clock ${CLK_PIN}
 set_output_delay ${OUT_DEL}  [all_outputs] -clock ${CLK_PIN}
 
-set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin X [all_inputs]
-set_load [load_of ${LOAD_LIB}/${LOAD_CELL}/A] [all_outputs]
+# attach load and drivers to IOs to get a more realistic estimate
+set_driving_cell  -no_design_rule -lib_cell ${DRIVING_CELL} -pin ${DRIVING_CELL_PIN} [all_inputs]
+set_load [load_of ${LOAD_CELL_LIB}/${LOAD_CELL}/${LOAD_CELL_PIN}] [all_outputs]
+
 
 # set a nonzero critical range to be able to spot the violating paths better
 # in the report
@@ -109,6 +115,6 @@ report_timing      -nosplit -nworst 1000 -input -net -trans -cap > "${REPDIR}/${
 ##   NETLIST   ##
 #################
 
-# change_names -rules verilog -hierarchy
+change_names -rules verilog -hierarchy
 write_file -format ddc     -hierarchy -output "${DDCDIR}/${DUT}_mapped.ddc"
 write_file -format verilog -hierarchy -output "${VLOGDIR}/${DUT}_mapped.v"
