@@ -190,42 +190,40 @@ funct2:
 loop:
   parents:
     - custom3
-    - funct2(funct2=b00)
+    - funct3(funct3=b000)
   fields:
     bodysize: 31-20
     grs: 19-15
     fixed:
-      bits: 14,11-7
-      value: bxxxxxx
+      bits: 11-7
+      value: bxxxxx
 
 # A specialised encoding for the loopi instruction (which, unusually, has 2
 # immediates)
 loopi:
   parents:
     - custom3
-    - funct2(funct2=b01)
+    - funct3(funct3=b001)
   fields:
     bodysize: 31-20
     iterations: 19-15,11-7
-    fixed:
-      bits: 14
-      value: bx
 
 # Used wide logical operations (bn.and, bn.or, bn.xor).
 bna:
   parents:
-    - custom1
+    - custom3
     - wdr3
     - funct3
     - shift
-    - funct31
+    - fg
 
 # Used for bn.not (no second source reg).
 bnan:
   parents:
-    - custom1
+    - custom3
+    - funct3
     - shift
-    - funct31
+    - fg
     - wrd
   fields:
     wrs1: 24-20
