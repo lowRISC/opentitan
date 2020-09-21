@@ -15,12 +15,20 @@ package kmac_pkg;
   // Function Name (N) and Customzation String (S) shall be
   // smaller than 2**256 bits and integer divisiable by 8.
   parameter int FnWidth = 32;  // up to 32bit Function Name
-  parameter int MaxFnEncodeSize = $clog2(FnWidth+1)/8 + 2;
   parameter int CsWidth = 256; // up to 256bit Customization Input
-  parameter int MaxCsEncodeSize = $clog2(CsWidth+1)/8 + 2;
 
-  parameter int NSRegisterSize = FnWidth/8       + CsWidth/8
-                               + MaxFnEncodeSize + MaxCsEncodeSize;
+  // Calculate left_encode(len( X )) bit size.
+  // Assume the enc_8(n) is always 1 (up to 255 byte of len(S) size)
+  // e.g) 248bit --> two bytes , 256bit --> three bytes
+  //  round8bit(clog2(X+1))/8
+
+  parameter int MaxFnEncodeSize = ($clog2(FnWidth+1) + 8 - 1) / 8 + 1;
+  parameter int MaxCsEncodeSize = ($clog2(CsWidth+1) + 8 - 1) / 8 + 1;
+
+  parameter int NSRegisterSizePre = FnWidth/8       + CsWidth/8
+                                  + MaxFnEncodeSize + MaxCsEncodeSize;
+  // Round up to 32bit word base
+  parameter int NSRegisterSize = ((NSRegisterSizePre + 4 - 1 ) / 4) * 4;
 
   // Prefix represents bytepad(encode_string(N) || encode_string(S), 168 or 136)
   // +2 represents left_encoding(168 or 136) which could be either:
