@@ -1,4 +1,4 @@
-From 869ad7202f4551ae75440b8e34d8aa37f4b3f4cf Mon Sep 17 00:00:00 2001
+From 7ada51301b9ef34982d8a05bdcc63d98e162243a Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 18:39:08 +0100
 Subject: [PATCH 3/3] Remove tests that do not pass on OpenTitan
@@ -33,5 +33,5 @@ index a19fff8..e27b7ac 100644
  rv32i_tests = $(addsuffix .elf, $(rv32i_sc_tests))
  
 -- 
-2.26.2
+2.28.0
 
