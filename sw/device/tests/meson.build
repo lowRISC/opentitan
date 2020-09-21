@@ -153,6 +153,9 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       device_lib,
       sw_lib_irq_handlers,
       sw_lib_testing_test_status,
+      sw_lib_runtime_print,
+      sw_lib_runtime_log,
+      sw_lib_dif_uart,
       # Explicitly do not pull in the test main; we need to run right after
       # the CRT is done executing.
       # sw_lib_testing_test_main,

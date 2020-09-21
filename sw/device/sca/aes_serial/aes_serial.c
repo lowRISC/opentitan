@@ -6,12 +6,13 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/uart.h"
+#include "sw/device/lib/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -22,6 +23,7 @@
 
 static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
+static dif_uart_t uart;
 
 // UART input maximum buffer sizes
 static const uint32_t kMaxInputLengthText = 128;
@@ -128,15 +130,11 @@ static simple_serial_result_t a2b_hex(const char *from, char *to, size_t num) {
  */
 static void print_cmd_response(const char cmd_tag, const char *data,
                                size_t data_len) {
-  static const char b2a_hex_values[16] = "0123456789ABCDEF";
-
-  // TODO: Switch to sw/device/lib/runtime/print.h
-  uart_send_char(cmd_tag);
+  base_printf("%c", cmd_tag);
   for (int i = 0; i < data_len; ++i) {
-    uart_send_char(b2a_hex_values[data[i] >> 4]);
-    uart_send_char(b2a_hex_values[data[i] & 0xF]);
+    base_printf("%x", (uint32_t)data[i]);
   }
-  uart_send_char('\n');
+  base_printf("\n");
 }
 
 /**
@@ -268,8 +266,19 @@ static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
 }
 
 int main(int argc, char **argv) {
-  uart_init(kUartBaudrate);
-  base_set_stdout(uart_stdout);
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart) == kDifUartOk);
+  CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
+                                      .baudrate = kUartBaudrate,
+                                      .clk_freq_hz = kClockFreqPeripheralHz,
+                                      .parity_enable = kDifUartToggleDisabled,
+                                      .parity = kDifUartParityEven,
+                                  }) == kDifUartConfigOk);
+  base_uart_stdout(&uart);
+
   pinmux_init();
 
   irq_global_ctrl(true);
@@ -303,7 +312,9 @@ int main(int argc, char **argv) {
   char text[128] = {0};
   size_t pos = 0;
   while (true) {
-    if (uart_rcv_char(&text[pos]) == -1) {
+    size_t chars_available;
+    if (dif_uart_rx_bytes_available(&uart, &chars_available) != kDifUartOk ||
+        chars_available == 0) {
       usleep(50);
       continue;
     }

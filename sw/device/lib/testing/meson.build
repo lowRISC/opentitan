@@ -54,8 +54,9 @@ sw_lib_testing_test_main = declare_dependency(
     'test_main_ot',
     sources: ['test_main.c'],
     dependencies: [
-      sw_lib_uart,
       sw_lib_runtime_log,
+      sw_lib_runtime_print,
+      sw_lib_dif_uart,
       sw_lib_testing_test_status,
       sw_lib_testing_test_coverage,
     ],

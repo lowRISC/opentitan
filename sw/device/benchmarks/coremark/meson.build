@@ -18,7 +18,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
     name_suffix: 'elf',
     dependencies: [
-      sw_lib_uart,
+      sw_lib_dif_uart,
       sw_lib_mem,
       riscv_crt,
       sw_lib_irq_handlers,
