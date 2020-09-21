@@ -213,6 +213,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   logic       pwrmgr_wakeups;
+  logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_main_tl_req;
@@ -813,7 +814,7 @@ module top_earlgrey #(
       .pwr_flash_i(pwrmgr_pwr_flash_rsp),
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .wakeups_i(pwrmgr_wakeups),
-      .rstreqs_i('0),
+      .rstreqs_i(pwrmgr_rstreqs),
       .tl_i(pwrmgr_tl_req),
       .tl_o(pwrmgr_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_powerup),
@@ -830,7 +831,6 @@ module top_earlgrey #(
       .resets_o(rstmgr_resets),
       .ast_i(rstmgr_ast_i),
       .cpu_i(rstmgr_cpu),
-      .peri_i(rstmgr_pkg::RSTMGR_PERI_DEFAULT),
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),
@@ -876,6 +876,7 @@ module top_earlgrey #(
       .intr_esc2_o (intr_nmi_gen_esc2),
 
       // Inter-module signals
+      .nmi_rst_req_o(pwrmgr_rstreqs),
       .tl_i(nmi_gen_tl_req),
       .tl_o(nmi_gen_tl_rsp),
       // escalation signal inputs
