@@ -233,6 +233,19 @@ class FlagReg:
                 setattr(self, n, getattr(self._new_val, n))
         self._new_val = None
 
+    @staticmethod
+    def mlz_for_result(C: bool, result: int) -> 'FlagReg':
+        '''Generate flags for the result of an operation.
+
+        C is the value for the C flag. result is the wide-side result value
+        that is used to generate M, L and Z.
+
+        '''
+        M = bool((result >> 255) & 1)
+        L = bool(result & 1)
+        Z = bool(result == 0)
+        return FlagReg(C=C, M=M, L=L, Z=Z)
+
 
 class FlagGroups:
     def __init__(self) -> None:
@@ -389,14 +402,14 @@ class OTBNState:
     @staticmethod
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, FlagReg]:
         result = a + b + carry_in
-
         carryless_result = result & ((1 << 256) - 1)
-        flags_out = FlagReg(C=bool((result >> 256) & 1),
-                            M=bool((result >> 255) & 1),
-                            L=bool(result & 1),
-                            Z=bool(1 if carryless_result == 0 else 0))
+        C = bool((result >> 256) & 1)
 
-        return (carryless_result, flags_out)
+        return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
+
+    def update_mlz_flags(self, fg: int, result: int) -> None:
+        '''Update M, L, Z flags for the given result'''
+        self.flags[fg] = FlagReg.mlz_for_result(self.flags[fg].C, result)
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''

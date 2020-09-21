@@ -489,6 +489,7 @@
     Performs a bitwise and operation.
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
     The content of the second source register can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
   decode: &bn-and-decode |
     d = UInt(wrd)
     a = UInt(wrs1)
@@ -501,6 +502,8 @@
     result = a & b_shifted
 
     WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
   encoding:
     scheme: bna
     mapping:
@@ -520,12 +523,15 @@
     Performs a bitwise or operation.
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
   decode: *bn-and-decode
   operation: |
     b_shifted = ShiftReg(b, st, sb)
     result = a | b_shifted
 
     WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
   encoding:
     scheme: bna
     mapping:
@@ -551,6 +557,7 @@
   doc: |
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
   decode: |
     d = UInt(wrd)
     a = UInt(wrs1)
@@ -562,6 +569,8 @@
     result = ~a_shifted
 
     WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
   encoding:
     scheme: bna
     mapping:
@@ -581,12 +590,15 @@
     Performs a bitwise xor operation.
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
   decode: *bn-and-decode
   operation: |
     b_shifted = ShiftReg(b, st, sb)
     result = a ^ b_shifted
 
     WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
   encoding:
     scheme: bnaf
     mapping:
