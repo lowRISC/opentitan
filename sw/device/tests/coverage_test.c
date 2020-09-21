@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/testing/test_coverage.h"
-#include "sw/device/lib/testing/test_main.h"
-#include "sw/device/lib/uart.h"
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/test_coverage.h"
+#include "sw/device/lib/testing/test_main.h"
+
 static void spin_45(uint8_t state) {
   static const char kSpinnerChars[] = "|/-\\";
-  uart_send_char(kSpinnerChars[state]);
-  uart_send_char('\r');
+  base_printf("%c\r", kSpinnerChars[state]);
 }
 
 static void spin_180(void) {
@@ -32,7 +33,7 @@ const test_config_t kTestConfig = {};
  */
 bool test_main(void) {
   // Print an assuring message.
-  uart_send_str("Collecting coverage data.\r\n");
+  LOG_INFO("Collecting coverage data.");
   // Display a spinning bar.
   for (uint8_t i = 0; i < 4; ++i) {
     spin_180();

@@ -132,7 +132,7 @@ static void print_cmd_response(const char cmd_tag, const char *data,
                                size_t data_len) {
   base_printf("%c", cmd_tag);
   for (int i = 0; i < data_len; ++i) {
-    base_printf("%x", (uint32_t)data[i]);
+    base_printf("%2x", (uint32_t)data[i]);
   }
   base_printf("\n");
 }

@@ -110,7 +110,7 @@ sw_lib_irq_handlers = declare_dependency(
       'handler.c',
     ],
     dependencies: [
-      sw_lib_uart,
+      sw_lib_runtime_log,
     ],
   )
 )
@@ -126,7 +126,6 @@ sw_lib_usb = declare_dependency(
       'usbdev.c',
     ],
     dependencies: [
-      sw_lib_uart,
       top_earlgrey,
     ]
   )

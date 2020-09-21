@@ -66,7 +66,6 @@ coverage_test_lib = declare_dependency(
     'coverage_test_lib',
     sources: ['coverage_test.c'],
     dependencies: [
-      sw_lib_uart,
       collect_coverage,
     ],
   ),
