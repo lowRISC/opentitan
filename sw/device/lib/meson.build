@@ -6,23 +6,6 @@ subdir('base')
 subdir('arch')
 subdir('dif')
 subdir('runtime')
-
-# UART library (sw_lib_uart)
-sw_lib_uart = declare_dependency(
-  link_with: static_library(
-    'uart_ot',
-    sources: ['uart.c'],
-    dependencies: [
-      sw_lib_runtime_print,
-      sw_lib_runtime_ibex,
-      sw_lib_dif_uart,
-      top_earlgrey,
-    ],
-  )
-)
-
-# NOTE: this needs to come *after* the UART library for now, until `test_main.c`
-# no longer depends on `uart.c`.
 subdir('testing')
 
 # Flash controller library (sw_lib_flash_ctrl)
