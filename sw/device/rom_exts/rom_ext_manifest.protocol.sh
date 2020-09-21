@@ -30,7 +30,6 @@ Signature Exponent:32,
 Usage Constraints (TBC):32,
 Reserved:32,
 
-Software Binding Tag (TBC):128,
 Peripheral Lockdown Info (TBC):128,
 
 Signature Public Key (3072 bits):${BROKEN_LENGTH},

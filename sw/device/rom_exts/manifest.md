@@ -37,14 +37,6 @@ Based on the requirements outlined in [boot.md](./boot)
 |                                                               |
 +                                                               +
 |                                                               |
-+                   Software Binding Tag (TBC)                  +
-|                                                               |
-+                                                               +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                                                               +
-|                                                               |
 +                 Peripheral Lockdown Info (TBC)                +
 |                                                               |
 +                                                               +
@@ -193,18 +185,6 @@ Notes:
 
     **Open Q** What possible values should this have?
 
-1.  **Software Binding Tag** This is a 128-bit enumeration value which is used
-    so the software helps to seed CreatorRootKey.
-
-    **Open Q** Is this the right size?
-
-    This is separate from the *Image Version* and the *Image Signature*, so that
-    images can be updated and still derive the same CreatorRootKey.
-
-    This is used by the Mask ROM as an input for the key manager.
-
-    **Open Q** Required Alignment. Assuming 32-bit for the moment.
-
 1.  **Peripheral Lockdown Info** This is a 128-bit value which describes how
     some peripherals should be configured, before the write-enable bits for
     their configuration registers are cleared.
@@ -256,25 +236,27 @@ Notes:
 1.  **Code Image** This is a sequence of bytes that make up the code and data of
     the ROM_EXT image. This data will include any data required for Extensions.
 
-    **Execution begins** at the address 128 bytes beyond the first 256-byte aligned
-    offset at the start of the ROM_EXT code image (measuring the offset from the
-    start of the ROM_EXT image). This leaves the possibility of the Mask ROM
-    initializing `mtvec` with the first 256-byte aligned offset in the ROM_EXT
-    code image, before jumping into ROM_EXT code. This matches how Ibex boots.
+    **Execution begins** at the address 128 (`0x80`) bytes beyond the first
+    256-byte (`0x100`-byte) aligned offset at the start of the ROM_EXT code
+    image (measuring the offset from the start of the ROM_EXT image). This
+    leaves the possibility of the Mask ROM initializing `mtvec` with the first
+    256-byte aligned offset in the ROM_EXT code image, before jumping into
+    ROM_EXT code. This matches how Ibex boots.
 
-    The total manifest length is currently 872 bytes, so the first valid mtvec
-    address is at offset `0x400` (1024) bytes from the beginning of the ROM_EXT
-    image, and the entry address is therefore `0x480`  (1152) bytes from the
-    beginning of the ROM_EXT image.
+    The total manifest length is currently `0x358` (856) bytes, so the first
+    valid mtvec address is at offset `0x400` (1024) bytes from the beginning of
+    the ROM_EXT image, and the entry address is therefore `0x480`  (1152) bytes
+    from the beginning of the ROM_EXT image.
 
-    This does leave 152 bytes between the end of the manifest and the first
-    valid mtvec. It is up to the image as to how this is used--it could be used
-    for extension data or for routines. We could also reserve this space so the
-    manifest can be extended later, but this is the intention of the Extension
-    entries.
+    This does leave 168 (`0xa8`) bytes between the end of the manifest and the
+    first valid mtvec. It is up to the image as to how this is used--it could be
+    used for extension data or for routines. We could also reserve this space so
+    the manifest can be extended later, but this is the intention of the
+    Extension entries.
 
-    **Open Q** Do we want to relax the requirement to match how ibex boots? It
-    makes sense to me to have a static entry address
+    **Open Q** Do we want to relax the requirement to match how ibex boots? We
+    still want a static entry address so we don't have to validate that it is in
+    bounds.
 
 ### Data Not in the Header
 
@@ -285,6 +267,22 @@ Notes:
 *   `.idata` section offset, for copying initialization values into `.data`
     section in RAM, as again, this is the responsibility of the ROM_EXT image,
     not Mask ROM.
+
+*   **Software Binding Tag** (aka **ROM_EXT Security Descriptor**)
+
+    A 256-bit input is needed to help seed the CreatorRootKey, as part of
+    preparing the key manager for later use.
+
+    There was originally a proposal to have the party that prepared the image
+    set the software binding tag explicitly, using a field in the manifest.
+    However, we have chosen to always use a 256-bit digest of the ROM_EXT image
+    itself.
+
+    This means future ROM_EXTs can not read data encrypted with a previous
+    ROM_EXT's key. A different ROM_EXT image will result in a different
+    CreatorRootKey.
+
+    This would have been used by the Mask ROM as an input for the key manager.
 
 ## Development Versions (Subject to Change)
 
