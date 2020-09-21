@@ -8,11 +8,14 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_status.h"
-#include "sw/device/lib/uart.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 /**
  * This symbol is defined in sw/device/boot_rom/rom_link.ld,
@@ -24,11 +27,27 @@
  */
 extern struct { void (*entry)(void); } _flash_header;
 
+static dif_uart_t uart0;
+
 void _boot_start(void) {
   test_status_set(kTestStatusInBootRom);
   pinmux_init();
-  uart_init(kUartBaudrate);
-  base_set_stdout(uart_stdout);
+
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart0) == kDifUartOk,
+        "failed to init UART");
+  CHECK(dif_uart_configure(&uart0,
+                           (dif_uart_config_t){
+                               .baudrate = kUartBaudrate,
+                               .clk_freq_hz = kClockFreqPeripheralHz,
+                               .parity_enable = kDifUartToggleDisabled,
+                               .parity = kDifUartParityEven,
+                           }) == kDifUartConfigOk,
+        "failed to configure UART");
+  base_uart_stdout(&uart0);
 
   LOG_INFO("%s", chip_info);
 

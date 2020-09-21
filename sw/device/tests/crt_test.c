@@ -7,11 +7,13 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_status.h"
-#include "sw/device/lib/uart.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 // Symbols defined in sw/device/exts/common/flash_link.ld, which we use to
 // check that the CRT did what it was supposed to.
@@ -32,6 +34,25 @@ static const uintptr_t data_init_start_addr = (uintptr_t)&_data_init_start;
 // these symbols, since they're volatile.
 volatile char ensure_data_exists = 42;
 volatile char ensure_bss_exists;
+
+static dif_uart_t uart0;
+static void init_uart(void) {
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart0) == kDifUartOk,
+        "failed to init UART");
+  CHECK(dif_uart_configure(&uart0,
+                           (dif_uart_config_t){
+                               .baudrate = kUartBaudrate,
+                               .clk_freq_hz = kClockFreqPeripheralHz,
+                               .parity_enable = kDifUartToggleDisabled,
+                               .parity = kDifUartParityEven,
+                           }) == kDifUartConfigOk,
+        "failed to configure UART");
+  base_uart_stdout(&uart0);
+}
 
 int main(int argc, char **argv) {
   // NOTE: we cannot call any external functions until all checks of post-CRT
@@ -85,8 +106,7 @@ int main(int argc, char **argv) {
   test_status_set(kTestStatusInTest);
   // Initialize the UART to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
-    uart_init(kUartBaudrate);
-    base_set_stdout(uart_stdout);
+    init_uart();
   }
 
   CHECK(bss_start_addr % sizeof(uint32_t) == 0,

@@ -10,14 +10,17 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/uart.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 #include "sw/device/lib/usbdev.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR 0x40150000
@@ -61,27 +64,38 @@ static char make_printable(char c, char replacement) {
 static const size_t kExpectedUsbCharsRecved = 6;
 static size_t usb_chars_recved_total;
 
+static dif_gpio_t gpio;
+static dif_spi_device_t spi;
+static dif_uart_t uart;
+
 /**
  * Callbacks for processing USB reciept. The latter increments the
  * recieved character by one, to make them distinct.
  */
 static void usb_receipt_callback_0(uint8_t c) {
   c = make_printable(c, '?');
-  uart_send_char(c);
+  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifUartOk);
   ++usb_chars_recved_total;
 }
 static void usb_receipt_callback_1(uint8_t c) {
   c = make_printable(c + 1, '?');
-  uart_send_char(c);
+  CHECK(dif_uart_byte_send_polled(&uart, c) == kDifUartOk);
   ++usb_chars_recved_total;
 }
 
-static dif_gpio_t gpio;
-static dif_spi_device_t spi;
-
 int main(int argc, char **argv) {
-  uart_init(kUartBaudrate);
-  base_set_stdout(uart_stdout);
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart) == kDifUartOk);
+  CHECK(dif_uart_configure(&uart, (dif_uart_config_t){
+                                      .baudrate = kUartBaudrate,
+                                      .clk_freq_hz = kClockFreqPeripheralHz,
+                                      .parity_enable = kDifUartToggleDisabled,
+                                      .parity = kDifUartParityEven,
+                                  }) == kDifUartConfigOk);
+  base_uart_stdout(&uart);
 
   pinmux_init();
 
@@ -133,9 +147,17 @@ int main(int argc, char **argv) {
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
     demo_spi_to_log_echo(&spi);
 
-    char rcv_char;
-    while (uart_rcv_char(&rcv_char) != -1) {
-      uart_send_char(rcv_char);
+    while (true) {
+      size_t chars_available;
+      if (dif_uart_rx_bytes_available(&uart, &chars_available) != kDifUartOk ||
+          chars_available == 0) {
+        break;
+      }
+
+      uint8_t rcv_char;
+      CHECK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL) == kDifUartOk);
+      CHECK(dif_uart_byte_send_polled(&uart, rcv_char) == kDifUartOk);
+
       CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifGpioOk);
 
       if (rcv_char == '/') {
@@ -150,12 +172,10 @@ int main(int argc, char **argv) {
 
     // Signal that the simulation succeeded.
     if (usb_chars_recved_total >= kExpectedUsbCharsRecved && !pass_signaled) {
-      uart_send_str("\r\n");
-      uart_send_str("PASS!\r\n");
+      LOG_INFO("PASS!");
       pass_signaled = true;
     }
   }
 
-  uart_send_str("\r\n");
   LOG_INFO("USB recieved %d characters.", usb_chars_recved_total);
 }
