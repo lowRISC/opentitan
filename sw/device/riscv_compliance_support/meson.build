@@ -10,20 +10,19 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   # library produces what we need.
   riscv_compliance_support_inner = static_library(
     'ot_riscv_compliance_support_inner_' + device_name,
-    dependencies : [
+    sources: ['support.c'],
+    dependencies: [
       sw_lib_uart,
       sw_lib_base_print,
       sw_lib_irq_handlers,
       sw_lib_mem,
       device_lib,
-    ]
+    ],
   )
 
   riscv_compliance_support = static_library(
     'ot_riscv_compliance_support_' + device_name,
-    link_whole : [
-      riscv_compliance_support_inner,
-    ],
+    link_whole: [riscv_compliance_support_inner],
   )
 
   custom_target(

@@ -1,27 +1,8 @@
-From 4d25ba90b659be25aaa441e7dfad6eed9c7f4af3 Mon Sep 17 00:00:00 2001
+From 1b37cf8ea5468c9bdf17e8633507fc595a8858b2 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
 Subject: [PATCH 2/3] Add OpenTitan target
 
----
- Makefile                                      |   6 +-
- riscv-target/opentitan/README.md              | 152 ++++++++++++++++++
- riscv-target/opentitan/compliance_io.h        |  22 +++
- riscv-target/opentitan/compliance_test.h      |  35 ++++
- .../opentitan/device/rv32imc/Makefile.include |  75 +++++++++
- .../opentitan/device/rv32imc/isa.yaml         |  49 ++++++
- riscv-target/opentitan/device/rv32imc/main.c  |  32 ++++
- .../opentitan/device/rv32imc/platform.yaml    |  10 ++
- .../opentitan/device/rv32imc/run_rvc_test.S   |  85 ++++++++++
- 9 files changed, 465 insertions(+), 1 deletion(-)
- create mode 100644 riscv-target/opentitan/README.md
- create mode 100644 riscv-target/opentitan/compliance_io.h
- create mode 100644 riscv-target/opentitan/compliance_test.h
- create mode 100644 riscv-target/opentitan/device/rv32imc/Makefile.include
- create mode 100644 riscv-target/opentitan/device/rv32imc/isa.yaml
- create mode 100644 riscv-target/opentitan/device/rv32imc/main.c
- create mode 100644 riscv-target/opentitan/device/rv32imc/platform.yaml
- create mode 100644 riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 
 diff --git a/Makefile b/Makefile
 index 25557c1..a6fd315 100644
@@ -409,41 +390,22 @@ index 0000000..c526fec
 +  implemented: true
 diff --git a/riscv-target/opentitan/device/rv32imc/main.c b/riscv-target/opentitan/device/rv32imc/main.c
 new file mode 100644
-index 0000000..ad5ca31
+index 0000000..8d67e4e
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/main.c
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,13 @@
 +// Copyright lowRISC contributors.
 +// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +// SPDX-License-Identifier: Apache-2.0
 +
-+// Wrapper for RISC-V compliance tests, it saves architectural state before
-+// jumping into the test (via run_rvc_test). After the test completes it dumps
-+// the signature out via the UART.
-+
-+#include "sw/device/lib/uart.h"
-+#include "sw/device/lib/arch/device.h"
-+#include "sw/device/lib/base/print.h"
-+#include "sw/device/lib/common.h"
-+
-+extern void run_rvc_test(void);
-+
-+extern uint32_t begin_signature[];
-+extern uint32_t end_signature[];
++// NOTE: This is the only header from OpenTitan that can be imported here. Any
++// OpenTitan-specific work should be done in support.c, instead.
++// Doing this avoids having to create patches for this file any time
++// requirements for the wrapper change.
++#include "sw/device/riscv_compliance_support/support.h"
 +
 +int main(int argc, char **argv) {
-+  uart_init(kUartBaudrate);
-+  base_set_stdout(uart_stdout);
-+
-+  run_rvc_test();
-+
-+  uint32_t size = end_signature - begin_signature;
-+
-+  for (uint32_t i = 0; i < size; ++i) {
-+    base_printf("SIG: %08x\r\n", REG32(begin_signature + i));
-+  }
-+
-+  return 0;
++  return opentitan_compliance_main(argc, argv);
 +}
 diff --git a/riscv-target/opentitan/device/rv32imc/platform.yaml b/riscv-target/opentitan/device/rv32imc/platform.yaml
 new file mode 100644
@@ -552,6 +514,3 @@ index 0000000..1b1b5c7
 +
 +  // jump to the handler from the OT library
 +  j crt_interrupt_vector
--- 
-2.28.0
-
