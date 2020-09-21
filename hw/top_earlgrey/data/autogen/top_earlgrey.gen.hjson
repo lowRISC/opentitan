@@ -923,6 +923,14 @@
       param_list:
       [
         {
+          name: AES192Enable
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "false"
+          name_top: AesAES192Enable
+        }
+        {
           name: Masking
           type: bit
           default: 1'b0
@@ -945,6 +953,14 @@
           local: "false"
           expose: "true"
           name_top: SecAesStartTriggerDelay
+        }
+        {
+          name: AlertAsyncOn
+          type: logic [aes_reg_pkg::NumAlerts-1:0]
+          default: "{aes_reg_pkg::NumAlerts{1'b1}}"
+          local: "false"
+          expose: "false"
+          name_top: AesAlertAsyncOn
         }
       ]
       interrupt_list: []

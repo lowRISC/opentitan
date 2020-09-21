@@ -93,18 +93,18 @@ def amend_ip(top, ip):
         # param_list
         if "param_list" in ip:
             ip_module["param_list"] = deepcopy(ip["param_list"])
-            # Removing parameters that aren't exposed at the top level.
+            # Removing local parameters.
             for i in ip["param_list"]:
-                if i["expose"] == "false":
+                if i["local"] == "true":
                     ip_module["param_list"].remove(i)
-                    if i["name"].lower().startswith("sec"):
-                        log.warning(
-                            mod_name + " has security-critical" +
-                            " parameter " + i["name"] + " not exposed to top")
-            # Removing descriptors and adding a top-level name.
+            # Removing descriptors, checking for security-relevant parameters
+            # that are not exposed, adding a top-level name.
             for i in ip_module["param_list"]:
                 i.pop("desc", None)
                 par_name = i["name"]
+                if par_name.lower().startswith("sec"):
+                    log.warning("{} has security-critical parameter {} "
+                                "not exposed to top".format(mod_name, par_name))
                 i["name_top"] = ("Sec" + mod_name.capitalize() + par_name[3:]
                                  if par_name.lower().startswith("sec")
                                  else mod_name.capitalize() + par_name)

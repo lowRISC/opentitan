@@ -683,9 +683,11 @@ module top_earlgrey #(
   );
 
   aes #(
+    .AES192Enable(1'b1),
     .Masking(AesMasking),
     .SBoxImpl(AesSBoxImpl),
-    .SecStartTriggerDelay(SecAesStartTriggerDelay)
+    .SecStartTriggerDelay(SecAesStartTriggerDelay),
+    .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}})
   ) u_aes (
 
       // [0]: ctrl_err_update

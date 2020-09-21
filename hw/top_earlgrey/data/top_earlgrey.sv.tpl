@@ -32,8 +32,8 @@ dm_rst = top["reset_paths"]["lc"]
 module top_${top["name"]} #(
   // Auto-inferred parameters
 % for m in top["module"]:
-  % for p in m["param_list"]:
-  parameter ${p["type"]} ${p["name_top"]} = ${p["default"]},
+  % for p_exp in filter(lambda p: p["expose"] == "true", m["param_list"]):
+  parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]},
   % endfor
 % endfor
 
@@ -488,7 +488,7 @@ else:
   % if m["param_list"]:
   ${m["type"]} #(
     % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top"]})${"," if not loop.last else ""}
+    .${i["name"]}(${i["name_top" if i["expose"] == "true" else "default"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:
