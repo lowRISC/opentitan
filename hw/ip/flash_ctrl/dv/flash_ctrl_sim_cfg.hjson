@@ -28,7 +28,15 @@
                 "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/data/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"],
+
+  // Flash references pwrmgr directly, need to reference the top version
+  overrides: [
+    {
+      name: design_level
+              value: "top"
+    }
+  ]
 
   // Add additional tops for simulation.
   sim_tops: ["-top {name}_bind"]
