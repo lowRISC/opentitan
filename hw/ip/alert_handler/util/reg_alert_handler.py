@@ -31,10 +31,6 @@ def main():
                         type=int,
                         default=16,
                         help='Width of accumulator')
-    parser.add_argument('--lfsr_seed',
-                        type=int,
-                        default=2**31-1,
-                        help='Seed for LFSR timer')
     parser.add_argument('--async_on',
                         type=str,
                         default="'0",
@@ -42,9 +38,6 @@ def main():
                         alert RX/TX pairs""")
 
     args = parser.parse_args()
-
-    if (args.lfsr_seed & 0xFFFF_FFFF) == 0 or args.lfsr_seed > 2**32:
-        parser.error("LFSR seed out of range or zero")
 
     # Determine output: if stdin then stdout if not then ??
     out = StringIO()
@@ -54,7 +47,6 @@ def main():
         reg_tpl.render(n_alerts=args.n_alerts,
                        esc_cnt_dw=args.esc_cnt_dw,
                        accu_cnt_dw=args.accu_cnt_dw,
-                       lfsr_seed=args.lfsr_seed,
                        async_on=args.async_on,
                        n_classes=4)) # leave this constant for now
 

@@ -22,6 +22,13 @@
 `include "prim_assert.sv"
 
 module alert_handler_ping_timer import alert_pkg::*; #(
+  parameter logic [31:0]       LfsrSeed = 32'd1,
+  parameter logic [31:0][31:0] LfsrPerm = {
+    32'd04, 32'd11, 32'd25, 32'd03, 32'd15, 32'd16, 32'd01, 32'd10,
+    32'd02, 32'd22, 32'd07, 32'd00, 32'd23, 32'd28, 32'd30, 32'd19,
+    32'd27, 32'd12, 32'd24, 32'd26, 32'd14, 32'd21, 32'd18, 32'd05,
+    32'd13, 32'd08, 32'd29, 32'd31, 32'd20, 32'd06, 32'd09, 32'd17
+  },
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA  = 1'b1,
   // Can be disabled in cases where entropy
@@ -47,31 +54,21 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   localparam int unsigned NModsToPing = NAlerts + N_ESC_SEV;
   localparam int unsigned IdDw        = $clog2(NModsToPing);
 
-  // this defines a random permutation
-  localparam int unsigned Perm [32] = '{
-    4, 11, 25,  3,   //
-    15, 16,  1, 10,  //
-    2, 22,  7,  0,   //
-    23, 28, 30, 19,  //
-    27, 12, 24, 26,  //
-    14, 21, 18,  5,  //
-    13,  8, 29, 31,  //
-    20,  6,  9, 17   //
-  };
-
   //////////
   // PRNG //
   //////////
 
   logic lfsr_en;
-  logic [31:0] lfsr_state, perm_state;
-  logic [16-IdDw-1:0] unused_perm_state;
+  logic [31:0] lfsr_state;
+  logic [16-IdDw-1:0] unused_lfsr_state;
 
   prim_lfsr #(
     .LfsrDw      ( 32         ),
     .EntropyDw   ( 1          ),
     .StateOutDw  ( 32         ),
     .DefaultSeed ( LfsrSeed   ),
+    .StatePermEn ( 1'b1       ),
+    .StatePerm   ( LfsrPerm   ),
     .MaxLenSVA   ( MaxLenSVA  ),
     .LockupSVA   ( LockupSVA  ),
     .ExtSeedSVA  ( 1'b0       ) // ext seed is unused
@@ -85,21 +82,17 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .state_o    ( lfsr_state )
   );
 
-  for (genvar k = 0; k < 32; k++) begin : gen_perm
-    assign perm_state[k] = lfsr_state[Perm[k]];
-  end
-
   logic [IdDw-1:0] id_to_ping;
   logic [PING_CNT_DW-1:0] wait_cyc;
   // we only use bits up to 23, as IdDw is 8bit maximum
-  assign id_to_ping = perm_state[16 +: IdDw];
+  assign id_to_ping = lfsr_state[16 +: IdDw];
 
   // to avoid lint warnings
-  assign unused_perm_state = perm_state[31:16+IdDw];
+  assign unused_lfsr_state = lfsr_state[31:16+IdDw];
 
   // concatenate with constant offset, introduce some stagger
   // by concatenating the lower bits below
-  assign wait_cyc   = PING_CNT_DW'({perm_state[15:2], 8'h01, perm_state[1:0]}) & wait_cyc_mask_i;
+  assign wait_cyc   = PING_CNT_DW'({lfsr_state[15:2], 8'h01, lfsr_state[1:0]}) & wait_cyc_mask_i;
 
   logic [2**IdDw-1:0] enable_mask;
   always_comb begin : p_enable_mask
