@@ -199,9 +199,9 @@ class LoopStack:
 
 
 class FlagReg:
-    FLAG_NAMES = ['C', 'L', 'M', 'Z']
+    FLAG_NAMES = ['C', 'M', 'L', 'Z']
 
-    def __init__(self, C: bool, L: bool, M: bool, Z: bool):
+    def __init__(self, C: bool, M: bool, L: bool, Z: bool):
         self.C = C
         self.L = L
         self.M = M
@@ -218,7 +218,7 @@ class FlagReg:
 
     def get_by_idx(self, flag_idx: int) -> bool:
         assert 0 <= flag_idx <= 3
-        flag_name = ['C', 'L', 'M', 'Z'][flag_idx]
+        flag_name = FlagReg.FLAG_NAMES[flag_idx]
         return self.get_by_name(flag_name)
 
     def changes(self, group_name: str) -> List[TraceFlag]:
@@ -392,8 +392,8 @@ class OTBNState:
 
         carryless_result = result & ((1 << 256) - 1)
         flags_out = FlagReg(C=bool((result >> 256) & 1),
-                            L=bool(result & 1),
                             M=bool((result >> 255) & 1),
+                            L=bool(result & 1),
                             Z=bool(1 if carryless_result == 0 else 0))
 
         return (carryless_result, flags_out)
