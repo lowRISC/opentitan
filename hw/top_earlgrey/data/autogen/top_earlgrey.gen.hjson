@@ -430,6 +430,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -497,6 +498,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -641,6 +643,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "true"
       scan_reset: "false"
       inter_signal_list:
@@ -761,6 +764,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -878,6 +882,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -980,6 +985,7 @@
         }
       ]
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1084,6 +1090,7 @@
         }
       ]
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1131,6 +1138,7 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1188,6 +1196,7 @@
           width: "1"
         }
       ]
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1288,6 +1297,7 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1391,6 +1401,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1455,6 +1466,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1553,12 +1565,15 @@
         }
         {
           struct: logic
-          width: 2
+          width: 1
           type: uni
           name: rstreqs
           act: rcv
           package: ""
           inst_name: pwrmgr
+          default: ""
+          top_type: broadcast
+          top_signame: pwrmgr_rstreqs
           index: -1
         }
         {
@@ -1616,6 +1631,7 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1667,15 +1683,6 @@
           width: 1
           default: ""
           top_signame: rstmgr_cpu
-          index: -1
-        }
-        {
-          struct: rstmgr_peri
-          type: uni
-          name: peri
-          act: rcv
-          package: rstmgr_pkg
-          inst_name: rstmgr
           index: -1
         }
         {
@@ -1739,6 +1746,7 @@
       interrupt_list: []
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -1933,10 +1941,28 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list:
+      [
+        {
+          name: nmi_rst_req
+        }
+      ]
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
       [
+        {
+          struct: logic
+          type: uni
+          name: nmi_rst_req
+          act: req
+          package: ""
+          default: 1'b0
+          inst_name: nmi_gen
+          width: 1
+          top_signame: pwrmgr_rstreqs
+          index: -1
+        }
         {
           struct: tl
           package: tlul_pkg
@@ -2230,6 +2256,7 @@
       ]
       alert_list: []
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -2314,6 +2341,7 @@
         }
       ]
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -2420,6 +2448,7 @@
         }
       ]
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -2578,6 +2607,7 @@
         }
       ]
       wakeup_list: []
+      reset_request_list: []
       scan: "false"
       scan_reset: "false"
       inter_signal_list:
@@ -2790,6 +2820,10 @@
       pwrmgr.wakeups:
       [
         pinmux.aon_wkup_req
+      ]
+      pwrmgr.rstreqs:
+      [
+        nmi_gen.nmi_rst_req
       ]
       rom.tl:
       [
@@ -5026,6 +5060,13 @@
       module: pinmux
     }
   ]
+  reset_requests:
+  [
+    {
+      name: nmi_rst_req
+      module: nmi_gen
+    }
+  ]
   inter_signal:
   {
     signals:
@@ -5384,12 +5425,15 @@
       }
       {
         struct: logic
-        width: 2
+        width: 1
         type: uni
         name: rstreqs
         act: rcv
         package: ""
         inst_name: pwrmgr
+        default: ""
+        top_type: broadcast
+        top_signame: pwrmgr_rstreqs
         index: -1
       }
       {
@@ -5451,15 +5495,6 @@
         width: 1
         default: ""
         top_signame: rstmgr_cpu
-        index: -1
-      }
-      {
-        struct: rstmgr_peri
-        type: uni
-        name: peri
-        act: rcv
-        package: rstmgr_pkg
-        inst_name: rstmgr
         index: -1
       }
       {
@@ -5607,6 +5642,18 @@
         width: 1
         default: ""
         top_signame: clkmgr_tl
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: nmi_rst_req
+        act: req
+        package: ""
+        default: 1'b0
+        inst_name: nmi_gen
+        width: 1
+        top_signame: pwrmgr_rstreqs
         index: -1
       }
       {
@@ -6443,6 +6490,14 @@
         package: ""
         struct: logic
         signame: pwrmgr_wakeups
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_rstreqs
         width: 1
         type: uni
         default: ""

@@ -10,8 +10,9 @@ package rstmgr_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
-    logic [4:0]  q;
-    logic        qe;
+    struct packed {
+      logic        q;
+    } hw_req;
   } rstmgr_reg2hw_reset_info_reg_t;
 
   typedef struct packed {
@@ -24,7 +25,18 @@ package rstmgr_reg_pkg;
 
 
   typedef struct packed {
-    logic [4:0]  d;
+    struct packed {
+      logic        d;
+      logic        de;
+    } low_power_exit;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ndm_reset;
+    struct packed {
+      logic        d;
+      logic        de;
+    } hw_req;
   } rstmgr_hw2reg_reset_info_reg_t;
 
 
@@ -32,7 +44,7 @@ package rstmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [7:2]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [2:2]
     rstmgr_reg2hw_rst_spi_device_n_reg_t rst_spi_device_n; // [1:1]
     rstmgr_reg2hw_rst_usb_n_reg_t rst_usb_n; // [0:0]
   } rstmgr_reg2hw_t;
@@ -41,7 +53,7 @@ package rstmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [4:-1]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [5:5]
   } rstmgr_hw2reg_t;
 
   // Register Address

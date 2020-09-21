@@ -71,10 +71,18 @@ module rstmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [4:0] reset_info_qs;
-  logic [4:0] reset_info_wd;
-  logic reset_info_we;
-  logic reset_info_re;
+  logic reset_info_por_qs;
+  logic reset_info_por_wd;
+  logic reset_info_por_we;
+  logic reset_info_low_power_exit_qs;
+  logic reset_info_low_power_exit_wd;
+  logic reset_info_low_power_exit_we;
+  logic reset_info_ndm_reset_qs;
+  logic reset_info_ndm_reset_wd;
+  logic reset_info_ndm_reset_we;
+  logic reset_info_hw_req_qs;
+  logic reset_info_hw_req_wd;
+  logic reset_info_hw_req_we;
   logic spi_device_regen_qs;
   logic spi_device_regen_wd;
   logic spi_device_regen_we;
@@ -89,19 +97,109 @@ module rstmgr_reg_top (
   logic rst_usb_n_we;
 
   // Register instances
-  // R[reset_info]: V(True)
+  // R[reset_info]: V(False)
 
-  prim_subreg_ext #(
-    .DW    (5)
-  ) u_reset_info (
-    .re     (reset_info_re),
-    .we     (reset_info_we),
-    .wd     (reset_info_wd),
-    .d      (hw2reg.reset_info.d),
-    .qre    (),
-    .qe     (reg2hw.reset_info.qe),
-    .q      (reg2hw.reset_info.q ),
-    .qs     (reset_info_qs)
+  //   F[por]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_reset_info_por (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_por_we),
+    .wd     (reset_info_por_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_por_qs)
+  );
+
+
+  //   F[low_power_exit]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_low_power_exit (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_low_power_exit_we),
+    .wd     (reset_info_low_power_exit_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.low_power_exit.de),
+    .d      (hw2reg.reset_info.low_power_exit.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_low_power_exit_qs)
+  );
+
+
+  //   F[ndm_reset]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_ndm_reset (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_ndm_reset_we),
+    .wd     (reset_info_ndm_reset_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.ndm_reset.de),
+    .d      (hw2reg.reset_info.ndm_reset.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_ndm_reset_qs)
+  );
+
+
+  //   F[hw_req]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_hw_req (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_hw_req_we),
+    .wd     (reset_info_hw_req_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.hw_req.de),
+    .d      (hw2reg.reset_info.hw_req.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_info.hw_req.q ),
+
+    // to register interface (read)
+    .qs     (reset_info_hw_req_qs)
   );
 
 
@@ -237,9 +335,17 @@ module rstmgr_reg_top (
     if (addr_hit[4] && reg_we && (RSTMGR_PERMIT[4] != (RSTMGR_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign reset_info_we = addr_hit[0] & reg_we & ~wr_err;
-  assign reset_info_wd = reg_wdata[4:0];
-  assign reset_info_re = addr_hit[0] && reg_re;
+  assign reset_info_por_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_por_wd = reg_wdata[0];
+
+  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_low_power_exit_wd = reg_wdata[1];
+
+  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_ndm_reset_wd = reg_wdata[2];
+
+  assign reset_info_hw_req_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_hw_req_wd = reg_wdata[3];
 
   assign spi_device_regen_we = addr_hit[1] & reg_we & ~wr_err;
   assign spi_device_regen_wd = reg_wdata[0];
@@ -258,7 +364,10 @@ module rstmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[4:0] = reset_info_qs;
+        reg_rdata_next[0] = reset_info_por_qs;
+        reg_rdata_next[1] = reset_info_low_power_exit_qs;
+        reg_rdata_next[2] = reset_info_ndm_reset_qs;
+        reg_rdata_next[3] = reset_info_hw_req_qs;
       end
 
       addr_hit[1]: begin

@@ -8,6 +8,7 @@ package pwrmgr_reg_pkg;
 
   // Param list
   parameter int NumWkups = 1;
+  parameter int NumRstReqs = 1;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -50,8 +51,8 @@ package pwrmgr_reg_pkg;
   } pwrmgr_reg2hw_wakeup_en_mreg_t;
 
   typedef struct packed {
-    logic [1:0]  q;
-  } pwrmgr_reg2hw_reset_en_reg_t;
+    logic        q;
+  } pwrmgr_reg2hw_reset_en_mreg_t;
 
   typedef struct packed {
     logic        q;
@@ -95,6 +96,16 @@ package pwrmgr_reg_pkg;
   } pwrmgr_hw2reg_cfg_cdc_sync_reg_t;
 
   typedef struct packed {
+    logic        d;
+    logic        de;
+  } pwrmgr_hw2reg_wake_status_mreg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } pwrmgr_hw2reg_reset_status_mreg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
     } reasons;
@@ -111,13 +122,13 @@ package pwrmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [19:19]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [18:18]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [17:16]
-    pwrmgr_reg2hw_control_reg_t control; // [15:12]
-    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [11:10]
-    pwrmgr_reg2hw_wakeup_en_mreg_t [0:0] wakeup_en; // [9:9]
-    pwrmgr_reg2hw_reset_en_reg_t reset_en; // [8:7]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [18:18]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [17:17]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [16:15]
+    pwrmgr_reg2hw_control_reg_t control; // [14:11]
+    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [10:9]
+    pwrmgr_reg2hw_wakeup_en_mreg_t [0:0] wakeup_en; // [8:8]
+    pwrmgr_reg2hw_reset_en_mreg_t [0:0] reset_en; // [7:7]
     pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [6:6]
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [5:0]
   } pwrmgr_reg2hw_t;
@@ -126,10 +137,12 @@ package pwrmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [9:9]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [8:9]
-    pwrmgr_hw2reg_control_reg_t control; // [8:5]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [4:3]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [13:13]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [12:13]
+    pwrmgr_hw2reg_control_reg_t control; // [12:9]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [8:7]
+    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [6:5]
+    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [4:3]
     pwrmgr_hw2reg_wake_info_reg_t wake_info; // [2:-3]
   } pwrmgr_hw2reg_t;
 

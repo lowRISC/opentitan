@@ -106,10 +106,10 @@ module pwrmgr_reg_top (
   logic reset_en_regwen_qs;
   logic reset_en_regwen_wd;
   logic reset_en_regwen_we;
-  logic [1:0] reset_en_qs;
-  logic [1:0] reset_en_wd;
+  logic reset_en_qs;
+  logic reset_en_wd;
   logic reset_en_we;
-  logic [1:0] reset_status_qs;
+  logic reset_status_qs;
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
   logic wake_info_capture_dis_we;
@@ -406,8 +406,28 @@ module pwrmgr_reg_top (
   // Subregister 0 of Multireg wake_status
   // R[wake_status]: V(False)
 
-  // constant-only read
-  assign wake_status_qs = 1'h0;
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_wake_status (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.wake_status[0].de),
+    .d      (hw2reg.wake_status[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (wake_status_qs)
+  );
 
 
   // R[reset_en_regwen]: V(False)
@@ -437,12 +457,14 @@ module pwrmgr_reg_top (
   );
 
 
+
+  // Subregister 0 of Multireg reset_en
   // R[reset_en]: V(False)
 
   prim_subreg #(
-    .DW      (2),
+    .DW      (1),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (1'h0)
   ) u_reset_en (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -457,17 +479,39 @@ module pwrmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en.q ),
+    .q      (reg2hw.reset_en[0].q ),
 
     // to register interface (read)
     .qs     (reset_en_qs)
   );
 
 
+
+  // Subregister 0 of Multireg reset_status
   // R[reset_status]: V(False)
 
-  // constant-only read
-  assign reset_status_qs = 2'h0;
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_reset_status (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.reset_status[0].de),
+    .d      (hw2reg.reset_status[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_status_qs)
+  );
 
 
   // R[wake_info_capture_dis]: V(False)
@@ -623,7 +667,7 @@ module pwrmgr_reg_top (
   assign reset_en_regwen_wd = reg_wdata[0];
 
   assign reset_en_we = addr_hit[10] & reg_we & ~wr_err;
-  assign reset_en_wd = reg_wdata[1:0];
+  assign reset_en_wd = reg_wdata[0];
 
 
   assign wake_info_capture_dis_we = addr_hit[12] & reg_we & ~wr_err;
@@ -689,11 +733,11 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[1:0] = reset_en_qs;
+        reg_rdata_next[0] = reset_en_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[1:0] = reset_status_qs;
+        reg_rdata_next[0] = reset_status_qs;
       end
 
       addr_hit[12]: begin

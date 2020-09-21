@@ -40,9 +40,6 @@ module rstmgr import rstmgr_pkg::*; (
   // cpu related inputs
   input rstmgr_cpu_t cpu_i,
 
-  // peripheral reset requests
-  input rstmgr_peri_t peri_i,
-
   // Interface to alert handler
 
   // reset outputs
@@ -67,12 +64,16 @@ module rstmgr import rstmgr_pkg::*; (
   // Register Interface                             //
   ////////////////////////////////////////////////////
 
+  // local_rst_n is the reset used by the rstmgr for its internal logic
+  logic local_rst_n;
+  assign local_rst_n = resets_o.rst_por_io_div2_n;
+
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
 
   rstmgr_reg_top u_reg (
     .clk_i,
-    .rst_ni(resets_o.rst_por_io_div2_n),
+    .rst_ni(local_rst_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -92,7 +93,7 @@ module rstmgr import rstmgr_pkg::*; (
     .ResetValue('0)
   ) u_sync (
     .clk_i,
-    .rst_ni(resets_o.rst_por_io_div2_n),
+    .rst_ni(local_rst_n),
     .d_i(cpu_i.ndmreset_req),
     .q_o(ndmreset_req_q)
   );
@@ -117,7 +118,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) u_lc_src (
     .clk_i,
-    .rst_ni(resets_o.rst_por_io_div2_n),
+    .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -128,7 +129,7 @@ module rstmgr import rstmgr_pkg::*; (
     .PowerDomains(PowerDomains)
   ) u_sys_src (
     .clk_i,
-    .rst_ni(resets_o.rst_por_io_div2_n),
+    .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -277,30 +278,50 @@ module rstmgr import rstmgr_pkg::*; (
   // Reset info construction                        //
   ////////////////////////////////////////////////////
 
-  logic [ResetReasons-1:0] rst_reqs;
   logic rst_hw_req;
   logic rst_low_power;
+  logic rst_ndm;
+  logic rst_cpu_nq;
+  logic first_reset;
 
-  assign rst_hw_req = pwr_i.reset_cause == pwrmgr_pkg::HwReq;
-  assign rst_low_power = pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry;
+  // The qualification of first reset below could technically be POR as well.
+  // However, that would enforce software to clear POR upon cold power up.  While that is
+  // the most likely outcome anyways, hardware should not require that.
+  assign rst_hw_req    = ~first_reset & pwr_i.reset_cause == pwrmgr_pkg::HwReq;
+  assign rst_ndm       = ~first_reset & ndm_req_valid;
+  assign rst_low_power = ~first_reset & pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry;
 
-  assign rst_reqs = {
-                    ndm_req_valid,
-                    rst_hw_req ? peri_i.rst_reqs : ExtResetReasons'(0),
-                    rst_low_power
-                    };
-
-  rstmgr_info #(
-    .Reasons(ResetReasons)
-  ) i_info (
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_cpu_reset_synced (
     .clk_i,
-    .rst_ni(rst_por_aon_n),
-    .rst_cpu_ni(cpu_i.rst_cpu_n),
-    .rst_req_i(rst_reqs),
-    .wr_i(reg2hw.reset_info.qe),
-    .data_i(reg2hw.reset_info.q),
-    .rst_reasons_o(hw2reg.reset_info)
+    .rst_ni(local_rst_n),
+    .d_i(cpu_i.rst_cpu_n),
+    .q_o(rst_cpu_nq)
   );
+
+  // first reset is a flag that blocks reset recording until first de-assertion
+  always_ff @(posedge clk_i or negedge local_rst_n) begin
+    if (!local_rst_n) begin
+      first_reset <= 1'b1;
+    end else if (rst_cpu_nq) begin
+      first_reset <= 1'b0;
+    end
+  end
+
+  // Only sw is allowed to clear a reset reason, hw is only allowed to set it.
+  assign hw2reg.reset_info.low_power_exit.d  = 1'b1;
+  assign hw2reg.reset_info.low_power_exit.de = rst_low_power;
+
+  assign hw2reg.reset_info.ndm_reset.d  = 1'b1;
+  assign hw2reg.reset_info.ndm_reset.de = rst_ndm;
+
+  // HW reset requests most likely will be multi-bit, so OR in whatever reasons
+  // that are already set.
+  assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs | reg2hw.reset_info.hw_req.q;
+  assign hw2reg.reset_info.hw_req.de = rst_hw_req;
+
 
   ////////////////////////////////////////////////////
   // Exported resets                                //
