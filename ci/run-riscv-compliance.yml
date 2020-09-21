@@ -26,13 +26,5 @@ jobs:
     - ${{ each test_suite in parameters.rvc_test_suites }}:
       - bash: |
           set -e
-          . util/build_consts.sh
-          export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
-          export RISCV_DEVICE=rv32imc
-          export RISCV_TARGET=opentitan
-          export OT_BIN="$BIN_DIR"
-          export OT_TARGET=sim_verilator
-          export OT_TOOLS="$TOOLCHAIN_PATH/bin"
-          cd sw/vendor/riscv_compliance
-          make RISCV_ISA=${{ test_suite }} VERBOSE=1
+          ci/run_riscv_compliance.sh ${{ test_suite }}
         displayName: Execute ${{ test_suite }}
