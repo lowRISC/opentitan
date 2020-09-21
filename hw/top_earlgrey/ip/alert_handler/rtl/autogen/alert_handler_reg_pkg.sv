@@ -10,7 +10,6 @@ package alert_handler_reg_pkg;
   parameter int NAlerts = 14;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter int LfsrSeed = 2147483647;
   parameter logic [NAlerts-1:0] AsyncOn = 14'b01111111000000;
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;

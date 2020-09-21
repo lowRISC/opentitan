@@ -16,7 +16,6 @@
 #  - n_alerts:    Number of alert sources
 #  - esc_cnt_dw:  Width of escalation counter
 #  - accu_cnt_dw: Width of accumulator
-#  - lfsr_seed:   Seed for LFSR timer
 #  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
 #  - n_classes:   Number of supported classes (leave this at 4 at the moment)
 
@@ -43,12 +42,6 @@
       desc: "Number of peripheral outputs",
       type: "int",
       default: "16",
-      local: "true"
-    },
-    { name: "LfsrSeed",
-      desc: "Number of peripheral outputs",
-      type: "int",
-      default: "2147483647",
       local: "true"
     },
     { name: "AsyncOn",
