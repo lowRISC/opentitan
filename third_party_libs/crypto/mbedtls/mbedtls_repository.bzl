@@ -3,6 +3,10 @@ VERSIONS = {
         "commit": "0fce215851cc069c5b5def12fcc18725055fa6cf",
         "sha256": "4e43a01d4a6198bfb7de9f7daf52957a422379b53dab15b6aa928e9a8f58cae9",
     },
+    "mbedtls-2.24.0": {
+        "commit": "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8",
+        "sha256": "d7b129288a957b1936ade3921504d5524e34a0dbe9f4d965df3416db9cfe0dae",
+    },
 }
 
 def _mbedtls_repository_impl(rctx):
