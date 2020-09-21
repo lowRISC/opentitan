@@ -9,10 +9,10 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/uart.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");
@@ -75,10 +75,17 @@ void demo_spi_to_log_echo(const dif_spi_device_t *spi) {
   }
 }
 
-void demo_uart_to_uart_and_gpio_echo(dif_gpio_t *gpio) {
-  char rcv_char;
-  while (uart_rcv_char(&rcv_char) != -1) {
-    uart_send_char(rcv_char);
+void demo_uart_to_uart_and_gpio_echo(dif_uart_t *uart, dif_gpio_t *gpio) {
+  while (true) {
+    size_t chars_available;
+    if (dif_uart_rx_bytes_available(uart, &chars_available) != kDifUartOk ||
+        chars_available == 0) {
+      break;
+    }
+
+    uint8_t rcv_char;
+    CHECK(dif_uart_bytes_receive(uart, 1, &rcv_char, NULL) == kDifUartOk);
+    CHECK(dif_uart_byte_send_polled(uart, rcv_char) == kDifUartOk);
     CHECK(dif_gpio_write_all(gpio, rcv_char << 8) == kDifGpioOk);
   }
 }

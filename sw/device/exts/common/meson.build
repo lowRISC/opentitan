@@ -43,6 +43,7 @@ riscv_crt = declare_dependency(
     freestanding_headers,
     sw_lib_mem,
     sw_lib_irq,
+    top_earlgrey,
   ],
   # This argument exists solely so that Meson realizes that riscv_linker_script
   # is part of the dependency graph. This seems to be the only way to convince

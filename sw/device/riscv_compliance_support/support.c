@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/print.h"
 

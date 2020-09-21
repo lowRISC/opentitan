@@ -15,7 +15,6 @@
 #include <stddef.h>
 
 #include "sw/device/lib/common.h"
-#include "sw/device/lib/uart.h"
 
 extern unsigned int _stack_start;
 

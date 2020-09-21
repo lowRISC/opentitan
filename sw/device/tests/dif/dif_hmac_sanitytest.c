@@ -10,7 +10,6 @@
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_main.h"
-#include "sw/device/lib/uart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

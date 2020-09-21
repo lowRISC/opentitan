@@ -10,8 +10,8 @@ sw_examples_demos = declare_dependency(
       sw_lib_runtime_hart,
       sw_lib_dif_gpio,
       sw_lib_dif_spi_device,
-      sw_lib_uart,
       sw_lib_runtime_log,
+      sw_lib_dif_uart,
     ],
   )
 )
