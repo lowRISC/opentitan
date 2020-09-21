@@ -28,8 +28,15 @@
 `include "prim_assert.sv"
 
 module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
-  parameter logic [TimerWidth-1:0] LfsrSeed     = TimerWidth'(1'b1),
-  parameter int                    EntropyWidth = 8
+  parameter logic [TimerWidth-1:0]       LfsrSeed     = TimerWidth'(1'b1),
+  parameter logic [TimerWidth-1:0][31:0] LfsrPerm     = {
+    32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
+    32'd05, 32'd39, 32'd31, 32'd21, 32'd15, 32'd01, 32'd24, 32'd37,
+    32'd32, 32'd38, 32'd26, 32'd34, 32'd08, 32'd10, 32'd04, 32'd02,
+    32'd19, 32'd00, 32'd20, 32'd06, 32'd25, 32'd22, 32'd03, 32'd35,
+    32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
+  },
+  parameter int                          EntropyWidth = 8
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -54,13 +61,15 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   //////////
 
   logic lfsr_en;
-  logic [TimerWidth-1:0] lfsr_state, perm_state;
+  logic [TimerWidth-1:0] lfsr_state;
 
   prim_lfsr #(
     .LfsrDw      ( TimerWidth   ),
     .EntropyDw   ( EntropyWidth ),
     .StateOutDw  ( TimerWidth   ),
     .DefaultSeed ( LfsrSeed     ),
+    .StatePermEn ( 1'b1         ),
+    .StatePerm   ( LfsrPerm     ),
     .ExtSeedSVA  ( 1'b0         ) // ext seed is unused
   ) i_prim_lfsr (
     .clk_i,
@@ -71,21 +80,6 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     .entropy_i  ( entropy_i & {EntropyWidth{entropy_en_i}} ),
     .state_o    ( lfsr_state )
   );
-
-  // This random permutation is meant to break the linear
-  // shifting pattern of the LFSR.
-  localparam int unsigned Perm [TimerWidth] = '{
-    13, 17, 29, 11, 28, 12, 33, 27,
-     5, 39, 31, 21, 15,  1, 24, 37,
-    32, 38, 26, 34,  8, 10,  4,  2,
-    19,  0, 20,  6, 25, 22,  3, 35,
-    16, 14, 23,  7, 30,  9, 18, 36
-  };
-
-  for (genvar k = 0; k < 32; k++) begin : gen_perm
-    assign perm_state[k] = lfsr_state[Perm[k]];
-  end
-
 
   //////////////
   // Counters //
