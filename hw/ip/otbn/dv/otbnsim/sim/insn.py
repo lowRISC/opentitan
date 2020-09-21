@@ -585,8 +585,10 @@ class BNAND(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs2],
                              self.shift_type, self.shift_bytes)
-        a = state.wreg[self.wrs1]
-        state.wreg[self.wrd] = a & b_shifted
+        a = state.wreg[self.wrs1].unsigned()
+        result = a & b_shifted
+        state.wreg[self.wrd] = result
+        state.update_mlz_flags(0, result)
 
 
 class BNOR(OTBNInsn):
@@ -604,7 +606,9 @@ class BNOR(OTBNInsn):
         b_shifted = ShiftReg(state.wreg[self.wrs2],
                              self.shift_type, self.shift_bytes)
         a = state.wreg[self.wrs1]
-        state.wreg[self.wrd] = a | b_shifted
+        result = a | b_shifted
+        state.wreg[self.wrd] = result
+        state.update_mlz_flags(0, result)
 
 
 class BNNOT(OTBNInsn):
@@ -620,7 +624,9 @@ class BNNOT(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs],
                              self.shift_type, self.shift_bytes)
-        state.wreg[self.wrd] = ~b_shifted
+        result = ~b_shifted
+        state.wreg[self.wrd] = result
+        state.update_mlz_flags(0, result)
 
 
 class BNXOR(OTBNInsn):
@@ -638,7 +644,9 @@ class BNXOR(OTBNInsn):
         b_shifted = ShiftReg(state.wreg[self.wrs2],
                              self.shift_type, self.shift_bytes)
         a = state.wreg[self.wrs1]
-        state.wreg[self.wrd] = a ^ b_shifted
+        result = a ^ b_shifted
+        state.wreg[self.wrd] = result
+        state.update_mlz_flags(0, result)
 
 
 class BNRSHI(OTBNInsn):
