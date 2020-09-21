@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:prim_dom_and_2share
       - lowrisc:prim:assert
+      - lowrisc:ip:tlul
     files:
       - rtl/kmac_pkg.sv
       - rtl/keccak_round.sv
