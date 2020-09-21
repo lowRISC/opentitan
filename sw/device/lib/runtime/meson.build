@@ -36,6 +36,7 @@ sw_lib_runtime_print = declare_dependency(
     sources: ['print.c'],
     dependencies: [
       sw_lib_mem,
+      sw_lib_dif_uart,
     ],
   )
 )

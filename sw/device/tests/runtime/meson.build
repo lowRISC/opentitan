@@ -6,7 +6,7 @@ test('runtime_print_unittest', executable(
   'runtime_print_unittest',
   sources: [
     meson.source_root() / 'sw/device/lib/runtime/print.c',
-    'print_unittest.cc'
+    'print_unittest.cc',
   ],
   dependencies: [
     sw_vendor_gtest,
