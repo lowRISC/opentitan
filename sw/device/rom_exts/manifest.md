@@ -163,13 +163,20 @@ Notes:
 1.  **Signature Algorithm Identifier** This identifies which algorithm has been
     used to sign the ROM_EXT Image. This is a 32-bit enumeration value.
 
-    **Open Q**: Are we supporting multiple signing algorithms for ROM_EXTs? This
-    complicates the Mask ROM significantly.
+    This is used when signing and validating the image. This happens in the
+    Mask ROM, as well as during firmware update.
 
     `0x0` denotes an unsigned image. Unsigned images **must not** be booted.
 
-    This is used when signing and validating the image. This happens in the
-    Mask ROM, as well as during firmware update.
+    The initial version of the Mask ROM will support the following message
+    digest algorithms:
+
+    *   SHA2-265
+    *   SHA2-384
+    *   SHA2-512
+
+    The specific signature scheme is as yet undefined, but will be based on
+    RSA-3k, and one of the message digest algorithms above.
 
 1.  **Signature Exponent** This is the RSA exponent to be used during the RSA
     3K Signature Scheme. This is a 32-bit numeric value.
@@ -222,16 +229,18 @@ Notes:
     Each Offset field is a 32-bit unsigned numeric value. Each Checksum field is
     a 32-bit numeric value.
 
-    **Open Q** It makes sense, once we fully understand the alignment
-    requirements, to fill the rest of the manifest with these pairs, so we may
-    end with more than 4 of these entries in the first production Mask ROM.
+    Extension pairs may be *allocated* a specific use. These fields should be
+    treated as Reserved until they are allocated. Once an extension pair has an
+    allocated use, it will not be used for any other use, unless the Manifest
+    Image Identifier also changes (In this way, the Identifier also works as a
+    versioning token for the manifest format). When an extension pair is
+    allocated, the extension may define an alignment requirement for the its
+    data. The extension's data must be at least byte-aligned.
 
-    These extensions will not be allocated in the initial version of the
-    ROM_EXT. Once an Extension slot has an allocated use, it will not be used
-    for any other use, for a given Manifest Image Identifier. In this way, the
-    Identifier also works as a versioning token for the manifest format.
-
-    These fields should be treated as Reserved until they are allocated.
+    **Open Q** We could allocate more of these pairs, as we have quite a few
+    bytes between the end of the last pair, and the first 256-byte-aligned
+    address in the code image (see the Code Image field description.). Do we
+    want to?
 
 1.  **Code Image** This is a sequence of bytes that make up the code and data of
     the ROM_EXT image. This data will include any data required for Extensions.
@@ -289,7 +298,7 @@ Notes:
 **ROM_EXT Manifest Identifier**: `0x4552544F` (Reads "OTRE" when Disassembled --
 OpenTitan ROM_EXT)
 
-**Signature Algorithm Identifier**: `0x1` denotes RSA 3K.
+**Signature Algorithm Identifier**: TBC
 
 **Signature Exponent**: TBC
 
@@ -298,13 +307,13 @@ but this will not be used in production software.
 
 **Extension Allocation**:
 
-Extension 0: Not Allocated
+| Identifier   | Pair | Use           | Length | Alignment |
+|--------------|------|---------------|--------|-----------|
+| `0x4552544F` | 0    | *Unallocated* |        |           |
+| `0x4552544F` | 1    | *Unallocated* |        |           |
+| `0x4552544F` | 2    | *Unallocated* |        |           |
+| `0x4552544F` | 3    | *Unallocated* |        |           |
 
-Extension 1: Not Allocated
-
-Extension 2: Not Allocated
-
-Extension 3: Not Allocated
 
 
 ## Software Deliverables
