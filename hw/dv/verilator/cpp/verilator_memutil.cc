@@ -112,18 +112,25 @@ static MemImageType GetMemImageTypeByName(const std::string &name) {
   return kMemImageUnknown;
 }
 
-// Return a MemImageType for the file at filepath, or kMemImageUnknown if not
-// known.
+// Return a MemImageType for the file at filepath or throw a std::runtime_error.
+// Never returns kMemImageUnknown.
 static MemImageType DetectMemImageType(const std::string &filepath) {
   size_t ext_pos = filepath.find_last_of(".");
-  std::string ext = filepath.substr(ext_pos + 1);
-
   if (ext_pos == std::string::npos) {
     // Assume ELF files if no file extension is given.
     // TODO: Make this more robust by actually checking the file contents.
     return kMemImageElf;
   }
-  return GetMemImageTypeByName(ext);
+
+  std::string ext = filepath.substr(ext_pos + 1);
+  MemImageType image_type = GetMemImageTypeByName(ext);
+  if (image_type == kMemImageUnknown) {
+    std::ostringstream oss;
+    oss << "Cannot auto-detect file type for `" << filepath << "'.";
+    throw std::runtime_error(oss.str());
+  }
+
+  return image_type;
 }
 
 // Parse a meminit command-line argument. This should be of the form
@@ -168,11 +175,6 @@ static bool ParseMemArg(std::string mem_argument, std::string &name,
   }
 
   return true;
-}
-
-static bool IsFileReadable(std::string filepath) {
-  struct stat statbuf;
-  return stat(filepath.data(), &statbuf) == 0;
 }
 
 // Generate a single array of bytes representing the contents of PT_LOAD
@@ -269,18 +271,11 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   return buf;
 }
 
-static bool WriteElfToMem(const svScope &scope, const std::string &filepath,
+static void WriteElfToMem(const svScope &scope, const std::string &filepath,
                           size_t size_byte) {
   SVScoped scoped(scope);
 
-  std::vector<uint8_t> elf_data;
-  try {
-    elf_data = FlattenElfFile(filepath);
-  } catch (const ElfError &err) {
-    std::cerr << "ERROR: " << err.what() << std::endl;
-    return false;
-  }
-
+  std::vector<uint8_t> elf_data = FlattenElfFile(filepath);
   size_t data_len = elf_data.size();
 
   // elf_data isn't necessarily a whole number of 256-bit words long. Round it
@@ -293,60 +288,42 @@ static bool WriteElfToMem(const svScope &scope, const std::string &filepath,
   for (int i = 0; i < num_words; ++i) {
     auto *bvv = reinterpret_cast<const svBitVecVal *>(&elf_data[i * size_byte]);
     if (!simutil_verilator_set_mem(i, bvv)) {
-      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
-                << elf_data.size() << std::endl;
-      return false;
+      std::ostringstream oss;
+      oss << "Could not set memory byte: " << i * size_byte << "/"
+          << elf_data.size() << ".";
+      throw std::runtime_error(oss.str());
     }
   }
-
-  return true;
 }
 
-static bool WriteVmemToMem(const svScope &scope, const std::string &filepath) {
+static void WriteVmemToMem(const svScope &scope, const std::string &filepath) {
   SVScoped scoped(scope);
-
   // TODO: Add error handling.
   simutil_verilator_memload(filepath.data());
-
-  return true;
 }
 
-static bool WriteFileToMem(const MemArea &m, const std::string &filepath,
+static void WriteFileToMem(const MemArea &m, const std::string &filepath,
                            MemImageType type) {
-  if (!IsFileReadable(filepath)) {
-    std::cerr << "ERROR: Memory initialization file "
-              << "'" << filepath << "'"
-              << " is not readable." << std::endl;
-    return false;
-  }
+  assert(type != kMemImageUnknown);
 
   svScope scope = svGetScopeFromName(m.location.data());
   if (!scope) {
-    std::cerr << "ERROR: No memory found at " << m.location << std::endl;
-    return false;
+    std::ostringstream oss;
+    oss << "No memory found at `" << m.location
+        << "' (the scope associated with region `" << m.name << "').";
+    throw std::runtime_error(oss.str());
   }
 
   switch (type) {
     case kMemImageElf:
-      if (!WriteElfToMem(scope, filepath, m.width_byte)) {
-        std::cerr << "ERROR: Writing ELF file to memory \"" << m.name << "\" ("
-                  << m.location << ") failed." << std::endl;
-        return false;
-      }
+      WriteElfToMem(scope, filepath, m.width_byte);
       break;
     case kMemImageVmem:
-      if (!WriteVmemToMem(scope, filepath)) {
-        std::cerr << "ERROR: Writing VMEM file to memory \"" << m.name << "\" ("
-                  << m.location << ") failed." << std::endl;
-        return false;
-      }
+      WriteVmemToMem(scope, filepath);
       break;
-    case kMemImageUnknown:
     default:
-      std::cerr << "ERROR: Unknown file type for " << m.name << std::endl;
-      return false;
+      assert(0);
   }
-  return true;
 }
 
 bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
@@ -467,47 +444,42 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
     // Disable error reporting by getopt
     opterr = 0;
 
+    bool do_mem_write = false;
+    std::string mem_name, filepath;
+    MemImageType type = kMemImageUnknown;
+
     switch (c) {
       case 0:
         break;
       case 'r':
-        if (!MemWrite("rom", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
+        mem_name = "rom";
+        filepath = optarg;
+        do_mem_write = true;
         break;
       case 'm':
-        if (!MemWrite("ram", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
+        mem_name = "ram";
+        filepath = optarg;
+        do_mem_write = true;
         break;
       case 'f':
-        if (!MemWrite("flash", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
+        mem_name = "flash";
+        filepath = optarg;
+        do_mem_write = true;
         break;
-      case 'l': {
+      case 'l':
         if (strcasecmp(optarg, "list") == 0) {
           PrintMemRegions();
           exit_app = true;
           return true;
         }
 
-        std::string name;
-        std::string filepath;
-        MemImageType type;
-        if (!ParseMemArg(optarg, name, filepath, type)) {
+        // --meminit / -l
+        do_mem_write = true;
+        if (!ParseMemArg(optarg, mem_name, filepath, type)) {
           std::cerr << "ERROR: Unable to parse meminit arguments." << std::endl;
           return false;
         }
-
-        if (!MemWrite(name, filepath, type)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
-      } break;
+        break;
       case 'h':
         PrintHelp();
         return true;
@@ -518,6 +490,16 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       default:;
         // Ignore unrecognized options since they might be consumed by
         // other utils
+    }
+
+    if (do_mem_write) {
+      try {
+        MemWrite(mem_name, filepath, type);
+      } catch (const std::exception &err) {
+        std::cerr << "ERROR: Unable to initialize memory: " << err.what()
+                  << std::endl;
+        return false;
+      }
     }
   }
 
@@ -540,32 +522,23 @@ void VerilatorMemUtil::PrintMemRegions() const {
   }
 }
 
-bool VerilatorMemUtil::MemWrite(const std::string &name,
-                                const std::string &filepath) {
-  MemImageType type = DetectMemImageType(filepath);
-  if (type == kMemImageUnknown) {
-    std::cerr << "ERROR: Unable to detect file type for: " << filepath
-              << std::endl;
-    // Continuing for more error messages
-  }
-  return MemWrite(name, filepath, type);
-}
-
-bool VerilatorMemUtil::MemWrite(const std::string &name,
+void VerilatorMemUtil::MemWrite(const std::string &name,
                                 const std::string &filepath,
                                 MemImageType type) {
+  // If the image type isn't specified, try to figure it out from the file name
+  if (type == kMemImageUnknown) {
+    type = DetectMemImageType(filepath);
+  }
+  assert(type != kMemImageUnknown);
+
   // Search for corresponding registered memory based on the name
   auto it = name_to_mem_.find(name);
   if (it == name_to_mem_.end()) {
-    std::cerr << "ERROR: Memory location not set for: '" << name << "'"
-              << std::endl;
-    PrintMemRegions();
-    return false;
+    std::ostringstream oss;
+    oss << "`" << name << ("' is not the name of a known memory region. "
+                           "Run with --meminit=list to get a list.");
+    throw std::runtime_error(oss.str());
   }
 
-  if (!WriteFileToMem(it->second, filepath, type)) {
-    std::cerr << "ERROR: Setting memory '" << name << "' failed." << std::endl;
-    return false;
-  }
-  return true;
+  WriteFileToMem(it->second, filepath, type);
 }
