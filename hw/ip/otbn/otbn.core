@@ -42,6 +42,8 @@ filesets:
     file_type: systemVerilogSource
 
   files_model:
+    depend:
+      - lowrisc:dv_verilator:memutil_verilator
     files:
       - dv/model/otbn_model.cc
       - dv/model/iss_wrapper.cc
