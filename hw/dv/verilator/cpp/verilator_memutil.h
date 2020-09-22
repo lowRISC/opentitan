@@ -76,39 +76,9 @@ class VerilatorMemUtil : public SimCtrlExtension {
    */
   void PrintMemRegions() const;
 
-  /**
-   * Print help how to use this tool
-   */
-  void PrintHelp() const;
-
-  /**
-   * Parse argument section specific to memory initialization.
-   *
-   * Must be in the form of: name,file[,type].
-   */
-  bool ParseMemArg(std::string mem_argument, std::string &name,
-                   std::string &filepath, MemImageType &type);
-
-  MemImageType DetectMemImageType(const std::string filepath);
-
-  MemImageType GetMemImageTypeByName(const std::string name);
-
-  bool IsFileReadable(std::string filepath) const;
-
-  /**
-   * Dump an ELF file into a raw binary
-   */
-  bool ElfFileToBinary(const std::string &filepath, uint8_t **data,
-                       size_t &len_bytes) const;
-
   bool MemWrite(const std::string &name, const std::string &filepath);
   bool MemWrite(const std::string &name, const std::string &filepath,
                 MemImageType type);
-  bool MemWrite(const MemArea &m, const std::string &filepath,
-                MemImageType type);
-  bool WriteElfToMem(const svScope &scope, const std::string &filepath,
-                     size_t size_byte);
-  bool WriteVmemToMem(const svScope &scope, const std::string &filepath);
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_

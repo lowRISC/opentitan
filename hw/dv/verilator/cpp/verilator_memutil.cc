@@ -33,119 +33,8 @@ extern void simutil_verilator_memload(const char *file);
 extern int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 }
 
-bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
-                                          const std::string location) {
-  // Default to 32bit width
-  return RegisterMemoryArea(name, location, 32);
-}
-
-bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
-                                          const std::string location,
-                                          size_t width_bit) {
-  MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
-
-  assert((width_bit <= 256) &&
-         "TODO: Memory loading only supported up to 256 bits.");
-
-  auto ret = mem_register_.emplace(name, mem);
-  if (ret.second == false) {
-    std::cerr << "ERROR: Can not register \"" << name << "\" at: \"" << location
-              << "\" (Previously defined at: \"" << ret.first->second.location
-              << "\")" << std::endl;
-    return false;
-  }
-  return true;
-}
-
-bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
-                                         bool &exit_app) {
-  const struct option long_options[] = {
-      {"rominit", required_argument, nullptr, 'r'},
-      {"raminit", required_argument, nullptr, 'm'},
-      {"flashinit", required_argument, nullptr, 'f'},
-      {"meminit", required_argument, nullptr, 'l'},
-      {"help", no_argument, nullptr, 'h'},
-      {nullptr, no_argument, nullptr, 0}};
-
-  // Reset the command parsing index in-case other utils have already parsed
-  // some arguments
-  optind = 1;
-  while (1) {
-    int c = getopt_long(argc, argv, ":r:m:f:l:h", long_options, nullptr);
-    if (c == -1) {
-      break;
-    }
-
-    // Disable error reporting by getopt
-    opterr = 0;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'r':
-        if (!MemWrite("rom", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
-        break;
-      case 'm':
-        if (!MemWrite("ram", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
-        break;
-      case 'f':
-        if (!MemWrite("flash", optarg)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
-        break;
-      case 'l': {
-        if (strcasecmp(optarg, "list") == 0) {
-          PrintMemRegions();
-          exit_app = true;
-          return true;
-        }
-
-        std::string name;
-        std::string filepath;
-        MemImageType type;
-        if (!ParseMemArg(optarg, name, filepath, type)) {
-          std::cerr << "ERROR: Unable to parse meminit arguments." << std::endl;
-          return false;
-        }
-
-        if (!MemWrite(name, filepath, type)) {
-          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
-          return false;
-        }
-      } break;
-      case 'h':
-        PrintHelp();
-        return true;
-      case ':':  // missing argument
-        std::cerr << "ERROR: Missing argument." << std::endl << std::endl;
-        return false;
-      case '?':
-      default:;
-        // Ignore unrecognized options since they might be consumed by
-        // other utils
-    }
-  }
-
-  return true;
-}
-
-void VerilatorMemUtil::PrintMemRegions() const {
-  std::cout << "Registered memory regions:" << std::endl;
-  for (const auto &m : mem_register_) {
-    std::cout << "\t'" << m.second.name << "' (" << m.second.width_bit
-              << "bits) at location: '" << m.second.location << "'"
-              << std::endl;
-  }
-}
-
-void VerilatorMemUtil::PrintHelp() const {
+// Print a usage message to stdout
+static void PrintHelp() {
   std::cout << "Simulation memory utilities:\n\n"
                "-r|--rominit=FILE\n"
                "  Initialize the ROM with FILE (elf/vmem)\n\n"
@@ -162,8 +51,34 @@ void VerilatorMemUtil::PrintHelp() const {
                "  Show help\n\n";
 }
 
-bool VerilatorMemUtil::ParseMemArg(std::string mem_argument, std::string &name,
-                                   std::string &filepath, MemImageType &type) {
+// Convert a string to a MemImageType, returning kMemImageUnknown if it's not a
+// known name.
+static MemImageType GetMemImageTypeByName(const std::string &name) {
+  if (name == "elf")
+    return kMemImageElf;
+  if (name == "vmem")
+    return kMemImageVmem;
+  return kMemImageUnknown;
+}
+
+// Return a MemImageType for the file at filepath, or kMemImageUnknown if not
+// known.
+static MemImageType DetectMemImageType(const std::string &filepath) {
+  size_t ext_pos = filepath.find_last_of(".");
+  std::string ext = filepath.substr(ext_pos + 1);
+
+  if (ext_pos == std::string::npos) {
+    // Assume ELF files if no file extension is given.
+    // TODO: Make this more robust by actually checking the file contents.
+    return kMemImageElf;
+  }
+  return GetMemImageTypeByName(ext);
+}
+
+// Parse a meminit command-line argument. This should be of the form
+// mem_area,file[,type].
+static bool ParseMemArg(std::string mem_argument, std::string &name,
+                        std::string &filepath, MemImageType &type) {
   std::array<std::string, 3> args;
   size_t pos = 0;
   size_t end_pos = 0;
@@ -204,36 +119,13 @@ bool VerilatorMemUtil::ParseMemArg(std::string mem_argument, std::string &name,
   return true;
 }
 
-MemImageType VerilatorMemUtil::DetectMemImageType(const std::string filepath) {
-  size_t ext_pos = filepath.find_last_of(".");
-  std::string ext = filepath.substr(ext_pos + 1);
-
-  if (ext_pos == std::string::npos) {
-    // Assume ELF files if no file extension is given.
-    // TODO: Make this more robust by actually checking the file contents.
-    return kMemImageElf;
-  }
-  return GetMemImageTypeByName(ext);
-}
-
-MemImageType VerilatorMemUtil::GetMemImageTypeByName(const std::string name) {
-  if (name.compare("elf") == 0) {
-    return kMemImageElf;
-  }
-  if (name.compare("vmem") == 0) {
-    return kMemImageVmem;
-  }
-  return kMemImageUnknown;
-}
-
-bool VerilatorMemUtil::IsFileReadable(std::string filepath) const {
+static bool IsFileReadable(std::string filepath) {
   struct stat statbuf;
   return stat(filepath.data(), &statbuf) == 0;
 }
 
-bool VerilatorMemUtil::ElfFileToBinary(const std::string &filepath,
-                                       uint8_t **data,
-                                       size_t &len_bytes) const {
+static bool ElfFileToBinary(const std::string &filepath, uint8_t **data,
+                            size_t &len_bytes) {
   uint8_t *buf;
   bool retval, any = false;
   GElf_Phdr phdr;
@@ -351,38 +243,59 @@ return_fd_end:
   return retval;
 }
 
-bool VerilatorMemUtil::MemWrite(const std::string &name,
-                                const std::string &filepath) {
-  MemImageType type = DetectMemImageType(filepath);
-  if (type == kMemImageUnknown) {
-    std::cerr << "ERROR: Unable to detect file type for: " << filepath
-              << std::endl;
-    // Continuing for more error messages
+static bool WriteElfToMem(const svScope &scope, const std::string &filepath,
+                          size_t size_byte) {
+  bool retcode;
+  svScope prev_scope = svSetScope(scope);
+
+  uint8_t *buf = nullptr;
+  size_t len_bytes;
+
+  // This "mini buffer" is used to transfer each write to Verilator. It's not
+  // massively efficient, but doing so ensures that we pass 256 bits (32 bytes)
+  // of initialised data each time. This is for simutil_verilator_set_mem
+  // (defined in prim_util_memload.svh), whose "val" argument has SystemVerilog
+  // type bit [255:0].
+  uint8_t minibuf[32];
+  memset(minibuf, 0, sizeof minibuf);
+  assert(size_byte <= sizeof minibuf);
+
+  if (!ElfFileToBinary(filepath, &buf, len_bytes)) {
+    std::cerr << "ERROR: Could not load: " << filepath << std::endl;
+    retcode = false;
+    goto ret;
   }
-  return MemWrite(name, filepath, type);
+  for (int i = 0; i < (len_bytes + size_byte - 1) / size_byte; ++i) {
+    memcpy(minibuf, &buf[size_byte * i], size_byte);
+    if (!simutil_verilator_set_mem(i, (svBitVecVal *)minibuf)) {
+      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
+                << len_bytes << "" << std::endl;
+
+      retcode = false;
+      goto ret;
+    }
+  }
+
+  retcode = true;
+
+ret:
+  svSetScope(prev_scope);
+  free(buf);
+  return retcode;
 }
 
-bool VerilatorMemUtil::MemWrite(const std::string &name,
-                                const std::string &filepath,
-                                MemImageType type) {
-  // Search for corresponding registered memory based on the name
-  auto it = mem_register_.find(name);
-  if (it == mem_register_.end()) {
-    std::cerr << "ERROR: Memory location not set for: '" << name << "'"
-              << std::endl;
-    PrintMemRegions();
-    return false;
-  }
+static bool WriteVmemToMem(const svScope &scope, const std::string &filepath) {
+  svScope prev_scope = svSetScope(scope);
 
-  if (!MemWrite(it->second, filepath, type)) {
-    std::cerr << "ERROR: Setting memory '" << name << "' failed." << std::endl;
-    return false;
-  }
+  // TODO: Add error handling.
+  simutil_verilator_memload(filepath.data());
+
+  svSetScope(prev_scope);
   return true;
 }
 
-bool VerilatorMemUtil::MemWrite(const MemArea &m, const std::string &filepath,
-                                MemImageType type) {
+static bool WriteFileToMem(const MemArea &m, const std::string &filepath,
+                           MemImageType type) {
   if (!IsFileReadable(filepath)) {
     std::cerr << "ERROR: Memory initialization file "
               << "'" << filepath << "'"
@@ -427,55 +340,144 @@ bool VerilatorMemUtil::MemWrite(const MemArea &m, const std::string &filepath,
   return true;
 }
 
-bool VerilatorMemUtil::WriteElfToMem(const svScope &scope,
-                                     const std::string &filepath,
-                                     size_t size_byte) {
-  bool retcode;
-  svScope prev_scope = svSetScope(scope);
+bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
+                                          const std::string location) {
+  // Default to 32bit width
+  return RegisterMemoryArea(name, location, 32);
+}
 
-  uint8_t *buf = nullptr;
-  size_t len_bytes;
+bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
+                                          const std::string location,
+                                          size_t width_bit) {
+  MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
 
-  // This "mini buffer" is used to transfer each write to Verilator. It's not
-  // massively efficient, but doing so ensures that we pass 256 bits (32 bytes)
-  // of initialised data each time. This is for simutil_verilator_set_mem
-  // (defined in prim_util_memload.svh), whose "val" argument has SystemVerilog
-  // type bit [255:0].
-  uint8_t minibuf[32];
-  memset(minibuf, 0, sizeof minibuf);
-  assert(size_byte <= sizeof minibuf);
+  assert((width_bit <= 256) &&
+         "TODO: Memory loading only supported up to 256 bits.");
 
-  if (!ElfFileToBinary(filepath, &buf, len_bytes)) {
-    std::cerr << "ERROR: Could not load: " << filepath << std::endl;
-    retcode = false;
-    goto ret;
+  auto ret = mem_register_.emplace(name, mem);
+  if (ret.second == false) {
+    std::cerr << "ERROR: Can not register \"" << name << "\" at: \"" << location
+              << "\" (Previously defined at: \"" << ret.first->second.location
+              << "\")" << std::endl;
+    return false;
   }
-  for (int i = 0; i < (len_bytes + size_byte - 1) / size_byte; ++i) {
-    memcpy(minibuf, &buf[size_byte * i], size_byte);
-    if (!simutil_verilator_set_mem(i, (svBitVecVal *)minibuf)) {
-      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
-                << len_bytes << "" << std::endl;
+  return true;
+}
 
-      retcode = false;
-      goto ret;
+bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
+                                         bool &exit_app) {
+  const struct option long_options[] = {
+      {"rominit", required_argument, nullptr, 'r'},
+      {"raminit", required_argument, nullptr, 'm'},
+      {"flashinit", required_argument, nullptr, 'f'},
+      {"meminit", required_argument, nullptr, 'l'},
+      {"help", no_argument, nullptr, 'h'},
+      {nullptr, no_argument, nullptr, 0}};
+
+  // Reset the command parsing index in-case other utils have already parsed
+  // some arguments
+  optind = 1;
+  while (1) {
+    int c = getopt_long(argc, argv, ":r:m:f:l:h", long_options, nullptr);
+    if (c == -1) {
+      break;
+    }
+
+    // Disable error reporting by getopt
+    opterr = 0;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'r':
+        if (!MemWrite("rom", optarg)) {
+          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
+          return false;
+        }
+        break;
+      case 'm':
+        if (!MemWrite("ram", optarg)) {
+          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
+          return false;
+        }
+        break;
+      case 'f':
+        if (!MemWrite("flash", optarg)) {
+          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
+          return false;
+        }
+        break;
+      case 'l': {
+        if (strcasecmp(optarg, "list") == 0) {
+          PrintMemRegions();
+          exit_app = true;
+          return true;
+        }
+
+        std::string name;
+        std::string filepath;
+        MemImageType type;
+        if (!ParseMemArg(optarg, name, filepath, type)) {
+          std::cerr << "ERROR: Unable to parse meminit arguments." << std::endl;
+          return false;
+        }
+
+        if (!MemWrite(name, filepath, type)) {
+          std::cerr << "ERROR: Unable to initialize memory." << std::endl;
+          return false;
+        }
+      } break;
+      case 'h':
+        PrintHelp();
+        return true;
+      case ':':  // missing argument
+        std::cerr << "ERROR: Missing argument." << std::endl << std::endl;
+        return false;
+      case '?':
+      default:;
+        // Ignore unrecognized options since they might be consumed by
+        // other utils
     }
   }
 
-  retcode = true;
-
-ret:
-  svSetScope(prev_scope);
-  free(buf);
-  return retcode;
+  return true;
 }
 
-bool VerilatorMemUtil::WriteVmemToMem(const svScope &scope,
-                                      const std::string &filepath) {
-  svScope prev_scope = svSetScope(scope);
+void VerilatorMemUtil::PrintMemRegions() const {
+  std::cout << "Registered memory regions:" << std::endl;
+  for (const auto &m : mem_register_) {
+    std::cout << "\t'" << m.second.name << "' (" << m.second.width_bit
+              << "bits) at location: '" << m.second.location << "'"
+              << std::endl;
+  }
+}
 
-  // TODO: Add error handling.
-  simutil_verilator_memload(filepath.data());
+bool VerilatorMemUtil::MemWrite(const std::string &name,
+                                const std::string &filepath) {
+  MemImageType type = DetectMemImageType(filepath);
+  if (type == kMemImageUnknown) {
+    std::cerr << "ERROR: Unable to detect file type for: " << filepath
+              << std::endl;
+    // Continuing for more error messages
+  }
+  return MemWrite(name, filepath, type);
+}
 
-  svSetScope(prev_scope);
+bool VerilatorMemUtil::MemWrite(const std::string &name,
+                                const std::string &filepath,
+                                MemImageType type) {
+  // Search for corresponding registered memory based on the name
+  auto it = mem_register_.find(name);
+  if (it == mem_register_.end()) {
+    std::cerr << "ERROR: Memory location not set for: '" << name << "'"
+              << std::endl;
+    PrintMemRegions();
+    return false;
+  }
+
+  if (!WriteFileToMem(it->second, filepath, type)) {
+    std::cerr << "ERROR: Setting memory '" << name << "' failed." << std::endl;
+    return false;
+  }
   return true;
 }
