@@ -89,8 +89,21 @@ class VerilatorMemUtil : public SimCtrlExtension {
    */
   void PrintMemRegions() const;
 
-  void MemWrite(bool verbose, const std::string &name, const std::string &filepath,
-                MemImageType type);
+  /**
+   * Load the file at filepath into the named memory. If type is
+   * kMemImageUnknown, the file type is determined from the path.
+   */
+  void LoadFileToNamedMem(bool verbose, const std::string &name,
+                          const std::string &filepath, MemImageType type);
+  /**
+   * Load an ELF file, placing segments in memories by LMA
+   */
+  void LoadElfToMemories(bool verbose, const std::string &filepath);
+
+  /**
+   * Try to find a region for the given LMA. Returns nullptr if none is found.
+   */
+  const MemArea *FindRegionForAddr(uint32_t lma) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
