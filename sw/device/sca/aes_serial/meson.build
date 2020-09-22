@@ -12,7 +12,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_dif_rv_timer,
       riscv_crt,
       sw_lib_aes,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
       sw_lib_dif_gpio,
       sw_lib_irq_handlers,
       sw_lib_irq,

@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/runtime/print.h"
 
 void uart_send_char(char c);
 

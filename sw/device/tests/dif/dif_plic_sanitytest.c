@@ -4,13 +4,13 @@
 
 #include "sw/device/lib/dif/dif_plic.h"
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/testing/test_status.h"
 

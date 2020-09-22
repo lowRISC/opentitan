@@ -5,8 +5,8 @@
 #include "sw/device/lib/testing/test_main.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_coverage.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"

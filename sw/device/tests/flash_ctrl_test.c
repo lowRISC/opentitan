@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/flash_ctrl.h"
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_main.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \

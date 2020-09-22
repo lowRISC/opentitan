@@ -4,13 +4,13 @@
 
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/uart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -130,7 +130,7 @@ static void print_cmd_response(const char cmd_tag, const char *data,
                                size_t data_len) {
   static const char b2a_hex_values[16] = "0123456789ABCDEF";
 
-  // TODO: Switch to sw/device/lib/base/print.h
+  // TODO: Switch to sw/device/lib/runtime/print.h
   uart_send_char(cmd_tag);
   for (int i = 0; i < data_len; ++i) {
     uart_send_char(b2a_hex_values[data[i] >> 4]);

@@ -11,6 +11,7 @@ sw_tests = {
 }
 
 subdir('dif')
+subdir('runtime')
 subdir('sim_dv')
 
 aes_test_lib = declare_dependency(
@@ -19,7 +20,7 @@ aes_test_lib = declare_dependency(
     sources: ['aes_test.c'],
     dependencies: [
       sw_lib_aes,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -32,7 +33,7 @@ flash_ctrl_test_lib = declare_dependency(
       sw_lib_mem,
       sw_lib_mmio,
       sw_lib_flash_ctrl,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -44,7 +45,7 @@ sha256_test_lib = declare_dependency(
     dependencies: [
       sw_lib_hmac,
       sw_lib_flash_ctrl,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -55,7 +56,7 @@ usbdev_test_lib = declare_dependency(
     sources: ['usbdev_test.c'],
     dependencies: [
       sw_lib_usb,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -77,7 +78,7 @@ pmp_sanitytest_napot_lib = declare_dependency(
     sources: ['pmp_sanitytest_napot.c'],
     dependencies: [
       sw_lib_irq,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
       sw_lib_runtime_hart,
       sw_lib_runtime_pmp,
       sw_lib_testing_test_status,
@@ -91,7 +92,7 @@ pmp_sanitytest_tor_lib = declare_dependency(
     sources: ['pmp_sanitytest_tor.c'],
     dependencies: [
       sw_lib_irq,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
       sw_lib_runtime_hart,
       sw_lib_runtime_pmp,
       sw_lib_testing_test_status,

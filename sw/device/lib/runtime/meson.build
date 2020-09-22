@@ -29,3 +29,23 @@ sw_lib_runtime_pmp = declare_dependency(
     ],
   )
 )
+
+sw_lib_runtime_print = declare_dependency(
+  link_with: static_library(
+    'runtime_print_ot',
+    sources: ['print.c'],
+    dependencies: [
+      sw_lib_mem,
+    ],
+  )
+)
+
+sw_lib_runtime_log = declare_dependency(
+  link_with: static_library(
+    'runtime_log_ot',
+    sources: ['log.c'],
+    dependencies: [
+      sw_lib_runtime_print,
+    ],
+  )
+)

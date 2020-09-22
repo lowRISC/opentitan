@@ -5,7 +5,7 @@
 // print.h's polyglotness is not part of its public API at the moment; we wrap
 // it in an `extern` here for the time being.
 extern "C" {
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/runtime/print.h"
 }  // extern "C"
 
 #include <stdint.h>

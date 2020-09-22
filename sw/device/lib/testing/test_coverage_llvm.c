@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/testing/test_coverage.h"
-#include "sw/device/lib/base/log.h"
+#include <stdint.h>
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/uart.h"
 #include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
-#include <stdint.h>
 
 /**
  * When the linker finds a definition of this symbol, it knows to skip loading

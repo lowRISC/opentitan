@@ -5,9 +5,9 @@
 #include "sw/device/lib/testing/test_status.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 
 void test_status_set(test_status_t test_status) {
   if (kDeviceTestStatusAddress != 0) {
