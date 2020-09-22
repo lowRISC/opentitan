@@ -103,6 +103,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic slow_main_pd_n;
   logic slow_io_clk_en;
   logic slow_core_clk_en;
+  logic slow_usb_clk_en_lp;
+  logic slow_usb_clk_en_active;
 
   ////////////////////////////
   ///  Register module
@@ -160,6 +162,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .slow_main_pd_no(slow_main_pd_n),
     .slow_io_clk_en_o(slow_io_clk_en),
     .slow_core_clk_en_o(slow_core_clk_en),
+    .slow_usb_clk_en_lp_o(slow_usb_clk_en_lp),
+    .slow_usb_clk_en_active_o(slow_usb_clk_en_active),
     .slow_req_pwrdn_o(slow_req_pwrdn),
     .slow_ack_pwrup_o(slow_ack_pwrup),
     .slow_ast_o(slow_ast),
@@ -176,6 +180,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .main_pd_ni(reg2hw.control.main_pd_n.q),
     .io_clk_en_i(reg2hw.control.io_clk_en.q),
     .core_clk_en_i(reg2hw.control.core_clk_en.q),
+    .usb_clk_en_lp_i(reg2hw.control.usb_clk_en_lp.q),
+    .usb_clk_en_active_i(reg2hw.control.usb_clk_en_active.q),
     .ack_pwrdn_o(ack_pwrdn),
     .req_pwrup_o(req_pwrup),
     .pwrup_cause_o(pwrup_cause),
@@ -251,6 +257,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .main_pd_ni           (slow_main_pd_n),
     .io_clk_en_i          (slow_io_clk_en),
     .core_clk_en_i        (slow_core_clk_en),
+    .usb_clk_en_lp_i      (slow_usb_clk_en_lp),
+    .usb_clk_en_active_i  (slow_usb_clk_en_active),
 
     // outputs to AST - These are on the slow clock domain
     // TBD - need to check this with partners

@@ -38,6 +38,12 @@ package pwrmgr_reg_pkg;
     } io_clk_en;
     struct packed {
       logic        q;
+    } usb_clk_en_lp;
+    struct packed {
+      logic        q;
+    } usb_clk_en_active;
+    struct packed {
+      logic        q;
     } main_pd_n;
   } pwrmgr_reg2hw_control_reg_t;
 
@@ -122,10 +128,10 @@ package pwrmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [18:18]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [17:17]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [16:15]
-    pwrmgr_reg2hw_control_reg_t control; // [14:11]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [20:20]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [19:19]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [18:17]
+    pwrmgr_reg2hw_control_reg_t control; // [16:11]
     pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [10:9]
     pwrmgr_reg2hw_wakeup_en_mreg_t [0:0] wakeup_en; // [8:8]
     pwrmgr_reg2hw_reset_en_mreg_t [0:0] reset_en; // [7:7]
@@ -139,11 +145,11 @@ package pwrmgr_reg_pkg;
   typedef struct packed {
     pwrmgr_hw2reg_intr_state_reg_t intr_state; // [13:13]
     pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [12:13]
-    pwrmgr_hw2reg_control_reg_t control; // [12:9]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [8:7]
-    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [6:5]
-    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [4:3]
-    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [2:-3]
+    pwrmgr_hw2reg_control_reg_t control; // [12:7]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [6:5]
+    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [4:3]
+    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [2:1]
+    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [0:-5]
   } pwrmgr_hw2reg_t;
 
   // Register Address
@@ -187,7 +193,7 @@ package pwrmgr_reg_pkg;
     4'b 0001, // index[ 1] PWRMGR_INTR_ENABLE
     4'b 0001, // index[ 2] PWRMGR_INTR_TEST
     4'b 0001, // index[ 3] PWRMGR_CTRL_CFG_REGWEN
-    4'b 0001, // index[ 4] PWRMGR_CONTROL
+    4'b 0011, // index[ 4] PWRMGR_CONTROL
     4'b 0001, // index[ 5] PWRMGR_CFG_CDC_SYNC
     4'b 0001, // index[ 6] PWRMGR_WAKEUP_EN_REGWEN
     4'b 0001, // index[ 7] PWRMGR_WAKEUP_EN

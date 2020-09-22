@@ -67,10 +67,16 @@ module ast_wrapper import ast_wrapper_pkg::*;
   // AST instantiation
   ///////////////////////////
 
-  // temporary assignments until pwrmgr interface is updated
-  assign pwr_o.core_clk_val[0] = ~pwr_o.core_clk_val[1];
-  assign pwr_o.slow_clk_val[0] = ~pwr_o.slow_clk_val[1];
-  assign pwr_o.io_clk_val[0]   = ~pwr_o.io_clk_val[1];
+  // Switch these to prim_mux cells
+  logic core_clk_val;
+  logic slow_clk_val;
+  logic io_clk_val;
+  logic usb_clk_val;
+
+  assign pwr_o.core_clk_val = core_clk_val ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
+  assign pwr_o.slow_clk_val = slow_clk_val ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
+  assign pwr_o.io_clk_val   = io_clk_val   ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
+  assign pwr_o.usb_clk_val  = usb_clk_val  ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
 
   ast #(
     .EntropyStreams(EntropyStreams),
@@ -115,19 +121,19 @@ module ast_wrapper import ast_wrapper_pkg::*;
 
     // output clocks and associated controls
     .clk_src_sys_o(clks_o.clk_sys),
-    .clk_src_sys_val_o(pwr_o.core_clk_val[1]),
+    .clk_src_sys_val_o(core_clk_val),
     .clk_src_sys_en_i(pwr_i.core_clk_en),
     .clk_src_sys_jen_i(1'b0),                 // need to add function in clkmgr
 
     .clk_src_aon_o(clks_o.clk_aon),
-    .clk_src_aon_val_o(pwr_o.slow_clk_val[1]),
+    .clk_src_aon_val_o(slow_clk_val),
 
     .clk_src_usb_o(clks_o.clk_usb),
-    .clk_src_usb_val_o(),                      // need to hookup later
-    .clk_src_usb_en_i(1'b1),                   // need to hookup later
+    .clk_src_usb_val_o(usb_clk_val),
+    .clk_src_usb_en_i(pwr_i.usb_clk_en),
 
     .clk_src_io_o(clks_o.clk_io),
-    .clk_src_io_val_o(pwr_o.io_clk_val[1]),
+    .clk_src_io_val_o(io_clk_val),
     .clk_src_io_en_i(pwr_i.io_clk_en),
 
     // input clock and references for calibration

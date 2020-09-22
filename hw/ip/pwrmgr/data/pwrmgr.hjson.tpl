@@ -206,6 +206,46 @@
         },
 
         { bits: "6",
+          name: "USB_CLK_EN_LP",
+          desc: "USB clock enable during low power state",
+          resval: "0",
+          enum: [
+            { value: "0",
+              name: "Disabled",
+              desc: '''
+                USB clock disabled during low power state
+                '''
+            },
+            { value: "1",
+              name: "Enabled",
+              desc: '''
+                USB clock enabled during low power state
+                '''
+            },
+          ]
+        },
+
+        { bits: "7",
+          name: "USB_CLK_EN_ACTIVE",
+          desc: "USB clock enable during active power state",
+          resval: "1"
+          enum: [
+            { value: "0",
+              name: "Disabled",
+              desc: '''
+                USB clock disabled during active power state
+                '''
+            },
+            { value: "1",
+              name: "Enabled",
+              desc: '''
+                USB clock enabled during active power state
+                '''
+            },
+          ]
+        },
+
+        { bits: "8",
           name: "MAIN_PD_N",
           desc: "Active low, main power domain power down",
           resval: "1"
@@ -226,6 +266,8 @@
             },
           ]
         },
+
+
       ],
     },
 
