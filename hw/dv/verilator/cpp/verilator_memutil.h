@@ -5,12 +5,11 @@
 #ifndef OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
 #define OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
 
-#include "sim_ctrl_extension.h"
-
-#include <vltstd/svdpi.h>
-
 #include <map>
 #include <string>
+#include <vltstd/svdpi.h>
+
+#include "sim_ctrl_extension.h"
 
 enum MemImageType {
   kMemImageUnknown = 0,
