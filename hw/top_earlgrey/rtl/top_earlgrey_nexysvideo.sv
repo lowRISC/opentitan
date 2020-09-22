@@ -209,9 +209,10 @@ module top_earlgrey_nexysvideo #(
   ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
   ast_wrapper_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = 2'b10;
-  assign ast_base_pwr.core_clk_val = 2'b10;
-  assign ast_base_pwr.io_clk_val   = 2'b10;
+  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
   assign ast_base_pwr.main_pok     = 1'b1;
 
   assign ast_base_alerts.alerts_p  = '0;
