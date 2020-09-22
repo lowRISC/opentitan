@@ -87,6 +87,17 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/pinmux/lint/{tool}"
              },
+             {    name: pwrmgr
+                  fusesoc_core: lowrisc:ip:pwrmgr
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"],
+                  rel_path: "hw/ip/pwrmgr/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:ip:rv_core_ibex
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
