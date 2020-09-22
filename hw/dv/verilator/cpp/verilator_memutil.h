@@ -89,8 +89,7 @@ class VerilatorMemUtil : public SimCtrlExtension {
    */
   void PrintMemRegions() const;
 
-  bool MemWrite(const std::string &name, const std::string &filepath);
-  bool MemWrite(const std::string &name, const std::string &filepath,
+  void MemWrite(const std::string &name, const std::string &filepath,
                 MemImageType type);
 };
 
