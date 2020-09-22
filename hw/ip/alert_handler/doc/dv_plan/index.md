@@ -34,6 +34,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
+In chip level testing, alert_handler testbench environment can be reused with a chip-level paramter package located at `hw/$CHIP/ip/alert_handler/dv/alert_handler_env_pkg__params.sv`
+
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
@@ -67,25 +69,34 @@ The `alert_handler_base_vseq` virtual sequence is extended from `cip_base_vseq` 
 All test sequences are extended from `alert_handler_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-// Work in Process:
-* task 1:
-* task 2:
+* drive_alert:     Drive alert_tx signal pairs through `alert_esc_if` interface
+* read_ecs_status: Readout registers that reflect escalation status, including `classa/b/c/d_accum_cnt`, `classa/b/c/d_esc_cnt`, and `classa/b/c/d_state`
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-// Work in Process:
-* cg1:
-* cg2:
+* accum_cnt_cg:      Cover number of alerts triggered under the same class
+* esc_sig_length_cg: Cover signal length of each escalation pairs
 
 ### Self-checking strategy
 #### Scoreboard
 The `alert_handler_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-// Work in Process:
 * tl_a_chan_fifo: tl address channel
 * tl_d_chan_fifo: tl data channel
-<!-- explain inputs monitored, flow of data and outputs checked -->
+* alert_fifo:     An array of `alert_fifo` that connects to corresponding alert_monitors
+* esc_fifo:       An array of `esc_fifo` that connects to corresponding esc_monitors
+
+Alert_handler scoreboard monitors all valid CSR registers, alert handshakes, and escalation handshakes.
+To ensure certain alert, interrupt, or escalation signals are triggered at the expected time, the alert_handler scoreboard implemented a few counters:
+* intr_cnter_per_class[NUM_ALERT_HANDLER_CLASSES]: Count number of clock cycles that the interrupt bit stays high.
+  If the stored number is larger than the `timeout_cyc` registers, the corresponding escalation is expected to be triggered
+* accum_cnter_per_class[NUM_ALERT_HANDLER_CLASSES]: Count number of alerts triggered under the same class.
+  If the stored number is larger than the `accum_threshold` registers, the corresponding escalation is expected to be triggered
+* esc_cnter_per_signal[NUM_ESC_SIGNALS]: Count number of clock cycles that each escalation signal stays high.
+  Compare the counter against `phase_cyc` registers
+
+The alert_handler scoreboard is parameterized to support different number of classes, alert pairs, and escalation pairs.
 
 #### Assertions
 * TLUL assertions: The `tb/alert_handler_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
@@ -96,9 +107,9 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/alert_handler/dv/alert_handler_generic_sim_cfg.hjson -i alert_handler_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/alert_handler/dv/alert_handler_sim_cfg.hjson -i alert_handler_sanity
 ```
+In this run command, $CHIP can be top_earlgrey, etc.
 
 ## Testplan
 {{< testplan "hw/ip/alert_handler/data/alert_handler_testplan.hjson" >}}
-
