@@ -4,17 +4,16 @@
 
 #include "verilator_memutil.h"
 
+#include <cassert>
+#include <cstring>
 #include <fcntl.h>
 #include <gelf.h>
 #include <getopt.h>
+#include <iostream>
 #include <libelf.h>
+#include <list>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include <cassert>
-#include <cstring>
-#include <iostream>
-#include <list>
 
 // DPI Exports
 extern "C" {
