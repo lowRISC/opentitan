@@ -22,10 +22,15 @@ int main(int argc, char **argv) {
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
+  MemAreaLoc imem_loc = {.base = 0x100000, .size = 4096};
+  MemAreaLoc dmem_loc = {.base = 0x200000, .size = 4096};
+
   memutil.RegisterMemoryArea(
-      "dmem", "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic", 256);
+      "dmem", "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic", 256,
+      &dmem_loc);
   memutil.RegisterMemoryArea(
-      "imem", "TOP.otbn_top_sim.u_imem.u_mem.gen_generic.u_impl_generic");
+      "imem", "TOP.otbn_top_sim.u_imem.u_mem.gen_generic.u_impl_generic", 32,
+      &imem_loc);
   simctrl.RegisterExtension(&memutil);
 
   bool exit_app = false;

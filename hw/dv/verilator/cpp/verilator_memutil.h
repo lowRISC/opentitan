@@ -17,10 +17,19 @@ enum MemImageType {
   kMemImageVmem,
 };
 
+// The "load" location of a memory area. base is the lowest address in
+// the area, and should correspond to an ELF file's LMA. size is the
+// length of the area in bytes.
+struct MemAreaLoc {
+  uint32_t base;
+  uint32_t size;
+};
+
 struct MemArea {
   std::string name;      // Unique identifier
   std::string location;  // Design scope location
   size_t width_bit;      // Memory width
+  MemAreaLoc addr_loc;   // Address location. If !size, location is unknown.
 };
 
 /**
@@ -43,12 +52,15 @@ class VerilatorMemUtil : public SimCtrlExtension {
    * 'vmem' and 'elf' files, respectively.
    * The |width_bit| argument specifies the with in bits of the target memory
    * instance (used for packing data).
+   * If |addr_loc| is not null, it gives the base and size of the
+   * memory for loading in the address space (corresponding to LMAs in
+   * an ELF file).
    *
    * Memories must be registered before command arguments are parsed by
    * ParseCommandArgs() in order for them to be known.
    */
   bool RegisterMemoryArea(const std::string name, const std::string location,
-                          size_t width_bit);
+                          size_t width_bit, const MemAreaLoc *addr_loc);
 
   /**
    * Register a memory with default width (32bits)
@@ -67,7 +79,8 @@ class VerilatorMemUtil : public SimCtrlExtension {
   virtual bool ParseCLIArguments(int argc, char **argv, bool &exit_app);
 
  private:
-  std::map<std::string, MemArea> mem_register_;
+  std::map<std::string, MemArea> name_to_mem_;
+  std::map<uint32_t, const MemArea *> addr_to_mem_;
 
   /**
    * Print a list of all registered memory regions

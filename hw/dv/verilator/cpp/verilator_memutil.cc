@@ -359,25 +359,96 @@ static bool WriteFileToMem(const MemArea &m, const std::string &filepath,
 
 bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           const std::string location) {
-  // Default to 32bit width
-  return RegisterMemoryArea(name, location, 32);
+  // Default to 32bit width and no address
+  return RegisterMemoryArea(name, location, 32, nullptr);
 }
 
 bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           const std::string location,
-                                          size_t width_bit) {
-  MemArea mem = {.name = name, .location = location, .width_bit = width_bit};
-
+                                          size_t width_bit,
+                                          const MemAreaLoc *addr_loc) {
   assert((width_bit <= 256) &&
          "TODO: Memory loading only supported up to 256 bits.");
 
-  auto ret = mem_register_.emplace(name, mem);
+  // First, create and register the memory by name
+  MemArea mem = {.name = name,
+                 .location = location,
+                 .width_bit = width_bit,
+                 .addr_loc = {.base = 0, .size = 0}};
+  auto ret = name_to_mem_.emplace(name, mem);
   if (ret.second == false) {
     std::cerr << "ERROR: Can not register \"" << name << "\" at: \"" << location
               << "\" (Previously defined at: \"" << ret.first->second.location
               << "\")" << std::endl;
     return false;
   }
+
+  MemArea *stored_mem_area = &ret.first->second;
+
+  // If we have no address information, there's nothing more to do. However, if
+  // we do have address information, we should add an entry to addr_to_mem_.
+  if (!addr_loc) {
+    return true;
+  }
+
+  // Check that the size of the new area is positive, and that we don't overflow
+  // the address space.
+  if (addr_loc->size == 0) {
+    std::cerr << "ERROR: Can not register '" << name
+              << "' because it has zero size.\n";
+    return false;
+  }
+  uint32_t addr_top = addr_loc->base + (addr_loc->size - 1);
+  if (addr_top < addr_loc->base) {
+    std::cerr << "ERROR: Can not register '" << name
+              << "' because it overflows the top of the address space.\n";
+    return false;
+  }
+
+  // If the existing map is non-empty, we must check for overlaps
+  if (!addr_to_mem_.empty()) {
+    // We start by checking for an overlap "from the right". This would be a
+    // region that starts strictly above addr_loc->base, but where it's low
+    // address is still less than addr_top. We can use std::map::upper_bound to
+    // find the first region strictly above addr_loc->base (which returns the
+    // end iterator if there isn't one).
+    auto right_it = addr_to_mem_.upper_bound(addr_loc->base);
+    if (right_it != addr_to_mem_.end()) {
+      const MemAreaLoc &ub_loc = right_it->second->addr_loc;
+      assert(ub_loc.size != 0);
+      if (ub_loc.base <= addr_top) {
+        std::cerr << "ERROR: Can not register '" << name
+                  << "' because its address range overlaps to left of '"
+                  << right_it->second->name << "'.\n";
+        return false;
+      }
+    }
+
+    // We also need to check from the other side. This would be a region that
+    // starts at or before addr_loc->base and extends past it. If right_it is
+    // addr_to_mem_.begin(), there is no such region (because the lowest
+    // addressed region already starts above addr_loc->base). Otherwise,
+    // decrement right_it to get the highest addressed region that starts at or
+    // before addr_loc->base. Note this still works if right_it is the end
+    // iterator: we just pick up the last region, which we know exists because
+    // addr_to_mem_ is not empty.
+    if (right_it != addr_to_mem_.begin()) {
+      auto left_it = std::prev(right_it);
+      const MemAreaLoc &lb_loc = left_it->second->addr_loc;
+      assert(lb_loc.size != 0);
+      uint32_t lb_max = lb_loc.base + lb_loc.size;
+      if (addr_loc->base <= lb_max) {
+        std::cerr << "ERROR: Can not register '" << name
+                  << "' because its address range overlaps to right of '"
+                  << left_it->second->name << "'.\n";
+        return false;
+      }
+    }
+  }
+
+  // Phew, no overlap!
+  addr_to_mem_.insert(std::make_pair(addr_loc->base, stored_mem_area));
+  stored_mem_area->addr_loc = *addr_loc;
   return true;
 }
 
@@ -462,10 +533,17 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
 
 void VerilatorMemUtil::PrintMemRegions() const {
   std::cout << "Registered memory regions:" << std::endl;
-  for (const auto &m : mem_register_) {
-    std::cout << "\t'" << m.second.name << "' (" << m.second.width_bit
-              << "bits) at location: '" << m.second.location << "'"
-              << std::endl;
+  for (const auto &pr : name_to_mem_) {
+    const MemArea &m = pr.second;
+    std::cout << "\t'" << m.name << "' (" << m.width_bit
+              << "bits) at location: '" << m.location << "'";
+    if (m.addr_loc.size) {
+      uint32_t low = m.addr_loc.base;
+      uint32_t high = m.addr_loc.base + m.addr_loc.size - 1;
+      std::cout << " (LMA range [0x" << std::hex << low << ", 0x" << high
+                << "])" << std::dec;
+    }
+    std::cout << std::endl;
   }
 }
 
@@ -484,8 +562,8 @@ bool VerilatorMemUtil::MemWrite(const std::string &name,
                                 const std::string &filepath,
                                 MemImageType type) {
   // Search for corresponding registered memory based on the name
-  auto it = mem_register_.find(name);
-  if (it == mem_register_.end()) {
+  auto it = name_to_mem_.find(name);
+  if (it == name_to_mem_.end()) {
     std::cerr << "ERROR: Memory location not set for: '" << name << "'"
               << std::endl;
     PrintMemRegions();
