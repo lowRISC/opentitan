@@ -3964,7 +3964,7 @@
       interrupt_list:
       [
         {
-          name: intr_patt_done_ch0
+          name: patt_done_ch0
           width: 1
           bits: "0"
           bitinfo:
@@ -3976,7 +3976,7 @@
           type: interrupt
         }
         {
-          name: intr_patt_done_ch1
+          name: patt_done_ch1
           width: 1
           bits: "1"
           bitinfo:
