@@ -49,7 +49,7 @@ GPIO testbench instantiates (handled in CIP base env) [tl_agent]({{< relref "hw/
 ### UVM RAL Model
 The GPIO RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -109,8 +109,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ cd hw/ip/gpio/dv
-$ make TEST_NAME=gpio_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/gpio/dv/gpio_sim_cfg.hjson -i gpio_sanity
 ```
 
 ## Testplan

@@ -108,9 +108,9 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ cd hw/ip/xbar/dv
-$ make TEST_NAME=xbar_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/$XBAR_IP/dv/autogen/${XBAR_IP}_sim_cfg.hjson -i ${XBAR_IP}_main_sanity
 ```
+In this run command, $XBAR_IP can be xbar_main, xbar_peri, etc. $CHIP can be top_earlgrey, etc.
 
 ## Testplan
 {{< testplan "hw/ip/tlul/data/tlul_testplan.hjson" >}}
