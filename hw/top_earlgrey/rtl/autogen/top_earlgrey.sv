@@ -464,8 +464,8 @@ module top_earlgrey #(
   logic intr_usbdev_aon_rx_bitstuff_err;
   logic intr_usbdev_aon_frame;
   logic intr_usbdev_aon_connected;
-  logic intr_pattgen_patt_done0;
-  logic intr_pattgen_patt_done1;
+  logic intr_pattgen_intr_patt_done_ch0;
+  logic intr_pattgen_intr_patt_done_ch1;
   logic intr_keymgr_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_fifo_err;
@@ -1632,8 +1632,8 @@ module top_earlgrey #(
       .cio_pcl1_tx_en_o (cio_pattgen_pcl1_tx_en_d2p),
 
       // Interrupt
-      .intr_patt_done0_o (intr_pattgen_patt_done0),
-      .intr_patt_done1_o (intr_pattgen_patt_done1),
+      .intr_intr_patt_done_ch0_o (intr_pattgen_intr_patt_done_ch0),
+      .intr_intr_patt_done_ch1_o (intr_pattgen_intr_patt_done_ch1),
       .clk_i (clkmgr_aon_clocks.clk_io_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_n)
   );
