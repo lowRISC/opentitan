@@ -17,10 +17,10 @@
   ]
   // INTERRUPT pins
   interrupt_list: [
-    { name: "intr_patt_done_ch0",
+    { name: "patt_done_ch0",
       desc: "raise if pattern generation on channel 0 is complete"
     }
-    { name: "intr_patt_done_ch1",
+    { name: "patt_done_ch1",
       desc: "raise if pattern generation on channel 1 is complete"
     }
   ],
