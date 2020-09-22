@@ -54,7 +54,7 @@ class ElfError : public std::exception {
 // Class wrapping an open ELF file
 class ElfFile {
  public:
-  ElfFile(const std::string &path) {
+  ElfFile(const std::string &path) : path_(path) {
     fd_ = open(path.c_str(), O_RDONLY, 0);
     if (fd_ < 0) {
       throw ElfError(path, "could not open file.");
@@ -78,6 +78,22 @@ class ElfFile {
     close(fd_);
   }
 
+  size_t GetPhdrNum() {
+    size_t phnum;
+    if (elf_getphdrnum(ptr_, &phnum) != 0) {
+      throw ElfError(path_, elf_errmsg(-1));
+    }
+    return phnum;
+  }
+
+  const Elf32_Phdr *GetPhdrs() {
+    const Elf32_Phdr *phdrs = elf32_getphdr(ptr_);
+    if (!phdrs)
+      throw ElfError(path_, elf_errmsg(-1));
+    return phdrs;
+  }
+
+  std::string path_;
   int fd_;
   Elf *ptr_;
 };
@@ -95,6 +111,8 @@ static void PrintHelp() {
                "-l|--meminit=NAME,FILE[,TYPE]\n"
                "  Initialize memory region NAME with FILE [of TYPE]\n"
                "  TYPE is either 'elf' or 'vmem'\n\n"
+               "-E|--load-elf=FILE\n"
+               "  Load ELF file, using segment LMAs to pick memory regions\n\n"
                "-l list|--meminit=list\n"
                "  Print registered memory regions\n\n"
                "--verbose-mem-load\n"
@@ -135,7 +153,10 @@ static MemImageType DetectMemImageType(const std::string &filepath) {
 }
 
 namespace {
-struct MemArg {
+// An instruction to load the file at filepath to the memory called name. If
+// name is the empty string then type must be kMemImageElf and this is an
+// instruction to load an ELF file, picking memories by LMA.
+struct LoadArg {
   std::string name;
   std::string filepath;
   MemImageType type;
@@ -144,7 +165,7 @@ struct MemArg {
 
 // Parse a meminit command-line argument. This should be of the form
 // mem_area,file[,type]. Throw a std::runtime_error if something looks wrong.
-static MemArg ParseMemArg(std::string mem_argument) {
+static LoadArg ParseMemArg(std::string mem_argument) {
   std::array<std::string, 3> args;
   size_t pos = 0;
   size_t end_pos = 0;
@@ -195,21 +216,14 @@ static MemArg ParseMemArg(std::string mem_argument) {
 // set to zero.
 static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   (void)elf_errno();
-
   if (elf_version(EV_CURRENT) == EV_NONE) {
     throw std::runtime_error(elf_errmsg(-1));
   }
 
   ElfFile elf(filepath);
 
-  size_t phnum;
-  if (elf_getphdrnum(elf.ptr_, &phnum) != 0) {
-    throw ElfError(filepath, elf_errmsg(-1));
-  }
-  Elf32_Phdr *phdrs = elf32_getphdr(elf.ptr_);
-  if (!phdrs) {
-    throw ElfError(filepath, elf_errmsg(-1));
-  }
+  size_t phnum = elf.GetPhdrNum();
+  const Elf32_Phdr *phdrs = elf.GetPhdrs();
 
   // To mimic what objcopy does (that is, the binary target of BFD), we need to
   // iterate over all loadable program headers, find the lowest address, and
@@ -277,45 +291,19 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   return buf;
 }
 
-static void WriteElfToMem(const svScope &scope, const std::string &filepath,
-                          size_t size_byte) {
-  SVScoped scoped(scope);
+// Write a "segment" of data to the given memory area. Reads file_sz bytes from
+// data. If mem_sz > file_sz, appends mem_sz - file_sz bytes of zeros to the
+// end.
+static void WriteSegment(const MemArea &m, uint32_t offset, uint32_t file_sz,
+                         uint32_t mem_sz, const uint8_t *data) {
+  assert(m.width_byte <= 32);
+  assert(m.addr_loc.size == 0 || mem_sz + offset <= m.addr_loc.size);
+  assert((offset % m.width_byte) == 0);
 
-  std::vector<uint8_t> elf_data = FlattenElfFile(filepath);
-  size_t data_len = elf_data.size();
-
-  // elf_data isn't necessarily a whole number of 256-bit words long. Round it
-  // up if necessary, padding with zeros. That way, we can safely pass even the
-  // last byte to simutil_verilator_set_mem (defined in prim_util_memload.svh),
-  // whose "val" argument has SystemVerilog type bit [255:0].
-  elf_data.resize((elf_data.size() + 31) / 32 * 32, 0);
-
-  size_t num_words = (data_len + size_byte - 1) / size_byte;
-  for (int i = 0; i < num_words; ++i) {
-    auto *bvv = reinterpret_cast<const svBitVecVal *>(&elf_data[i * size_byte]);
-    if (!simutil_verilator_set_mem(i, bvv)) {
-      std::ostringstream oss;
-      oss << "Could not set memory byte: " << i * size_byte << "/"
-          << elf_data.size() << ".";
-      throw std::runtime_error(oss.str());
-    }
-  }
-}
-
-static void WriteVmemToMem(const svScope &scope, const std::string &filepath) {
-  SVScoped scoped(scope);
-  // TODO: Add error handling.
-  simutil_verilator_memload(filepath.data());
-}
-
-static void WriteFileToMem(bool verbose, const MemArea &m, const std::string &filepath,
-                           MemImageType type) {
-  assert(type != kMemImageUnknown);
-
-  if (verbose) {
-    std::cout << "Loading data from file `" << filepath << "' into memory `"
-              << m.name << "'." << std::endl;
-  }
+  // Valid ELF files probably have file_sz <= mem_sz, but it sort of makes sense
+  // even if not: we are just reading the initial portion of some data stored in
+  // the file.
+  file_sz = std::min(file_sz, mem_sz);
 
   svScope scope = svGetScopeFromName(m.location.data());
   if (!scope) {
@@ -325,16 +313,88 @@ static void WriteFileToMem(bool verbose, const MemArea &m, const std::string &fi
     throw std::runtime_error(oss.str());
   }
 
-  switch (type) {
-    case kMemImageElf:
-      WriteElfToMem(scope, filepath, m.width_byte);
-      break;
-    case kMemImageVmem:
-      WriteVmemToMem(scope, filepath);
-      break;
-    default:
-      assert(0);
+  SVScoped scoped(scope);
+
+  // This "mini buffer" is used to transfer each write to SystemVerilog. It's
+  // not massively efficient, but doing so ensures that we pass 256 bits (32
+  // bytes) of initialised data each time. This is for simutil_verilator_set_mem
+  // (defined in prim_util_memload.svh), whose "val" argument has SystemVerilog
+  // type bit [255:0].
+  uint8_t minibuf[32];
+  memset(minibuf, 0, sizeof minibuf);
+  assert(m.width_byte <= sizeof minibuf);
+
+  uint32_t all_words = (mem_sz + m.width_byte - 1) / m.width_byte;
+  uint32_t full_data_words = file_sz / m.width_byte;
+  uint32_t part_data_word_len = file_sz % m.width_byte;
+  bool has_part_data_word = part_data_word_len != 0;
+  uint32_t all_data_words = full_data_words + (has_part_data_word ? 1 : 0);
+
+  assert(all_data_words <= all_words);
+  uint32_t zero_words = all_words - all_data_words;
+
+  uint32_t word_offset = offset / m.width_byte;
+
+  // Copy the full data words
+  for (uint32_t i = 0; i < full_data_words; ++i) {
+    uint32_t dst_word = word_offset + i;
+    uint32_t src_byte = i * m.width_byte;
+    memcpy(minibuf, &data[src_byte], m.width_byte);
+    if (!simutil_verilator_set_mem(dst_word, (svBitVecVal *)minibuf)) {
+      std::ostringstream oss;
+      oss << "Could not set `" << m.name << "' memory at byte offset 0x"
+          << std::hex << dst_word * m.width_byte << ".";
+      throw std::runtime_error(oss.str());
+    }
   }
+
+  // Copy any partial data, zeroing minibuf first to ensure that the latter
+  // bytes in the word are zero.
+  if (has_part_data_word) {
+    memset(minibuf, 0, sizeof minibuf);
+    uint32_t dst_word = word_offset + full_data_words;
+    uint32_t src_byte = full_data_words * m.width_byte;
+    memcpy(minibuf, &data[src_byte], part_data_word_len);
+    if (!simutil_verilator_set_mem(dst_word, (svBitVecVal *)minibuf)) {
+      std::ostringstream oss;
+      oss << "Could not set `" << m.name << "' memory at byte offset 0x"
+          << std::hex << dst_word * m.width_byte << " (partial data word).";
+      throw std::runtime_error(oss.str());
+    }
+  }
+
+  // Zero minibuf again and splat any remaining words.
+  if (zero_words > 0) {
+    memset(minibuf, 0, sizeof minibuf);
+    for (uint32_t i = 0; i < zero_words; ++i) {
+      uint32_t dst_word = word_offset + full_data_words + i;
+      if (!simutil_verilator_set_mem(dst_word, (svBitVecVal *)minibuf)) {
+        std::ostringstream oss;
+        oss << "Could not set `" << m.name << "' memory at byte offset 0x"
+            << std::hex << dst_word * m.width_byte << " (zero word).";
+        throw std::runtime_error(oss.str());
+      }
+    }
+  }
+}
+
+static void WriteElfToMem(const MemArea &m, const std::string &filepath) {
+  std::vector<uint8_t> elf_data = FlattenElfFile(filepath);
+  WriteSegment(m, 0, elf_data.size(), elf_data.size(), &elf_data[0]);
+}
+
+static void WriteVmemToMem(const MemArea &m, const std::string &filepath) {
+  svScope scope = svGetScopeFromName(m.location.data());
+  if (!scope) {
+    std::ostringstream oss;
+    oss << "No memory found at `" << m.location
+        << "' (the scope associated with region `" << m.name << "').";
+    throw std::runtime_error(oss.str());
+  }
+
+  SVScoped scoped(scope);
+  // TODO: Add error handling.
+  simutil_verilator_memload(filepath.data());
 }
 
 bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
@@ -441,17 +501,18 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       {"flashinit", required_argument, nullptr, 'f'},
       {"meminit", required_argument, nullptr, 'l'},
       {"verbose-mem-load", no_argument, nullptr, 'V'},
+      {"load-elf", required_argument, nullptr, 'E'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
 
-  std::vector<MemArg> mem_args;
+  std::vector<LoadArg> load_args;
   bool verbose = false;
 
   // Reset the command parsing index in-case other utils have already parsed
   // some arguments
   optind = 1;
   while (1) {
-    int c = getopt_long(argc, argv, ":r:m:f:l:h", long_options, nullptr);
+    int c = getopt_long(argc, argv, ":r:m:f:l:E:h", long_options, nullptr);
     if (c == -1) {
       break;
     }
@@ -463,15 +524,15 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       case 0:
         break;
       case 'r':
-        mem_args.push_back(
+        load_args.push_back(
             {.name = "rom", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'm':
-        mem_args.push_back(
+        load_args.push_back(
             {.name = "ram", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'f':
-        mem_args.push_back(
+        load_args.push_back(
             {.name = "flash", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'l':
@@ -483,7 +544,7 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
 
         // --meminit / -l
         try {
-          mem_args.emplace_back(ParseMemArg(optarg));
+          load_args.emplace_back(ParseMemArg(optarg));
         } catch (const std::runtime_error &err) {
           std::cerr << "ERROR: " << err.what() << std::endl;
           return false;
@@ -491,6 +552,10 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
         break;
       case 'V':
         verbose = true;
+        break;
+      case 'E':
+        load_args.push_back(
+            {.name = "", .filepath = optarg, .type = kMemImageElf});
         break;
       case 'h':
         PrintHelp();
@@ -505,12 +570,16 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
     }
   }
 
-  for (const MemArg &arg : mem_args) {
+  for (const LoadArg &arg : load_args) {
     try {
-      MemWrite(verbose, arg.name, arg.filepath, arg.type);
+      if (!arg.name.empty()) {
+        LoadFileToNamedMem(verbose, arg.name, arg.filepath, arg.type);
+      } else {
+        assert(arg.type == kMemImageElf);
+        LoadElfToMemories(verbose, arg.filepath);
+      }
     } catch (const std::exception &err) {
-      std::cerr << "ERROR: Unable to initialize memory: " << err.what()
-                << std::endl;
+      std::cerr << "ERROR: " << err.what() << std::endl;
       return false;
     }
   }
@@ -534,10 +603,9 @@ void VerilatorMemUtil::PrintMemRegions() const {
   }
 }
 
-void VerilatorMemUtil::MemWrite(bool verbose,
-                                const std::string &name,
-                                const std::string &filepath,
-                                MemImageType type) {
+void VerilatorMemUtil::LoadFileToNamedMem(bool verbose, const std::string &name,
+                                          const std::string &filepath,
+                                          MemImageType type) {
   // If the image type isn't specified, try to figure it out from the file name
   if (type == kMemImageUnknown) {
     type = DetectMemImageType(filepath);
@@ -553,5 +621,144 @@ void VerilatorMemUtil::MemWrite(bool verbose,
     throw std::runtime_error(oss.str());
   }
 
-  WriteFileToMem(verbose, it->second, filepath, type);
+  if (verbose) {
+    std::cout << "Loading data from file `" << filepath << "' into memory `"
+              << name << "'." << std::endl;
+  }
+
+  const MemArea &m = it->second;
+
+  switch (type) {
+    case kMemImageElf:
+      WriteElfToMem(m, filepath);
+      break;
+    case kMemImageVmem:
+      WriteVmemToMem(m, filepath);
+      break;
+    default:
+      assert(0);
+  }
+}
+
+void VerilatorMemUtil::LoadElfToMemories(bool verbose,
+                                         const std::string &filepath) {
+  (void)elf_errno();
+  if (elf_version(EV_CURRENT) == EV_NONE) {
+    throw std::runtime_error(elf_errmsg(-1));
+  }
+
+  ElfFile elf(filepath);
+
+  size_t file_size;
+  const char *file_data = elf_rawfile(elf.ptr_, &file_size);
+  assert(file_data);
+
+  size_t phnum = elf.GetPhdrNum();
+  const Elf32_Phdr *phdrs = elf.GetPhdrs();
+
+  for (size_t i = 0; i < phnum; ++i) {
+    const Elf32_Phdr &phdr = phdrs[i];
+    if (phdr.p_type != PT_LOAD)
+      continue;
+
+    if (phdr.p_memsz == 0)
+      continue;
+
+    const MemArea *mem_area = FindRegionForAddr(phdr.p_paddr);
+    if (!mem_area) {
+      std::ostringstream oss;
+      oss << "No memory region is registered that contains the address 0x"
+          << std::hex << phdr.p_paddr << " (the base address of segment " << i
+          << ").";
+      throw ElfError(filepath, oss.str());
+    }
+    assert(mem_area->addr_loc.base <= phdr.p_paddr);
+
+    uint32_t lma_top = phdr.p_paddr + (phdr.p_memsz - 1);
+    uint32_t off_end = phdr.p_offset + phdr.p_filesz;
+
+    // Overflow checks
+    if (lma_top < phdr.p_paddr) {
+      std::ostringstream oss;
+      oss << "Integer overflow for top address of segment " << i << ".";
+      throw ElfError(filepath, oss.str());
+    }
+    if (off_end < phdr.p_offset) {
+      std::ostringstream oss;
+      oss << "Integer overflow for top file offset of segment " << i << ".";
+      throw ElfError(filepath, oss.str());
+    }
+
+    uint32_t local_base = phdr.p_paddr - mem_area->addr_loc.base;
+    uint32_t local_top = lma_top - mem_area->addr_loc.base;
+
+    if (mem_area->addr_loc.size <= local_top) {
+      std::ostringstream oss;
+      oss << "Segment " << i << " has size 0x" << std::hex << phdr.p_memsz
+          << " bytes. Its LMA of 0x" << phdr.p_paddr << " is at offset 0x"
+          << local_base << " in the memory region `" << mem_area->name
+          << "', so the segment finishes at offset 0x" << local_top
+          << ", but the memory region is only 0x" << mem_area->addr_loc.size
+          << " bytes long.";
+      throw ElfError(filepath, oss.str());
+    }
+
+    // Check that the segment is aligned correctly for the memory
+    if (local_base % mem_area->width_byte) {
+      std::ostringstream oss;
+      oss << "Segment " << i << " has LMA 0x" << std::hex << phdr.p_paddr
+          << ", which starts at offset 0x" << local_base
+          << " in the memory region `" << mem_area->name
+          << "'. This offset is not aligned to the region's word width of "
+          << std::dec << 8 * mem_area->width_byte << " bits.";
+      throw ElfError(filepath, oss.str());
+    }
+
+    // Check the segment actually fits in the file
+    if (file_size < off_end) {
+      std::ostringstream oss;
+      oss << "phdr for segment " << i << " claims to end at offset 0x"
+          << std::hex << off_end - 1 << ", but the file only has size 0x"
+          << file_size << ".";
+      throw ElfError(filepath, oss.str());
+    }
+
+    if (verbose) {
+      std::cout << "Loading segment " << i << " from ELF file `" << filepath
+                << "' into memory `" << mem_area->name << "'." << std::endl;
+    }
+
+    const char *seg_data = file_data + phdr.p_offset;
+    WriteSegment(*mem_area, local_base, phdr.p_filesz, phdr.p_memsz,
+                 (const uint8_t *)seg_data);
+  }
+}
+
+const MemArea *VerilatorMemUtil::FindRegionForAddr(uint32_t lma) const {
+  // To find the memory area containing lma, use upper_bound to find the first
+  // region strictly after it, and then std::prev to step backwards. This fails
+  // if either the map is empty (obviously!) or if ub_it is already the
+  // beginning of the map.
+  if (addr_to_mem_.empty())
+    return nullptr;
+
+  auto ub_it = addr_to_mem_.upper_bound(lma);
+  if (ub_it == addr_to_mem_.begin())
+    return nullptr;
+
+  const MemArea *m = std::prev(ub_it)->second;
+
+  // Every entry in addr_to_mem_ should have a valid pointer to a MemArea with a
+  // valid location.
+  assert(m != nullptr);
+  assert(m->addr_loc.size != 0);
+
+  // What's more, the base of the location should be less than equal to lma
+  // (because it's strictly less than the smallest entry strictly greater).
+  assert(m->addr_loc.base <= lma);
+
+  // This means that we've found the right region iff the top of the region
+  // includes lma.
+  uint32_t addr_top = m->addr_loc.base + (m->addr_loc.size - 1);
+  return (lma <= addr_top) ? m : nullptr;
 }
