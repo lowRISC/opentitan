@@ -382,7 +382,7 @@
           desc: '''
             Max key version.
 
-            Any key version up to the value specificed in this register is value.
+            Any key version up to the value specificed in this register is valid.
           '''
         },
       ]
