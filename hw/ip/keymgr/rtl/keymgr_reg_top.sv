@@ -1503,7 +1503,7 @@ module keymgr_reg_top (
 
   prim_subreg #(
     .DW      (2),
-    .SWACCESS("RC"),
+    .SWACCESS("W1C"),
     .RESVAL  (2'h0)
   ) u_op_status (
     .clk_i   (clk_i    ),
@@ -1531,7 +1531,7 @@ module keymgr_reg_top (
   //   F[invalid_op]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RC"),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_invalid_op (
     .clk_i   (clk_i    ),
@@ -1557,7 +1557,7 @@ module keymgr_reg_top (
   //   F[invalid_cmd]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RC"),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_invalid_cmd (
     .clk_i   (clk_i    ),
@@ -1583,7 +1583,7 @@ module keymgr_reg_top (
   //   F[invalid_kmac_input]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RC"),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_invalid_kmac_input (
     .clk_i   (clk_i    ),
@@ -1609,7 +1609,7 @@ module keymgr_reg_top (
   //   F[invalid_kmac_data]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RC"),
+    .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_invalid_kmac_data (
     .clk_i   (clk_i    ),
@@ -1875,20 +1875,20 @@ module keymgr_reg_top (
   assign sw_share1_output_7_wd = '1;
 
 
-  assign op_status_we = addr_hit[42] & reg_re;
-  assign op_status_wd = '1;
+  assign op_status_we = addr_hit[42] & reg_we & ~wr_err;
+  assign op_status_wd = reg_wdata[1:0];
 
-  assign err_code_invalid_op_we = addr_hit[43] & reg_re;
-  assign err_code_invalid_op_wd = '1;
+  assign err_code_invalid_op_we = addr_hit[43] & reg_we & ~wr_err;
+  assign err_code_invalid_op_wd = reg_wdata[0];
 
-  assign err_code_invalid_cmd_we = addr_hit[43] & reg_re;
-  assign err_code_invalid_cmd_wd = '1;
+  assign err_code_invalid_cmd_we = addr_hit[43] & reg_we & ~wr_err;
+  assign err_code_invalid_cmd_wd = reg_wdata[1];
 
-  assign err_code_invalid_kmac_input_we = addr_hit[43] & reg_re;
-  assign err_code_invalid_kmac_input_wd = '1;
+  assign err_code_invalid_kmac_input_we = addr_hit[43] & reg_we & ~wr_err;
+  assign err_code_invalid_kmac_input_wd = reg_wdata[2];
 
-  assign err_code_invalid_kmac_data_we = addr_hit[43] & reg_re;
-  assign err_code_invalid_kmac_data_wd = '1;
+  assign err_code_invalid_kmac_data_we = addr_hit[43] & reg_we & ~wr_err;
+  assign err_code_invalid_kmac_data_wd = reg_wdata[3];
 
   // Read data return
   always_comb begin

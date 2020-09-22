@@ -575,7 +575,7 @@
         Hardware sets the status based on software initiated operations.
         When software reads the status, it is self cleared.
       ''',
-      swaccess: "rc",
+      swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
         { bits: "1:0",
@@ -617,7 +617,7 @@
       desc: '''
         Key manager error code.
       ''',
-      swaccess: "rc",
+      swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
         { bits: "0",
