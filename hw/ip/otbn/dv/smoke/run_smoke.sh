@@ -12,6 +12,7 @@ fail() {
 }
 
 set -o pipefail
+set -e
 
 SCRIPT_DIR="$(dirname "$(readlink -e "$BASH_SOURCE")")"
 UTIL_DIR="$(readlink -e "$SCRIPT_DIR/../../../../../util")" || \
@@ -24,23 +25,23 @@ SMOKE_SRC_DIR=$REPO_TOP/hw/ip/otbn/dv/smoke
 
 mkdir -p $SMOKE_BIN_DIR
 
-$REPO_TOP/hw/ip/otbn/util/build.sh $SMOKE_SRC_DIR/smoke_test.S \
-  $SMOKE_BIN_DIR/smoke || fail "Software build failed"
+OTBN_UTIL=$REPO_TOP/hw/ip/otbn/util
 
-pushd $REPO_TOP
+$OTBN_UTIL/otbn-as -o $SMOKE_BIN_DIR/smoke_test.o $SMOKE_SRC_DIR/smoke_test.S || \
+    fail "Failed to assemble smoke_test.S"
+$OTBN_UTIL/otbn-ld -o $SMOKE_BIN_DIR/smoke.elf $SMOKE_BIN_DIR/smoke_test.o || \
+    fail "Failed to link smoke_test.o"
 
-fusesoc --cores-root=. run --target=sim --setup --build \
-  lowrisc:ip:otbn_top_sim || fail "HW Sim build failed"
-
-popd
+(cd $REPO_TOP;
+ fusesoc --cores-root=. run --target=sim --setup --build \
+         lowrisc:ip:otbn_top_sim || fail "HW Sim build failed")
 
 RUN_LOG=`mktemp`
 trap "rm -rf $RUN_LOG" EXIT
 
 timeout 5s \
   $REPO_TOP/build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim \
-  --meminit=imem,$SMOKE_BIN_DIR/smoke_imem.elf \
-  --meminit=dmem,$SMOKE_BIN_DIR/smoke_dmem.elf | tee $RUN_LOG
+  --load-elf=$SMOKE_BIN_DIR/smoke.elf | tee $RUN_LOG
 
 if [ $? -eq 124 ]; then
   fail "Simulation timeout"
