@@ -7,7 +7,6 @@
 #include <cassert>
 #include <cstring>
 #include <fcntl.h>
-#include <gelf.h>
 #include <getopt.h>
 #include <iostream>
 #include <libelf.h>
@@ -202,13 +201,13 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   }
 
   ElfFile elf(filepath);
-  // TODO: add support for ELFCLASS64
-  if (gelf_getclass(elf.ptr_) != ELFCLASS32) {
-    throw ElfError(filepath, "ELF file is not 32-bit.");
-  }
 
   size_t phnum;
   if (elf_getphdrnum(elf.ptr_, &phnum) != 0) {
+    throw ElfError(filepath, elf_errmsg(-1));
+  }
+  Elf32_Phdr *phdrs = elf32_getphdr(elf.ptr_);
+  if (!phdrs) {
     throw ElfError(filepath, elf_errmsg(-1));
   }
 
@@ -216,16 +215,11 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   // iterate over all loadable program headers, find the lowest address, and
   // then copy in our loadable data based on their offset with respect to the
   // found base address.
+
   bool any = false;
-  GElf_Addr high = 0;
-  GElf_Addr low = (GElf_Addr)-1;
+  Elf32_Addr low = 0, high = 0;
   for (size_t i = 0; i < phnum; i++) {
-    GElf_Phdr phdr;
-    if (gelf_getphdr(elf.ptr_, i, &phdr) == NULL) {
-      std::ostringstream oss;
-      oss << "in segment number " << i << ": " << elf_errmsg(-1);
-      throw ElfError(filepath, oss.str());
-    }
+    const Elf32_Phdr &phdr = phdrs[i];
 
     if (phdr.p_type != PT_LOAD) {
       std::cout << "Program header number " << i << " in `" << filepath
@@ -251,30 +245,33 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   assert(low <= high);
   size_t len_bytes = high - low;
 
-  std::vector<uint8_t> buf(len_bytes);
+  size_t file_size;
+  const char *file_data = elf_rawfile(elf.ptr_, &file_size);
+  assert(file_data);
 
+  std::vector<uint8_t> buf(len_bytes);
   for (size_t i = 0; i < phnum; i++) {
-    GElf_Phdr phdr;
-    (void)gelf_getphdr(elf.ptr_, i, &phdr);
+    const Elf32_Phdr &phdr = phdrs[i];
 
     if (phdr.p_type != PT_LOAD || phdr.p_filesz == 0) {
       continue;
     }
 
-    Elf_Data *elf_data = elf_getdata_rawchunk(elf.ptr_, phdr.p_offset,
-                                              phdr.p_filesz, ELF_T_BYTE);
-    if (elf_data == NULL) {
+    // Check the segment actually fits in the file
+    if (file_size < phdr.p_offset + phdr.p_filesz) {
       std::ostringstream oss;
-      oss << "failed to load data for segment number " << i << ".";
+      oss << "phdr for segment " << i << " claims to end at offset 0x"
+          << std::hex << phdr.p_offset + phdr.p_filesz
+          << ", but the file only has size 0x" << file_size << ".";
       throw ElfError(filepath, oss.str());
     }
 
-    // Actually copy the data across. elf_getdata_rawchunk has checked that
-    // there are elf_data->d_size bytes of data available, and the loop that
-    // picked low/high above ensured that we have space to store for p_memsz
-    // bytes: use the smaller of the two numbers.
-    memcpy(&buf[phdr.p_paddr - low], (uint8_t *)elf_data->d_buf,
-           std::min(elf_data->d_size, phdr.p_memsz));
+    // Actually copy the data across. We have just checked that there are
+    // p_filesz bytes of data available, and the loop that picked low/high
+    // above ensured that we have space to store for p_memsz bytes: use the
+    // smaller of the two numbers.
+    memcpy(&buf[phdr.p_paddr - low], file_data + phdr.p_offset,
+           std::min(phdr.p_filesz, phdr.p_memsz));
   }
 
   return buf;
