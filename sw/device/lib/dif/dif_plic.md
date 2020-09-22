@@ -25,7 +25,7 @@ Review         | Signoff date         | Done        | 2020-06-08
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Implementation | [DIF_FEATURES][]            | Not Started |
-Coordination   | [DIF_HW_USAGE_REVIEWED][]   | Not Started |
+Coordination   | [DIF_HW_USAGE_REVIEWED][]   | Done        |
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Not Started | [HW Dashboard]({{< relref "hw" >}})
 Implementation | [DIF_HW_PARAMS][]           | Not Started |
 Documentation  | [DIF_DOC_HW][]              | Not Started |
@@ -33,7 +33,7 @@ Documentation  | [DIF_DOC_API][]             | Not Started |
 Code Quality   | [DIF_CODE_STYLE][]          | Not Started |
 Coordination   | [DIF_DV_TESTS][]            | Not Started |
 Implementation | [DIF_USED_TOCK][]           | Not Started |
-Review         | HW IP Usage Reviewer(s)     | Not Started |
+Review         | HW IP Usage Reviewer(s)     | Not Started | @eunchan
 Review         | Reviewer(s)                 | Not Started |
 Review         | Signoff date                | Not Started |
 

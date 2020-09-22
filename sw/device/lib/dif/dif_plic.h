@@ -7,7 +7,14 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ * @brief [PLIC](/hw/ip/rv_plic/doc/) Device Interface Functions.
+ *
+ * The PLIC should be largely compatible with the (currently draft) [RISC-V PLIC
+ * specification][plic], but tailored for the OpenTitan rv_plic register
+ * addresses. We intend to make the addresses compatible with the PLIC
+ * specification in the near future.
+ *
+ * [plic]: https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
  */
 
 #include <stdbool.h>
@@ -192,8 +199,19 @@ dif_plic_result_t dif_plic_irq_pending_status_get(const dif_plic_t *plic,
  * Claims an IRQ and gets the information about the source.
  *
  * Claims an IRQ and returns the IRQ related data to the caller. This function
- * reads a target specific CC register. dif_plic_irq_complete must be called
- * after the claimed IRQ has been serviced.
+ * reads a target specific CC register. #dif_plic_irq_complete must be called in
+ * order to allow another interrupt with the same source id to be delivered.
+ * This usually would be done once the interrupt has been serviced.
+ *
+ * Another IRQ can be claimed before a prior IRQ is completed. In this way, this
+ * functionality is compatible with nested interrupt handling. The restriction
+ * is that you must Complete a Claimed IRQ before you will be able to claim an
+ * IRQ with the same ID. This allows a pair of Claim/Complete calls to be
+ * overlapped with another pair -- and there is no requirement that the
+ * interrupts should be Completed in the reverse order of when they were
+ * Claimed.
+ *
+ * @see #dif_plic_irq_complete
  *
  * @param plic PLIC state data.
  * @param target Target that claimed the IRQ.
@@ -210,7 +228,12 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
  *
  * Finishes servicing of the claimed IRQ by writing the IRQ source ID back to a
  * target specific CC register. This function must be called after
- * dif_plic_claim_irq, when a caller has finished servicing the IRQ.
+ * #dif_plic_irq_claim, when the caller is prepared to service another IRQ with
+ * the same source ID. If a source ID is never Completed, then when future
+ * interrupts are Claimed, they will never have the source ID of the uncompleted
+ * IRQ.
+ *
+ * @see #dif_plic_irq_claim
  *
  * @param plic PLIC state data.
  * @param target Target that claimed the IRQ.
