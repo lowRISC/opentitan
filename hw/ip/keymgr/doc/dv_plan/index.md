@@ -70,7 +70,7 @@ TL host interface into KEYMGR device.
 ### UVM RAL Model
 The KEYMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
@@ -110,8 +110,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ cd hw/ip/keymgr/dv
-$ make TEST_NAME=keymgr_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson -i keymgr_sanity
 ```
 
 ## Testplan

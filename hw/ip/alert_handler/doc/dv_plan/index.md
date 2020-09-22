@@ -58,7 +58,7 @@ receiver pairs for the alerts and escalators.
 ### UVM RAL Model
 The ALERT_HANDLER RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) `fusesoc` generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -96,8 +96,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ cd hw/ip/alert_handler/dv
-$ make TEST_NAME=alert_handler_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/alert_handler/dv/alert_handler_generic_sim_cfg.hjson -i alert_handler_sanity
 ```
 
 ## Testplan

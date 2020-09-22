@@ -56,7 +56,7 @@ TL host interface into HMAC device.
 ### UVM RAL Model
 The HMAC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Reference models
 To check the correctness of the output for SHA256 and HMAC, the testbench uses
@@ -139,8 +139,7 @@ Please take a look at the link for detailed information on the usage, capabiliti
 issues.
 Here's how to run a basic sanity test:
 ```console
-  $ cd hw/ip/hmac/dv
-  $ make TEST_NAME=hmac_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/hmac/dv/hmac_sim_cfg.hjson -i hmac_sanity
 ```
 
 ## Testplan

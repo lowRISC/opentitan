@@ -57,7 +57,7 @@ The `tl_agent` monitor supplies partial TileLink request packets as well as comp
 ### UVM RAL Model
 The `flash_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 #### Sequence cfg
 An efficient way to develop test sequences is by providing some random varibles that are used to configure the DUT / drive stimulus.
