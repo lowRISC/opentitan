@@ -2382,6 +2382,7 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
+      param_list: []
       interrupt_list:
       [
         {
