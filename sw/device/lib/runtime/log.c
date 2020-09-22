@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/log.h"
+#include "sw/device/lib/runtime/log.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/runtime/print.h"
 
 /**
  * Ensure that log_fields_t is always 20 bytes.

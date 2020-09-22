@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/print.h"
+#include "sw/device/lib/runtime/print.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include "sw/device/lib/base/memory.h"
 
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not
@@ -83,7 +85,7 @@ static size_t snprintf_sink(void *data, const char *buf, size_t len) {
   if (len > captures->bytes_left) {
     len = captures->bytes_left;
   }
-  __builtin_memcpy(captures->buf, buf, len);
+  memcpy(captures->buf, buf, len);
   captures->buf += len;
   captures->bytes_left -= len;
   return len;

@@ -5,12 +5,12 @@
 #include "sw/device/boot_rom/bootstrap.h"
 #include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/print.h"
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 

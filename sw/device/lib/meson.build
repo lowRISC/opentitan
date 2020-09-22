@@ -13,7 +13,7 @@ sw_lib_uart = declare_dependency(
     'uart_ot',
     sources: ['uart.c'],
     dependencies: [
-      sw_lib_base_print,
+      sw_lib_runtime_print,
       sw_lib_runtime_ibex,
       sw_lib_dif_uart,
       top_earlgrey,

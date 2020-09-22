@@ -8,7 +8,6 @@
 
 #include "sw/device/boot_rom/spiflash_frame.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -17,6 +16,7 @@
 #include "sw/device/lib/hw_sha256.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

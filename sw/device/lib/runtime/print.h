@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_PRINT_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_PRINT_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -175,4 +175,4 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args);
  */
 void base_set_stdout(buffer_sink_t out);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_PRINT_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_

@@ -186,7 +186,7 @@ SECTIONS {
 
   /**
    * The following section contains log fields constructed from the logs using
-   * the log_fields_t struct defined in sw/device/lib/base/log.h. The size of
+   * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
    * each log field is fixed - 20 bytes, which is used as the delimiter.
    */
   .logs.fields 0x0 (DSECT): {

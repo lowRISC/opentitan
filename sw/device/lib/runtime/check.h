@@ -7,9 +7,9 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_status.h"
 
 /**

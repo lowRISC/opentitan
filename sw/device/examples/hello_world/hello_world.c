@@ -4,12 +4,12 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 

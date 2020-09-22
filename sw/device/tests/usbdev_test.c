@@ -19,8 +19,8 @@
 
 #include "sw/device/lib/usbdev.h"
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/uart.h"
 #include "sw/device/lib/usb_controlep.h"
