@@ -11,9 +11,12 @@
 #include <getopt.h>
 #include <iostream>
 #include <libelf.h>
-#include <list>
+#include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <vector>
+
+#include "sv_scoped.h"
 
 // DPI Exports
 extern "C" {
@@ -32,6 +35,54 @@ extern void simutil_verilator_memload(const char *file);
  */
 extern int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 }
+
+namespace {
+// Convenience class for runtime errors when loading an ELF file
+class ElfError : public std::exception {
+ public:
+  ElfError(const std::string &path, const std::string &msg) {
+    std::ostringstream oss;
+    oss << "Failed to load ELF file at `" << path << "': " << msg;
+    msg_ = oss.str();
+  }
+
+  const char *what() const noexcept override { return msg_.c_str(); }
+
+ private:
+  std::string msg_;
+};
+
+// Class wrapping an open ELF file
+class ElfFile {
+ public:
+  ElfFile(const std::string &path) {
+    fd_ = open(path.c_str(), O_RDONLY, 0);
+    if (fd_ < 0) {
+      throw ElfError(path, "could not open file.");
+    }
+
+    ptr_ = elf_begin(fd_, ELF_C_READ, NULL);
+    if (!ptr_) {
+      close(fd_);
+      throw ElfError(path, elf_errmsg(-1));
+    }
+
+    if (elf_kind(ptr_) != ELF_K_ELF) {
+      elf_end(ptr_);
+      close(fd_);
+      throw ElfError(path, "not an ELF file.");
+    }
+  }
+
+  ~ElfFile() {
+    elf_end(ptr_);
+    close(fd_);
+  }
+
+  int fd_;
+  Elf *ptr_;
+};
+}  // namespace
 
 // Print a usage message to stdout
 static void PrintHelp() {
@@ -124,77 +175,54 @@ static bool IsFileReadable(std::string filepath) {
   return stat(filepath.data(), &statbuf) == 0;
 }
 
-static bool ElfFileToBinary(const std::string &filepath, uint8_t **data,
-                            size_t &len_bytes) {
-  uint8_t *buf;
-  bool retval, any = false;
-  GElf_Phdr phdr;
-  GElf_Addr high = 0;
-  GElf_Addr low = (GElf_Addr)-1;
-  Elf_Data *elf_data;
-  size_t i;
-
+// Generate a single array of bytes representing the contents of PT_LOAD
+// segments of the ELF file. Like objcopy, this generates a single "giant
+// segment" whose first byte corresponds to the first byte of the lowest
+// addressed segment and whose last byte corresponds to the last byte of the
+// highest address.
+//
+// The data for any intermediate addresses that don't appear in a segment are
+// set to zero.
+static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   (void)elf_errno();
-  len_bytes = 0;
 
   if (elf_version(EV_CURRENT) == EV_NONE) {
-    std::cerr << elf_errmsg(-1) << std::endl;
-    return false;
+    throw std::runtime_error(elf_errmsg(-1));
   }
 
-  int fd = open(filepath.c_str(), O_RDONLY, 0);
-  if (fd < 0) {
-    std::cerr << "Could not open file: " << filepath << std::endl;
-    return false;
-  }
-
-  Elf *elf_desc;
-  elf_desc = elf_begin(fd, ELF_C_READ, NULL);
-  if (elf_desc == NULL) {
-    std::cerr << elf_errmsg(-1) << " in: " << filepath << std::endl;
-    retval = false;
-    goto return_fd_end;
-  }
-  if (elf_kind(elf_desc) != ELF_K_ELF) {
-    std::cerr << "Not a ELF file: " << filepath << std::endl;
-    retval = false;
-    goto return_elf_end;
-  }
+  ElfFile elf(filepath);
   // TODO: add support for ELFCLASS64
-  if (gelf_getclass(elf_desc) != ELFCLASS32) {
-    std::cerr << "Not a 32-bit ELF file: " << filepath << std::endl;
-    retval = false;
-    goto return_elf_end;
+  if (gelf_getclass(elf.ptr_) != ELFCLASS32) {
+    throw ElfError(filepath, "ELF file is not 32-bit.");
   }
 
   size_t phnum;
-  if (elf_getphdrnum(elf_desc, &phnum) != 0) {
-    std::cerr << elf_errmsg(-1) << " in: " << filepath << std::endl;
-    retval = false;
-    goto return_elf_end;
+  if (elf_getphdrnum(elf.ptr_, &phnum) != 0) {
+    throw ElfError(filepath, elf_errmsg(-1));
   }
 
-  //
   // To mimic what objcopy does (that is, the binary target of BFD), we need to
   // iterate over all loadable program headers, find the lowest address, and
-  // then copy in our loadable sections based on their offset with respect to
-  // the found base address.
-  //
-  for (i = 0; i < phnum; i++) {
-    if (gelf_getphdr(elf_desc, i, &phdr) == NULL) {
-      std::cerr << elf_errmsg(-1) << " segment number: " << i
-                << " in: " << filepath << std::endl;
-      retval = false;
-      goto return_elf_end;
+  // then copy in our loadable data based on their offset with respect to the
+  // found base address.
+  bool any = false;
+  GElf_Addr high = 0;
+  GElf_Addr low = (GElf_Addr)-1;
+  for (size_t i = 0; i < phnum; i++) {
+    GElf_Phdr phdr;
+    if (gelf_getphdr(elf.ptr_, i, &phdr) == NULL) {
+      std::ostringstream oss;
+      oss << "in segment number " << i << ": " << elf_errmsg(-1);
+      throw ElfError(filepath, oss.str());
     }
 
     if (phdr.p_type != PT_LOAD) {
-      std::cout << "Program header number " << i << " is not of type PT_LOAD; "
-                << "ignoring." << std::endl;
+      std::cout << "Program header number " << i << " in `" << filepath
+                << "' is not of type PT_LOAD; ignoring." << std::endl;
       continue;
     }
 
-    if (phdr.p_filesz == 0) {
+    if (phdr.p_memsz == 0) {
       continue;
     }
 
@@ -202,95 +230,84 @@ static bool ElfFileToBinary(const std::string &filepath, uint8_t **data,
       low = phdr.p_paddr;
     }
 
-    if (!any || phdr.p_paddr + phdr.p_filesz > high) {
-      high = phdr.p_paddr + phdr.p_filesz;
+    if (!any || phdr.p_paddr + phdr.p_memsz > high) {
+      high = phdr.p_paddr + phdr.p_memsz;
     }
 
     any = true;
   }
 
-  len_bytes = high - low;
-  buf = (uint8_t *)malloc(len_bytes);
-  assert(buf != NULL);
+  assert(low <= high);
+  size_t len_bytes = high - low;
 
-  for (i = 0; i < phnum; i++) {
-    (void)gelf_getphdr(elf_desc, i, &phdr);
+  std::vector<uint8_t> buf(len_bytes);
+
+  for (size_t i = 0; i < phnum; i++) {
+    GElf_Phdr phdr;
+    (void)gelf_getphdr(elf.ptr_, i, &phdr);
 
     if (phdr.p_type != PT_LOAD || phdr.p_filesz == 0) {
       continue;
     }
 
-    elf_data = elf_getdata_rawchunk(elf_desc, phdr.p_offset, phdr.p_filesz,
-                                    ELF_T_BYTE);
-
+    Elf_Data *elf_data = elf_getdata_rawchunk(elf.ptr_, phdr.p_offset,
+                                              phdr.p_filesz, ELF_T_BYTE);
     if (elf_data == NULL) {
-      retval = false;
-      free(buf);
-      goto return_elf_end;
+      std::ostringstream oss;
+      oss << "failed to load data for segment number " << i << ".";
+      throw ElfError(filepath, oss.str());
     }
 
+    // Actually copy the data across. elf_getdata_rawchunk has checked that
+    // there are elf_data->d_size bytes of data available, and the loop that
+    // picked low/high above ensured that we have space to store for p_memsz
+    // bytes: use the smaller of the two numbers.
     memcpy(&buf[phdr.p_paddr - low], (uint8_t *)elf_data->d_buf,
-           elf_data->d_size);
+           std::min(elf_data->d_size, phdr.p_memsz));
   }
 
-  *data = buf;
-  retval = true;
-
-return_elf_end:
-  elf_end(elf_desc);
-return_fd_end:
-  close(fd);
-  return retval;
+  return buf;
 }
 
 static bool WriteElfToMem(const svScope &scope, const std::string &filepath,
                           size_t size_byte) {
-  bool retcode;
-  svScope prev_scope = svSetScope(scope);
+  SVScoped scoped(scope);
 
-  uint8_t *buf = nullptr;
-  size_t len_bytes;
-
-  // This "mini buffer" is used to transfer each write to Verilator. It's not
-  // massively efficient, but doing so ensures that we pass 256 bits (32 bytes)
-  // of initialised data each time. This is for simutil_verilator_set_mem
-  // (defined in prim_util_memload.svh), whose "val" argument has SystemVerilog
-  // type bit [255:0].
-  uint8_t minibuf[32];
-  memset(minibuf, 0, sizeof minibuf);
-  assert(size_byte <= sizeof minibuf);
-
-  if (!ElfFileToBinary(filepath, &buf, len_bytes)) {
-    std::cerr << "ERROR: Could not load: " << filepath << std::endl;
-    retcode = false;
-    goto ret;
+  std::vector<uint8_t> elf_data;
+  try {
+    elf_data = FlattenElfFile(filepath);
+  } catch (const ElfError &err) {
+    std::cerr << "ERROR: " << err.what() << std::endl;
+    return false;
   }
-  for (int i = 0; i < (len_bytes + size_byte - 1) / size_byte; ++i) {
-    memcpy(minibuf, &buf[size_byte * i], size_byte);
-    if (!simutil_verilator_set_mem(i, (svBitVecVal *)minibuf)) {
-      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
-                << len_bytes << "" << std::endl;
 
-      retcode = false;
-      goto ret;
+  size_t data_len = elf_data.size();
+
+  // elf_data isn't necessarily a whole number of 256-bit words long. Round it
+  // up if necessary, padding with zeros. That way, we can safely pass even the
+  // last byte to simutil_verilator_set_mem (defined in prim_util_memload.svh),
+  // whose "val" argument has SystemVerilog type bit [255:0].
+  elf_data.resize((elf_data.size() + 31) / 32 * 32, 0);
+
+  size_t num_words = (data_len + size_byte - 1) / size_byte;
+  for (int i = 0; i < num_words; ++i) {
+    auto *bvv = reinterpret_cast<const svBitVecVal *>(&elf_data[i * size_byte]);
+    if (!simutil_verilator_set_mem(i, bvv)) {
+      std::cerr << "ERROR: Could not set memory byte: " << i * size_byte << "/"
+                << elf_data.size() << std::endl;
+      return false;
     }
   }
 
-  retcode = true;
-
-ret:
-  svSetScope(prev_scope);
-  free(buf);
-  return retcode;
+  return true;
 }
 
 static bool WriteVmemToMem(const svScope &scope, const std::string &filepath) {
-  svScope prev_scope = svSetScope(scope);
+  SVScoped scoped(scope);
 
   // TODO: Add error handling.
   simutil_verilator_memload(filepath.data());
 
-  svSetScope(prev_scope);
   return true;
 }
 
