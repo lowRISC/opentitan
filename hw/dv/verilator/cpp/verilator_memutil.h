@@ -28,7 +28,7 @@ struct MemAreaLoc {
 struct MemArea {
   std::string name;      // Unique identifier
   std::string location;  // Design scope location
-  size_t width_bit;      // Memory width
+  uint32_t width_byte;   // Memory width in bytes
   MemAreaLoc addr_loc;   // Address location. If !size, location is unknown.
 };
 
@@ -51,7 +51,7 @@ class VerilatorMemUtil : public SimCtrlExtension {
    * 'simutil_verilator_memload' and 'simutil_verilator_set_mem' used for
    * 'vmem' and 'elf' files, respectively.
    * The |width_bit| argument specifies the with in bits of the target memory
-   * instance (used for packing data).
+   * instance (used for packing data). This must be a multiple of 8.
    * If |addr_loc| is not null, it gives the base and size of the
    * memory for loading in the address space (corresponding to LMAs in
    * an ELF file).
