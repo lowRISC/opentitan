@@ -50,7 +50,10 @@ enum class SpiFlashAction {
   kVerilator,
 
   /** Covert input binrary into frames. */
-  kDumpFrames
+  kDumpFrames,
+
+  /** Print usage information/help. */
+  kPrintUsage,
 };
 
 /** SPI flash configuration options. */
@@ -203,7 +206,8 @@ bool ParseArgs(int argc, char **argv, SpiFlashOpts *options) {
         break;
       case '?':
       case 'h':
-        PrintUsage(argc, argv);
+        options->action = SpiFlashAction::kPrintUsage;
+        break;
       default:;
     }
   }
@@ -223,6 +227,11 @@ int main(int argc, char **argv) {
     std::cerr << "Unable to detect valid command line arguments." << std::endl;
     PrintUsage(argc, argv);
     return 1;
+  }
+
+  if (spi_flash_options.action == SpiFlashAction::kPrintUsage) {
+    PrintUsage(argc, argv);
+    return 0;
   }
 
   std::string code;
