@@ -326,17 +326,9 @@ static bool WriteFileToMem(const MemArea &m, const std::string &filepath,
     return false;
   }
 
-  if ((m.width_bit % 8) != 0) {
-    std::cerr << "ERROR: width for: " << m.name
-              << "must be a multiple of 8 (was : " << m.width_bit << ")"
-              << std::endl;
-    return false;
-  }
-  size_t size_byte = m.width_bit / 8;
-
   switch (type) {
     case kMemImageElf:
-      if (!WriteElfToMem(scope, filepath, size_byte)) {
+      if (!WriteElfToMem(scope, filepath, m.width_byte)) {
         std::cerr << "ERROR: Writing ELF file to memory \"" << m.name << "\" ("
                   << m.location << ") failed." << std::endl;
         return false;
@@ -369,11 +361,12 @@ bool VerilatorMemUtil::RegisterMemoryArea(const std::string name,
                                           const MemAreaLoc *addr_loc) {
   assert((width_bit <= 256) &&
          "TODO: Memory loading only supported up to 256 bits.");
+  assert(width_bit % 8 == 0);
 
   // First, create and register the memory by name
   MemArea mem = {.name = name,
                  .location = location,
-                 .width_bit = width_bit,
+                 .width_byte = (uint32_t)width_bit / 8,
                  .addr_loc = {.base = 0, .size = 0}};
   auto ret = name_to_mem_.emplace(name, mem);
   if (ret.second == false) {
@@ -535,7 +528,7 @@ void VerilatorMemUtil::PrintMemRegions() const {
   std::cout << "Registered memory regions:" << std::endl;
   for (const auto &pr : name_to_mem_) {
     const MemArea &m = pr.second;
-    std::cout << "\t'" << m.name << "' (" << m.width_bit
+    std::cout << "\t'" << m.name << "' (" << m.width_byte * 8
               << "bits) at location: '" << m.location << "'";
     if (m.addr_loc.size) {
       uint32_t low = m.addr_loc.base;
