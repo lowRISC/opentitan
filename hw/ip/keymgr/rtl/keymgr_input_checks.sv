@@ -18,8 +18,8 @@ module keymgr_input_checks import keymgr_pkg::*;(
   logic [31:0] cur_max_key_version;
   assign cur_max_key_version = max_key_versions_i[stage_sel_i];
 
-  // TBD, should harden this compare
-  assign key_version_good_o = key_version_i > cur_max_key_version;
+  // key version must be smaller than or equal to max version
+  assign key_version_good_o = key_version_i <= cur_max_key_version;
 
 
 
