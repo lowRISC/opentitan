@@ -236,12 +236,6 @@ module prim_packer #(
             valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
   end
 
-  // Assume data and mask patterns to reduce FPV test time
-  if (InW + OutW > 32) begin : gen_fpv_assumption
-    `ASSUME_FPV(FpvDataWithin_M, data_i inside {'0, '1, 32'hDEAD_BEEF})
-    `ASSUME_FPV(FpvMaskWithin_M, mask_i inside {'0, '1, 32'h08FF_2E41})
-  end
-
   // Flush and Write Enable cannot be asserted same time
   `ASSUME(ExFlushValid_M, flush_i |-> !valid_i)
 
