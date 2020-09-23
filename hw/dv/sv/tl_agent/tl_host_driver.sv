@@ -92,7 +92,6 @@ class tl_host_driver extends tl_base_driver;
         cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
         cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
       end else begin
-        seq_item_port.put_response(req); // if reset, skip data phase
         req_done = 1;
       end
       // drop valid if it lasts for a_valid_len, even there is no a_ready
@@ -105,6 +104,8 @@ class tl_host_driver extends tl_base_driver;
       invalidate_a_channel();
     end
     seq_item_port.item_done();
+    // if reset, skip data phase
+    if (reset_asserted) seq_item_port.put_response(req);
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
 
