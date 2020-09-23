@@ -162,7 +162,7 @@ extern "C" int otbn_model_start(ISSWrapper *model, const char *imem_scope,
   try {
     dump_memory_to_file(dfname, dmem_scope, dmem_words, 32);
     dump_memory_to_file(ifname, imem_scope, imem_words, 4);
-  } catch (const std::runtime_error &err) {
+  } catch (const std::exception &err) {
     std::cerr << "Error when dumping memory contents: " << err.what() << "\n";
     return -1;
   }
@@ -200,7 +200,7 @@ extern "C" int otbn_model_load_dmem(ISSWrapper *model, const char *dmem_scope,
   try {
     model->dump_d(dfname);
     load_memory_from_file(dfname, dmem_scope, dmem_words, 32);
-  } catch (const std::runtime_error &err) {
+  } catch (const std::exception &err) {
     std::cerr << "Error when loading dmem from ISS: " << err.what() << "\n";
     return -1;
   }
