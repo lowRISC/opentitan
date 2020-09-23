@@ -11,6 +11,7 @@ sw_tests = {
 }
 
 subdir('dif')
+subdir('rom_ext')
 subdir('runtime')
 subdir('sim_dv')
 
