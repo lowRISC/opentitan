@@ -68,31 +68,33 @@ static volatile bool expected_irq_edge;
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
   LOG_INFO("Initializing the PLIC.");
 
-  CHECK(dif_plic_init(base_addr, plic) == kDifPlicOk, "dif_plic_init failed");
+  CHECK(dif_plic_init((dif_plic_params_t){.base_addr = base_addr}, plic) ==
+            kDifPlicOk,
+        "dif_plic_init failed");
 
   for (uint32_t i = 0; i < kNumGpios; ++i) {
     dif_plic_irq_id_t plic_irq_id = i + kTopEarlgreyPlicIrqIdGpioGpio0;
 
     // Enable GPIO interrupts at PLIC as edge triggered.
-    CHECK(dif_plic_irq_trigger_type_set(plic, plic_irq_id, kDifPlicEnable) ==
+    CHECK(dif_plic_irq_set_trigger(plic, plic_irq_id, kDifPlicIrqTriggerEdge) ==
               kDifPlicOk,
-          "dif_plic_irq_trigger_type_set failed");
+          "dif_plic_irq_set_trigger failed");
 
     // Set the priority of GPIO interrupts at PLIC to be >=1
-    CHECK(dif_plic_irq_priority_set(plic, plic_irq_id, 0x1) == kDifPlicOk,
-          "dif_plic_irq_priority_set failed");
+    CHECK(dif_plic_irq_set_priority(plic, plic_irq_id, 0x1) == kDifPlicOk,
+          "dif_plic_irq_set_priority failed");
 
     // Enable all GPIO interrupts at the PLIC.
     CHECK(
-        dif_plic_irq_enable_set(plic, plic_irq_id, kTopEarlgreyPlicTargetIbex0,
-                                kDifPlicEnable) == kDifPlicOk,
-        "dif_plic_irq_enable_set failed");
+        dif_plic_irq_set_enabled(plic, plic_irq_id, kTopEarlgreyPlicTargetIbex0,
+                                 kDifPlicToggleEnabled) == kDifPlicOk,
+        "dif_plic_irq_set_enabled failed");
   }
 
   // Set the threshold for the Ibex to 0.
-  CHECK(dif_plic_target_threshold_set(plic, kTopEarlgreyPlicTargetIbex0, 0x0) ==
+  CHECK(dif_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0) ==
             kDifPlicOk,
-        "dif_plic_target_threshold_set failed");
+        "dif_plic_target_set_threshold failed");
 }
 
 /**

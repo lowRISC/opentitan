@@ -21,9 +21,8 @@ constexpr uint32_t kFirstIrq = 1;
 
 class PlicTest : public Test, public MmioTest {
  protected:
-  mmio_region_t base_addr_ = dev().region();
   dif_plic_t dif_plic_ = {
-      /* base_addr = */ base_addr_,
+      .params = {.base_addr = dev().region()},
   };
 };
 
@@ -55,14 +54,16 @@ class InitTest : public PlicTest {
 };
 
 TEST_F(InitTest, NullArgs) {
-  dif_plic_result_t result = dif_plic_init(base_addr_, nullptr);
+  dif_plic_result_t result =
+      dif_plic_init({.base_addr = dev().region()}, nullptr);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
 TEST_F(InitTest, Success) {
   ExpectInitReset();
 
-  dif_plic_result_t result = dif_plic_init(base_addr_, &dif_plic_);
+  dif_plic_result_t result =
+      dif_plic_init({.base_addr = dev().region()}, &dif_plic_);
   EXPECT_EQ(result, kDifPlicOk);
 }
 
@@ -120,8 +121,8 @@ class IrqEnableSetTest : public IrqTests {
 };
 
 TEST_F(IrqEnableSetTest, NullArgs) {
-  dif_plic_result_t result =
-      dif_plic_irq_enable_set(nullptr, kFirstIrq, kTarget0, kDifPlicEnable);
+  dif_plic_result_t result = dif_plic_irq_set_enabled(
+      nullptr, kFirstIrq, kTarget0, kDifPlicToggleEnabled);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
@@ -130,8 +131,8 @@ TEST_F(IrqEnableSetTest, Target0Enable) {
 
   // Enable every IRQ, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
-    dif_plic_result_t result =
-        dif_plic_irq_enable_set(&dif_plic_, i, kTarget0, kDifPlicEnable);
+    dif_plic_result_t result = dif_plic_irq_set_enabled(&dif_plic_, i, kTarget0,
+                                                        kDifPlicToggleEnabled);
     EXPECT_EQ(result, kDifPlicOk);
   }
 }
@@ -141,8 +142,8 @@ TEST_F(IrqEnableSetTest, Target0Disable) {
 
   // Disable every bit, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
-    dif_plic_result_t result =
-        dif_plic_irq_enable_set(&dif_plic_, i, kTarget0, kDifPlicDisable);
+    dif_plic_result_t result = dif_plic_irq_set_enabled(&dif_plic_, i, kTarget0,
+                                                        kDifPlicToggleDisabled);
     EXPECT_EQ(result, kDifPlicOk);
   }
 }
@@ -169,7 +170,7 @@ class IrqTriggerTypeSetTest : public IrqTests {
 
 TEST_F(IrqTriggerTypeSetTest, NullArgs) {
   dif_plic_result_t result =
-      dif_plic_irq_trigger_type_set(nullptr, kFirstIrq, kDifPlicEnable);
+      dif_plic_irq_set_trigger(nullptr, kFirstIrq, kDifPlicIrqTriggerEdge);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
@@ -179,7 +180,7 @@ TEST_F(IrqTriggerTypeSetTest, Enable) {
   // Enable every IRQ, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
     dif_plic_result_t result =
-        dif_plic_irq_trigger_type_set(&dif_plic_, i, kDifPlicEnable);
+        dif_plic_irq_set_trigger(&dif_plic_, i, kDifPlicIrqTriggerEdge);
     EXPECT_EQ(result, kDifPlicOk);
   }
 }
@@ -190,7 +191,7 @@ TEST_F(IrqTriggerTypeSetTest, Disable) {
   // Enable every IRQ, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
     dif_plic_result_t result =
-        dif_plic_irq_trigger_type_set(&dif_plic_, i, kDifPlicDisable);
+        dif_plic_irq_set_trigger(&dif_plic_, i, kDifPlicIrqTriggerLevel);
     EXPECT_EQ(result, kDifPlicOk);
   }
 }
@@ -199,13 +200,13 @@ class IrqPrioritySetTest : public PlicTest {};
 
 TEST_F(IrqPrioritySetTest, NullArgs) {
   dif_plic_result_t result =
-      dif_plic_irq_priority_set(nullptr, kFirstIrq, kDifPlicMaxPriority);
+      dif_plic_irq_set_priority(nullptr, kFirstIrq, kDifPlicMaxPriority);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
 TEST_F(IrqPrioritySetTest, PriorityInvalid) {
   dif_plic_result_t result =
-      dif_plic_irq_priority_set(nullptr, kFirstIrq, kDifPlicMaxPriority + 1);
+      dif_plic_irq_set_priority(nullptr, kFirstIrq, kDifPlicMaxPriority + 1);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
@@ -217,7 +218,7 @@ TEST_F(IrqPrioritySetTest, Success) {
 
     // Set every priority register to MAX priority.
     dif_plic_result_t result =
-        dif_plic_irq_priority_set(&dif_plic_, i, kDifPlicMaxPriority);
+        dif_plic_irq_set_priority(&dif_plic_, i, kDifPlicMaxPriority);
     EXPECT_EQ(result, kDifPlicOk);
   }
 }
@@ -230,12 +231,12 @@ class TargetThresholdSetTest : public PlicTest {
 
 TEST_F(TargetThresholdSetTest, Target0NullArgs) {
   dif_plic_result_t result =
-      dif_plic_target_threshold_set(nullptr, kTarget0, kDifPlicMaxPriority);
+      dif_plic_target_set_threshold(nullptr, kTarget0, kDifPlicMaxPriority);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
 TEST_F(TargetThresholdSetTest, Target0PriorityInvalid) {
-  dif_plic_result_t result = dif_plic_target_threshold_set(
+  dif_plic_result_t result = dif_plic_target_set_threshold(
       &dif_plic_, kTarget0, kDifPlicMaxPriority + 1);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
@@ -244,7 +245,7 @@ TEST_F(TargetThresholdSetTest, Target0Success) {
   EXPECT_WRITE32(RV_PLIC_THRESHOLD0_REG_OFFSET, kDifPlicMaxPriority);
 
   dif_plic_result_t result =
-      dif_plic_target_threshold_set(&dif_plic_, kTarget0, kDifPlicMaxPriority);
+      dif_plic_target_set_threshold(&dif_plic_, kTarget0, kDifPlicMaxPriority);
   EXPECT_EQ(result, kDifPlicOk);
 }
 
@@ -269,15 +270,15 @@ class IrqPendingStatusGetTest : public IrqTests {
 };
 
 TEST_F(IrqPendingStatusGetTest, NullArgs) {
-  dif_plic_flag_t status;
+  bool status;
   dif_plic_result_t result =
-      dif_plic_irq_pending_status_get(nullptr, kFirstIrq, &status);
+      dif_plic_irq_is_pending(nullptr, kFirstIrq, &status);
   EXPECT_EQ(result, kDifPlicBadArg);
 
-  result = dif_plic_irq_pending_status_get(&dif_plic_, kFirstIrq, nullptr);
+  result = dif_plic_irq_is_pending(&dif_plic_, kFirstIrq, nullptr);
   EXPECT_EQ(result, kDifPlicBadArg);
 
-  result = dif_plic_irq_pending_status_get(nullptr, kFirstIrq, nullptr);
+  result = dif_plic_irq_is_pending(nullptr, kFirstIrq, nullptr);
   EXPECT_EQ(result, kDifPlicBadArg);
 }
 
@@ -286,11 +287,10 @@ TEST_F(IrqPendingStatusGetTest, Enabled) {
 
   // Get status of every IRQ, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
-    dif_plic_flag_t status = kDifPlicUnset;
-    dif_plic_result_t result =
-        dif_plic_irq_pending_status_get(&dif_plic_, i, &status);
+    bool status;
+    dif_plic_result_t result = dif_plic_irq_is_pending(&dif_plic_, i, &status);
     EXPECT_EQ(result, kDifPlicOk);
-    EXPECT_EQ(status, kDifPlicSet);
+    EXPECT_TRUE(status);
   }
 }
 
@@ -299,11 +299,10 @@ TEST_F(IrqPendingStatusGetTest, Disabled) {
 
   // Get status of every IRQ, one at a time.
   for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
-    dif_plic_flag_t status = kDifPlicSet;
-    dif_plic_result_t result =
-        dif_plic_irq_pending_status_get(&dif_plic_, i, &status);
+    bool status;
+    dif_plic_result_t result = dif_plic_irq_is_pending(&dif_plic_, i, &status);
     EXPECT_EQ(result, kDifPlicOk);
-    EXPECT_EQ(status, kDifPlicUnset);
+    EXPECT_FALSE(status);
   }
 }
 
