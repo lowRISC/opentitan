@@ -75,11 +75,11 @@ static svScope SetRelScope(const std::string &name) {
   // If first_not_dot points inside name (so name looked like "..foo.bar"
   // rather than "..."), subtract one to point at the last dot of the initial
   // segment (we know there is one because name[0] == '.') and then append
-  // everything from there to scope_name. For example, if scope_name
+  // everything to scope_name starting from there. For example, if scope_name
   // was "TOP.foo.bar.baz" and name was "..qux", we will have just amended
   // scope_name to be "TOP.foo.bar". Now we want to add ".qux".
   if (first_not_dot < name.size()) {
-    scope_name.append(name, first_not_dot - 1);
+    scope_name.append(name, first_not_dot - 1, std::string::npos);
   }
 
   return SetAbsScope(scope_name);
