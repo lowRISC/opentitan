@@ -28,55 +28,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * The lowest interrupt priority.
- */
-extern const uint32_t kDifPlicMinPriority;
-
-/**
- * The highest interrupt priority.
- */
-extern const uint32_t kDifPlicMaxPriority;
-
-/**
- * A PLIC interrupt source identifier.
- *
- * This corresponds to a specific interrupt, and not the device it originates
- * from.
- *
- * This is an unsigned 32-bit value that is at least zero and is less than the
- * `NumSrc` instantiation parameter of the `rv_plic` device.
- *
- * The value 0 corresponds to "No Interrupt".
- */
-typedef uint32_t dif_plic_irq_id_t;
-
-/**
- * A PLIC interrupt target.
- *
- * This corresponds to a specific system that can service an interrupt. In
- * OpenTitan's case, that is the Ibex core. If there were multiple cores in the
- * system, each core would have its own specific interrupt target ID.
- *
- * This is an unsigned 32-bit value that is at least 0 and is less than the
- * `NumTarget` instantiation parameter of the `rv_plic` device.
- */
-typedef uint32_t dif_plic_target_t;
-
-/**
- * An interrupt trigger type.
- */
-typedef enum dif_plic_irq_trigger {
-  /**
-   * Trigger on an edge (when the signal changes from low to high).
-   */
-  kDifPlicIrqTriggerEdge,
-  /**
-   * Trigger on a level (when the signal remains high).
-   */
-  kDifPlicIrqTriggerLevel,
-} dif_plic_irq_trigger_t;
-
-/**
  * A toggle state: enabled, or disabled.
  *
  * This enum may be used instead of a `bool` when describing an enabled/disabled
@@ -138,6 +89,55 @@ typedef enum dif_plic_result {
 } dif_plic_result_t;
 
 /**
+ * The lowest interrupt priority.
+ */
+extern const uint32_t kDifPlicMinPriority;
+
+/**
+ * The highest interrupt priority.
+ */
+extern const uint32_t kDifPlicMaxPriority;
+
+/**
+ * A PLIC interrupt source identifier.
+ *
+ * This corresponds to a specific interrupt, and not the device it originates
+ * from.
+ *
+ * This is an unsigned 32-bit value that is at least zero and is less than the
+ * `NumSrc` instantiation parameter of the `rv_plic` device.
+ *
+ * The value 0 corresponds to "No Interrupt".
+ */
+typedef uint32_t dif_plic_irq_id_t;
+
+/**
+ * A PLIC interrupt target.
+ *
+ * This corresponds to a specific system that can service an interrupt. In
+ * OpenTitan's case, that is the Ibex core. If there were multiple cores in the
+ * system, each core would have its own specific interrupt target ID.
+ *
+ * This is an unsigned 32-bit value that is at least 0 and is less than the
+ * `NumTarget` instantiation parameter of the `rv_plic` device.
+ */
+typedef uint32_t dif_plic_target_t;
+
+/**
+ * An interrupt trigger type.
+ */
+typedef enum dif_plic_irq_trigger {
+  /**
+   * Trigger on an edge (when the signal changes from low to high).
+   */
+  kDifPlicIrqTriggerEdge,
+  /**
+   * Trigger on a level (when the signal remains high).
+   */
+  kDifPlicIrqTriggerLevel,
+} dif_plic_irq_trigger_t;
+
+/**
  * Creates a new handle for PLIC.
  *
  * This function does not actuate the hardware.
@@ -148,6 +148,19 @@ typedef enum dif_plic_result {
  */
 DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_init(dif_plic_params_t params, dif_plic_t *plic);
+
+/**
+ * Returns whether a particular interrupt is currently pending.
+ *
+ * @param plic A PLIC handle.
+ * @param irq An interrupt type.
+ * @param[out] is_pending Out-param for whether the interrupt is pending.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_plic_result_t dif_plic_irq_is_pending(const dif_plic_t *plic,
+                                          dif_plic_irq_id_t irq,
+                                          bool *is_pending);
 
 /**
  * Checks whether a particular interrupt is currently enabled or disabled.
@@ -231,19 +244,6 @@ DIF_WARN_UNUSED_RESULT
 dif_plic_result_t dif_plic_target_set_threshold(const dif_plic_t *plic,
                                                 dif_plic_target_t target,
                                                 uint32_t threshold);
-
-/**
- * Returns whether a particular interrupt is currently pending.
- *
- * @param plic A PLIC handle.
- * @param irq An interrupt type.
- * @param[out] is_pending Out-param for whether the interrupt is pending.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_plic_result_t dif_plic_irq_is_pending(const dif_plic_t *plic,
-                                          dif_plic_irq_id_t irq,
-                                          bool *is_pending);
 
 /**
  * Claims an IRQ and gets the information about the source.
