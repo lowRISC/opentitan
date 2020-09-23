@@ -56,8 +56,8 @@ module otp_ctrl_part_unbuf
   localparam int DigestOffset = (Info.offset + (Info.size - (ScrmblBlockWidth/8)));
 
   // Integration checks for parameters.
-  `ASSERT_INIT(OffsetMustBeBlockAligned_A, Info.offset % ScrmblBlockWidth/8 == 0)
-  `ASSERT_INIT(SizeMustBeBlockAligned_A, Info.size % ScrmblBlockWidth/8 == 0)
+  `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
+  `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
 
   ///////////////////////
   // OTP Partition FSM //
@@ -195,7 +195,7 @@ module otp_ctrl_part_unbuf
       // these checks pass, an OTP word is requested.
       ReadSt: begin
         init_done_o = 1'b1;
-        if (OtpByteAddrWidth'({tlul_addr_q, 2'b00} < Info.size) &&
+        if (OtpByteAddrWidth'({tlul_addr_q, 2'b00}) < Info.size &&
             access_o.read_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;

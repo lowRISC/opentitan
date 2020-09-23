@@ -148,8 +148,6 @@ module otp_ctrl
   dai_cmd_e                     dai_cmd;
   logic [OtpByteAddrWidth-1:0]  dai_addr;
   logic [NumDaiWords-1:0][31:0] dai_wdata, dai_rdata;
-  logic                         unused_wdata_qe;
-  logic                         unused_addr_qe;
 
   // Any write to this register triggers a DAI command.
   assign dai_req = reg2hw.direct_access_cmd.digest.qe |
@@ -572,10 +570,10 @@ module otp_ctrl
   assign part_scrmbl_req_bundle[LciIdx] = '0;
 
   // This stops lint from complaining about unused signals.
-  logic unused_part_scrmbl_req_ready, unused_part_scrmbl_rsp_valid, unused_part_scrmbl_mtx_gnt;
-  assign unused_part_scrmbl_mtx_gnt   = part_scrmbl_mtx_gnt[LciIdx];
-  assign unused_part_scrmbl_req_ready = part_scrmbl_req_ready[LciIdx];
-  assign unused_part_scrmbl_rsp_valid = part_scrmbl_rsp_valid[LciIdx];
+  logic unused_lci_scrmbl_sigs;
+  assign unused_lci_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[LciIdx],
+                                    part_scrmbl_req_ready[LciIdx],
+                                    part_scrmbl_rsp_valid[LciIdx]};
 
   ////////////////////////////////////
   // Key Derivation Interface (KDI) //
@@ -621,13 +619,9 @@ module otp_ctrl
   assign part_otp_arb_bundle[KdiIdx] = '0;
 
   // This stops lint from complaining about unused signals.
-  logic unused_part_otp_arb_gnt, unused_part_otp_rvalid;
-  logic [OtpIfWidth-1:0] unused_part_otp_rdata;
-  logic [OtpErrWidth-1:0] unused_part_otp_err;
-  assign unused_part_otp_arb_gnt = part_otp_arb_gnt[KdiIdx];
-  assign unused_part_otp_rvalid  = part_otp_rvalid[KdiIdx];
-  assign unused_part_otp_rdata   = part_otp_rdata[KdiIdx];
-  assign unused_part_otp_err   = part_otp_err[KdiIdx];
+  logic unused_kdi_otp_sigs;
+  assign unused_kdi_otp_sigs = ^{part_otp_arb_gnt[KdiIdx],
+                                 part_otp_rvalid[KdiIdx]};
 
   /////////////////////////
   // Partition Instances //
@@ -676,13 +670,12 @@ module otp_ctrl
       assign part_buf_data[PartInfo[k].offset +: PartInfo[k].size] = '0;
 
       // This stops lint from complaining about unused signals.
-      logic unused_part_scrmbl_req_ready, unused_part_scrmbl_rsp_valid, unused_part_scrmbl_mtx_gnt;
-      logic unused_integ_chk_req, unused_cnsty_chk_req;
-      assign unused_part_scrmbl_mtx_gnt   = part_scrmbl_mtx_gnt[k];
-      assign unused_part_scrmbl_req_ready = part_scrmbl_req_ready[k];
-      assign unused_part_scrmbl_rsp_valid = part_scrmbl_rsp_valid[k];
-      assign unused_integ_chk_req         = integ_chk_req[k];
-      assign unused_cnsty_chk_req         = cnsty_chk_req[k];
+      logic unused_part_scrmbl_sigs;
+      assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
+                                         part_scrmbl_req_ready[k],
+                                         part_scrmbl_rsp_valid[k],
+                                         integ_chk_req[k],
+                                         cnsty_chk_req[k]};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
@@ -732,6 +725,10 @@ module otp_ctrl
     end
   end
 
+  // TODO: remove this once connected.
+  logic unused_entropy;
+  assign unused_entropy = ^edn_otp_up_i.data;
+
   //////////////////////////////////
   // Buffered Data Output Mapping //
   //////////////////////////////////
@@ -774,6 +771,10 @@ module otp_ctrl
           otp_lc_data_o.state}        = part_buf_data[PartInfo[LifeCycleIdx].offset +:
                                                       PartInfo[LifeCycleIdx].size];
 
+  // Not all bits of part_buf_data are used here.
+  logic unused_buf_data;
+  assign unused_buf_data = ^part_buf_data;
+
   ////////////////
   // Assertions //
   ////////////////
@@ -787,7 +788,9 @@ module otp_ctrl
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_rsp_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          otp_flash_key_o)
+  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          flash_otp_key_rsp_o)
+  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          sram_otp_key_rsp_o)
+  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          otbn_otp_key_rsp_o)
   `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
 
 endmodule : otp_ctrl

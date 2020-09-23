@@ -98,13 +98,13 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   assign cnsty_mask  = {cnsty_period_msk_i, {TimerWidth-32{1'b1}}};
 
   assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
-                       (integ_load_timeout) ? timeout_i               :
+                       (integ_load_timeout) ? TimerWidth'(timeout_i)  :
                        (integ_cnt_zero)     ? '0                      :
                                               integ_cnt_q - 1'b1;
 
 
   assign cnsty_cnt_d = (cnsty_load_period)  ? lfsr_state & cnsty_mask :
-                       (cnsty_load_timeout) ? timeout_i               :
+                       (cnsty_load_timeout) ? TimerWidth'(timeout_i)  :
                        (cnsty_cnt_zero)     ? '0                      :
                                               cnsty_cnt_q - 1'b1;
 
@@ -178,7 +178,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     set_all_cnsty_reqs = '0;
 
     // Status signals going to CSRs and error logic.
-    chk_timeout_o = 1'b0;
+    chk_timeout_d = 1'b0;
     chk_pending_o = 1'b0;
     fsm_err_o = 1'b0;
 

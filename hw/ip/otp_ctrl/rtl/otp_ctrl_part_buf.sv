@@ -72,8 +72,8 @@ module otp_ctrl_part_buf
   localparam int CntWidth = vbits(NumScrmblBlocks);
 
   // Integration checks for parameters.
-  `ASSERT_INIT(OffsetMustBeBlockAligned_A, Info.offset % ScrmblBlockWidth/8 == 0)
-  `ASSERT_INIT(SizeMustBeBlockAligned_A, Info.size % ScrmblBlockWidth/8 == 0)
+  `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
+  `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
   `ASSERT(ScrambledImpliesDigest_A, Info.scrambled |-> Info.hw_digest)
   `ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
   `ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)

@@ -4,4 +4,14 @@
 #
 # waiver file for OTP controller
 
+waive -rules {TERMINAL_STATE} -location {otp_ctrl_dai.sv \
+                                         otp_ctrl_lci.sv \
+                                         otp_ctrl_lfsr_timer.sv \
+                                         otp_ctrl_part_buf.sv \
+                                         otp_ctrl_part_unbuf.sv \
+                                         otp_ctrl_scrmbl.sv} \
+      -msg {Terminal state 'ErrorSt' is detected. Next state register 'state_d' is not assigned in this state.} \
+      -comment "All these FSMs have a valid, terminal error state."
 
+waive -rules {INVALID_COMPARE} -location {otp_ctrl_dai.sv} -regexp {.*dai_addr_i >= PartInfo\[0\]\.offset.*} \
+      -comment "This invalid compare is due to the first partition offset being zero."

@@ -13,7 +13,7 @@ module otp_ctrl_kdi
 #(
   // Number of SRAM key requestor slots. All of them will use the same key seed.
   // However, each request will generate a new key seed.
-  parameter int NumSramKeyReqSlots = 3
+  parameter int NumSramKeyReqSlots = 2
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -23,7 +23,7 @@ module otp_ctrl_kdi
   // Escalation input. This moves the FSM into a terminal state.
   input  lc_tx_t                                     escalate_en_i,
   // FSM is in error state
-  output otp_err_e                                   fsm_err_o,
+  output logic                                       fsm_err_o,
   // Key seed inputs from OTP
   input  logic                                       scrmbl_key_seed_valid_i,
   input  logic [FlashKeySeedWidth-1:0]               flash_data_key_seed_i,
@@ -55,5 +55,42 @@ module otp_ctrl_kdi
   input  logic [ScrmblBlockWidth-1:0]                scrmbl_data_i
 );
 
+  // tie-off and unused assignments for preventing lint messages
+  assign fsm_err_o = 1'b0;
+  assign otp_edn_req_o = '0;
+  assign lc_otp_token_rsp_o = '0;
+  assign flash_otp_key_rsp_o = '0;
+  assign sram_otp_key_rsp_o = '0;
+  assign otbn_otp_key_rsp_o = '0;
+  assign scrmbl_mtx_req_o = '0;
+  assign scrmbl_cmd_o = '0;
+  assign scrmbl_sel_o = '0;
+  assign scrmbl_data_o = '0;
+  assign scrmbl_valid_o = '0;
+
+  logic unused_sigs_d, unused_sigs_q;
+  assign unused_sigs_d = ^{key_deriv_en_i,
+                           escalate_en_i,
+                           scrmbl_key_seed_valid_i,
+                           flash_data_key_seed_i,
+                           flash_addr_key_seed_i,
+                           sram_data_key_seed_i,
+                           otp_edn_rsp_i,
+                           lc_otp_token_req_i,
+                           flash_otp_key_req_i,
+                           sram_otp_key_req_i,
+                           otbn_otp_key_req_i,
+                           scrmbl_mtx_gnt_i,
+                           scrmbl_ready_i,
+                           scrmbl_valid_i,
+                           scrmbl_data_i};
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      unused_sigs_q <= '0;
+    end else begin
+      unused_sigs_q <= unused_sigs_d;
+    end
+  end
 
 endmodule : otp_ctrl_kdi

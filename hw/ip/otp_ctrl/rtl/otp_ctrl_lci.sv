@@ -14,36 +14,36 @@ module otp_ctrl_lci
   // Lifecycle partition information
   parameter part_info_t Info
 ) (
-  input                               clk_i,
-  input                               rst_ni,
-  input                               init_req_i,
+  input                                    clk_i,
+  input                                    rst_ni,
+  input                                    init_req_i,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
-  input  lc_tx_t                      escalate_en_i,
+  input  lc_tx_t                           escalate_en_i,
   // Life cycle transition request. In order to perform a state transition,
   // the LC controller signals the differential value with respect to the
   // current state. The OTP controller then only programs the non-zero
   // state differential.
-  input                               lc_req_i,
-  input  lc_state_e                   lc_state_diff_i,
-  input  lc_state_e                   lc_count_diff_i,
-  output logic                        lc_ack_o,
-  output logic                        lc_err_o,
+  input                                    lc_req_i,
+  input  lc_state_e                        lc_state_diff_i,
+  input  lc_value_e [NumLcCountValues-1:0] lc_count_diff_i,
+  output logic                             lc_ack_o,
+  output logic                             lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
-  output otp_err_e                    error_o,
-  output logic                        lci_idle_o,
+  output otp_err_e                          error_o,
+  output logic                              lci_idle_o,
   // OTP interface
-  output logic                        otp_req_o,
-  output prim_otp_cmd_e               otp_cmd_o,
-  output logic [OtpSizeWidth-1:0]     otp_size_o,
-  output logic [OtpIfWidth-1:0]       otp_wdata_o,
-  output logic [OtpAddrWidth-1:0]     otp_addr_o,
-  input                               otp_gnt_i,
-  input                               otp_rvalid_i,
-  input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
-  input  otp_err_e                    otp_err_i
+  output logic                              otp_req_o,
+  output prim_otp_cmd_e                     otp_cmd_o,
+  output logic [OtpSizeWidth-1:0]           otp_size_o,
+  output logic [OtpIfWidth-1:0]             otp_wdata_o,
+  output logic [OtpAddrWidth-1:0]           otp_addr_o,
+  input                                     otp_gnt_i,
+  input                                     otp_rvalid_i,
+  input  [ScrmblBlockWidth-1:0]             otp_rdata_i,
+  input  otp_err_e                          otp_err_i
 );
 
   ////////////////////////
@@ -225,13 +225,16 @@ module otp_ctrl_lci
   assign otp_wdata_o      = OtpIfWidth'(diff_data[cnt_q]);
   assign diff_data_is_set = (diff_data[cnt_q] != Blk);
 
+  logic unused_rdata;
+  assign unused_rdata = ^otp_rdata_i;
+
   ///////////////
   // Registers //
   ///////////////
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q <= IdleSt;
+      state_q <= ResetSt;
       error_q <= NoErr;
       cnt_q   <= '0;
     end else begin
