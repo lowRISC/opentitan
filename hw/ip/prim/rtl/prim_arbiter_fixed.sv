@@ -93,6 +93,8 @@ module prim_arbiter_fixed #(
             assign req_tree[Pa]  = '0;
             assign idx_tree[Pa]  = '0;
             assign data_tree[Pa] = '0;
+            logic unused_sigs;
+            assign unused_sigs = gnt_tree[Pa];
           end
         // this creates the node assignments
         end else begin : gen_nodes
@@ -118,8 +120,8 @@ module prim_arbiter_fixed #(
     if (EnDataPort) begin : gen_data_port
       assign data_o      = data_tree[0];
     end else begin : gen_no_dataport
-      logic [DW-1:0] unused_data [N];
-      assign unused_data = data_i;
+      logic [DW-1:0] unused_data;
+      assign unused_data = data_tree[0];
       assign data_o = '1;
     end
 
