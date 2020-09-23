@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:clock_mux2
       - lowrisc:ip:rstmgr_pkg
     files:
       - rtl/rstmgr_ctrl.sv

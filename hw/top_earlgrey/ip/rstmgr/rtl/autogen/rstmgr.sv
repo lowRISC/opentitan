@@ -41,12 +41,19 @@ module rstmgr import rstmgr_pkg::*; (
   input rstmgr_cpu_t cpu_i,
 
   // Interface to alert handler
+  input alert_pkg::alert_crashdump_t alert_dump_i,
+
+  // dft bypass
+  input scan_rst_ni,
+  input scanmode_i,
 
   // reset outputs
   output rstmgr_ast_out_t resets_ast_o,
   output rstmgr_out_t resets_o
 
 );
+
+  import rstmgr_reg_pkg::*;
 
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
@@ -55,10 +62,17 @@ module rstmgr import rstmgr_pkg::*; (
   rstmgr_por u_rst_por_aon (
     .clk_i(clk_aon_i),
     .rst_ni(ast_i.aon_pok),
+    .scan_rst_ni,
+    .scanmode_i,
     .rst_no(rst_por_aon_n)
   );
 
-  assign resets_o.rst_por_aon_n = rst_por_aon_n;
+  prim_clock_mux2 u_rst_por_aon_n_mux (
+    .clk0_i(rst_por_aon_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_aon_n)
+  );
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -113,6 +127,7 @@ module rstmgr import rstmgr_pkg::*; (
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
 
+
   // lc reset sources
   rstmgr_ctrl #(
     .PowerDomains(PowerDomains)
@@ -143,6 +158,8 @@ module rstmgr import rstmgr_pkg::*; (
   // These should all be generated                  //
   ////////////////////////////////////////////////////
 
+  logic rst_por_n;
+
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
@@ -150,8 +167,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_o.rst_por_n)
+    .q_o(rst_por_n)
   );
+
+  prim_clock_mux2 u_por_mux (
+    .clk0_i(rst_por_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_n)
+  );
+
+  logic rst_por_io_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -160,8 +186,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_i),
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_o.rst_por_io_n)
+    .q_o(rst_por_io_n)
   );
+
+  prim_clock_mux2 u_por_io_mux (
+    .clk0_i(rst_por_io_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_io_n)
+  );
+
+  logic rst_por_io_div2_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -170,8 +205,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_o.rst_por_io_div2_n)
+    .q_o(rst_por_io_div2_n)
   );
+
+  prim_clock_mux2 u_por_io_div2_mux (
+    .clk0_i(rst_por_io_div2_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_io_div2_n)
+  );
+
+  logic rst_por_io_div4_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -180,8 +224,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_o.rst_por_io_div4_n)
+    .q_o(rst_por_io_div4_n)
   );
+
+  prim_clock_mux2 u_por_io_div4_mux (
+    .clk0_i(rst_por_io_div4_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_io_div4_n)
+  );
+
+  logic rst_por_usb_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -190,8 +243,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_usb_i),
     .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_o.rst_por_usb_n)
+    .q_o(rst_por_usb_n)
   );
+
+  prim_clock_mux2 u_por_usb_mux (
+    .clk0_i(rst_por_usb_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_por_usb_n)
+  );
+
+  logic rst_lc_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -200,8 +262,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(rst_lc_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_lc_n)
+    .q_o(rst_lc_n)
   );
+
+  prim_clock_mux2 u_lc_mux (
+    .clk0_i(rst_lc_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_lc_n)
+  );
+
+  logic rst_lc_io_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -210,8 +281,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_lc_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_lc_io_n)
+    .q_o(rst_lc_io_n)
   );
+
+  prim_clock_mux2 u_lc_io_mux (
+    .clk0_i(rst_lc_io_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_lc_io_n)
+  );
+
+  logic rst_sys_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -220,8 +300,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_main_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_sys_n)
+    .q_o(rst_sys_n)
   );
+
+  prim_clock_mux2 u_sys_mux (
+    .clk0_i(rst_sys_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_n)
+  );
+
+  logic rst_sys_io_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -230,8 +319,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_sys_io_n)
+    .q_o(rst_sys_io_n)
   );
+
+  prim_clock_mux2 u_sys_io_mux (
+    .clk0_i(rst_sys_io_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_io_n)
+  );
+
+  logic rst_sys_io_div4_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -240,8 +338,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_sys_io_div4_n)
+    .q_o(rst_sys_io_div4_n)
   );
+
+  prim_clock_mux2 u_sys_io_div4_mux (
+    .clk0_i(rst_sys_io_div4_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_io_div4_n)
+  );
+
+  logic rst_sys_aon_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -250,8 +357,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_aon_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(1'b1),
-    .q_o(resets_o.rst_sys_aon_n)
+    .q_o(rst_sys_aon_n)
   );
+
+  prim_clock_mux2 u_sys_aon_mux (
+    .clk0_i(rst_sys_aon_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_aon_n)
+  );
+
+  logic rst_spi_device_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -260,8 +376,17 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(reg2hw.rst_spi_device_n.q),
-    .q_o(resets_o.rst_spi_device_n)
+    .q_o(rst_spi_device_n)
   );
+
+  prim_clock_mux2 u_spi_device_mux (
+    .clk0_i(rst_spi_device_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_spi_device_n)
+  );
+
+  logic rst_usb_n;
 
   prim_flop_2sync #(
     .Width(1),
@@ -270,7 +395,14 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[0]),
     .d_i(reg2hw.rst_usb_n.q),
-    .q_o(resets_o.rst_usb_n)
+    .q_o(rst_usb_n)
+  );
+
+  prim_clock_mux2 u_usb_mux (
+    .clk0_i(rst_usb_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_usb_n)
   );
 
 
@@ -331,8 +463,58 @@ module rstmgr import rstmgr_pkg::*; (
   assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
 
   ////////////////////////////////////////////////////
+  // Crash info capture                             //
+  ////////////////////////////////////////////////////
+  localparam int CrashRemainder = $bits(alert_pkg::alert_crashdump_t) % RdWidth > 0 ? 1 : 0;
+  localparam int CrashStoreSlot = $bits(alert_pkg::alert_crashdump_t) / RdWidth +
+      CrashRemainder;
+  localparam int TotalWidth     = CrashStoreSlot * RdWidth;
+  localparam int SlotCntWidth   = $clog2(CrashStoreSlot);
+
+  logic dump_capture;
+  logic [2**SlotCntWidth-1:0][RdWidth-1:0] slots;
+  logic [CrashStoreSlot-1:0][RdWidth-1:0] slots_q;
+
+  // capture on any legal reset request
+  assign dump_capture = reg2hw.alert_info_ctrl.en.q &
+                        (rst_hw_req | rst_ndm | rst_low_power);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      slots_q <= '0;
+    end else if (dump_capture) begin
+      slots_q <= TotalWidth'(alert_dump_i);
+    end
+  end
+
+  always_comb begin
+    slots = '0;
+    slots[CrashStoreSlot-1:0] = slots_q;
+  end
+
+  // once dump is captured, no more information is captured until
+  // re-eanbled by software.
+  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.alert_info_ctrl.en.de = dump_capture;
+
+  // number of segments to read
+  assign hw2reg.alert_info_attr.d = CrashStoreSlot;
+
+  // the actual dump data
+  assign hw2reg.alert_info.d = slots[reg2hw.alert_info_ctrl.index.q[SlotCntWidth-1:0]];
+
+  if (SlotCntWidth < IdxWidth) begin : gen_tieoffs
+    logic [IdxWidth-SlotCntWidth-1:0] unused_idx;
+    assign unused_idx = reg2hw.alert_info_ctrl.index.q[IdxWidth-1:SlotCntWidth];
+  end
+
+
+  ////////////////////////////////////////////////////
   // Assertions                                     //
   ////////////////////////////////////////////////////
+
+  // Make sure the crash dump isn't excessively large
+  `ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
 
   // when upstream resets, downstream must also reset
 

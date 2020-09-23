@@ -1,0 +1,7 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rstmgr
+
+set_reset_drivers prim_clock_mux2 prim_flop prim_flop_2sync

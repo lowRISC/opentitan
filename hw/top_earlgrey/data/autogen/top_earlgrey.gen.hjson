@@ -1632,8 +1632,8 @@
       alert_list: []
       wakeup_list: []
       reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
+      scan: "true"
+      scan_reset: "true"
       inter_signal_list:
       [
         {
