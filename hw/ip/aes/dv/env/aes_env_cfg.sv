@@ -91,6 +91,11 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   constraint c_ref_model    { ref_model    dist   { 0 :/ use_c_model_pct,
                                                     1 :/ (100-use_c_model_pct) }; }
 
+
+  
+  
+  
+  
   function void post_randomize();
     if(use_key_mask) key_mask = 1;
 
@@ -99,6 +104,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
  
     
     zero_delays = 1; // disable the CIP constraining
+    //TODO remove this constraint
+    host_resp_speed = VeryFast;
     
     case(host_resp_speed)
       VerySlow: begin      
