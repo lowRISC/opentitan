@@ -179,8 +179,8 @@ module otbn_top_sim (
   // This runs in parallel with the real core above. Eventually, we'll have strong consistency
   // checks between the two. For now, we just check that they have the same "done" signals.
 
-  localparam string ImemScope = "TOP.otbn_top_sim.u_imem.u_mem.gen_generic.u_impl_generic";
-  localparam string DmemScope = "TOP.otbn_top_sim.u_dmem.u_mem.gen_generic.u_impl_generic";
+  localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
+  localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
 
   logic otbn_model_done;
 

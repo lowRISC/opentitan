@@ -424,8 +424,8 @@ module otbn
   assign busy_d = (busy_q | start) & ~done;
 
   if (OTBNModel) begin : gen_impl_model
-    localparam ImemScope = "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_imem.u_mem.gen_generic.u_impl_generic";
-    localparam DmemScope = "TOP.top_earlgrey_verilator.top_earlgrey.u_otbn.u_dmem.u_mem.gen_generic.u_impl_generic";
+    localparam ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
+    localparam DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
 
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
