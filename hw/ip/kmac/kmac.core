@@ -46,6 +46,11 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
 
 targets:
   default: &default_target
@@ -54,8 +59,24 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: keccak_2share
+    toplevel: kmac
+
   formal:
     filesets:
       - files_rtl
-    toplevel: keccak_2share
+    toplevel: kmac
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+

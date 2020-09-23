@@ -52,6 +52,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/hmac/lint/{tool}"
              },
+             {    name: kmac
+                  fusesoc_core: lowrisc:ip:kmac
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/kmac/lint/{tool}"
+             },
              {    name: i2c
                   fusesoc_core: lowrisc:ip:i2c
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
