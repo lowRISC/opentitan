@@ -262,6 +262,10 @@ module tlul_adapter_sram #(
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
                         ? reqfifo_rready : 1'b0 ;
 
+  // This module only cares about uncorrectable errors.
+  logic unused_rerror;
+  assign unused_rerror = rerror_i[0];
+
   // FIFO instance: REQ, RSP
 
   // ReqFIFO is to store the Access type to match to the Response data.
