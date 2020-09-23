@@ -48,7 +48,6 @@
   tests: [
     {
       name: keymgr_sanity
-      run_opts: ["+en_scb=0"]
       uvm_test_seq: keymgr_sanity_vseq
     }
 
