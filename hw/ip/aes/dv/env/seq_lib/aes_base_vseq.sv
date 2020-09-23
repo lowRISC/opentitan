@@ -40,7 +40,7 @@ class aes_base_vseq extends cip_base_vseq #(
     bit [31:0] aes_ctrl    = '0;
     bit [31:0] aes_trigger = '0;
 
-    `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_LOW)
      // Wait for DUT ready
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
 
@@ -112,11 +112,11 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task add_data(ref bit [3:0] [31:0] data);
-    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data),  UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_0: %h ", data[0][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data),  UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_0: %h ", data[0][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3][31:0]), UVM_LOW)
     csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]) );
     csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]) );
     csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]) );
@@ -129,12 +129,12 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2][31:0]));
     csr_rd(.ptr(ral.data_out_3), .value(cypher_txt[3][31:0]));
 
-    `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", cypher_txt),   UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", cypher_txt),   UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_LOW)
   endtask
 
 
@@ -188,15 +188,15 @@ class aes_base_vseq extends cip_base_vseq #(
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
       end
 
-      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_LOW)
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
-      `uvm_info(`gfn, $sformatf("\n ----| generating data item %d", n), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n ----| generating data item %d", n), UVM_LOW)
     end
 
     // check if message length is not divisible by 16bytes
     if( msg_item.message_length[3:0] != 4'd0) begin
-      `uvm_info(`gfn, $sformatf("\n ----| generating runt "), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n ----| generating runt "), UVM_LOW)
       aes_item.data_len = msg_item.message_length[3:0];
       if(msg_item.fixed_data_en) begin
         `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data; )
@@ -254,7 +254,7 @@ class aes_base_vseq extends cip_base_vseq #(
        "data_in_3": csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]) );
      endcase // case interleave_queue[i]
    end
-    `uvm_info(`gfn, $sformatf("\n\t ----| Configuring the DUT in the following order:  %s",txt), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| Configuring the DUT in the following order:  %s",txt), UVM_LOW)
   endtask // write_interleaved_data_key_iv
 
 
@@ -329,11 +329,11 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     while(num_blocks > 0) begin // until all block has been processed and read out
-      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks), UVM_LOW)
 
       csr_rd(.ptr(ral.status), .value(status));
-      `uvm_info(`gfn, $sformatf("\n\t ....| POLLED STATUS %h |....",status), UVM_MEDIUM)
-      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....",aes_item_queue.size()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ....| POLLED STATUS %h |....",status), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....",aes_item_queue.size()), UVM_LOW)
       // If the DUT is ready new input and also has new output
       // this will produce the two request at the same time
       // and leave it to the sequencer to arbritrate
@@ -382,7 +382,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item.item_type = AES_CFG;
 
     `DV_CHECK_RANDOMIZE_FATAL(aes_item)
-    `uvm_info(`gfn, $sformatf("----| CONFIG  AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("----| CONFIG  AES ITEM %s", aes_item.convert2string()), UVM_LOW)
 
     `downcast(item_clone, aes_item.clone());
     aes_item_queue.push_front(item_clone);
@@ -423,7 +423,7 @@ class aes_base_vseq extends cip_base_vseq #(
       `downcast(cloned_message, aes_message.clone());
       //`assert($cast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
-      `uvm_info(`gfn, $sformatf("\n message # %d \n %s",i, cloned_message.convert2string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n message # %d \n %s",i, cloned_message.convert2string()), UVM_LOW)
     end
 
   endfunction
@@ -431,11 +431,11 @@ class aes_base_vseq extends cip_base_vseq #(
 
   function void aes_print_item_queue(ref aes_seq_item item_queue[$]);
     aes_seq_item print_item;
-    `uvm_info(`gfn, $sformatf("----| Item queue size: %d", item_queue.size()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("----| Item queue size: %d", item_queue.size()), UVM_LOW)
     for(int n = 0; n<item_queue.size(); n++) begin
       print_item = item_queue[n];
-      `uvm_info(`gfn, $sformatf("----|  ITEM #%d", n ), UVM_MEDIUM)
-      `uvm_info(`gfn, $sformatf("%s", print_item.convert2string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("----|  ITEM #%d", n ), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("%s", print_item.convert2string()), UVM_LOW)
     end
   endfunction
 endclass : aes_base_vseq
