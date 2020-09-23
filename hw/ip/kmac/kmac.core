@@ -16,6 +16,10 @@ filesets:
       - rtl/keccak_2share.sv
       - rtl/sha3pad.sv
       - rtl/sha3core.sv
+      - rtl/kmac_msgfifo.sv
+      - rtl/kmac_reg_pkg.sv
+      - rtl/kmac_reg_top.sv
+      - rtl/kmac.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

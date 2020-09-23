@@ -70,6 +70,7 @@ package kmac_pkg;
 
   // Required MsgFifoDepth. Adding slightly more buffer for margin
   parameter int MsgFifoDepth   = 2 + ((BufferSizeBits + MsgWidth - 1)/MsgWidth);
+  parameter int MsgFifoDepthW  = $clog2(MsgFifoDepth+1);
 
   // Keccak module supports SHA3, SHAKE, cSHAKE function.
   // This mode determines if the module uses encoded N and S or not.
@@ -133,5 +134,15 @@ package kmac_pkg;
     err_code_e   code; // Type of error
     logic [23:0] info; // Additional Debug info
   } err_t;
+
+  function automatic logic [31:0] conv_endian32( input logic [31:0] v, input logic swap);
+    logic [31:0] conv_data = {<<8{v}};
+    conv_endian32 = (swap) ? conv_data : v ;
+  endfunction : conv_endian32
+
+  function automatic logic [63:0] conv_endian64( input logic [63:0] v, input logic swap);
+    logic [63:0] conv_data = {<<8{v}};
+    conv_endian64 = (swap) ? conv_data : v ;
+  endfunction : conv_endian64
 
 endpackage : kmac_pkg
