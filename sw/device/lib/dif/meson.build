@@ -26,6 +26,7 @@ sw_lib_dif_plic = declare_dependency(
     ],
     dependencies: [
       sw_lib_mmio,
+      sw_lib_bitfield,
     ],
   )
 )
