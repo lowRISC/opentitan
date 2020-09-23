@@ -77,7 +77,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   output logic                        ready_o,
   // output data
   output logic [ScrmblBlockWidth-1:0] data_o,
-  output logic                        valid_o
+  output logic                        valid_o,
+  // escalation input and FSM error indication
+  input  logic                        escalate_en_i,
+  output logic                        fsm_err_o
 );
 
   ////////////////////////
@@ -172,7 +175,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // FSM //
   /////////
 
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 4 -n 8
+  // Encoding generated with ./sparse-fsm-encode -d 5 -m 5 -n 9
   // Hamming distance histogram:
   //
   // 0: --
@@ -180,19 +183,21 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // 2: --
   // 3: --
   // 4: --
-  // 5: |||||||||||||||||||| (66.67%)
-  // 6: |||||||||| (33.33%)
+  // 5: |||||||||||||||||||| (60.00%)
+  // 6: ||||||||||||| (40.00%)
   // 7: --
   // 8: --
+  // 9: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
   //
-  typedef enum logic [7:0] {
-    IdleSt    = 8'b11100001,
-    DecryptSt = 8'b01011010,
-    EncryptSt = 8'b10010100,
-    DigestSt  = 8'b00101111
+  typedef enum logic [8:0] {
+    IdleSt    = 9'b011110111,
+    DecryptSt = 9'b000010001,
+    EncryptSt = 9'b011101000,
+    DigestSt  = 9'b100111100,
+    ErrorSt   = 9'b101001111
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
@@ -224,6 +229,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
     cnt_clr          = 1'b0;
     valid_d          = 1'b0;
     ready_o          = 1'b0;
+    fsm_err_o        = 1'b0;
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
@@ -329,12 +335,25 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
         end
       end
       ///////////////////////////////////////////////////////////////////
+      // Terminal error state. This raises an alert.
+      ErrorSt: begin
+        fsm_err_o = 1'b1;
+      end
+      ///////////////////////////////////////////////////////////////////
+      // This should never happen, hence we directly jump into the
+      // error state, where an alert will be triggered.
       default: begin
-        // TODO: add error signal here as well, like in the partition controllers?
-        state_d = IdleSt;
+        state_d = ErrorSt;
       end
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
+
+    if (state_q != ErrorSt) begin
+      // Unconditionally jump into the terminal error state in case of escalation.
+      if (escalate_en_i != Off) begin
+        state_d = ErrorSt;
+      end
+    end
   end
 
   /////////////////////////////

@@ -53,7 +53,9 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   output logic [NumPart-1:0]       cnsty_chk_req_o,    // request to all partitions
   input        [NumPart-1:0]       integ_chk_ack_i,    // response from partitions
   input        [NumPart-1:0]       cnsty_chk_ack_i,    // response from partitions
-  output logic                     chk_timeout_o       // a check has timed out
+  input  lc_tx_t                   escalate_en_i,      // escalation input, moves FSM into ErrorSt
+  output logic                     chk_timeout_o,      // a check has timed out
+  output logic                     fsm_err_o           // the FSM has reached an invalid state
 );
 
   //////////
@@ -153,9 +155,13 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     IdleSt      = 9'b011011101,
     IntegWaitSt = 9'b100111111,
     CnstyWaitSt = 9'b001000110,
-    ErrSt       = 9'b101101000
+    ErrorSt     = 9'b101101000
   } state_e;
+
   state_e state_d, state_q;
+  logic chk_timeout_d, chk_timeout_q;
+
+  assign chk_timeout_o = chk_timeout_q;
 
   always_comb begin : p_fsm
     state_d = state_q;
@@ -174,6 +180,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     // Status signals going to CSRs and error logic.
     chk_timeout_o = 1'b0;
     chk_pending_o = 1'b0;
+    fsm_err_o = 1'b0;
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
@@ -206,7 +213,8 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       IntegWaitSt: begin
         chk_pending_o = 1'b1;
         if (!timeout_zero && integ_cnt_zero) begin
-          state_d = ErrSt;
+          state_d = ErrorSt;
+          chk_timeout_d = 1'b1;
         end else if (integ_chk_req_q == '0) begin
           state_d = IdleSt;
           // This draws the next wait period.
@@ -221,7 +229,8 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       CnstyWaitSt: begin
         chk_pending_o = 1'b1;
         if (!timeout_zero && cnsty_cnt_zero) begin
-          state_d = ErrSt;
+          state_d = ErrorSt;
+          chk_timeout_d = 1'b1;
         end else if (cnsty_chk_req_q == '0) begin
           state_d = IdleSt;
           // This draws the next wait period.
@@ -231,17 +240,26 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       end
       ///////////////////////////////////////////////////////////////////
       // Terminal error state. This raises an alert.
-      ErrSt: begin
-        chk_timeout_o = 1'b1;
+      ErrorSt: begin
+        if (!chk_timeout_q) begin
+          fsm_err_o = 1'b1;
+        end
       end
       ///////////////////////////////////////////////////////////////////
       // This should never happen, hence we directly jump into the
       // error state, where an alert will be triggered.
       default: begin
-        state_d = ErrSt;
+        state_d = ErrorSt;
       end
       ///////////////////////////////////////////////////////////////////
-    endcase
+    endcase // state_q
+
+    if (state_q != ErrorSt) begin
+      // Unconditionally jump into the terminal error state in case of escalation.
+      if (escalate_en_i != Off) begin
+        state_d = ErrorSt;
+      end
+    end
   end
 
   ///////////////
@@ -255,12 +273,14 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       cnsty_cnt_q <= '0;
       integ_chk_req_q <= '0;
       cnsty_chk_req_q <= '0;
+      chk_timeout_q   <= 1'b0;
     end else begin
       state_q     <= state_d;
       integ_cnt_q <= integ_cnt_d;
       cnsty_cnt_q <= cnsty_cnt_d;
       integ_chk_req_q <= integ_chk_req_d;
       cnsty_chk_req_q <= cnsty_chk_req_d;
+      chk_timeout_q   <= chk_timeout_d;
     end
   end
 

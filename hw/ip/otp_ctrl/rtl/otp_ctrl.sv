@@ -11,7 +11,12 @@ module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]  AlertAsyncOn = {NumAlerts{1'b1}},
+  // TODO: set this when integrating the module into the top-level.
+  // There is no limit on the number of SRAM key request generation slots,
+  // since each requested key is ephemeral.
+  parameter int                          NumSramKeyReqSlots = 2,
+  // Enable asynchronous transitions on alerts.
+  parameter logic [NumAlerts-1:0]        AlertAsyncOn = {NumAlerts{1'b1}},
   // TODO: These constants have to be replaced by the silicon creator before taping out.
   parameter logic [TimerWidth-1:0]       LfsrSeed     = TimerWidth'(1'b1),
   parameter logic [TimerWidth-1:0][31:0] LfsrPerm     = {
@@ -22,40 +27,49 @@ module otp_ctrl
     32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
   }
 ) (
-  input                             clk_i,
-  input                             rst_ni,
+  input                                              clk_i,
+  input                                              rst_ni,
   // TODO: signals to AST
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t         tl_i,
-  output tlul_pkg::tl_d2h_t         tl_o,
+  input  tlul_pkg::tl_h2d_t                          tl_i,
+  output tlul_pkg::tl_d2h_t                          tl_o,
   // Interrupt Requests
-  output logic                      intr_otp_operation_done_o,
-  output logic                      intr_otp_error_o,
+  output logic                                       intr_otp_operation_done_o,
+  output logic                                       intr_otp_error_o,
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
-  // TODO: Complete entropy interface
-  input  otp_entropy_t              entropy_i,
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
+  // TODO: EDN interface for entropy updates
+  input  edn_otp_up_t                                edn_otp_up_i,
+  // TODO: EDN interface for requesting entropy
+  output otp_edn_req_t                               otp_edn_req_o,
+  input  otp_edn_rsp_t                               otp_edn_rsp_i,
   // Power manager interface
-  input  pwr_otp_init_req_t         pwr_otp_init_req_i,
-  output pwr_otp_init_rsp_t         pwr_otp_init_rsp_o,
-  output otp_pwr_state_t            otp_pwr_state_o,
+  input  pwr_otp_init_req_t                          pwr_otp_init_req_i,
+  output pwr_otp_init_rsp_t                          pwr_otp_init_rsp_o,
+  output otp_pwr_state_t                             otp_pwr_state_o,
   // Lifecycle transition command interface
-  input  lc_otp_program_req_t       lc_otp_program_req_i,
-  output lc_otp_program_rsp_t       lc_otp_program_rsp_o,
+  input  lc_otp_program_req_t                        lc_otp_program_req_i,
+  output lc_otp_program_rsp_t                        lc_otp_program_rsp_o,
   // Lifecycle hashing interface for raw unlock
-  input  lc_otp_token_req_t         lc_otp_token_req_i,
-  output lc_otp_token_rsp_t         lc_otp_token_rsp_o,
+  input  lc_otp_token_req_t                          lc_otp_token_req_i,
+  output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
   // Lifecycle broadcast inputs
-  input  lc_tx_t                    lc_escalate_en_i,
-  input  lc_tx_t                    lc_provision_en_i,
-  input  lc_tx_t                    lc_test_en_i,
+  input  lc_tx_t                                     lc_escalate_en_i,
+  input  lc_tx_t                                     lc_provision_en_i,
+  input  lc_tx_t                                     lc_test_en_i,
   // OTP broadcast outputs
-  output otp_lc_data_t              otp_lc_data_o,
-  output keymgr_key_t               otp_keymgr_key_o,
-  output flash_key_t                otp_flash_key_o,
+  output otp_lc_data_t                               otp_lc_data_o,
+  output otp_keymgr_key_t                            otp_keymgr_key_o,
+  // Scrambling key requests
+  input  flash_otp_key_req_t                         flash_otp_key_req_i,
+  output flash_otp_key_rsp_t                         flash_otp_key_rsp_o,
+  input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_req_i,
+  output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_rsp_o,
+  input  otbn_otp_key_req_t                          otbn_otp_key_req_i,
+  output otbn_otp_key_rsp_t                          otbn_otp_key_rsp_o,
   // Hardware config bits
-  output logic [NumHwCfgBits-1:0]   hw_cfg_o
+  output logic [NumHwCfgBits-1:0]                    hw_cfg_o
 );
 
   import prim_util_pkg::vbits;
@@ -169,6 +183,7 @@ module otp_ctrl
   logic otp_operation_done, otp_error;
   logic otp_fatal_error, otp_check_failed;
   logic chk_pending, chk_timeout;
+  logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
     otp_fatal_error = 1'b0;
@@ -190,13 +205,20 @@ module otp_ctrl
       otp_check_failed |= part_error[k] inside {ParityErr,
                                                 IntegErr,
                                                 CnstyErr,
-                                                FsmErr} | chk_timeout;
+                                                FsmErr} |
+                          chk_timeout       |
+                          lfsr_fsm_err      |
+                          scrmbl_fsm_err    |
+                          key_deriv_fsm_err;
     end
   end
 
   // Assign these to the status register.
   assign hw2reg.status = {chk_pending,
                           dai_idle,
+                          key_deriv_fsm_err,
+                          scrmbl_fsm_err,
+                          lfsr_fsm_err,
                           chk_timeout,
                           part_errors_reduced};
   // If we got an error, we trigger an interrupt.
@@ -276,9 +298,9 @@ module otp_ctrl
   ) u_otp_ctrl_lfsr_timer (
     .clk_i,
     .rst_ni,
-    .entropy_en_i       ( entropy_i.en            ),
+    .entropy_en_i       ( edn_otp_up_i.en          ),
     // Lower entropy bits are used for reseeding secure erase LFSRs
-    .entropy_i          ( entropy_i.data[31:28]   ),
+    .entropy_i          ( edn_otp_up_i.data[31:28] ),
     // We can enable the timer once OTP has initialized.
     .timer_en_i         ( pwr_otp_init_rsp_o.done ),
     .integ_chk_trig_i   ( integ_chk_trig          ),
@@ -291,7 +313,9 @@ module otp_ctrl
     .cnsty_chk_req_o    ( cnsty_chk_req           ),
     .integ_chk_ack_i    ( integ_chk_ack           ),
     .cnsty_chk_ack_i    ( cnsty_chk_ack           ),
-    .chk_timeout_o      ( chk_timeout             )
+    .escalate_en_i      ( lc_escalate_en_i        ),
+    .chk_timeout_o      ( chk_timeout             ),
+    .fsm_err_o          ( lfsr_fsm_err            )
   );
 
   ///////////////////////////////
@@ -305,16 +329,16 @@ module otp_ctrl
     logic [OtpAddrWidth-1:0]     addr; // Halfword address.
   } otp_bundle_t;
 
-  logic [NumPart+1:0]          part_otp_arb_req, part_otp_arb_gnt;
-  otp_bundle_t                 part_otp_arb_bundle [NumPart+2];
+  logic [NumAgents-1:0]        part_otp_arb_req, part_otp_arb_gnt;
+  otp_bundle_t                 part_otp_arb_bundle [NumAgents];
   logic                        otp_arb_valid, otp_arb_ready;
-  logic [vbits(NumPart+2)-1:0] otp_arb_idx;
+  logic [vbits(NumAgents)-1:0] otp_arb_idx;
   otp_bundle_t                 otp_arb_bundle;
 
   // The OTP interface is arbitrated on a per-cycle basis, meaning that back-to-back
   // transactions can be completely independent.
   prim_arbiter_tree #(
-    .N(NumPart+2),
+    .N(NumAgents),
     .DW($bits(otp_bundle_t))
   ) u_otp_arb (
     .clk_i,
@@ -363,13 +387,13 @@ module otp_ctrl
   );
 
   logic otp_fifo_valid;
-  logic [NumPartWidth-1:0] otp_part_idx;
-  logic [NumPart+1:0] part_otp_rvalid;
+  logic [vbits(NumAgents)-1:0] otp_part_idx;
+  logic [NumAgents-1:0] part_otp_rvalid;
 
   // We can have up to two OTP commands in flight, hence we size this to be 2 deep.
   // The partitions can unconditionally sink requested data.
   prim_fifo_sync #(
-    .Width(NumPartWidth),
+    .Width(vbits(NumAgents)),
     .Depth(2)
   ) u_otp_rsp_fifo (
     .clk_i,
@@ -406,21 +430,21 @@ module otp_ctrl
   // eventually release their locks for this to be fair.
   typedef struct packed {
     otp_scrmbl_cmd_e             cmd;
-    logic  [ConstSelWidth-1:0]   sel;
+    logic [ConstSelWidth-1:0]    sel;
     logic [ScrmblBlockWidth-1:0] data;
     logic                        valid;
   } scrmbl_bundle_t;
 
-  logic [NumPart:0]            part_scrmbl_mtx_req, part_scrmbl_mtx_gnt;
-  scrmbl_bundle_t              part_scrmbl_req_bundle [NumPart+1];
+  logic [NumAgents-1:0]        part_scrmbl_mtx_req, part_scrmbl_mtx_gnt;
+  scrmbl_bundle_t              part_scrmbl_req_bundle [NumAgents];
   scrmbl_bundle_t              scrmbl_req_bundle;
-  logic [vbits(NumPart+1)-1:0] scrmbl_mtx_idx;
+  logic [vbits(NumAgents)-1:0] scrmbl_mtx_idx;
   logic                        scrmbl_mtx_valid;
 
   // Note that arbiter decisions do not change when backpressured.
   // Hence, the idx_o signal is guaranteed to remain stable until ack'ed.
   prim_arbiter_tree #(
-    .N(NumPart+1),
+    .N(NumAgents),
     .DW($bits(scrmbl_bundle_t))
   ) u_scrmbl_mtx (
     .clk_i,
@@ -445,18 +469,20 @@ module otp_ctrl
 
   logic [ScrmblBlockWidth-1:0] part_scrmbl_rsp_data;
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
-  logic [NumPart:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
+  logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
   otp_ctrl_scrmbl u_scrmbl (
     .clk_i,
     .rst_ni,
-    .cmd_i   ( scrmbl_req_bundle.cmd   ),
-    .sel_i   ( scrmbl_req_bundle.sel   ),
-    .data_i  ( scrmbl_req_bundle.data  ),
-    .valid_i ( scrmbl_req_bundle.valid ),
-    .ready_o ( scrmbl_arb_req_ready    ),
-    .data_o  ( part_scrmbl_rsp_data    ),
-    .valid_o ( scrmbl_arb_rsp_valid    )
+    .cmd_i         ( scrmbl_req_bundle.cmd   ),
+    .sel_i         ( scrmbl_req_bundle.sel   ),
+    .data_i        ( scrmbl_req_bundle.data  ),
+    .valid_i       ( scrmbl_req_bundle.valid ),
+    .ready_o       ( scrmbl_arb_req_ready    ),
+    .data_o        ( part_scrmbl_rsp_data    ),
+    .valid_o       ( scrmbl_arb_rsp_valid    ),
+    .escalate_en_i ( lc_escalate_en_i        ),
+    .fsm_err_o     ( scrmbl_fsm_err          )
   );
 
   // steer back responses
@@ -541,19 +567,67 @@ module otp_ctrl
     .otp_err_i       ( part_otp_err                      )
   );
 
-  ///////////////////////////////
-  // Scrambling Key Derivation //
-  ///////////////////////////////
+  // Tie off unused connections.
+  assign part_scrmbl_mtx_req[LciIdx]    = '0;
+  assign part_scrmbl_req_bundle[LciIdx] = '0;
 
-  // TODO: scrambling key derivation datapath
-  logic scrambling_keys_valid;
-  logic [SramKeySeedWidth-1:0] sram_data_key;
-  logic [FlashKeySeedWidth-1:0] flash_data_key, flash_addr_key;
+  // This stops lint from complaining about unused signals.
+  logic unused_part_scrmbl_req_ready, unused_part_scrmbl_rsp_valid, unused_part_scrmbl_mtx_gnt;
+  assign unused_part_scrmbl_mtx_gnt   = part_scrmbl_mtx_gnt[LciIdx];
+  assign unused_part_scrmbl_req_ready = part_scrmbl_req_ready[LciIdx];
+  assign unused_part_scrmbl_rsp_valid = part_scrmbl_rsp_valid[LciIdx];
 
-  // TODO: add all key outputs
-  assign otp_flash_key_o = '0;
-  // TODO: hashed raw unlock token
-  assign lc_otp_token_rsp_o = '0;
+  ////////////////////////////////////
+  // Key Derivation Interface (KDI) //
+  ////////////////////////////////////
+
+  logic scrmbl_key_seed_valid;
+  logic [SramKeySeedWidth-1:0] sram_data_key_seed;
+  logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
+
+  otp_ctrl_kdi i_otp_ctrl_kdi (
+    .clk_i,
+    .rst_ni,
+    .key_deriv_en_i          ( pwr_otp_init_rsp_o.done ),
+    .escalate_en_i           ( lc_escalate_en_i        ),
+    .fsm_err_o               ( key_deriv_fsm_err       ),
+    .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
+    .flash_data_key_seed_i   ( flash_data_key_seed     ),
+    .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
+    .sram_data_key_seed_i    ( sram_data_key_seed      ),
+    .otp_edn_req_o,
+    .otp_edn_rsp_i,
+    .lc_otp_token_req_i ,
+    .lc_otp_token_rsp_o ,
+    .flash_otp_key_req_i,
+    .flash_otp_key_rsp_o,
+    .sram_otp_key_req_i,
+    .sram_otp_key_rsp_o,
+    .otbn_otp_key_req_i,
+    .otbn_otp_key_rsp_o,
+    .scrmbl_mtx_req_o        ( part_scrmbl_mtx_req[KdiIdx]          ),
+    .scrmbl_mtx_gnt_i        ( part_scrmbl_mtx_gnt[KdiIdx]          ),
+    .scrmbl_cmd_o            ( part_scrmbl_req_bundle[KdiIdx].cmd   ),
+    .scrmbl_sel_o            ( part_scrmbl_req_bundle[KdiIdx].sel   ),
+    .scrmbl_data_o           ( part_scrmbl_req_bundle[KdiIdx].data  ),
+    .scrmbl_valid_o          ( part_scrmbl_req_bundle[KdiIdx].valid ),
+    .scrmbl_ready_i          ( part_scrmbl_req_ready[KdiIdx]        ),
+    .scrmbl_valid_i          ( part_scrmbl_rsp_valid[KdiIdx]        ),
+    .scrmbl_data_i           ( part_scrmbl_rsp_data                 )
+  );
+
+  // Tie off OTP bus access, since this is not needed.
+  assign part_otp_arb_req[KdiIdx] = 1'b0;
+  assign part_otp_arb_bundle[KdiIdx] = '0;
+
+  // This stops lint from complaining about unused signals.
+  logic unused_part_otp_arb_gnt, unused_part_otp_rvalid;
+  logic [OtpIfWidth-1:0] unused_part_otp_rdata;
+  logic [OtpErrWidth-1:0] unused_part_otp_err;
+  assign unused_part_otp_arb_gnt = part_otp_arb_gnt[KdiIdx];
+  assign unused_part_otp_rvalid  = part_otp_rvalid[KdiIdx];
+  assign unused_part_otp_rdata   = part_otp_rdata[KdiIdx];
+  assign unused_part_otp_err   = part_otp_err[KdiIdx];
 
   /////////////////////////
   // Partition Instances //
@@ -619,8 +693,8 @@ module otp_ctrl
         .clk_i,
         .rst_ni,
         // TODO: Entropy for clearing LFSRs
-        // .entropy_en_i     ( entropy_i.en                    ),
-        // .entropy_i        ( entropy_i.data[(k-NumUnbuffered) * 2 +: 2] ),
+        // .entropy_en_i     ( edn_otp_up_i.en                    ),
+        // .entropy_i        ( edn_otp_up_i.data[(k-NumUnbuffered) * 2 +: 2] ),
         .init_req_i       ( part_init_req                   ),
         .init_done_o      ( part_init_done[k]               ),
         .integ_chk_req_i  ( integ_chk_req[k]                ),
@@ -662,6 +736,8 @@ module otp_ctrl
   // Buffered Data Output Mapping //
   //////////////////////////////////
 
+  // TODO: template these mappings, based on the address map hjson contents.
+
   // Output complete hardware config partition.
   // Actual mapping to other IPs can occur at the top-level.
   assign hw_cfg_o = part_buf_data[PartInfo[HwCfgIdx].offset +:
@@ -673,12 +749,12 @@ module otp_ctrl
           otp_keymgr_key_o.key_share0} = part_buf_data[PartInfo[Secret2Idx].offset +:
                                                        2*KeyMgrKeyWidth/8];
   // Scrambling Keys
-  assign scrambling_keys_valid = part_init_done[Secret1Idx];
-  assign {sram_data_key,
-          flash_data_key,
-          flash_addr_key} = part_buf_data[PartInfo[Secret1Idx].offset +:
-                                          2*FlashKeySeedWidth/8 +
-                                          SramKeySeedWidth/8];
+  assign scrmbl_key_seed_valid = part_init_done[Secret1Idx];
+  assign {sram_data_key_seed,
+          flash_data_key_seed,
+          flash_addr_key_seed} = part_buf_data[PartInfo[Secret1Idx].offset +:
+                                               2*FlashKeySeedWidth/8 +
+                                               SramKeySeedWidth/8];
   // Test unlock and exit tokens
   assign otp_lc_data_o.test_token_valid = part_init_done[Secret0Idx];
   assign {otp_lc_data_o.test_exit_token,

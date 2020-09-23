@@ -176,29 +176,44 @@ package otp_ctrl_pkg;
     '{Buffered,     11'h7A8, 88,       0,       1'b0,      1'b0,      1'b0,       1'b0}
   };
 
-  parameter int CreatorSwCfgIdx = 0;
-  parameter int OwnerSwCfgIdx   = 1;
-  parameter int HwCfgIdx        = 2;
-  parameter int Secret0Idx      = 3;
-  parameter int Secret1Idx      = 4;
-  parameter int Secret2Idx      = 5;
-  parameter int LifeCycleIdx    = 6;
-  // These are not "real partitions", but in terms of implementation it is convenient to
-  // add these at the end of certain arrays.
-  parameter int DaiIdx = 7;
-  parameter int LciIdx = 8;
+  typedef enum {
+    CreatorSwCfgIdx,
+    OwnerSwCfgIdx,
+    HwCfgIdx,
+    Secret0Idx,
+    Secret1Idx,
+    Secret2Idx,
+    LifeCycleIdx,
+    // These are not "real partitions", but in terms of implementation it is convenient to
+    // add these at the end of certain arrays.
+    DaiIdx,
+    LciIdx,
+    KdiIdx,
+    // Number of agents is the last idx+1.
+    NumAgents
+  } part_idx_e;
 
-  parameter int NumUnbuffered = 2;
   parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
   ////////////////////////
   // Typedefs for CSRNG //
   ////////////////////////
 
+  // Unidirectional input type for LFSR reseeding.
   typedef struct packed {
     logic        en;
     logic [31:0] data;
-  } otp_entropy_t;
+  } edn_otp_up_t;
+
+  // Bidirectional entropy requests for scramble key derivation.
+  typedef struct packed {
+    logic        req;
+  } otp_edn_req_t;
+
+  typedef struct packed {
+    logic        ack;
+    logic [31:0] data;
+  } otp_edn_rsp_t;
 
   ///////////////////////////////
   // Typedefs for LC Interface //
@@ -212,8 +227,8 @@ package otp_ctrl_pkg;
   parameter int NumLcCountValues = 32;
 
   typedef enum logic [LcValueWidth-1:0] {
-    Blk = 16'h0000,
-    Set = 16'hF5FA
+    Blk = 16'h0000, // blank
+    Set = 16'hF5FA  // programmed
   } lc_value_e;
 
   typedef enum logic [LcStateWidth-1:0] {
@@ -284,30 +299,57 @@ package otp_ctrl_pkg;
   // Typedefs for Key Broadcast //
   ////////////////////////////////
 
-  parameter int KeyMgrKeyWidth = 256;
-  parameter int FlashKeyWidth  = 128;
-  parameter int SramKeyWidth  = 128;
-
   parameter int FlashKeySeedWidth = 256;
   parameter int SramKeySeedWidth  = 128;
+
+  parameter int KeyMgrKeyWidth   = 256;
+
+  parameter int FlashKeyWidth    = 128;
+
+  parameter int SramKeyWidth     = 128;
+  parameter int SramNonceWidth   = 64;
+
+  parameter int OtbnKeyWidth     = 128;
+  parameter int OtbnNonceWidth   = 256;
 
   typedef struct packed {
     logic valid;
     logic [KeyMgrKeyWidth-1:0] key_share0;
     logic [KeyMgrKeyWidth-1:0] key_share1;
-  } keymgr_key_t;
+  } otp_keymgr_key_t;
 
   typedef struct packed {
-    logic valid;
+    logic req;
+  } flash_otp_key_req_t;
+
+  typedef struct packed {
+    logic req;
+  } sram_otp_key_req_t;
+
+  typedef struct packed {
+    logic req;
+  } otbn_otp_key_req_t;
+
+  typedef struct packed {
+    logic ack;
     logic [FlashKeyWidth-1:0] addr_key;
     logic [FlashKeyWidth-1:0] data_key;
-  } flash_key_t;
+  } flash_otp_key_rsp_t;
 
   typedef struct packed {
-    logic valid;
-    logic [SramKeyWidth-1:0] addr_key;
-    logic [SramKeyWidth-1:0] data_key;
-  } sram_key_t;
+    logic ack;
+    logic [SramKeyWidth-1:0]   key;
+    logic [SramNonceWidth-1:0] nonce;
+  } sram_otp_key_rsp_t;
+
+  typedef struct packed {
+    logic ack;
+    logic [OtbnKeyWidth-1:0]   key;
+    logic [OtbnNonceWidth-1:0] nonce;
+  } otbn_otp_key_rsp_t;
+
+
+
 
 
   ////////////////////////////////

@@ -256,13 +256,37 @@
         }
         { bits: "9"
           name: "TIMEOUT_ERROR"
-          desc: "Set to 1 if an integrity or consistency check times out. This raises an otp_check_failed alert and is an unrecoverable error condition."
+          desc: '''
+                Set to 1 if an integrity or consistency check times out.
+                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                '''
         }
         { bits: "10"
+          name: "LFSR_FSM_ERROR"
+          desc: '''
+                Set to 1 if the LFSR timer FSM has reached an invalid state.
+                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                '''
+        }
+        { bits: "11"
+          name: "SCRAMBLING_FSM_ERROR"
+          desc: '''
+                Set to 1 if the scrambling datapath FSM has reached an invalid state.
+                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                '''
+        }
+        { bits: "12"
+          name: "KEY_DERIV_FSM_ERROR"
+          desc: '''
+                Set to 1 if the key derivation FSM has reached an invalid state.
+                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                '''
+        }
+        { bits: "13"
           name: "DAI_IDLE"
           desc: "Set to 1 if the DAI is idle and ready to accept commands."
         }
-        { bits: "11"
+        { bits: "14"
           name: "CHECK_PENDING"
           desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
         }
@@ -530,7 +554,7 @@
             Register write enable for !!CHECK_TRIGGER.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         { bits:   "0",
           desc: '''
@@ -571,7 +595,7 @@
             Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         { bits:   "0",
           desc: '''

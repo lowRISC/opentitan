@@ -611,17 +611,23 @@ module otp_ctrl_part_buf
   ////////////////
 
   // Known assertions
-  `ASSERT_KNOWN(InitDoneKnown_A,  init_done_o)
-  `ASSERT_KNOWN(ErrorKnown_A,     error_o)
-  `ASSERT_KNOWN(AccessKnown_A,    access_o)
-  `ASSERT_KNOWN(DataKnown_A,      data_o)
-  `ASSERT_KNOWN(DigestKnown_A,    digest_o)
-
-  `ASSERT_KNOWN(OtpReqKnown_A,    otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,    otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,   otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A,  otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,   otp_addr_o)
+  `ASSERT_KNOWN(InitDoneKnown_A,     init_done_o)
+  `ASSERT_KNOWN(IntegChkAckKnown_A,  integ_chk_ack_o)
+  `ASSERT_KNOWN(CnstyChkAckKnown_A,  cnsty_chk_ack_o)
+  `ASSERT_KNOWN(ErrorKnown_A,        error_o)
+  `ASSERT_KNOWN(AccessKnown_A,       access_o)
+  `ASSERT_KNOWN(DigestKnown_A,       digest_o)
+  `ASSERT_KNOWN(DataKnown_A,         data_o)
+  `ASSERT_KNOWN(OtpReqKnown_A,       otp_req_o)
+  `ASSERT_KNOWN(OtpCmdKnown_A,       otp_cmd_o)
+  `ASSERT_KNOWN(OtpSizeKnown_A,      otp_size_o)
+  `ASSERT_KNOWN(OtpWdataKnown_A,     otp_wdata_o)
+  `ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
+  `ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
+  `ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
+  `ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
+  `ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
+  `ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
 
   // Uninitialized partitions should always be locked, no matter what.
   `ASSERT(InitWriteLocksPartition_A,
