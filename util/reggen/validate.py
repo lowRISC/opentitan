@@ -6,6 +6,8 @@ Register JSON validation
 """
 
 import logging as log
+import re
+import operator
 from collections import OrderedDict
 
 from reggen.field_enums import SwWrAccess, SwRdAccess, SwAccess, HwAccess
@@ -662,21 +664,67 @@ def resolve_value(entry, param_list):
     return int(val), err
 
 
-# only supports subtractions right now
-def resolve_bitfield(entry, param_list):
-    lead_term = True
+# resolve expression
+def resolve_expression(entry, ops, param_list):
+    log.info("Evaluating entry {}".format(entry))
+
     val = 0
     error = 0
-    terms = entry.replace(" ", "").split('-')
 
-    for i in terms:
-        if lead_term:
-            lead_term = False
-            val, err = resolve_value(i, param_list)
+    # construct the pattern to search
+    operators = ''
+    for op in ops.keys():
+        operators += str(op)
+
+    pattern = '([{}])'.format(operators)
+
+    terms = re.split(pattern, entry)
+    log.info("Separate terms: {}".format(terms))
+
+    pending_op = ''
+
+    # When an operation is encountered, save its operation in pending op.
+    # On the next item, it is assumed to be a value and then the operation is
+    # performed.
+    for term in terms:
+        log.info("Operating on {}".format(term))
+        if term in ops.keys():
+            pending_op = term
         else:
-            tmp, err = resolve_value(i, param_list)
-            val -= tmp
+            op_val, err = resolve_value(term, param_list)
+            if pending_op:
+                log.info("Pending operation")
+                val = ops[pending_op](val, op_val)
+                pending_op = ''
+            else:
+                log.info("No pending operation")
+                val = op_val
+
         error += err
+
+    log.info("Final resolved value is {}".format(val))
+    return int(val), error
+
+
+# Supports addition / subtraction in bitfield calculation
+def resolve_bitfield(entry, param_list):
+    log.info("Resolving bitfield {}".format(entry))
+    val = 0
+    error = 0
+    ops = {"+": operator.add, "-": operator.sub}
+    entry = entry.replace(" ", "")
+    expression = re.search('[+-]', entry)
+
+    # The field is an expression
+    if expression:
+        log.info("It is an expression!")
+        val, err = resolve_expression(entry, ops, param_list)
+    else:
+        log.info("It is not an expression!")
+        val, err = resolve_value(entry, param_list)
+
+    error += err
+
     # convert back to string
     return str(val), error
 
