@@ -766,7 +766,7 @@ module sha3pad
   // If not full block is written, the pad shall send message to keccak_round
   // If it is end of the message, the state moves to StPad and send the request
   `ASSERT(CompleteBlockWhenProcess_A,
-    $rose(process_latched) && (!end_of_block || !sent_blocksize )
+    $rose(process_latched) && (!end_of_block && !sent_blocksize )
     && !(st inside {StPrefixWait, StMessageWait}) |-> ##[1:5] keccak_valid_o)
   // If `process_i` is asserted, eventually sha3pad trigger run signal
   `ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o))
