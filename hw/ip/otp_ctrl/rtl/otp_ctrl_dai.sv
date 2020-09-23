@@ -68,8 +68,8 @@ module otp_ctrl_dai
   localparam int CntWidth = OtpByteAddrWidth - $clog2(ScrmblBlockWidth/8);
 
   // Integration checks for parameters.
-  `ASSERT_INIT(CheckNativeOtpWidth0_A, ScrmblBlockWidth % OtpWidth == 0)
-  `ASSERT_INIT(CheckNativeOtpWidth1_A, 32 % OtpWidth == 0)
+  `ASSERT_INIT(CheckNativeOtpWidth0_A, (ScrmblBlockWidth % OtpWidth) == 0)
+  `ASSERT_INIT(CheckNativeOtpWidth1_A, (32 % OtpWidth) == 0)
 
   /////////////////////
   // DAI Control FSM //

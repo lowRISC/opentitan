@@ -190,9 +190,10 @@ package otp_ctrl_pkg;
     LciIdx,
     KdiIdx,
     // Number of agents is the last idx+1.
-    NumAgents
+    NumAgentsIdx
   } part_idx_e;
 
+  parameter int NumAgents = int'(NumAgentsIdx);
   parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
   ////////////////////////
@@ -261,8 +262,8 @@ package otp_ctrl_pkg;
   } otp_lc_data_t;
 
   typedef struct packed {
-    logic         req;
-    otp_lc_data_t state_diff;
+    logic      req;
+    lc_state_e state_diff;
     lc_value_e [NumLcCountValues-1:0] count_diff;
   } lc_otp_program_req_t;
 

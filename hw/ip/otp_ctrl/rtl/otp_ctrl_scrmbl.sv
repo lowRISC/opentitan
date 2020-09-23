@@ -79,9 +79,11 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   output logic [ScrmblBlockWidth-1:0] data_o,
   output logic                        valid_o,
   // escalation input and FSM error indication
-  input  logic                        escalate_en_i,
+  input  lc_tx_t                      escalate_en_i,
   output logic                        fsm_err_o
 );
+
+  import prim_util_pkg::vbits;
 
   ////////////////////////
   // Decryption Key LUT //
@@ -142,10 +144,14 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   logic [ConstSelWidth-1:0] sel_d, sel_q;
   otp_digest_mode_e digest_mode_d, digest_mode_q;
 
-  assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ? OtpKey[sel_d]          : '0;
-  assign otp_dec_key_mux      = (sel_d < NumScrmblKeys) ? otp_dec_key_lut[sel_d] : '0;
-  assign otp_digest_const_mux = (sel_d < NumDigestSets) ? OtpDigestConst[sel_d]  : '0;
-  assign otp_digest_iv_mux    = (sel_d < NumDigestSets) ? OtpDigestIV[sel_d]     : '0;
+  assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ?
+                                OtpKey[sel_d[vbits(NumScrmblKeys)-1:0]]          : '0;
+  assign otp_dec_key_mux      = (sel_d < NumScrmblKeys) ?
+                                otp_dec_key_lut[sel_d[vbits(NumScrmblKeys)-1:0]] : '0;
+  assign otp_digest_const_mux = (sel_d < NumDigestSets) ?
+                                OtpDigestConst[sel_d[vbits(NumDigestSets)-1:0]]  : '0;
+  assign otp_digest_iv_mux    = (sel_d < NumDigestSets) ?
+                                OtpDigestIV[sel_d[vbits(NumDigestSets)-1:0]]     : '0;
 
   // Make sure we always select a valid key / digest constant.
   `ASSERT(CheckNumEncKeys_A, data_state_sel == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
