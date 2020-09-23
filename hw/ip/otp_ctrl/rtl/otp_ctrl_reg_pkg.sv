@@ -73,10 +73,6 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_reg2hw_direct_access_wdata_mreg_t;
 
   typedef struct packed {
-    logic        q;
-  } otp_ctrl_reg2hw_check_trigger_regwen_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
@@ -86,10 +82,6 @@ package otp_ctrl_reg_pkg;
       logic        qe;
     } consistency;
   } otp_ctrl_reg2hw_check_trigger_reg_t;
-
-  typedef struct packed {
-    logic        q;
-  } otp_ctrl_reg2hw_check_regwen_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -156,6 +148,15 @@ package otp_ctrl_reg_pkg;
     } timeout_error;
     struct packed {
       logic        d;
+    } lfsr_fsm_error;
+    struct packed {
+      logic        d;
+    } scrambling_fsm_error;
+    struct packed {
+      logic        d;
+    } key_deriv_fsm_error;
+    struct packed {
+      logic        d;
     } dai_idle;
     struct packed {
       logic        d;
@@ -213,15 +214,13 @@ package otp_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [192:191]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [190:189]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [188:185]
-    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [184:179]
-    otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [178:168]
-    otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [167:104]
-    otp_ctrl_reg2hw_check_trigger_regwen_reg_t check_trigger_regwen; // [103:103]
-    otp_ctrl_reg2hw_check_trigger_reg_t check_trigger; // [102:99]
-    otp_ctrl_reg2hw_check_regwen_reg_t check_regwen; // [98:98]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [190:189]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [188:187]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [186:183]
+    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [182:177]
+    otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [176:166]
+    otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [165:102]
+    otp_ctrl_reg2hw_check_trigger_reg_t check_trigger; // [101:98]
     otp_ctrl_reg2hw_check_timeout_reg_t check_timeout; // [97:66]
     otp_ctrl_reg2hw_integrity_check_period_reg_t integrity_check_period; // [65:34]
     otp_ctrl_reg2hw_consistency_check_period_reg_t consistency_check_period; // [33:2]
@@ -233,19 +232,19 @@ package otp_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [737:736]
-    otp_ctrl_hw2reg_status_reg_t status; // [735:736]
-    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [735:700]
-    otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [699:700]
-    otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [699:636]
-    otp_ctrl_hw2reg_creator_sw_cfg_digest_mreg_t [1:0] creator_sw_cfg_digest; // [635:572]
-    otp_ctrl_hw2reg_owner_sw_cfg_digest_mreg_t [1:0] owner_sw_cfg_digest; // [571:508]
-    otp_ctrl_hw2reg_hw_cfg_digest_mreg_t [1:0] hw_cfg_digest; // [507:444]
-    otp_ctrl_hw2reg_secret0_digest_mreg_t [1:0] secret0_digest; // [443:380]
-    otp_ctrl_hw2reg_secret1_digest_mreg_t [1:0] secret1_digest; // [379:316]
-    otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [315:252]
-    otp_ctrl_hw2reg_lc_state_mreg_t [11:0] lc_state; // [251:48]
-    otp_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [47:48]
+    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [740:739]
+    otp_ctrl_hw2reg_status_reg_t status; // [738:739]
+    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [738:703]
+    otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [702:703]
+    otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [702:639]
+    otp_ctrl_hw2reg_creator_sw_cfg_digest_mreg_t [1:0] creator_sw_cfg_digest; // [638:575]
+    otp_ctrl_hw2reg_owner_sw_cfg_digest_mreg_t [1:0] owner_sw_cfg_digest; // [574:511]
+    otp_ctrl_hw2reg_hw_cfg_digest_mreg_t [1:0] hw_cfg_digest; // [510:447]
+    otp_ctrl_hw2reg_secret0_digest_mreg_t [1:0] secret0_digest; // [446:383]
+    otp_ctrl_hw2reg_secret1_digest_mreg_t [1:0] secret1_digest; // [382:319]
+    otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [318:255]
+    otp_ctrl_hw2reg_lc_state_mreg_t [11:0] lc_state; // [254:51]
+    otp_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [50:51]
   } otp_ctrl_hw2reg_t;
 
   // Register Address

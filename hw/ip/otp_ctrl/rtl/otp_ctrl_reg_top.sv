@@ -162,6 +162,12 @@ module otp_ctrl_reg_top (
   logic status_lci_error_re;
   logic status_timeout_error_qs;
   logic status_timeout_error_re;
+  logic status_lfsr_fsm_error_qs;
+  logic status_lfsr_fsm_error_re;
+  logic status_scrambling_fsm_error_qs;
+  logic status_scrambling_fsm_error_re;
+  logic status_key_deriv_fsm_error_qs;
+  logic status_key_deriv_fsm_error_re;
   logic status_dai_idle_qs;
   logic status_dai_idle_re;
   logic status_check_pending_qs;
@@ -561,7 +567,52 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[dai_idle]: 10:10
+  //   F[lfsr_fsm_error]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_lfsr_fsm_error (
+    .re     (status_lfsr_fsm_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.lfsr_fsm_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_lfsr_fsm_error_qs)
+  );
+
+
+  //   F[scrambling_fsm_error]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_scrambling_fsm_error (
+    .re     (status_scrambling_fsm_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.scrambling_fsm_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_scrambling_fsm_error_qs)
+  );
+
+
+  //   F[key_deriv_fsm_error]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_key_deriv_fsm_error (
+    .re     (status_key_deriv_fsm_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.key_deriv_fsm_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_key_deriv_fsm_error_qs)
+  );
+
+
+  //   F[dai_idle]: 13:13
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_dai_idle (
@@ -576,7 +627,7 @@ module otp_ctrl_reg_top (
   );
 
 
-  //   F[check_pending]: 11:11
+  //   F[check_pending]: 14:14
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_check_pending (
@@ -962,7 +1013,7 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.check_trigger_regwen.q ),
+    .q      (),
 
     // to register interface (read)
     .qs     (check_trigger_regwen_qs)
@@ -1041,7 +1092,7 @@ module otp_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.check_regwen.q ),
+    .q      (),
 
     // to register interface (read)
     .qs     (check_regwen_qs)
@@ -1865,6 +1916,12 @@ module otp_ctrl_reg_top (
 
   assign status_timeout_error_re = addr_hit[3] && reg_re;
 
+  assign status_lfsr_fsm_error_re = addr_hit[3] && reg_re;
+
+  assign status_scrambling_fsm_error_re = addr_hit[3] && reg_re;
+
+  assign status_key_deriv_fsm_error_re = addr_hit[3] && reg_re;
+
   assign status_dai_idle_re = addr_hit[3] && reg_re;
 
   assign status_check_pending_re = addr_hit[3] && reg_re;
@@ -2005,8 +2062,11 @@ module otp_ctrl_reg_top (
         reg_rdata_next[7] = status_dai_error_qs;
         reg_rdata_next[8] = status_lci_error_qs;
         reg_rdata_next[9] = status_timeout_error_qs;
-        reg_rdata_next[10] = status_dai_idle_qs;
-        reg_rdata_next[11] = status_check_pending_qs;
+        reg_rdata_next[10] = status_lfsr_fsm_error_qs;
+        reg_rdata_next[11] = status_scrambling_fsm_error_qs;
+        reg_rdata_next[12] = status_key_deriv_fsm_error_qs;
+        reg_rdata_next[13] = status_dai_idle_qs;
+        reg_rdata_next[14] = status_check_pending_qs;
       end
 
       addr_hit[4]: begin
