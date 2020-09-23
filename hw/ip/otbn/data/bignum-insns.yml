@@ -483,8 +483,9 @@
       doc: Name of the second source WDR
     - *bn-shift-type-operand
     - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
   syntax: &bn-and-syntax |
-    <wrd>, <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B]
+    <wrd>, <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
   doc: |
     Performs a bitwise and operation.
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
@@ -497,22 +498,23 @@
 
     sb = UInt(shift_bytes)
     st = DecodeShiftType(shift_type)
+    fg = DecodeFlagGroup(flag_group)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
     result = a & b_shifted
 
     WDR[d] = result
     flags_out = FlagsForResult(result)
-    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bna
     mapping:
-      funct31: b0
+      fg: flag_group
       shift_type: shift_type
       shift_bytes: shift_bytes
       wrs2: wrs2
       wrs1: wrs1
-      funct3: b110
+      funct3: b010
       wrd: wrd
 
 - mnemonic: bn.or
@@ -531,16 +533,16 @@
 
     WDR[d] = result
     flags_out = FlagsForResult(result)
-    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bna
     mapping:
-      funct31: b1
+      fg: flag_group
       shift_type: shift_type
       shift_bytes: shift_bytes
       wrs2: wrs2
       wrs1: wrs1
-      funct3: b110
+      funct3: b100
       wrd: wrd
 
 - mnemonic: bn.not
@@ -552,8 +554,9 @@
       doc: Name of the source WDR
     - *bn-shift-type-operand
     - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
   syntax: |
-    <wrd>, <wrs>[, <shift_type> <shift_bytes>B]
+    <wrd>, <wrs>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
   doc: |
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
@@ -564,22 +567,22 @@
 
     sb = UInt(shift_bytes)
     st = DecodeShiftType(shift_type)
+    fg = DecodeFlagGroup(flag_group)
   operation: |
     a_shifted = ShiftReg(a, st, sb)
     result = ~a_shifted
 
     WDR[d] = result
     flags_out = FlagsForResult(result)
-    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
-    scheme: bna
+    scheme: bnan
     mapping:
-      funct31: b0
+      fg: flag_group
       shift_type: shift_type
       shift_bytes: shift_bytes
-      wrs2: wrs
-      wrs1: bxxxxx
-      funct3: b111
+      wrs1: wrs
+      funct3: b101
       wrd: wrd
 
 - mnemonic: bn.xor
@@ -598,16 +601,16 @@
 
     WDR[d] = result
     flags_out = FlagsForResult(result)
-    FLAGS[0] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[0].C}
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
-    scheme: bnaf
+    scheme: bna
     mapping:
-      fg: b1
+      fg: flag_group
       shift_type: shift_type
       shift_bytes: shift_bytes
       wrs2: wrs2
       wrs1: wrs1
-      funct3: b111
+      funct3: b110
       wrd: wrd
 
 - mnemonic: bn.rshi
