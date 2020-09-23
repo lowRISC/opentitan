@@ -89,6 +89,15 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       local: "true"
     },
   ],
+
+  inter_signal_list: [
+    { struct:  "alert_crashdump",
+      type:    "uni",
+      name:    "crashdump",
+      act:     "req",
+      package: "alert_pkg"
+    },
+  ]
 ##############################################################################
 # interrupt registers for the classes
   interrupt_list: [

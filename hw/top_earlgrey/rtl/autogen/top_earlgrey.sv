@@ -219,6 +219,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
+  alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   logic       pwrmgr_wakeups;
   logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
@@ -791,10 +792,9 @@ module top_earlgrey #(
       .intr_classd_o (intr_alert_handler_classd),
 
       // Inter-module signals
+      .crashdump_o(alert_handler_crashdump),
       .tl_i(alert_handler_tl_req),
       .tl_o(alert_handler_tl_rsp),
-      // TODO: wire this to hardware debug circuit
-      .crashdump_o (          ),
       // TODO: wire this to TRNG
       .entropy_i   ( 1'b0     ),
       // alert signals
@@ -844,6 +844,7 @@ module top_earlgrey #(
       .resets_o(rstmgr_resets),
       .ast_i(rstmgr_ast_i),
       .cpu_i(rstmgr_cpu),
+      .alert_dump_i(alert_handler_crashdump),
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),

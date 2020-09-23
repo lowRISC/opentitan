@@ -410,7 +410,8 @@
       'pwrmgr.pwr_flash' : ['flash_ctrl.pwrmgr'],
       'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
-      'flash_ctrl.keymgr': ['keymgr.flash']
+      'flash_ctrl.keymgr': ['keymgr.flash'],
+      'alert_handler.crashdump': ['rstmgr.alert_dump']
     }
 
     // top is to connect to top net/struct.

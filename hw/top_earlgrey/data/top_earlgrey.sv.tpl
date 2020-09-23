@@ -577,8 +577,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
-      // TODO: wire this to hardware debug circuit
-      .crashdump_o (          ),
       // TODO: wire this to TRNG
       .entropy_i   ( 1'b0     ),
       // alert signals
