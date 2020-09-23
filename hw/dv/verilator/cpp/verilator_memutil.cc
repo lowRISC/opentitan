@@ -305,15 +305,9 @@ static void WriteSegment(const MemArea &m, uint32_t offset, uint32_t file_sz,
   // the file.
   file_sz = std::min(file_sz, mem_sz);
 
-  svScope scope = svGetScopeFromName(m.location.data());
-  if (!scope) {
-    std::ostringstream oss;
-    oss << "No memory found at `" << m.location
-        << "' (the scope associated with region `" << m.name << "').";
-    throw std::runtime_error(oss.str());
-  }
-
-  SVScoped scoped(scope);
+  // If this fails to set scope, it will throw an error which should
+  // be caught at this function's callsite.
+  SVScoped scoped(m.location.data());
 
   // This "mini buffer" is used to transfer each write to SystemVerilog. It's
   // not massively efficient, but doing so ensures that we pass 256 bits (32
@@ -384,15 +378,7 @@ static void WriteElfToMem(const MemArea &m, const std::string &filepath) {
 }
 
 static void WriteVmemToMem(const MemArea &m, const std::string &filepath) {
-  svScope scope = svGetScopeFromName(m.location.data());
-  if (!scope) {
-    std::ostringstream oss;
-    oss << "No memory found at `" << m.location
-        << "' (the scope associated with region `" << m.name << "').";
-    throw std::runtime_error(oss.str());
-  }
-
-  SVScoped scoped(scope);
+  SVScoped scoped(m.location.data());
   // TODO: Add error handling.
   simutil_verilator_memload(filepath.data());
 }
@@ -628,15 +614,22 @@ void VerilatorMemUtil::LoadFileToNamedMem(bool verbose, const std::string &name,
 
   const MemArea &m = it->second;
 
-  switch (type) {
-    case kMemImageElf:
-      WriteElfToMem(m, filepath);
-      break;
-    case kMemImageVmem:
-      WriteVmemToMem(m, filepath);
-      break;
-    default:
-      assert(0);
+  try {
+    switch (type) {
+      case kMemImageElf:
+        WriteElfToMem(m, filepath);
+        break;
+      case kMemImageVmem:
+        WriteVmemToMem(m, filepath);
+        break;
+      default:
+        assert(0);
+    }
+  } catch (const SVScoped::Error &err) {
+    std::ostringstream oss;
+    oss << "No memory found at `" << err.scope_name_
+        << "' (the scope associated with region `" << m.name << "').";
+    throw std::runtime_error(oss.str());
   }
 }
 
@@ -729,8 +722,17 @@ void VerilatorMemUtil::LoadElfToMemories(bool verbose,
     }
 
     const char *seg_data = file_data + phdr.p_offset;
-    WriteSegment(*mem_area, local_base, phdr.p_filesz, phdr.p_memsz,
-                 (const uint8_t *)seg_data);
+    try {
+      WriteSegment(*mem_area, local_base, phdr.p_filesz, phdr.p_memsz,
+                   (const uint8_t *)seg_data);
+    } catch (const SVScoped::Error &err) {
+      std::ostringstream oss;
+      oss << "No memory found at `" << err.scope_name_
+          << "' (the scope associated with region `" << mem_area->name
+          << "', used by segment " << i << ", which starts at LMA 0x"
+          << std::hex << phdr.p_paddr << ").";
+      throw std::runtime_error(oss.str());
+    }
   }
 }
 
