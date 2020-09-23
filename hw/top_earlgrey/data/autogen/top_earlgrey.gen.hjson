@@ -1407,6 +1407,19 @@
       inter_signal_list:
       [
         {
+          struct: alert_crashdump
+          type: uni
+          name: crashdump
+          act: req
+          package: alert_pkg
+          inst_name: alert_handler
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: alert_handler_crashdump
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -1683,6 +1696,18 @@
           width: 1
           default: ""
           top_signame: rstmgr_cpu
+          index: -1
+        }
+        {
+          struct: alert_crashdump
+          type: uni
+          name: alert_dump
+          act: rcv
+          package: alert_pkg
+          inst_name: rstmgr
+          width: 1
+          default: ""
+          top_signame: alert_handler_crashdump
           index: -1
         }
         {
@@ -2816,6 +2841,10 @@
       flash_ctrl.keymgr:
       [
         keymgr.flash
+      ]
+      alert_handler.crashdump:
+      [
+        rstmgr.alert_dump
       ]
       pwrmgr.wakeups:
       [
@@ -5320,6 +5349,19 @@
         index: -1
       }
       {
+        struct: alert_crashdump
+        type: uni
+        name: crashdump
+        act: req
+        package: alert_pkg
+        inst_name: alert_handler
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: alert_handler_crashdump
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -5495,6 +5537,18 @@
         width: 1
         default: ""
         top_signame: rstmgr_cpu
+        index: -1
+      }
+      {
+        struct: alert_crashdump
+        type: uni
+        name: alert_dump
+        act: rcv
+        package: alert_pkg
+        inst_name: rstmgr
+        width: 1
+        default: ""
+        top_signame: alert_handler_crashdump
         index: -1
       }
       {
@@ -6482,6 +6536,14 @@
         package: flash_ctrl_pkg
         struct: keymgr_flash
         signame: flash_ctrl_keymgr
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: alert_pkg
+        struct: alert_crashdump
+        signame: alert_handler_crashdump
         width: 1
         type: uni
         default: ""

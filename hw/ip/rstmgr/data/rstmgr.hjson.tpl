@@ -65,6 +65,13 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
+    { struct:  "alert_crashdump",
+      type:    "uni",
+      name:    "alert_dump",
+      act:     "rcv",
+      package: "alert_pkg",
+    },
+
     // Exported resets
 % for intf in export_rsts:
     { struct:  "rstmgr_${intf}_out",
