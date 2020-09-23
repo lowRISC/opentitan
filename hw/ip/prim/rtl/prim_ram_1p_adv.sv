@@ -117,6 +117,8 @@ module prim_ram_1p_adv #(
   /////////////////////////////
 
   if (EnableParity == 0 && EnableECC) begin : gen_secded
+    logic unused_wmask;
+    assign unused_wmask = ^wmask_i;
 
     // check supported widths
     `ASSERT_INIT(SecDecWidth_A, Width inside {16, 32})
