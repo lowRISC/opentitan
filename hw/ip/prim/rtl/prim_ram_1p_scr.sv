@@ -54,15 +54,14 @@ module prim_ram_1p_scr #(
   // This is given by the PRINCE cipher primitive. All parallel cipher modules
   // use the same key, but they use a different IV
   localparam int DataKeyWidth         = 128,
-  // Each scrambling primitive requires a 64bit IV composed of {nonce, address}
-  localparam int DataNonceWidth       = (64-AddrWidth) * NumParScr
+  // Each 64 bit scrambling primitive requires a 64bit IV
+  localparam int NonceWidth           = 64 * NumParScr
 ) (
   input                             clk_i,
   input                             rst_ni,
 
   input        [DataKeyWidth-1:0]   key_i,
-  input        [DataNonceWidth-1:0] data_nonce_i,
-  input        [AddrWidth-1:0]      addr_nonce_i,
+  input        [NonceWidth-1:0]     nonce_i,
 
   input                             req_i,
   input                             write_i,
@@ -83,8 +82,6 @@ module prim_ram_1p_scr #(
 
   // The depth needs to be a power of 2 in case address scrambling is turned on
   `ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
-  // The address nonce should be set to 0 if address scrambling is disabled
-  `ASSERT(AddrNonceCheck_A, NumAddrScrRounds <= '0 |-> addr_nonce_i == '0)
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //
@@ -131,15 +128,23 @@ module prim_ram_1p_scr #(
 
   // This creates a bijective address mapping using a substitution / permutation network.
   logic [AddrWidth-1:0] addr_scr;
-  prim_subst_perm #(
-    .DataWidth ( AddrWidth        ),
-    .NumRounds ( NumAddrScrRounds ),
-    .Decrypt   ( 0                )
-  ) i_prim_subst_perm (
-    .data_i ( addr_mux ),
-    .key_i  ( addr_nonce_i ),
-    .data_o ( addr_scr     )
-  );
+  if (NumAddrScrRounds > 0) begin : gen_addr_scr
+    prim_subst_perm #(
+      .DataWidth ( AddrWidth        ),
+      .NumRounds ( NumAddrScrRounds ),
+      .Decrypt   ( 0                )
+    ) i_prim_subst_perm (
+      .data_i ( addr_mux ),
+      // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr_i} to form
+      // the IV, the upper AddrWidth bits of the nonce are not used and can be used for address
+      // scrambling. In cases where N parallel PRINCE blocks are used due to a data
+      // width > 64bit, N*AddrWidth nonce bits are left dangling.
+      .key_i  ( nonce_i[NonceWidth - 1 : NonceWidth - AddrWidth] ),
+      .data_o ( addr_scr )
+    );
+  end else begin : gen_no_addr_scr
+    assign addr_scr = addr_mux;
+  end
 
   //////////////////////////////////////////////
   // Keystream Generation for Data Scrambling //
@@ -162,7 +167,7 @@ module prim_ram_1p_scr #(
       .rst_ni,
       .valid_i ( req_i ),
       // The IV is composed of a nonce and the row address
-      .data_i  ( {data_nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
+      .data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
       // All parallel scramblers use the same key
       .key_i,
       // Since we operate in counter mode, this can always be set to encryption mode
