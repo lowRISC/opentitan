@@ -1023,7 +1023,7 @@ def main():
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
 
-            return rendered_path
+            return rendered_path.resolve()
 
         # SystemVerilog Top:
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
@@ -1046,9 +1046,8 @@ def main():
         cformat_path.write_text(cformat_tplpath.read_text())
 
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
-        cheader_path = render_template('top_%s.h',
-                                       'sw/autogen',
-                                       helper=c_helper).resolve()
+        cheader_path = render_template('top_%s.h', 'sw/autogen',
+                                       helper=c_helper)
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
