@@ -9,10 +9,7 @@
 // building a DIF for a new peripheral, defining all of the declarations that
 // would be expected of a DIF library as described in the README.md.
 //
-// To instantiate this for a new IP named my_ip, run the command
-// $ util/make_new_dif.py --ip my_ip --peripheral "my peripheral"
-// where "my peripheral" is a documentation-friendly name for your peripheral.
-// Compare "pwrmgr" and "power manager".
+// This file should be instantiated with the `util/make_new_dif.py` script.
 //
 // The script also includes additional options for controlling how the tempalte
 // is instantiated. After the script runs, delete this comment, the #error

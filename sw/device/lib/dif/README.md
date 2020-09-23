@@ -13,6 +13,19 @@ There is one DIF library per hardware IP, and each one contains the DIFs
 required to actuate all of the specification-required functionality of the
 hardware they are written for.
 
+## New DIFs
+
+Developers should use the `util/make_new_dif.py` script to instantiate some
+DIF-related templates which follow the guidance below. The script will create:
+
+*   A Header for the DIF, based on [`dif_template.h.tpl`](./dif_template.h.tpl).
+*   A Checklist for the DIF, based on `doc/project/sw_checklist.md.tpl`.
+
+These files will need checking and editing, but the templates serve to avoid
+most of the copy/paste required.
+
+Further documentation for the script is provided in the script's source.
+
 ## Checklists
 
 This directory also contains checklists for each DIF, in markdown format. They
@@ -67,8 +80,6 @@ Notational caveats:
   `result_t`.
 * Unless otherwise noted, all symbols mentioned below are required.
 
-[`dif_template.h.tpl`](./dif_tempalte.h.tpl) provides a starting point for
-building a DIF library that conforms to this guidance.
 
 #### Base Types
 
