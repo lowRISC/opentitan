@@ -572,7 +572,7 @@ class BNSUBM(OTBNInsn):
 
 
 class BNAND(OTBNInsn):
-    insn = insn_for_mnemonic('bn.and', 5)
+    insn = insn_for_mnemonic('bn.and', 6)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -581,6 +581,7 @@ class BNAND(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
         self.shift_bytes = op_vals['shift_bytes']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs2],
@@ -588,11 +589,11 @@ class BNAND(OTBNInsn):
         a = state.wreg[self.wrs1].unsigned()
         result = a & b_shifted
         state.wreg[self.wrd] = result
-        state.update_mlz_flags(0, result)
+        state.update_mlz_flags(self.flag_group, result)
 
 
 class BNOR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.or', 5)
+    insn = insn_for_mnemonic('bn.or', 6)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -601,6 +602,7 @@ class BNOR(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
         self.shift_bytes = op_vals['shift_bytes']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs2],
@@ -608,11 +610,11 @@ class BNOR(OTBNInsn):
         a = state.wreg[self.wrs1]
         result = a | b_shifted
         state.wreg[self.wrd] = result
-        state.update_mlz_flags(0, result)
+        state.update_mlz_flags(self.flag_group, result)
 
 
 class BNNOT(OTBNInsn):
-    insn = insn_for_mnemonic('bn.not', 4)
+    insn = insn_for_mnemonic('bn.not', 5)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -620,6 +622,7 @@ class BNNOT(OTBNInsn):
         self.wrs = op_vals['wrs']
         self.shift_type = op_vals['shift_type']
         self.shift_bytes = op_vals['shift_bytes']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs],
@@ -627,10 +630,11 @@ class BNNOT(OTBNInsn):
         result = ~b_shifted
         state.wreg[self.wrd] = result
         state.update_mlz_flags(0, result)
+        state.update_mlz_flags(self.flag_group, result)
 
 
 class BNXOR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.xor', 5)
+    insn = insn_for_mnemonic('bn.xor', 6)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -639,6 +643,7 @@ class BNXOR(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
         self.shift_bytes = op_vals['shift_bytes']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs2],
@@ -646,7 +651,7 @@ class BNXOR(OTBNInsn):
         a = state.wreg[self.wrs1]
         result = a ^ b_shifted
         state.wreg[self.wrd] = result
-        state.update_mlz_flags(0, result)
+        state.update_mlz_flags(self.flag_group, result)
 
 
 class BNRSHI(OTBNInsn):
