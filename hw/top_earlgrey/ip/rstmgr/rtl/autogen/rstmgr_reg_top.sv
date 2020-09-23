@@ -83,6 +83,16 @@ module rstmgr_reg_top (
   logic reset_info_hw_req_qs;
   logic reset_info_hw_req_wd;
   logic reset_info_hw_req_we;
+  logic alert_info_ctrl_en_qs;
+  logic alert_info_ctrl_en_wd;
+  logic alert_info_ctrl_en_we;
+  logic [3:0] alert_info_ctrl_index_qs;
+  logic [3:0] alert_info_ctrl_index_wd;
+  logic alert_info_ctrl_index_we;
+  logic [3:0] alert_info_attr_qs;
+  logic alert_info_attr_re;
+  logic [31:0] alert_info_qs;
+  logic alert_info_re;
   logic spi_device_regen_qs;
   logic spi_device_regen_wd;
   logic spi_device_regen_we;
@@ -203,6 +213,92 @@ module rstmgr_reg_top (
   );
 
 
+  // R[alert_info_ctrl]: V(False)
+
+  //   F[en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_info_ctrl_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_info_ctrl_en_we),
+    .wd     (alert_info_ctrl_en_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_info_ctrl.en.de),
+    .d      (hw2reg.alert_info_ctrl.en.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_info_ctrl.en.q ),
+
+    // to register interface (read)
+    .qs     (alert_info_ctrl_en_qs)
+  );
+
+
+  //   F[index]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_alert_info_ctrl_index (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_info_ctrl_index_we),
+    .wd     (alert_info_ctrl_index_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_info_ctrl.index.q ),
+
+    // to register interface (read)
+    .qs     (alert_info_ctrl_index_qs)
+  );
+
+
+  // R[alert_info_attr]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_alert_info_attr (
+    .re     (alert_info_attr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.alert_info_attr.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (alert_info_attr_qs)
+  );
+
+
+  // R[alert_info]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_alert_info (
+    .re     (alert_info_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.alert_info.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (alert_info_qs)
+  );
+
+
   // R[spi_device_regen]: V(False)
 
   prim_subreg #(
@@ -313,14 +409,17 @@ module rstmgr_reg_top (
 
 
 
-  logic [4:0] addr_hit;
+  logic [7:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
-    addr_hit[1] = (reg_addr == RSTMGR_SPI_DEVICE_REGEN_OFFSET);
-    addr_hit[2] = (reg_addr == RSTMGR_RST_SPI_DEVICE_N_OFFSET);
-    addr_hit[3] = (reg_addr == RSTMGR_USB_REGEN_OFFSET);
-    addr_hit[4] = (reg_addr == RSTMGR_RST_USB_N_OFFSET);
+    addr_hit[1] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
+    addr_hit[2] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
+    addr_hit[3] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
+    addr_hit[4] = (reg_addr == RSTMGR_SPI_DEVICE_REGEN_OFFSET);
+    addr_hit[5] = (reg_addr == RSTMGR_RST_SPI_DEVICE_N_OFFSET);
+    addr_hit[6] = (reg_addr == RSTMGR_USB_REGEN_OFFSET);
+    addr_hit[7] = (reg_addr == RSTMGR_RST_USB_N_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -333,6 +432,9 @@ module rstmgr_reg_top (
     if (addr_hit[2] && reg_we && (RSTMGR_PERMIT[2] != (RSTMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[3] && reg_we && (RSTMGR_PERMIT[3] != (RSTMGR_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[4] && reg_we && (RSTMGR_PERMIT[4] != (RSTMGR_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[5] && reg_we && (RSTMGR_PERMIT[5] != (RSTMGR_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[6] && reg_we && (RSTMGR_PERMIT[6] != (RSTMGR_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[7] && reg_we && (RSTMGR_PERMIT[7] != (RSTMGR_PERMIT[7] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign reset_info_por_we = addr_hit[0] & reg_we & ~wr_err;
@@ -347,16 +449,26 @@ module rstmgr_reg_top (
   assign reset_info_hw_req_we = addr_hit[0] & reg_we & ~wr_err;
   assign reset_info_hw_req_wd = reg_wdata[3];
 
-  assign spi_device_regen_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_en_wd = reg_wdata[0];
+
+  assign alert_info_ctrl_index_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_index_wd = reg_wdata[7:4];
+
+  assign alert_info_attr_re = addr_hit[2] && reg_re;
+
+  assign alert_info_re = addr_hit[3] && reg_re;
+
+  assign spi_device_regen_we = addr_hit[4] & reg_we & ~wr_err;
   assign spi_device_regen_wd = reg_wdata[0];
 
-  assign rst_spi_device_n_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rst_spi_device_n_we = addr_hit[5] & reg_we & ~wr_err;
   assign rst_spi_device_n_wd = reg_wdata[0];
 
-  assign usb_regen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign usb_regen_we = addr_hit[6] & reg_we & ~wr_err;
   assign usb_regen_wd = reg_wdata[0];
 
-  assign rst_usb_n_we = addr_hit[4] & reg_we & ~wr_err;
+  assign rst_usb_n_we = addr_hit[7] & reg_we & ~wr_err;
   assign rst_usb_n_wd = reg_wdata[0];
 
   // Read data return
@@ -371,18 +483,31 @@ module rstmgr_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = spi_device_regen_qs;
+        reg_rdata_next[0] = alert_info_ctrl_en_qs;
+        reg_rdata_next[7:4] = alert_info_ctrl_index_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = rst_spi_device_n_qs;
+        reg_rdata_next[3:0] = alert_info_attr_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = usb_regen_qs;
+        reg_rdata_next[31:0] = alert_info_qs;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[0] = spi_device_regen_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[0] = rst_spi_device_n_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[0] = usb_regen_qs;
+      end
+
+      addr_hit[7]: begin
         reg_rdata_next[0] = rst_usb_n_qs;
       end
 

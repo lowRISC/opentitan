@@ -13,6 +13,8 @@ module rstmgr_por #(
 ) (
   input clk_i,
   input rst_ni,
+  input scan_rst_ni,
+  input scanmode_i,
   output logic rst_no
 );
   localparam int CtrWidth = $clog2(StretchCount+1);
@@ -46,7 +48,14 @@ module rstmgr_por #(
 
   // The stable is a vote of all filter stages.
   // Only when all the stages agree is the reset considered stable and count allowed.
-  assign rst_clean_n = rst_filter_n[FilterStages-1];
+
+  prim_clock_mux2 u_rst_clean_mux (
+    .clk0_i(rst_filter_n[FilterStages-1]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(rst_clean_n)
+  );
+
   assign rst_stable = &rst_filter_n;
   assign cnt_en = rst_stable & !rst_no;
 

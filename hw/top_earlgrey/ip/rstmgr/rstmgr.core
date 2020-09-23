@@ -14,7 +14,33 @@ filesets:
       - rtl/autogen/rstmgr.sv
     file_type: systemVerilogSource
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rstmgr.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
 targets:
-  default:
+  default: &default_target
     filesets:
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
+    toplevel: rstmgr
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"

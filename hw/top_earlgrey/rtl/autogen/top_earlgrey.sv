@@ -847,6 +847,8 @@ module top_earlgrey #(
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),
+      .scanmode_i   (scanmode_i),
+      .scan_rst_ni  (scan_rst_ni),
       .clk_i (clkmgr_clocks.clk_io_div4_powerup),
       .clk_aon_i (clkmgr_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_clocks.clk_main_powerup),
