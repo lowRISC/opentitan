@@ -51,10 +51,10 @@ class tl_device_driver extends tl_base_driver;
 
     forever begin
       int unsigned d_valid_delay, d_valid_len, d_valid_cnt;
-      bit rsp_done;
+      bit rsp_done, rsp_abort;
       seq_item_port.get_next_item(rsp);
 
-      while (!rsp_done && cfg.vif.rst_n) begin
+      while (!rsp_done && !rsp_abort && cfg.vif.rst_n) begin
         if (cfg.use_seq_item_d_valid_delay) begin
           d_valid_delay = rsp.d_valid_delay;
         end else begin
@@ -94,7 +94,9 @@ class tl_device_driver extends tl_base_driver;
           if (cfg.vif.device_cb.h2d.d_ready) begin
             rsp_done = 1;
             break;
-          end else if (cfg.allow_d_valid_drop_wo_d_ready && d_valid_cnt >= d_valid_len) begin
+          end else if ((cfg.allow_d_valid_drop_wo_d_ready || rsp.rsp_abort_after_d_valid_len)
+                      && d_valid_cnt >= d_valid_len) begin
+            if (rsp.rsp_abort_after_d_valid_len) rsp_abort = 1;
             invalidate_d_channel();
             if (!cfg.vif.rst_n) @(cfg.vif.device_cb);
             break;
@@ -102,7 +104,9 @@ class tl_device_driver extends tl_base_driver;
         end // while (!cfg.vif.rst_n)
       end // while (!rsp_done && cfg.vif.rst_n)
       invalidate_d_channel();
+      rsp.rsp_completed = !rsp_abort;
       seq_item_port.item_done();
+      seq_item_port.put_response(rsp);
     end
   endtask : d_channel_thread
 

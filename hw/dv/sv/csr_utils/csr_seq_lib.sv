@@ -364,14 +364,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       val = rg.get();
       val[k]  = ~val[k];
       err_msg = $sformatf("Wrote %0s[%0d]: %0b", rg.get_full_name(), k, val[k]);
-      csr_wr(.csr(rg), .value(val), .blocking(1));
-
-      // if external checker is not enabled and writes are made non-blocking, then we need to
-      // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
-      // might pick up stale mirrored value
-      if (!external_checker) begin
-        void'(rg.predict(.value(val), .kind(UVM_PREDICT_WRITE)));
-      end
+      csr_wr(.csr(rg), .value(val), .blocking(1), .predict(!external_checker));
 
       // TODO, outstanding access to same reg isn't supported in uvm_reg. Need to add another seq
       // uvm_reg waits until transaction is completed, before start another read/write in same reg
@@ -414,14 +407,7 @@ class csr_aliasing_seq extends csr_base_seq;
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrAliasingTest, m_csr_excl_item);
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0));
-
-      // if external checker is not enabled and writes are made non-blocking, then we need to
-      // pre-predict so that the mirrored value will be updated. if we dont, then csr_rd_check task
-      // might pick up stale mirrored value
-      if (!external_checker) begin
-        void'(test_csrs[i].predict(.value(wdata), .kind(UVM_PREDICT_WRITE)));
-      end
+      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       all_csrs.shuffle();
       foreach (all_csrs[j]) begin

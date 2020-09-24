@@ -13,13 +13,14 @@ package csr_utils_pkg;
   `include "dv_macros.svh"
 
   // local types and variables
-  uint       outstanding_accesses        = 0;
-  uint       default_timeout_ns          = 1_000_000; // 1ms
-  uint       default_spinwait_timeout_ns = 10_000_000; // 10ms
-  string     msg_id                      = "csr_utils";
-  bit        default_csr_blocking        = 1;
-  bit        under_reset                 = 0;
-  int        max_outstanding_accesses    = 100;
+  uint        outstanding_accesses        = 0;
+  uint        default_timeout_ns          = 1_000_000; // 1ms
+  uint        default_spinwait_timeout_ns = 10_000_000; // 10ms
+  string      msg_id                      = "csr_utils";
+  bit         default_csr_blocking        = 1;
+  uvm_check_e default_csr_check           = UVM_CHECK;
+  bit         under_reset                 = 0;
+  int         max_outstanding_accesses    = 100;
 
   // csr field struct - hold field specific params
   typedef struct {
@@ -174,7 +175,7 @@ package csr_utils_pkg;
   endtask
 
   task automatic csr_update(input  uvm_reg      csr,
-                            input  uvm_check_e  check = UVM_CHECK,
+                            input  uvm_check_e  check = default_csr_check,
                             input  uvm_path_e   path = UVM_DEFAULT_PATH,
                             input  bit          blocking = default_csr_blocking,
                             input  uint         timeout_ns = default_timeout_ns,
@@ -193,7 +194,7 @@ package csr_utils_pkg;
 
   // subroutine of csr_update, don't use it directly
   task automatic csr_update_sub(input  uvm_reg      csr,
-                                input  uvm_check_e  check = UVM_CHECK,
+                                input  uvm_check_e  check = default_csr_check,
                                 input  uvm_path_e   path = UVM_DEFAULT_PATH,
                                 input  uint         timeout_ns = default_timeout_ns,
                                 input  uvm_reg_map  map = null,
@@ -229,7 +230,7 @@ package csr_utils_pkg;
 
   task automatic csr_wr(input uvm_reg        csr,
                         input uvm_reg_data_t value,
-                        input uvm_check_e    check = UVM_CHECK,
+                        input uvm_check_e    check = default_csr_check,
                         input uvm_path_e     path = UVM_DEFAULT_PATH,
                         input bit            blocking = default_csr_blocking,
                         input bit            backdoor = 0,
@@ -240,15 +241,11 @@ package csr_utils_pkg;
     if (backdoor) begin
       csr_poke(csr, value, check, predict);
     end else if (blocking) begin
-      csr_wr_sub(csr, value, check, path, timeout_ns, map, en_shadow_wr);
-      if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
+      csr_wr_sub(csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
     end else begin
       fork
         begin
-          csr_wr_sub(csr, value, check, path, timeout_ns, map, en_shadow_wr);
-          // predict after csr_wr_sub, to ensure predict after enable register overwrite the locked
-          // registers' access information
-          if (predict) void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
+          csr_wr_sub(csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
         end
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -259,9 +256,10 @@ package csr_utils_pkg;
   // subroutine of csr_wr, don't use it directly
   task automatic csr_wr_sub(input uvm_reg        csr,
                             input uvm_reg_data_t value,
-                            input uvm_check_e    check = UVM_CHECK,
+                            input uvm_check_e    check = default_csr_check,
                             input uvm_path_e     path = UVM_DEFAULT_PATH,
                             input uint           timeout_ns = default_timeout_ns,
+                            input bit            predict = 0,
                             input uvm_reg_map    map = null,
                             input bit            en_shadow_wr = 1);
     fork
@@ -277,6 +275,11 @@ package csr_utils_pkg;
             csr_post_write_sub(csr, en_shadow_wr);
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+            end
+            // Only update the predicted value if status is ok (otherwise the write isn't completed
+            // successfully and the design shouldn't have accepted the written value)
+            if (status == UVM_IS_OK && predict) begin
+              void'(csr.predict(.value(value), .kind(UVM_PREDICT_WRITE)));
             end
             decrement_outstanding_access();
           end
@@ -318,7 +321,7 @@ package csr_utils_pkg;
   // backdoor write csr
   task automatic csr_poke(input uvm_reg         csr,
                           input uvm_reg_data_t  value,
-                          input uvm_check_e     check = UVM_CHECK,
+                          input uvm_check_e     check = default_csr_check,
                           input bit             predict = 0,
                           input bkdr_reg_path_e kind = BkdrRegPathRtl);
     uvm_status_e  status;
@@ -342,19 +345,21 @@ package csr_utils_pkg;
 
   task automatic csr_rd(input  uvm_object     ptr, // accept reg or field
                         output uvm_reg_data_t value,
-                        input  uvm_check_e    check = UVM_CHECK,
+                        input  uvm_check_e    check = default_csr_check,
                         input  uvm_path_e     path = UVM_DEFAULT_PATH,
                         input  bit            blocking = default_csr_blocking,
                         input  bit            backdoor = 0,
                         input  uint           timeout_ns = default_timeout_ns,
                         input  uvm_reg_map    map = null);
-    if (backdoor) begin
-        csr_peek(ptr, value, check);
-    end else if (blocking) begin
-      csr_rd_sub(ptr, value, check, path, timeout_ns, map);
+    uvm_status_e status;
+    if (blocking) begin
+      csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
+                 .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map));
     end else begin
+      `DV_CHECK_EQ(backdoor, 0, "Don't enable backdoor with blocking = 0", error, msg_id)
       fork
-        csr_rd_sub(ptr, value, check, path, timeout_ns, map);
+        csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
+                   .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map));
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -364,14 +369,20 @@ package csr_utils_pkg;
   // subroutine of csr_rd, don't use it directly
   task automatic csr_rd_sub(input  uvm_object     ptr, // accept reg or field
                             output uvm_reg_data_t value,
-                            input  uvm_check_e    check = UVM_CHECK,
+                            output uvm_status_e   status,
+                            input  bit            backdoor = 0,
+                            input  uvm_check_e    check = default_csr_check,
                             input  uvm_path_e     path = UVM_DEFAULT_PATH,
                             input  uint           timeout_ns = default_timeout_ns,
                             input  uvm_reg_map    map = null);
+    if (backdoor) begin
+        csr_peek(ptr, value, check);
+        status = UVM_IS_OK;
+        return;
+    end
     fork
       begin : isolation_fork
         csr_field_t   csr_or_fld;
-        uvm_status_e  status;
         string        msg_id = {csr_utils_pkg::msg_id, "::csr_rd"};
 
         fork
@@ -405,7 +416,7 @@ package csr_utils_pkg;
   // uvm_reg::peek() returns a 2-state value, directly get data from hdl path
   task automatic csr_peek(input uvm_object      ptr,
                           output uvm_reg_data_t value,
-                          input uvm_check_e     check = UVM_CHECK,
+                          input uvm_check_e     check = default_csr_check,
                           input bkdr_reg_path_e kind = BkdrRegPathRtl);
     string      msg_id = {csr_utils_pkg::msg_id, "::csr_peek"};
     csr_field_t csr_or_fld = decode_csr_or_field(ptr);
@@ -434,7 +445,7 @@ package csr_utils_pkg;
   endtask
 
   task automatic csr_rd_check(input  uvm_object     ptr,
-                              input  uvm_check_e    check = UVM_CHECK,
+                              input  uvm_check_e    check = default_csr_check,
                               input  uvm_path_e     path = UVM_DEFAULT_PATH,
                               input  bit            blocking = default_csr_blocking,
                               input  bit            backdoor = 0,
@@ -457,8 +468,8 @@ package csr_utils_pkg;
 
             csr_or_fld = decode_csr_or_field(ptr);
 
-            csr_rd(.ptr(ptr), .value(obs), .check(check), .path(path), .backdoor(backdoor),
-                   .blocking(1), .timeout_ns(timeout_ns), .map(map));
+            csr_rd_sub(.ptr(ptr), .value(obs), .status(status), .check(check), .path(path),
+                       .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map));
 
             // get mirrored value after read to make sure the read reg access is updated
             if (csr_or_fld.field != null) begin
@@ -466,7 +477,7 @@ package csr_utils_pkg;
             end else begin
               exp = csr_or_fld.csr.get_mirrored_value();
             end
-            if (compare && !under_reset) begin
+            if (compare && status == UVM_IS_OK && !under_reset) begin
               obs = obs & compare_mask;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
               `DV_CHECK_EQ(obs, exp, {"Regname: ", ptr.get_full_name(), " ", err_msg},
@@ -538,7 +549,7 @@ package csr_utils_pkg;
   // poll a csr or csr field continuously until it reads the expected value.
   task automatic csr_spinwait(input uvm_object      ptr,
                               input uvm_reg_data_t  exp_data,
-                              input uvm_check_e     check = UVM_CHECK,
+                              input uvm_check_e     check = default_csr_check,
                               input uvm_path_e      path = UVM_DEFAULT_PATH,
                               input uvm_reg_map     map = null,
                               input uint            spinwait_delay_ns = 0,
@@ -588,7 +599,7 @@ package csr_utils_pkg;
   task automatic mem_rd(input  uvm_mem     ptr,
                         input  int         offset,
                         output bit[31:0]   data,
-                        input  uvm_check_e check = UVM_CHECK,
+                        input  uvm_check_e check = default_csr_check,
                         input  bit         blocking = default_csr_blocking,
                         input  uint        timeout_ns = default_timeout_ns,
                         input  uvm_reg_map map = null);
@@ -606,7 +617,7 @@ package csr_utils_pkg;
   task automatic mem_rd_sub(input  uvm_mem     ptr,
                             input  int         offset,
                             output bit[31:0]   data,
-                            input  uvm_check_e check = UVM_CHECK,
+                            input  uvm_check_e check = default_csr_check,
                             input  uint        timeout_ns = default_timeout_ns,
                             input  uvm_reg_map map = null);
     fork
@@ -639,7 +650,7 @@ package csr_utils_pkg;
                         input bit[31:0]   data,
                         input bit         blocking = default_csr_blocking,
                         input uint        timeout_ns = default_timeout_ns,
-                        input uvm_check_e check = UVM_CHECK,
+                        input uvm_check_e check = default_csr_check,
                         input uvm_reg_map map = null);
     if (blocking) begin
       mem_wr_sub(ptr, offset, data, timeout_ns, check, map);
@@ -656,7 +667,7 @@ package csr_utils_pkg;
                             input int         offset,
                             input bit[31:0]   data,
                             input uint        timeout_ns = default_timeout_ns,
-                            input uvm_check_e check = UVM_CHECK,
+                            input uvm_check_e check = default_csr_check,
                             input uvm_reg_map map = null);
      fork
       begin : isolation_fork

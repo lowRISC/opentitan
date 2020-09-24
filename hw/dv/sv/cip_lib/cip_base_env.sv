@@ -42,6 +42,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     // create components
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
+    m_tl_reg_adapter.cfg = cfg.m_tl_agent_cfg;
 
     // create alert agents and set cfgs
     foreach(cfg.list_of_alerts[i]) begin

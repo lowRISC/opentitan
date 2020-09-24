@@ -57,7 +57,7 @@ class tl_host_driver extends tl_base_driver;
   // Send request on A channel
   virtual task send_a_channel_request(tl_seq_item req);
     int unsigned a_valid_delay, a_valid_len;
-    bit req_done;
+    bit req_done, req_abort;
 
     // Seq may override the a_source, in which case it is possible that it might not have factored
     // in the a_source values from pending requests that have not yet completed. If that is true, we
@@ -68,7 +68,7 @@ class tl_host_driver extends tl_base_driver;
                         wait(reset_asserted);)
     end
 
-    while (!req_done) begin
+    while (!req_done && !req_abort) begin
       if (cfg.use_seq_item_a_valid_delay) begin
         a_valid_delay = req.a_valid_delay;
       end else begin
@@ -99,10 +99,10 @@ class tl_host_driver extends tl_base_driver;
         cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
         cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
       end else begin
-        req_done = 1;
+        req_abort = 1;
       end
       // drop valid if it lasts for a_valid_len, even there is no a_ready
-      `DV_SPINWAIT_EXIT(send_a_request_body(a_valid_len, req_done);,
+      `DV_SPINWAIT_EXIT(send_a_request_body(req, a_valid_len, req_done, req_abort);,
                         wait(reset_asserted);)
 
       // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
@@ -111,16 +111,20 @@ class tl_host_driver extends tl_base_driver;
       invalidate_a_channel();
     end
     seq_item_port.item_done();
-    // if reset, skip data phase
-    if (reset_asserted) begin
+    if (req_abort || reset_asserted) begin
+      req.req_completed = 0;
       // Just wire the d_source back to a_source to avoid errors in upstream logic.
       req.d_source = req.a_source;
       seq_item_port.put_response(req);
+    end else begin
+      req.req_completed = 1;
     end
-    `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
+    `uvm_info(get_full_name(), $sformatf("Req %0s: %0s", req_abort ? "aborted" : "sent",
+                                         req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
 
-  virtual task send_a_request_body(int a_valid_len, ref bit req_done);
+  virtual task send_a_request_body(tl_seq_item req, int a_valid_len,
+                                   ref bit req_done, ref bit req_abort);
     int unsigned a_valid_cnt;
     while (1) begin
       @(cfg.vif.host_cb);
@@ -128,8 +132,9 @@ class tl_host_driver extends tl_base_driver;
       if (cfg.vif.host_cb.d2h.a_ready) begin
         req_done = 1;
         break;
-      end else if (cfg.allow_a_valid_drop_wo_a_ready &&
+      end else if ((req.req_abort_after_a_valid_len || cfg.allow_a_valid_drop_wo_a_ready) &&
                    a_valid_cnt >= a_valid_len) begin
+        if (req.req_abort_after_a_valid_len) req_abort = 1;
         cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
         // remove unaccepted item
         void'(pending_a_req.pop_back());
@@ -186,7 +191,8 @@ class tl_host_driver extends tl_base_driver;
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
-            req_found = 1'b1;
+            req_found         = 1;
+            rsp.rsp_completed = 1;
             break;
           end
         end

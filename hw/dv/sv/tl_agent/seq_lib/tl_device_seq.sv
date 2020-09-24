@@ -8,6 +8,11 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
                                           .SEQUENCER_T(tl_sequencer)
   );
 
+  // if enabled, rsp will be aborted if it's not accepted after given valid length
+  rand bit                 rsp_abort_after_d_valid_len;
+  // chance to abort rsp
+  int                      rsp_abort_pct = 0;
+
   int                      min_rsp_delay = 0;
   int                      max_rsp_delay = 10;
   mem_model_pkg::mem_model mem;
@@ -16,6 +21,13 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
 
   `uvm_object_utils(tl_device_seq)
   `uvm_object_new
+
+  constraint en_req_abort_after_d_valid_len_c {
+    rsp_abort_after_d_valid_len dist {
+      1 :/ rsp_abort_pct,
+      0 :/ 100 - rsp_abort_pct
+    };
+  }
 
   virtual task body();
     fork
@@ -38,9 +50,13 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
         req = req_q.pop_front();
         $cast(rsp, req.clone());
         randomize_rsp(rsp);
+        post_randomize_rsp(rsp);
         update_mem(rsp);
         start_item(rsp);
         finish_item(rsp);
+        get_response(rsp);
+        // put it back to the top of queue to re-send rsp later if it's not completed
+        if (!rsp.rsp_completed) req_q.push_front(rsp);
         `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
                                    rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
         rsp_cnt++;
@@ -64,21 +80,26 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
     end
   endfunction
 
+  // callback after randomize seq, extened seq can override it to handle some non-rand variables
+  virtual function void post_randomize_rsp(tl_seq_item rsp);
+    rsp.rsp_abort_after_d_valid_len = rsp_abort_after_d_valid_len;
+  endfunction
+
   virtual function void update_mem(tl_seq_item rsp);
     if (mem != null) begin
-      if (req.a_opcode inside {PutFullData, PutPartialData}) begin
+      if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin
         bit [tl_agent_pkg::DataWidth-1:0] data;
-        data = req.a_data;
-        for (int i = 0; i < $bits(req.a_mask); i++) begin
-          if (req.a_mask[i]) begin
-            mem.write_byte(req.a_addr + i, data[7:0]);
+        data = rsp.a_data;
+        for (int i = 0; i < $bits(rsp.a_mask); i++) begin
+          if (rsp.a_mask[i]) begin
+            mem.write_byte(rsp.a_addr + i, data[7:0]);
           end
           data = data >> 8;
         end
       end else begin
-        for (int i = 2**req.a_size - 1; i >= 0; i--) begin
+        for (int i = 2**rsp.a_size - 1; i >= 0; i--) begin
           rsp.d_data = rsp.d_data << 8;
-          rsp.d_data[7:0] = mem.read_byte(req.a_addr+i);
+          rsp.d_data[7:0] = mem.read_byte(rsp.a_addr+i);
         end
       end
     end
