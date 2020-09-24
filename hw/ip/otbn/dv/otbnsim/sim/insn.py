@@ -588,7 +588,7 @@ class BNAND(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         b_shifted = ShiftReg(state.wreg[self.wrs2],
                              self.shift_type, self.shift_bytes)
-        a = state.wreg[self.wrs1].unsigned()
+        a = state.wreg[self.wrs1]
         result = a & b_shifted
         state.wreg[self.wrd] = result
         state.update_mlz_flags(self.flag_group, result)
