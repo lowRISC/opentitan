@@ -21,6 +21,13 @@ filesets:
       - otbn_top_sim_waivers.vlt
     file_type: vlt
 
+parameters:
+  UseModel:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+    description: "Run the OTBN model in the simulation, RTL behaviour is checked against model behaviour"
+
 targets:
   default: &default_target
     filesets:
@@ -43,6 +50,8 @@ targets:
 
   sim:
     <<: *default_target
+    parameters:
+      - UseModel
     default_tool: verilator
     tools:
       vcs:

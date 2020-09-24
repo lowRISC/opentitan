@@ -14,6 +14,8 @@ module otbn_top_sim (
   parameter int DmemSizeByte = otbn_reg_pkg::OTBN_DMEM_SIZE;
   // Start address of first instruction in IMem
   parameter int ImemStartAddr = 32'h0;
+  // Include the model. If included checks are run to compare model and RTL behaviour
+  parameter bit UseModel = 1'b1;
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
@@ -162,51 +164,65 @@ module otbn_top_sim (
     end
   end
 
-  // The model
-  //
-  // This runs in parallel with the real core above. Eventually, we'll have strong consistency
-  // checks between the two. For now, we just check that they have the same "done" signals.
+  if (UseModel) begin : g_model
+    // The model
+    //
+    // This runs in parallel with the real core above. Eventually, we'll have strong consistency
+    // checks between the two. For now, we just check that they have the same "done" signals.
 
-  localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
-  localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
-  localparam string DesignScope = "..u_otbn_core";
+    localparam string ImemScope = "...u_imem.u_mem.gen_generic.u_impl_generic";
+    localparam string DmemScope = "...u_dmem.u_mem.gen_generic.u_impl_generic";
+    localparam string DesignScope = "...u_otbn_core";
 
-  logic otbn_model_done;
-  bit   otbn_model_err;
+    logic otbn_model_done;
+    bit   otbn_model_err;
 
-  otbn_core_model #(
-    .DmemSizeByte    ( DmemSizeByte ),
-    .ImemSizeByte    ( ImemSizeByte ),
-    .DmemScope       ( DmemScope ),
-    .ImemScope       ( ImemScope ),
-    .DesignScope     ( DesignScope )
-  ) u_otbn_core_model (
-    .clk_i        ( IO_CLK ),
-    .rst_ni       ( IO_RST_N ),
+    otbn_core_model #(
+      .DmemSizeByte    ( DmemSizeByte ),
+      .ImemSizeByte    ( ImemSizeByte ),
+      .DmemScope       ( DmemScope ),
+      .ImemScope       ( ImemScope ),
+      .DesignScope     ( DesignScope )
+    ) u_otbn_core_model (
+      .clk_i        ( IO_CLK ),
+      .rst_ni       ( IO_RST_N ),
 
-    .start_i      ( otbn_start ),
-    .done_o       ( otbn_model_done ),
+      .start_i      ( otbn_start ),
+      .done_o       ( otbn_model_done ),
 
-    .start_addr_i ( ImemStartAddr ),
+      .start_addr_i ( ImemStartAddr ),
 
-    .err_o        ( otbn_model_err )
-  );
+      .err_o        ( otbn_model_err )
+    );
 
-  bit done_mismatch_latched;
-  bit model_err_latched;
+    bit done_mismatch_latched;
+    bit model_err_latched;
 
-  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
-    if (!IO_RST_N) begin
-      done_mismatch_latched <= 1'b0;
-      model_err_latched     <= 1'b0;
-    end else begin
-      if (otbn_done != otbn_model_done) begin
-        $display("ERROR: At time %0t, otbn_done != otbn_model_done (%0d != %0d).",
-                 $time, otbn_done, otbn_model_done);
-        done_mismatch_latched <= 1'b1;
+    always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+      if (!IO_RST_N) begin
+        done_mismatch_latched <= 1'b0;
+        model_err_latched     <= 1'b0;
+      end else begin
+        if (otbn_done != otbn_model_done) begin
+          $display("ERROR: At time %0t, otbn_done != otbn_model_done (%0d != %0d).",
+                   $time, otbn_done, otbn_model_done);
+          done_mismatch_latched <= 1'b1;
+        end
+        model_err_latched <= model_err_latched | otbn_model_err;
       end
-      model_err_latched <= model_err_latched | otbn_model_err;
     end
+
+    export "DPI-C" function otbn_err_get;
+
+    function automatic bit otbn_err_get();
+      return model_err_latched | done_mismatch_latched;
+    endfunction
+  end else begin : g_no_model
+    export "DPI-C" function otbn_err_get;
+
+    function automatic bit otbn_err_get();
+      return 0;
+    endfunction
   end
 
 
@@ -222,10 +238,5 @@ module otbn_top_sim (
     return u_otbn_core.gen_rf_bignum_ff.u_otbn_rf_bignum.rf[index][word*32+:32];
   endfunction
 
-  export "DPI-C" function otbn_err_get;
-
-  function automatic bit otbn_err_get();
-    return model_err_latched | done_mismatch_latched;
-  endfunction
 
 endmodule

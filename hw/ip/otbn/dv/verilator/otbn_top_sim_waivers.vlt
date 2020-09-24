@@ -7,3 +7,5 @@
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_IMEM_SIZE' generates 22 bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_DMEM_SIZE' generates 22 bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
+lint_off -rule WIDTH -file "*/otbn_top_sim.sv"
+         -match "*expects 1 bits*Initial value's CONST '32'h1'*"
