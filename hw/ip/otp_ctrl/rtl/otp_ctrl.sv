@@ -293,15 +293,13 @@ module otp_ctrl
 
   otp_ctrl_lfsr_timer #(
     .LfsrSeed(TimerLfsrSeed),
-    .LfsrPerm(TimerLfsrPerm),
-    .EntropyWidth(4)
+    .LfsrPerm(TimerLfsrPerm)
   ) u_otp_ctrl_lfsr_timer (
     .clk_i,
     .rst_ni,
     .edn_req_o          ( lfsr_edn_req              ),
     .edn_ack_i          ( lfsr_edn_ack              ),
-    // Lower entropy bits are used for reseeding secure erase LFSRs
-    .edn_data_i         ( otp_edn_rsp_i.data[31:28] ),
+    .edn_data_i         ( otp_edn_rsp_i.data        ),
     // We can enable the timer once OTP has initialized.
     // Note that this is only the initial release that gets
     // the timer FSM into an operational state.
@@ -577,7 +575,7 @@ module otp_ctrl
   ) u_otp_ctrl_lci (
     .clk_i,
     .rst_ni,
-    .init_req_i      ( part_init_req                     ),
+    .lci_en_i        ( pwr_otp_rsp_o.otp_done            ),
     .escalate_en_i   ( lc_escalate_en_i                  ),
     .error_o         ( part_error[LciIdx]                ),
     .lci_idle_o      ( lci_idle                          ),
@@ -618,7 +616,7 @@ module otp_ctrl
   otp_ctrl_kdi i_otp_ctrl_kdi (
     .clk_i,
     .rst_ni,
-    .key_deriv_en_i          ( pwr_otp_rsp_o.otp_done  ),
+    .kdi_en_i                ( pwr_otp_rsp_o.otp_done  ),
     .escalate_en_i           ( lc_escalate_en_i        ),
     .fsm_err_o               ( key_deriv_fsm_err       ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
@@ -808,6 +806,7 @@ module otp_ctrl
   // Assertions //
   ////////////////
 
+  `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
   `ASSERT_KNOWN(TlOutKnown_A,                tl_o)
   `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
   `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
@@ -816,7 +815,7 @@ module otp_ctrl
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_rsp_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          flash_otp_key_rsp_o)
+  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_rsp_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_rsp_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_rsp_o)
   `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)

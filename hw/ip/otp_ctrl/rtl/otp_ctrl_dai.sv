@@ -169,7 +169,7 @@ module otp_ctrl_dai
 
     // Scrambling datapath
     scrmbl_cmd_o   = LoadShadow;
-    scrmbl_sel_o   = '0;
+    scrmbl_sel_o   = CnstyDigest;
     scrmbl_valid_o = 1'b0;
 
     // Counter
@@ -235,16 +235,16 @@ module otp_ctrl_dai
         if (dai_req_i) begin
           // This clears previous (recoverable) errors.
           error_d = NoErr;
-          // Clear the temporary data register.
-          data_clr = 1'b1;
           unique case (dai_cmd_i)
             DaiRead:  begin
               state_d = ReadSt;
+              // Clear the temporary data register.
+              data_clr = 1'b1;
               base_sel_d = DaiOffset;
             end
             DaiWrite: begin
-              // Fetch data block.
               data_sel = DaiData;
+              // Fetch data block.
               data_en = 1'b1;
               base_sel_d = DaiOffset;
               // If this partition is scrambled, directly go to write scrambling first.
@@ -319,7 +319,7 @@ module otp_ctrl_dai
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Decrypt;
-        scrmbl_sel_o = PartInfo[part_idx].key_idx;
+        scrmbl_sel_o = PartInfo[part_idx].key_sel;
         if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
           state_d = DescrWaitSt;
         end
@@ -329,7 +329,7 @@ module otp_ctrl_dai
       // the mutex lock upon leaving this state.
       DescrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        scrmbl_sel_o = PartInfo[part_idx].key_idx;
+        scrmbl_sel_o = PartInfo[part_idx].key_sel;
         data_sel = ScrmblData;
         if (scrmbl_valid_i) begin
           state_d = IdleSt;
@@ -394,7 +394,7 @@ module otp_ctrl_dai
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Encrypt;
-        scrmbl_sel_o = PartInfo[part_idx].key_idx;
+        scrmbl_sel_o = PartInfo[part_idx].key_sel;
         if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
           state_d = ScrWaitSt;
         end

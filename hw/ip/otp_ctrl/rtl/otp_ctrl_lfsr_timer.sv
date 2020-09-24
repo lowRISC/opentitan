@@ -31,8 +31,6 @@
 module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Entropy reseeding is triggered every time this counter expires.
   parameter int                          ReseedTimerWidth = 16,
-  // Number of LFSR LSBs to reseed
-  parameter int                          EntropyWidth       = 4,
   parameter logic [TimerWidth-1:0]       LfsrSeed           = TimerWidth'(1'b1),
   parameter logic [TimerWidth-1:0][31:0] LfsrPerm           = {
     32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
@@ -46,7 +44,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   input                            rst_ni,
   output logic                     edn_req_o,          // request to EDN
   input                            edn_ack_i,          // ack from EDN
-  input        [EntropyWidth-1:0]  edn_data_i,         // from EDN
+  input        [EdnDataWidth-1:0]  edn_data_i,         // from EDN
   input                            timer_en_i,         // enable timer
   input                            integ_chk_trig_i,   // one-off trigger for integrity check
   input                            cnsty_chk_trig_i,   // one-off trigger for consistency check
@@ -84,7 +82,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
 
   prim_lfsr #(
     .LfsrDw      ( TimerWidth   ),
-    .EntropyDw   ( EntropyWidth ),
+    .EntropyDw   ( TimerWidth   ),
     .StateOutDw  ( TimerWidth   ),
     .DefaultSeed ( LfsrSeed     ),
     .StatePermEn ( 1'b1         ),
@@ -95,10 +93,14 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     .rst_ni,
     .seed_en_i  ( 1'b0       ),
     .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en | reseed_en                    ),
-    .entropy_i  ( edn_data_i & {EntropyWidth{reseed_en}} ),
+    .lfsr_en_i  ( lfsr_en | reseed_en                                  ),
+    .entropy_i  ( edn_data_i[TimerWidth-1:0] & {TimerWidth{reseed_en}} ),
     .state_o    ( lfsr_state )
   );
+
+  // Not all entropy bits are used.
+  logic unused_seed;
+  assign unused_seed = ^edn_data_i;
 
   //////////////
   // Counters //
