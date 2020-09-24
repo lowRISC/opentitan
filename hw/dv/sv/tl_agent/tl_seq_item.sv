@@ -71,6 +71,14 @@ class tl_seq_item extends uvm_sequence_item;
   // this request, to avoid protocol violation.
   bit                             a_source_is_overridden;
 
+  // after given valid_len, end the req/rsp if it's not accepted, which allows seq to switch
+  // content and test unaccepted item shouldn't be used in design
+  bit                             req_abort_after_a_valid_len;
+  bit                             rsp_abort_after_d_valid_len;
+  // True if the item is completed, not aborted
+  bit                             req_completed;
+  bit                             rsp_completed;
+
   // param is reserved for future use, must be zero
   constraint param_c {
     a_param == 0;
@@ -129,22 +137,30 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   `uvm_object_utils_begin(tl_seq_item)
-    `uvm_field_int  (a_addr,                 UVM_DEFAULT)
-    `uvm_field_int  (a_data,                 UVM_DEFAULT)
-    `uvm_field_int  (a_mask,                 UVM_DEFAULT)
-    `uvm_field_int  (a_size,                 UVM_DEFAULT)
-    `uvm_field_int  (a_param,                UVM_DEFAULT)
-    `uvm_field_int  (a_source,               UVM_DEFAULT)
-    `uvm_field_int  (a_opcode,               UVM_DEFAULT)
-    `uvm_field_int  (d_param,                UVM_DEFAULT)
-    `uvm_field_int  (d_source,               UVM_DEFAULT)
-    `uvm_field_int  (d_data,                 UVM_DEFAULT)
-    `uvm_field_int  (d_size,                 UVM_DEFAULT)
-    `uvm_field_int  (d_opcode,               UVM_DEFAULT)
-    `uvm_field_int  (d_error,                UVM_DEFAULT)
-    `uvm_field_int  (d_sink,                 UVM_DEFAULT)
-    `uvm_field_int  (d_user,                 UVM_DEFAULT)
-    `uvm_field_int  (a_source_is_overridden, UVM_DEFAULT | UVM_NOPACK | UVM_NOPRINT)
+    `uvm_field_int  (a_addr,              UVM_DEFAULT)
+    `uvm_field_int  (a_data,              UVM_DEFAULT)
+    `uvm_field_int  (a_mask,              UVM_DEFAULT)
+    `uvm_field_int  (a_size,              UVM_DEFAULT)
+    `uvm_field_int  (a_param,             UVM_DEFAULT)
+    `uvm_field_int  (a_source,            UVM_DEFAULT)
+    `uvm_field_int  (a_opcode,            UVM_DEFAULT)
+    `uvm_field_int  (d_param,             UVM_DEFAULT)
+    `uvm_field_int  (d_source,            UVM_DEFAULT)
+    `uvm_field_int  (d_data,              UVM_DEFAULT)
+    `uvm_field_int  (d_size,              UVM_DEFAULT)
+    `uvm_field_int  (d_opcode,            UVM_DEFAULT)
+    `uvm_field_int  (d_error,             UVM_DEFAULT)
+    `uvm_field_int  (d_sink,              UVM_DEFAULT)
+    `uvm_field_int  (d_user,              UVM_DEFAULT)
+    `uvm_field_int  (a_source_is_overridden, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (a_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (d_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (a_valid_len,         UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (d_valid_len,         UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (req_abort_after_a_valid_len, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (rsp_abort_after_d_valid_len, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (req_completed,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (rsp_completed,       UVM_DEFAULT | UVM_NOPACK)
   `uvm_object_utils_end
 
   function new (string name = "");
@@ -175,7 +191,11 @@ class tl_seq_item extends uvm_sequence_item;
            $sformatf("d_opcode = %0s ", d_opcode_name),
            $sformatf("d_error = %0b ", d_error),
            $sformatf("d_user = %0b ", d_user),
-           $sformatf("d_sink = %0b ", d_sink)};
+           $sformatf("d_sink = %0b ", d_sink),
+           $sformatf("req_abort_after_a_valid_len = %0b ", req_abort_after_a_valid_len),
+           $sformatf("rsp_abort_after_d_valid_len = %0b ", rsp_abort_after_d_valid_len),
+           $sformatf("req_completed = %0b ", req_completed),
+           $sformatf("rsp_completed = %0b ", rsp_completed)};
     return str;
   endfunction
 

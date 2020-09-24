@@ -11,6 +11,10 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
 
   `uvm_object_param_utils(tl_reg_adapter#(ITEM_T))
 
+  // Ensure that when an instance of this adapter is created, the cfg handle below is initialized to
+  // the `tl_agent_cfg` instance associated with this adapter instance.
+  tl_agent_cfg cfg;
+
   function new(string name = "tl_reg_adapter");
     super.new(name);
     // Force the uvm_reg_map to use this sequence to sync with the driver instead.
@@ -67,6 +71,10 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
           a_mask[0] == 1;
           $countones(a_mask) > (msb / 8);)
     end
+    if (cfg.csr_access_abort_pct_in_adapter > $urandom_range(0, 100)) begin
+      bus_req.req_abort_after_a_valid_len = 1;
+      `uvm_info(`gtn, $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
+    end
     `uvm_info(`gtn, {"tl_reg_adapter::reg2bus: ", bus_req.convert2string()}, UVM_HIGH)
     return bus_req;
   endfunction : reg2bus
@@ -78,8 +86,11 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     rw.addr    = bus_rsp.a_addr;
     rw.data    = (rw.kind == UVM_WRITE) ? bus_rsp.a_data : bus_rsp.d_data;
     rw.byte_en = bus_rsp.a_mask;
-    rw.status  = bus_rsp.d_error ? UVM_NOT_OK : UVM_IS_OK;
-    // TODO: check if d_source == a_source?
+    `DV_CHECK_EQ(bus_rsp.d_source, bus_rsp.a_source)
+    // expect d_error = 0 as we won't drive any error case through RAL
+    `DV_CHECK_EQ(bus_rsp.d_error, 0)
+    // indicate if the item is completed successfully for upper level to update predict value
+    rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
     `uvm_info(`gtn, {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
   endfunction: bus2reg
 

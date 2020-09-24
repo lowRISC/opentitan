@@ -44,6 +44,18 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         [1_000_001 :5_000_000]  :/ 1
     };
   }
+
+  // control the chance to let tl adapter to abort CSR access if the valid isn't accept within given
+  // a_valid_len
+  rand uint csr_access_abort_pct;
+  constraint csr_access_abort_pct_c {
+    csr_access_abort_pct dist {
+      0      :/ 50,
+      [1:99] :/ 40,
+      100    :/ 10
+    };
+  }
+
   `uvm_object_param_utils_begin(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
     `uvm_field_string(common_seq_type, UVM_DEFAULT)
     `uvm_field_queue_int(mem_exist_addr_q, UVM_DEFAULT)
@@ -360,6 +372,20 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
   endtask
+
+  // override csr_vseq to control adapter to abort transaction
+  virtual task run_csr_vseq(string          csr_test_type = "",
+                            csr_excl_item   csr_excl = null,
+                            int             num_test_csrs = 0,
+                            bit             do_rand_wr_and_reset = 1);
+
+    cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = csr_access_abort_pct;
+    // when allowing TL transaction to be aborted, TL adapter will return status UVM_NOT_OK, skip
+    // checking the status.
+    if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
+    super.run_csr_vseq(csr_test_type, csr_excl, num_test_csrs, do_rand_wr_and_reset);
+  endtask
+
 
   // task to insert random reset within the input vseqs list, then check all CSR values
   virtual task run_stress_all_with_rand_reset_vseq(int num_times = 1, bit do_tl_err = 1,

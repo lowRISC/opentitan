@@ -119,6 +119,13 @@ class tl_agent_cfg extends dv_base_agent_cfg;
     };
   }
 
+  // TLUL allows host to switch content if the item isn't accepted. RAL doesn't provide interface
+  // to control this. Use this knob to allow tl_reg_adapter to randomize req_abort_after_a_valid_len
+  // Note: below set the chance to abort after a_valid_len in tl_reg_adapter. if > 0, csr access may
+  // return UVM_NOT_OK when the item is aborted without accepted.
+  int unsigned csr_access_abort_pct_in_adapter = 0;
+
+
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
     `uvm_field_enum(tl_level_e, tl_level, UVM_DEFAULT)
@@ -126,6 +133,10 @@ class tl_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(a_ready_delay_max,     UVM_DEFAULT)
     `uvm_field_int(d_ready_delay_min,     UVM_DEFAULT)
     `uvm_field_int(d_ready_delay_max,     UVM_DEFAULT)
+    `uvm_field_int(host_can_stall_rsp_when_a_valid_high, UVM_DEFAULT)
+    `uvm_field_int(device_can_rsp_on_same_cycle,         UVM_DEFAULT)
+    `uvm_field_int(time_a_valid_avail_after_sample_edge, UVM_DEFAULT)
+    `uvm_field_int(csr_access_abort_pct_in_adapter,      UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 

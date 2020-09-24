@@ -12,6 +12,8 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   // TL host and device sub-sequences
   rand xbar_tl_host_seq  host_seq[];
   rand tl_device_seq     device_seq[];
+  rand bit               en_req_abort;
+  rand bit               en_rsp_abort;
 
   uint                   min_req_cnt = 100;
   uint                   max_req_cnt = 200;
@@ -25,6 +27,19 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     }
   }
 
+  constraint en_req_abort_c {
+    en_req_abort dist {
+      1 :/ 25,
+      0 :/ 75
+    };
+  }
+
+  constraint en_rsp_abort_c {
+    en_rsp_abort dist {
+      1 :/ 25,
+      0 :/ 75
+    };
+  }
   `uvm_object_utils(xbar_base_vseq)
   `uvm_object_new
 
@@ -40,6 +55,7 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (host_seq[i]) begin
       host_seq[i] = xbar_tl_host_seq::type_id::create(
                     $sformatf("%0s_seq", xbar_hosts[i].host_name));
+      if (en_req_abort) host_seq[i].req_abort_pct = $urandom_range(0, 100);
       // Default only send request to valid devices that is accessible by the host
       foreach (xbar_devices[j]) begin
         if (is_valid_path(xbar_hosts[i].host_name, xbar_devices[j].device_name)) begin
@@ -52,6 +68,7 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (device_seq[i]) begin
       device_seq[i] = tl_device_seq::type_id::create(
                       $sformatf("%0s_seq", xbar_devices[i].device_name));
+      if (en_rsp_abort) device_seq[i].rsp_abort_pct = $urandom_range(0, 100);
     end
   endfunction : seq_init
 
