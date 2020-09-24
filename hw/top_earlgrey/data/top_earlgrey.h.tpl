@@ -154,6 +154,12 @@ ${helper.pwrmgr_wakeups.render()}
  */
 ${helper.rstmgr_sw_rsts.render()}
 
+/**
+ * Power Manager Reset Request Signals
+ */
+${helper.pwrmgr_reset_requests.render()}
+
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

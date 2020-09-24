@@ -149,6 +149,7 @@ class TopGenC(object):
         self._init_pinmux_mapping()
         self._init_pwrmgr_wakeups()
         self._init_rstmgr_sw_rsts()
+        self._init_pwrmgr_reset_requests()
 
     def modules(self):
         return [(m["name"],
@@ -274,7 +275,7 @@ class TopGenC(object):
                     name = Name.from_snake_case(
                         alert["name"]) + Name([str(i)])
                     irq_id = alerts.add_constant(name, docstring="{} {}".format(
-                                                         alert["name"], i))
+                        alert["name"], i))
                     source_name = source_name_map[alert["module_name"]]
                     alert_mapping.add_entry(irq_id, source_name)
             else:
@@ -321,7 +322,7 @@ class TopGenC(object):
             else:
                 peripheral_in.add_constant(Name.from_snake_case(
                     signal["name"]),
-                                           docstring=signal["name"])
+                    docstring=signal["name"])
         peripheral_in.add_last_constant("Last valid peripheral input")
 
         # Pinmux Input Selects
@@ -392,3 +393,14 @@ class TopGenC(object):
         enum.add_last_constant("Last valid rstmgr software reset request")
 
         self.rstmgr_sw_rsts = enum
+
+    def _init_pwrmgr_reset_requests(self):
+        enum = CEnum(self._top_name + Name(["power", "manager", "reset", "requests"]))
+
+        for signal in self.top["reset_requests"]:
+            enum.add_constant(Name.from_snake_case(signal["module"]) +
+                              Name.from_snake_case(signal["name"]))
+
+        enum.add_last_constant("Last valid pwrmgr reset_request signal")
+
+        self.pwrmgr_reset_requests = enum
