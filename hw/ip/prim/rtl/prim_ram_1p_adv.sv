@@ -125,7 +125,7 @@ module prim_ram_1p_adv #(
 
     // the wmask is constantly set to 1 in this case
     `ASSERT(OnlyWordWritePossibleWithEccPortA_A, req_i |->
-          wmask_i == {TotalWidth{1'b1}})
+          wmask_i == {Width{1'b1}})
 
     assign wmask_d = {TotalWidth{1'b1}};
 
