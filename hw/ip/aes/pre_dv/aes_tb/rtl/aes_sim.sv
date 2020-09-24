@@ -6,10 +6,11 @@
 
 module aes_sim import aes_pkg::*;
 #(
-  parameter bit          AES192Enable               = 1,
-  parameter bit          Masking                    = 1,
-  parameter sbox_impl_e  SBoxImpl                   = SBoxImplCanrightMasked,
-  parameter int unsigned NumDelayCyclesStartTrigger = 40
+  parameter bit          AES192Enable         = 1,
+  parameter bit          Masking              = 1,
+  parameter sbox_impl_e  SBoxImpl             = SBoxImplCanrightMaskedNoreuse,
+  parameter int unsigned SecStartTriggerDelay = 40,
+  parameter bit          SecAllowForcingMasks = 0
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -23,10 +24,11 @@ module aes_sim import aes_pkg::*;
 
   // Instantiate top-level
   aes #(
-    .AES192Enable               ( AES192Enable               ),
-    .Masking                    ( Masking                    ),
-    .SBoxImpl                   ( SBoxImpl                   ),
-    .NumDelayCyclesStartTrigger ( NumDelayCyclesStartTrigger )
+    .AES192Enable         ( AES192Enable         ),
+    .Masking              ( Masking              ),
+    .SBoxImpl             ( SBoxImpl             ),
+    .SecStartTriggerDelay ( SecStartTriggerDelay ),
+    .SecAllowForcingMasks ( SecAllowForcingMasks )
   ) u_aes (
     .clk_i,
     .rst_ni,

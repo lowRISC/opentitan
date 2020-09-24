@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#define FORCE_ZERO_MASKS 0
 #define FEED_INPUT_WHILE_BUSY 1
 #define TEST_STALL 1
 
@@ -48,7 +49,9 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_CONFIG,
       0xF,
-      (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) | (unsigned)op,
+      FORCE_ZERO_MASKS << AES_CTRL_FORCE_ZERO_MASKS_OFFSET |
+          (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) |
+          (unsigned)op,
       0,
       true};
   i_trx++;
@@ -62,7 +65,9 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
       0,
       AES_CONFIG,
       0xF,
-      (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) | (unsigned)op,
+      FORCE_ZERO_MASKS << AES_CTRL_FORCE_ZERO_MASKS_OFFSET |
+          (key_len_bits << AES_CTRL_KEY_LEN_OFFSET) | (mode << 1) |
+          (unsigned)op,
       0,
       true};
   i_trx++;
@@ -70,7 +75,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   // write key share 0
   for (int i = 0; i < key_len / 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE0_0 + 4 * i), 0xF, key[i], 0, true};
+        true, 0,      0, 2,   0, (unsigned)(AES_KEY_SHARE0_0 + 4 * i),
+        0xF,  key[i], 0, true};
     i_trx++;
   }
   for (int i = key_len / 4; i < 8; ++i) {
@@ -83,7 +89,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
   // write key share 1
   for (int i = 0; i < key_len / 4; ++i) {
     tl_i_transactions[i_trx] = {
-        true, 0, 0, 2, 0, (unsigned)(AES_KEY_SHARE1_0 + 4 * i), 0xF, 0, 0, true};
+        true, 0, 0, 2,   0, (unsigned)(AES_KEY_SHARE1_0 + 4 * i),
+        0xF,  0, 0, true};
     i_trx++;
   }
   for (int i = key_len / 4; i < 8; ++i) {
@@ -151,7 +158,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
     // read output data
     for (int i = 0; i < 4; ++i) {
       tl_i_transactions[i_trx] = {
-          true, 4, 0, 2, 0, (unsigned)(AES_DATA_OUT_0 + 4 * i), 0xF, 0, 0, true};
+          true, 4, 0, 2,   0, (unsigned)(AES_DATA_OUT_0 + 4 * i),
+          0xF,  0, 0, true};
       tl_o_exp_resp[i_resp] = {0xFFFFFFFF, cipher_text[i]};
       i_trx++;
       i_resp++;
@@ -302,7 +310,7 @@ int aes_tlul_sequence_modes_gen_all() {
       plain_text = (unsigned *)&kAesModesCipherTextCbc256;
       iv = (unsigned *)&kAesModesIvCbc;
       cipher_text = (unsigned *)&kAesModesPlainText;
-    }  else if (i == 12) {
+    } else if (i == 12) {
       // CFB - 128 - encode
       op = 0;
       mode = kCryptoAesCfb;
@@ -356,7 +364,7 @@ int aes_tlul_sequence_modes_gen_all() {
       plain_text = (unsigned *)&kAesModesCipherTextCfb256;
       iv = (unsigned *)&kAesModesIvCfb;
       cipher_text = (unsigned *)&kAesModesPlainText;
-    }  else if (i == 18) {
+    } else if (i == 18) {
       // OFB - 128 - encode
       op = 0;
       mode = kCryptoAesOfb;
