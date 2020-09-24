@@ -8,12 +8,13 @@ description: "OTP Controller"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p
       - lowrisc:prim:otp
       - lowrisc:prim:lfsr
-      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_parity_reg.sv
