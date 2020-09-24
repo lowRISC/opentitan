@@ -33,7 +33,7 @@ typedef enum sig_verify_rsa_key_length {
 
 /**
  * An octet string of length k that can be used to represent moduli, signatures,
- * and encryption blocks for RSA keys that are k octets long.
+ * and encoded messages for RSA keys that are k octets long.
  */
 typedef struct sig_verify_rsa_octet_string {
   sig_verify_rsa_key_length_t key_length;
@@ -129,11 +129,26 @@ static sig_verify_result_t sig_verify_get_rsa_octet_string_value(
   return kSigVerifyOk;
 }
 
+static sig_verify_result_t sig_verify_rsa_octet_string_compare_octet(
+    const sig_verify_rsa_octet_string_t *octet_string, size_t index,
+    uint8_t octet) {
+  const uint8_t *value = NULL;
+  size_t length = 0;
+  if (sig_verify_get_rsa_octet_string_value(octet_string, &value, &length) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  if (index >= length || value[index] != octet) {
+    return kSigVerifyError;
+  }
+  return kSigVerifyOk;
+}
+
 static sig_verify_result_t sig_verify_perform_rsa(
     const sig_verify_public_key_t *key,
     const sig_verify_rsa_octet_string_t *signature,
-    sig_verify_rsa_octet_string_t *enc_block) {
-  if (key == NULL || signature == NULL || enc_block == NULL) {
+    sig_verify_rsa_octet_string_t *enc_msg) {
+  if (key == NULL || signature == NULL || enc_msg == NULL) {
     return kSigVerifyError;
   }
   // TODO: jon-flatley
@@ -156,19 +171,112 @@ static sig_verify_result_t sig_verify_perform_rsa(
     return kSigVerifyError;
   }
 
-  // Perform RSA computation to obtain the encryption block
+  // Perform RSA computation to obtain the encoded message
   // TODO: jon-flatley
 
   return kSigVerifyOk;
 }
 
-static sig_verify_result_t sig_verify_decode_enc_block(
-    const sig_verify_rsa_octet_string_t *enc_block,
+static sig_verify_result_t sig_verify_create_digest(
+    sig_verify_hash_alg_t alg, const uint8_t *octets, size_t len,
     sig_verify_digest_t *digest) {
-  // TODO: alphan
-  // Parse encryption block and decode data
-  //   - Parse padding
-  //   - Decode the encoded message to get digest and hash alg
+  digest->alg = alg;
+  const uint8_t *dst = NULL;
+  size_t dst_len = 0;
+  if (sig_verify_get_digest_value(digest, &dst, &dst_len) != kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  if (len != dst_len) {
+    return kSigVerifyError;
+  }
+  // TODO: This cast is OK as long as `digest` is not declared as `const`, which
+  // should not be the case.
+  memcpy((uint8_t *)dst, octets, dst_len);
+  return kSigVerifyOk;
+}
+
+static sig_verify_result_t sig_verify_create_digest_from_digest_info(
+    const sig_verify_rsa_octet_string_t *enc_msg, size_t start_index,
+    sig_verify_digest_t *digest) {
+  // TODO: Support multiple hash algorithms (array of structs).
+  static const uint8_t kEncodedDigestAlgSha2_256[] = {
+      0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01,
+      0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20};
+  for (size_t i = 0; i < ARRAYSIZE(kEncodedDigestAlgSha2_256); ++i) {
+    if (sig_verify_rsa_octet_string_compare_octet(
+            enc_msg, start_index + i, kEncodedDigestAlgSha2_256[i]) !=
+        kSigVerifyOk) {
+      return kSigVerifyError;
+    }
+  }
+
+  const uint8_t *octets = NULL;
+  size_t len = 0;
+  if (sig_verify_get_rsa_octet_string_value(enc_msg, &octets, &len) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+
+  size_t digest_start_index =
+      start_index + ARRAYSIZE(kEncodedDigestAlgSha2_256);
+
+  if (sig_verify_create_digest(
+          kSigVerifyHashAlgSha2_256, octets + digest_start_index,
+          len - digest_start_index, digest) != kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  return kSigVerifyOk;
+}
+
+/**
+ * Decodes a message encoded by EMSA-PKCS1-v1_5 described in
+ * https://tools.ietf.org/html/rfc8017#section-9.2.
+ *
+ * An encoded message enc_msg is an octet string of the form:
+ *    enc_msg = 0x00 || 0x01 || ps || 0x00 || enc_digest_info, where
+ * ps is an octet string of 0xFFs and enc_digest_info is the DER encoded
+ * ASN.1 value of type DigestInfo that contains the digest algorithm and the
+ * digest.
+ *
+ * For an RSA key of length k, length of enc_msg is k, length of enc_digest_info
+ * is sum of the lengths of the digest and the DER encoding of the corresponding
+ * digest algorithm (RFC 8017, p. 46), and length of ps is given by k - 3 -
+ * |enc_digest_info|, which must be greater than 8.
+ */
+static sig_verify_result_t sig_verify_decode_enc_msg(
+    const sig_verify_rsa_octet_string_t *enc_msg, sig_verify_digest_t *digest) {
+  // First octet of `enc_msg` must be 0x00.
+  if (sig_verify_rsa_octet_string_compare_octet(enc_msg, 0, 0x00) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  // Second octet of `enc_msg` must be 0x01.
+  if (sig_verify_rsa_octet_string_compare_octet(enc_msg, 1, 0x01) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  // Parse padding string.
+  size_t ps_len = 0;
+  while (sig_verify_rsa_octet_string_compare_octet(enc_msg, ps_len + 2, 0xFF) ==
+         kSigVerifyOk) {
+    ++ps_len;
+  }
+  // Check length of padding string, must be at least 8 octets.
+  // TODO: upper bound of ps_len
+  if (ps_len < 8) {
+    return kSigVerifyError;
+  }
+  // Check the value of the octet after the padding string, must be 0x00.
+  if (sig_verify_rsa_octet_string_compare_octet(enc_msg, ps_len + 2, 0x00) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+  // Decode digest info.
+  if (sig_verify_create_digest_from_digest_info(enc_msg, ps_len + 3, digest) !=
+      kSigVerifyOk) {
+    return kSigVerifyError;
+  }
+
   return kSigVerifyOk;
 }
 
@@ -180,14 +288,14 @@ static sig_verify_result_t sig_verify_get_digest_from_signature(
     return kSigVerifyError;
   }
 
-  // Perform RSA computation to obtain the encryption block.
-  sig_verify_rsa_octet_string_t enc_block;
-  if (sig_verify_perform_rsa(key, signature, &enc_block) != kSigVerifyOk) {
+  // Perform RSA computation to obtain the encoded message.
+  sig_verify_rsa_octet_string_t enc_msg;
+  if (sig_verify_perform_rsa(key, signature, &enc_msg) != kSigVerifyOk) {
     return kSigVerifyError;
   }
 
-  // Decode the encryption block to obtain the expected digest.
-  if (sig_verify_decode_enc_block(&enc_block, digest) != kSigVerifyOk) {
+  // Decode the encoded message to obtain the expected digest.
+  if (sig_verify_decode_enc_msg(&enc_msg, digest) != kSigVerifyOk) {
     return kSigVerifyError;
   }
 
@@ -252,6 +360,7 @@ sig_verify_result_t sig_verify_verify_rom_ext(
   }
 
   // Output actual and expected digests if requested.
+  // TODO: consider making these non-optional.
   if (actual) {
     *actual = act_digest;
   }
