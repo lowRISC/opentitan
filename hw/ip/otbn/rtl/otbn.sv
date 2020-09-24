@@ -52,7 +52,6 @@ module otbn
   logic busy_d, busy_q;
   logic done;
 
-  logic        err_valid;
   logic [31:0] err_code;
 
   logic [ImemAddrWidth-1:0] start_addr;
@@ -118,27 +117,13 @@ module otbn
   assign hw2reg.status.dummy.d = 1'b0;
 
   // ERR_CODE register
+  // The error code (stored as ERR_CODE) for an OTBN operation gets stored on the cycle that done is
+  // asserted. Software is expected to read out this value before starting the next operation.
   assign hw2reg.err_code.de = done;
   assign hw2reg.err_code.d  = err_code;
 
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
-
-  // Errors ====================================================================
-
-  // The error code (stored as ERR_CODE) for an OTBN operation gets stored on the cycle that done is
-  // asserted. Software is expected to read out this value before starting the next operation.
-
-  always_comb begin
-    err_code = ErrCodeNoError;
-    unique case (1'b1)
-      // TODO: Add more errors here.
-
-      default: begin
-        err_code = ErrCodeNoError;
-      end
-    endcase
-  end
 
   // Instruction Memory (IMEM) =================================================
 
@@ -436,9 +421,12 @@ module otbn
     end
 
     // Mux between model and RTL implementation at runtime.
-    logic done_model, done_rtl;
-    logic start_model, start_rtl;
+    logic      done_model, done_rtl;
+    logic      start_model, start_rtl;
+    err_code_e err_code_model, err_code_rtl;
+
     assign done = otbn_use_model ? done_model : done_rtl;
+    assign err_code = otbn_use_model ? err_code_model : err_code_rtl;
     assign start_model = start & otbn_use_model;
     assign start_rtl = start & ~otbn_use_model;
 
@@ -478,6 +466,8 @@ module otbn
       .start_i (start_rtl),
       .done_o  (done_rtl),
 
+      .err_code_o (err_code_rtl),
+
       .start_addr_i  (start_addr),
 
       .imem_req_o    (imem_req_core),
@@ -507,6 +497,8 @@ module otbn
 
       .start_i (start),
       .done_o  (done),
+
+      .err_code_o (err_code_rtl),
 
       .start_addr_i  (start_addr),
 

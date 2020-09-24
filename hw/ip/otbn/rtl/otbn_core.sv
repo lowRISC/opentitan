@@ -29,6 +29,8 @@ module otbn_core
   input  logic  start_i, // start the operation
   output logic  done_o,  // operation done
 
+  output err_code_e err_code_o, // valid when done_o is asserted
+
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
   // Instruction memory (IMEM)
@@ -68,6 +70,7 @@ module otbn_core
   logic                     insn_fetch_resp_valid;
   logic [ImemAddrWidth-1:0] insn_fetch_resp_addr;
   logic [31:0]              insn_fetch_resp_data;
+  logic                     insn_fetch_err;
 
   // The currently executed instruction.
   logic                     insn_valid;
@@ -86,6 +89,7 @@ module otbn_core
   logic [4:0]   rf_base_rd_addr_b;
   logic         rf_base_rd_en_b;
   logic [31:0]  rf_base_rd_data_b;
+  logic         rf_base_call_stack_err;
 
   alu_base_operation_t  alu_base_operation;
   alu_base_comparison_t alu_base_comparison;
@@ -158,7 +162,8 @@ module otbn_core
     // Fetched instruction
     .insn_fetch_resp_addr_o  (insn_fetch_resp_addr),
     .insn_fetch_resp_valid_o (insn_fetch_resp_valid),
-    .insn_fetch_resp_data_o  (insn_fetch_resp_data)
+    .insn_fetch_resp_data_o  (insn_fetch_resp_data),
+    .insn_fetch_err_o        (insn_fetch_err)
   );
 
   assign imem_wdata_o = '0;
@@ -192,15 +197,21 @@ module otbn_core
 
     .start_i,
     .done_o,
+
+    .err_code_o,
+
     .start_addr_i,
 
     // Next instruction selection (to instruction fetch)
     .insn_fetch_req_addr_o  (insn_fetch_req_addr),
     .insn_fetch_req_valid_o (insn_fetch_req_valid),
+    // Error from fetch requested last cycle
+    .insn_fetch_err_i       (insn_fetch_err),
 
     // The current instruction
-    .insn_valid_i (insn_valid),
-    .insn_addr_i  (insn_addr),
+    .insn_valid_i   (insn_valid),
+    .insn_illegal_i (insn_illegal),
+    .insn_addr_i    (insn_addr),
 
     // Decoded instruction from decoder
     .insn_dec_base_i   (insn_dec_base),
@@ -208,15 +219,16 @@ module otbn_core
     .insn_dec_shared_i (insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o   (rf_base_wr_addr),
-    .rf_base_wr_en_o     (rf_base_wr_en),
-    .rf_base_wr_data_o   (rf_base_wr_data),
-    .rf_base_rd_addr_a_o (rf_base_rd_addr_a),
-    .rf_base_rd_en_a_o   (rf_base_rd_en_a),
-    .rf_base_rd_data_a_i (rf_base_rd_data_a),
-    .rf_base_rd_addr_b_o (rf_base_rd_addr_b),
-    .rf_base_rd_en_b_o   (rf_base_rd_en_b),
-    .rf_base_rd_data_b_i (rf_base_rd_data_b),
+    .rf_base_wr_addr_o        (rf_base_wr_addr),
+    .rf_base_wr_en_o          (rf_base_wr_en),
+    .rf_base_wr_data_o        (rf_base_wr_data),
+    .rf_base_rd_addr_a_o      (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o        (rf_base_rd_en_a),
+    .rf_base_rd_data_a_i      (rf_base_rd_data_a),
+    .rf_base_rd_addr_b_o      (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o        (rf_base_rd_en_b),
+    .rf_base_rd_data_b_i      (rf_base_rd_data_b),
+    .rf_base_call_stack_err_i (rf_base_call_stack_err),
 
     // To/from bignunm register file
     .rf_bignum_wr_addr_o   (rf_bignum_wr_addr),
@@ -311,7 +323,7 @@ module otbn_core
     .rd_en_b_i   (rf_base_rd_en_b),
     .rd_data_b_o (rf_base_rd_data_b),
 
-    .call_stack_overflow_err_o ()
+    .call_stack_err_o (rf_base_call_stack_err)
   );
 
   otbn_alu_base u_otbn_alu_base (
@@ -393,10 +405,4 @@ module otbn_core
     .ispr_acc_wr_data_i (ispr_acc_wr_data),
     .ispr_acc_wr_en_i   (ispr_acc_wr_en)
   );
-
-  logic unused_insn_illegal;
-
-  // TODO: Implement error handling
-  assign unused_insn_illegal = insn_illegal;
-
 endmodule

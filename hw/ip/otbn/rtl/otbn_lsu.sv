@@ -102,16 +102,12 @@ module otbn_lsu
   `ASSERT(DMemRValidAfterReq, dmem_req_o & ~dmem_write_o |=> dmem_rvalid_i)
 
   assign lsu_bignum_rdata_o = dmem_rdata_i;
-  assign lsu_rdata_err_o    = dmem_rerror_i;
+  assign lsu_rdata_err_o    = dmem_rvalid_i & dmem_rerror_i;
 
-  // clk_i, rst_ni and dmem_rvalid_i are only used by assertions
+  // clk_i, rst_ni are only used by assertions
   logic unused_clk;
   logic unused_rst_n;
-  logic unused_dmem_rvalid;
 
   assign unused_clk = clk_i;
   assign unused_rst_n = rst_ni;
-  assign unused_dmem_rvalid = dmem_rvalid_i;
-
-
 endmodule

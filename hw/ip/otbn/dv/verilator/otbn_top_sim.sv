@@ -51,6 +51,8 @@ module otbn_top_sim (
     .start_i       ( otbn_start    ),
     .done_o        ( otbn_done_d   ),
 
+    .err_code_o    (               ),
+
     .start_addr_i  ( ImemStartAddr ),
 
     .imem_req_o    ( imem_req      ),
