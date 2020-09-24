@@ -242,7 +242,7 @@ module keccak_2share #(
   `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
   // sel_i shall stay for two cycle after change to 1.
-  if (EnMasking == 1) begin
+  if (EnMasking == 1) begin : gen_selperiod_chk
     `ASSUME(SelStayTwoCycleIf1_A, $rose(sel_i) |=> sel_i, clk_i, !rst_ni)
   end
 
