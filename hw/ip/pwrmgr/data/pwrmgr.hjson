@@ -1,6 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 { name: "PWRMGR",
   clock_primary: "clk_i",
   other_clock_list: [ "clk_slow_i" ]
@@ -49,9 +55,9 @@
     },
 
     { struct:  "pwr_flash",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "pwr_flash",
-      act:     "rcv",
+      act:     "req",
       package: "pwrmgr_pkg",
     },
 
@@ -63,7 +69,7 @@
     },
 
     { struct:  "logic",
-      width:   3,
+      width:   1,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -71,7 +77,7 @@
     },
 
     { struct:  "logic",
-      width:   2,
+      width:   1,
       type:    "uni",
       name:    "rstreqs",
       act:     "rcv",
@@ -84,7 +90,13 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "16",
+      default: "1",
+      local: "true"
+    },
+    { name: "NumRstReqs",
+      desc: "Number of reset requets",
+      type: "int",
+      default: "1",
       local: "true"
     },
   ],
@@ -200,6 +212,46 @@
         },
 
         { bits: "6",
+          name: "USB_CLK_EN_LP",
+          desc: "USB clock enable during low power state",
+          resval: "0",
+          enum: [
+            { value: "0",
+              name: "Disabled",
+              desc: '''
+                USB clock disabled during low power state
+                '''
+            },
+            { value: "1",
+              name: "Enabled",
+              desc: '''
+                USB clock enabled during low power state
+                '''
+            },
+          ]
+        },
+
+        { bits: "7",
+          name: "USB_CLK_EN_ACTIVE",
+          desc: "USB clock enable during active power state",
+          resval: "1"
+          enum: [
+            { value: "0",
+              name: "Disabled",
+              desc: '''
+                USB clock disabled during active power state
+                '''
+            },
+            { value: "1",
+              name: "Enabled",
+              desc: '''
+                USB clock enabled during active power state
+                '''
+            },
+          ]
+        },
+
+        { bits: "8",
           name: "MAIN_PD_N",
           desc: "Active low, main power domain power down",
           resval: "1"
@@ -220,6 +272,8 @@
             },
           ]
         },
+
+
       ],
     },
 
@@ -294,7 +348,7 @@
       { name: "WAKE_STATUS",
         desc: "A read only register of all current wake requests post enable mask",
         swaccess: "ro",
-        hwaccess: "none",
+        hwaccess: "hwo",
         resval: "0"
         cname: "wake_status",
         count: "NumWkups",
@@ -325,36 +379,44 @@
       ]
     },
 
-    { name: "RESET_EN",
-      desc: "Bit mask for enabled resets",
-      swaccess: "rw",
-      hwaccess: "hro",
-      regwen: "RESET_EN_REGWEN",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "EN",
-          desc: '''
-            Whenever a particular bit is set to 1, that reset request is enabled.
-            Whenever a particular bit is set to 0, that reset request cannot reset the device.
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "RESET_EN",
+        desc: "Bit mask for enabled reset requests",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "RESET_EN_REGWEN",
+        resval: "0"
+        cname: "rstreq_en",
+        count: "NumRstReqs"
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+              Whenever a particular bit is set to 1, that reset request is enabled.
+              Whenever a particular bit is set to 0, that reset request cannot reset the device.
+            ''',
+          },
+        ]
+      },
     },
 
-    { name: "RESET_STATUS",
-      desc: "A read only register of all current reset requests post enable mask",
-      swaccess: "ro",
-      hwaccess: "none",
-      resval: "0"
-      fields: [
-        { bits: "1:0",
-          name: "VAL",
-          desc: '''
-            Current value of reset request
-          ''',
-        },
-      ]
+    { multireg:
+      { name: "RESET_STATUS",
+        desc: "A read only register of all current reset requests post enable mask",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        resval: "0"
+        cname: "reset_status",
+        count: "NumRstReqs",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+              Current value of reset request
+            ''',
+          },
+        ]
+      },
     },
 
     { name: "WAKE_INFO_CAPTURE_DIS",
@@ -387,11 +449,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "15:0",
+        { bits: "0:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "16",
+        { bits: "1",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -400,7 +462,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "17",
+        { bits: "2",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power
@@ -417,4 +479,3 @@
     },
   ]
 }
-
