@@ -2,24 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from random import getrandbits
 from typing import List, Optional, Tuple, cast
 
 from riscvmodel.types import (RegisterFile, Register,  # type: ignore
-                              SingleRegister, Trace, TracePC)
+                              Trace, TracePC)
 
+from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
-
-
-class TraceFlag(Trace):  # type: ignore
-    def __init__(self, group_name: str, flag_name: str, value: bool):
-        self.group_name = group_name
-        self.flag_name = flag_name
-        self.value = value
-
-    def __str__(self) -> str:
-        return '{}.{} = {}'.format(self.group_name, self.flag_name, int(self.value))
+from .flags import FlagReg
+from .wsr import WSRFile
 
 
 class TraceCallStackPush(Trace):  # type: ignore
@@ -198,85 +190,13 @@ class LoopStack:
         self.trace = []
 
 
-class FlagReg:
-    FLAG_NAMES = ['C', 'M', 'L', 'Z']
-
-    def __init__(self, C: bool, M: bool, L: bool, Z: bool):
-        self.C = C
-        self.L = L
-        self.M = M
-        self.Z = Z
-
-        self._new_val = None  # type: Optional['FlagReg']
-
-    def set_flags(self, other: 'FlagReg') -> None:
-        self._new_val = other
-
-    def get_by_name(self, flag_name: str) -> bool:
-        assert flag_name in FlagReg.FLAG_NAMES
-        return cast(bool, getattr(self, flag_name))
-
-    def get_by_idx(self, flag_idx: int) -> bool:
-        assert 0 <= flag_idx <= 3
-        flag_name = FlagReg.FLAG_NAMES[flag_idx]
-        return self.get_by_name(flag_name)
-
-    def changes(self, group_name: str) -> List[TraceFlag]:
-        if self._new_val is None:
-            return []
-        return [TraceFlag(group_name, n, self._new_val.get_by_name(n))
-                for n in FlagReg.FLAG_NAMES]
-
-    def commit(self) -> None:
-        if self._new_val is not None:
-            for n in FlagReg.FLAG_NAMES:
-                setattr(self, n, getattr(self._new_val, n))
-        self._new_val = None
-
-    @staticmethod
-    def mlz_for_result(C: bool, result: int) -> 'FlagReg':
-        '''Generate flags for the result of an operation.
-
-        C is the value for the C flag. result is the wide-side result value
-        that is used to generate M, L and Z.
-
-        '''
-        M = bool((result >> 255) & 1)
-        L = bool(result & 1)
-        Z = bool(result == 0)
-        return FlagReg(C=C, M=M, L=L, Z=Z)
-
-
-class FlagGroups:
-    def __init__(self) -> None:
-        self.groups = {0: FlagReg(False, False, False, False),
-                       1: FlagReg(False, False, False, False)}
-
-    def __getitem__(self, key: int) -> FlagReg:
-        assert 0 <= key <= 1
-        return self.groups[key]
-
-    def __setitem__(self, key: int, value: FlagReg) -> None:
-        assert 0 <= key <= 1
-        self.groups[key].set_flags(value)
-
-    def changes(self) -> List[Trace]:
-        return self.groups[0].changes('FG0') + self.groups[1].changes('FG1')
-
-    def commit(self) -> None:
-        self.groups[0].commit()
-        self.groups[1].commit()
-
-
 class OTBNState:
     def __init__(self) -> None:
         self.intreg = OTBNIntRegisterFile()
         self.wreg = RegisterFile(num=32, bits=256, immutable={}, prefix="w")
-        self.single_regs = {
-            'acc': SingleRegister(256, "ACC"),
-            'mod': SingleRegister(256, "MOD")
-        }
-        self.flags = FlagGroups()
+
+        self.wsrs = WSRFile()
+        self.csrs = CSRFile()
 
         self.pc = Register(32)
         self.pc_next = None  # type: Optional[int]
@@ -293,33 +213,6 @@ class OTBNState:
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
         self.running = False
-
-    def csr_read(self, index: int) -> int:
-        if index == 0x7C0:
-            return int(self.wreg)
-        elif 0x7D0 <= index <= 0x7D7:
-            bit_shift = 32 * (index - 0x7D0)
-            mask32 = (1 << 32) - 1
-            return (int(self.mod) >> bit_shift) & mask32
-        elif index == 0xFC0:
-            return getrandbits(32)
-
-        # Unimplemented CSR
-        raise ValueError('Unknown CSR index: {}'.format(index))
-
-    def wcsr_read(self, index: int) -> int:
-        assert 0 <= index <= 2
-        if index == 0:
-            return int(self.mod)
-        elif index == 1:
-            return getrandbits(256)
-        else:
-            assert index == 2
-            return int(self.single_regs['acc'])
-
-    def wcsr_write(self, index: int, value: int) -> None:
-        if index == 0:
-            self.mod = value
 
     def add_stall_cycles(self, num_cycles: int) -> None:
         '''Add a single stall cycle before the next insn completes'''
@@ -344,10 +237,9 @@ class OTBNState:
         c += self.dmem.changes()
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
+        c += self.wsrs.changes()
+        c += self.csrs.changes()
         c += self.wreg.changes()
-        c += self.flags.changes()
-        for name, reg in sorted(self.single_regs.items()):
-            c += reg.changes()
         return c
 
     def commit(self) -> None:
@@ -373,10 +265,9 @@ class OTBNState:
         self.dmem.commit()
         self.loop_stack.commit()
         self.ext_regs.commit()
+        self.wsrs.commit()
+        self.csrs.commit()
         self.wreg.commit()
-        self.flags.commit()
-        for reg in self.single_regs.values():
-            reg.commit()
 
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag'''
@@ -415,11 +306,24 @@ class OTBNState:
 
         return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
 
-    def update_mlz_flags(self, fg: int, result: int) -> None:
-        '''Update M, L, Z flags for the given result'''
-        self.flags[fg] = FlagReg.mlz_for_result(self.flags[fg].C, result)
+    def set_flags(self, fg: int, flags: FlagReg) -> None:
+        '''Update flags for a flag group'''
+        self.csrs.flags[fg] = flags
+
+    def set_mlz_flags(self, fg: int, result: int) -> None:
+        '''Update M, L, Z flags for a flag group using the given result'''
+        self.csrs.flags[fg] = \
+            FlagReg.mlz_for_result(self.csrs.flags[fg].C, result)
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.loop_step()
         self.intreg.post_insn()
+
+    def read_csr(self, idx: int) -> int:
+        '''Read the CSR with index idx as an unsigned 32-bit number'''
+        return self.csrs.read_unsigned(self.wsrs, idx)
+
+    def write_csr(self, idx: int, value: int) -> None:
+        '''Write value (an unsigned 32-bit number) to the CSR with index idx'''
+        self.csrs.write_unsigned(self.wsrs, idx, value)
