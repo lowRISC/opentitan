@@ -19,7 +19,8 @@
 // programmed. If a particular check times out, chk_timeout_o will be asserted, which will raise
 // an alert via the error logic.
 //
-// If needed, the LFSR can be reseeded with fresh entropy from the CSRNG via entropy_i.
+// The EntropyWidth LSBs of the LFSR are periodically reseeded with fresh entropy from
+// CSRNG every 2^ReseedTimerWidth cycles.
 //
 // It is also possible to trigger one-off checks via integ_chk_trig_i and cnsty_chk_trig_i.
 // This can be useful if SW chooses to leave the periodic checks disabled.
@@ -28,20 +29,24 @@
 `include "prim_assert.sv"
 
 module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
-  parameter logic [TimerWidth-1:0]       LfsrSeed     = TimerWidth'(1'b1),
-  parameter logic [TimerWidth-1:0][31:0] LfsrPerm     = {
+  // Entropy reseeding is triggered every time this counter expires.
+  parameter int                          ReseedTimerWidth = 16,
+  // Number of LFSR LSBs to reseed
+  parameter int                          EntropyWidth       = 4,
+  parameter logic [TimerWidth-1:0]       LfsrSeed           = TimerWidth'(1'b1),
+  parameter logic [TimerWidth-1:0][31:0] LfsrPerm           = {
     32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
     32'd05, 32'd39, 32'd31, 32'd21, 32'd15, 32'd01, 32'd24, 32'd37,
     32'd32, 32'd38, 32'd26, 32'd34, 32'd08, 32'd10, 32'd04, 32'd02,
     32'd19, 32'd00, 32'd20, 32'd06, 32'd25, 32'd22, 32'd03, 32'd35,
     32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
-  },
-  parameter int                          EntropyWidth = 8
+  }
 ) (
   input                            clk_i,
   input                            rst_ni,
-  input                            entropy_en_i,       // entropy update pulse from CSRNG
-  input        [EntropyWidth-1:0]  entropy_i,          // from CSRNG
+  output logic                     edn_req_o,          // request to EDN
+  input                            edn_ack_i,          // ack from EDN
+  input        [EntropyWidth-1:0]  edn_data_i,         // from EDN
   input                            timer_en_i,         // enable timer
   input                            integ_chk_trig_i,   // one-off trigger for integrity check
   input                            cnsty_chk_trig_i,   // one-off trigger for consistency check
@@ -57,6 +62,18 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   output logic                     chk_timeout_o,      // a check has timed out
   output logic                     fsm_err_o           // the FSM has reached an invalid state
 );
+
+  ////////////////////
+  // Reseed counter //
+  ////////////////////
+
+  logic reseed_en;
+  logic [ReseedTimerWidth-1:0] reseed_timer_d, reseed_timer_q;
+
+  assign reseed_timer_d = (reseed_timer_q > '0) ? reseed_timer_q - 1'b1    :
+                          (reseed_en)           ? {ReseedTimerWidth{1'b1}} : '0;
+  assign edn_req_o = (reseed_timer_q == '0);
+  assign reseed_en = edn_req_o & edn_ack_i;
 
   //////////
   // PRNG //
@@ -78,8 +95,8 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
     .rst_ni,
     .seed_en_i  ( 1'b0       ),
     .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en | entropy_en_i ),
-    .entropy_i  ( entropy_i & {EntropyWidth{entropy_en_i}} ),
+    .lfsr_en_i  ( lfsr_en | reseed_en                    ),
+    .entropy_i  ( edn_data_i & {EntropyWidth{reseed_en}} ),
     .state_o    ( lfsr_state )
   );
 
@@ -274,6 +291,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       integ_chk_req_q <= '0;
       cnsty_chk_req_q <= '0;
       chk_timeout_q   <= 1'b0;
+      reseed_timer_q  <= '0;
     end else begin
       state_q     <= state_d;
       integ_cnt_q <= integ_cnt_d;
@@ -281,6 +299,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       integ_chk_req_q <= integ_chk_req_d;
       cnsty_chk_req_q <= cnsty_chk_req_d;
       chk_timeout_q   <= chk_timeout_d;
+      reseed_timer_q  <= reseed_timer_d;
     end
   end
 
@@ -288,6 +307,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Assertions //
   ////////////////
 
+  `ASSERT_KNOWN(EntropyReqKnown_A,  entropy_req_o)
   `ASSERT_KNOWN(ChkPendingKnown_A,  chk_pending_o)
   `ASSERT_KNOWN(IntegChkReqKnown_A, integ_chk_req_o)
   `ASSERT_KNOWN(CnstyChkReqKnown_A, cnsty_chk_req_o)

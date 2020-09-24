@@ -18,8 +18,8 @@ module otp_ctrl
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0]        AlertAsyncOn = {NumAlerts{1'b1}},
   // TODO: These constants have to be replaced by the silicon creator before taping out.
-  parameter logic [TimerWidth-1:0]       LfsrSeed     = TimerWidth'(1'b1),
-  parameter logic [TimerWidth-1:0][31:0] LfsrPerm     = {
+  parameter logic [TimerWidth-1:0]       TimerLfsrSeed     = TimerWidth'(1'b1),
+  parameter logic [TimerWidth-1:0][31:0] TimerLfsrPerm     = {
     32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
     32'd05, 32'd39, 32'd31, 32'd21, 32'd15, 32'd01, 32'd24, 32'd37,
     32'd32, 32'd38, 32'd26, 32'd34, 32'd08, 32'd10, 32'd04, 32'd02,
@@ -39,15 +39,12 @@ module otp_ctrl
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
-  // TODO: EDN interface for entropy updates
-  input  edn_otp_up_t                                edn_otp_up_i,
-  // TODO: EDN interface for requesting entropy
+  // TODO: EDN interface
   output otp_edn_req_t                               otp_edn_req_o,
   input  otp_edn_rsp_t                               otp_edn_rsp_i,
   // Power manager interface
-  input  pwr_otp_init_req_t                          pwr_otp_init_req_i,
-  output pwr_otp_init_rsp_t                          pwr_otp_init_rsp_o,
-  output otp_pwr_state_t                             otp_pwr_state_o,
+  input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_req_i,
+  output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_rsp_o,
   // Lifecycle transition command interface
   input  lc_otp_program_req_t                        lc_otp_program_req_i,
   output lc_otp_program_rsp_t                        lc_otp_program_rsp_o,
@@ -169,7 +166,7 @@ module otp_ctrl
   // are pending. Hence, we signal the LCI/DAI idle state to the
   // power manager
   logic lci_idle;
-  assign otp_pwr_state_o.idle = lci_idle & dai_idle;
+  assign pwr_otp_rsp_o.otp_idle = lci_idle & dai_idle;
 
   //////////////////////////////////////
   // Ctrl/Status CSRs, Errors, Alerts //
@@ -283,6 +280,7 @@ module otp_ctrl
   logic integ_chk_trig, cnsty_chk_trig;
   logic [NumPart-1:0] integ_chk_req, integ_chk_ack;
   logic [NumPart-1:0] cnsty_chk_req, cnsty_chk_ack;
+  logic lfsr_edn_req, lfsr_edn_ack;
 
   assign integ_chk_trig   = reg2hw.check_trigger.integrity.q &
                             reg2hw.check_trigger.integrity.qe;
@@ -290,30 +288,58 @@ module otp_ctrl
                             reg2hw.check_trigger.consistency.qe;
 
   otp_ctrl_lfsr_timer #(
-    .LfsrSeed(LfsrSeed),
-    .LfsrPerm(LfsrPerm),
+    .LfsrSeed(TimerLfsrSeed),
+    .LfsrPerm(TimerLfsrPerm),
     .EntropyWidth(4)
   ) u_otp_ctrl_lfsr_timer (
     .clk_i,
     .rst_ni,
-    .entropy_en_i       ( edn_otp_up_i.en          ),
+    .edn_req_o          ( lfsr_edn_req              ),
+    .edn_ack_i          ( lfsr_edn_ack              ),
     // Lower entropy bits are used for reseeding secure erase LFSRs
-    .entropy_i          ( edn_otp_up_i.data[31:28] ),
+    .edn_data_i         ( otp_edn_rsp_i.data[31:28] ),
     // We can enable the timer once OTP has initialized.
-    .timer_en_i         ( pwr_otp_init_rsp_o.done ),
-    .integ_chk_trig_i   ( integ_chk_trig          ),
-    .cnsty_chk_trig_i   ( cnsty_chk_trig          ),
-    .chk_pending_o      ( chk_pending             ),
-    .timeout_i          ( reg2hw.check_timeout.q  ),
+    // Note that this is only the initial release that gets
+    // the timer FSM into an operational state.
+    // Whether or not the timers / background checks are
+    // activated depends on the CSR configuration (by default
+    // they are switched off).
+    .timer_en_i         ( pwr_otp_rsp_o.otp_done    ),
+    .integ_chk_trig_i   ( integ_chk_trig            ),
+    .cnsty_chk_trig_i   ( cnsty_chk_trig            ),
+    .chk_pending_o      ( chk_pending               ),
+    .timeout_i          ( reg2hw.check_timeout.q    ),
     .integ_period_msk_i ( reg2hw.integrity_check_period.q   ),
     .cnsty_period_msk_i ( reg2hw.consistency_check_period.q ),
-    .integ_chk_req_o    ( integ_chk_req           ),
-    .cnsty_chk_req_o    ( cnsty_chk_req           ),
-    .integ_chk_ack_i    ( integ_chk_ack           ),
-    .cnsty_chk_ack_i    ( cnsty_chk_ack           ),
-    .escalate_en_i      ( lc_escalate_en_i        ),
-    .chk_timeout_o      ( chk_timeout             ),
-    .fsm_err_o          ( lfsr_fsm_err            )
+    .integ_chk_req_o    ( integ_chk_req             ),
+    .cnsty_chk_req_o    ( cnsty_chk_req             ),
+    .integ_chk_ack_i    ( integ_chk_ack             ),
+    .cnsty_chk_ack_i    ( cnsty_chk_ack             ),
+    .escalate_en_i      ( lc_escalate_en_i          ),
+    .chk_timeout_o      ( chk_timeout               ),
+    .fsm_err_o          ( lfsr_fsm_err              )
+  );
+
+  /////////////////////
+  // EDN Arbitration //
+  /////////////////////
+
+  // Both the key derivation and LFSR reseeding are low bandwidth,
+  // hence they can share the same EDN interface.
+  logic key_edn_req, key_edn_ack;
+  prim_arbiter_tree #(
+    .N(2),
+    .EnDataPort(0)
+  ) u_edn_arb (
+    .clk_i,
+    .rst_ni,
+    .req_i   ( {lfsr_edn_req, key_edn_req} ),
+    .data_i  ( '{default: '0}              ),
+    .gnt_o   ( {lfsr_edn_ack, key_edn_ack} ),
+    .idx_o   (                             ), // unused
+    .valid_o ( otp_edn_req_o.req           ),
+    .data_o  (                             ), // unused
+    .ready_i ( otp_edn_rsp_i.ack           )
   );
 
   ///////////////////////////////
@@ -502,8 +528,8 @@ module otp_ctrl
   otp_ctrl_dai u_otp_ctrl_dai (
     .clk_i,
     .rst_ni,
-    .init_req_i       ( pwr_otp_init_req_i.init               ),
-    .init_done_o      ( pwr_otp_init_rsp_o.done               ),
+    .init_req_i       ( pwr_otp_req_i.otp_init                ),
+    .init_done_o      ( pwr_otp_rsp_o.otp_done                ),
     .part_init_req_o  ( part_init_req                         ),
     .part_init_done_i ( part_init_done                        ),
     .escalate_en_i    ( lc_escalate_en_i                      ),
@@ -586,15 +612,16 @@ module otp_ctrl
   otp_ctrl_kdi i_otp_ctrl_kdi (
     .clk_i,
     .rst_ni,
-    .key_deriv_en_i          ( pwr_otp_init_rsp_o.done ),
+    .key_deriv_en_i          ( pwr_otp_rsp_o.otp_done  ),
     .escalate_en_i           ( lc_escalate_en_i        ),
     .fsm_err_o               ( key_deriv_fsm_err       ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
     .flash_data_key_seed_i   ( flash_data_key_seed     ),
     .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
-    .otp_edn_req_o,
-    .otp_edn_rsp_i,
+    .edn_req_o               ( key_edn_req             ),
+    .edn_ack_i               ( key_edn_ack             ),
+    .edn_data_i              ( otp_edn_rsp_i.data      ),
     .lc_otp_token_req_i ,
     .lc_otp_token_rsp_o ,
     .flash_otp_key_req_i,
@@ -724,10 +751,6 @@ module otp_ctrl
       assert_static_in_generate_invalid assert_static_in_generate_invalid();
     end
   end
-
-  // TODO: remove this once connected.
-  logic unused_entropy;
-  assign unused_entropy = ^edn_otp_up_i.data;
 
   //////////////////////////////////
   // Buffered Data Output Mapping //

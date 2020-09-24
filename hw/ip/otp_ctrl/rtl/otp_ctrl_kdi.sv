@@ -30,8 +30,9 @@ module otp_ctrl_kdi
   input  logic [FlashKeySeedWidth-1:0]               flash_addr_key_seed_i,
   input  logic [SramKeySeedWidth-1:0]                sram_data_key_seed_i,
   // EDN interface for requesting entropy
-  output otp_edn_req_t                               otp_edn_req_o,
-  input  otp_edn_rsp_t                               otp_edn_rsp_i,
+  output logic                                       edn_req_o,
+  input                                              edn_ack_i,
+  input  [31:0]                                      edn_data_i,
   // Lifecycle hashing request
   input  lc_otp_token_rsp_t                          lc_otp_token_req_i,
   output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
@@ -57,7 +58,7 @@ module otp_ctrl_kdi
 
   // tie-off and unused assignments for preventing lint messages
   assign fsm_err_o = 1'b0;
-  assign otp_edn_req_o = '0;
+  assign edn_req_o = '0;
   assign lc_otp_token_rsp_o = '0;
   assign flash_otp_key_rsp_o = '0;
   assign sram_otp_key_rsp_o = '0;
@@ -75,7 +76,8 @@ module otp_ctrl_kdi
                            flash_data_key_seed_i,
                            flash_addr_key_seed_i,
                            sram_data_key_seed_i,
-                           otp_edn_rsp_i,
+                           edn_ack_i,
+                           edn_data_i,
                            lc_otp_token_req_i,
                            flash_otp_key_req_i,
                            sram_otp_key_req_i,
