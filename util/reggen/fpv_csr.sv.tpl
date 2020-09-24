@@ -6,7 +6,6 @@
 // Do Not Edit directly
 // TODO: This automation does not support: shadow reg, has_d has_de not has_q (right now does not
 // have internal storage if de=0)
-// This automation assumes that enable registers are 1 bit with RW0C or RW1C access policy
 <% from reggen import (gen_fpv)
 %>\
 <% from topgen import lib
@@ -38,6 +37,15 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
 
 `ifdef UVM
   import uvm_pkg::*;
+  % if block.hier_path:
+  `define REGWEN_PATH dut.${block.hier_path}.u_reg
+  % elif block.name == "flash_ctrl":
+  `define REGWEN_PATH dut.u_flash_ctrl.u_reg
+  % else:
+  `define REGWEN_PATH dut.u_reg
+  % endif
+`else
+  `define REGWEN_PATH u_reg
 `endif
 
   bit disable_sva;
@@ -53,74 +61,10 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
 <%
   addr_msb       = block.addr_width - 1
   reg_width      = block.addr_width
-  regen_names    = list()
-  regen_addrs    = list()
-  regen_swaccess = list()
 %>\
   // normalized address only take the [${addr_msb}:2] address from the TLUL a_address
   bit [${addr_msb}:0] normalized_addr;
   assign normalized_addr = {h2d.a_address[${addr_msb}:2], 2'b0};
-
-% for r in block.get_regs_flat():
-  % if r.regwen and r.regwen not in regen_names:
-<% regen_names.append(r.regwen) %>\
-  % endif
-% endfor
-% for r in block.get_regs_flat():
-  % if r.name in regen_names:
-<%
-  reg_offset = str(reg_width) + "'h" + "%x" % r.offset
-  regen_addrs.append(reg_offset)
-  regen_swaccess.append(r.get_field_flat(0).swaccess.name)
-%>\
-  % endif
-% endfor
-  // declare variables to hold enable registers values
-  typedef struct packed {
-    logic [TL_DW-1:0]  data;
-    logic [TL_AW-1:0]  addr;
-    logic [TL_SZW-1:0] size;
-    logic [TL_DW-1:0]  mask;
-  } tlul_req_t;
-
-  // max there are 2*TL_AIW num of reqs source IDs
-  tlul_req_t [2**TL_AIW-1:0] tlul_req;
-% for regen_name in regen_names:
-  logic ${regen_name};
-% endfor
-  // use negedge clk to avoid possible race conditions
-  always_ff @(negedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      tlul_req <= '0;
-% for regen_name in regen_names:
-      ${regen_name} <= 1'b1;
-% endfor
-    end else begin
-      if (h2d.a_valid && h2d.a_opcode inside {PutFullData, PutPartialData}) begin
-        // store each request in tlul_req array (we use blocking statements below so
-        // that we can handle the case where request and response for the same
-        // source-ID happen in the same cycle)
-        if (d2h.a_ready) begin
-          tlul_req[h2d.a_source].mask <= a_mask_bit;
-          tlul_req[h2d.a_source].data <= h2d.a_data;
-          tlul_req[h2d.a_source].addr <= normalized_addr;
-        end
-      end // h2d.a_valid
-
-      if (d2h.d_valid) begin
-        // update tlul_req array
-        if (h2d.d_ready) begin
-% for regen_name in regen_names:
-          ${"if" if loop.first else "end else if"} (tlul_req[d2h.d_source].addr == ${regen_addrs[loop.index]} && tlul_req[d2h.d_source].mask[0] && ${regen_name}) begin
-            ${regen_name} <= ${"!" if regen_swaccess[loop.index] == "W1C" else ""}tlul_req[d2h.d_source].data[0];
-  % if loop.last:
-          end
-  % endif
-% endfor
-        end
-      end //d2h.d_valid
-    end
-  end
 
   // declare common read and write sequences
   sequence device_wr_S(logic [${addr_msb}:0] addr);
@@ -263,7 +207,7 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
 %>\
   // assertions for register: ${reg_name}
     % if regwen:
-<% reg_wen = regwen %>\
+<% reg_wen = "`REGWEN_PATH." + regwen + "_qs" %>\
     % else:
 <% reg_wen = "1" %>\
     % endif
@@ -410,6 +354,7 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
 </%def>\
 </%def>\
 ${construct_classes(block)}
+`undef REGWEN_PATH
 `endif
 `endif
 endmodule

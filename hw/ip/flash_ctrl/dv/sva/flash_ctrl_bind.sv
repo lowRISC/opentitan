@@ -13,15 +13,14 @@ module flash_ctrl_bind;
     .d2h  (tl_o)
   );
 
-  // TODO: flash_ctrl's enable registers are not all RW0C, need more support on CSR FPV assertion
-  // import flash_ctrl_reg_pkg::*;
-  // bind flash_ctrl flash_ctrl_csr_assert_fpv flash_ctrl_csr_assert (
-  //   .clk_i,
-  //   .rst_ni,
-  //   .h2d    (tl_i),
-  //   .d2h    (tl_o),
-  //   .reg2hw (reg2hw),
-  //   .hw2reg (hw2reg)
-  // );
+  import flash_ctrl_reg_pkg::*;
+  bind flash_ctrl flash_ctrl_csr_assert_fpv flash_ctrl_csr_assert (
+    .clk_i,
+    .rst_ni,
+    .h2d    (tl_i),
+    .d2h    (tl_o),
+    .reg2hw (reg2hw),
+    .hw2reg (hw2reg)
+  );
 
 endmodule
