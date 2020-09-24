@@ -800,6 +800,15 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
   kTopEarlgreyResetManagerSwResetsLast = 1, /**< \internal Last valid rstmgr software reset request */
 } top_earlgrey_reset_manager_sw_resets_t;
 
+/**
+ * Power Manager Reset Request Signals
+ */
+typedef enum top_earlgrey_power_manager_reset_requests {
+  kTopEarlgreyPowerManagerResetRequestsNmiGenNmiRstReq = 0, /**<  */
+  kTopEarlgreyPowerManagerResetRequestsLast = 0, /**< \internal Last valid pwrmgr reset_request signal */
+} top_earlgrey_power_manager_reset_requests_t;
+
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"
