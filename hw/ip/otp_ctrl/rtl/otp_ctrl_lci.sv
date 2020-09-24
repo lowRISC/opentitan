@@ -16,7 +16,7 @@ module otp_ctrl_lci
 ) (
   input                                    clk_i,
   input                                    rst_ni,
-  input                                    init_req_i,
+  input                                    lci_en_i,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
   input  lc_tx_t                           escalate_en_i,
@@ -117,10 +117,9 @@ module otp_ctrl_lci
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
-      // State right after reset. Wait here until we get a an
-      // initialization request.
+      // State right after reset. Wait here until LCI gets enabled.
       ResetSt: begin
-        if (init_req_i) begin
+        if (lci_en_i) begin
           state_d = IdleSt;
         end
       end

@@ -165,7 +165,7 @@ module otp_ctrl_part_buf
 
     // Scrambling datapath
     scrmbl_cmd_o   = LoadShadow;
-    scrmbl_sel_o   = '0;
+    scrmbl_sel_o   = CnstyDigest;
     scrmbl_valid_o = 1'b0;
 
     // Counter
@@ -246,7 +246,7 @@ module otp_ctrl_part_buf
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Decrypt;
-        scrmbl_sel_o = Info.key_idx;
+        scrmbl_sel_o = Info.key_sel;
         if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
           state_d = InitDescrWaitSt;
         end
@@ -256,7 +256,7 @@ module otp_ctrl_part_buf
       // the mutex lock upon leaving this state.
       InitDescrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        scrmbl_sel_o = Info.key_idx;
+        scrmbl_sel_o = Info.key_sel;
         data_sel = ScrmblData;
         if (scrmbl_valid_i) begin
           state_d = InitSt;
@@ -388,7 +388,7 @@ module otp_ctrl_part_buf
           scrmbl_mtx_req_o = 1'b1;
           scrmbl_valid_o = 1'b1;
           scrmbl_cmd_o = Encrypt;
-          scrmbl_sel_o = Info.key_idx;
+          scrmbl_sel_o = Info.key_sel;
           if (scrmbl_ready_i) begin
             state_d = IntegScrWaitSt;
           end
@@ -397,7 +397,7 @@ module otp_ctrl_part_buf
       // Wait for the scrambled data to return.
       IntegScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        scrmbl_sel_o = Info.key_idx;
+        scrmbl_sel_o = Info.key_sel;
         if (scrmbl_valid_i) begin
           state_d = IntegDigSt;
         end

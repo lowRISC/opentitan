@@ -12,6 +12,9 @@ package otp_ctrl_pkg;
   // General Parameters //
   ////////////////////////
 
+  // Width of entropy input
+  parameter int EdnDataWidth = 64;
+
   parameter int NumPart = 7;
   parameter int NumPartWidth = vbits(NumPart);
   // This defines the width of the check timers and LFSR
@@ -85,7 +88,6 @@ package otp_ctrl_pkg;
 
   parameter int ScrmblKeyWidth   = 128;
   parameter int ScrmblBlockWidth = 64;
-  parameter int DigestBlockWidth = 64;
 
   parameter int NumPresentRounds = 31;
   parameter int ScrmblBlockHalfWords = ScrmblBlockWidth / OtpWidth;
@@ -131,9 +133,23 @@ package otp_ctrl_pkg;
   };
 
   typedef enum logic [ConstSelWidth-1:0] {
+    Secret0Key,
+    Secret1Key,
+    Secret2Key
+  } key_sel_e;
+
+  typedef enum logic [ConstSelWidth-1:0] {
+    CnstyDigest,
+    LcRawDigest,
+    FlashDataKey,
+    FlashAddrKey,
+    SramDataKey
+  } digest_sel_e;
+
+  typedef enum logic [ConstSelWidth-1:0] {
     StandardMode,
     ChainedMode
-  } otp_digest_mode_e;
+  } digest_mode_e;
 
   ////////////////////////
   // Partition Metadata //
@@ -150,7 +166,7 @@ package otp_ctrl_pkg;
     logic [OtpByteAddrWidth-1:0] offset;
     logic [OtpByteAddrWidth-1:0] size;
     // Key index to use for scrambling.
-    logic [ConstSelWidth-1:0] key_idx;
+    key_sel_e key_sel;
     // Attributes
     logic scrambled;  // Whether the partition is scrambled
     logic hw_digest;  // Whether the partition has a hardware digest
@@ -160,21 +176,21 @@ package otp_ctrl_pkg;
 
   // TODO: need to parse this somehow from an hjson
   localparam part_info_t PartInfo [NumPart] = '{
-    // Variant    | offset | size | key_idx | scrambled | HW digest | write_lock | read_lock
+    // Variant    | offset | size | key_sel | scrambled | HW digest | write_lock | read_lock
     // CREATOR_SW_CFG
-    '{Unbuffered,   11'h0,   768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    '{Unbuffered,   11'h0,   768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
     // OWNER_SW_CFG
-    '{Unbuffered,   11'h300, 768,      0,       1'b0,      1'b0,      1'b1,       1'b0},
+    '{Unbuffered,   11'h300, 768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
     // HW_CFG
-    '{Buffered,     11'h600, 176,      0,       1'b0,      1'b1,      1'b1,       1'b0},
+    '{Buffered,     11'h600, 176,  Secret0Key,  1'b0,      1'b1,      1'b1,       1'b0},
     // SECRET0
-    '{Buffered,     11'h6B0, 40,       0,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h6B0, 40,   Secret0Key,  1'b1,      1'b1,      1'b1,       1'b1},
     // SECRET1
-    '{Buffered,     11'h6D8, 88,       1,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h6D8, 88,   Secret1Key,  1'b1,      1'b1,      1'b1,       1'b1},
     // SECRET2
-    '{Buffered,     11'h730, 120,      2,       1'b1,      1'b1,      1'b1,       1'b1},
+    '{Buffered,     11'h730, 120,  Secret2Key,  1'b1,      1'b1,      1'b1,       1'b1},
     // LIFE_CYCLE
-    '{Buffered,     11'h7A8, 88,       0,       1'b0,      1'b0,      1'b0,       1'b0}
+    '{Buffered,     11'h7A8, 88,   Secret0Key,  1'b0,      1'b0,      1'b0,       1'b0}
   };
 
   typedef enum {
@@ -201,20 +217,14 @@ package otp_ctrl_pkg;
   // Typedefs for CSRNG //
   ////////////////////////
 
-  // Unidirectional input type for LFSR reseeding.
-  typedef struct packed {
-    logic        en;
-    logic [31:0] data;
-  } edn_otp_up_t;
-
   // Bidirectional entropy requests for scramble key derivation.
   typedef struct packed {
     logic        req;
   } otp_edn_req_t;
 
   typedef struct packed {
-    logic        ack;
-    logic [31:0] data;
+    logic                    ack;
+    logic [EdnDataWidth-1:0] data;
   } otp_edn_rsp_t;
 
   ///////////////////////////////
@@ -280,8 +290,13 @@ package otp_ctrl_pkg;
   } lc_otp_token_req_t;
 
   typedef struct packed {
+<<<<<<< HEAD
     logic  ack;
     logic [LcTokenWidth-1:0] hashed_token;
+=======
+    logic ack;
+    logic [lc_ctrl_pkg::LcTokenWidth-1:0] hashed_token;
+>>>>>>> cd99a29a (fix)
   } lc_otp_token_rsp_t;
 
 
@@ -321,7 +336,8 @@ package otp_ctrl_pkg;
   } otp_keymgr_key_t;
 
   typedef struct packed {
-    logic req;
+    logic addr_req;
+    logic data_req;
   } flash_otp_key_req_t;
 
   typedef struct packed {
@@ -333,9 +349,9 @@ package otp_ctrl_pkg;
   } otbn_otp_key_req_t;
 
   typedef struct packed {
-    logic ack;
-    logic [FlashKeyWidth-1:0] addr_key;
-    logic [FlashKeyWidth-1:0] data_key;
+    logic data_ack;
+    logic addr_ack;
+    logic [FlashKeyWidth-1:0] key;
   } flash_otp_key_rsp_t;
 
   typedef struct packed {

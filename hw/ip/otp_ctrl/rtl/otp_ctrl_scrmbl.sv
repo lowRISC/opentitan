@@ -142,7 +142,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   key_state_sel_e   key_state_sel;
   logic data_state_en, data_shadow_copy, data_shadow_load, digest_state_en, key_state_en;
   logic [ConstSelWidth-1:0] sel_d, sel_q;
-  otp_digest_mode_e digest_mode_d, digest_mode_q;
+  digest_mode_e digest_mode_d, digest_mode_q;
 
   assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ?
                                 OtpKey[sel_d[vbits(NumScrmblKeys)-1:0]]          : '0;
@@ -280,7 +280,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
               sel_d          = sel_i;
             end
             DigestInit: begin
-              digest_mode_d  = otp_digest_mode_e'(sel_i);
+              digest_mode_d  = digest_mode_e'(sel_i);
               is_first_d     = 1'b1;
             end
             DigestFinalize:  begin
