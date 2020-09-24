@@ -21,16 +21,22 @@ module otbn_controller
   input  logic  clk_i,
   input  logic  rst_ni,
 
-  input  logic                     start_i, // start the processing at start_addr_i
-  output logic                     done_o,  // processing done, signaled by ECALL
+  input  logic  start_i, // start the processing at start_addr_i
+  output logic  done_o,  // processing done, signaled by ECALL or error occurring
+
+  output err_code_e err_code_o, // valid when done_o is asserted
+
   input  logic [ImemAddrWidth-1:0] start_addr_i,
 
   // Next instruction selection (to instruction fetch)
   output logic                     insn_fetch_req_valid_o,
   output logic [ImemAddrWidth-1:0] insn_fetch_req_addr_o,
+  // Error from fetch requested last cycle
+  input  logic                     insn_fetch_err_i,
 
   // Fetched/decoded instruction
   input  logic                     insn_valid_i,
+  input  logic                     insn_illegal_i,
   input  logic [ImemAddrWidth-1:0] insn_addr_i,
 
   // Decoded instruction data, matching the "Decoding" section of the specification.
@@ -46,10 +52,11 @@ module otbn_controller
   output logic [4:0]   rf_base_rd_addr_a_o,
   output logic         rf_base_rd_en_a_o,
   input  logic [31:0]  rf_base_rd_data_a_i,
-
   output logic [4:0]   rf_base_rd_addr_b_o,
   output logic         rf_base_rd_en_b_o,
   input  logic [31:0]  rf_base_rd_data_b_i,
+
+  input  logic         rf_base_call_stack_err_i,
 
   // Bignum register file (WDRs)
   output logic [4:0]      rf_bignum_wr_addr_o,
@@ -100,13 +107,20 @@ module otbn_controller
   output logic                        ispr_bignum_wr_en_o,
   input  logic [WLEN-1:0]             ispr_rdata_i
 );
-  otbn_state_e state_q, state_d;
+  otbn_state_e state_q, state_d, state_raw;
+
+  logic err;
+  logic done_complete;
+
+  logic insn_fetch_req_valid_raw;
 
   logic stall;
   logic mem_stall;
   logic branch_taken;
   logic [ImemAddrWidth-1:0] branch_target;
+  logic                     branch_target_overflow;
   logic [ImemAddrWidth-1:0] next_insn_addr;
+  logic                     next_insn_addr_overflow;
 
   csr_e                                csr_addr;
   logic [31:0]                         csr_rdata_raw;
@@ -148,6 +162,10 @@ module otbn_controller
 
   logic [WLEN-1:0] mac_bignum_rf_wr_data;
 
+  logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
+  logic imem_addr_err, loop_err, ispr_err;
+  logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
+
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
   // TODO: Possibility of error response on store? Probably still don't need to stall in that case
@@ -155,7 +173,12 @@ module otbn_controller
   assign mem_stall = lsu_load_req_o;
 
   assign stall = mem_stall;
-  assign done_o = insn_valid_i && insn_dec_shared_i.ecall_insn;
+
+  // OTBN is done (raising the 'done' interrupt) either when it executes an ecall or an error
+  // occurs. The ecall triggered done is factored out as `done_complete` to avoid logic loops in the
+  // error handling logic.
+  assign done_complete = (insn_valid_i && insn_dec_shared_i.ecall_insn);
+  assign done_o = done_complete | err;
 
   // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
   // instruction (which is always taken)
@@ -163,36 +186,38 @@ module otbn_controller
                         ((insn_dec_shared_i.branch_insn & alu_base_comparison_result_i) |
                          insn_dec_shared_i.jump_insn);
   // Branch target computed by base ALU (PC + imm)
-  // TODO: Implement error on branch out of range
   assign branch_target = alu_base_operation_result_i[ImemAddrWidth-1:0];
+  assign branch_target_overflow = |alu_base_operation_result_i[31:ImemAddrWidth];
 
-  assign next_insn_addr = insn_addr_i + 'd4;
+  assign {next_insn_addr_overflow, next_insn_addr} = insn_addr_i + 'd4;
 
   always_comb begin
-    state_d                = state_q;
-    insn_fetch_req_valid_o = 1'b0;
-    insn_fetch_req_addr_o  = start_addr_i;
+    // `state_raw` and `insn_fetch_req_valid_raw` are the values of `state_d` and
+    // `insn_fetch_req_valid_o` before any errors are considered.
+    state_raw                = state_q;
+    insn_fetch_req_valid_raw = 1'b0;
+    insn_fetch_req_addr_o    = start_addr_i;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
     unique case (state_q)
       OtbnStateHalt: begin
         if (start_i) begin
-          state_d = OtbnStateRun;
-          insn_fetch_req_addr_o  = start_addr_i;
-          insn_fetch_req_valid_o = 1'b1;
+          state_raw = OtbnStateRun;
+          insn_fetch_req_addr_o    = start_addr_i;
+          insn_fetch_req_valid_raw = 1'b1;
         end
       end
       OtbnStateRun: begin
-        insn_fetch_req_valid_o = 1'b1;
+        insn_fetch_req_valid_raw = 1'b1;
 
-        if (done_o) begin
-          state_d                = OtbnStateHalt;
-          insn_fetch_req_valid_o = 1'b0;
+        if (done_complete) begin
+          state_raw                = OtbnStateHalt;
+          insn_fetch_req_valid_raw = 1'b0;
         end else begin
           // When stalling refetch the same instruction to keep decode inputs constant
           if (stall) begin
-            state_d               = OtbnStateStall;
+            state_raw             = OtbnStateStall;
             insn_fetch_req_addr_o = insn_addr_i;
           end else begin
             if (branch_taken) begin
@@ -208,13 +233,62 @@ module otbn_controller
       OtbnStateStall: begin
         // Only ever stall for a single cycle
         // TODO: Any more than one cycle stall cases?
-        insn_fetch_req_valid_o = 1'b1;
-        insn_fetch_req_addr_o  = next_insn_addr;
-        state_d = OtbnStateRun;
+        insn_fetch_req_valid_raw = 1'b1;
+        insn_fetch_req_addr_o    = next_insn_addr;
+        state_raw = OtbnStateRun;
       end
       default: ;
     endcase
   end
+
+  // On any error immediately halt and suppress any Imem request.
+  assign state_d = err ? OtbnStateHalt : state_raw;
+  assign insn_fetch_req_valid_o = err ? 1'b0 : insn_fetch_req_valid_raw;
+
+  // Determine if there are any errors related to the Imem fetch address.
+  always_comb begin
+    imem_addr_err = 1'b0;
+
+    if (insn_fetch_req_valid_raw) begin
+      if (|insn_fetch_req_addr_o[1:0]) begin
+        // Imem address is unaligned
+        imem_addr_err = 1'b1;
+      end else if (branch_taken) begin
+        imem_addr_err = branch_target_overflow;
+      end else begin
+        imem_addr_err = next_insn_addr_overflow;
+      end
+    end
+  end
+
+  // Err signal and code generation and prioritisation
+  always_comb begin
+    err        = 1'b1;
+    err_code_o = ErrCodeNoError;
+
+    if (insn_fetch_err_i) begin
+      err_code_o = ErrCodeFatalImem;
+    end else if (lsu_rdata_err_i) begin
+      err_code_o = ErrCodeFatalDmem;
+    end else if (insn_illegal_i) begin
+      err_code_o = ErrCodeIllegalInsn;
+    end else if (ispr_err) begin
+      err_code_o = ErrCodeIllegalInsn;
+    end else if (dmem_addr_err) begin
+      err_code_o = ErrCodeBadDataAddr;
+    end else if (loop_err) begin
+      err_code_o = ErrCodeLoop;
+    end else if (rf_base_call_stack_err_i) begin
+      err_code_o = ErrCodeCallStack;
+    end else if (imem_addr_err) begin
+      err_code_o = ErrCodeBadInsnAddr;
+    end else begin
+      err        = 1'b0;
+      err_code_o = ErrCodeNoError;
+    end
+  end
+
+  `ASSERT(ErrCodeOnErr, err |-> err_code_o != ErrCodeNoError)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
@@ -245,7 +319,7 @@ module otbn_controller
 
     .loop_jump_o       (loop_jump),
     .loop_jump_addr_o  (loop_jump_addr),
-    .loop_err_o        ()
+    .loop_err_o        (loop_err),
   );
 
   assign loop_start      = insn_valid_i & insn_dec_shared_i.loop_insn;
@@ -450,6 +524,7 @@ module otbn_controller
   always_comb begin
     ispr_addr_base      = IsprMod;
     ispr_word_addr_base = '0;
+    csr_illegal_addr    = 1'b0;
 
     unique case (csr_addr)
       CsrFlags, CsrFg0, CsrFg1 : begin
@@ -464,8 +539,7 @@ module otbn_controller
         ispr_addr_base      = IsprRnd;
         ispr_word_addr_base = '0;
       end
-      // TODO: Illegal addr handling
-      default: ;
+      default: csr_illegal_addr = 1'b1;
     endcase
   end
 
@@ -520,17 +594,24 @@ module otbn_controller
 
   always_comb begin
     ispr_addr_bignum = IsprMod;
+    wsr_illegal_addr = 1'b0;
 
     unique case (wsr_addr)
       WsrMod: ispr_addr_bignum = IsprMod;
       WsrRnd: ispr_addr_bignum = IsprRnd;
       WsrAcc: ispr_addr_bignum = IsprAcc;
-      default: ;
+      default: wsr_illegal_addr = 1'b1;
     endcase
   end
 
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i :
                                                       rf_bignum_rd_data_a_i;
+
+  assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr : wsr_illegal_addr;
+
+  assign ispr_err = ispr_illegal_addr & insn_valid_i & (insn_dec_shared_i.ispr_rd_insn |
+                                                        insn_dec_shared_i.ispr_wr_insn |
+                                                        insn_dec_shared_i.ispr_rs_insn);
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
 
@@ -545,7 +626,6 @@ module otbn_controller
   assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn
     & insn_valid_i;
 
-  // TODO: Add error on unaligned/out of bounds
   assign lsu_load_req_o   = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
   assign lsu_store_req_o  = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
   assign lsu_req_subset_o = insn_dec_shared_i.subset;
@@ -554,6 +634,14 @@ module otbn_controller
   assign lsu_base_wdata_o   = rf_base_rd_data_b_i;
   assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_i;
 
+  assign dmem_addr_unaligned_bignum = (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);
+  assign dmem_addr_unaligned_base   = (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
+  assign dmem_addr_overflow         = |alu_base_operation_result_i[31:DmemAddrWidth];
+
+  assign dmem_addr_err = (lsu_load_req_o | lsu_store_req_o) & (dmem_addr_overflow    |
+                                                               dmem_addr_unaligned_bignum |
+                                                               dmem_addr_unaligned_base);
+
   // RF Read enables for bignum RF are unused for now. Future security hardening work may make use
   // of them.
   logic unused_rf_ren_a_bignum;
@@ -561,13 +649,4 @@ module otbn_controller
 
   assign unused_rf_ren_a_bignum = insn_dec_bignum_i.rf_ren_a;
   assign unused_rf_ren_b_bignum = insn_dec_bignum_i.rf_ren_b;
-
-  // TODO: Implement error handling
-  logic unused_lsu_rdata_err;
-  assign unused_lsu_rdata_err = lsu_rdata_err_i;
-
-  // Unused for now, may be used in later security hardening work
-  logic unused_ispr_rd_insn;
-  assign unused_ispr_rd_insn = insn_dec_shared_i.ispr_rd_insn;
-
 endmodule

@@ -33,7 +33,9 @@ module otbn_instruction_fetch
   // Decoded instruction
   output logic                     insn_fetch_resp_valid_o,
   output logic [ImemAddrWidth-1:0] insn_fetch_resp_addr_o,
-  output logic [31:0]              insn_fetch_resp_data_o
+  output logic [31:0]              insn_fetch_resp_data_o,
+
+  output logic                     insn_fetch_err_o // ECC error seen in instruction fetch
 );
 
   assign imem_req_o = insn_fetch_req_valid_i;
@@ -46,10 +48,7 @@ module otbn_instruction_fetch
     insn_fetch_resp_addr_o <= insn_fetch_req_addr_i;
   end
 
-  // TODO: Need to handle imem_rerror somewhere, which need to be turned into alerts. Could be
-  // handled either here or somewhere more up in the hierarchy.
-  logic unused_imem_rerror;
-  assign unused_imem_rerror = imem_rerror_i;
+  assign insn_fetch_err_o = imem_rvalid_i & imem_rerror_i;
 
   // Nothing is reset in this module so rst_ni is unused. Leaving it in so adding resettable flops
   // (or an assertion which will use the reset) is straight forward.

@@ -35,7 +35,7 @@ module otbn_rf_base
   input  logic         rd_en_b_i,
   output logic [31:0]  rd_data_b_o,
 
-  output logic         call_stack_overflow_err_o
+  output logic         call_stack_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
@@ -64,8 +64,8 @@ module otbn_rf_base
 
   assign push_stack = wr_en_i & (wr_addr_i == CallStackRegIndex[4:0]);
 
-  assign call_stack_overflow_err_o = (push_stack & stack_full & ~pop_stack) |
-                                     (pop_stack & ~stack_data_valid);
+  assign call_stack_err_o =
+      (push_stack & stack_full & ~pop_stack) | (pop_stack & ~stack_data_valid);
 
   // Prevent any write to the stack register from going to the register file,
   // all other writes are passed straight through
