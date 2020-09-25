@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from enum import IntEnum
 import sys
 from typing import Dict
 
@@ -109,15 +108,21 @@ class RV32ImmShift(OTBNInsn):
         self.shamt = op_vals['shamt']
 
 
-class ShiftType(IntEnum):
-    LSL = 0  # logical shift left
-    LSR = 1  # logical shift right
+def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
+    '''Logical shift value by shift_bytes to the left or right.
 
+    value should be an unsigned 256-bit value. shift_type should be 0 (shift left)
+    or 1 (shift right): matching the encoding of the big number instructions.
+    shift_bytes should be a non-negative number of bytes to shift by.
 
-def ShiftReg(reg: int, shift_type: int, shift_bytes: Immediate) -> int:
-    assert 0 <= int(shift_bytes)
-    shift_bits = int(shift_bytes << 3)
+    Returns an unsigned 256-bit value, truncating on an overflowing left shift.
 
-    return (reg << shift_bits
-            if shift_type == ShiftType.LSL
-            else reg >> shift_bits)
+    '''
+    mask256 = (1 << 256) - 1
+    assert 0 <= value <= mask256
+    assert 0 <= shift_type <= 1
+    assert 0 <= shift_bytes
+
+    shift_bits = 8 * shift_bytes
+    shifted = value << shift_bits if shift_type == 0 else value >> shift_bits
+    return shifted & mask256

@@ -2,32 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Tuple, cast
+from typing import List, Optional, Tuple
 
-from riscvmodel.types import (RegisterFile, Register,  # type: ignore
-                              Trace, TracePC)
+from riscvmodel.types import Trace, TracePC  # type: ignore
+
 
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
+from .gpr import GPRs
+from .reg import RegFile
 from .wsr import WSRFile
-
-
-class TraceCallStackPush(Trace):  # type: ignore
-    def __init__(self, value: int):
-        self.value = value
-
-    def __str__(self) -> str:
-        return "RAS push {:08x}".format(self.value)
-
-
-class TraceCallStackPop(Trace):  # type: ignore
-    def __init__(self, value: int):
-        self.value = value
-
-    def __str__(self) -> str:
-        return "RAS pop {:08x}".format(self.value)
 
 
 class TraceLoopStart(Trace):  # type: ignore
@@ -47,63 +33,6 @@ class TraceLoopIteration(Trace):  # type: ignore
 
     def __str__(self) -> str:
         return "LOOP iteration {}/{}".format(self.iteration, self.total)
-
-
-class OTBNIntRegisterFile(RegisterFile):  # type: ignore
-    def __init__(self) -> None:
-        super().__init__(num=32, bits=32, immutable={0: 0})
-
-        # The call stack for x1 and its pending updates
-        self.callstack = []  # type: List[int]
-        self.have_read_callstack = False
-        self.callstack_push_val = None  # type: Optional[int]
-
-    def __setitem__(self, key: int, value: int) -> None:
-        # Special handling for the callstack in x1
-        if key == 1:
-            self.callstack_push_val = value
-            return
-
-        # Otherwise, use the base class implementation
-        super().__setitem__(key, value)
-
-    def __getitem__(self, key: int) -> Register:
-        # Special handling for the callstack in x1
-        if key == 1:
-            self.have_read_callstack = True
-
-        return cast(Register, super().__getitem__(key))
-
-    def post_insn(self) -> None:
-        '''Update the x1 call stack after an instruction executes
-
-        This needs to run after execution (which sets up callstack_push_val and
-        have_read_callstack) but before we print the instruction in
-        State.issue, because any changes to x1 need to be reflected there.
-
-        '''
-        cs_changed = False
-        if self.have_read_callstack:
-            if self.callstack:
-                self.callstack.pop()
-                cs_changed = True
-
-        if self.callstack_push_val is not None:
-            self.callstack.append(self.callstack_push_val)
-            cs_changed = True
-
-        # Update self.regs[1] so that it always points at the top of the stack.
-        # If the stack is empty, set it to zero (we need to decide what happens
-        # in this case: see issue #3239)
-        if cs_changed:
-            cs_val = 0
-            if self.callstack:
-                cs_val = self.callstack[-1]
-
-            super().__setitem__(1, cs_val)
-
-        self.have_read_callstack = False
-        self.callstack_push_val = None
 
 
 class LoopLevel:
@@ -192,13 +121,13 @@ class LoopStack:
 
 class OTBNState:
     def __init__(self) -> None:
-        self.intreg = OTBNIntRegisterFile()
-        self.wreg = RegisterFile(num=32, bits=256, immutable={}, prefix="w")
+        self.gprs = GPRs()
+        self.wdrs = RegFile('w', 256, 32)
 
         self.wsrs = WSRFile()
         self.csrs = CSRFile()
 
-        self.pc = Register(32)
+        self.pc = 0
         self.pc_next = None  # type: Optional[int]
         self.dmem = Dmem()
 
@@ -226,12 +155,12 @@ class OTBNState:
             self.pc_next = skip_pc
 
     def loop_step(self) -> None:
-        back_pc = self.loop_stack.step(self.pc.unsigned() + 4)
+        back_pc = self.loop_stack.step(self.pc + 4)
         if back_pc is not None:
             self.pc_next = back_pc
 
     def changes(self) -> List[Trace]:
-        c = cast(List[Trace], self.intreg.changes())
+        c = self.gprs.changes()
         if self.pc_next is not None:
             c.append(TracePC(self.pc_next))
         c += self.dmem.changes()
@@ -239,7 +168,7 @@ class OTBNState:
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
         c += self.csrs.changes()
-        c += self.wreg.changes()
+        c += self.wdrs.changes()
         return c
 
     def commit(self) -> None:
@@ -257,51 +186,86 @@ class OTBNState:
         if self.stalled:
             return
 
-        self.intreg.commit()
-        self.pc.set(self.pc_next
-                    if self.pc_next is not None
-                    else self.pc.value + 4)
+        self.gprs.commit()
+        self.pc = self.pc_next if self.pc_next is not None else self.pc + 4
         self.pc_next = None
         self.dmem.commit()
         self.loop_stack.commit()
         self.ext_regs.commit()
         self.wsrs.commit()
         self.csrs.commit()
-        self.wreg.commit()
+        self.wdrs.commit()
 
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
 
-    def get_wr_quarterword(self, wridx: int, qwsel: int) -> int:
-        assert 0 <= wridx <= 31
+    def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
+        '''Select a 64-bit quarter of a wide register.
+
+        The bits are interpreted as an unsigned value.
+
+        '''
+        assert 0 <= idx <= 31
         assert 0 <= qwsel <= 3
-        mask = (1 << 64) - 1
-        return (int(self.wreg[wridx]) >> (qwsel * 64)) & mask
+        full_val = self.wdrs.get_reg(idx).read_unsigned()
+        return (full_val >> (qwsel * 64)) & ((1 << 64) - 1)
 
-    def set_wr_halfword(self, wridx: int, value: int, hwsel: int) -> None:
-        assert 0 <= wridx <= 31
-        assert (value >> 128) == 0
+    def set_half_word_unsigned(self, idx: int, hwsel: int, value: int) -> None:
+        '''Set the low or high 128-bit half of a wide register to value.
+
+        The value should be unsigned.
+
+        '''
+        assert 0 <= idx <= 31
         assert 0 <= hwsel <= 1
+        assert 0 <= value <= (1 << 128) - 1
 
-        mask = ((1 << 128) - 1) << (0 if hwsel else 128)
-        curr = int(self.wreg[wridx]) & mask
-        valpos = value << 128 if hwsel else value
-        self.wreg[wridx] = curr | valpos
+        shift = 128 * hwsel
+        shifted_input = value << shift
+        mask = ((1 << 128) - 1) << shift
+
+        old_val = self.wdrs.get_reg(idx).read_unsigned()
+        new_val = (old_val & ~mask) | shifted_input
+        self.wdrs.get_reg(idx).write_unsigned(new_val)
 
     @staticmethod
     def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, FlagReg]:
+        '''Compute a + b + carry_in and resulting flags.
+
+        Here, a and b are unsigned 256-bit numbers and carry_in is 0 or 1.
+        Returns a pair (result, flags) where result is the unsigned 256-bit
+        result and flags is the FlagReg that the computation generates.
+
+        '''
+        mask256 = (1 << 256) - 1
+        assert 0 <= a <= mask256
+        assert 0 <= b <= mask256
+        assert 0 <= carry_in <= 1
+
         result = a + b + carry_in
-        carryless_result = result & ((1 << 256) - 1)
+        carryless_result = result & mask256
         C = bool((result >> 256) & 1)
 
         return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
 
     @staticmethod
-    def subtract_with_borrow(a: int, b: int, borrow_in: int) -> Tuple[int, FlagReg]:
+    def sub_with_borrow(a: int, b: int, borrow_in: int) -> Tuple[int, FlagReg]:
+        '''Compute a - b - borrow_in and resulting flags.
+
+        Here, a and b are unsigned 256-bit numbers and borrow_in is 0 or 1.
+        Returns a pair (result, flags) where result is the unsigned 256-bit
+        result and flags is the FlagReg that the computation generates.
+
+        '''
+        mask256 = (1 << 256) - 1
+        assert 0 <= a <= mask256
+        assert 0 <= b <= mask256
+        assert 0 <= borrow_in <= 1
+
         result = a - b - borrow_in
-        carryless_result = result & ((1 << 256) - 1)
+        carryless_result = result & mask256
         C = bool((result >> 256) & 1)
 
         return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
@@ -318,7 +282,7 @@ class OTBNState:
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.loop_step()
-        self.intreg.post_insn()
+        self.gprs.post_insn()
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''

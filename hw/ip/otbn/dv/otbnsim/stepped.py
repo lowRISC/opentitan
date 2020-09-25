@@ -68,7 +68,7 @@ def on_start(sim: OTBNSim, args: List[str]) -> None:
                          .format(addr))
 
     print('START {:#08x}'.format(addr))
-    sim.state.pc.set(addr)
+    sim.state.pc = addr
     sim.state.start()
 
 
