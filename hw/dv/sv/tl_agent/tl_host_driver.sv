@@ -109,7 +109,7 @@ class tl_host_driver extends tl_base_driver;
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
 
-  virtual task send_a_request_body(input int a_valid_len, output bit req_done);
+  virtual task send_a_request_body(int a_valid_len, ref bit req_done);
     int unsigned a_valid_cnt;
     while(1) begin
       @(cfg.vif.host_cb);
