@@ -76,16 +76,12 @@ extern const uint64_t kClockFreqUsbHz;
 extern const uint64_t kUartBaudrate;
 
 /**
- * An address to write to to cause execution to stop.
- *
- * If this is zero, there is no address you can write to to stop execution.
- */
-extern const uintptr_t kDeviceStopAddress;
-
-/**
  * An address to write to to report test status.
  *
  * If this is zero, there is no address to write to to report test status.
+ *
+ * Depending on the simulation environment and the value written to this
+ * address, the simulation may stop.
  *
  * @see #test_status_set
  */

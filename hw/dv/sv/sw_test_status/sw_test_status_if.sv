@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface sw_test_status_if ();
+interface sw_test_status_if (
+  input clk
+);
   import top_pkg::*;
   import sw_test_status_pkg::*;
 
@@ -16,23 +18,19 @@ interface sw_test_status_if ();
   logic [TL_DW-1:0] sw_test_status_val;
 
   // SW test status indication.
-  sw_test_status_e sw_test_status;
+  sw_test_status_e sw_test_status_d;
+  sw_test_status_e sw_test_status = SwTestStatusUnderReset;
 
   // If the sw_test_status reaches the terminal states, assert that we are done.
   bit sw_test_done;
 
-  // Logic that updates the sw_test_status from the val.
-  // Note that sw_test_status is set by the testbench when the CPU is under reset.
-  initial begin
-    forever begin
-      @(valid);
-      if (valid) begin
-        sw_test_status = sw_test_status_e'(sw_test_status_val[15:0]);
-        if (!sw_test_done) begin
-          sw_test_done = (sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed});
-        end
-      end
+  assign sw_test_status_d = valid ? sw_test_status_e'(sw_test_status_val[15:0]) : sw_test_status;
+
+  always_ff @(posedge clk) begin
+    if (valid) begin
+      sw_test_status <= sw_test_status_d;
+      sw_test_done <= sw_test_done | (sw_test_status_d inside {SwTestStatusPassed, SwTestStatusFailed});
+      $display("%t [%m]: Detected SW test status change: %0s", $time, sw_test_status_d.name);
     end
   end
-
 endinterface

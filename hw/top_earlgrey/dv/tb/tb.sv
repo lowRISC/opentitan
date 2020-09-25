@@ -134,7 +134,7 @@ module tb;
                         (`RAM_MAIN_SUB_HIER.addr_i == sw_log_addr[15:2]);
 
   // connect the sw_test_status_if
-  sw_test_status_if sw_test_status_if();
+  sw_test_status_if sw_test_status_if (.clk(`RAM_MAIN_SUB_HIER.clk_i));
   assign sw_test_status_if.valid =  !stub_cpu &&
                                     `RAM_MAIN_SUB_HIER.req_i &&
                                     `RAM_MAIN_SUB_HIER.write_i &&

@@ -236,24 +236,24 @@ module top_earlgrey_verilator (
   assign unused_cio_usbdev_d_d2p = cio_usbdev_d_d2p;
   assign unused_cio_usbdev_d_en_d2p = cio_usbdev_d_en_d2p;
 
-  // monitor for termination
-`ifndef END_MON_PATH
-  `define END_MON_PATH top_earlgrey.u_ram1p_ram_main
+  // monitor for test status and termination
+`ifndef SW_TEST_STATUS_PATH
+  `define SW_TEST_STATUS_PATH top_earlgrey.u_ram1p_ram_main
 `endif
 
-  logic valid;
-  logic [31:0] addr;
-  logic end_valid;
+  // connect the sw_test_status_if
+  sw_test_status_if sw_test_status_if (.clk(`SW_TEST_STATUS_PATH.clk_i));
+  assign sw_test_status_if.valid =  `SW_TEST_STATUS_PATH.req_i &&
+                                    `SW_TEST_STATUS_PATH.write_i &&
+                                    (`SW_TEST_STATUS_PATH.addr_i ==
+                                     sw_test_status_if.sw_test_status_addr[15:2]);
+  assign sw_test_status_if.sw_test_status_val = `SW_TEST_STATUS_PATH.wdata_i;
+  assign sw_test_status_if.sw_test_status_addr = `VERILATOR_TEST_STATUS_ADDR;
 
-  // mem address in design is offset from base, re-create the full address here
-  assign addr = `VERILATOR_MEM_BASE + {`END_MON_PATH.addr_i, 2'h0};
-  assign valid = `END_MON_PATH.req_i & `END_MON_PATH.write_i & `END_MON_PATH.rst_ni;
-  assign end_valid = valid & (addr == `VERILATOR_END_SIM_ADDR);
-
+  // terminate if requested
   always_ff @(posedge clk_i) begin
-    if (end_valid) begin
+    if (sw_test_status_if.sw_test_done) begin
       $display("Verilator sim termination requested");
-      $display("Your simulation wrote to 0x%h", `VERILATOR_END_SIM_ADDR);
       $finish;
     end
   end

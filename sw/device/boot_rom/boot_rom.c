@@ -11,6 +11,7 @@
 #include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/pinmux.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_status.h"
 #include "sw/device/lib/uart.h"
 
@@ -47,12 +48,6 @@ void _boot_start(void) {
   // return.
   _flash_header.entry();
 
-  // If there's a stop address, write to it.
-  if (kDeviceStopAddress != 0) {
-    mmio_region_t end_sim_addr = mmio_region_from_addr(kDeviceStopAddress);
-    // We write `0xFFFFFFFE` to differentiate from `abort` (which writes
-    // `0xFFFFFFFF`), and the `main` function in the flash image (which is
-    // likely to return `0x0` or `0x1` to match unix exit codes).
-    mmio_region_write32(end_sim_addr, 0x0, 0xFFFFFFFE);
-  }
+  // If the flash image returns, we should abort anyway.
+  abort();
 }

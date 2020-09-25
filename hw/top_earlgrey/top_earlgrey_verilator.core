@@ -17,6 +17,7 @@ filesets:
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_tracer
+      - lowrisc:dv:sw_test_status
 
     files:
       - rtl/top_earlgrey_verilator.sv: { file_type: systemVerilogSource }
@@ -36,10 +37,10 @@ parameters:
     datatype: int
     paramtype: vlogdefine
     description: Main memory mem base.
-  VERILATOR_END_SIM_ADDR:
+  VERILATOR_TEST_STATUS_ADDR:
     datatype: int
     paramtype: vlogdefine
-    description: Verilator specific address to write to terminate the sim.  This value should be word offset from mem base.
+    description: Verilator specific address to write to report the test status.  This value should be a word offset from mem base.
   flashinit:
     datatype : file
     description : Application to load into Flash (in Verilog hex format)
@@ -73,7 +74,7 @@ targets:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
       - RVFI=true
       - VERILATOR_MEM_BASE=0x10000000
-      - VERILATOR_END_SIM_ADDR=0x10008000
+      - VERILATOR_TEST_STATUS_ADDR=0x1000fff8
       - flashinit
       - rominit
       - DMIDirectTAP
