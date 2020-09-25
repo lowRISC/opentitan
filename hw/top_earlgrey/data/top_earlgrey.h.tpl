@@ -150,6 +150,11 @@ ${helper.pinmux_outsel.render()}
  */
 ${helper.pwrmgr_wakeups.render()}
 
+/**
+ * Reset Manager Software Controlled Resets
+ */
+${helper.rstmgr_sw_rsts.render()}
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

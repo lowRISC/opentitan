@@ -146,6 +146,30 @@ module rstmgr import rstmgr_pkg::*; (
   assign pwr_o.rst_lc_src_n = rst_lc_src_n;
   assign pwr_o.rst_sys_src_n = rst_sys_src_n;
 
+
+  ////////////////////////////////////////////////////
+  // Software reset controls external reg           //
+  ////////////////////////////////////////////////////
+  logic [${len(sw_rsts)}-1:0] sw_rst_ctrl_n;
+
+  for (genvar i=0; i < ${len(sw_rsts)}; i++) begin : gen_sw_rst_ext_regs
+    prim_subreg #(
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1)
+    ) u_rst_sw_ctrl_reg (
+      .clk_i,
+      .rst_ni(local_rst_n),
+      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
+      .wd(reg2hw.sw_rst_ctrl_n[i].q),
+      .de('0),
+      .d('0),
+      .qe(),
+      .q(sw_rst_ctrl_n[i]),
+      .qs(hw2reg.sw_rst_ctrl_n[i].d)
+    );
+  end
+
   ////////////////////////////////////////////////////
   // leaf reset in the system                       //
   // These should all be generated                  //
@@ -165,7 +189,7 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_ni(rst_${rst['parent']}_n),
   % endif
   % if "sw" in rst:
-    .d_i(reg2hw.rst_${rst['name']}_n.q),
+    .d_i(sw_rst_ctrl_n[${rst['name'].upper()}]),
   % else:
     .d_i(1'b1),
   % endif

@@ -204,45 +204,55 @@
     # Templated registers for software control
     ########################
 
-% for rst in sw_rsts:
-    { name: "${rst['name'].upper()}_REGEN",
-      desc: '''
-            Register write enable for ${rst['name']} reset.
-            ''',
-      swaccess: "rw1c",
-      hwaccess: "none",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When 1, rst_${rst['name']}_n is software programmable.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
+    { multireg: {
+        cname: "RSTMGR_SW_RST",
+        name:  "SW_RST_REGEN",
+        desc:  '''
+          Register write enable for software controllabe resets.
+          When a particular bit value is 0, the corresponding value in !SW_RST_CTRL can no longer be changed.
+          When a particular bit value is 1, the corresponding value in !SW_RST_CTRL can be changed.
+        ''',
+        count: ${len(sw_rsts)},
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "EN",
+            desc: "Register write enable for software controllable resets",
+            resval: "1",
+            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+              "excl:CsrAllTests:CsrExclCheck"]
+          },
+        ],
+      }
+    }
 
-    { name: "RST_${rst['name'].upper()}_N",
-      regwen:  "${rst['name'].upper()}_REGEN",
-      desc: '''
-            Software reset control for ${rst['name']}
-            ''',
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When set to 0, ${rst['name']} is held in reset.  This bit can only be
-            programmed when ${rst['name']}_regen is 1.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
-% endfor
+    { multireg: {
+        cname: "RSTMGR_SW_RST",
+        name:  "SW_RST_CTRL_N",
+        desc:  '''
+          Software controllabe resets.
+          When a particular bit value is 0, the corresponding module is held in reset.
+          When a particular bit value is 1, the corresponding module is not held in reset.
+        ''',
+        count: ${len(sw_rsts)},
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          {
+            bits: "0",
+            name: "VAL",
+            desc: "Software reset value",
+            resval: "1",
+            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+              "excl:CsrAllTests:CsrExclCheck"]
+          },
+        ],
+      }
+    }
   ]
 
 

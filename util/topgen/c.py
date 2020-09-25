@@ -139,6 +139,7 @@ class TopGenC(object):
         self._init_alert_mapping()
         self._init_pinmux_mapping()
         self._init_pwrmgr_wakeups()
+        self._init_rstmgr_sw_rsts()
 
     def modules(self):
         return [(m["name"],
@@ -368,3 +369,17 @@ class TopGenC(object):
         enum.add_last_constant("Last valid pwrmgr wakeup signal")
 
         self.pwrmgr_wakeups = enum
+
+    # Enumerates the positions of all software controllable resets
+    def _init_rstmgr_sw_rsts(self):
+        sw_rsts = [rst for rst in self.top["resets"]["nodes"] if 'sw' in rst
+                   and rst['sw'] == 1]
+
+        enum = CEnum(self._top_name + Name(["reset", "manager", "sw", "resets"]))
+
+        for rst in sw_rsts:
+            enum.add_constant(Name.from_snake_case(rst["name"]))
+
+        enum.add_last_constant("Last valid rstmgr software reset request")
+
+        self.rstmgr_sw_rsts = enum
