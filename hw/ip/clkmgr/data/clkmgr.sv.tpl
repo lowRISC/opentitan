@@ -44,7 +44,7 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_dft_t dft_i,
 
   // idle hints
-  input clk_hint_status_t status_i,
+  input [${len(hint_clks)-1}:0] idle_i,
 
   // clock output interface
 % for intf in export_clks:
@@ -234,20 +234,20 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for k,v in hint_clks.items():
-  assign ${k}_en = ${k}_hint | ~status_i.idle[${loop.index}];
+  assign ${k}_en = ${k}_hint | ~idle_i[${v["name"].capitalize()}];
 
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_hint_sync (
-    .clk_i(clk_${v}_i),
-    .rst_ni(rst_${v}_ni),
+    .clk_i(clk_${v["src"]}_i),
+    .rst_ni(rst_${v["src"]}_ni),
     .d_i(reg2hw.clk_hints.${k}_hint.q),
     .q_o(${k}_hint)
   );
 
   prim_clock_gating u_${k}_cg (
-    .clk_i(clk_${v}_i),
-    .en_i(${k}_en & clk_${v}_en),
+    .clk_i(clk_${v["src"]}_i),
+    .en_i(${k}_en & clk_${v["src"]}_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.${k})
   );

@@ -80,11 +80,12 @@ num_grps = len(grps)
       package: "clkmgr_pkg", // This should be moved elsewhere later
     },
 
-    { struct:  "clk_hint_status",
+    { struct:  "logic",
       type:    "uni",
-      name:    "status",
+      name:    "idle",
       act:     "rcv",
-      package: "clkmgr_pkg",
+      package: "",
+      width:   "${len(hint_clks)}"
     },
   ],
 
@@ -127,7 +128,7 @@ num_grps = len(grps)
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks:
+% for clk in hint_clks.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_HINT",
@@ -153,7 +154,7 @@ num_grps = len(grps)
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-% for clk in hint_clks:
+% for clk in hint_clks.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_VAL",

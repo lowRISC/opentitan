@@ -23,6 +23,8 @@ module hmac
   output logic intr_fifo_empty_o,
   output logic intr_hmac_err_o,
 
+  output logic idle_o,
+
   // alerts
   input  alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output alert_tx_t [NumAlerts-1:0] alert_tx_o
@@ -522,6 +524,13 @@ module hmac
       .alert_tx_o ( alert_tx_o[j] )
     );
   end : gen_alert_tx
+
+
+  /////////////////////
+  // Idle output     //
+  /////////////////////
+  // TBD this should be connected later
+  assign idle_o = 1'b1;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //

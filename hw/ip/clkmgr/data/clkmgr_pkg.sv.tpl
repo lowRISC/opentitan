@@ -12,6 +12,12 @@ num_hints = len(hint_clks)
 
 package clkmgr_pkg;
 
+  typedef enum int {
+% for hint, v in hint_clks.items():
+    ${v['name'].capitalize()} = ${loop.index}${"," if not loop.last else ""}
+% endfor
+  } hint_names_e;
+
   typedef struct packed {
     logic test_en;
   } clk_dft_t;
