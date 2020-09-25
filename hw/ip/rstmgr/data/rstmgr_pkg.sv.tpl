@@ -18,8 +18,10 @@ package rstmgr_pkg;
   // calculated domains
   parameter int OffDomains = PowerDomains-1;
 
-  // low power exit + ndm_reset_req + external reasons
-  //parameter int ResetReasons = 1 + 1 + HwResetReqs;
+  // positions of software controllable reset bits
+% for rst in sw_rsts:
+  parameter int ${rst['name'].upper()} = ${loop.index};
+% endfor
 
   // ast interface
   typedef struct packed {
