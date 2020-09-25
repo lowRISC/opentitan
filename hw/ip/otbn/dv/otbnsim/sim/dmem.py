@@ -136,27 +136,22 @@ class Dmem:
             u32s += reversed(self._get_u32s(idx))
         return struct.pack('<{}I'.format(len(u32s)), *u32s)
 
-    def load_i256(self, addr: int) -> int:
-        '''Read a wide word from memory. addr should be aligned.'''
+    def load_u256(self, addr: int) -> int:
+        '''Read an unsigned wide word from memory. addr should be aligned.'''
         assert 0 == addr % 32
-        u256 = self.data[addr // 32]
-        i256 = u256 - (1 << 256) if u256 >> 255 else u256
-        assert -(1 << 255) <= i256 <= (1 << 255) - 1
-        return i256
+        return self.data[addr // 32]
 
-    def store_i256(self, addr: int, value: int) -> None:
-        '''Write a wide word to memory. addr should be aligned.'''
+    def store_u256(self, addr: int, value: int) -> None:
+        '''Write an unsigned wide word to memory. addr should be aligned.'''
         assert 0 == addr % 32
-        assert -(1 << 255) <= value <= (1 << 255) - 1
-        u256 = (1 << 256) + value if value < 0 else value
-        assert 0 <= u256 < (1 << 256)
-        self.trace.append(TraceDmemStore(addr, u256, True))
+        assert 0 <= value < (1 << 256)
+        self.trace.append(TraceDmemStore(addr, value, True))
 
-    def load_i32(self, addr: int) -> int:
+    def load_u32(self, addr: int) -> int:
         '''Read a 32-bit value from memory.
 
-        addr should be 4-byte aligned. The result is returned as a signed
-        32-bit integer (appropriate for storing in a riscvmodel Register)
+        addr should be 4-byte aligned. The result is returned as an unsigned
+        32-bit integer.
 
         '''
         assert 0 == addr % 4
@@ -166,23 +161,18 @@ class Dmem:
         idxW = idx32 // 8
         offW = idx32 % 8
 
-        u32 = self._get_u32s(idxW)[offW]
+        return self._get_u32s(idxW)[offW]
 
-        # Now convert back to signed and return
-        return u32 - (1 << 32) if u32 >> 31 else u32
-
-    def store_i32(self, addr: int, value: int) -> None:
-        '''Store a 32-bit signed value to memory.
+    def store_u32(self, addr: int, value: int) -> None:
+        '''Store a 32-bit unsigned value to memory.
 
         addr should be 4-byte aligned.
 
         '''
         assert 0 == addr % 4
         assert addr < 32 * len(self.data)
-        assert -(1 << 31) <= value <= (1 << 31) - 1
-        u32 = (1 << 32) + value if value < 0 else value
-        assert 0 <= u32 < (1 << 32)
-        self.trace.append(TraceDmemStore(addr, u32, False))
+        assert 0 <= value <= (1 << 32) - 1
+        self.trace.append(TraceDmemStore(addr, value, False))
 
     def changes(self) -> List[Trace]:
         return self.trace

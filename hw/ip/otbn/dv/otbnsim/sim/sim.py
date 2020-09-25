@@ -25,7 +25,7 @@ class OTBNSim:
         Return the number of instructions executed.
 
         '''
-        self.state.pc.set(start_addr)
+        self.state.pc = start_addr
         self.state.start()
         insn_count = 0
         while self.state.running:

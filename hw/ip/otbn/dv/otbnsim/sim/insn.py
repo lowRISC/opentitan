@@ -6,25 +6,26 @@ from typing import Dict
 
 from .state import OTBNState
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
-                  insn_for_mnemonic,
-                  ShiftReg)
+                  insn_for_mnemonic, logical_byte_shift)
 
 
 class ADD(RV32RegReg):
     insn = insn_for_mnemonic('add', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2]
-        state.intreg[self.grd] = val1 + val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+        result = (val1 + val2) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class ADDI(RV32RegImm):
     insn = insn_for_mnemonic('addi', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 + self.imm
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        result = (val1 + self.imm) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class LUI(OTBNInsn):
@@ -36,131 +37,135 @@ class LUI(OTBNInsn):
         self.imm = op_vals['imm']
 
     def execute(self, state: OTBNState) -> None:
-        state.intreg[self.grd] = (self.imm << 12)
+        state.gprs.get_reg(self.grd).write_unsigned(self.imm << 12)
 
 
 class SUB(RV32RegReg):
     insn = insn_for_mnemonic('sub', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2]
-        state.intreg[self.grd] = val1 - val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+        result = (val1 - val2) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SLL(RV32RegReg):
     insn = insn_for_mnemonic('sll', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2] & 0x1f
-        state.intreg[self.grd] = val1 << val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        result = (val1 << val2) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SLLI(RV32ImmShift):
     insn = insn_for_mnemonic('slli', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 << self.shamt
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        result = (val1 << self.shamt) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SRL(RV32RegReg):
     insn = insn_for_mnemonic('srl', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2] & 0x1f
-        state.intreg[self.grd] = val1 >> val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        result = val1 >> val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SRLI(RV32ImmShift):
     insn = insn_for_mnemonic('srli', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 >> self.shamt
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        result = val1 >> self.shamt
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SRA(RV32RegReg):
     insn = insn_for_mnemonic('sra', 3)
 
     def execute(self, state: OTBNState) -> None:
-        usrc = state.intreg[self.grs1].unsigned()
-        shift = state.intreg[self.grs2].unsigned() & 0x1f
-        if usrc >> 31:
-            to_clear = 32 - shift
-            sign_mask = (((1 << 32) - 1) >> to_clear) << to_clear
-        else:
-            sign_mask = 0
-
-        state.intreg[self.grd] = sign_mask | (usrc >> shift)
+        val1 = state.gprs.get_reg(self.grs1).read_signed()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        result = val1 >> val2
+        state.gprs.get_reg(self.grd).write_signed(result)
 
 
 class SRAI(RV32ImmShift):
     insn = insn_for_mnemonic('srai', 3)
 
     def execute(self, state: OTBNState) -> None:
-        usrc = state.intreg[self.grs1].unsigned()
-        shift = self.shamt
-        if usrc >> 31:
-            to_clear = 32 - shift
-            sign_mask = (((1 << 32) - 1) >> to_clear) << to_clear
-        else:
-            sign_mask = 0
-
-        state.intreg[self.grd] = sign_mask | (usrc >> shift)
+        val1 = state.gprs.get_reg(self.grs1).read_signed()
+        val2 = self.shamt
+        result = val1 >> val2
+        state.gprs.get_reg(self.grd).write_signed(result)
 
 
 class AND(RV32RegReg):
     insn = insn_for_mnemonic('and', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2]
-        state.intreg[self.grd] = val1 & val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+        result = val1 & val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class ANDI(RV32RegImm):
     insn = insn_for_mnemonic('andi', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 & self.imm
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = self.imm
+        result = val1 & val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class OR(RV32RegReg):
     insn = insn_for_mnemonic('or', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2]
-        state.intreg[self.grd] = val1 | val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+        result = val1 | val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class ORI(RV32RegImm):
     insn = insn_for_mnemonic('ori', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 | self.imm
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = self.imm
+        result = val1 | val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class XOR(RV32RegReg):
     insn = insn_for_mnemonic('xor', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        val2 = state.intreg[self.grs2]
-        state.intreg[self.grd] = val1 | val2
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
+        result = val1 ^ val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class XORI(RV32RegImm):
     insn = insn_for_mnemonic('xori', 3)
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1]
-        state.intreg[self.grd] = val1 | self.imm
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = self.imm
+        result = val1 ^ val2
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class LW(OTBNInsn):
@@ -173,8 +178,10 @@ class LW(OTBNInsn):
         self.grs1 = op_vals['grs1']
 
     def execute(self, state: OTBNState) -> None:
-        addr = (state.intreg[self.grs1] + self.offset).unsigned()
-        state.intreg[self.grd] = state.dmem.load_i32(addr)
+        base = state.gprs.get_reg(self.grs1).read_unsigned()
+        addr = (base + self.offset) & ((1 << 32) - 1)
+        result = state.dmem.load_u32(addr)
+        state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
 class SW(OTBNInsn):
@@ -187,9 +194,10 @@ class SW(OTBNInsn):
         self.grs1 = op_vals['grs1']
 
     def execute(self, state: OTBNState) -> None:
-        addr = (state.intreg[self.grs1] + self.offset).unsigned()
-        value = int(state.intreg[self.grs2])
-        state.dmem.store_i32(addr, value)
+        base = state.gprs.get_reg(self.grs1).read_unsigned()
+        addr = (base + self.offset) & ((1 << 32) - 1)
+        value = state.gprs.get_reg(self.grs2).read_unsigned()
+        state.dmem.store_u32(addr, value)
 
 
 class BEQ(OTBNInsn):
@@ -202,8 +210,8 @@ class BEQ(OTBNInsn):
         self.offset = op_vals['offset']
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1].value
-        val2 = state.intreg[self.grs2].value
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
         if val1 == val2:
             state.pc_next = self.offset
 
@@ -218,8 +226,8 @@ class BNE(OTBNInsn):
         self.offset = op_vals['offset']
 
     def execute(self, state: OTBNState) -> None:
-        val1 = state.intreg[self.grs1].value
-        val2 = state.intreg[self.grs2].value
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned()
         if val1 != val2:
             state.pc_next = self.offset
 
@@ -233,7 +241,8 @@ class JAL(OTBNInsn):
         self.offset = op_vals['offset']
 
     def execute(self, state: OTBNState) -> None:
-        state.intreg[self.grd] = state.pc + 4
+        link_pc = (state.pc + 4) & ((1 << 32) - 1)
+        state.gprs.get_reg(self.grd).write_unsigned(link_pc)
         state.pc_next = self.offset
 
 
@@ -247,8 +256,11 @@ class JALR(OTBNInsn):
         self.offset = op_vals['offset']
 
     def execute(self, state: OTBNState) -> None:
-        state.intreg[self.grd] = state.pc + 4
-        state.pc_next = state.intreg[self.grs1] + self.offset
+        val1 = state.gprs.get_reg(self.grs1).read_unsigned()
+        link_pc = (state.pc + 4) & ((1 << 32) - 1)
+
+        state.gprs.get_reg(self.grd).write_unsigned(link_pc)
+        state.pc_next = (val1 + self.offset) & ((1 << 32) - 1)
 
 
 class CSRRS(OTBNInsn):
@@ -262,10 +274,11 @@ class CSRRS(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         old_val = state.read_csr(self.csr)
-        bits_to_set = state.intreg[self.grs1].unsigned()
+        bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
+        new_val = old_val | bits_to_set
 
-        state.intreg[self.grd] = old_val
-        state.write_csr(self.csr, old_val | bits_to_set)
+        state.gprs.get_reg(self.grd).write_unsigned(old_val)
+        state.write_csr(self.csr, new_val)
 
 
 class CSRRW(OTBNInsn):
@@ -282,9 +295,9 @@ class CSRRW(OTBNInsn):
             return
 
         old_val = state.read_csr(self.csr)
-        new_val = state.intreg[self.grs1].unsigned()
+        new_val = state.gprs.get_reg(self.grs1).read_unsigned()
 
-        state.intreg[self.grd] = old_val
+        state.gprs.get_reg(self.grd).write_unsigned(old_val)
         state.write_csr(self.csr, new_val)
 
 
@@ -316,7 +329,7 @@ class LOOP(OTBNInsn):
         self.bodysize = op_vals['bodysize']
 
     def execute(self, state: OTBNState) -> None:
-        num_iters = state.intreg[self.grs].unsigned()
+        num_iters = state.gprs.get_reg(self.grs).read_unsigned()
         state.loop_start(num_iters, self.bodysize)
 
 
@@ -345,11 +358,12 @@ class BNADD(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1].unsigned())
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2].unsigned()),
-                             self.shift_type, self.shift_bytes)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
         (result, flags) = state.add_with_carry(a, b_shifted, 0)
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -366,12 +380,13 @@ class BNADDC(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1].unsigned())
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2].unsigned()),
-                             self.shift_type, self.shift_bytes)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
         carry = int(state.csrs.flags[self.flag_group].C)
         (result, flags) = state.add_with_carry(a, b_shifted, carry)
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -386,10 +401,11 @@ class BNADDI(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs].unsigned())
-        b = int(self.imm)
+        a = state.wdrs.get_reg(self.wrs).read_unsigned()
+        b = self.imm
+
         (result, flags) = state.add_with_carry(a, b, 0)
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -403,12 +419,15 @@ class BNADDM(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1].unsigned())
-        b = int(state.wreg[self.wrs2].unsigned())
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
         (result, _) = state.add_with_carry(a, b, 0)
-        if result >= state.wsrs.MOD.read_unsigned():
-            result -= state.wsrs.MOD.read_unsigned()
-        state.wreg[self.wrd] = result
+        mod_val = state.wsrs.MOD.read_unsigned()
+        if result >= mod_val:
+            result -= mod_val
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
 class BNMULQACC(OTBNInsn):
@@ -424,18 +443,19 @@ class BNMULQACC(OTBNInsn):
         self.acc_shift_imm = op_vals['acc_shift_imm']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_wr_quarterword(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_wr_quarterword(self.wrs2, self.wrs2_qwsel)
+        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
+        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
-        acc = state.wsrs.ACC.read_signed()
+        acc = state.wsrs.ACC.read_unsigned()
         if self.zero_acc:
             acc = 0
 
         acc += (mul_res << self.acc_shift_imm)
 
-        state.wsrs.ACC.write_signed(acc)
+        truncated = acc & ((1 << 256) - 1)
+        state.wsrs.ACC.write_unsigned(truncated)
 
 
 class BNMULQACCWO(OTBNInsn):
@@ -452,20 +472,20 @@ class BNMULQACCWO(OTBNInsn):
         self.acc_shift_imm = op_vals['acc_shift_imm']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_wr_quarterword(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_wr_quarterword(self.wrs2, self.wrs2_qwsel)
+        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
+        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
-        acc = state.wsrs.ACC.read_signed()
+        acc = state.wsrs.ACC.read_unsigned()
         if self.zero_acc:
             acc = 0
 
         acc += (mul_res << self.acc_shift_imm)
 
-        state.wreg[self.wrd].set(acc)
-
-        state.wsrs.ACC.write_signed(acc)
+        truncated = acc & ((1 << 256) - 1)
+        state.wdrs.get_reg(self.wrd).write_unsigned(truncated)
+        state.wsrs.ACC.write_unsigned(truncated)
 
 
 class BNMULQACCSO(OTBNInsn):
@@ -483,23 +503,22 @@ class BNMULQACCSO(OTBNInsn):
         self.acc_shift_imm = op_vals['acc_shift_imm']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_wr_quarterword(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_wr_quarterword(self.wrs2, self.wrs2_qwsel)
+        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
+        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
-        acc = state.wsrs.ACC.read_signed()
+        acc = state.wsrs.ACC.read_unsigned()
         if self.zero_acc:
             acc = 0
 
         acc += (mul_res << self.acc_shift_imm)
 
-        # set_wr_halfword expects 0 in upper 128 bits
-        acc_lower = acc & ((1 << 128) - 1)
-        state.set_wr_halfword(self.wrd, acc_lower, self.wrd_hwsel)
-        acc = acc >> 128
+        lo_part = acc & ((1 << 128) - 1)
+        hi_part = acc >> 128
 
-        state.wsrs.ACC.write_signed(acc)
+        state.set_half_word_unsigned(self.wrd, lo_part, self.wrd_hwsel)
+        state.wsrs.ACC.write_unsigned(hi_part)
 
 
 class BNSUB(OTBNInsn):
@@ -515,11 +534,12 @@ class BNSUB(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
-                             self.shift_bytes)
-        (result, flags) = state.subtract_with_borrow(a, b_shifted, 0)
-        state.wreg[self.wrd] = result
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
+        (result, flags) = state.sub_with_borrow(a, b_shifted, 0)
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -536,12 +556,13 @@ class BNSUBB(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
-                             self.shift_bytes)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
         borrow = int(state.csrs.flags[self.flag_group].C)
-        (result, flags) = state.subtract_with_borrow(a, b_shifted, borrow)
-        state.wreg[self.wrd] = result
+
+        (result, flags) = state.sub_with_borrow(a, b_shifted, borrow)
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -556,10 +577,11 @@ class BNSUBI(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs])
-        b = int(self.imm)
-        (result, flags) = state.subtract_with_borrow(a, b, 0)
-        state.wreg[self.wrd] = result
+        a = state.wdrs.get_reg(self.wrs).read_unsigned()
+        b = self.imm
+
+        (result, flags) = state.sub_with_borrow(a, b, 0)
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_flags(self.flag_group, flags)
 
 
@@ -573,12 +595,22 @@ class BNSUBM(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b = int(state.wreg[self.wrs2])
-        result, _ = state.subtract_with_borrow(a, b, 0)
-        if result < 0:
-            result += state.wsrs.MOD.read_unsigned()
-        state.wreg[self.wrd] = result
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        (ures, _) = state.sub_with_borrow(a, b, 0)
+
+        mod_val = state.wsrs.MOD.read_unsigned()
+
+        # sub_with_borrow returns an unsigned result (in 2's complement), so
+        # the result is negative if the top bit is set.
+        is_negative = bool(ures >> 255)
+        if is_negative:
+            result = (ures + mod_val) & ((1 << 256) - 1)
+        else:
+            result = ures
+
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
 class BNAND(OTBNInsn):
@@ -594,11 +626,12 @@ class BNAND(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        b_shifted = ShiftReg(state.wreg[self.wrs2],
-                             self.shift_type, self.shift_bytes)
-        a = state.wreg[self.wrs1]
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
         result = a & b_shifted
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
 
@@ -615,11 +648,12 @@ class BNOR(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        b_shifted = ShiftReg(state.wreg[self.wrs2],
-                             self.shift_type, self.shift_bytes)
-        a = state.wreg[self.wrs1]
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
         result = a | b_shifted
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
 
@@ -635,10 +669,11 @@ class BNNOT(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        b_shifted = ShiftReg(state.wreg[self.wrs],
-                             self.shift_type, self.shift_bytes)
-        result = ~b_shifted
-        state.wreg[self.wrd] = result
+        a = state.wdrs.get_reg(self.wrs).read_unsigned()
+        a_shifted = logical_byte_shift(a, self.shift_type, self.shift_bytes)
+
+        result = a_shifted ^ ((1 << 256) - 1)
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
 
@@ -655,11 +690,12 @@ class BNXOR(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        b_shifted = ShiftReg(state.wreg[self.wrs2],
-                             self.shift_type, self.shift_bytes)
-        a = state.wreg[self.wrs1]
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
         result = a ^ b_shifted
-        state.wreg[self.wrd] = result
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
 
@@ -674,10 +710,11 @@ class BNRSHI(OTBNInsn):
         self.imm = op_vals['imm']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b = int(state.wreg[self.wrs2])
-        shifted = ((a << 256) | b) >> self.imm
-        state.wreg[self.wrd] = shifted & ((1 << 256) - 1)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        result = (((a << 256) | b) >> self.imm) & ((1 << 256) - 1)
+        state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
 class BNRSEL(OTBNInsn):
@@ -693,8 +730,9 @@ class BNRSEL(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         flag_is_set = state.csrs.flags[self.flag_group].get_by_idx(self.flag)
-        val = state.wreg[self.wrs1 if flag_is_set else self.wrs2]
-        state.wreg[self.wrd] = val
+        wrs = self.wrs1 if flag_is_set else self.wrs2
+        value = state.wdrs.get_reg(wrs).read_unsigned()
+        state.wdrs.get_reg(self.wrd).write_unsigned(value)
 
 
 class BNCMP(OTBNInsn):
@@ -709,10 +747,11 @@ class BNCMP(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
-                             self.shift_bytes)
-        (_, flags) = state.subtract_with_borrow(a, b_shifted, 0)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
+
+        (_, flags) = state.sub_with_borrow(a, b_shifted, 0)
         state.set_flags(self.flag_group, flags)
 
 
@@ -728,11 +767,12 @@ class BNCMPB(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a = int(state.wreg[self.wrs1])
-        b_shifted = ShiftReg(int(state.wreg[self.wrs2]), self.shift_type,
-                             self.shift_bytes)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        b_shifted = logical_byte_shift(b, self.shift_type, self.shift_bytes)
         borrow = int(state.csrs.flags[self.flag_group].C)
-        (_, flags) = state.subtract_with_borrow(a, b_shifted, borrow)
+
+        (_, flags) = state.sub_with_borrow(a, b_shifted, borrow)
         state.set_flags(self.flag_group, flags)
 
 
@@ -748,14 +788,21 @@ class BNLID(OTBNInsn):
         self.grs1_inc = op_vals['grs1_inc']
 
     def execute(self, state: OTBNState) -> None:
-        addr = int(state.intreg[self.grs1] + int(self.offset))
-        wrd = int(state.intreg[self.grd])
-        state.wreg[wrd] = state.dmem.load_i256(addr)
+        grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
+        addr = (grs1_val + self.offset) & ((1 << 32) - 1)
+        grd_val = state.gprs.get_reg(self.grd).read_unsigned()
+
+        wrd = grd_val & 0x1f
+        value = state.dmem.load_u256(addr)
+        state.wdrs.get_reg(wrd).write_unsigned(value)
 
         if self.grd_inc:
-            state.intreg[self.grd] += 1
+            new_grd_val = (grd_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+
         if self.grs1_inc:
-            state.intreg[self.grs1] += 32
+            new_grs1_val = (grs1_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
 
 class BNSID(OTBNInsn):
@@ -770,16 +817,22 @@ class BNSID(OTBNInsn):
         self.grs1_inc = op_vals['grs1_inc']
 
     def execute(self, state: OTBNState) -> None:
-        idx = int(state.intreg[self.grs2])
-        addr = int(state.intreg[self.grs1] + int(self.offset))
+        grs1_val = state.gprs.get_reg(self.grs1).read_unsigned()
+        addr = (grs1_val + self.offset) & ((1 << 32) - 1)
 
-        wrs = state.wreg[idx]
-        state.dmem.store_i256(addr, int(wrs))
+        grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
+        wrs = grs2_val & 0x1f
+        wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
+
+        state.dmem.store_u256(addr, wrs_val)
+
+        if self.grs1_inc:
+            new_grs1_val = (grs1_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
         if self.grs2_inc:
-            state.intreg[self.grs2] += 1
-        if self.grs1_inc:
-            state.intreg[self.grs1] += 32
+            new_grs2_val = (grs2_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
 
 
 class BNMOV(OTBNInsn):
@@ -791,7 +844,8 @@ class BNMOV(OTBNInsn):
         self.wrs = op_vals['wrs']
 
     def execute(self, state: OTBNState) -> None:
-        state.wreg[self.wrd] = state.wreg[self.wrs]
+        value = state.wdrs.get_reg(self.wrs).read_unsigned()
+        state.wdrs.get_reg(self.wrd).write_unsigned(value)
 
 
 class BNMOVR(OTBNInsn):
@@ -805,14 +859,22 @@ class BNMOVR(OTBNInsn):
         self.grs_inc = op_vals['grs_inc']
 
     def execute(self, state: OTBNState) -> None:
-        wrd = int(state.intreg[self.grd])
-        wrs = int(state.intreg[self.grs])
-        state.wreg[wrd] = state.wreg[wrs]
+        grd_val = state.gprs.get_reg(self.grd).read_unsigned()
+        grs_val = state.gprs.get_reg(self.grs).read_unsigned()
+
+        wrd = grd_val & 0x1f
+        wrs = grs_val & 0x1f
+
+        value = state.wdrs.get_reg(wrs).read_unsigned()
+        state.wdrs.get_reg(wrd).write_unsigned(value)
 
         if self.grd_inc:
-            state.intreg[self.grd] += 1
+            new_grd_val = (grd_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+
         if self.grs_inc:
-            state.intreg[self.grs] += 1
+            new_grs_val = (grs_val + 1) & ((1 << 32) - 1)
+            state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
 
 class BNWSRRS(OTBNInsn):
@@ -826,10 +888,11 @@ class BNWSRRS(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         old_val = state.wsrs.read_at_idx(self.wsr)
-        bits_to_set = state.wreg[self.wrs].unsigned()
+        bits_to_set = state.wdrs.get_reg(self.wrs).read_unsigned()
+        new_val = old_val | bits_to_set
 
-        state.wreg[self.wrd] = old_val
-        state.wsrs.write_at_idx(self.wsr, old_val | bits_to_set)
+        state.wdrs.get_reg(self.wrd).write_unsigned(old_val)
+        state.wsrs.write_at_idx(self.wsr, new_val)
 
 
 class BNWSRRW(OTBNInsn):
@@ -843,9 +906,9 @@ class BNWSRRW(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         old_val = state.wsrs.read_at_idx(self.wsr)
-        new_val = state.wreg[self.wrs].unsigned()
+        new_val = state.wdrs.get_reg(self.wrs).read_unsigned()
 
-        state.wreg[self.wrd] = old_val
+        state.wdrs.get_reg(self.wrd).write_unsigned(old_val)
         state.wsrs.write_at_idx(self.wsr, new_val)
 
 
