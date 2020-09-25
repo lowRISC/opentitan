@@ -521,6 +521,7 @@ def amend_clocks(top: OrderedDict):
     clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
     exported_clks = OrderedDict()
+    trans_eps = []
 
     # Assign default parameters to source clocks
     for src in clks_attr['srcs']:
@@ -550,6 +551,10 @@ def amend_clocks(top: OrderedDict):
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
             'clock_group']
         ep_grp = ep['clock_group']
+
+        # if ep is in the transactional group, collect into list below
+        if ep['clock_group'] == 'trans':
+            trans_eps.append(ep['name'])
 
         # end point names and clocks
         ep_name = ep['name']
@@ -617,6 +622,11 @@ def amend_clocks(top: OrderedDict):
     # add entry to inter_module automatically
     for intf in top['exported_clks']:
         top['inter_module']['external']['clkmgr.clocks_{}'.format(intf)] = "clks_{}".format(intf)
+
+    # add to intermodule connections
+    for ep in trans_eps:
+        entry = ep + ".idle"
+        top['inter_module']['connect']['clkmgr.idle'].append(entry)
 
 
 def amend_resets(top):

@@ -411,7 +411,8 @@
       'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
       'flash_ctrl.keymgr': ['keymgr.flash'],
-      'alert_handler.crashdump': ['rstmgr.alert_dump']
+      'alert_handler.crashdump': ['rstmgr.alert_dump'],
+      'clkmgr.idle'      : [],
     }
 
     // top is to connect to top net/struct.
@@ -419,7 +420,6 @@
     // use of the signal is up to top template
     'top': [
         'rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks',
-        'aes.idle', 'clkmgr.status',
 
         // Xbars
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'

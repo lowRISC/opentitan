@@ -489,10 +489,10 @@ def generate_clkmgr(top, cfg_path, out_path):
     # clock classification
     grps = top['clocks']['groups']
 
-    src_aon_attr = OrderedDict()
     ft_clks = OrderedDict()
     rg_clks = OrderedDict()
     sw_clks = OrderedDict()
+    src_aon_attr = OrderedDict()
     hint_clks = OrderedDict()
 
     # construct a dictionary of the aon attribute for easier lookup
@@ -532,11 +532,19 @@ def generate_clkmgr(top, cfg_path, out_path):
     ])
 
     # sw hint clocks
-    hint_clks = OrderedDict([
+    hints = OrderedDict([
         (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
     ])
+
+    # hint clocks dict
+    for clk, src in hints.items():
+        # the clock if constructed as clk_{src_name}_{module_name}.
+        # so to get the module name we split from the right and pick the last entry
+        hint_clks[clk] = OrderedDict()
+        hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
+        hint_clks[clk]['src'] = src
 
     for idx, tpl in enumerate(tpls):
         out = ""

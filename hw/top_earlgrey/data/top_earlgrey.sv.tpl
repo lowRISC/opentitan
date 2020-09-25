@@ -181,11 +181,6 @@ module top_${top["name"]} #(
 % endfor
 
 ## Inter-module signal collection
-  always_comb begin
-    // TODO: So far just aes is connected
-    clkmgr_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
-    clkmgr_status.idle[0] = aes_idle;
-  end
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
