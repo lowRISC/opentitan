@@ -82,4 +82,22 @@ extern const uint64_t kUartBaudrate;
  */
 extern const uintptr_t kDeviceStopAddress;
 
+/**
+ * An address to write to to report test status.
+ *
+ * If this is zero, there is no address to write to to report test status.
+ *
+ * @see #test_status_set
+ */
+extern const uintptr_t kDeviceTestStatusAddress;
+
+/**
+ * An address to write use for UART logging bypass
+ *
+ * If this is zero, there is no address to write to to bypass UART logging.
+ *
+ * @see #LOG
+ */
+extern const uintptr_t kDeviceLogBypassUartAddress;
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_

@@ -21,3 +21,7 @@ const uint64_t kUartBaudrate = 230400;
 
 // No Device Stop Address in our FPGA implementation.
 const uintptr_t kDeviceStopAddress = 0;
+
+const uintptr_t kDeviceTestStatusAddress = 0;
+
+const uintptr_t kDeviceLogBypassUartAddress = 0;

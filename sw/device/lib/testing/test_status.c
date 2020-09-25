@@ -9,15 +9,10 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/hart.h"
 
-/**
- * Address of the memory location to write the test status. For DV use only.
- */
-static const uintptr_t kSwDvTestStatusAddr = 0x1000fff8;
-
 void test_status_set(test_status_t test_status) {
-  if (kDeviceType == kDeviceSimDV) {
+  if (kDeviceTestStatusAddress != 0) {
     mmio_region_t sw_dv_test_status_addr =
-        mmio_region_from_addr(kSwDvTestStatusAddr);
+        mmio_region_from_addr(kDeviceTestStatusAddress);
     mmio_region_write32(sw_dv_test_status_addr, 0x0, (uint32_t)test_status);
   }
 

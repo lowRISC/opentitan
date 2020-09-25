@@ -110,7 +110,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
  */
 #define LOG(severity, format, ...)                               \
   do {                                                           \
-    if (kDeviceType == kDeviceSimDV) {                           \
+    if (kDeviceLogBypassUartAddress != 0) {                      \
       /* clang-format off */                                     \
       /* Put DV-only log constants in .logs.* sections, which
        * the linker will dutifully discard.
