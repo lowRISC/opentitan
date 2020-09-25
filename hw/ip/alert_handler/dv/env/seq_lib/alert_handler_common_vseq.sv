@@ -16,6 +16,10 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
   virtual task body();
     // driven entropy to avoid assertion error in ping_timer
     cfg.entropy_vif.drive(entropy_bit);
+    // run alert/esc ping response sequences without error or timeout to prevent triggering local
+    // alert failure
+    run_alert_ping_rsp_seq_nonblocking(0);
+    run_esc_rsp_seq_nonblocking(0);
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
