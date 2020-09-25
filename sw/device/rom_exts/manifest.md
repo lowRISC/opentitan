@@ -245,7 +245,7 @@ Notes:
 1.  **Code Image** This is a sequence of bytes that make up the code and data of
     the ROM_EXT image. This data will include any data required for Extensions.
 
-    **Execution begins** at the address 128 (`0x80`) bytes beyond the first
+    Execution begins at the address 128 (`0x80`) bytes beyond the first
     256-byte (`0x100`-byte) aligned offset at the start of the ROM_EXT code
     image (measuring the offset from the start of the ROM_EXT image). This
     leaves the possibility of the Mask ROM initializing `mtvec` with the first
@@ -254,8 +254,8 @@ Notes:
 
     The total manifest length is currently `0x358` (856) bytes, so the first
     valid mtvec address is at offset `0x400` (1024) bytes from the beginning of
-    the ROM_EXT image, and the entry address is therefore `0x480`  (1152) bytes
-    from the beginning of the ROM_EXT image.
+    the ROM_EXT image, and **the entry address is therefore `0x480` (1152) bytes
+    from the beginning of the ROM_EXT image**.
 
     This does leave 168 (`0xa8`) bytes between the end of the manifest and the
     first valid mtvec. It is up to the image as to how this is used--it could be
