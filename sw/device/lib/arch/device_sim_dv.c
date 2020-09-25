@@ -23,3 +23,7 @@ const uint64_t kUartBaudrate = 1 * (1 << 20);  // 1Mbps
 
 // No Device Stop Address in our DV simulator.
 const uintptr_t kDeviceStopAddress = 0;
+
+const uintptr_t kDeviceTestStatusAddress = 0x1000fff8;
+
+const uintptr_t kDeviceLogBypassUartAddress = 0x1000fffc;
