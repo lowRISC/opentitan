@@ -772,6 +772,15 @@ typedef enum top_earlgrey_power_manager_wake_ups {
   kTopEarlgreyPowerManagerWakeUpsLast = 0, /**< \internal Last valid pwrmgr wakeup signal */
 } top_earlgrey_power_manager_wake_ups_t;
 
+/**
+ * Reset Manager Software Controlled Resets
+ */
+typedef enum top_earlgrey_reset_manager_sw_resets {
+  kTopEarlgreyResetManagerSwResetsSpiDevice = 0, /**<  */
+  kTopEarlgreyResetManagerSwResetsUsb = 1, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 1, /**< \internal Last valid rstmgr software reset request */
+} top_earlgrey_reset_manager_sw_resets_t;
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

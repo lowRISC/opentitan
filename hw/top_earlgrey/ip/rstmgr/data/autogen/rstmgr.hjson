@@ -207,80 +207,55 @@
 
     # Templated registers for software control
 
-    { name: "SPI_DEVICE_REGEN",
-      desc: '''
-            Register write enable for spi_device reset.
-            ''',
-      swaccess: "rw1c",
-      hwaccess: "none",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When 1, rst_spi_device_n is software programmable.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
+    { multireg: {
+        cname: "RSTMGR_SW_RST",
+        name:  "SW_RST_REGEN",
+        desc:  '''
+          Register write enable for software controllabe resets.
+          When a particular bit value is 0, the corresponding value in !SW_RST_CTRL can no longer be changed.
+          When a particular bit value is 1, the corresponding value in !SW_RST_CTRL can be changed.
+        ''',
+        count: 2,
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        fields: [
+          {
+            bits: "0",
+            name: "EN",
+            desc: "Register write enable for software controllable resets",
+            resval: "1",
+            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+              "excl:CsrAllTests:CsrExclCheck"]
+          },
+        ],
+      }
+    }
 
-    { name: "RST_SPI_DEVICE_N",
-      regwen:  "SPI_DEVICE_REGEN",
-      desc: '''
-            Software reset control for spi_device
-            ''',
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
-            programmed when spi_device_regen is 1.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
-    { name: "USB_REGEN",
-      desc: '''
-            Register write enable for usb reset.
-            ''',
-      swaccess: "rw1c",
-      hwaccess: "none",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When 1, rst_usb_n is software programmable.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
-
-    { name: "RST_USB_N",
-      regwen:  "USB_REGEN",
-      desc: '''
-            Software reset control for usb
-            ''',
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When set to 0, usb is held in reset.  This bit can only be
-            programmed when usb_regen is 1.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
+    { multireg: {
+        cname: "RSTMGR_SW_RST",
+        name:  "SW_RST_CTRL_N",
+        desc:  '''
+          Software controllabe resets.
+          When a particular bit value is 0, the corresponding module is held in reset.
+          When a particular bit value is 1, the corresponding module is not held in reset.
+        ''',
+        count: 2,
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          {
+            bits: "0",
+            name: "VAL",
+            desc: "Software reset value",
+            resval: "1",
+            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+              "excl:CsrAllTests:CsrExclCheck"]
+          },
+        ],
+      }
+    }
   ]
 
 

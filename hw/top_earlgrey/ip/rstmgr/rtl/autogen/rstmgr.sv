@@ -153,6 +153,30 @@ module rstmgr import rstmgr_pkg::*; (
   assign pwr_o.rst_lc_src_n = rst_lc_src_n;
   assign pwr_o.rst_sys_src_n = rst_sys_src_n;
 
+
+  ////////////////////////////////////////////////////
+  // Software reset controls external reg           //
+  ////////////////////////////////////////////////////
+  logic [2-1:0] sw_rst_ctrl_n;
+
+  for (genvar i=0; i < 2; i++) begin : gen_sw_rst_ext_regs
+    prim_subreg #(
+      .DW(1),
+      .SWACCESS("RW"),
+      .RESVAL(1)
+    ) u_rst_sw_ctrl_reg (
+      .clk_i,
+      .rst_ni(local_rst_n),
+      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
+      .wd(reg2hw.sw_rst_ctrl_n[i].q),
+      .de('0),
+      .d('0),
+      .qe(),
+      .q(sw_rst_ctrl_n[i]),
+      .qs(hw2reg.sw_rst_ctrl_n[i].d)
+    );
+  end
+
   ////////////////////////////////////////////////////
   // leaf reset in the system                       //
   // These should all be generated                  //
@@ -375,7 +399,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_spi_device (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_sys_src_n[0]),
-    .d_i(reg2hw.rst_spi_device_n.q),
+    .d_i(sw_rst_ctrl_n[SPI_DEVICE]),
     .q_o(rst_spi_device_n)
   );
 
@@ -394,7 +418,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_usb (
     .clk_i(clk_usb_i),
     .rst_ni(rst_sys_src_n[0]),
-    .d_i(reg2hw.rst_usb_n.q),
+    .d_i(sw_rst_ctrl_n[USB]),
     .q_o(rst_usb_n)
   );
 

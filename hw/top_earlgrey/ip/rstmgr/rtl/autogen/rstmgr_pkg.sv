@@ -24,8 +24,9 @@ package rstmgr_pkg;
   // calculated domains
   parameter int OffDomains = PowerDomains-1;
 
-  // low power exit + ndm_reset_req + external reasons
-  //parameter int ResetReasons = 1 + 1 + HwResetReqs;
+  // positions of software controllable reset bits
+  parameter int SPI_DEVICE = 0;
+  parameter int USB = 1;
 
   // ast interface
   typedef struct packed {
