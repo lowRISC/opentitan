@@ -52,6 +52,7 @@ config = {
         "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/csrng/data/csrng.hjson",
+        "hw/ip/edn/data/edn.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
         "hw/ip/gpio/data/gpio.hjson",
         "hw/ip/hmac/data/hmac.hjson",
