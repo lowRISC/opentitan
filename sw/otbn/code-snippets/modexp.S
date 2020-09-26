@@ -27,13 +27,13 @@ d0inv:
   bn.or     w29, w29, w1
   bn.add    w0, w0, w0
   bn.sub    w29, w31, w29
-  jalr      x0, x1, 0
+  ret
 
 selcxSub:
-  addi      x8, x0, 5
-  addi      x10, x0, 3
-  addi      x11, x0, 2
-  addi      x12, x0, 4
+  li         x8, 5
+  li        x10, 3
+  li        x11, 2
+  li        x12, 4
   lw        x16, 0(x0)
   bn.wsrrs  w4, 1, w31
   bn.add    w4, w4, w31
@@ -49,7 +49,7 @@ selcxSub:
   bn.wsrrs  w3, 1, w31
   bn.sel    w3, w4, w2, FG1.L
   bn.movr   x8++, x10
-  jalr      x0, x1, 0
+  ret
 
 selcxSub_invsel:
   bn.addc   w3, w4, w4 << 16B, FG1
@@ -61,11 +61,11 @@ selcxSub_invsel:
   bn.wsrrs  w3, 1, w31
   bn.sel    w3, w2, w4, FG1.L
   bn.movr   x8++, x10
-  jalr      x0, x1, 0
+  ret
 
 computeRR:
   bn.xor    w31, w31, w31
-  addi      x3, x0, 0
+  li        x3, 0
   bn.lid    x3, 0(x0)
   lw        x16, 0(x0)
   lw        x17, 4(x0)
@@ -77,22 +77,22 @@ computeRR:
   lw        x23, 28(x0)
   bn.xor    w3, w3, w3
   slli      x24, x22, 8
-  addi      x8, x0, 5
-  addi      x10, x0, 3
+  li        x8, 5
+  li        x10, 3
   bn.xor    w3, w3, w3
   loop      x30, 1
   bn.movr   x8++, x10
   bn.sub    w3, w31, w0, FG1
   jal       x1, selcxSub
   loop      x24, 16
-  addi      x8, x0, 5
+  li        x8, 5
   bn.sub    w3, w3, w3, FG1
   loop      x30, 3
   bn.movr   x11, x8
   bn.addc   w2, w2, w2, FG1
   bn.movr   x8++, x11
   jal       x1, selcxSub
-  addi      x8, x0, 5
+  li        x8, 5
   lw        x16, 0(x0)
   bn.sub    w3, w3, w3, FG1
   loop      x30, 3
@@ -100,12 +100,12 @@ computeRR:
   bn.movr   x11, x8++
   bn.cmpb   w3, w2, FG1
   jal       x1, selcxSub
-  addi      x0, x0, 0
-  addi      x8, x0, 5
+  li        x0, 0
+  li        x8, 5
   loop      x30, 2
   bn.sid    x8, 0(x18++)
   addi      x8, x8, 1
-  jalr      x0, x1, 0
+  ret
 
 dmXd0:
   bn.mulqacc.z          w30.0, w25.0,  0
@@ -124,7 +124,7 @@ dmXd0:
   bn.mulqacc            w30.3, w25.2, 64
   bn.mulqacc.so  w26.L, w30.2, w25.3, 64
   bn.mulqacc.so  w26.U, w30.3, w25.3,  0
-  jalr      x0, x1, 0
+  ret
 
 dmXa:
   bn.mulqacc.z          w30.0, w2.0,  0
@@ -143,7 +143,7 @@ dmXa:
   bn.mulqacc            w30.3, w2.2, 64
   bn.mulqacc.so  w26.L, w30.2, w2.3, 64
   bn.mulqacc.so  w26.U, w30.3, w2.3,  0
-  jalr      x0, x1, 0
+  ret
 
 mma_sub_cx:
   bn.wsrrs  w28, 1, w31
@@ -160,7 +160,7 @@ mma_sub_cx:
   bn.movr   x8, x13
   bn.sel    w24, w29, w30, FG1.L
   bn.movr   x8++, x13
-  jalr      x0, x1, 0
+  ret
 
 mma_invsel:
   bn.addc   w28, w28, w28 << 16B, FG1
@@ -172,13 +172,13 @@ mma_invsel:
   bn.movr   x8, x13
   bn.sel    w24, w30, w29, FG1.L
   bn.movr   x8++, x13
-  jalr      x0, x1, 0
+  ret
 
 mma:
-  addi      x12, x0, 30
-  addi      x13, x0, 24
-  addi      x8, x0, 4
-  addi      x10, x0, 4
+  li        x12, 30
+  li        x13, 24
+  li         x8,  4
+  li        x10,  4
   bn.lid    x12, 0(x19++)
   jal x1,   dmXa
   bn.movr   x13, x8++
@@ -212,13 +212,13 @@ mma:
   bn.movr   x10++, x13
   lw        x16, 0(x0)
   lw        x19, 12(x0)
-  addi      x8, x0, 4
-  addi      x10, x0, 4
-  addi      x12, x0, 30
-  addi      x13, x0, 24
+  li        x8, 4
+  li        x10, 4
+  li        x12, 30
+  li        x13, 24
   jal       x1, mma_sub_cx
-  addi      x0, x0, 0
-  jalr      x0, x1, 0
+  nop
+  ret
 
 setupPtrs:
   lw        x16, 0(x0)
@@ -238,21 +238,21 @@ setupPtrs:
   lw        x30, 24(x0)
   lw        x31, 28(x0)
   bn.mov    w1, w31
-  addi      x8, x0, 4
-  addi      x9, x0, 3
-  addi      x10, x0, 4
-  addi      x11, x0, 2
-  jalr      x0, x1, 0
+  li         x8, 4
+  li         x9, 3
+  li        x10, 4
+  li        x11, 2
+  ret
 
 mulx:
-  addi      x3, x0, 0
+  li        x3, 0
   bn.lid    x3, 0(x0)
   jal       x1, setupPtrs
   bn.lid    x9, 0(x17)
   bn.mov    w2, w31
   loop      x30, 1
   bn.movr   x10++, x11
-  addi      x10, x0, 4
+  li        x10, 4
   loop      x30, 8
   bn.lid    x11, 0(x20++)
   add       x4, x16, x0
@@ -262,12 +262,12 @@ mulx:
   add       x16, x4, x0
   add       x19, x5, x0
   add       x20, x6, x0
-  addi      x8, x0, 4
+  li        x8, 4
   loop      x30, 2
   bn.sid    x8, 0(x21++)
   addi      x8, x8, 1
-  addi      x8, x0, 4
-  jalr      x0, x1, 0
+  li        x8, 4
+  ret
 
 mm1_sub_cx:
   bn.wsrrs  w3, 1, w31
@@ -282,9 +282,9 @@ mm1_sub_cx:
   bn.subb   w3, w2, w3
   bn.sel    w2, w3, w2, FG1.L
   bn.sid    x11, 0(x21++)
-  addi      x0, x0, 0
-  jalr      x0, x1, 0
-  addi      x0, x0, 0
+  nop
+  ret
+  nop
 
 mm1_invsel:
   bn.addc   w3, w3, w3 << 16B, FG1
@@ -294,8 +294,8 @@ mm1_invsel:
   bn.subb   w3, w2, w3
   bn.sel    w2, w2, w3, FG1.L
   bn.sid    x11, 0(x21++)
-  addi      x0, x0, 0
-  jalr      x0, x1, 0
+  nop
+  ret
 
 mul1_exp:
   bn.lid    x9, 0(x17)
@@ -318,17 +318,17 @@ mul1_exp:
   bn.lid    x9, 0(x16++)
   bn.movr   x11, x8++
   bn.cmpb   w3, w2, FG1
-  addi      x8, x0, 4
-  addi      x10, x0, 4
+  li         x8, 4
+  li        x10, 4
   addi      x16, x6, 0
   addi      x19, x7, 0
   jal       x1, mm1_sub_cx
   addi      x16, x6, 0
   addi      x19, x7, 0
-  jalr      x0, x1, 0
+  ret
 
 mul1:
-  addi      x3, x0, 0
+  li        x3, 0
   bn.lid    x3, 0(x0)
   jal       x1, setupPtrs
   jal       x1, mul1_exp
@@ -357,16 +357,16 @@ sqrx_exp:
   addi      x20, x5, 0
   addi      x16, x6, 0
   addi      x19, x7, 0
-  addi      x10, x0, 4
-  addi      x8, x0, 4
+  li        x10, 4
+  li         x8, 4
   loop      x30, 2
   bn.sid    x8, 0(x21++)
   addi      x8, x8, 1
-  addi      x8, x0, 4
-  addi      x10, x0, 4
+  li         x8, 4
+  li        x10, 4
   lw        x12, 16(x0)
   lw        x13, 20(x0)
-  jalr      x0, x1, 0
+  ret
 
 mulx_exp:
   lw        x16, 64(x0)
@@ -381,8 +381,8 @@ mulx_exp:
   bn.mov    w2, w31
   loop      x30, 1
   bn.movr   x10++, x11
-  addi      x8, x0, 4
-  addi      x10, x0, 4
+  li         x8, 4
+  li        x10, 4
   lw        x12, 16(x0)
   lw        x13, 20(x0)
   loop      x30, 8
@@ -394,11 +394,11 @@ mulx_exp:
   addi      x20, x5, 0
   addi      x16, x6, 0
   addi      x19, x7, 0
-  addi      x8, x0, 4
-  addi      x10, x0, 4
+  li        x8, 4
+  li        x10, 4
   lw        x12, 16(x0)
   lw        x13, 20(x0)
-  jalr      x0, x1, 0
+  ret
 
 selOutOrC:
   bn.wsrrs  w3, 1, w31
@@ -418,8 +418,8 @@ selOutOrC:
   bn.wsrrs  w2, 1, w31
   bn.sel    w2, w0, w3, L
   bn.sid    x11, 0(x21++)
-  jalr      x0, x1, 0
-  addi      x0, x0, 0
+  ret
+  nop
 
 selOutOrC_invsel:
   bn.addc   w3, w3, w3 << 16B
@@ -434,7 +434,7 @@ selOutOrC_invsel:
   bn.wsrrs  w2, 1, w31
   bn.sel    w2, w3, w0, L
   bn.sid    x11, 0(x21++)
-  jalr      x0, x1, 0
+  ret
 
 modexp:
   jal       x1, mulx
@@ -448,11 +448,11 @@ modexp:
   lw        x23, 124(x0)
   bn.sub    w2, w2, w2
   loop      x30, 4
-  addi      x0, x0, 0
+  nop
   bn.lid    x11, 0(x16++)
   bn.subb   w2, w31, w2
   bn.sid    x11, 0(x21++)
-  addi      x0, x0, 0
+  nop
   slli      x24, x22, 8
   loop      x24, 19
   jal       x1, sqrx_exp
@@ -473,8 +473,8 @@ modexp:
   bn.addc   w2, w2, w2
   bn.sid    x11, 0(x20++)
   jal       x1, selOutOrC
-  addi      x0, x0, 0
-  addi      x3, x0, 0
+  nop
+  li        x3, 0
   bn.lid    x3, 96(x0)
   lw        x16, 96(x0)
   lw        x17, 100(x0)
@@ -489,7 +489,7 @@ modexp:
 
 modload:
   bn.xor   w31, w31, w31
-  addi     x3, x0, 0
+  li       x3, 0
   bn.lid   x3, 0(x0)
   lw       x16, 0(x0)
   lw       x17, 4(x0)
@@ -507,8 +507,8 @@ modload:
   lw       x29, 20(x0)
   lw       x30, 24(x0)
   lw       x31, 28(x0)
-  addi     x8, x0, 28
-  addi     x9, x0, 29
+  li       x8, 28
+  li       x9, 29
   lw       x10, 8(x0)
   lw       x11, 12(x0)
   lw       x12, 16(x0)
