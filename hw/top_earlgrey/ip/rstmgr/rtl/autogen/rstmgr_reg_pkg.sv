@@ -9,8 +9,7 @@ package rstmgr_reg_pkg;
   // Param list
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
-  parameter int SW_RST_REGEN = 2;
-  parameter int SW_RST_CTRL_N = 2;
+  parameter int NumSwResets = 2;
 
   ////////////////////////////
   // Typedefs for registers //

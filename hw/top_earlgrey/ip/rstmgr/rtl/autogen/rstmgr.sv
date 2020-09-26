@@ -157,9 +157,9 @@ module rstmgr import rstmgr_pkg::*; (
   ////////////////////////////////////////////////////
   // Software reset controls external reg           //
   ////////////////////////////////////////////////////
-  logic [2-1:0] sw_rst_ctrl_n;
+  logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
-  for (genvar i=0; i < 2; i++) begin : gen_sw_rst_ext_regs
+  for (genvar i=0; i < NumSwResets; i++) begin : gen_sw_rst_ext_regs
     prim_subreg #(
       .DW(1),
       .SWACCESS("RW"),

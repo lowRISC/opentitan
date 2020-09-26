@@ -34,6 +34,13 @@
       default: "4",
       local: "true"
     },
+
+    { name: "NumSwResets",
+      desc: "Number of software resets",
+      type: "int",
+      default: "${len(sw_rsts)}",
+      local: "true"
+    },
   ],
 
   // Define rstmgr struct package
@@ -212,7 +219,7 @@
           When a particular bit value is 0, the corresponding value in !SW_RST_CTRL can no longer be changed.
           When a particular bit value is 1, the corresponding value in !SW_RST_CTRL can be changed.
         ''',
-        count: ${len(sw_rsts)},
+        count: "NumSwResets",
         swaccess: "rw0c",
         hwaccess: "hro",
         fields: [
@@ -236,7 +243,7 @@
           When a particular bit value is 0, the corresponding module is held in reset.
           When a particular bit value is 1, the corresponding module is not held in reset.
         ''',
-        count: ${len(sw_rsts)},
+        count: "NumSwResets",
         swaccess: "rw",
         hwaccess: "hro",
         hwext: "true",
