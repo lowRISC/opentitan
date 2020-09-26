@@ -20,17 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-load("//toolchains/compilers/gcc_arm_none_eabi/impl:gcc_arm_none_versions.bzl", "GetRemoteToolchainInfo", "TOOLCHAIN_VERSIONS")
+load("//toolchains/compilers/gcc_arm_none_eabi/impl:gcc_arm_none_versions.bzl", "TOOLCHAIN_VERSIONS", "get_platform_specific_config")
 load("//toolchains/tools/include_tools:include_tools.bzl", "include_tools")
 
 def _com_gcc_arm_none_repository_impl(repository_ctx):
     version = repository_ctx.attr.version
-    remote_toolchain_info = GetRemoteToolchainInfo(version, repository_ctx.os.name)
+    remote_toolchain_info = get_platform_specific_config(version, repository_ctx.os.name)
 
     repository_ctx.download_and_extract(
-        url = remote_toolchain_info.remote_compiler.url,
-        sha256 = remote_toolchain_info.remote_compiler.sha256,
-        stripPrefix = remote_toolchain_info.remote_compiler.strip_prefix,
+        url = remote_toolchain_info["remote_compiler"]["url"],
+        sha256 = remote_toolchain_info["remote_compiler"]["sha256"],
+        stripPrefix = remote_toolchain_info["remote_compiler"]["strip_prefix"],
     )
     response = repository_ctx.execute(include_tools.ShellCommand(
         "bin/arm-none-eabi-cpp",

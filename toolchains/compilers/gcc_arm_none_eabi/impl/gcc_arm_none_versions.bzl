@@ -20,46 +20,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-def remote_compiler(url, sha256, strip_prefix):
-    return struct(url = url, sha256 = sha256, strip_prefix = strip_prefix)
-
-def gcc_toolchain_info(full_version, remote_compiler):
-    return struct(full_version = full_version, remote_compiler = remote_compiler)
-
-TOOLCHAIN_VERSIONS = {
-    "9": {
-        "linux": gcc_toolchain_info(
-            full_version = "9.2.1",
-            remote_compiler = remote_compiler(
-                url = "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2?revision=6e63531f-8cb1-40b9-bbfc-8a57cdfc01b4&la=en&hash=F761343D43A0587E8AC0925B723C04DBFB848339",
-                sha256 = "bcd840f839d5bf49279638e9f67890b2ef3a7c9c7a9b25271e83ec4ff41d177a",
-                strip_prefix = "gcc-arm-none-eabi-9-2019-q4-major",
-            ),
-        ),
-        "windows": gcc_toolchain_info(
-            full_version = "9.2.1",
-            remote_compiler = remote_compiler(
-                url = "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-win32.zip.bz2?revision=0dc1c4c9-8bba-4577-b57d-dc57d6f80c26&la=en&hash=F0B7C0475BA3213D5CC5DB576C75EC7D9BA3614A",
-                sha256 = "e4c964add8d0fdcc6b14f323e277a0946456082a84a1cc560da265b357762b62",
-                strip_prefix = "",
-            ),
-        ),
-        "osx": gcc_toolchain_info(
-            full_version = "9.2.1",
-            remote_compiler = remote_compiler(
-                url = "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-mac.tar.bz2?revision=0108cc32-e125-409b-ae7b-b2d6d30bf69c&la=en&hash=8C90ACFF11212E0540D74DA6A4F6CEE7253CD13F",
-                sha256 = "1249f860d4155d9c3ba8f30c19e7a88c5047923cea17e0d08e633f12408f01f0",
-                strip_prefix = "gcc-arm-none-eabi-9-2019-q4-major",
-            ),
-        ),
+_PLATFORM_SPECIFIC_CONFIGS_9 = {
+    "linux": {
+        "full_version": "9.2.1",
+        "remote_compiler": {
+            "url": "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2?revision=6e63531f-8cb1-40b9-bbfc-8a57cdfc01b4&la=en&hash=F761343D43A0587E8AC0925B723C04DBFB848339",
+            "sha256": "bcd840f839d5bf49279638e9f67890b2ef3a7c9c7a9b25271e83ec4ff41d177a",
+            "strip_prefix": "gcc-arm-none-eabi-9-2019-q4-major",
+        },
+    },
+    "windows": {
+        "full_version": "9.2.1",
+        "remote_compiler": {
+            "url": "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-win32.zip.bz2?revision=0dc1c4c9-8bba-4577-b57d-dc57d6f80c26&la=en&hash=F0B7C0475BA3213D5CC5DB576C75EC7D9BA3614A",
+            "sha256": "e4c964add8d0fdcc6b14f323e277a0946456082a84a1cc560da265b357762b62",
+            "strip_prefix": "",
+        },
+    },
+    "mac os x": {
+        "full_version": "9.2.1",
+        "remote_compiler": {
+            "url": "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-mac.tar.bz2?revision=0108cc32-e125-409b-ae7b-b2d6d30bf69c&la=en&hash=8C90ACFF11212E0540D74DA6A4F6CEE7253CD13F",
+            "sha256": "1249f860d4155d9c3ba8f30c19e7a88c5047923cea17e0d08e633f12408f01f0",
+            "strip_prefix": "gcc-arm-none-eabi-9-2019-q4-major",
+        },
     },
 }
 
-def GetRemoteToolchainInfo(version, platform):
-    p = platform
-    if p == "mac os x":
-        p = "osx"
-    else:
-        p = "linux"
+TOOLCHAIN_VERSIONS = {
+    "9": _PLATFORM_SPECIFIC_CONFIGS_9,
+}
 
-    return TOOLCHAIN_VERSIONS[version][p]
+def get_platform_specific_config(version, os_name):
+    if version not in TOOLCHAIN_VERSIONS:
+        fail("Toolchain configuration not available for version: ", version)
+    if os_name not in TOOLCHAIN_VERSIONS[version].keys():
+        fail("OS configuration not available for: ", os_name)
+    return TOOLCHAIN_VERSIONS[version][os_name]
