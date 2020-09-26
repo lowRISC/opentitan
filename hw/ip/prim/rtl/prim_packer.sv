@@ -248,9 +248,6 @@ module prim_packer #(
           ##1 valid_i && $past(valid_i) && !$past(ready_o)
           |-> $stable(data_i) && $stable(mask_i))
 
-  `ASSUME(ValidIPairedWithReadyO_M,
-          valid_i && !ready_o |=> valid_i)
-
   `ASSERT(FlushFollowedByDone_A,
           ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o)
 
