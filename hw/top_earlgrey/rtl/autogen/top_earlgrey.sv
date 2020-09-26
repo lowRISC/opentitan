@@ -221,6 +221,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
+  logic [2:0] clkmgr_idle;
   logic       pwrmgr_wakeups;
   logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
@@ -275,8 +276,6 @@ module top_earlgrey #(
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
   clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
-  logic       aes_idle;
-  clkmgr_pkg::clk_hint_status_t       clkmgr_status;
   tlul_pkg::tl_h2d_t       main_tl_corei_req;
   tlul_pkg::tl_d2h_t       main_tl_corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_cored_req;
@@ -286,11 +285,6 @@ module top_earlgrey #(
   tlul_pkg::tl_h2d_t       main_tl_debug_mem_req;
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
 
-  always_comb begin
-    // TODO: So far just aes is connected
-    clkmgr_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
-    clkmgr_status.idle[0] = aes_idle;
-  end
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -700,7 +694,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[1:0] ),
 
       // Inter-module signals
-      .idle_o(aes_idle),
+      .idle_o(clkmgr_idle[0]),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_aes),
@@ -719,6 +713,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
+      .idle_o(clkmgr_idle[1]),
       .tl_i(hmac_tl_req),
       .tl_o(hmac_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_hmac),
@@ -873,7 +868,7 @@ module top_earlgrey #(
       .pwr_i(pwrmgr_pwr_clk_req),
       .pwr_o(pwrmgr_pwr_clk_rsp),
       .dft_i(clkmgr_pkg::CLK_DFT_DEFAULT),
-      .status_i(clkmgr_status),
+      .idle_i(clkmgr_idle),
       .tl_i(clkmgr_tl_req),
       .tl_o(clkmgr_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_powerup),
@@ -1020,7 +1015,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[13:11] ),
 
       // Inter-module signals
-      .idle_o(),
+      .idle_o(clkmgr_idle[2]),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_otbn),

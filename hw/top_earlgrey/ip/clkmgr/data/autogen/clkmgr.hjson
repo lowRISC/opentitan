@@ -92,11 +92,12 @@
       package: "clkmgr_pkg", // This should be moved elsewhere later
     },
 
-    { struct:  "clk_hint_status",
+    { struct:  "logic",
       type:    "uni",
-      name:    "status",
+      name:    "idle",
       act:     "rcv",
-      package: "clkmgr_pkg",
+      package: "",
+      width:   "3"
     },
   ],
 

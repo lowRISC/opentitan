@@ -47,7 +47,7 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_dft_t dft_i,
 
   // idle hints
-  input clk_hint_status_t status_i,
+  input [2:0] idle_i,
 
   // clock output interface
   output clkmgr_ast_out_t clocks_ast_o,
@@ -292,7 +292,7 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_main_otbn_hint;
   logic clk_main_otbn_en;
 
-  assign clk_main_aes_en = clk_main_aes_hint | ~status_i.idle[0];
+  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[Aes];
 
   prim_flop_2sync #(
     .Width(1)
@@ -310,7 +310,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_aes)
   );
 
-  assign clk_main_hmac_en = clk_main_hmac_hint | ~status_i.idle[1];
+  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[Hmac];
 
   prim_flop_2sync #(
     .Width(1)
@@ -328,7 +328,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_main_hmac)
   );
 
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~status_i.idle[2];
+  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[Otbn];
 
   prim_flop_2sync #(
     .Width(1)

@@ -999,8 +999,8 @@
           width: 1
           inst_name: aes
           default: ""
-          top_signame: aes_idle
-          index: -1
+          top_signame: clkmgr_idle
+          index: 0
         }
         {
           struct: tl
@@ -1095,6 +1095,18 @@
       scan_reset: "false"
       inter_signal_list:
       [
+        {
+          name: idle
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: hmac
+          default: ""
+          top_signame: clkmgr_idle
+          index: 1
+        }
         {
           struct: tl
           package: tlul_pkg
@@ -1875,15 +1887,16 @@
           index: -1
         }
         {
-          struct: clk_hint_status
+          struct: logic
           type: uni
-          name: status
+          name: idle
           act: rcv
-          package: clkmgr_pkg
+          package: ""
+          width: 3
           inst_name: clkmgr
-          width: 1
           default: ""
-          top_signame: clkmgr_status
+          top_type: one-to-N
+          top_signame: clkmgr_idle
           index: -1
         }
         {
@@ -2651,10 +2664,13 @@
           name: idle
           type: uni
           struct: logic
-          width: "1"
+          width: 1
           act: req
           inst_name: otbn
-          index: -1
+          default: ""
+          package: ""
+          top_signame: clkmgr_idle
+          index: 2
         }
         {
           struct: tl
@@ -2856,6 +2872,12 @@
       [
         rstmgr.alert_dump
       ]
+      clkmgr.idle:
+      [
+        aes.idle
+        hmac.idle
+        otbn.idle
+      ]
       pwrmgr.wakeups:
       [
         pinmux.aon_wkup_req
@@ -2967,8 +2989,6 @@
       rstmgr.cpu
       pwrmgr.pwr_cpu
       clkmgr.clocks
-      aes.idle
-      clkmgr.status
       main.tl_corei
       main.tl_cored
       main.tl_dm_sba
@@ -5243,8 +5263,8 @@
         width: 1
         inst_name: aes
         default: ""
-        top_signame: aes_idle
-        index: -1
+        top_signame: clkmgr_idle
+        index: 0
       }
       {
         struct: tl
@@ -5257,6 +5277,18 @@
         default: ""
         top_signame: aes_tl
         index: -1
+      }
+      {
+        name: idle
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: hmac
+        default: ""
+        top_signame: clkmgr_idle
+        index: 1
       }
       {
         struct: tl
@@ -5685,15 +5717,16 @@
         index: -1
       }
       {
-        struct: clk_hint_status
+        struct: logic
         type: uni
-        name: status
+        name: idle
         act: rcv
-        package: clkmgr_pkg
+        package: ""
+        width: 3
         inst_name: clkmgr
-        width: 1
         default: ""
-        top_signame: clkmgr_status
+        top_type: one-to-N
+        top_signame: clkmgr_idle
         index: -1
       }
       {
@@ -5890,10 +5923,13 @@
         name: idle
         type: uni
         struct: logic
-        width: "1"
+        width: 1
         act: req
         inst_name: otbn
-        index: -1
+        default: ""
+        package: ""
+        top_signame: clkmgr_idle
+        index: 2
       }
       {
         struct: tl
@@ -6561,6 +6597,14 @@
       {
         package: ""
         struct: logic
+        signame: clkmgr_idle
+        width: 3
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
         signame: pwrmgr_wakeups
         width: 1
         type: uni
@@ -6986,22 +7030,6 @@
         package: clkmgr_pkg
         struct: clkmgr_out
         signame: clkmgr_clocks
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: ""
-        struct: logic
-        signame: aes_idle
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: clkmgr_pkg
-        struct: clk_hint_status
-        signame: clkmgr_status
         width: 1
         type: uni
         default: ""
