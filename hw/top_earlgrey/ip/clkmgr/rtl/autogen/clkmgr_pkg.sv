@@ -12,6 +12,12 @@
 
 package clkmgr_pkg;
 
+  typedef enum int {
+    Aes = 0,
+    Hmac = 1,
+    Otbn = 2
+  } hint_names_e;
+
   typedef struct packed {
     logic test_en;
   } clk_dft_t;
