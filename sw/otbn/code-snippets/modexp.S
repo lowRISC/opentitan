@@ -33,33 +33,13 @@ selcxSub:
   li         x8, 5
   li        x10, 3
   li        x11, 2
-  li        x12, 4
   lw        x16, 0(x0)
-  bn.wsrrs  w4, 1, w31
-  bn.add    w4, w4, w31
-  csrrs     x2, 1984, x0
-  andi      x2, x2, 2
-  bne       x2, x0, selcxSub_invsel
-  bn.addc   w3, w4, w4 << 16B, FG1
-  loop      x30, 7
+  bn.add    w31, w31, w31
+  loop      x30, 5
   bn.lid    x10, 0(x16++)
   bn.movr   x11, x8
-  bn.movr   x8, x12
   bn.subb   w4, w2, w3
-  bn.wsrrs  w3, 1, w31
-  bn.sel    w3, w4, w2, FG1.L
-  bn.movr   x8++, x10
-  ret
-
-selcxSub_invsel:
-  bn.addc   w3, w4, w4 << 16B, FG1
-  loop      x30, 7
-  bn.lid    x10, 0(x16++)
-  bn.movr   x11, x8
-  bn.movr   x8, x12
-  bn.subb   w4, w2, w3
-  bn.wsrrs  w3, 1, w31
-  bn.sel    w3, w2, w4, FG1.L
+  bn.sel    w3, w4, w2, FG1.C
   bn.movr   x8++, x10
   ret
 
@@ -146,31 +126,12 @@ dmXa:
   ret
 
 mma_sub_cx:
-  bn.wsrrs  w28, 1, w31
-  bn.add    w28, w28, w31
-  csrrs     x2, 1984, x0
-  andi      x2, x2, 2
-  bne       x2, x0, mma_invsel
-  bn.addc   w28, w28, w28 << 16B, FG1
-  loop      x30, 7
+  loop      x30, 6
   bn.lid    x13, 0(x16++)
   bn.movr   x12, x8
   bn.subb   w29, w30, w24
-  bn.wsrrs  w24, 1, w31
   bn.movr   x8, x13
-  bn.sel    w24, w29, w30, FG1.L
-  bn.movr   x8++, x13
-  ret
-
-mma_invsel:
-  bn.addc   w28, w28, w28 << 16B, FG1
-  loop      x30, 7
-  bn.lid    x13, 0(x16++)
-  bn.movr   x12, x8
-  bn.subb   w29, w30, w24
-  bn.wsrrs  w24, 1, w31
-  bn.movr   x8, x13
-  bn.sel    w24, w30, w29, FG1.L
+  bn.sel    w24, w29, w30, FG1.C
   bn.movr   x8++, x13
   ret
 
@@ -270,31 +231,12 @@ mulx:
   ret
 
 mm1_sub_cx:
-  bn.wsrrs  w3, 1, w31
-  bn.add    w3, w3, w31
-  csrrs     x2, 1984, x0
-  andi      x2, x2, 2
-  bne       x2, x0, mm1_invsel
-  bn.addc   w3, w3, w3 << 16B, FG1
-  loop      x30, 6
+  loop      x30, 5
   bn.lid    x9, 0(x16++)
   bn.movr   x11, x8++
   bn.subb   w3, w2, w3
-  bn.sel    w2, w3, w2, FG1.L
+  bn.sel    w2, w3, w2, FG1.C
   bn.sid    x11, 0(x21++)
-  nop
-  ret
-  nop
-
-mm1_invsel:
-  bn.addc   w3, w3, w3 << 16B, FG1
-  loop      x30, 6
-  bn.lid    x9, 0(x16++)
-  bn.movr   x11, x8++
-  bn.subb   w3, w2, w3
-  bn.sel    w2, w2, w3, FG1.L
-  bn.sid    x11, 0(x21++)
-  nop
   ret
 
 mul1_exp:
@@ -401,38 +343,12 @@ mulx_exp:
   ret
 
 selOutOrC:
-  bn.wsrrs  w3, 1, w31
-  bn.or     w3, w3, w3
-  csrrs     x2, 1984, x0
-  andi      x2, x2, 2
-  bne       x2, x0, selOutOrC_invsel
-  bn.addc   w3, w3, w3 << 16B
-  loop      x30, 10
-  bn.wsrrs  w3, 1, w31
-  bn.wsrrs  w2, 1, w31
+  loop      x30, 6
   bn.lid    x9, 0(x21)
   bn.sid    x11, 0(x21)
   bn.movr   x11, x8++
-  bn.wsrrs  w0, 1, w31
   bn.mov    w0, w2
-  bn.wsrrs  w2, 1, w31
-  bn.sel    w2, w0, w3, L
-  bn.sid    x11, 0(x21++)
-  ret
-  nop
-
-selOutOrC_invsel:
-  bn.addc   w3, w3, w3 << 16B
-  loop      x30, 10
-  bn.wsrrs  w3, 1, w31
-  bn.wsrrs  w2, 1, w31
-  bn.lid    x9, 0(x21)
-  bn.sid    x11, 0(x21)
-  bn.movr   x11, x8++
-  bn.wsrrs  w0, 1, w31
-  bn.mov    w0, w2
-  bn.wsrrs  w2, 1, w31
-  bn.sel    w2, w3, w0, L
+  bn.sel    w2, w0, w3, C
   bn.sid    x11, 0(x21++)
   ret
 
@@ -447,14 +363,12 @@ modexp:
   lw        x22, 120(x0)
   lw        x23, 124(x0)
   bn.sub    w2, w2, w2
-  loop      x30, 4
-  nop
+  loop      x30, 3
   bn.lid    x11, 0(x16++)
   bn.subb   w2, w31, w2
   bn.sid    x11, 0(x21++)
-  nop
   slli      x24, x22, 8
-  loop      x24, 19
+  loop      x24, 17
   jal       x1, sqrx_exp
   jal       x1, mulx_exp
   lw        x16, 96(x0)
@@ -465,10 +379,8 @@ modexp:
   lw        x21, 116(x0)
   lw        x22, 120(x0)
   lw        x23, 124(x0)
-  bn.wsrrs  w2, 1, w31
   bn.add    w2, w2, w2
-  loop      x30, 4
-  bn.wsrrs  w2, 1, w31
+  loop      x30, 3
   bn.lid    x11, 0(x20)
   bn.addc   w2, w2, w2
   bn.sid    x11, 0(x20++)
