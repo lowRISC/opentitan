@@ -17,6 +17,12 @@ prefixed with "0x" if they are hexadecimal.
     step                 Run one instruction. Print trace information to
                          stdout.
 
+    run                  Run instructions until ecall or error. No trace
+                         information.
+
+    load_elf <path>      Load the ELF file at <path>, replacing current
+                         contents of DMEM and IMEM.
+
     load_d <path>        Replace the current contents of DMEM with <path>
                          (read as an array of 32-bit little-endian words)
 
@@ -26,12 +32,15 @@ prefixed with "0x" if they are hexadecimal.
     dump_d <path>        Write the current contents of DMEM to <path> (same
                          format as for load).
 
+    print_regs           Write the contents of all registers to stdout (in hex)
+
 '''
 
 import sys
 from typing import List
 
 from sim.decode import decode_file
+from sim.elf import load_elf
 from sim.sim import OTBNSim
 
 
@@ -88,6 +97,27 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
         print('  {}'.format(trace))
 
 
+def on_run(sim: OTBNSim, args: List[str]) -> None:
+    '''Run until ecall or error'''
+    if len(args):
+        raise ValueError('run expects zero arguments. Got {}.'
+                         .format(args))
+
+    num_cycles = sim.run(verbose=False)
+    print(' ran for {} cycles'.format(num_cycles))
+
+
+def on_load_elf(sim: OTBNSim, args: List[str]) -> None:
+    '''Load contents of ELF at path given by only argument'''
+    if len(args) != 1:
+        raise ValueError('load_elf expects exactly 1 argument. Got {}.'
+                         .format(args))
+    path = args[0]
+
+    print('LOAD_ELF {!r}'.format(path))
+    load_elf(sim, path)
+
+
 def on_load_d(sim: OTBNSim, args: List[str]) -> None:
     '''Load contents of data memory from file at path given by only argument'''
     if len(args) != 1:
@@ -124,12 +154,28 @@ def on_dump_d(sim: OTBNSim, args: List[str]) -> None:
         handle.write(sim.state.dmem.dump_le_words())
 
 
+def on_print_regs(sim: OTBNSim, args: List[str]) -> None:
+    '''Print registers to stdout'''
+    if len(args):
+        raise ValueError('print_regs expects zero arguments. Got {}.'
+                         .format(args))
+
+    print('PRINT_REGS')
+    for idx, value in enumerate(sim.state.gprs.peek_unsigned_values()):
+        print(' x{:<2} = 0x{:08x}'.format(idx, value))
+    for idx, value in enumerate(sim.state.wdrs.peek_unsigned_values()):
+        print(' w{:<2} = 0x{:064x}'.format(idx, value))
+
+
 _HANDLERS = {
     'start': on_start,
     'step': on_step,
+    'run': on_run,
+    'load_elf': on_load_elf,
     'load_d': on_load_d,
     'load_i': on_load_i,
-    'dump_d': on_dump_d
+    'dump_d': on_dump_d,
+    'print_regs': on_print_regs
 }
 
 

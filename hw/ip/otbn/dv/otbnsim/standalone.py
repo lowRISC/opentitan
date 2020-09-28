@@ -21,7 +21,9 @@ def main() -> int:
     sim = OTBNSim()
     load_elf(sim, args.elf)
 
-    sim.run(start_addr=0, verbose=args.verbose)
+    sim.state.pc = 0
+    sim.state.start()
+    sim.run(verbose=args.verbose)
 
     if args.dmem_dump is not None:
         try:

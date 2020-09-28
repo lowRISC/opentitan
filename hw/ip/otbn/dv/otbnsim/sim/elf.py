@@ -8,11 +8,10 @@ from typing import List, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
 
-from riscvmodel.sim import Simulator  # type: ignore
-
 from shared.mem_layout import get_memory_layout
 
 from .decode import decode_bytes
+from .sim import OTBNSim
 
 _SegList = List[Tuple[int, bytes]]
 
@@ -117,7 +116,7 @@ def _get_elf_segments(path: str,
     return (imem_segments, dmem_segments)
 
 
-def load_elf(sim: Simulator, path: str) -> None:
+def load_elf(sim: OTBNSim, path: str) -> None:
     '''Load contents of ELF file at path'''
     mems = get_memory_layout()
     imem_desc = mems['IMEM']

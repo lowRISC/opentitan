@@ -19,14 +19,12 @@ class OTBNSim:
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
 
-    def run(self, start_addr: int, verbose: bool) -> int:
-        '''Start a simulation at start_addr and run until ECALL.
+    def run(self, verbose: bool) -> int:
+        '''Run until ECALL.
 
-        Return the number of instructions executed.
+        Return the number of cycles taken.
 
         '''
-        self.state.pc = start_addr
-        self.state.start()
         insn_count = 0
         while self.state.running:
             self.step(verbose)
