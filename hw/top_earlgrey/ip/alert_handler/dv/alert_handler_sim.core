@@ -7,8 +7,7 @@ description: "ALERT_HANDLER DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:top_earlgrey:alert_handler_reg
-      - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:alert_handler
     file_type: systemVerilogSource
 
   files_dv:
