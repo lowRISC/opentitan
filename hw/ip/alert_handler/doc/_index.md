@@ -173,12 +173,23 @@ that all alert senders are always active and have not been the target of an
 attack. Note that low power states are not considered at this time, but could
 affect the signaling and testing of alerts.
 
-The `crashdump_o` struct outputs a collection of CSRs and alert handler state
-bits that can be latched by hardware debugging circuitry. This can be useful for
-extracting more information about possible failures or bugs without having to
-use the tile-link bus interface (which may become unresponsive under certain
-circumstances). It is recommended for the top level to store this information in
-an always-on location.
+The `crashdump_o` struct outputs a collection of CSRs and alert handler state bits that can be latched by hardware debugging circuitry:
+
+```systemverilog
+  typedef struct packed {
+    // alerts
+    logic    [NAlerts-1:0] alert_cause;     // alert cause bits
+    logic    [3:0]         loc_alert_cause; // local alert cause bits
+    // class state
+    logic    [3:0][15:0]   class_accum_cnt; // current accumulator value
+    logic    [3:0][31:0]   class_esc_cnt;   // current escalation counter value
+    cstate_e [3:0]         class_esc_state; // current escalation protocol state
+  } alert_crashdump_t;
+```
+
+This can be useful for extracting more information about possible failures or bugs without having to use the tile-link bus interface (which may become unresponsive under certain circumstances).
+It is recommended for the top level to store this information in an always-on location.
+
 
 ## Design Details
 
