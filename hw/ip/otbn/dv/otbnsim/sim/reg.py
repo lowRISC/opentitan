@@ -34,15 +34,15 @@ class Reg:
         self._uval = uval
         self._next_uval = None  # type: Optional[int]
 
-    def read_unsigned(self) -> int:
-        if self._parent is not None:
+    def read_unsigned(self, backdoor: bool = False) -> int:
+        if not backdoor and self._parent is not None:
             self._parent.mark_read(self._idx)
         return self._uval
 
-    def write_unsigned(self, uval: int) -> None:
+    def write_unsigned(self, uval: int, backdoor: bool = False) -> None:
         assert 0 <= uval < (1 << self._width)
         self._next_uval = uval
-        if self._parent is not None:
+        if not backdoor and self._parent is not None:
             self._parent.mark_written(self._idx)
 
     def read_next(self) -> Optional[int]:
@@ -117,3 +117,7 @@ class RegFile:
             assert 0 <= idx < len(self._registers)
             self._registers[idx].commit()
         self._pending_writes.clear()
+
+    def peek_unsigned_values(self) -> List[int]:
+        '''Get a list of the (unsigned) values of the registers'''
+        return [reg.read_unsigned(backdoor=True) for reg in self._registers]
