@@ -98,6 +98,8 @@ static void PrintHelp() {
                "  TYPE is either 'elf' or 'vmem'\n\n"
                "-l list|--meminit=list\n"
                "  Print registered memory regions\n\n"
+               "--verbose-mem-load\n"
+               "  Print a message for each memory load\n\n"
                "-h|--help\n"
                "  Show help\n\n";
 }
@@ -309,9 +311,14 @@ static void WriteVmemToMem(const svScope &scope, const std::string &filepath) {
   simutil_verilator_memload(filepath.data());
 }
 
-static void WriteFileToMem(const MemArea &m, const std::string &filepath,
+static void WriteFileToMem(bool verbose, const MemArea &m, const std::string &filepath,
                            MemImageType type) {
   assert(type != kMemImageUnknown);
+
+  if (verbose) {
+    std::cout << "Loading data from file `" << filepath << "' into memory `"
+              << m.name << "'." << std::endl;
+  }
 
   svScope scope = svGetScopeFromName(m.location.data());
   if (!scope) {
@@ -436,10 +443,12 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       {"raminit", required_argument, nullptr, 'm'},
       {"flashinit", required_argument, nullptr, 'f'},
       {"meminit", required_argument, nullptr, 'l'},
+      {"verbose-mem-load", no_argument, nullptr, 'V'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
 
   std::vector<MemArg> mem_args;
+  bool verbose = false;
 
   // Reset the command parsing index in-case other utils have already parsed
   // some arguments
@@ -483,6 +492,9 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
           return false;
         }
         break;
+      case 'V':
+        verbose = true;
+        break;
       case 'h':
         PrintHelp();
         return true;
@@ -498,7 +510,7 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
 
   for (const MemArg &arg : mem_args) {
     try {
-      MemWrite(arg.name, arg.filepath, arg.type);
+      MemWrite(verbose, arg.name, arg.filepath, arg.type);
     } catch (const std::exception &err) {
       std::cerr << "ERROR: Unable to initialize memory: " << err.what()
                 << std::endl;
@@ -525,7 +537,8 @@ void VerilatorMemUtil::PrintMemRegions() const {
   }
 }
 
-void VerilatorMemUtil::MemWrite(const std::string &name,
+void VerilatorMemUtil::MemWrite(bool verbose,
+                                const std::string &name,
                                 const std::string &filepath,
                                 MemImageType type) {
   // If the image type isn't specified, try to figure it out from the file name
@@ -543,5 +556,5 @@ void VerilatorMemUtil::MemWrite(const std::string &name,
     throw std::runtime_error(oss.str());
   }
 
-  WriteFileToMem(it->second, filepath, type);
+  WriteFileToMem(verbose, it->second, filepath, type);
 }
