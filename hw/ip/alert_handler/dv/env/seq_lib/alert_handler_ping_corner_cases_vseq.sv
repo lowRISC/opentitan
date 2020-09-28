@@ -39,9 +39,17 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
     ping_timeout_cyc inside {[1:MAX_PING_TIMEOUT_CYCLE]};
   }
 
+  // disable interrupt timeout
+  constraint esc_intr_timeout_c {
+    foreach (intr_timeout_cyc[i]) {intr_timeout_cyc[i] == 0;}
+  }
+
   virtual task pre_start();
     super.pre_start();
     num_ping_trans.rand_mode(0);
+    do_alert_handler_init = 1;
+    do_standalone_alert_handler_init = 0;
+    do_clear_all_interrupts = 0;
     // disable alert/esc build-in coverage, because this test forced original design variable
     for (int i = 0; i < NUM_ALERTS; i++) cfg.alert_host_cfg[i].en_cov = 0;
     for (int i = 0; i < NUM_ESCS; i++)   cfg.esc_device_cfg[i].en_cov = 0;
@@ -50,7 +58,7 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
   virtual task body();
     trigger_non_blocking_seqs();
     `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
-    for (int trans = 1; trans < num_ping_trans; trans++) begin
+    for (int trans = 1; trans <= num_ping_trans; trans++) begin
       int ping_index;
       `uvm_info(`gfn, $sformatf("start ping_seq %0d/%0d", trans, num_ping_trans), UVM_LOW)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
@@ -82,25 +90,15 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
         `uvm_info(`gfn, "apply hard reset", UVM_MEDIUM)
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 4));
         dut_init("HARD");
-        config_locked = 0;
       end
       40: begin
         `uvm_info(`gfn, "insert alerts", UVM_MEDIUM)
         drive_alert('1, 0);
-        // wait 5 cycles to make sure all the sig_int_errs are processed
-        cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE + 5);
-        wait_esc_handshake_done();
       end
       10: begin
         `uvm_info(`gfn, "do nothing", UVM_MEDIUM)
-        // wait 5 cycles to make sure all the sig_int_errs are processed
-        cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE + 5);
-        wait_esc_handshake_done();
       end
     endcase
-    read_alert_cause();
-    read_esc_status();
-    clear_all_interrupts();
   endtask
 
 endclass : alert_handler_ping_corner_cases_vseq
