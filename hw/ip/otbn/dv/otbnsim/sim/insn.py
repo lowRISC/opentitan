@@ -517,7 +517,7 @@ class BNMULQACCSO(OTBNInsn):
         lo_part = acc & ((1 << 128) - 1)
         hi_part = acc >> 128
 
-        state.set_half_word_unsigned(self.wrd, lo_part, self.wrd_hwsel)
+        state.set_half_word_unsigned(self.wrd, self.wrd_hwsel, lo_part)
         state.wsrs.ACC.write_unsigned(hi_part)
 
 
