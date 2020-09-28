@@ -806,14 +806,13 @@ module otp_ctrl
   `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
   `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
   `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
-  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_init_rsp_o)
-  `ASSERT_KNOWN(OtpPwrStateKnown_A,          otp_pwr_state_o)
+  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_rsp_o)
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_rsp_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
   `ASSERT_KNOWN(OtpFlashKeyKnown_A,          flash_otp_key_rsp_o)
-  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          sram_otp_key_rsp_o)
-  `ASSERT_KNOWN(OtpFlashKeyKnown_A,          otbn_otp_key_rsp_o)
+  `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_rsp_o)
+  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_rsp_o)
   `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
 
 endmodule : otp_ctrl
