@@ -25,6 +25,12 @@
                   fusesoc_core: lowrisc:ip:alert_handler
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/alert_handler/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              {    name: entropy_src
                   fusesoc_core: lowrisc:ip:entropy_src
