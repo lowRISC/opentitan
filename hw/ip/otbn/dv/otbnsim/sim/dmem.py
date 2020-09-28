@@ -61,7 +61,17 @@ class Dmem:
         self.trace = []  # type: List[Trace]
 
     def _get_u32s(self, idx: int) -> List[int]:
-        '''Return the value at idx as 8 uint32's in little-endian order'''
+        '''Return the value at idx as 8 uint32's
+
+        These are ordered by increasing address, so the first word from
+        _get_u32s(0) will correspond to bytes at addresses 0x0 through 0x3.
+
+        These uint32's are the words that get loaded by word accesses to
+        memory. Since these accesses are also little-endian, the byte at memory
+        address 0x0 (which holds the LSB for the first 256-bit value) will also
+        be the LSB of the first u32 returned by _get_u32s(0).
+
+        '''
         assert 0 <= idx < len(self.data)
 
         word = self.data[idx]
@@ -73,7 +83,8 @@ class Dmem:
         ret = []
         w32_mask = (1 << 32) - 1
         for subidx in range(8):
-            ret.append((word >> (32 * (7 - subidx))) & w32_mask)
+            ret.append((word >> (32 * subidx)) & w32_mask)
+
         return ret
 
     def _set_u32s(self, idx: int, u32s: List[int]) -> None:
@@ -92,12 +103,7 @@ class Dmem:
         self.data[idx] = u256
 
     def load_le_words(self, data: bytes) -> None:
-        '''Replace the start of memory with data
-
-        This data should be in the form of little-endian 32-bit words. These
-        words are themselves packed little-endian into 256-bit words.
-
-        '''
+        '''Replace the start of memory with data'''
         if len(data) > 32 * len(self.data):
             raise ValueError('Trying to load {} bytes of data, but DMEM '
                              'is only {} bytes long.'
@@ -112,9 +118,6 @@ class Dmem:
         for idx32, u32 in enumerate(struct.iter_unpack('<I', data)):
             acc.append(u32[0])
             if len(acc) == 8:
-                # Reverse acc here, because we're also little-endian moving
-                # from u32 to u256
-                acc.reverse()
                 self._set_u32s(idx32 // 8, acc)
                 acc = []
 
@@ -131,18 +134,16 @@ class Dmem:
         '''
         u32s = []  # type: List[int]
         for idx in range(len(self.data)):
-            # As in load_le_words, we also have to reverse each set of 8 words
-            # because we're little-endian at this scale too.
-            u32s += reversed(self._get_u32s(idx))
+            u32s += self._get_u32s(idx)
         return struct.pack('<{}I'.format(len(u32s)), *u32s)
 
     def load_u256(self, addr: int) -> int:
-        '''Read an unsigned wide word from memory. addr should be aligned.'''
+        '''Read a u256 little-endian value from an aligned address'''
         assert 0 == addr % 32
         return self.data[addr // 32]
 
     def store_u256(self, addr: int, value: int) -> None:
-        '''Write an unsigned wide word to memory. addr should be aligned.'''
+        '''Write a u256 little-endian value to an aligned address'''
         assert 0 == addr % 32
         assert 0 <= value < (1 << 256)
         self.trace.append(TraceDmemStore(addr, value, True))
