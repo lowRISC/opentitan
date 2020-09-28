@@ -76,7 +76,7 @@ class VerilatorMemUtil : public SimCtrlExtension {
    * @param exit_app Indicate that program should terminate
    * @return Return code, true == success
    */
-  virtual bool ParseCLIArguments(int argc, char **argv, bool &exit_app);
+  bool ParseCLIArguments(int argc, char **argv, bool &exit_app) override;
 
  private:
   std::map<std::string, MemArea> name_to_mem_;
