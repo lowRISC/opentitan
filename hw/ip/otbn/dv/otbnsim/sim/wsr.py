@@ -82,8 +82,15 @@ class RandWSR(WSR):
         # For now, the RTL doesn't have a real "random number generator".
         # Eventually, it will have an LFSR of some sort, seeded by the
         # CSRNG/EDN. We'll model that properly when we've specced it out. Until
-        # then, random numbers are all 0x1.
-        self._random_value = 1
+        # then, random numbers are constant.  This constant must match the one
+        # in the RTL (the `rnd` signal in the `otbn_core` module found in
+        # rtl/otbn_core.sv). If changed here it must be changed there to match.
+        # Constant for RND is the binary bit pattern 1001 (0x9 hex) repeated to
+        # fill a 256-bit word.
+        u32 = 0x99999999
+        u64 = (u32 << 32) | u32
+        u128 = (u64 << 64) | u64
+        self._random_value = (u128 << 128) | u128
 
     def read_unsigned(self) -> int:
         return self._random_value
