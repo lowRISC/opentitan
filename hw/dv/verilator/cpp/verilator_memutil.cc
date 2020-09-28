@@ -133,10 +133,17 @@ static MemImageType DetectMemImageType(const std::string &filepath) {
   return image_type;
 }
 
+namespace {
+struct MemArg {
+  std::string name;
+  std::string filepath;
+  MemImageType type;
+};
+}  // namespace
+
 // Parse a meminit command-line argument. This should be of the form
-// mem_area,file[,type].
-static bool ParseMemArg(std::string mem_argument, std::string &name,
-                        std::string &filepath, MemImageType &type) {
+// mem_area,file[,type]. Throw a std::runtime_error if something looks wrong.
+static MemArg ParseMemArg(std::string mem_argument) {
   std::array<std::string, 3> args;
   size_t pos = 0;
   size_t end_pos = 0;
@@ -146,8 +153,9 @@ static bool ParseMemArg(std::string mem_argument, std::string &name,
     end_pos = mem_argument.find(",", pos);
     // Check for possible exit conditions
     if (pos == end_pos) {
-      std::cerr << "ERROR: empty field in: " << mem_argument << std::endl;
-      return false;
+      std::ostringstream oss;
+      oss << "empty field in: `" << mem_argument << "'.";
+      throw std::runtime_error(oss.str());
     }
     if (end_pos == std::string::npos) {
       args[i] = mem_argument.substr(pos);
@@ -159,22 +167,21 @@ static bool ParseMemArg(std::string mem_argument, std::string &name,
   // mem_argument is not empty as getopt requires an argument,
   // but not a valid argument for memory initialization
   if (i == 0) {
-    std::cerr << "ERROR: meminit must be in \"name,file[,type]\""
-              << " got: " << mem_argument << std::endl;
-    return false;
+    std::ostringstream oss;
+    oss << "meminit must be in the format `name,file[,type]'. Got: `"
+        << mem_argument << "'.";
+    throw std::runtime_error(oss.str());
   }
 
-  name = args[0];
-  filepath = args[1];
-
+  MemImageType type;
   if (i == 1) {
     // Type not set explicitly
-    type = DetectMemImageType(filepath);
+    type = DetectMemImageType(args[1]);
   } else {
     type = GetMemImageTypeByName(args[2]);
   }
 
-  return true;
+  return {.name = args[0], .filepath = args[1], .type = type};
 }
 
 // Generate a single array of bytes representing the contents of PT_LOAD
@@ -432,6 +439,8 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
 
+  std::vector<MemArg> mem_args;
+
   // Reset the command parsing index in-case other utils have already parsed
   // some arguments
   optind = 1;
@@ -444,27 +453,20 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
     // Disable error reporting by getopt
     opterr = 0;
 
-    bool do_mem_write = false;
-    std::string mem_name, filepath;
-    MemImageType type = kMemImageUnknown;
-
     switch (c) {
       case 0:
         break;
       case 'r':
-        mem_name = "rom";
-        filepath = optarg;
-        do_mem_write = true;
+        mem_args.push_back(
+            {.name = "rom", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'm':
-        mem_name = "ram";
-        filepath = optarg;
-        do_mem_write = true;
+        mem_args.push_back(
+            {.name = "ram", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'f':
-        mem_name = "flash";
-        filepath = optarg;
-        do_mem_write = true;
+        mem_args.push_back(
+            {.name = "flash", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'l':
         if (strcasecmp(optarg, "list") == 0) {
@@ -474,9 +476,10 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
         }
 
         // --meminit / -l
-        do_mem_write = true;
-        if (!ParseMemArg(optarg, mem_name, filepath, type)) {
-          std::cerr << "ERROR: Unable to parse meminit arguments." << std::endl;
+        try {
+          mem_args.emplace_back(ParseMemArg(optarg));
+        } catch (const std::runtime_error &err) {
+          std::cerr << "ERROR: " << err.what() << std::endl;
           return false;
         }
         break;
@@ -491,15 +494,15 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
         // Ignore unrecognized options since they might be consumed by
         // other utils
     }
+  }
 
-    if (do_mem_write) {
-      try {
-        MemWrite(mem_name, filepath, type);
-      } catch (const std::exception &err) {
-        std::cerr << "ERROR: Unable to initialize memory: " << err.what()
-                  << std::endl;
-        return false;
-      }
+  for (const MemArg &arg : mem_args) {
+    try {
+      MemWrite(arg.name, arg.filepath, arg.type);
+    } catch (const std::exception &err) {
+      std::cerr << "ERROR: Unable to initialize memory: " << err.what()
+                << std::endl;
+      return false;
     }
   }
 
