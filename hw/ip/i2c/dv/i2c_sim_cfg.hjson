@@ -53,6 +53,7 @@
     {
       name: i2c_override
       uvm_test_seq: i2c_override_vseq
+      run_opts: ["+en_scb=0"]
     }
 
     {
@@ -72,7 +73,6 @@
 
     {
       name: i2c_perf
-      reseed: 10
       uvm_test_seq: i2c_perf_vseq
     }
 
@@ -83,7 +83,6 @@
 
     {
       name: i2c_error_intr
-      reseed: 10
       uvm_test_seq: i2c_error_intr_vseq
     }
   ]

@@ -7,28 +7,30 @@
 //   such as sda_interference, scl_interference, sda_unstable irqs
 // - do on-the-fly reset dut and dv if error irqs are asserted
 // - continue sending transactions and verify dut works as normal
-class i2c_error_intr_vseq extends i2c_sanity_vseq;
+class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_error_intr_vseq)
   `uvm_object_new
 
-  bit do_reset = 1'b0;
+  local bit do_reset = 1'b0;
 
   // increase num_trans to cover error interrupts
   constraint num_trans_c { num_trans inside {[50 : 100]}; }
 
-  virtual task body();
+  virtual task pre_start();
+    super.pre_start();
     // allow agent/target creating interference and unstable signals so
     // sda_interference, scl_interference, sda_unstable are asserted
     cfg.en_sda_unstable     = 1'b1;
     cfg.en_sda_interference = 1'b1;
     cfg.en_scl_interference = 1'b1;
+  endtask : pre_start
 
-    device_init();
-    host_init();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_resets)
-    for (int run = 0; run < num_resets; run++) begin
-      `uvm_info(`gfn, $sformatf("\n****** RUN %0d ******", run), UVM_DEBUG)
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
+  virtual task body();
+
+    `uvm_info(`gfn, "\n--> start of i2c_error_intr_vseq", UVM_DEBUG)
+    initialization();
+    for (int i = 1; i <= num_runs; i++) begin
+      `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
       fork
         begin
           // issue trans. and check the occourances of error irqs
@@ -36,24 +38,28 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
             begin
               process_error_interrupts();
               apply_reset("HARD");
-              `uvm_info(`gfn, $sformatf("\n>>>Reset ended"), UVM_DEBUG)
+              `uvm_info(`gfn, $sformatf("\n  reset is issued"), UVM_DEBUG)
             end
-            host_send_trans(num_trans);
+            begin
+              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
+              host_send_trans(num_trans);
+            end
           join_any
-          // stop all tl_seqs
+          // stop all tl_seqs if reset is issued
           p_sequencer.tl_sequencer_h.stop_sequences();
           disable fork;
           // delay to avoid race condition when sending item and
           // checking no item after reset occur at the same time
           #1ps;
-          // handle on-the-fly reset
           if (do_reset) begin
+            // re-initialize dut after on-the-fly reset
             host_init();
             do_reset = 1'b0;
           end
         end
       join
     end
+    `uvm_info(`gfn, "\n--> end of i2c_error_intr_vseq", UVM_DEBUG)
   endtask : body
 
   virtual task process_error_interrupts();
@@ -63,7 +69,7 @@ class i2c_error_intr_vseq extends i2c_sanity_vseq;
         if (cfg.intr_vif.pins[SclInference] ||
             cfg.intr_vif.pins[SdaInference] ||
             cfg.intr_vif.pins[SdaUnstable]) begin
-          `uvm_info(`gfn, $sformatf("\n>>>Get error interrupts SclIrf %b, SdaIrf %b, SdaUns %b",
+          `uvm_info(`gfn, $sformatf("\n  get error interrupts SclIrf %b, SdaIrf %b, SdaUns %b",
               cfg.intr_vif.pins[SclInference], cfg.intr_vif.pins[SdaInference],
               cfg.intr_vif.pins[SdaUnstable]), UVM_DEBUG)
           do_reset = 1'b1;

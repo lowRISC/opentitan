@@ -7,12 +7,7 @@
 // to test watermark irq
 class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_fifo_watermark_vseq)
-
   `uvm_object_new
-
-  // counting the number of received watermark interrupts
-  local uint cnt_fmt_watermark;
-  local uint cnt_rx_watermark;
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
@@ -28,22 +23,27 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   // read transaction length is equal to rx_fifo depth to cross rxilvl
   constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
 
+  // counting the number of received watermark interrupts
+  local uint cnt_fmt_watermark;
+  local uint cnt_rx_watermark;
+
+  virtual task pre_start();
+    super.pre_start();
+    // config rx_watermark test (fmt_watermark test is auto configed)
+    cfg.en_rx_watermark = 1'b1;
+  endtask : pre_start
+
   virtual task body();
     bit check_fmt_watermark, check_rx_watermark;
 
-    device_init();
-    host_init();
-
-    // config rx_watermark test (fmt_watermark test is auto configed)
-    cfg.en_rx_watermark = 1'b1;
-
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
-    for (int i = 0; i < num_trans; i++) begin
+    initialization();
+    `uvm_info(`gfn, "\n--> start of i2c_fifo_watermark_vseq", UVM_DEBUG)
+    for (int i = 1; i <= num_trans; i++) begin
       check_fmt_watermark = 1'b1;
       check_rx_watermark  = 1'b1;
       cnt_fmt_watermark   = 0;
       cnt_rx_watermark    = 0;
-
+      `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_trans), UVM_DEBUG)
       fork
         begin
           //*** verify fmt_watermark irq:
@@ -58,10 +58,11 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // (timing regsisters), cnt_fmt_watermark could be
             //   1: fmtilvl is crossed one   when data drains from fmt_fifo
             //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
-            `DV_CHECK_GT(cnt_fmt_watermark, 0)
-            `DV_CHECK_LE(cnt_fmt_watermark, 2)
-            `uvm_info(`gfn, $sformatf("\nrun %0d, cnt_fmt_watermark %0d",
-                i, cnt_fmt_watermark), UVM_DEBUG)
+            if (!cfg.under_reset) begin
+              `DV_CHECK_GT(cnt_fmt_watermark, 0)
+              `DV_CHECK_LE(cnt_fmt_watermark, 2)
+              `uvm_info(`gfn, $sformatf("\n cnt_fmt_watermark %0d", cnt_fmt_watermark), UVM_DEBUG)
+            end
           end
 
           //*** verify rx_watermark irq:
@@ -77,16 +78,19 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
-            if ( rxilvl <= 4) begin
-              `DV_CHECK_EQ(cnt_rx_watermark, 1)
-            end else begin
-              `DV_CHECK_EQ(cnt_rx_watermark, 0)
+            if (!cfg.under_reset) begin
+              if ( rxilvl <= 4) begin
+                `DV_CHECK_EQ(cnt_rx_watermark, 1)
+              end else begin
+                `DV_CHECK_EQ(cnt_rx_watermark, 0)
+              end
+              // during a read transaction, fmt_watermark could be triggered since read address
+              // and control byte are programmed to fmt_fifo and possibly cross fmtilvl
+              // if fmt_watermark is triggered, then it should be cleared to not interfere
+              // counting fmt_watermark in the next transaction (no need to verify
+              // fmt_watermark again during read)
+              `uvm_info(`gfn, $sformatf("\n cnt_rx_watermark %0d", cnt_rx_watermark), UVM_DEBUG)
             end
-            // during a read transaction, fmt_watermark could be triggered since read address
-            // and control byte are programmed to fmt_fifo and possibly cross fmtilvl
-            // if fmt_watermark is triggered, then it should be cleared to not interfere
-            // counting fmt_watermark in the next transaction (no need to verify
-            // fmt_watermark again during read)
             clear_interrupt(FmtWatermark);
           end
         end
@@ -98,6 +102,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
+    `uvm_info(`gfn, "\n--> end of i2c_fifo_watermark_vseq", UVM_DEBUG)
   endtask : body
 
   task process_fmt_watermark_intr();
@@ -105,8 +110,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
 
     @(posedge cfg.clk_rst_vif.clk);
     if (cfg.intr_vif.pins[FmtWatermark]) begin
-      clear_interrupt(FmtWatermark);
       cnt_fmt_watermark++;
+      clear_interrupt(FmtWatermark);
     end
   endtask : process_fmt_watermark_intr
 
@@ -115,8 +120,8 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
 
     @(posedge cfg.clk_rst_vif.clk);
     if (cfg.intr_vif.pins[RxWatermark]) begin
-      clear_interrupt(RxWatermark);
       cnt_rx_watermark++;
+      clear_interrupt(RxWatermark);
     end
   endtask : process_rx_watermark_intr
 

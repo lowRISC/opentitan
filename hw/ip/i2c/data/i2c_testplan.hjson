@@ -30,15 +30,17 @@
     {
       name: error_intr
       desc: '''
-            Test error interrupts are asserted by the host due to interference and unstable signals on bus.
+            Test error interrupts are asserted by the host due to
+            interference and unstable signals on bus.
 
             Stimulus:
               - In host transmit mode, device (target/host) forces sda or scl signal low within the
                 clock pulse of host scl that asserts `sda_interference` or `scl_interference` interrupts
               - In host receiving mode (data or ack bits), SDA signal is changed with the
                 clock pulse of host scl that asserts `intr_sda_unstable` interrupts
-              - When error interrupt assertions are detected, dut, agent, and scoreboard will be reset on-the-fly
-                then new transaction can be continue programming
+              - When error interrupt assertions are detected, dut, agent, and scoreboard will be
+                reset on-the-fly then new transaction can be continue programming
+
             Checking:
               - Ensure all intr_scl_interference, intr_sda_interference, and
                 intr_sda_unstable interrupts are asserted
@@ -50,19 +52,37 @@
       tests: ["i2c_error_intr"]
     }
     {
-      name: stress_all_with_reset
+      name: stress_all
       desc: '''
-            Pull reset at random times, ensure DUT are reset and recovered/ correctly and
-            there is no residual data left in the registers.
+            Support vseq (context) switching with random reset in between.
 
             Stimulus:
-              - Randomly reset DUT
-              - Restart send/receive transaction
+              - Combine above sequences in one test to run sequentially
+                except csr sequence and i2c_rx_oversample_vseq (requires zero_delays)
+              - Randomly add reset between each sequence
 
             Checking:
-              - Ensure registers are properly reset
+              - Ensure transactions are transmitted/received correctly,
+              - Ensure reset is handled correctly
             '''
       milestone: V2
+      tests: ["i2c_stress_all"]
+    }
+    {
+      name: stress_all_with_rand_reset
+      desc: '''
+            Support random reset in parallel with stress_all and tl_errors sequences.
+
+            Stimulus:
+              - Combine above sequences in one test to run sequentially
+                except csr sequence and i2c_rx_oversample_vseq (requires zero_delays)
+              - Randomly add reset within the sequences then switch to another one
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure reset is handled correctly
+            '''
+      milestone: V3
       tests: ["i2c_stress_all_with_rand_reset"]
     }
     {
@@ -75,27 +95,12 @@
               - Issue long read/write back-to-back transactions 
               - Read rx_fifo as soon as read data valid
               - Clear interrupt quickly
+
             Checking:
-              - Ensure transactions are transceivered correctly
+              - Ensure transactions are transmitted/received correctly
             '''
       milestone: V2
       tests: ["i2c_perf"]
-    }
-    {
-      name: stress
-      desc: '''
-            Test multiple interrupts asserted.
-
-            Stimulus:
-              - Do combinations of multiple of above scenarios to get
-                multiple interrupts asserted at the same time
-              - Scoreboard should be robust enough to deal with all scenarios
-
-            Checking:
-              - Ensure multiple interrupts are asserted
-            '''
-      milestone: V2
-      tests: ["i2c_stress"]
     }
     {
       name: override
@@ -190,7 +195,7 @@
       tests: ["i2c_fifo_full"]
     }
     {
-      name: stretch_timeout,
+      name: stretch_timeout
       desc: '''
             Test host clock stretching.
 
@@ -209,7 +214,7 @@
     {
       name: rx_oversample
       desc: '''
-            Test rc oversampling.
+            Test oversampling on received channel.
 
             Stimulus:
               - Use input clock to sample the target sda (sample with baud rate equal to 1)
