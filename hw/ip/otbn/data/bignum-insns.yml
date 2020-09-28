@@ -779,15 +779,17 @@
   syntax: |
     <grd>[<grd_inc>], <offset>(<grs1>[<grs1_inc>])
   doc: |
-    Calculates a byte memory address by adding the offset to the value in the GPR `grs1`.
-    The value from this memory address is then copied into the WDR pointed to by the value in GPR `grd`.
+    Load a WLEN-bit little-endian value from data memory.
+
+    The load address is `offset` plus the value in the GPR `grs1`.
+    The loaded value is stored into the WDR given by the bottom 5 bits of the GPR `grd`.
 
     After the operation, either the value in the GPR `grs1`, or the value in `grd` can be optionally incremented.
 
-    - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
-    - If `grd_inc` is set, the value in `grd` is incremented by the value 1.
+    - If `grs1_inc` is set, the value in `grs1` is incremented by value WLEN/8 (one word).
+    - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
 
-    The memory address must be aligned to WLEN bytes.
+    The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   cycles: 2
   decode: |
@@ -809,7 +811,7 @@
     if grs1_inc:
         GPR[rs1] = GPR[rs1] + (WLEN / 8)
     if grd_inc:
-        GPR[rd] = GPR[rd] + 1
+        GPR[rd] = (GPR[rd] + 1) & 0x1f
   lsu:
     type: mem-load
     target: [offset, grs1]
@@ -851,15 +853,17 @@
   syntax: |
     <grs2>[<grs2_inc>], <offset>(<grs1>[<grs1_inc>])
   doc: |
-    Calculates a byte memory address by adding the offset to the value in the GPR `grs1`.
-    The value from the WDR pointed to by `grs2` is then copied into the memory.
+    Store a WDR to memory as a WLEN-bit little-endian value.
+
+    The store address is `offset` plus the value in the GPR `grs1`.
+    The value to store is taken from the WDR given by the bottom 5 bits of the GPR `grs2`.
 
     After the operation, either the value in the GPR `grs1`, or the value in `grs2` can be optionally incremented.
 
     - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
-    - If `grs2_inc` is set, the value in `grs2` is incremented by the value 1.
+    - If `grs2_inc` is set, the value in `grs2` is updated to be `(*grs2 + 1) & 0x1f`.
 
-    The memory address must be aligned to WLEN bytes.
+    The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
   decode: |
     rs1 = UInt(grs1)
@@ -880,7 +884,7 @@
     if grs1_inc:
         GPR[rs1] = GPR[rs1] + (WLEN / 8)
     if grs2_inc:
-        GPR[rs2] = GPR[rs2] + 1
+        GPR[rs2] = (GPR[rs2] + 1) & 0x1f
   lsu:
     type: mem-store
     target: [offset, grs1]
