@@ -268,7 +268,14 @@ module otp_ctrl_part_buf
       // triggers in this state.
       IdleSt: begin
         if (integ_chk_req_i) begin
-          state_d = IntegDigClrSt;
+          if (Info.hw_digest) begin
+            state_d = IntegDigClrSt;
+          // In case there is nothing to check we can just
+          // acknowledge the request right away, without going to the
+          // integrity check.
+          end else begin
+            integ_chk_ack_o = 1'b1;
+          end
         end else if (cnsty_chk_req_i) begin
           state_d = CnstyReadSt;
           cnt_clr = 1'b1;
@@ -361,11 +368,15 @@ module otp_ctrl_part_buf
             end
           end
         // Otherwise, if this partition is not digest protected,
-        // we can just acknowledge the request and return to idle,
-        // since there is nothing to check.
+        // we can just go to idle, since there is nothing to check.
+        // Note that we do not come back to this state in case there is no
+        // digest, and hence it is safe to unlock the buffer regs at this point.
+        // This is the only way the buffer regs can get unlocked.
         end else begin
           state_d = IdleSt;
-          integ_chk_ack_o = 1'b1;
+          if (dout_gate_q == Locked) begin
+            dout_gate_d = Unlocked;
+          end
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -459,7 +470,7 @@ module otp_ctrl_part_buf
             state_d = IdleSt;
             // If the partition is still locked, this is the first integrity check after
             // initialization. This is the only way the buffer regs can get unlocked.
-            if (dout_gate_q != Unlocked) begin
+            if (dout_gate_q == Locked) begin
               dout_gate_d = Unlocked;
             // Otherwise, this integrity check has requested by the LFSR timer, and we have
             // to acknowledge its completion.
