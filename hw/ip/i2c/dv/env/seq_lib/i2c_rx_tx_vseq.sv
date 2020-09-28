@@ -4,11 +4,24 @@
 
 class i2c_rx_tx_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_rx_tx_vseq)
-
   `uvm_object_new
 
-  int total_rd_bytes;
-  bit complete_program_fmt_fifo;
+  local int total_rd_bytes;
+  local bit complete_program_fmt_fifo;
+  local bit do_interrupt = 1'b1;
+
+  virtual task body();
+    initialization();
+    fork
+      begin
+        while (do_interrupt) process_interrupts();
+      end
+      begin
+        host_send_trans(num_trans);
+        do_interrupt = 1'b0; // gracefully stop process_interrupts
+      end
+    join
+  endtask : body
 
   virtual task host_send_trans(int num_trans, tran_type_e trans_type = ReadWrite);
     bit last_tran, chained_read;
@@ -51,7 +64,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           end
 
           last_tran = (cur_tran == num_trans);
-          `uvm_info(`gfn, $sformatf("\nstart sending %s transaction %0d/%0d",
+          `uvm_info(`gfn, $sformatf("\n  start sending %s transaction %0d/%0d",
               (rw_bit) ? "READ" : "WRITE", cur_tran, num_trans), UVM_DEBUG)
           if (chained_read) begin
             // keep programming chained read transaction
@@ -61,7 +74,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             else        program_write_data_to_target(last_tran);
           end
 
-          `uvm_info(`gfn, $sformatf("\nfinish sending %s transaction, %0s at the end,  %0d/%0d, ",
+          `uvm_info(`gfn, $sformatf("\n  finish %s transaction, %0s at the end,  %0d/%0d, ",
               (rw_bit) ? "read" : "write",
               (fmt_item.stop) ? "stop" : "rstart", cur_tran, num_trans), UVM_DEBUG)
 
@@ -91,7 +104,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end else begin // Addr10BitMode
       fmt_item.fbyte = (rw_bit) ? {addr[9:0], BusOpRead} : {addr[9:0], BusOpWrite};
     end
-    program_format_flag(fmt_item, "program_address_to_target");
+    program_format_flag(fmt_item, "  program_address_to_target");
   endtask : program_address_to_target
 
   virtual task program_control_read_to_target(bit last_tran);
@@ -108,7 +121,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       )
       `DV_CHECK_EQ(fmt_item.stop | fmt_item.rcont, 1)
       if (num_rd_bytes == 0) begin
-        `uvm_info(`gfn, "\nread transaction length is 256 byte", UVM_DEBUG)
+        `uvm_info(`gfn, "\n  read transaction length is 256 byte", UVM_DEBUG)
       end
 
       // accumulate number of read byte
@@ -117,13 +130,13 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       if (cfg.en_rx_overflow) total_rd_bytes--;
 
       if (fmt_item.rcont) begin
-        `uvm_info(`gfn, "\ntransaction READ is chained with next READ transaction", UVM_DEBUG)
+        `uvm_info(`gfn, "\n  transaction READ is chained with next READ transaction", UVM_DEBUG)
       end else begin
-        `uvm_info(`gfn, $sformatf("\ntransaction READ ended %0s", (fmt_item.stop) ?
+        `uvm_info(`gfn, $sformatf("\n  transaction READ ended %0s", (fmt_item.stop) ?
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
       end
-      program_format_flag(fmt_item, "program number of bytes to read");
+      program_format_flag(fmt_item, "  program number of bytes to read");
     end
   endtask : program_control_read_to_target
 
@@ -163,7 +176,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
     if (num_wr_bytes == 256) begin
-      `uvm_info(`gfn, "\nwrite transaction length is 256 byte", UVM_DEBUG)
+      `uvm_info(`gfn, "\n  write transaction length is 256 byte", UVM_DEBUG)
     end
 
     for (int i = 1; i <= num_wr_bytes; i++) begin
@@ -181,7 +194,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       // last write byte of other tran., stop is randomly set/unset to issue stop/rstart bit
       fmt_item.stop = (i != num_wr_bytes) ? 1'b0 : ((last_tran) ? 1'b1 : fmt_item.stop);
       if (i == num_wr_bytes) begin
-        `uvm_info(`gfn, $sformatf("\ntransaction WRITE ended %0s", (fmt_item.stop) ?
+        `uvm_info(`gfn, $sformatf("\n  transaction WRITE ended %0s", (fmt_item.stop) ?
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
       end
@@ -202,10 +215,10 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
                                        })
 
     if (bit'(get_field_val(ral.intr_state.fmt_watermark, intr_clear))) begin
-      `uvm_info(`gfn, "\nClearing fmt_watermark", UVM_DEBUG)
+      `uvm_info(`gfn, "\n  clearing fmt_watermark", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.rx_watermark, intr_clear))) begin
-      `uvm_info(`gfn, "\nClearing rx_watermark", UVM_DEBUG)
+      `uvm_info(`gfn, "\n  clearing rx_watermark", UVM_DEBUG)
     end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
@@ -218,12 +231,5 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     csr_wr(.csr(ral.intr_state), .value(1 << intr));
     if (verify_clear) wait(!cfg.intr_vif.pins[intr]);
   endtask : clear_interrupt
-
-  virtual task post_start();
-    do_dut_shutdown = 0;
-    // TODO: tempraly disable the execution of clear_all_interrupt task due to
-    // incorrecly assertions of sda_interference and scl_interference (to be fixed with other PR)
-    //super.post_start();
-  endtask : post_start
 
 endclass : i2c_rx_tx_vseq

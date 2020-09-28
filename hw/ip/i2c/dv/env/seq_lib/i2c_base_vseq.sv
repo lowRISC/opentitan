@@ -11,7 +11,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(i2c_base_vseq)
 
   // class property
-  bit                         do_interrupt = 1'b1;
   bit                         program_incorrect_regs = 1'b0;
 
   local timing_cfg_t          timing_cfg;
@@ -23,7 +22,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   rx_fifo_access_dly;
   rand uint                   clear_intr_dly;
 
-  rand uint                   num_trans;
+  rand uint                   num_runs;
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
   rand uint                   num_data_ovf;
@@ -54,7 +53,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   prob_sda_unstable;
   rand uint                   prob_sda_interference;
   rand uint                   prob_scl_interference;
-  rand uint                   num_resets; // the max. num. of on-the-fly reset if error irq occurs
 
   // constraints
   constraint addr_c {
@@ -65,6 +63,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.i2c_min_num_trans : cfg.seq_cfg.i2c_max_num_trans]};
+  }
+  constraint num_runs_c {
+    num_runs inside {[cfg.seq_cfg.i2c_min_num_runs : cfg.seq_cfg.i2c_max_num_runs]};
   }
 
   // get an array with unique write data
@@ -106,9 +107,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       [17:31] :/ 1,
       32      :/ 1
     };
-  }
-  constraint num_reset_max_c {
-    num_resets inside {[cfg.seq_cfg.i2c_min_num_resets : cfg.seq_cfg.i2c_max_num_resets]};
   }
 
   // use this prob_dist value to make interrupt assertion more discrepancy
@@ -172,12 +170,22 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  task pre_start();
+    super.pre_start();
+    num_runs.rand_mode(0);
+  endtask : pre_start
+
+  virtual task initialization();
+    device_init();
+    host_init();
+  endtask : initialization
+
   virtual task device_init();
     i2c_device_seq m_dev_seq;
 
     if (!cfg.start_dev_seq) begin
       m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
-      `uvm_info(`gfn, "\nstart i2c_device sequence", UVM_DEBUG)
+      `uvm_info(`gfn, "\n  start i2c_device sequence", UVM_DEBUG)
       fork
         m_dev_seq.start(p_sequencer.i2c_sequencer_h);
       join_none
@@ -189,7 +197,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   virtual task host_init();
     bit [TL_DW-1:0] intr_state;
 
-    `uvm_info(`gfn, "\ninitialize host", UVM_DEBUG)
+    `uvm_info(`gfn, "\n  initialize host", UVM_DEBUG)
     // enable host/target
     ral.ctrl.enablehost.set(1'b1);
     ral.ctrl.enabletarget.set(1'b0);
@@ -217,7 +225,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
       hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
     end while (!fmtempty || !hostidle);
-    `uvm_info(`gfn, $sformatf("\nhost is in idle status"), UVM_DEBUG);
+    `uvm_info(`gfn, $sformatf("\n  host is in idle status"), UVM_DEBUG);
   endtask : check_host_idle
 
   function automatic void get_timing_values();
@@ -242,7 +250,7 @@ class i2c_base_vseq extends cip_base_vseq #(
                                   prob_sda_interference * t_sda_interference : 0;
     timing_cfg.tSdaUnstable     = (cfg.en_sda_unstable) ?
                                   prob_sda_unstable * t_sda_unstable : 0;
-    `uvm_info(`gfn, $sformatf("\ntSclItf = %0d, tSdaItf = %0d, tSdaUnstable = %0d",
+    `uvm_info(`gfn, $sformatf("\n  tSclItf = %0d, tSdaItf = %0d, tSdaUnstable = %0d",
         timing_cfg.tSclInterference,
         timing_cfg.tSdaInterference,
         timing_cfg.tSdaUnstable), UVM_DEBUG)
@@ -276,7 +284,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.timeout_ctrl));
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
-    `uvm_info(`gfn, $sformatf("\ncfg.m_i2c_agent_cfg.timing_cfg\n%p",
+    `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_DEBUG)
     // set time to stop test
     cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = cfg.ok_to_end_delay_ns;
