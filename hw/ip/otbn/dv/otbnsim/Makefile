@@ -25,3 +25,7 @@ $(lint-stamps): $(build-dir)/%.stamp: % $(py-libs) | $(build-dir)
 
 .PHONY: lint
 lint: $(lint-stamps)
+
+.PHONY: test
+test:
+	pytest test

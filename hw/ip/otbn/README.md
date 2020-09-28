@@ -133,8 +133,14 @@ cycle count and dumps DMEM contents. This is used to implement the
 model inside of simulation, but is probably not very convenient for
 command-line use otherwise.
 
+## Test the ISS
 
-### Update the RISC-V part of the ISS
+The ISS has a simple test suite, which runs various instructions and
+makes sure they behave as expected. You can find the tests in
+`dv/otbnsim/test` and can run them with `make -C dv/otbnsim test`.
+
+
+## Update the RISC-V part of the ISS
 
 The OTBN model is an instruction set simulator written in Python. It lives
 in the `opentitan` repository in the `util/otbnsim` directory, but builds on top
