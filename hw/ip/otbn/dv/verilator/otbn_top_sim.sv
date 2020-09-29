@@ -181,6 +181,7 @@ module otbn_top_sim (
 
   localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
   localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
+  localparam string DesignScope = "..u_otbn_core";
 
   logic otbn_model_done;
 
@@ -189,7 +190,7 @@ module otbn_top_sim (
     .ImemSizeByte    ( ImemSizeByte ),
     .DmemScope       ( DmemScope ),
     .ImemScope       ( ImemScope ),
-    .StandaloneModel ( 1'b0 )
+    .DesignScope     ( DesignScope )
   ) u_otbn_core_model (
     .clk_i        ( IO_CLK ),
     .rst_ni       ( IO_RST_N ),

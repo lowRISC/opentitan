@@ -21,11 +21,10 @@ module otbn_core_model
   parameter string ImemScope = "",
   // Scope of the data memory (for DPI)
   parameter string DmemScope = "",
-
-  // True if this is a "standalone" model, which should write DMEM on completion. If false, we
-  // assume there's a real implementation running alongside and we check that the DMEM contents
-  // match on completion.
-  parameter bit StandaloneModel = 1'b0,
+  // Scope of an RTL OTBN implementation (for DPI). If empty, this is a "standalone" model, which
+  // should update DMEM on completion. If not empty, we assume it's the scope for the top-level of a
+  // real implementation running alongside and we check DMEM contents on completion.
+  parameter string DesignScope = "",
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
@@ -107,11 +106,11 @@ module otbn_core_model
     unique case (retcode)
       0: new_run = 1'b1;
       1: begin
-        // The model has just finished running. If this is a standalone model, write the ISS's DMEM
-        // contents back to the simulation. Otherwise, check the ISS and simulation agree (TODO: We
-        // don't do error handling properly at the moment; for now, the C++ code just prints error
-        // messages to stderr).
-        if (StandaloneModel) begin
+        // The model has just finished running. If this is a standalone model (which we can tell
+        // because DesignScope is empty), write the ISS's DMEM contents back to the simulation.
+        // Otherwise, check the ISS and simulation agree (TODO: We don't do error handling properly
+        // at the moment; for now, the C++ code just prints error messages to stderr).
+        if (DesignScope.len() == 0) begin
           void'(otbn_model_load_dmem(model_handle, DmemScope, DmemSizeWords));
         end else begin
           void'(otbn_model_check_dmem(model_handle, DmemScope, DmemSizeWords));
