@@ -63,7 +63,7 @@ module otp_ctrl_part_unbuf
   // OTP Partition FSM //
   ///////////////////////
 
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 7 -n 10
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 7 -n 10 -s 4247417884
   // Hamming distance histogram:
   //
   // 0: --
@@ -71,24 +71,25 @@ module otp_ctrl_part_unbuf
   // 2: --
   // 3: --
   // 4: --
-  // 5: |||||||||||||||||||| (42.86%)
-  // 6: |||||||||||||||||||| (42.86%)
-  // 7: |||||| (14.29%)
-  // 8: --
+  // 5: |||||||||||||||||||| (52.38%)
+  // 6: |||||||||||||| (38.10%)
+  // 7: | (4.76%)
+  // 8: | (4.76%)
   // 9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 7
+  // Maximum Hamming distance: 8
   //
-  typedef enum logic [9:0] {
-    ResetSt    = 10'b1000011000,
-    InitSt     = 10'b1001110011,
-    InitWaitSt = 10'b0100000111,
-    IdleSt     = 10'b1101100100,
-    ReadSt     = 10'b1110101011,
-    ReadWaitSt = 10'b0011011101,
-    ErrorSt    = 10'b0111010010
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    ResetSt    = 10'b1000111001,
+    InitSt     = 10'b1010110110,
+    InitWaitSt = 10'b0100010011,
+    IdleSt     = 10'b0101011100,
+    ReadSt     = 10'b0011000010,
+    ReadWaitSt = 10'b1101100000,
+    ErrorSt    = 10'b0110100101
   } state_e;
 
   typedef enum logic {
@@ -350,13 +351,23 @@ module otp_ctrl_part_unbuf
   // Registers //
   ///////////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(ResetSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q       <= ResetSt;
       error_q       <= NoErr;
       tlul_addr_q   <= '0;
     end else begin
-      state_q       <= state_d;
       error_q       <= error_d;
       if (tlul_gnt) begin
         tlul_addr_q <= tlul_addr_d;

@@ -59,7 +59,7 @@ module otp_ctrl_lci
   // Controller FSM //
   ////////////////////
 
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 5 -n 9
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 5 -n 9 -s 558234734
   // Hamming distance histogram:
   //
   // 0: --
@@ -76,12 +76,13 @@ module otp_ctrl_lci
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
   //
-  typedef enum logic [8:0] {
-    ResetSt     = 9'b110111000,
-    IdleSt      = 9'b101010100,
-    WriteSt     = 9'b000101110,
-    WriteWaitSt = 9'b000010011,
-    ErrorSt     = 9'b011001101
+  localparam int StateWidth = 9;
+  typedef enum logic [StateWidth-1:0] {
+    ResetSt     = 9'b010110111,
+    IdleSt      = 9'b101010010,
+    WriteSt     = 9'b111101110,
+    WriteWaitSt = 9'b100011101,
+    ErrorSt     = 9'b010000000
   } state_e;
 
   logic cnt_clr, cnt_en;
@@ -124,7 +125,7 @@ module otp_ctrl_lci
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Wait for a request from the life cycle controllers
+      // Wait for a request from the life cycle controller
       IdleSt: begin
         if (lc_req_i) begin
           state_d = WriteSt;
@@ -232,13 +233,23 @@ module otp_ctrl_lci
   // Registers //
   ///////////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(ResetSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q <= ResetSt;
       error_q <= NoErr;
       cnt_q   <= '0;
     end else begin
-      state_q <= state_d;
       error_q <= error_d;
       cnt_q   <= cnt_d;
     end

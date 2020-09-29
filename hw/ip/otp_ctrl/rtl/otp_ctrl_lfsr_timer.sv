@@ -150,7 +150,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Ping and Timeout Logic //
   ////////////////////////////
 
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 5 -n 9
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 5 -n 9 -s 628816752
   // Hamming distance histogram:
   //
   // 0: --
@@ -167,12 +167,13 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
   //
-  typedef enum logic [8:0] {
-    ResetSt     = 9'b110010010,
-    IdleSt      = 9'b011011101,
-    IntegWaitSt = 9'b100111111,
-    CnstyWaitSt = 9'b001000110,
-    ErrorSt     = 9'b101101000
+  localparam int StateWidth = 9;
+  typedef enum logic [StateWidth-1:0] {
+    ResetSt     = 9'b011111011,
+    IdleSt      = 9'b000100000,
+    IntegWaitSt = 9'b110010101,
+    CnstyWaitSt = 9'b001010110,
+    ErrorSt     = 9'b100101111
   } state_e;
 
   state_e state_d, state_q;
@@ -283,9 +284,20 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   // Registers //
   ///////////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(ResetSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q     <= ResetSt;
       integ_cnt_q <= '0;
       cnsty_cnt_q <= '0;
       integ_chk_req_q <= '0;
@@ -293,7 +305,6 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       chk_timeout_q   <= 1'b0;
       reseed_timer_q  <= '0;
     end else begin
-      state_q     <= state_d;
       integ_cnt_q <= integ_cnt_d;
       cnsty_cnt_q <= cnsty_cnt_d;
       integ_chk_req_q <= integ_chk_req_d;
