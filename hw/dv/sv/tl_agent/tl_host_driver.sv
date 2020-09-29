@@ -48,7 +48,9 @@ class tl_host_driver extends tl_base_driver;
       reset_asserted = 1'b0;
       // Check for seq_item_port FIFO & pending req queue is empty when coming out of reset
       `DV_CHECK_EQ(pending_a_req.size(), 0)
-      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0);
+      `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
+      // Check if the a_source_pend_q maintained in the cfg is empty.
+      `DV_CHECK_EQ(cfg.a_source_pend_q.size(), 0)
     end
   endtask
 
@@ -57,9 +59,14 @@ class tl_host_driver extends tl_base_driver;
     int unsigned a_valid_delay, a_valid_len;
     bit req_done;
 
-    // wait until no outstanding transaction with same source id
-    `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    // Seq may override the a_source, in which case it is possible that it might not have factored
+    // in the a_source values from pending requests that have not yet completed. If that is true, we
+    // need to insert additional delays to ensure we do not end up sending the new request whose
+    // a_source matches one of the pending requests.
+    if (req.a_source_is_overridden) begin
+      `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
+                        wait(reset_asserted);)
+    end
 
     while (!req_done) begin
       if (cfg.use_seq_item_a_valid_delay) begin
@@ -105,13 +112,17 @@ class tl_host_driver extends tl_base_driver;
     end
     seq_item_port.item_done();
     // if reset, skip data phase
-    if (reset_asserted) seq_item_port.put_response(req);
+    if (reset_asserted) begin
+      // Just wire the d_source back to a_source to avoid errors in upstream logic.
+      req.d_source = req.a_source;
+      seq_item_port.put_response(req);
+    end
     `uvm_info(get_full_name(), $sformatf("Req sent: %0s", req.convert2string()), UVM_HIGH)
   endtask : send_a_channel_request
 
   virtual task send_a_request_body(int a_valid_len, ref bit req_done);
     int unsigned a_valid_cnt;
-    while(1) begin
+    while (1) begin
       @(cfg.vif.host_cb);
       a_valid_cnt++;
       if (cfg.vif.host_cb.d2h.a_ready) begin
@@ -171,11 +182,11 @@ class tl_host_driver extends tl_base_driver;
             // make sure every req has a rsp with same source even during reset
             if (reset_asserted) rsp.d_source = rsp.a_source;
             else                rsp.d_source = cfg.vif.host_cb.d2h.d_source;
-            req_found = 1'b1;
             seq_item_port.put_response(rsp);
             pending_a_req.delete(i);
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
+            req_found = 1'b1;
             break;
           end
         end
@@ -192,7 +203,7 @@ class tl_host_driver extends tl_base_driver;
     end
   endtask : d_channel_thread
 
-  function bit is_source_in_pending_req(bit [SourceWidth-1 : 0] source);
+  function bit is_source_in_pending_req(bit [SourceWidth-1:0] source);
     foreach (pending_a_req[i]) begin
       if (pending_a_req[i].a_source == source) return 1;
     end

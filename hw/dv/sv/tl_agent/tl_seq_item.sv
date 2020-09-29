@@ -62,6 +62,15 @@ class tl_seq_item extends uvm_sequence_item;
   rand int unsigned               d_valid_delay;
   rand int unsigned               d_valid_len;
 
+  // Indicates a_source val is overridden.
+  //
+  // a_source is randomized and set in tl_host_base_seq::finish_item() to facilitate late
+  // randomization. If this bit is set, the a_source is assumed to be set to a fixed value instead.
+  // It is possible that this fixed value might match one of the pending reqs in the that has not
+  // yet completed. The driver can then use this bit to add more delays if needed before sending
+  // this request, to avoid protocol violation.
+  bit                             a_source_is_overridden;
+
   // param is reserved for future use, must be zero
   constraint param_c {
     a_param == 0;
@@ -120,21 +129,22 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   `uvm_object_utils_begin(tl_seq_item)
-    `uvm_field_int  (a_addr,              UVM_DEFAULT)
-    `uvm_field_int  (a_data,              UVM_DEFAULT)
-    `uvm_field_int  (a_mask,              UVM_DEFAULT)
-    `uvm_field_int  (a_size,              UVM_DEFAULT)
-    `uvm_field_int  (a_param,             UVM_DEFAULT)
-    `uvm_field_int  (a_source,            UVM_DEFAULT)
-    `uvm_field_int  (a_opcode,            UVM_DEFAULT)
-    `uvm_field_int  (d_param,             UVM_DEFAULT)
-    `uvm_field_int  (d_source,            UVM_DEFAULT)
-    `uvm_field_int  (d_data,              UVM_DEFAULT)
-    `uvm_field_int  (d_size,              UVM_DEFAULT)
-    `uvm_field_int  (d_opcode,            UVM_DEFAULT)
-    `uvm_field_int  (d_error,             UVM_DEFAULT)
-    `uvm_field_int  (d_sink,              UVM_DEFAULT)
-    `uvm_field_int  (d_user,              UVM_DEFAULT)
+    `uvm_field_int  (a_addr,                 UVM_DEFAULT)
+    `uvm_field_int  (a_data,                 UVM_DEFAULT)
+    `uvm_field_int  (a_mask,                 UVM_DEFAULT)
+    `uvm_field_int  (a_size,                 UVM_DEFAULT)
+    `uvm_field_int  (a_param,                UVM_DEFAULT)
+    `uvm_field_int  (a_source,               UVM_DEFAULT)
+    `uvm_field_int  (a_opcode,               UVM_DEFAULT)
+    `uvm_field_int  (d_param,                UVM_DEFAULT)
+    `uvm_field_int  (d_source,               UVM_DEFAULT)
+    `uvm_field_int  (d_data,                 UVM_DEFAULT)
+    `uvm_field_int  (d_size,                 UVM_DEFAULT)
+    `uvm_field_int  (d_opcode,               UVM_DEFAULT)
+    `uvm_field_int  (d_error,                UVM_DEFAULT)
+    `uvm_field_int  (d_sink,                 UVM_DEFAULT)
+    `uvm_field_int  (d_user,                 UVM_DEFAULT)
+    `uvm_field_int  (a_source_is_overridden, UVM_DEFAULT | UVM_NOPACK | UVM_NOPRINT)
   `uvm_object_utils_end
 
   function new (string name = "");

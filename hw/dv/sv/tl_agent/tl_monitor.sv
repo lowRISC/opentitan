@@ -52,9 +52,11 @@ class tl_monitor extends dv_base_monitor#(
   virtual task reset_thread();
     forever begin
       @(negedge cfg.vif.rst_n);
+      cfg.reset_asserted = 1'b1;
       // on reset asserted sample pending request is present or not
       if (cfg.en_cov) cov.m_pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
       @(posedge cfg.vif.rst_n);
+      cfg.reset_asserted = 1'b0;
       pending_a_req.delete();
     end
   endtask : reset_thread
