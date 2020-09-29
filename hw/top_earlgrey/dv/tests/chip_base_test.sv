@@ -39,9 +39,6 @@ class chip_base_test extends cip_base_test #(
 
     // Knob to pre-initialize RAM to 0s (disabled by default).
     void'($value$plusargs("initialize_ram=%0b", cfg.initialize_ram));
-
-    // override tl_seq_item to apply constraint on source_id
-    tl_seq_item::type_id::set_type_override(chip_tl_seq_item::get_type());
   endfunction : build_phase
 
 endclass : chip_base_test
