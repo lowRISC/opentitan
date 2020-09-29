@@ -12,8 +12,8 @@ class xbar_env_cfg extends dv_base_env_cfg;
   uint               num_hosts;
   uint               num_devices;
   uint               num_enabled_hosts;
-  // Num of valid host source id bits, the upper bits should be tied to zero
-  uint               valid_host_id_width;
+  // Actual number of a_source bits used by the design.
+  uint               valid_a_source_width;
   // enable to drop valid without ready
   rand bit           allow_host_drop_valid_wo_ready;
   rand bit           allow_device_drop_valid_wo_ready;
@@ -43,15 +43,16 @@ class xbar_env_cfg extends dv_base_env_cfg;
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     has_ral = 0; // no csr in xbar
     // Host TL agent cfg
-    num_hosts           = xbar_hosts.size();
-    num_enabled_hosts   = xbar_hosts.size();
-    valid_host_id_width = top_pkg::TL_AIW - $clog2(num_hosts);
-    host_agent_cfg      = new[num_hosts];
+    num_hosts             = xbar_hosts.size();
+    num_enabled_hosts     = xbar_hosts.size();
+    valid_a_source_width  = top_pkg::TL_AIW - $clog2(num_hosts);
+    host_agent_cfg        = new[num_hosts];
     foreach (host_agent_cfg[i]) begin
-      host_agent_cfg[i] = tl_agent_cfg::type_id::
-                          create($sformatf("%0s_agent_cfg", xbar_hosts[i].host_name));
+      host_agent_cfg[i]   = tl_agent_cfg::type_id::
+                            create($sformatf("%0s_agent_cfg", xbar_hosts[i].host_name));
       host_agent_cfg[i].if_mode = dv_utils_pkg::Host;
-      host_agent_cfg[i].max_outstanding_req = 1 << valid_host_id_width;
+      host_agent_cfg[i].valid_a_source_width = valid_a_source_width;
+      host_agent_cfg[i].max_outstanding_req = 1 << valid_a_source_width;
       host_agent_cfg[i].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
     end
     // Device TL agent cfg
