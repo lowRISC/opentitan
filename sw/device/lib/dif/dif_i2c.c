@@ -27,59 +27,60 @@ static uint16_t round_up_divide(uint32_t a, uint32_t b) {
  *
  * Returns an unspecified value for an invalid speed.
  */
-static dif_i2c_timing_params_t default_timing_for_speed(
-    dif_i2c_speed_t speed, uint32_t clock_period_nanos) {
+static dif_i2c_config_t default_timing_for_speed(dif_i2c_speed_t speed,
+                                                 uint32_t clock_period_nanos) {
   // NOTE: All constants below are lifted from Table 10 of the I2C spec.
   // All literal values are given in nanoseconds; we don't bother putting
   // these into constants since they are not used anywhere else.
   switch (speed) {
     case kDifI2cSpeedStandard:
-      return (dif_i2c_timing_params_t){
-          .scl_time_high = round_up_divide(4000, clock_period_nanos),
-          .scl_time_low = round_up_divide(4700, clock_period_nanos),
-          .start_signal_setup_time = round_up_divide(4700, clock_period_nanos),
-          .start_signal_hold_time = round_up_divide(4000, clock_period_nanos),
-          .data_signal_setup_time = round_up_divide(250, clock_period_nanos),
-          .data_signal_hold_time = 0,
-          .stop_signal_setup_time = round_up_divide(4000, clock_period_nanos),
-          .stop_signal_hold_time = round_up_divide(4700, clock_period_nanos),
+      return (dif_i2c_config_t){
+          .scl_time_high_cycles = round_up_divide(4000, clock_period_nanos),
+          .scl_time_low_cycles = round_up_divide(4700, clock_period_nanos),
+          .start_signal_setup_cycles =
+              round_up_divide(4700, clock_period_nanos),
+          .start_signal_hold_cycles = round_up_divide(4000, clock_period_nanos),
+          .data_signal_setup_cycles = round_up_divide(250, clock_period_nanos),
+          .data_signal_hold_cycles = 0,
+          .stop_signal_setup_cycles = round_up_divide(4000, clock_period_nanos),
+          .stop_signal_hold_cycles = round_up_divide(4700, clock_period_nanos),
       };
     case kDifI2cSpeedFast:
-      return (dif_i2c_timing_params_t){
-          .scl_time_high = round_up_divide(600, clock_period_nanos),
-          .scl_time_low = round_up_divide(1300, clock_period_nanos),
-          .start_signal_setup_time = round_up_divide(600, clock_period_nanos),
-          .start_signal_hold_time = round_up_divide(600, clock_period_nanos),
-          .data_signal_setup_time = round_up_divide(100, clock_period_nanos),
-          .data_signal_hold_time = 0,
-          .stop_signal_setup_time = round_up_divide(600, clock_period_nanos),
-          .stop_signal_hold_time = round_up_divide(1300, clock_period_nanos),
+      return (dif_i2c_config_t){
+          .scl_time_high_cycles = round_up_divide(600, clock_period_nanos),
+          .scl_time_low_cycles = round_up_divide(1300, clock_period_nanos),
+          .start_signal_setup_cycles = round_up_divide(600, clock_period_nanos),
+          .start_signal_hold_cycles = round_up_divide(600, clock_period_nanos),
+          .data_signal_setup_cycles = round_up_divide(100, clock_period_nanos),
+          .data_signal_hold_cycles = 0,
+          .stop_signal_setup_cycles = round_up_divide(600, clock_period_nanos),
+          .stop_signal_hold_cycles = round_up_divide(1300, clock_period_nanos),
       };
     case kDifI2cSpeedFastPlus:
-      return (dif_i2c_timing_params_t){
-          .scl_time_high = round_up_divide(260, clock_period_nanos),
-          .scl_time_low = round_up_divide(500, clock_period_nanos),
-          .start_signal_setup_time = round_up_divide(260, clock_period_nanos),
-          .start_signal_hold_time = round_up_divide(260, clock_period_nanos),
-          .data_signal_setup_time = round_up_divide(50, clock_period_nanos),
-          .data_signal_hold_time = 0,
-          .stop_signal_setup_time = round_up_divide(260, clock_period_nanos),
-          .stop_signal_hold_time = round_up_divide(500, clock_period_nanos),
+      return (dif_i2c_config_t){
+          .scl_time_high_cycles = round_up_divide(260, clock_period_nanos),
+          .scl_time_low_cycles = round_up_divide(500, clock_period_nanos),
+          .start_signal_setup_cycles = round_up_divide(260, clock_period_nanos),
+          .start_signal_hold_cycles = round_up_divide(260, clock_period_nanos),
+          .data_signal_setup_cycles = round_up_divide(50, clock_period_nanos),
+          .data_signal_hold_cycles = 0,
+          .stop_signal_setup_cycles = round_up_divide(260, clock_period_nanos),
+          .stop_signal_hold_cycles = round_up_divide(500, clock_period_nanos),
       };
     default:
-      return (dif_i2c_timing_params_t){0};
+      return (dif_i2c_config_t){0};
   }
 }
 
 static const uint32_t kNanosPerKBaud = 1000000;  // One million.
 
-dif_i2c_result_t dif_i2c_compute_timing(const dif_i2c_timing_config_t *config,
-                                        dif_i2c_timing_params_t *out) {
-  if (config == NULL || out == NULL) {
+dif_i2c_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
+                                        dif_i2c_config_t *config) {
+  if (config == NULL) {
     return kDifI2cBadArg;
   }
   uint32_t lowest_target_device_speed_khz;
-  switch (config->lowest_target_device_speed) {
+  switch (timing_config.lowest_target_device_speed) {
     case kDifI2cSpeedStandard:
       lowest_target_device_speed_khz = 100;
       break;
@@ -96,52 +97,64 @@ dif_i2c_result_t dif_i2c_compute_timing(const dif_i2c_timing_config_t *config,
   // This code follows the algorithm given in
   // https://docs.opentitan.org/hw/ip/i2c/doc/index.html#initialization
 
-  *out = default_timing_for_speed(config->lowest_target_device_speed,
-                                  config->clock_period_nanos);
+  *config = default_timing_for_speed(timing_config.lowest_target_device_speed,
+                                     timing_config.clock_period_nanos);
 
-  out->rise_time =
-      round_up_divide(config->sda_rise_nanos, config->clock_period_nanos);
-  out->fall_time =
-      round_up_divide(config->sda_fall_nanos, config->clock_period_nanos);
+  config->rise_cycles = round_up_divide(timing_config.sda_rise_nanos,
+                                        timing_config.clock_period_nanos);
+  config->fall_cycles = round_up_divide(timing_config.sda_fall_nanos,
+                                        timing_config.clock_period_nanos);
 
-  uint32_t scl_period_nanos = config->scl_period_nanos;
+  uint32_t scl_period_nanos = timing_config.scl_period_nanos;
   uint32_t slowest_scl_period_nanos =
       kNanosPerKBaud / lowest_target_device_speed_khz;
   if (scl_period_nanos < slowest_scl_period_nanos) {
     scl_period_nanos = slowest_scl_period_nanos;
   }
   uint16_t scl_period_cycles =
-      round_up_divide(scl_period_nanos, config->clock_period_nanos);
+      round_up_divide(scl_period_nanos, timing_config.clock_period_nanos);
 
   // Lengthen the SCL high period to accomodate the desired SCL period.
-  uint16_t lengthened_high_time =
-      scl_period_cycles - out->scl_time_low - out->rise_time - out->fall_time;
-  if (lengthened_high_time > out->scl_time_high) {
-    out->scl_time_high = lengthened_high_time;
+  uint16_t lengthened_high_cycles = scl_period_cycles -
+                                    config->scl_time_low_cycles -
+                                    config->rise_cycles - config->fall_cycles;
+  if (lengthened_high_cycles > config->scl_time_high_cycles) {
+    config->scl_time_high_cycles = lengthened_high_cycles;
   }
 
   return kDifI2cOk;
 }
 
-/**
- * Writes all ten timing params in `timing` into the register in `i2c`.
- */
-static void write_timing_params(const dif_i2c_t *i2c,
-                                const dif_i2c_timing_params_t *timing) {
+dif_i2c_result_t dif_i2c_init(dif_i2c_params_t params, dif_i2c_t *i2c) {
+  if (i2c == NULL) {
+    return kDifI2cBadArg;
+  }
+
+  i2c->params = params;
+
+  return kDifI2cOk;
+}
+
+dif_i2c_result_t dif_i2c_configure(const dif_i2c_t *i2c,
+                                   dif_i2c_config_t config) {
+  if (i2c == NULL) {
+    return kDifI2cBadArg;
+  }
+
   uint32_t timing0 = 0;
   timing0 = bitfield_field32_write(
       timing0,
       (bitfield_field32_t){
           .mask = I2C_TIMING0_THIGH_MASK, .index = I2C_TIMING0_THIGH_OFFSET,
       },
-      timing->scl_time_high);
+      config.scl_time_high_cycles);
   timing0 = bitfield_field32_write(
       timing0,
       (bitfield_field32_t){
           .mask = I2C_TIMING0_TLOW_MASK, .index = I2C_TIMING0_TLOW_OFFSET,
       },
-      timing->scl_time_low);
-  mmio_region_write32(i2c->base_addr, I2C_TIMING0_REG_OFFSET, timing0);
+      config.scl_time_low_cycles);
+  mmio_region_write32(i2c->params.base_addr, I2C_TIMING0_REG_OFFSET, timing0);
 
   uint32_t timing1 = 0;
   timing1 = bitfield_field32_write(
@@ -149,14 +162,14 @@ static void write_timing_params(const dif_i2c_t *i2c,
       (bitfield_field32_t){
           .mask = I2C_TIMING1_T_R_MASK, .index = I2C_TIMING1_T_R_OFFSET,
       },
-      timing->rise_time);
+      config.rise_cycles);
   timing1 = bitfield_field32_write(
       timing1,
       (bitfield_field32_t){
           .mask = I2C_TIMING1_T_F_MASK, .index = I2C_TIMING1_T_F_OFFSET,
       },
-      timing->fall_time);
-  mmio_region_write32(i2c->base_addr, I2C_TIMING1_REG_OFFSET, timing1);
+      config.fall_cycles);
+  mmio_region_write32(i2c->params.base_addr, I2C_TIMING1_REG_OFFSET, timing1);
 
   uint32_t timing2 = 0;
   timing2 = bitfield_field32_write(
@@ -164,14 +177,14 @@ static void write_timing_params(const dif_i2c_t *i2c,
       (bitfield_field32_t){
           .mask = I2C_TIMING2_TSU_STA_MASK, .index = I2C_TIMING2_TSU_STA_OFFSET,
       },
-      timing->start_signal_setup_time);
+      config.start_signal_setup_cycles);
   timing2 = bitfield_field32_write(
       timing2,
       (bitfield_field32_t){
           .mask = I2C_TIMING2_THD_STA_MASK, .index = I2C_TIMING2_THD_STA_OFFSET,
       },
-      timing->start_signal_hold_time);
-  mmio_region_write32(i2c->base_addr, I2C_TIMING2_REG_OFFSET, timing2);
+      config.start_signal_hold_cycles);
+  mmio_region_write32(i2c->params.base_addr, I2C_TIMING2_REG_OFFSET, timing2);
 
   uint32_t timing3 = 0;
   timing3 = bitfield_field32_write(
@@ -179,14 +192,14 @@ static void write_timing_params(const dif_i2c_t *i2c,
       (bitfield_field32_t){
           .mask = I2C_TIMING3_TSU_DAT_MASK, .index = I2C_TIMING3_TSU_DAT_OFFSET,
       },
-      timing->data_signal_setup_time);
+      config.data_signal_setup_cycles);
   timing3 = bitfield_field32_write(
       timing3,
       (bitfield_field32_t){
           .mask = I2C_TIMING3_THD_DAT_MASK, .index = I2C_TIMING3_THD_DAT_OFFSET,
       },
-      timing->data_signal_hold_time);
-  mmio_region_write32(i2c->base_addr, I2C_TIMING3_REG_OFFSET, timing3);
+      config.data_signal_hold_cycles);
+  mmio_region_write32(i2c->params.base_addr, I2C_TIMING3_REG_OFFSET, timing3);
 
   uint32_t timing4 = 0;
   timing4 = bitfield_field32_write(
@@ -194,52 +207,14 @@ static void write_timing_params(const dif_i2c_t *i2c,
       (bitfield_field32_t){
           .mask = I2C_TIMING4_TSU_STO_MASK, .index = I2C_TIMING4_TSU_STO_OFFSET,
       },
-      timing->stop_signal_setup_time);
+      config.stop_signal_setup_cycles);
   timing4 = bitfield_field32_write(
       timing4,
       (bitfield_field32_t){
           .mask = I2C_TIMING4_T_BUF_MASK, .index = I2C_TIMING4_T_BUF_OFFSET,
       },
-      timing->stop_signal_hold_time);
-  mmio_region_write32(i2c->base_addr, I2C_TIMING4_REG_OFFSET, timing4);
-}
-
-dif_i2c_result_t dif_i2c_init(mmio_region_t base_addr,
-                              const dif_i2c_timing_params_t *timing,
-                              dif_i2c_t *i2c) {
-  if (timing == NULL || i2c == NULL) {
-    return kDifI2cBadArg;
-  }
-
-  i2c->base_addr = base_addr;
-
-  // Turn the device off, before resetting it.
-  dif_i2c_result_t error;
-  error = dif_i2c_host_set_enabled(i2c, kDifI2cDisabled);
-  if (error != kDifI2cOk) {
-    return error;
-  }
-
-  // Clear + disable all interrupts. We do this directly, rather than using the
-  // actual DIF functions, to perform both in single store operations.
-  mmio_region_write32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET, UINT32_MAX);
-  mmio_region_write32(i2c->base_addr, I2C_INTR_ENABLE_REG_OFFSET, 0);
-
-  // Reset all FIFO state.
-  error = dif_i2c_reset_rx_fifo(i2c);
-  if (error != kDifI2cOk) {
-    return error;
-  }
-  error = dif_i2c_reset_fmt_fifo(i2c);
-  if (error != kDifI2cOk) {
-    return error;
-  }
-  error = dif_i2c_set_watermarks(i2c, kDifI2cLevel1Byte, kDifI2cLevel1Byte);
-  if (error != kDifI2cOk) {
-    return error;
-  }
-
-  write_timing_params(i2c, timing);
+      config.stop_signal_hold_cycles);
+  mmio_region_write32(i2c->params.base_addr, I2C_TIMING4_REG_OFFSET, timing4);
 
   return kDifI2cOk;
 }
@@ -249,8 +224,8 @@ dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c) {
     return kDifI2cBadArg;
   }
 
-  mmio_region_nonatomic_set_bit32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET,
-                                  I2C_FIFO_CTRL_RXRST);
+  mmio_region_nonatomic_set_bit32(
+      i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET, I2C_FIFO_CTRL_RXRST);
 
   return kDifI2cOk;
 }
@@ -260,8 +235,8 @@ dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c) {
     return kDifI2cBadArg;
   }
 
-  mmio_region_nonatomic_set_bit32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET,
-                                  I2C_FIFO_CTRL_FMTRST);
+  mmio_region_nonatomic_set_bit32(
+      i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET, I2C_FIFO_CTRL_FMTRST);
 
   return kDifI2cOk;
 }
@@ -313,7 +288,7 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
   }
 
   uint32_t ctrl_value =
-      mmio_region_read32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET);
+      mmio_region_read32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET);
   ctrl_value = bitfield_field32_write(ctrl_value,
                                       (bitfield_field32_t){
                                           .mask = I2C_FIFO_CTRL_RXILVL_MASK,
@@ -326,40 +301,41 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
                                           .index = I2C_FIFO_CTRL_FMTILVL_OFFSET,
                                       },
                                       fmt_level_value);
-  mmio_region_write32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET, ctrl_value);
+  mmio_region_write32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET,
+                      ctrl_value);
 
   return kDifI2cOk;
 }
 
 DIF_WARN_UNUSED_RESULT
-static dif_i2c_result_t irq_bit_for_type(dif_i2c_irq_type_t type,
+static dif_i2c_result_t irq_bit_for_type(dif_i2c_irq_t irq,
                                          uint32_t *bit_index) {
-  switch (type) {
-    case kDifI2cIrqTypeFmtWatermarkUnderflow:
+  switch (irq) {
+    case kDifI2cIrqFmtWatermarkUnderflow:
       *bit_index = I2C_INTR_COMMON_FMT_WATERMARK;
       break;
-    case kDifI2cIrqTypeRxWatermarkOverflow:
+    case kDifI2cIrqRxWatermarkOverflow:
       *bit_index = I2C_INTR_COMMON_RX_WATERMARK;
       break;
-    case kDifI2cIrqTypeFmtFifoOverflow:
+    case kDifI2cIrqFmtFifoOverflow:
       *bit_index = I2C_INTR_COMMON_FMT_OVERFLOW;
       break;
-    case kDifI2cIrqTypeRxFifoOverflow:
+    case kDifI2cIrqRxFifoOverflow:
       *bit_index = I2C_INTR_COMMON_RX_OVERFLOW;
       break;
-    case kDifI2cIrqTypeNak:
+    case kDifI2cIrqNak:
       *bit_index = I2C_INTR_COMMON_NAK;
       break;
-    case kDifI2cIrqTypeSclInterference:
+    case kDifI2cIrqSclInterference:
       *bit_index = I2C_INTR_COMMON_SCL_INTERFERENCE;
       break;
-    case kDifI2cIrqTypeSdaInterference:
+    case kDifI2cIrqSdaInterference:
       *bit_index = I2C_INTR_COMMON_SDA_INTERFERENCE;
       break;
-    case kDifI2cIrqTypeClockStretchTimeout:
+    case kDifI2cIrqClockStretchTimeout:
       *bit_index = I2C_INTR_COMMON_STRETCH_TIMEOUT;
       break;
-    case kDifI2cIrqTypeSdaUnstable:
+    case kDifI2cIrqSdaUnstable:
       *bit_index = I2C_INTR_COMMON_SDA_UNSTABLE;
       break;
     default:
@@ -368,63 +344,84 @@ static dif_i2c_result_t irq_bit_for_type(dif_i2c_irq_type_t type,
   return kDifI2cOk;
 }
 
-dif_i2c_result_t dif_i2c_irq_get(const dif_i2c_t *i2c, dif_i2c_irq_type_t type,
-                                 bool *flag_out) {
-  if (i2c == NULL || flag_out == NULL) {
+dif_i2c_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+                                        bool *is_pending) {
+  if (i2c == NULL || is_pending == NULL) {
     return kDifI2cBadArg;
   }
 
   uint32_t index;
-  dif_i2c_result_t err = irq_bit_for_type(type, &index);
+  dif_i2c_result_t err = irq_bit_for_type(irq, &index);
   if (err != kDifI2cOk) {
     return err;
   }
 
-  *flag_out =
-      mmio_region_get_bit32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET, index);
+  *is_pending = mmio_region_get_bit32(i2c->params.base_addr,
+                                      I2C_INTR_STATE_REG_OFFSET, index);
 
   return kDifI2cOk;
 }
 
-dif_i2c_result_t dif_i2c_irq_clear(const dif_i2c_t *i2c,
-                                   dif_i2c_irq_type_t type) {
+dif_i2c_result_t dif_i2c_irq_acknowledge(const dif_i2c_t *i2c,
+                                         dif_i2c_irq_t irq) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
   uint32_t index;
-  dif_i2c_result_t err = irq_bit_for_type(type, &index);
+  dif_i2c_result_t err = irq_bit_for_type(irq, &index);
   if (err != kDifI2cOk) {
     return err;
   }
 
   // IRQ state registers are write-one-clear.
-  mmio_region_write_only_set_bit32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET,
-                                   index);
+  mmio_region_write_only_set_bit32(i2c->params.base_addr,
+                                   I2C_INTR_STATE_REG_OFFSET, index);
 
   return kDifI2cOk;
 }
 
-dif_i2c_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c,
-                                         dif_i2c_irq_type_t type,
-                                         dif_i2c_enable_t state) {
+dif_i2c_result_t dif_i2c_irq_get_enabled(const dif_i2c_t *i2c,
+                                         dif_i2c_irq_t irq,
+                                         dif_i2c_toggle_t *state) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
   uint32_t index;
-  dif_i2c_result_t err = irq_bit_for_type(type, &index);
+  dif_i2c_result_t err = irq_bit_for_type(irq, &index);
+  if (err != kDifI2cOk) {
+    return err;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(i2c->params.base_addr, I2C_INTR_ENABLE_REG_OFFSET);
+  bool is_enabled = bitfield_bit32_read(reg, index);
+  *state = is_enabled ? kDifI2cToggleEnabled : kDifI2cToggleDisabled;
+
+  return kDifI2cOk;
+}
+
+dif_i2c_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c,
+                                         dif_i2c_irq_t irq,
+                                         dif_i2c_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifI2cBadArg;
+  }
+
+  uint32_t index;
+  dif_i2c_result_t err = irq_bit_for_type(irq, &index);
   if (err != kDifI2cOk) {
     return err;
   }
 
   switch (state) {
-    case kDifI2cEnabled:
-      mmio_region_nonatomic_set_bit32(i2c->base_addr,
+    case kDifI2cToggleEnabled:
+      mmio_region_nonatomic_set_bit32(i2c->params.base_addr,
                                       I2C_INTR_ENABLE_REG_OFFSET, index);
       break;
-    case kDifI2cDisabled:
-      mmio_region_nonatomic_clear_bit32(i2c->base_addr,
+    case kDifI2cToggleDisabled:
+      mmio_region_nonatomic_clear_bit32(i2c->params.base_addr,
                                         I2C_INTR_ENABLE_REG_OFFSET, index);
       break;
     default:
@@ -434,38 +431,65 @@ dif_i2c_result_t dif_i2c_irq_set_enabled(const dif_i2c_t *i2c,
   return kDifI2cOk;
 }
 
-dif_i2c_result_t dif_i2c_irq_force(const dif_i2c_t *i2c,
-                                   dif_i2c_irq_type_t type) {
+dif_i2c_result_t dif_i2c_irq_force(const dif_i2c_t *i2c, dif_i2c_irq_t irq) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
   uint32_t index;
-  dif_i2c_result_t err = irq_bit_for_type(type, &index);
+  dif_i2c_result_t err = irq_bit_for_type(irq, &index);
   if (err != kDifI2cOk) {
     return err;
   }
 
-  mmio_region_write_only_set_bit32(i2c->base_addr, I2C_INTR_TEST_REG_OFFSET,
-                                   index);
+  mmio_region_write_only_set_bit32(i2c->params.base_addr,
+                                   I2C_INTR_TEST_REG_OFFSET, index);
+
+  return kDifI2cOk;
+}
+
+dif_i2c_result_t dif_i2c_irq_disable_all(const dif_i2c_t *i2c,
+                                         dif_i2c_irq_snapshot_t *snapshot) {
+  if (i2c == NULL) {
+    return kDifI2cBadArg;
+  }
+
+  if (snapshot != NULL) {
+    *snapshot =
+        mmio_region_read32(i2c->params.base_addr, I2C_INTR_ENABLE_REG_OFFSET);
+  }
+
+  mmio_region_write32(i2c->params.base_addr, I2C_INTR_ENABLE_REG_OFFSET, 0);
+
+  return kDifI2cOk;
+}
+
+dif_i2c_result_t dif_i2c_irq_restore_all(
+    const dif_i2c_t *i2c, const dif_i2c_irq_snapshot_t *snapshot) {
+  if (i2c == NULL || snapshot == NULL) {
+    return kDifI2cBadArg;
+  }
+
+  mmio_region_write32(i2c->params.base_addr, I2C_INTR_ENABLE_REG_OFFSET,
+                      *snapshot);
 
   return kDifI2cOk;
 }
 
 dif_i2c_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c,
-                                          dif_i2c_enable_t state) {
+                                          dif_i2c_toggle_t state) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
   switch (state) {
-    case kDifI2cEnabled:
-      mmio_region_nonatomic_set_bit32(i2c->base_addr, I2C_CTRL_REG_OFFSET,
-                                      I2C_CTRL_ENABLEHOST);
+    case kDifI2cToggleEnabled:
+      mmio_region_nonatomic_set_bit32(i2c->params.base_addr,
+                                      I2C_CTRL_REG_OFFSET, I2C_CTRL_ENABLEHOST);
       break;
-    case kDifI2cDisabled:
-      mmio_region_nonatomic_clear_bit32(i2c->base_addr, I2C_CTRL_REG_OFFSET,
-                                        I2C_CTRL_ENABLEHOST);
+    case kDifI2cToggleDisabled:
+      mmio_region_nonatomic_clear_bit32(
+          i2c->params.base_addr, I2C_CTRL_REG_OFFSET, I2C_CTRL_ENABLEHOST);
       break;
     default:
       return kDifI2cBadArg;
@@ -475,19 +499,19 @@ dif_i2c_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c,
 }
 
 dif_i2c_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
-                                              dif_i2c_enable_t state) {
+                                              dif_i2c_toggle_t state) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
   switch (state) {
-    case kDifI2cEnabled:
-      mmio_region_nonatomic_set_bit32(i2c->base_addr, I2C_OVRD_REG_OFFSET,
-                                      I2C_OVRD_TXOVRDEN);
+    case kDifI2cToggleEnabled:
+      mmio_region_nonatomic_set_bit32(i2c->params.base_addr,
+                                      I2C_OVRD_REG_OFFSET, I2C_OVRD_TXOVRDEN);
       break;
-    case kDifI2cDisabled:
-      mmio_region_nonatomic_clear_bit32(i2c->base_addr, I2C_OVRD_REG_OFFSET,
-                                        I2C_OVRD_TXOVRDEN);
+    case kDifI2cToggleDisabled:
+      mmio_region_nonatomic_clear_bit32(i2c->params.base_addr,
+                                        I2C_OVRD_REG_OFFSET, I2C_OVRD_TXOVRDEN);
       break;
     default:
       return kDifI2cBadArg;
@@ -503,10 +527,10 @@ dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
   }
 
   uint32_t override_val =
-      mmio_region_read32(i2c->base_addr, I2C_OVRD_REG_OFFSET);
+      mmio_region_read32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET);
   override_val = bitfield_bit32_write(override_val, I2C_OVRD_SCLVAL, scl);
   override_val = bitfield_bit32_write(override_val, I2C_OVRD_SDAVAL, sda);
-  mmio_region_write32(i2c->base_addr, I2C_OVRD_REG_OFFSET, override_val);
+  mmio_region_write32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET, override_val);
 
   return kDifI2cOk;
 }
@@ -518,7 +542,8 @@ dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
     return kDifI2cBadArg;
   }
 
-  uint32_t samples = mmio_region_read32(i2c->base_addr, I2C_VAL_REG_OFFSET);
+  uint32_t samples =
+      mmio_region_read32(i2c->params.base_addr, I2C_VAL_REG_OFFSET);
   if (scl_samples != NULL) {
     *scl_samples = bitfield_field32_read(
         samples,
@@ -546,7 +571,7 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
   }
 
   uint32_t values =
-      mmio_region_read32(i2c->base_addr, I2C_FIFO_STATUS_REG_OFFSET);
+      mmio_region_read32(i2c->params.base_addr, I2C_FIFO_STATUS_REG_OFFSET);
   if (fmt_fifo_level != NULL) {
     *fmt_fifo_level = bitfield_field32_read(
         values, (bitfield_field32_t){
@@ -570,7 +595,8 @@ dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte) {
     return kDifI2cBadArg;
   }
 
-  uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
+  uint32_t values =
+      mmio_region_read32(i2c->params.base_addr, I2C_RDATA_REG_OFFSET);
   if (byte != NULL) {
     *byte = bitfield_field32_read(values, (bitfield_field32_t){
                                               .mask = I2C_RDATA_RDATA_MASK,
@@ -611,7 +637,7 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_RCONT, flags.read_cont);
   fmt_byte =
       bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK, flags.supress_nak_irq);
-  mmio_region_write32(i2c->base_addr, I2C_FDATA_REG_OFFSET, fmt_byte);
+  mmio_region_write32(i2c->params.base_addr, I2C_FDATA_REG_OFFSET, fmt_byte);
 
   return kDifI2cOk;
 }
