@@ -14,6 +14,7 @@ variables:
   TOOLCHAIN_VERSION: 20200626-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
+  VIVADO_VERSION: "2020.1"
 
 trigger:
   batch: true
@@ -441,6 +442,35 @@ jobs:
   - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: top_earlgrey_nexysvideo
+
+- job: execute_fpga_tests
+  displayName: Execute tests on FPGA
+  pool: FPGA
+  timeoutInMinutes: 30
+  dependsOn:
+    - top_earlgrey_nexysvideo
+    - sw_build
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+  - bash: |
+      set -e
+
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/earlgrey/test_fpga_nexysvideo.py \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests on Nexys Video FPGA board" \
+        --napoleon-docstrings
+    # FPGA CI is using new infrastructure. Do not fail CI until we have more
+    # experience with it.
+    continueOnError: true
+    displayName: Execute tests
 
 - job: deploy_release_artifacts
   displayName: Package and deploy release distribution
