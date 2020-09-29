@@ -57,6 +57,11 @@
     _inst_name_ = _type_name_::type_id::create(`"_inst_name_`", this);
 `endif
 
+// Convert arbitrary text / expression to string.
+`ifndef DV_STRINGIFY
+  `define DV_STRINGIFY(I_) `"I_`"
+`endif
+
 // Common check macros used by DV_CHECK error and fatal macros.
 // Note: Should not be called by user code
 `ifndef DV_CHECK
@@ -342,5 +347,56 @@
       join_any \
       disable fork; \
     end join \
+  end
+`endif
+
+// Control assertions in the DUT.
+//
+// This macro is invoked in top level testbench that instantiates the DUT. It spawns off an initial
+// block that forever waits for a resource of type bit named by the string arg ~LABEL_~ that
+// can be set by any entity in the testbench. Based on the value set, it enables or disables the
+// assertions at the hierarchy of the provided path. The entity setting the resource value invokes
+// uvm_config_db#(bit)::set(...) and this macro calls the corresponding get.
+//
+// LABEL_ : Name of the assertion control resource bit (string).
+// HIER_  : Path to the module within which the assertion is controlled.
+// LEVELS_: Number of levels within the module to control the assertions.
+// SCOPE_ : Hierarchical string path to the testbench where this macro is invoked, example: %m.
+// ID_    : Identifier string used for UVM logs.
+`ifndef DV_ASSERT_CTRL
+`define DV_ASSERT_CTRL(LABEL_, HIER_, LEVELS_ = 0, SCOPE_ = "", ID_ = "%m") \
+  initial begin \
+    bit assert_en; \
+    forever begin \
+      uvm_config_db#(bit)::wait_modified(null, SCOPE_, LABEL_); \
+      if (!uvm_config_db#(bit)::get(null, SCOPE_, LABEL_, assert_en)) begin \
+        `uvm_fatal(ID_, $sformatf("Failed to get \"%0s\" from uvm_config_db", LABEL_)) \
+      end \
+      if (assert_en) begin \
+        `uvm_info(ID_, $sformatf("Enabling assertions: %0s", `DV_STRINGIFY(HIER_)), UVM_LOW) \
+        $asserton(LEVELS_, HIER_); \
+      end else begin \
+        `uvm_info(ID_, $sformatf("Disabling assertions: %0s", `DV_STRINGIFY(HIER_)), UVM_LOW) \
+        $assertoff(LEVELS_, HIER_); \
+      end \
+    end \
+  end
+`endif
+
+// Enable / disable assertions at a module hierarchy identified by LABEL_.
+//
+// This goes in conjunction with `DV_ASSERT_CTRL() macro above, but is invoked in the entity that is
+// sending the req to turn on / off the assertions. Note that that piece of code invoking this macro
+// does not have the information on the actual hierarchical path to the module or the levels - this
+// is 'wrapped' into the LABEL_ instead. DV user needs to uniquify the label sufficienly enough to
+// reflect it.
+//
+// LABEL_ : Name of the assertion control resource bit (string).
+// VALUE_ : Value of the control bit - 1 - enable assertions, 0 - disable assertions.
+// SCOPE_ : Hierarchical string path to the testbench where this macro is invoked, example: %m.
+`ifndef DV_ASSERT_CTRL_REQ
+`define DV_ASSERT_CTRL_REQ(LABEL_, VALUE_, SCOPE_="") \
+  begin \
+    uvm_config_db#(bit)::set(null, SCOPE_, LABEL_, VALUE_); \
   end
 `endif

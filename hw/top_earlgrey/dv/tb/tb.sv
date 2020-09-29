@@ -255,6 +255,9 @@ module tb;
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
+  // Control assertions in the DUT.
+  `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
+
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"
 
