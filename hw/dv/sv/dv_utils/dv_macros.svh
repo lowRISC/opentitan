@@ -304,32 +304,14 @@
   `define GET_PARITY(val, odd=0) (^val ^ odd)
 `endif
 
-// wait a task or statement with timer watchdog
+// Wait a task or statement with exit condition
+// Kill the thread when either the wait statement is completed or exit condition occurs
 // input WAIT_ need to be a statement. Here are some examples
 // `DV_SPINWAIT(wait(...);, "Wait for ...")
 // `DV_SPINWAIT(
 //              while (1) begin
 //                ...
 //              end)
-`ifndef DV_SPINWAIT
-`define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  begin \
-    fork begin \
-      fork \
-        begin \
-          WAIT_ \
-        end \
-        begin \
-          wait_timeout(TIMEOUT_NS_, ID_, MSG_); \
-        end \
-      join_any \
-      disable fork; \
-    end join \
-  end
-`endif
-
-// Wait a task or statement with exit condition
-// Kill the thread when either the wait statement is completed or exit condition occurs
 `ifndef DV_SPINWAIT_EXIT
 `define DV_SPINWAIT_EXIT(WAIT_, EXIT_, MSG_ = "exit condition occurred!", ID_ =`gfn) \
   begin \
@@ -348,6 +330,12 @@
       disable fork; \
     end join \
   end
+`endif
+
+// wait a task or statement with timer watchdog
+`ifndef DV_SPINWAIT
+`define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
+  `DV_SPINWAIT_EXIT(WAIT_, wait_timeout(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
 `endif
 
 // Control assertions in the DUT.
