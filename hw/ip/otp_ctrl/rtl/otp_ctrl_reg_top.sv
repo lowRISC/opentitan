@@ -799,79 +799,52 @@ module otp_ctrl_reg_top (
   );
 
 
-  // R[direct_access_cmd]: V(False)
+  // R[direct_access_cmd]: V(True)
 
   //   F[read]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_direct_access_cmd_read (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (direct_access_cmd_read_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_read_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.direct_access_cmd.read.qe),
     .q      (reg2hw.direct_access_cmd.read.q ),
-
     .qs     ()
   );
 
 
   //   F[write]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_direct_access_cmd_write (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (direct_access_cmd_write_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_write_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.direct_access_cmd.write.qe),
     .q      (reg2hw.direct_access_cmd.write.q ),
-
     .qs     ()
   );
 
 
   //   F[digest]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_direct_access_cmd_digest (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (direct_access_cmd_digest_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_digest_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.direct_access_cmd.digest.qe),
     .q      (reg2hw.direct_access_cmd.digest.q ),
-
     .qs     ()
   );
 
@@ -1020,54 +993,36 @@ module otp_ctrl_reg_top (
   );
 
 
-  // R[check_trigger]: V(False)
+  // R[check_trigger]: V(True)
 
   //   F[integrity]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_check_trigger_integrity (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (check_trigger_integrity_we & check_trigger_regwen_qs),
     .wd     (check_trigger_integrity_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.check_trigger.integrity.qe),
     .q      (reg2hw.check_trigger.integrity.q ),
-
     .qs     ()
   );
 
 
   //   F[consistency]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_check_trigger_consistency (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (check_trigger_consistency_we & check_trigger_regwen_qs),
     .wd     (check_trigger_consistency_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.check_trigger.consistency.qe),
     .q      (reg2hw.check_trigger.consistency.q ),
-
     .qs     ()
   );
 
