@@ -98,6 +98,13 @@
       act:    "req"
       package: "otp_ctrl_pkg"
     }
+    // Power sequencing signals to/from AST
+    { struct: "otp_ast"
+      type:   "req_rsp"
+      name:   "otp_ast_pwr_seq"
+      act:    "req"
+      package: "otp_ctrl_pkg"
+    }
     // LC transition command
     { struct: "lc_otp_program"
       type:   "req_rsp"

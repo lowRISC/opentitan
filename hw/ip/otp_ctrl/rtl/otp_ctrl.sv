@@ -13,7 +13,9 @@ module otp_ctrl
 (
   input                             clk_i,
   input                             rst_ni,
-  // TODO: signals to AST
+  // Macro-specific power sequencing signals to/from AST
+  output otp_ast_req_t              otp_ast_pwr_seq_o,
+  input  otp_ast_rsp_t              otp_ast_pwr_seq_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t         tl_i,
   output tlul_pkg::tl_d2h_t         tl_o,
@@ -139,51 +141,43 @@ module otp_ctrl
   // OTP Macro //
   ///////////////
 
-  localparam int OtpWidth     = 16;
-  localparam int OtpDepth     = 1024;
-  localparam int OtpAddrWidth = $clog2(OtpDepth);
-  localparam int OtpErrWidth  = 8;
-
   logic otp_init_req, otp_init_done;
-  logic otp_err_valid;
   logic [OtpErrWidth-1:0] otp_err_code;
   logic otp_valid, otp_ready;
   logic [OtpAddrWidth-1:0] otp_addr;
-  logic [OtpWidth-1:0] otp_wdata, otp_rdata;
-  logic otp_wren, otp_rvalid;
+  logic [OtpIfWidth-1:0] otp_wdata, otp_rdata;
+  logic otp_wren, otp_out_valid;
 
   // a couple of dummy connections to the OTP macro
   assign otp_valid = reg2hw.direct_access_wdata[1].qe | reg2hw.direct_access_cmd.write.qe;
-  assign otp_wren  = reg2hw.direct_access_wdata[1].qe;
   assign otp_addr  = reg2hw.direct_access_address.q;
-  assign otp_wdata = reg2hw.direct_access_wdata[1].q[OtpWidth-1:0];
+  assign otp_wdata = OtpIfWidth'(reg2hw.direct_access_wdata[1].q[OtpWidth-1:0]);
 
   assign otp_init_req = 1'b1;
 
   prim_otp #(
     .Width(OtpWidth),
-    .Depth(OtpDepth),
-    .ErrWidth(OtpErrWidth)
+    .Depth(OtpDepth)
   ) i_prim_otp (
     .clk_i,
     .rst_ni,
+      // Macro-specific power sequencing signals to/from AST
+    .pwr_seq_h_o ( otp_ast_pwr_seq_o.pwr_seq_h ),
+    .pwr_seq_h_i ( otp_ast_pwr_seq_i.pwr_seq_h ),
     // Test inerface
     .test_tl_i   ( tl_win_h2d[1] ),
     .test_tl_o   ( tl_win_d2h[1] ),
-    // Init and error signals
-    .init_req_i  ( otp_init_req  ),
-    .init_done_o ( otp_init_done ),
-    .err_valid_o ( otp_err_valid ),
-    .err_code_o  ( otp_err_code  ),
     // Read / Write command interface
     .ready_o     ( otp_ready     ),
     .valid_i     ( otp_valid     ),
+    .size_i      ( '0            ),
+    .cmd_i       ( '0            ),
     .addr_i      ( otp_addr      ),
     .wdata_i     ( otp_wdata     ),
-    .wren_i      ( otp_wren      ),
     // Read data out
     .rdata_o     ( otp_rdata     ),
-    .rvalid_o    ( otp_rvalid    )
+    .valid_o     ( otp_out_valid ),
+    .err_o       ( otp_err_code  )
   );
 
   ////////////////////
@@ -276,7 +270,7 @@ module otp_ctrl
      hw2reg.direct_access_rdata[1].d} = otp_scrambler_out ^ {gate_gen_out, gate_gen_out};
     hw2reg.direct_access_rdata[0].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
     hw2reg.direct_access_rdata[1].de = gate_gen_out_valid ^ otp_scrambler_out_valid;
-    hw2reg.lc_state[OtpWidth/8-1:0]  = otp_rdata ^ {OtpWidth{otp_rvalid}};
+    hw2reg.lc_state = $bits(hw2reg.lc_state)'(otp_rdata ^ {OtpIfWidth{otp_out_valid}});
   end
 
   // Dummy registers for flash key

@@ -92,6 +92,48 @@ package otp_ctrl_pkg;
     logic  done;
   } lc_otp_program_rsp_t;
 
+  //////////////////////////////////////
+  // Typedefs for OTP Macro Interface //
+  //////////////////////////////////////
+
+  parameter int OtpByteAddrWidth = 11;
+
+  // OTP-macro specific
+  parameter int OtpWidth         = 16;
+  parameter int OtpAddrWidth     = OtpByteAddrWidth - $clog2(OtpWidth/8);
+  parameter int OtpDepth         = 2**OtpAddrWidth;
+  parameter int OtpCmdWidth      = 2;
+  parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
+  parameter int OtpErrWidth      = 4;
+  parameter int OtpPwrSeqWidth   = 2;
+  parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
+  // Number of Byte address bits to cut off in order to get the native OTP word address.
+  parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
+
+  typedef enum logic [OtpCmdWidth-1:0] {
+    OtpRead  = 2'b00,
+    OtpWrite = 2'b01,
+    OtpInit  = 2'b11
+  } prim_otp_cmd_e;
+
+  typedef enum logic [OtpErrWidth-1:0] {
+    NoErr            = 4'h0,
+    OtpCmdInvErr     = 4'h1,
+    OtpInitErr       = 4'h2,
+    OtpReadCorrErr   = 4'h3,
+    OtpReadUncorrErr = 4'h4,
+    OtpReadErr       = 4'h5,
+    OtpWriteBlankErr = 4'h6,
+    OtpWriteErr      = 4'h7,
+    CmdInvErr        = 4'h8,
+    AccessErr        = 4'h9,
+    ParityErr        = 4'hA,
+    IntegErr         = 4'hB,
+    CnstyErr         = 4'hC,
+    FsmErr           = 4'hD,
+    EscErr           = 4'hE
+  } otp_err_e;
+
   ////////////////////////////////
   // Typedefs for Key Broadcast //
   ////////////////////////////////
@@ -146,5 +188,17 @@ package otp_ctrl_pkg;
   typedef struct packed {
     otp_pwr_state_e  state;
   } otp_pwr_state_t;
+
+  ///////////////////
+  // AST Interface //
+  ///////////////////
+
+  typedef struct packed {
+    logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
+  } otp_ast_req_t;
+
+  typedef struct packed {
+    logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
+  } otp_ast_rsp_t;
 
 endpackage : otp_ctrl_pkg
