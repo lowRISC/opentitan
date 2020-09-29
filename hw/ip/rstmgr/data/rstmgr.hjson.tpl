@@ -221,10 +221,10 @@
             name: "EN",
             desc: "Register write enable for software controllable resets",
             resval: "1",
-            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-              "excl:CsrAllTests:CsrExclCheck"]
           },
         ],
+        tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+               "excl:CsrAllTests:CsrExclWrite"]
       }
     }
 
@@ -247,10 +247,10 @@
             name: "VAL",
             desc: "Software reset value",
             resval: "1",
-            tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-              "excl:CsrAllTests:CsrExclCheck"]
           },
         ],
+        tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+               "excl:CsrAllTests:CsrExclWrite"]
       }
     }
   ]
