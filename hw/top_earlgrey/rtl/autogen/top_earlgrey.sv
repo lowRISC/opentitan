@@ -59,6 +59,8 @@ module top_earlgrey #(
   input  ast_wrapper_pkg::ast_status_t       pinmux_aon_io_pok,
   output ast_wrapper_pkg::adc_ast_req_t       dcd_aon_adc_req,
   input  ast_wrapper_pkg::adc_ast_rsp_t       dcd_aon_adc_rsp,
+  output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_req,
+  input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_rsp,
   input               scan_rst_ni, // reset used for test mode
   input               scanmode_i,  // 1 for Scan
   output ast_wrapper_pkg::ast_func_clks_rsts aux_o
@@ -1235,6 +1237,8 @@ module top_earlgrey #(
       .pwr_otp_init_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_init_o(pwrmgr_aon_pwr_otp_rsp),
       .otp_pwr_state_o(),
+      .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_req),
+      .otp_ast_pwr_seq_i(otp_ctrl_otp_ast_pwr_seq_rsp),
       .lc_otp_program_i(otp_ctrl_lc_otp_program_req),
       .lc_otp_program_o(otp_ctrl_lc_otp_program_rsp),
       .otp_lc_data_o(otp_ctrl_otp_lc_data),

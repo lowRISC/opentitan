@@ -417,6 +417,8 @@ module top_earlgrey_asic (
   // Top-level design //
   //////////////////////
 
+  otp_ctrl_pkg::otp_ast_req_t otp_ast_pwr_seq;
+
   top_earlgrey top_earlgrey (
     .rst_ni              ( rst_n                 ),
     .clkmgr_aon_clk_main ( ast_base_clks.clk_sys ),
@@ -461,6 +463,8 @@ module top_earlgrey_asic (
     .entropy_src_entropy_src_rng_rsp ( ast_base_entropy_src ),
     .pinmux_aon_io_pok               ( ast_base_status      ),
     .ast_eflash_i                    ( ast_base_eflash      ),
+    .otp_ctrl_otp_ast_pwr_seq_req    ( otp_ast_pwr_seq      ), // Just loop through for now.
+    .otp_ctrl_otp_ast_pwr_seq_rsp    ( otp_ast_pwr_seq      ),
 
     // USB signals
     .usbdev_aon_usb_rx_enable,

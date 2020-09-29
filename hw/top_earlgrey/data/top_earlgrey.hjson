@@ -522,7 +522,8 @@
                  'clkmgr_aon.clk_usb',
                  'clkmgr_aon.clk_aon',
                  'pinmux_aon.io_pok'
-                 'dcd_aon.adc'],
+                 'dcd_aon.adc',
+                 'otp_ctrl.otp_ast_pwr_seq'],
   },
 
   debug_mem_base_addr: "0x1A110000",

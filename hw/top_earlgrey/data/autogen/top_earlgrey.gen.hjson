@@ -2155,6 +2155,18 @@
           index: -1
         }
         {
+          struct: otp_ast
+          type: req_rsp
+          name: otp_ast_pwr_seq
+          act: req
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_otp_ast_pwr_seq
+          index: -1
+        }
+        {
           struct: lc_otp_program
           type: req_rsp
           name: lc_otp_program
@@ -4620,6 +4632,7 @@
       clkmgr_aon.clk_aon
       pinmux_aon.io_pok
       dcd_aon.adc
+      otp_ctrl.otp_ast_pwr_seq
     ]
   }
   xbar:
@@ -8092,6 +8105,18 @@
         index: -1
       }
       {
+        struct: otp_ast
+        type: req_rsp
+        name: otp_ast_pwr_seq
+        act: req
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_otp_ast_pwr_seq
+        index: -1
+      }
+      {
         struct: lc_otp_program
         type: req_rsp
         name: lc_otp_program
@@ -9066,6 +9091,24 @@
         package: ast_wrapper_pkg
         struct: adc_ast_rsp
         signame: dcd_aon_adc_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_req
+        signame: otp_ctrl_otp_ast_pwr_seq_req
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_rsp
+        signame: otp_ctrl_otp_ast_pwr_seq_rsp
         width: 1
         type: req_rsp
         default: ""
