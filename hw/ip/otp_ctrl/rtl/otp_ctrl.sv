@@ -162,7 +162,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
       // Macro-specific power sequencing signals to/from AST
-    .pwr_seq_h_o ( otp_ast_pwr_seq_o.pwr_seq_h ),
+    .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq   ),
     .pwr_seq_h_i ( otp_ast_pwr_seq_i.pwr_seq_h ),
     // Test inerface
     .test_tl_i   ( tl_win_h2d[1] ),

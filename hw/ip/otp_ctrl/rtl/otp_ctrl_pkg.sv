@@ -194,7 +194,7 @@ package otp_ctrl_pkg;
   ///////////////////
 
   typedef struct packed {
-    logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
+    logic [OtpPwrSeqWidth-1:0] pwr_seq;
   } otp_ast_req_t;
 
   typedef struct packed {

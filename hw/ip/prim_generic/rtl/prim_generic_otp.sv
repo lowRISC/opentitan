@@ -22,7 +22,7 @@ module prim_generic_otp #(
   input                          clk_i,
   input                          rst_ni,
   // Macro-specific power sequencing signals to/from AST
-  output logic [PwrSeqWidth-1:0] pwr_seq_h_o,
+  output logic [PwrSeqWidth-1:0] pwr_seq_o,
   input        [PwrSeqWidth-1:0] pwr_seq_h_i,
   // Test interface
   input  tlul_pkg::tl_h2d_t      test_tl_i,
@@ -50,11 +50,13 @@ module prim_generic_otp #(
   // Not supported in open-source emulation model.
   logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
   assign unused_pwr_seq_h = pwr_seq_h_i;
-  assign pwr_seq_h_o = '0;
+  assign pwr_seq_o = '0;
 
   ///////////////////
   // Control logic //
   ///////////////////
+
+  parameter int StateWidth = 10;
 
   // Encoding generated with ./sparse-fsm-encode -d 5 -m 8 -n 10
   // Hamming distance histogram:
@@ -74,7 +76,7 @@ module prim_generic_otp #(
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 8
   //
-  typedef enum logic [9:0] {
+  typedef enum logic [StateWidth-1:0] {
     ResetSt      = 10'b1100000011,
     InitSt       = 10'b1100110100,
     IdleSt       = 10'b1010111010,
@@ -259,9 +261,21 @@ module prim_generic_otp #(
   // Regs //
   //////////
 
+  // This primitive is used to place a size-only constraint on the flops
+  // in order to prevent FSM state encoding optimizations.
+
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(ResetSt)
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i    ( state_d ),
+    .q_o    ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q <= ResetSt;
       valid_q <= '0;
       err_q   <= '0;
       addr_q  <= '0;
@@ -270,7 +284,6 @@ module prim_generic_otp #(
       cnt_q   <= '0;
       size_q  <= '0;
     end else begin
-      state_q <= state_d;
       valid_q <= valid_d;
       err_q   <= err_d;
       cnt_q   <= cnt_d;
