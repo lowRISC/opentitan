@@ -33,25 +33,16 @@
 // Index of the unimplemented endpoint to test
 #define UNIMPL_EP_ID 15
 
-#define D2P_BITS 11
-#define D2P_DP 1024
-#define D2P_DP_EN 512
-#define D2P_DN 256
-#define D2P_DN_EN 128
-#define D2P_D 64
-#define D2P_D_EN 32
-#define D2P_SE0 16
-#define D2P_SE0_EN 8
-#define D2P_DPPU 4
-#define D2P_DNPU 2
-#define D2P_TXMODE_SE 1
-// Either pullup (dp/dn swapped if the pullup is on DN)
-#define D2P_PU (D2P_DPPU | D2P_DNPU)
+#define D2P_BITS 5
+#define D2P_DP 16
+#define D2P_DP_EN 8
+#define D2P_DN 4
+#define D2P_DN_EN 2
+#define D2P_PU 1
 
 #define P2D_SENSE 1
 #define P2D_DN 2
 #define P2D_DP 4
-#define P2D_D 8
 
 #define ST_IDLE 0
 #define ST_SEND 1
@@ -104,7 +95,6 @@ struct usbdpi_ctx {
   FILE *mon_file;
   char mon_pathname[PATH_MAX];
   void *mon;
-  int last_pu;
   int lastrxpid;
   int tick;
   int tick_bits;

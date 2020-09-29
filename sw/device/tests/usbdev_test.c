@@ -89,8 +89,7 @@ bool test_main(void) {
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev, /* pinflip= */ false, /* rx_diff= */ false,
-              /* tx_diff= */ false);
+  usbdev_init(&usbdev);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
   usb_simpleserial_init(&simple_serial, &usbdev, 1, usb_receipt_callback);

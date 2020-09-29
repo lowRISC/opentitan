@@ -10,8 +10,8 @@ module usbdev_linkstate (
   input  logic rst_ni,
   input  logic us_tick_i,
   input  logic usb_sense_i,
-  input  logic rx_se0_det_i,
-  input  logic rx_jjj_det_i,
+  input  logic usb_rx_d_i,
+  input  logic usb_rx_se0_i,
   input  logic sof_valid_i,
   output logic link_disconnect_o,  // level
   output logic link_connect_o,     // level
@@ -35,7 +35,6 @@ module usbdev_linkstate (
     LinkPoweredSuspend = 2,
     // Active states
     LinkActive = 3,
-    LinkActiveNoSOF = 5,
     LinkSuspend = 4
   } link_state_e;
 
@@ -52,7 +51,8 @@ module usbdev_linkstate (
   } link_inac_state_e;
 
   link_state_e  link_state_d, link_state_q;
-  logic         see_pwr_sense;
+  logic         line_se0_raw, line_idle_raw;
+  logic         see_se0, see_idle, see_pwr_sense;
 
   // Reset FSM
   logic [2:0]      link_rst_timer_d, link_rst_timer_q;
@@ -75,10 +75,31 @@ module usbdev_linkstate (
   assign link_connect_o    = (link_state_q != LinkDisconnect);
   assign link_suspend_o    = (link_state_q == LinkSuspend ||
     link_state_q == LinkPoweredSuspend);
-  assign link_active_o     = (link_state_q == LinkActive) ||
-    (link_state_q == LinkActiveNoSOF);
+  assign link_active_o     = (link_state_q == LinkActive);
   // Link state is stable, so we can output it to the register
   assign link_state_o      =  link_state_q;
+
+  assign line_se0_raw = usb_rx_se0_i;
+  assign line_idle_raw = usb_rx_d_i && !usb_rx_se0_i; // same as J
+
+  // four ticks is a bit time
+  // Could completely filter out 2-cycle EOP SE0 here but
+  // does not seem needed
+  prim_filter #(.Cycles(6)) filter_se0 (
+    .clk_i    (clk_48mhz_i),
+    .rst_ni   (rst_ni),
+    .enable_i (1'b1),
+    .filter_i (line_se0_raw),
+    .filter_o (see_se0)
+  );
+
+  prim_filter #(.Cycles(6)) filter_idle (
+    .clk_i    (clk_48mhz_i),
+    .rst_ni   (rst_ni),
+    .enable_i (1'b1),
+    .filter_i (line_idle_raw),
+    .filter_o (see_idle)
+  );
 
   prim_filter #(.Cycles(6)) filter_pwr_sense (
     .clk_i    (clk_48mhz_i),
@@ -89,14 +110,13 @@ module usbdev_linkstate (
   );
 
   // Simple events
-  assign ev_bus_active = !rx_jjj_det_i;
-
-  assign monitor_inac = see_pwr_sense ? ((link_state_q == LinkPowered) | link_active_o) :
-                        1'b0;
+  assign ev_bus_active = !see_idle;
 
   always_comb begin
     link_state_d = link_state_q;
     link_resume_o = 0;
+    monitor_inac = see_pwr_sense ? ((link_state_q == LinkPowered) | (link_state_q == LinkActive)) :
+                                   1'b0;
 
     // If VBUS ever goes away the link has disconnected
     if (!see_pwr_sense) begin
@@ -112,7 +132,7 @@ module usbdev_linkstate (
 
         LinkPowered: begin
           if (ev_reset) begin
-            link_state_d = LinkActiveNoSOF;
+            link_state_d = LinkActive;
           end else if (ev_bus_inactive) begin
             link_state_d = LinkPoweredSuspend;
           end
@@ -120,22 +140,10 @@ module usbdev_linkstate (
 
         LinkPoweredSuspend: begin
           if (ev_reset) begin
-            link_state_d = LinkActiveNoSOF;
+            link_state_d = LinkActive;
           end else if (ev_bus_active) begin
             link_resume_o = 1;
             link_state_d  = LinkPowered;
-          end
-        end
-
-        // Active but not yet seen a frame
-        // One reason for getting stuck here is the host thinks it is a LS link
-        // which could happen if the flipped bit does not match the actual pins
-        // Annother is the SI is bad so good data is not recovered from the link
-        LinkActiveNoSOF: begin
-          if (ev_bus_inactive) begin
-            link_state_d = LinkSuspend;
-          end else if (sof_valid_i) begin
-            link_state_d = LinkActive;
           end
         end
 
@@ -143,16 +151,11 @@ module usbdev_linkstate (
         LinkActive: begin
           if (ev_bus_inactive) begin
             link_state_d = LinkSuspend;
-          end else if (ev_reset) begin
-            link_state_d = LinkActiveNoSOF;
           end
         end
 
         LinkSuspend: begin
-          if (ev_reset) begin
-            link_resume_o = 1;
-            link_state_d  = LinkActiveNoSOF;
-          end else if (ev_bus_active) begin
+          if (ev_reset || ev_bus_active) begin
             link_resume_o = 1;
             link_state_d  = LinkActive;
           end
@@ -188,7 +191,7 @@ module usbdev_linkstate (
     unique case (link_rst_state_q)
       // No reset signal detected
       NoRst: begin
-        if (rx_se0_det_i) begin
+        if (see_se0) begin
           link_rst_state_d = RstCnt;
           link_rst_timer_d = 0;
         end
@@ -196,7 +199,7 @@ module usbdev_linkstate (
 
       // Reset signal detected -> counting
       RstCnt: begin
-        if (!rx_se0_det_i) begin
+        if (!see_se0) begin
           link_rst_state_d = NoRst;
         end else begin
           if (us_tick_i) begin
@@ -211,7 +214,7 @@ module usbdev_linkstate (
 
       // Detected reset -> wait for falling edge
       RstPend: begin
-        if (!rx_se0_det_i) begin
+        if (!see_se0) begin
           link_rst_state_d = NoRst;
           ev_reset = 1'b1;
         end
@@ -248,14 +251,14 @@ module usbdev_linkstate (
       // Active or disabled
       Active: begin
         link_inac_timer_d = 0;
-        if (!ev_bus_active && monitor_inac) begin
+        if (see_idle && monitor_inac) begin
           link_inac_state_d = InactCnt;
         end
       end
 
       // Got an inactivity signal -> count duration
       InactCnt: begin
-        if (ev_bus_active || !monitor_inac) begin
+        if (!see_idle || !monitor_inac) begin
           link_inac_state_d  = Active;
         end else if (us_tick_i) begin
           if (link_inac_timer_q == SUSPEND_TIMEOUT) begin
@@ -269,7 +272,7 @@ module usbdev_linkstate (
 
       // Counter expired & event sent, wait here
       InactPend: begin
-        if (ev_bus_active || !monitor_inac) begin
+        if (!see_idle || !monitor_inac) begin
           link_inac_state_d  = Active;
         end
       end
