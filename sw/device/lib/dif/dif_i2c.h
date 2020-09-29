@@ -75,7 +75,7 @@ typedef struct dif_i2c_timing_config {
    * The lowest speed at which an I2C target connected to this host will
    * operate.
    *
-   * In other words, this is the maxiumum speed at which the host can operate
+   * In other words, this is the maximum speed at which the host can operate
    * without going over what the target devices can handle.
    */
   dif_i2c_speed_t lowest_target_device_speed;
@@ -94,7 +94,7 @@ typedef struct dif_i2c_timing_config {
    */
   uint32_t sda_rise_nanos;
   /**
-   * The expected time for the bus singal to fall, similar to `sda_rise_nanos`.
+   * The expected time for the bus signal to fall, similar to `sda_rise_nanos`.
    */
   uint32_t sda_fall_nanos;
   /**
@@ -174,7 +174,7 @@ typedef enum dif_i2c_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifI2cBadArg = 2,
 } dif_i2c_result_t;
@@ -212,7 +212,7 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqSdaInterference,
   /**
-   * Fired when the target streches the clock beyond the allowed period.
+   * Fired when the target stretches the clock beyond the allowed period.
    */
   kDifI2cIrqClockStretchTimeout,
   /**
@@ -222,7 +222,7 @@ typedef enum dif_i2c_irq {
 } dif_i2c_irq_t;
 
 /**
- * A snapshot of the enablement state of the interrupts for I2C.
+ * A snapshot of the entablement state of the interrupts for I2C.
  *
  * This is an opaque type, to be used with the `dif_i2c_irq_disable_all()` and
  * `dif_i2c_irq_restore_all()` functions.
@@ -293,7 +293,7 @@ typedef struct dif_i2c_fmt_flags {
    *
    * This flag cannot be set along with `read` or `read_cont`.
    */
-  bool supress_nak_irq;
+  bool suppress_nak_irq;
 } dif_i2c_fmt_flags_t;
 
 /**
@@ -480,7 +480,7 @@ dif_i2c_result_t dif_i2c_irq_restore_all(
     const dif_i2c_t *i2c, const dif_i2c_irq_snapshot_t *snapshot);
 
 /**
- * Resets the state of the RX FIFO, essentially dropping all recieved bytes.
+ * Resets the state of the RX FIFO, essentially dropping all received bytes.
  *
  * @param i2c An I2c handle.
  * @return The result of the operation.
@@ -500,7 +500,7 @@ dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
 
 /**
  * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
- * interrupts when each fifo exceeds, or falls bekow, the set level.
+ * interrupts when each fifo exceeds, or falls below, the set level.
  *
  * Note that the 30-byte level is only supported for the RX FIFO: trying to use
  * it with the FMT FIFO is an error.
@@ -589,7 +589,7 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
  *
  * @param i2c An I2C handle.
  * @param[out] byte The popped byte; may be `NULL`.
- * @return The result of the opeartion.
+ * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte);
@@ -626,7 +626,7 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
  */
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
-                                    dif_i2c_fmt_t code, bool supress_nak_irq);
+                                    dif_i2c_fmt_t code, bool suppress_nak_irq);
 
 #ifdef __cplusplus
 }  // extern "C"
