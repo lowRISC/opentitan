@@ -7,6 +7,11 @@
 from typing import Callable, Dict, List, Optional, Sequence, TypeVar
 
 import yaml
+try:
+    from yaml import CSafeLoader as YamlLoader
+except ImportError:
+    from yaml import SafeLoader as YamlLoader
+
 
 T = TypeVar('T')
 
@@ -143,7 +148,7 @@ def load_yaml(path: str, what: Optional[str]) -> object:
     for_msg = ' for ' + what if what is not None else ''
     try:
         with open(path, 'r') as handle:
-            return yaml.load(handle, Loader=yaml.SafeLoader)
+            return yaml.load(handle, Loader=YamlLoader)
     except FileNotFoundError:
         raise RuntimeError('Cannot find YAML file{} at {!r}.'
                            .format(for_msg, path)) from None
