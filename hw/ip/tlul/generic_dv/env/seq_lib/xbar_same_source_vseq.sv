@@ -17,8 +17,9 @@ class xbar_same_source_vseq extends xbar_random_vseq;
   endfunction
 
   virtual function void update_host_seq();
-    int source = $urandom_range(0, (1 << cfg.valid_host_id_width) - 1);
+    int source = $urandom_range(0, (1 << cfg.valid_a_source_width) - 1);
 
+    // TODO: figure out a way to sample the cov below in the scb instead of here.
     if (cfg.en_cov) cov.same_source_access_cg.sample(source);
     `uvm_info(`gfn, $sformatf("Picked source (%0d) for all hosts", source), UVM_HIGH)
 
