@@ -251,12 +251,12 @@
       ]
     } // R: STATUS
     { multireg: {
-        name: "KEY"
+        name: "KEY_SHARE0"
         desc: '''KMAC Secret Key
 
               KMAC secret key can be up to 512 bit.
               Order of the secret key is:
-              key[512:0] = {KEY0, KEY1, KEY2, ... , KEY15};
+              key[512:0] = {KEY15, KEY14, ... , KEY0};
 
               The registers are allowed to be updated when the engine is in Idle state.
               If the engine computes the hash, it discards any attempts to update the secret keys
@@ -277,20 +277,72 @@
             desc: "32-bit chunk of up-to 512-bit Secret Key"
           }
         ]
-      } // R: KEY
-    } // multireg: KEY
+      } // R: KEY_SHARE0
+    } // multireg: KEY_SHARE0
+    { multireg: {
+        name: "KEY_SHARE1"
+        desc: '''KMAC Secret Key, 2nd share.
+
+              KMAC secret key can be up to 512 bit.
+              Order of the secret key is:
+              key[512:0] = {KEY15, KEY14, ... , KEY0};
+
+              The registers are allowed to be updated when the engine is in Idle state.
+              If the engine computes the hash, it discards any attempts to update the secret keys
+              and report an error.
+
+              Current KMAC supports up to 512 bit secret key. It is the sw
+              responsibility to keep upper bits of the secret key to 0.
+              '''
+        count: "NumWordsKey"
+        cname: "KMAC"
+        hwext: "true"
+        hwqe : "true"
+        swaccess: "wo"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "key"
+            desc: "32-bit chunk of up-to 512-bit Secret Key"
+          }
+        ]
+      } // R: KEY_SHARE1
+    } // multireg: KEY_SHARE1
     { name: "KEY_LEN"
       desc: '''Secret Key length in bit.
 
             This value is used to make encoded secret key in KMAC.
             '''
+      regwen: "CFG_REGWEN"
       swaccess: "wo"
       hwaccess: "hro"
       hwext: "false"
       fields: [
-        { bits: "9:0"
+        { bits: "2:0"
           name: "len"
           desc: "Length in bits"
+          enum: [
+            { value: "0"
+              name:  "Key128"
+              desc: "Key length is 128 bit."
+            }
+            { value: "1"
+              name:  "Key192"
+              desc: "Key length is 192 bit."
+            }
+            { value: "2"
+              name:  "Key256"
+              desc: "Key length is 256 bit."
+            }
+            { value: "3"
+              name:  "Key384"
+              desc: "Key length is 384 bit."
+            }
+            { value: "4"
+              name:  "Key512"
+              desc: "Key length is 512 bit."
+            }
+          ]
         } // f : len
       ]
     } // R : KEY_LEN
