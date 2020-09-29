@@ -181,7 +181,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // FSM //
   /////////
 
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 5 -n 9
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 5 -n 9 -s 2193087944
   // Hamming distance histogram:
   //
   // 0: --
@@ -198,12 +198,13 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 6
   //
-  typedef enum logic [8:0] {
-    IdleSt    = 9'b011110111,
-    DecryptSt = 9'b000010001,
-    EncryptSt = 9'b011101000,
-    DigestSt  = 9'b100111100,
-    ErrorSt   = 9'b101001111
+  localparam int StateWidth = 9;
+  typedef enum logic [StateWidth-1:0] {
+    IdleSt    = 9'b100010111,
+    DecryptSt = 9'b001010000,
+    EncryptSt = 9'b011001011,
+    DigestSt  = 9'b100101000,
+    ErrorSt   = 9'b010111101
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
@@ -391,9 +392,20 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // Registers //
   ///////////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(IdleSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q        <= IdleSt;
       cnt_q          <= '0;
       key_state_q    <= '0;
       data_state_q   <= '0;
@@ -404,7 +416,6 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
       sel_q          <= '0;
       digest_mode_q  <= 1'b0;
     end else begin
-      state_q       <= state_d;
       cnt_q         <= cnt_d;
       valid_q       <= valid_d;
       is_first_q    <= is_first_d;
