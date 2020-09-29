@@ -28,16 +28,23 @@ def main():
         usage=USAGE)
     parser.add_argument('-d',
                         type=int,
-                        default=2,
-                        help='Minimum Hamming distance between encoded states.')
+                        default=5,
+                        help='Minimum Hamming distance between encoded states. '
+                             'This should be set to 2 minimum. A value of 4-5 '
+                             'is recommended.')
     parser.add_argument('-m',
                         type=int,
-                        default=12,
-                        help='Number of states.')
+                        default=7,
+                        help='Number of states to encode.')
     parser.add_argument('-n',
                         type=int,
-                        default=8,
+                        default=10,
                         help='Encoding length [bit].')
+    parser.add_argument('-s',
+                        type=int,
+                        help='Custom seed for RNG. Can be used to make '
+                             'subsequent runs deterministic. The script '
+                             'randomly picks a seed if not specified.')
 
     args = parser.parse_args()
 
@@ -47,7 +54,14 @@ def main():
             (args.n, args.m))
         sys.exit(1)
 
-    random.seed()
+    # If no seed has been provided, we choose a seed and print it
+    # into the generated output later on such that this run can be
+    # reproduced.
+    if args.s is None:
+        random.seed()
+        args.s = random.getrandbits(32)
+
+    random.seed(args.s)
 
     # This is a heuristic that opportunistically draws random
     # state encodings and check whether they fulfill the minimum
@@ -99,9 +113,9 @@ def main():
                 minimum = min(dist, minimum)
                 maximum = max(dist, maximum)
 
-    print("// Encoding generated with ./sparse-fsm-encode -d {} -m {} -n {}".format(args.d, args.m, args.n))
-    print("// Hamming distance histogram:")
-    print("// ")
+    print("// Encoding generated with ./sparse-fsm-encode.py -d {} -m {} -n {} -s {}\n"
+          "// Hamming distance histogram:\n"
+          "//".format(args.d, args.m, args.n, args.s))
     for i, j in enumerate(hist):
         hist_bar = "// {}: ".format(i)
         for k in range(len(str(args.m)) - len(str(i))):
@@ -110,21 +124,47 @@ def main():
             hist_bar += "|"
         hist_bar += " ({:.2f}%)".format(100.0 * j / sum(hist)) if j else "--"
         print(hist_bar)
-    print("// ")
-
-    print("// Minimum Hamming distance: {}".format(minimum))
-    print("// Maximum Hamming distance: {}".format(maximum))
-
-    print("//")
-    print('typedef enum logic [{}:0]'.format(args.n - 1) + ' {')
+    print("//\n"
+          "// Minimum Hamming distance: {}\n"
+          "// Maximum Hamming distance: {}\n"
+          "//\n"
+          "localparam int StateWidth = {};\n"
+          "typedef enum logic [StateWidth-1:0] {{".format(minimum, maximum, args.n))
     fmt_str = "  State{0:} {1:}= {2:}'b{3:0" + str(args.n) + "b}"
+    state_str = ""
     for j, k in enumerate(encodings):
         pad = ""
         for i in range(len(str(args.m)) - len(str(j))):
             pad += " "
         comma = "," if j < len(encodings) - 1 else ""
         print(fmt_str.format(j, pad, args.n, k) + comma)
-    print('} state_e;')
+        state_str += "    State{}: ;\n".format(j)
+
+    # print FSM template
+    print('''}} state_e;
+
+state_e state_d, state_q;
+always_comb begin : p_fsm
+  // Default assignments
+  state_d = state_q;
+
+  unique case (state_q)
+{}    default: ; // Consider triggering an error or alert in this case.
+  endcase
+end
+
+// This primitive is used to place a size-only constraint on the
+// flops in order to prevent FSM state encoding optimizations.
+prim_flop #(
+  .Width(StateWidth),
+  .ResetValue(StateWidth'(State0))
+) u_state_regs (
+  .clk_i,
+  .rst_ni,
+  .d_i ( state_d ),
+  .q_o ( state_q )
+);
+'''.format(state_str));
 
 
 if __name__ == "__main__":
