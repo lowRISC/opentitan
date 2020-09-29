@@ -208,16 +208,18 @@
     `DV_CHECK_FATAL(std::randomize(VAR_) with {WITH_C_}, MSG_, ID_)
 `endif
 
-// Shorthand for common this.randomize(foo) + fatal check
+// Shorthand for common cls_inst.randomize(member) + fatal check
+// Randomizes a specific member of a class instance.
 `ifndef DV_CHECK_MEMBER_RANDOMIZE_FATAL
-  `define DV_CHECK_MEMBER_RANDOMIZE_FATAL(VAR_, MSG_="Randomization failed!", ID_=`gfn) \
-    `DV_CHECK_FATAL(this.randomize(VAR_), MSG_, ID_)
+  `define DV_CHECK_MEMBER_RANDOMIZE_FATAL(VAR_, CLS_INST_=this, MSG_="Randomization failed!", ID_=`gfn) \
+    `DV_CHECK_FATAL(CLS_INST_.randomize(VAR_), MSG_, ID_)
 `endif
 
-// Shorthand for common this.randomize(foo) with { } + fatal check
+// Shorthand for common cls_inst.randomize(member) with { } + fatal check
+// Randomizes a specific member of a class instance with inline constraints.
 `ifndef DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL
-  `define DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(VAR_, C_, MSG_="Randomization failed!", ID_=`gfn) \
-    `DV_CHECK_FATAL(this.randomize(VAR_) with {C_}, MSG_, ID_)
+  `define DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(VAR_, C_, CLS_INST_=this, MSG_="Randomization failed!", ID_=`gfn) \
+    `DV_CHECK_FATAL(CLS_INST_.randomize(VAR_) with {C_}, MSG_, ID_)
 `endif
 
 // print static/dynamic 1d array or queue
