@@ -181,39 +181,71 @@ module kmac_reg_top (
   logic status_fifo_empty_re;
   logic status_fifo_full_qs;
   logic status_fifo_full_re;
-  logic [31:0] key_0_wd;
-  logic key_0_we;
-  logic [31:0] key_1_wd;
-  logic key_1_we;
-  logic [31:0] key_2_wd;
-  logic key_2_we;
-  logic [31:0] key_3_wd;
-  logic key_3_we;
-  logic [31:0] key_4_wd;
-  logic key_4_we;
-  logic [31:0] key_5_wd;
-  logic key_5_we;
-  logic [31:0] key_6_wd;
-  logic key_6_we;
-  logic [31:0] key_7_wd;
-  logic key_7_we;
-  logic [31:0] key_8_wd;
-  logic key_8_we;
-  logic [31:0] key_9_wd;
-  logic key_9_we;
-  logic [31:0] key_10_wd;
-  logic key_10_we;
-  logic [31:0] key_11_wd;
-  logic key_11_we;
-  logic [31:0] key_12_wd;
-  logic key_12_we;
-  logic [31:0] key_13_wd;
-  logic key_13_we;
-  logic [31:0] key_14_wd;
-  logic key_14_we;
-  logic [31:0] key_15_wd;
-  logic key_15_we;
-  logic [9:0] key_len_wd;
+  logic [31:0] key_share0_0_wd;
+  logic key_share0_0_we;
+  logic [31:0] key_share0_1_wd;
+  logic key_share0_1_we;
+  logic [31:0] key_share0_2_wd;
+  logic key_share0_2_we;
+  logic [31:0] key_share0_3_wd;
+  logic key_share0_3_we;
+  logic [31:0] key_share0_4_wd;
+  logic key_share0_4_we;
+  logic [31:0] key_share0_5_wd;
+  logic key_share0_5_we;
+  logic [31:0] key_share0_6_wd;
+  logic key_share0_6_we;
+  logic [31:0] key_share0_7_wd;
+  logic key_share0_7_we;
+  logic [31:0] key_share0_8_wd;
+  logic key_share0_8_we;
+  logic [31:0] key_share0_9_wd;
+  logic key_share0_9_we;
+  logic [31:0] key_share0_10_wd;
+  logic key_share0_10_we;
+  logic [31:0] key_share0_11_wd;
+  logic key_share0_11_we;
+  logic [31:0] key_share0_12_wd;
+  logic key_share0_12_we;
+  logic [31:0] key_share0_13_wd;
+  logic key_share0_13_we;
+  logic [31:0] key_share0_14_wd;
+  logic key_share0_14_we;
+  logic [31:0] key_share0_15_wd;
+  logic key_share0_15_we;
+  logic [31:0] key_share1_0_wd;
+  logic key_share1_0_we;
+  logic [31:0] key_share1_1_wd;
+  logic key_share1_1_we;
+  logic [31:0] key_share1_2_wd;
+  logic key_share1_2_we;
+  logic [31:0] key_share1_3_wd;
+  logic key_share1_3_we;
+  logic [31:0] key_share1_4_wd;
+  logic key_share1_4_we;
+  logic [31:0] key_share1_5_wd;
+  logic key_share1_5_we;
+  logic [31:0] key_share1_6_wd;
+  logic key_share1_6_we;
+  logic [31:0] key_share1_7_wd;
+  logic key_share1_7_we;
+  logic [31:0] key_share1_8_wd;
+  logic key_share1_8_we;
+  logic [31:0] key_share1_9_wd;
+  logic key_share1_9_we;
+  logic [31:0] key_share1_10_wd;
+  logic key_share1_10_we;
+  logic [31:0] key_share1_11_wd;
+  logic key_share1_11_we;
+  logic [31:0] key_share1_12_wd;
+  logic key_share1_12_we;
+  logic [31:0] key_share1_13_wd;
+  logic key_share1_13_we;
+  logic [31:0] key_share1_14_wd;
+  logic key_share1_14_we;
+  logic [31:0] key_share1_15_wd;
+  logic key_share1_15_we;
+  logic [2:0] key_len_wd;
   logic key_len_we;
   logic [31:0] prefix_0_qs;
   logic [31:0] prefix_0_wd;
@@ -747,259 +779,517 @@ module kmac_reg_top (
 
 
 
-  // Subregister 0 of Multireg key
-  // R[key_0]: V(True)
+  // Subregister 0 of Multireg key_share0
+  // R[key_share0_0]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_0 (
+  ) u_key_share0_0 (
     .re     (1'b0),
-    .we     (key_0_we),
-    .wd     (key_0_wd),
+    .we     (key_share0_0_we),
+    .wd     (key_share0_0_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[0].qe),
-    .q      (reg2hw.key[0].q ),
+    .qe     (reg2hw.key_share0[0].qe),
+    .q      (reg2hw.key_share0[0].q ),
     .qs     ()
   );
 
-  // Subregister 1 of Multireg key
-  // R[key_1]: V(True)
+  // Subregister 1 of Multireg key_share0
+  // R[key_share0_1]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_1 (
+  ) u_key_share0_1 (
     .re     (1'b0),
-    .we     (key_1_we),
-    .wd     (key_1_wd),
+    .we     (key_share0_1_we),
+    .wd     (key_share0_1_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[1].qe),
-    .q      (reg2hw.key[1].q ),
+    .qe     (reg2hw.key_share0[1].qe),
+    .q      (reg2hw.key_share0[1].q ),
     .qs     ()
   );
 
-  // Subregister 2 of Multireg key
-  // R[key_2]: V(True)
+  // Subregister 2 of Multireg key_share0
+  // R[key_share0_2]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_2 (
+  ) u_key_share0_2 (
     .re     (1'b0),
-    .we     (key_2_we),
-    .wd     (key_2_wd),
+    .we     (key_share0_2_we),
+    .wd     (key_share0_2_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[2].qe),
-    .q      (reg2hw.key[2].q ),
+    .qe     (reg2hw.key_share0[2].qe),
+    .q      (reg2hw.key_share0[2].q ),
     .qs     ()
   );
 
-  // Subregister 3 of Multireg key
-  // R[key_3]: V(True)
+  // Subregister 3 of Multireg key_share0
+  // R[key_share0_3]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_3 (
+  ) u_key_share0_3 (
     .re     (1'b0),
-    .we     (key_3_we),
-    .wd     (key_3_wd),
+    .we     (key_share0_3_we),
+    .wd     (key_share0_3_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[3].qe),
-    .q      (reg2hw.key[3].q ),
+    .qe     (reg2hw.key_share0[3].qe),
+    .q      (reg2hw.key_share0[3].q ),
     .qs     ()
   );
 
-  // Subregister 4 of Multireg key
-  // R[key_4]: V(True)
+  // Subregister 4 of Multireg key_share0
+  // R[key_share0_4]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_4 (
+  ) u_key_share0_4 (
     .re     (1'b0),
-    .we     (key_4_we),
-    .wd     (key_4_wd),
+    .we     (key_share0_4_we),
+    .wd     (key_share0_4_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[4].qe),
-    .q      (reg2hw.key[4].q ),
+    .qe     (reg2hw.key_share0[4].qe),
+    .q      (reg2hw.key_share0[4].q ),
     .qs     ()
   );
 
-  // Subregister 5 of Multireg key
-  // R[key_5]: V(True)
+  // Subregister 5 of Multireg key_share0
+  // R[key_share0_5]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_5 (
+  ) u_key_share0_5 (
     .re     (1'b0),
-    .we     (key_5_we),
-    .wd     (key_5_wd),
+    .we     (key_share0_5_we),
+    .wd     (key_share0_5_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[5].qe),
-    .q      (reg2hw.key[5].q ),
+    .qe     (reg2hw.key_share0[5].qe),
+    .q      (reg2hw.key_share0[5].q ),
     .qs     ()
   );
 
-  // Subregister 6 of Multireg key
-  // R[key_6]: V(True)
+  // Subregister 6 of Multireg key_share0
+  // R[key_share0_6]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_6 (
+  ) u_key_share0_6 (
     .re     (1'b0),
-    .we     (key_6_we),
-    .wd     (key_6_wd),
+    .we     (key_share0_6_we),
+    .wd     (key_share0_6_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[6].qe),
-    .q      (reg2hw.key[6].q ),
+    .qe     (reg2hw.key_share0[6].qe),
+    .q      (reg2hw.key_share0[6].q ),
     .qs     ()
   );
 
-  // Subregister 7 of Multireg key
-  // R[key_7]: V(True)
+  // Subregister 7 of Multireg key_share0
+  // R[key_share0_7]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_7 (
+  ) u_key_share0_7 (
     .re     (1'b0),
-    .we     (key_7_we),
-    .wd     (key_7_wd),
+    .we     (key_share0_7_we),
+    .wd     (key_share0_7_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[7].qe),
-    .q      (reg2hw.key[7].q ),
+    .qe     (reg2hw.key_share0[7].qe),
+    .q      (reg2hw.key_share0[7].q ),
     .qs     ()
   );
 
-  // Subregister 8 of Multireg key
-  // R[key_8]: V(True)
+  // Subregister 8 of Multireg key_share0
+  // R[key_share0_8]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_8 (
+  ) u_key_share0_8 (
     .re     (1'b0),
-    .we     (key_8_we),
-    .wd     (key_8_wd),
+    .we     (key_share0_8_we),
+    .wd     (key_share0_8_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[8].qe),
-    .q      (reg2hw.key[8].q ),
+    .qe     (reg2hw.key_share0[8].qe),
+    .q      (reg2hw.key_share0[8].q ),
     .qs     ()
   );
 
-  // Subregister 9 of Multireg key
-  // R[key_9]: V(True)
+  // Subregister 9 of Multireg key_share0
+  // R[key_share0_9]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_9 (
+  ) u_key_share0_9 (
     .re     (1'b0),
-    .we     (key_9_we),
-    .wd     (key_9_wd),
+    .we     (key_share0_9_we),
+    .wd     (key_share0_9_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[9].qe),
-    .q      (reg2hw.key[9].q ),
+    .qe     (reg2hw.key_share0[9].qe),
+    .q      (reg2hw.key_share0[9].q ),
     .qs     ()
   );
 
-  // Subregister 10 of Multireg key
-  // R[key_10]: V(True)
+  // Subregister 10 of Multireg key_share0
+  // R[key_share0_10]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_10 (
+  ) u_key_share0_10 (
     .re     (1'b0),
-    .we     (key_10_we),
-    .wd     (key_10_wd),
+    .we     (key_share0_10_we),
+    .wd     (key_share0_10_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[10].qe),
-    .q      (reg2hw.key[10].q ),
+    .qe     (reg2hw.key_share0[10].qe),
+    .q      (reg2hw.key_share0[10].q ),
     .qs     ()
   );
 
-  // Subregister 11 of Multireg key
-  // R[key_11]: V(True)
+  // Subregister 11 of Multireg key_share0
+  // R[key_share0_11]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_11 (
+  ) u_key_share0_11 (
     .re     (1'b0),
-    .we     (key_11_we),
-    .wd     (key_11_wd),
+    .we     (key_share0_11_we),
+    .wd     (key_share0_11_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[11].qe),
-    .q      (reg2hw.key[11].q ),
+    .qe     (reg2hw.key_share0[11].qe),
+    .q      (reg2hw.key_share0[11].q ),
     .qs     ()
   );
 
-  // Subregister 12 of Multireg key
-  // R[key_12]: V(True)
+  // Subregister 12 of Multireg key_share0
+  // R[key_share0_12]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_12 (
+  ) u_key_share0_12 (
     .re     (1'b0),
-    .we     (key_12_we),
-    .wd     (key_12_wd),
+    .we     (key_share0_12_we),
+    .wd     (key_share0_12_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[12].qe),
-    .q      (reg2hw.key[12].q ),
+    .qe     (reg2hw.key_share0[12].qe),
+    .q      (reg2hw.key_share0[12].q ),
     .qs     ()
   );
 
-  // Subregister 13 of Multireg key
-  // R[key_13]: V(True)
+  // Subregister 13 of Multireg key_share0
+  // R[key_share0_13]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_13 (
+  ) u_key_share0_13 (
     .re     (1'b0),
-    .we     (key_13_we),
-    .wd     (key_13_wd),
+    .we     (key_share0_13_we),
+    .wd     (key_share0_13_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[13].qe),
-    .q      (reg2hw.key[13].q ),
+    .qe     (reg2hw.key_share0[13].qe),
+    .q      (reg2hw.key_share0[13].q ),
     .qs     ()
   );
 
-  // Subregister 14 of Multireg key
-  // R[key_14]: V(True)
+  // Subregister 14 of Multireg key_share0
+  // R[key_share0_14]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_14 (
+  ) u_key_share0_14 (
     .re     (1'b0),
-    .we     (key_14_we),
-    .wd     (key_14_wd),
+    .we     (key_share0_14_we),
+    .wd     (key_share0_14_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[14].qe),
-    .q      (reg2hw.key[14].q ),
+    .qe     (reg2hw.key_share0[14].qe),
+    .q      (reg2hw.key_share0[14].q ),
     .qs     ()
   );
 
-  // Subregister 15 of Multireg key
-  // R[key_15]: V(True)
+  // Subregister 15 of Multireg key_share0
+  // R[key_share0_15]: V(True)
 
   prim_subreg_ext #(
     .DW    (32)
-  ) u_key_15 (
+  ) u_key_share0_15 (
     .re     (1'b0),
-    .we     (key_15_we),
-    .wd     (key_15_wd),
+    .we     (key_share0_15_we),
+    .wd     (key_share0_15_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.key[15].qe),
-    .q      (reg2hw.key[15].q ),
+    .qe     (reg2hw.key_share0[15].qe),
+    .q      (reg2hw.key_share0[15].q ),
+    .qs     ()
+  );
+
+
+
+  // Subregister 0 of Multireg key_share1
+  // R[key_share1_0]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_0 (
+    .re     (1'b0),
+    .we     (key_share1_0_we),
+    .wd     (key_share1_0_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[0].qe),
+    .q      (reg2hw.key_share1[0].q ),
+    .qs     ()
+  );
+
+  // Subregister 1 of Multireg key_share1
+  // R[key_share1_1]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_1 (
+    .re     (1'b0),
+    .we     (key_share1_1_we),
+    .wd     (key_share1_1_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[1].qe),
+    .q      (reg2hw.key_share1[1].q ),
+    .qs     ()
+  );
+
+  // Subregister 2 of Multireg key_share1
+  // R[key_share1_2]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_2 (
+    .re     (1'b0),
+    .we     (key_share1_2_we),
+    .wd     (key_share1_2_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[2].qe),
+    .q      (reg2hw.key_share1[2].q ),
+    .qs     ()
+  );
+
+  // Subregister 3 of Multireg key_share1
+  // R[key_share1_3]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_3 (
+    .re     (1'b0),
+    .we     (key_share1_3_we),
+    .wd     (key_share1_3_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[3].qe),
+    .q      (reg2hw.key_share1[3].q ),
+    .qs     ()
+  );
+
+  // Subregister 4 of Multireg key_share1
+  // R[key_share1_4]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_4 (
+    .re     (1'b0),
+    .we     (key_share1_4_we),
+    .wd     (key_share1_4_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[4].qe),
+    .q      (reg2hw.key_share1[4].q ),
+    .qs     ()
+  );
+
+  // Subregister 5 of Multireg key_share1
+  // R[key_share1_5]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_5 (
+    .re     (1'b0),
+    .we     (key_share1_5_we),
+    .wd     (key_share1_5_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[5].qe),
+    .q      (reg2hw.key_share1[5].q ),
+    .qs     ()
+  );
+
+  // Subregister 6 of Multireg key_share1
+  // R[key_share1_6]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_6 (
+    .re     (1'b0),
+    .we     (key_share1_6_we),
+    .wd     (key_share1_6_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[6].qe),
+    .q      (reg2hw.key_share1[6].q ),
+    .qs     ()
+  );
+
+  // Subregister 7 of Multireg key_share1
+  // R[key_share1_7]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_7 (
+    .re     (1'b0),
+    .we     (key_share1_7_we),
+    .wd     (key_share1_7_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[7].qe),
+    .q      (reg2hw.key_share1[7].q ),
+    .qs     ()
+  );
+
+  // Subregister 8 of Multireg key_share1
+  // R[key_share1_8]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_8 (
+    .re     (1'b0),
+    .we     (key_share1_8_we),
+    .wd     (key_share1_8_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[8].qe),
+    .q      (reg2hw.key_share1[8].q ),
+    .qs     ()
+  );
+
+  // Subregister 9 of Multireg key_share1
+  // R[key_share1_9]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_9 (
+    .re     (1'b0),
+    .we     (key_share1_9_we),
+    .wd     (key_share1_9_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[9].qe),
+    .q      (reg2hw.key_share1[9].q ),
+    .qs     ()
+  );
+
+  // Subregister 10 of Multireg key_share1
+  // R[key_share1_10]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_10 (
+    .re     (1'b0),
+    .we     (key_share1_10_we),
+    .wd     (key_share1_10_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[10].qe),
+    .q      (reg2hw.key_share1[10].q ),
+    .qs     ()
+  );
+
+  // Subregister 11 of Multireg key_share1
+  // R[key_share1_11]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_11 (
+    .re     (1'b0),
+    .we     (key_share1_11_we),
+    .wd     (key_share1_11_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[11].qe),
+    .q      (reg2hw.key_share1[11].q ),
+    .qs     ()
+  );
+
+  // Subregister 12 of Multireg key_share1
+  // R[key_share1_12]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_12 (
+    .re     (1'b0),
+    .we     (key_share1_12_we),
+    .wd     (key_share1_12_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[12].qe),
+    .q      (reg2hw.key_share1[12].q ),
+    .qs     ()
+  );
+
+  // Subregister 13 of Multireg key_share1
+  // R[key_share1_13]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_13 (
+    .re     (1'b0),
+    .we     (key_share1_13_we),
+    .wd     (key_share1_13_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[13].qe),
+    .q      (reg2hw.key_share1[13].q ),
+    .qs     ()
+  );
+
+  // Subregister 14 of Multireg key_share1
+  // R[key_share1_14]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_14 (
+    .re     (1'b0),
+    .we     (key_share1_14_we),
+    .wd     (key_share1_14_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[14].qe),
+    .q      (reg2hw.key_share1[14].q ),
+    .qs     ()
+  );
+
+  // Subregister 15 of Multireg key_share1
+  // R[key_share1_15]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_share1_15 (
+    .re     (1'b0),
+    .we     (key_share1_15_we),
+    .wd     (key_share1_15_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.key_share1[15].qe),
+    .q      (reg2hw.key_share1[15].q ),
     .qs     ()
   );
 
@@ -1007,15 +1297,15 @@ module kmac_reg_top (
   // R[key_len]: V(False)
 
   prim_subreg #(
-    .DW      (10),
+    .DW      (3),
     .SWACCESS("WO"),
-    .RESVAL  (10'h0)
+    .RESVAL  (3'h0)
   ) u_key_len (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_len_we),
+    // from register interface (qualified with register enable)
+    .we     (key_len_we & cfg_regwen_qs),
     .wd     (key_len_wd),
 
     // from internal hardware
@@ -1373,7 +1663,7 @@ module kmac_reg_top (
 
 
 
-  logic [35:0] addr_hit;
+  logic [51:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == KMAC_INTR_STATE_OFFSET);
@@ -1382,36 +1672,52 @@ module kmac_reg_top (
     addr_hit[ 3] = (reg_addr == KMAC_CFG_OFFSET);
     addr_hit[ 4] = (reg_addr == KMAC_CMD_OFFSET);
     addr_hit[ 5] = (reg_addr == KMAC_STATUS_OFFSET);
-    addr_hit[ 6] = (reg_addr == KMAC_KEY_0_OFFSET);
-    addr_hit[ 7] = (reg_addr == KMAC_KEY_1_OFFSET);
-    addr_hit[ 8] = (reg_addr == KMAC_KEY_2_OFFSET);
-    addr_hit[ 9] = (reg_addr == KMAC_KEY_3_OFFSET);
-    addr_hit[10] = (reg_addr == KMAC_KEY_4_OFFSET);
-    addr_hit[11] = (reg_addr == KMAC_KEY_5_OFFSET);
-    addr_hit[12] = (reg_addr == KMAC_KEY_6_OFFSET);
-    addr_hit[13] = (reg_addr == KMAC_KEY_7_OFFSET);
-    addr_hit[14] = (reg_addr == KMAC_KEY_8_OFFSET);
-    addr_hit[15] = (reg_addr == KMAC_KEY_9_OFFSET);
-    addr_hit[16] = (reg_addr == KMAC_KEY_10_OFFSET);
-    addr_hit[17] = (reg_addr == KMAC_KEY_11_OFFSET);
-    addr_hit[18] = (reg_addr == KMAC_KEY_12_OFFSET);
-    addr_hit[19] = (reg_addr == KMAC_KEY_13_OFFSET);
-    addr_hit[20] = (reg_addr == KMAC_KEY_14_OFFSET);
-    addr_hit[21] = (reg_addr == KMAC_KEY_15_OFFSET);
-    addr_hit[22] = (reg_addr == KMAC_KEY_LEN_OFFSET);
-    addr_hit[23] = (reg_addr == KMAC_PREFIX_0_OFFSET);
-    addr_hit[24] = (reg_addr == KMAC_PREFIX_1_OFFSET);
-    addr_hit[25] = (reg_addr == KMAC_PREFIX_2_OFFSET);
-    addr_hit[26] = (reg_addr == KMAC_PREFIX_3_OFFSET);
-    addr_hit[27] = (reg_addr == KMAC_PREFIX_4_OFFSET);
-    addr_hit[28] = (reg_addr == KMAC_PREFIX_5_OFFSET);
-    addr_hit[29] = (reg_addr == KMAC_PREFIX_6_OFFSET);
-    addr_hit[30] = (reg_addr == KMAC_PREFIX_7_OFFSET);
-    addr_hit[31] = (reg_addr == KMAC_PREFIX_8_OFFSET);
-    addr_hit[32] = (reg_addr == KMAC_PREFIX_9_OFFSET);
-    addr_hit[33] = (reg_addr == KMAC_PREFIX_10_OFFSET);
-    addr_hit[34] = (reg_addr == KMAC_ERR_CODE_OFFSET);
-    addr_hit[35] = (reg_addr == KMAC_CFG_REGWEN_OFFSET);
+    addr_hit[ 6] = (reg_addr == KMAC_KEY_SHARE0_0_OFFSET);
+    addr_hit[ 7] = (reg_addr == KMAC_KEY_SHARE0_1_OFFSET);
+    addr_hit[ 8] = (reg_addr == KMAC_KEY_SHARE0_2_OFFSET);
+    addr_hit[ 9] = (reg_addr == KMAC_KEY_SHARE0_3_OFFSET);
+    addr_hit[10] = (reg_addr == KMAC_KEY_SHARE0_4_OFFSET);
+    addr_hit[11] = (reg_addr == KMAC_KEY_SHARE0_5_OFFSET);
+    addr_hit[12] = (reg_addr == KMAC_KEY_SHARE0_6_OFFSET);
+    addr_hit[13] = (reg_addr == KMAC_KEY_SHARE0_7_OFFSET);
+    addr_hit[14] = (reg_addr == KMAC_KEY_SHARE0_8_OFFSET);
+    addr_hit[15] = (reg_addr == KMAC_KEY_SHARE0_9_OFFSET);
+    addr_hit[16] = (reg_addr == KMAC_KEY_SHARE0_10_OFFSET);
+    addr_hit[17] = (reg_addr == KMAC_KEY_SHARE0_11_OFFSET);
+    addr_hit[18] = (reg_addr == KMAC_KEY_SHARE0_12_OFFSET);
+    addr_hit[19] = (reg_addr == KMAC_KEY_SHARE0_13_OFFSET);
+    addr_hit[20] = (reg_addr == KMAC_KEY_SHARE0_14_OFFSET);
+    addr_hit[21] = (reg_addr == KMAC_KEY_SHARE0_15_OFFSET);
+    addr_hit[22] = (reg_addr == KMAC_KEY_SHARE1_0_OFFSET);
+    addr_hit[23] = (reg_addr == KMAC_KEY_SHARE1_1_OFFSET);
+    addr_hit[24] = (reg_addr == KMAC_KEY_SHARE1_2_OFFSET);
+    addr_hit[25] = (reg_addr == KMAC_KEY_SHARE1_3_OFFSET);
+    addr_hit[26] = (reg_addr == KMAC_KEY_SHARE1_4_OFFSET);
+    addr_hit[27] = (reg_addr == KMAC_KEY_SHARE1_5_OFFSET);
+    addr_hit[28] = (reg_addr == KMAC_KEY_SHARE1_6_OFFSET);
+    addr_hit[29] = (reg_addr == KMAC_KEY_SHARE1_7_OFFSET);
+    addr_hit[30] = (reg_addr == KMAC_KEY_SHARE1_8_OFFSET);
+    addr_hit[31] = (reg_addr == KMAC_KEY_SHARE1_9_OFFSET);
+    addr_hit[32] = (reg_addr == KMAC_KEY_SHARE1_10_OFFSET);
+    addr_hit[33] = (reg_addr == KMAC_KEY_SHARE1_11_OFFSET);
+    addr_hit[34] = (reg_addr == KMAC_KEY_SHARE1_12_OFFSET);
+    addr_hit[35] = (reg_addr == KMAC_KEY_SHARE1_13_OFFSET);
+    addr_hit[36] = (reg_addr == KMAC_KEY_SHARE1_14_OFFSET);
+    addr_hit[37] = (reg_addr == KMAC_KEY_SHARE1_15_OFFSET);
+    addr_hit[38] = (reg_addr == KMAC_KEY_LEN_OFFSET);
+    addr_hit[39] = (reg_addr == KMAC_PREFIX_0_OFFSET);
+    addr_hit[40] = (reg_addr == KMAC_PREFIX_1_OFFSET);
+    addr_hit[41] = (reg_addr == KMAC_PREFIX_2_OFFSET);
+    addr_hit[42] = (reg_addr == KMAC_PREFIX_3_OFFSET);
+    addr_hit[43] = (reg_addr == KMAC_PREFIX_4_OFFSET);
+    addr_hit[44] = (reg_addr == KMAC_PREFIX_5_OFFSET);
+    addr_hit[45] = (reg_addr == KMAC_PREFIX_6_OFFSET);
+    addr_hit[46] = (reg_addr == KMAC_PREFIX_7_OFFSET);
+    addr_hit[47] = (reg_addr == KMAC_PREFIX_8_OFFSET);
+    addr_hit[48] = (reg_addr == KMAC_PREFIX_9_OFFSET);
+    addr_hit[49] = (reg_addr == KMAC_PREFIX_10_OFFSET);
+    addr_hit[50] = (reg_addr == KMAC_ERR_CODE_OFFSET);
+    addr_hit[51] = (reg_addr == KMAC_CFG_REGWEN_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1455,6 +1761,22 @@ module kmac_reg_top (
     if (addr_hit[33] && reg_we && (KMAC_PERMIT[33] != (KMAC_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[34] && reg_we && (KMAC_PERMIT[34] != (KMAC_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[35] && reg_we && (KMAC_PERMIT[35] != (KMAC_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[36] && reg_we && (KMAC_PERMIT[36] != (KMAC_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[37] && reg_we && (KMAC_PERMIT[37] != (KMAC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[38] && reg_we && (KMAC_PERMIT[38] != (KMAC_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[39] && reg_we && (KMAC_PERMIT[39] != (KMAC_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[40] && reg_we && (KMAC_PERMIT[40] != (KMAC_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[41] && reg_we && (KMAC_PERMIT[41] != (KMAC_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[42] && reg_we && (KMAC_PERMIT[42] != (KMAC_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[43] && reg_we && (KMAC_PERMIT[43] != (KMAC_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[44] && reg_we && (KMAC_PERMIT[44] != (KMAC_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[45] && reg_we && (KMAC_PERMIT[45] != (KMAC_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[46] && reg_we && (KMAC_PERMIT[46] != (KMAC_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[47] && reg_we && (KMAC_PERMIT[47] != (KMAC_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[48] && reg_we && (KMAC_PERMIT[48] != (KMAC_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[49] && reg_we && (KMAC_PERMIT[49] != (KMAC_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[50] && reg_we && (KMAC_PERMIT[50] != (KMAC_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[51] && reg_we && (KMAC_PERMIT[51] != (KMAC_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_kmac_done_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1523,92 +1845,140 @@ module kmac_reg_top (
 
   assign status_fifo_full_re = addr_hit[5] && reg_re;
 
-  assign key_0_we = addr_hit[6] & reg_we & ~wr_err;
-  assign key_0_wd = reg_wdata[31:0];
+  assign key_share0_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign key_share0_0_wd = reg_wdata[31:0];
 
-  assign key_1_we = addr_hit[7] & reg_we & ~wr_err;
-  assign key_1_wd = reg_wdata[31:0];
+  assign key_share0_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_share0_1_wd = reg_wdata[31:0];
 
-  assign key_2_we = addr_hit[8] & reg_we & ~wr_err;
-  assign key_2_wd = reg_wdata[31:0];
+  assign key_share0_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign key_share0_2_wd = reg_wdata[31:0];
 
-  assign key_3_we = addr_hit[9] & reg_we & ~wr_err;
-  assign key_3_wd = reg_wdata[31:0];
+  assign key_share0_3_we = addr_hit[9] & reg_we & ~wr_err;
+  assign key_share0_3_wd = reg_wdata[31:0];
 
-  assign key_4_we = addr_hit[10] & reg_we & ~wr_err;
-  assign key_4_wd = reg_wdata[31:0];
+  assign key_share0_4_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_share0_4_wd = reg_wdata[31:0];
 
-  assign key_5_we = addr_hit[11] & reg_we & ~wr_err;
-  assign key_5_wd = reg_wdata[31:0];
+  assign key_share0_5_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_share0_5_wd = reg_wdata[31:0];
 
-  assign key_6_we = addr_hit[12] & reg_we & ~wr_err;
-  assign key_6_wd = reg_wdata[31:0];
+  assign key_share0_6_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key_share0_6_wd = reg_wdata[31:0];
 
-  assign key_7_we = addr_hit[13] & reg_we & ~wr_err;
-  assign key_7_wd = reg_wdata[31:0];
+  assign key_share0_7_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key_share0_7_wd = reg_wdata[31:0];
 
-  assign key_8_we = addr_hit[14] & reg_we & ~wr_err;
-  assign key_8_wd = reg_wdata[31:0];
+  assign key_share0_8_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key_share0_8_wd = reg_wdata[31:0];
 
-  assign key_9_we = addr_hit[15] & reg_we & ~wr_err;
-  assign key_9_wd = reg_wdata[31:0];
+  assign key_share0_9_we = addr_hit[15] & reg_we & ~wr_err;
+  assign key_share0_9_wd = reg_wdata[31:0];
 
-  assign key_10_we = addr_hit[16] & reg_we & ~wr_err;
-  assign key_10_wd = reg_wdata[31:0];
+  assign key_share0_10_we = addr_hit[16] & reg_we & ~wr_err;
+  assign key_share0_10_wd = reg_wdata[31:0];
 
-  assign key_11_we = addr_hit[17] & reg_we & ~wr_err;
-  assign key_11_wd = reg_wdata[31:0];
+  assign key_share0_11_we = addr_hit[17] & reg_we & ~wr_err;
+  assign key_share0_11_wd = reg_wdata[31:0];
 
-  assign key_12_we = addr_hit[18] & reg_we & ~wr_err;
-  assign key_12_wd = reg_wdata[31:0];
+  assign key_share0_12_we = addr_hit[18] & reg_we & ~wr_err;
+  assign key_share0_12_wd = reg_wdata[31:0];
 
-  assign key_13_we = addr_hit[19] & reg_we & ~wr_err;
-  assign key_13_wd = reg_wdata[31:0];
+  assign key_share0_13_we = addr_hit[19] & reg_we & ~wr_err;
+  assign key_share0_13_wd = reg_wdata[31:0];
 
-  assign key_14_we = addr_hit[20] & reg_we & ~wr_err;
-  assign key_14_wd = reg_wdata[31:0];
+  assign key_share0_14_we = addr_hit[20] & reg_we & ~wr_err;
+  assign key_share0_14_wd = reg_wdata[31:0];
 
-  assign key_15_we = addr_hit[21] & reg_we & ~wr_err;
-  assign key_15_wd = reg_wdata[31:0];
+  assign key_share0_15_we = addr_hit[21] & reg_we & ~wr_err;
+  assign key_share0_15_wd = reg_wdata[31:0];
 
-  assign key_len_we = addr_hit[22] & reg_we & ~wr_err;
-  assign key_len_wd = reg_wdata[9:0];
+  assign key_share1_0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign key_share1_0_wd = reg_wdata[31:0];
 
-  assign prefix_0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign key_share1_1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign key_share1_1_wd = reg_wdata[31:0];
+
+  assign key_share1_2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign key_share1_2_wd = reg_wdata[31:0];
+
+  assign key_share1_3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign key_share1_3_wd = reg_wdata[31:0];
+
+  assign key_share1_4_we = addr_hit[26] & reg_we & ~wr_err;
+  assign key_share1_4_wd = reg_wdata[31:0];
+
+  assign key_share1_5_we = addr_hit[27] & reg_we & ~wr_err;
+  assign key_share1_5_wd = reg_wdata[31:0];
+
+  assign key_share1_6_we = addr_hit[28] & reg_we & ~wr_err;
+  assign key_share1_6_wd = reg_wdata[31:0];
+
+  assign key_share1_7_we = addr_hit[29] & reg_we & ~wr_err;
+  assign key_share1_7_wd = reg_wdata[31:0];
+
+  assign key_share1_8_we = addr_hit[30] & reg_we & ~wr_err;
+  assign key_share1_8_wd = reg_wdata[31:0];
+
+  assign key_share1_9_we = addr_hit[31] & reg_we & ~wr_err;
+  assign key_share1_9_wd = reg_wdata[31:0];
+
+  assign key_share1_10_we = addr_hit[32] & reg_we & ~wr_err;
+  assign key_share1_10_wd = reg_wdata[31:0];
+
+  assign key_share1_11_we = addr_hit[33] & reg_we & ~wr_err;
+  assign key_share1_11_wd = reg_wdata[31:0];
+
+  assign key_share1_12_we = addr_hit[34] & reg_we & ~wr_err;
+  assign key_share1_12_wd = reg_wdata[31:0];
+
+  assign key_share1_13_we = addr_hit[35] & reg_we & ~wr_err;
+  assign key_share1_13_wd = reg_wdata[31:0];
+
+  assign key_share1_14_we = addr_hit[36] & reg_we & ~wr_err;
+  assign key_share1_14_wd = reg_wdata[31:0];
+
+  assign key_share1_15_we = addr_hit[37] & reg_we & ~wr_err;
+  assign key_share1_15_wd = reg_wdata[31:0];
+
+  assign key_len_we = addr_hit[38] & reg_we & ~wr_err;
+  assign key_len_wd = reg_wdata[2:0];
+
+  assign prefix_0_we = addr_hit[39] & reg_we & ~wr_err;
   assign prefix_0_wd = reg_wdata[31:0];
 
-  assign prefix_1_we = addr_hit[24] & reg_we & ~wr_err;
+  assign prefix_1_we = addr_hit[40] & reg_we & ~wr_err;
   assign prefix_1_wd = reg_wdata[31:0];
 
-  assign prefix_2_we = addr_hit[25] & reg_we & ~wr_err;
+  assign prefix_2_we = addr_hit[41] & reg_we & ~wr_err;
   assign prefix_2_wd = reg_wdata[31:0];
 
-  assign prefix_3_we = addr_hit[26] & reg_we & ~wr_err;
+  assign prefix_3_we = addr_hit[42] & reg_we & ~wr_err;
   assign prefix_3_wd = reg_wdata[31:0];
 
-  assign prefix_4_we = addr_hit[27] & reg_we & ~wr_err;
+  assign prefix_4_we = addr_hit[43] & reg_we & ~wr_err;
   assign prefix_4_wd = reg_wdata[31:0];
 
-  assign prefix_5_we = addr_hit[28] & reg_we & ~wr_err;
+  assign prefix_5_we = addr_hit[44] & reg_we & ~wr_err;
   assign prefix_5_wd = reg_wdata[31:0];
 
-  assign prefix_6_we = addr_hit[29] & reg_we & ~wr_err;
+  assign prefix_6_we = addr_hit[45] & reg_we & ~wr_err;
   assign prefix_6_wd = reg_wdata[31:0];
 
-  assign prefix_7_we = addr_hit[30] & reg_we & ~wr_err;
+  assign prefix_7_we = addr_hit[46] & reg_we & ~wr_err;
   assign prefix_7_wd = reg_wdata[31:0];
 
-  assign prefix_8_we = addr_hit[31] & reg_we & ~wr_err;
+  assign prefix_8_we = addr_hit[47] & reg_we & ~wr_err;
   assign prefix_8_wd = reg_wdata[31:0];
 
-  assign prefix_9_we = addr_hit[32] & reg_we & ~wr_err;
+  assign prefix_9_we = addr_hit[48] & reg_we & ~wr_err;
   assign prefix_9_wd = reg_wdata[31:0];
 
-  assign prefix_10_we = addr_hit[33] & reg_we & ~wr_err;
+  assign prefix_10_we = addr_hit[49] & reg_we & ~wr_err;
   assign prefix_10_wd = reg_wdata[31:0];
 
 
-  assign cfg_regwen_re = addr_hit[35] && reg_re;
+  assign cfg_regwen_re = addr_hit[51] && reg_re;
 
   // Read data return
   always_comb begin
@@ -1721,58 +2091,122 @@ module kmac_reg_top (
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[9:0] = '0;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = prefix_0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = prefix_1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = prefix_2_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = prefix_3_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = prefix_4_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = prefix_5_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = prefix_6_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[31:0] = prefix_7_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = prefix_8_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[31:0] = prefix_9_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[31:0] = prefix_10_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[34]: begin
-        reg_rdata_next[31:0] = err_code_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[35]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[36]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[37]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[2:0] = '0;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[31:0] = prefix_0_qs;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[31:0] = prefix_1_qs;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[31:0] = prefix_2_qs;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[31:0] = prefix_3_qs;
+      end
+
+      addr_hit[43]: begin
+        reg_rdata_next[31:0] = prefix_4_qs;
+      end
+
+      addr_hit[44]: begin
+        reg_rdata_next[31:0] = prefix_5_qs;
+      end
+
+      addr_hit[45]: begin
+        reg_rdata_next[31:0] = prefix_6_qs;
+      end
+
+      addr_hit[46]: begin
+        reg_rdata_next[31:0] = prefix_7_qs;
+      end
+
+      addr_hit[47]: begin
+        reg_rdata_next[31:0] = prefix_8_qs;
+      end
+
+      addr_hit[48]: begin
+        reg_rdata_next[31:0] = prefix_9_qs;
+      end
+
+      addr_hit[49]: begin
+        reg_rdata_next[31:0] = prefix_10_qs;
+      end
+
+      addr_hit[50]: begin
+        reg_rdata_next[31:0] = err_code_qs;
+      end
+
+      addr_hit[51]: begin
         reg_rdata_next[0] = cfg_regwen_qs;
       end
 
