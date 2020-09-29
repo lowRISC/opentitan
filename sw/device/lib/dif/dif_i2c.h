@@ -22,6 +22,23 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * A toggle state: enabled, or disabled.
+ *
+ * This enum may be used instead of a `bool` when describing an enabled/disabled
+ * state.
+ */
+typedef enum dif_i2c_toggle {
+  /*
+   * The "enabled" state.
+   */
+  kDifI2cToggleEnabled,
+  /**
+   * The "disabled" state.
+   */
+  kDifI2cToggleDisabled,
+} dif_i2c_toggle_t;
+
+/**
  * Represents a speed setting for an I2C component: standard, fast, and
  * fast plus, corresponding to 100 kbaud, 400 kbaud, and 1 Mbaud,
  * respectively.
@@ -163,34 +180,6 @@ typedef enum dif_i2c_result {
 } dif_i2c_result_t;
 
 /**
- * Represents a valid watermark level for one of the I2C FIFOs.
- */
-typedef enum dif_i2c_watermark_level {
-  /**
-   * A one-byte watermark.
-   */
-  kDifI2cLevel1Byte = 0,
-  /**
-   * A four-byte watermark.
-   */
-  kDifI2cLevel4Byte,
-  /**
-   * An eight-byte watermark.
-   */
-  kDifI2cLevel8Byte,
-  /**
-   * A sixteen-byte watermark.
-   */
-  kDifI2cLevel16Byte,
-  /**
-   * A thirty-byte watermark.
-   *
-   * Note that this watermark is only supported for RX, and not for FMT.
-   */
-  kDifI2cLevel30Byte,
-} dif_i2c_level_t;
-
-/**
  * Represents an I2C-related interrupt type.
  */
 typedef enum dif_i2c_irq {
@@ -241,21 +230,128 @@ typedef enum dif_i2c_irq {
 typedef uint32_t dif_i2c_irq_snapshot_t;
 
 /**
- * A toggle state: enabled, or disabled.
- *
- * This enum may be used instead of a `bool` when describing an enabled/disabled
- * state.
+ * Represents a valid watermark level for one of the I2C FIFOs.
  */
-typedef enum dif_i2c_toggle {
-  /*
-   * The "enabled" state.
-   */
-  kDifI2cToggleEnabled,
+typedef enum dif_i2c_watermark_level {
   /**
-   * The "disabled" state.
+   * A one-byte watermark.
    */
-  kDifI2cToggleDisabled,
-} dif_i2c_toggle_t;
+  kDifI2cLevel1Byte = 0,
+  /**
+   * A four-byte watermark.
+   */
+  kDifI2cLevel4Byte,
+  /**
+   * An eight-byte watermark.
+   */
+  kDifI2cLevel8Byte,
+  /**
+   * A sixteen-byte watermark.
+   */
+  kDifI2cLevel16Byte,
+  /**
+   * A thirty-byte watermark.
+   *
+   * Note that this watermark is only supported for RX, and not for FMT.
+   */
+  kDifI2cLevel30Byte,
+} dif_i2c_level_t;
+
+/**
+ * Flags for a formatted I2C byte, used by the `dif_i2c_write_byte_raw()`
+ * function.
+ */
+typedef struct dif_i2c_fmt_flags {
+  /**
+   * Causes a start signal to be sent before the byte.
+   *
+   * If a start has been issued during the current transaction, this will issue
+   * a repeated start.
+   */
+  bool start;
+  /**
+   * Causes a stop signal to be sent after the byte.
+   *
+   * This flag cannot be set when both `read` and `read_cont` are set.
+   */
+  bool stop;
+  /**
+   * Causes the byte to be interpreted as an unsigned number of bytes to read
+   * from the target; 0 is interpreted as 256.
+   */
+  bool read;
+  /**
+   * Requires `read` to be set; if so, once the final byte associated with this
+   * read is received, it will be acknowledged, allowing the read operation to
+   * continue.
+   */
+  bool read_cont;
+  /**
+   * By default, the hardware expects an ACK after every byte sent, and raises
+   * an exception (surfaced as the `kDifi2cIrqNak` interrupt). This flag
+   * disables that behavior.
+   *
+   * This flag cannot be set along with `read` or `read_cont`.
+   */
+  bool supress_nak_irq;
+} dif_i2c_fmt_flags_t;
+
+/**
+ * Available formatting codes for `dif_i2c_write_byte_raw()`.
+ *
+ * Each code describes how to interpret the `byte` parameter, referred to below
+ * as "the byte".
+ *
+ * It is the caller's responsibility to observe the state transitions in the
+ * comments below.
+ */
+typedef enum dif_i2c_fmt {
+  /**
+   * Start a transaction. This sends a START signal followed by the byte.
+   * The byte sent will form (potentially part of) the target address for the
+   * transaction.
+   *
+   * May be followed by any format code.
+   */
+  kDifI2cFmtStart,
+  /**
+   * Transmit byte. This simply sends the byte. It may need to be used in
+   * conjunction with `Start` to send a multi-byte target address.
+   *
+   * May be followed by any format code.
+   */
+  kDifI2cFmtTx,
+  /**
+   * Transmit byte and stop. This sends the byte, and then sends a stop
+   * signal, completing a transaction.
+   *
+   * Only `Start` may follow this code.
+   */
+  kDifI2cFmtTxStop,
+  /**
+   * Request `n` bytes, where `n` is the byte interpreted as an unsigned
+   * integer; a byte value of `0` will be interpreted as requesting `256`
+   * bytes. This will NAK the last byte.
+   *
+   * Only `Start` may follow this code (this code does not stop a transaction;
+   * see `RxStop`).
+   */
+  kDifI2cFmtRx,
+  /**
+   * Request `n` bytes, same as `Rx`, but ACK the last byte so that more data
+   * can be requested.
+   *
+   * May be followed by `RxContinue`, `Rx`, or `RxStop`.
+   */
+  kDifI2cFmtRxContinue,
+  /**
+   * Request `n` bytes, same as `Rx`, but, after NAKing the last byte, send a
+   * stop signal to end the transaction.
+   *
+   * Only `Start` may follow this code.
+   */
+  kDifI2cFmtRxStop,
+} dif_i2c_fmt_t;
 
 /**
  * Computes timing parameters for an I2C device and stores them in `config`.
@@ -295,42 +391,6 @@ dif_i2c_result_t dif_i2c_init(dif_i2c_params_t params, dif_i2c_t *i2c);
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_configure(const dif_i2c_t *i2c,
                                    dif_i2c_config_t config);
-
-/**
- * Resets the state of the RX FIFO, essentially dropping all recieved bytes.
- *
- * @param i2c An I2c handle.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c);
-
-/**
- * Resets the state of the FMT FIFO, essentially dropping all scheduled
- * operations.
- *
- * @param i2c An I2c handle.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
-
-/**
- * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
- * interrupts when each fifo exceeds, or falls bekow, the set level.
- *
- * Note that the 30-byte level is only supported for the RX FIFO: trying to use
- * it with the FMT FIFO is an error.
- *
- * @param i2c An I2C handle.
- * @param rx_level The desired watermark level for the RX FIFO.
- * @param fmt_level The desired watermark level for the FMT FIFO.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
-                                        dif_i2c_level_t rx_level,
-                                        dif_i2c_level_t fmt_level);
 
 /**
  * Returns whether a particular interrupt is currently pending.
@@ -420,6 +480,42 @@ dif_i2c_result_t dif_i2c_irq_restore_all(
     const dif_i2c_t *i2c, const dif_i2c_irq_snapshot_t *snapshot);
 
 /**
+ * Resets the state of the RX FIFO, essentially dropping all recieved bytes.
+ *
+ * @param i2c An I2c handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c);
+
+/**
+ * Resets the state of the FMT FIFO, essentially dropping all scheduled
+ * operations.
+ *
+ * @param i2c An I2c handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
+
+/**
+ * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
+ * interrupts when each fifo exceeds, or falls bekow, the set level.
+ *
+ * Note that the 30-byte level is only supported for the RX FIFO: trying to use
+ * it with the FMT FIFO is an error.
+ *
+ * @param i2c An I2C handle.
+ * @param rx_level The desired watermark level for the RX FIFO.
+ * @param fmt_level The desired watermark level for the FMT FIFO.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
+                                        dif_i2c_level_t rx_level,
+                                        dif_i2c_level_t fmt_level);
+
+/**
  * Enables or disables the "Host I2C" functionality, effectively turning the
  * I2C device on or off. This function should be called to enable the device
  * once timings, interrupts, and watermarks are all configured.
@@ -463,8 +559,8 @@ dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
  * zeroth bit being the most recent.
  *
  * @param i2c An I2C handle.
- * @param[out] scl_samples SCL sample bits; may be null.
- * @param[out] sda_samples SDA sample bits; may be null.
+ * @param[out] scl_samples SCL sample bits; may be `NULL`.
+ * @param[out] sda_samples SDA sample bits; may be `NULL`.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -478,8 +574,8 @@ dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
  * and entries pending for read by software, respectively.
  *
  * @param i2c An I2C handle.
- * @param[out] fmt_fifo_level The number of unsent FMT bytes; may be null.
- * @param[out] rx_fifo_level The number of unread RX bytes; may be null.
+ * @param[out] fmt_fifo_level The number of unsent FMT bytes; may be `NULL`.
+ * @param[out] rx_fifo_level The number of unread RX bytes; may be `NULL`.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -492,50 +588,11 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
  * will still trigger a byte pop.
  *
  * @param i2c An I2C handle.
- * @param[out] byte The popped byte; may be null.
+ * @param[out] byte The popped byte; may be `NULL`.
  * @return The result of the opeartion.
  */
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte);
-
-/**
- * Flags for a formatted I2C byte, used by the `dif_i2c_write_byte_raw()`
- * function.
- */
-typedef struct dif_i2c_fmt_flags {
-  /**
-   * Causes a start signal to be sent before the byte.
-   *
-   * If a start has been issued during the current transaction, this will issue
-   * a repeated start.
-   */
-  bool start;
-  /**
-   * Causes a stop signal to be sent after the byte.
-   *
-   * This flag cannot be set when both `read` and `read_cont` are set.
-   */
-  bool stop;
-  /**
-   * Causes the byte to be interpreted as an unsigned number of bytes to read
-   * from the target; 0 is interpreted as 256.
-   */
-  bool read;
-  /**
-   * Requires `read` to be set; if so, once the final byte associated with this
-   * read is received, it will be acknowledged, allowing the read operation to
-   * continue.
-   */
-  bool read_cont;
-  /**
-   * By default, the hardware expects an ACK after every byte sent, and raises
-   * an exception (surfaced as the `kDifi2cIrqNak` interrupt). This flag
-   * disables that behavior.
-   *
-   * This flag cannot be set along with `read` or `read_cont`.
-   */
-  bool supress_nak_irq;
-} dif_i2c_fmt_flags_t;
 
 /**
  * Pushes a raw write entry onto the FMT FIFO, consisting of a byte and format
@@ -554,62 +611,6 @@ typedef struct dif_i2c_fmt_flags {
 DIF_WARN_UNUSED_RESULT
 dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
                                         dif_i2c_fmt_flags_t flags);
-/**
- * Available formatting codes for `dif_i2c_write_byte_raw()`.
- *
- * Each code describes how to interpret the `byte` parameter, referred to below
- * as "the byte".
- *
- * It is the caller's responsibility to observe the state transitions in the
- * comments below.
- */
-typedef enum dif_i2c_fmt {
-  /**
-   * Start a transaction. This sends a START signal followed by the byte.
-   * The byte sent will form (potentially part of) the target address for the
-   * transaction.
-   *
-   * May be followed by any format code.
-   */
-  kDifI2cFmtStart,
-  /**
-   * Transmit byte. This simply sends the byte. It may need to be used in
-   * conjunction with `Start` to send a multi-byte target address.
-   *
-   * May be followed by any format code.
-   */
-  kDifI2cFmtTx,
-  /**
-   * Transmit byte and stop. This sends the byte, and then sends a stop
-   * signal, completing a transaction.
-   *
-   * Only `Start` may follow this code.
-   */
-  kDifI2cFmtTxStop,
-  /**
-   * Request `n` bytes, where `n` is the byte interpreted as an unsigned
-   * integer; a byte value of `0` will be interpreted as requesting `256`
-   * bytes. This will NAK the last byte.
-   *
-   * Only `Start` may follow this code (this code does not stop a transaction;
-   * see `RxStop`).
-   */
-  kDifI2cFmtRx,
-  /**
-   * Request `n` bytes, same as `Rx`, but ACK the last byte so that more data
-   * can be requested.
-   *
-   * May be followed by `RxContinue`, `Rx`, or `RxStop`.
-   */
-  kDifI2cFmtRxContinue,
-  /**
-   * Request `n` bytes, same as `Rx`, but, after NAKing the last byte, send a
-   * stop signal to end the transaction.
-   *
-   * Only `Start` may follow this code.
-   */
-  kDifI2cFmtRxStop,
-} dif_i2c_fmt_t;
 
 /**
  * Pushes a write entry onto the FMT FIFO, consisting of a byte and a format
