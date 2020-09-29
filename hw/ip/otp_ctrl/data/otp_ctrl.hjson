@@ -463,6 +463,7 @@
       swaccess: "r0w1c",
       hwaccess: "hro",
       hwqe:     "true",
+      hwext:    "true",
       regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
         { bits: "0",
@@ -570,6 +571,7 @@
       swaccess: "r0w1c",
       hwaccess: "hro",
       hwqe:     "true",
+      hwext:    "true",
       regwen:   "CHECK_TRIGGER_REGWEN",
       fields: [
         { bits: "0",
