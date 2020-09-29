@@ -27,9 +27,13 @@ module otp_ctrl
     32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
   }
 ) (
+  // TODO: implement clock muxing for initial programming.
+  // TODO: check whether interfaces need asynchronous transitions.
   input                                              clk_i,
   input                                              rst_ni,
-  // TODO: signals to AST
+  // Macro-specific power sequencing signals to/from AST.
+  output otp_ast_req_t                               otp_ast_pwr_seq_o,
+  input  otp_ast_rsp_t                               otp_ast_pwr_seq_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -388,12 +392,13 @@ module otp_ctrl
 
   prim_otp #(
     .Width(OtpWidth),
-    .Depth(OtpDepth),
-    .CmdWidth(OtpCmdWidth),
-    .ErrWidth(OtpErrWidth)
+    .Depth(OtpDepth)
   ) u_otp (
     .clk_i,
     .rst_ni,
+    // Power sequencing signals to/from AST
+    .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq   ),
+    .pwr_seq_h_i ( otp_ast_pwr_seq_i.pwr_seq_h ),
     // Test interface
     .test_tl_i   ( tl_win_h2d_gated     ),
     .test_tl_o   ( tl_win_d2h_gated     ),

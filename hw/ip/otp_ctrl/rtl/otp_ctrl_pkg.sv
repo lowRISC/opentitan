@@ -50,6 +50,7 @@ package otp_ctrl_pkg;
   parameter int OtpCmdWidth      = 2;
   parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
   parameter int OtpErrWidth      = 4;
+  parameter int OtpPwrSeqWidth   = 2;
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
   parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
@@ -350,9 +351,6 @@ package otp_ctrl_pkg;
   } otbn_otp_key_rsp_t;
 
 
-
-
-
   ////////////////////////////////
   // Power/Reset Ctrl Interface //
   ////////////////////////////////
@@ -368,6 +366,19 @@ package otp_ctrl_pkg;
   typedef struct packed {
     logic idle;
   } otp_pwr_state_t;
+
+
+  ///////////////////
+  // AST Interface //
+  ///////////////////
+
+  typedef struct packed {
+    logic [OtpPwrSeqWidth-1:0] pwr_seq;
+  } otp_ast_req_t;
+
+  typedef struct packed {
+    logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
+  } otp_ast_rsp_t;
 
 endpackage : otp_ctrl_pkg
 
