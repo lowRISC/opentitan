@@ -13,13 +13,21 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Right now only TL-UL is supported
   tl_level_e tl_level = kTLUL;
 
-  // Maximum outstanding transaction
+  // Maximum number of outstanding transactions supported by the DUT.
   // 0: Unlimited from the host perspective, might be back-pressured by the device
   // 1: Only single transaction at a time
   // n: Number of maximum oustanding requests
 
-  // Set for this large value to find max outstanding req DV can hit
-  // Then compare this value with designers to check if it meets their expectation
+  // This is initialized to an arbitrary value. The DUT may actually support higher or lower than
+  // this number. Calculating exactly how many outstanding transactions the DUT supports is hard to
+  // determine. For most comportable IPs, it will likely be less than 16. The testbench attempts to
+  // pump the DUT with as many transactions as possible. The missing coverage in
+  // `tl_agent_cov::max_outstanding_cfg` will then indicate what the design actually supported.
+  // The designer must then confirm if that looks correct (in the coverage report), and then this
+  // value is updated accordingly in the DUT's test / env class.
+  //
+  // Note that this is a device constant. It should only be set within the scope of the test class'
+  // build_phase. Once set, it MUST NOT BE modified whatsoever.
   int unsigned max_outstanding_req = 16;
 
   // If allow_a_valid_drop_wo_a_ready then the host can de-assert valid if there is no response from
@@ -62,12 +70,54 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // TL spec requires host to set d_ready = 1 when a_valid = 1, but some design may not follow this
   // rule. Details at #3208. Use below knob to control
   bit host_can_stall_rsp_when_a_valid_high = 0;
+
   // knob for device to enable/disable same cycle response
   bit device_can_rsp_on_same_cycle = 0;
+
   // for same cycle response, need to know when a_valid and other data/control are available, so
   // that monitor can sample it, then send to sequence to get data for response in the same cycle
   // 10 means 10% of TL clock period. This var is only use when device_can_rsp_on_same_cycle = 1
   time time_a_valid_avail_after_sample_edge = 1ns;
+
+  // Sets the valid a_source width. The DUT may support fewer bits than the whole SourceWidth bits.
+  int unsigned valid_a_source_width = SourceWidth;
+
+  // Maintains a queue of a_source values used in previous TL requests.
+  //
+  // The queue size maxes out at max_outstanding_req value, beyond which the a_source values can
+  // be recycled. The a_source value for a new request is randomized such that it does not match any
+  // in this queue. The new a_source is pushed into the back of the queue and the oldest one is
+  // popped from the front when the max size is reached.
+  //
+  // NOTE: If a tl_seq_item is being constructed for a new host request (whether in the TL
+  // sequences, adapter or elsewhere), it is mandatory to constrain the tl_seq_item::a_source to NOT
+  // match what already exists in the queue. Otherwise, it will violate the spec and the design will
+  // end up throwing assertion errors. It is recommended to use the `randomize_a_source_in_req()`
+  // function below to achieve this.
+  bit [SourceWidth-1:0] a_source_pend_q[$];
+
+  // Records the a_source value that was last released from the `a_source_pend_q` pool.
+  // We influence the randomization of a new req's a_source to reuse this 20% (also a knob) of the
+  // time. The initial value is randomized (see post_randomize()).
+  protected bit [SourceWidth-1:0] last_a_source_released;
+
+  // Sets the randomization dist weight for a new a_source value to be constrained to the last
+  // a_source released. This only ATTEMPTS to set the a_source to the last_a_source_released value -
+  // it is not always guaranteed even at 100%, especially if the test does non-blocking accessses.
+  rand int unsigned use_last_a_source_released_pct = 20;
+
+  // The monitor detects reset and maintains the value below.
+  bit reset_asserted;
+
+  constraint a_source_eq_last_a_source_released_pct_c {
+    use_last_a_source_released_pct <= 100;
+    use_last_a_source_released_pct dist {
+      [0:19]  :/ 1,
+      [20:59] :/ 1,
+      [60:99] :/ 1,
+      100     :/ 1
+    };
+  }
 
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
@@ -78,5 +128,80 @@ class tl_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(d_ready_delay_max,     UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
+
+  function void post_randomize();
+    // We want to randomize the initial value of last_a_source_released, while respecting any
+    // constraints on a_source in the tl_seq_item (and its extensions). So we do it here instead.
+    tl_seq_item dummy = tl_seq_item::type_id::create("dummy");
+    `DV_CHECK_RANDOMIZE_FATAL(dummy)
+    randomize_a_source_in_item(.item(dummy), .use_last_a_source_released(1'b0));
+    last_a_source_released = dummy.a_source;
+  endfunction
+
+  // Randomizes a_source within an item (protected function).
+  //
+  // This function takes the tl_seq_item object to specifically randomize the a_source such that it
+  // does not match an existing one in the a_source_q. This randomization also takes into account
+  // any existing constriants on a_source that may exist in the class definition. The new a_source
+  // value is randomized to be equal to the last a_source released from the a_source_pend_q
+  // 20% of the time (weight is configurable).
+  //
+  // For actual reqs made out to the DUT, use randomize_a_source_in_req().
+  protected function void randomize_a_source_in_item(tl_seq_item item,
+                                                     bit use_last_a_source_released);
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(a_source,
+        (!reset_asserted) -> !(a_source inside {a_source_pend_q});
+        // Set the upper a_source bits that are unused to 0.
+        (a_source >> valid_a_source_width) == 0;
+        // We cannot guarantee that last_a_source_released is not in a_source_pend_q,
+        // especially if the test does non-blocking accesses. If the a_source for the new req
+        // needs to be equal to last_a_source_released, we will need the bottom constraint to be a
+        // soft one to *potentially* avoid violating the previous constraint. Only way to guarantee
+        // that the new a_source == last_a_source_released is to ensure the test only does blocking
+        // accesses.
+        use_last_a_source_released -> soft (a_source == last_a_source_released);,
+        item)
+  endfunction
+
+  // Randomizes the a_source for a 'real' req (public version of the above function).
+  //
+  // Invokes randomize_a_source_in_item() and adds the a_source for the new req to the queue.
+  virtual function void randomize_a_source_in_req(tl_seq_item item);
+    bit use_last_a_source_released;
+    use_last_a_source_released = ($urandom_range(1, 100) <= use_last_a_source_released_pct);
+    randomize_a_source_in_item(item, use_last_a_source_released);
+    add_to_a_source_pend_q(item.a_source);
+  endfunction
+
+  // Adds a_source to the a_source_pend_q.
+  //
+  // Ensures that the queue does not exceed the max outstanding req size. Pops the oldest a_source
+  // used to last_a_source_released.
+  virtual function void add_to_a_source_pend_q(bit [SourceWidth-1:0] a_source);
+    if (reset_asserted) return;
+    if (a_source_pend_q.size() == max_outstanding_req) begin
+      last_a_source_released = a_source_pend_q.pop_front();
+    end
+    a_source_pend_q.push_back(a_source);
+    `uvm_info(`gfn, $sformatf("a_source_pend_q: %p", a_source_pend_q), UVM_DEBUG)
+  endfunction
+
+  // Removes the last used a_source from a_source_pend_q.
+  //
+  // Invoked by the tl_host_base_seq::get_base_response() which overrides the default UVM
+  // implementation. It is recommended that all TL host sequence flavors that do not extended from
+  // tl_host_base_seq invoke this function similarly to avoid running out of a_source IDs when
+  // creating non-blocking requests.
+  virtual function void remove_from_a_source_pend_q(bit [SourceWidth-1:0] a_source);
+    int result[$];
+
+    // Responses can return out of order, so the a_source can be anywhere in the queue.
+    result = a_source_pend_q.find_first_index with (item == a_source);
+    if (result.size() == 1) begin
+      a_source_pend_q.delete(result.pop_front());
+      last_a_source_released = a_source;
+      `uvm_info(`gfn, $sformatf("a_source_pend_q: %p", a_source_pend_q), UVM_DEBUG)
+    end
+  endfunction
 
 endclass

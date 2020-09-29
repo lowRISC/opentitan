@@ -25,6 +25,7 @@ filesets:
       - tl_agent.sv: {is_include_file: true}
       - tl_reg_adapter.sv: {is_include_file: true}
       - seq_lib/tl_seq_list.sv: {is_include_file: true}
+      - seq_lib/tl_host_base_seq.sv: {is_include_file: true}
       - seq_lib/tl_host_seq.sv: {is_include_file: true}
       - seq_lib/tl_host_single_seq.sv: {is_include_file: true}
       - seq_lib/tl_host_custom_seq.sv: {is_include_file: true}
