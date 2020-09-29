@@ -114,7 +114,7 @@ dif_i2c_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
   uint16_t scl_period_cycles =
       round_up_divide(scl_period_nanos, timing_config.clock_period_nanos);
 
-  // Lengthen the SCL high period to accomodate the desired SCL period.
+  // Lengthen the SCL high period to accommodate the desired SCL period.
   uint16_t lengthened_high_cycles = scl_period_cycles -
                                     config->scl_time_low_cycles -
                                     config->rise_cycles - config->fall_cycles;
@@ -621,8 +621,8 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
     return kDifI2cBadArg;
   }
   // Validate that "write only" flags and "read only" flags are not set
-  // simulataneously.
-  bool has_write_flags = flags.start || flags.stop || flags.supress_nak_irq;
+  // simultaneously.
+  bool has_write_flags = flags.start || flags.stop || flags.suppress_nak_irq;
   bool has_read_flags = flags.read || flags.read_cont;
   if (has_write_flags && has_read_flags) {
     return kDifI2cBadArg;
@@ -644,20 +644,20 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READ, flags.read);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_RCONT, flags.read_cont);
   fmt_byte =
-      bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK, flags.supress_nak_irq);
+      bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK, flags.suppress_nak_irq);
   mmio_region_write32(i2c->params.base_addr, I2C_FDATA_REG_OFFSET, fmt_byte);
 
   return kDifI2cOk;
 }
 
 dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
-                                    dif_i2c_fmt_t code, bool supress_nak_irq) {
+                                    dif_i2c_fmt_t code, bool suppress_nak_irq) {
   if (i2c == NULL) {
     return kDifI2cBadArg;
   }
 
-  // Validate that `supress_nak_irq` has not been mixed with an Rx code.
-  if (supress_nak_irq) {
+  // Validate that `suppress_nak_irq` has not been mixed with an Rx code.
+  if (suppress_nak_irq) {
     switch (code) {
       case kDifI2cFmtRx:
       case kDifI2cFmtRxContinue:
@@ -669,7 +669,7 @@ dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
   }
 
   // Convert the format code into flags.
-  dif_i2c_fmt_flags_t flags = {.supress_nak_irq = supress_nak_irq};
+  dif_i2c_fmt_flags_t flags = {.suppress_nak_irq = suppress_nak_irq};
   switch (code) {
     case kDifI2cFmtStart:
       flags.start = true;
