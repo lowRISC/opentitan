@@ -50,7 +50,6 @@ package chip_env_pkg;
   // functions
 
   // package sources
-  `include "chip_tl_seq_item.sv"
   `include "chip_env_cfg.sv"
   `include "chip_env_cov.sv"
   `include "chip_virtual_sequencer.sv"

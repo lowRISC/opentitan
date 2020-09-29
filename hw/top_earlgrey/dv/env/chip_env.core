@@ -18,8 +18,6 @@ filesets:
       - sw_test_status_pkg.sv
       - sw_test_status_if.sv
       - chip_env_pkg.sv
-      - autogen/alert_handler_env_pkg__params.sv: {is_include_file: true}
-      - chip_tl_seq_item.sv: {is_include_file: true}
       - chip_env_cfg.sv: {is_include_file: true}
       - chip_env_cov.sv: {is_include_file: true}
       - chip_env.sv: {is_include_file: true}
@@ -32,6 +30,7 @@ filesets:
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
+      - autogen/alert_handler_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

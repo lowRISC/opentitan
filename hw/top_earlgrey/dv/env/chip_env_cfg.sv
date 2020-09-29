@@ -67,6 +67,11 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
 
     super.initialize(csr_base_addr);
+
+    // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
+    // TODO: use a parameter (or some better way)?
+    m_tl_agent_cfg.valid_a_source_width = 6;
+
     // create uart agent config obj
     m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
 
