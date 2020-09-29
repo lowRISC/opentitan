@@ -5,7 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_USBDEV_H_
 #define OPENTITAN_SW_DEVICE_LIB_USBDEV_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -222,11 +221,8 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
  * Initialize the usbdev interface
  *
  * @param ctx uninitialized usbdev context pointer
- * @param pinflip boolean to indicate if PHY should be configured for D+/D- flip
- * @param diff_rx boolean to indicate if PHY uses differential RX
- * @param diff_tx boolean to indicate if PHY uses differential TX
  */
-void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx);
+void usbdev_init(usbdev_ctx_t *ctx);
 
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.

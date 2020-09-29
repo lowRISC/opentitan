@@ -40,11 +40,12 @@ module usbdev_iomux
 
   // Internal USB Interface (usb clk)
   output logic                          usb_rx_d_o,
-  output logic                          usb_rx_dp_o,
-  output logic                          usb_rx_dn_o,
+  output logic                          usb_rx_se0_o,
+
   input  logic                          usb_tx_d_i,
   input  logic                          usb_tx_se0_i,
   input  logic                          usb_tx_oe_i,
+
   output logic                          usb_pwr_sense_o,
   input  logic                          usb_pullup_en_i,
   input  logic                          usb_suspend_i
@@ -52,16 +53,15 @@ module usbdev_iomux
 
   logic async_pwr_sense, sys_usb_sense;
   logic cio_usb_dp, cio_usb_dn, cio_usb_d;
+  logic usb_rx_dp, usb_rx_dn, usb_rx_d;
   logic pinflip;
   logic unused_eop_single_bit;
-  logic unused_rx_differential_mode;
   logic unused_usb_ref_disable;
   logic unused_tx_osc_test_mode;
 
-  assign unused_eop_single_bit       = sys_reg2hw_config_i.eop_single_bit.q;
-  assign unused_usb_ref_disable      = sys_reg2hw_config_i.usb_ref_disable.q;
-  assign unused_tx_osc_test_mode     = sys_reg2hw_config_i.tx_osc_test_mode.q;
-  assign unused_rx_differential_mode = sys_reg2hw_config_i.rx_differential_mode.q;
+  assign unused_eop_single_bit   = sys_reg2hw_config_i.eop_single_bit.q;
+  assign unused_usb_ref_disable  = sys_reg2hw_config_i.usb_ref_disable.q;
+  assign unused_tx_osc_test_mode = sys_reg2hw_config_i.tx_osc_test_mode.q;
 
   //////////
   // CDCs //
@@ -113,12 +113,11 @@ module usbdev_iomux
 
     // The single-ended signals are only driven in single-ended mode.
     if (sys_reg2hw_config_i.tx_differential_mode.q) begin
-      // Differential TX mode (physical IO takes d and se0)
-      // i.e. expect the "else" logic to be in the physical interface
+      // Differential TX mode
       cio_usb_tx_mode_se_o   = 1'b0;
 
     end else begin
-      // Single-ended TX mode (physical IO takes dp and dn)
+      // Single-ended TX mode
       cio_usb_tx_mode_se_o   = 1'b1;
       if (usb_tx_se0_i) begin
         cio_usb_dp_o = 1'b0;
@@ -140,10 +139,26 @@ module usbdev_iomux
   // USB input pin mux //
   ///////////////////////
 
+  // Note that while transmitting, we fix the receive line to 1. If the receive line isn't fixed,
+  // we are trying to regenerate the bit clock from the bit clock we are regenerating, rather than
+  // just holding the phase.
   // D+/D- can be swapped based on a config register.
-  assign usb_rx_dp_o = pinflip ?  cio_usb_dn : cio_usb_dp;
-  assign usb_rx_dn_o = pinflip ?  cio_usb_dp : cio_usb_dn;
-  assign usb_rx_d_o  = pinflip ? ~cio_usb_d  : cio_usb_d;
+  assign usb_rx_dp = usb_tx_oe_i ? 1'b1 : (pinflip ?  cio_usb_dn : cio_usb_dp);
+  assign usb_rx_dn = usb_tx_oe_i ? 1'b0 : (pinflip ?  cio_usb_dp : cio_usb_dn);
+  assign usb_rx_d  = usb_tx_oe_i ? 1'b1 : (pinflip ? ~cio_usb_d  : cio_usb_d);
+
+  always_comb begin : proc_diff_se_mux_in
+    usb_rx_se0_o = ~usb_rx_dp & ~usb_rx_dn;
+
+    if (sys_reg2hw_config_i.rx_differential_mode.q) begin
+      // Differential RX mode
+      usb_rx_d_o = usb_rx_d;
+
+    end else begin
+      // Single-ended RX mode
+      usb_rx_d_o = usb_rx_dp; // SE1 is interpreted as differential 1
+    end
+  end
 
   // Power sense mux
   always_comb begin : proc_mux_pwr_sense
