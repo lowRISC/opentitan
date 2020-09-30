@@ -15,7 +15,13 @@ filesets:
       - rtl/entropy_src_pkg.sv
       - rtl/entropy_src_reg_pkg.sv
       - rtl/entropy_src_reg_top.sv
-      - rtl/entropy_src_shtests.sv
+      - rtl/entropy_src_watermark_reg.sv
+      - rtl/entropy_src_cntr_reg.sv
+      - rtl/entropy_src_main_sm.sv
+      - rtl/entropy_src_repcnt_ht.sv
+      - rtl/entropy_src_adaptp_ht.sv
+      - rtl/entropy_src_bucket_ht.sv
+      - rtl/entropy_src_markov_ht.sv
       - rtl/entropy_src_core.sv
       - rtl/entropy_src.sv
     file_type: systemVerilogSource

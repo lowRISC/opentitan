@@ -87,7 +87,7 @@ module prim_packer #(
     lod_idx = 0;
     for (int i = InW-1; i >= 0 ; i--) begin
       if (mask_i[i] == 1'b1) begin
-        lod_idx = i;
+        lod_idx = $unsigned(i);
       end
     end
   end
