@@ -14,7 +14,7 @@ class tl_monitor extends dv_base_monitor#(
     .COV_T  (tl_agent_cov)
   );
 
-  tl_seq_item    pending_a_req[$];
+  tl_seq_item    pending_a_req[bit [SourceWidth - 1 : 0]];
   string         agent_name;
   uvm_phase      run_phase_h;
 
@@ -88,14 +88,18 @@ class tl_monitor extends dv_base_monitor#(
         req.a_source = h2d.a_source;
         `uvm_info("tl_logging", $sformatf("[%0s][a_chan] : %0s",
                    agent_name, req.convert2string()), UVM_HIGH)
+
         `downcast(cloned_req, req.clone());
-        pending_a_req.push_back(cloned_req);
+        `DV_CHECK_EQ_FATAL(cloned_req.a_source >> cfg.valid_a_source_width, 0)
+        `DV_CHECK_EQ_FATAL(pending_a_req.exists(cloned_req.a_source), 0)
+        pending_a_req[cloned_req.a_source] = cloned_req;
+
         if (cfg.max_outstanding_req > 0 && cfg.vif.rst_n === 1) begin
           if (pending_a_req.size() > cfg.max_outstanding_req) begin
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
                                         pending_a_req.size()))
           end
-          if (cfg.en_cov) cov.m_max_outstanding_cg.sample(pending_a_req.size());
+          if (cfg.en_cov) sample_outstanding_cov(req);
         end
 
         // when device_can_rsp_on_same_cycle=1, write item to a_chan_same_cycle_rsp_port in the same
@@ -132,31 +136,24 @@ class tl_monitor extends dv_base_monitor#(
     forever begin
       @(cfg.vif.mon_cb);
       if (cfg.vif.mon_cb.d2h.d_valid && cfg.vif.mon_cb.h2d.d_ready) begin
-        // Use the source ID to find the matching request
-        bit req_found;
-        foreach (pending_a_req[i]) begin
-          if (pending_a_req[i].a_source == cfg.vif.mon_cb.d2h.d_source) begin
-            rsp = pending_a_req[i];
-            rsp.d_opcode = cfg.vif.mon_cb.d2h.d_opcode;
-            rsp.d_data   = cfg.vif.mon_cb.d2h.d_data;
-            rsp.d_source = cfg.vif.mon_cb.d2h.d_source;
-            rsp.d_param  = cfg.vif.mon_cb.d2h.d_param;
-            rsp.d_error  = cfg.vif.mon_cb.d2h.d_error;
-            rsp.d_sink   = cfg.vif.mon_cb.d2h.d_sink;
-            rsp.d_size   = cfg.vif.mon_cb.d2h.d_size;
-            rsp.d_user   = cfg.vif.mon_cb.d2h.d_user;
-            `uvm_info("tl_logging", $sformatf("[%0s][d_chan] : %0s",
-                      agent_name, rsp.convert2string()), UVM_HIGH)
-            d_chan_port.write(rsp);
-            pending_a_req.delete(i);
-            req_found = 1'b1;
-            break;
-          end
-        end
-        if (!req_found) begin
-          `uvm_error(get_full_name(), $sformatf(
+        // A matching request must exist
+        `DV_CHECK_EQ_FATAL(pending_a_req.exists(cfg.vif.mon_cb.d2h.d_source), 1, $sformatf(
              "Cannot find request matching d_source 0x%0x", cfg.vif.mon_cb.d2h.d_source))
-        end
+        rsp = pending_a_req[cfg.vif.mon_cb.d2h.d_source];
+        rsp.d_opcode = cfg.vif.mon_cb.d2h.d_opcode;
+        rsp.d_data   = cfg.vif.mon_cb.d2h.d_data;
+        rsp.d_source = cfg.vif.mon_cb.d2h.d_source;
+        rsp.d_param  = cfg.vif.mon_cb.d2h.d_param;
+        rsp.d_error  = cfg.vif.mon_cb.d2h.d_error;
+        rsp.d_sink   = cfg.vif.mon_cb.d2h.d_sink;
+        rsp.d_size   = cfg.vif.mon_cb.d2h.d_size;
+        rsp.d_user   = cfg.vif.mon_cb.d2h.d_user;
+
+        `uvm_info("tl_logging", $sformatf("[%0s][d_chan] : %0s",
+                  agent_name, rsp.convert2string()), UVM_HIGH)
+        d_chan_port.write(rsp);
+        pending_a_req.delete(cfg.vif.mon_cb.d2h.d_source);
+        if (cfg.en_cov) cov.sample(rsp);
       end
     end
   endtask : d_channel_thread
@@ -180,5 +177,27 @@ class tl_monitor extends dv_base_monitor#(
       end
     end
   endfunction : report_phase
+
+  // sample outstanding related coverage
+  virtual function void sample_outstanding_cov(tl_seq_item item);
+    bit is_outstanding_item_w_same_addr;
+
+    // check if same address has been used in more than 1 outstanding_item
+    foreach (pending_a_req[i]) begin
+      if (pending_a_req[i].a_addr == item.a_addr) begin
+        is_outstanding_item_w_same_addr = 1;
+        break;
+      end
+    end
+
+    // sample a same address used in more than 1 outstanding items, if it's null, design doesn't
+    // support outstanding items use the same address
+    if (cov.m_outstanding_item_w_same_addr_cov_obj != null) begin
+      cov.m_outstanding_item_w_same_addr_cov_obj.sample(is_outstanding_item_w_same_addr);
+    end
+
+    // sample current outstanding number
+    cov.m_max_outstanding_cg.sample(pending_a_req.size());
+  endfunction : sample_outstanding_cov
 
 endclass : tl_monitor
