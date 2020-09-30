@@ -28,11 +28,11 @@ typedef enum dif_pwrmgr_toggle {
   /**
    * Enabled state.
    */
-  kDifPwrmgrToggleEnable,
+  kDifPwrmgrToggleEnabled,
   /**
    * Disabled state.
    */
-  kDifPwrmgrToggleDisable,
+  kDifPwrmgrToggleDisabled,
 } dif_pwrmgr_toggle_t;
 
 /**
@@ -76,36 +76,45 @@ typedef enum dif_pwrmgr_req_type {
 } dif_pwrmgr_req_type_t;
 
 /**
- * A domain that can be enabled or disabled by the power manager.
+ * Options for enabling/disabling various clock and power domains
+ * in low and active power states.
  *
- * Constants below are bitmasks that can be used to define sets of domains.
+ * Constants below are bitmasks that can be combined to define configurations.
  *
- * See also: `dif_pwrmgr_domains_t`.
+ * See also: `dif_pwrmgr_domain_config_t`.
  */
-typedef enum dif_pwrmgr_domain {
+typedef enum dif_pwrmgr_domain_option {
   /**
-   * Core clock domain.
+   * Enable core clock in low power state.
    */
-  kDifPwrmgrDomainCoreClock = (1u << 0),
+  kDifPwrmgrDomainOptionCoreClockInLowPower = (1u << 0),
   /**
-   * Input/output (IO) clock domain.
+   * Enable input/output (IO) clock in low power state.
    */
-  kDifPwrmgrDomainIoClock = (1u << 1),
+  kDifPwrmgrDomainOptionIoClockInLowPower = (1u << 1),
   /**
-   * Main power domain.
+   * Enable USB clock in low power state.
    */
-  kDifPwrmgrDomainMain = (1u << 2),
-} dif_pwrmgr_domain_t;
+  kDifPwrmgrDomainOptionUsbClockInLowPower = (1u << 2),
+  /**
+   * Enable USB clock in active power state.
+   */
+  kDifPwrmgrDomainOptionUsbClockInActivePower = (1u << 3),
+  /**
+   * Enable main power domain in low power state.
+   */
+  kDifPwrmgrDomainOptionMainPowerInLowPower = (1u << 4),
+} dif_pwrmgr_domain_option_t;
 
 /**
- * A set of power domains.
+ * A set of domain options.
  *
- * This type is used for specifying and querying which domains are enabled in
- * low power state.
+ * This type is used for specifying and querying which clock and power domains
+ * are enabled in low and active power states.
  *
- * See also: `dif_pwrmgr_domain_t`.
+ * See also: `dif_pwrmgr_domain_option_t`.
  */
-typedef uint8_t dif_pwrmgr_domains_t;
+typedef uint8_t dif_pwrmgr_domain_config_t;
 
 /**
  * A wakeup request source.
@@ -119,11 +128,6 @@ typedef uint8_t dif_pwrmgr_domains_t;
  */
 typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceOne = (1u << 0),
-  kDifPwrmgrWakeupRequestSourceTwo = (1u << 1),
-  kDifPwrmgrWakeupRequestSourceThree = (1u << 2),
-  kDifPwrmgrWakeupRequestSourceFour = (1u << 3),
-  kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
-  kDifPwrmgrWakeupRequestSourceSix = (1u << 5),
 } dif_pwrmgr_wakeup_request_source_t;
 
 /**
@@ -138,8 +142,6 @@ typedef enum dif_pwrmgr_wakeup_request_source {
  */
 typedef enum dif_pwrmgr_reset_request_source {
   kDifPwrmgrResetRequestSourceOne = (1u << 0),
-  kDifPwrmgrResetRequestSourceTwo = (1u << 1),
-  kDifPwrmgrResetRequestSourceThree = (1u << 2),
 } dif_pwrmgr_reset_request_source_t;
 
 /**
@@ -209,7 +211,7 @@ typedef enum dif_pwrmgr_result {
   /**
    * The call succeeded.
    */
-  kDifPwrmgrOK = 0,
+  kDifPwrmgrOk = 0,
   /**
    * A non-specific error occurred and the hardware is in an invalid or
    * irrecoverable state.
@@ -230,21 +232,21 @@ typedef enum dif_pwrmgr_config_result {
   /**
    * The call succeeded.
    */
-  kDifPwrmgrConfigResultOK = kDifPwrmgrOK,
+  kDifPwrmgrConfigOk = kDifPwrmgrOk,
   /**
    * A non-specific error occurred and the hardware is in an invalid or
    * irrecoverable state.
    */
-  kDifPwrmgrConfigResultError = kDifPwrmgrError,
+  kDifPwrmgrConfigError = kDifPwrmgrError,
   /**
    * The caller supplied invalid arguments but the call did not cause any
    * side-effects and the hardware is in a valid and recoverable state.
    */
-  kDifPwrmgrConfigResultBadArg = kDifPwrmgrBadArg,
+  kDifPwrmgrConfigBadArg = kDifPwrmgrBadArg,
   /**
    * The register that needs to be written to is locked.
    */
-  kDifPwrMgrConfigResultLocked,
+  kDifPwrMgrConfigLocked,
 } dif_pwrmgr_config_result_t;
 
 /**
@@ -256,7 +258,11 @@ typedef enum dif_pwrmgr_irq {
    *
    * Note: This interrupt is not triggered during power-on reset.
    */
-  kDifPwrmgrIrqWakeup,
+  kDifPwrmgrIrqWakeup = 0,
+  /**
+   * \internal Last power manager interrupt.
+   */
+  kDifPwrmgrIrqLast = kDifPwrmgrIrqWakeup,
 } dif_pwrmgr_irq_t;
 
 /**
@@ -288,12 +294,15 @@ dif_pwrmgr_result_t dif_pwrmgr_init(dif_pwrmgr_params_t params,
  * corresponding bit automatically, this function must be called before each
  * transition to low power state.
  *
+ * Note: This function also syncs changes to the slow clock domain for them to
+ * take effect.
+ *
  * @param pwrmgr A power manager handle.
  * @param new_state Whether low power state is enabled.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_low_power_set_enabled(
+dif_pwrmgr_config_result_t dif_pwrmgr_low_power_set_enabled(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t new_state);
 
 /**
@@ -308,26 +317,30 @@ dif_pwrmgr_result_t dif_pwrmgr_low_power_get_enabled(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_toggle_t *cur_state);
 
 /**
- * Sets domains that are enabled in low power state.
+ * Configures power manager to enable/disable various clock and power domains in
+ * low and active power states.
+ *
+ * Note: This function also syncs changes to the slow clock domain for them to
+ * take effect.
  *
  * @param pwrmgr A power manager handle.
- * @param domains Domains enabled in low power state.
+ * @param config A domain configuration.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_low_power_set_domains(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domains_t domains);
+dif_pwrmgr_config_result_t dif_pwrmgr_set_domain_config(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domain_config_t config);
 
 /**
- * Gets domains that are enabled in low power state.
+ * Gets current power manager configuration.
  *
  * @param pwrmgr A power manager handle.
- * @param[out] domains Domains enabled in low power state.
+ * @param[out] config Current configuration.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_pwrmgr_result_t dif_pwrmgr_low_power_get_domains(
-    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domains_t *domains);
+dif_pwrmgr_result_t dif_pwrmgr_get_domain_config(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_domain_config_t *config);
 
 /**
  * Sets sources enabled for a request type.
@@ -335,6 +348,9 @@ dif_pwrmgr_result_t dif_pwrmgr_low_power_get_domains(
  * A wakeup or reset request can be triggered by multiple sources, e.g. GPIO,
  * watchdog timer, USB, etc. This function sets which sources are enabled for a
  * particular request type.
+ *
+ * Note: This function also syncs changes to the slow clock domain for them to
+ * take effect.
  *
  * @param pwrmgr A power manager handle.
  * @param req_type A request type.
