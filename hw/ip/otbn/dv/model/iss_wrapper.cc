@@ -171,6 +171,14 @@ static std::string find_otbn_model() {
   return std::string(model_path.get());
 }
 
+// Read 8 hex characters from str as a uint32_t.
+static uint32_t read_hex_32(const char *str) {
+  char buf[9];
+  memcpy(buf, str, 8);
+  buf[8] = '\0';
+  return strtoul(buf, nullptr, 16);
+}
+
 ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
@@ -279,6 +287,87 @@ bool ISSWrapper::step() {
   std::vector<std::string> lines;
   run_command("step\n", &lines);
   return saw_busy_cleared(lines);
+}
+
+void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
+                          std::array<u256_t, 32> *wdrs) {
+  assert(gprs && wdrs);
+
+  std::vector<std::string> lines;
+  run_command("print_regs\n", &lines);
+
+  // A record of which registers we've seen (to check we see each
+  // register exactly once). GPR i sets bit i. WDR i sets bit 32 + i.
+  uint64_t seen_mask = 0;
+
+  // Lines look like
+  //
+  //  x3  = 0x12345678
+  //  w10 = 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+  std::regex re("\\s*([wx][0-9]{1,2})\\s*=\\s*0x([0-9a-f]+)\n");
+  std::smatch match;
+
+  for (const std::string &line : lines) {
+    if (line == "PRINT_REGS\n")
+      continue;
+
+    if (!std::regex_match(line, match, re)) {
+      std::ostringstream oss;
+      oss << "Invalid line in ISS print_register output (`" << line << "').";
+      throw std::runtime_error(oss.str());
+    }
+
+    assert(match.size() == 3);
+
+    std::string reg_name = match[1].str();
+    std::string str_value = match[2].str();
+
+    assert(reg_name.size() <= 3);
+    assert(reg_name[0] == 'w' || reg_name[0] == 'x');
+    bool is_wide = reg_name[0] == 'w';
+    int reg_idx = atoi(reg_name.c_str() + 1);
+
+    assert(reg_idx >= 0);
+    if (reg_idx >= 32) {
+      std::ostringstream oss;
+      oss << "Invalid register name in ISS output (`" << reg_name
+          << "'). Line was `" << line << "'.";
+      throw std::runtime_error(oss.str());
+    }
+
+    unsigned idx_seen = reg_idx + (is_wide ? 32 : 0);
+    if ((seen_mask >> idx_seen) & 1) {
+      std::ostringstream oss;
+      oss << "Duplicate lines writing register " << reg_name << ".";
+      throw std::runtime_error(oss.str());
+    }
+
+    unsigned num_u32s = is_wide ? 8 : 1;
+    unsigned expected_value_len = 8 * num_u32s;
+    if (str_value.size() != expected_value_len) {
+      std::ostringstream oss;
+      oss << "Value for register " << reg_name << " has " << str_value.size()
+          << " hex characters, but we expected " << expected_value_len << ".";
+      throw std::runtime_error(oss.str());
+    }
+
+    uint32_t *dst = is_wide ? &(*wdrs)[reg_idx].words[7] : &(*gprs)[reg_idx];
+    for (unsigned i = 0; i < num_u32s; ++i) {
+      *dst = read_hex_32(&str_value[8 * i]);
+      --dst;
+    }
+
+    seen_mask |= ((uint64_t)1 << idx_seen);
+  }
+
+  // Check that we've seen all the registers
+  if (~seen_mask) {
+    std::ostringstream oss;
+    oss << "Some registers were missing from print_register output. Mask: 0x"
+        << std::hex << seen_mask << ".";
+    throw std::runtime_error(oss.str());
+  }
 }
 
 std::string ISSWrapper::make_tmp_path(const std::string &relative) const {
