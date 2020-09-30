@@ -15,7 +15,7 @@ module sha3pad_fpv
   // Message interface (FIFO)
   input                       msg_valid_i,
   input        [MsgWidth-1:0] msg_data_i [Share],
-  input        [MsgStrbW-1:0] msg_mask_i,         // one masking for shares
+  input        [MsgStrbW-1:0] msg_strb_i,         // one masking for shares
   output logic                msg_ready_o,
 
   // N, S: Used in cSHAKE mode only
@@ -56,7 +56,7 @@ module sha3pad_fpv
 
     .msg_valid_i,
     .msg_data_i,
-    .msg_mask_i,
+    .msg_strb_i,
     .msg_ready_o,
 
     .ns_data_i,
@@ -148,7 +148,7 @@ module sha3pad_fpv
   // "abcdefgh"
   //`ASSUME(AbcdefghInputVector_A, start_i |=> !start_i ##2 (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h
   //68676665_64636261 ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i) ##1 !process_i)
-  //`ASSUME(AbcdefghInputMask_A, msg_mask_i == '1)
+  //`ASSUME(AbcdefghInputMask_A, msg_strb_i == '1)
 
   //`ASSERT(AbcdefghVector_A, keccak_complete |->
   //256'({<<8{state[0][255:0]}}) == 256'h 3e2020725a38a48e_b3bbf75767f03a22_c6b3f41f459c8313_09b06433ec649779)
@@ -159,7 +159,7 @@ module sha3pad_fpv
     ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i)
     ##1 !process_i && $stable(msg_valid_i)
     ##[0:$] $stable(msg_valid_i))
-  `ASSUME(AbcInputMask_A, msg_mask_i == 8'b 0000_0111)
+  `ASSUME(AbcInputMask_A, msg_strb_i == 8'b 0000_0111)
 
   `ASSERT(AbcVector_A, absorbed_o |->
   256'({<<8{state[0][255:0]}}) == 256'h 3a985da74fe225b2_045c172d6bd390bd_855f086e3e9d525b_46bfe24511431532)
