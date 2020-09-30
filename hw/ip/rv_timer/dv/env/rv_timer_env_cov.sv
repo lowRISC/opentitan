@@ -58,7 +58,7 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
 
   rv_timer_cfg_cov_obj      cfg_values_cov_obj[NUM_HARTS*NUM_TIMERS];
   rv_timer_ctrl_reg_cov_obj ctrl_reg_cov_obj[NUM_HARTS];
-  dv_base_generic_cov_obj   rv_timer_prescale_values_cov_obj[NUM_HARTS][12];
+  bit_toggle_cg_wrap        rv_timer_prescale_values_cov_obj[NUM_HARTS][12];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);

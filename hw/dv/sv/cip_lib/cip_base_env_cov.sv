@@ -60,7 +60,7 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
   // Coverage for sticky interrupt functionality described in CIP specification
   // As some interrupts are non-sticky, this covergroup should be populated on "as and when needed"
   // basis in extended <ip>_env_cov class for interrupt types that are sticky
-  dv_base_generic_cov_obj sticky_intr_cov[string];
+  bit_toggle_cg_wrap sticky_intr_cov[string];
 
   `uvm_component_new
 
