@@ -36,6 +36,7 @@ filesets:
       - rtl/prim_sync_reqack.sv
       - rtl/prim_keccak.sv
       - rtl/prim_packer.sv
+      - rtl/prim_packer_fifo.sv
       - rtl/prim_cipher_pkg.sv
       - rtl/prim_present.sv
       - rtl/prim_prince.sv

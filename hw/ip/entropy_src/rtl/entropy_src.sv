@@ -6,7 +6,7 @@
 
 
 module entropy_src import entropy_src_pkg::*; #(
-  parameter int unsigned EsFifoDepth = 16
+  parameter int unsigned EsFifoDepth = 2
 ) (
   input  clk_i,
   input  rst_ni,
@@ -26,10 +26,13 @@ module entropy_src import entropy_src_pkg::*; #(
   output entropy_src_rng_req_t entropy_src_rng_o,
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t alert_rx_i,
+  output prim_alert_pkg::alert_tx_t alert_tx_o,
+
   // Interrupts
   output logic    es_entropy_valid_o,
-  output logic    es_rct_failed_o,
-  output logic    es_apt_failed_o,
+  output logic    es_health_test_failed_o,
   output logic    es_fifo_err_o
 );
 
@@ -37,6 +40,8 @@ module entropy_src import entropy_src_pkg::*; #(
 
   entropy_src_reg2hw_t reg2hw;
   entropy_src_hw2reg_t hw2reg;
+
+  logic alert_event;
 
   entropy_src_reg_top u_reg (
     .clk_i,
@@ -65,10 +70,24 @@ module entropy_src import entropy_src_pkg::*; #(
     .entropy_src_rng_o,
     .entropy_src_rng_i,
 
+    .alert_event_o(alert_event),
+
     .es_entropy_valid_o,
-    .es_rct_failed_o,
-    .es_apt_failed_o,
+    .es_health_test_failed_o,
     .es_fifo_err_o
   );
+
+   prim_alert_sender #(
+     .AsyncOn(1'b0) // TODO: does this need to be AsyncOn
+   ) u_alert_sender_i (
+     .clk_i      ( clk_i      ),
+     .rst_ni     ( rst_ni     ),
+     .alert_i    ( alert_event ),
+     .alert_rx_i ( alert_rx_i ),
+     .alert_tx_o ( alert_tx_o )
+   );
+
+  // Outputs should have a known value after reset
+  `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
 endmodule

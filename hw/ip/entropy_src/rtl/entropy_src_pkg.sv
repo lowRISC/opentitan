@@ -11,12 +11,13 @@ package entropy_src_pkg;
   //-------------------------
 
   typedef struct packed {
-    logic        entropy_src_vld;
-    logic [31:0] entropy_src_bits;
+    logic         es_ack;
+    logic [383:0] es_bits;
+    logic         es_fips;
   } entropy_src_hw_if_rsp_t;
 
   typedef struct packed {
-    logic entropy_src_rdy;
+    logic es_req;
   } entropy_src_hw_if_req_t;
 
   typedef struct packed {
