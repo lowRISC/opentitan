@@ -54,9 +54,10 @@ module otbn_core_model
                              string  dmem_scope,
                              int     dmem_size);
   import "DPI-C" context function
-    int otbn_model_check_dmem(chandle model,
-                              string  dmem_scope,
-                              int     dmem_size);
+    int otbn_model_check(chandle model,
+                         string dmem_scope,
+                         int    dmem_size,
+                         string design_scope);
 
   chandle model_handle;
   initial begin
@@ -113,7 +114,7 @@ module otbn_core_model
         if (DesignScope.len() == 0) begin
           void'(otbn_model_load_dmem(model_handle, DmemScope, DmemSizeWords));
         end else begin
-          void'(otbn_model_check_dmem(model_handle, DmemScope, DmemSizeWords));
+          void'(otbn_model_check(model_handle, DmemScope, DmemSizeWords, DesignScope));
         end
         new_run = 1'b0;
       end
@@ -136,5 +137,15 @@ module otbn_core_model
 
   // Track negedges of running and expose that as a "done" output.
   assign done_o = running_r & ~running;
+
+  // If DesignScope is not empty, we have a design to check. Bind a copy of otbn_rf_snooper into
+  // each register file. The otbn_model_check() function will use these to extract memory contents.
+  generate if (DesignScope.len() != 0) begin
+    // TODO: This bind is by module, rather than by instance, because I couldn't get the by-instance
+    // syntax plus upwards name referencing to work with Verilator. Obviously, this won't work with
+    // multiple OTBN instances, so it would be nice to get it right.
+    bind otbn_rf_base_ff otbn_rf_snooper #(.Width (32), .Depth (32)) u_snooper (.rf (rf_reg));
+    bind otbn_rf_bignum_ff otbn_rf_snooper #(.Width (256), .Depth (32)) u_snooper (.rf (rf));
+  end endgenerate
 
 endmodule

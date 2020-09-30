@@ -52,6 +52,7 @@ filesets:
       - dv/model/iss_wrapper.cc
       - dv/model/iss_wrapper.h: { is_include_file: true }
       - dv/model/otbn_core_model.sv: { file_type: systemVerilogSource }
+      - dv/model/otbn_rf_snooper.sv: { file_type: systemVerilogSource }
     file_type: cppSource
 
   files_verilator_waiver:

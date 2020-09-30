@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
@@ -16,6 +17,12 @@ struct TmpDir;
 
 // An object wrapping the ISS subprocess.
 struct ISSWrapper {
+  // A 256-bit unsigned integer value, stored in "LSB order". Thus, words[0]
+  // contains the LSB and words[7] contains the MSB.
+  struct u256_t {
+    uint32_t words[256 / 32];
+  };
+
   ISSWrapper();
   ~ISSWrapper();
 
@@ -32,6 +39,9 @@ struct ISSWrapper {
   // Run simulation for a single cycle. Return true if it is now
   // finished (ECALL or error).
   bool step();
+
+  // Read contents of the register file
+  void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);
 
   // Resolve a path relative to the convenience temporary directory.
   // relative should be a relative path (it is just appended to the
