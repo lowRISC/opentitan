@@ -412,6 +412,9 @@
       'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
       'flash_ctrl.keymgr': ['keymgr.flash'],
       'alert_handler.crashdump': ['rstmgr.alert_dump'],
+      // The idle connection is automatically connected through topgen.
+      // The user does not need to explicitly declare anything other than
+      // an empty list.
       'clkmgr.idle'      : [],
     }
 
