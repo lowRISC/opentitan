@@ -291,13 +291,12 @@ class CSRRW(OTBNInsn):
         self.grs1 = op_vals['grs1']
 
     def execute(self, state: OTBNState) -> None:
-        if self.grd == 0:
-            return
-
-        old_val = state.read_csr(self.csr)
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
 
-        state.gprs.get_reg(self.grd).write_unsigned(old_val)
+        if self.grd != 0:
+            old_val = state.read_csr(self.csr)
+            state.gprs.get_reg(self.grd).write_unsigned(old_val)
+
         state.write_csr(self.csr, new_val)
 
 
