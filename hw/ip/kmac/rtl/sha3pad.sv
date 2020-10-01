@@ -444,18 +444,7 @@ module sha3pad
   // 10000000 || 00010001 // 136
   logic [15:0] encode_bytepad;
 
-  always_comb begin
-    unique case (strength_i)
-      L128: encode_bytepad = 16'h A801; // cSHAKE128
-      L224: encode_bytepad = 16'h 9001; // not used
-      L256: encode_bytepad = 16'h 8801; // cSHAKE256
-      L384: encode_bytepad = 16'h 6801; // not used
-      L512: encode_bytepad = 16'h 4801; // not used
-
-      default: encode_bytepad = 16'h 0000;
-    endcase
-  end
-
+  assign encode_bytepad = encode_bytepad_len(strength_i);
 
   // Prefix size ==============================================================
   // Prefix represents bytepad(encode_string(N) || encode_string(S), 168 or 136)

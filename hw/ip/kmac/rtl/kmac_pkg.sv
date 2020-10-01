@@ -40,6 +40,15 @@ package kmac_pkg;
   parameter int PrefixIndexW = $clog2(PrefixSize/64);
 
   // Datapath width in KMAC, this also affects the output of MSG_FIFO
+  // This is assumed as 64 in KMAC design. If this value is changed, some parts
+  // of the KMAC design need to be changed.
+  //
+  // 1. keccak_round logic datapath. Keccak round logic assumes MsgWidth
+  //    divides 1600 keccak state `Width`. Choose the value accordingly.
+  // 2. sha3pad module has fixed width mux for funcpad logic. If MsgWidth is
+  //    changed, the logic also need to be revised.
+  // 3. kmac core logic also has fixed size mux for appeding output length.
+  //    Revise the case statement to fit into revised MsgWidth value.
   parameter int MsgWidth = 64;
   parameter int MsgStrbW = MsgWidth / 8;
 
@@ -117,6 +126,31 @@ package kmac_pkg;
 
   parameter int KeccakCountW = $clog2(KeccakEntries+1);
 
+  // Key related definitions
+  parameter int MaxKeyLen = 512;
+
+  // size of encode_string(Key)
+  // $ceil($clog2(MaxKeyLen+1)/8)
+  parameter int MaxEncodedKeyLenW = $clog2(MaxKeyLen+1);
+  parameter int MaxEncodedKeyLenByte = (MaxEncodedKeyLenW + 8 - 1) / 8;
+  parameter int MaxEncodedKeyLenSize = MaxEncodedKeyLenByte * 8;
+
+  //                             Secret Key  left_encode(len(Key))
+  //                             ----------  ------------------------
+  parameter int MaxEncodedKeyW = MaxKeyLen + MaxEncodedKeyLenSize + 8;
+
+  // key_len is SW configurable CSR.
+  // Current KMAC allows 5 key length options.
+  // This value determines the KMAC core how to map the value
+  // from Secret Key register to key size block
+  typedef enum logic [2:0] {
+    Key128 = 3'b 000, // 128 bit secret key
+    Key192 = 3'b 001, // 192 bit secret key
+    Key256 = 3'b 010, // 256 bit secret key
+    Key384 = 3'b 011, // 384 bit secret key
+    Key512 = 3'b 100  // 512 bit secret key
+  } key_len_e;
+
   //////////////////
   // Error Report //
   //////////////////
@@ -144,5 +178,23 @@ package kmac_pkg;
     logic [63:0] conv_data = {<<8{v}};
     conv_endian64 = (swap) ? conv_data : v ;
   endfunction : conv_endian64
+
+  // Bytepading function
+  // `encode_bytepad_len` represents the first two bytes of bytepad()
+  // It depends on the block size. We can reuse KeccakRate
+  // 10000000 || 00010101 // 168
+  // 10000000 || 00010001 // 136
+  function automatic logic [15:0] encode_bytepad_len(keccak_strength_e strength);
+    logic [15:0] result;
+    unique case (strength)
+      L128: result = 16'h A801; // cSHAKE128
+      L224: result = 16'h 9001; // not used
+      L256: result = 16'h 8801; // cSHAKE256
+      L384: result = 16'h 6801; // not used
+      L512: result = 16'h 4801; // not used
+
+      default: result = 16'h 0000;
+    endcase
+  endfunction : encode_bytepad_len
 
 endpackage : kmac_pkg
