@@ -170,6 +170,7 @@ module top_earlgrey_artys7  #(
     .SecAesStartTriggerDelay(0),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets

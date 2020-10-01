@@ -36,6 +36,12 @@ package otbn_pkg;
   parameter int AlertDmemUncorrectable = 1;
   parameter int AlertRegUncorrectable = 2;
 
+  // Register file implementation selection enum.
+  typedef enum integer {
+    RegFileFF    = 0, // Generic flip-flop based implementation
+    RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
+  } regfile_e;
+
   // Error codes
   typedef enum logic [31:0] {
     ErrCodeNoError     = 32'h 0000_0000,

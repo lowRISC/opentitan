@@ -12,6 +12,9 @@
 module otbn_core
   import otbn_pkg::*;
 #(
+  // Register file implementation selection, see otbn_pkg.sv.
+  parameter regfile_e RegFile = RegFileFF,
+
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
   // Size of the data memory, in bytes
@@ -274,19 +277,35 @@ module otbn_core
   // Base Instruction Subset =======================================================================
 
   // General-Purpose Register File (GPRs): 32 32b registers
-  otbn_rf_base u_otbn_rf_base (
-    .clk_i,
-    .rst_ni,
+  if (RegFile == RegFileFF) begin : gen_rf_base_ff
+    otbn_rf_base_ff u_otbn_rf_base (
+      .clk_i,
+      .rst_ni,
 
-    .wr_addr_i (rf_base_wr_addr),
-    .wr_en_i   (rf_base_wr_en),
-    .wr_data_i (rf_base_wr_data),
+      .wr_addr_i (rf_base_wr_addr),
+      .wr_en_i   (rf_base_wr_en),
+      .wr_data_i (rf_base_wr_data),
 
-    .rd_addr_a_i (rf_base_rd_addr_a),
-    .rd_data_a_o (rf_base_rd_data_a),
-    .rd_addr_b_i (rf_base_rd_addr_b),
-    .rd_data_b_o (rf_base_rd_data_b)
-  );
+      .rd_addr_a_i (rf_base_rd_addr_a),
+      .rd_data_a_o (rf_base_rd_data_a),
+      .rd_addr_b_i (rf_base_rd_addr_b),
+      .rd_data_b_o (rf_base_rd_data_b)
+    );
+  end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
+    otbn_rf_base_fpga u_otbn_rf_base (
+      .clk_i,
+      .rst_ni,
+
+      .wr_addr_i (rf_base_wr_addr),
+      .wr_en_i   (rf_base_wr_en),
+      .wr_data_i (rf_base_wr_data),
+
+      .rd_addr_a_i (rf_base_rd_addr_a),
+      .rd_data_a_o (rf_base_rd_data_a),
+      .rd_addr_b_i (rf_base_rd_addr_b),
+      .rd_data_b_o (rf_base_rd_data_b)
+    );
+  end
 
   otbn_alu_base u_otbn_alu_base (
     .clk_i,
@@ -298,19 +317,35 @@ module otbn_core
     .comparison_result_o (alu_base_comparison_result)
   );
 
-  otbn_rf_bignum u_otbn_rf_bignum (
-    .clk_i,
-    .rst_ni,
+  if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
+    otbn_rf_bignum_ff u_otbn_rf_bignum (
+      .clk_i,
+      .rst_ni,
 
-    .wr_addr_i (rf_bignum_wr_addr),
-    .wr_en_i   (rf_bignum_wr_en),
-    .wr_data_i (rf_bignum_wr_data),
+      .wr_addr_i (rf_bignum_wr_addr),
+      .wr_en_i   (rf_bignum_wr_en),
+      .wr_data_i (rf_bignum_wr_data),
 
-    .rd_addr_a_i (rf_bignum_rd_addr_a),
-    .rd_data_a_o (rf_bignum_rd_data_a),
-    .rd_addr_b_i (rf_bignum_rd_addr_b),
-    .rd_data_b_o (rf_bignum_rd_data_b)
-  );
+      .rd_addr_a_i (rf_bignum_rd_addr_a),
+      .rd_data_a_o (rf_bignum_rd_data_a),
+      .rd_addr_b_i (rf_bignum_rd_addr_b),
+      .rd_data_b_o (rf_bignum_rd_data_b)
+    );
+  end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
+    otbn_rf_bignum_fpga u_otbn_rf_bignum (
+      .clk_i,
+      .rst_ni,
+
+      .wr_addr_i (rf_bignum_wr_addr),
+      .wr_en_i   (rf_bignum_wr_en),
+      .wr_data_i (rf_bignum_wr_data),
+
+      .rd_addr_a_i (rf_bignum_rd_addr_a),
+      .rd_data_a_o (rf_bignum_rd_data_a),
+      .rd_addr_b_i (rf_bignum_rd_addr_b),
+      .rd_data_b_o (rf_bignum_rd_data_b)
+    );
+  end
 
   otbn_alu_bignum u_otbn_alu_bignum (
     .clk_i,

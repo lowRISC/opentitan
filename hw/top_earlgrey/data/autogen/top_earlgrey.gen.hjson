@@ -2582,7 +2582,17 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
-      param_list: []
+      param_list:
+      [
+        {
+          name: RegFile
+          type: otbn_pkg::regfile_e
+          default: otbn_pkg::RegFileFF
+          local: "false"
+          expose: "true"
+          name_top: OtbnRegFile
+        }
+      ]
       interrupt_list:
       [
         {
