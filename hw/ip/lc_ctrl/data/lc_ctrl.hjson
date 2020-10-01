@@ -1,0 +1,63 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "lc_ctrl",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+
+//  ///////////////////////////
+//  // Interrupts and Alerts //
+//  ///////////////////////////
+//
+//  interrupt_list: [
+//  ],
+//
+//  alert_list: [
+//  ],
+//
+//  ////////////////
+//  // Parameters //
+//  ////////////////
+//  param_list: [
+//  ]
+//
+//  /////////////////////////////
+//  // Intermodule Connections //
+//  /////////////////////////////
+//  // TODO: these need to be refined during implementation and integration
+//  inter_signal_list: [
+//  ] // inter_signal_list
+
+  ///////////////
+  // Registers //
+  ///////////////
+
+  regwidth: "32",
+  registers: [
+    { name: "STATUS",
+      desc: "LC status register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "1:0"
+          name: "DUMMY"
+          desc: '''foo
+                '''
+        }
+      ]
+    }
+    { name: "CTRL",
+      desc: "LC control register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "1:0"
+          name: "DUMMY"
+          desc: '''foo
+                '''
+        }
+      ]
+    }
+  ]
+}

@@ -19,6 +19,7 @@ IPS ?= aes           \
        kmac          \
        i2c           \
        keymgr        \
+       lc_ctrl       \
        nmi_gen       \
        otp_ctrl      \
        padctrl       \

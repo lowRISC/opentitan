@@ -56,7 +56,7 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
   output logic [NumPart-1:0]       cnsty_chk_req_o,    // request to all partitions
   input        [NumPart-1:0]       integ_chk_ack_i,    // response from partitions
   input        [NumPart-1:0]       cnsty_chk_ack_i,    // response from partitions
-  input  lc_tx_t                   escalate_en_i,      // escalation input, moves FSM into ErrorSt
+  input  lc_ctrl_pkg::lc_tx_t      escalate_en_i,      // escalation input, moves FSM into ErrorSt
   output logic                     chk_timeout_o,      // a check has timed out
   output logic                     fsm_err_o           // the FSM has reached an invalid state
 );
@@ -274,11 +274,9 @@ module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    if (state_q != ErrorSt) begin
-      // Unconditionally jump into the terminal error state in case of escalation.
-      if (escalate_en_i != Off) begin
-        state_d = ErrorSt;
-      end
+    // Unconditionally jump into the terminal error state in case of escalation.
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+      state_d = ErrorSt;
     end
   end
 
