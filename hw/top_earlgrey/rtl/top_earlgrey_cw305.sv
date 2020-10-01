@@ -144,7 +144,7 @@ module top_earlgrey_cw305 #(
   //////////////////////
 
   logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
   localparam int NumIOs = padctrl_reg_pkg::NMioPads +
                           padctrl_reg_pkg::NDioPads;
@@ -189,6 +189,15 @@ module top_earlgrey_cw305 #(
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
     .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
     .in_padring_i  ( {dio_in_padring , mio_in_padring } )
+  );
+
+  ////////////////////////////////
+  // JTAG clock buffer for FPGA //
+  ////////////////////////////////
+
+  BUFG jtag_buf (
+    .I (jtag_tck),
+    .O (jtag_tck_buf)
   );
 
   //////////////////
@@ -255,7 +264,7 @@ module top_earlgrey_cw305 #(
     .ast_tl_rsp_i                ( '0              ),
 
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tck_i      ( jtag_tck_buf  ),
     .jtag_tms_i      ( jtag_tms      ),
     .jtag_trst_ni    ( jtag_trst_n   ),
     .jtag_tdi_i      ( jtag_tdi      ),
