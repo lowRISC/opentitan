@@ -9,7 +9,7 @@
  * - 2 read ports
  * - 1 write port
  */
-module otbn_rf_base
+module otbn_rf_base_ff
   import otbn_pkg::*;
 (
   input logic          clk_i,

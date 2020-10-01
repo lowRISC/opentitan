@@ -229,6 +229,7 @@ module top_earlgrey_nexysvideo #(
     .SecAesStartTriggerDelay(0),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets

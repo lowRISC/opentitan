@@ -7,6 +7,7 @@ module top_earlgrey #(
   parameter bit AesMasking = 1'b0,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplLut,
   parameter int unsigned SecAesStartTriggerDelay = 0,
+  parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
@@ -1004,7 +1005,9 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
-  otbn u_otbn (
+  otbn #(
+    .RegFile(OtbnRegFile)
+  ) u_otbn (
 
       // Interrupt
       .intr_done_o (intr_otbn_done),

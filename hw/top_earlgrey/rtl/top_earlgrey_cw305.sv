@@ -233,6 +233,7 @@ module top_earlgrey_cw305 #(
     .SecAesStartTriggerDelay(40),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets

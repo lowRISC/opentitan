@@ -165,13 +165,13 @@ module otbn_top_sim (
   export "DPI-C" function otbn_base_reg_get;
 
   function automatic int unsigned otbn_base_reg_get(int index);
-    return u_otbn_core.u_otbn_rf_base.rf_reg[index];
+    return u_otbn_core.gen_rf_base_ff.u_otbn_rf_base.rf_reg[index];
   endfunction
 
   export "DPI-C" function otbn_bignum_reg_get;
 
   function automatic int unsigned otbn_bignum_reg_get(int index, int word);
-    return u_otbn_core.u_otbn_rf_bignum.rf[index][word*32+:32];
+    return u_otbn_core.gen_rf_bignum_ff.u_otbn_rf_bignum.rf[index][word*32+:32];
   endfunction
 
   // The model

@@ -9,8 +9,11 @@
  * - 2 read ports
  * - 1 write port
  * - Half (WLEN) word write enables
+ *
+ * This register file is designed to make FPGA synthesis tools infer RAM primitives. For Xilinx
+ * FPGA architectures, it will produce RAM32M primitives. Other vendors have not yet been tested.
  */
-module otbn_rf_bignum
+module otbn_rf_bignum_fpga
   import otbn_pkg::*;
 (
   input  logic             clk_i,
@@ -27,29 +30,22 @@ module otbn_rf_bignum
   output logic [WLEN-1:0]  rd_data_b_o
 );
   logic [WLEN-1:0] rf [NWdr];
-  logic [1:0]      we_onehot [NWdr];
 
-  for (genvar i = 0;i < NWdr; i++) begin : g_rf
-    assign we_onehot[i] = wr_en_i & {2{wr_addr_i == i}};
+  // The reset is not used in this register file version.
+  logic unused_rst_ni;
+  assign unused_rst_ni = rst_ni;
 
-    // Split registers into halves for clear seperation for the enable terms
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        rf[i][0+:WLEN/2] <= '0;
-      end else if (we_onehot[i][0]) begin
-        rf[i][0+:WLEN/2] <= wr_data_i[0+:WLEN/2];
-      end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        rf[i][WLEN/2+:WLEN/2] <= '0;
-      end else if (we_onehot[i][1]) begin
-        rf[i][WLEN/2+:WLEN/2] <= wr_data_i[WLEN/2+:WLEN/2];
+  // Sync write
+  for (genvar i = 0; i < 2; i++) begin : g_rf
+    // Split registers into halves for clear separation for the enable terms.
+    always_ff @(posedge clk_i) begin
+      if (wr_en_i[i] == 1'b1) begin
+        rf[wr_addr_i][i*WLEN/2+:WLEN/2] <= wr_data_i[i*WLEN/2+:WLEN/2];
       end
     end
   end
 
+  // Async read
   assign rd_data_a_o = rf[rd_addr_a_i];
   assign rd_data_b_o = rf[rd_addr_b_i];
 endmodule

@@ -12,6 +12,7 @@ module otbn
   import otbn_pkg::*;
   import otbn_reg_pkg::*;
 #(
+  parameter regfile_e             RegFile      = RegFileFF,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input clk_i,
@@ -444,6 +445,7 @@ module otbn
     );
   end else begin : gen_impl_rtl
     otbn_core #(
+      .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte)
     ) u_otbn_core (
