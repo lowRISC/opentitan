@@ -51,22 +51,6 @@ sw_lib_aes = declare_dependency(
   )
 )
 
-# HMAC library (sw_lib_hmac)
-sw_lib_hmac = declare_dependency(
-  link_with: static_library(
-    'hmac_ot',
-    sources: [
-      hw_ip_hmac_reg_h,
-      'hw_sha256.c',
-      'hmac.c',
-    ],
-    dependencies: [
-      sw_lib_mem,
-      top_earlgrey,
-    ]
-  )
-)
-
 # IRQ library (sw_lib_irq)
 sw_lib_irq = declare_dependency(
   link_with: static_library(
