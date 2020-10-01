@@ -5,10 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_BOOT_ROM_SPIFLASH_FRAME_H_
 #define OPENTITAN_SW_DEVICE_BOOT_ROM_SPIFLASH_FRAME_H_
 
-#include <stdalign.h>
 #include <stdint.h>
 
-#include "sw/device/lib/hw_sha256.h"
+#include "sw/device/lib/dif/dif_hmac.h"
 
 /**
  * The total size of a spiflash frame.
@@ -45,7 +44,7 @@ typedef struct spiflash_frame_header {
   /**
    * SHA256 of the entire frame_t message starting at the `frame_num` offset.
    */
-  uint32_t hash[SHA256_DIGEST_SIZE / sizeof(uint32_t)];
+  dif_hmac_digest_t hash;
   /**
    * Frame number starting at 0. The last frame should be OR'd with
    * FRAME_EOF_MARKER.

@@ -11,9 +11,10 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/hw_sha256.h"
+#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
@@ -65,16 +66,47 @@ static int erase_flash(void) {
 }
 
 /**
+ * Computes the SHA256 of the given data.
+ */
+static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
+                           dif_hmac_digest_t *digest) {
+  CHECK(dif_hmac_mode_sha256_start(hmac) == kDifHmacOk);
+  const char *data8 = (const char *)data;
+  size_t data_left = len;
+  while (data_left > 0) {
+    size_t bytes_sent;
+    dif_hmac_fifo_result_t result =
+        dif_hmac_fifo_push(hmac, data8, data_left, &bytes_sent);
+    if (result == kDifHmacFifoOk) {
+      break;
+    }
+    CHECK(result == kDifHmacFifoFull, "Error while pushing to FIFO.");
+    data8 += bytes_sent;
+    data_left -= bytes_sent;
+  }
+
+  CHECK(dif_hmac_process(hmac) == kDifHmacOk);
+  dif_hmac_digest_result_t digest_result = kDifHmacDigestProcessing;
+  while (digest_result == kDifHmacDigestProcessing) {
+    digest_result = dif_hmac_digest_read(hmac, digest);
+  }
+  CHECK(digest_result == kDifHmacDigestOk, "Error reading the digest.");
+}
+
+/**
  * Compares the SHA256 hash of the recieved data with the recieved hash.
  *
  * Returns true if the hashes match.
  */
-static bool check_frame_hash(const spiflash_frame_t *frame) {
-  uint8_t hash[sizeof(frame->header.hash)];
-  uint8_t *data = ((uint8_t *)frame) + sizeof(hash);
-  hw_SHA256_hash(data, sizeof(spiflash_frame_t) - sizeof(hash), hash);
+static bool check_frame_hash(const dif_hmac_t *hmac,
+                             const spiflash_frame_t *frame) {
+  dif_hmac_digest_t digest;
+  size_t digest_len = sizeof(digest.digest);
 
-  return memcmp(hash, frame->header.hash, sizeof(hash)) == 0;
+  uint8_t *data = ((uint8_t *)frame) + digest_len;
+  compute_sha256(hmac, data, sizeof(spiflash_frame_t) - digest_len, &digest);
+
+  return memcmp(digest.digest, frame->header.hash.digest, digest_len) == 0;
 }
 
 /**
@@ -83,8 +115,8 @@ static bool check_frame_hash(const spiflash_frame_t *frame) {
  * This function checks that the sequence numbers and hashes of the frames are
  * correct before programming them into flash.
  */
-static int bootstrap_flash(dif_spi_device_t *spi) {
-  uint8_t ack[SHA256_DIGEST_SIZE] = {0};
+static int bootstrap_flash(dif_spi_device_t *spi, dif_hmac_t *hmac) {
+  dif_hmac_digest_t ack = {0};
   uint32_t expected_frame_num = 0;
   while (true) {
     size_t bytes_available;
@@ -101,18 +133,20 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
                expected_frame_num);
 
       if (frame_num == expected_frame_num) {
-        if (!check_frame_hash(&frame)) {
+        if (!check_frame_hash(hmac, &frame)) {
           LOG_ERROR("Detected hash mismatch on frame #%d", frame_num);
-          CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
+          CHECK(dif_spi_device_send(spi, (uint8_t *)&ack.digest,
+                                    sizeof(ack.digest),
                                     /*bytes_received=*/NULL) == kDifSpiDeviceOk,
                 "Failed to send bytes to SPI.");
           continue;
         }
 
-        hw_SHA256_hash(&frame, sizeof(spiflash_frame_t), ack);
-        CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
-                                  /*bytes_received=*/NULL) == kDifSpiDeviceOk,
-              "Failed to send bytes to SPI.");
+        compute_sha256(hmac, &frame, sizeof(spiflash_frame_t), &ack);
+        CHECK(
+            dif_spi_device_send(spi, (uint8_t *)&ack.digest, sizeof(ack.digest),
+                                /*bytes_received=*/NULL) == kDifSpiDeviceOk,
+            "Failed to send bytes to SPI.");
 
         if (expected_frame_num == 0) {
           flash_default_region_access(/*rd_en=*/true, /*prog_en=*/true,
@@ -136,9 +170,10 @@ static int bootstrap_flash(dif_spi_device_t *spi) {
         }
       } else {
         // Send previous ack if unable to verify current frame.
-        CHECK(dif_spi_device_send(spi, ack, sizeof(ack),
-                                  /*bytes_received=*/NULL) == kDifSpiDeviceOk,
-              "Failed to send bytes to SPI.");
+        CHECK(
+            dif_spi_device_send(spi, (uint8_t *)&ack.digest, sizeof(ack.digest),
+                                /*bytes_received=*/NULL) == kDifSpiDeviceOk,
+            "Failed to send bytes to SPI.");
       }
     }
   }
@@ -174,8 +209,17 @@ int bootstrap(void) {
                                }) == kDifSpiDeviceOk,
       "Failed to configure SPI.");
 
+  dif_hmac_t hmac;
+  dif_hmac_config_t config = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
+      .message_endianness = kDifHmacEndiannessBig,
+      .digest_endianness = kDifHmacEndiannessBig,
+  };
+  CHECK(dif_hmac_init(&config, &hmac) == kDifHmacOk,
+        "Failed to configure HMAC.");
+
   LOG_INFO("HW initialisation completed, waiting for SPI input...");
-  int error = bootstrap_flash(&spi);
+  int error = bootstrap_flash(&spi, &hmac);
   if (error != 0) {
     error |= erase_flash();
     LOG_ERROR("Bootstrap error: 0x%x", error);

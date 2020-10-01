@@ -56,7 +56,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_pinmux,
       sw_lib_dif_gpio,
       sw_lib_dif_spi_device,
-      sw_lib_hmac,
+      sw_lib_dif_hmac,
       sw_lib_mmio,
       sw_lib_runtime_log,
       sw_lib_dif_uart,
