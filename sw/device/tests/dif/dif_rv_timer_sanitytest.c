@@ -28,7 +28,6 @@ static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
-static const uint64_t kDeadline = 30000;          // 30 ms.
 
 static void test_handler(void) {
   CHECK(!irq_fired, "Entered IRQ handler, but `irq_fired` was not false!");
@@ -75,6 +74,12 @@ bool test_main(void) {
                                 kDifRvTimerEnabled) == kDifRvTimerOk);
 
   uint64_t current_time;
+  // Logs over UART incur a large runtime overhead. To accommodate that, the
+  // timer deadline needs to be large as well. In DV simulations, logs are not
+  // sent over UART, so we can reduce the runtime / sim time with a much shorter
+  // deadline (30 ms vs 100 us).
+  uint64_t kDeadline =
+      (kDeviceType == kDeviceSimDV) ? 100 /* 100 us */ : 30000 /* 30 ms */;
   CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
         kDifRvTimerOk);
   LOG_INFO("Current time: %d; timer theshold: %d", (uint32_t)current_time,
