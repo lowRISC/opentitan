@@ -8,14 +8,14 @@ module clkgen_xil7series # (
 ) (
   input IO_CLK,
   input IO_RST_N,
-  output clk_sys,
+  output clk_main,
   output clk_48MHz,
-  output rst_sys_n
+  output rst_n
 );
   logic locked_pll;
   logic io_clk_buf;
-  logic clk_50_buf;
-  logic clk_50_unbuf;
+  logic clk_10_buf;
+  logic clk_10_unbuf;
   logic clk_fb_buf;
   logic clk_fb_unbuf;
   logic clk_48_buf;
@@ -34,7 +34,7 @@ module clkgen_xil7series # (
     .DIVCLK_DIVIDE        (1),
     .CLKFBOUT_MULT        (12),
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE       (24),
+    .CLKOUT0_DIVIDE       (120),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT1_DIVIDE       (25),
@@ -43,7 +43,7 @@ module clkgen_xil7series # (
     .CLKIN1_PERIOD        (10.000)
   ) pll (
     .CLKFBOUT            (clk_fb_unbuf),
-    .CLKOUT0             (clk_50_unbuf),
+    .CLKOUT0             (clk_10_unbuf),
     .CLKOUT1             (clk_48_unbuf),
     .CLKOUT2             (),
     .CLKOUT3             (),
@@ -76,9 +76,9 @@ module clkgen_xil7series # (
   );
 
   if (AddClkBuf == 1) begin : gen_clk_bufs
-    BUFG clk_50_bufg (
-      .I (clk_50_unbuf),
-      .O (clk_50_buf)
+    BUFG clk_10_bufg (
+      .I (clk_10_unbuf),
+      .O (clk_10_buf)
     );
 
     BUFG clk_48_bufg (
@@ -87,15 +87,15 @@ module clkgen_xil7series # (
     );
   end else begin : gen_no_clk_bufs
     // BUFGs added by downstream modules, no need to add here
-    assign clk_50_buf = clk_50_unbuf;
+    assign clk_10_buf = clk_10_unbuf;
     assign clk_48_buf = clk_48_unbuf;
   end
 
   // outputs
   // clock
-  assign clk_sys = clk_50_buf; // TODO: choose 50 MHz clock as sysclock for now
+  assign clk_main = clk_10_buf;
   assign clk_48MHz = clk_48_buf;
 
   // reset
-  assign rst_sys_n = locked_pll & IO_RST_N;
+  assign rst_n = locked_pll & IO_RST_N;
 endmodule

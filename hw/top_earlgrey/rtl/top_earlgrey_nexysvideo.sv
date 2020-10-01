@@ -54,7 +54,7 @@ module top_earlgrey_nexysvideo #(
   //////////////////////
 
 
-  logic clk, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -194,11 +194,11 @@ module top_earlgrey_nexysvideo #(
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
-      .IO_CLK,
+    .IO_CLK,
     .IO_RST_N(IO_RST_N & jtag_srst_n),
-    .clk_sys(clk),
+    .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
-    .rst_sys_n(rst_n)
+    .rst_n(rst_n)
   );
 
   //////////////////////
@@ -234,10 +234,10 @@ module top_earlgrey_nexysvideo #(
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni          ( rst_n         ),
-    .clk_main_i      ( clk           ),
-    .clk_io_i        ( clk           ),
+    .clk_main_i      ( clk_main      ),
+    .clk_io_i        ( clk_main      ),
     .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
+    .clk_aon_i       ( clk_main      ),
     .rstmgr_ast_i                ( ast_base_rst    ),
     .pwrmgr_pwr_ast_req_o        (                 ),
     .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr    ),

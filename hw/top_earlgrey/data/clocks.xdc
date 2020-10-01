@@ -6,7 +6,7 @@
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_CLK]
 
 ## Clock Domain Crossings
-set clks_50_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT0]]
+set clks_10_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT0]]
 set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
 
 ## Divided clock
@@ -19,4 +19,4 @@ create_generated_clock -name clk_io_div2 -source [get_pin ${div2_cell}/C] -divid
 set div4_cell [get_cells top_earlgrey/u_clkmgr/u_io_div4_div/gen_div.clk_int_reg]
 create_generated_clock -name clk_io_div4 -source [get_pin ${div4_cell}/C] -divide_by 4 [get_pin ${div4_cell}/Q]
 
-set_clock_groups -group ${clks_50_unbuf} -group ${clks_48_unbuf} -group clk_io_div2 -group clk_io_div4 -asynchronous
+set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group clk_io_div2 -group clk_io_div4 -asynchronous
