@@ -128,7 +128,7 @@ num_grps = len(grps)
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in hint_clks.keys():
+% for clk in hint_clks:
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_HINT",

@@ -540,7 +540,7 @@ def generate_clkmgr(top, cfg_path, out_path):
 
     # hint clocks dict
     for clk, src in hints.items():
-        # the clock if constructed as clk_{src_name}_{module_name}.
+        # the clock is constructed as clk_{src_name}_{module_name}.
         # so to get the module name we split from the right and pick the last entry
         hint_clks[clk] = OrderedDict()
         hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
