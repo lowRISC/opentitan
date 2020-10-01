@@ -6,7 +6,6 @@
 #include "sw/device/boot_rom/chip_info.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/pinmux.h"

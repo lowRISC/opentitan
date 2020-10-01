@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usb_controlep.h"
 
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/usb_consts.h"
 #include "sw/device/lib/usbdev.h"
 

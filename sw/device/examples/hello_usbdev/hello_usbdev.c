@@ -7,7 +7,6 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -25,6 +24,8 @@
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR 0x40150000
 #include "usbdev_regs.h"  // Generated.
+
+#define REG32(add) *((volatile uint32_t *)(add))
 
 /**
  * Configuration values for USB.
