@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/usbdev.h"
 
 // This is only here because caller of _init needs it

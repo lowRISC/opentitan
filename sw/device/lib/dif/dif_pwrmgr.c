@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 
-#include "sw/device/lib/common.h"
 
 #include "pwrmgr_regs.h"  // Generated.
 

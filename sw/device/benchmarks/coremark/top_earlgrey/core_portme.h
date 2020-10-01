@@ -14,8 +14,6 @@
 
 #include <stddef.h>
 
-#include "sw/device/lib/common.h"
-
 extern unsigned int _stack_start;
 
 /************************/

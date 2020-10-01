@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
-#include "sw/device/lib/common.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
+
+#define REG32(add) *((volatile uint32_t *)(add))
+#define SETBIT(val, bit) (val | 1 << bit)
+#define CLRBIT(val, bit) (val & ~(1 << bit))
 
 typedef enum flash_op {
   FLASH_READ = 0,

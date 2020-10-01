@@ -5,7 +5,6 @@
 #include "sw/device/lib/handler.h"
 
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/runtime/log.h"
 
 /**

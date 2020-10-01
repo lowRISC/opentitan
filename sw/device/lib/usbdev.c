@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usbdev.h"
 
-#include "sw/device/lib/common.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "usbdev_regs.h"  // Generated.
@@ -12,6 +11,11 @@
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
 #define EXTRACT(n, f) ((n >> USBDEV_##f##_OFFSET) & USBDEV_##f##_MASK)
+
+#define SETBIT(val, bit) (val | 1 << bit)
+#define CLRBIT(val, bit) (val & ~(1 << bit))
+
+#define REG32(add) *((volatile uint32_t *)(add))
 
 // Free buffer pool is held on a simple stack
 // Initalize to all buffer IDs are free
