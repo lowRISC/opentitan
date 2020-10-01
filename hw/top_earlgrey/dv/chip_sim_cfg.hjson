@@ -172,7 +172,6 @@
       name: chip_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/dif_rv_timer_sanitytest
-      run_opts: ["+sw_test_timeout_ns=12000000"]
     }
     {
       name: chip_coremark
