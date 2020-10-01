@@ -33,7 +33,7 @@ module otp_ctrl
   input                                              rst_ni,
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
-  input  otp_ast_rsp_t                               otp_ast_pwr_seq_i,
+  input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -56,9 +56,9 @@ module otp_ctrl
   input  lc_otp_token_req_t                          lc_otp_token_req_i,
   output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
   // Lifecycle broadcast inputs
-  input  lc_tx_t                                     lc_escalate_en_i,
-  input  lc_tx_t                                     lc_provision_en_i,
-  input  lc_tx_t                                     lc_test_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_provision_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
   // OTP broadcast outputs
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
@@ -134,8 +134,8 @@ module otp_ctrl
     // Propagate CSR read enables down to the SW_CFG partitions.
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
     if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
-    // The SECRET2 partition can only be accessed when provisioning is enabled.
-    if (lc_provision_en_i != On) part_access_csrs[Secret2Idx].read_lock = Locked;
+    // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
+    if (lc_provision_en_i != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
     // Permanently lock DAI write access to the life cycle partition
     part_access_csrs[LifeCycleIdx].write_lock = Locked;
   end
@@ -385,8 +385,10 @@ module otp_ctrl
   tlul_pkg::tl_d2h_t     tl_win_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
-  assign tl_win_h2d_gated              = (lc_test_en_i == On) ? tl_win_h2d[$high(tl_win_h2d)] : '0;
-  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_test_en_i == On) ? tl_win_d2h_gated : '0;
+  assign tl_win_h2d_gated              = (lc_dft_en_i == lc_ctrl_pkg::On) ?
+                                         tl_win_h2d[$high(tl_win_h2d)] : '0;
+  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en_i == lc_ctrl_pkg::On) ?
+                                         tl_win_d2h_gated : '0;
 
   prim_otp #(
     .Width(OtpWidth),
@@ -395,8 +397,8 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     // Power sequencing signals to/from AST
-    .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq   ),
-    .pwr_seq_h_i ( otp_ast_pwr_seq_i.pwr_seq_h ),
+    .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq     ),
+    .pwr_seq_h_i ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
     // Test interface
     .test_tl_i   ( tl_win_h2d_gated     ),
     .test_tl_o   ( tl_win_d2h_gated     ),
@@ -455,6 +457,8 @@ module otp_ctrl
   // partition must yield its lock by deasserting the request signal for the arbiter to proceed.
   // Since this scheme does not have built-in preemtion, it must be ensured that the agents
   // eventually release their locks for this to be fair.
+  //
+  // See also https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#block-diagram for details.
   typedef struct packed {
     otp_scrmbl_cmd_e             cmd;
     logic [ConstSelWidth-1:0]    sel;
@@ -575,24 +579,24 @@ module otp_ctrl
   ) u_otp_ctrl_lci (
     .clk_i,
     .rst_ni,
-    .lci_en_i        ( pwr_otp_rsp_o.otp_done            ),
-    .escalate_en_i   ( lc_escalate_en_i                  ),
-    .error_o         ( part_error[LciIdx]                ),
-    .lci_idle_o      ( lci_idle                          ),
-    .lc_req_i        ( lc_otp_program_req_i.req          ),
-    .lc_state_diff_i ( lc_otp_program_req_i.state_diff   ),
-    .lc_count_diff_i ( lc_otp_program_req_i.count_diff   ),
-    .lc_ack_o        ( lc_otp_program_rsp_o.ack          ),
-    .lc_err_o        ( lc_otp_program_rsp_o.err          ),
-    .otp_req_o       ( part_otp_arb_req[LciIdx]          ),
-    .otp_cmd_o       ( part_otp_arb_bundle[LciIdx].cmd   ),
-    .otp_size_o      ( part_otp_arb_bundle[LciIdx].size  ),
-    .otp_wdata_o     ( part_otp_arb_bundle[LciIdx].wdata ),
-    .otp_addr_o      ( part_otp_arb_bundle[LciIdx].addr  ),
-    .otp_gnt_i       ( part_otp_arb_gnt[LciIdx]          ),
-    .otp_rvalid_i    ( part_otp_rvalid[LciIdx]           ),
-    .otp_rdata_i     ( part_otp_rdata                    ),
-    .otp_err_i       ( part_otp_err                      )
+    .lci_en_i         ( pwr_otp_rsp_o.otp_done            ),
+    .escalate_en_i    ( lc_escalate_en_i                  ),
+    .error_o          ( part_error[LciIdx]                ),
+    .lci_idle_o       ( lci_idle                          ),
+    .lc_req_i         ( lc_otp_program_req_i.req          ),
+    .lc_state_delta_i ( lc_otp_program_req_i.state_delta  ),
+    .lc_count_delta_i ( lc_otp_program_req_i.count_delta  ),
+    .lc_ack_o         ( lc_otp_program_rsp_o.ack          ),
+    .lc_err_o         ( lc_otp_program_rsp_o.err          ),
+    .otp_req_o        ( part_otp_arb_req[LciIdx]          ),
+    .otp_cmd_o        ( part_otp_arb_bundle[LciIdx].cmd   ),
+    .otp_size_o       ( part_otp_arb_bundle[LciIdx].size  ),
+    .otp_wdata_o      ( part_otp_arb_bundle[LciIdx].wdata ),
+    .otp_addr_o       ( part_otp_arb_bundle[LciIdx].addr  ),
+    .otp_gnt_i        ( part_otp_arb_gnt[LciIdx]          ),
+    .otp_rvalid_i     ( part_otp_rvalid[LciIdx]           ),
+    .otp_rdata_i      ( part_otp_rdata                    ),
+    .otp_err_i        ( part_otp_err                      )
   );
 
   // Tie off unused connections.
@@ -780,23 +784,23 @@ module otp_ctrl
                                                2*FlashKeySeedWidth/8 +
                                                SramKeySeedWidth/8];
   // Test unlock and exit tokens
-  assign otp_lc_data_o.test_token_valid = part_init_done[Secret0Idx];
   assign {otp_lc_data_o.test_exit_token,
           otp_lc_data_o.test_unlock_token} = part_buf_data[PartInfo[Secret0Idx].offset +:
-                                                           2*LcTokenWidth/8];
+                                                           2*lc_ctrl_pkg::LcTokenWidth/8];
   // RMA token
-  assign otp_lc_data_o.rma_token_valid  = part_init_done[Secret2Idx];
-  assign otp_lc_data_o.rma_token        = part_buf_data[PartInfo[Secret2Idx].offset +:
-                                                        LcTokenWidth/8];
+  assign otp_lc_data_o.rma_token      = part_buf_data[PartInfo[Secret2Idx].offset +:
+                                                        lc_ctrl_pkg::LcTokenWidth/8];
   // The device is personalized if the root key has been provisioned and locked
-  assign otp_lc_data_o.id_state_valid = part_init_done[Secret2Idx];
-  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? Set : Blk;
+  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::Set :
+                                                                          lc_ctrl_pkg::Blk;
 
   // Lifecycle state
-  assign otp_lc_data_o.state_valid    = part_init_done[LifeCycleIdx];
   assign {otp_lc_data_o.count,
           otp_lc_data_o.state}        = part_buf_data[PartInfo[LifeCycleIdx].offset +:
                                                       PartInfo[LifeCycleIdx].size];
+
+  // Assert life cycle state valid signal only when all partitions have initialized.
+  assign otp_lc_data_o.valid    = &part_init_done;
 
   // Not all bits of part_buf_data are used here.
   logic unused_buf_data;

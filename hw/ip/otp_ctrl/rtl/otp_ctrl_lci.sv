@@ -19,14 +19,14 @@ module otp_ctrl_lci
   input                                    lci_en_i,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
-  input  lc_tx_t                           escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t              escalate_en_i,
   // Life cycle transition request. In order to perform a state transition,
-  // the LC controller signals the differential value with respect to the
+  // the LC controller signals the incremental value with respect to the
   // current state. The OTP controller then only programs the non-zero
-  // state differential.
+  // state delta.
   input                                    lc_req_i,
-  input  lc_state_e                        lc_state_diff_i,
-  input  lc_value_e [NumLcCountValues-1:0] lc_count_diff_i,
+  input  lc_ctrl_pkg::lc_state_e           lc_state_delta_i,
+  input  lc_ctrl_pkg::lc_cnt_t             lc_count_delta_i,
   output logic                             lc_ack_o,
   output logic                             lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
@@ -54,6 +54,9 @@ module otp_ctrl_lci
 
   localparam int NumLcOtpWords = Info.size >> OtpAddrShift;
   localparam int CntWidth = vbits(NumLcOtpWords);
+
+  // This is required, since each native OTP word can only be programmed once.
+  `ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_pkg::LcValueWidth >= OtpWidth)
 
   ////////////////////
   // Controller FSM //
@@ -88,7 +91,7 @@ module otp_ctrl_lci
   logic cnt_clr, cnt_en;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   otp_err_e error_d, error_q;
-  logic diff_data_is_set;
+  logic delta_data_is_set;
   state_e state_d, state_q;
 
   // Output LCI errors
@@ -135,7 +138,7 @@ module otp_ctrl_lci
       // Loop through the lifecycle sate and burn in the words that are set.
       WriteSt: begin
         // Check whether the OTP word is nonzero.
-        if (diff_data_is_set) begin
+        if (delta_data_is_set) begin
           otp_req_o = 1'b1;
           otp_cmd_o = OtpWrite;
           if (otp_gnt_i) begin
@@ -195,10 +198,10 @@ module otp_ctrl_lci
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    if (state_q != ErrorSt) begin
-      // Unconditionally jump into the terminal error state in case of escalation.
-      if (escalate_en_i != Off) begin
-        state_d = ErrorSt;
+    // Unconditionally jump into the terminal error state in case of escalation.
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+      state_d = ErrorSt;
+      if (state_q != ErrorSt) begin
         error_d = EscErr;
       end
     end
@@ -220,10 +223,10 @@ module otp_ctrl_lci
   // Always transfer 16bit blocks.
   assign otp_size_o = '0;
 
-  logic [NumLcOtpWords-1:0][OtpWidth-1:0] diff_data;
-  assign diff_data        = {lc_count_diff_i, lc_state_diff_i};
-  assign otp_wdata_o      = OtpIfWidth'(diff_data[cnt_q]);
-  assign diff_data_is_set = (diff_data[cnt_q] != Blk);
+  logic [NumLcOtpWords-1:0][OtpWidth-1:0] delta_data;
+  assign delta_data        = {lc_count_delta_i, lc_state_delta_i};
+  assign otp_wdata_o       = OtpIfWidth'(delta_data[cnt_q]);
+  assign delta_data_is_set = (delta_data[cnt_q] != lc_ctrl_pkg::Blk);
 
   logic unused_rdata;
   assign unused_rdata = ^otp_rdata_i;

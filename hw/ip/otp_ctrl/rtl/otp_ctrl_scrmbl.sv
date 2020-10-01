@@ -79,7 +79,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   output logic [ScrmblBlockWidth-1:0] data_o,
   output logic                        valid_o,
   // escalation input and FSM error indication
-  input  lc_tx_t                      escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t         escalate_en_i,
   output logic                        fsm_err_o
 );
 
@@ -355,11 +355,9 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    if (state_q != ErrorSt) begin
-      // Unconditionally jump into the terminal error state in case of escalation.
-      if (escalate_en_i != Off) begin
-        state_d = ErrorSt;
-      end
+    // Unconditionally jump into the terminal error state in case of escalation.
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+      state_d = ErrorSt;
     end
   end
 

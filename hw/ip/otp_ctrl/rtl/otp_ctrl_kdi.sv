@@ -21,7 +21,7 @@ module otp_ctrl_kdi
   // been initialized.
   input                                              kdi_en_i,
   // Escalation input. This moves the FSM into a terminal state.
-  input  lc_tx_t                                     escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        escalate_en_i,
   // FSM is in error state
   output logic                                       fsm_err_o,
   // Key seed inputs from OTP
@@ -455,7 +455,7 @@ module otp_ctrl_kdi
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
-    if (escalate_en_i != Off) begin
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
     end
   end

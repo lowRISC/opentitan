@@ -21,7 +21,7 @@ module otp_ctrl_dai
   input  [NumPart-1:0]                   part_init_done_i,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the DAI.
-  input lc_tx_t                          escalate_en_i,
+  input lc_ctrl_pkg::lc_tx_t             escalate_en_i,
   // Output error state of DAI, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the DAI FSM into
   // a terminal error state.
@@ -546,11 +546,10 @@ module otp_ctrl_dai
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    if (state_q != ErrorSt) begin
-      // Unconditionally jump into the terminal error state in case of
-      // escalation, and lock access to the DAI down.
-      if (escalate_en_i != Off) begin
-        state_d = ErrorSt;
+    // Unconditionally jump into the terminal error state in case of escalation.
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+      state_d = ErrorSt;
+      if (state_q != ErrorSt) begin
         error_d = EscErr;
       end
     end

@@ -21,7 +21,7 @@ module otp_ctrl_part_unbuf
   output logic                        init_done_o,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
-  input  lc_tx_t                      escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t         escalate_en_i,
   // Output error state of partition, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
@@ -251,15 +251,17 @@ module otp_ctrl_part_unbuf
       ///////////////////////////////////////////////////////////////////
     endcase // state_q
 
-    if (state_q != ErrorSt) begin
-      // Unconditionally jump into the terminal error state in case of
-      // a parity error or escalation, and lock access to the partition down.
-      if (parity_err) begin
-        state_d = ErrorSt;
+    // Unconditionally jump into the terminal error state in case of
+    // a parity error or escalation, and lock access to the partition down.
+    if (parity_err) begin
+      state_d = ErrorSt;
+      if (state_q != ErrorSt) begin
         error_d = ParityErr;
       end
-      if (escalate_en_i != Off) begin
-        state_d = ErrorSt;
+    end
+    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+      state_d = ErrorSt;
+      if (state_q != ErrorSt) begin
         error_d = EscErr;
       end
     end
