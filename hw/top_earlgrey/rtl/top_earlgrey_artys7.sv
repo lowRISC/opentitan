@@ -133,11 +133,12 @@ module top_earlgrey_artys7  #(
   // Unlike nexysvideo, there is currently no dedicated
   // JTAG port available, hence tie off.
   logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
   assign jtag_trst_n = 1'b1;
   assign jtag_srst_n = 1'b1;
   assign jtag_tck = 1'b0;
+  assign jtag_tck_buf = 1'b0;
   assign jtag_tms = 1'b0;
   assign jtag_tdi = 1'b0;
 
@@ -212,7 +213,7 @@ module top_earlgrey_artys7  #(
     .ast_tl_rsp_i                ( '0              ),
 
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tck_i      ( jtag_tck_buf  ),
     .jtag_tms_i      ( jtag_tms      ),
     .jtag_trst_ni    ( jtag_trst_n   ),
     .jtag_tdi_i      ( jtag_tdi      ),
