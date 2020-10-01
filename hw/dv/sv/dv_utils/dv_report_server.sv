@@ -6,12 +6,15 @@
 class dv_report_server extends uvm_default_report_server;
 
   bit show_file_line = 1'b1;
+  // if enabled, show the relative path of the file. By default only show file name
+  bit show_file_path = 1'b0;
   bit use_default_uvm_report_message_format = 1'b0;
 
   function new (string name = "");
     super.new(name);
     // provide ability to override these knobs over cli
     void'($value$plusargs("show_file_line=%0b", show_file_line));
+    void'($value$plusargs("show_file_path=%0b", show_file_path));
     void'($value$plusargs("use_default_uvm_report_message_format=%0b",
                            use_default_uvm_report_message_format));
   endfunction
@@ -66,7 +69,7 @@ class dv_report_server extends uvm_default_report_server;
       string        file_line;
 
       if (show_file_line && filename != "") begin
-        filename = get_no_hier_filename(filename);
+        if (!show_file_path) filename = get_no_hier_filename(filename);
         file_line = $sformatf("(%0s:%0d) ", filename, line);
       end
       obj_name = {obj_name, ((obj_name != "") ? " " : "")};
