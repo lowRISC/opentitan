@@ -551,8 +551,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       UVM_HIGH);
             if (shadowed_csrs[index].get_shadow_storage_err()) begin
               shadow_reg_storage_err_post_write();
-              // TODO: temp wait a clk cycle, will delete once the real alert check impelemented
-              cfg.clk_rst_vif.wait_clks(1);
+              // TODO: temp wait 10 clk cycles, will delete once the real alert check impelemented
+              // use 10 clock cycles to make sure async mode it reaches at least one clock cycle
+              // for alert sender clock
+              cfg.clk_rst_vif.wait_clks(10);
             end
             csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
           end

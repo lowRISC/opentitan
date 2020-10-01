@@ -352,6 +352,8 @@
         resval: "0"
         cname: "wake_status",
         count: "NumWkups",
+        tags: [// Cannot auto-predict current wake request status
+               "excl:CsrNonInitTests:CsrExclWriteCheck"],
         fields: [
           { bits: "0",
             name: "VAL",
