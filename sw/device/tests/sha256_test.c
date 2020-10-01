@@ -2,10 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/hw_sha256.h"
+#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_main.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+
+static dif_hmac_t hmac0;
 
 static const size_t kDataLen = 142;
 static const char kData[142] =
@@ -20,17 +26,55 @@ static const uint32_t kExpectedDigest[8] = {0xdc96c23d, 0xaf36e268, 0xcb68ff71,
 
 const test_config_t kTestConfig;
 
+/**
+ * Computes the SHA256 of the given data.
+ */
+static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
+                           dif_hmac_digest_t *digest) {
+  CHECK(dif_hmac_mode_sha256_start(hmac) == kDifHmacOk);
+  const char *data8 = (const char *)data;
+  size_t data_left = len;
+  while (data_left > 0) {
+    size_t bytes_sent;
+    dif_hmac_fifo_result_t result =
+        dif_hmac_fifo_push(hmac, data8, data_left, &bytes_sent);
+    if (result == kDifHmacFifoOk) {
+      break;
+    }
+    CHECK(result == kDifHmacFifoFull, "Error while pushing to FIFO.");
+    data8 += bytes_sent;
+    data_left -= bytes_sent;
+  }
+
+  CHECK(dif_hmac_process(hmac) == kDifHmacOk);
+  dif_hmac_digest_result_t digest_result = kDifHmacDigestProcessing;
+  while (digest_result == kDifHmacDigestProcessing) {
+    digest_result = dif_hmac_digest_read(hmac, digest);
+  }
+  CHECK(digest_result == kDifHmacDigestOk, "Error reading the digest.");
+}
+
+const test_config_t kTestConfig = {};
+
 bool test_main(void) {
-  LOG_INFO("Running SHA256 test");
+  dif_hmac_config_t config = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
+      .message_endianness = kDifHmacEndiannessBig,
+      .digest_endianness = kDifHmacEndiannessBig,
+  };
+  CHECK(dif_hmac_init(&config, &hmac0) == kDifHmacOk);
 
-  uint32_t digest[8];
-  hw_SHA256_hash(kData, kDataLen, (uint8_t *)digest);
+  dif_hmac_digest_t digest;
+  compute_sha256(&hmac0, kData, kDataLen, &digest);
 
-  for (uint32_t i = 0; i < 8; i++) {
-    if (digest[i] != kExpectedDigest[i]) {
-      LOG_ERROR("Digest mismatched at index %d: exp: %x, act: %x", i, digest[i],
-                kExpectedDigest[i]);
-      flash_write_scratch_reg(digest[i]);
+  for (uint32_t i = 0; i < 8; ++i) {
+    uint32_t got = digest.digest[i];
+    uint32_t want = kExpectedDigest[i];
+    if (got != want) {
+      LOG_ERROR("Digest mismatch at index %d: wanted 0x%x, got 0x%x.", i, want,
+                got);
+      // TODO: Document why this is called, or delete it.
+      flash_write_scratch_reg(got);
       return false;
     }
   }

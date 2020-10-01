@@ -71,7 +71,7 @@ sha256_test_lib = declare_dependency(
     'sha256_test_lib',
     sources: ['sha256_test.c'],
     dependencies: [
-      sw_lib_hmac,
+      sw_lib_dif_hmac,
       sw_lib_flash_ctrl,
       sw_lib_runtime_log,
     ],
