@@ -11,6 +11,5 @@
 #define SETBIT(val, bit) (val | 1 << bit)
 #define CLRBIT(val, bit) (val & ~(1 << bit))
 
-#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_COMMON_H_
