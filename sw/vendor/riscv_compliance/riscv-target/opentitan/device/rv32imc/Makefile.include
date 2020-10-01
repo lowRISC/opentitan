@@ -38,7 +38,7 @@ else ifeq ($(OT_TARGET),fpga_nexysvideo)
         ( test -e "$(OT_FPGA_UART)" || ( echo "UART device '$(OT_FPGA_UART)' not available. Set OT_FPGA_UART." >&2 && exit 1 ) ) \
         && echo "Writing '$(<).bin' to device." \
         && $(OT_BIN)/sw/host/spiflash/spiflash --input="$(<).bin" \
-        && stty -F "$(OT_FPGA_UART)" speed 230400 cs8 -cstopb -parenb \
+        && stty -F "$(OT_FPGA_UART)" speed 115200 cs8 -cstopb -parenb \
         && grep -o 'SIG: [a-zA-Z0-9_]*' "$(OT_FPGA_UART)" \
             | sed 's/SIG: //' > $(*).signature.output
 else

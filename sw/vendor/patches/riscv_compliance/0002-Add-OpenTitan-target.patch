@@ -1,4 +1,4 @@
-From 1b37cf8ea5468c9bdf17e8633507fc595a8858b2 Mon Sep 17 00:00:00 2001
+From 12485c998481c4414e157a7b6d475c2c118fce77 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
 Subject: [PATCH 2/3] Add OpenTitan target
@@ -254,7 +254,7 @@ index 0000000..6a889cf
 +#endif
 diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
 new file mode 100644
-index 0000000..a44e0c3
+index 0000000..b71105c
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
 @@ -0,0 +1,75 @@
@@ -298,7 +298,7 @@ index 0000000..a44e0c3
 +        ( test -e "$(OT_FPGA_UART)" || ( echo "UART device '$(OT_FPGA_UART)' not available. Set OT_FPGA_UART." >&2 && exit 1 ) ) \
 +        && echo "Writing '$(<).bin' to device." \
 +        && $(OT_BIN)/sw/host/spiflash/spiflash --input="$(<).bin" \
-+        && stty -F "$(OT_FPGA_UART)" speed 230400 cs8 -cstopb -parenb \
++        && stty -F "$(OT_FPGA_UART)" speed 115200 cs8 -cstopb -parenb \
 +        && grep -o 'SIG: [a-zA-Z0-9_]*' "$(OT_FPGA_UART)" \
 +            | sed 's/SIG: //' > $(*).signature.output
 +else

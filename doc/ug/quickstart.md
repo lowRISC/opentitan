@@ -178,11 +178,11 @@ See [the section udev rules of the installation guide]({{< relref "install_instr
 
     It should be named `/dev/ttyUSB*` in this example it is `/dev/ttyUSB0`.
 3.  Open a serial console (use the device file determined before) and connect.
-    Settings: 230400 baud, 8N1, no hardware or software flow control.
+    Settings: 115200 baud, 8N1, no hardware or software flow control.
     `screen` needs to be installed first.
 
     ```console
-    $ screen /dev/ttyUSB0 230400
+    $ screen /dev/ttyUSB0 115200
     ```
 
 4.  On the Nexys Video board, press the red button labeled CPU_RESET.
