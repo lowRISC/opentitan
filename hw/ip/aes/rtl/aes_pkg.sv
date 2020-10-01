@@ -112,17 +112,17 @@ typedef enum logic [2:0] {
 } add_so_sel_e;
 
 typedef struct packed {
-  aes_op_e   operation;
-  aes_mode_e mode;
-  key_len_e  key_len;
   logic      manual_operation;
+  key_len_e  key_len;
+  aes_mode_e mode;
+  aes_op_e   operation;
 } ctrl_reg_t;
 
 parameter ctrl_reg_t CTRL_RESET = '{
-  operation:        AES_ENC,
-  mode:             AES_NONE,
+  manual_operation: '0,
   key_len:          AES_128,
-  manual_operation: '0
+  mode:             AES_NONE,
+  operation:        AES_ENC
 };
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
