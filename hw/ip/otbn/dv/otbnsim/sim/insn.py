@@ -599,18 +599,13 @@ class BNSUBM(OTBNInsn):
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
 
-        (ures, _) = state.sub_with_borrow(a, b, 0)
-
         mod_val = state.wsrs.MOD.read_unsigned()
 
-        # sub_with_borrow returns an unsigned result (in 2's complement), so
-        # the result is negative if the top bit is set.
-        is_negative = bool(ures >> 255)
-        if is_negative:
-            result = (ures + mod_val) & ((1 << 256) - 1)
-        else:
-            result = ures
+        diff = a - b
+        if diff < 0:
+            diff += mod_val
 
+        result = diff & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
