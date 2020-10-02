@@ -72,8 +72,15 @@
       default: "8",
       local: "true"
     },
-    { name: "NumInfos",
-      desc: "Number of configurable flash info pages",
+    { name: "NumInfos0",
+      desc: "Number of configurable flash info pages for info type 0",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+
+    { name: "NumInfos1",
+      desc: "Number of configurable flash info pages for info type 1",
       type: "int",
       default: "4",
       local: "true"
@@ -260,67 +267,64 @@
       ]
     },
 
-// TODO(#1412):
-// This multireg is temporarily removed until the nested multireg compact feature is fully implemented.
-// Until then, use only one register wen for all flash regions.
-// Another alternative solution is to move flash into topgen, this may have to be done anyways.
-
-//    { multireg: {
-//        cname: "FLASH_CTRL",
-//        name: "REGION_CFG_REGWEN"
-//        desc: "Memory region registers configuration enable.",
-//        count: "NumRegions",
-//        swaccess: "rw0c",
-//        hwaccess: "none",
-//        fields: [
-//            { bits: "0",
-//              name: "REGION",
-//              resval: "1"
-//              desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
-//              enum: [
-//                { value: "0",
-//                  name: "Region locked",
-//                  desc: '''
-//                    Region can no longer be configured until next reset
-//                    '''
-//                },
-//                { value: "1",
-//                  name: "Region enabled",
-//                  desc: '''
-//                    Region can be configured
-//                    '''
-//                },
-//              ]
-//            },
-//        ],
-//      },
-//    },
-    { name: "REGION_CFG_REGWEN",
-      desc: "Memory region registers configuration enable.",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0",
-          name: "EN",
-          desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
-          resval: "1",
-          enum: [
-            { value: "0",
-              name: "Region locked",
-              desc: '''
-                Region can no longer be configured until next reset
-                '''
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "REGION_CFG_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumRegions",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Region locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Region enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
             },
-            { value: "1",
-              name: "Region enabled",
-              desc: '''
-                Region can be configured
-                '''
-            },
-          ],
-        },
-      ]
+        ],
+      },
     },
+
+//    { name: "REGION_CFG_REGWEN",
+//      desc: "Memory region registers configuration enable.",
+//      swaccess: "rw0c",
+//      hwaccess: "none",
+//      fields: [
+//        { bits: "0",
+//          name: "EN",
+//          desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+//          resval: "1",
+//          enum: [
+//            { value: "0",
+//              name: "Region locked",
+//              desc: '''
+//                Region can no longer be configured until next reset
+//                '''
+//            },
+//            { value: "1",
+//              name: "Region enabled",
+//              desc: '''
+//                Region can be configured
+//                '''
+//            },
+//          ],
+//        },
+//      ]
+//    },
 
     { multireg: {
         cname: "FLASH_CTRL",
@@ -330,6 +334,7 @@
         swaccess: "rw",
         hwaccess: "hro",
         regwen: "REGION_CFG_REGWEN",
+        regwen_multi: true,
         fields: [
             { bits: "0",
               name: "EN",
@@ -384,9 +389,73 @@
       },
     },
 
-    // TBD, need to update lock register to individual and separated
+    // Bank 0 Info pages
     // TBD, nested multi-reg is not supported, so each bank is done manually
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK0_INFO0_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos0",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
 
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK0_INFO1_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos0",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
+    // TBD, nested multi-reg is not supported, so each bank is done manually
     { multireg: {
         cname: "FLASH_CTRL",
         name: "BANK0_INFO0_PAGE_CFG",
@@ -394,10 +463,11 @@
                 Memory protection configuration for info partition in bank0,
                 Unlike data partition, each page is individually protected.
               '''
-        count: "NumInfos",
+        count: "NumInfos0",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "REGION_CFG_REGWEN",
+        regwen: "BANK0_INFO0_REGWEN",
+        regwen_multi: true,
         fields: [
             { bits: "0",
               name: "EN",
@@ -445,10 +515,11 @@
                 Memory protection configuration for info partition in bank0,
                 Unlike data partition, each page is individually protected.
               '''
-        count: "NumInfos",
+        count: "NumInfos1",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "REGION_CFG_REGWEN",
+        regwen: "BANK0_INFO1_REGWEN",
+        regwen_multi: true,
         fields: [
             { bits: "0",
               name: "EN",
@@ -489,6 +560,71 @@
       },
     },
 
+    // Bank 1 Info pages
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO0_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos0",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO1_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos0",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
     { multireg: {
         cname: "FLASH_CTRL",
         name: "BANK1_INFO0_PAGE_CFG",
@@ -496,10 +632,11 @@
                 Memory protection configuration for info partition in bank1,
                 Unlike data partition, each page is individually protected.
               '''
-        count: "NumInfos",
+        count: "NumInfos0",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "REGION_CFG_REGWEN",
+        regwen: "BANK1_INFO0_REGWEN",
+        regwen_multi: true,
         fields: [
             { bits: "0",
               name: "EN",
@@ -547,10 +684,11 @@
                 Memory protection configuration for info partition in bank1,
                 Unlike data partition, each page is individually protected.
               '''
-        count: "NumInfos",
+        count: "NumInfos1",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "REGION_CFG_REGWEN",
+        regwen: "BANK1_INFO1_REGWEN",
+        regwen_multi: true,
         fields: [
             { bits: "0",
               name: "EN",
