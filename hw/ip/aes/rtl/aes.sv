@@ -22,6 +22,9 @@ module aes
                                                     // SCA measurements. A value of e.g. 40
                                                     // allows the processor to go into sleep
                                                     // before AES starts operation.
+  parameter bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
+                                                    // FORCE_ZERO_MASK bit in Control Register.
+                                                    // Useful for SCA only.
   parameter logic [WidthPRDClearing-1:0] SeedClearing = DefaultSeedClearing,
   parameter logic  [WidthPRDMasking-1:0] SeedMasking  = DefaultSeedMasking,
   parameter logic        [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -71,6 +74,7 @@ module aes
     .Masking              ( Masking              ),
     .SBoxImpl             ( SBoxImpl             ),
     .SecStartTriggerDelay ( SecStartTriggerDelay ),
+    .SecAllowForcingMasks ( SecAllowForcingMasks ),
     .SeedClearing         ( SeedClearing         ),
     .SeedMasking          ( SeedMasking          )
   ) u_aes_core (

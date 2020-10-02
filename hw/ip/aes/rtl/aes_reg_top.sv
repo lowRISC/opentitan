@@ -143,6 +143,10 @@ module aes_reg_top (
   logic ctrl_shadowed_manual_operation_wd;
   logic ctrl_shadowed_manual_operation_we;
   logic ctrl_shadowed_manual_operation_re;
+  logic ctrl_shadowed_force_zero_masks_qs;
+  logic ctrl_shadowed_force_zero_masks_wd;
+  logic ctrl_shadowed_force_zero_masks_we;
+  logic ctrl_shadowed_force_zero_masks_re;
   logic trigger_start_wd;
   logic trigger_start_we;
   logic trigger_key_clear_wd;
@@ -722,6 +726,21 @@ module aes_reg_top (
   );
 
 
+  //   F[force_zero_masks]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl_shadowed_force_zero_masks (
+    .re     (ctrl_shadowed_force_zero_masks_re),
+    .we     (ctrl_shadowed_force_zero_masks_we),
+    .wd     (ctrl_shadowed_force_zero_masks_wd),
+    .d      (hw2reg.ctrl_shadowed.force_zero_masks.d),
+    .qre    (reg2hw.ctrl_shadowed.force_zero_masks.re),
+    .qe     (reg2hw.ctrl_shadowed.force_zero_masks.qe),
+    .q      (reg2hw.ctrl_shadowed.force_zero_masks.q ),
+    .qs     (ctrl_shadowed_force_zero_masks_qs)
+  );
+
+
   // R[trigger]: V(False)
 
   //   F[start]: 0:0
@@ -1173,6 +1192,10 @@ module aes_reg_top (
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
   assign ctrl_shadowed_manual_operation_re = addr_hit[28] && reg_re;
 
+  assign ctrl_shadowed_force_zero_masks_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[11];
+  assign ctrl_shadowed_force_zero_masks_re = addr_hit[28] && reg_re;
+
   assign trigger_start_we = addr_hit[29] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
 
@@ -1317,6 +1340,7 @@ module aes_reg_top (
         reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
         reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
         reg_rdata_next[10] = ctrl_shadowed_manual_operation_qs;
+        reg_rdata_next[11] = ctrl_shadowed_force_zero_masks_qs;
       end
 
       addr_hit[29]: begin

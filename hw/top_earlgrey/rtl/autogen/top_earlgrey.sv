@@ -7,6 +7,7 @@ module top_earlgrey #(
   parameter bit AesMasking = 1'b0,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplLut,
   parameter int unsigned SecAesStartTriggerDelay = 0,
+  parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
@@ -685,6 +686,7 @@ module top_earlgrey #(
     .Masking(AesMasking),
     .SBoxImpl(AesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
+    .SecAllowForcingMasks(SecAesAllowForcingMasks),
     .SeedClearing(aes_pkg::DefaultSeedClearing),
     .SeedMasking(aes_pkg::DefaultSeedMasking),
     .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}})
