@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+from pathlib import Path
 
 from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
-from pathlib import Path
 
 from .xbar import Xbar
 
@@ -18,7 +18,7 @@ def generate_tb(xbar: Xbar,
     # list all the generate files for TB
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
-        "xbar.bind.core", "xbar.bind.sv", "Makefile", "xbar.sim_cfg.hjson",
+        "xbar.bind.core", "xbar.bind.sv", "xbar.sim_cfg.hjson",
         "xbar.testplan.hjson"
     ]
 
