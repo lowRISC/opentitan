@@ -8,8 +8,8 @@ module top_earlgrey_artys7  #(
   parameter BootRomInitFile = "boot_rom_fpga_artys7.32.vmem"
 ) (
   // Clock and Reset
-  inout               IO_CLK,
-  inout               IO_RST_N,
+  input               IO_CLK,
+  input               IO_RST_N,
   // JTAG interface -- not hooked up at the moment
   // inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   // inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -157,6 +157,7 @@ module top_earlgrey_artys7  #(
   ) clkgen (
     .IO_CLK,
     .IO_RST_N,
+    .jtag_srst_n,
     .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
     .rst_n(rst_n)

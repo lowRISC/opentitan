@@ -8,8 +8,8 @@ module top_earlgrey_cw305 #(
   parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem"
 ) (
   // Clock and Reset
-  inout               IO_CLK,
-  inout               IO_RST_N,
+  input               IO_CLK,
+  input               IO_RST_N,
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -199,7 +199,8 @@ module top_earlgrey_cw305 #(
     .AddClkBuf(0)
   ) clkgen (
     .IO_CLK,
-    .IO_RST_N(IO_RST_N & jtag_srst_n),
+    .IO_RST_N,
+    .jtag_srst_n,
     .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
     .rst_n(rst_n)
