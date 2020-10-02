@@ -312,6 +312,8 @@
       desc: '''Secret Key length in bit.
 
             This value is used to make encoded secret key in KMAC.
+            KMAC supports certain lengths of the secret key. Currently it
+            supports 128b, 192b, 256b, 384b, and 512b secret keys.
             '''
       regwen: "CFG_REGWEN"
       swaccess: "wo"
@@ -320,7 +322,7 @@
       fields: [
         { bits: "2:0"
           name: "len"
-          desc: "Length in bits"
+          desc: "Key length choice"
           enum: [
             { value: "0"
               name:  "Key128"
