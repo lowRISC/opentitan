@@ -85,21 +85,18 @@ int main(int argc, char **argv) {
 
   pinmux_init();
 
-  CHECK(dif_spi_device_init(
-      (dif_spi_device_params_t){
-          .base_addr = mmio_region_from_addr(0x40020000),
-      },
-      &spi));
-  CHECK(dif_spi_device_configure(
-            &spi, (dif_spi_device_config_t){
-                      .clock_polarity = kDifSpiDeviceEdgePositive,
-                      .data_phase = kDifSpiDeviceEdgeNegative,
-                      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-                      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-                      .rx_fifo_timeout = 63,
-                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                  }) == kDifSpiDeviceOk);
+  mmio_region_t spi_reg = mmio_region_from_addr(0x40020000);
+  dif_spi_device_config_t spi_config = {
+      .clock_polarity = kDifSpiDeviceEdgePositive,
+      .data_phase = kDifSpiDeviceEdgeNegative,
+      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+      .rx_fifo_timeout = 63,
+      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+  };
+  CHECK(dif_spi_device_init(spi_reg, &spi_config, &spi) ==
+        kDifSpiDeviceResultOk);
 
   dif_gpio_params_t gpio_params = {
       .base_addr = mmio_region_from_addr(0x40010000),
@@ -123,7 +120,7 @@ int main(int argc, char **argv) {
   usb_simpleserial_init(&simple_serial1, &usbdev, 2, usb_receipt_callback_1);
 
   CHECK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL) ==
-        kDifSpiDeviceOk);
+        kDifSpiDeviceResultOk);
 
   uint32_t gpio_state = 0;
   bool pass_signaled = false;

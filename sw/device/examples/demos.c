@@ -66,11 +66,11 @@ void demo_spi_to_log_echo(const dif_spi_device_t *spi) {
   uint32_t spi_buf[8];
   size_t spi_len;
   CHECK(dif_spi_device_recv(spi, spi_buf, sizeof(spi_buf), &spi_len) ==
-        kDifSpiDeviceOk);
+        kDifSpiDeviceResultOk);
   if (spi_len > 0) {
     uint32_t echo_word = spi_buf[0] ^ 0x01010101;
     CHECK(dif_spi_device_send(spi, &echo_word, sizeof(uint32_t),
-                              /*bytes_sent=*/NULL) == kDifSpiDeviceOk);
+                              /*bytes_sent=*/NULL) == kDifSpiDeviceResultOk);
     LOG_INFO("SPI: %z", spi_len, spi_buf);
   }
 }
