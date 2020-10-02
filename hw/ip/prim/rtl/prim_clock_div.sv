@@ -67,5 +67,4 @@ module prim_clock_div #(
     .clk_o
   );
 
-
-endmodule // prim_generic_clock_div2
+endmodule

@@ -13,10 +13,11 @@ set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
 ## This is not really recommended per Vivado's guidelines, but hopefully these clocks are slow enough and their
 ## destination flops few enough.
 
-set div2_cell [get_cells top_earlgrey/u_io_div2_div/gen_div2.u_div2/gen_generic.u_impl_generic/q_o_reg[0]]
-create_generated_clock -name clk_io_div2 -source [get_pin ${div2_cell}/C] -divide_by 2 [get_pin ${div2_cell}/Q]
+set u_pll clkgen/pll
+set u_div2 top_earlgrey/u_clkmgr/u_io_div2_div
+create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 
-set div4_cell [get_cells top_earlgrey/u_clkmgr/u_io_div4_div/gen_div.clk_int_reg]
-create_generated_clock -name clk_io_div4 -source [get_pin ${div4_cell}/C] -divide_by 4 [get_pin ${div4_cell}/Q]
+set u_div4 top_earlgrey/u_clkmgr/u_io_div4_div
+create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 
 set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group clk_io_div2 -group clk_io_div4 -asynchronous
