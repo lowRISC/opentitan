@@ -66,6 +66,8 @@ module kmac
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
   logic sha3_start, sha3_run, sha3_done, sha3_absorbed;
 
+  kmac_pkg::sha3_st_e sha3_fsm;
+
   // Prefix: kmac_pkg defines Prefix based on N size and S size.
   // Then computes left_encode(len(N)) size and left_encode(len(S))
   // For given default value 32, 256 bits, the max
@@ -138,11 +140,12 @@ module kmac
   assign kmac2sha3_process = msgfifo2kmac_process;
 
   // Status register ==========================================================
-  // SHA3 Idle, Absorb, Squeeze aren't exposed yet.
-  // TODO: implement
-  assign hw2reg.status.sha3_idle.d     = 1'b 0;
-  assign hw2reg.status.sha3_absorb.d   = 1'b 0;
-  assign hw2reg.status.sha3_squeeze.d  = 1'b 0;
+  // status.squeeze is valid only when SHA3 engine completes the Absorb and not
+  // running the manual keccak rounds. This status is for SW to determine when
+  // to read the STATE values.
+  assign hw2reg.status.sha3_idle.d     = sha3_fsm == kmac_pkg::StIdle;
+  assign hw2reg.status.sha3_absorb.d   = sha3_fsm == kmac_pkg::StAbsorb;
+  assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == kmac_pkg::StSqueeze;
 
   // FIFO related status
   // TODO: handle if register width of `depth` is not same to MsgFifoDepthW
@@ -151,9 +154,8 @@ module kmac
   assign hw2reg.status.fifo_full.d   = msgfifo_full;
 
   // Configuration Register
-  // TODO: Guard CFG write in operation
   logic engine_stable;
-  assign engine_stable = 1'b 1;
+  assign engine_stable = sha3_fsm == kmac_pkg::StIdle;
 
   assign hw2reg.cfg_regwen.d = engine_stable;
 
@@ -238,6 +240,8 @@ module kmac
     .done_i     (sha3_done        ),
 
     .absorbed_o (sha3_absorbed),
+
+    .sha3_fsm_o (sha3_fsm),
 
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]

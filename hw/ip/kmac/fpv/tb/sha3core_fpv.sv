@@ -38,6 +38,8 @@ module sha3core_fpv
 
   output logic absorbed_o,
 
+  output sha3_st_e sha3_fsm_o,
+
   // digest output
   // This value is valid only after all absorbing process is completed.
   output logic              state_valid_o,

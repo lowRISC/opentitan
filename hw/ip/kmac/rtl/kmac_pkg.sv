@@ -151,6 +151,46 @@ package kmac_pkg;
     Key512 = 3'b 100  // 512 bit secret key
   } key_len_e;
 
+
+  // SHA3 core state. This state value is used in sha3core module
+  // and also in KMAC top module and the register interface for sw to track the
+  // sha3 status.
+  typedef enum logic [2:0] {
+    StIdle,
+
+    // Absorb stage receives the message bitstream and computes the keccak
+    // rounds. This internal operation is mainly done inside sha3pad module
+    // not sha3core. The core module and this state machine observe the status
+    // of the process and mainly waits until all the sponge absorbing is
+    // completed. The main indicator is `absorbed` signal.
+    StAbsorb,
+
+    // TODO: Implement StAbort later after context-switching discussion.
+    // Abort stage can be moved from StAbsorb stage. It basically holds the
+    // keccak round operation and opens up the internal state variable to the
+    // software. This stage is for the software to pause current operation and
+    // store the internal state elsewhere then initiates new KMAC/SHA3 process.
+    // StAbort only can be moved to _StFlush_.
+    //StAbort,
+
+    // Squeeze stage allows the software to read the internal state.
+    // If `EnMasking`, it opens the read permission of two share of the state.
+    // The squeezing in SHA3 specification describes the software to read up to
+    // the rate of SHA3 algorithm but this logic opens up the entire 1600 bits
+    // of the state (3200bits if `EnMasking`).
+    StSqueeze,
+
+    // ManualRun stage initiaties the keccak round and waits the completion.
+    // This state is moved from Squeeze state by writing 1 to manual_run CSR.
+    // When keccak round is completed, it goes back to Squeeze state.
+    StManualRun,
+
+    // Flush stage, the core clears out the internal variables and also
+    // submodules' variables too. Then moves back to Idle state.
+    StFlush
+  } sha3_st_e;
+
+
   //////////////////
   // Error Report //
   //////////////////
@@ -169,6 +209,12 @@ package kmac_pkg;
     logic [23:0] info; // Additional Debug info
   } err_t;
 
+
+  ///////////////////////
+  // Library Functions //
+  ///////////////////////
+
+  // Endian conversion functions (32-bit, 64-bit)
   function automatic logic [31:0] conv_endian32( input logic [31:0] v, input logic swap);
     logic [31:0] conv_data = {<<8{v}};
     conv_endian32 = (swap) ? conv_data : v ;
