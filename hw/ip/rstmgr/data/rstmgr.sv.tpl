@@ -321,4 +321,13 @@ module rstmgr import rstmgr_pkg::*; (
 
   // when upstream resets, downstream must also reset
 
+  // output known asserts
+  `ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
+  `ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
+  `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
+  `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
+% for intf in export_rsts:
+  `ASSERT_KNOWN(${intf.capitalize()}ResetsKnownO_A, resets_${intf}_o )
+% endfor
+
 endmodule // rstmgr
