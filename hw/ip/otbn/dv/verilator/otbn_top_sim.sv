@@ -198,7 +198,9 @@ module otbn_top_sim (
     .start_i      ( otbn_start ),
     .done_o       ( otbn_model_done ),
 
-    .start_addr_i ( ImemStartAddr )
+    .start_addr_i ( ImemStartAddr ),
+
+    .err_o ()
   );
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin

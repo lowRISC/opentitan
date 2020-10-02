@@ -441,7 +441,9 @@ module otbn
       .start_i (start),
       .done_o  (done),
 
-      .start_addr_i  (start_addr)
+      .start_addr_i  (start_addr),
+
+      .err_o ()
     );
   end else begin : gen_impl_rtl
     otbn_core #(

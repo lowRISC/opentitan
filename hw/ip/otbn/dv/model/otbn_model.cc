@@ -19,6 +19,44 @@ extern "C" int simutil_verilator_get_mem(int index, svBitVecVal *val);
 extern "C" int simutil_verilator_set_mem(int index, const svBitVecVal *val);
 extern "C" int otbn_rf_peek(int index, svBitVecVal *val);
 
+#define RUNNING_BIT (1U << 0)
+#define FAILED_STEP_BIT (1U << 1)
+#define FAILED_CMP_BIT (1U << 2)
+
+// The main entry point to the OTBN model, exported from here and used in
+// otbn_core_model.sv.
+//
+// This communicates state with otbn_core_model.sv through the status
+// parameter, which has the following bits:
+//
+//    Bit 0:    running       True if the model is currently running
+//    Bit 1:    failed_step   Something failed when trying to start/step ISS
+//    Bit 2:    failed_cmp    Consistency check at end of run failed
+//
+// The otbn_model_step function should only be called when either the model is
+// running (bit 0 of status) or when start_i is asserted. At other times, it
+// will return immediately (but wastes a DPI call).
+//
+// If the model is running and start_i is false, otbn_model_step steps the ISS
+// by a single cycle. If something goes wrong, it will set failed_step to true
+// and running to false.
+//
+// If nothing goes wrong, but the ISS finishes its run, we still set running to
+// false, but also do the post-run task. If design_scope is non-empty, it
+// should be the scope of an RTL implementation. In that case, we compare
+// register and memory contents with that implementation, printing to stderr
+// and setting the failed_cmp bit if there are any mismatches. If design_scope
+// is the empty string, we grab the contents of DMEM from the ISS and inject
+// them into the memory at dmem_scope.
+//
+// If start_i is true, we start the model at start_addr and then step once (as
+// described above).
+extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
+                                    unsigned imem_words, const char *dmem_scope,
+                                    unsigned dmem_words,
+                                    const char *design_scope, svLogic start_i,
+                                    unsigned start_addr, unsigned status);
+
 // Use simutil_verilator_get_mem to read data one word at a time from the given
 // scope and collect the results up in a vector of uint8_t values.
 static std::vector<uint8_t> get_sim_memory(const char *scope, size_t num_words,
@@ -149,13 +187,13 @@ extern "C" void otbn_model_destroy(ISSWrapper *model) { delete model; }
 
 // Start a new run with the model, writing IMEM/DMEM and jumping to the given
 // start address. Returns 0 on success; -1 on failure.
-extern "C" int otbn_model_start(ISSWrapper *model, const char *imem_scope,
-                                int imem_words, const char *dmem_scope,
-                                int dmem_words, int start_addr) {
+static int start_model(ISSWrapper *model, const char *imem_scope,
+                       unsigned imem_words, const char *dmem_scope,
+                       unsigned dmem_words, unsigned start_addr) {
   assert(model);
   assert(imem_words >= 0);
   assert(dmem_words >= 0);
-  assert(start_addr >= 0 && start_addr < (imem_words * 4));
+  assert(start_addr < (imem_words * 4));
 
   std::string ifname(model->make_tmp_path("imem"));
   std::string dfname(model->make_tmp_path("dmem"));
@@ -182,7 +220,7 @@ extern "C" int otbn_model_start(ISSWrapper *model, const char *imem_scope,
 
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
 // on failure.
-extern "C" int otbn_model_step(ISSWrapper *model) {
+static int step_model(ISSWrapper *model) {
   assert(model);
   try {
     return model->step() ? 1 : 0;
@@ -194,8 +232,8 @@ extern "C" int otbn_model_step(ISSWrapper *model) {
 
 // Grab contents of dmem from the model and load it back into the RTL. Returns
 // 0 on success; -1 on failure.
-extern "C" int otbn_model_load_dmem(ISSWrapper *model, const char *dmem_scope,
-                                    int dmem_words) {
+static int load_dmem(ISSWrapper *model, const char *dmem_scope,
+                     unsigned dmem_words) {
   assert(model);
   std::string dfname(model->make_tmp_path("dmem_out"));
   try {
@@ -211,10 +249,9 @@ extern "C" int otbn_model_load_dmem(ISSWrapper *model, const char *dmem_scope,
 // Grab contents of dmem from the model and compare it with the RTL.
 // Prints messages to stderr on failure or mismatch. Returns true on
 // success; false on mismatch. Throws a std::runtime_error on failure.
-static bool otbn_model_check_dmem(ISSWrapper *model, const char *dmem_scope,
-                                  int dmem_words) {
+static bool check_dmem(ISSWrapper *model, const char *dmem_scope,
+                       unsigned dmem_words) {
   assert(model);
-  assert(dmem_words >= 0);
 
   size_t dmem_bytes = dmem_words * 32;
   std::string dfname(model->make_tmp_path("dmem_out"));
@@ -281,8 +318,7 @@ static std::array<T, 32> get_rtl_regs(const std::string &reg_scope) {
 // Compare contents of ISS registers with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch. Throws a std::runtime_error on failure.
-static bool otbn_model_check_regs(ISSWrapper *model,
-                                  const std::string &design_scope) {
+static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
   assert(model);
 
   std::string base_scope =
@@ -337,29 +373,106 @@ static bool otbn_model_check_regs(ISSWrapper *model,
   return good;
 }
 
-// Check model against RTL when a run has finished. Prints messages to
-// stderr on failure or mismatch. Returns 1 for a match, 0 for a
-// mismatch, -1 for some other failure.
-extern "C" int otbn_model_check(ISSWrapper *model, const char *dmem_scope,
-                                int dmem_words, const char *design_scope) {
+// Check model against RTL when a run has finished. Prints messages to stderr
+// on failure or mismatch. Returns 1 for a match, 0 for a mismatch, -1 for some
+// other failure.
+int check_model(ISSWrapper *model, const char *dmem_scope, unsigned dmem_words,
+                const char *design_scope) {
   assert(model);
   assert(dmem_words >= 0);
   assert(design_scope);
 
   bool good = true;
   try {
-    good &= otbn_model_check_dmem(model, dmem_scope, dmem_words);
+    good &= check_dmem(model, dmem_scope, dmem_words);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check DMEM: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    good &= otbn_model_check_regs(model, design_scope);
+    good &= check_regs(model, design_scope);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check registers: " << err.what() << "\n";
     return -1;
   }
 
   return good ? 1 : 0;
+}
+
+extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
+                                    unsigned imem_words, const char *dmem_scope,
+                                    unsigned dmem_words,
+                                    const char *design_scope, svLogic start_i,
+                                    unsigned start_addr, unsigned status) {
+  assert(model && imem_scope && dmem_scope && design_scope);
+
+  // Start the model if requested
+  if (start_i) {
+    switch (start_model(model, imem_scope, imem_words, dmem_scope, dmem_words,
+                        start_addr)) {
+      case 0:
+        // All good
+        status |= RUNNING_BIT;
+        break;
+
+      default:
+        // Something went wrong.
+        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+    }
+  }
+
+  // If the model isn't running, there's nothing more to do.
+  if (!(status & RUNNING_BIT))
+    return status;
+
+  // Step the model once
+  switch (step_model(model)) {
+    case 0:
+      // Still running: no change
+      break;
+
+    case 1:
+      // Finished
+      status = status & ~RUNNING_BIT;
+      break;
+
+    default:
+      // Something went wrong
+      return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+  }
+
+  // If we're still running, there's nothing more to do.
+  if (status & RUNNING_BIT)
+    return status;
+
+  // If we've stopped running, either load DMEM or check against the RTL.
+  if (design_scope[0] == '\0') {
+    switch (load_dmem(model, dmem_scope, dmem_words)) {
+      case 0:
+        // Success
+        break;
+
+      default:
+        // Failed to load DMEM
+        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+    }
+  } else {
+    switch (check_model(model, dmem_scope, dmem_words, design_scope)) {
+      case 1:
+        // Match (success)
+        break;
+
+      case 0:
+        // Mismatch
+        status |= FAILED_CMP_BIT;
+        break;
+
+      default:
+        // Something went wrong
+        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+    }
+  }
+
+  return status;
 }
