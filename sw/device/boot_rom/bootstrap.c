@@ -158,7 +158,7 @@ int bootstrap(void) {
             (dif_spi_device_params_t){
                 .base_addr = mmio_region_from_addr(0x40020000),
             },
-            &spi),
+            &spi) == kDifSpiDeviceOk,
         "Failed to initialize SPI.");
   CHECK(
       dif_spi_device_configure(&spi,
