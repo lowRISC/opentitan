@@ -5,8 +5,8 @@
 {
     name:               "pwrmgr",
     design_spec:        "hw/ip/pwrmgr/doc",
-    dv_plan:            "",
-    hw_checklist:       "",
+    dv_plan:            "hw/top_earlgrey/doc/dv_plan",
+    hw_checklist:       "hw/ip/pwrmgr/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_pwrmgr",
     revisions: [
       {
