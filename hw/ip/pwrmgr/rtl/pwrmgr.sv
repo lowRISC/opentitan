@@ -372,5 +372,15 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ///  Assertions
   ////////////////////////////
 
+  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid     )
+  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready     )
+  `ASSERT_KNOWN(AstKnownO_A,       pwr_ast_o        )
+  `ASSERT_KNOWN(RstKnownO_A,       pwr_rst_o        )
+  `ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )
+  `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
+  `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
+  `ASSERT_KNOWN(FlashKnownO_A,     pwr_flash_o      )
+  `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
+
 
 endmodule // pwrmgr
