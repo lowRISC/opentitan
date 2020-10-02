@@ -960,6 +960,14 @@
           name_top: SecAesStartTriggerDelay
         }
         {
+          name: SecAllowForcingMasks
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: SecAesAllowForcingMasks
+        }
+        {
           name: SeedClearing
           type: logic [aes_pkg::WidthPRDClearing-1:0]
           default: aes_pkg::DefaultSeedClearing

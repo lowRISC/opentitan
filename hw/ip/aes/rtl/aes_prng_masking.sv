@@ -22,11 +22,16 @@ module aes_prng_masking #(
   localparam int unsigned CHUNK_SIZE  = 32,               // width of the LFSR primitives
   localparam int unsigned NumChunks   = Width/CHUNK_SIZE, // derived parameter
 
+  parameter  bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
+                                                     // force_zero_masks_i. Useful for SCA only.
+
   // The chunks must not be initialized to 0. Every chunk should get a different seed.
   parameter logic [NumChunks-1:0][CHUNK_SIZE-1:0] DefaultSeed = {NumChunks{CHUNK_SIZE'(1)}}
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
+
+  input  logic             force_zero_masks_i,
 
   // Connections to AES internals, PRNG consumers
   input  logic             data_update_i,
@@ -104,7 +109,14 @@ module aes_prng_masking #(
 
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
-  assign data_o = phase_q ? {perm[0], perm[NumChunks-1:1]} : perm;
+  assign data_o =
+      (SecAllowForcingMasks && force_zero_masks_i) ? '0                             :
+       phase_q                                     ? {perm[0], perm[NumChunks-1:1]} : perm;
+
+  if (!SecAllowForcingMasks) begin : gen_unused_force_masks
+    logic unused_force_zero_masks;
+    assign unused_force_zero_masks = force_zero_masks_i;
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_phase
     if (!rst_ni) begin

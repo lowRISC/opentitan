@@ -122,6 +122,7 @@ typedef enum logic [2:0] {
 } add_so_sel_e;
 
 typedef struct packed {
+  logic      force_zero_masks;
   logic      manual_operation;
   key_len_e  key_len;
   aes_mode_e mode;
@@ -129,6 +130,7 @@ typedef struct packed {
 } ctrl_reg_t;
 
 parameter ctrl_reg_t CTRL_RESET = '{
+  force_zero_masks: '0,
   manual_operation: '0,
   key_len:          AES_128,
   mode:             AES_NONE,

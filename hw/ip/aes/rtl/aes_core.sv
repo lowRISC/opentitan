@@ -14,6 +14,7 @@ module aes_core
   parameter bit          Masking              = 0,
   parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
   parameter int unsigned SecStartTriggerDelay = 0,
+  parameter bit          SecAllowForcingMasks = 0,
 
   localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
@@ -51,6 +52,7 @@ module aes_core
   key_len_e                    key_len;
   key_len_e                    key_len_q;
   logic                        manual_operation_q;
+  logic                        force_zero_masks_q;
   ctrl_reg_t                   ctrl_d, ctrl_q;
 
   logic        [3:0][3:0][7:0] state_in;
@@ -317,42 +319,44 @@ module aes_core
 
   // Cipher core
   aes_cipher_core #(
-    .AES192Enable ( AES192Enable ),
-    .Masking      ( Masking      ),
-    .SBoxImpl     ( SBoxImpl     ),
-    .SeedMasking  ( SeedMasking  )
+    .AES192Enable         ( AES192Enable         ),
+    .Masking              ( Masking              ),
+    .SBoxImpl             ( SBoxImpl             ),
+    .SecAllowForcingMasks ( SecAllowForcingMasks ),
+    .SeedMasking          ( SeedMasking          )
   ) u_aes_cipher_core (
-    .clk_i            ( clk_i                      ),
-    .rst_ni           ( rst_ni                     ),
+    .clk_i              ( clk_i                      ),
+    .rst_ni             ( rst_ni                     ),
 
-    .in_valid_i       ( cipher_in_valid            ),
-    .in_ready_o       ( cipher_in_ready            ),
+    .in_valid_i         ( cipher_in_valid            ),
+    .in_ready_o         ( cipher_in_ready            ),
 
-    .out_valid_o      ( cipher_out_valid           ),
-    .out_ready_i      ( cipher_out_ready           ),
+    .out_valid_o        ( cipher_out_valid           ),
+    .out_ready_i        ( cipher_out_ready           ),
 
-    .cfg_valid_i      ( ~ctrl_err_storage_o        ),
-    .op_i             ( cipher_op                  ),
-    .key_len_i        ( key_len_q                  ),
-    .crypt_i          ( cipher_crypt               ),
-    .crypt_o          ( cipher_crypt_busy          ),
-    .dec_key_gen_i    ( cipher_dec_key_gen         ),
-    .dec_key_gen_o    ( cipher_dec_key_gen_busy    ),
-    .key_clear_i      ( cipher_key_clear           ),
-    .key_clear_o      ( cipher_key_clear_busy      ),
-    .data_out_clear_i ( cipher_data_out_clear      ),
-    .data_out_clear_o ( cipher_data_out_clear_busy ),
+    .cfg_valid_i        ( ~ctrl_err_storage_o        ),
+    .op_i               ( cipher_op                  ),
+    .key_len_i          ( key_len_q                  ),
+    .crypt_i            ( cipher_crypt               ),
+    .crypt_o            ( cipher_crypt_busy          ),
+    .dec_key_gen_i      ( cipher_dec_key_gen         ),
+    .dec_key_gen_o      ( cipher_dec_key_gen_busy    ),
+    .key_clear_i        ( cipher_key_clear           ),
+    .key_clear_o        ( cipher_key_clear_busy      ),
+    .data_out_clear_i   ( cipher_data_out_clear      ),
+    .data_out_clear_o   ( cipher_data_out_clear_busy ),
 
-    .prd_clearing_i   ( prd_clearing               ),
+    .prd_clearing_i     ( prd_clearing               ),
 
-    .data_in_mask_o   ( state_mask                 ),
-    .entropy_req_o    ( entropy_masking_req_o      ),
-    .entropy_ack_i    ( entropy_masking_ack_i      ),
-    .entropy_i        ( entropy_masking_i          ),
+    .force_zero_masks_i ( force_zero_masks_q         ),
+    .data_in_mask_o     ( state_mask                 ),
+    .entropy_req_o      ( entropy_masking_req_o      ),
+    .entropy_ack_i      ( entropy_masking_ack_i      ),
+    .entropy_i          ( entropy_masking_i          ),
 
-    .state_init_i     ( state_init                 ),
-    .key_init_i       ( key_init_cipher            ),
-    .state_o          ( state_done                 )
+    .state_init_i       ( state_init                 ),
+    .key_init_i         ( key_init_cipher            ),
+    .state_o            ( state_done                 )
   );
 
   if (!Masking) begin : gen_state_out_unmasked
@@ -407,11 +411,18 @@ module aes_core
 
   assign ctrl_d.manual_operation = reg2hw.ctrl_shadowed.manual_operation.q;
 
+  // SecAllowForcingMasks forbids forcing the masks. Forcing the masks to zero is only
+  // useful for SCA.
+  assign ctrl_d.force_zero_masks = SecAllowForcingMasks ?
+      reg2hw.ctrl_shadowed.force_zero_masks.q : 1'b0;
+
   // Get and forward write enable. Writes are only allowed if the module is idle.
   assign ctrl_re = reg2hw.ctrl_shadowed.operation.re & reg2hw.ctrl_shadowed.mode.re &
-      reg2hw.ctrl_shadowed.key_len.re & reg2hw.ctrl_shadowed.manual_operation.re;
+      reg2hw.ctrl_shadowed.key_len.re & reg2hw.ctrl_shadowed.manual_operation.re &
+      reg2hw.ctrl_shadowed.force_zero_masks.re;
   assign ctrl_qe = reg2hw.ctrl_shadowed.operation.qe & reg2hw.ctrl_shadowed.mode.qe &
-      reg2hw.ctrl_shadowed.key_len.qe & reg2hw.ctrl_shadowed.manual_operation.qe;
+      reg2hw.ctrl_shadowed.key_len.qe & reg2hw.ctrl_shadowed.manual_operation.qe &
+      reg2hw.ctrl_shadowed.force_zero_masks.qe;
 
   // Shadowed register primitve
   prim_subreg_shadow #(
@@ -442,6 +453,7 @@ module aes_core
   assign aes_mode_q         = ctrl_q.mode;
   assign key_len_q          = ctrl_q.key_len;
   assign manual_operation_q = ctrl_q.manual_operation;
+  assign force_zero_masks_q = ctrl_q.force_zero_masks;
 
   /////////////
   // Control //
@@ -575,6 +587,7 @@ module aes_core
   // These fields are actually hro. But software must be able observe the current value (rw).
   assign hw2reg.ctrl_shadowed.operation.d        = {aes_op_q};
   assign hw2reg.ctrl_shadowed.manual_operation.d = manual_operation_q;
+  assign hw2reg.ctrl_shadowed.force_zero_masks.d = force_zero_masks_q;
 
   ////////////////
   // Assertions //

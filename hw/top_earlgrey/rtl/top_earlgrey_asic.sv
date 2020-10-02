@@ -244,7 +244,8 @@ module top_earlgrey_asic (
   top_earlgrey #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplCanright),
-    .SecAesStartTriggerDelay(0)
+    .SecAesStartTriggerDelay(0),
+    .SecAesAllowForcingMasks(1'b0)
   ) top_earlgrey (
     .rst_ni          ( rst_n         ),
     // ast connections
