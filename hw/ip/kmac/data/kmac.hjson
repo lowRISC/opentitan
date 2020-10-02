@@ -440,8 +440,8 @@
               If Masking feature is enabled, the software reads two shares from
               this memory space.
 
-              0x400 - 0x4C7: STATE or first share of STATE if Masking = 1
-              0x500 - 0x5C7: 0 or second share of STATE if Masking = 1
+              0x400 - 0x4C7: State share
+              0x500 - 0x5C7: Mask share of the state, 0 if EnMasking = 0
               '''
       }
     } // W: STATE

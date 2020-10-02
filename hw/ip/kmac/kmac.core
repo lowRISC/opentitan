@@ -17,6 +17,7 @@ filesets:
       - rtl/keccak_2share.sv
       - rtl/sha3pad.sv
       - rtl/sha3core.sv
+      - rtl/kmac_core.sv
       - rtl/kmac_msgfifo.sv
       - rtl/kmac_staterd.sv
       - rtl/kmac_reg_pkg.sv

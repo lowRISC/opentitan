@@ -127,6 +127,8 @@ package kmac_pkg;
   parameter int KeccakCountW = $clog2(KeccakEntries+1);
 
   // Key related definitions
+  // If this value is changed, please modify the logic inside kmac_core
+  // that assigns the value into `encoded_key`
   parameter int MaxKeyLen = 512;
 
   // size of encode_string(Key)

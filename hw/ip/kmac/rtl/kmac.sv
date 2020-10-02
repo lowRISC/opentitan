@@ -25,6 +25,12 @@ module kmac
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
+  // TODO: KeyMgr sideload (secret key) interface
+
+  // TODO: KeyMgr KDF data path
+
+  // TODO: CSRNG (EDN) interface
+
   // interrupts
   output logic intr_kmac_done_o,
   output logic intr_fifo_empty_o,
@@ -107,11 +113,25 @@ module kmac
     assign msgfifo_data[1] = '0;
   end
 
+  // KMAC to SHA3 core
+  logic                          msg_valid       ;
+  logic [kmac_pkg::MsgWidth-1:0] msg_data [Share];
+  logic [kmac_pkg::MsgStrbW-1:0] msg_strb        ;
+  logic                          msg_ready       ;
+
   // Process control signals
   // Process pulse propagates from register to SHA3 engine one by one.
   // Each module (MSG_FIFO, KMAC core, SHA3 core) generates the process pulse
   // after flushing internal data to the next module.
   logic reg2msgfifo_process, msgfifo2kmac_process, kmac2sha3_process;
+
+
+  // Secret Key signals
+  logic [MaxKeyLen-1:0] key_data [Share];
+  key_len_e             key_len;
+
+  // KeyMgr interface control
+  logic keymgr_en;
 
   // SHA3 Error response
   err_t sha3_err;
@@ -159,9 +179,6 @@ module kmac
     end // if reg2hw.cmd.qe
   end
 
-  // TODO: disconnect below after kmac core implemented
-  assign kmac2sha3_process = msgfifo2kmac_process;
-
   // Status register ==========================================================
   // status.squeeze is valid only when SHA3 engine completes the Absorb and not
   // running the manual keccak rounds. This status is for SW to determine when
@@ -181,6 +198,40 @@ module kmac
   assign engine_stable = sha3_fsm == kmac_pkg::StIdle;
 
   assign hw2reg.cfg_regwen.d = engine_stable;
+
+  // Secret Key
+  // Secret key is defined as external register. So the logic latches when SW
+  // writes to KEY_SHARE0 , KEY_SHARE1 registers.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      key_data[0] <= '0;
+    end else if (engine_stable) begin
+      for (int j = 0 ; j < MaxKeyLen/32 ; j++) begin
+        if (reg2hw.key_share0[j].qe) begin
+          key_data[0][32*j+:32] <= reg2hw.key_share0[j].q;
+        end
+      end // for j
+    end // else if engine_stable
+  end // always_ff
+
+  if (EnMasking) begin : gen_key_masked
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        key_data[1] <= '0;
+      end else if (engine_stable) begin
+        for (int i = 0 ; i < MaxKeyLen/32 ; i++) begin
+          if (reg2hw.key_share1[i].qe) begin
+            key_data[1][32*i+:32] <= reg2hw.key_share1[i].q;
+          end
+        end // for i
+      end // else if engine_stable
+    end // always_ff
+  end else begin : gen_unused_key_share1
+    logic unused_keyshare1;
+    assign unused_keyshare1 = ^reg2hw.key_share1;
+  end
+
+  assign key_len = key_len_e'(reg2hw.key_len.q);
 
   ///////////////
   // Interrupt //
@@ -230,6 +281,41 @@ module kmac
   // Instances //
   ///////////////
 
+  // KMAC core
+  kmac_core #(
+    .EnMasking (EnMasking)
+  ) u_kmac_core (
+    .clk_i,
+    .rst_ni,
+
+    // from Msg FIFO
+    .fifo_valid_i (msgfifo_valid),
+    .fifo_data_i  (msgfifo_data ),
+    .fifo_strb_i  (msgfifo_strb ),
+    .fifo_ready_o (msgfifo_ready),
+
+    // to SHA3 core
+    .msg_valid_o  (msg_valid),
+    .msg_data_o   (msg_data ),
+    .msg_strb_o   (msg_strb ),
+    .msg_ready_i  (msg_ready),
+
+    // Configurations
+    .kmac_en_i  (reg2hw.cfg.kmac_en.q),
+    .mode_i     (sha3_mode_e'(reg2hw.cfg.mode.q)),
+    .strength_i (keccak_strength_e'(reg2hw.cfg.strength.q)),
+
+    // Secret key interface
+    .key_data_i (key_data),
+    .key_len_i  (key_len ),
+
+    // Controls
+    .start_i   (sha3_start          ),
+    .process_i (msgfifo2kmac_process),
+    .done_i    (sha3_done           ),
+    .process_o (kmac2sha3_process   )
+  );
+
   // SHA3 hashing engine
   sha3core #(
     .EnMasking (EnMasking),
@@ -239,10 +325,10 @@ module kmac
     .rst_ni,
 
     // MSG_FIFO interface (or from KMAC)
-    .msg_valid_i (msgfifo_valid),
-    .msg_data_i  (msgfifo_data), // always store to 0 regardless of EnMasking
-    .msg_strb_i  (msgfifo_strb),
-    .msg_ready_o (msgfifo_ready),
+    .msg_valid_i (msg_valid),
+    .msg_data_i  (msg_data ), // always store to 0 regardless of EnMasking
+    .msg_strb_i  (msg_strb ),
+    .msg_ready_o (msg_ready),
 
     // Entropy interface
     .rand_valid_i    (sha3_rand_valid),
@@ -344,8 +430,13 @@ module kmac
   `ASSERT_KNOWN(KmacDone_A, intr_kmac_done_o)
   `ASSERT_KNOWN(FifoEmpty_A, intr_fifo_empty_o)
   `ASSERT_KNOWN(KmacErr_A, intr_kmac_err_o)
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+
+  // Parameter as desired
+  `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
 
   // Command input should be onehot0
-  `ASSUME(CmdOneHot0_a, reg2hw.cmd.qe |-> $onehot0(reg2hw.cmd.q))
+  `ASSUME(CmdOneHot0_M, reg2hw.cmd.qe |-> $onehot0(reg2hw.cmd.q))
 endmodule
 
