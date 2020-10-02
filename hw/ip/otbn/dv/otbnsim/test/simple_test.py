@@ -11,6 +11,7 @@ containing a list of expected register values.
 '''
 
 import os
+import py  # type: ignore
 import re
 import subprocess
 from typing import Any, Dict, List, Tuple
@@ -125,9 +126,11 @@ def get_reg_expected(exp_path: str) -> Dict[str, int]:
     return ret
 
 
-def test_count(tmpdir: str, asm_file: str, expected_file: str) -> None:
+def test_count(tmpdir: py.path.local,
+               asm_file: str,
+               expected_file: str) -> None:
     # Start by assembling and linking the input file
-    elf_file = asm_and_link_one_file(asm_file, tmpdir)
+    elf_file = asm_and_link_one_file(asm_file, str(tmpdir))
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
