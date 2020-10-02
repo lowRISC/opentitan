@@ -469,7 +469,8 @@ module otp_ctrl
   // Hence, the idx_o signal is guaranteed to remain stable until ack'ed.
   prim_arbiter_tree #(
     .N(NumAgents),
-    .DW($bits(scrmbl_bundle_t))
+    .DW($bits(scrmbl_bundle_t)),
+    .EnReqStabA(0)
   ) u_scrmbl_mtx (
     .clk_i,
     .rst_ni,
