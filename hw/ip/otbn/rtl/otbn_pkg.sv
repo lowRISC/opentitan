@@ -120,9 +120,10 @@ package otbn_pkg;
   } op_a_sel_e;
 
   // Operand b source selection
-  typedef enum logic {
-    OpBSelRegister  = 1'b0,
-    OpBSelImmediate = 1'b1
+  typedef enum logic [1:0] {
+    OpBSelRegister  = 'd0,
+    OpBSelImmediate = 'd1,
+    OpBSelZero      = 'd2
   } op_b_sel_e;
 
   // Immediate b selection for base ISA
@@ -131,7 +132,8 @@ package otbn_pkg;
     ImmBaseBS,
     ImmBaseBB,
     ImmBaseBU,
-    ImmBaseBJ
+    ImmBaseBJ,
+    ImmBaseBX
   } imm_b_sel_base_e;
 
   // Shift amount select for bignum ISA
@@ -142,11 +144,12 @@ package otbn_pkg;
   } shamt_sel_bignum_e;
 
   // Regfile write data selection
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     RfWdSelEx,
     RfWdSelNextPc,
     RfWdSelLsu,
-    RfWdSelIspr
+    RfWdSelIspr,
+    RfWdSelIncr
   } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
@@ -236,6 +239,22 @@ package otbn_pkg;
     logic [WdrAw-1:0]        a;           // First source register
     logic [WdrAw-1:0]        b;           // Second source register
     logic [WLEN-1:0]         i;           // Immediate
+
+    logic                    rf_a_indirect; // Indirect lookup, bignum register index a comes from
+                                            // base register a read
+    logic                    rf_b_indirect; // Indirect lookup, bignum register index b comes from
+                                            // base register b read
+    logic                    rf_d_indirect; // Indirect lookup, bignum register index d comes from
+                                            // base register b read using d in this struct
+
+    logic                    d_inc;           // Increment destination register index in base
+                                              // register file
+    logic                    a_inc;           // Increment source register index a in base register
+                                              // file
+    logic                    a_wlen_word_inc; // Increment source register a in base register file
+                                              // by WLEN word size
+    logic                    b_inc;           // Increment source register index b in base register
+                                              // file
 
     // Shifting only applies to a subset of ALU operations
     logic [$clog2(WLEN)-1:0] shift_amt;   // Shift amount
