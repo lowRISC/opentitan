@@ -51,6 +51,12 @@ int main(int argc, char **argv) {
   }
 
   svSetScope(svGetScopeFromName("TOP.otbn_top_sim"));
+
+  svBit model_err = otbn_err_get();
+  if (model_err) {
+    return 1;
+  }
+
   std::cout << "Final Base Register Values:" << std::endl;
   std::cout << "Reg | Value" << std::endl;
   std::cout << "----------------" << std::endl;
