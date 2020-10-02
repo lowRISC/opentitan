@@ -116,8 +116,7 @@ package otbn_pkg;
   typedef enum logic [1:0] {
     OpASelRegister  = 'd0,
     OpASelZero = 'd1,
-    OpASelFwd = 'd2,
-    OpASelCurrPc = 'd3
+    OpASelCurrPc = 'd2
   } op_a_sel_e;
 
   // Operand b source selection
@@ -125,11 +124,6 @@ package otbn_pkg;
     OpBSelRegister  = 1'b0,
     OpBSelImmediate = 1'b1
   } op_b_sel_e;
-
-  // Immediate a selection for base ISA
-  typedef enum logic {
-    ImmBaseAZero
-  } imm_a_sel_base_e;
 
   // Immediate b selection for base ISA
   typedef enum logic [2:0] {
@@ -206,21 +200,14 @@ package otbn_pkg;
   //`ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
   // Structures for decoded instructions, grouped into three:
-  // - insn_dec_shared_t - Anything that applies to both bignum and base ISAs, all fields valid when
-  // instruction is valid.
-  // - insn_dec_base_t - Anything that only applies to base ISA, fields only valid when `subset` in
-  // `insn_dec_shared_t` indicates a base ISA instruction.
-  // - insn_dec_bignum_t - Anything that only applies to bignum ISA, fields only valid when `subset` in
-  // `insn_dec_shared_t` indicates a bignum ISA instruction.
+  // - insn_dec_shared_t - Anything that applies to both bignum and base microarchitecture
+  // - insn_dec_base_t - Anything that only applies to the base side microarchitecture
+  // - insn_dec_bignum_t - Anything that only applies to bignum side microarchitecture
   //
   // TODO: The variable names are rather short, especially "i" is confusing. Think about renaming.
   //
   typedef struct packed {
     insn_subset_e   subset;
-    op_a_sel_e      op_a_sel;
-    op_b_sel_e      op_b_sel;
-    logic           rf_we;
-    rf_wd_sel_e     rf_wdata_sel;
     logic           ecall_insn;
     logic           ld_insn;
     logic           st_insn;
@@ -237,6 +224,10 @@ package otbn_pkg;
     logic [31:0]         i;             // Immediate
     alu_op_base_e        alu_op;
     comparison_op_base_e comparison_op;
+    op_a_sel_e           op_a_sel;
+    op_b_sel_e           op_b_sel;
+    logic                rf_we;
+    rf_wd_sel_e          rf_wdata_sel;
   } insn_dec_base_t;
 
   typedef struct packed {
@@ -251,6 +242,9 @@ package otbn_pkg;
 
     flag_group_t             flag_group;
     alu_op_bignum_e          alu_op;
+    op_b_sel_e               op_b_sel;
+    logic                    rf_we;
+    rf_wd_sel_e              rf_wdata_sel;
   } insn_dec_bignum_t;
 
   typedef struct packed {

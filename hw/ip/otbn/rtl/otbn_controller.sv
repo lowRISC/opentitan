@@ -207,7 +207,7 @@ module otbn_controller
 
   // Base ALU Operand A MUX
   always_comb begin
-    unique case (insn_dec_shared_i.op_a_sel)
+    unique case (insn_dec_base_i.op_a_sel)
       OpASelRegister:
         alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
       OpASelZero:
@@ -221,7 +221,7 @@ module otbn_controller
 
   // Base ALU Operand B MUX
   always_comb begin
-    unique case (insn_dec_shared_i.op_b_sel)
+    unique case (insn_dec_base_i.op_b_sel)
       OpBSelRegister:
         alu_base_operation_o.operand_b = rf_base_rd_data_b_i;
       OpBSelImmediate:
@@ -240,15 +240,13 @@ module otbn_controller
   // Register file write MUX
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
   // only available in the stall state.
-  assign rf_base_wr_en_o =
-   insn_dec_shared_i.rf_we                                    &
-   ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall)) &
-   (insn_dec_shared_i.subset == InsnSubsetBase);
+  assign rf_base_wr_en_o = insn_dec_base_i.rf_we &
+    ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
 
   assign rf_base_wr_addr_o = insn_dec_base_i.d;
 
   always_comb begin
-    unique case (insn_dec_shared_i.rf_wdata_sel)
+    unique case (insn_dec_base_i.rf_wdata_sel)
       RfWdSelEx:
         rf_base_wr_data_o = alu_base_operation_result_i;
       RfWdSelLsu:
@@ -269,7 +267,7 @@ module otbn_controller
 
   // Base ALU Operand B MUX
   always_comb begin
-    unique case (insn_dec_shared_i.op_b_sel)
+    unique case (insn_dec_bignum_i.op_b_sel)
       OpBSelRegister:
         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
       OpBSelImmediate:
@@ -288,15 +286,12 @@ module otbn_controller
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
   // only available in the stall state.
   assign rf_bignum_wr_en_o =
-    {2{insn_dec_shared_i.rf_we                                    &
-       ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall)) &
-       (insn_dec_shared_i.subset == InsnSubsetBignum)
-    }};
+    {2{insn_dec_bignum_i.rf_we & ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall))}};
 
   assign rf_bignum_wr_addr_o = insn_dec_bignum_i.d;
 
   always_comb begin
-    unique case (insn_dec_shared_i.rf_wdata_sel)
+    unique case (insn_dec_bignum_i.rf_wdata_sel)
       RfWdSelEx:
         rf_bignum_wr_data_o = alu_bignum_operation_result_i;
       RfWdSelLsu:
