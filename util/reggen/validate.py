@@ -9,6 +9,7 @@ import logging as log
 import re
 import operator
 from collections import OrderedDict
+from copy import deepcopy
 
 from reggen.field_enums import SwWrAccess, SwRdAccess, SwAccess, HwAccess
 
@@ -509,9 +510,13 @@ multireg_required = {
 }
 multireg_optional = reg_optional
 multireg_optional.update({
-    'regwen_incr': [
-        's', "If true, regwen term increments"
+    'regwen_multi': [
+        'pb', "If true, regwen term increments"
         " along with current multireg count."
+    ],
+    'compact': [
+        'pb', "If true, allow multireg compacting."
+        "If false, do not compact."
     ],
 })
 
@@ -1108,20 +1113,19 @@ def validate_multi(mreg, offset, addrsep, width, top):
         mreg["name"] = "MREG_" + hex(offset)
     else:
         mrname = mreg['name']
+
+    # multireg defaults
+    # Should probably create this structure somewhere else as part checking,
+    # then directly create the default value
+    defaults = {'regwen_multi': False, 'compact': True}
+    for entry in defaults:
+        mreg.setdefault(entry, defaults[entry])
+
     error = check_keys(mreg, multireg_required, multireg_optional,
                        multireg_added, mrname)
     derr, default_sw, default_hw, full_resval = validate_reg_defaults(
         mreg, mrname)
     error += derr
-
-    # multireg specific default validation
-    regwen_incr = False
-    if 'regwen_incr' not in mreg or 'regwen' not in mreg:
-        mreg['regwen_incr'] = 'false'
-    else:
-        regwen_incr, derr = check_bool(mreg['regwen_incr'],
-                                       mrname + " multireg increment")
-        error += derr
 
     # if there was an error before this then can't trust anything!
     if error > 0:
@@ -1129,6 +1133,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
                  " top level errors. Not processing fields")
         return error
 
+    # should add an option to include a register directly instead of a field
     gen = validate_fields(mreg['fields'], mrname, default_sw, default_hw,
                           full_resval, mreg['hwqe'] == "true",
                           mreg['hwre'] == "true", width, top)
@@ -1151,115 +1156,105 @@ def validate_multi(mreg, offset, addrsep, width, top):
     if error > 0:
         return (error, 0)
 
-    bused = gen[3]
-    max_rval = (1 << width) - 1
+    # multireg attributes
     cname = mreg['cname']
-    bpos = 0
-    inum = 0
+    template_reg = OrderedDict ([
+        ('name', mrname + "{}"),
+        ('desc', mreg['desc']),
+        ('hwext', mreg['hwext']),
+        ('hwqe', mreg['hwqe']),
+        ('hwre', mreg['hwre']),
+        ('swaccess', mreg['swaccess']),
+        ('hwaccess', mreg['hwaccess']),
+        ('shadowed', mreg['shadowed']),
+        ('regwen_multi', mreg['regwen_multi']),
+        ('compact', mreg['compact']),
+        ('fields', []),
+    ])
+
+    template_reg['tags'] = mreg['tags'] if 'tags' in mreg else []
+    template_reg['regwen'] = mreg['regwen'] if 'regwen' in mreg else []
+
+    # msb of the field bitmask
+    # Should probably consider making the validate_field return a class so that we do not
+    # hardcode a selection like this
+    field_bitmask = gen[3]
+    field_msb = 0
+    for pos in range(width - 1, 0, -1):
+        if (field_bitmask & (1 << pos)):
+            field_msb = pos
+            break
+
+    # number of bits needed
+    bits_used = field_msb + 1
+
+    # Number of fields
+    num_fields = len(mreg['fields'])
+
+    # Maximum number of fields per reg
+    max_fields_per_reg = 1 if num_fields > 1 else min(mcount, int(width / bits_used))
+
+    # list of created registers
     rlist = []
+
+    # rnum represents which register we are currently working on.
+    # idx represents which index in the mcount we are working on.
+    # These two are not the same due to the compacting feature.
+    # Compacting happens under the following conditions:
+    # - There is only 1 field type for a multi-reg and compact is not set to
+    #   false.
     rnum = 0
-    while inum < mcount:
-        closereg = False
-        if bpos == 0:
-            genreg = {}
-            if shadowed is True:
-                genreg['name'] = mrname[:idx] + "_" + str(rnum) + mrname[idx:]
-            else:
-                genreg['name'] = mrname + "_" + str(rnum)
-            genreg['desc'] = mreg['desc']
-            genreg['hwext'] = mreg['hwext']
-            genreg['hwqe'] = mreg['hwqe']
-            genreg['hwre'] = mreg['hwre']
-            genreg['swaccess'] = default_sw
-            genreg['hwaccess'] = default_hw
-            if 'tags' in mreg:
-                genreg['tags'] = mreg['tags']
-            else:
-                genreg['tags'] = []
+    idx = 0
 
-            if regwen_incr:
-                genreg['regwen'] = mreg['regwen'] + str(rnum)
-            else:
-                genreg['regwen'] = mreg['regwen']
-            genreg['shadowed'] = mreg['shadowed']
+    # will fields be compacted?
+    is_compact = num_fields == 1 and template_reg['compact']
 
-            resval = 0
-            resmask = 0
-            bits_used = 0
-            genfields = []
+    # will there be multiple registers?
+    is_mult = (mcount > max_fields_per_reg) or (not is_compact and mcount > 1)
 
-        while bpos < width:
-            # bused is a bit mask of how many bits the fields need
-            # bpos is the current LSB of the bits allocated for the fields
-            trypos = bused << bpos
+    log.info("Multireg attributes 0x{:x} {} {} {}".format(field_bitmask, bits_used,
+                                                          num_fields, max_fields_per_reg))
+    while idx < mcount:
 
-            # if register can no longer contain another homogenous field
-            # if the field is not homogenous and has been allocated
-            # Currently we only compact if field is homogenous
-            if (trypos > max_rval) or (bpos != 0 and len(mreg['fields']) > 1):
-                bpos = width
-                break
-            # if bits have not been used, break and allocate
-            if (trypos & bits_used) == 0:
-                break
-            bpos += 1
+        genreg = deepcopy(template_reg)
 
-        if bpos < width:
-            # found a spot
-            for fn in mreg['fields']:
-                newf = fn.copy()
-                newf['name'] += "_" + str(inum)
-                if bpos != 0:
-                    newf['bits'] = bitfield_add(newf['bits'], bpos)
-                    newf['desc'] = 'for ' + cname + str(inum)
-                    newf['bitinfo'] = (newf['bitinfo'][0] << bpos,
-                                       newf['bitinfo'][1],
-                                       newf['bitinfo'][2] + bpos)
-                    if 'tags' not in fn:
-                        newf['tags'] = []
-                    if 'enum' in newf:
-                        del newf['enum']
-                else:
-                    newf['desc'] += ' for ' + cname + str(inum)
-                genfields.append(newf)
-            bits_used = bits_used | bused << bpos
-            resval = resval | gen[1] << bpos
-            resmask = resmask | gen[2] << bpos
-            bpos += 1
-            inum += 1
-            if inum == mcount:
-                closereg = True
+        # name the register
+        # if everything fits into 1 reg, do not add numbered suffix.
+        # if shadowed, add shadowed suffix.
+        name = "_" + str(rnum) if is_mult else ""
+        name += "_shadowed" if shadowed else ""
+        genreg['name'] = genreg['name'].format(name)
+
+        if (is_compact):
+            # Compact the minimum of remaining fields, or the max number of fields
+            # we are able to compact into a register.
+            for fnum in range(0, min(mcount - idx, max_fields_per_reg)):
+                new_field = deepcopy(mreg['fields'][0])
+                new_field['name'] += "_" + str(idx)
+                new_field['bits'] = bitfield_add(new_field['bits'], fnum * bits_used)
+                new_field['desc'] = "For {}{}".format(cname, idx)
+                genreg['fields'].append(new_field)
+                idx += 1
         else:
-            # need new register
-            closereg = True
+            genreg['fields'] = deepcopy(mreg['fields'])
+            # This is here to ensure no deltas with previous code.
+            # This is not needed if on separate registers we do not enforce suffix
+            for f in genreg['fields']:
+                f['name'] += "_" + str(idx)
+            idx += 1
 
-        if closereg:
-            genreg['fields'] = genfields
-            genreg['genbasebits'] = bused
-            genreg['genresval'] = resval
-            genreg['genresmask'] = resmask
-            error += validate_register(genreg, offset + (rnum * addrsep),
-                                       width, top)
-            if error:
-                return (error, 0)
-            rnum += 1
-            bpos = 0
-            rlist.append(genreg)
-    # there is only one entry, so the index is unnecessary.  Pop and re-assign names
-    # associated with the index
-    if len(rlist) == 1:
-        if regwen_incr:
-            error += 1
-            log.error(
-                "%s multireg has only 1 register entry with regwen_incr set to true"
-                % mrname)
-        # TODO really should make the following a function that reverses the last node inserted
-        # may have more properties than just genrnames in the future
-        rlist[0]['name'] = mrname
-        rlist[0]['regwen'] = mreg['regwen']
-        top['genrnames'].pop()
+        # if regwen_multi is used, each register uses a different regen
+        if (genreg['regwen'] and genreg['regwen_multi']):
+            genreg['regwen'] += "_{}".format(rnum)
+
+        # validate register
+        validate_register(genreg, offset + (rnum * addrsep), width, top)
+        rnum += 1
+
+        # append to register list
+        rlist.append(genreg)
+
     mreg['genregs'] = rlist
-    top['genrnames'].append(mrname.lower())
     return error, rnum
 
 
@@ -1457,8 +1452,7 @@ def validate_window(win, offset, regwidth, top):
 
 """ Check that terms specified for regwen exist
 
-Regwen can be individual registers or fields within a register.  The function
-below checks for both and additional regwen properties.
+Regwen are all assumed to be individual registers.
 """
 
 
@@ -1478,17 +1472,33 @@ def check_wen_regs(regs):
 
     reg_list = [(reg['name'].lower(), reg['genresval'], reg['swaccess'],
                  reg['hwaccess']) for reg in regs['registers']
-                if 'name' in reg and 'genresval' in reg]
+                if 'name' in reg and 'genresval' in reg and 'swaccess' in reg]
+
     mreg_list = [
         reg['multireg'] for reg in regs['registers'] if 'multireg' in reg
     ]
-    field_list = [((reg['name'] + "_" + field['name']).lower(),
-                   field['genresval'], field['swaccess'], field['hwaccess'])
-                  for mreg in mreg_list for reg in mreg['genregs']
-                  for field in reg['fields']]
+
+    # all generated registers
+    mreg_reg_list = [reg for mreg in mreg_list for reg in mreg['genregs']]
+
+    # genreg attr
+    genreg_list = []
+    for reg in mreg_reg_list:
+        # There is only one field
+        if len(reg['fields']) == 1:
+            genreg_list.append((reg['name'].lower(),
+                                reg['fields'][0]['genresval'],
+                                reg['fields'][0]['swaccess'],
+                                reg['fields'][0]['hwaccess']))
+        else:
+            for f in reg['fields']:
+                genreg_list.append(((reg['name'] + "_" + f['name']).lower(),
+                                    f['genresval'],
+                                    f['swaccess'],
+                                    f['hwaccess']))
 
     # Need to check in register names and field list in case of multireg
-    reg_list.extend(field_list)
+    reg_list.extend(genreg_list)
 
     # check for reset value
     # both w1c and w0c are acceptable, ro is also acceptable when hwaccess is wo (hw managed regwen)
