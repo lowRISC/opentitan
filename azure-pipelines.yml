@@ -393,6 +393,9 @@ jobs:
       verilator --version
     displayName: Display environment
   - bash: |
+      make -C hw/ip/otbn/dv/otbnsim test
+    displayName: OTBN ISS Test
+  - bash: |
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
   - bash: |
