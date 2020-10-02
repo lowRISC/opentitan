@@ -292,11 +292,6 @@ One of the key requirements of nightly regressions is to complete overnight, so 
 If test runtimes are longer, we could define a weekly regression based on need.
 In general, it is a good practice to periodically profile the simulation to identify bottlenecks in terms of simulation performance (which often is a result of specific coding style choices).
 
-Currently, the [Makefile based simulation workflow]({{< relref "hw/dv/tools/README.md" >}}) serves our simulation build and run needs.
-It does not provide the capability to run regressions yet (under development).
-For the time being, users are limited to running each test individually (or develop a lightweight bash script to run all tests with several seeds using the existing Make based flow).
-Once the regression tool is developed, it will provide a way to enable these capabilities.
-
 ## Coverage Collection
 
 Collecting, analyzing, and reporting coverage with waivers is a requirement to assert 'verification complete'.
