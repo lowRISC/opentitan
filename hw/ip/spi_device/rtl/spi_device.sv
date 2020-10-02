@@ -46,8 +46,8 @@ module spi_device #(
   localparam int PtrW = SramAw + 1 + SDW;
   localparam int AsFifoDepthW = $clog2(FifoDepth+1);
 
-  logic clk_spi_in;   // clock for latch SDI
-  logic clk_spi_out;  // clock for driving SDO
+  logic clk_spi_in, clk_spi_in_buf;   // clock for latch SDI
+  logic clk_spi_out, clk_spi_out_buf; // clock for driving SDO
 
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
@@ -189,11 +189,11 @@ module spi_device #(
   );
 
   logic rxf_full_q, txf_empty_q;
-  always_ff @(posedge clk_spi_in or negedge rst_ni) begin
+  always_ff @(posedge clk_spi_in_buf or negedge rst_ni) begin
     if (!rst_ni) rxf_full_q <= 1'b0;
     else         rxf_full_q <= ~rxf_wready;
   end
-  always_ff @(posedge clk_spi_out or negedge rst_ni) begin
+  always_ff @(posedge clk_spi_out_buf or negedge rst_ni) begin
     if (!rst_ni) txf_empty_q <= 1'b1;
     else         txf_empty_q <= ~txf_rvalid;
   end
@@ -259,7 +259,7 @@ module spi_device #(
   //    Could trigger lint error for input clock.
   //    It's unavoidable due to the characteristics of SPI intf
   prim_pulse_sync u_rxf_overflow (
-    .clk_src_i   (clk_spi_in         ),
+    .clk_src_i   (clk_spi_in_buf     ),
     .rst_src_ni  (rst_ni             ),
     .src_pulse_i (rxf_overflow       ),
     .clk_dst_i   (clk_i              ),
@@ -271,7 +271,7 @@ module spi_device #(
   //    Could trigger lint error for input clock.
   //    It's unavoidable due to the characteristics of SPI intf
   prim_pulse_sync u_txf_underflow (
-    .clk_src_i   (clk_spi_out         ),
+    .clk_src_i   (clk_spi_out_buf     ),
     .rst_src_ni  (rst_ni              ),
     .src_pulse_i (txf_underflow       ),
     .clk_dst_i   (clk_i               ),
@@ -318,6 +318,15 @@ module spi_device #(
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
+  prim_clock_buf u_clk_spi_in_buf(
+    .clk_i (clk_spi_in),
+    .clk_o (clk_spi_in_buf)
+  );
+  prim_clock_buf u_clk_spi_out_buf(
+    .clk_i (clk_spi_out),
+    .clk_o (clk_spi_out_buf)
+  );
+
   assign rst_spi_n = (scanmode_i) ? rst_ni : rst_ni & ~cio_csb_i;
 
   assign rst_txfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_txfifo_reg;
@@ -328,10 +337,10 @@ module spi_device #(
   // FW Mode //
   /////////////
   spi_fwmode u_fwmode (
-    .clk_in_i     (clk_spi_in),
+    .clk_in_i     (clk_spi_in_buf),
     .rst_in_ni    (rst_spi_n),
 
-    .clk_out_i    (clk_spi_out),
+    .clk_out_i    (clk_spi_out_buf),
     .rst_out_ni   (rst_spi_n),
 
     .cpha_i        (cpha),
@@ -363,7 +372,7 @@ module spi_device #(
     .Width (FifoWidth),
     .Depth (FifoDepth)
   ) u_rx_fifo (
-    .clk_wr_i     (clk_spi_in),
+    .clk_wr_i     (clk_spi_in_buf),
     .rst_wr_ni    (rst_rxfifo_n),
 
     .clk_rd_i     (clk_i),
@@ -388,7 +397,7 @@ module spi_device #(
     .clk_wr_i     (clk_i),
     .rst_wr_ni    (rst_txfifo_n),
 
-    .clk_rd_i     (clk_spi_out),
+    .clk_rd_i     (clk_spi_out_buf),
     .rst_rd_ni    (rst_txfifo_n),
 
     .wvalid_i     (txf_wvalid),
