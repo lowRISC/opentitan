@@ -178,7 +178,7 @@ bn.sub  w16, w1, w2, FG1
 # w15 = w10 + w11 + 1 (carry) = 0x66666666_66666666_66666666_66666666_66666666_66666666_66666666_66666665
 bn.addc w15, w10, w11, FG0
 
-# x17 - w3 - w4 - 1 (borrow) = 0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333331
+# x17 = w3 - w4 - 1 (borrow) = 0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333331
 bn.subb w17, w3, w4, FG1
 
 # x23 = {fg1, fg0} = 0x62
@@ -201,6 +201,25 @@ bn.addi w22, w21, 0x1bd
 
 # w23 = w21 - 0x207 = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff99d4
 bn.subi w23, w21, 0x207
+
+# *x26 == w24 = dmem[x25 == 0x0] = 0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_d0beb533_1234abcd
+# x25 = x25 + 0x20 = 0x20
+li x25, 0
+li x26, 24
+bn.lid x26, 0(x25++)
+
+# dmem[x25 == 0x20] = *x26 == w20 = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be57d4_fecd21a1_b9dd0141
+# x26 = x26 + 1 = 21 (0x15)
+li x26, 20
+bn.sid x26++, 0(x25)
+
+# w25 = w24 = 0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_d0beb533_1234abcd
+bn.mov w25, w24
+
+# *x27 == w26 = *x26 == w21 = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
+# x26 = x26 + 1 = 22 (0x16)
+li x27, 26
+bn.movr x27, x26++
 
 jal x0, end
 
@@ -225,3 +244,6 @@ test_fn:
 .word 0xcafed00d
 .word 0xdeadbeef
 .word 0xfacefeed
+.word 0xaaaaaaaa
+.word 0xbbbbbbbb
+.word 0xcccccccc

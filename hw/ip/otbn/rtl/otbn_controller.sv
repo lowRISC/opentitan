@@ -124,6 +124,16 @@ module otbn_controller
 
   logic                                ispr_wr_insn;
 
+  // Computed increments for indirect register index and memory address in BN.LID/BN.SID/BN.MOVR
+  // instructions.
+  logic [4:0]               rf_base_rd_data_a_inc;
+  logic [4:0]               rf_base_rd_data_b_inc;
+  logic [DmemAddrWidth-1:0] rf_base_rd_data_a_wlen_word_inc;
+
+  // Output of mux taking the above increments as inputs and choosing one to write back to base
+  // register file with appropriate zero extension and padding to give a 32-bit result.
+  logic [31:0]              increment_out;
+
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
   // TODO: Possibility of error response on store? Probably still don't need to stall in that case
@@ -202,8 +212,54 @@ module otbn_controller
     end
   end
 
-  assign rf_base_rd_addr_a_o = insn_dec_base_i.a;
-  assign rf_base_rd_addr_b_o = insn_dec_base_i.b;
+  // Compute increments which can be optionally applied to indirect register accesses and memory
+  // addresses in BN.LID/BN.SID/BN.MOVR instructions.
+  assign rf_base_rd_data_a_inc           = rf_base_rd_data_a_i[4:0] + 1'b1;
+  assign rf_base_rd_data_b_inc           = rf_base_rd_data_b_i[4:0] + 1'b1;
+  assign rf_base_rd_data_a_wlen_word_inc = {rf_base_rd_data_a_i[DmemAddrWidth-1:5] + 1'b1, 5'b0};
+
+  // Choose increment to write back to base register file, only one increment can be written as
+  // there is only one write port. Note that where an instruction is incrementing the indirect
+  // reference to its destination register (insn_dec_bignum_i.d_inc) that reference is read on the
+  // B read port so the B increment is written back.
+  always_comb begin
+    unique case (1'b1)
+      insn_dec_bignum_i.a_inc: begin
+        increment_out = {27'b0, rf_base_rd_data_a_inc};
+      end
+      insn_dec_bignum_i.b_inc: begin
+        increment_out = {27'b0, rf_base_rd_data_b_inc};
+      end
+      insn_dec_bignum_i.d_inc: begin
+        increment_out = {27'b0, rf_base_rd_data_b_inc};
+      end
+      insn_dec_bignum_i.a_wlen_word_inc: begin
+        increment_out = {{32-DmemAddrWidth{1'b0}}, rf_base_rd_data_a_wlen_word_inc};
+      end
+      default: ;
+    endcase
+  end
+
+  always_comb begin
+    rf_base_rd_addr_a_o = insn_dec_base_i.a;
+    rf_base_rd_addr_b_o = insn_dec_base_i.b;
+    rf_base_wr_addr_o   = insn_dec_base_i.d;
+
+    if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
+      unique case (1'b1)
+        insn_dec_bignum_i.a_inc,
+        insn_dec_bignum_i.a_wlen_word_inc: begin
+          rf_base_wr_addr_o = insn_dec_base_i.a;
+        end
+
+        insn_dec_bignum_i.b_inc,
+        insn_dec_bignum_i.d_inc: begin
+          rf_base_wr_addr_o = insn_dec_base_i.b;
+        end
+        default: ;
+      endcase
+    end
+  end
 
   // Base ALU Operand A MUX
   always_comb begin
@@ -243,8 +299,6 @@ module otbn_controller
   assign rf_base_wr_en_o = insn_dec_base_i.rf_we &
     ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
 
-  assign rf_base_wr_addr_o = insn_dec_base_i.d;
-
   always_comb begin
     unique case (insn_dec_base_i.rf_wdata_sel)
       RfWdSelEx:
@@ -255,13 +309,18 @@ module otbn_controller
         rf_base_wr_data_o = {{(32-ImemAddrWidth){1'b0}}, next_insn_addr};
       RfWdSelIspr:
         rf_base_wr_data_o = csr_rdata;
+      RfWdSelIncr:
+        rf_base_wr_data_o = increment_out;
       default:
         rf_base_wr_data_o = alu_base_operation_result_i;
     endcase
   end
 
-  assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.a;
-  assign rf_bignum_rd_addr_b_o = insn_dec_bignum_i.b;
+  assign rf_bignum_rd_addr_a_o = insn_dec_bignum_i.rf_a_indirect ? rf_base_rd_data_a_i[4:0] :
+                                                                   insn_dec_bignum_i.a;
+
+  assign rf_bignum_rd_addr_b_o = insn_dec_bignum_i.rf_b_indirect ? rf_base_rd_data_b_i[4:0] :
+                                                                   insn_dec_bignum_i.b;
 
   assign alu_bignum_operation_o.operand_a = rf_bignum_rd_data_a_i;
 
@@ -272,6 +331,8 @@ module otbn_controller
         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
       OpBSelImmediate:
         alu_bignum_operation_o.operand_b = insn_dec_bignum_i.i;
+      OpBSelZero:
+        alu_bignum_operation_o.operand_b = '0;
       default:
         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
     endcase
@@ -288,7 +349,8 @@ module otbn_controller
   assign rf_bignum_wr_en_o =
     {2{insn_dec_bignum_i.rf_we & ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall))}};
 
-  assign rf_bignum_wr_addr_o = insn_dec_bignum_i.d;
+  assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? rf_base_rd_data_b_i[4:0] :
+                                                                 insn_dec_bignum_i.d;
 
   always_comb begin
     unique case (insn_dec_bignum_i.rf_wdata_sel)
@@ -372,10 +434,8 @@ module otbn_controller
   assign lsu_load_req_o   = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
   assign lsu_store_req_o  = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
   assign lsu_req_subset_o = insn_dec_shared_i.subset;
-  // TODO: Switch between address from base/bignum
-  assign lsu_addr_o       = alu_base_operation_result_i[DmemAddrWidth-1:0];
-  assign lsu_base_wdata_o = rf_base_rd_data_b_i;
 
-  // TODO: Bignum load/store
-  assign lsu_bignum_wdata_o = '0;
+  assign lsu_addr_o         = alu_base_operation_result_i[DmemAddrWidth-1:0];
+  assign lsu_base_wdata_o   = rf_base_rd_data_b_i;
+  assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_i;
 endmodule
