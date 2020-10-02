@@ -162,18 +162,6 @@ module otbn_top_sim (
     end
   end
 
-  export "DPI-C" function otbn_base_reg_get;
-
-  function automatic int unsigned otbn_base_reg_get(int index);
-    return u_otbn_core.gen_rf_base_ff.u_otbn_rf_base.rf_reg[index];
-  endfunction
-
-  export "DPI-C" function otbn_bignum_reg_get;
-
-  function automatic int unsigned otbn_bignum_reg_get(int index, int word);
-    return u_otbn_core.gen_rf_bignum_ff.u_otbn_rf_bignum.rf[index][word*32+:32];
-  endfunction
-
   // The model
   //
   // This runs in parallel with the real core above. Eventually, we'll have strong consistency
@@ -184,6 +172,7 @@ module otbn_top_sim (
   localparam string DesignScope = "..u_otbn_core";
 
   logic otbn_model_done;
+  bit   otbn_model_err;
 
   otbn_core_model #(
     .DmemSizeByte    ( DmemSizeByte ),
@@ -200,17 +189,43 @@ module otbn_top_sim (
 
     .start_addr_i ( ImemStartAddr ),
 
-    .err_o ()
+    .err_o        ( otbn_model_err )
   );
+
+  bit done_mismatch_latched;
+  bit model_err_latched;
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
-      // Check is disabled in reset
+      done_mismatch_latched <= 1'b0;
+      model_err_latched     <= 1'b0;
     end else begin
       if (otbn_done != otbn_model_done) begin
         $display("ERROR: At time %0t, otbn_done != otbn_model_done (%0d != %0d).",
                  $time, otbn_done, otbn_model_done);
+        done_mismatch_latched <= 1'b1;
       end
+      model_err_latched <= model_err_latched | otbn_model_err;
     end
   end
+
+
+  export "DPI-C" function otbn_base_reg_get;
+
+  function automatic int unsigned otbn_base_reg_get(int index);
+    return u_otbn_core.gen_rf_base_ff.u_otbn_rf_base.rf_reg[index];
+  endfunction
+
+  export "DPI-C" function otbn_bignum_reg_get;
+
+  function automatic int unsigned otbn_bignum_reg_get(int index, int word);
+    return u_otbn_core.gen_rf_bignum_ff.u_otbn_rf_bignum.rf[index][word*32+:32];
+  endfunction
+
+  export "DPI-C" function otbn_err_get;
+
+  function automatic bit otbn_err_get();
+    return model_err_latched | done_mismatch_latched;
+  endfunction
+
 endmodule
