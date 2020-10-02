@@ -11,19 +11,19 @@
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
                      // tool-specific configuration
-                     "{proj_root}/hw/lint/data/{tool}.hjson"]
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
   // Different dashboard output path for each tool
   rel_path: "hw/top_earlgrey/lint/{tool}"
 
   use_cfgs: [{    name: aes
                   fusesoc_core: lowrisc:ip:aes
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/aes/lint/{tool}"
              },
              {    name: alert_handler
                   fusesoc_core: lowrisc:ip:alert_handler
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/alert_handler/lint/{tool}"
                   overrides: [
                     {
@@ -34,12 +34,12 @@
              },
              {    name: entropy_src
                   fusesoc_core: lowrisc:ip:entropy_src
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/entropy_src/lint/{tool}"
              },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/flash_ctrl/lint/{tool}"
                   overrides: [
                     {
@@ -50,42 +50,42 @@
              },
              {    name: gpio
                   fusesoc_core: lowrisc:ip:gpio
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/gpio/lint/{tool}"
              },
              {    name: hmac
                   fusesoc_core: lowrisc:ip:hmac
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/hmac/lint/{tool}"
              },
              {    name: kmac
                   fusesoc_core: lowrisc:ip:kmac
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/kmac/lint/{tool}"
              },
              {    name: i2c
                   fusesoc_core: lowrisc:ip:i2c
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/i2c/lint/{tool}"
              },
              {    name: keymgr
                   fusesoc_core: lowrisc:ip:keymgr
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/keymgr/lint/{tool}"
              },
              {    name: nmi_gen
                   fusesoc_core: lowrisc:ip:nmi_gen
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/nmi_gen/lint/{tool}"
              },
              {    name: otbn
                   fusesoc_core: lowrisc:ip:otbn
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otbn/lint/{tool}"
              },
              {    name: otp_ctrl
                   fusesoc_core: lowrisc:ip:otp_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otp_ctrl/lint/{tool}"
                   overrides: [
                     {
@@ -96,17 +96,17 @@
              },
              {    name: padctrl
                   fusesoc_core: lowrisc:ip:padctrl
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/padctrl/lint/{tool}"
              },
              {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/pinmux/lint/{tool}"
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"],
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/pwrmgr/lint/{tool}",
                   overrides: [
                     {
@@ -117,7 +117,7 @@
              },
              {    name: rstmgr
                   fusesoc_core: lowrisc:systems:rstmgr
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"],
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_earlgrey/ip/rstmgr/lint/{tool}",
                   overrides: [
                     {
@@ -128,32 +128,32 @@
              },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:ip:rv_core_ibex
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_core_ibex/lint/{tool}"
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_dm/lint/{tool}"
              },
              {    name: rv_plic_example
                   fusesoc_core: lowrisc:ip:rv_plic_example
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_plic_example/lint/{tool}"
              },
              {    name: rv_timer
                   fusesoc_core: lowrisc:ip:rv_timer
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_timer/lint/{tool}"
              },
              {    name: spi_device
                   fusesoc_core: lowrisc:ip:spi_device
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/spi_device/lint/{tool}"
              },
              {    name: sram_ctrl
                   fusesoc_core: lowrisc:ip:sram_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/sram_ctrl/lint/{tool}"
                   overrides: [
                     {
@@ -164,52 +164,52 @@
              },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/uart/lint/{tool}"
              },
              {    name: usbdev
                   fusesoc_core: lowrisc:ip:usbdev
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/usbdev/lint/{tool}"
              },
              {    name: usb_fs_nb_pe
                   fusesoc_core: lowrisc:ip:usb_fs_nb_pe
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/usb_fs_nb_pe/lint/{tool}"
              },
              {    name: usbuart
                   fusesoc_core: lowrisc:ip:usbuart
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/usbuart/lint/{tool}"
              },
              {    name: socket_1n
                   fusesoc_core: lowrisc:tlul:socket_1n
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/socket_1n/lint/{tool}"
              },
              {    name: socket_m1
                   fusesoc_core: lowrisc:tlul:socket_m1
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/socket_m1/lint/{tool}"
              },
              {    name: adapter_reg
                   fusesoc_core: lowrisc:tlul:adapter_reg
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/adapter_reg/lint/{tool}"
              },
              {    name: adapter_sram
                   fusesoc_core: lowrisc:tlul:adapter_sram
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
              },
              {    name: sram2tlul
                   fusesoc_core: lowrisc:tlul:sram2tlul
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/sram2tlul/lint/{tool}"
              },
              {    name: top_earlgrey
                   fusesoc_core: lowrisc:systems:top_earlgrey
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/lint/{tool}"
                   overrides: [
                     {
@@ -220,7 +220,7 @@
              },
              {    name: top_earlgrey_asic
                   fusesoc_core: lowrisc:systems:top_earlgrey_asic
-                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey_asic/lint/{tool}"
                   overrides: [
                     {
@@ -232,12 +232,12 @@
              // these two currently cause compilation issues in AscentLint
              //{    name: top_earlgrey_nexysvideo
              //     fusesoc_core: lowrisc:systems:top_earlgrey_nexysvideo
-             //     import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
              //     rel_path: "hw/top_earlgrey_nexysvideo/lint/{tool}"
              //},
              //{    name: top_earlgrey_verilator
              //     fusesoc_core: lowrisc:systems:top_earlgrey_verilator
-             //     import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
              //     rel_path: "hw/top_earlgrey_verilator/lint/{tool}"
              //},
             ]

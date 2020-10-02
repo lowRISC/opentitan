@@ -29,13 +29,13 @@
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
-                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 // TODO: temp commented out to avoid regression errors, will support soon
-                // "{proj_root}/hw/dv/data/tests/shadow_reg_errors_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
+                // "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"
                 ]
@@ -51,14 +51,14 @@
 
     // Used by all chip level functional test. Collects coverage on the IO
     // boundary of all pre-verified IPs and full coverage on non-pre-verified
-    // IPs. See `hw/dv/data/common_sim_cfg.hjson` for the default value.
+    // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {tool_srcs_dir}/chip_cover.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
-    // `hw/dv/data//common_sim_cfg.hjson` for the default value.
+    // `hw/dv/tools/dvsim//common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
       value: "-cm_hier {tool_srcs_dir}/chip_cover_reg_top.cfg"

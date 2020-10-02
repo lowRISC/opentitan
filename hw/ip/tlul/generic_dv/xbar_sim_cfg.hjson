@@ -28,7 +28,7 @@
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"]
 
   // Add additional tops for simulation.

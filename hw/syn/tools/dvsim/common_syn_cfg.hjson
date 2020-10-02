@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             syn
-  flow_makefile:    "{proj_root}/hw/syn/data/syn.mk"
+  flow_makefile:    "{proj_root}/hw/syn/tools/dvsim/syn.mk"
 
   import_cfgs:      [// common server configuration for results upload
                      // TODO: check whether this config file can be aligned such that it can
                      // be reused among different flow types
-                     // "{proj_root}/hw/dv/data/fusesoc.hjson",
+                     // "{proj_root}/hw/dv/tools/dvsim/fusesoc.hjson",
                      "{proj_root}/hw/data/common_project_cfg.hjson",
-                     "{proj_root}/hw/syn/data/{tool}.hjson"]
+                     "{proj_root}/hw/syn/tools/dvsim/{tool}.hjson"]
 
   // Default directory structure for the output
   dut:              "{name}"
