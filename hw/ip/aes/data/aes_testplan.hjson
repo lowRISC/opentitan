@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "aes"
-  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/testplans/shadow_reg_errors_testplan.hjson",
-                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
    // {
    //   name: default_setting

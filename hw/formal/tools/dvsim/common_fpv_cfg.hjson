@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             fpv
-  flow_makefile:    "{proj_root}/hw/formal/data/fpv.mk"
+  flow_makefile:    "{proj_root}/hw/formal/tools/dvsim/fpv.mk"
 
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson",

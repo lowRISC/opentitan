@@ -18,7 +18,7 @@
   fusesoc_core: lowrisc:dv:prim_lfsr_sim:0.1
 
   // Import additional common sim cfg files.
-  import_cfgs: ["{proj_root}/hw/dv/data/common_sim_cfg.hjson"]
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
