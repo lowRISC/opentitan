@@ -28,7 +28,8 @@ module otbn_decoder
 );
 
   logic        illegal_insn;
-  logic        rf_we;
+  logic        rf_we_base;
+  logic        rf_we_bignum;
 
   logic [31:0] insn;
   logic [31:0] insn_alu;
@@ -51,7 +52,6 @@ module otbn_decoder
   //////////////////////////////////////
   // Register and immediate selection //
   //////////////////////////////////////
-  imm_a_sel_base_e   imm_a_mux_sel_base; // immediate selection for operand a in base ISA
   imm_b_sel_base_e   imm_b_mux_sel_base; // immediate selection for operand b in base ISA
   shamt_sel_bignum_e shift_amt_mux_sel_bignum; // shift amount selection in bignum ISA
 
@@ -63,8 +63,11 @@ module otbn_decoder
 
   alu_op_base_e   alu_operator_base;   // ALU operation selection for base ISA
   alu_op_bignum_e alu_operator_bignum; // ALU operation selection for bignum ISA
-  op_a_sel_e      alu_op_a_mux_sel;    // operand a selection: reg value, PC, immediate or zero
-  op_b_sel_e      alu_op_b_mux_sel;    // operand b selection: reg value or immediate
+
+  op_a_sel_e alu_op_a_mux_sel_base; // operand a selection for base ISA: reg value, PC or zero
+  op_b_sel_e alu_op_b_mux_sel_base; // operand b selection for base ISA: reg value or immediate
+
+  op_b_sel_e alu_op_b_mux_sel_bignum; // operand b selection for bignum ISA: reg value or immediate
 
   comparison_op_base_e comparison_operator_base;
 
@@ -106,7 +109,8 @@ module otbn_decoder
   assign insn_rd = insn[11:7];
 
   insn_subset_e insn_subset;
-  rf_wd_sel_e rf_wdata_sel;
+  rf_wd_sel_e rf_wdata_sel_base;
+  rf_wd_sel_e rf_wdata_sel_bignum;
 
   logic ecall_insn;
   logic ld_insn;
@@ -147,26 +151,29 @@ module otbn_decoder
     d:             insn_rd,
     i:             imm_b_base,
     alu_op:        alu_operator_base,
-    comparison_op: comparison_operator_base
+    comparison_op: comparison_operator_base,
+    op_a_sel:      alu_op_a_mux_sel_base,
+    op_b_sel:      alu_op_b_mux_sel_base,
+    rf_we:         rf_we_base,
+    rf_wdata_sel:  rf_wdata_sel_base
   };
 
   assign insn_dec_bignum_o = '{
-    a:           insn_rs1,
-    b:           insn_rs2,
-    d:           insn_rd,
-    i:           imm_i_type_bignum,
-    shift_amt:   shift_amt_bignum,
-    shift_right: shift_right_bignum,
-    flag_group:  flag_group_bignum,
-    alu_op:      alu_operator_bignum
+    a:            insn_rs1,
+    b:            insn_rs2,
+    d:            insn_rd,
+    i:            imm_i_type_bignum,
+    shift_amt:    shift_amt_bignum,
+    shift_right:  shift_right_bignum,
+    flag_group:   flag_group_bignum,
+    alu_op:       alu_operator_bignum,
+    op_b_sel:     alu_op_b_mux_sel_bignum,
+    rf_we:        rf_we_bignum,
+    rf_wdata_sel: rf_wdata_sel_bignum
   };
 
   assign insn_dec_shared_o = '{
     subset:        insn_subset,
-    op_a_sel:      alu_op_a_mux_sel,
-    op_b_sel:      alu_op_b_mux_sel,
-    rf_we:         rf_we,
-    rf_wdata_sel:  rf_wdata_sel,
     ecall_insn:    ecall_insn,
     ld_insn:       ld_insn,
     st_insn:       st_insn,
@@ -181,8 +188,12 @@ module otbn_decoder
   /////////////
 
   always_comb begin
-    rf_wdata_sel          = RfWdSelEx;
-    rf_we                 = 1'b0;
+    rf_wdata_sel_base     = RfWdSelEx;
+    rf_we_base            = 1'b0;
+
+    rf_wdata_sel_bignum   = RfWdSelEx;
+    rf_we_bignum          = 1'b0;
+
     rf_ren_a              = 1'b0;
     rf_ren_b              = 1'b0;
 
@@ -204,13 +215,13 @@ module otbn_decoder
 
       InsnOpcodeBaseLui: begin  // Load Upper Immediate
         insn_subset      = InsnSubsetBase;
-        rf_we            = 1'b1;
+        rf_we_base       = 1'b1;
       end
 
       InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
         insn_subset      = InsnSubsetBase;
         rf_ren_a         = 1'b1;
-        rf_we            = 1'b1;
+        rf_we_base       = 1'b1;
 
         unique case (insn[14:12])
           3'b000,
@@ -246,7 +257,7 @@ module otbn_decoder
         insn_subset     = InsnSubsetBase;
         rf_ren_a        = 1'b1;
         rf_ren_b        = 1'b1;
-        rf_we           = 1'b1;
+        rf_we_base      = 1'b1;
         if ({insn[26], insn[13:12]} != {1'b1, 2'b01}) begin
           unique case ({insn[31:25], insn[14:12]})
             // RV32I ALU operations
@@ -272,11 +283,11 @@ module otbn_decoder
       ///////////////////////
 
       InsnOpcodeBaseLoad: begin
-        insn_subset  = InsnSubsetBase;
-        ld_insn      = 1'b1;
-        rf_ren_a     = 1'b1;
-        rf_we        = 1'b1;
-        rf_wdata_sel = RfWdSelLsu;
+        insn_subset       = InsnSubsetBase;
+        ld_insn           = 1'b1;
+        rf_ren_a          = 1'b1;
+        rf_we_base        = 1'b1;
+        rf_wdata_sel_base = RfWdSelLsu;
 
         if (insn[14:12] != 3'b010) begin
           illegal_insn = 1'b1;
@@ -311,18 +322,18 @@ module otbn_decoder
       end
 
       InsnOpcodeBaseJal: begin
-        insn_subset  = InsnSubsetBase;
-        jump_insn    = 1'b1;
-        rf_we        = 1'b1;
-        rf_wdata_sel = RfWdSelNextPc;
+        insn_subset       = InsnSubsetBase;
+        jump_insn         = 1'b1;
+        rf_we_base        = 1'b1;
+        rf_wdata_sel_base = RfWdSelNextPc;
       end
 
       InsnOpcodeBaseJalr: begin
-        insn_subset  = InsnSubsetBase;
-        jump_insn    = 1'b1;
-        rf_ren_a     = 1'b1;
-        rf_we        = 1'b1;
-        rf_wdata_sel = RfWdSelNextPc;
+        insn_subset       = InsnSubsetBase;
+        jump_insn         = 1'b1;
+        rf_ren_a          = 1'b1;
+        rf_we_base        = 1'b1;
+        rf_wdata_sel_base = RfWdSelNextPc;
 
         if (insn[14:12] != 3'b000) begin
           illegal_insn = 1'b1;
@@ -350,9 +361,9 @@ module otbn_decoder
             illegal_insn = 1'b1;
           end
         end else begin
-          rf_we        = 1'b1;
-          rf_wdata_sel = RfWdSelIspr;
-          rf_ren_a     = 1'b1;
+          rf_we_base        = 1'b1;
+          rf_wdata_sel_base = RfWdSelIspr;
+          rf_ren_a          = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
             ispr_rw_insn = 1'b1;
@@ -369,9 +380,9 @@ module otbn_decoder
       ////////////////
 
       InsnOpcodeBignumArith: begin
-        insn_subset = InsnSubsetBignum;
-        rf_we       = 1'b1;
-        rf_ren_a    = 1'b1;
+        insn_subset  = InsnSubsetBignum;
+        rf_we_bignum = 1'b1;
+        rf_ren_a     = 1'b1;
 
         if (insn[14:12] != 3'b100) begin
           // All Alu instructions other than BN.ADDI/BN.SUBI
@@ -390,9 +401,9 @@ module otbn_decoder
       ////////////////////////
 
       InsnOpcodeBignumShiftLogical: begin
-        insn_subset = InsnSubsetBignum;
-        rf_we       = 1'b1;
-        rf_ren_a    = 1'b1;
+        insn_subset  = InsnSubsetBignum;
+        rf_we_bignum = 1'b1;
+        rf_ren_a     = 1'b1;
 
         // BN.NOT doesn't read register B
         if (insn[14:12] != 3'b101) begin
@@ -414,9 +425,9 @@ module otbn_decoder
         insn_subset = InsnSubsetBignum;
 
         if (insn[14:12] == 3'b111) begin //BN.WSRRS/BN.WSRRW
-          rf_we         = 1'b1;
-          rf_ren_a      = 1'b1;
-          rf_wdata_sel  = RfWdSelIspr;
+          rf_we_bignum        = 1'b1;
+          rf_ren_a            = 1'b1;
+          rf_wdata_sel_bignum = RfWdSelIspr;
 
           if (insn[31]) begin
             ispr_rw_insn = 1'b1;
@@ -436,7 +447,8 @@ module otbn_decoder
     // NOTE: instructions can also be detected to be illegal inside the CSRs (upon accesses with
     // insufficient privileges). These cases are not handled here.
     if (illegal_insn) begin
-      rf_we           = 1'b0;
+      rf_we_base   = 1'b0;
+      rf_we_bignum = 1'b0;
     end
   end
 
@@ -446,13 +458,16 @@ module otbn_decoder
 
   always_comb begin
     alu_operator_base        = AluOpBaseAdd;
-    alu_operator_bignum      = AluOpBignumAdd;
     comparison_operator_base = ComparisonOpBaseEq;
-    alu_op_a_mux_sel         = OpASelRegister;
-    alu_op_b_mux_sel         = OpBSelImmediate;
 
-    imm_a_mux_sel_base       = ImmBaseAZero;
+    alu_op_a_mux_sel_base    = OpASelRegister;
+    alu_op_b_mux_sel_base    = OpBSelImmediate;
+
     imm_b_mux_sel_base       = ImmBaseBI;
+
+    alu_operator_bignum      = AluOpBignumAdd;
+    alu_op_b_mux_sel_bignum  = OpBSelImmediate;
+
     shift_amt_mux_sel_bignum = ShamtSelBignumA;
 
     opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
@@ -463,24 +478,23 @@ module otbn_decoder
       //////////////
 
       InsnOpcodeBaseLui: begin  // Load Upper Immediate
-        alu_op_a_mux_sel   = OpASelZero;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        imm_a_mux_sel_base = ImmBaseAZero;
-        imm_b_mux_sel_base = ImmBaseBU;
-        alu_operator_base  = AluOpBaseAdd;
+        alu_op_a_mux_sel_base = OpASelZero;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        imm_b_mux_sel_base    = ImmBaseBU;
+        alu_operator_base     = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseAuipc: begin  // Add Upper Immediate to PC
-        alu_op_a_mux_sel   = OpASelCurrPc;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        imm_b_mux_sel_base = ImmBaseBU;
-        alu_operator_base  = AluOpBaseAdd;
+        alu_op_a_mux_sel_base = OpASelCurrPc;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        imm_b_mux_sel_base    = ImmBaseBU;
+        alu_operator_base     = AluOpBaseAdd;
       end
 
       InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
-        alu_op_a_mux_sel   = OpASelRegister;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        imm_b_mux_sel_base = ImmBaseBI;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        imm_b_mux_sel_base    = ImmBaseBI;
 
         unique case (insn_alu[14:12])
           3'b000: alu_operator_base = AluOpBaseAdd;  // Add Immediate
@@ -505,8 +519,8 @@ module otbn_decoder
       end
 
       InsnOpcodeBaseOp: begin  // Register-Register ALU operation
-        alu_op_a_mux_sel = OpASelRegister;
-        alu_op_b_mux_sel = OpBSelRegister;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        alu_op_b_mux_sel_base = OpBSelRegister;
 
         if (!insn_alu[26]) begin
           unique case ({insn_alu[31:25], insn_alu[14:12]})
@@ -529,17 +543,17 @@ module otbn_decoder
       ///////////////////////
 
       InsnOpcodeBaseLoad: begin
-        alu_op_a_mux_sel   = OpASelRegister;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        alu_operator_base  = AluOpBaseAdd;
-        imm_b_mux_sel_base = ImmBaseBI;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        alu_operator_base     = AluOpBaseAdd;
+        imm_b_mux_sel_base    = ImmBaseBI;
       end
 
       InsnOpcodeBaseStore: begin
-        alu_op_a_mux_sel   = OpASelRegister;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        alu_operator_base  = AluOpBaseAdd;
-        imm_b_mux_sel_base = ImmBaseBS;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        alu_operator_base     = AluOpBaseAdd;
+        imm_b_mux_sel_base    = ImmBaseBS;
       end
 
       //////////////////////
@@ -547,25 +561,25 @@ module otbn_decoder
       //////////////////////
 
       InsnOpcodeBaseBranch: begin
-        alu_op_a_mux_sel         = OpASelCurrPc;
-        alu_op_b_mux_sel         = OpBSelImmediate;
+        alu_op_a_mux_sel_base    = OpASelCurrPc;
+        alu_op_b_mux_sel_base    = OpBSelImmediate;
         alu_operator_base        = AluOpBaseAdd;
         imm_b_mux_sel_base       = ImmBaseBB;
         comparison_operator_base = insn_alu[12] ? ComparisonOpBaseNeq : ComparisonOpBaseEq;
       end
 
       InsnOpcodeBaseJal: begin
-        alu_op_a_mux_sel   = OpASelCurrPc;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        alu_operator_base  = AluOpBaseAdd;
-        imm_b_mux_sel_base = ImmBaseBJ;
+        alu_op_a_mux_sel_base = OpASelCurrPc;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        alu_operator_base     = AluOpBaseAdd;
+        imm_b_mux_sel_base    = ImmBaseBJ;
       end
 
       InsnOpcodeBaseJalr: begin
-        alu_op_a_mux_sel   = OpASelRegister;
-        alu_op_b_mux_sel   = OpBSelImmediate;
-        alu_operator_base  = AluOpBaseAdd;
-        imm_b_mux_sel_base = ImmBaseBI;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        alu_op_b_mux_sel_base = OpBSelImmediate;
+        alu_operator_base     = AluOpBaseAdd;
+        imm_b_mux_sel_base    = ImmBaseBI;
       end
 
       //////////////////
@@ -574,8 +588,8 @@ module otbn_decoder
 
       InsnOpcodeBaseSystem: begin
         // The only instructions with System opcode that care about operands are CSR access
-        alu_op_a_mux_sel   = OpASelRegister;
-        imm_b_mux_sel_base = ImmBaseBI;
+        alu_op_a_mux_sel_base = OpASelRegister;
+        imm_b_mux_sel_base    = ImmBaseBI;
       end
       default: ;
 
@@ -584,7 +598,6 @@ module otbn_decoder
       ////////////////
 
       InsnOpcodeBignumArith: begin
-        alu_op_a_mux_sel         = OpASelRegister;
         shift_amt_mux_sel_bignum = ShamtSelBignumA;
 
         unique case(insn_alu[14:12])
@@ -610,9 +623,9 @@ module otbn_decoder
         endcase
 
         if (insn_alu[14:12] != 3'b100) begin
-          alu_op_b_mux_sel = OpBSelRegister;
+          alu_op_b_mux_sel_bignum = OpBSelRegister;
         end else begin
-          alu_op_b_mux_sel = OpBSelImmediate;
+          alu_op_b_mux_sel_bignum = OpBSelImmediate;
         end
       end
 
@@ -621,8 +634,7 @@ module otbn_decoder
       /////////////////
 
       InsnOpcodeBignumShiftLogical: begin
-        alu_op_a_mux_sel = OpASelRegister;
-        alu_op_b_mux_sel = OpBSelRegister;
+        alu_op_b_mux_sel_bignum = OpBSelRegister;
 
         unique case(insn_alu[14:12])
           3'b010: begin
