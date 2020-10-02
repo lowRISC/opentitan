@@ -188,6 +188,8 @@ module otbn_decoder
   /////////////
 
   always_comb begin
+    insn_subset           = InsnSubsetBase;
+
     rf_wdata_sel_base     = RfWdSelEx;
     rf_we_base            = 1'b0;
 
