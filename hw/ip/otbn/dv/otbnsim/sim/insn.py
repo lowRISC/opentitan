@@ -421,12 +421,13 @@ class BNADDM(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+        result = a + b
 
-        (result, _) = state.add_with_carry(a, b, 0)
         mod_val = state.wsrs.MOD.read_unsigned()
         if result >= mod_val:
             result -= mod_val
 
+        result = result & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 

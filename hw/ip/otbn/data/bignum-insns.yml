@@ -134,22 +134,27 @@
   synopsis: Pseudo-Modulo Add
   operands: [wrd, wrs1, wrs2]
   doc: |
-    Adds two WDR values, subtracts the value of the MOD WSR once if
-    the result is equal or larger than MOD, and writes the result to
-    the destination WDR. This operation is a modulo addition if the
-    sum of the two input registers is smaller than twice the value
-    of the MOD WSR. Flags are not used or saved.
+    Add two WDR values, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
+    If this result is greater than MOD then MOD is subtracted from it.
+    The result is then truncated to 256 bits and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
+    The intermediate result is small enough if both inputs are less than `MOD`.
+
+    Flags are not used or saved.
   decode: |
     d = UInt(wrd)
     a = UInt(wrs1)
     b = UInt(wrs2)
   operation: |
-    (result, ) = AddWithCarry(a, b, "0")
+    result = a + b
 
     if result >= MOD:
       result = result - MOD
 
-    WDR[d] = result
+    WDR[d] = result & ((1 << 256) - 1)
   encoding:
     scheme: bnam
     mapping:
