@@ -157,8 +157,8 @@ bool FtdiSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
   auto now = begin;
   while (!hash_correct &&
          std::chrono::duration_cast<std::chrono::microseconds>(now - begin)
-                 .count() < options_.hash_read_timeout_ns) {
-    usleep(options_.hash_read_delay_ns);
+                 .count() < options_.hash_read_timeout_us) {
+    usleep(options_.hash_read_delay_us);
     rx = nullptr;
     rx = ::Read(spi_->ctx, size);
     if (!rx) {
@@ -170,6 +170,7 @@ bool FtdiSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
     // testing I've seen the hash appear at random locations in the message.
     // Checking for the hash at any location or even split between messages may
     // not be necessary, but it is probably safer.
+    usleep(options_.hash_check_delay_us);
     for (int i = 0; !hash_correct && i < SHA256_DIGEST_LENGTH; ++i) {
       if (rx[i] == hash[hash_index]) {
         ++hash_index;

@@ -55,6 +55,8 @@ class Updater {
   struct Options {
     /** Firmware image in binary format. */
     std::string code;
+    /** Flash erase delay in microseconds. */
+    int32_t flash_erase_delay_us = 100000;
   };
 
   /**
