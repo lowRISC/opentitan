@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <unistd.h>
 
 namespace opentitan {
 namespace spiflash {
@@ -77,6 +78,12 @@ bool Updater::Run() {
                              sizeof(Frame))) {
       std::cerr << "Failed to transmit frame no: 0x" << std::setfill('0')
                 << std::setw(8) << std::hex << f.hdr.frame_num << std::endl;
+    }
+
+    // After receiving and validating the first frame, the device is erasing
+    // the Flash.
+    if (current_frame == 0) {
+      usleep(options_.flash_erase_delay_us);
     }
 
     // When we send each frame we wait for the correct hash before continuing.
