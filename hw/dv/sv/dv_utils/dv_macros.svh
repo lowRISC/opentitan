@@ -492,4 +492,29 @@
   end
 `endif
 
+// Instantiates a covergroup in an interface or module.
+//
+// This macro assumes that a covergroup of the same name as the __CG_NAME arg is defined in the
+// interface or module. It just adds some extra signals and logic to control the creation of the
+// covergroup instance with ~bit en_<cg_name>~. This defaults to 0. It is ORed with the external
+// __COND signal. The testbench can modify it at t = 0 based on the test being run.
+// NOTE: This is not meant to be invoked inside a class.
+//
+// __CG_NAME : Name of the covergroup.
+// __COND    : External condition / expr that controls the creation of the covergroup.
+// __CG_ARGS : Arguments to covergroup instance, if any. Args MUST BE wrapped in (..).
+`ifndef DV_INSTANTIATE_CG
+`define DV_INSTANTIATE_CG(__CG_NAME, __COND = 1'b1, __CG_ARGS = ()) \
+  bit en_``__CG_NAME = 1'b0; \
+  __CG_NAME __CG_NAME``_inst; \
+  initial begin \
+    /* The #1 delay below allows any part of the tb to control the conditions first at t = 0. */ \
+    #1; \
+    if ((en_``__CG_NAME) || (__COND)) begin \
+      `DV_INFO({"Creating covergroup ", `"__CG_NAME`"}, UVM_MEDIUM) \
+      __CG_NAME``_inst = new``__CG_ARGS; \
+    end \
+  end
+`endif
+
 `endif // __DV_MACROS_SVH__

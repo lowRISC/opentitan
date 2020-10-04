@@ -47,7 +47,9 @@
                //  - Write (deposit) capability on registers and variables
                //  - Force capability on registers, variables, and nets
                "-debug_access+f",
-
+               // Use this to conditionally compile for VCS (example: LRM interpretations differ
+               // across tools).
+               "+define+VCS",
                // Upgrade below warnings to errors to make VCS more strict on syntax to avoid
                // having issue with other simulators but passing with VCS
                //
