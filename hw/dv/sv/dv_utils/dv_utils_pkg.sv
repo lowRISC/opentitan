@@ -152,9 +152,27 @@ package dv_utils_pkg;
   endfunction
 `endif
 
+  // Returns the hierarchical path to the interface / module N levels up.
+  //
+  // Meant to be invoked inside a module or interface.
+  // hier:        String input of the interface / module, typically $sformatf("%m").
+  // n_levels_up: Integer number of levels up the hierarchy to omit.
+  //              Example: if (hier = tb.dut.foo.bar, n_levels_up = 2), then return tb.dut
+  function automatic string get_parent_hier(string hier, int n_levels_up = 1);
+    int idx;
+    int level;
+    if (n_levels_up <= 0) return hier;
+    for (idx = hier.len() - 1; idx >= 0; idx--) begin
+      if (hier[idx] == ".") level++;
+      if (level == n_levels_up) break;
+    end
+    return (hier.substr(0, idx - 1));
+  endfunction
+
   // sources
 `ifdef UVM
   `include "dv_report_server.sv"
+  `include "dv_vif_wrap.sv"
 `endif
 
 endpackage
