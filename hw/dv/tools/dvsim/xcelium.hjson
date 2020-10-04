@@ -20,8 +20,9 @@
                "-xmlibdirname {build_dir}/xcelium.d",
                // for uvm_hdl_* used by csr backdoor
                "-access +rw",
-               "+define+XCELIUM",
-               ]
+               // Use this to conditionally compile for Xcelium (example: LRM interpretations differ
+               // across tools).
+               "+define+XCELIUM"]
 
   run_opts:   ["-input {run_script}",
                "-licqueue",
