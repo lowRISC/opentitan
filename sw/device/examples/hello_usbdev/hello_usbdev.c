@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
   pinmux_init();
 
   CHECK(dif_spi_device_init(
-      (dif_spi_device_params_t){
-          .base_addr = mmio_region_from_addr(0x40020000),
-      },
-      &spi));
+            (dif_spi_device_params_t){
+                .base_addr = mmio_region_from_addr(0x40020000),
+            },
+            &spi) == kDifSpiDeviceOk);
   CHECK(dif_spi_device_configure(
             &spi, (dif_spi_device_config_t){
                       .clock_polarity = kDifSpiDeviceEdgePositive,
