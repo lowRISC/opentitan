@@ -29,9 +29,18 @@ if { $explicit_hw_target != "" } {
   puts "INFO: Programming target $explicit_hw_target"
 }
 
-# Connect to Xilinx Hardware Server
+# Connect to Xilinx Hardware Server. A new instance of the hardware server is
+# started on localhost if HW_SERVER_URL is not given, and if no hardware server
+# is already running on localhost.
 if { [ catch { open_hw_manager } ] } { open_hw }
-connect_hw_server
+
+if {[info exists env(HW_SERVER_URL)]} {
+  set hw_server_url $env(HW_SERVER_URL)
+  puts "INFO: Connecting to hardware server at $hw_server_url"
+  connect_hw_server -url $hw_server_url
+} else {
+  connect_hw_server
+}
 
 if { $explicit_hw_target == "" } {
   set hw_targets [get_hw_targets]

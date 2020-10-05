@@ -10,12 +10,14 @@ import subprocess
 import sys
 
 
-def program_bitstream_with_vivado(part, bitstream, hw_target, jtag_freq):
+def program_bitstream_with_vivado(part, bitstream, hw_server_url, hw_target, jtag_freq):
     tcl_file = os.path.join(os.path.dirname(__file__), 'vivado_pgm.tcl')
     if not os.path.isfile(tcl_file):
         raise FileNotFoundError('{} not found.'.format(tcl_file))
 
     cmd_env = os.environ.copy()
+    if hw_server_url is not None:
+        cmd_env['HW_SERVER_URL'] = hw_server_url
     if hw_target is not None:
         cmd_env['HW_TARGET'] = hw_target
     if jtag_freq is not None:
@@ -38,6 +40,12 @@ def program_bitstream_with_vivado(part, bitstream, hw_target, jtag_freq):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--hw-server-url',
+                        required=False,
+                        default=None,
+                        help='The URL of a running Xilinx hardware server to '
+                        'connect to. If not specified, a hardware server will '
+                        'be started automatically on localhost.')
     parser.add_argument('--hw-target',
                         '-t',
                         required=False,
@@ -56,6 +64,7 @@ def main():
 
     return program_bitstream_with_vivado(args.part,
                                          args.bitstream,
+                                         hw_server_url=args.hw_server_url,
                                          hw_target=args.hw_target,
                                          jtag_freq=args.jtag_freq)
 
