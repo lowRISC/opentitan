@@ -826,11 +826,11 @@
     scheme: bnxid
     mapping:
       imm: offset
+      rs2: grd
+      rs1: grs1
       spp: grs1_inc
       dpp: grd_inc
-      rs: grs1
       funct3: b100
-      rd: grd
 
 - mnemonic: bn.sid
   synopsis: Store Word (indirect source, indirect destination)
@@ -899,11 +899,11 @@
     scheme: bnxid
     mapping:
       imm: offset
+      rs2: grs2
+      rs1: grs1
       spp: grs1_inc
       dpp: grs2_inc
-      rs: grs1
       funct3: b101
-      rd: grs2
 
 - mnemonic: bn.mov
   synopsis: Copy content between WDRs (direct addressing)
@@ -915,9 +915,6 @@
   encoding:
     scheme: bnmov
     mapping:
-      indirect: b0
-      spp: bx
-      dpp: bx
       src: wrs
       dst: wrd
 
@@ -954,13 +951,12 @@
     if grd_inc:
       GPR[d] = GPR[d] + 1
   encoding:
-    scheme: bnmov
+    scheme: bnmovr
     mapping:
-      indirect: b1
+      dst: grd
+      src: grs
       spp: grs_inc
       dpp: grd_inc
-      src: grs
-      dst: grd
 
 - mnemonic: bn.wsrrs
   synopsis: Atomic Read and Set Bits in WSR
