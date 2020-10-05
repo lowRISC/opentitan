@@ -11,7 +11,7 @@ project(
     'build.c_std=c11',
     'cpp_std=c++14',
     'build.cpp_std=c++14',
-    'warning_level=1',
+    'warning_level=2',
     'werror=true',
     'debug=true',
     'b_staticpic=false', # Disable PIC for device static libraries
@@ -47,6 +47,11 @@ extra_warning_args = [
   '-Wimplicit-fallthrough', # Error on implicit fallthrough
   '-Wswitch-default', # Ensure all switches have default statements
   '-Wno-covered-switch-default', # We require `default:` always.
+  # Issues we intend to fix in the future but are currently ignored as there are
+  # many places they are triggered.
+  '-Wno-unused-parameter',
+  '-Wno-sign-compare',
+  '-Wno-missing-field-initializers',
 ]
 
 # C compiler arguments to optimize for size, used on cross builds only.
