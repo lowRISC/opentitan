@@ -179,6 +179,12 @@ funct2:
   fields:
     funct2: 13-12
 
+# A partial scheme for the bn.mov/bn.movr instructions. Specifies if register
+# indirect lookup is used (bn.mov vs bn.movr)
+indirect:
+  fields:
+    indirect: 31
+
 # A specialised encoding for the loop instruction (only one source, no
 # destination)
 loop:
@@ -309,26 +315,42 @@ bnxid:
     - custom0
     - funct3
   fields:
-    imm: 24-22,31-25
-    spp: 21
-    dpp: 20
-    rs: 19-15
-    rd: 11-7
+    imm: 11-9,31-25
+    rs2: 24-20
+    rs1: 19-15
+    spp: 8
+    dpp: 7
 
-# Used by bn.mov and bn.movr
+# Used by bn.mov
 bnmov:
   parents:
     - custom0
     - funct3(funct3=b110)
+    - indirect(indirect=b0)
   fields:
-    indirect: 31
     fixed_top:
-      bits: 30-22
-      value: bxxxxxxxxx
-    spp: 21
-    dpp: 20
+      bits: 30-20
+      value: bxxxxxxxxxxx
     src: 19-15
     dst: 11-7
+
+# Used by bn.movr
+bnmovr:
+  parents:
+    - custom0
+    - funct3(funct3=b110)
+    - indirect(indirect=b1)
+  fields:
+    fixed_top:
+      bits: 30-25
+      value: bxxxxxx
+    dst: 24-20
+    src: 19-15
+    spp: 9
+    dpp: 7
+    unused:
+      bits: 11-10,8
+      value: bxxx
 
 # Used by bn.wsrrs and bn.wsrrw
 wcsr:
