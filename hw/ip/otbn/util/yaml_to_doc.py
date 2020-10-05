@@ -15,6 +15,8 @@ from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
 from shared.operand import EnumOperandType, OptionOperandType, Operand
 
+from docs.get_impl import read_implementation
+
 _O2EDicts = Tuple[Dict[str, List[str]], Dict[int, str]]
 
 
@@ -229,7 +231,7 @@ def name_op_enc_fields(name_to_operand: Dict[str, Operand],
     return (o2e, e2o)
 
 
-def render_insn(insn: Insn, heading_level: int) -> str:
+def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     '''Generate the documentation for an instruction
 
     heading_level is the current Markdown heading level. It should be greater
@@ -307,8 +309,7 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     if insn.literal_pseudo_op is not None:
         parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
 
-    # Show operation pseudo-code if given
-    if insn.operation is not None:
+    if impl is not None:
         parts.append('{} Operation\n\n'
                      .format('#' * (heading_level + 1)))
 
@@ -335,14 +336,18 @@ def render_insn(insn: Insn, heading_level: int) -> str:
                          'to assembly syntax.\n\n'
                          .format(op_str))
 
-        parts.append('```python3\n'
-                     '{}\n'
+        # Note: No trailing newline after the inserted contents because libcst
+        # (which we use for extracting documentation) always adds a trailing
+        # newline itself.
+        parts.append('```\n'
+                     '{}'
                      '```\n\n'
-                     .format(insn.operation))
+                     .format(impl))
     return ''.join(parts)
 
 
 def render_insn_group(group: InsnGroup,
+                      impls: Dict[str, str],
                       heading_level: int,
                       out_file: TextIO) -> None:
     # We don't print the group heading: that's done in the top-level
@@ -355,28 +360,33 @@ def render_insn_group(group: InsnGroup,
         return
 
     for insn in group.insns:
-        out_file.write(render_insn(insn, heading_level))
+        class_name = insn.mnemonic.replace('.', '').upper()
+        impl = impls.get(class_name)
+        out_file.write(render_insn(insn, impl, heading_level))
 
 
 def render_insns(insns: InsnsFile,
+                 impls: Dict[str, str],
                  heading_level: int,
                  out_dir: str) -> None:
     '''Render documentation for all instructions'''
     for group in insns.groups.groups:
         group_path = os.path.join(out_dir, group.key + '.md')
         with open(group_path, 'w') as group_file:
-            render_insn_group(group, heading_level, group_file)
+            render_insn_group(group, impls, heading_level, group_file)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('yaml_file')
+    parser.add_argument('py_file')
     parser.add_argument('out_dir')
 
     args = parser.parse_args()
 
     try:
         insns = load_file(args.yaml_file)
+        impls = read_implementation(args.py_file)
     except RuntimeError as err:
         print(err, file=sys.stderr)
         return 1
@@ -387,7 +397,7 @@ def main() -> int:
         print('Failed to create output directory {!r}: {}.'
               .format(args.out_dir, err))
 
-    render_insns(insns, 2, args.out_dir)
+    render_insns(insns, impls, 2, args.out_dir)
     return 0
 
 

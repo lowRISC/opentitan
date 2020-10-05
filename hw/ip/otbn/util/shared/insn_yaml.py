@@ -27,7 +27,7 @@ class Insn:
                         ['mnemonic', 'operands'],
                         ['group', 'rv32i', 'synopsis',
                          'syntax', 'doc', 'note', 'trailing-doc',
-                         'operation', 'encoding', 'glued-ops',
+                         'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
                          'straight-line', 'cycles'])
 
@@ -86,7 +86,6 @@ class Insn:
         self.doc = get_optional_str(yd, 'doc', what)
         self.note = get_optional_str(yd, 'note', what)
         self.trailing_doc = get_optional_str(yd, 'trailing-doc', what)
-        self.operation = get_optional_str(yd, 'operation', what)
 
         raw_syntax = get_optional_str(yd, 'syntax', what)
         if raw_syntax is not None:
