@@ -40,8 +40,7 @@ module entropy_src_bucket_ht #(
     if (!rst_ni) begin
       window_cntr_q    <= '0;
       test_cnt_q       <= '0;
-      bin_cntr_q       <= {10'b0,10'b0,10'b0,10'b0,10'b0,10'b0,10'b0,10'b0,
-                           10'b0,10'b0,10'b0,10'b0,10'b0,10'b0,10'b0,10'b0};
+      bin_cntr_q       <= '{default:0};
     end else begin
       window_cntr_q    <= window_cntr_d;
       test_cnt_q       <= test_cnt_d;
@@ -60,9 +59,7 @@ module entropy_src_bucket_ht #(
 
   // Analyze the incoming symbols
 
-  genvar i;
-  generate
-    for (i = 0; i < NUM_BINS; i = i + 1) begin  : g_symbol_match
+    for (genvar i = 0; i < NUM_BINS; i = i + 1) begin : gen_symbol_match
       // set the bin incrementer if the symbol matches that bin
       assign bin_incr[i] = entropy_bit_vld_i && (entropy_bit_i == i);
       // use the bin incrementer to increase the bin total count
@@ -70,8 +67,7 @@ module entropy_src_bucket_ht #(
              ((active_i && bin_incr[i]) ? (bin_cntr_q[i]+1) : bin_cntr_q[i]);
       // use the bin incrementer to increase the bin total count
       assign bin_cnt_exceeds_thresh[i] = (bin_cntr_q[i] > thresh_i);
-    end
-  endgenerate
+    end : gen_symbol_match
 
 
   // Window wrap condition

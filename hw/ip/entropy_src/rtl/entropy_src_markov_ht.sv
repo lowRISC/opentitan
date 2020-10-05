@@ -38,8 +38,7 @@ module entropy_src_markov_ht #(
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       prev_sample_q    <= '0;
-      pair_cntr_q      <= {{RegWidth{1'b0}},{RegWidth{1'b0}},
-                           {RegWidth{1'b0}},{RegWidth{1'b0}}};
+      pair_cntr_q      <= '{default:0};
       window_cntr_q    <= '0;
       test_cnt_q       <= '0;
     end else begin
@@ -57,9 +56,7 @@ module entropy_src_markov_ht #(
   //  stream will only count when the pair equals 0b01 or 0b10.
 
 
-  genvar sh;
-  generate
-    for (sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
+    for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
 
       // bit sampler
       assign prev_sample_d[sh] =
@@ -81,8 +78,7 @@ module entropy_src_markov_ht #(
 
       assign pair_cnt_fail[sh] = (pair_cntr_q[sh] >= thresh_i);
 
-    end
-  endgenerate
+    end : gen_cntrs
 
 
   // Window wrap condition
