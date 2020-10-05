@@ -45,6 +45,8 @@ endif
 # C compiler arguments to to catch common errors, used on all builds.
 extra_warning_args = [
   '-Wimplicit-fallthrough', # Error on implicit fallthrough
+  '-Wswitch-default', # Ensure all switches have default statements
+  '-Wno-covered-switch-default', # We require `default:` always.
 ]
 
 # C compiler arguments to optimize for size, used on cross builds only.
