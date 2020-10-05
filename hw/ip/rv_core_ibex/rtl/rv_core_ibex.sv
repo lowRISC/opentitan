@@ -96,6 +96,11 @@ module rv_core_ibex #(
   tl_h2d_t tl_d_ibex2fifo;
   tl_d2h_t tl_d_fifo2ibex;
 
+  // Intermediate TL signals to connect an sram used in simulations.
+  tlul_pkg::tl_h2d_t tl_d_o_int;
+  tlul_pkg::tl_d2h_t tl_d_i_int;
+
+
 `ifdef RVFI
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
@@ -292,13 +297,27 @@ module rv_core_ibex #(
     .rst_ni,
     .tl_h_i      (tl_d_ibex2fifo),
     .tl_h_o      (tl_d_fifo2ibex),
-    .tl_d_o      (tl_d_o),
-    .tl_d_i      (tl_d_i),
+    .tl_d_o      (tl_d_o_int),
+    .tl_d_i      (tl_d_i_int),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
+  //
+  // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The
+  // disconnection is done only if `SYNTHESIS is NOT defined AND `RV_CORE_IBEX_SIM_SRAM is
+  // defined.
+  //
+`ifdef RV_CORE_IBEX_SIM_SRAM
+`ifdef SYNTHESIS
+  // Induce a compilation error by instantiating a non-existent module.
+  illegal_preprocessor_branch_taken u_illegal_preprocessor_branch_taken();
+`endif
+`else
+  assign tl_d_o = tl_d_o_int;
+  assign tl_d_i_int = tl_d_i;
+`endif
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
