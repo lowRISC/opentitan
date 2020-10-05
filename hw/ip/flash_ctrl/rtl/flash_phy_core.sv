@@ -198,8 +198,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        reqs[PhyPgErase] = pg_erase_i;
-        reqs[PhyBkErase] = bk_erase_i;
         if (ack) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
