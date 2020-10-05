@@ -44,6 +44,7 @@ endif
 
 # C compiler arguments to to catch common errors, used on all builds.
 extra_warning_args = [
+  '-Wimplicit-fallthrough', # Error on implicit fallthrough
 ]
 
 # C compiler arguments to optimize for size, used on cross builds only.
