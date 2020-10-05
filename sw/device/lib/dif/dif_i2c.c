@@ -689,6 +689,7 @@ dif_i2c_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
     case kDifI2cFmtRxStop:
       flags.read = true;
       flags.stop = true;
+      break;
     default:
       return kDifI2cBadArg;
   }
