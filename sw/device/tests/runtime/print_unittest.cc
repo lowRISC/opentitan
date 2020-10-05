@@ -169,6 +169,9 @@ TEST_F(PrintfTest, Pointer) {
     case 8:
       EXPECT_EQ(buf_, "Hello, 0x0000000000001234!\n");
       break;
+    default:
+      FAIL() << "Unknown pointer size";
+      break;
   }
 }
 
@@ -180,6 +183,9 @@ TEST_F(PrintfTest, NullPtr) {
       break;
     case 8:
       EXPECT_EQ(buf_, "Hello, 0x0000000000000000!\n");
+      break;
+    default:
+      FAIL() << "Unknown pointer size";
       break;
   }
 }
