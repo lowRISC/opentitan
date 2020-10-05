@@ -299,10 +299,10 @@ module top_earlgrey_cw305 #(
 
   for (genvar i = 0; i < padctrl_reg_pkg::NMioPads; i++) begin : gen_mio_out
     if (i == MioIdxTrigger) begin
-      // To obtain a more precise capture trigger for SCA analysis, we only forward the software-
-      // controlled capture trigger when the AES module is actually busy (performing either
-      // encryption/decryption or clearing internal registers).
-      assign mio_out[i] = mio_out_core[i] & ~top_earlgrey.aes_idle;
+      // To obtain a more precise capture trigger for side-channel analysis, we only forward the
+      // software-controlled capture trigger when the AES module is actually busy (performing
+      // either encryption/decryption or clearing internal registers).
+      assign mio_out[i] = mio_out_core[i] & ~top_earlgrey.clkmgr_idle[clkmgr_pkg::Aes];
     end else begin
       assign mio_out[i] = mio_out_core[i];
     end
