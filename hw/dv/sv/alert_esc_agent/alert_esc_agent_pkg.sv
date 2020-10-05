@@ -20,6 +20,7 @@ package alert_esc_agent_pkg;
   } alert_esc_trans_type_e;
 
   typedef enum {
+    AlertPingReceived,
     AlertReceived,
     AlertAckReceived,
     AlertComplete,

@@ -10,19 +10,35 @@ interface alert_esc_if(input clk, input rst_n);
   wire prim_alert_pkg::alert_rx_t alert_rx;
   wire prim_esc_pkg::esc_tx_t     esc_tx;
   wire prim_esc_pkg::esc_rx_t     esc_rx;
+  prim_alert_pkg::alert_tx_t      alert_tx_sync;      // sync alert_tx 2 clks delay flop
+  prim_alert_pkg::alert_tx_t      alert_tx_sync_temp; // sync alert_tx 1 clk delay flop
+  prim_alert_pkg::alert_tx_t      alert_tx_final;     // final alert_tx value depends if on async_mode
   prim_alert_pkg::alert_tx_t      alert_tx_int; // internal alert_tx
   prim_alert_pkg::alert_rx_t      alert_rx_int; // internal alert_rx
   prim_esc_pkg::esc_tx_t          esc_tx_int;   // internal esc_tx
   prim_esc_pkg::esc_rx_t          esc_rx_int;   // internal esc_rx
 
-  wire       sender_clk;
-  bit        is_async, is_alert;
+  wire                     sender_clk;
+  bit                      is_async, is_alert;
   dv_utils_pkg::if_mode_e  if_mode;
-  clk_rst_if clk_rst_async_if(.clk(sender_clk), .rst_n(rst_n));
+  clk_rst_if               clk_rst_async_if(.clk(sender_clk), .rst_n(rst_n));
 
   // if alert sender is async mode, the clock will be drived in alert_esc_agent,
   // if it is sync mode, will assign to dut clk here
   assign sender_clk = (is_async) ? 'z : clk ;
+
+  // async interface for alert_tx has two_clock cycles delay
+  // TODO: this is not needed once the CDC module is implemented
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      alert_tx_sync      <= {'b01};
+      alert_tx_sync_temp <= {'b01};
+    end else begin
+      alert_tx_sync      <= alert_tx_sync_temp;
+      alert_tx_sync_temp <= alert_tx;
+    end
+  end
+  assign alert_tx_final = (is_async) ? alert_tx_sync : alert_tx;
 
   clocking sender_cb @(posedge sender_clk);
     input  rst_n;
@@ -42,7 +58,7 @@ interface alert_esc_if(input clk, input rst_n);
 
   clocking monitor_cb @(posedge clk);
     input rst_n;
-    input alert_tx;
+    input alert_tx_final;
     input alert_rx;
     input esc_tx;
     input esc_rx;
@@ -70,8 +86,12 @@ interface alert_esc_if(input clk, input rst_n);
   // alert_ping request is detected by level triggered "alert_rx.ping_p/n" signals pairs
   // and no sig_int_err
   task automatic wait_alert_ping();
-    logic ping_p = alert_rx.ping_p;
-    wait(alert_rx.ping_p !== ping_p && alert_rx.ping_p === !alert_rx.ping_n);
+    do begin
+      logic ping_p;
+      wait(rst_n === 1'b1);
+      ping_p = alert_rx.ping_p;
+      wait(alert_rx.ping_p !== ping_p && alert_rx.ping_p === !alert_rx.ping_n);
+    end while (rst_n != 1'b1);
   endtask : wait_alert_ping
 
   // this task wait for esc_ping request.
@@ -80,6 +100,7 @@ interface alert_esc_if(input clk, input rst_n);
   task automatic wait_esc_ping();
     int cycle_cnt;
     do begin
+      wait(rst_n === 1'b1);
       cycle_cnt = 0;
       // wait for esc_p and no sig_int_err
       while (esc_tx.esc_p === 1'b0 || esc_tx.esc_p === esc_tx.esc_n) @(monitor_cb);
@@ -90,7 +111,7 @@ interface alert_esc_if(input clk, input rst_n);
       end
     // if cycle is larger than one, then it is a real esc signal instead of ping request
     // so keep blocking until found the ping request
-    end while (cycle_cnt > 1);
+    end while (cycle_cnt > 1 || rst_n != 1'b1);
   endtask : wait_esc_ping
 
 endinterface: alert_esc_if
