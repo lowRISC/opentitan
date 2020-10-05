@@ -200,8 +200,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (tx_q.size > 0 && tx_processing_item_q.size == 0) begin
               tx_processing_item_q.push_back(tx_q.pop_front());
               fork begin
+                int loc_tx_q_size = tx_q.size();
                 cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
-                predict_tx_watermark_intr();
+                predict_tx_watermark_intr(loc_tx_q_size);
               end join_none
             end
           end
@@ -222,6 +223,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                 csr.get_mirrored_value(), tx_q.size(), uart_tx_clk_pulses), UVM_MEDIUM)
           end
           fork begin
+            int loc_tx_q_size = tx_q.size();
             // use negedge to avoid race condition
             cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
@@ -234,7 +236,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             end else if (tx_enabled && tx_processing_item_q.size == 0 && tx_q.size > 0) begin
               tx_processing_item_q.push_back(tx_q.pop_front());
             end
-            predict_tx_watermark_intr();
+            predict_tx_watermark_intr(loc_tx_q_size);
           end join_none
         end // write && channel == AddrChannel
       end
@@ -268,8 +270,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           // recalculate watermark when RXILVL/TXILVL is updated
           predict_rx_watermark_intr();
           fork begin
+            int loc_tx_q_size = tx_q.size();
             if (txrst_val) cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
-            predict_tx_watermark_intr();
+            predict_tx_watermark_intr(loc_tx_q_size);
           end join_none
         end // write && channel == AddrChannel
       end
