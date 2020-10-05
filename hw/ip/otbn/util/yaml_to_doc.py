@@ -6,14 +6,59 @@
 '''Generate Markdown documentation for the instructions in insns.yml'''
 
 import argparse
+import ast
 import os
 import sys
-from typing import Dict, List, TextIO
+from typing import Dict, List, Optional, TextIO
+
+import astor  # type: ignore
 
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
 from shared.operand import ImmOperandType, Operand
+
+
+class ImplVisitor(ast.NodeVisitor):
+    '''An AST visitor used to extract documentation from the ISS'''
+    def __init__(self) -> None:
+        self.impls = {}  # type: Dict[str, str]
+
+        self.cur_class = None  # type: Optional[str]
+
+    def visit_ClassDef(self, class_def: ast.ClassDef) -> None:
+        assert self.cur_class is None
+
+        self.cur_class = class_def.name
+        self.generic_visit(class_def)
+        self.cur_class = None
+
+    def visit_FunctionDef(self, fun_def: ast.FunctionDef) -> None:
+        if ((self.cur_class is None or
+             fun_def.name != 'execute' or
+             self.cur_class in self.impls)):
+            return
+
+        lines = []
+        for stmt in fun_def.body:
+            lines.append(astor.to_source(stmt))
+        self.impls[self.cur_class] = ''.join(lines)
+
+
+def read_implementation(path: str) -> Dict[str, str]:
+    '''Read the implementation at path (probably insn.py)
+
+    Returns a dictionary from instruction class name to its pseudo-code
+    implementation. An instruction class name looks like ADDI (for addi) or
+    BNADDM (for bn.addm).
+
+    '''
+    with open(path, 'r') as handle:
+        node = ast.parse(handle.read(), path)  # type: ast.Module
+
+    visitor = ImplVisitor()
+    visitor.visit(node)
+    return visitor.impls
 
 
 def render_operand_row(operand: Operand) -> str:
@@ -156,7 +201,7 @@ def render_literal_pseudo_op(rewrite: List[str]) -> str:
     return ''.join(parts)
 
 
-def render_insn(insn: Insn, heading_level: int) -> str:
+def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     '''Generate the documentation for an instruction
 
     heading_level is the current Markdown heading level. It should be greater
@@ -226,27 +271,17 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     if insn.literal_pseudo_op is not None:
         parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
 
-    # Show decode pseudo-code if given
-    if insn.decode is not None:
-        parts.append('{} Decode\n\n'
-                     '```python3\n'
-                     '{}\n'
-                     '```\n\n'
-                     .format('#' * (heading_level + 1),
-                             insn.decode))
-
-    # Show operation pseudo-code if given
-    if insn.operation is not None:
+    if impl is not None:
         parts.append('{} Operation\n\n'
                      '```python3\n'
                      '{}\n'
                      '```\n\n'
-                     .format('#' * (heading_level + 1),
-                             insn.operation))
+                     .format('#' * (heading_level + 1), impl))
     return ''.join(parts)
 
 
 def render_insn_group(group: InsnGroup,
+                      impls: Dict[str, str],
                       heading_level: int,
                       out_file: TextIO) -> None:
     # We don't print the group heading: that's done in the top-level
@@ -259,28 +294,33 @@ def render_insn_group(group: InsnGroup,
         return
 
     for insn in group.insns:
-        out_file.write(render_insn(insn, heading_level))
+        class_name = insn.mnemonic.replace('.', '').upper()
+        impl = impls.get(class_name)
+        out_file.write(render_insn(insn, impl, heading_level))
 
 
 def render_insns(insns: InsnsFile,
+                 impls: Dict[str, str],
                  heading_level: int,
                  out_dir: str) -> None:
     '''Render documentation for all instructions'''
     for group in insns.groups.groups:
         group_path = os.path.join(out_dir, group.key + '.md')
         with open(group_path, 'w') as group_file:
-            render_insn_group(group, heading_level, group_file)
+            render_insn_group(group, impls, heading_level, group_file)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('yaml_file')
+    parser.add_argument('py_file')
     parser.add_argument('out_dir')
 
     args = parser.parse_args()
 
     try:
         insns = load_file(args.yaml_file)
+        impls = read_implementation(args.py_file)
     except RuntimeError as err:
         print(err, file=sys.stderr)
         return 1
@@ -291,7 +331,7 @@ def main() -> int:
         print('Failed to create output directory {!r}: {}.'
               .format(args.out_dir, err))
 
-    render_insns(insns, 3, args.out_dir)
+    render_insns(insns, impls, 3, args.out_dir)
     return 0
 
 
