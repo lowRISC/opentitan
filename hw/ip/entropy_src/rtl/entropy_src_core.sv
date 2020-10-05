@@ -239,7 +239,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // instantiate interrupt hardware primitives
   //--------------------------------------------
 
-  prim_intr_hw #(.Width(1)) intr_hw_es_entropy_valid (
+  prim_intr_hw # (
+    .Width(1)
+  ) u_intr_hw_es_entropy_valid (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .event_intr_i           (event_es_entropy_valid),
@@ -252,7 +254,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (es_entropy_valid_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_es_health_test_failed (
+  prim_intr_hw # (
+    .Width(1)
+  ) u_intr_hw_es_health_test_failed (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .event_intr_i           (event_es_health_test_failed),
@@ -265,7 +269,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (es_health_test_failed_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_es_fifo_err (
+  prim_intr_hw # (
+    .Width(1)
+  ) u_intr_hw_es_fifo_err (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .event_intr_i           (event_es_fifo_err),
@@ -285,12 +291,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
   assign lfsr_incr_dly_d = lfsr_incr;
 
-  prim_lfsr #(.LfsrDw(RngBusWidth),
-              .EntropyDw(RngBusWidth),
-              .StateOutDw(RngBusWidth),
-              .DefaultSeed(1),
-              .CustomCoeffs('0))
-    u_prim_lfsr (
+  prim_lfsr # (
+    .LfsrDw(RngBusWidth),
+    .EntropyDw(RngBusWidth),
+    .StateOutDw(RngBusWidth),
+    .DefaultSeed(1),
+    .CustomCoeffs('0)
+  ) u_prim_lfsr (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .seed_en_i      (load_seed),
@@ -338,8 +345,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
 
-  prim_fifo_sync # (.Width(RngBusWidth),.Pass(0),.Depth(2))
-   u_prim_fifo_sync_esrng (
+  prim_fifo_sync # (
+    .Width(RngBusWidth),
+    .Pass(0),
+    .Depth(2)
+  ) u_prim_fifo_sync_esrng (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (sfifo_esrng_clr),
@@ -370,8 +380,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign rng_bit_en = reg2hw.conf.rng_bit_en.q;
   assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
 
-  prim_packer_fifo # (.InW(1),.OutW(RngBusWidth))
-    u_prim_packer_fifo_esbit (
+  prim_packer_fifo # (
+    .InW(1),
+    .OutW(RngBusWidth)
+  ) u_prim_packer_fifo_esbit (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_esbit_clr),
@@ -457,56 +469,59 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // repetitive count test
   //--------------------------------------------
 
-  entropy_src_repcnt_ht # (.RegWidth(HalfRegWidth),.RngBusWidth(RngBusWidth))
-    u_entropy_src_repcnt_ht
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .entropy_bit_i       (health_test_esbus),
-       .entropy_bit_vld_i   (health_test_esbus_vld),
-       .clear_i             (health_test_clr),
-       .active_i            (repcnt_active),
-       .thresh_i            (repcnt_threshold),
-       .window_i            (health_test_window),
-       .test_cnt_o          (repcnt_event_cnt),
-       .test_done_pulse_o   (health_test_done_pulse),
-       .test_fail_pulse_o   (repcnt_fail_pulse)
-       );
+  entropy_src_repcnt_ht # (
+    .RegWidth(HalfRegWidth),
+    .RngBusWidth(RngBusWidth)
+  ) u_entropy_src_repcnt_ht (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .entropy_bit_i       (health_test_esbus),
+    .entropy_bit_vld_i   (health_test_esbus_vld),
+    .clear_i             (health_test_clr),
+    .active_i            (repcnt_active),
+    .thresh_i            (repcnt_threshold),
+    .window_i            (health_test_window),
+    .test_cnt_o          (repcnt_event_cnt),
+    .test_done_pulse_o   (health_test_done_pulse),
+    .test_fail_pulse_o   (repcnt_fail_pulse)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_repcnt_fips
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (repcnt_active),
-       .event_i             (repcnt_fail_pulse && !es_bypass_mode),
-       .value_i             (repcnt_event_cnt),
-       .value_o             (repcnt_event_hwm_fips)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_repcnt_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (repcnt_active),
+    .event_i             (repcnt_fail_pulse && !es_bypass_mode),
+    .value_i             (repcnt_event_cnt),
+    .value_o             (repcnt_event_hwm_fips)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_repcnt_bypass
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (repcnt_active),
-       .event_i             (repcnt_fail_pulse && es_bypass_mode),
-       .value_i             (repcnt_event_cnt),
-       .value_o             (repcnt_event_hwm_bypass)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_repcnt_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (repcnt_active),
+    .event_i             (repcnt_fail_pulse && es_bypass_mode),
+    .value_i             (repcnt_event_cnt),
+    .value_o             (repcnt_event_hwm_bypass)
+  );
 
-  entropy_src_cntr_reg # (.RegWidth(FullRegWidth))
-    u_entropy_src_cntr_reg_repcnt
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (repcnt_active),
-       .event_i             (repcnt_fail_pulse),
-       .value_o             (repcnt_total_fails)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_repcnt (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (repcnt_active),
+    .event_i             (repcnt_fail_pulse),
+    .value_o             (repcnt_total_fails)
+  );
 
   assign hw2reg.repcnt_hi_watermarks.fips_repcnt_hi_watermark.d = repcnt_event_hwm_fips;
   assign hw2reg.repcnt_hi_watermarks.bypass_repcnt_hi_watermark.d = repcnt_event_hwm_bypass;
@@ -516,59 +531,62 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // adaptive proportion test
   //--------------------------------------------
 
-  entropy_src_adaptp_ht # (.RegWidth(HalfRegWidth),.RngBusWidth(RngBusWidth))
-    u_entropy_src_adaptp_ht
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .entropy_bit_i       (health_test_esbus),
-       .entropy_bit_vld_i   (health_test_esbus_vld),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .thresh_hi_i         (adaptp_hi_threshold),
-       .thresh_lo_i         (adaptp_lo_threshold),
-       .window_i            (health_test_window),
-       .test_cnt_o          (adaptp_event_cnt),
-       .test_done_pulse_o   (), // NC
-       .test_fail_hi_pulse_o(adaptp_hi_fail_pulse),
-       .test_fail_lo_pulse_o(adaptp_lo_fail_pulse)
-       );
+  entropy_src_adaptp_ht # (
+    .RegWidth(HalfRegWidth),
+    .RngBusWidth(RngBusWidth)
+  ) u_entropy_src_adaptp_ht (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .entropy_bit_i       (health_test_esbus),
+    .entropy_bit_vld_i   (health_test_esbus_vld),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .thresh_hi_i         (adaptp_hi_threshold),
+    .thresh_lo_i         (adaptp_lo_threshold),
+    .window_i            (health_test_window),
+    .test_cnt_o          (adaptp_event_cnt),
+    .test_done_pulse_o   (), // NC
+    .test_fail_hi_pulse_o(adaptp_hi_fail_pulse),
+    .test_fail_lo_pulse_o(adaptp_lo_fail_pulse)
+  );
 
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_adaptp_hi_fips
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_hi_fail_pulse && !es_bypass_mode),
-       .value_i             (adaptp_event_cnt),
-       .value_o             (adaptp_hi_event_hwm_fips)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_adaptp_hi_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_hi_fail_pulse && !es_bypass_mode),
+    .value_i             (adaptp_event_cnt),
+    .value_o             (adaptp_hi_event_hwm_fips)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_adaptp_hi_bypass
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_hi_fail_pulse && es_bypass_mode),
-       .value_i             (adaptp_event_cnt),
-       .value_o             (adaptp_hi_event_hwm_bypass)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_adaptp_hi_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_hi_fail_pulse && es_bypass_mode),
+    .value_i             (adaptp_event_cnt),
+    .value_o             (adaptp_hi_event_hwm_bypass)
+  );
 
-  entropy_src_cntr_reg # (.RegWidth(FullRegWidth))
-    u_entropy_src_cntr_reg_adaptp_hi
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_hi_fail_pulse),
-       .value_o             (adaptp_hi_total_fails)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_adaptp_hi (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_hi_fail_pulse),
+    .value_o             (adaptp_hi_total_fails)
+  );
 
 
   assign hw2reg.adaptp_hi_watermarks.fips_adaptp_hi_watermark.d = adaptp_hi_event_hwm_fips;
@@ -576,40 +594,42 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.adaptp_hi_total_fails.d = adaptp_hi_total_fails;
 
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(0))
-    u_entropy_src_watermark_reg_adaptp_lo_fips
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_lo_fail_pulse && !es_bypass_mode),
-       .value_i             (adaptp_event_cnt),
-       .value_o             (adaptp_lo_event_hwm_fips)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_adaptp_lo_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_lo_fail_pulse && !es_bypass_mode),
+    .value_i             (adaptp_event_cnt),
+    .value_o             (adaptp_lo_event_hwm_fips)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(0))
-    u_entropy_src_watermark_reg_adaptp_lo_bypass
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_lo_fail_pulse && es_bypass_mode),
-       .value_i             (adaptp_event_cnt),
-       .value_o             (adaptp_lo_event_hwm_bypass)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_adaptp_lo_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_lo_fail_pulse && es_bypass_mode),
+    .value_i             (adaptp_event_cnt),
+    .value_o             (adaptp_lo_event_hwm_bypass)
+  );
 
-  entropy_src_cntr_reg # (.RegWidth(FullRegWidth))
-    u_entropy_src_cntr_reg_adaptp_lo
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_lo_fail_pulse),
-       .value_o             (adaptp_lo_total_fails)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_adaptp_lo (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_lo_fail_pulse),
+    .value_o             (adaptp_lo_total_fails)
+  );
 
   assign hw2reg.adaptp_lo_watermarks.fips_adaptp_lo_watermark.d = adaptp_lo_event_hwm_fips;
   assign hw2reg.adaptp_lo_watermarks.bypass_adaptp_lo_watermark.d = adaptp_lo_event_hwm_bypass;
@@ -620,56 +640,59 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bucket test
   //--------------------------------------------
 
-  entropy_src_bucket_ht # (.RegWidth(HalfRegWidth),.RngBusWidth(RngBusWidth))
-    u_entropy_src_bucket_ht
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .entropy_bit_i       (health_test_esbus),
-       .entropy_bit_vld_i   (health_test_esbus_vld),
-       .clear_i             (health_test_clr),
-       .active_i            (bucket_active),
-       .thresh_i            (bucket_threshold),
-       .window_i            (health_test_window),
-       .test_cnt_o          (bucket_event_cnt),
-       .test_done_pulse_o     (), // NC
-       .test_fail_pulse_o     (bucket_fail_pulse)
-       );
+  entropy_src_bucket_ht # (
+    .RegWidth(HalfRegWidth),
+    .RngBusWidth(RngBusWidth)
+  ) u_entropy_src_bucket_ht (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .entropy_bit_i       (health_test_esbus),
+    .entropy_bit_vld_i   (health_test_esbus_vld),
+    .clear_i             (health_test_clr),
+    .active_i            (bucket_active),
+    .thresh_i            (bucket_threshold),
+    .window_i            (health_test_window),
+    .test_cnt_o          (bucket_event_cnt),
+    .test_done_pulse_o     (), // NC
+    .test_fail_pulse_o     (bucket_fail_pulse)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_bucket_fips
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (bucket_active),
-       .event_i             (bucket_fail_pulse && !es_bypass_mode),
-       .value_i             (bucket_event_cnt),
-       .value_o             (bucket_event_hwm_fips)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_bucket_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (bucket_active),
+    .event_i             (bucket_fail_pulse && !es_bypass_mode),
+    .value_i             (bucket_event_cnt),
+    .value_o             (bucket_event_hwm_fips)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_bucket_bypass
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (bucket_active),
-       .event_i             (bucket_fail_pulse && es_bypass_mode),
-       .value_i             (bucket_event_cnt),
-       .value_o             (bucket_event_hwm_bypass)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_bucket_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (bucket_active),
+    .event_i             (bucket_fail_pulse && es_bypass_mode),
+    .value_i             (bucket_event_cnt),
+    .value_o             (bucket_event_hwm_bypass)
+  );
 
-  entropy_src_cntr_reg # (.RegWidth(FullRegWidth))
-    u_entropy_src_cntr_reg_bucket
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (bucket_active),
-       .event_i             (bucket_fail_pulse),
-       .value_o             (bucket_total_fails)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_bucket (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (bucket_active),
+    .event_i             (bucket_fail_pulse),
+    .value_o             (bucket_total_fails)
+  );
 
   assign hw2reg.bucket_hi_watermarks.fips_bucket_hi_watermark.d = bucket_event_hwm_fips;
   assign hw2reg.bucket_hi_watermarks.bypass_bucket_hi_watermark.d = bucket_event_hwm_bypass;
@@ -680,56 +703,59 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Markov test
   //--------------------------------------------
 
-  entropy_src_markov_ht # (.RegWidth(HalfRegWidth),.RngBusWidth(RngBusWidth))
-    u_entropy_src_markov_ht
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .entropy_bit_i       (health_test_esbus),
-       .entropy_bit_vld_i   (health_test_esbus_vld),
-       .clear_i             (health_test_clr),
-       .active_i            (markov_active),
-       .thresh_i            (markov_threshold),
-       .window_i            (health_test_window),
-       .test_cnt_o          (markov_event_cnt),
-       .test_done_pulse_o   (),// NC
-       .test_fail_pulse_o   (markov_fail_pulse)
-       );
+  entropy_src_markov_ht # (
+    .RegWidth(HalfRegWidth),
+    .RngBusWidth(RngBusWidth)
+  ) u_entropy_src_markov_ht (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .entropy_bit_i       (health_test_esbus),
+    .entropy_bit_vld_i   (health_test_esbus_vld),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .thresh_i            (markov_threshold),
+    .window_i            (health_test_window),
+    .test_cnt_o          (markov_event_cnt),
+    .test_done_pulse_o   (),// NC
+    .test_fail_pulse_o   (markov_fail_pulse)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_markov_fips
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (markov_active),
-       .event_i             (markov_fail_pulse && !es_bypass_mode),
-       .value_i             (markov_event_cnt),
-       .value_o             (markov_event_hwm_fips)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_fail_pulse && !es_bypass_mode),
+    .value_i             (markov_event_cnt),
+    .value_o             (markov_event_hwm_fips)
+  );
 
-  entropy_src_watermark_reg # (.RegWidth(HalfRegWidth),.HighWatermark(1))
-    u_entropy_src_watermark_reg_markov_bypass
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (markov_active),
-       .event_i             (markov_fail_pulse && es_bypass_mode),
-       .value_i             (markov_event_cnt),
-       .value_o             (markov_event_hwm_bypass)
-       );
+  entropy_src_watermark_reg # (
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_fail_pulse && es_bypass_mode),
+    .value_i             (markov_event_cnt),
+    .value_o             (markov_event_hwm_bypass)
+  );
 
-  entropy_src_cntr_reg # (.RegWidth(FullRegWidth))
-    u_entropy_src_cntr_reg_markov
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (health_test_clr),
-       .active_i            (markov_active),
-       .event_i             (markov_fail_pulse),
-       .value_o             (markov_total_fails)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_markov (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_fail_pulse),
+    .value_o             (markov_total_fails)
+  );
 
   assign hw2reg.markov_hi_watermarks.fips_markov_hi_watermark.d = markov_event_hwm_fips;
   assign hw2reg.markov_hi_watermarks.bypass_markov_hi_watermark.d = markov_event_hwm_bypass;
@@ -741,16 +767,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_any_alert_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (any_active),
-       .event_i             (any_fail_pulse),
-       .value_o             (any_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_any_alert_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (any_active),
+    .event_i             (any_fail_pulse),
+    .value_o             (any_fail_count)
+  );
 
   assign any_active = repcnt_active || adaptp_active || bucket_active || markov_active;
   assign any_fail_pulse = repcnt_fail_pulse || adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
@@ -770,69 +796,69 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign alert_event_o = alert_event;
 
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_repcnt_alert_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (repcnt_active),
-       .event_i             (repcnt_fail_pulse),
-       .value_o             (repcnt_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_repcnt_alert_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (repcnt_active),
+    .event_i             (repcnt_fail_pulse),
+    .value_o             (repcnt_fail_count)
+  );
 
   assign hw2reg.alert_fail_counts.repcnt_fail_count.d = repcnt_fail_count;
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_adaptp_alert_hi_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_hi_fail_pulse),
-       .value_o             (adaptp_hi_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_adaptp_alert_hi_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_hi_fail_pulse),
+    .value_o             (adaptp_hi_fail_count)
+  );
 
   assign hw2reg.alert_fail_counts.adaptp_hi_fail_count.d = adaptp_hi_fail_count;
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_adaptp_alert_lo_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (adaptp_active),
-       .event_i             (adaptp_lo_fail_pulse),
-       .value_o             (adaptp_lo_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_adaptp_alert_lo_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (adaptp_active),
+    .event_i             (adaptp_lo_fail_pulse),
+    .value_o             (adaptp_lo_fail_count)
+  );
 
   assign hw2reg.alert_fail_counts.adaptp_lo_fail_count.d = adaptp_lo_fail_count;
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_bucket_alert_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (bucket_active),
-       .event_i             (bucket_fail_pulse),
-       .value_o             (bucket_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_bucket_alert_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (bucket_active),
+    .event_i             (bucket_fail_pulse),
+    .value_o             (bucket_fail_count)
+  );
 
   assign hw2reg.alert_fail_counts.bucket_fail_count.d = bucket_fail_count;
 
 
-  entropy_src_cntr_reg # (.RegWidth(EigthRegWidth))
-    u_entropy_src_cntr_reg_markov_alert_fails
-      (
-       .clk_i               (clk_i),
-       .rst_ni              (rst_ni),
-       .clear_i             (alert_cntrs_clr),
-       .active_i            (markov_active),
-       .event_i             (markov_fail_pulse),
-       .value_o             (markov_fail_count)
-       );
+  entropy_src_cntr_reg # (
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_markov_alert_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_fail_pulse),
+    .value_o             (markov_fail_count)
+  );
 
   assign hw2reg.alert_fail_counts.markov_fail_count.d = markov_fail_count;
 
@@ -840,8 +866,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // pack tested entropy into pre-conditioning packer
   //--------------------------------------------
 
-  prim_packer_fifo # (.InW(RngBusWidth),.OutW(PostHTWidth))
-    u_prim_packer_fifo_postht (
+  prim_packer_fifo # (
+    .InW(RngBusWidth),
+    .OutW(PostHTWidth)
+  ) u_prim_packer_fifo_postht (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_postht_clr),
@@ -866,8 +894,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
 
-  prim_packer_fifo # (.InW(PostHTWidth),.OutW(SeedLen))
-    u_prim_packer_fifo_cond (
+  prim_packer_fifo # (
+    .InW(PostHTWidth),
+    .OutW(SeedLen)
+  ) u_prim_packer_fifo_cond (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_cond_clr),
@@ -890,8 +920,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bypass SHA conditioner path
   //--------------------------------------------
 
-  prim_packer_fifo # (.InW(PostHTWidth),.OutW(SeedLen))
-    u_prim_packer_fifo_bypass (
+  prim_packer_fifo # (
+     .InW(PostHTWidth),
+     .OutW(SeedLen)
+  ) u_prim_packer_fifo_bypass (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_bypass_clr),
@@ -942,8 +974,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // send processed entropy to final fifo
   //--------------------------------------------
 
-  prim_fifo_sync # (.Width(1+SeedLen),.Pass(0),.Depth(EsFifoDepth))
-    u_prim_fifo_sync_esfinal (
+  prim_fifo_sync # (
+    .Width(1+SeedLen),
+    .Pass(0),
+    .Depth(EsFifoDepth)
+  ) u_prim_fifo_sync_esfinal (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_esfinal_clr),
@@ -981,8 +1016,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // software es read path
   //--------------------------------------------
 
-  prim_packer_fifo # (.InW(SeedLen),.OutW(FullRegWidth))
-    u_prim_packer_fifo_swread (
+  prim_packer_fifo # (
+    .InW(SeedLen),
+    .OutW(FullRegWidth)
+  ) u_prim_packer_fifo_swread (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_swread_clr),

@@ -23,15 +23,15 @@ module entropy_src_main_sm (
   output logic               bypass_stage_pop_o
 );
 
-  // TODO: consider hamming-distance expansion of state encoding
-  typedef enum logic [2:0] {
-                            IDLE = 3'h0, // idle
-                            HTDP = 3'h1, // wait for health test done pulse
-                            PNMT = 3'h2, // wait for post health test packer not empty state
-                            MODE = 3'h3, // determine what mode the flow is in
-                            BYPS = 3'h4, // in bypass mode
-                            NORM = 3'h5  // in normal mode
-                            } state_e;
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+    IDLE = 6'b000010, // idle (hamming distance = 3)
+    HTDP = 6'b101110, // wait for health test done pulse
+    PNMT = 6'b010100, // wait for post health test packer not empty state
+    MODE = 6'b011011, // determine what mode the flow is in
+    BYPS = 6'b101001, // in bypass mode
+    NORM = 6'b110111  // in normal mode
+  } state_e;
 
   state_e state_q, state_d;
 
