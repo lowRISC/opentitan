@@ -60,9 +60,9 @@ module top_earlgrey_nexysvideo #(
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
     // MIOs 31:20 are currently not
@@ -177,15 +177,67 @@ module top_earlgrey_nexysvideo #(
     .jtag_srst_no ( jtag_srst_n     ),
     .jtag_tdi_o   ( jtag_tdi        ),
     .jtag_tdo_i   ( jtag_tdo        ),
-    // To core side
-    .out_core_i   ( {dio_out_core, mio_out_core} ),
-    .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
-    .in_core_o    ( {dio_in_core,  mio_in_core}  ),
+    // To core side via usbmux for DIOs
+    .out_core_i   ( {dio_out_umux, mio_out_core} ),
+    .oe_core_i    ( {dio_oe_umux,  mio_oe_core}  ),
+    .in_core_o    ( {dio_in_umux,  mio_in_core}  ),
     // To padring side
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
-    .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring , mio_in_padring } )
+    .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
+    .in_padring_i  ( {dio_in_padring, mio_in_padring } )
   );
+
+  // Software can enable the pinflip feature inside usbdev.
+  // The example hello_usbdev does this based on GPIO0 (a switch on the board)
+  //
+  // Here, we use the state of the DN pullup to effectively undo the
+  // swapping such that the PCB always sees the unflipped D+/D-. We
+  // could do the same inside the .xdc file but then two FPGA
+  // bitstreams would be needed for testing.
+  //
+  // dio_in/out/oe map is: PADS <- _padring <- JTAG mux -> _umux -> USB mux -> _core
+  localparam int DioIdxUsbDn0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDn;
+  localparam int DioIdxUsbDp0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDp;
+  localparam int DioIdxUsbDnPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup;
+  localparam int DioIdxUsbDpPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup;
+
+  // The output enable for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
+  logic undo_swap;
+  assign undo_swap = dio_oe_core[DioIdxUsbDnPullup0];
+
+  for (genvar i = 0; i < padctrl_reg_pkg::NDioPads; i++) begin : gen_dio
+    if (i == DioIdxUsbDn0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDp0] :
+                                           dio_out_core[DioIdxUsbDn0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDp0] :
+                                           dio_oe_core[DioIdxUsbDn0];
+      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDp0] :
+                                           dio_in_umux[DioIdxUsbDn0];
+    end else if (i == DioIdxUsbDp0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDn0] :
+                                           dio_out_core[DioIdxUsbDp0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDn0] :
+                                           dio_oe_core[DioIdxUsbDp0];
+      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDn0] :
+                                           dio_in_umux[DioIdxUsbDp0];
+    end else if (i == DioIdxUsbDnPullup0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDpPullup0] :
+                                           dio_out_core[DioIdxUsbDnPullup0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDpPullup0] :
+                                           dio_oe_core[DioIdxUsbDnPullup0];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end else if (i == DioIdxUsbDpPullup0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDnPullup0] :
+                                           dio_out_core[DioIdxUsbDpPullup0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDnPullup0] :
+                                           dio_oe_core[DioIdxUsbDpPullup0];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end else begin
+      assign dio_out_umux[i] = dio_out_core[i];
+      assign dio_oe_umux[i]  = dio_oe_core[i];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end
+  end
 
   ////////////////////////////////
   // JTAG clock buffer for FPGA //
