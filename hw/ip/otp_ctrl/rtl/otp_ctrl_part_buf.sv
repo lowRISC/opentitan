@@ -44,13 +44,13 @@ module otp_ctrl_part_buf
   output logic [OtpSizeWidth-1:0]     otp_size_o,
   output logic [OtpIfWidth-1:0]       otp_wdata_o,
   output logic [OtpAddrWidth-1:0]     otp_addr_o,
-  input                               otp_gnt_i,
+  input                               otp_ack_i,
   input                               otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
   input  otp_err_e                    otp_err_i,
   // Scrambling mutex request
   output logic                        scrmbl_mtx_req_o,
-  input                               scrmbl_mtx_gnt_i,
+  input                               scrmbl_mtx_ack_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e             scrmbl_cmd_o,
   output logic [ConstSelWidth-1:0]    scrmbl_sel_o,
@@ -199,7 +199,7 @@ module otp_ctrl_part_buf
       // And then wait until the OTP word comes back.
       InitSt: begin
         otp_req_o = 1'b1;
-        if (otp_gnt_i) begin
+        if (otp_ack_i) begin
           state_d = InitWaitSt;
         end
       end
@@ -247,7 +247,7 @@ module otp_ctrl_part_buf
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Decrypt;
         scrmbl_sel_o = Info.key_sel;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+        if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
           state_d = InitDescrWaitSt;
         end
       end
@@ -294,7 +294,7 @@ module otp_ctrl_part_buf
         if (Info.hw_digest) begin
           base_sel = DigOffset;
         end
-        if (otp_gnt_i) begin
+        if (otp_ack_i) begin
           state_d = CnstyReadWaitSt;
         end
       end
@@ -357,14 +357,14 @@ module otp_ctrl_part_buf
           scrmbl_cmd_o = DigestInit;
           if (Info.scrambled) begin
             scrmbl_sel_o = ChainedMode;
-            if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+            if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
               state_d = IntegScrSt;
             end
           // If this partition is not scrambled, we can just directly
           // jump to the digest state.
           end else begin
             scrmbl_sel_o = StandardMode;
-            if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+            if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
               state_d = IntegDigSt;
             end
           end

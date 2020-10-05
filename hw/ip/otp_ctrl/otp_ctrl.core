@@ -26,6 +26,7 @@ filesets:
       - rtl/otp_ctrl_lfsr_timer.sv
       - rtl/otp_ctrl_part_unbuf.sv
       - rtl/otp_ctrl_part_buf.sv
+      - rtl/otp_ctrl_sync_wrap.sv
       - rtl/otp_ctrl_dai.sv
       - rtl/otp_ctrl_kdi.sv
       - rtl/otp_ctrl_lci.sv

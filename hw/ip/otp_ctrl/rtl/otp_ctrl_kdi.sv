@@ -45,7 +45,7 @@ module otp_ctrl_kdi
   output otbn_otp_key_rsp_t                          otbn_otp_key_rsp_o,
   // Scrambling mutex request
   output logic                                       scrmbl_mtx_req_o,
-  input                                              scrmbl_mtx_gnt_i,
+  input                                              scrmbl_mtx_ack_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e                            scrmbl_cmd_o,
   output logic [ConstSelWidth-1:0]                   scrmbl_sel_o,
@@ -330,7 +330,7 @@ module otp_ctrl_kdi
         // Need to reset the digest state and set digest mode to "standard".
         scrmbl_sel_o = StandardMode;
         scrmbl_cmd_o = DigestInit;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+        if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
           state_d = DigLoadSt;
         end
       end

@@ -40,7 +40,7 @@ module otp_ctrl_part_unbuf
   output logic [OtpSizeWidth-1:0]     otp_size_o,
   output logic [OtpIfWidth-1:0]       otp_wdata_o,
   output logic [OtpAddrWidth-1:0]     otp_addr_o,
-  input                               otp_gnt_i,
+  input                               otp_ack_i,
   input                               otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
   input  otp_err_e                    otp_err_i
@@ -153,7 +153,7 @@ module otp_ctrl_part_unbuf
       // And then wait until the OTP word comes back.
       InitSt: begin
         otp_req_o = 1'b1;
-        if (otp_gnt_i) begin
+        if (otp_ack_i) begin
           state_d = InitWaitSt;
         end
       end
@@ -200,7 +200,7 @@ module otp_ctrl_part_unbuf
             access_o.read_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;
-          if (otp_gnt_i) begin
+          if (otp_ack_i) begin
             state_d = ReadWaitSt;
           end
         end else begin

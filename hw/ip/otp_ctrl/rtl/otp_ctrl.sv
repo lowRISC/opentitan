@@ -49,7 +49,7 @@ module otp_ctrl
   // TODO: EDN interface
   output otp_edn_req_t                               otp_edn_req_o,
   input  otp_edn_rsp_t                               otp_edn_rsp_i,
-  // Power manager interface
+  // Power manager interface (inputs are synced to OTP clock domain)
   input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_req_i,
   output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_rsp_o,
   // Lifecycle transition command interface
@@ -172,9 +172,19 @@ module otp_ctrl
   // The DAI and the LCI can initiate write transactions, which
   // are critical and we must not power down if such transactions
   // are pending. Hence, we signal the LCI/DAI idle state to the
-  // power manager
-  logic lci_idle;
-  assign pwr_otp_rsp_o.otp_idle = lci_idle & dai_idle;
+  // power manager. This signal is flopped here as it has to
+  // cross a clock boundary to the power manager.
+  logic lci_idle, otp_idle_d, otp_idle_q;
+  assign otp_idle_d = lci_idle & dai_idle;
+  assign pwr_otp_rsp_o.otp_idle = otp_idle_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
+    if (!rst_ni) begin
+      otp_idle_q <= 1'b0;
+    end else begin
+      otp_idle_q <= otp_idle_d;
+    end
+  end
 
   //////////////////////////////////////
   // Ctrl/Status CSRs, Errors, Alerts //
@@ -359,9 +369,9 @@ module otp_ctrl
     logic [OtpAddrWidth-1:0]     addr; // Halfword address.
   } otp_bundle_t;
 
-  logic [NumAgents-1:0]        part_otp_arb_req, part_otp_arb_gnt;
+  logic [NumAgents-1:0]        part_otp_arb_req, part_otp_arb_ack;
   otp_bundle_t                 part_otp_arb_bundle [NumAgents];
-  logic                        otp_arb_valid, otp_arb_ready;
+  logic                        otp_arb_req, otp_arb_ack;
   logic [vbits(NumAgents)-1:0] otp_arb_idx;
   otp_bundle_t                 otp_arb_bundle;
 
@@ -375,58 +385,42 @@ module otp_ctrl
     .rst_ni,
     .req_i   ( part_otp_arb_req    ),
     .data_i  ( part_otp_arb_bundle ),
-    .gnt_o   ( part_otp_arb_gnt    ),
+    .gnt_o   ( part_otp_arb_ack    ),
     .idx_o   ( otp_arb_idx         ),
-    .valid_o ( otp_arb_valid       ),
+    .valid_o ( otp_arb_req         ),
     .data_o  ( otp_arb_bundle      ),
-    .ready_i ( otp_arb_ready       )
+    .ready_i ( otp_arb_ack         )
   );
 
   otp_err_e              part_otp_err;
   logic [OtpIfWidth-1:0] part_otp_rdata;
   logic                  otp_rvalid;
-  tlul_pkg::tl_h2d_t     tl_win_h2d_gated;
-  tlul_pkg::tl_d2h_t     tl_win_d2h_gated;
 
-  // Life cycle qualification of TL-UL test interface.
-  assign tl_win_h2d_gated              = (lc_dft_en_i == lc_ctrl_pkg::On) ?
-                                         tl_win_h2d[$high(tl_win_h2d)] : '0;
-  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en_i == lc_ctrl_pkg::On) ?
-                                         tl_win_d2h_gated : '0;
-
-
-  // This clock mux is only steered to clk_raw_i if we are in the RAW life cycle state and the LC
-  // controller initiates a RAW unlock transition. Consequently, the TL-UL test port of the OTP
-  // wrapper does not require special synchronization logic, since it will never be active during
-  // RAW. The functional OTP wrapper interface however needs to be treated as asynchronous.
-  logic clk_otp;
-  otp_ctrl_clk_mux u_otp_ctrl_clk_mux (
-    .clk_i,
-    .rst_ni,
-    .clk_raw_i,
-    .lc_raw_clk_en_i,
-    .test_en_i,
-    .clk_o ( clk_otp )
-  );
-
-  // TODO: implement asynchronous transition for functional OTP interface.
-  prim_otp #(
+  // This wraps the OTP macro primitive and performs clock muxing and
+  // data synchronization.
+  otp_ctrl_sync_wrap #(
     .Width(OtpWidth),
     .Depth(OtpDepth)
-  ) u_otp (
-    // This muxed clock is switched to an external clock
-    // when performing RAW unlock via the LC controller.
-    .clk_i       ( clk_otp              ),
+  ) u_otp_ctrl_sync_wrap (
+    // Normal functional clock.
+    .clk_i,
     .rst_ni,
+    // Test clock for initial programming. Only used during RAW unlock
+    .clk_raw_i,
+    // Test enable input, overrides the OTP clock mux to use clk_i.
+    .test_en_i,
+    // Lifecycle broadcast inputs
+    .lc_raw_clk_en_i,
+    .lc_dft_en_i,
     // Power sequencing signals to/from AST
     .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq     ),
     .pwr_seq_h_i ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
-    // Test interface
-    .test_tl_i   ( tl_win_h2d_gated     ),
-    .test_tl_o   ( tl_win_d2h_gated     ),
+    // Test interface (this is gated with lc_dft_en_i)
+    .test_tl_i   ( tl_win_h2d[$high(tl_win_h2d)] ),
+    .test_tl_o   ( tl_win_d2h[$high(tl_win_d2h)] ),
     // Read / Write command interface
-    .ready_o     ( otp_arb_ready        ),
-    .valid_i     ( otp_arb_valid        ),
+    .req_i       ( otp_arb_ack          ),
+    .ack_o       ( otp_arb_req          ),
     .cmd_i       ( otp_arb_bundle.cmd   ),
     .size_i      ( otp_arb_bundle.size  ),
     .addr_i      ( otp_arb_bundle.addr  ),
@@ -450,8 +444,8 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .clr_i    ( 1'b0           ),
-    .wvalid_i ( otp_arb_valid & otp_arb_ready ),
-    .wready_o (                ),
+    .wvalid_i ( otp_arb_req & otp_arb_ack ),
+    .wready_o (                           ),
     .wdata_i  ( otp_arb_idx    ),
     .rvalid_o ( otp_fifo_valid ),
     .rready_i ( otp_rvalid     ),
@@ -488,7 +482,7 @@ module otp_ctrl
     logic                        valid;
   } scrmbl_bundle_t;
 
-  logic [NumAgents-1:0]        part_scrmbl_mtx_req, part_scrmbl_mtx_gnt;
+  logic [NumAgents-1:0]        part_scrmbl_mtx_req, part_scrmbl_mtx_ack;
   scrmbl_bundle_t              part_scrmbl_req_bundle [NumAgents];
   scrmbl_bundle_t              scrmbl_req_bundle;
   logic [vbits(NumAgents)-1:0] scrmbl_mtx_idx;
@@ -517,8 +511,8 @@ module otp_ctrl
   // to give the current winner max priority in subsequent cycles in order to keep the decision
   // stable. Rearbitration occurs once the winning agent deasserts its request.
   always_comb begin : p_mutex
-    part_scrmbl_mtx_gnt = '0;
-    part_scrmbl_mtx_gnt[scrmbl_mtx_idx] = scrmbl_mtx_valid;
+    part_scrmbl_mtx_ack = '0;
+    part_scrmbl_mtx_ack[scrmbl_mtx_idx] = scrmbl_mtx_valid;
   end
 
   logic [ScrmblBlockWidth-1:0] part_scrmbl_rsp_data;
@@ -555,11 +549,34 @@ module otp_ctrl
   logic [NumPart-1:0]             part_init_done;
   part_access_t [NumPart-1:0]     part_access_dai;
 
+  // The init request comes from the power manager, which lives in the AON clock domain.
+  logic pwr_otp_req_synced;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_otp_init_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i ( pwr_otp_req_i.otp_init  ),
+    .q_o ( pwr_otp_req_synced )
+  );
+
+  // Register this signal as it has to cross a clock boundary.
+  logic pwr_otp_rsp_d, pwr_otp_rsp_q;
+  assign pwr_otp_rsp_o.otp_done = pwr_otp_rsp_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_init_reg
+    if (!rst_ni) begin
+      pwr_otp_rsp_q <= 1'b0;
+    end else begin
+      pwr_otp_rsp_q <= pwr_otp_rsp_d;
+    end
+  end
+
   otp_ctrl_dai u_otp_ctrl_dai (
     .clk_i,
     .rst_ni,
-    .init_req_i       ( pwr_otp_req_i.otp_init                ),
-    .init_done_o      ( pwr_otp_rsp_o.otp_done                ),
+    .init_req_i       ( pwr_otp_req_synced                    ),
+    .init_done_o      ( pwr_otp_rsp_d                         ),
     .part_init_req_o  ( part_init_req                         ),
     .part_init_done_i ( part_init_done                        ),
     .escalate_en_i    ( lc_escalate_en_i                      ),
@@ -577,12 +594,12 @@ module otp_ctrl
     .otp_size_o       ( part_otp_arb_bundle[DaiIdx].size      ),
     .otp_wdata_o      ( part_otp_arb_bundle[DaiIdx].wdata     ),
     .otp_addr_o       ( part_otp_arb_bundle[DaiIdx].addr      ),
-    .otp_gnt_i        ( part_otp_arb_gnt[DaiIdx]              ),
+    .otp_ack_i        ( part_otp_arb_ack[DaiIdx]              ),
     .otp_rvalid_i     ( part_otp_rvalid[DaiIdx]               ),
     .otp_rdata_i      ( part_otp_rdata                        ),
     .otp_err_i        ( part_otp_err                          ),
     .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[DaiIdx]           ),
-    .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[DaiIdx]           ),
+    .scrmbl_mtx_ack_i ( part_scrmbl_mtx_ack[DaiIdx]           ),
     .scrmbl_cmd_o     ( part_scrmbl_req_bundle[DaiIdx].cmd    ),
     .scrmbl_sel_o     ( part_scrmbl_req_bundle[DaiIdx].sel    ),
     .scrmbl_data_o    ( part_scrmbl_req_bundle[DaiIdx].data   ),
@@ -615,7 +632,7 @@ module otp_ctrl
     .otp_size_o       ( part_otp_arb_bundle[LciIdx].size  ),
     .otp_wdata_o      ( part_otp_arb_bundle[LciIdx].wdata ),
     .otp_addr_o       ( part_otp_arb_bundle[LciIdx].addr  ),
-    .otp_gnt_i        ( part_otp_arb_gnt[LciIdx]          ),
+    .otp_ack_i        ( part_otp_arb_ack[LciIdx]          ),
     .otp_rvalid_i     ( part_otp_rvalid[LciIdx]           ),
     .otp_rdata_i      ( part_otp_rdata                    ),
     .otp_err_i        ( part_otp_err                      )
@@ -627,7 +644,7 @@ module otp_ctrl
 
   // This stops lint from complaining about unused signals.
   logic unused_lci_scrmbl_sigs;
-  assign unused_lci_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[LciIdx],
+  assign unused_lci_scrmbl_sigs = ^{part_scrmbl_mtx_ack[LciIdx],
                                     part_scrmbl_req_ready[LciIdx],
                                     part_scrmbl_rsp_valid[LciIdx]};
 
@@ -661,7 +678,7 @@ module otp_ctrl
     .otbn_otp_key_req_i,
     .otbn_otp_key_rsp_o,
     .scrmbl_mtx_req_o        ( part_scrmbl_mtx_req[KdiIdx]          ),
-    .scrmbl_mtx_gnt_i        ( part_scrmbl_mtx_gnt[KdiIdx]          ),
+    .scrmbl_mtx_ack_i        ( part_scrmbl_mtx_ack[KdiIdx]          ),
     .scrmbl_cmd_o            ( part_scrmbl_req_bundle[KdiIdx].cmd   ),
     .scrmbl_sel_o            ( part_scrmbl_req_bundle[KdiIdx].sel   ),
     .scrmbl_data_o           ( part_scrmbl_req_bundle[KdiIdx].data  ),
@@ -677,7 +694,7 @@ module otp_ctrl
 
   // This stops lint from complaining about unused signals.
   logic unused_kdi_otp_sigs;
-  assign unused_kdi_otp_sigs = ^{part_otp_arb_gnt[KdiIdx],
+  assign unused_kdi_otp_sigs = ^{part_otp_arb_ack[KdiIdx],
                                  part_otp_rvalid[KdiIdx]};
 
   /////////////////////////
@@ -709,7 +726,7 @@ module otp_ctrl
         .otp_size_o    ( part_otp_arb_bundle[k].size  ),
         .otp_wdata_o   ( part_otp_arb_bundle[k].wdata ),
         .otp_addr_o    ( part_otp_arb_bundle[k].addr  ),
-        .otp_gnt_i     ( part_otp_arb_gnt[k]          ),
+        .otp_ack_i     ( part_otp_arb_ack[k]          ),
         .otp_rvalid_i  ( part_otp_rvalid[k]           ),
         .otp_rdata_i   ( part_otp_rdata               ),
         .otp_err_i     ( part_otp_err                 )
@@ -728,7 +745,7 @@ module otp_ctrl
 
       // This stops lint from complaining about unused signals.
       logic unused_part_scrmbl_sigs;
-      assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
+      assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_ack[k],
                                          part_scrmbl_req_ready[k],
                                          part_scrmbl_rsp_valid[k],
                                          integ_chk_req[k],
@@ -762,12 +779,12 @@ module otp_ctrl
         .otp_size_o       ( part_otp_arb_bundle[k].size     ),
         .otp_wdata_o      ( part_otp_arb_bundle[k].wdata    ),
         .otp_addr_o       ( part_otp_arb_bundle[k].addr     ),
-        .otp_gnt_i        ( part_otp_arb_gnt[k]             ),
+        .otp_ack_i        ( part_otp_arb_ack[k]             ),
         .otp_rvalid_i     ( part_otp_rvalid[k]              ),
         .otp_rdata_i      ( part_otp_rdata                  ),
         .otp_err_i        ( part_otp_err                    ),
         .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[k]          ),
-        .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[k]          ),
+        .scrmbl_mtx_ack_i ( part_scrmbl_mtx_ack[k]          ),
         .scrmbl_cmd_o     ( part_scrmbl_req_bundle[k].cmd   ),
         .scrmbl_sel_o     ( part_scrmbl_req_bundle[k].sel   ),
         .scrmbl_data_o    ( part_scrmbl_req_bundle[k].data  ),

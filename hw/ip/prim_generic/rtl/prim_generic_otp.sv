@@ -1,6 +1,10 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// This is a generic model for the OTP macro wrapper.
+// It has two simple req/ack interfaces for the command and the return data / error code.
+// TODO: expand this some more.
 
 module prim_generic_otp #(
   // Native OTP word size. This determines the size_i granule.
@@ -28,14 +32,15 @@ module prim_generic_otp #(
   input  tlul_pkg::tl_h2d_t      test_tl_i,
   output tlul_pkg::tl_d2h_t      test_tl_o,
   // Ready valid handshake for read/write command
-  output logic                   ready_o,
-  input                          valid_i,
+  output logic                   ack_o,
+  input                          req_i,
   input [SizeWidth-1:0]          size_i, // #(Native words)-1, e.g. size == 0 for 1 native word.
   input [CmdWidth-1:0]           cmd_i,  // 00: read command, 01: write command, 11: init command
   input [AddrWidth-1:0]          addr_i,
   input [IfWidth-1:0]            wdata_i,
   // Response channel
-  output logic                   valid_o,
+  output logic                   req_o,
+  input                          ack_i,
   output logic [IfWidth-1:0]     rdata_o,
   output logic [ErrWidth-1:0]    err_o
 );
@@ -56,7 +61,7 @@ module prim_generic_otp #(
   // Control logic //
   ///////////////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 8 -n 10
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 9 -n 10 -s 3547362473
   // Hamming distance histogram:
   //
   // 0: --
@@ -64,10 +69,10 @@ module prim_generic_otp #(
   // 2: --
   // 3: --
   // 4: --
-  // 5: |||||||||||||||||||| (53.57%)
-  // 6: ||||||||||||| (35.71%)
-  // 7: | (3.57%)
-  // 8: || (7.14%)
+  // 5: |||||||||||||||||||| (52.78%)
+  // 6: ||||||||||||||| (41.67%)
+  // 7: | (2.78%)
+  // 8: | (2.78%)
   // 9: --
   // 10: --
   //
@@ -76,18 +81,19 @@ module prim_generic_otp #(
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt      = 10'b1100000011,
-    InitSt       = 10'b1100110100,
-    IdleSt       = 10'b1010111010,
-    ReadSt       = 10'b0011100000,
-    ReadWaitSt   = 10'b1001011111,
-    WriteCheckSt = 10'b0111010101,
-    WriteWaitSt  = 10'b0000001100,
-    WriteSt      = 10'b0110101111
+    ResetSt      = 10'b1110110111,
+    InitSt       = 10'b0010111010,
+    IdleSt       = 10'b1100001010,
+    ReadSt       = 10'b0101100101,
+    ReadWaitSt   = 10'b0000010001,
+    WriteCheckSt = 10'b0011001111,
+    WriteWaitSt  = 10'b1001010110,
+    WriteSt      = 10'b1111011001,
+    AckWaitSt    = 10'b1011100000
   } state_e;
 
   state_e state_d, state_q;
-  logic  valid_d, valid_q;
+  logic  err_en;
   logic [ErrWidth-1:0] err_d, err_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
@@ -101,15 +107,15 @@ module prim_generic_otp #(
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
-  assign valid_o = valid_q;
   assign rdata_o = rdata_q;
   assign err_o   = err_q;
 
   always_comb begin : p_fsm
     // Default
     state_d = state_q;
-    ready_o = 1'b0;
-    valid_d = 1'b0;
+    ack_o   = 1'b0;
+    req_o   = 1'b0;
+    err_en  = 1'b0;
     err_d   = otp_ctrl_pkg::NoErr;
     req     = 1'b0;
     wren    = 1'b0;
@@ -119,13 +125,14 @@ module prim_generic_otp #(
     unique case (state_q)
       // Wait here until we receive an initialization command.
       ResetSt: begin
-        ready_o = 1'b1;
-        if (valid_i) begin
+        if (req_i) begin
+          ack_o = 1'b1;
           if (cmd_i == otp_ctrl_pkg::OtpInit) begin
             state_d = InitSt;
           end else begin
             // Invalid commands get caught here
-            valid_d = 1'b1;
+            state_d = AckWaitSt;
+            err_en = 1'b1;
             err_d = otp_ctrl_pkg::OtpCmdInvErr;
           end
         end
@@ -133,13 +140,13 @@ module prim_generic_otp #(
       // Wait for some time until the OTP macro is ready.
       InitSt: begin
         // TODO: add some pseudo random init time here.
-        state_d = IdleSt;
-        valid_d = 1'b1;
+        state_d = AckWaitSt;
+        err_en = 1'b1;
       end
       // In the idle state, we basically wait for read or write commands.
       IdleSt: begin
-        ready_o = 1'b1;
-        if (valid_i) begin
+        if (req_i) begin
+          ack_o = 1'b1;
           cnt_clr = 1'b1;
           err_d = otp_ctrl_pkg::NoErr;
           unique case (cmd_i)
@@ -147,8 +154,9 @@ module prim_generic_otp #(
             otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
             default:  begin
               // Invalid commands get caught here
-              valid_d = 1'b1;
-              err_d = otp_ctrl_pkg::OtpCmdInvErr;
+              state_d = AckWaitSt;
+              err_en  = 1'b1;
+              err_d   = otp_ctrl_pkg::OtpCmdInvErr;
             end
           endcase // cmd_i
         end
@@ -165,13 +173,13 @@ module prim_generic_otp #(
           cnt_en = 1'b1;
           // Uncorrectable error, bail out.
           if (rerror[1]) begin
-            state_d = IdleSt;
-            valid_d = 1'b1;
+            state_d = AckWaitSt;
+            err_en = 1'b1;
             err_d = otp_ctrl_pkg::OtpReadUncorrErr;
           end else begin
             if (cnt_q == size_q) begin
-              state_d = IdleSt;
-              valid_d = 1'b1;
+              state_d = AckWaitSt;
+              err_en = 1'b1;
             end else begin
               state_d = ReadSt;
             end
@@ -195,8 +203,8 @@ module prim_generic_otp #(
         if (rvalid) begin
           cnt_en = 1'b1;
           if (rerror[1] || rdata_d != '0) begin
-            state_d = IdleSt;
-            valid_d = 1'b1;
+            state_d = AckWaitSt;
+            err_en = 1'b1;
             err_d = otp_ctrl_pkg::OtpWriteBlankErr;
           end else begin
             if (cnt_q == size_q) begin
@@ -215,7 +223,14 @@ module prim_generic_otp #(
         wren = 1'b1;
         cnt_en = 1'b1;
         if (cnt_q == size_q) begin
-          valid_d = 1'b1;
+          err_en = 1'b1;
+          state_d = AckWaitSt;
+        end
+      end
+      // Wait for output handshake to complete.
+      AckWaitSt: begin
+        req_o = 1'b1;
+        if (ack_i) begin
           state_d = IdleSt;
         end
       end
@@ -274,7 +289,6 @@ module prim_generic_otp #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      valid_q <= '0;
       err_q   <= '0;
       addr_q  <= '0;
       wdata_q <= '0;
@@ -282,16 +296,17 @@ module prim_generic_otp #(
       cnt_q   <= '0;
       size_q  <= '0;
     end else begin
-      valid_q <= valid_d;
-      err_q   <= err_d;
       cnt_q   <= cnt_d;
-      if (ready_o && valid_i) begin
+      if (ack_o && req_i) begin
         addr_q  <= addr_i;
         wdata_q <= wdata_i;
         size_q  <= size_i;
       end
       if (rvalid) begin
         rdata_q[cnt_q] <= rdata_d;
+      end
+      if (err_en) begin
+        err_q   <= err_d;
       end
     end
   end

@@ -42,13 +42,13 @@ module otp_ctrl_dai
   output logic [OtpSizeWidth-1:0]        otp_size_o,
   output logic [OtpIfWidth-1:0]          otp_wdata_o,
   output logic [OtpAddrWidth-1:0]        otp_addr_o,
-  input                                  otp_gnt_i,
+  input                                  otp_ack_i,
   input                                  otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]          otp_rdata_i,
   input  otp_err_e                       otp_err_i,
   // Scrambling mutex request
   output logic                           scrmbl_mtx_req_o,
-  input                                  scrmbl_mtx_gnt_i,
+  input                                  scrmbl_mtx_ack_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e                scrmbl_cmd_o,
   output logic [ConstSelWidth-1:0]       scrmbl_sel_o,
@@ -196,7 +196,7 @@ module otp_ctrl_dai
         data_clr = 1'b1;
         if (init_req_i) begin
           otp_req_o = 1'b1;
-          if (otp_gnt_i) begin
+          if (otp_ack_i) begin
             state_d = InitOtpSt;
           end
         end
@@ -275,7 +275,7 @@ module otp_ctrl_dai
         if (part_access_i[part_idx].read_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_cmd_o = OtpRead;
-          if (otp_gnt_i) begin
+          if (otp_ack_i) begin
             state_d = ReadWaitSt;
           end
         end else begin
@@ -320,7 +320,7 @@ module otp_ctrl_dai
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Decrypt;
         scrmbl_sel_o = PartInfo[part_idx].key_sel;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+        if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
           state_d = DescrWaitSt;
         end
       end
@@ -356,7 +356,7 @@ module otp_ctrl_dai
              (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset))) begin
           otp_req_o = 1'b1;
           otp_cmd_o = OtpWrite;
-          if (otp_gnt_i) begin
+          if (otp_ack_i) begin
             state_d = WriteWaitSt;
           end
         end else begin
@@ -395,7 +395,7 @@ module otp_ctrl_dai
         scrmbl_valid_o = 1'b1;
         scrmbl_cmd_o = Encrypt;
         scrmbl_sel_o = PartInfo[part_idx].key_sel;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+        if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
           state_d = ScrWaitSt;
         end
       end
@@ -418,7 +418,7 @@ module otp_ctrl_dai
         // Need to reset the digest state and set digest mode to "standard".
         scrmbl_sel_o = StandardMode;
         scrmbl_cmd_o = DigestInit;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+        if (scrmbl_mtx_ack_i && scrmbl_ready_i) begin
           state_d = DigReadSt;
         end
       end
@@ -431,7 +431,7 @@ module otp_ctrl_dai
             part_access_i[part_idx].write_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_cmd_o = OtpRead;
-          if (otp_gnt_i) begin
+          if (otp_ack_i) begin
             state_d = DigReadWaitSt;
           end
         end else begin
