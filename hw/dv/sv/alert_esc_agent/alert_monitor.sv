@@ -82,7 +82,7 @@ class alert_monitor extends alert_esc_base_monitor;
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
-      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
+      alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : ping_thread
 
@@ -91,7 +91,6 @@ class alert_monitor extends alert_esc_base_monitor;
     bit                alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
-        alert_async_delays();
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
@@ -132,8 +131,8 @@ class alert_monitor extends alert_esc_base_monitor;
           cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
           if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
         end
-      end
-      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
+      end  // end while loop
+      alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : alert_thread
 
@@ -145,7 +144,6 @@ class alert_monitor extends alert_esc_base_monitor;
       if (!under_reset && is_sig_int_err() && (!cfg.is_async || prev_err != 0)) begin
         fork
           begin
-            alert_async_delays();
             req = alert_esc_seq_item::type_id::create("req");
             req.alert_esc_type = AlertEscIntFail;
             alert_esc_port.write(req);
@@ -157,13 +155,11 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : int_fail_thread
 
   virtual task wait_alert();
-    while (cfg.vif.alert_tx.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
-    alert_async_delays();
+    while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
   endtask : wait_alert
 
   virtual task wait_alert_complete();
-    while (cfg.vif.alert_tx.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
-    alert_async_delays();
+    while (cfg.vif.alert_tx_final.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
   endtask : wait_alert_complete
 
   virtual task wait_ack();
@@ -175,26 +171,20 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : wait_ack_complete
 
   virtual function bit is_sig_int_err();
-    return cfg.vif.monitor_cb.alert_tx.alert_p === cfg.vif.monitor_cb.alert_tx.alert_n;
+    return cfg.vif.monitor_cb.alert_tx_final.alert_p === cfg.vif.monitor_cb.alert_tx_final.alert_n;
   endfunction : is_sig_int_err
 
   virtual function bit is_valid_alert();
-    return cfg.vif.monitor_cb.alert_tx.alert_p && !cfg.vif.monitor_cb.alert_tx.alert_n;
+    return cfg.vif.monitor_cb.alert_tx_final.alert_p && !cfg.vif.monitor_cb.alert_tx_final.alert_n;
   endfunction : is_valid_alert
 
   // end phase when no alert is triggered
   virtual task monitor_ready_to_end();
     forever begin
-      @(cfg.vif.monitor_cb.alert_tx.alert_p);
-      ok_to_end = !cfg.vif.monitor_cb.alert_tx.alert_p && cfg.vif.monitor_cb.alert_tx.alert_n;
+      @(cfg.vif.monitor_cb.alert_tx_final.alert_p);
+      ok_to_end = !cfg.vif.monitor_cb.alert_tx_final.alert_p &&
+                  cfg.vif.monitor_cb.alert_tx_final.alert_n;
     end
   endtask
 
-  // if alert is detected under async_mode
-  // will take extra two clock cycles for alert to propogate to the main clock domain
-  task alert_async_delays();
-    if (cfg.is_async) begin
-      repeat (2) @(cfg.vif.monitor_cb);
-    end
-  endtask
 endclass : alert_monitor
