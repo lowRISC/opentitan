@@ -17,6 +17,7 @@ filesets:
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_tracer
+      - lowrisc:dv:sim_sram
 
     files:
       - rtl/top_earlgrey_verilator.sv: { file_type: systemVerilogSource }
@@ -61,6 +62,10 @@ parameters:
     datatype: string
     paramtype: plusarg
     description: Write a log of output from uart0 to the given log file. Use "-" for stdout.
+  RV_CORE_IBEX_SIM_SRAM:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Disconnect the TL data output of rv_core_ibex so that we can attach the simulation SRAM.
 
 targets:
   default: &default_target
@@ -78,6 +83,7 @@ targets:
       - rominit
       - DMIDirectTAP
       - OTBN_MODEL
+      - RV_CORE_IBEX_SIM_SRAM=true
     default_tool: verilator
     filesets:
       - files_sim_verilator

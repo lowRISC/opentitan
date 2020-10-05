@@ -17,6 +17,7 @@ filesets:
       - lowrisc:dv:xbar_peri_bind
       - lowrisc:dv:xbar_test
       - lowrisc:dv:xbar_macros
+      - lowrisc:dv:sim_sram
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}
       - autogen/tb__xbar_connect.sv: {is_include_file: true}

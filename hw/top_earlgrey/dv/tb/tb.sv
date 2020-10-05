@@ -43,6 +43,7 @@ module tb;
   wire uart_rx, uart_tx;
 
   bit stub_cpu;
+  bit en_sim_sram = 1'b1;
 
   // internal clocks and resets
   // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
@@ -143,6 +144,28 @@ module tb;
                                     (`RAM_MAIN_SUB_HIER.addr_i ==
                                      sw_test_status_if.sw_test_status_addr[15:2]);
   assign sw_test_status_if.sw_test_status_val = `RAM_MAIN_SUB_HIER.wdata_i;
+
+  // Instantiate & connect the simulation SRAM.
+  sim_sram u_sim_sram (
+    .clk_i    (`CPU_HIER.clk_i),
+    .rst_ni   (`CPU_HIER.rst_ni),
+    .tl_in_i  (`CPU_HIER.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (`CPU_HIER.tl_d_i)
+  );
+
+  initial begin
+    void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
+    // Set the start address of the simulation SRAM.
+    u_sim_sram.u_sim_sram_if.start_addr = 32'h3000_0000;
+    if (!stub_cpu && en_sim_sram) begin
+      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
+      force `CPU_HIER.tl_d_o = u_sim_sram.tl_out_o;
+    end else begin
+      force u_sim_sram.clk_i = 1'b0;
+    end
+  end
 
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
@@ -255,7 +278,7 @@ module tb;
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
-  // Control assertions in the DUT.
+  // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
   `include "../autogen/tb__xbar_connect.sv"

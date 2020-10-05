@@ -256,4 +256,23 @@ module top_earlgrey_verilator (
     end
   end
 
+`ifdef RV_CORE_IBEX_SIM_SRAM
+  sim_sram u_sim_sram (
+    .clk_i    (top_earlgrey.u_rv_core_ibex.clk_i),
+    .rst_ni   (top_earlgrey.u_rv_core_ibex.rst_ni),
+    .tl_in_i  (top_earlgrey.u_rv_core_ibex.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (top_earlgrey.u_rv_core_ibex.tl_d_i)
+  );
+
+  assign top_earlgrey.u_rv_core_ibex.tl_d_i_int = u_sim_sram.tl_in_o;
+  assign top_earlgrey.u_rv_core_ibex.tl_d_o     = u_sim_sram.tl_out_o;
+
+  initial begin
+    // Set the start address of the simulation SRAM.
+    u_sim_sram.u_sim_sram_if.start_addr = 32'h3000_0000;
+  end
+`endif
+
 endmodule
