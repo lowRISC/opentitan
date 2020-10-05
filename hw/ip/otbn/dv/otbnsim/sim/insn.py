@@ -796,7 +796,7 @@ class BNLID(OTBNInsn):
             state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
 
         if self.grs1_inc:
-            new_grs1_val = (grs1_val + 1) & ((1 << 32) - 1)
+            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
             state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
 
@@ -822,7 +822,7 @@ class BNSID(OTBNInsn):
         state.dmem.store_u256(addr, wrs_val)
 
         if self.grs1_inc:
-            new_grs1_val = (grs1_val + 1) & ((1 << 32) - 1)
+            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
             state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
         if self.grs2_inc:
