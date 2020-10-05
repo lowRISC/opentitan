@@ -37,12 +37,6 @@
     Adds two WDR values, writes the result to the destination WDR and updates
     flags. The content of the second source WDR can be shifted by an unsigned
     immediate before it is consumed by the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    (result, flags_out) = AddWithCarry(wrs1, b_shifted, "0")
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnaf
     mapping:
@@ -63,12 +57,6 @@
     destination WDR, and updates the flags. The content of the second source
     WDR can be shifted by an unsigned immediate before it is consumed by the
     operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    (result, flags_out) = AddWithCarry(wrs1, b_shifted, FLAGS[flag_group].C)
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnaf
     mapping:
@@ -96,11 +84,6 @@
   doc: |
     Adds a zero-extended unsigned immediate to the value of a WDR, writes the
     result to the destination WDR, and updates the flags.
-  operation: |
-    (result, flags_out) = AddWithCarry(wrs1, imm, "0")
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnai
     mapping:
@@ -125,13 +108,6 @@
     The intermediate result is small enough if both inputs are less than `MOD`.
 
     Flags are not used or saved.
-  operation: |
-    result = wrs1 + wrs2
-
-    if result >= MOD:
-      result = result - MOD
-
-    WDR[wrd] = result & ((1 << 256) - 1)
   encoding:
     scheme: bnam
     mapping:
@@ -192,16 +168,6 @@
     Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
 
     For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
-  operation: |
-    a_qw = GetQuarterWord(wrs1, wrs1_qwsel)
-    b_qw = GetQuarterWord(wrs2, wrs2_qwsel)
-
-    mul_res = a_qw * b_qw
-
-    if zero_acc:
-      ACC = 0
-
-    ACC = ACC + (mul_res << acc_shift_imm)
   encoding:
     scheme: bnaq
     mapping:
@@ -235,22 +201,6 @@
   doc: |
     Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
     Writes the resulting accumulator to `wrd`.
-    Updates the M, L and Z flags of `flag_group`.
-  operation: |
-    a_qw = GetQuarterWord(wrs1, wrs1_qwsel)
-    b_qw = GetQuarterWord(wrs2, wrs2_qwsel)
-
-    mul_res = a_qw * b_qw
-
-    if zero_acc:
-      ACC = 0
-
-    ACC = ACC + (mul_res << acc_shift_imm)
-
-    WDR[wrd] = ACC
-    FLAGS[flag_group].M = ACC[WLEN-1]
-    FLAGS[flag_group].L = ACC[0]
-    FLAGS[flag_group].Z = (ACC == 0)
   encoding:
     scheme: bnaq
     mapping:
@@ -299,29 +249,6 @@
     If `wrd_hwsel` is one (so the instruction is updating the upper half-word of `wrd`), it updates the `M` and `Z` flags and leaves `L` unchanged.
     The `M` flag is set iff the top bit of the shifted-out result is zero.
     The `Z` flag is left unchanged if the shifted-out result is zero and cleared if not.
-  operation: |
-    a_qw = GetQuarterWord(wrs1, wrs1_qwsel)
-    b_qw = GetQuarterWord(wrs2, wrs2_qwsel)
-
-    mul_res = a_qw * b_qw
-
-    if zero_acc:
-      ACC = 0
-
-    ACC = ACC + (mul_res << acc_shift_imm)
-
-    shifted = ACC[WLEN/2-1:0]
-    ACC = ACC >> (WLEN/2)
-
-    if wrd_hwsel == 'L':
-      WDR[wrd][WLEN/2-1:0] = shifted
-      FLAGS[flag_group].L = shifted[0]
-      FLAGS[flag_group].Z = (shifted == 0)
-    elif wrd_hwsel == 'U':
-      WDR[wrd][WLEN-1:WLEN/2] = shifted
-      FLAGS[flag_group].M = shifted[WLEN/2-1]
-      if (shifted != 0):
-        FLAGS[flag_group].Z = 0
   encoding:
     scheme: bnaq
     mapping:
@@ -352,12 +279,6 @@
   doc: |
     Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    (result, flags_out) = SubtractWithBorrow(wrs1, b_shifted, 0)
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnaf
     mapping:
@@ -376,12 +297,6 @@
   doc: |
     Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
     The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    (result, flags_out) = SubtractWithBorrow(wrs1, b_shifted, FLAGS[flag_group].C)
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnaf
     mapping:
@@ -408,11 +323,6 @@
   doc: |
     Subtracts a zero-extended unsigned immediate from the value of a WDR,
     writes the result to the destination WDR, and updates the flags.
-  operation: |
-    (result, flags_out) = SubtractWithBorrow(wrs1, imm, 0)
-
-    WDR[wrd] = result
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnai
     mapping:
@@ -437,13 +347,6 @@
     This is guaranteed if both inputs are less than `MOD`.
 
     Flags are not used or saved.
-  operation: |
-    result = wrs1 - wrs2
-
-    if result < 0:
-      result = MOD + result
-
-    WDR[wrd] = result & ((1 << 256) - 1)
   encoding:
     scheme: bnam
     mapping:
@@ -472,13 +375,6 @@
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
     The content of the second source register can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group 0 are updated with the result of the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    result = wrs1 & b_shifted
-
-    WDR[wrd] = result
-    flags_out = FlagsForResult(result)
-    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bna
     mapping:
@@ -499,13 +395,6 @@
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group 0 are updated with the result of the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    result = wrs1 | b_shifted
-
-    WDR[wrd] = result
-    flags_out = FlagsForResult(result)
-    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bna
     mapping:
@@ -533,13 +422,6 @@
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group 0 are updated with the result of the operation.
-  operation: |
-    a_shifted = ShiftReg(wrs1, shift_type, shift_bits)
-    result = ~a_shifted
-
-    WDR[wrd] = result
-    flags_out = FlagsForResult(result)
-    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bnan
     mapping:
@@ -559,13 +441,6 @@
     Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
     The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
     The M, L and Z flags in flag group 0 are updated with the result of the operation.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    result = wrs1 ^ b_shifted
-
-    WDR[wrd] = result
-    flags_out = FlagsForResult(result)
-    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
   encoding:
     scheme: bna
     mapping:
@@ -595,8 +470,6 @@
   doc: |
     Concatenates the content of WDRs referenced by `wrs1` and `wrs2` (`wrs1` forms the upper part), shifts it right by an immediate value and truncates to WLEN bit.
     The result is stored in the WDR referenced by `wrd`.
-  operation: |
-    WDR[wrd] = (((wrs1 << WLEN) | wrs2) >> imm)[WLEN-1:0]
   encoding:
     scheme: bnr
     mapping:
@@ -628,10 +501,6 @@
     <wrd>, <wrs1>, <wrs2>, [FG<flag_group>.]<flag>
   doc: |
     Returns in the destination WDR the value of the first source WDR if the flag in the chosen flag group is set, otherwise returns the value of the second source WDR.
-  operation: |
-    flag_is_set = FLAGS[flag_group].get(flag)
-
-    WDR[wrd] = wrs1 if flag_is_set else wrs2
   encoding:
     scheme: bns
     mapping:
@@ -656,11 +525,6 @@
   doc: |
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUB, except that no result register is written.
-  operation: |
-    b_shifted = ShiftReg(wrs2, shift_type, shift_bits)
-    (, flags_out) = SubtractWithBorrow(wrs1, b_shifted, 0)
-
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnc
     mapping:
@@ -678,10 +542,6 @@
   doc: |
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUBB, except that no result register is written.
-  operation: |
-    (, flags_out) = SubtractWithBorrow(wrs1, wrs2, FLAGS[flag_group].C)
-
-    FLAGS[flag_group] = flags_out
   encoding:
     scheme: bnc
     mapping:
@@ -740,24 +600,6 @@
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
   cycles: 2
-  operation: |
-    mem_addr = GPR[grs1] + offset
-    wdr_dest = GPR[grd]
-
-    if grs1_inc and grd_inc:
-        raise IllegalInsn()
-
-    if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
-        raise BadDataAddr()
-
-    mem_index = mem_addr // (WLEN / 8)
-
-    WDR[wdr_dest] = LoadWlenWordFromMemory(mem_index)
-
-    if grs1_inc:
-        GPR[grs1] = GPR[grs1] + (WLEN / 8)
-    if grd_inc:
-        GPR[grd] = (GPR[grd] + 1) & 0x1f
   lsu:
     type: mem-load
     target: [offset, grs1]
@@ -815,24 +657,6 @@
 
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
-  operation: |
-    mem_addr = GPR[grs1] + offset
-    wdr_src = GPR[grs2]
-
-    if grs1_inc and grs2_inc:
-        raise IllegalInsn()
-
-    if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
-        raise BadDataAddr()
-
-    mem_index = mem_addr // (WLEN / 8)
-
-    StoreWlenWordToMemory(mem_index, WDR[wdr_src])
-
-    if grs1_inc:
-        GPR[grs1] = GPR[grs1] + (WLEN / 8)
-    if grs2_inc:
-        GPR[grs2] = (GPR[grs2] + 1) & 0x1f
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -850,7 +674,6 @@
 - mnemonic: bn.mov
   synopsis: Copy content between WDRs (direct addressing)
   operands: [wrd, wrs]
-  operation: WDR[wrd] = WDR[wrs]
   encoding:
     scheme: bnmov
     mapping:
@@ -888,16 +711,6 @@
 
     - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
     - If `grs_inc` is set, `grs` is updated to be `(*grs + 1) & 0x1f`.
-  operation: |
-    WDR[GPR[grd]] = WDR[GPR[grs]]
-
-    if grd_inc and grs_inc:
-        raise IllegalInsn()
-
-    if grs_inc:
-      GPR[grs] = GPR[grs] + 1
-    if grd_inc:
-      GPR[grd] = GPR[grd] + 1
   encoding:
     scheme: bnmovr
     mapping:
@@ -916,8 +729,6 @@
   doc: |
     Reads a WSR to a WDR.
     If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
-  operation: |
-    WDR[wrd] = WSR[wsr]
   encoding:
     scheme: wcsr
     mapping:
@@ -940,8 +751,6 @@
   doc: |
     Writes a WDR to a WSR.
     If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
-  operation: |
-    WSR[wsr] = WDR[wrs]
   encoding:
     scheme: wcsr
     mapping:

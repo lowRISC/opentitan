@@ -383,10 +383,6 @@
   lsu:
     type: csr
     target: [csr]
-  operation: |
-    gpr_s_val = GPR[grs1]
-    GPR[grd] = CSR[csr]
-    CSR[csr] |= gpr_s_val
 
 - mnemonic: csrrw
   rv32i: true
@@ -408,13 +404,6 @@
   lsu:
     type: csr
     target: [csr]
-  operation: |
-    gpr_s_val = GPR[grs1]
-
-    if d != 0:
-      GPR[grd] = CSR[csr]
-
-    CSR[csr] = gpr_s_val
 
 - mnemonic: ecall
   rv32i: true

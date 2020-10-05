@@ -330,9 +330,11 @@ def generate_otbn_isa():
     otbn_dir = SRCTREE_TOP / 'hw/ip/otbn'
     script = otbn_dir / 'util/yaml_to_doc.py'
     yaml_file = otbn_dir / 'data/insns.yml'
+    impl_file = otbn_dir / 'dv/otbnsim/sim/insn.py'
 
     out_dir = config['outdir-generated'].joinpath('otbn-isa')
-    subprocess.run([str(script), str(yaml_file), str(out_dir)], check=True)
+    subprocess.run([str(script), str(yaml_file), str(impl_file), str(out_dir)],
+                   check=True)
 
 
 def hugo_match_version(hugo_bin_path, version):
