@@ -44,11 +44,12 @@ module flash_phy_prog import flash_phy_pkg::*; (
   output logic [FullDataWidth-1:0] data_o
 );
 
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     StIdle,
     StPrePack,
     StPackData,
     StPostPack,
+    StReqFlash,
     StWaitFlash,
     StCalcMask,
     StScrambleData,
@@ -138,7 +139,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         if (req_i && idx == (WidthMultiple-1)) begin
           // last beat of a flash word
-          state_d = scramble_i ? StCalcMask : StWaitFlash;
+          state_d = scramble_i ? StCalcMask : StReqFlash;
         end else if (req_i && last_i) begin
           // last beat is not aligned with the last entry of flash word
           state_d = StPostPack;
@@ -154,7 +155,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
         // finish packing remaining entries
         if (idx == (WidthMultiple-1)) begin
-          state_d = scramble_i ? StCalcMask : StWaitFlash;
+          state_d = scramble_i ? StCalcMask : StReqFlash;
         end
       end
 
@@ -175,11 +176,15 @@ module flash_phy_prog import flash_phy_pkg::*; (
       end
 
       StCalcEcc: begin
+        state_d = StReqFlash;
+      end
+
+      StReqFlash: begin
+        req_o = 1'b1;
         state_d = StWaitFlash;
       end
 
       StWaitFlash: begin
-        req_o = 1'b1;
 
         if (ack_i) begin
           ack_o = 1'b1;
