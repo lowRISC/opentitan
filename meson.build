@@ -42,19 +42,26 @@ if coverage and meson.get_compiler('c').get_id() != 'clang'
   error('Coverage requires clang.')
 endif
 
-# C Arguments to optimize for size, used on cross builds only.
+# C compiler arguments to to catch common errors, used on all builds.
+extra_warning_args = [
+]
+
+# C compiler arguments to optimize for size, used on cross builds only.
 optimize_size_args = [
   '-Os', # General "Optimize for Size" Option
   '-fvisibility=hidden', # Hide symbols by default
 ]
 
-if meson.get_compiler('c', native: false).has_argument('-Wa,--no-pad-sections')
-    # Don't pad assembly sections. This was originally added to avoid sections
-    # being padded to the alignment size. Specifically, .vectors was being
-    # padded to 256 bytes when aligning to that value, when it only needed to be
-    # 128 bytes long. Clang doesn't do this padding, so restricting this option
-    # to GCC doesn't waste space when compiling with Clang.
-    optimize_size_args += '-Wa,--no-pad-sections'
+native_c_compiler = meson.get_compiler('c', native: true)
+cross_c_compiler = meson.get_compiler('c', native: false)
+
+if cross_c_compiler.has_argument('-Wa,--no-pad-sections')
+  # Don't pad assembly sections. This was originally added to avoid sections
+  # being padded to the alignment size. Specifically, .vectors was being
+  # padded to 256 bytes when aligning to that value, when it only needed to be
+  # 128 bytes long. Clang doesn't do this padding, so restricting this option
+  # to GCC doesn't waste space when compiling with Clang.
+  optimize_size_args += '-Wa,--no-pad-sections'
 endif
 
 # The following flags are applied to *all* builds, both cross builds and native
@@ -74,6 +81,15 @@ c_cpp_cross_args = [
   # Use OpenTitan's freestanding headers instead
   '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
 ]
+
+# Add extra warning flags for cross builds, if they are supported.
+foreach warning_arg : extra_warning_args
+  if cross_c_compiler.has_argument(warning_arg)
+    c_cpp_cross_args += [warning_arg]
+  endif
+endforeach
+
+# Add the flags for cross builds.
 add_project_arguments(
   c_cpp_cross_args,
   optimize_size_args,
@@ -96,6 +112,15 @@ c_cpp_native_args = [
   # Use a define to exclude libc redefinitions.
   '-DHOST_BUILD',
 ]
+
+# Add Extra warning flags for native builds, if they are supported.
+foreach warning_arg : extra_warning_args
+  if native_c_compiler.has_argument(warning_arg)
+    c_cpp_native_args += [warning_arg]
+  endif
+endforeach
+
+# Add the flags for native builds.
 add_project_arguments(
   c_cpp_native_args,
   language: ['c', 'cpp'], native: true)
