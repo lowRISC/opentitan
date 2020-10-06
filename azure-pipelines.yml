@@ -33,7 +33,7 @@ jobs:
 - job: lint
   displayName: Run code quality checks (quick lint)
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
@@ -43,7 +43,7 @@ jobs:
       set -e
       mkdir -p build/verible
       cd build/verible
-      curl -Ls -o verible.tar.gz https://github.com/google/verible/releases/download/$(VERIBLE_VERSION)/verible-$(VERIBLE_VERSION)-Ubuntu-16.04-xenial-x86_64.tar.gz
+      curl -Ls -o verible.tar.gz "https://github.com/google/verible/releases/download/$(VERIBLE_VERSION)/verible-$(VERIBLE_VERSION)-Ubuntu-$(lsb_release -sr)-$(lsb_release -sc)-x86_64.tar.gz"
       sudo mkdir -p /tools/verible && sudo chmod 777 /tools/verible
       tar -C /tools/verible -xf verible.tar.gz --strip-components=1
       echo "##vso[task.setvariable variable=PATH]/tools/verible/bin:$PATH"
@@ -233,7 +233,7 @@ jobs:
   displayName: Run code quality checks (in-depth lint)
   dependsOn: lint
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -258,7 +258,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -289,7 +289,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -318,7 +318,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -350,7 +350,7 @@ jobs:
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   dependsOn:
     - top_earlgrey_verilator
     - sw_build
@@ -386,7 +386,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   timeoutInMinutes: 5
   steps:
   - template: ci/install-package-dependencies.yml
@@ -480,7 +480,7 @@ jobs:
 - job: deploy_release_artifacts
   displayName: Package and deploy release distribution
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   dependsOn:
     - lint
     - sw_build
@@ -517,7 +517,7 @@ jobs:
 - job: build_docker_containers
   displayName: "Build Docker Containers"
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   dependsOn:
     - lint
   steps:
