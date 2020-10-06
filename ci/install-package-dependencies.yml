@@ -36,8 +36,8 @@ steps:
       # Install verilator from experimental OBS repository
       # apt-requirements.txt doesn't cover this dependency as we don't support
       # using the repository below for anything but our CI (yet).
-      EDATOOLS_REPO_KEY="https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_16.04/Release.key"
-      EDATOOLS_REPO="deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_16.04/ /"
+      EDATOOLS_REPO_KEY="https://download.opensuse.org/repositories/home:phiwag:edatools/xUbuntu_$(lsb_release -sr)/Release.key"
+      EDATOOLS_REPO="deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_$(lsb_release -sr)/ /"
       curl -sL "$EDATOOLS_REPO_KEY" | sudo apt-key add -
       sudo sh -c "echo \"$EDATOOLS_REPO\" > /etc/apt/sources.list.d/edatools.list"
 

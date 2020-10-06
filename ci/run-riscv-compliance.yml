@@ -9,7 +9,7 @@ jobs:
   - job: riscv_compliance_tests_${{ join('_', parameters.rvc_test_suites) }}
     displayName: Execute RISC-V compliance tests for ${{ join(' ', parameters.rvc_test_suites) }}
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-18.04
     dependsOn:
       - top_earlgrey_verilator
       - sw_build
