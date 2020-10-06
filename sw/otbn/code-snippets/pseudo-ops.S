@@ -18,6 +18,7 @@ li_example:
        into just addi */
     li x2, 1230
     li x2, -123
+    li x2, 2272
 
     /* With a big immediate which happens to have nothing set in the
        lower 20 bits, it turns into just a LUI */
