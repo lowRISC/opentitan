@@ -45,8 +45,9 @@ module top_earlgrey_cw305 #(
   inout               IO_GP13,
   inout               IO_GP14,
   inout               IO_GP15,
-  // chipwhisperer IO
-  output              TIO_CLKOUT
+  // ChipWhisperer IO
+  output              TIO_CLKOUT,
+  output              IO_UTX_DEBUG
 );
 
   import top_earlgrey_pkg::*;
@@ -65,8 +66,6 @@ module top_earlgrey_cw305 #(
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
-
-  assign TIO_CLKOUT = IO_CLK;
 
   padring #(
     // MIOs 31:20 are currently not
@@ -308,5 +307,15 @@ module top_earlgrey_cw305 #(
       assign mio_out[i] = mio_out_core[i];
     end
   end
+
+  //////////////////////
+  // ChipWhisperer IO //
+  //////////////////////
+
+  // Clock ouput to capture board.
+  assign TIO_CLKOUT = IO_CLK;
+
+  // UART Tx for debugging. The UART itself is connected to the capture board.
+  assign IO_UTX_DEBUG = top_earlgrey.cio_uart_tx_d2p;
 
 endmodule : top_earlgrey_cw305
