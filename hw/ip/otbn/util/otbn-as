@@ -457,6 +457,12 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
 
 def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     '''Expand the li pseudo-op'''
+
+    # This logic is slightly complicated so it has some associated tests in the
+    # ISS testsuite (where we can run the results). If adding more cleverness
+    # to this or fixing bugs, we should also add a check at
+    # hw/ip/otbn/dv/otbnsim/test/simple/li.
+
     if set(op_to_expr.keys()) != {'grd', 'imm'}:
         raise RuntimeError('When expanding LI, got wrong op_to_expr keys '
                            '({}). This is a mismatch between expand_li in '
