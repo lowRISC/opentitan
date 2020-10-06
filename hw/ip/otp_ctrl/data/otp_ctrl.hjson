@@ -840,54 +840,6 @@
       }
     },
 
-    //////////////////////
-    // Life Cycle State //
-    //////////////////////
-    { multireg: {
-        name:     "LC_STATE",
-        desc:     '''
-                  Life cycle state, comprised of 12 16bit words.
-                  TODO: add link to LC controller spec.
-                  Other values than specified below are invalid.
-                  ''',
-        count:    "NumLcHalfwords",
-        swaccess: "ro",
-        hwaccess: "hwo",
-        cname:    "HALFWORD",
-        fields: [
-          { bits: "15:0"
-            enum: [
-              { value: "0",
-                name: "BLANK",
-                desc: '''
-                0x0000
-                '''
-              },
-              { value: "62970",
-                name: "SET",
-                desc: '''
-                0xF5FA
-                '''
-              },
-            ]
-          }
-        ]
-      }
-    },
-    { name: "LC_TRANSITION_CNT",
-      desc: "Counter for total amount of state transition attempts.",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      fields: [
-        { bits: "31:0",
-          desc: '''
-          This counter will be incremented upon each state transition attempt,
-          or when the transition command coming from the life cycle controller is invalid.
-          '''
-        }
-      ]
-    }
-
     ////////////////////////////////
     // Software Config Partitions //
     ////////////////////////////////
@@ -924,14 +876,13 @@
     //////////////////////
     { skipto: "0xC00" }
 
-    // TODO: may have to update description, once it is known how RAW unlock is handled.
     { window: {
         name: "TEST_ACCESS"
         items: "NumDebugWindowWords"
         swaccess: "rw",
         desc: '''
         This maps to the register file of the proprietary OTP macro. Note that this is only
-        accessible during the TEST life cycle state.
+        accessible during the TEST_UNLOCKED* life cycle states.
         '''
       }
     }
