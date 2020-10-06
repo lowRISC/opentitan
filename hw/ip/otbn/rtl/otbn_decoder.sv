@@ -136,9 +136,10 @@ module otbn_decoder
   logic [$clog2(WLEN)-1:0] shift_amt_bignum;
   always_comb begin
     unique case (shift_amt_mux_sel_bignum)
-      ShamtSelBignumA: shift_amt_bignum = shift_amt_a_type_bignum;
-      ShamtSelBignumS: shift_amt_bignum = shift_amt_s_type_bignum;
-      default:      shift_amt_bignum = shift_amt_a_type_bignum;
+      ShamtSelBignumA:    shift_amt_bignum = shift_amt_a_type_bignum;
+      ShamtSelBignumS:    shift_amt_bignum = shift_amt_s_type_bignum;
+      ShamtSelBignumZero: shift_amt_bignum = '0;
+      default:            shift_amt_bignum = shift_amt_a_type_bignum;
     endcase
   end
 
@@ -600,7 +601,6 @@ module otbn_decoder
       ////////////////
 
       InsnOpcodeBignumArith: begin
-        shift_amt_mux_sel_bignum = ShamtSelBignumA;
 
         unique case(insn_alu[14:12])
           3'b000: alu_operator_bignum = AluOpBignumAdd;
@@ -625,9 +625,11 @@ module otbn_decoder
         endcase
 
         if (insn_alu[14:12] != 3'b100) begin
-          alu_op_b_mux_sel_bignum = OpBSelRegister;
+          alu_op_b_mux_sel_bignum  = OpBSelRegister;
+          shift_amt_mux_sel_bignum = ShamtSelBignumA;
         end else begin
-          alu_op_b_mux_sel_bignum = OpBSelImmediate;
+          alu_op_b_mux_sel_bignum  = OpBSelImmediate;
+          shift_amt_mux_sel_bignum = ShamtSelBignumZero;
         end
       end
 
