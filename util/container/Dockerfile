@@ -14,7 +14,7 @@ ARG RISCV_TOOLCHAIN_TAR_VERSION=20200904-1
 # Build OpenOCD
 # OpenOCD is a tool to connect with the target chip over JTAG and similar
 # transports.
-FROM ubuntu:16.04 AS openocd
+FROM ubuntu:18.04 AS openocd
 RUN apt-get update && apt-get install -y \
     autoconf \
     git \
@@ -30,7 +30,7 @@ RUN cd /usr/local/src/openocd && ./bootstrap && mkdir build && cd build && \
     make -j$(nproc) && make install
 
 # Build Verilator.
-FROM ubuntu:16.04 as verilator
+FROM ubuntu:18.04 as verilator
 ARG VERILATOR_VERSION
 RUN apt-get update && apt-get install -y \
     autoconf \
@@ -48,7 +48,7 @@ RUN cd /usr/local/src/verilator && \
 
 
 # Main container image.
-FROM ubuntu:16.04 AS opentitan
+FROM ubuntu:18.04 AS opentitan
 ARG VERILATOR_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 

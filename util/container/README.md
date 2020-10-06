@@ -1,6 +1,6 @@
 # Docker Container
 
-Docker container based on Ubuntu 16.04 LTS containing various hardware and
+Docker container based on Ubuntu 18.04 LTS containing various hardware and
 software development tools for OpenTitan, as listed in the
 [OpenTitan documentation](https://docs.opentitan.org/doc/ug/install_instructions/).
 
