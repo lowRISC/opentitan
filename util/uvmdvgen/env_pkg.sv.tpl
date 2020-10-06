@@ -25,6 +25,11 @@ package ${name}_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
+% if has_alerts:
+  // TODO: add the names of alerts in order
+  parameter string LIST_OF_ALERTS[] = {};
+  parameter uint   NUM_ALERTS = ;
+% endif
 
   // types
 % if not has_ral:

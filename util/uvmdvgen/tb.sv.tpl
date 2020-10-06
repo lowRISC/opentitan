@@ -20,8 +20,8 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 % endif
 % if has_alerts:
-  // TODO: change alert_names
-  list_of_alerts = {"alert_names"};
+  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
 % endif
 % endif
 
@@ -32,8 +32,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 % endif
 % if has_alerts:
-  // TODO: declare alert interfaces according to the list_of_alerts
-  alert_if alert_names(.clk(clk), .rst_n(rst_n))
+  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
 % endif
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -44,24 +43,37 @@ module tb;
 
   // dut
   ${name} dut (
-    .clk_i                (clk        ),
+    .clk_i                (clk      ),
 % if is_cip:
-    .rst_ni               (rst_n      ),
+    .rst_ni               (rst_n    ),
 
-    .tl_i                 (tl_if.h2d  ),
+    .tl_i                 (tl_if.h2d),
 % if has_alerts:
-    .tl_o                 (tl_if.d2h  ),
-    .alert_rx_i           (alert_names.alert_rx ),
-    .alert_tx_o           (alert_names.alert_tx )
+    .tl_o                 (tl_if.d2h),
+    .alert_rx_i           (alert_rx ),
+    .alert_tx_o           (alert_tx )
 % else:
-    .tl_o                 (tl_if.d2h  )
+    .tl_o                 (tl_if.d2h)
 % endif
 % else:
-    .rst_ni               (rst_n      )
+    .rst_ni               (rst_n    )
 
 % endif
     // TODO: add remaining IOs and hook them
   );
+
+% if is_cip:
+% if has_alerts:
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+    assign alert_rx[k] = alert_if[k].alert_rx;
+    assign alert_if[k].alert_tx = alert_tx[k];
+    initial begin
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
+          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
+    end
+  end
+% endif
+% endif
 
   initial begin
     // drive clk and rst_n from clk_if
@@ -70,11 +82,6 @@ module tb;
 % if is_cip:
 % if has_interrupts:
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-% endif
-% if has_alerts:
-  // TODO: set alert interfaces with the correct names
-  uvm_config_db#(virtual alert_if)::set(null, "*.env.m_alert_agent_alert_names",
-        "vif", alert_names);
 % endif
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);

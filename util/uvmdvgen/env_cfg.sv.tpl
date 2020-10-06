@@ -24,6 +24,9 @@ class ${name}_env_cfg extends dv_base_env_cfg;
   `uvm_object_new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+% if has_alerts:
+    list_of_alerts = ${name}_env_pkg::LIST_OF_ALERTS;
+% endif
 % if has_ral:
     super.initialize(csr_base_addr);
 % endif
