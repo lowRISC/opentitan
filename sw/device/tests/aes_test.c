@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 
 // The following plaintext, key and ciphertext are extracted from Appendix C of

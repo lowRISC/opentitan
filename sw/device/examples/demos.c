@@ -10,9 +10,9 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");
