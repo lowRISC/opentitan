@@ -16,6 +16,8 @@ steps:
     inputs:
       buildType: current
       targetPath: '$(BUILD_ROOT)/downloads'
+      # The first "path" segment is the name of the artifact.
+      pattern: "*-build-bin/**"
     displayName: 'Download upstream outputs'
   - bash: |
       set -e
