@@ -25,4 +25,11 @@
   li x9, 123456789
   li x10, 0x7fffffff
 
+  /* We also allow immediates in the range [2^31, 2^32-1] (which could
+     equally have been specified as negative constants) because
+     sometimes this is more useful for "magic hex numbers" */
+  li x11, 0xffffffff
+  li x12, 0x80000000
+  li x13, 0x80000001
+
   ecall
