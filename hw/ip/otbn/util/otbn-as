@@ -498,11 +498,19 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
                            'instruction, as an integer.'
                            .format(where, imm))
 
-    # imm_int had better be representable as an i32.
-    if imm_int < -(1 << 32) or 1 << 32 <= imm_int:
+    # We allow immediates in the range [-2^31, 2^31-1] (the i32 range), plus
+    # [2^31, 2^32-1] (to allow any u32 constant).
+    if not (-(1 << 31) <= imm_int <= (1 << 32) - 1):
         raise RuntimeError('{}: The immediate for an LI instruction is {}, '
-                           'which does not fit in a signed 32-bit integer.'
+                           'which does not fit in a 32-bit integer.'
                            .format(where, imm))
+
+    # Convert any large positive constants to negative ones, so imm_int ends up
+    # in the range [-2^31, 2^31-1].
+    if (1 << 31) <= imm_int:
+        imm_int -= 1 << 32
+
+    assert -(1 << 31) <= imm_int <= (1 << 31) - 1
 
     # If imm_int is representable as an i12, we can just generate an addi
     if -(1 << 11) <= imm_int < (1 << 11):
