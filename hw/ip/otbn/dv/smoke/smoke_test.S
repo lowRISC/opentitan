@@ -196,6 +196,12 @@ bn.sub w20, w1, w2 >> 23B
 # w21 = w1 | (w2 >> 15B) = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
 bn.or  w21, w1, w2, >> 15B
 
+# w22 = w21 + 0x1bd = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9d98
+bn.addi w22, w21, 0x1bd
+
+# w23 = w21 - 0x207 = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff99d4
+bn.subi w23, w21, 0x207
+
 jal x0, end
 
 # Place end at fixed address so write to x31 by jal doesn't have changing value

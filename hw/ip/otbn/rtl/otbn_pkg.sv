@@ -135,9 +135,10 @@ package otbn_pkg;
   } imm_b_sel_base_e;
 
   // Shift amount select for bignum ISA
-  typedef enum logic {
+  typedef enum logic [1:0] {
     ShamtSelBignumA,
-    ShamtSelBignumS
+    ShamtSelBignumS,
+    ShamtSelBignumZero
   } shamt_sel_bignum_e;
 
   // Regfile write data selection
