@@ -499,7 +499,7 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
                            .format(where, imm))
 
     # If imm_int is representable as an i12, we can just generate an addi
-    if -(1 << 12) <= imm_int < (1 << 12):
+    if -(1 << 11) <= imm_int < (1 << 11):
         return ['addi {}, x0, {}'.format(grd_txt, imm_int)]
 
     imm_uint = imm_int if imm_int > 0 else (1 << 32) + imm_int
