@@ -8,9 +8,9 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.

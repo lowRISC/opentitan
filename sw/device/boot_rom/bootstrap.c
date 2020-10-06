@@ -14,9 +14,9 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/hw_sha256.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

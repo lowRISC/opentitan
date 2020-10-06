@@ -6,8 +6,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
