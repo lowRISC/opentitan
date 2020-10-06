@@ -40,17 +40,53 @@ module prim_generic_otp #(
   output logic [ErrWidth-1:0]    err_o
 );
 
-  // TODO: need a randomized LFSR timer to add some reasonable, non-deterministic response delays.
-
-  // Not supported in open-source emulation model.
-  tlul_pkg::tl_h2d_t unused_test_tl;
-  assign unused_test_tl = test_tl_i;
-  assign test_tl_o   = '0;
-
   // Not supported in open-source emulation model.
   logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
   assign unused_pwr_seq_h = pwr_seq_h_i;
   assign pwr_seq_o = '0;
+
+  ////////////////////////////////////
+  // TL-UL Test Interface Emulation //
+  ////////////////////////////////////
+
+  // Put down a register that can be used to test the TL interface.
+  // TODO: this emulation may need to be adjusted, once closed source wrapper is
+  // implemented.
+  logic tlul_req, tlul_rvalid_q, tlul_wren;
+  logic [31:0] tlul_testreg_d, tlul_testreg_q;
+  tlul_adapter_sram #(
+    .SramAw      ( 9             ),
+    .SramDw      ( 32            ),
+    .Outstanding ( 1             ),
+    .ByteAccess  ( 0             ),
+    .ErrOnWrite  ( 0             )
+  ) u_tlul_adapter_sram (
+    .clk_i,
+    .rst_ni,
+    .tl_i     ( test_tl_i         ),
+    .tl_o     ( test_tl_o         ),
+    .req_o    ( tlul_req          ),
+    .gnt_i    ( tlul_req          ),
+    .we_o     ( tlul_wren         ),
+    .addr_o   (                   ),
+    .wdata_o  ( tlul_testreg_d    ),
+    .wmask_o  (                   ),
+    .rdata_i  ( tlul_testreg_q    ),
+    .rvalid_i ( tlul_rvalid_q     ),
+    .rerror_i ( '0                )
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
+    if (!rst_ni) begin
+      tlul_rvalid_q  <= 1'b0;
+      tlul_testreg_q <= '0;
+    end else begin
+      tlul_rvalid_q <= tlul_req & ~tlul_wren;
+      if (tlul_req && tlul_wren) begin
+        tlul_testreg_q <= tlul_testreg_d;
+      end
+    end
+  end
 
   ///////////////////
   // Control logic //
@@ -132,7 +168,6 @@ module prim_generic_otp #(
       end
       // Wait for some time until the OTP macro is ready.
       InitSt: begin
-        // TODO: add some pseudo random init time here.
         state_d = IdleSt;
         valid_d = 1'b1;
       end
