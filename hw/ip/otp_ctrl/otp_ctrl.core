@@ -14,10 +14,14 @@ filesets:
       - lowrisc:prim:ram_1p
       - lowrisc:prim:otp
       - lowrisc:prim:lfsr
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:clock_mux2
+      - lowrisc:prim:flop_2sync
       - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_parity_reg.sv
+      - rtl/otp_ctrl_clk_mux.sv
       - rtl/otp_ctrl_scrmbl.sv
       - rtl/otp_ctrl_lfsr_timer.sv
       - rtl/otp_ctrl_part_unbuf.sv

@@ -27,10 +27,13 @@ module otp_ctrl
     32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
   }
 ) (
-  // TODO: implement clock muxing for initial programming.
   // TODO: check whether interfaces need asynchronous transitions.
   input                                              clk_i,
   input                                              rst_ni,
+  // Test clock for initial programming. Only used during RAW unlock
+  input                                              clk_raw_i,
+  // Test enable input, overrides the OTP clock mux to use clk_i.
+  input                                              test_en_i,
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
@@ -56,6 +59,7 @@ module otp_ctrl
   input  lc_otp_token_req_t                          lc_otp_token_req_i,
   output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
   // Lifecycle broadcast inputs
+  input  lc_ctrl_pkg::lc_tx_t                        lc_raw_clk_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_provision_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
@@ -390,11 +394,29 @@ module otp_ctrl
   assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en_i == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
 
+
+  // This clock mux is only steered to clk_raw_i if we are in the RAW life cycle state and the LC
+  // controller initiates a RAW unlock transition. Consequently, the TL-UL test port of the OTP
+  // wrapper does not require special synchronization logic, since it will never be active during
+  // RAW. The functional OTP wrapper interface however needs to be treated as asynchronous.
+  logic clk_otp;
+  otp_ctrl_clk_mux u_otp_ctrl_clk_mux (
+    .clk_i,
+    .rst_ni,
+    .clk_raw_i,
+    .lc_raw_clk_en_i,
+    .test_en_i,
+    .clk_o ( clk_otp )
+  );
+
+  // TODO: implement asynchronous transition for functional OTP interface.
   prim_otp #(
     .Width(OtpWidth),
     .Depth(OtpDepth)
   ) u_otp (
-    .clk_i,
+    // This muxed clock is switched to an external clock
+    // when performing RAW unlock via the LC controller.
+    .clk_i       ( clk_otp              ),
     .rst_ni,
     // Power sequencing signals to/from AST
     .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq     ),
