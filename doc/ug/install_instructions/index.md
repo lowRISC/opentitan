@@ -14,8 +14,8 @@ This guide makes assumes the following system setup.
 * 60 GB or more of disk space, depending on the EDA tools used.
   (EDA tools like Xilinx Vivado can easily take up 40 GB each.)
 * Linux
-  * Ubuntu 16.04 LTS is the recommended reference platform.
-    Our continuous integration setup runs on Ubuntu 16.04 LTS, which gives us the most confidence that this distribution works out of the box.
+  * Ubuntu 18.04 LTS is the recommended reference platform.
+    Our continuous integration setup runs on Ubuntu 18.04 LTS, which gives us the most confidence that this distribution works out of the box.
   * We do our best to support other Linux distributions.
     However, we cannot guarantee they can be used "out of the box" and might require updates of packages.
     Please file a [GitHub issue](https://github.com/lowRISC/opentitan/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
@@ -35,12 +35,12 @@ Note: Version numbers given below indicate a minimum version, newer versions are
 For packages listed below without a version number we have not determined a minimum version.
 
 * git
-* Python 3.5.2 with pip.
+* Python 3.6 with pip.
   Additional Python dependencies are installed through pip.
 * A C++14 capable compiler.
   GCC 5 or Clang 3.5 should meet this requirement.
 * clang-format.
-  The use of clang-format 3.8 is recommended to match the formatting enforced when submitting a pull request.
+  The use of clang-format 6.0 is recommended to match the formatting enforced when submitting a pull request.
 * [ninja](https://ninja-build.org/)  {{< tool_version "ninja-build" >}}
 * Bash
 * curl
@@ -73,7 +73,7 @@ To build our documentation the following additional sofware packages are require
   A supported binary build of Hugo is installed when building the documentation.
   However, the binaries do not run on very old distributions, such as RHEL 6.
   In this case, Hugo must be installed separately (e.g. by building it from source).
-* [doxygen](https://www.doxygen.nl/) 1.8.11
+* [doxygen](https://www.doxygen.nl/) 1.8
 * xsltproc
 
 ## System preparation
@@ -81,7 +81,7 @@ To build our documentation the following additional sofware packages are require
 <div class="bd-callout bd-callout-warning">
   <h5>Note</h5>
 
-  This documentation and the following steps in general assume our reference distribution, Ubuntu 16.04.
+  This documentation and the following steps in general assume our reference distribution, Ubuntu 18.04.
   Users inexperienced with Linux and OpenTitan are strongly encouraged to use this distribution for a seamless development experience.
 
   Users of other Linux distributions should use these steps as guidance, but will need to adjust them as necessary.
@@ -112,13 +112,12 @@ The repository will be checked out into `<working-area>/opentitan` (this is the 
 ### Install required software
 
 A number of software packages from the distribution's package manager is required.
-All installation instructions below are for Ubuntu 16.04.
+All installation instructions below are for Ubuntu 18.04.
 Adjust as necessary for other Linux distributions.
 
 {{< apt_cmd >}}
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
-(Note that the `diff_generated_util_output.py` tool works better with Python 3.6 or later where the order is preserved in `dict` types, earlier versions of Python will show spurious differences caused by things being reordered.)
 
 ```console
 $ cd $REPO_TOP
@@ -255,13 +254,13 @@ But since this requires the Bazel build system the recommendation is to download
 ### Install Verible
 
 Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
-The example below is for Ubuntu 16.04:
+The example below is for Ubuntu 18.04:
 
 ```console
 $ export VERIBLE_VERSION={{< tool_version "verible" >}}
 
-$ wget https://github.com/google/verible/releases/download/v${VERIBLE_VERSION}/verible-v${VERIBLE_VERSION}-Ubuntu-16.04-xenial-x86_64.tar.gz
-$ tar -xf verible-v${VERIBLE_VERSION}-Ubuntu-16.04-xenial-x86_64.tar.gz
+$ wget https://github.com/google/verible/releases/download/v${VERIBLE_VERSION}/verible-v${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
+$ tar -xf verible-v${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 
 $ sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
 $ sudo mv verible-v${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
