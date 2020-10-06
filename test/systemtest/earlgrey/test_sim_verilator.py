@@ -203,6 +203,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking_elf):
     sim.terminate()
 
 
+@pytest.mark.skip(reason="Spiflash on Verilator isn't reliable currently. See issue #3708.")
 def test_spiflash(tmp_path, bin_dir):
     """ Load a single application to the Verilator simulation using spiflash """
 
