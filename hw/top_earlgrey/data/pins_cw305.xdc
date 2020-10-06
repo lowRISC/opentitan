@@ -47,6 +47,10 @@ set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_D
 set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE0 }]; #JP3.D16
 set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 } [get_ports { IO_USB_DNPULLUP0 }]; #JP3.E16
 
+set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 } [get_ports { IO_UTX_DEBUG }]; #JP3.G16 (UART) for debugging
+
+## Unused pins of JP3: A12, B12, F12
+
 ## 20-Pin Connector (JP1)
 
 set_property -dict { PACKAGE_PIN R16 IOSTANDARD LVCMOS33 } [get_ports { IO_UTX }];     #JP1 PIN 10 (UART)
