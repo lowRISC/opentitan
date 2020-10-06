@@ -206,8 +206,6 @@ This verification is primarily concerned with whether the storage flops have exp
 This check applies to only the HW_CFG and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out an `otp_integrity_mismatch` alert and reset all of its hardware outputs to their defaults.
 
-**TBD do we need an LFSR clearing mechanism here for the secret partitions?**
-
 ### Storage Consistency
 
 This verification ensures the value stored in the buffer registers remain consistent with those in the OTP.
@@ -218,8 +216,6 @@ If there is an integrity digest, only the digest needs to be read; otherwise, al
 
 This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out an `otp_consistency_mismatch` alert and reset all of its hardware outputs to their defaults.
-
-**TBD do we need an LFSR clearing mechanism here for the secret partitions?**
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
 The controller hence detects this condition and makes sure that the buffer registers are kept up to date in order to prevent false positives.
@@ -310,7 +306,7 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 `TimerLfsrSeed`             | 1                     | 1            | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
 `TimerLfsrPerm`             | (see RTL)             | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
 
-**TODO: add more**
+**TODO: add more once it is clear how to distribute netlist constants on the top-level**
 
 ### Signals
 
@@ -322,48 +318,46 @@ Signal                     | Direction        | Type                        | De
 ---------------------------|------------------|-----------------------------|---------------
 `otp_ast_pwr_seq_o`        | `output`         | `otp_ast_req_t `            | Power sequencing signals going to AST (VDD domain).
 `otp_ast_pwr_seq_h_i`      | `input`          | `otp_ast_rsp_t `            | Power sequencing signals coming from AST (VCC domain).
-`otp_edn_req_o`            | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`otp_edn_rsp_i`            | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`pwr_otp_req_i`            | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
-`pwr_otp_rsp_o`            | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
-`lc_otp_program_req_i`     | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
-`lc_otp_program_rsp_o`     | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
-`lc_otp_token_req_i`       | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
-`lc_otp_token_rsp_o`       | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
+`otp_edn_o`                | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`otp_edn_i`                | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`pwr_otp_i`                | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
+`pwr_otp_o`                | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
+`lc_otp_program_i`         | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
+`lc_otp_program_o`         | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
+`lc_otp_token_i`           | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
+`lc_otp_token_o`           | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
 `lc_provision_en_i`        | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
 `lc_dft_en_i`              | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
 `otp_lc_data_o`            | `output`         | `otp_lc_data_t`             | life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `otp_keymgr_key_o`         | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`flash_otp_key_req_i`      | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
-`flash_otp_key_rsp_o`      | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
-`sram_otp_key_req_i`       | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
-`sram_otp_key_rsp_o`       | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
-`otbn_otp_key_req_i`       | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
-`otbn_otp_key_rsp_o`       | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
+`flash_otp_key_i`          | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
+`flash_otp_key_o`          | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
+`sram_otp_key_i`           | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
+`sram_otp_key_o`           | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
+`otbn_otp_key_i`           | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
+`otbn_otp_key_o`           | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
+`hw_cfg_o`                 | `output`         | `logic [NumHwCfgBits-1:0]`                   | Output of the HW_CFG partition.
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
 #### CSRNG Interface
 
 The entropy request interface that talks to CSRNG in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
-It is comprised of the `otp_csrng_o` and `otp_csrng_i` signals and follows a req / ack protocol.
+It is comprised of the `otp_edn_o` and `otp_edn_i` signals and follows a req / ack protocol.
 
 See also [CSRNG documentation]({{< relref "hw/ip/csrng/doc" >}}).
 
-**TODO: clock synchronization needed?**
+#### Power Manager Interface
 
-#### Power Manager Interfaces
+The power manager interface is comprised of three signals overall: an initialization request (`pwr_otp_i.otp_init`), an initialization done response (`pwr_otp_o.otp_done`) and an idle indicator (`pwr_otp_o.otp_idle`).
 
-There are two separate interfaces that connect the OTP controller with the power manager.
+The power manager asserts `pwr_otp_i.otp_init` in order to signal to the OTP controller that it can start initialization, and the OTP controller signals completion of the initialization sequence by asserting `pwr_otp_o.otp_done` (the signal will remain high until reset).
 
-First, there is an initialization request interface `pwr_otp_init_i` / `pwr_otp_init_o` that follows a req / ack protocol.
-The power manager asserts `pwr_otp_init_i` in order to signal to the OTP controller that it can start initialization, and the OTP controller signals completion of the initialization sequence by pulsing `pwr_otp_init_o` high.
+The idle indication signal `pwr_otp_o.otp_idle` indicates whether there is an ongoing write operation in the DAI or LCI, and the power manager uses that indication to determine whether a power down request needs to be aborted.
 
-Second, the OTP controller always outputs its state to the power manager via `otp_pwr_state_o`, such that the power manager can determine whether a shutdown needs to be aborted due to an ongoing OTP operation.
-
-Since the power manager may run in a different clock domain, the `pwr_otp_init_i` signal is synchronized within the OTP controller.
-The power manager is responsible for synchronizing the `pwr_otp_init_o` and `otp_pwr_state_o` signals.
+Since the power manager may run in a different clock domain, the `pwr_otp_i.otp_init` signal is synchronized within the OTP controller.
+The power manager is responsible for synchronizing the `pwr_otp_o.otp_done` and `pwr_otp_o.otp_idle` signals.
 
 See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
 
@@ -382,7 +376,7 @@ Some of these qualifier signals (`lc_dft_en_i`, `lc_provision_en_i` and `lc_esca
 A possible sequence for the signals described is illustrated below.
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i', wave: 'p.................'},
+  {name: 'clk_i',                           wave: 'p.................'},
   {name: 'otp_lc_data_o.valid',             wave: '0.|...|.1.|...|...'},
   {name: 'otp_lc_data_o.state',             wave: '03|...|...|...|...'},
   {name: 'otp_lc_data_o.count',             wave: '03|...|...|...|...'},
@@ -408,12 +402,12 @@ In order to perform life cycle state transitions, the life cycle controller can 
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i', wave: 'p.......'},
-  {name: 'lc_otp_program_req_i.req',             wave: '01.|..0.'},
-  {name: 'lc_otp_program_req_i.state_delta',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_req_i.count_delta',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_rsp_o.ack',             wave: '0..|.10.'},
-  {name: 'lc_otp_program_rsp_o.err',             wave: '0..|.40.'},
+  {name: 'clk_i',                            wave: 'p.......'},
+  {name: 'lc_otp_program_i.req',             wave: '01.|..0.'},
+  {name: 'lc_otp_program_i.state_delta',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_i.count_delta',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_o.ack',             wave: '0..|.10.'},
+  {name: 'lc_otp_program_o.err',             wave: '0..|.40.'},
 ]}
 {{< /wavejson >}}
 
@@ -423,16 +417,16 @@ An error is fatal and indicates that the OTP programming operation has failed.
 ##### Token Hashing
 
 The OTP controller implements a [PRESENT-based one-way function]({{< relref "#scrambling-datapath" >}}) on 128bit to compute the partition digests.
-This function is reused for the RAW unlock process (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more info), and can be accessed via `lc_otp_token_req_i`, `lc_otp_token_rsp_o`.
+This function is reused for the RAW unlock process (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more info), and can be accessed via `lc_otp_token_i`, `lc_otp_token_o`.
 The expected timining is illustrated below:
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i', wave: 'p.......'},
-  {name: 'lc_otp_token_req_i.req',             wave: '01.|..0.'},
-  {name: 'lc_otp_token_req_i.token_input',     wave: '03.|..0.'},
-  {name: 'lc_otp_token_rsp_o.ack',             wave: '0..|.10.'},
-  {name: 'lc_otp_token_rsp_o.hashed_token',    wave: '0..|.40.'},
+  {name: 'clk_i',                          wave: 'p.......'},
+  {name: 'lc_otp_token_i.req',             wave: '01.|..0.'},
+  {name: 'lc_otp_token_i.token_input',     wave: '03.|..0.'},
+  {name: 'lc_otp_token_o.ack',             wave: '0..|.10.'},
+  {name: 'lc_otp_token_o.hashed_token',    wave: '0..|.40.'},
 ]}
 {{< /wavejson >}}
 
@@ -441,7 +435,7 @@ The expected timining is illustrated below:
 The interface to the key manager is a simple struct that outputs the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 keys via `otp_keymgr_key_o` if these secrets have been provisioned and locked (via CREATOR_KEY_LOCK).
 Otherwise, this signal is tied to all-zeros.
 
-**TODO: talk about clock synchronization**
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
 #### Interface to Flash Scrambler
 
@@ -453,40 +447,48 @@ The keys can be requested as illustrated below:
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                        wave: 'p...........'},
-  {name: 'flash_otp_key_req_i.data_req', wave: '01.|..0.|...'},
-  {name: 'flash_otp_key_req_i.addr_req', wave: '01.|....|..0'},
-  {name: 'flash_otp_key_rsp_o.data_ack', wave: '0..|.10.|...'},
-  {name: 'flash_otp_key_rsp_o.addr_ack', wave: '0..|....|.10'},
-  {name: 'flash_otp_key_rsp_o.key',      wave: '0..|.30.|.40'},
+  {name: 'clk_i',                    wave: 'p...........'},
+  {name: 'flash_otp_key_i.data_req', wave: '01.|..0.|...'},
+  {name: 'flash_otp_key_i.addr_req', wave: '01.|....|..0'},
+  {name: 'flash_otp_key_o.data_ack', wave: '0..|.10.|...'},
+  {name: 'flash_otp_key_o.addr_ack', wave: '0..|....|.10'},
+  {name: 'flash_otp_key_o.key',      wave: '0..|.30.|.40'},
 ]}
 {{< /wavejson >}}
 
-The request signals shall remain asserted until both keys have been transferred.
+Note that the req/ack protocol runs on the OTP clock.
+It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_scr_key_req.sv` primitive as shown below.
 
-**TODO: talk about clock synchronization**
+![OTP Key Req Ack](otp_ctrl_key_req_ack.svg)
+
+Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
+Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
+If the scrambling device runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
 
 #### Interfaces to SRAM and OTBN Scramblers
 
-The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_req_i[*]`, `otbn_otp_key_req_i`).
+The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).
 The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path]({{< relref "#scrambling-datapath" >}}).
-Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_rsp_o[*]`, `otbn_otp_key_rsp_o`), which complete the req / ack handshake.
+Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The wave diagram below illustrates this process for the OTBN scrambling device.
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                    wave: 'p.......'},
-  {name: 'otbn_otp_key_req_i.req',   wave: '01.|..0.'},
-  {name: 'otbn_otp_key_rsp_o.ack',   wave: '0..|.10.'},
-  {name: 'otbn_otp_key_rsp_o.nonce', wave: '0..|.30.'},
-  {name: 'otbn_otp_key_rsp_o.key',   wave: '0..|.30.'},
+  {name: 'clk_i',                wave: 'p.......'},
+  {name: 'otbn_otp_key_i.req',   wave: '01.|..0.'},
+  {name: 'otbn_otp_key_o.ack',   wave: '0..|.10.'},
+  {name: 'otbn_otp_key_o.nonce', wave: '0..|.30.'},
+  {name: 'otbn_otp_key_o.key',   wave: '0..|.30.'},
 ]}
 {{< /wavejson >}}
 
-Note that this mechanism always works - even if the SRAM_DATA_KEY_SEED has not yet been provisioned and locked (via SRAM_KEY_LOCK).
-If SRAM_DATA_KEY_SEED has not been locked, an all-zeros value is used to derive the ephemeral key.
+If the key seeds have not yet been provisioned, the keys are derived from all-zero constants.
+However, it should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational.
+Otherwise a key derivation request will block until they are ready.
 
-**TODO: talk about clock synchronization**
+Note that the req/ack protocol runs on the OTP clock.
+It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface]({{< relref "#interface-to-flash-scrambler" >}}).
+
 
 ## Design Details
 
@@ -603,7 +605,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation and token hashing can be requested via the [token hashing]({{< relref "#token-hashing" >}}), [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scrambles" >}}) interfaces.
+Once it is in the idle state, key derivation and token hashing can be requested via the [token hashing]({{< relref "#token-hashing" >}}), [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scramblers" >}}) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -661,7 +663,7 @@ This is behavior illustrated in the example below.
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i', wave: 'p............'},
+  {name: 'clk_i',                  wave: 'p............'},
   {name: 'part_scrmbl_mtx_req[0]', wave: '01....0.1....'},
   {name: 'part_scrmbl_mtx_req[1]', wave: '0.1......0...'},
   {name: 'part_scrmbl_mtx_req[2]', wave: '0.1........0.'},
@@ -874,9 +876,10 @@ The agents that can access the OTP macro (DAI, LCI, buffered/unbuffered partitio
 The error codes are defined in the table below, and the corresponding `otp_err_e` enum type can be found in the `otp_ctrl_pkg`.
 The table also lists which error codes are supported by which agent.
 
-
 Errors that are not "recoverable" are severe errors that move the corresponding partition or DAI/LCI FSM into a terminal error state, where no more commands can be accepted (a system reset is required to restore functionality in that case).
 Errors that are "recoverable" are less severe and do not cause the FSM to jump into a terminal error state.
+
+Note that error codes that originate in the physical OTP macro are prefixed with `Otp*`.
 
 Error Code | Enum Name        | Recoverable | DAI | LCI | Unbuf | Buf   | Description
 -----------|------------------|-------------|-----|-----|-------|-------|-------------
@@ -931,8 +934,8 @@ Sizes below are specified in multiples of 32bit words.
 |       |                                 |             |                | CREATOR_ROOT_KEY_SHARE0                  | 0x740        | 32
 |       |                                 |             |                | CREATOR_ROOT_KEY_SHARE1                  | 0x760        | 32
 |       |                                 |             |                | {{< regref "SECRET2_DIGEST_0" >}}        | 0x7A0        | 8
-| 6     | LIFE_CYCLE                      | 88          | 32bit          | {{< regref "LC_STATE_0" >}}              | 0x7A8        | 24
-|       |                                 |             |                | {{< regref "TRANSITION_CNT" >}}          | 0x7C0        | 64
+| 6     | LIFE_CYCLE                      | 88          | 32bit          | LC_STATE                                 | 0x7A8        | 24
+|       |                                 |             |                | LC_TRANSITION_CNT                        | 0x7C0        | 64
 
 Note that since the content in the SECRET* partitions are scrambled using a 64bit PRESENT cipher, read and write access through the DAI needs to occur at a 64bit granularity.
 
