@@ -78,7 +78,7 @@ mul384:
  *
  * Returns c = a x b % m.
  *
- * Expects: two operands, modulus and pre-calculated parameter u for barret
+ * Expects: two operands, modulus and pre-calculated parameter u for barrett
  * reduction (usually greek mu in literature). u is expected without the
  * leading 1 at bit 384. u has to be pre-calculated as u = floor(2^768/m).
  * This guarantees that u > 2^384. However, in order for u to be at
@@ -97,7 +97,7 @@ mul384:
  *
  * @param[in] [w9, w8]: a, first operand, max. length 384 bit.
  * @param[in] [w11, w10]: b, second operand, max. length 384 bit.
- * @param[in] [w13, w12]: m, modulus, max. length 384 bit, 2^284 > m > 2^283.
+ * @param[in] [w13, w12]: m, modulus, max. length 384 bit, 2^384 > m > 2^383.
  * @param[in] [w15, w14]: u, pre-computed Barrett constant (without u[384]/MSb
  *                           of u which is always 1 for the allowed range but
  *                           has to be set to 0 here).
@@ -207,7 +207,7 @@ barrett384:
   bn.add w30, w30, w22
   bn.sel w22, w30, w22, C
 
-  /* Barret algorithm requires subtraction of the modulus at most two times if
+  /* Barrett algorithm requires subtraction of the modulus at most two times if
      result is too large. */
   bn.sub w29, w21, w12
   bn.subb w30, w22, w13
@@ -231,7 +231,7 @@ barrett384:
  * @param[in]  dmem[47:0]: a, first operand, max. length 384 bit
  * @param[in]  dmem[111:64]: b, second operand, max. length 384 bit
  * @param[in]  dmem[303:256]: m, modulus, max. length 384 bit
- *                            with 2^284 > m > 2^283
+ *                            with 2^384 > m > 2^383
  * @param[in]  dmem[367:320]: u, pre-computed Barrett constant
  *                               (without u[384]/MSb of u which is always 1
  *                               for the allowed range but has to be set to 0
@@ -251,7 +251,7 @@ wrap_barrett384:
   /* load modulus from dmem to [w13, w12] */
   bn.lid x4++, 256(x0)
   bn.lid x4++, 288(x0)
-  /* load barret precomputed parameter u from dmem to [w15, w14] */
+  /* load barrett precomputed parameter u from dmem to [w15, w14] */
   bn.lid x4++, 320(x0)
   bn.lid x4++, 352(x0)
 
