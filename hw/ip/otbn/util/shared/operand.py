@@ -302,7 +302,7 @@ class ImmOperandType(OperandType):
         # decipher the immediate here. It might be a label which binutils' as
         # can deal with for us.
         try:
-            return int(as_str)
+            return int(as_str, 0)
         except ValueError:
             return None
 
