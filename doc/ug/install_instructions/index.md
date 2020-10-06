@@ -172,7 +172,7 @@ Then you can fetch, build and install Verilator itself (this should be done outs
 ```console
 $ export VERILATOR_VERSION={{< tool_version "verilator" >}}
 
-$ git clone http://git.veripool.org/git/verilator
+$ git clone https://github.com/verilator/verilator.git
 $ cd verilator
 $ git checkout v$VERILATOR_VERSION
 

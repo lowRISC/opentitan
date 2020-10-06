@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y \
     flex \
     git
 RUN git clone --depth=1 -b  v${VERILATOR_VERSION} \
-    http://git.veripool.org/git/verilator /usr/local/src/verilator
+    https://github.com/verilator/verilator.git /usr/local/src/verilator
 RUN cd /usr/local/src/verilator && \
     autoconf && ./configure --prefix=/tools/verilator/${VERILATOR_VERSION} && \
     make -j$(nproc) && make install
