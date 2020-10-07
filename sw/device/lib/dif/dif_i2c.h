@@ -58,9 +58,6 @@ typedef enum dif_i2c_speed {
   kDifI2cSpeedFastPlus,
 } dif_i2c_speed_t;
 
-typedef struct dif_i2c_timing_params {
-} dif_i2c_timing_params_t;
-
 /**
  * Timing configuration parameters for I2C.
  *

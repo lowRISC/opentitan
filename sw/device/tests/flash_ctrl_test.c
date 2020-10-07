@@ -182,7 +182,7 @@ static void test_memory_protection(void) {
   }
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   flash_init_block();

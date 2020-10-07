@@ -47,11 +47,13 @@ extra_warning_args = [
   '-Wimplicit-fallthrough', # Error on implicit fallthrough
   '-Wswitch-default', # Ensure all switches have default statements
   '-Wno-covered-switch-default', # We require `default:` always.
+  '-Wgnu', # We aim to be standards compliant, and avoid gnu extensions.
   # Issues we intend to fix in the future but are currently ignored as there are
   # many places they are triggered.
   '-Wno-unused-parameter',
   '-Wno-sign-compare',
   '-Wno-missing-field-initializers',
+  '-Wno-gnu-zero-variadic-macro-arguments',
 ]
 
 # C compiler arguments to optimize for size, used on cross builds only.

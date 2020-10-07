@@ -442,7 +442,7 @@ static bool execute_test(const dif_uart_t *uart) {
   return true;
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   LOG_INFO("UART TX RX test");
