@@ -38,7 +38,7 @@ typedef struct test_config {
  * This symbol should be defined externally in a standalone SW test. For most
  * tests, this will just look like the following:
  *
- *   const test_config_t kTestConfig = {};
+ *   const test_config_t kTestConfig;
  *
  * The zero values of all of the fields will behave like sane defaults.
  *

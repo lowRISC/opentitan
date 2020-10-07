@@ -270,7 +270,7 @@ void handler_irq_external(void) {
         "dif_plic_irq_complete failed");
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   // Initialize the pinmux - this assigns MIO0-31 to GPIOs.
