@@ -26,10 +26,12 @@ def main():
 
     # Change the following expressions in the following source files.
     files = [
+        top_path + "/sw/device/lib/flash_ctrl.h",
         top_path + "/hw/top_earlgrey/rtl/top_pkg.sv",
         top_path + "/hw/top_earlgrey/data/top_earlgrey.hjson"
     ]
     match = [
+        r"(#define\s+FLASH_PAGES_PER_BANK\s+)\d+(\s*)",
         r"(localparam\s+int\s+FLASH_PAGES_PER_BANK\s*=\s*)\d+(\s*;)",
         r"({\s*name:\s*\"eflash\"," +
         r"\s*clock_srcs:\s*{clk_i:\s*\"main\"}," +
@@ -41,6 +43,7 @@ def main():
         r"\s*size:\s*\"0x)\w+"
     ]
     replace = [
+        r"\g<1>32\g<2>",  # Change FLASH_PAGES_PER_BANK to 32
         r"\g<1>32\g<2>",  # Change FLASH_PAGES_PER_BANK to 32
         r"\g<1>10000"     # Change size to 0x10000
     ]
@@ -73,6 +76,21 @@ def main():
 
     except subprocess.CalledProcessError as e:
         log.error("Failed to regenerate auto-generated files: " + str(e))
+        log.error(e.stdout)
+        sys.exit(1)
+
+    # Regenerate boot ROM
+    print("Regenerating boot ROM...")
+    cmd = ["ninja", "-C", top_path + "/build-out", "sw/device/boot_rom/boot_rom_export_fpga_nexysvideo"]
+    try:
+        subprocess.run(cmd,
+                       check=True,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT,
+                       universal_newlines=True)
+
+    except subprocess.CalledProcessError as e:
+        log.error("Failed to regenerate boot ROM: " + str(e))
         log.error(e.stdout)
         sys.exit(1)
 
