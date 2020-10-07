@@ -312,9 +312,10 @@ int main(int argc, char **argv) {
   char text[128] = {0};
   size_t pos = 0;
   while (true) {
-    size_t chars_available;
-    if (dif_uart_rx_bytes_available(&uart, &chars_available) != kDifUartOk ||
-        chars_available == 0) {
+    size_t chars_read;
+    if (dif_uart_bytes_receive(&uart, 1, (uint8_t *)&text[pos], &chars_read) !=
+            kDifUartOk ||
+        chars_read == 0) {
       usleep(50);
       continue;
     }
