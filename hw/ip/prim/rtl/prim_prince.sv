@@ -21,9 +21,6 @@
 //             - https://eprint.iacr.org/2015/372.pdf
 //             - https://eprint.iacr.org/2014/656.pdf
 
-
-// TODO: this module has not been verified yet, and has only been used in
-// synthesis experiments.
 `include "prim_assert.sv"
 module prim_prince #(
   parameter int DataWidth     = 64,
