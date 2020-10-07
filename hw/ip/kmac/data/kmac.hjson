@@ -69,7 +69,7 @@
             '''
       regwen: "CFG_REGWEN"
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       fields: [
         { bits: "0"
           name: "kmac_en"
