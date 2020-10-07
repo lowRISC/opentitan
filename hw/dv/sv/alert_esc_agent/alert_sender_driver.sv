@@ -20,10 +20,10 @@ class alert_sender_driver extends alert_esc_base_driver;
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
-      void'(alert_atomic.try_get(1));
-      alert_atomic.put(1);
       do_reset();
       @(posedge cfg.vif.rst_n);
+      void'(alert_atomic.try_get(1));
+      alert_atomic.put(1);
       under_reset = 0;
     end
   endtask
