@@ -11,6 +11,11 @@ std::random_device MockDevice::rd;
 
 // Definitions for the MOCK_MMIO-mode declarations in |mmio.h|.
 extern "C" {
+// dummy
+mmio_region_t mmio_region_from_addr(uintptr_t address) {
+  return (mmio_region_t){};
+}
+
 uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
   auto *dev = static_cast<MockDevice *>(base.mock);
   return dev->Read8(offset);
