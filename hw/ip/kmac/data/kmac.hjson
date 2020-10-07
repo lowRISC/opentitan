@@ -177,41 +177,49 @@
              // design assertion : process can be set only after start is set
              "excl:CsrAllTests:CsrExclWrite"]
       fields: [
-        { bits: "0"
-          name: "start"
-          desc: '''If writes 1 into this field when KMAC/SHA3 is in idle,
-                KMAC/SHA3 begins its operation.
+        { bits: "3:0"
+          name: "cmd"
+          desc: '''Issue a command to the KMAC/SHA3 IP. To prevent sw from
+                writing multiple bits at once, the field is defined as enum.
+                '''
+          enum: [
+            { value: "1"
+              name: "start"
+              desc: '''If writes 1 into this field when KMAC/SHA3 is in idle,
+                    KMAC/SHA3 begins its operation.
 
-                If the mode is cSHAKE, before receiving the message, the
-                hashing logic processes Function name string N and
-                customization input string S first. If KMAC mode is enabled,
-                additionally it processes secret key block.
-                '''
-        } // f: start
-        { bits: "1"
-          name: "process"
-          desc: '''If writes 1 into this field when KMAC/SHA3 began its
-                operation and received the entire message, it computes the
-                digest or signing.
-                '''
-        } // f: process
-        { bits: "2"
-          name: "run"
-          desc: '''The `run` field is used in the sponge squeezing stage.
-                It triggers the keccak round logic to run full 24 rounds.
-                This is optional and used when software needs more digest bits
-                than the keccak rate.
+                    If the mode is cSHAKE, before receiving the message, the
+                    hashing logic processes Function name string N and
+                    customization input string S first. If KMAC mode is enabled,
+                    additionally it processes secret key block.
+                    '''
+            } // e: start
+            { value: "2"
+              name: "process"
+              desc: '''If writes 1 into this field when KMAC/SHA3 began its
+                    operation and received the entire message, it computes the
+                    digest or signing.
+                    '''
+            } // e: process
+            { value: "4"
+              name: "run"
+              desc: '''The `run` field is used in the sponge squeezing stage.
+                    It triggers the keccak round logic to run full 24 rounds.
+                    This is optional and used when software needs more digest
+                    bits than the keccak rate.
 
-                It only affects when the kmac/sha3 operation is completed.
-                '''
-        } // f: run
-        { bits: "3"
-          name: "done"
-          desc: '''If writes 1 into this field when KMAC/SHA3 squeezing is
-                completed. KMAC/SHA3 hashing engine clears internal varaibles
-                and goes back to Idle state for next command.
-                '''
-        } // f: done
+                    It only affects when the kmac/sha3 operation is completed.
+                    '''
+            } // e: run
+            { value: "8"
+              name: "done"
+              desc: '''If writes 1 into this field when KMAC/SHA3 squeezing is
+                    completed. KMAC/SHA3 hashing engine clears internal
+                    variables and goes back to Idle state for next command.
+                    '''
+            } // e: done
+          ] // enum
+        } // f: cmd
       ]
     } // R: CMD
     { name: "STATUS"
