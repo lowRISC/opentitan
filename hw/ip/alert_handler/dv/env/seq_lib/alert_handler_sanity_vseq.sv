@@ -129,10 +129,6 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       // when all configuration registers are set, write lock register
       lock_config(do_lock_config);
 
-      if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
-      // drive alert
-      drive_alert(alert_trigger, alert_int_err);
-
       // if config is not locked, update max_intr_timeout and max_wait_phases cycles
       if (!config_locked) begin
         bit [TL_DW-1:0] max_intr_timeout_cyc;
@@ -141,6 +137,10 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
         max_wait_phases_cyc = max2(max_wait_phases_cyc, max_phase_cyc * NUM_ESC_PHASES);
         if (do_lock_config) config_locked = 1;
       end
+
+      // drive alerts and escalations
+      if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
+      drive_alert(alert_trigger, alert_int_err);
 
       if (do_esc_intr_timeout) begin
         cfg.clk_rst_vif.wait_clks(max_intr_timeout_cyc);
