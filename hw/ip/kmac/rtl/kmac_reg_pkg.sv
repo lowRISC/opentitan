@@ -127,29 +127,6 @@ package kmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-      logic        de;
-    } kmac_en;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } strength;
-    struct packed {
-      logic [1:0]  d;
-      logic        de;
-    } mode;
-    struct packed {
-      logic        d;
-      logic        de;
-    } msg_endianness;
-    struct packed {
-      logic        d;
-      logic        de;
-    } state_endianness;
-  } kmac_hw2reg_cfg_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
     } sha3_idle;
     struct packed {
       logic        d;
@@ -197,11 +174,10 @@ package kmac_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [62:60]
-    kmac_hw2reg_cfg_reg_t cfg; // [59:52]
-    kmac_hw2reg_status_reg_t status; // [51:52]
-    kmac_hw2reg_err_code_reg_t err_code; // [51:52]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [51:52]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [49:47]
+    kmac_hw2reg_status_reg_t status; // [46:47]
+    kmac_hw2reg_err_code_reg_t err_code; // [46:47]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [46:47]
   } kmac_hw2reg_t;
 
   // Register Address

@@ -508,8 +508,8 @@ module kmac_reg_top (
     .wd     (cfg_kmac_en_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.kmac_en.de),
-    .d      (hw2reg.cfg.kmac_en.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
@@ -534,8 +534,8 @@ module kmac_reg_top (
     .wd     (cfg_strength_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.strength.de),
-    .d      (hw2reg.cfg.strength.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
@@ -560,8 +560,8 @@ module kmac_reg_top (
     .wd     (cfg_mode_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.mode.de),
-    .d      (hw2reg.cfg.mode.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
@@ -586,8 +586,8 @@ module kmac_reg_top (
     .wd     (cfg_msg_endianness_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.msg_endianness.de),
-    .d      (hw2reg.cfg.msg_endianness.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
@@ -612,8 +612,8 @@ module kmac_reg_top (
     .wd     (cfg_state_endianness_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg.state_endianness.de),
-    .d      (hw2reg.cfg.state_endianness.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
