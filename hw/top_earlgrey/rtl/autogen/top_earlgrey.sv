@@ -56,6 +56,8 @@ module top_earlgrey #(
   output logic       usbdev_usb_ref_pulse_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
+  output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
+  input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input               scan_rst_ni, // reset used for test mode
@@ -134,6 +136,7 @@ module top_earlgrey #(
   logic        cio_usbdev_dn_en_d2p;
   // sensor_ctrl
   // keymgr
+  // otp_ctrl
   // otbn
 
 
@@ -190,6 +193,8 @@ module top_earlgrey #(
   logic intr_usbdev_connected;
   logic intr_keymgr_op_done;
   logic intr_keymgr_err;
+  logic intr_otp_ctrl_otp_operation_done;
+  logic intr_otp_ctrl_otp_error;
   logic intr_otbn_done;
   logic intr_otbn_err;
 
@@ -271,6 +276,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       clkmgr_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_ret_tl_req;
   tlul_pkg::tl_d2h_t       ram_ret_tl_rsp;
+  tlul_pkg::tl_h2d_t       otp_ctrl_tl_req;
+  tlul_pkg::tl_d2h_t       otp_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
@@ -1004,6 +1011,46 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
+  otp_ctrl u_otp_ctrl (
+
+      // Interrupt
+      .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
+      .intr_otp_error_o          (intr_otp_ctrl_otp_error),
+
+      // [11]: otp_fatal_error
+      // [12]: otp_check_failed
+      .alert_tx_o  ( alert_tx[12:11] ),
+      .alert_rx_i  ( alert_rx[12:11] ),
+
+      // Inter-module signals
+      .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
+      .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
+      .otp_edn_o(),
+      .otp_edn_i('0),
+      .pwr_otp_i('0),
+      .pwr_otp_o(),
+      .lc_otp_program_i('0),
+      .lc_otp_program_o(),
+      .lc_otp_token_i('0),
+      .lc_otp_token_o(),
+      .otp_lc_data_o(),
+      .lc_escalate_en_i('0),
+      .lc_provision_en_i('0),
+      .lc_dft_en_i('0),
+      .otp_keymgr_key_o(),
+      .flash_otp_key_i('0),
+      .flash_otp_key_o(),
+      .sram_otp_key_i('0),
+      .sram_otp_key_o(),
+      .otbn_otp_key_i('0),
+      .otbn_otp_key_o(),
+      .hw_cfg_o(),
+      .tl_i(otp_ctrl_tl_req),
+      .tl_o(otp_ctrl_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
+  );
+
   otbn #(
     .RegFile(OtbnRegFile)
   ) u_otbn (
@@ -1012,11 +1059,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [11]: imem_uncorrectable
-      // [12]: dmem_uncorrectable
-      // [13]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[13:11] ),
-      .alert_rx_i  ( alert_rx[13:11] ),
+      // [13]: imem_uncorrectable
+      // [14]: dmem_uncorrectable
+      // [15]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[15:13] ),
+      .alert_rx_i  ( alert_rx[15:13] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[2]),
@@ -1208,6 +1255,10 @@ module top_earlgrey #(
     // port: tl_ram_ret
     .tl_ram_ret_o(ram_ret_tl_req),
     .tl_ram_ret_i(ram_ret_tl_rsp),
+
+    // port: tl_otp_ctrl
+    .tl_otp_ctrl_o(otp_ctrl_tl_req),
+    .tl_otp_ctrl_i(otp_ctrl_tl_rsp),
 
     // port: tl_sensor_ctrl
     .tl_sensor_ctrl_o(sensor_ctrl_tl_req),
