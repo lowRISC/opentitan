@@ -18,7 +18,11 @@
                 {{- if .LinkTitle }}
                     {{- .LinkTitle }}
                 {{- else }}
-                    {{- replace .File.Dir .Parent.File.Dir "" | replaceRE "/" "-" }}{{- .File.TranslationBaseName }}
+                    {{- $noparent := .File.Dir }}
+                    {{- if .Parent.File }}
+                        {{- $noparent = replace .File.Dir .Parent.File.Dir "" }}
+                    {{- end }}
+                    {{- replaceRE "/" "-" $noparent }}{{- .File.TranslationBaseName }}
                 {{- end }}
             </a>
             {{- if and (ne $numberOfPages 0) (or (.IsDescendant $displayedNode) (.IsAncestor $displayedNode) (.InSection $displayedNode)) }}
