@@ -92,8 +92,15 @@ module otbn_alu_bignum
   logic   [NFlagGroups-1:0]            flags_en;
   logic   [NFlagGroups-1:0]            is_operation_flag_group;
   flags_t                              selected_flags;
-  flags_t                              update_flags;
-  logic                                update_flags_en;
+  flags_t                              adder_update_flags;
+  logic                                adder_update_flags_en;
+  flags_t                              logic_update_flags;
+  logic                                logic_update_flags_en;
+  logic                                ispr_update_flags_en;
+
+  assign ispr_update_flags_en = (ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags));
+
+  `ASSERT(UpdateFlagsOnehot, $onehot0({adder_update_flags_en, logic_update_flags_en, ispr_update_flags_en}))
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -106,13 +113,21 @@ module otbn_alu_bignum
 
     assign is_operation_flag_group[i_fg] = operation_i.flag_group == i_fg;
 
-    assign flags_d[i_fg] = update_flags_en & is_operation_flag_group[i_fg] ?
-      update_flags : ispr_base_wdata_i[i_fg * FlagsWidth +: FlagsWidth];
-
-    assign flags_en[i_fg] = (update_flags_en & is_operation_flag_group[i_fg]) |
-                            (ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags));
-
     assign flags_flattened[i_fg * FlagsWidth +: FlagsWidth] = flags_q[i_fg];
+
+    // Flag updates can come from the Y adder result, the logical operation result or from an ISPR
+    // write.
+    always_comb begin
+      unique case (1'b1)
+        adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
+        logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
+        default: flags_d[i_fg] = ispr_base_wdata_i[i_fg * FlagsWidth +: FlagsWidth];
+      endcase
+    end
+
+    assign flags_en[i_fg] = (adder_update_flags_en & is_operation_flag_group[i_fg]) |
+                            (logic_update_flags_en & is_operation_flag_group[i_fg]) |
+                            ispr_update_flags_en;
   end
 
   assign selected_flags = flags_q[operation_i.flag_group];
@@ -211,49 +226,50 @@ module otbn_alu_bignum
 
   assign adder_y_res = adder_y_op_a + adder_y_op_b;
 
-  assign update_flags.C = (operation_i.op == AluOpBignumAdd ||
-                           operation_i.op == AluOpBignumAddc)  ?  adder_y_res[WLEN+1] :
-                                                                 ~adder_y_res[WLEN+1];
-  assign update_flags.M = adder_y_res[WLEN];
-  assign update_flags.L = adder_y_res[1];
-  assign update_flags.Z = ~|adder_y_res[WLEN:1];
+  assign adder_update_flags.C = (operation_i.op == AluOpBignumAdd ||
+                                 operation_i.op == AluOpBignumAddc) ?  adder_y_res[WLEN+1] :
+                                                                      ~adder_y_res[WLEN+1];
+  assign adder_update_flags.M = adder_y_res[WLEN];
+  assign adder_update_flags.L = adder_y_res[1];
+  assign adder_update_flags.Z = ~|adder_y_res[WLEN:1];
 
   //////////////////////////////
   // Shifter & Adders control //
   //////////////////////////////
 
   always_comb begin
-    shift_right          = 1'b0;
-    adder_x_carry_in     = 1'b0;
-    adder_x_op_b_invert  = 1'b0;
-    x_res_operand_a_sel  = 1'b0;
-    shift_mod_sel        = 1'b0;
-    adder_y_carry_in     = 1'b0;
-    adder_y_op_b_invert  = 1'b0;
-    update_flags_en      = 1'b0;
+    shift_right           = 1'b0;
+    adder_x_carry_in      = 1'b0;
+    adder_x_op_b_invert   = 1'b0;
+    x_res_operand_a_sel   = 1'b0;
+    shift_mod_sel         = 1'b0;
+    adder_y_carry_in      = 1'b0;
+    adder_y_op_b_invert   = 1'b0;
+    adder_update_flags_en = 1'b0;
+    logic_update_flags_en = 1'b0;
 
     unique case (operation_i.op)
       AluOpBignumAdd: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A + shifter_res
         // X ignored
-        shift_right         = operation_i.shift_right;
-        x_res_operand_a_sel = 1'b0;
-        shift_mod_sel       = 1'b1;
-        adder_y_carry_in    = 1'b0;
-        adder_y_op_b_invert = 1'b0;
-        update_flags_en     = 1'b1;
+        shift_right           = operation_i.shift_right;
+        x_res_operand_a_sel   = 1'b0;
+        shift_mod_sel         = 1'b1;
+        adder_y_carry_in      = 1'b0;
+        adder_y_op_b_invert   = 1'b0;
+        adder_update_flags_en = 1'b1;
       end
       AluOpBignumAddc: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A + shifter_res + flags.C
         // X ignored
-        shift_right         = operation_i.shift_right;
-        x_res_operand_a_sel = 1'b0;
-        shift_mod_sel       = 1'b1;
-        adder_y_carry_in    = selected_flags.C;
-        adder_y_op_b_invert = 1'b0;
-        update_flags_en     = 1'b1;
+        shift_right           = operation_i.shift_right;
+        x_res_operand_a_sel   = 1'b0;
+        shift_mod_sel         = 1'b1;
+        adder_y_carry_in      = selected_flags.C;
+        adder_y_op_b_invert   = 1'b0;
+        adder_update_flags_en = 1'b1;
       end
       AluOpBignumAddm: begin
         // X computes A + B
@@ -272,23 +288,23 @@ module otbn_alu_bignum
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res = A + ~shifter_res + 1
         // X ignored
-        shift_right         = operation_i.shift_right;
-        x_res_operand_a_sel = 1'b0;
-        shift_mod_sel       = 1'b1;
-        adder_y_carry_in    = 1'b1;
-        adder_y_op_b_invert = 1'b1;
-        update_flags_en     = 1'b1;
+        shift_right           = operation_i.shift_right;
+        x_res_operand_a_sel   = 1'b0;
+        shift_mod_sel         = 1'b1;
+        adder_y_carry_in      = 1'b1;
+        adder_y_op_b_invert   = 1'b1;
+        adder_update_flags_en = 1'b1;
       end
       AluOpBignumSubb: begin
         // Shifter computes B [>>|<<] shift_amt
         // Y computes A - shifter_res + ~flags.C = A + ~shifter_res + flags.C
         // X ignored
-        shift_right         = operation_i.shift_right;
-        x_res_operand_a_sel = 1'b0;
-        shift_mod_sel       = 1'b1;
-        adder_y_carry_in    = ~selected_flags.C;
-        adder_y_op_b_invert = 1'b1;
-        update_flags_en     = 1'b1;
+        shift_right           = operation_i.shift_right;
+        x_res_operand_a_sel   = 1'b0;
+        shift_mod_sel         = 1'b1;
+        adder_y_carry_in      = ~selected_flags.C;
+        adder_y_op_b_invert   = 1'b1;
+        adder_update_flags_en = 1'b1;
       end
       AluOpBignumSubm: begin
         // X computes A - B = A + ~B + 1
@@ -314,7 +330,8 @@ module otbn_alu_bignum
       AluOpBignumNot: begin
         // Shift computes one operand for the logical operation
         // X & Y ignored
-        shift_right         = operation_i.shift_right;
+        shift_right           = operation_i.shift_right;
+        logic_update_flags_en = 1'b1;
       end
       default: ;
     endcase
@@ -337,6 +354,12 @@ module otbn_alu_bignum
       default:;
     endcase
   end
+
+  // Logical operations only update M, L and Z; C must remain at its old value.
+  assign logic_update_flags.C = selected_flags.C;
+  assign logic_update_flags.M = logical_res[WLEN-1];
+  assign logic_update_flags.L = logical_res[0];
+  assign logic_update_flags.Z = ~|logical_res;
 
   ////////////////////////
   // Conditional Select //
