@@ -412,7 +412,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
       valid_q        <= 1'b0;
       is_first_q     <= 1'b1;
       sel_q          <= '0;
-      digest_mode_q  <= 1'b0;
+      digest_mode_q  <= StandardMode;
     end else begin
       cnt_q         <= cnt_d;
       valid_q       <= valid_d;

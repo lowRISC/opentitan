@@ -11,10 +11,6 @@ module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
 #(
-  // TODO: set this when integrating the module into the top-level.
-  // There is no limit on the number of SRAM key request generation slots,
-  // since each requested key is ephemeral.
-  parameter int                          NumSramKeyReqSlots = 2,
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0]        AlertAsyncOn = {NumAlerts{1'b1}},
   // TODO: These constants have to be replaced by the silicon creator before taping out.
@@ -27,13 +23,8 @@ module otp_ctrl
     32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
   }
 ) (
-  // TODO: implement clock muxing for initial programming.
-  // TODO: check whether interfaces need asynchronous transitions.
   input                                              clk_i,
   input                                              rst_ni,
-  // Macro-specific power sequencing signals to/from AST.
-  output otp_ast_req_t                               otp_ast_pwr_seq_o,
-  input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -43,18 +34,21 @@ module otp_ctrl
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
-  // TODO: EDN interface
-  output otp_edn_req_t                               otp_edn_req_o,
-  input  otp_edn_rsp_t                               otp_edn_rsp_i,
-  // Power manager interface
-  input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_req_i,
-  output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_rsp_o,
+  // Macro-specific power sequencing signals to/from AST.
+  output otp_ast_req_t                               otp_ast_pwr_seq_o,
+  input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
+  // TODO: Refine and connect EDN interface
+  output otp_edn_req_t                               otp_edn_o,
+  input  otp_edn_rsp_t                               otp_edn_i,
+  // Power manager interface (inputs are synced to OTP clock domain)
+  input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
+  output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
   // Lifecycle transition command interface
-  input  lc_otp_program_req_t                        lc_otp_program_req_i,
-  output lc_otp_program_rsp_t                        lc_otp_program_rsp_o,
+  input  lc_otp_program_req_t                        lc_otp_program_i,
+  output lc_otp_program_rsp_t                        lc_otp_program_o,
   // Lifecycle hashing interface for raw unlock
-  input  lc_otp_token_req_t                          lc_otp_token_req_i,
-  output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
+  input  lc_otp_token_req_t                          lc_otp_token_i,
+  output lc_otp_token_rsp_t                          lc_otp_token_o,
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_provision_en_i,
@@ -63,12 +57,12 @@ module otp_ctrl
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
   // Scrambling key requests
-  input  flash_otp_key_req_t                         flash_otp_key_req_i,
-  output flash_otp_key_rsp_t                         flash_otp_key_rsp_o,
-  input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_req_i,
-  output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_rsp_o,
-  input  otbn_otp_key_req_t                          otbn_otp_key_req_i,
-  output otbn_otp_key_rsp_t                          otbn_otp_key_rsp_o,
+  input  flash_otp_key_req_t                         flash_otp_key_i,
+  output flash_otp_key_rsp_t                         flash_otp_key_o,
+  input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
+  output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
+  input  otbn_otp_key_req_t                          otbn_otp_key_i,
+  output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
   output logic [NumHwCfgBits-1:0]                    hw_cfg_o
 );
@@ -119,10 +113,6 @@ module otp_ctrl
   // LC partition has no digest
   assign unused_digest                = part_digest[LifeCycleIdx];
 
-  // TODO: connect these
-  assign hw2reg.lc_state          = '0;
-  assign hw2reg.lc_transition_cnt = '0;
-
   //////////////////////////////
   // Access Defaults and CSRs //
   //////////////////////////////
@@ -155,9 +145,9 @@ module otp_ctrl
                    reg2hw.direct_access_cmd.write.qe  |
                    reg2hw.direct_access_cmd.read.qe;
 
-  assign dai_cmd = {reg2hw.direct_access_cmd.digest.q,
-                    reg2hw.direct_access_cmd.write.q,
-                    reg2hw.direct_access_cmd.read.q};
+  assign dai_cmd = dai_cmd_e'({reg2hw.direct_access_cmd.digest.q,
+                               reg2hw.direct_access_cmd.write.q,
+                               reg2hw.direct_access_cmd.read.q});
 
   assign dai_addr  = reg2hw.direct_access_address.q;
   assign dai_wdata = reg2hw.direct_access_wdata;
@@ -168,9 +158,19 @@ module otp_ctrl
   // The DAI and the LCI can initiate write transactions, which
   // are critical and we must not power down if such transactions
   // are pending. Hence, we signal the LCI/DAI idle state to the
-  // power manager
-  logic lci_idle;
-  assign pwr_otp_rsp_o.otp_idle = lci_idle & dai_idle;
+  // power manager. This signal is flopped here as it has to
+  // cross a clock boundary to the power manager.
+  logic lci_idle, otp_idle_d, otp_idle_q;
+  assign otp_idle_d = lci_idle & dai_idle;
+  assign pwr_otp_o.otp_idle = otp_idle_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
+    if (!rst_ni) begin
+      otp_idle_q <= 1'b0;
+    end else begin
+      otp_idle_q <= otp_idle_d;
+    end
+  end
 
   //////////////////////////////////////
   // Ctrl/Status CSRs, Errors, Alerts //
@@ -299,14 +299,14 @@ module otp_ctrl
     .rst_ni,
     .edn_req_o          ( lfsr_edn_req              ),
     .edn_ack_i          ( lfsr_edn_ack              ),
-    .edn_data_i         ( otp_edn_rsp_i.data        ),
+    .edn_data_i         ( otp_edn_i.data            ),
     // We can enable the timer once OTP has initialized.
     // Note that this is only the initial release that gets
     // the timer FSM into an operational state.
     // Whether or not the timers / background checks are
     // activated depends on the CSR configuration (by default
     // they are switched off).
-    .timer_en_i         ( pwr_otp_rsp_o.otp_done    ),
+    .timer_en_i         ( pwr_otp_o.otp_done        ),
     .integ_chk_trig_i   ( integ_chk_trig            ),
     .cnsty_chk_trig_i   ( cnsty_chk_trig            ),
     .chk_pending_o      ( chk_pending               ),
@@ -339,9 +339,9 @@ module otp_ctrl
     .data_i  ( '{default: '0}              ),
     .gnt_o   ( {lfsr_edn_ack, key_edn_ack} ),
     .idx_o   (                             ), // unused
-    .valid_o ( otp_edn_req_o.req           ),
+    .valid_o ( otp_edn_o.req               ),
     .data_o  (                             ), // unused
-    .ready_i ( otp_edn_rsp_i.ack           )
+    .ready_i ( otp_edn_i.ack               )
   );
 
   ///////////////////////////////
@@ -533,11 +533,34 @@ module otp_ctrl
   logic [NumPart-1:0]             part_init_done;
   part_access_t [NumPart-1:0]     part_access_dai;
 
+  // The init request comes from the power manager, which lives in the AON clock domain.
+  logic pwr_otp_req_synced;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_otp_init_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i ( pwr_otp_i.otp_init ),
+    .q_o ( pwr_otp_req_synced )
+  );
+
+  // Register this signal as it has to cross a clock boundary.
+  logic pwr_otp_rsp_d, pwr_otp_rsp_q;
+  assign pwr_otp_o.otp_done = pwr_otp_rsp_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_init_reg
+    if (!rst_ni) begin
+      pwr_otp_rsp_q <= 1'b0;
+    end else begin
+      pwr_otp_rsp_q <= pwr_otp_rsp_d;
+    end
+  end
+
   otp_ctrl_dai u_otp_ctrl_dai (
     .clk_i,
     .rst_ni,
-    .init_req_i       ( pwr_otp_req_i.otp_init                ),
-    .init_done_o      ( pwr_otp_rsp_o.otp_done                ),
+    .init_req_i       ( pwr_otp_req_synced                    ),
+    .init_done_o      ( pwr_otp_rsp_d                         ),
     .part_init_req_o  ( part_init_req                         ),
     .part_init_done_i ( part_init_done                        ),
     .escalate_en_i    ( lc_escalate_en_i                      ),
@@ -579,15 +602,15 @@ module otp_ctrl
   ) u_otp_ctrl_lci (
     .clk_i,
     .rst_ni,
-    .lci_en_i         ( pwr_otp_rsp_o.otp_done            ),
+    .lci_en_i         ( pwr_otp_o.otp_done                ),
     .escalate_en_i    ( lc_escalate_en_i                  ),
     .error_o          ( part_error[LciIdx]                ),
     .lci_idle_o       ( lci_idle                          ),
-    .lc_req_i         ( lc_otp_program_req_i.req          ),
-    .lc_state_delta_i ( lc_otp_program_req_i.state_delta  ),
-    .lc_count_delta_i ( lc_otp_program_req_i.count_delta  ),
-    .lc_ack_o         ( lc_otp_program_rsp_o.ack          ),
-    .lc_err_o         ( lc_otp_program_rsp_o.err          ),
+    .lc_req_i         ( lc_otp_program_i.req              ),
+    .lc_state_delta_i ( lc_otp_program_i.state_delta      ),
+    .lc_count_delta_i ( lc_otp_program_i.count_delta      ),
+    .lc_ack_o         ( lc_otp_program_o.ack              ),
+    .lc_err_o         ( lc_otp_program_o.err              ),
     .otp_req_o        ( part_otp_arb_req[LciIdx]          ),
     .otp_cmd_o        ( part_otp_arb_bundle[LciIdx].cmd   ),
     .otp_size_o       ( part_otp_arb_bundle[LciIdx].size  ),
@@ -620,7 +643,7 @@ module otp_ctrl
   otp_ctrl_kdi i_otp_ctrl_kdi (
     .clk_i,
     .rst_ni,
-    .kdi_en_i                ( pwr_otp_rsp_o.otp_done  ),
+    .kdi_en_i                ( pwr_otp_o.otp_done      ),
     .escalate_en_i           ( lc_escalate_en_i        ),
     .fsm_err_o               ( key_deriv_fsm_err       ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
@@ -629,15 +652,15 @@ module otp_ctrl
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
-    .edn_data_i              ( otp_edn_rsp_i.data      ),
-    .lc_otp_token_req_i ,
-    .lc_otp_token_rsp_o ,
-    .flash_otp_key_req_i,
-    .flash_otp_key_rsp_o,
-    .sram_otp_key_req_i,
-    .sram_otp_key_rsp_o,
-    .otbn_otp_key_req_i,
-    .otbn_otp_key_rsp_o,
+    .edn_data_i              ( otp_edn_i.data          ),
+    .lc_otp_token_i ,
+    .lc_otp_token_o ,
+    .flash_otp_key_i,
+    .flash_otp_key_o,
+    .sram_otp_key_i,
+    .sram_otp_key_o,
+    .otbn_otp_key_i,
+    .otbn_otp_key_o,
     .scrmbl_mtx_req_o        ( part_scrmbl_mtx_req[KdiIdx]          ),
     .scrmbl_mtx_gnt_i        ( part_scrmbl_mtx_gnt[KdiIdx]          ),
     .scrmbl_cmd_o            ( part_scrmbl_req_bundle[KdiIdx].cmd   ),
@@ -815,13 +838,13 @@ module otp_ctrl
   `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
   `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
   `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
-  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_rsp_o)
-  `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_rsp_o)
+  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_o)
+  `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_rsp_o)
-  `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_rsp_o)
-  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_rsp_o)
+  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
+  `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
+  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
   `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
 
 endmodule : otp_ctrl
