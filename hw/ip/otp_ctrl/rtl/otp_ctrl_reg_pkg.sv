@@ -7,6 +7,7 @@
 package otp_ctrl_reg_pkg;
 
   // Param list
+  parameter int NumSramKeyReqSlots = 2;
   parameter int OtpByteAddrWidth = 11;
   parameter int NumErrorEntries = 9;
   parameter int NumDaiWords = 2;
@@ -199,16 +200,6 @@ package otp_ctrl_reg_pkg;
     logic [31:0] d;
   } otp_ctrl_hw2reg_secret2_digest_mreg_t;
 
-  typedef struct packed {
-    logic [15:0] d;
-    logic        de;
-  } otp_ctrl_hw2reg_lc_state_mreg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } otp_ctrl_hw2reg_lc_transition_cnt_reg_t;
-
 
   ///////////////////////////////////////
   // Register to internal design logic //
@@ -232,19 +223,17 @@ package otp_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [740:739]
-    otp_ctrl_hw2reg_status_reg_t status; // [738:739]
-    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [738:703]
-    otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [702:703]
-    otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [702:639]
-    otp_ctrl_hw2reg_creator_sw_cfg_digest_mreg_t [1:0] creator_sw_cfg_digest; // [638:575]
-    otp_ctrl_hw2reg_owner_sw_cfg_digest_mreg_t [1:0] owner_sw_cfg_digest; // [574:511]
-    otp_ctrl_hw2reg_hw_cfg_digest_mreg_t [1:0] hw_cfg_digest; // [510:447]
-    otp_ctrl_hw2reg_secret0_digest_mreg_t [1:0] secret0_digest; // [446:383]
-    otp_ctrl_hw2reg_secret1_digest_mreg_t [1:0] secret1_digest; // [382:319]
-    otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [318:255]
-    otp_ctrl_hw2reg_lc_state_mreg_t [11:0] lc_state; // [254:51]
-    otp_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [50:51]
+    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [503:502]
+    otp_ctrl_hw2reg_status_reg_t status; // [501:502]
+    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [501:466]
+    otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [465:466]
+    otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [465:402]
+    otp_ctrl_hw2reg_creator_sw_cfg_digest_mreg_t [1:0] creator_sw_cfg_digest; // [401:338]
+    otp_ctrl_hw2reg_owner_sw_cfg_digest_mreg_t [1:0] owner_sw_cfg_digest; // [337:274]
+    otp_ctrl_hw2reg_hw_cfg_digest_mreg_t [1:0] hw_cfg_digest; // [273:210]
+    otp_ctrl_hw2reg_secret0_digest_mreg_t [1:0] secret0_digest; // [209:146]
+    otp_ctrl_hw2reg_secret1_digest_mreg_t [1:0] secret1_digest; // [145:82]
+    otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [81:18]
   } otp_ctrl_hw2reg_t;
 
   // Register Address
@@ -281,13 +270,6 @@ package otp_ctrl_reg_pkg;
   parameter logic [12:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 13'h 78;
   parameter logic [12:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 13'h 7c;
   parameter logic [12:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 13'h 80;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_0_OFFSET = 13'h 84;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_1_OFFSET = 13'h 88;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_2_OFFSET = 13'h 8c;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_3_OFFSET = 13'h 90;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_4_OFFSET = 13'h 94;
-  parameter logic [12:0] OTP_CTRL_LC_STATE_5_OFFSET = 13'h 98;
-  parameter logic [12:0] OTP_CTRL_LC_TRANSITION_CNT_OFFSET = 13'h 9c;
 
   // Window parameter
   parameter logic [12:0] OTP_CTRL_CREATOR_SW_CFG_OFFSET = 13'h 400;
@@ -331,18 +313,11 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_SECRET1_DIGEST_0,
     OTP_CTRL_SECRET1_DIGEST_1,
     OTP_CTRL_SECRET2_DIGEST_0,
-    OTP_CTRL_SECRET2_DIGEST_1,
-    OTP_CTRL_LC_STATE_0,
-    OTP_CTRL_LC_STATE_1,
-    OTP_CTRL_LC_STATE_2,
-    OTP_CTRL_LC_STATE_3,
-    OTP_CTRL_LC_STATE_4,
-    OTP_CTRL_LC_STATE_5,
-    OTP_CTRL_LC_TRANSITION_CNT
+    OTP_CTRL_SECRET2_DIGEST_1
   } otp_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTP_CTRL_PERMIT [40] = '{
+  parameter logic [3:0] OTP_CTRL_PERMIT [33] = '{
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
     4'b 0001, // index[ 1] OTP_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] OTP_CTRL_INTR_TEST
@@ -375,14 +350,7 @@ package otp_ctrl_reg_pkg;
     4'b 1111, // index[29] OTP_CTRL_SECRET1_DIGEST_0
     4'b 1111, // index[30] OTP_CTRL_SECRET1_DIGEST_1
     4'b 1111, // index[31] OTP_CTRL_SECRET2_DIGEST_0
-    4'b 1111, // index[32] OTP_CTRL_SECRET2_DIGEST_1
-    4'b 1111, // index[33] OTP_CTRL_LC_STATE_0
-    4'b 1111, // index[34] OTP_CTRL_LC_STATE_1
-    4'b 1111, // index[35] OTP_CTRL_LC_STATE_2
-    4'b 1111, // index[36] OTP_CTRL_LC_STATE_3
-    4'b 1111, // index[37] OTP_CTRL_LC_STATE_4
-    4'b 1111, // index[38] OTP_CTRL_LC_STATE_5
-    4'b 1111  // index[39] OTP_CTRL_LC_TRANSITION_CNT
+    4'b 1111  // index[32] OTP_CTRL_SECRET2_DIGEST_1
   };
 endpackage
 
