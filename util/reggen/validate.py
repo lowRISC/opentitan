@@ -832,14 +832,16 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
             error += err
             field['bits'] = msb_range + ':' + lsb_range
 
-        field_bits = bitmask(field['bits'])
-        if (field_bits[0] == 0):
+        field_bitinfo = bitmask(field['bits'])
+        field_mask, field_width, field_lsb = field_bitinfo
+        field_msb = field_lsb + field_width - 1
+        max_in_field = (1 << field_width) - 1
+
+        if (field_mask == 0):
             error += 1
         else:
-            reuse_check = bits_used & field_bits[0]
-            # > is correct here because the check is of the bit
-            # above the msb. The equal case is thus valid
-            if ((field_bits[1] + field_bits[2]) > width):
+            reuse_check = bits_used & field_mask
+            if field_msb >= width:
                 error += 1
                 log.error(fname + ": Register not wide enough for bits: " +
                           field['bits'])
@@ -847,9 +849,8 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                 error += 1
                 log.error(fname + ": Defines already defined bits " +
                           hex(reuse_check))
-            bits_used |= field_bits[0]
-            field['bitinfo'] = field_bits
-        max_in_field = (1 << field_bits[1]) - 1
+            bits_used |= field_mask
+            field['bitinfo'] = field_bitinfo
 
         if 'resval' in field:
             if field['resval'] != "x":
@@ -865,13 +866,13 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
 
                 if (full_resval is not None and
                     (resval !=
-                     ((full_resval >> field_bits[2]) & max_in_field))):
+                     ((full_resval >> field_lsb) & max_in_field))):
                     error += 1
                     log.error(fname + ": Field resval " + field['resval'] +
                               " differs from value in main register resval " +
                               hex(full_resval))
-                gen_resval |= resval << field_bits[2]
-                gen_resmask |= field_bits[0]
+                gen_resval |= resval << field_lsb
+                gen_resmask |= field_mask
                 field['genresval'] = resval
                 field['genresvalx'] = False
             else:
@@ -879,9 +880,9 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                 field['genresvalx'] = True
         else:
             if full_resval is not None:
-                resval = (full_resval >> field_bits[2]) & max_in_field
-                gen_resval |= resval << field_bits[2]
-                gen_resmask |= field_bits[0]
+                resval = (full_resval >> field_lsb) & max_in_field
+                gen_resval |= resval << field_lsb
+                gen_resmask |= field_mask
                 field['genresval'] = resval
                 field['genresvalx'] = False
                 log.info(fname + ": use register default genresval")
@@ -890,7 +891,7 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                     field['genresval'] = 0
                     field['genresvalx'] = False
                     log.info(fname + ": use zero genresval")
-                    gen_resmask |= field_bits[0]
+                    gen_resmask |= field_mask
                 else:
                     field['genresval'] = 0
                     field['genresvalx'] = True
