@@ -128,13 +128,36 @@ module kmac
   end
 
   // Command signals
-  // TODO: FI tolerant?
-  // TODO: Revise after KMAC core is designed
-  assign sha3_start   = reg2hw.cmd.start.qe   & reg2hw.cmd.start.q   ;
-  assign sha3_run     = reg2hw.cmd.run.qe     & reg2hw.cmd.run.q     ;
-  assign sha3_done    = reg2hw.cmd.done.qe    & reg2hw.cmd.done.q    ;
+  // TODO: Make the entire logic to use enum rather than signal
+  always_comb begin
+    sha3_start = 1'b 0;
+    sha3_run = 1'b 0;
+    sha3_done = 1'b 0;
+    reg2msgfifo_process = 1'b 0;
+    if (reg2hw.cmd.qe) begin
+      unique case (kmac_cmd_e'(reg2hw.cmd.q))
+        CmdStart: begin
+          sha3_start = 1'b 1;
+        end
 
-  assign reg2msgfifo_process = reg2hw.cmd.process.qe & reg2hw.cmd.process.q ;
+        CmdProcess: begin
+          reg2msgfifo_process = 1'b 1;
+        end
+
+        CmdManualRun: begin
+          sha3_run = 1'b 1;
+        end
+
+        CmdDone: begin
+          sha3_done = 1'b 1;
+        end
+
+        default: begin
+          // TODO: Raise an error here
+        end
+      endcase
+    end // if reg2hw.cmd.qe
+  end
 
   // TODO: disconnect below after kmac core implemented
   assign kmac2sha3_process = msgfifo2kmac_process;
@@ -322,5 +345,7 @@ module kmac
   `ASSERT_KNOWN(FifoEmpty_A, intr_fifo_empty_o)
   `ASSERT_KNOWN(KmacErr_A, intr_kmac_err_o)
 
+  // Command input should be onehot0
+  `ASSUME(CmdOneHot0_a, reg2hw.cmd.qe |-> $onehot0(reg2hw.cmd.q))
 endmodule
 

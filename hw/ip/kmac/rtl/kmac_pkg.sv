@@ -190,6 +190,15 @@ package kmac_pkg;
     StFlush
   } sha3_st_e;
 
+  // kmac_cmd_e defines the possible command sets that software issues via
+  // !!CMD register. This is mainly to limit the error scenario that SW writes
+  // multiple commands at once.
+  typedef enum logic [3:0] {
+    CmdStart     = 4'b 0001,
+    CmdProcess   = 4'b 0010,
+    CmdManualRun = 4'b 0100,
+    CmdDone      = 4'b 1000
+  } kmac_cmd_e;
 
   //////////////////
   // Error Report //
