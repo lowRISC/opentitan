@@ -206,17 +206,18 @@ def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
             error += 1
             log.error(err_prefix + " missing required key " + x)
     for x in obj:
-        type = ''
+        type = None
         if x in required_keys:
             type = required_keys[x][0]
         elif x in optional_keys:
             type = optional_keys[x][0]
         elif x not in added_keys:
             log.warning(err_prefix + " contains extra key " + x)
-        if type[:2] == 'ln':
-            error += check_ln(obj, x, type == 'lnw', err_prefix)
-        if type == 'lp':
-            error += check_lp(obj, x, err_prefix)
+        if type is not None:
+            if type[:2] == 'ln':
+                error += check_ln(obj, x, type == 'lnw', err_prefix)
+            if type == 'lp':
+                error += check_lp(obj, x, err_prefix)
 
     return error
 
@@ -343,7 +344,9 @@ top_optional = {
         "Only use this if unable to put this "
         "information in a comment at the top of the "
         "file."
-    ]
+    ],
+    'hier_path': [None,
+                  'additional hierarchy path before the reg block instance']
 }
 top_added = {
     'genrnames': ['pl', "list of register names"],
