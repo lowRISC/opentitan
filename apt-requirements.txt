@@ -18,6 +18,7 @@ libftdi1-2
 libftdi1-dev
 libssl-dev
 libusb-1.0-0
+lsb-release
 make
 ninja-build
 pkgconf
