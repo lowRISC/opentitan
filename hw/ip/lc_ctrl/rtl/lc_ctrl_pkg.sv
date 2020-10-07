@@ -52,5 +52,6 @@ package lc_ctrl_pkg;
     lc_tx_e state;
   } lc_tx_t;
 
+  parameter lc_tx_t LC_TX_DEFAULT = Off;
 
 endpackage : lc_ctrl_pkg

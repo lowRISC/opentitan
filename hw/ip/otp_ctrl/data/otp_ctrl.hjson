@@ -32,6 +32,12 @@
   // Parameters //
   ////////////////
   param_list: [
+    { name: "NumSramKeyReqSlots",
+      desc: "Number of key slots",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
     { name: "OtpByteAddrWidth",
       desc: "Width of the OTP Byte address.",
       type: "int",
@@ -85,95 +91,127 @@
   /////////////////////////////
   // Intermodule Connections //
   /////////////////////////////
-  // TODO: these need to be refined during implementation and integration
+
   inter_signal_list: [
-    // CSRNG interface
-    { struct: "otp_csrng"
-      type:   "req_rsp"
-      name:   "otp_csrng"
-      act:    "req"
+    // Power sequencing signals to AST
+    { struct:  "otp_ast_req"
+      type:    "uni"
+      name:    "otp_ast_pwr_seq"
+      act:     "req"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    }
+    // Power sequencing signals from AST
+    { struct:  "otp_ast_rsp"
+      type:    "uni"
+      name:    "otp_ast_pwr_seq_h"
+      act:     "rcv"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    }
+    // EDN interface
+    { struct:  "otp_edn"
+      type:    "req_rsp"
+      name:    "otp_edn"
+      act:     "req"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
     // Power manager init command
-    { struct: "pwr_otp"
-      type:   "req_rsp"
-      name:   "pwr_otp_init"
-      act:    "rsp"
+    { struct:  "pwr_otp"
+      type:    "req_rsp"
+      name:    "pwr_otp"
+      act:     "rsp"
+      default: "'0"
       package: "pwrmgr_pkg"
     }
-    // Status output to power manager
-    { struct: "otp_pwr_state"
-      type:   "uni"
-      name:   "otp_pwr_state"
-      act:    "req"
+    // LC transition command
+    { struct:  "lc_otp_program"
+      type:    "req_rsp"
+      name:    "lc_otp_program"
+      act:     "rsp"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // LC transition command
-    { struct: "lc_otp_program"
-      type:   "req_rsp"
-      name:   "lc_otp_program"
-      act:    "rsp"
+    // LC token hashing command
+    { struct:  "lc_otp_token"
+      type:    "req_rsp"
+      name:    "lc_otp_token"
+      act:     "rsp"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
     // Broadcast to LC
-    { struct: "otp_lc_data"
-      type:   "uni"
-      name:   "otp_lc_data"
-      act:    "req"
+    { struct:  "otp_lc_data"
+      type:    "uni"
+      name:    "otp_lc_data"
+      act:     "req"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
     // Broadcast from LC
-    { struct: "lc_tx"
-      type:   "uni"
-      name:   "lc_escalate_en"
-      act:    "rcv"
-      package: "lifecycle_pkg" // TODO: move to LC package?
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "'0"
+      package: "lc_ctrl_pkg"
     }
-    { struct: "lc_tx"
-      type:   "uni"
-      name:   "lc_provision_en"
-      act:    "rcv"
-      package: "lifecycle_pkg" // TODO: move to LC package?
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_provision_en"
+      act:     "rcv"
+      default: "'0"
+      package: "lc_ctrl_pkg"
     }
-    { struct: "lc_tx"
-      type:   "uni"
-      name:   "lc_test_en"
-      act:    "rcv"
-      package: "lifecycle_pkg" // TODO: move to LC package?
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "'0"
+      package: "lc_ctrl_pkg"
     }
     // Broadcast to Key Manager
-    { struct: "keymgr_key"
-      type:   "uni"
-      name:   "otp_keymgr_key"
-      act:    "req"
-      package: "otp_ctrl_pkg" // TODO: move this to keymgr package?
+    { struct:  "otp_keymgr_key"
+      type:    "uni"
+      name:    "otp_keymgr_key"
+      act:     "req"
+      default: "'0"
+      package: "otp_ctrl_pkg"
     }
     // Broadcast to Flash Controller
-    { struct: "flash_key"
-      type:   "uni"
-      name:   "otp_flash_key"
-      act:    "req"
+    { struct:  "flash_otp_key"
+      type:    "req_rsp"
+      name:    "flash_otp_key"
+      act:     "rsp"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // Key request from Main RAM Scrambler
-    { struct: "ram_main_key"
-      type:   "req_rsp"
-      name:   "otp_ram_main_key"
-      act:    "rsp"
-      package: "otp_ctrl_pkg"
-    }
-    // Key request from Retention RAM Scrambler
-    { struct: "ram_ret_aon_key"
-      type:   "req_rsp"
-      name:   "otp_ram_ret_aon_key"
-      act:    "rsp"
+    // Key request from SRAM scramblers
+    { struct:  "sram_otp_key"
+      // TODO: would be nice if this could accept parameters.
+      // Split this out into an issue.
+      width:   "2"
+      type:    "req_rsp"
+      name:    "sram_otp_key"
+      act:     "rsp"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
     // Key request from OTBN RAM Scrambler
-    { struct: "otbn_ram_key"
-      type:   "req_rsp"
-      name:   "otp_otbn_ram_key"
-      act:    "rsp"
+    { struct:  "otbn_otp_key"
+      type:    "req_rsp"
+      name:    "otbn_otp_key"
+      act:     "rsp"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    }
+    // Key request from OTBN RAM Scrambler
+    { struct:  "logic"
+      type:    "uni"
+      name:    "hw_cfg"
+      act:     "req"
+      default: "'0"
       package: "otp_ctrl_pkg"
     }
   ] // inter_signal_list

@@ -10,11 +10,7 @@
 module otp_ctrl_kdi
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
-#(
-  // Number of SRAM key requestor slots. All of them will use the same key seed.
-  // However, each request will generate a new key seed.
-  parameter int NumSramKeyReqSlots = 2
-) (
+(
   input                                              clk_i,
   input                                              rst_ni,
   // Pulse to enable this module after OTP partitions have
@@ -34,15 +30,15 @@ module otp_ctrl_kdi
   input                                              edn_ack_i,
   input  [EdnDataWidth-1:0]                          edn_data_i,
   // Lifecycle hashing request
-  input  lc_otp_token_req_t                          lc_otp_token_req_i,
-  output lc_otp_token_rsp_t                          lc_otp_token_rsp_o,
+  input  lc_otp_token_req_t                          lc_otp_token_i,
+  output lc_otp_token_rsp_t                          lc_otp_token_o,
   // Scrambling key requests
-  input  flash_otp_key_req_t                         flash_otp_key_req_i,
-  output flash_otp_key_rsp_t                         flash_otp_key_rsp_o,
-  input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_req_i,
-  output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_rsp_o,
-  input  otbn_otp_key_req_t                          otbn_otp_key_req_i,
-  output otbn_otp_key_rsp_t                          otbn_otp_key_rsp_o,
+  input  flash_otp_key_req_t                         flash_otp_key_i,
+  output flash_otp_key_rsp_t                         flash_otp_key_o,
+  input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
+  output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
+  input  otbn_otp_key_req_t                          otbn_otp_key_i,
+  output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Scrambling mutex request
   output logic                                       scrmbl_mtx_req_o,
   input                                              scrmbl_mtx_gnt_i,
@@ -110,15 +106,15 @@ module otp_ctrl_kdi
   logic [NumReq-1:0] req, gnt;
   req_bundle_t req_bundles [NumReq];
 
-  assign req[0] = lc_otp_token_req_i.req;
-  assign req[1] = flash_otp_key_req_i.data_req;
-  assign req[2] = flash_otp_key_req_i.addr_req;
-  assign req[3] = otbn_otp_key_req_i.req;
+  assign req[0] = lc_otp_token_i.req;
+  assign req[1] = flash_otp_key_i.data_req;
+  assign req[2] = flash_otp_key_i.addr_req;
+  assign req[3] = otbn_otp_key_i.req;
 
-  assign lc_otp_token_rsp_o.ack       = gnt[0];
-  assign flash_otp_key_rsp_o.data_ack = gnt[1];
-  assign flash_otp_key_rsp_o.addr_ack = gnt[2];
-  assign otbn_otp_key_rsp_o.ack       = gnt[3];
+  assign lc_otp_token_o.ack       = gnt[0];
+  assign flash_otp_key_o.data_ack = gnt[1];
+  assign flash_otp_key_o.addr_ack = gnt[2];
+  assign otbn_otp_key_o.ack       = gnt[3];
 
   // Life cycle unlock token.
   assign req_bundles[0] = '{ingest_entropy: 1'b0, // no random entropy added
@@ -127,8 +123,8 @@ module otp_ctrl_kdi
                             fetch_nonce:    1'b0, // no nonce needed
                             nonce_size:     '0,
                             seed_valid:     1'b1, // valid if request is valid
-                            seed:           {lc_otp_token_req_i.token_input,  // reuse same seed
-                                             lc_otp_token_req_i.token_input}};
+                            seed:           {lc_otp_token_i.token_input,  // reuse same seed
+                                             lc_otp_token_i.token_input}};
   // Flash data key
   assign req_bundles[1] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
@@ -157,8 +153,8 @@ module otp_ctrl_kdi
 
   // SRAM keys
   for (genvar k = 4; k < NumReq; k++) begin : gen_req_assign
-    assign req[k]                      = sram_otp_key_req_i[k-4].req;
-    assign sram_otp_key_rsp_o[k-4].ack = gnt[k];
+    assign req[k]                      = sram_otp_key_i[k-4].req;
+    assign sram_otp_key_o[k-4].ack = gnt[k];
     assign req_bundles[k] = '{ingest_entropy: 1'b1, // ingest random data
                               chained_digest: 1'b0, // revert to netlist IV between blocks
                               digest_sel:     SramDataKey,
@@ -217,14 +213,14 @@ module otp_ctrl_kdi
   end
 
   // Connect keys/nonce outputs to output regs.
-  assign lc_otp_token_rsp_o.hashed_token = key_out_q;
-  assign flash_otp_key_rsp_o.key         = key_out_q;
-  assign otbn_otp_key_rsp_o.key          = key_out_q;
-  assign otbn_otp_key_rsp_o.nonce        = nonce_out_q;
+  assign lc_otp_token_o.hashed_token = key_out_q;
+  assign flash_otp_key_o.key         = key_out_q;
+  assign otbn_otp_key_o.key          = key_out_q;
+  assign otbn_otp_key_o.nonce        = nonce_out_q;
 
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign
-    assign sram_otp_key_rsp_o[k].key     = key_out_q;
-    assign sram_otp_key_rsp_o[k].nonce   = nonce_out_q[0];
+    assign sram_otp_key_o[k].key     = key_out_q;
+    assign sram_otp_key_o[k].nonce   = nonce_out_q[0];
   end
 
   typedef enum logic {
@@ -496,10 +492,10 @@ module otp_ctrl_kdi
 
   `ASSERT_KNOWN(FsmErrKnown_A,             fsm_err_o)
   `ASSERT_KNOWN(EdnReqKnown_A,             edn_req_o)
-  `ASSERT_KNOWN(LcOtpTokenRspKnown_A,      lc_otp_token_rsp_o)
-  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,     flash_otp_key_rsp_o)
-  `ASSERT_KNOWN(SramOtpKeyRspKnown_A,      sram_otp_key_rsp_o)
-  `ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_rsp_o)
+  `ASSERT_KNOWN(LcOtpTokenRspKnown_A,      lc_otp_token_o)
+  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,     flash_otp_key_o)
+  `ASSERT_KNOWN(SramOtpKeyRspKnown_A,      sram_otp_key_o)
+  `ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_o)
   `ASSERT_KNOWN(ScrmblMtxReqKnown_A,       scrmbl_mtx_req_o)
   `ASSERT_KNOWN(ScrmblCmdKnown_A,          scrmbl_cmd_o)
   `ASSERT_KNOWN(ScrmblSelKnown_A,          scrmbl_sel_o)
