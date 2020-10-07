@@ -313,6 +313,13 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x401a0000",
     },
+    { name: "otp_ctrl",
+      type: "otp_ctrl",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "timers",
+      reset_connections: {rst_ni: "sys_io_div4"},
+      base_addr: "0x401b0000",
+    },
     { name: "otbn",
       type: "otbn",
       clock_srcs: {clk_i: "main"},
@@ -410,6 +417,7 @@
       'pwrmgr.pwr_flash' : ['flash_ctrl.pwrmgr'],
       'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
+      // TODO: connect this once OTP has passed initial sanity tests: 'pwrmgr.pwr_otp'   : ['otp_ctrl.pwr_otp'],
       'flash_ctrl.keymgr': ['keymgr.flash'],
       'alert_handler.crashdump': ['rstmgr.alert_dump'],
       // The idle connection is automatically connected through topgen.
@@ -441,7 +449,9 @@
         'sensor_ctrl.ast_status': '',
         'usbdev.usb_ref_val': '',
         'usbdev.usb_ref_pulse': '',
-        'peri.tl_ast_wrapper': 'ast_tl'
+        'peri.tl_ast_wrapper': 'ast_tl',
+        'otp_ctrl.otp_ast_pwr_seq': '',
+        'otp_ctrl.otp_ast_pwr_seq_h': '',
     },
   },
 
@@ -485,7 +495,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "hmac", "otbn", "sensor_ctrl", "keymgr" ]
+  alert_module: [ "aes", "hmac", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl" ]
 
   // generated list of alerts:
   alert: [

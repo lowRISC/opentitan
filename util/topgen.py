@@ -125,7 +125,7 @@ def generate_alert_handler(top, out_path):
     if accu_cnt_dw < 1:
         log.error("AccuCntDw must be larger than 0")
 
-    # Count number of interrupts
+    # Count number of alerts
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
 
     if n_alerts < 1:

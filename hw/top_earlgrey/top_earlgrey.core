@@ -31,6 +31,7 @@ filesets:
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
+      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
