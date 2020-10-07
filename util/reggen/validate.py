@@ -56,7 +56,7 @@ def check_count(top, mreg, err_prefix):
             "local": "true",
             "expose": "false",
         })
-        log.info("Parameter {} is added".format(mreg["name"]))
+        log.debug("Parameter {} is added".format(mreg["name"]))
         # Replace count integer to parameter
         mreg["count"] = mreg["name"]
 
@@ -671,7 +671,7 @@ def resolve_value(entry, param_list):
 
 # resolve expression
 def resolve_expression(entry, ops, param_list):
-    log.info("Evaluating entry {}".format(entry))
+    log.debug("Evaluating entry {}".format(entry))
 
     val = 0
     error = 0
@@ -684,7 +684,7 @@ def resolve_expression(entry, ops, param_list):
     pattern = '([{}])'.format(operators)
 
     terms = re.split(pattern, entry)
-    log.info("Separate terms: {}".format(terms))
+    log.debug("Separate terms: {}".format(terms))
 
     pending_op = ''
 
@@ -692,28 +692,28 @@ def resolve_expression(entry, ops, param_list):
     # On the next item, it is assumed to be a value and then the operation is
     # performed.
     for term in terms:
-        log.info("Operating on {}".format(term))
+        log.debug("Operating on {}".format(term))
         if term in ops.keys():
             pending_op = term
         else:
             op_val, err = resolve_value(term, param_list)
             if pending_op:
-                log.info("Pending operation")
+                log.debug("Pending operation")
                 val = ops[pending_op](val, op_val)
                 pending_op = ''
             else:
-                log.info("No pending operation")
+                log.debug("No pending operation")
                 val = op_val
 
         error += err
 
-    log.info("Final resolved value is {}".format(val))
+    log.debug("Final resolved value is {}".format(val))
     return int(val), error
 
 
 # Supports addition / subtraction in bitfield calculation
 def resolve_bitfield(entry, param_list):
-    log.info("Resolving bitfield {}".format(entry))
+    log.debug("Resolving bitfield {}".format(entry))
     val = 0
     error = 0
     ops = {"+": operator.add, "-": operator.sub}
@@ -722,10 +722,10 @@ def resolve_bitfield(entry, param_list):
 
     # The field is an expression
     if expression:
-        log.info("It is an expression!")
+        log.debug("It is an expression!")
         val, err = resolve_expression(entry, ops, param_list)
     else:
-        log.info("It is not an expression!")
+        log.debug("It is not an expression!")
         val, err = resolve_value(entry, param_list)
 
     error += err
@@ -782,10 +782,10 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
         if 'swaccess' not in field:
             if default_sw is None:
                 error += 1
-                log.error(fname + ":no swaccess or register default swaccess")
+                log.error(fname + ": no swaccess or register default swaccess")
                 swaccess = "wo"
             else:
-                log.info(fname + ": use register default swaccess")
+                log.debug(fname + ": use register default swaccess")
                 field['swaccess'] = default_sw
                 swaccess = default_sw
         else:
@@ -805,7 +805,7 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                 log.error(fname + ": no hwaccess or register default hwaccess")
                 hwaccess = "hro"
             else:
-                log.info(fname + ": use register default hwaccess")
+                log.debug(fname + ": use register default hwaccess")
                 field['hwaccess'] = default_hw
                 hwaccess = default_hw
         else:
@@ -885,17 +885,17 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                 gen_resmask |= field_mask
                 field['genresval'] = resval
                 field['genresvalx'] = False
-                log.info(fname + ": use register default genresval")
+                log.debug(fname + ": use register default genresval")
             else:
                 if swaccess[0] != 'w':
                     field['genresval'] = 0
                     field['genresvalx'] = False
-                    log.info(fname + ": use zero genresval")
+                    log.debug(fname + ": use zero genresval")
                     gen_resmask |= field_mask
                 else:
                     field['genresval'] = 0
                     field['genresvalx'] = True
-                    log.info(fname + ": use x genresval")
+                    log.debug(fname + ": use x genresval")
 
         if 'enum' in field:
             # Warn if the elements of the enumeration are not distinct
@@ -1084,8 +1084,8 @@ def validate_register(reg, offset, width, top):
 
     # if there was an error before this then can't trust anything!
     if error > 0:
-        log.info(rname + "@" + hex(offset) + " " + str(error) +
-                 " top level errors. Not processing fields")
+        log.debug(rname + "@" + hex(offset) + " " + str(error) +
+                  " top level errors. Not processing fields")
         return error
 
     gen = validate_fields(reg['fields'], rname, default_sw, default_hw,
@@ -1104,8 +1104,8 @@ def validate_register(reg, offset, width, top):
     if ((reg['regwen'] != '') and (not reg['regwen'] in top['genwennames'])):
         top['genwennames'].append(reg['regwen'])
 
-    log.info(rname + "@" + hex(offset) + " " + str(error) + " errors. Mask " +
-             hex(gen[3]))
+    log.debug(rname + "@" + hex(offset) + " " + str(error) + " errors. Mask " +
+              hex(gen[3]))
 
     return error
 
@@ -1135,8 +1135,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     # if there was an error before this then can't trust anything!
     if error > 0:
-        log.info(mrname + "@" + hex(offset) + " " + str(error) +
-                 " top level errors. Not processing fields")
+        log.debug(mrname + "@" + hex(offset) + " " + str(error) +
+                  " top level errors. Not processing fields")
         return error
 
     # should add an option to include a register directly instead of a field
@@ -1164,7 +1164,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
 
     # multireg attributes
     cname = mreg['cname']
-    template_reg = OrderedDict ([
+    template_reg = OrderedDict([
         ('name', mrname + "{}"),
         ('desc', mreg['desc']),
         ('hwext', mreg['hwext']),
@@ -1218,8 +1218,8 @@ def validate_multi(mreg, offset, addrsep, width, top):
     # will there be multiple registers?
     is_mult = (mcount > max_fields_per_reg) or (not is_compact and mcount > 1)
 
-    log.info("Multireg attributes 0x{:x} {} {} {}".format(field_bitmask, bits_used,
-                                                          num_fields, max_fields_per_reg))
+    log.debug("Multireg attributes 0x{:x} {} {} {}"
+              .format(field_bitmask, bits_used, num_fields, max_fields_per_reg))
     while idx < mcount:
 
         genreg = deepcopy(template_reg)
@@ -1383,8 +1383,8 @@ def validate_window(win, offset, regwidth, top):
 
     # if there was an error before this then can't trust anything!
     if error > 0:
-        log.info(name + "@" + hex(offset) + " " + str(error) +
-                 " top level errors. Window will be ignored.")
+        log.debug(name + "@" + hex(offset) + " " + str(error) +
+                  " top level errors. Window will be ignored.")
         return error, offset
 
     # optional flags
@@ -1510,7 +1510,7 @@ def check_wen_regs(regs):
     # both w1c and w0c are acceptable, ro is also acceptable when hwaccess is wo (hw managed regwen)
     for x in regs['genwennames']:
         target = x.lower()
-        log.info("check_wen_regs::Searching for %s" % target)
+        log.debug("check_wen_regs::Searching for %s" % target)
         try:
             idx = [r[tuple_name] for r in reg_list].index(target)
         except ValueError:
@@ -1728,8 +1728,8 @@ def validate(regs, **kwargs):
         regs['registers'] = autoregs
         regs['genautoregs'] = True
 
-    log.info("Validated, size = " + hex(regs['gensize']) + " errors=" +
-             str(error) + " names are " + str(regs['genrnames']))
+    log.debug("Validated, size = " + hex(regs['gensize']) + " errors=" +
+              str(error) + " names are " + str(regs['genrnames']))
     if (error > 0):
         log.error("Register description had " + str(error) + " error" +
                   "s" if error > 1 else "")
