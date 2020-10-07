@@ -21,8 +21,6 @@
 //             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/
 //               documents/papers/session7-maene-paper.pdf
 
-// TODO: this module has not been verified yet, and has only been used in
-// synthesis experiments.
 `include "prim_assert.sv"
 module prim_present #(
   parameter int DataWidth = 64,  // {32, 64}
