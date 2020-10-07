@@ -32,8 +32,6 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                // TODO: temp commented out to avoid regression errors, will support soon
-                // "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 // xbar tests
@@ -200,7 +198,12 @@
                  "+sw_test_is_external=1",
                  "+sw_test_timeout_ns=50000000"]
     }
-
+    {
+      name: chip_shadow_reg_errors
+      uvm_test_seq: chip_shadow_reg_errors_vseq
+      en_run_modes: ["stub_cpu"]
+      run_opts: ["+en_scb=0"]
+    }
     // The test below is added in the included tl_access_tests.hjson.
     // We just need to append the stub_cpu run mode to it.
     {
