@@ -2596,6 +2596,250 @@
       ]
     }
     {
+      name: otp_ctrl
+      type: otp_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      base_addr: 0x401b0000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_div4_timers
+      }
+      size: 0x2000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: otp_operation_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: otp_error
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: otp_fatal_error
+          width: 1
+          type: alert
+          async: 1
+        }
+        {
+          name: otp_check_failed
+          width: 1
+          type: alert
+          async: 1
+        }
+      ]
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: otp_ast_req
+          type: uni
+          name: otp_ast_pwr_seq
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          external: true
+          top_signame: otp_ctrl_otp_ast_pwr_seq
+          index: -1
+        }
+        {
+          struct: otp_ast_rsp
+          type: uni
+          name: otp_ast_pwr_seq_h
+          act: rcv
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          external: true
+          top_signame: otp_ctrl_otp_ast_pwr_seq_h
+          index: -1
+        }
+        {
+          struct: otp_edn
+          type: req_rsp
+          name: otp_edn
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: pwr_otp
+          type: req_rsp
+          name: pwr_otp
+          act: rsp
+          default: "'0"
+          package: pwrmgr_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_otp_program
+          type: req_rsp
+          name: lc_otp_program
+          act: rsp
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_otp_token
+          type: req_rsp
+          name: lc_otp_token
+          act: rsp
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: otp_lc_data
+          type: uni
+          name: otp_lc_data
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: rcv
+          default: "'0"
+          package: lc_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_provision_en
+          act: rcv
+          default: "'0"
+          package: lc_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_dft_en
+          act: rcv
+          default: "'0"
+          package: lc_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: otp_keymgr_key
+          type: uni
+          name: otp_keymgr_key
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: flash_otp_key
+          type: req_rsp
+          name: flash_otp_key
+          act: rsp
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: sram_otp_key
+          width: "2"
+          type: req_rsp
+          name: sram_otp_key
+          act: rsp
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: otbn_otp_key
+          type: req_rsp
+          name: otbn_otp_key
+          act: rsp
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: hw_cfg
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: otp_ctrl
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: otbn
       type: otbn
       clock_srcs:
@@ -3002,6 +3246,10 @@
       [
         peri.tl_ram_ret
       ]
+      otp_ctrl.tl:
+      [
+        peri.tl_otp_ctrl
+      ]
       sensor_ctrl.tl:
       [
         peri.tl_sensor_ctrl
@@ -3031,6 +3279,8 @@
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
       peri.tl_ast_wrapper: ast_tl
+      otp_ctrl.otp_ast_pwr_seq: ""
+      otp_ctrl.otp_ast_pwr_seq_h: ""
       clkmgr.clocks_ast: clks_ast
       rstmgr.resets_ast: rsts_ast
     }
@@ -3242,6 +3492,10 @@
             {
               base_addr: 0x40170000
               size_byte: 0x11000
+            }
+            {
+              base_addr: 0x401b0000
+              size_byte: 0x2000
             }
           ]
         }
@@ -3676,6 +3930,7 @@
           rstmgr
           clkmgr
           ram_ret
+          otp_ctrl
           sensor_ctrl
           ast_wrapper
         ]
@@ -3856,6 +4111,24 @@
           pipeline_byp: "true"
         }
         {
+          name: otp_ctrl
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: otp_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x401b0000
+              size_byte: 0x2000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
           name: sensor_ctrl
           type: device
           clock: clk_peri_i
@@ -4013,6 +4286,18 @@
           width: 1
           default: ""
           top_signame: ram_ret_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_otp_ctrl
+          act: req
+          package: tlul_pkg
+          inst_name: peri
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_tl
           index: -1
         }
         {
@@ -4743,6 +5028,7 @@
     otbn
     sensor_ctrl
     keymgr
+    otp_ctrl
   ]
   alert:
   [
@@ -4801,6 +5087,20 @@
       type: alert
       async: 0
       module_name: keymgr
+    }
+    {
+      name: otp_ctrl_otp_fatal_error
+      width: 1
+      type: alert
+      async: 1
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_otp_check_failed
+      width: 1
+      type: alert
+      async: 1
+      module_name: otp_ctrl
     }
   ]
   pinmux:
@@ -5944,6 +6244,175 @@
         index: -1
       }
       {
+        struct: otp_ast_req
+        type: uni
+        name: otp_ast_pwr_seq
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        external: true
+        top_signame: otp_ctrl_otp_ast_pwr_seq
+        index: -1
+      }
+      {
+        struct: otp_ast_rsp
+        type: uni
+        name: otp_ast_pwr_seq_h
+        act: rcv
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        external: true
+        top_signame: otp_ctrl_otp_ast_pwr_seq_h
+        index: -1
+      }
+      {
+        struct: otp_edn
+        type: req_rsp
+        name: otp_edn
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: pwr_otp
+        type: req_rsp
+        name: pwr_otp
+        act: rsp
+        default: "'0"
+        package: pwrmgr_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_otp_program
+        type: req_rsp
+        name: lc_otp_program
+        act: rsp
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_otp_token
+        type: req_rsp
+        name: lc_otp_token
+        act: rsp
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: otp_lc_data
+        type: uni
+        name: otp_lc_data
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: rcv
+        default: "'0"
+        package: lc_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_provision_en
+        act: rcv
+        default: "'0"
+        package: lc_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_dft_en
+        act: rcv
+        default: "'0"
+        package: lc_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: otp_keymgr_key
+        type: uni
+        name: otp_keymgr_key
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: flash_otp_key
+        type: req_rsp
+        name: flash_otp_key
+        act: rsp
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: sram_otp_key
+        width: "2"
+        type: req_rsp
+        name: sram_otp_key
+        act: rsp
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: otbn_otp_key
+        type: req_rsp
+        name: otbn_otp_key
+        act: rsp
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: hw_cfg
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: otp_ctrl
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_tl
+        index: -1
+      }
+      {
         name: idle
         type: uni
         struct: logic
@@ -6366,6 +6835,18 @@
       {
         struct: tl
         type: req_rsp
+        name: tl_otp_ctrl
+        act: req
+        package: tlul_pkg
+        inst_name: peri
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
         name: tl_sensor_ctrl
         act: req
         package: tlul_pkg
@@ -6515,6 +6996,24 @@
         width: 1
         type: req_rsp
         default: ""
+        direction: in
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_req
+        signame: otp_ctrl_otp_ast_pwr_seq_o
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_rsp
+        signame: otp_ctrl_otp_ast_pwr_seq_h_i
+        width: 1
+        type: uni
+        default: "'0"
         direction: in
       }
       {
@@ -7006,6 +7505,22 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: ram_ret_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: otp_ctrl_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: otp_ctrl_tl_rsp
         width: 1
         type: req_rsp
         default: ""

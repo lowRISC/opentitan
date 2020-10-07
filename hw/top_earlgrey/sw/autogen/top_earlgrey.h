@@ -351,6 +351,24 @@ extern "C" {
 #define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for otp_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x401b0000u
+
+/**
+ * Peripheral size for otp_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x2000u
+
+/**
  * Peripheral base address for otbn in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -558,7 +576,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralOtbn = 2, /**< otbn */
   kTopEarlgreyAlertPeripheralSensorCtrl = 3, /**< sensor_ctrl */
   kTopEarlgreyAlertPeripheralKeymgr = 4, /**< keymgr */
-  kTopEarlgreyAlertPeripheralLast = 4, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralOtpCtrl = 5, /**< otp_ctrl */
+  kTopEarlgreyAlertPeripheralLast = 5, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -582,7 +601,9 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 11, /**< sensor_ctrl_ast_alerts 5 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 12, /**< sensor_ctrl_ast_alerts 6 */
   kTopEarlgreyAlertIdKeymgrErr = 13, /**< keymgr_err */
-  kTopEarlgreyAlertIdLast = 13, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdOtpCtrlOtpFatalError = 14, /**< otp_ctrl_otp_fatal_error */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailed = 15, /**< otp_ctrl_otp_check_failed */
+  kTopEarlgreyAlertIdLast = 15, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -592,7 +613,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[14];
+    top_earlgrey_alert_for_peripheral[16];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 

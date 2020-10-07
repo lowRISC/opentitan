@@ -26,5 +26,6 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rstmgr, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(clkmgr, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(ram_ret, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(otp_ctrl, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sensor_ctrl, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(ast_wrapper, dut, clk_peri_i, rst_n)

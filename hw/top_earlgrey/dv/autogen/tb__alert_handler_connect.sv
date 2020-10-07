@@ -12,3 +12,5 @@ assign alert_if[4].alert_tx = `CHIP_HIER.u_otbn.alert_tx_o[1];
 assign alert_if[5].alert_tx = `CHIP_HIER.u_otbn.alert_tx_o[2];
 assign alert_if[6].alert_tx = `CHIP_HIER.u_sensor_ctrl.alert_tx_o[0];
 assign alert_if[7].alert_tx = `CHIP_HIER.u_keymgr.alert_tx_o[0];
+assign alert_if[8].alert_tx = `CHIP_HIER.u_otp_ctrl.alert_tx_o[0];
+assign alert_if[9].alert_tx = `CHIP_HIER.u_otp_ctrl.alert_tx_o[1];
