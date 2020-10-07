@@ -206,9 +206,16 @@ module top_earlgrey_asic (
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
   clkmgr_pkg::clkmgr_ast_out_t clks_ast;
   rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
+  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
+  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
   //ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
   logic usb_ref_pulse;
   logic usb_ref_val;
+
+  // TODO: connect once available in AST
+  logic unused_otp_ctrl_otp_ast_pwr_seq;
+  assign unused_otp_ctrl_otp_ast_pwr_seq = otp_ctrl_otp_ast_pwr_seq;
+  assign otp_ctrl_otp_ast_pwr_seq_h = '0;
 
   ast_wrapper ast_wrapper (
     .clk_ext_i(clk),
@@ -254,17 +261,19 @@ module top_earlgrey_asic (
     .clk_usb_i       ( ast_base_clks.clk_usb ),
     .clk_aon_i       ( ast_base_clks.clk_aon ),
     .clks_ast_o      ( clks_ast      ),
-    .rstmgr_ast_i                ( ast_base_rst          ),
-    .rsts_ast_o                  ( rsts_ast              ),
-    .pwrmgr_pwr_ast_req_o        ( base_ast_pwr          ),
-    .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr          ),
-    .sensor_ctrl_ast_alert_req_i ( ast_base_alerts       ),
-    .sensor_ctrl_ast_alert_rsp_o ( base_ast_alerts       ),
-    .sensor_ctrl_ast_status_i    ( ast_base_status       ),
-    .usbdev_usb_ref_val_o        ( usb_ref_pulse         ),
-    .usbdev_usb_ref_pulse_o      ( usb_ref_val           ),
-    .ast_tl_req_o                ( base_ast_bus          ),
-    .ast_tl_rsp_i                ( ast_base_bus          ),
+    .rstmgr_ast_i                 ( ast_base_rst               ),
+    .rsts_ast_o                   ( rsts_ast                   ),
+    .pwrmgr_pwr_ast_req_o         ( base_ast_pwr               ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr               ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts            ),
+    .sensor_ctrl_ast_alert_rsp_o  ( base_ast_alerts            ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status            ),
+    .usbdev_usb_ref_val_o         ( usb_ref_pulse              ),
+    .usbdev_usb_ref_pulse_o       ( usb_ref_val                ),
+    .ast_tl_req_o                 ( base_ast_bus               ),
+    .ast_tl_rsp_i                 ( ast_base_bus               ),
+    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),
