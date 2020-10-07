@@ -161,14 +161,8 @@ module kmac_reg_top (
   logic cfg_state_endianness_qs;
   logic cfg_state_endianness_wd;
   logic cfg_state_endianness_we;
-  logic cmd_start_wd;
-  logic cmd_start_we;
-  logic cmd_process_wd;
-  logic cmd_process_we;
-  logic cmd_run_wd;
-  logic cmd_run_we;
-  logic cmd_done_wd;
-  logic cmd_done_we;
+  logic [3:0] cmd_wd;
+  logic cmd_we;
   logic status_sha3_idle_qs;
   logic status_sha3_idle_re;
   logic status_sha3_absorb_qs;
@@ -626,62 +620,16 @@ module kmac_reg_top (
 
   // R[cmd]: V(True)
 
-  //   F[start]: 0:0
   prim_subreg_ext #(
-    .DW    (1)
-  ) u_cmd_start (
+    .DW    (4)
+  ) u_cmd (
     .re     (1'b0),
-    .we     (cmd_start_we),
-    .wd     (cmd_start_wd),
+    .we     (cmd_we),
+    .wd     (cmd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.cmd.start.qe),
-    .q      (reg2hw.cmd.start.q ),
-    .qs     ()
-  );
-
-
-  //   F[process]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_cmd_process (
-    .re     (1'b0),
-    .we     (cmd_process_we),
-    .wd     (cmd_process_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.process.qe),
-    .q      (reg2hw.cmd.process.q ),
-    .qs     ()
-  );
-
-
-  //   F[run]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_cmd_run (
-    .re     (1'b0),
-    .we     (cmd_run_we),
-    .wd     (cmd_run_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.run.qe),
-    .q      (reg2hw.cmd.run.q ),
-    .qs     ()
-  );
-
-
-  //   F[done]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_cmd_done (
-    .re     (1'b0),
-    .we     (cmd_done_we),
-    .wd     (cmd_done_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.done.qe),
-    .q      (reg2hw.cmd.done.q ),
+    .qe     (reg2hw.cmd.qe),
+    .q      (reg2hw.cmd.q ),
     .qs     ()
   );
 
@@ -1821,17 +1769,8 @@ module kmac_reg_top (
   assign cfg_state_endianness_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_state_endianness_wd = reg_wdata[9];
 
-  assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_start_wd = reg_wdata[0];
-
-  assign cmd_process_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_process_wd = reg_wdata[1];
-
-  assign cmd_run_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_run_wd = reg_wdata[2];
-
-  assign cmd_done_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_done_wd = reg_wdata[3];
+  assign cmd_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cmd_wd = reg_wdata[3:0];
 
   assign status_sha3_idle_re = addr_hit[5] && reg_re;
 
@@ -2011,10 +1950,7 @@ module kmac_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
-        reg_rdata_next[3] = '0;
+        reg_rdata_next[3:0] = '0;
       end
 
       addr_hit[5]: begin
