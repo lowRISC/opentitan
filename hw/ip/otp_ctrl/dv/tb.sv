@@ -47,7 +47,7 @@ module tb;
     .lc_otp_token_req_i        ('0),
     .lc_escalate_en_i          ('0),
     .lc_provision_en_i         ('0),
-    .lc_test_en_i              ('0),
+    .lc_dft_en_i               ('0),
     .flash_otp_key_req_i       ('0),
     .sram_otp_key_req_i        ('0),
     .otbn_otp_key_req_i        ('0)

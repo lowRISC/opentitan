@@ -12,8 +12,6 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     super.otp_ctrl_init();
     // drive pwr_otp_req pin
     cfg.pwr_otp_vif.drive_pin(0, 1);
-    // reset memory to avoid readout X
-    cfg.mem_bkdr_vif.clear_mem();
   endtask
 
   virtual task pre_start();

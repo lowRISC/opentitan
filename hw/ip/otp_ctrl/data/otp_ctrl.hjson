@@ -448,6 +448,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // DAI interface will set it to 0 during initialization,
+              // so even after reset, the value might not be the reset value
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         {
             bits:   "0",
@@ -467,6 +470,9 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "DIRECT_ACCESS_REGWEN",
+      tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+              // so not able to predict this register value automatically
+              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "0",
           name: "READ",
@@ -499,6 +505,9 @@
       hwaccess: "hro",
       hwqe:     "false",
       regwen:   "DIRECT_ACCESS_REGWEN",
+      tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+              // so not able to predict this register value automatically
+              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "OtpByteAddrWidth-1:0",
           desc: '''
@@ -524,6 +533,9 @@
         hwqe:     "false",
         regwen:   "DIRECT_ACCESS_REGWEN",
         cname:    "WORD",
+        tags: [ // The value of this register is written from "DIRECT_ACCESS_RDATA",
+                // so could not predict this register value automatically
+                "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
