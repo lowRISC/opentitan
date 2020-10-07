@@ -427,7 +427,7 @@ jobs:
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: Default
+  pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
   - template: ci/install-package-dependencies.yml
@@ -435,13 +435,15 @@ jobs:
   - bash: |
       set -e
       . util/build_consts.sh
+
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
       BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
       test -f "$BOOTROM_VMEM"
 
-      . /opt/xilinx/Vivado/2018.3/settings64.sh
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
