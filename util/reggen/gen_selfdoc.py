@@ -208,11 +208,20 @@ def doc_tbl_head(outfile, use):
 
 def doc_tbl_line(outfile, key, use, desc):
     if use is not None:
-        genout(
-            outfile, key + " | " + validate.key_use[use] + " | " +
-            validate.val_types[desc[0]][0] + " | " + desc[1] + "\n")
+        desc_key, desc_txt = desc
+        val_type = (validate.val_types[desc_key][0]
+                    if desc_key is not None else None)
     else:
-        genout(outfile, key + " | " + desc + "\n")
+        assert isinstance(desc, str)
+        val_type = None
+        desc_txt = desc
+
+    if val_type is not None:
+        genout(outfile,
+               '{} | {} | {} | {}\n'
+               .format(key, validate.key_use[use], val_type, desc_txt))
+    else:
+        genout(outfile, key + " | " + desc_txt + "\n")
 
 
 def document(outfile):
