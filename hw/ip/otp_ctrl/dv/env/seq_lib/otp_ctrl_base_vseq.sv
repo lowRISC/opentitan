@@ -27,7 +27,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // setup basic otp_ctrl features
   virtual task otp_ctrl_init();
-    //`uvm_error(`gfn, "FIXME")
+    cfg.pwr_otp_vif.drive_pin(0, 0);
+    // reset memory to avoid readout X
+    cfg.mem_bkdr_vif.clear_mem();
   endtask
 
 endclass : otp_ctrl_base_vseq
