@@ -898,11 +898,8 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                     log.info(fname + ": use x genresval")
 
         if 'enum' in field:
-            if max_in_field > 127:
-                log.warning(fname + "enum too big for checking.")
-                enum_mask = 0
-            else:
-                enum_mask = (1 << (max_in_field + 1)) - 1
+            # Warn if the elements of the enumeration are not distinct
+            enum_val_names = {}
             for enum in field['enum']:
                 eck_err = check_keys(enum, enum_required, [], [],
                                      fname + " enum")
@@ -913,20 +910,28 @@ def validate_fields(fields, rname, default_sw, default_hw, full_resval,
                 val, ierr = check_int(enum['value'], fname + "." + ename)
                 if ierr:
                     error += 1
-                if (val > max_in_field):
+                    continue
+
+                if val > max_in_field:
                     error += 1
                     log.error(fname + ": enum value " + str(val) + "too big")
-                elif max_in_field <= 127:
-                    valbit = 1 << val
-                    if ((enum_mask & valbit) == 0):
-                        log.warning(fname + "enum has multiple " + str(val))
-                    else:
-                        enum_mask ^= valbit
+                    continue
 
-            if (enum_mask != 0):
+                old_name = enum_val_names.get(val)
+                if old_name is not None:
+                    log.warning('{}: both {!r} and {!r} have enum value {}.'
+                                .format(fname, old_name, ename, val))
+                enum_val_names[val] = ename
+
+            # Check whether every possible bit pattern has a named enum value,
+            # setting the 'genrsvdenum' flag if not.
+            assert len(enum_val_names) <= max_in_field + 1
+            if len(enum_val_names) < max_in_field + 1:
                 field['genrsvdenum'] = True
-                log.info(fname + ": Enum values not complete. Mask " +
-                         hex(enum_mask))
+                log.debug('{}: Enum values not complete '
+                          '({} of {} values named).'
+                          .format(fname,
+                                  len(enum_val_names), max_in_field + 1))
 
     return error, gen_resval, gen_resmask, bits_used
 
