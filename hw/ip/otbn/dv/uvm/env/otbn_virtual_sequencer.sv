@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otbn_virtual_sequencer extends dv_base_virtual_sequencer #(
+class otbn_virtual_sequencer extends cip_base_virtual_sequencer #(
     .CFG_T(otbn_env_cfg),
     .COV_T(otbn_env_cov)
   );

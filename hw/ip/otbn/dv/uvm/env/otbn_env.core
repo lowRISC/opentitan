@@ -7,7 +7,12 @@ description: "OTBN DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:ip:otbn
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
       - lowrisc:dv:dv_lib
+      - lowrisc:dv:tl_agent
+      - lowrisc:dv:alert_esc_agent
     files:
       - otbn_env_pkg.sv
       - otbn_env_cfg.sv: {is_include_file: true}
@@ -21,8 +26,16 @@ filesets:
       - seq_lib/otbn_sanity_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: otbn
+      ip_hjson: ../../../data/otbn.hjson
 
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

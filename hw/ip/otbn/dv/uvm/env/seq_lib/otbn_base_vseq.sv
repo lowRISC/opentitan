@@ -2,8 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class otbn_base_vseq extends dv_base_vseq #(
+//
+// Base class for all OTBN test sequences
+//
+
+class otbn_base_vseq extends cip_base_vseq #(
     .CFG_T               (otbn_env_cfg),
+    .RAL_T               (otbn_reg_block),
     .COV_T               (otbn_env_cov),
     .VIRTUAL_SEQUENCER_T (otbn_virtual_sequencer)
   );
