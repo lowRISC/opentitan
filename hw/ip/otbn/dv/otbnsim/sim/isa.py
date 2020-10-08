@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
-from typing import Dict
-
-from riscvmodel.types import Immediate  # type: ignore
+from typing import Dict, Optional, Tuple
 
 from shared.insn_yaml import Insn, load_insns_yaml
 
@@ -73,12 +71,24 @@ class OTBNInsn:
     def __init__(self, op_vals: Dict[str, int]):
         self.op_vals = op_vals
 
+        # Memoized disassembly for this instruction. We store the PC at which
+        # we disassembled too (which should be the same next time around, but
+        # it can't hurt to check).
+        self._disasm = None  # type: Optional[Tuple[int, str]]
+
     def execute(self, state: OTBNState) -> None:
         raise NotImplementedError('OTBNInsn.execute')
 
     def disassemble(self, pc: int) -> str:
         '''Generate an assembly listing for this instruction'''
-        return self.insn.disassemble(self.op_vals, 12)
+        if self._disasm is not None:
+            old_pc, old_disasm = self._disasm
+            assert pc == old_pc
+            return old_disasm
+
+        disasm = self.insn.disassemble(self.op_vals, 12)
+        self._disasm = (pc, disasm)
+        return disasm
 
 
 class RV32RegReg(OTBNInsn):
