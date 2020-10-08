@@ -42,7 +42,7 @@ module prim_subst_perm #(
         end
         // Flip vector
         for (int k = 0; k < DataWidth; k++) begin
-          data_state_flipped[DataWidth - 1 - k] = data_state_sbox[k];
+          data_state_sbox[DataWidth - 1 - k] = data_state_flipped[k];
         end
         // Inverse SBox layer
         for (int k = 0; k < DataWidth/4; k++) begin
@@ -66,7 +66,7 @@ module prim_subst_perm #(
           data_state_flipped[DataWidth - 1 - k] = data_state_sbox[k];
         end
         // Regroup bits such that all even indices are stacked up first, followed by all odd
-        // indices, and then flip the vector. Note that if the Width is odd, this is still ok, since
+        // indices. Note that if the Width is odd, this is still ok, since
         // the uppermost bit just stays in place in that case.
         for (int k = 0; k < DataWidth/2; k++) begin
           data_state_sbox[k]               = data_state_flipped[k * 2];
