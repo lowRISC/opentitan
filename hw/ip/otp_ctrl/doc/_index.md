@@ -459,7 +459,7 @@ The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
 
 Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_scr_key_req.sv` primitive as shown below.
+It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_sync_reqack.sv` primitive as shown below.
 
 ![OTP Key Req Ack](otp_ctrl_key_req_ack.svg)
 

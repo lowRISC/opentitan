@@ -1,0 +1,206 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "sram_ctrl",
+  clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_fixed_i", // OTP clock
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_fixed_ni" // OTP reset
+  ]
+
+  bus_device: "tlul",
+  bus_host: "none",
+
+  ///////////////////////////
+  // Interrupts and Alerts //
+  ///////////////////////////
+
+  interrupt_list: [
+    { name: "sram_integ_error",
+      desc: "A correctable or uncorrectable integrity error has occurred in SRAM."
+    }
+  ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+  param_list: [
+
+  ]
+
+  /////////////////////////////
+  // Intermodule Connections //
+  /////////////////////////////
+
+  inter_signal_list: [
+    // Key request to OTP
+    { struct:  "sram_otp_key"
+      type:    "req_rsp"
+      name:    "sram_otp_key"
+      act:     "req"
+      default: "'0"
+      package: "otp_ctrl_pkg"
+    }
+  ] // inter_signal_list
+
+  regwidth: "32",
+  registers: [
+
+    ////////////////////////
+    // Ctrl / Status CSRs //
+    ////////////////////////
+
+    { name: "STATUS",
+      desc: "SRAM status register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "false",
+      hwext:    "true",
+      fields: [
+        { bits: "0"
+          name: "ERROR"
+          desc: '''
+                Set to 1 if a correctable or uncorrectable error has occurred in the SRAM.
+                If set to 1, SW should check the !!ERROR_TYPE and !!ERROR_ADDRESS register for more information.
+                This bit will be cleared automatically if the errors are cleared in !!ERROR_TYPE.
+                '''
+        }
+        { bits: "1"
+          name: "SCR_KEY_VALID"
+          desc: '''
+                Set to 1 if a new scrambling key has been successfully obtained from OTP.
+                Note that if this is set to 0, the SRAM contents are still scrambled, but a
+                default all-zero key and nonce are used to do so.
+                '''
+        }
+        { bits: "2"
+          name: "SCR_KEY_SEED_VALID"
+          desc: '''
+                Set to 1 if the scrambling key has been derived from a valid key seed in OTP.
+                If !!STATUS.SCR_KEY_VALID is set to 1, !!STATUS.SCR_KEY_SEED_VALID should be 1
+                except for cases where the scrambling key seeds have not yet been provisioned to
+                OTP. In such a case, the scrambling key is still ephemeral (i.e., it is derived
+                using entropy from CSRNG), but a default all-zero value is used as the key seed.
+                '''
+        }
+      ]
+    }
+    { name: "CTRL_REGWEN",
+      desc: "Lock register for control register.",
+      swaccess: "rw1c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0"
+          desc: '''
+                When cleared to zero, !!CTRL can not be written anymore.
+                ''',
+          resval: 1
+        }
+      ]
+    }
+    { name: "CTRL",
+      desc: "SRAM ctrl register.",
+      swaccess: "r0w1c",
+      hwaccess: "hro",
+      hwqe:     "true",
+      hwext:    "false",
+      regwen:   "CTRL_REGWEN"
+      fields: [
+        { bits: "0",
+          name: "RENEW_SCR_KEY",
+          desc: '''
+                Write 1 to request a new scrambling key from OTP. After writing to this register, software must not
+                use the SRAM until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
+                before triggering a key renewal, hardware will automatically clear that status bit such that software
+                can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
+                to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
+                a key request is pending has no effect.
+                '''
+        }
+      ]
+    }
+
+    /////////////////////
+    // SRAM Attributes //
+    /////////////////////
+
+    { name: "SRAM_CFG_REGWEN",
+      desc: "Lock register for macro attributes.",
+      swaccess: "rw1c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                When cleared to zero, !!SRAM_CFG can not be written anymore.
+                ''',
+          resval: 1
+        }
+      ]
+    }
+    { name: "SRAM_CFG",
+      desc: "Macro attributes.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe:     "false",
+      hwext:    "false",
+      regwen:   "SRAM_CFG_REGWEN",
+      fields: [
+        { bits: "7:0"
+          name: "ATTRIBUTES"
+          desc: '''
+                Attributes of the physical SRAM macro.
+                '''
+        }
+      ]
+    }
+
+    /////////////////////
+    // Error Reporting //
+    /////////////////////
+
+    { name: "ERROR_TYPE",
+      desc: "Error type register.",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      hwqe:     "false",
+      hwext:    "false",
+      fields: [
+        { bits: "0"
+          name: "CORRECTABLE"
+          desc: '''
+                A correctable integrity error has occurred in SRAM.
+                The address of the last error is exposed in !!ERROR_ADDRESS.
+                Write 1 to this register in order to clear the error.
+                '''
+        }
+        { bits: "1"
+          name: "UNCORRECTABLE"
+          desc: '''
+                A uncorrectable integrity error has occurred in SRAM.
+                The address of the last error is exposed in !!ERROR_ADDRESS.
+                Write 1 to this register in order to clear the error.
+                '''
+        }
+      ]
+    }
+
+    { name: "ERROR_ADDRESS",
+      desc: "Error address register.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwqe:     "false",
+      hwext:    "false",
+      fields: [
+        { bits: "31:0"
+          name: "ADDRESS"
+          desc: '''
+                Contains the byte address of the last parity error.
+                '''
+        }
+      ]
+    }
+  ],
+}
