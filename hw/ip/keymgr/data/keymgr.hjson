@@ -9,8 +9,13 @@
     { name: "err",       desc: "keymanager error" },
   ],
   alert_list: [
-    { name: "err",
-      desc: "Alert for key manager error",
+    { name: "fault_err",
+      desc: "Alert for key manager faults.  These errors cannot be caused by software",
+    },
+    { name: "operation_err",
+      desc: '''
+        Alert for key manager operation errors.  These errors could have been caused by
+        software'''
     }
   ],
 
@@ -127,7 +132,10 @@
               desc: '''
                 Requests key manager initialization.
                 This is not automated by hardware as software may want to initialize entropy sources
-                prior to calling key manager initlialization
+                prior to calling key manager initlialization.
+
+                Note the Init command is only accepted by the key manager control logic if START is not set.
+                Once the control has been initialized, the field no longer serves a function.
                 '''
             },
           ]

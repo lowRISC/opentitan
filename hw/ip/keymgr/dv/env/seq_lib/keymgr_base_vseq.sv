@@ -35,6 +35,8 @@ class keymgr_base_vseq extends cip_base_vseq #(
     ral.control.init.set(1'b1);
     csr_update(.csr(ral.control));
     csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
+    // manually clear here since ral is not aware this bet is self-clearing
+    ral.control.init.set(1'b0);
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output

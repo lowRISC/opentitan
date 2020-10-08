@@ -121,7 +121,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
       inputs_invalid_q <= inputs_invalid_d;
       state_q <= state_d;
     end
-  end
+   end
 
 
   always_comb begin
@@ -214,8 +214,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     endcase // unique case (state_q)
   end
 
-  assign data_o = start && done_o ? {kmac_data_i.digest_share1, kmac_data_i.digest_share0} :
-                                    {DecoyOutputCopies{entropy_i}};
+  // If an fsm error is detected, there is no guarantee the transaction can completely gracefully.
+  // Allow the transaction to terminate early with random data.
+  assign data_o = start && done_o && !fsm_error_o ? {kmac_data_i.digest_share1,
+                                                     kmac_data_i.digest_share0} :
+                                                    {DecoyOutputCopies{entropy_i}};
 
   // The input invalid check is done whenever transactions are ongoing with kmac
   // once set, it cannot be unset until transactions are fully complete

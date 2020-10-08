@@ -140,8 +140,10 @@ During each state, there are 3 valid commands software can issue:
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
 If a command is valid during the current working state, it is processed and acknowledged when complete.
 If a command is invalid, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
-
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
+
+During `Disable` state, working state and output registers are updated as usual.
+The only difference during `Disabled` state is that random data is used and invalid operations are reported.
 
 ## Generating Output Key
 The generate output command is composed of 2 options
@@ -157,6 +159,53 @@ This means the working states, even though functionally 256b, are maintained as 
 
 For advance-state and `generate-output` commands, the KMAC emitted output are also in 2-shares.
 Software is responsible for determining if the key should be preserved in shares or combined, depending on the use case.
+
+## Errors, Interrupts and Alerts
+An error code register is maintained {{< regref ERR_CODE >}} to check issues that might rise while using the key manager.
+There are two categories of errors
+*  Hardware fault errors - These errors indicate something fundamental has gone wrong and are errors that could not have been caused by software.
+   *  Invalid command - A non-one-hot command was issued from the key manager controller to the KMAC data interface. This is not possible by software and indicates a hardware fault.  This error can also happen if the KMCA data fsm gets into an invalid state.
+   *  Invalid output - The data return from KMAC is all 0's or all 1's.  This is not possible given the set of KMAC data interface inputs.
+
+*  Software operation errors - These errors could have been caused by user errors and is a sign that software should examine its usage of key manager.
+   *  Invalid operation - An invalid operation (for example `generate` while in Idle) was invoked.
+   *  Invalid input - Invalid software input was supplied (for example a greater key version than allowed in {{< regref MAX_OWNER_KEY_VER >}}.
+
+Whenever the error code changes from its previous value to a non-zero value, an interrupt is generated.
+Two separate alerts are also generated, one corresponding to each category above.
+
+### Invalid Command
+When these errors occur, random data is fed to the KMAC for processing.
+At the completion of KMAC processing, the working state is over-written with KMAC's output and the state is transitioned to `Disabled`.
+An error interrupt and fault alert are also generated.
+
+### Invalid Output
+When these errors occur, an error interrupt and fault alert are generated.
+Neither the working state nor the relevant output registers are updated.
+
+### Invalid Input
+When these errors occur, random data is fed to the KMAC for processing.
+Neither the working state nor the relevant output registers are updated.
+An error interrupt and operation alert are also generated.
+
+### Invalid Operation
+When these errors occur, an error interrupt and fault are generated.
+
+The effects of an invalid operation vary depending on state.
+The table below enumerates the legal operations in a given state.
+When an illegal operation is supplied, the error code is updated and the operation is flagged as `done with error`.
+Note that even though `Init` is not a legal operation in most states, it is treated as an ignored command rather as an explicit error.
+
+| Current State  | Legal Operations               | Outcome                                                                                                                       |
+| -------------  | ------------------------------ | ------------------------------------------------------------                                                                  |
+| Reset          | Init                           | Advance to Initialized state upon completion.                                                                                 |
+| Reset          | Disable / Advance / Generate   | Invalid operation error triggered with no other side effects.                                                                 |
+| Initialized    | Disable / Advance              | Advance to next Disabled state or CreatorRootKey.                                                                             |
+| Initialized    | Generate                       | Invalid operation error triggered with random data, output registers are updated.                                             |
+| CreatorRootKey | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
+| OwnerIntKey    | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
+| OwnerKey       | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
+| Disabled       | Disable / Advance / Generate   | Invalid operation error triggered with random data, both working state and output registers are updated depending on command. |
 
 
 ## Block Diagram
