@@ -19,9 +19,6 @@
 // that nonce, the address mapping is not fully baked into RTL and can be changed at runtime as
 // well.
 //
-// Note that this design is not final nor tested, and its main purpose is to be instantiated in
-// Bronze for area and timing estimates.
-//
 // See also: prim_cipher_pkg, prim_prince
 
 `include "prim_assert.sv"
@@ -30,7 +27,7 @@ module prim_ram_1p_scr #(
   parameter  int Depth                = 512, // Needs to be a power of 2 if NumAddrScrRounds > 0.
   parameter  int Width                = 256, // Needs to be Byte aligned for parity
   parameter  int DataBitsPerMask      = 8,   // Currently only 8 is supported
-  parameter  int CfgW                 = 8,   // WTC, RTC, etc
+  parameter  int CfgWidth             = 8,   // WTC, RTC, etc
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -63,6 +60,7 @@ module prim_ram_1p_scr #(
   input        [DataKeyWidth-1:0]   key_i,
   input        [NonceWidth-1:0]     nonce_i,
 
+  // Interface to TL-UL SRAM adapter
   input                             req_i,
   input                             write_i,
   input        [AddrWidth-1:0]      addr_i,
@@ -71,9 +69,10 @@ module prim_ram_1p_scr #(
   output logic [Width-1:0]          rdata_o,
   output logic                      rvalid_o, // Read response (rdata_o) is valid
   output logic [1:0]                rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
+  output logic [AddrWidth-1:0]      raddr_o,  // Read address for error reporting.
 
   // config
-  input [CfgW-1:0]                  cfg_i
+  input [CfgWidth-1:0]              cfg_i
 );
 
   //////////////////////
@@ -146,6 +145,11 @@ module prim_ram_1p_scr #(
     assign addr_scr = addr_mux;
   end
 
+  // We latch the non-scrambled address for error reporting.
+  logic [AddrWidth-1:0] raddr_d, raddr_q;
+  assign raddr_d = addr_mux;
+  assign raddr_o = raddr_q;
+
   //////////////////////////////////////////////
   // Keystream Generation for Data Scrambling //
   //////////////////////////////////////////////
@@ -176,6 +180,13 @@ module prim_ram_1p_scr #(
       .data_o  ( keystream[k * 64 +: 64] ),
       .valid_o ( )
     );
+
+    // Unread unused bits from keystream
+    if (k == NumParKeystr-1 && (Width % 64) > 0) begin : gen_unread_last
+      localparam int UnusedWidth = 64 - (Width % 64);
+      logic [UnusedWidth-1:0] unused_keystream;
+      assign unused_keystream = keystream[(k+1) * 64 - 1 -: UnusedWidth];
+    end
   end
 
   // Replicate keystream if needed
@@ -197,7 +208,7 @@ module prim_ram_1p_scr #(
 
   // Write path. Note that since this does not fan out into the interconnect, the write path is not
   // as critical as the read path below in terms of timing.
-  logic [Width-1:0] wdata_scr_d, wdata_scr_q;
+  logic [Width-1:0] wdata_scr_d, wdata_scr_q, wdata_q;
   for (genvar k = 0; k < Width/8; k++) begin : gen_diffuse_wdata
     // Apply the keystream first
     logic [7:0] wdata_xor;
@@ -277,7 +288,6 @@ module prim_ram_1p_scr #(
   // Registers //
   ///////////////
 
-  logic [Width-1:0] wdata_q;
   logic [Width-1:0] wmask_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
@@ -289,11 +299,13 @@ module prim_ram_1p_scr #(
       wdata_q             <= '0;
       wdata_scr_q         <= '0;
       wmask_q             <= '0;
+      raddr_q             <= '0;
     end else begin
       write_scr_pending_q <= write_scr_pending_d;
       write_pending_q     <= write_pending_d;
       collision_q         <= collision_d;
       rvalid_q            <= read_en;
+      raddr_q             <= raddr_d;
       if (write_en) begin
         waddr_q <= addr_i;
         wmask_q <= wmask_i;
@@ -313,7 +325,7 @@ module prim_ram_1p_scr #(
     .Depth(Depth),
     .Width(Width),
     .DataBitsPerMask(DataBitsPerMask),
-    .CfgW(CfgW),
+    .CfgW(CfgWidth),
     .EnableECC(1'b0),
     .EnableParity(1'b1), // We are using Byte parity
     .EnableInputPipeline(1'b0),

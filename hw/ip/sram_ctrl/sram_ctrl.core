@@ -1,0 +1,81 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:sram_ctrl:0.1"
+description: "SRAM Controller"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:util
+      - lowrisc:prim:multibit_sync
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:tlul:adapter_sram
+      - lowrisc:ip:tlul
+      - lowrisc:ip:sram_ctrl_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:otp_ctrl_pkg
+    files:
+      - rtl/sram_ctrl_reg_top.sv
+      - rtl/sram_ctrl.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/sram_ctrl.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/sram_ctrl.waiver
+    file_type: waiver
+
+  files_formal:
+    files:
+      - dv/tb/sram_ctrl_bind.sv
+    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - target_formal   ? (files_formal)
+      - files_rtl
+    toplevel: sram_ctrl
+
+  formal:
+    filesets:
+      - files_rtl
+      - files_formal
+    toplevel: sram_ctrl
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

@@ -2741,7 +2741,7 @@
           type: uni
           name: lc_escalate_en
           act: rcv
-          default: "'0"
+          default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
@@ -2751,7 +2751,7 @@
           type: uni
           name: lc_provision_en
           act: rcv
-          default: "'0"
+          default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
@@ -2761,7 +2761,7 @@
           type: uni
           name: lc_dft_en
           act: rcv
-          default: "'0"
+          default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
           index: -1
@@ -6308,7 +6308,7 @@
         type: uni
         name: lc_escalate_en
         act: rcv
-        default: "'0"
+        default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
@@ -6318,7 +6318,7 @@
         type: uni
         name: lc_provision_en
         act: rcv
-        default: "'0"
+        default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
         index: -1
@@ -6328,7 +6328,7 @@
         type: uni
         name: lc_dft_en
         act: rcv
-        default: "'0"
+        default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
         index: -1

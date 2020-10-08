@@ -151,6 +151,17 @@
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/spi_device/lint/{tool}"
              },
+             {    name: sram_ctrl
+                  fusesoc_core: lowrisc:ip:sram_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/sram_ctrl/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart
                   import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
