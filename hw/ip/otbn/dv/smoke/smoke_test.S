@@ -221,6 +221,14 @@ bn.mov w25, w24
 li x27, 26
 bn.movr x27, x26++
 
+# w27 = w2 == w1 ? w5 : w6 = w6 = 0x18988800_00088990_89899109_88189108_81989801_09981808_98009919_11109898
+bn.cmp w1, w2
+bn.sel w27, w5, w6, FG0.Z
+
+# w28 = (w4 - w3 - 1 (borrow)) & 1 ? w7 : w8 = w7 = 0xe165559f_bbb1704f_10502cd6_11e568d7_5e0361bc_f027c1f7_01ff22a2_caef0343
+bn.cmpb w4, w3
+bn.sel w28, w7, w8, FG0.L
+
 jal x0, end
 
 # Place end at fixed address so write to x31 by jal doesn't have changing value

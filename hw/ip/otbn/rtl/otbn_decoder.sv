@@ -110,6 +110,10 @@ module otbn_decoder
 
   assign flag_group_bignum = insn[31];
 
+  flag_e sel_flag_bignum;
+
+  assign sel_flag_bignum = flag_e'(insn[26:25]);
+
   // source registers
   assign insn_rs1 = insn[19:15];
   assign insn_rs2 = insn[24:20];
@@ -189,6 +193,7 @@ module otbn_decoder
     shift_amt:       shift_amt_bignum,
     shift_right:     shift_right_bignum,
     flag_group:      flag_group_bignum,
+    sel_flag:        sel_flag_bignum,
     alu_op:          alu_operator_bignum,
     op_b_sel:        alu_op_b_mux_sel_bignum,
     rf_we:           rf_we_bignum,
@@ -450,14 +455,23 @@ module otbn_decoder
         endcase
       end
 
-      ////////////////////////////
-      // Bignum WSR/LID/SID/MOV //
-      ////////////////////////////
+      ///////////////////////////////////////////////
+      // Bignum Misc WSR/LID/SID/MOV[R]/CMP[B]/SEL //
+      ///////////////////////////////////////////////
 
       InsnOpcodeBignumMisc: begin
         insn_subset = InsnSubsetBignum;
 
         unique case (insn[14:12])
+          3'b000: begin // BN.SEL
+            rf_we_bignum = 1'b1;
+            rf_ren_a = 1'b1;
+            rf_ren_b = 1'b1;
+          end
+          3'b011, 3'b001: begin // BN.CMP[B]
+            rf_ren_a = 1'b1;
+            rf_ren_b = 1'b1;
+          end
           3'b100: begin // BN.LID
             ld_insn              = 1'b1;
             rf_we_bignum         = 1'b1;
@@ -770,12 +784,26 @@ module otbn_decoder
         endcase
       end
 
-      ///////////////////////////
-      // Bignum LID/SID/MOV[R] //
-      ///////////////////////////
+      ///////////////////////////////////////////
+      // Bignum Misc LID/SID/MOV[R]/CMP[B]/SEL //
+      ///////////////////////////////////////////
 
       InsnOpcodeBignumMisc: begin
         unique case (insn[14:12])
+          3'b000: begin // BN.SEL
+            alu_operator_bignum      = AluOpBignumSel;
+            alu_op_b_mux_sel_bignum  = OpBSelRegister;
+          end
+          3'b001: begin // BN.CMP
+            alu_operator_bignum      = AluOpBignumSub;
+            alu_op_b_mux_sel_bignum  = OpBSelRegister;
+            shift_amt_mux_sel_bignum = ShamtSelBignumA;
+          end
+          3'b011: begin // BN.CMPB
+            alu_operator_bignum      = AluOpBignumSubb;
+            alu_op_b_mux_sel_bignum  = OpBSelRegister;
+            shift_amt_mux_sel_bignum = ShamtSelBignumA;
+          end
           3'b100,
           3'b101: begin // BN.LID/BN.SID
             // Calculate memory address using base ALU

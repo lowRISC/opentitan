@@ -104,7 +104,9 @@ package otbn_pkg;
     AluOpBignumXor,
     AluOpBignumOr,
     AluOpBignumAnd,
-    AluOpBignumNot
+    AluOpBignumNot,
+
+    AluOpBignumSel
   } alu_op_bignum_e;
 
   typedef enum logic {
@@ -199,6 +201,13 @@ package otbn_pkg;
 
   localparam int FlagsWidth = $bits(flags_t);
 
+  typedef enum logic [$clog2(FlagsWidth)-1:0] {
+    FlagC = 'd0,
+    FlagL = 'd1,
+    FlagM = 'd2,
+    FlagZ = 'd3
+  } flag_e;
+
   // TODO: Figure out how to add assertions for the enum type width; initial blocks, as produced by
   // ASSERT_INIT, aren't allowed in packages.
   //`ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
@@ -261,6 +270,7 @@ package otbn_pkg;
     logic                    shift_right; // Shift right if set otherwise left
 
     flag_group_t             flag_group;
+    flag_e                   sel_flag;
     alu_op_bignum_e          alu_op;
     op_b_sel_e               op_b_sel;
     logic                    rf_we;
@@ -286,6 +296,8 @@ package otbn_pkg;
     logic                    shift_right;
     logic [$clog2(WLEN)-1:0] shift_amt;
     flag_group_t             flag_group;
+    flag_e                   sel_flag;
   } alu_bignum_operation_t;
+
 
 endpackage
