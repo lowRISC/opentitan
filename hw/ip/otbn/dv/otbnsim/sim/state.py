@@ -167,7 +167,7 @@ class OTBNState:
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
         c += self.wsrs.changes()
-        c += self.csrs.changes()
+        c += self.csrs.flags.changes()
         c += self.wdrs.changes()
         return c
 
@@ -193,7 +193,7 @@ class OTBNState:
         self.loop_stack.commit()
         self.ext_regs.commit()
         self.wsrs.commit()
-        self.csrs.commit()
+        self.csrs.flags.commit()
         self.wdrs.commit()
 
     def start(self) -> None:

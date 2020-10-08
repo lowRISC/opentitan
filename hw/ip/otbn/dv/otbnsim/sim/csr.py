@@ -56,9 +56,3 @@ class CSRFile:
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
-
-    def commit(self) -> None:
-        self.flags.commit()
-
-    def changes(self) -> List[Trace]:
-        return self.flags.changes()

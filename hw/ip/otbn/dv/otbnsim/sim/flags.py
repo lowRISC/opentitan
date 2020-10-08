@@ -89,23 +89,28 @@ class FlagReg:
 
 class FlagGroups:
     def __init__(self) -> None:
-        self.groups = {0: FlagReg(False, False, False, False),
-                       1: FlagReg(False, False, False, False)}
+        self._groups = {0: FlagReg(False, False, False, False),
+                        1: FlagReg(False, False, False, False)}
+        # Have any flags changed?
+        self._dirty = False
 
     def __getitem__(self, key: int) -> FlagReg:
         assert 0 <= key <= 1
-        return self.groups[key]
+        return self._groups[key]
 
     def __setitem__(self, key: int, value: FlagReg) -> None:
         assert 0 <= key <= 1
-        self.groups[key].set_flags(value)
+        self._dirty = True
+        self._groups[key].set_flags(value)
 
     def changes(self) -> List[TraceFlag]:
-        return self.groups[0].changes('FG0') + self.groups[1].changes('FG1')
+        return self._groups[0].changes('FG0') + self._groups[1].changes('FG1')
 
     def commit(self) -> None:
-        self.groups[0].commit()
-        self.groups[1].commit()
+        if self._dirty:
+            self._groups[0].commit()
+            self._groups[1].commit()
+        self._dirty = False
 
     def read_unsigned(self) -> int:
         '''Return the flag groups as an unsigned value (as seen by CSRs)
@@ -113,8 +118,8 @@ class FlagGroups:
         Format is defined in FlagReg, with group 0 as LSB.
 
         '''
-        return ((self.groups[1].read_unsigned() << 4) |
-                (self.groups[0].read_unsigned() << 0))
+        return ((self._groups[1].read_unsigned() << 4) |
+                (self._groups[0].read_unsigned() << 0))
 
     def write_unsigned(self, value: int) -> None:
         '''Set the flag groups with an unsigned value, ignoring unused bits
@@ -124,5 +129,6 @@ class FlagGroups:
         '''
         assert 0 <= value
         mask4 = (1 << 4) - 1
-        self.groups[0].write_unsigned((value >> 0) & mask4)
-        self.groups[1].write_unsigned((value >> 4) & mask4)
+        self._dirty = True
+        self._groups[0].write_unsigned((value >> 0) & mask4)
+        self._groups[1].write_unsigned((value >> 4) & mask4)
