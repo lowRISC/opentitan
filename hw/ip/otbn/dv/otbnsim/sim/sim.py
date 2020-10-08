@@ -43,10 +43,11 @@ class OTBNSim:
         if not self.state.running:
             return (None, [])
 
-        if self.state.stalled:
+        was_stalled = self.state.stalled
+
+        if was_stalled:
             insn = None
             changes = []
-            disasm = '(stall)'
         else:
             word_pc = int(self.state.pc) >> 2
             if word_pc >= len(self.program):
@@ -67,11 +68,12 @@ class OTBNSim:
             self.state.post_insn()
 
             changes = self.state.changes()
-            disasm = insn.disassemble(int(self.state.pc))
 
         self.state.commit()
 
         if verbose:
+            disasm = ('(stall)' if was_stalled
+                      else insn.disassemble(self.state.pc))
             self._print_trace(disasm, changes)
 
         return (insn, changes)
