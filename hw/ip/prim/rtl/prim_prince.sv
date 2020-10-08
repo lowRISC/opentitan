@@ -16,7 +16,8 @@
 // References: - https://en.wikipedia.org/wiki/PRESENT
 //             - https://en.wikipedia.org/wiki/Prince_(cipher)
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
-//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/documents/papers/session7-maene-paper.pdf
+//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/
+//               documents/papers/session7-maene-paper.pdf
 //             - https://eprint.iacr.org/2012/529.pdf
 //             - https://eprint.iacr.org/2015/372.pdf
 //             - https://eprint.iacr.org/2014/656.pdf
