@@ -339,6 +339,27 @@ module otbn_alu_bignum
   end
 
   ////////////////////////
+  // Conditional Select //
+  ////////////////////////
+
+  logic [WLEN-1:0] sel_res;
+  logic            sel_flag;
+
+  always_comb begin
+    unique case (operation_i.sel_flag)
+      FlagC:   sel_flag = selected_flags.C;
+      FlagL:   sel_flag = selected_flags.L;
+      FlagM:   sel_flag = selected_flags.M;
+      FlagZ:   sel_flag = selected_flags.Z;
+      default: sel_flag = selected_flags.C;
+    endcase
+  end
+
+  `ASSERT(SelFlagValid, operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
+
+  assign sel_res = sel_flag ? operation_i.operand_a : operation_i.operand_b;
+
+  ////////////////////////
   // Output multiplexer //
   ////////////////////////
 
@@ -386,6 +407,8 @@ module otbn_alu_bignum
       AluOpBignumOr,
       AluOpBignumAnd,
       AluOpBignumNot:  operation_result_o = logical_res;
+
+      AluOpBignumSel:  operation_result_o = sel_res;
       default: ;
     endcase
   end

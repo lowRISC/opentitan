@@ -342,6 +342,7 @@ module otbn_controller
   assign alu_bignum_operation_o.shift_right = insn_dec_bignum_i.shift_right;
   assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.shift_amt;
   assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.flag_group;
+  assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.sel_flag;
 
   // Register file write MUX
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
