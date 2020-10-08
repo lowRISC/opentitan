@@ -18,25 +18,17 @@ module prim_slicer #(
   output logic [OutW-1:0]   data_o
 );
 
-  // Find number of entries imitating ceil function
-  localparam int Entries = (InW + OutW -1)/OutW;
-  localparam int Partial = (InW % OutW != 0) ? 1 : 0;
+  logic [(2**IndexW)*OutW-1:0] unrolled_data;
 
-  always_comb begin
-    data_o = '0;
-    if (sel_i < Entries) begin
-      for (int i = 0 ; i < Entries ; i++) begin
-        if (i == sel_i) begin
-          if (Partial && i == (Entries-1)) begin
-            // last message that is partial
-            data_o = OutW'(data_i[InW-1:(Entries-1)*OutW]);
-          end else begin
-            data_o = data_i[i*OutW+:OutW];
-          end
-        end
-      end
-    end
+  if (InW < OutW*(2**IndexW)) begin : gen_biggerwidth
+    assign unrolled_data = {'0, data_i};
+  end else if (InW == OutW*(2**IndexW)) begin : gen_samewidth
+    assign unrolled_data = data_i;
   end
+
+  assign data_o = unrolled_data[sel_i*OutW+:OutW];
+
+  `ASSERT_INIT(ValidWidth_A, InW <= OutW*(2**IndexW))
 
 endmodule
 
