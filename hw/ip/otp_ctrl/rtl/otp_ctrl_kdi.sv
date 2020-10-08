@@ -197,30 +197,39 @@ module otp_ctrl_kdi
   assign entropy_cnt_d = (entropy_cnt_clr) ? '0 :
                          (entropy_cnt_en)  ? entropy_cnt_q + 1'b1 : entropy_cnt_q;
 
+  logic seed_valid_reg_en;
   logic key_reg_en, nonce_reg_en;
+  logic seed_valid_d, seed_valid_q;
   logic [ScrmblKeyWidth/ScrmblBlockWidth-1:0][ScrmblBlockWidth-1:0] key_out_d, key_out_q;
   logic [3:0][ScrmblBlockWidth-1:0] nonce_out_d, nonce_out_q;
 
   always_comb begin : p_outregs
     key_out_d   = key_out_q;
     nonce_out_d = nonce_out_q;
+    seed_valid_d = seed_valid_q;
     if (key_reg_en) begin
       key_out_d[seed_cnt_q[1]] = scrmbl_data_i;
     end
     if (nonce_reg_en) begin
       nonce_out_d[entropy_cnt_q] = edn_data_i;
     end
+    if (seed_valid_reg_en) begin
+      seed_valid_d = req_bundle.seed_valid;
+    end
   end
 
   // Connect keys/nonce outputs to output regs.
   assign lc_otp_token_o.hashed_token = key_out_q;
   assign flash_otp_key_o.key         = key_out_q;
+  assign flash_otp_key_o.seed_valid  = seed_valid_q;
   assign otbn_otp_key_o.key          = key_out_q;
   assign otbn_otp_key_o.nonce        = nonce_out_q;
+  assign otbn_otp_key_o.seed_valid   = seed_valid_q;
 
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign
-    assign sram_otp_key_o[k].key     = key_out_q;
-    assign sram_otp_key_o[k].nonce   = nonce_out_q[0];
+    assign sram_otp_key_o[k].key        = key_out_q;
+    assign sram_otp_key_o[k].nonce      = nonce_out_q[0];
+    assign sram_otp_key_o[k].seed_valid = seed_valid_q;
   end
 
   typedef enum logic {
@@ -288,9 +297,10 @@ module otp_ctrl_kdi
     edn_req_o = 1'b0;
 
     // Data selection and temp registers
-    data_sel     = SeedData;
-    key_reg_en   = 1'b0;
-    nonce_reg_en = 1'b0;
+    data_sel          = SeedData;
+    key_reg_en        = 1'b0;
+    nonce_reg_en      = 1'b0;
+    seed_valid_reg_en = 1'b0;
 
     // Scrambling datapath
     scrmbl_mtx_req_o = 1'b0;
@@ -403,6 +413,8 @@ module otp_ctrl_kdi
           // This was the second 64bit output block.
           end else begin
             seed_cnt_clr = 1'b1;
+            // Make sure we output the status of the key seed in OTP.
+            seed_valid_reg_en = 1'b1;
             // Check whether we need to fetch additional nonce data.
             if (req_bundle.fetch_nonce) begin
               state_d = FetchNonceSt;
@@ -478,11 +490,13 @@ module otp_ctrl_kdi
       entropy_cnt_q <= '0;
       key_out_q     <= '0;
       nonce_out_q   <= '0;
+      seed_valid_q  <= 1'b0;
     end else begin
       seed_cnt_q    <= seed_cnt_d;
       entropy_cnt_q <= entropy_cnt_d;
       key_out_q     <= key_out_d;
       nonce_out_q   <= nonce_out_d;
+      seed_valid_q  <= seed_valid_d;
     end
   end
 

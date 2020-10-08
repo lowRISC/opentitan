@@ -287,34 +287,37 @@ package otp_ctrl_pkg;
   } otp_keymgr_key_t;
 
   typedef struct packed {
-    logic addr_req;
-    logic data_req;
+    logic data_req; // Requests static key for data scrambling.
+    logic addr_req; // Requests static key for address scrambling.
   } flash_otp_key_req_t;
 
   typedef struct packed {
-    logic req;
+    logic req; // Requests ephemeral scrambling key and nonce.
   } sram_otp_key_req_t;
 
   typedef struct packed {
-    logic req;
+    logic req; // Requests ephemeral scrambling key and nonce.
   } otbn_otp_key_req_t;
 
   typedef struct packed {
-    logic data_ack;
-    logic addr_ack;
-    logic [FlashKeyWidth-1:0] key;
+    logic data_ack;                // Ack for data key.
+    logic addr_ack;                // Ack for address key.
+    logic [FlashKeyWidth-1:0] key; // 128bit static scrambling key.
+    logic seed_valid;              // Set to 1 if the key seed has been provisioned and is valid.
   } flash_otp_key_rsp_t;
 
   typedef struct packed {
-    logic ack;
-    logic [SramKeyWidth-1:0]   key;
-    logic [SramNonceWidth-1:0] nonce;
+    logic                      ack;   // Ack for key.
+    logic [SramKeyWidth-1:0]   key;   // 128bit ephemeral scrambling key.
+    logic [SramNonceWidth-1:0] nonce; // 64bit nonce.
+    logic seed_valid;                 // Set to 1 if the key seed has been provisioned and is valid.
   } sram_otp_key_rsp_t;
 
   typedef struct packed {
-    logic ack;
-    logic [OtbnKeyWidth-1:0]   key;
-    logic [OtbnNonceWidth-1:0] nonce;
+    logic ack;                        // Ack for key.
+    logic [OtbnKeyWidth-1:0]   key;   // 128bit ephemeral scrambling key.
+    logic [OtbnNonceWidth-1:0] nonce; // 256bit nonce.
+    logic seed_valid;                 // Set to 1 if the key seed has been provisioned and is valid.
   } otbn_otp_key_rsp_t;
 
   ////////////////////////////////
