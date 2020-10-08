@@ -8,6 +8,8 @@ from collections import OrderedDict
 
 from mako.template import Template
 
+from math import ceil
+
 
 class Name(object):
     """We often need to format names in specific ways; this class does so."""
@@ -52,12 +54,19 @@ class MemoryRegion(object):
         self.name = name
         self.base_addr = base_addr
         self.size_bytes = size_bytes
+        self.size_words = ceil(int(str(size_bytes), 0) / 4)
 
     def base_addr_name(self):
         return self.name + Name(["base", "addr"])
 
+    def offset_name(self):
+        return self.name + Name(["offset"])
+
     def size_bytes_name(self):
         return self.name + Name(["size", "bytes"])
+
+    def size_words_name(self):
+        return self.name + Name(["size", "words"])
 
 
 class CEnum(object):
