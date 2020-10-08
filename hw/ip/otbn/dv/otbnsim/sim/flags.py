@@ -53,10 +53,10 @@ class FlagReg:
         self._new_val = None
 
     def read_unsigned(self) -> int:
-        '''Return a 4-bit number with the flags as ZMLC'''
+        '''Return a 4-bit number with the flags as ZLMC'''
         return ((int(self.Z) << 3) |
-                (int(self.M) << 2) |
-                (int(self.L) << 1) |
+                (int(self.L) << 2) |
+                (int(self.M) << 1) |
                 (int(self.C) << 0))
 
     def write_unsigned(self, value: int) -> None:
@@ -81,8 +81,8 @@ class FlagReg:
     def from_bits(value: int) -> 'FlagReg':
         assert 0 <= value
         C = bool((value >> 0) & 1)
-        L = bool((value >> 1) & 1)
-        M = bool((value >> 2) & 1)
+        M = bool((value >> 1) & 1)
+        L = bool((value >> 2) & 1)
         Z = bool((value >> 3) & 1)
         return FlagReg(C=C, M=M, L=L, Z=Z)
 

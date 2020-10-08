@@ -134,12 +134,12 @@ CSRs can be accessed through dedicated instructions, `CSRRS` and `CSRRW`.
           </thead>
           <tbody>
             <tr><td>0</td><td>Carry of Flag Group 0</td></tr>
-            <tr><td>1</td><td>LSb of Flag Group 0</td></tr>
-            <tr><td>2</td><td>MSb of Flag Group 0</td></tr>
+            <tr><td>1</td><td>MSb of Flag Group 0</td></tr>
+            <tr><td>2</td><td>LSb of Flag Group 0</td></tr>
             <tr><td>3</td><td>Zero of Flag Group 0</td></tr>
             <tr><td>4</td><td>Carry of Flag Group 1</td></tr>
-            <tr><td>5</td><td>LSb of Flag Group 1</td></tr>
-            <tr><td>6</td><td>MSb of Flag Group 1</td></tr>
+            <tr><td>5</td><td>MSb of Flag Group 1</td></tr>
+            <tr><td>6</td><td>LSb of Flag Group 1</td></tr>
             <tr><td>7</td><td>Zero of Flag Group 1</td></tr>
           </tbody>
         </table>

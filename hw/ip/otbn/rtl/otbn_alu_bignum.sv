@@ -98,7 +98,7 @@ module otbn_alu_bignum
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        flags_q[i_fg] <= '{Z : 1'b0, M : 1'b0, L : 1'b0, C : 1'b0};
+        flags_q[i_fg] <= '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0};
       end else if (flags_en[i_fg]) begin
         flags_q[i_fg] <= flags_d[i_fg];
       end

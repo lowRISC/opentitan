@@ -194,8 +194,8 @@ package otbn_pkg;
 
   typedef struct packed {
     logic Z;
-    logic M;
     logic L;
+    logic M;
     logic C;
   } flags_t;
 
