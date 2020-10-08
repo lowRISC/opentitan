@@ -43,9 +43,10 @@ package lc_ctrl_pkg;
   // Typedefs for LC Interfaces //
   ////////////////////////////////
 
-  typedef enum logic [2:0] {
-    On  = 3'b101,
-    Off = 3'b000
+  parameter int TxWidth = 4;
+  typedef enum logic [TxWidth-1:0] {
+    On  = 4'b1010,
+    Off = 4'b0101
   } lc_tx_e;
 
   typedef struct packed {
