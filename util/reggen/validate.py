@@ -1109,6 +1109,13 @@ def validate_register(reg, offset, width, top):
 
     return error
 
+# simplify the descriptions and enums for non-first entries in multireg
+def _multi_simplify (field, cname, idx):
+    # description and enum already showed once, skip
+    if idx > 0:
+        field.pop('enum', None)
+        field['desc'] = "For {}{}".format(cname, idx)
+
 
 def validate_multi(mreg, offset, addrsep, width, top):
     error = 0
@@ -1238,7 +1245,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
                 new_field = deepcopy(mreg['fields'][0])
                 new_field['name'] += "_" + str(idx)
                 new_field['bits'] = bitfield_add(new_field['bits'], fnum * bits_used)
-                new_field['desc'] = "For {}{}".format(cname, idx)
+                _multi_simplify(new_field, cname, idx)
                 genreg['fields'].append(new_field)
                 idx += 1
         else:
@@ -1247,6 +1254,7 @@ def validate_multi(mreg, offset, addrsep, width, top):
             # This is not needed if on separate registers we do not enforce suffix
             for f in genreg['fields']:
                 f['name'] += "_" + str(idx)
+                _multi_simplify(f, cname, idx)
             idx += 1
 
         # if regwen_multi is used, each register uses a different regen
