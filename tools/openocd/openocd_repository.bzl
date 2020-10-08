@@ -1,19 +1,38 @@
+def _get_platform_specific_config(os_name):
+    _PLATFORM_SPECIFIC_CONFIGS = {
+        "mac os x": {
+            "sha256": "30917a5c6f60fcd7df82b41dcec8ab7d86f0cea3caeaf98b965b901c10a60b39",
+            "prefix": "xpack-openocd-0.10.0-14",
+            "url": "https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.10.0-14/xpack-openocd-0.10.0-14-darwin-x64.tar.gz",
+        },
+        "linux": {
+            "sha256": "185c070f9729cf38dca08686c2905561c07a63c563e5bc7a70e045f2a1865c11",
+            "prefix": "xpack-openocd-0.10.0-14",
+            "url": "https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.10.0-14/xpack-openocd-0.10.0-14-linux-x64.tar.gz",
+        },
+    }
+    if os_name not in _PLATFORM_SPECIFIC_CONFIGS.keys():
+        fail("OS configuration not available for:", os_name)
+    return _PLATFORM_SPECIFIC_CONFIGS[os_name]
+
 def _openocd_repository_impl(repository_ctx):
     tar_name = "openocd.tgz"
-    prefix = "xPacks/openocd/0.10.0-13/"
+
+    config = _get_platform_specific_config(repository_ctx.os.name)
+    prefix = config["prefix"]
     repository_ctx.download(
-        url = "https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.10.0-13/xpack-openocd-0.10.0-13-linux-x64.tgz",
-        sha256 = "44fefd65e915e9e697b490eb990b4555424af3b7c166c9e298058dc555039cae",
+        url = config["url"],
+        sha256 = config["sha256"],
         output = tar_name,
     )
 
     # Bazel does not support unicode character targets in download and extract, so extraction happens as a seperate step and files containing unicode characters are removed
     setup_script_template = """
-    /bin/tar -zxvf {tar_name}
+    set -eux pipefail
+    tar -zxvf {tar_name}
     # Remove files with unicode characters as bazel doesn't like them
-    /bin/rm {prefix}/script/target/к1879xб1я.cfg
     /bin/mv {prefix}/* ./
-    /bin/rm -r xPacks {tar_name}
+    /bin/rm -r  {tar_name}
     """
 
     # Adds variables to script
@@ -30,7 +49,10 @@ def _openocd_repository_impl(repository_ctx):
     )
 
     # Execute Setup script
-    repository_ctx.execute(["./setup.sh"])
+    result = repository_ctx.execute(["./setup.sh"])
+    if result.return_code != 0:
+        fail("Setup failed\n STDERR: %s\n STDOUT: %s\n" % (result.stderr, result.stdout))
+
     repository_ctx.symlink("bin/openocd", "openocd")
 
     repository_ctx.file(

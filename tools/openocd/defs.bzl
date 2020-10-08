@@ -6,6 +6,9 @@ def _openocd_flash_impl(ctx):
     chip_config_string = ""
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
+    transport_string = ""
+    if ctx.attr.transport:
+        transport_string = "-c \"transport select %s\"" % (ctx.attr.transport)
     script_template = """
 {openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware} verify reset exit {flash_offset}"
 """
@@ -18,7 +21,7 @@ def _openocd_flash_impl(ctx):
         firmware = ctx.file.image.short_path,
         flash_offset = ctx.attr.flash_offset,
         programmer_frequency = ctx.attr.programmer_frequency,
-        transport = ctx.attr.transport,
+        transport_string = transport_string,
     )
     ctx.actions.write(script, script_content, is_executable = True)
     runfiles = ctx.runfiles(files = [ctx.file._openocd, ctx.file.image])
@@ -50,13 +53,9 @@ Example:
         ),
         "interface_configs": attr.string_list(
             doc = "openocd config path for interface, note that user defined configs are not supported at this time",
-            mandatory = True,
-            allow_empty = False,
         ),
         "device_configs": attr.string_list(
             doc = "openocd config path for chip/board, note that user defined configs are not suppported at this time",
-            mandatory = True,
-            allow_empty = False,
         ),
         "flash_offset": attr.string(
             doc = "The starting point of the flash memory",
@@ -89,8 +88,11 @@ def _openocd_debug_server_impl(ctx):
     chip_config_string = ""
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
+    transport_string = ""
+    if ctx.attr.transport:
+        transport_string = "-c \"transport select %s\"" % (ctx.attr.transport)
     script_template = """
-{openocd} {interface_config_string} -c "transport select {transport}; adapter_khz {programmer_frequency}" {chip_config_string}
+{openocd} {interface_config_string} {transport_string} -c "adapter_khz {programmer_frequency}" {chip_config_string}
 
 """
 
@@ -100,7 +102,7 @@ def _openocd_debug_server_impl(ctx):
         interface_config_string = interface_config_string,
         chip_config_string = chip_config_string,
         programmer_frequency = ctx.attr.programmer_frequency,
-        transport = ctx.attr.transport,
+        transport_string = transport_string,
     )
     ctx.actions.write(script, script_content, is_executable = True)
     runfiles = ctx.runfiles(files = [ctx.file._openocd])
@@ -126,13 +128,9 @@ Example:
     attrs = {
         "device_configs": attr.string_list(
             doc = "openocd config path for chip/board/interface",
-            mandatory = True,
-            allow_empty = False,
         ),
         "interface_configs": attr.string_list(
             doc = "openocd config path for interface",
-            mandatory = True,
-            allow_empty = False,
         ),
         "_openocd": attr.label(
             doc = "Executable for flashing using stlink",
@@ -146,7 +144,6 @@ Example:
         ),
         "transport": attr.string(
             doc = "Debugger transport interface",
-            default = "hla_swd",
             mandatory = False,
         ),
     },
@@ -161,10 +158,14 @@ def _openocd_execution_wrapper_impl(ctx):
     chip_config_string = ""
     for config in ctx.attr.device_configs:
         chip_config_string = chip_config_string + " -f " + config
+    transport_string = ""
+    if ctx.attr.transport:
+        transport_string = "-c \"transport select %s\"" % (ctx.attr.transport)
+
     script_template = """
 set -eo pipefail
 ln -s $1 $1.elf
-$RUNFILES_DIR/openocd {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit"
+$RUNFILES_DIR/openocd {interface_config_string} {transport_string} {chip_config_string} -c "adapter_khz {programmer_frequency}; program $1 verify reset exit"
 $RUNFILES_DIR/serial_wrapper -p {port} -f {fail_string} -s {success_string} -b {baud_rate}
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
@@ -174,7 +175,7 @@ $RUNFILES_DIR/serial_wrapper -p {port} -f {fail_string} -s {success_string} -b {
         chip_config_string = chip_config_string,
         flash_offset = ctx.attr.flash_offset,
         programmer_frequency = ctx.attr.programmer_frequency,
-        transport = ctx.attr.transport,
+        transport_string = transport_string,
         port = ctx.attr.port,
         fail_string = ctx.attr.fail_string,
         success_string = ctx.attr.success_string,
@@ -207,13 +208,9 @@ Example:
     attrs = {
         "device_configs": attr.string_list(
             doc = "openocd config path for chip/board/interface",
-            mandatory = True,
-            allow_empty = False,
         ),
         "interface_configs": attr.string_list(
             doc = "openocd config path for interface",
-            mandatory = True,
-            allow_empty = False,
         ),
         "_openocd": attr.label(
             doc = "Executable for flashing using stlink",
@@ -234,7 +231,6 @@ Example:
         ),
         "transport": attr.string(
             doc = "Debugger transport interface",
-            default = "hla_swd",
             mandatory = False,
         ),
         "flash_offset": attr.string(
