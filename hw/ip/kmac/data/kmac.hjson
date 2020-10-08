@@ -58,6 +58,20 @@
       local:   "true"
     }
   ]
+  inter_signal_list: [
+    { struct:  "hw_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      package: "keymgr_pkg"
+    }
+    { struct:  "kmac_data"
+      type:    "req_rsp"
+      name:    "keymgr_kdf"
+      act:     "rsp"
+      package: "keymgr_pkg"
+    }
+  ]
   regwidth: "32"
   registers: [
     { name: "CFG"

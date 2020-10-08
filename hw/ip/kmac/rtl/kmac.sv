@@ -25,9 +25,12 @@ module kmac
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // TODO: KeyMgr sideload (secret key) interface
+  // KeyMgr sideload (secret key) interface
+  input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
-  // TODO: KeyMgr KDF data path
+  // KeyMgr KDF data path
+  input  keymgr_pkg::kmac_data_req_t keymgr_kdf_i,
+  output keymgr_pkg::kmac_data_rsp_t keymgr_kdf_o,
 
   // TODO: CSRNG (EDN) interface
 
@@ -238,6 +241,14 @@ module kmac
   end
 
   assign key_len = key_len_e'(reg2hw.key_len.q);
+
+  // TODO: Implement KeyMgr interface module. As of now, tying them to default value
+  assign keymgr_kdf_o = '{
+    ready: 1'b 0,
+    digest_share0: '0,
+    digest_share1: '0,
+    done: 1'b 0
+  };
 
   ///////////////
   // Interrupt //
