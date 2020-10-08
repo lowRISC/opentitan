@@ -30,6 +30,7 @@ IPS ?= aes           \
        rv_timer      \
        sensor_ctrl   \
        spi_device    \
+       sram_ctrl     \
        trial1        \
        otbn          \
        uart          \
