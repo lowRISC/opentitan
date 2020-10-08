@@ -221,6 +221,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit fmtempty, hostidle;
     bit [TL_DW-1:0] reg_val;
     do begin
+      if (cfg.under_reset) break;
       csr_rd(.ptr(ral.status), .value(reg_val));
       fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
       hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));

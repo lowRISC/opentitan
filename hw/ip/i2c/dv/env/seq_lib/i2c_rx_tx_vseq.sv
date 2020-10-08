@@ -147,6 +147,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     rx_overflow  = 1'b0;
     rx_watermark = 1'b0;
     while (!complete_program_fmt_fifo || total_rd_bytes > 0) begin
+      if (cfg.under_reset) break;
       rx_sanity      = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
       rx_overflow   |= (cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
       if (cfg.en_rx_watermark) begin
