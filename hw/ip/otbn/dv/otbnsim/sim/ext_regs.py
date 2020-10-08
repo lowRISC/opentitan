@@ -203,6 +203,11 @@ class OTBNExtRegs:
         return self.trace
 
     def commit(self) -> None:
+        # We know that we'll only have any pending changes if self.trace is
+        # nonempty, so needn't bother calling commit on each register if not.
+        if not self.trace:
+            return
+
         for reg in self.regs.values():
             reg.commit()
         self.trace = []
