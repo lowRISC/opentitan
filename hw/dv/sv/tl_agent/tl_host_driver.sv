@@ -180,10 +180,11 @@ class tl_host_driver extends tl_base_driver;
             rsp.d_opcode = cfg.vif.host_cb.d2h.d_opcode;
             rsp.d_data   = cfg.vif.host_cb.d2h.d_data;
             rsp.d_param  = cfg.vif.host_cb.d2h.d_param;
-            rsp.d_error  = cfg.vif.host_cb.d2h.d_error;
             rsp.d_sink   = cfg.vif.host_cb.d2h.d_sink;
             rsp.d_size   = cfg.vif.host_cb.d2h.d_size;
             rsp.d_user   = cfg.vif.host_cb.d2h.d_user;
+            // set d_error = 0 and rsp_completed = 0 when reset occurs
+            rsp.d_error  = reset_asserted ? 0 : cfg.vif.host_cb.d2h.d_error;
             // make sure every req has a rsp with same source even during reset
             if (reset_asserted) rsp.d_source = rsp.a_source;
             else                rsp.d_source = cfg.vif.host_cb.d2h.d_source;
@@ -192,7 +193,7 @@ class tl_host_driver extends tl_base_driver;
             `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
                                        rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
             req_found         = 1;
-            rsp.rsp_completed = 1;
+            rsp.rsp_completed = !reset_asserted;
             break;
           end
         end

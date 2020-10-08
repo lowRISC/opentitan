@@ -211,6 +211,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
     if (ral.ctrl.tx.get_mirrored_value()) begin
       do begin
+        if (cfg.under_reset) break;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
         cfg.clk_rst_vif.wait_clks(dly_to_access_fifo);
         csr_rd(.ptr(ral.fifo_status), .value(fifo_status));

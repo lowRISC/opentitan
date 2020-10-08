@@ -452,7 +452,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task read_and_check_all_csrs_after_reset();
     csr_excl_item csr_excl = add_and_return_csr_excl("hw_reset");
     `uvm_info(`gfn, "running csr hw_reset vseq", UVM_HIGH)
+
     run_csr_vseq(.csr_test_type("hw_reset"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
+    // abort should not occur after this, as the following is normal seq
+    cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = 0;
+    csr_utils_pkg::default_csr_check = UVM_CHECK;
   endtask
 
   virtual task run_same_csr_outstanding_vseq(int num_times);
