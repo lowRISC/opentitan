@@ -80,8 +80,7 @@ package keymgr_pkg;
     StCreatorRootKey = 3,
     StOwnerIntKey = 4,
     StOwnerKey = 5,
-    StDisabled = 6,
-    StWait = 7
+    StDisabled = 6
   } keymgr_working_state_e;
 
   // Enumeration for operation status

@@ -20,8 +20,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // Software interface
   input init_i,
-  input keymgr_ops_e op_i,
+  output logic init_done_o,
   input op_start_i,
+  input keymgr_ops_e op_i,
   output logic op_done_o,
   output keymgr_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
@@ -91,7 +92,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // check incoming kmac data validity
   // also check inputs used during compute
   assign data_valid = valid_data_chk(kmac_data_i[0]) & valid_data_chk(kmac_data_i[1])
-    & !kmac_input_invalid_i;
+    & !kmac_input_invalid_i & !kmac_op_err;
 
   // Unlike the key state, the working state can be safely reset.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -144,6 +145,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
     // enable prng toggling
     prng_en_o = 1'b1;
 
+    op_done_o = 1'b0;
+    init_done_o = 1'b0;
+
     // TBD
     // Wait for some more software feedback to see if the states remain so similar.
     // If yes, we can merge 3 states below with some minor tweaking.
@@ -157,16 +161,19 @@ module keymgr_ctrl import keymgr_pkg::*;(
         op_done_o = op_start_i;
         invalid_op = op_start_i;
 
-        // When initialization command is given, begin
-        state_d = (init_i && keymgr_en_i) ? StWipe : StReset;
+        // When initialization command is given, begin.
+        // Note, if init is called at the same time as start, it is considered
+        // an invalid command sequence.
+        if (init_i && !invalid_op && keymgr_en_i) begin
+          state_d = StWipe;
+        end else begin
+          state_d = StReset;
+          init_done_o = init_i & invalid_op;
+        end
       end
 
-      // This state does not accept any command. Issuing any command
-      // will cause an immediate error
+      // This state does not accept any command.
       StWipe: begin
-        op_done_o = op_start_i;
-        invalid_op = op_start_i;
-
         // populate both shares with the same entropy
         // This is the default mask
         if (cnt < EntropyRounds) begin
@@ -181,6 +188,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
         else begin
           cnt_clr = 1'b1;
           key_state_d[0] = key_state_q[0] ^ root_key_i;
+          init_done_o = 1'b1;
           state_d = StInit;
         end
       end
@@ -286,12 +294,14 @@ module keymgr_ctrl import keymgr_pkg::*;(
         stage_sel_o = Disable;
         hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
-        // During disabled state, wildly update everything
-        key_state_d = op_done_o ? kmac_data_i : key_state_q;
+        // During disabled state, continue to update state
+        key_state_d = (op_done_o && advance_sel) ? kmac_data_i : key_state_q;
 
         // Despite accepting all commands, operations are always
         // considered invalid in disabled state
-        invalid_op = 1'b1;
+        // TBD this may be changed later if we decide to hide disable state from
+        // software.
+        invalid_op = op_start_i;
       end
 
     endcase // unique case (state_q)

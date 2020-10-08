@@ -11,7 +11,7 @@ package keymgr_reg_pkg;
   parameter int NumInReg = 4;
   parameter int NumOutReg = 8;
   parameter int NumKeyVersion = 1;
-  parameter int NumAlerts = 1;
+  parameter int NumAlerts = 2;
 
   ////////////////////////////
   // Typedefs for registers //
