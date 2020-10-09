@@ -7,7 +7,6 @@
 parameter string LIST_OF_ALERTS[] = {
   "aes_ctrl_err_update",
   "aes_ctrl_err_storage",
-  "hmac_msg_push_sha_disabled",
   "otbn_imem_uncorrectable",
   "otbn_dmem_uncorrectable",
   "otbn_reg_uncorrectable",
@@ -17,4 +16,4 @@ parameter string LIST_OF_ALERTS[] = {
   "otp_ctrl_otp_check_failed"
 };
 
-parameter uint NUM_ALERTS = 10;
+parameter uint NUM_ALERTS = 9;

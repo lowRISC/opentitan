@@ -8,7 +8,6 @@ package hmac_reg_pkg;
 
   // Param list
   parameter int NumWords = 8;
-  parameter int NumAlerts = 1;
 
   ////////////////////////////
   // Typedefs for registers //
