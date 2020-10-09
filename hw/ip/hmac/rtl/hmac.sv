@@ -7,12 +7,9 @@
 `include "prim_assert.sv"
 
 module hmac
-  import prim_alert_pkg::*;
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
-#(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
-) (
+(
   input clk_i,
   input rst_ni,
 
@@ -23,11 +20,7 @@ module hmac
   output logic intr_fifo_empty_o,
   output logic intr_hmac_err_o,
 
-  output logic idle_o,
-
-  // alerts
-  input  alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output alert_tx_t [NumAlerts-1:0] alert_tx_o
+  output logic idle_o
 );
 
 
@@ -506,27 +499,6 @@ module hmac
   end
 
   /////////////////////
-  // Hardware Alerts //
-  /////////////////////
-
-  // TODO: add CSR with REGWEN to test alert via SW
-  logic [NumAlerts-1:0] alerts;
-  assign alerts = {msg_push_sha_disabled};
-
-  for (genvar j = 0; j < NumAlerts; j++) begin : gen_alert_tx
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[j])
-    ) i_prim_alert_sender (
-      .clk_i      ( clk_i         ),
-      .rst_ni     ( rst_ni        ),
-      .alert_i    ( alerts[j]     ),
-      .alert_rx_i ( alert_rx_i[j] ),
-      .alert_tx_o ( alert_tx_o[j] )
-    );
-  end : gen_alert_tx
-
-
-  /////////////////////
   // Idle output     //
   /////////////////////
   // TBD this should be connected later
@@ -586,9 +558,6 @@ module hmac
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-
-  // Alert outputs
-  `ASSERT_KNOWN(AlertTxOKnown, alert_tx_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR

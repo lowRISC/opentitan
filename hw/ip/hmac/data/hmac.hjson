@@ -25,11 +25,6 @@
       width:   "1"
     }
   ],
-  alert_list: [
-    { name: "msg_push_sha_disabled",
-      desc: "Dummy alert which is triggered upon writing a message when SHA is disabled",
-    }
-  ],
   param_list: [
     { name:    "NumWords",
       type:    "int",
