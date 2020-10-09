@@ -19,7 +19,8 @@ from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
 from utils import VERBOSE
 
-from testplanner import class_defs, testplan_utils
+from testplanner.class_defs import TestResult, Testplan
+from testplanner.testplan_utils import parse_testplan
 
 
 def pick_wave_format(fmts):
@@ -40,6 +41,49 @@ def pick_wave_format(fmts):
         return pick_wave_format(fmts[1:])
 
     return fmt
+
+
+class Results:
+    '''An object wrapping up a table of results for some tests
+
+    self.table is a list of TestResult objects, each of which
+    corresponds to one or more runs of the test with a given name.
+
+    self.fail_msgs is a list of error messages, one per failing run.
+
+    '''
+    def __init__(self, items):
+        self.table = []
+        self.fail_msgs = []
+
+        self._name_to_row = {}
+        for item in items:
+            self._add_item(item)
+
+    def _add_item(self, item):
+        '''Recursively add a single item to the table of results'''
+        if item.status == "F":
+            self.fail_msgs.append(item.fail_msg)
+
+        # Runs get added to the table directly
+        if item.target == "run":
+            self._add_run(item)
+
+        # Recurse to any sub-items
+        for child in item.sub:
+            self._add_item(child)
+
+    def _add_run(self, item):
+        '''Add an entry to table for item'''
+        row = self._name_to_row.get(item.name)
+        if row is None:
+            row = TestResult(item.name)
+            self.table.append(row)
+            self._name_to_row[item.name] = row
+
+        if item.status == 'P':
+            row.passing += 1
+        row.total += 1
 
 
 class SimCfg(FlowCfg):
@@ -303,12 +347,12 @@ class SimCfg(FlowCfg):
         # Regressions
         # Parse testplan if provided.
         if self.testplan != "":
-            self.testplan = testplan_utils.parse_testplan(self.testplan)
+            self.testplan = parse_testplan(self.testplan)
             # Extract tests in each milestone and add them as regression target.
             self.regressions.extend(self.testplan.get_milestone_regressions())
         else:
             # Create a dummy testplan with no entries.
-            self.testplan = class_defs.Testplan(name=self.name)
+            self.testplan = Testplan(name=self.name)
 
         # Create regressions
         self.regressions = Regressions.create_regressions(
@@ -581,50 +625,14 @@ class SimCfg(FlowCfg):
         result is in markdown format.
         '''
 
-        # TODO: add support for html
-        def retrieve_result(name, results):
-            for item in results:
-                if name == item["name"]:
-                    return item
-            return None
-
-        def gen_results_sub(items, results, fail_msgs):
-            '''
-            Generate the results table from the test runs (builds are ignored).
-            The table has 3 columns - name, passing and total as a list of dicts.
-            This is populated for all tests. The number of passing and total is
-            in reference to the number of iterations or reseeds for that test.
-            This list of dicts is directly consumed by the Testplan::results_table
-            method for testplan mapping / annotation.
-            '''
-            for item in items:
-                if item.status == "F":
-                    fail_msgs += item.fail_msg
-
-                # Generate results table for runs.
-                if item.target == "run":
-                    result = retrieve_result(item.name, results)
-                    if result is None:
-                        result = {"name": item.name, "passing": 0, "total": 0}
-                        results.append(result)
-                    if item.status == "P":
-                        result["passing"] += 1
-                    result["total"] += 1
-                (results, fail_msgs) = gen_results_sub(item.sub, results,
-                                                       fail_msgs)
-            return (results, fail_msgs)
-
-        regr_results = []
-        fail_msgs = ""
         deployed_items = self.deploy
         if self.cov:
             deployed_items.append(self.cov_merge_deploy)
-        (regr_results, fail_msgs) = gen_results_sub(deployed_items,
-                                                    regr_results, fail_msgs)
 
-        # Add title if there are indeed failures
-        if fail_msgs != "":
-            fail_msgs = "\n## List of Failures\n" + fail_msgs
+        results = Results(deployed_items)
+
+        # Set a flag if anything failed
+        if results.fail_msgs:
             self.errors_seen = True
 
         # Generate results table for runs.
@@ -648,13 +656,13 @@ class SimCfg(FlowCfg):
 
         results_str += "### Simulator: " + self.tool.upper() + "\n\n"
 
-        if regr_results == []:
+        if not results.table:
             results_str += "No results to display.\n"
 
         else:
             # Map regr results to the testplan entries.
             results_str += self.testplan.results_table(
-                regr_results=regr_results,
+                test_results=results.table,
                 map_full_testplan=self.map_full_testplan)
             results_str += "\n"
             self.results_summary = self.testplan.results_summary
@@ -683,15 +691,19 @@ class SimCfg(FlowCfg):
                 self.results_summary["Name"])
 
         # Append failures for triage
-        self.results_md = results_str + fail_msgs
-        results_str += fail_msgs
+        if results.fail_msgs:
+            fail_msgs = "\n## List of Failures\n" + ''.join(results.fail_msgs)
+            results_str += fail_msgs
+
+        self.results_md = results_str
 
         # Write results to the scratch area
-        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        with open(results_file, 'w') as f:
-            f.write(self.results_md)
+        results_path = self.scratch_path + "/results_" + self.timestamp + ".md"
+        with open(results_path, 'w') as results_file:
+            results_file.write(self.results_md)
 
-        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
+        # Return only the tables
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_path)
         return results_str
 
     def gen_results_summary(self):
