@@ -4,29 +4,89 @@ title: Install Build Requirements
 
 ## System requirements
 
-_**Note for all Windows users:** many tools we're using can in theory work on Windows.
-However, we didn't test on Windows and things will be broken there.
-Unless you are experienced in debugging various tool problems on Windows using Linux will improve your developer experience significantly._
-
 This guide makes assumes the following system setup.
 
-* A reasonably powerful PC running Linux.
+* A reasonably powerful PC.
   Using a virtual machine can work, but will slow down builds considerably.
   8 GB of RAM or more are highly recommended.
-* Physical access to that machine, root permissions and a graphical environment.
-* Python 3.5.2 or newer. Python 3.6+ is recommended.
-* A C++14 capable compiler. GCC 5 or Clang 3.5 should meet this requirement.
-* 60 GB or more of disk space.
-  EDA tools like Xilinx Vivado can easily take up 40 GB each.
-* We develop and test on the following Linux distributions:
-  * Ubuntu 16.04 LTS
-  * Debian testing
-  * openSUSE Tumbleweed
-  * TODO: Check RHEL/CentOS and SLES (used in many commercial environments)
+* Physical access to that machine, root permissions and a graphical environment are assumed in this guide.
+  However, with an appropriate setup, none of these things are strictly needed.
+* 60 GB or more of disk space, depending on the EDA tools used.
+  (EDA tools like Xilinx Vivado can easily take up 40 GB each.)
+* Linux
+  * Ubuntu 16.04 LTS is the recommended reference platform.
+    Our continuous integration setup runs on Ubuntu 16.04 LTS, which gives us the most confidence that this distribution works out of the box.
+  * We do our best to support other Linux distributions.
+    However, we cannot guarantee they can be used "out of the box" and might require updates of packages.
+    Please file a [GitHub issue](https://github.com/lowRISC/opentitan/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
+    * RedHat Enterprise Linux (RHEL)/CentOS.
 
-TODO: Be more specific about the system requirements, especially the Linux distribution.
+      On RHEL/CentOS not all required packages are part of the base distribution; however, they can be installed easily.
+      All required packages except for a C/C++ compiler can be obtained by enabling the [EPEL repository](https://fedoraproject.org/wiki/EPEL).
+      A sufficiently recent version of GCC or LLVM (clang) can be obtained through [Red Hat Software Collections](https://www.softwarecollections.org/en/).
+      SCLs can also be used to obtain newer version of Python if needed.
+
+    * Many of our contributors use rolling release distributions, which generally include the latest stable releases of all software packages, such as Debian unstable, openSUSE Tumbleweed, or Arch Linux.
+
+The following software packages are required to build and use the software, hardware, and tools in the OpenTitan repository.
+Not every interaction with the repository requires all tools -- however, we recommend users installing all dependencies listed below for a seamless development experience.
+
+Note: Version numbers given below indicate a minimum version, newer versions are generally expected to work, unless explicitly stated.
+For packages listed below without a version number we have not determined a minimum version.
+
+* git
+* Python 3.5.2 with pip.
+  Additional Python dependencies are installed through pip.
+* A C++14 capable compiler.
+  GCC 5 or Clang 3.5 should meet this requirement.
+* clang-format.
+  The use of clang-format 3.8 is recommended to match the formatting enforced when submitting a pull request.
+* [ninja](https://ninja-build.org/)  {{< tool_version "ninja-build" >}}
+* Bash
+* curl
+* xz tools
+* LSB core packages (only the `lsb_release` tool must be available)
+* srecord
+* GNU make
+* pkg-config or pkgconf
+* libelf with development headers
+* libftdi with development headers
+* OpenSSL 1.0 or 1.1 with development headers
+* libusb 1.0 (called libusbx in older distributions)
+* OpenOCD
+* [Verible](https://github.com/google/verible) {{< tool_version "verible" >}}
+
+To synthesize and simulate the hardware components of OpenTitan multiple EDA tools are supported.
+Depending on how you interact with the OpenTitan hardware code, one of more of the following tools need to be available.
+
+* [Verilator](https://verilator.org) {{< tool_version "verilator" >}}
+* Xilinx Vivado 2018.3
+* Synopsys VCS
+* Cadence Xcelium
+* Cadence JasperGold
+* RealIntent Ascent Lint
+* Synopsys Design Compiler (DC)
+
+To build our documentation the following additional sofware packages are required.
+
+* [Hugo extended](https://gohugo.io/) {{< tool_version "hugo_extended" >}}.
+  A supported binary build of Hugo is installed when building the documentation.
+  However, the binaries do not run on very old distributions, such as RHEL 6.
+  In this case, Hugo must be installed separately (e.g. by building it from source).
+* [doxygen](https://www.doxygen.nl/) 1.8.11
+* xsltproc
 
 ## System preparation
+
+<div class="bd-callout bd-callout-warning">
+  <h5>Note</h5>
+
+  This documentation and the following steps in general assume our reference distribution, Ubuntu 16.04.
+  Users inexperienced with Linux and OpenTitan are strongly encouraged to use this distribution for a seamless development experience.
+
+  Users of other Linux distributions should use these steps as guidance, but will need to adjust them as necessary.
+  Please file [GitHub issues](https://github.com/opentitan/issues/new) if you have questions.
+</div>
 
 By convention tools which are not provided through a package manager will be installed into `/tools`.
 This directory can be replaced by any sufficiently large directory without spaces in the directory name.
@@ -47,8 +107,7 @@ $ cd <working-area>
 $ git clone https://github.com/lowRISC/opentitan.git
 ```
 
-The repository will be checked out into `<working-area>/opentitan` (this is the
-`$REPO_TOP` path).
+The repository will be checked out into `<working-area>/opentitan` (this is the `$REPO_TOP` path).
 
 ### Install required software
 
@@ -196,7 +255,7 @@ But since this requires the Bazel build system the recommendation is to download
 ### Install Verible
 
 Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
-The example below is for Ubuntu-16.04:
+The example below is for Ubuntu 16.04:
 
 ```console
 $ export VERIBLE_VERSION={{< tool_version "verible" >}}
