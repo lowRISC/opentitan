@@ -229,12 +229,10 @@ static uint64_t prince_m_inv_layer(const uint64_t m_inv_in) {
 /**
  * The core function of the Prince cipher.
  */
-static uint64_t prince_core(const uint64_t core_input, const uint64_t k0,
-                            const uint64_t k1, int num_half_rounds,
-                            int old_key_schedule) {
+static uint64_t prince_core(const uint64_t core_input, const uint64_t k0_new,
+                            const uint64_t k1, int num_half_rounds) {
   PRINCE_PRINT(core_input);
   PRINCE_PRINT(k1);
-  uint64_t k0_new = (old_key_schedule) ? k1 : k0;
   uint64_t round_input = core_input ^ k1 ^ prince_round_constant(0);
   for (unsigned int round = 1; round <= num_half_rounds; round++) {
     PRINCE_PRINT(round_input);
@@ -257,7 +255,7 @@ static uint64_t prince_core(const uint64_t core_input, const uint64_t k0,
     PRINCE_PRINT(round_input);
     const uint64_t constant_idx = 10 - num_half_rounds + round;
     const uint64_t m_inv_in =
-        (round % 2 == 1)
+        ((num_half_rounds + round + 1) % 2 == 1)
             ? round_input ^ k0_new ^ prince_round_constant(constant_idx)
             : round_input ^ k1 ^ prince_round_constant(constant_idx);
     PRINCE_PRINT(m_inv_in);
@@ -282,6 +280,8 @@ uint64_t prince_enc_dec_uint64(const uint64_t input, const uint64_t enc_k0,
                                int num_half_rounds, int old_key_schedule) {
   const uint64_t prince_alpha = UINT64_C(0xc0ac29b7c97c50dd);
   const uint64_t k1 = enc_k1 ^ (decrypt ? prince_alpha : 0);
+  const uint64_t k0_new =
+      (old_key_schedule) ? k1 : enc_k0 ^ (decrypt ? prince_alpha : 0);
   const uint64_t enc_k0_prime = prince_k0_to_k0_prime(enc_k0);
   const uint64_t k0 = decrypt ? enc_k0_prime : enc_k0;
   const uint64_t k0_prime = decrypt ? enc_k0 : enc_k0_prime;
@@ -289,7 +289,7 @@ uint64_t prince_enc_dec_uint64(const uint64_t input, const uint64_t enc_k0,
   PRINCE_PRINT(input);
   const uint64_t core_input = input ^ k0;
   const uint64_t core_output =
-      prince_core(core_input, k0, k1, num_half_rounds, old_key_schedule);
+      prince_core(core_input, k0_new, k1, num_half_rounds);
   const uint64_t output = core_output ^ k0_prime;
   PRINCE_PRINT(k0_prime);
   PRINCE_PRINT(output);
