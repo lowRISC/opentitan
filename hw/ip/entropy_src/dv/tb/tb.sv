@@ -17,14 +17,16 @@ module tb;
   wire devmode;
   wire efuse_es_sw_reg_en;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
   wire intr_entropy_valid;
-  wire intr_rct_failed;
-  wire intr_apt_failed;
+  wire intr_health_test_failed;
   wire intr_fifo_err;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
+  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
   pins_if #(1) devmode_if(devmode);
   pins_if #(1) efuse_es_sw_reg_en_if(efuse_es_sw_reg_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -32,36 +34,47 @@ module tb;
 
   // dut
   entropy_src dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
+    .clk_i                     (clk        ),
+    .rst_ni                    (rst_n      ),
 
-    .tl_i                 (tl_if.h2d  ),
-    .tl_o                 (tl_if.d2h  ),
+    .tl_i                      (tl_if.h2d  ),
+    .tl_o                      (tl_if.d2h  ),
 
-    .efuse_es_sw_reg_en_i (efuse_es_sw_reg_en),
+    .efuse_es_sw_reg_en_i      (efuse_es_sw_reg_en),
 
-    .entropy_src_hw_if_o  (),
-    .entropy_src_hw_if_i  (1'b0),
+    .entropy_src_hw_if_o       (),
+    .entropy_src_hw_if_i       (1'b0),
 
-    .entropy_src_rng_o    (rng_if.enable),
-    .entropy_src_rng_i    ({rng_if.entropy_ok, rng_if.entropy}),
+    .entropy_src_rng_o         (rng_if.enable),
+    .entropy_src_rng_i         ({rng_if.entropy_ok, rng_if.entropy}),
 
-    .es_entropy_valid_o   (intr_entropy_valid),
-    .es_rct_failed_o      (intr_rct_failed),
-    .es_apt_failed_o      (intr_apt_failed),
-    .es_fifo_err_o        (intr_fifo_err)
+    .alert_rx_i                (alert_rx),
+    .alert_tx_o                (alert_tx),
+
+    .es_entropy_valid_o        (intr_entropy_valid),
+    .es_health_test_failed_o   (intr_health_test_failed),
+    .es_fifo_err_o             (intr_fifo_err)
   );
 
-  assign rng_if.clk      = clk;
-  assign rng_if.rst_n    = rst_n;
+  assign rng_if.clk   = clk;
+  assign rng_if.rst_n = rst_n;
 
-  assign interrupts[EntropyValid] = intr_entropy_valid;
-  assign interrupts[RctFailed]    = intr_rct_failed;
-  assign interrupts[AptFailed]    = intr_apt_failed;
-  assign interrupts[FifoErr]      = intr_fifo_err;
+  assign interrupts[EntropyValid]     = intr_entropy_valid;
+  assign interrupts[HealthTestFailed] = intr_health_test_failed;
+  assign interrupts[FifoErr]          = intr_fifo_err;
+
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+    assign alert_rx[k] = alert_if[k].alert_rx;
+    assign alert_if[k].alert_tx = alert_tx[k];
+    initial begin
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
+          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
+    end
+  end
 
   initial begin
     // drive clk and rst_n from clk_if
+    //Set interfaces in config_db
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
