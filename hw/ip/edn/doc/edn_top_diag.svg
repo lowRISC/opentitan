@@ -415,7 +415,7 @@
 			<v:textRect cx="11.5" cy="581.727" width="23.01" height="60.5461"/>
 			<rect x="0" y="551.454" width="23" height="60.5461" class="st8"/>
 			<text x="19.15" y="555.45" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>peripheral<v:lf/><tspan
-						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em" class="st13">port </tspan>0</text>		</g>
+						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em 52.497em" class="st13">port 0</tspan></text>		</g>
 		<g id="shape189-236" v:mID="189" v:groupContext="shape" transform="translate(-218.454,563) rotate(-90)">
 			<title>Sheet.189</title>
 			<desc>peripheral port 2</desc>
@@ -423,7 +423,7 @@
 			<v:textRect cx="11.5" cy="581.727" width="23.01" height="60.5461"/>
 			<rect x="0" y="551.454" width="23" height="60.5461" class="st8"/>
 			<text x="19.15" y="555.45" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>peripheral<v:lf/><tspan
-						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em" class="st13">port </tspan>2</text>		</g>
+						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em 52.497em" class="st13">port 2</tspan></text>		</g>
 		<g id="shape190-240" v:mID="190" v:groupContext="shape" transform="translate(-218.454,101.5) rotate(-90)">
 			<title>Sheet.190</title>
 			<desc>peripheral port 0</desc>
@@ -431,7 +431,7 @@
 			<v:textRect cx="11.5" cy="581.727" width="23.01" height="60.5461"/>
 			<rect x="0" y="551.454" width="23" height="60.5461" class="st8"/>
 			<text x="19.15" y="555.45" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>peripheral<v:lf/><tspan
-						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em" class="st13">port </tspan>0</text>		</g>
+						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em 52.497em" class="st13">port 0</tspan></text>		</g>
 		<g id="shape191-244" v:mID="191" v:groupContext="shape" transform="translate(-218.454,270) rotate(-90)">
 			<title>Sheet.191</title>
 			<desc>peripheral port N</desc>
@@ -447,7 +447,7 @@
 			<v:textRect cx="11.5" cy="581.727" width="23.01" height="60.5461"/>
 			<rect x="0" y="551.454" width="23" height="60.5461" class="st8"/>
 			<text x="19.15" y="555.45" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>peripheral<v:lf/><tspan
-						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em" class="st13">port </tspan>1</text>		</g>
+						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em 52.497em" class="st13">port 1</tspan></text>		</g>
 		<g id="shape194-252" v:mID="194" v:groupContext="shape" transform="translate(148.375,-251)">
 			<title>Sheet.194</title>
 			<desc>req</desc>
@@ -509,7 +509,7 @@
 			<v:textRect cx="11.5" cy="581.727" width="23.01" height="60.5461"/>
 			<rect x="0" y="551.454" width="23" height="60.5461" class="st8"/>
 			<text x="19.15" y="555.45" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>peripheral<v:lf/><tspan
-						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em" class="st13">port </tspan>1</text>		</g>
+						dx="-1.2em" y="50.496em 51.052em 51.608em 51.941em 52.219em 52.497em" class="st13">port 1</tspan></text>		</g>
 		<g id="shape204-289" v:mID="204" v:groupContext="shape" transform="translate(-24.5041,133) rotate(-90)">
 			<title>Sheet.204</title>
 			<desc>Application Interface Port 0</desc>
@@ -518,8 +518,8 @@
 			<rect x="0" y="544.254" width="23" height="67.7459" class="st8"/>
 			<text x="25.75" y="548.25" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>Application <tspan
 						dx="-1.2em" y="49.841em 50.119em 50.675em 50.953em 51.509em 51.842em 52.12em 52.676em 53.176em 53.732em"
-						class="st13">Interface </tspan><tspan dx="-1.2em" y="49.841em 50.508em 51.064em 51.397em 51.675em"
-						class="st13">Port </tspan>0</text>		</g>
+						class="st13">Interface </tspan><tspan dx="-1.2em" y="49.841em 50.508em 51.064em 51.397em 51.675em 51.953em"
+						class="st13">Port 0</tspan></text>		</g>
 		<g id="shape205-294" v:mID="205" v:groupContext="shape" transform="translate(-24.5041,369) rotate(-90)">
 			<title>Sheet.205</title>
 			<desc>Application Interface Port 1</desc>
@@ -528,8 +528,8 @@
 			<rect x="0" y="544.254" width="23" height="67.7459" class="st8"/>
 			<text x="25.75" y="548.25" writing-mode="tb-rl" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>Application <tspan
 						dx="-1.2em" y="49.841em 50.119em 50.675em 50.953em 51.509em 51.842em 52.12em 52.676em 53.176em 53.732em"
-						class="st13">Interface </tspan><tspan dx="-1.2em" y="49.841em 50.508em 51.064em 51.397em 51.675em"
-						class="st13">Port </tspan>1</text>		</g>
+						class="st13">Interface </tspan><tspan dx="-1.2em" y="49.841em 50.508em 51.064em 51.397em 51.675em 51.953em"
+						class="st13">Port 1</tspan></text>		</g>
 		<g id="shape206-299" v:mID="206" v:groupContext="shape" transform="translate(686.125,-299.25)">
 			<title>Sheet.206</title>
 			<desc>entropy_src</desc>
@@ -548,7 +548,7 @@
 			<v:textRect cx="23.75" cy="602" width="47.5" height="20"/>
 			<rect x="0" y="592" width="47.5" height="20" class="st8"/>
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>req</text>		</g>
-		<g id="shape216-310" v:mID="216" v:groupContext="shape" transform="translate(607.5,-439) rotate(6.99858E-007)">
+		<g id="shape216-310" v:mID="216" v:groupContext="shape" transform="translate(607.5,-439) rotate(6.99858E-07)">
 			<title>Sheet.216</title>
 			<path d="M5.8 612 L6.16 612 L78.08 612" class="st14"/>
 		</g>

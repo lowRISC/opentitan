@@ -198,15 +198,16 @@ See the [CSRNG IP]({{< relref "hw/ip/csrng/doc" >}}) waveform section for the CS
 
 ##### Peripheral Hardware Interface - Req/Ack
 The following waveform shows an example of how the peripheral hardware interface works.
+This example shows the case where the boot-time mode in the ENTROPY_SRC block is enabled.
 
 {{< wavejson >}}
 {signal: [
    {name: 'clk'           , wave: 'p...|.........|.......'},
    {name: 'edn_enable'    , wave: '01..|.........|.......'},
-   {name: 'edn_req'       , wave: '0..1|......0.1|.....0.'},
-   {name: 'edn_ack'       , wave: '0...|.1.01.0..|101....'},
-   {name: 'edn_bus[31:0]' , wave: 'x...|.33.33...|3.3333.', data: ['gb0','gb1','gb2','gb3','es4','es5','es6','es7','es8']},
-   {name: 'edn_fips'      , wave: '2.....................', data: ['Typically "1", unless in boot-time request mode']},
+   {name: 'edn_req'       , wave: '0..1|..01.0..1|.....0.'},
+   {name: 'edn_ack'       , wave: '0...|.10.10...|....10.'},
+   {name: 'edn_bus[31:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
+   {name: 'edn_fips'      , wave: '0...|....10...|....10.'},
  {},
 ]}
 {{< /wavejson >}}
