@@ -6,7 +6,7 @@
 # for OpenTitan.
 
 # Global configuration options.
-ARG VERILATOR_VERSION=4.028
+ARG VERILATOR_VERSION=4.040
 
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20200626-1
@@ -70,7 +70,6 @@ COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN apt-get update && \
     sed 's/#.*//' /tmp/apt-requirements.txt \
         | xargs apt-get install -y && \
-    apt-get install -y  && \
     apt-get install -y \
         locales \
         locales-all \
