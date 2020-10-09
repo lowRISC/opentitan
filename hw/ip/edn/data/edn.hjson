@@ -141,9 +141,13 @@
           desc: '''
                 This bit indicates that the EDN state machine has started the instantiation
                 process. If this bit is asserted it means the state machine has started in
-                boot-time request mode and that the the CSRNG has confirmed that this
+                boot-time request mode and that the CSRNG has confirmed that this
                 EDN will be the next application to receive a seed from the entropy_src IP.
                 '''
+        }
+        { bits: "31",
+          name: "INTERNAL_USE",
+          desc: "This bit is for internal use only."
         }
       ]
     },
