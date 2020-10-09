@@ -33,10 +33,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
-
+    bit     do_read_check     = 1'b0;
+    bit     write             = item.is_write();
+    uvm_reg_addr_t csr_addr   = get_normalized_addr(item.a_addr);
+    bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
+ 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
@@ -46,8 +47,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    // memories
+    // TODO: memory read check, change hardcoded to parameters once design finalized
+    end else if ((csr_addr & addr_mask) inside
+        {[CREATOR_WINDOW_BASE_ADDR : CREATOR_WINDOW_BASE_ADDR + WINDOW_SIZE],
+         [TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + WINDOW_SIZE]}) begin
+      return;
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -72,7 +78,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 
