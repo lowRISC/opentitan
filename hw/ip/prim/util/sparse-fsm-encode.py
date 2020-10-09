@@ -2,19 +2,50 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Script for generating sparse FSM encodings that fulfill a minimum
-Hamming distance requirement.
+r"""This script generates sparse FSM encodings that fulfill a minimum
+Hamming distance requirement. It uses a heuristic that incrementally
+draws random state encodings until a solution has been found.
+
+Depending on the parameterization, the script may not find a solution right
+away. In such cases, the script should be rerun after tweaking the d/m/n
+parameters. E.g. in order to increase the chances for success, the state
+space can be made more sparse by increasing n, or the Hamming distance
+threshold d can be lowered.
+
+Note however that the Hamming distance d should be set to 3 at minimum.
+It is recommended to set this value to 4-5 for security critical FSMs.
+
+The custom seed s can be used to make subsequent runs of the script
+deterministic. If not specified, the script randomly picks a seed.
+
 """
 import argparse
 import logging
 import random
+import textwrap
 import sys
 
 MAX_DRAWS = 10000
 MAX_RESTARTS = 10000
-USAGE = '''
-  ./sparse-fsm-encode -d <minimum HD> -m <#states> -n <#bits>
-'''
+USAGE = "./sparse-fsm-encode -m <#states> -n <#bits> -d <minimum HD> -s <seed>"
+
+
+def wrapped_docstring():
+    '''Return a text-wrapped version of the module docstring'''
+    paras = []
+    para = []
+    for line in __doc__.strip().split('\n'):
+        line = line.strip()
+        if not line:
+            if para:
+                paras.append('\n'.join(para))
+                para = []
+        else:
+            para.append(line)
+    if para:
+        paras.append('\n'.join(para))
+
+    return '\n\n'.join(textwrap.fill(p) for p in paras)
 
 
 def main():
@@ -24,14 +55,13 @@ def main():
 
     parser = argparse.ArgumentParser(
         prog="sparse-fsm-encode",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        usage=USAGE)
+        description=wrapped_docstring(),
+        usage=USAGE,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-d',
                         type=int,
                         default=5,
-                        help='Minimum Hamming distance between encoded states. '
-                             'This should be set to 2 minimum. A value of 4-5 '
-                             'is recommended.')
+                        help='Minimum Hamming distance between encoded states.')
     parser.add_argument('-m',
                         type=int,
                         default=7,
@@ -42,9 +72,7 @@ def main():
                         help='Encoding length [bit].')
     parser.add_argument('-s',
                         type=int,
-                        help='Custom seed for RNG. Can be used to make '
-                             'subsequent runs deterministic. The script '
-                             'randomly picks a seed if not specified.')
+                        help='Custom seed for RNG.')
 
     args = parser.parse_args()
 
@@ -53,6 +81,23 @@ def main():
             'Statespace 2^%d not large enough to accommodate %d states.' %
             (args.n, args.m))
         sys.exit(1)
+
+    if args.d >= args.n:
+        logging.error(
+            'State is only %d bits wide, which is not enough to fulfill a '
+            'minimum Hamming distance constraint of %d. ' %
+            (args.n, args.d))
+        sys.exit(1)
+
+    if args.d <= 0:
+        logging.error(
+            'Hamming distance must be > 0.')
+        sys.exit(1)
+
+    if args.d < 3:
+        logging.warning(
+            'A value of 4-5 is recommended for the minimum Hamming distance '
+            'constraint. At a minimum, this should be set to 3.')
 
     # If no seed has been provided, we choose a seed and print it
     # into the generated output later on such that this run can be
@@ -87,19 +132,22 @@ def main():
                 'Did not find a solution after restarting {} times. This is '
                 'an indicator that not many (or even no) solutions exist for '
                 'the current parameterization. Rerun the script and/or adjust '
-                'the D/M/N parameters. E.g. make the state space more sparse by '
-                'increasing N, or lower the minimum Hamming distance threshold D.'
+                'the d/m/n parameters. E.g. make the state space more sparse by '
+                'increasing n, or lower the minimum Hamming distance threshold d.'
                 .format(num_restarts))
             sys.exit(1)
         num_draws += 1
         # draw a candidate and check whether it fulfills the minimum
         # distance requirement with respect to other encodings.
         c = random.getrandbits(args.n)
-        for k in encodings:
-            if bin(c ^ k).count('1') < args.d:
-                break
-        else:
-            encodings.append(c)
+        # disallow all-zero and all-one states
+        pop_cnt = bin(c).count('1')
+        if pop_cnt < args.n and pop_cnt > 0:
+            for k in encodings:
+                if bin(c ^ k).count('1') < args.d:
+                    break
+            else:
+                encodings.append(c)
 
     # build Hamming distance histogram
     minimum = args.n
@@ -113,7 +161,12 @@ def main():
                 minimum = min(dist, minimum)
                 maximum = max(dist, maximum)
 
-    print("// Encoding generated with ./sparse-fsm-encode.py -d {} -m {} -n {} -s {}\n"
+    print("------------------------------------------------------\n"
+          "| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR RTL   |\n"
+          "| IMPLEMENTATION, INLUDING THE COMMENT AND PRIM_FLOP |\n"
+          "| IN ORDER TO EASE AUDITABILITY AND REPRODUCIBILITY. |\n"
+          "------------------------------------------------------\n\n"
+          "// Encoding generated with ./sparse-fsm-encode.py -d {} -m {} -n {} -s {}\n"
           "// Hamming distance histogram:\n"
           "//".format(args.d, args.m, args.n, args.s))
     for i, j in enumerate(hist):
@@ -164,7 +217,7 @@ prim_flop #(
   .d_i ( state_d ),
   .q_o ( state_q )
 );
-'''.format(state_str));
+'''.format(state_str))
 
 
 if __name__ == "__main__":
