@@ -440,21 +440,23 @@ Since the key manager may run in a different clock domain, key manager is respon
 #### Interface to Flash Scrambler
 
 The interface to the FLASH scrambling device is a simple req/ack interface that provides the flash controller with the two 128bit keys for data and address scrambling.
-The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive]({{< relref "#scrambling-datapath" >}}).
-If the key seeds have not yet been provisioned, the keys are derived from all-zero constants.
 
 The keys can be requested as illustrated below:
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                    wave: 'p...........'},
-  {name: 'flash_otp_key_i.data_req', wave: '01.|..0.|...'},
-  {name: 'flash_otp_key_i.addr_req', wave: '01.|....|..0'},
-  {name: 'flash_otp_key_o.data_ack', wave: '0..|.10.|...'},
-  {name: 'flash_otp_key_o.addr_ack', wave: '0..|....|.10'},
-  {name: 'flash_otp_key_o.key',      wave: '0..|.30.|.40'},
+  {name: 'clk_i',                      wave: 'p...........'},
+  {name: 'flash_otp_key_i.data_req',   wave: '01.|..0.|...'},
+  {name: 'flash_otp_key_i.addr_req',   wave: '01.|....|..0'},
+  {name: 'flash_otp_key_o.data_ack',   wave: '0..|.10.|...'},
+  {name: 'flash_otp_key_o.addr_ack',   wave: '0..|....|.10'},
+  {name: 'flash_otp_key_o.key',        wave: '0..|.30.|.40'},
+  {name: 'flash_otp_key_o.seed_valid', wave: '0..|.10.|.10'},
 ]}
 {{< /wavejson >}}
+
+The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive]({{< relref "#scrambling-datapath" >}}).
+If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
 
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_scr_key_req.sv` primitive as shown below.
@@ -474,17 +476,17 @@ The wave diagram below illustrates this process for the OTBN scrambling device.
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                wave: 'p.......'},
-  {name: 'otbn_otp_key_i.req',   wave: '01.|..0.'},
-  {name: 'otbn_otp_key_o.ack',   wave: '0..|.10.'},
-  {name: 'otbn_otp_key_o.nonce', wave: '0..|.30.'},
-  {name: 'otbn_otp_key_o.key',   wave: '0..|.30.'},
+  {name: 'clk_i',                     wave: 'p.......'},
+  {name: 'otbn_otp_key_i.req',        wave: '01.|..0.'},
+  {name: 'otbn_otp_key_o.ack',        wave: '0..|.10.'},
+  {name: 'otbn_otp_key_o.nonce',      wave: '0..|.30.'},
+  {name: 'otbn_otp_key_o.key',        wave: '0..|.30.'},
+  {name: 'otbn_otp_key_o.seed_valid', wave: '0..|.10.'},
 ]}
 {{< /wavejson >}}
 
-If the key seeds have not yet been provisioned, the keys are derived from all-zero constants.
-However, it should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational.
-Otherwise a key derivation request will block until they are ready.
+If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
+It should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational, and a key derivation request will block if they are not.
 
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface]({{< relref "#interface-to-flash-scrambler" >}}).

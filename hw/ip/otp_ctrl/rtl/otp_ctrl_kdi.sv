@@ -204,8 +204,8 @@ module otp_ctrl_kdi
   logic [3:0][ScrmblBlockWidth-1:0] nonce_out_d, nonce_out_q;
 
   always_comb begin : p_outregs
-    key_out_d   = key_out_q;
-    nonce_out_d = nonce_out_q;
+    key_out_d    = key_out_q;
+    nonce_out_d  = nonce_out_q;
     seed_valid_d = seed_valid_q;
     if (key_reg_en) begin
       key_out_d[seed_cnt_q[1]] = scrmbl_data_i;
