@@ -1104,15 +1104,7 @@
           type: interrupt
         }
       ]
-      alert_list:
-      [
-        {
-          name: msg_push_sha_disabled
-          width: 1
-          type: alert
-          async: 0
-        }
-      ]
+      alert_list: []
       wakeup_list: []
       reset_request_list: []
       scan: "false"
@@ -5024,7 +5016,6 @@
   alert_module:
   [
     aes
-    hmac
     otbn
     sensor_ctrl
     keymgr
@@ -5045,13 +5036,6 @@
       type: alert
       async: 0
       module_name: aes
-    }
-    {
-      name: hmac_msg_push_sha_disabled
-      width: 1
-      type: alert
-      async: 0
-      module_name: hmac
     }
     {
       name: otbn_imem_uncorrectable
