@@ -1,16 +1,8 @@
 # Docker Container
 
 Docker container based on Ubuntu 16.04 LTS containing various hardware and
-software development tools for OpenTitan. Current list of tools:
-
-* Python 3
-* fusesoc
-* OpenOCD
-* RISCV toolchain
-* clang-format
-* Verilator
-
-The versions of the above should match the versions installed in CI.
+software development tools for OpenTitan, as listed in the
+[OpenTitan documentation](https://docs.opentitan.org/doc/ug/install_instructions/).
 
 ## Local Build Instructions
 
@@ -18,7 +10,7 @@ Skip this step if planning to use the pre-built container. To build in local
 mode:
 
 ```shell
-$ cd ${REPO_TOP}
+$ cd $REPO_TOP
 $ sudo docker build -t opentitan -f util/container/Dockerfile .
 ```
 
@@ -27,7 +19,7 @@ $ sudo docker build -t opentitan -f util/container/Dockerfile .
 To run container in interactive mode:
 
 ```shell
-$ docker run -it -v ${REPO_TOP}:/repo -w /repo opentitan --user $(id -u):$(id -g)
+$ docker run -it -v $REPO_TOP:/repo -w /repo opentitan --user $(id -u):$(id -g)
 ```
 
 ## Pre-built Container
