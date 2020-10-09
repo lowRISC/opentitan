@@ -22,6 +22,7 @@ from pathlib import Path
 
 import hjson
 
+import check_tool_requirements
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import difgen.gen_dif_listing as gen_dif_listing
 import reggen.gen_cfg_html as gen_cfg_html
@@ -36,7 +37,12 @@ USAGE = """
 """
 
 # Version of hugo extended to be used to build the docs
-HUGO_EXTENDED_VERSION = "0.71.0"
+try:
+    tool_requirements = check_tool_requirements.read_tool_requirements()
+    HUGO_EXTENDED_VERSION = tool_requirements['hugo_extended']
+except Exception as e:
+    print("Unable to get required hugo version: %s" % str(e), file=sys.stderr)
+    sys.exit(1)
 
 # Configurations
 # TODO: Move to config.yaml
