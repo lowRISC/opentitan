@@ -106,7 +106,8 @@ package otbn_pkg;
     AluOpBignumAnd,
     AluOpBignumNot,
 
-    AluOpBignumSel
+    AluOpBignumSel,
+    AluOpBignumMov
   } alu_op_bignum_e;
 
   typedef enum logic {
@@ -122,10 +123,9 @@ package otbn_pkg;
   } op_a_sel_e;
 
   // Operand b source selection
-  typedef enum logic [1:0] {
+  typedef enum logic {
     OpBSelRegister  = 'd0,
-    OpBSelImmediate = 'd1,
-    OpBSelZero      = 'd2
+    OpBSelImmediate = 'd1
   } op_b_sel_e;
 
   // Immediate b selection for base ISA

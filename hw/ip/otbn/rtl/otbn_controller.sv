@@ -331,8 +331,6 @@ module otbn_controller
         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
       OpBSelImmediate:
         alu_bignum_operation_o.operand_b = insn_dec_bignum_i.i;
-      OpBSelZero:
-        alu_bignum_operation_o.operand_b = '0;
       default:
         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
     endcase

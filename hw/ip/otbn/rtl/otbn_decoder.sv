@@ -813,9 +813,7 @@ module otbn_decoder
             imm_b_mux_sel_base    = ImmBaseBX;
           end
           3'b110: begin // BN.MOV/BN.MOVR
-            // Implement move using A + 0 addition
-            alu_operator_bignum     = AluOpBignumAdd;
-            alu_op_b_mux_sel_bignum = OpBSelZero;
+            alu_operator_bignum     = AluOpBignumMov;
           end
           default: ;
         endcase
