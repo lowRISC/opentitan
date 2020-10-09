@@ -85,66 +85,67 @@ module prim_packer_fifo #(
 
   assign depth_o = depth_q;
 
-  generate
-    if (InW < OutW) begin : g_pack_mode
-      logic [MaxW-1:0] wdata_shifted;
+  if (InW < OutW) begin : gen_pack_mode
+    logic [MaxW-1:0] wdata_shifted;
 
-      assign wdata_shifted = wdata_i << (depth_q*InW);
-      assign clear_data = (rready_i && rvalid_o) || clr_i;
-      assign load_data = wvalid_i && wready_o;
+    assign wdata_shifted = wdata_i << (depth_q*InW);
+    assign clear_data = (rready_i && rvalid_o) || clr_i;
+    assign load_data = wvalid_i && wready_o;
 
-      assign depth_d =  clear_data ? '0 :
-             load_data ? depth_q+1 :
-             depth_q;
+    assign depth_d =  clear_data ? '0 :
+           load_data ? depth_q+1 :
+           depth_q;
 
-      assign data_d = clear_data ? '0 :
-             load_data ? (data_q | wdata_shifted) :
-             data_q;
+    assign data_d = clear_data ? '0 :
+           load_data ? (data_q | wdata_shifted) :
+           data_q;
 
-      // set outputs
-      assign wready_o = !(depth_q == (MaxW/MinW));
-      assign rdata_o =  data_q;
-      assign rvalid_o = (depth_q == (MaxW/MinW));
+    // set outputs
+    assign wready_o = !(depth_q == (MaxW/MinW));
+    assign rdata_o =  data_q;
+    assign rvalid_o = (depth_q == (MaxW/MinW));
 
-    end else begin : g_unpack_mode
-      logic [MaxW-1:0] rdata_shifted; // ri lint_check_waive NOT_READ
-      logic         pull_data;
-      logic [DepthW-1:0] ptr_q, ptr_d;
+  end else begin : gen_unpack_mode
+    logic [MaxW-1:0] rdata_shifted; // ri lint_check_waive NOT_READ
+    logic            pull_data;
+    logic [DepthW:0] ptr_q, ptr_d;
+    logic [DepthW:0] lsb_is_one;
+    logic [DepthW:0] max_value;
 
-      always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-          ptr_q   <= '0;
-        end else begin
-          ptr_q   <= ptr_d;
-        end
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        ptr_q   <= '0;
+      end else begin
+        ptr_q   <= ptr_d;
       end
-
-      assign rdata_shifted = data_q >> ptr_q*OutW;
-      assign clear_data = (rready_i && (depth_q == {{DepthW{1'b0}},1'b1})) || clr_i;
-      assign load_data = wvalid_i && wready_o;
-      assign pull_data = rvalid_o && rready_i;
-
-      assign depth_d =  clear_data ? '0 :
-             load_data ? {1'b1,{DepthW{1'b0}}} :
-             pull_data ? depth_q-1 :
-             depth_q;
-
-      assign ptr_d =  clear_data ? '0 :
-             pull_data ? ptr_q+1 :
-             ptr_q;
-
-      assign data_d = clear_data ? '0 :
-             load_data ? wdata_i :
-             data_q;
-
-      // set outputs
-      assign wready_o = (depth_q == '0);
-      assign rdata_o =  rdata_shifted[OutW-1:0];
-      assign rvalid_o = !(depth_q == '0);
-
     end
-  endgenerate
 
+    assign lsb_is_one = {{DepthW{1'b0}},1'b1}; // ri lint_check_waive ZERO_REP
+    assign   max_value = (MaxW/MinW);
+    assign rdata_shifted = data_q >> ptr_q*OutW;
+    assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_i;
+    assign load_data = wvalid_i && wready_o;
+    assign pull_data = rvalid_o && rready_i;
+
+    assign depth_d =  clear_data ? '0 :
+           load_data ? max_value :
+           pull_data ? depth_q-1 :
+           depth_q;
+
+    assign ptr_d =  clear_data ? '0 :
+           pull_data ? ptr_q+1 :
+           ptr_q;
+
+    assign data_d = clear_data ? '0 :
+           load_data ? wdata_i :
+           data_q;
+
+    // set outputs
+    assign wready_o = (depth_q == '0);
+    assign rdata_o =  rdata_shifted[OutW-1:0];
+    assign rvalid_o = !(depth_q == '0);
+
+  end
 
 
   //////////////////////////////////////////////

@@ -56,29 +56,28 @@ module entropy_src_markov_ht #(
   //  stream will only count when the pair equals 0b01 or 0b10.
 
 
-    for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
+  for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
 
-      // bit sampler
-      assign prev_sample_d[sh] =
-             (!active_i || clear_i) ? '0 :
-             window_cntr_wrap ? '0  :
-             entropy_bit_vld_i ? entropy_bit_i[sh] :
-             prev_sample_q[sh];
+    // bit sampler
+    assign prev_sample_d[sh] = (!active_i || clear_i) ? '0 :
+                               window_cntr_wrap ? '0  :
+                               entropy_bit_vld_i ? entropy_bit_i[sh] :
+                               prev_sample_q[sh];
 
-      // pair check
-      assign samples_no_match_pulse[sh] = entropy_bit_vld_i && window_cntr_q[0] &&
-             (prev_sample_q[sh] == !entropy_bit_i[sh]);
+    // pair check
+    assign samples_no_match_pulse[sh] = entropy_bit_vld_i && window_cntr_q[0] &&
+           (prev_sample_q[sh] == !entropy_bit_i[sh]);
 
-      // pair counter
-      assign pair_cntr_d[sh] =
-             (!active_i || clear_i) ? '0 :
-             window_cntr_wrap ? '0  :
-             samples_no_match_pulse[sh] ? (pair_cntr_q[sh]+1) :
-             pair_cntr_q[sh];
+    // pair counter
+    assign pair_cntr_d[sh] =
+           (!active_i || clear_i) ? '0 :
+           window_cntr_wrap ? '0  :
+           samples_no_match_pulse[sh] ? (pair_cntr_q[sh]+1) :
+           pair_cntr_q[sh];
 
-      assign pair_cnt_fail[sh] = (pair_cntr_q[sh] >= thresh_i);
+    assign pair_cnt_fail[sh] = (pair_cntr_q[sh] >= thresh_i);
 
-    end : gen_cntrs
+  end : gen_cntrs
 
 
   // Window wrap condition

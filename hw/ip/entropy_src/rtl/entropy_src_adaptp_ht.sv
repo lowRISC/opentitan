@@ -54,7 +54,11 @@ module entropy_src_adaptp_ht #(
 
 
   // Number of ones per column
-  assign column_cnt = entropy_bit_i[3]+entropy_bit_i[2]+entropy_bit_i[1]+entropy_bit_i[0];
+//  assign column_cnt =  {{RngBusWidth{1'b0}},entropy_bit_i[3]};
+  assign column_cnt =  {{(RngBusWidth-1){1'b0}},entropy_bit_i[3]} +
+                       {{(RngBusWidth-1){1'b0}},entropy_bit_i[2]} +
+                       {{(RngBusWidth-1){1'b0}},entropy_bit_i[1]} +
+                       {{(RngBusWidth-1){1'b0}},entropy_bit_i[0]};
 
   // Window wrap condition
   assign window_cntr_wrap = (window_cntr_q == window_i);

@@ -78,7 +78,7 @@ module entropy_src import entropy_src_pkg::*; #(
   );
 
    prim_alert_sender #(
-     .AsyncOn(1'b0) // TODO: does this need to be AsyncOn
+     .AsyncOn(1'b1)
    ) u_alert_sender_i (
      .clk_i      ( clk_i      ),
      .rst_ni     ( rst_ni     ),
