@@ -59,15 +59,15 @@ module entropy_src_bucket_ht #(
 
   // Analyze the incoming symbols
 
-    for (genvar i = 0; i < NUM_BINS; i = i + 1) begin : gen_symbol_match
-      // set the bin incrementer if the symbol matches that bin
-      assign bin_incr[i] = entropy_bit_vld_i && (entropy_bit_i == i);
-      // use the bin incrementer to increase the bin total count
-      assign bin_cntr_d[i] = window_cntr_wrap ? '0 :
-             ((active_i && bin_incr[i]) ? (bin_cntr_q[i]+1) : bin_cntr_q[i]);
-      // use the bin incrementer to increase the bin total count
-      assign bin_cnt_exceeds_thresh[i] = (bin_cntr_q[i] > thresh_i);
-    end : gen_symbol_match
+  for (genvar i = 0; i < NUM_BINS; i = i + 1) begin : gen_symbol_match
+    // set the bin incrementer if the symbol matches that bin
+    assign bin_incr[i] = entropy_bit_vld_i && (entropy_bit_i == i);
+    // use the bin incrementer to increase the bin total count
+    assign bin_cntr_d[i] = window_cntr_wrap ? '0 :
+           ((active_i && bin_incr[i]) ? (bin_cntr_q[i]+1) : bin_cntr_q[i]);
+    // use the bin incrementer to increase the bin total count
+    assign bin_cnt_exceeds_thresh[i] = (bin_cntr_q[i] > thresh_i);
+  end : gen_symbol_match
 
 
   // Window wrap condition

@@ -216,13 +216,11 @@ The following waveform shows an example of how the entropy source hardware inter
 
 {{< wavejson >}}
 {signal: [
-   {name: 'clk'                , wave: 'p...................'},
-   {name: 'es_enable'          , wave: '01..................'},
-   {name: 'es_req'  , wave: '0..1...0.10.101.....'},
-   {name: 'es_ack'  , wave: '0.....1...0.10.1.0..'},
-   {name: 'es_bits'  , wave: 'x.....3xx4xx5xx34x..', data: ['es0','es1','es2','es3','es4','es5','es6','es7']},
-   {name: 'es_fips'  , wave: '0........10.10.1.0..'},
- {},
+   {name: 'clk'           , wave: 'p...|.........|.......'},
+   {name: 'es_req'        , wave: '0..1|..01.0..1|.....0.'},
+   {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
+   {name: 'es_bus[383:0]' , wave: 'x...|.3x.3x...|....3x.', data: ['es0','es1','es2']},
+   {name: 'es_fips'       , wave: 'x...|.0x.1x...|....1x.'},
 ]}
 {{< /wavejson >}}
 

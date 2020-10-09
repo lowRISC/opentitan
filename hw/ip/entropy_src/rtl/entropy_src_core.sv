@@ -194,7 +194,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     pfifo_swread_pop;
 
   logic [SeedLen-1:0]       final_es_data;
-
+  logic                     es_hw_if_req;
+  logic                     es_hw_if_ack;
+  logic                     es_hw_if_fifo_pop;
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -239,7 +241,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // instantiate interrupt hardware primitives
   //--------------------------------------------
 
-  prim_intr_hw # (
+  prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_entropy_valid (
     .clk_i                  (clk_i),
@@ -254,7 +256,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (es_entropy_valid_o)
   );
 
-  prim_intr_hw # (
+  prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_health_test_failed (
     .clk_i                  (clk_i),
@@ -269,7 +271,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (es_health_test_failed_o)
   );
 
-  prim_intr_hw # (
+  prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_fifo_err (
     .clk_i                  (clk_i),
@@ -291,7 +293,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
   assign lfsr_incr_dly_d = lfsr_incr;
 
-  prim_lfsr # (
+  prim_lfsr #(
     .LfsrDw(RngBusWidth),
     .EntropyDw(RngBusWidth),
     .StateOutDw(RngBusWidth),
@@ -345,7 +347,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
 
-  prim_fifo_sync # (
+  prim_fifo_sync #(
     .Width(RngBusWidth),
     .Pass(0),
     .Depth(2)
@@ -380,7 +382,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign rng_bit_en = reg2hw.conf.rng_bit_en.q;
   assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
 
-  prim_packer_fifo # (
+  prim_packer_fifo #(
     .InW(1),
     .OutW(RngBusWidth)
   ) u_prim_packer_fifo_esbit (
@@ -469,7 +471,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // repetitive count test
   //--------------------------------------------
 
-  entropy_src_repcnt_ht # (
+  entropy_src_repcnt_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
   ) u_entropy_src_repcnt_ht (
@@ -486,7 +488,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .test_fail_pulse_o   (repcnt_fail_pulse)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_repcnt_fips (
@@ -499,7 +501,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (repcnt_event_hwm_fips)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_repcnt_bypass (
@@ -512,7 +514,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (repcnt_event_hwm_bypass)
   );
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_repcnt (
     .clk_i               (clk_i),
@@ -531,7 +533,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // adaptive proportion test
   //--------------------------------------------
 
-  entropy_src_adaptp_ht # (
+  entropy_src_adaptp_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
   ) u_entropy_src_adaptp_ht (
@@ -551,7 +553,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_adaptp_hi_fips (
@@ -564,7 +566,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_hi_event_hwm_fips)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_adaptp_hi_bypass (
@@ -577,7 +579,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_hi_event_hwm_bypass)
   );
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_hi (
     .clk_i               (clk_i),
@@ -594,7 +596,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.adaptp_hi_total_fails.d = adaptp_hi_total_fails;
 
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(0)
   ) u_entropy_src_watermark_reg_adaptp_lo_fips (
@@ -607,7 +609,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_lo_event_hwm_fips)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(0)
   ) u_entropy_src_watermark_reg_adaptp_lo_bypass (
@@ -620,7 +622,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_lo_event_hwm_bypass)
   );
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_lo (
     .clk_i               (clk_i),
@@ -640,7 +642,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bucket test
   //--------------------------------------------
 
-  entropy_src_bucket_ht # (
+  entropy_src_bucket_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
   ) u_entropy_src_bucket_ht (
@@ -657,7 +659,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .test_fail_pulse_o     (bucket_fail_pulse)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_bucket_fips (
@@ -670,7 +672,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (bucket_event_hwm_fips)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_bucket_bypass (
@@ -683,7 +685,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (bucket_event_hwm_bypass)
   );
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_bucket (
     .clk_i               (clk_i),
@@ -703,7 +705,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Markov test
   //--------------------------------------------
 
-  entropy_src_markov_ht # (
+  entropy_src_markov_ht #(
     .RegWidth(HalfRegWidth),
     .RngBusWidth(RngBusWidth)
   ) u_entropy_src_markov_ht (
@@ -720,7 +722,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .test_fail_pulse_o   (markov_fail_pulse)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_markov_fips (
@@ -733,7 +735,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_event_hwm_fips)
   );
 
-  entropy_src_watermark_reg # (
+  entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
   ) u_entropy_src_watermark_reg_markov_bypass (
@@ -746,7 +748,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_event_hwm_bypass)
   );
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_markov (
     .clk_i               (clk_i),
@@ -767,7 +769,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_any_alert_fails (
     .clk_i               (clk_i),
@@ -796,7 +798,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign alert_event_o = alert_event;
 
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_repcnt_alert_fails (
     .clk_i               (clk_i),
@@ -809,7 +811,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.alert_fail_counts.repcnt_fail_count.d = repcnt_fail_count;
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_alert_hi_fails (
     .clk_i               (clk_i),
@@ -822,7 +824,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.alert_fail_counts.adaptp_hi_fail_count.d = adaptp_hi_fail_count;
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_alert_lo_fails (
     .clk_i               (clk_i),
@@ -835,7 +837,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.alert_fail_counts.adaptp_lo_fail_count.d = adaptp_lo_fail_count;
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_bucket_alert_fails (
     .clk_i               (clk_i),
@@ -849,7 +851,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_fail_counts.bucket_fail_count.d = bucket_fail_count;
 
 
-  entropy_src_cntr_reg # (
+  entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
   ) u_entropy_src_cntr_reg_markov_alert_fails (
     .clk_i               (clk_i),
@@ -866,7 +868,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // pack tested entropy into pre-conditioning packer
   //--------------------------------------------
 
-  prim_packer_fifo # (
+  prim_packer_fifo #(
     .InW(RngBusWidth),
     .OutW(PostHTWidth)
   ) u_prim_packer_fifo_postht (
@@ -894,7 +896,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
 
-  prim_packer_fifo # (
+  prim_packer_fifo #(
     .InW(PostHTWidth),
     .OutW(SeedLen)
   ) u_prim_packer_fifo_cond (
@@ -920,7 +922,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bypass SHA conditioner path
   //--------------------------------------------
 
-  prim_packer_fifo # (
+  prim_packer_fifo #(
      .InW(PostHTWidth),
      .OutW(SeedLen)
   ) u_prim_packer_fifo_bypass (
@@ -974,7 +976,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // send processed entropy to final fifo
   //--------------------------------------------
 
-  prim_fifo_sync # (
+  prim_fifo_sync #(
     .Width(1+SeedLen),
     .Pass(0),
     .Depth(EsFifoDepth)
@@ -996,10 +998,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // fifo controls
   assign sfifo_esfinal_push = sfifo_esfinal_not_full &&
          ((main_stage_pop || bypass_stage_pop) && !ht_failed_q);
-  assign sfifo_esfinal_clr  = ~es_enable;
+  assign sfifo_esfinal_clr  = !es_enable;
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
-  assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_not_full :
-         (es_enable && entropy_src_hw_if_i.es_req);
+  assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
+         es_hw_if_fifo_pop;
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
 
   // fifo err
@@ -1008,15 +1010,25 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (sfifo_esfinal_pop && !sfifo_esfinal_not_empty );
 
   // drive out hw interface
-  assign entropy_src_hw_if_o.es_ack = sfifo_esfinal_not_empty && !es_route_to_sw;
+  assign es_hw_if_req = entropy_src_hw_if_i.es_req;
+  assign entropy_src_hw_if_o.es_ack = es_hw_if_ack;
   assign entropy_src_hw_if_o.es_bits = esfinal_data;
   assign entropy_src_hw_if_o.es_fips = esfinal_fips_flag;
+
+  entropy_src_ack_sm u_entropy_src_ack_sm (
+    .clk_i            (clk_i),
+    .rst_ni           (rst_ni),
+    .req_i            (es_hw_if_req),
+    .ack_o            (es_hw_if_ack),
+    .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
+    .fifo_pop_o       (es_hw_if_fifo_pop)
+  );
 
   //--------------------------------------------
   // software es read path
   //--------------------------------------------
 
-  prim_packer_fifo # (
+  prim_packer_fifo #(
     .InW(SeedLen),
     .OutW(FullRegWidth)
   ) u_prim_packer_fifo_swread (
@@ -1032,7 +1044,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
-  assign pfifo_swread_push = sfifo_esfinal_pop;
+  assign pfifo_swread_push = es_route_to_sw && pfifo_swread_not_full && sfifo_esfinal_not_empty;
   assign pfifo_swread_wdata = esfinal_data;
 
   assign pfifo_swread_clr = !es_enable;

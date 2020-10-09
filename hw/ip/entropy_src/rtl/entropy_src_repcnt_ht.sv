@@ -57,31 +57,30 @@ module entropy_src_repcnt_ht #(
   //  uses zero as the starting value, differing from the NIST value of one.
 
 
-    for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
+  for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
 
-      // NIST A sample
-      assign prev_sample_d[sh] =
-             (!active_i || clear_i) ? '0 :
-             window_cntr_wrap ? '0  :
-             entropy_bit_vld_i ? entropy_bit_i[sh] :
-             prev_sample_q[sh];
+    // NIST A sample
+    assign prev_sample_d[sh] = (!active_i || clear_i) ? '0 :
+                               window_cntr_wrap ? '0  :
+                               entropy_bit_vld_i ? entropy_bit_i[sh] :
+                               prev_sample_q[sh];
 
-      assign samples_match_pulse[sh] = entropy_bit_vld_i &&
-             (prev_sample_q[sh] == entropy_bit_i[sh]);
-      assign samples_no_match_pulse[sh] = entropy_bit_vld_i &&
-             (prev_sample_q[sh] != entropy_bit_i[sh]);
+    assign samples_match_pulse[sh] = entropy_bit_vld_i &&
+           (prev_sample_q[sh] == entropy_bit_i[sh]);
+    assign samples_no_match_pulse[sh] = entropy_bit_vld_i &&
+           (prev_sample_q[sh] != entropy_bit_i[sh]);
 
-      // NIST B counter
-      assign rep_cntr_d[sh] =
-             (!active_i || clear_i) ? '0 :
-             window_cntr_wrap ? '0  :
-             samples_match_pulse[sh] ? (rep_cntr_q[sh]+1) :
-             samples_no_match_pulse[sh] ?  '0 :
-             rep_cntr_q[sh];
+    // NIST B counter
+    assign rep_cntr_d[sh] =
+           (!active_i || clear_i) ? '0 :
+           window_cntr_wrap ? '0  :
+           samples_match_pulse[sh] ? (rep_cntr_q[sh]+1) :
+           samples_no_match_pulse[sh] ?  '0 :
+           rep_cntr_q[sh];
 
-      assign rep_cnt_fail[sh] = (rep_cntr_q[sh] >= thresh_i);
+    assign rep_cnt_fail[sh] = (rep_cntr_q[sh] >= thresh_i);
 
-    end : gen_cntrs
+  end : gen_cntrs
 
 
   // Window wrap condition

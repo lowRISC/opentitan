@@ -23,24 +23,46 @@ module entropy_src_main_sm (
   output logic               bypass_stage_pop_o
 );
 
-  localparam int StateWidth = 6;
+  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 6 -n 8 -s 3348095039
+  // Hamming distance histogram:
+  //
+  // 0: --
+  // 1: --
+  // 2: --
+  // 3: |||||| (13.33%)
+  // 4: |||||||||||||||| (33.33%)
+  // 5: |||||||||||||||||||| (40.00%)
+  // 6: |||||| (13.33%)
+  // 7: --
+  // 8: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 6
+  //
+
+  localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
-    IDLE = 6'b000010, // idle (hamming distance = 3)
-    HTDP = 6'b101110, // wait for health test done pulse
-    PNMT = 6'b010100, // wait for post health test packer not empty state
-    MODE = 6'b011011, // determine what mode the flow is in
-    BYPS = 6'b101001, // in bypass mode
-    NORM = 6'b110111  // in normal mode
+    Idle              = 8'b00011111, // idle
+    HealthTestDone    = 8'b01111010, // wait for health test done pulse
+    PostHealthTestChk = 8'b11111001, // wait for post health test packer not empty state
+    FlowModeChk       = 8'b10110100, // determine what mode the flow is in
+    BypassMode        = 8'b00100011, // in bypass mode
+    NormalMode        = 8'b11001000  // in normal mode
   } state_e;
 
   state_e state_q, state_d;
 
-  always_ff @(posedge clk_i or negedge rst_ni)
-    if (!rst_ni) begin
-      state_q    <= IDLE;
-    end else begin
-      state_q    <= state_d;
-    end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(Idle))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
 
   always_comb begin
     state_d = state_q;
@@ -49,47 +71,47 @@ module entropy_src_main_sm (
     main_stage_pop_o = 1'b0;
     bypass_stage_pop_o = 1'b0;
     unique case (state_q)
-      IDLE: begin
+      Idle: begin
         if (enable_i) begin
-          state_d = HTDP;
+          state_d = HealthTestDone;
         end
       end
-      HTDP: begin
+      HealthTestDone: begin
         if (ht_done_pulse_i) begin
           if (ht_fail_pulse_i) begin
-            state_d = IDLE;
+            state_d = Idle;
           end else begin
-            state_d = PNMT;
+            state_d = PostHealthTestChk;
           end
         end
       end
-      PNMT: begin
+      PostHealthTestChk: begin
         rst_alert_cntr_o = 1'b1;
         if (postht_not_empty_i) begin
-          state_d = MODE;
+          state_d = FlowModeChk;
         end
       end
-      MODE: begin
+      FlowModeChk: begin
         if (bypass_mode_i) begin
-          state_d = BYPS;
+          state_d = BypassMode;
         end else begin
-          state_d = NORM;
+          state_d = NormalMode;
         end
       end
-      BYPS: begin
+      BypassMode: begin
         if (bypass_stage_rdy_i) begin
           rst_bypass_mode_o = 1'b1;
           bypass_stage_pop_o = 1'b1;
-          state_d = IDLE;
+          state_d = Idle;
         end
       end
-      NORM: begin
+      NormalMode: begin
         if (main_stage_rdy_i) begin
           main_stage_pop_o = 1'b1;
-          state_d = IDLE;
+          state_d = Idle;
         end
       end
-      default: state_d = IDLE;
+      default: state_d = Idle;
     endcase
   end
 
