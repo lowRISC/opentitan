@@ -10,9 +10,10 @@ module prim_generic_flash #(
   parameter int PagesPerBank = 256, // data pages per bank
   parameter int WordsPerPage = 256, // words per page
   parameter int DataWidth   = 32,   // bits per word
+  parameter int MetaDataWidth = 12, // this is a temporary parameter to work around ECC issues
   parameter bit SkipInit = 1,       // this is an option to reset flash to all F's at reset
 
-  // Derived parameters
+  //Do not touch - Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
   localparam int WordW = $clog2(WordsPerPage),
   localparam int AddrW = PageW + WordW
@@ -21,14 +22,18 @@ module prim_generic_flash #(
   input                              rst_ni,
   input                              rd_i,
   input                              prog_i,
+  // the generic model does not make use of program types
+  input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
   input [AddrW-1:0]                  addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
   input [DataWidth-1:0]              prog_data_i,
+  output logic [flash_ctrl_pkg::ProgTypes-1:0] prog_type_avail_o,
   output logic                       ack_o,
   output logic [DataWidth-1:0]       rd_data_o,
   output logic                       init_busy_o,
+
   input                              tck_i,
   input                              tdi_i,
   input                              tms_i,
@@ -40,6 +45,11 @@ module prim_generic_flash #(
   inout [3:0]                        flash_test_mode_ai,
   inout                              flash_test_voltage_hi
 );
+
+  // Not connected at the moment.
+  logic unused;
+  assign unused = ^prog_type_i;
+  assign prog_type_avail_o = '0;
 
   // Emulated flash macro values
   localparam int ReadCycles = 1;
