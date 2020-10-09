@@ -155,7 +155,7 @@ module otbn_controller
         if (start_i) begin
           state_d = OtbnStateRun;
           insn_fetch_req_addr_o  = start_addr_i;
-          insn_fetch_req_valid_o = 1'b01;
+          insn_fetch_req_valid_o = 1'b1;
         end
       end
       OtbnStateRun: begin
