@@ -324,7 +324,7 @@ which lists the total number of assertions and the number of proven, vacuous,
 covered and failing assertions for each block. CRASH identifies modules that
 fail to run VC Formal.
 
-## Naming Convenctions
+## Naming Conventions
 For assertions, it is preferred to use postfix `_A` for assertions,
 `_M` for assumptions, `_P` for properties, and `_S` for sequences.
 For example:
