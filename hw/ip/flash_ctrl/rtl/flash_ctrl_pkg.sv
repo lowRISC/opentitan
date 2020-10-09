@@ -47,6 +47,13 @@ package flash_ctrl_pkg;
     FlashOpInvalid  = 2'h3
   } flash_op_e;
 
+  // Flash Program Operations Supported
+  typedef enum logic {
+    FlashProgNormal = 0,
+    FlashProgRepair = 1
+  } flash_prog_e;
+  parameter int ProgTypes = 2;
+
   // Flash Erase Operations Supported
   typedef enum logic  {
     FlashErasePage  = 0,
