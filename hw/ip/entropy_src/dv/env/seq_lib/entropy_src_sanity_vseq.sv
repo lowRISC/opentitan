@@ -10,22 +10,24 @@ class entropy_src_sanity_vseq extends entropy_src_base_vseq;
 
   task body();
     // Ensure es_entropy is 0 before enabling
-    csr_rd_check(.ptr(ral.es_entropy), .compare_value(1'b0));
+    csr_rd_check(.ptr(ral.entropy_data), .compare_value(1'b0));
 
-    // Set FIFO Threshold
-    csr_wr(.csr(ral.es_thresh), .value(1'b1));
+    // Change entropy rate
+    csr_wr(.csr(ral.rate), .value('h8));
 
-    // Enable entropy_src
-    csr_wr(.csr(ral.es_conf), .value(1'b1));
+    // Route to ENTROPY_DATA register
+    csr_wr(.csr(ral.entropy_control), .value(1'b1));
+
+    // Enable entropy_src - lfsr mode
+    csr_wr(.csr(ral.conf), .value(2'b10));
 
     // Wait for entropy_valid interrupt
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
 
-    // Expect POR_ENTROPY with POR_SEED
-    csr_rd_check(.ptr(ral.es_entropy), .compare_value(POR_ENTROPY));
-
-    // Disable entropy_src
-    csr_wr(.csr(ral.es_conf), .value(1'b0));
+    // Read entropy_data register (384/32=12 times) and expect POR_ENTROPY
+    for (int i = 0; i < 12; i++) begin
+      csr_rd_check(.ptr(ral.entropy_data), .compare_value(POR_ENTROPY[i]));
+    end
 
     // Ensure entropy_valid interrupt bit set
     csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b1));

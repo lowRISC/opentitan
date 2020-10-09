@@ -66,27 +66,58 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       end
       "intr_test": begin
       end
-      "es_regen": begin
+      "regen": begin
       end
-      "es_conf": begin
+      "conf": begin
       end
-      "es_rev": begin
+      "rev": begin
       end
-      "es_entropy": begin
+      "rate": begin
+      end
+      "entropy_control": begin
+      end
+       "entropy_data": begin
          do_read_check = 1'b0;
       end
-      "es_ctrl": begin
+      "health_test_windows": begin
       end
-      "es_status": begin
-         do_read_check = 1'b0;
+      "repcnt_thresholds": begin
       end
-      "es_fdepthst": begin
+      "adaptp_hi_thresholds": begin
       end
-      "es_thresh": begin
+      "adaptp_lo_thresholds": begin
       end
-      "es_rate": begin
+      "bucket_thresholds": begin
       end
-      "es_seed": begin
+      "markov_thresholds": begin
+      end
+      "repcnt_hi_watermarks": begin
+      end
+      "adaptp_hi_watermarks": begin
+      end
+      "adaptp_lo_watermarks": begin
+      end
+      "bucket_hi_watermarks": begin
+      end
+      "markov_hi_watermarks": begin
+      end
+      "repcnt_total_fails": begin
+      end
+      "adaptp_hi_total_fails": begin
+      end
+      "adaptp_lo_total_fails": begin
+      end
+      "bucket_total_fails": begin
+      end
+      "markov_total_fails": begin
+      end
+      "alert_threshold": begin
+      end
+      "alert_fail_counts": begin
+      end
+      "debug_status": begin
+      end
+      "seed": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
