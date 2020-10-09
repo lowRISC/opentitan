@@ -31,8 +31,8 @@ export_embedded_target = [
 ]
 
 subdir('boot_rom')
-subdir('mask_rom')
 subdir('rom_exts')
+subdir('mask_rom')
 subdir('examples')
 subdir('sca')
 subdir('tests')

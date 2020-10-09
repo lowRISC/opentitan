@@ -14,12 +14,29 @@ rom_ext_link_args = [
 ]
 rom_ext_link_deps = [rom_ext_linkfile]
 
+# ROM_EXT manifest generator.
+rom_exts_manifest_offsets_header = custom_target(
+  'rom_exts_manifest_h',
+  output: 'manifest.h',
+  depend_files: [
+    'manifest.h.tpl',
+    'manifest.hjson',
+  ],
+  command: [
+    prog_python,
+    meson.source_root() / 'util/rom-ext-manifest-generator.py',
+    '--input-dir', meson.current_source_dir(),
+    '--output-dir', meson.current_build_dir(),
+  ],
+)
+
 # ROM_EXT manifest parser.
 rom_ext_manifest_parser = declare_dependency(
   link_with: static_library(
     'rom_ext_manifest_parser',
     sources: [
       'rom_ext_manifest_parser.c',
+      rom_exts_manifest_offsets_header,
     ],
     dependencies: [
       sw_lib_mmio,

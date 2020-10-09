@@ -181,22 +181,4 @@ top_earlgrey = declare_dependency(
   )
 )
 
-# ROM_EXT manifest generator.
-rom_exts_source_dir = meson.source_root() / 'sw/device/rom_exts'
-custom_target(
-  'rom_exts_manifest_h',
-  output: 'manifest.h',
-  depend_files: [
-    rom_exts_source_dir / 'manifest.h.tpl',
-    rom_exts_source_dir / 'manifest.hjson',
-  ],
-  command: [
-    prog_python,
-    meson.source_root() / 'util/rom-ext-manifest-generator.py',
-    '--input-dir', rom_exts_source_dir,
-    '--output-dir', rom_exts_source_dir,
-  ],
-  build_by_default: true,
-)
-
 subdir('sw')
