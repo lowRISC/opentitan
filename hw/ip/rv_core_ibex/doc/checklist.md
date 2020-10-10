@@ -18,22 +18,22 @@ Documentation | [SPEC_COMPLETE][]     | Done        |
 Documentation | [CSR_DEFINED][]       | Done        | lowRISC/ibex#307
 RTL           | [CLKRST_CONNECTED][]  | Done        |
 RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANTIABLE][]      | Done        |
+RTL           | [IP_INSTANTIABLE][]   | Done        |
 RTL           | [MEM_INSTANCED_80][]  | N/A         |
 RTL           | [FUNC_IMPLEMENTED][]  | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
 Code Quality  | [LINT_SETUP][]        | Done        |
 
 
-[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec-complete" >}}
-[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
-[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
-[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip-top" >}}
-[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
-[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem-instanced-80" >}}
-[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
-[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
-[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint-setup" >}}
+[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec_complete" >}}
+[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr_defined" >}}
+[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
+[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip_top" >}}
+[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
+[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem_instanced_80" >}}
+[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func_implemented" >}}
+[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert_known_added" >}}
+[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint_setup" >}}
 
 ### D1 Exceptions
 
@@ -62,24 +62,24 @@ Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
 
-[NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new-features" >}}
-[BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block-diagram" >}}
-[DOC_INTERFACE]:       {{<relref "/doc/project/checklist.md#doc-interface" >}}
-[MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing-func" >}}
-[FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
-[FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
-[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
-[PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
-[ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
-[REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
-[STYLE_X]:             {{<relref "/doc/project/checklist.md#style-x" >}}
-[LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint-pass" >}}
-[CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc-setup" >}}
-[CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc-syncmacro" >}}
-[FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga-timing" >}}
-[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec-cm-implemented" >}}
-[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec-non-reset-flops" >}}
-[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec-shadow-regs" >}}
+[NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
+[BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
+[DOC_INTERFACE]:       {{<relref "/doc/project/checklist.md#doc_interface" >}}
+[MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
+[FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
+[FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
+[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area_sanity_check" >}}
+[PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
+[ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
+[REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}
+[STYLE_X]:             {{<relref "/doc/project/checklist.md#style_x" >}}
+[LINT_PASS]:           {{<relref "/doc/project/checklist.md#lint_pass" >}}
+[CDC_SETUP]:           {{<relref "/doc/project/checklist.md#cdc_setup" >}}
+[FPGA_TIMING]:         {{<relref "/doc/project/checklist.md#fpga_timing" >}}
+[CDC_SYNCMACRO]:       {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
+[SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
+[SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
+[SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
 ### D3
 
@@ -96,17 +96,17 @@ Review        | [REVIEW_SW_FATAL_ERR][] | Not Started |
 Review        | [REVIEW_SW_CHANGE][]    | Not Started |
 Review        | [REVIEW_SW_ERRATA][]    | Not Started |
 
-[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new-features-d3" >}}
-[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo-complete" >}}
-[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint-complete" >}}
-[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc-complete" >}}
-[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review-rtl" >}}
-[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review-dbg" >}}
-[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review-deleted-ff" >}}
-[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review-sw-csr" >}}
-[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review-sw-fatal-err" >}}
-[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review-sw-change" >}}
-[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review-sw-errata" >}}
+[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
+[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
+[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
+[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
+[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
+[REVIEW_DBG]:           {{<relref "/doc/project/checklist.md#review_dbg" >}}
+[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
+[REVIEW_SW_CSR]:        {{<relref "/doc/project/checklist.md#review_sw_csr" >}}
+[REVIEW_SW_FATAL_ERR]:  {{<relref "/doc/project/checklist.md#review_sw_fatal_err" >}}
+[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
+[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
 
 ## Verification Checklist
 
@@ -117,40 +117,45 @@ Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Waived      | Plan creat
 Documentation | [TESTPLAN_COMPLETED][]                | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| N/A         |
-Testbench     | [TB_ENV_CREATED][]                    | Done        |
-Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | N/A         |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | N/A         |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | N/A         |
 Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
-Tests         | [SANITY_TEST_PASSING][]               | Done        |
-Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | Done        |
-Tool Setup    | [ALT_TOOL_SETUP][]                    | Waived      | waived for now, doesn't follow standard tool flow
-Regression    | [SANITY_REGRESSION_SETUP][]           | Done        |
-Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        |
-Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |
+Tests         | [SIM_SANITY_TEST_PASSING][]           | Done        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Waived      | waived for now, doesn't follow standard tool flow
+Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
+Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Waived      | Not done, will be reviewed in V2
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | different format than comportable modules
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
-
-[DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan-completed" >}}
-[TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-top-created" >}}
-[PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary-assertion-checks-added" >}}
-[TB_ENV_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-env-created" >}}
-[RAL_MODEL_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#ral-model-gen-automated" >}}
-[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated" >}}
-[SANITY_TEST_PASSING]:                {{<relref "/doc/project/checklist.md#sanity-test-passing" >}}
-[CSR_MEM_TEST_SUITE_PASSING]:         {{<relref "/doc/project/checklist.md#csr-mem-test-suite-passing" >}}
-[ALT_TOOL_SETUP]:                     {{<relref "/doc/project/checklist.md#alt-tool-setup" >}}
-[SANITY_REGRESSION_SETUP]:            {{<relref "/doc/project/checklist.md#sanity-regression-setup" >}}
-[NIGHTLY_REGRESSION_SETUP]:           {{<relref "/doc/project/checklist.md#nightly-regression-setup" >}}
-[COVERAGE_MODEL_ADDED]:               {{<relref "/doc/project/checklist.md#coverage-model-added" >}}
-[PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v1" >}}
-[DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design-spec-reviewed" >}}
-[DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv-plan-testplan-reviewed" >}}
-[STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std-test-categories-planned" >}}
-[V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2-checklist-scoped" >}}
+[DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_plan_draft_completed" >}}
+[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
+[PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
+[SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
+[SIM_RAL_MODEL_GEN_AUTOMATED]:        {{<relref "/doc/project/checklist.md#sim_ral_model_gen_automated" >}}
+[CSR_CHECK_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#csr_check_gen_automated" >}}
+[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb_gen_automated" >}}
+[SIM_SANITY_TEST_PASSING]:            {{<relref "/doc/project/checklist.md#sim_sanity_test_passing" >}}
+[SIM_CSR_MEM_TEST_SUITE_PASSING]:     {{<relref "/doc/project/checklist.md#sim_csr_mem_test_suite_passing" >}}
+[FPV_MAIN_ASSERTIONS_PROVEN]:         {{<relref "/doc/project/checklist.md#fpv_main_assertions_proven" >}}
+[SIM_ALT_TOOL_SETUP]:                 {{<relref "/doc/project/checklist.md#sim_alt_tool_setup" >}}
+[SIM_SANITY_REGRESSION_SETUP]:        {{<relref "/doc/project/checklist.md#sim_sanity_regression_setup" >}}
+[SIM_NIGHTLY_REGRESSION_SETUP]:       {{<relref "/doc/project/checklist.md#sim_nightly_regression_setup" >}}
+[FPV_REGRESSION_SETUP]:               {{<relref "/doc/project/checklist.md#fpv_regression_setup" >}}
+[SIM_COVERAGE_MODEL_ADDED]:           {{<relref "/doc/project/checklist.md#sim_coverage_model_added" >}}
+[PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
+[DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
+[DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
+[STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
+[V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 
 ### V2
  Type         | Item                                    | Resolution  | Note/Collaterals
@@ -159,32 +164,40 @@ Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
 Documentation | [DV_PLAN_COMPLETED][]                   | Not Started |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [TB_ENV_COMPLETED][]                    | Not Started |
-Tests         | [ALL_TESTS_PASSING][]                   | Not Started |
-Tests         | [FW_SIMULATED][]                        | Not Started |
-Regression    | [NIGHTLY_REGRESSION_V2][]               | Not Started |
-Coverage      | [CODE_COVERAGE_V2][]                    | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Not Started |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
+Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
+[DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all_interfaces_exercised" >}}
+[ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all_assertion_checks_added" >}}
+[SIM_TB_ENV_COMPLETED]:               {{<relref "/doc/project/checklist.md#sim_tb_env_completed" >}}
+[SIM_ALL_TESTS_PASSING]:              {{<relref "/doc/project/checklist.md#sim_all_tests_passing" >}}
+[FPV_ALL_ASSERTIONS_WRITTEN]:         {{<relref "/doc/project/checklist.md#fpv_all_assertions_written" >}}
+[FPV_ALL_ASSUMPTIONS_REVIEWED]:       {{<relref "/doc/project/checklist.md#fpv_all_assumptions_reviewed" >}}
+[SIM_FW_SIMULATED]:                   {{<relref "/doc/project/checklist.md#sim_fw_simulated" >}}
+[SIM_NIGHTLY_REGRESSION_V2]:          {{<relref "/doc/project/checklist.md#sim_nightly_regression_v2" >}}
+[SIM_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#sim_code_coverage_v2" >}}
+[SIM_FUNCTIONAL_COVERAGE_V2]:         {{<relref "/doc/project/checklist.md#sim_functional_coverage_v2" >}}
+[FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
+[FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
+[NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
+[ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
+[PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
+[V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
 
-[DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design-deltas-captured-v2" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv-plan-completed" >}}
-[ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all-interfaces-exercised" >}}
-[ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all-assertion-checks-added" >}}
-[TB_ENV_COMPLETED]:                   {{<relref "/doc/project/checklist.md#tb-env-completed" >}}
-[ALL_TESTS_PASSING]:                  {{<relref "/doc/project/checklist.md#all-tests-passing" >}}
-[FW_SIMULATED]:                       {{<relref "/doc/project/checklist.md#fw-simulated" >}}
-[NIGHTLY_REGRESSION_V2]:              {{<relref "/doc/project/checklist.md#nightly-regression-v2" >}}
-[CODE_COVERAGE_V2]:                   {{<relref "/doc/project/checklist.md#code-coverage-v2" >}}
-[FUNCTIONAL_COVERAGE_V2]:             {{<relref "/doc/project/checklist.md#functional-coverage-v2" >}}
-[NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no-high-priority-issues-pending" >}}
-[ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all-low-priority-issues-root-caused" >}}
-[PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v2" >}}
-[V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3-checklist-scoped" >}}
 
 ### V3
  Type         | Item                              | Resolution  | Note/Collaterals
@@ -192,20 +205,27 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not Started |
 Testbench     | [ALL_TODOS_RESOLVED][]            | Not Started |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not Started |
-Regression    | [NIGHTLY_REGRESSION_AT_100][]     | Not Started |
-Coverage      | [CODE_COVERAGE_AT_100][]          | Not Started |
-Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Not Started |
+Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not Started |
+Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not Started |
+Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not Started |
 Issues        | [NO_ISSUES_PENDING][]             | Not Started |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
+Review        | Reviewer(s)                       | Not Started |
+Review        | Signoff date                      | Not Started |
 
-[DESIGN_DELTAS_CAPTURED_V3]:    {{<relref "/doc/project/checklist.md#design-deltas-captured-v3" >}}
-[ALL_TODOS_RESOLVED]:           {{<relref "/doc/project/checklist.md#all-todos-resolved" >}}
-[X_PROP_ANALYSIS_COMPLETED]:    {{<relref "/doc/project/checklist.md#x-prop-analysis-completed" >}}
-[NIGHTLY_REGRESSION_AT_100]:    {{<relref "/doc/project/checklist.md#nightly-regression-at-100" >}}
-[CODE_COVERAGE_AT_100]:         {{<relref "/doc/project/checklist.md#code-coverage-at-100" >}}
-[FUNCTIONAL_COVERAGE_AT_100]:   {{<relref "/doc/project/checklist.md#functional-coverage-at-100" >}}
-[NO_ISSUES_PENDING]:            {{<relref "/doc/project/checklist.md#no-issues-pending" >}}
-[NO_TOOL_WARNINGS_THROWN]:      {{<relref "/doc/project/checklist.md#no-tool-warnings-thrown" >}}
-[PRE_VERIFIED_SUB_MODULES_V3]:  {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v3" >}}
-
+[DESIGN_DELTAS_CAPTURED_V3]:     {{<relref "/doc/project/checklist.md#design_deltas_captured_v3" >}}
+[ALL_TODOS_RESOLVED]:            {{<relref "/doc/project/checklist.md#all_todos_resolved" >}}
+[X_PROP_ANALYSIS_COMPLETED]:     {{<relref "/doc/project/checklist.md#x_prop_analysis_completed" >}}
+[FPV_ASSERTIONS_PROVEN_AT_V3]:   {{<relref "/doc/project/checklist.md#fpv_assertions_proven_at_v3" >}}
+[SIM_NIGHTLY_REGRESSION_AT_V3]:  {{<relref "/doc/project/checklist.md#sim_nightly_regression_at_v3" >}}
+[SIM_CODE_COVERAGE_AT_100]:      {{<relref "/doc/project/checklist.md#sim_code_coverage_at_100" >}}
+[SIM_FUNCTIONAL_COVERAGE_AT_100]:{{<relref "/doc/project/checklist.md#sim_functional_coverage_at_100" >}}
+[FPV_CODE_COVERAGE_AT_100]:      {{<relref "/doc/project/checklist.md#fpv_code_coverage_at_100" >}}
+[FPV_COI_COVERAGE_AT_100]:       {{<relref "/doc/project/checklist.md#fpv_coi_coverage_at_100" >}}
+[NO_ISSUES_PENDING]:             {{<relref "/doc/project/checklist.md#no_issues_pending" >}}
+[NO_TOOL_WARNINGS_THROWN]:       {{<relref "/doc/project/checklist.md#no_tool_warnings_thrown" >}}
+[PRE_VERIFIED_SUB_MODULES_V3]:   {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v3" >}}
