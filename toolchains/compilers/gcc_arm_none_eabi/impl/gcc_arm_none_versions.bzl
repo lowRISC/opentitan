@@ -20,6 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+_WINDOWS = {
+    "full_version": "9.2.1",
+    "remote_compiler": {
+        "url": "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-win32.zip?revision=95631fd0-0c29-41f4-8d0c-3702650bdd74&la=en&hash=D2C7F7C52183A8818AE6179AB87AA7CF6B1AE275",
+        "sha256": "49d6029ecd176deaa437a15b3404f54792079a39f3b23cb46381b0e6fbbe9070",
+        "strip_prefix": "",
+    },
+}
+
 _PLATFORM_SPECIFIC_CONFIGS_9 = {
     "linux": {
         "full_version": "9.2.1",
@@ -29,14 +38,9 @@ _PLATFORM_SPECIFIC_CONFIGS_9 = {
             "strip_prefix": "gcc-arm-none-eabi-9-2019-q4-major",
         },
     },
-    "windows": {
-        "full_version": "9.2.1",
-        "remote_compiler": {
-            "url": "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-win32.zip.bz2?revision=0dc1c4c9-8bba-4577-b57d-dc57d6f80c26&la=en&hash=F0B7C0475BA3213D5CC5DB576C75EC7D9BA3614A",
-            "sha256": "e4c964add8d0fdcc6b14f323e277a0946456082a84a1cc560da265b357762b62",
-            "strip_prefix": "",
-        },
-    },
+    "windows": _WINDOWS,
+    "windows server 2019": _WINDOWS,
+    "windows 10": _WINDOWS,
     "mac os x": {
         "full_version": "9.2.1",
         "remote_compiler": {
@@ -55,5 +59,5 @@ def get_platform_specific_config(version, os_name):
     if version not in TOOLCHAIN_VERSIONS:
         fail("Toolchain configuration not available for version: ", version)
     if os_name not in TOOLCHAIN_VERSIONS[version].keys():
-        fail("OS configuration not available for: ", os_name)
+        fail("OS configuration not available for: {}".format(os_name))
     return TOOLCHAIN_VERSIONS[version][os_name]

@@ -16,7 +16,7 @@ def ProccessResponse(shell_command_result):
     Returns:
         list: strings in the include path
     """
-    lines = shell_command_result.split("\n")
+    lines = shell_command_result.splitlines()
     filtered_lines = []
     start_of_includes_found = False
     for line in lines:

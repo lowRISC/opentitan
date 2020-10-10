@@ -1,4 +1,9 @@
 def _get_platform_specific_config(os_name):
+    _WINDOWS = {
+        "sha256": "1fb26bbcfd65dbabe747ce3c8467a1f1cece7253bde4a95de13c2267d422ed8b",
+        "prefix": "xpack-openocd-0.10.0-14",
+        "url": "https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.10.0-14/xpack-openocd-0.10.0-14-win32-x64.zip",
+    }
     _PLATFORM_SPECIFIC_CONFIGS = {
         "mac os x": {
             "sha256": "30917a5c6f60fcd7df82b41dcec8ab7d86f0cea3caeaf98b965b901c10a60b39",
@@ -10,6 +15,9 @@ def _get_platform_specific_config(os_name):
             "prefix": "xpack-openocd-0.10.0-14",
             "url": "https://github.com/xpack-dev-tools/openocd-xpack/releases/download/v0.10.0-14/xpack-openocd-0.10.0-14-linux-x64.tar.gz",
         },
+        "windows": _WINDOWS,
+        "windows server 2019": _WINDOWS,
+        "windows 10": _WINDOWS,
     }
     if os_name not in _PLATFORM_SPECIFIC_CONFIGS.keys():
         fail("OS configuration not available for:", os_name)
@@ -20,10 +28,10 @@ def _openocd_repository_impl(repository_ctx):
 
     config = _get_platform_specific_config(repository_ctx.os.name)
     prefix = config["prefix"]
-    repository_ctx.download(
+    repository_ctx.download_and_extract(
         url = config["url"],
         sha256 = config["sha256"],
-        output = tar_name,
+        stripPrefix = prefix,
     )
 
     # Bazel does not support unicode character targets in download and extract, so extraction happens as a seperate step and files containing unicode characters are removed
@@ -34,26 +42,10 @@ def _openocd_repository_impl(repository_ctx):
     /bin/mv {prefix}/* ./
     /bin/rm -r  {tar_name}
     """
-
-    # Adds variables to script
-    setup_script = setup_script_template.format(
-        tar_name = tar_name,
-        prefix = prefix,
-    )
-
-    # Create setup shell script in current directory
-    repository_ctx.file(
-        "setup.sh",
-        content = setup_script,
-        executable = True,
-    )
-
-    # Execute Setup script
-    result = repository_ctx.execute(["./setup.sh"])
-    if result.return_code != 0:
-        fail("Setup failed\n STDERR: %s\n STDOUT: %s\n" % (result.stderr, result.stdout))
-
-    repository_ctx.symlink("bin/openocd", "openocd")
+    executable_extension = ""
+    if "windows" in repository_ctx.os.name:
+        executable_extension = ".exe"
+    repository_ctx.symlink("bin/openocd"+ executable_extension, "openocd" )
 
     repository_ctx.file(
         "BUILD",

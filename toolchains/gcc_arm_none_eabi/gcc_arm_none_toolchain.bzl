@@ -56,37 +56,44 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
             name = "gcc",
-            path = "gcc_wrappers/gcc",
+            path = "gcc_wrappers/{os}/gcc",
         ),
         tool_path(
             name = "ld",
-            path = "gcc_wrappers/ld",
+            path = "gcc_wrappers/{os}/ld",
         ),
         tool_path(
             name = "ar",
-            path = "gcc_wrappers/ar",
+            path = "gcc_wrappers/{os}/ar",
         ),
         tool_path(
             name = "cpp",
-            path = "gcc_wrappers/cpp",
+            path = "gcc_wrappers/{os}/cpp",
         ),
         tool_path(
             name = "gcov",
-            path = "gcc_wrappers/gcov",
+            path = "gcc_wrappers/{os}/gcov",
         ),
         tool_path(
             name = "nm",
-            path = "gcc_wrappers/nm",
+            path = "gcc_wrappers/{os}/nm",
         ),
         tool_path(
             name = "objdump",
-            path = "gcc_wrappers/objdump",
+            path = "gcc_wrappers/{os}/objdump",
         ),
         tool_path(
             name = "strip",
-            path = "gcc_wrappers/strip",
+            path = "gcc_wrappers/{os}/strip",
         ),
     ]
+    os = "nix"
+    postfix = ""
+    if ctx.host_configuration.host_path_separator == ";":
+        os = "windows"
+        postfix = ".bat"
+    tool_paths = [tool_path(name = t.name, path = t.path.format(os = os) + postfix) for t in tool_paths]
+
     common_features = GetCommonFeatures(
         compiler = "GCC",
         architecture = ctx.attr.architecture,
@@ -213,6 +220,14 @@ gcc_arm_none_toolchain_config = rule(
         "_gcc_wrappers": attr.label(
             doc = "Passthrough gcc wrappers used for the compiler",
             default = "//toolchains/gcc_arm_none_eabi/gcc_wrappers:all",
+        ),
+        "_host_platform": attr.label(
+            default = "@local_config_platform//:host",
+            providers = [platform_common.PlatformInfo],
+        ),
+        "_os": attr.label(
+            default = "@platforms//os",
+            providers = [platform_common.ConstraintSettingInfo],
         ),
     },
     provides = [CcToolchainConfigInfo],

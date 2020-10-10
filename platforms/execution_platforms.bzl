@@ -1,2 +1,2 @@
 def register_platforms():
-    native.register_execution_platforms("@bazel_embedded//platforms:all")
+    native.register_execution_platforms("@local_config_platform//:host","@bazel_embedded//platforms:all")
