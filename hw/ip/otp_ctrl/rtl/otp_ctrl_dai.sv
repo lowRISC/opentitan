@@ -685,7 +685,7 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoErr, OtpReadCorrErr})
+      !(otp_err_i inside {NoErr, OtpReadCorrErr, OtpWriteBlankErr})
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 
