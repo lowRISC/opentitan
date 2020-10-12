@@ -104,21 +104,21 @@ module tlul_socket_1n #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      num_req_outstanding <= 8'h0;
+      num_req_outstanding <= '0;
       dev_select_outstanding <= '0;
     end else if (accept_t_req) begin
       if (!accept_t_rsp) begin
         `ASSERT_I(NotOverflowed_A, num_req_outstanding < MaxOutstanding)
-        num_req_outstanding <= num_req_outstanding + 8'h1;
+        num_req_outstanding <= num_req_outstanding + 1'b1;
       end
       dev_select_outstanding <= dev_select_t;
     end else if (accept_t_rsp) begin
-      num_req_outstanding <= num_req_outstanding - 8'h1;
+      num_req_outstanding <= num_req_outstanding - 1'b1;
     end
   end
 
   assign hold_all_requests =
-      (num_req_outstanding != 8'h0) &
+      (num_req_outstanding != '0) &
       (dev_select_t != dev_select_outstanding);
 
   // Make N copies of 't' request side with modified reqvalid, call
