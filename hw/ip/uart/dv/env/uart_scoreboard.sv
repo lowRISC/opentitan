@@ -224,6 +224,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           end
           fork begin
             int loc_tx_q_size = tx_q.size();
+            // remove 1 when it's abort to be popped for transfer
+            if (tx_enabled && tx_processing_item_q.size == 0 && tx_q.size > 0) loc_tx_q_size--;
             // use negedge to avoid race condition
             cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
