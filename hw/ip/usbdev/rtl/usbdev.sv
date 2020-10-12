@@ -87,9 +87,6 @@ module usbdev (
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 4;
 
-  // Number of endpoints
-  localparam int NEndpoints = usbdev_reg_pkg::NEndpoints;
-
   usbdev_reg2hw_t reg2hw;
   usbdev_hw2reg_t hw2reg;
 

@@ -4,3 +4,7 @@
 //
 // waiver file for usbdev
 
+`verilator_config
+
+// The TL-UL socket outputs the full 32 bits of write data to both the register interface and the SRAM window, but only the SRAM window uses the full width.
+lint_off -rule UNUSED -file "*/rtl/usbdev_reg_top.sv" -match "Bits of signal are not used: 'reg_wdata'[29:23]"

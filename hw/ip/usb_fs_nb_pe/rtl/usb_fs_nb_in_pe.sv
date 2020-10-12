@@ -142,7 +142,8 @@ module usb_fs_nb_in_pe #(
   assign in_ep_index   = in_ep_current_o[0 +: InEpW];
   assign in_ep_index_d = in_ep_current_d[0 +: InEpW];
 
-  assign more_data_to_send = ep_impl_q & in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
+  assign more_data_to_send = ep_impl_q &
+      in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
 
   assign tx_data_avail_o = logic'(in_xfr_state == StSendData) & more_data_to_send;
 
