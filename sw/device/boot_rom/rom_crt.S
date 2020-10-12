@@ -6,12 +6,12 @@
  * Boot ROM runtime initialization code.
  */
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section 
+  // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
 
 /**
- * Entry point after reset. This symbol is jumped to from the handler 
+ * Entry point after reset. This symbol is jumped to from the handler
  * for IRQ 0x80.
  *
  * Sets up the stack, then jumps to `_start`.
@@ -52,7 +52,7 @@ _reset_start:
   li  x31, 0x0
 
   // Set up the stack.
-  la  sp, _stack_start
+  la  sp, _stack_end
 
   // Set up the global pointer. This requires that we disable linker relaxations
   // (or it will be relaxed to `mv gp, gp`).
@@ -89,9 +89,9 @@ bss_zero_loop_end:
   //
   // We use `t0` and `t1` to represent the start and end pointers of the stack.
   // As the stack grows downwards and we zero going forwards the start pointer
-  // starts as _stack_end and the end pointer at _stack_start
-  la   t0, _stack_end
-  la   t1, _stack_start
+  // starts as _stack_start and the end pointer at _stack_end.
+  la   t0, _stack_start
+  la   t1, _stack_end
   bgeu t0, t1, stack_zero_loop_end
 stack_zero_loop:
   sw    zero, 0(t0)
@@ -100,7 +100,7 @@ stack_zero_loop:
 stack_zero_loop_end:
 
   // Initialize the `.data` segment from the `.idata` segment.
-  // 
+  //
   // We use `t0` and `t1` to represent the start and end pointers
   // of `.data`, `t2` to represent the start pointer of `.idata`
   // (which has the same length as `.data`) and `t3` is a scratch
@@ -125,7 +125,7 @@ data_copy_loop_end:
 
   // Jump into the C program entry point.
   call _boot_start
-  
+
   // Loop forever if _boot_start somehow returns.
 1:
   wfi

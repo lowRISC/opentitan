@@ -24,12 +24,10 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _boot_address = ORIGIN(rom);
 
-/* Reserving 32 bytes at the top of the RAM for test utils. */
-_test_reserved_size = 0x20;
 _heap_size = 0xe000;
-_stack_size = 0x2000 - _test_reserved_size;
-_stack_start = ORIGIN(ram_main) + _heap_size + _stack_size;
-_stack_end   = ORIGIN(ram_main) + _heap_size;
+_stack_size = LENGTH(ram_main) - _heap_size;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
 _flash_start = ORIGIN(eflash);
 
 /**

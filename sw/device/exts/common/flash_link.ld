@@ -21,16 +21,13 @@ __DYNAMIC = 0;
  */
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
-/* Reserving 32 bytes at the top of the RAM for test utils. */
-_test_reserved_size = 0x20;
-
 /**
- * The stack starts at the end of RAM right after the 32 reserved bytes and grows down.
+/* Reserving space at the top of the RAM for the stack.
  * It is zeroed out so a size must be provided.
  */
-_stack_size = 0x2000 - _test_reserved_size; /* ~8kb stack */
-_stack_start = ORIGIN(ram_main) + LENGTH(ram_main) - _test_reserved_size;
-_stack_end = _stack_start - _stack_size;
+_stack_size = 0x2000;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
 
 SECTIONS {
   /**

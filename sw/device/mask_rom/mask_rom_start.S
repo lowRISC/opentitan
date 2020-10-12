@@ -147,7 +147,7 @@ _mask_rom_start_boot:
   //
   // If an exception fires, the handler is conventionaly only allowed to clobber
   // memory at addresses below `sp`.
-  la   sp, _stack_start
+  la   sp, _stack_end
 
   /**
    * Set well-defined interrupt/exception handlers

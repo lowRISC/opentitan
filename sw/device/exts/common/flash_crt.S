@@ -33,7 +33,7 @@ _start:
 
   // Set up the stack. We have no expectation that the rom that
   // jumps here will have the correct stack start linked in.
-  la sp, _stack_start
+  la sp, _stack_end
 
   // Set up the global pointer. This requires that we disable linker relaxations
   // (or it will be relaxed to `mv gp, gp`).
@@ -63,9 +63,9 @@ bss_zero_loop_end:
   //
   // We use `t0` and `t1` to represent the start and end pointers of the stack.
   // As the stack grows downwards and we zero going forwards the start pointer
-  // starts as _stack_end and the end pointer at _stack_start.
-  la   t0, _stack_end
-  la   t1, _stack_start
+  // starts as _stack_start and the end pointer at _stack_end.
+  la   t0, _stack_start
+  la   t1, _stack_end
   bgeu t0, t1, stack_zero_loop_end
 stack_zero_loop:
   sw    zero, 0(t0)

@@ -24,14 +24,9 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _mask_rom_boot_address = ORIGIN(rom);
 
-/* Reserving 32 bytes at the top of the RAM for test utils. */
-_test_reserved_size  = 0x20;
-_test_reserved_end   = ORIGIN(ram_main) + LENGTH(ram_main);
-_test_reserved_start = _test_reserved_end - _test_reserved_size;
-
-/* Reserving space near the top of the RAM for the stack. */
-_stack_size  = 0x2000 - _test_reserved_size;
-_stack_end   = _test_reserved_start;
+/* Reserving space at the top of the RAM for the stack. */
+_stack_size = 0x2000;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
 
 /* Reserving 128 bytes at the top of ROM for chip info */
