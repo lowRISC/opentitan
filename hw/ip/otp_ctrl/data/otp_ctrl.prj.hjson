@@ -9,7 +9,7 @@
     hw_checklist:       "hw/ip/otp_ctrl/doc/checklist",
     sw_checklist:       ""
     version:            "0.1",
-    life_stage:         "L0",
+    life_stage:         "L1",
     design_stage:       "D1",
     verification_stage: "V0",
     notes:              "",
