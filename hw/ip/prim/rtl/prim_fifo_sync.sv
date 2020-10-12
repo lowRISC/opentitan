@@ -83,7 +83,7 @@ module prim_fifo_sync #(
       end else if (clr_i) begin
         fifo_wptr <= {(PTR_WIDTH){1'b0}};
       end else if (fifo_incr_wptr) begin
-        if (fifo_wptr[PTR_WIDTH-2:0] == (Depth-1)) begin
+        if (fifo_wptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
           fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
         end else begin
           fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
@@ -97,7 +97,7 @@ module prim_fifo_sync #(
       end else if (clr_i) begin
         fifo_rptr <= {(PTR_WIDTH){1'b0}};
       end else if (fifo_incr_rptr) begin
-        if (fifo_rptr[PTR_WIDTH-2:0] == (Depth-1)) begin
+        if (fifo_rptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
           fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
         end else begin
           fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
