@@ -1,0 +1,42 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Rules for svlint, a SystemVerilog linter commonly used in editors.
+# The configuration matches the lowRISC SystemVerilog style guide at
+# https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md.
+# See https://github.com/dalance/svlint/blob/master/RULES.md for a list of rules.
+
+[option]
+exclude_paths = ["build.*", "sw/.*", ".sv.tpl$"]
+
+[rules]
+case_default = true
+enum_with_type = true
+for_with_begin = true
+function_same_as_system_function = true
+function_with_automatic = true
+generate_for_with_label = true
+generate_if_with_label = true
+generate_keyword_forbidden = true
+generate_keyword_required = false
+genvar_declaration_in_loop = true
+genvar_declaration_out_loop = false
+if_with_begin = true
+inout_with_tri = false
+input_with_var = false
+interface_port_with_modport = false
+legacy_always = false
+level_sensitive_always = true
+loop_variable_declaration = true
+non_ansi_module = true
+output_with_var = false
+parameter_in_package = false
+priority_keyword = true
+tab_character = true
+unique0_keyword = false
+unique_keyword = false
+wire_reg = true
+generate_keyword = false
+tab_charactor = false
+genvar_declaration = false
