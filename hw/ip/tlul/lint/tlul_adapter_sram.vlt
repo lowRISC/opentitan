@@ -2,3 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+
+`verilator_config
+
+// This signal is only used by an assertion.
+lint_off -rule UNUSED -file "*/rtl/tlul_adapter_sram.sv" -match "Signal is not used: 'rspfifo_wready'"

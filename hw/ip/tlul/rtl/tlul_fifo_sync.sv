@@ -7,8 +7,8 @@
 // and one for the response side.
 
 module tlul_fifo_sync #(
-  parameter int unsigned ReqPass  = 1'b1,
-  parameter int unsigned RspPass  = 1'b1,
+  parameter bit          ReqPass = 1'b1,
+  parameter bit          RspPass = 1'b1,
   parameter int unsigned ReqDepth = 2,
   parameter int unsigned RspDepth = 2,
   parameter int unsigned SpareReqW = 1,

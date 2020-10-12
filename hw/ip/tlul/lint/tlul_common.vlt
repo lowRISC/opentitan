@@ -7,3 +7,7 @@
 // TLUL Error
 // All error checkings are comb logic and only portion of signals are used
 lint_off -rule UNUSED -file "*/rtl/tlul_err.sv"
+
+// FIFOs
+// The depth parameters are of type int unsigned, but the higher-level modules can extract the per-port FIFO depths from a M|N x 4 bit array and drive the LSBs only.
+lint_off -rule WIDTH -file "*/rtl/tlul_fifo_sync.sv" -match "Operator VAR '*Depth' expects 32 bits on the Initial value, but Initial value's CONST '*' generates 4 bits."
