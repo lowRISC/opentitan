@@ -9,7 +9,7 @@ from signal import SIGINT, signal
 import threading
 
 from utils import VERBOSE
-from Deploy import Deploy, DeployError
+from Deploy import DeployError
 from Timer import Timer
 
 
@@ -89,10 +89,9 @@ class TargetScheduler:
 
         '''
         num_slots = min(Scheduler.slot_limit,
-                        Scheduler.max_parallel - Deploy.dispatch_counter,
+                        Scheduler.max_parallel - len(self._running),
                         len(self._queued))
-
-        if not num_slots:
+        if num_slots <= 0:
             return
 
         to_dispatch = []

@@ -26,9 +26,6 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
-    # Maintain a list of dispatched items.
-    dispatch_counter = 0
-
     # Misc common deploy settings.
     max_odirs = 5
 
@@ -272,7 +269,6 @@ class Deploy():
                                             stderr=f,
                                             env=exports)
             self.log_fd = f
-            Deploy.dispatch_counter += 1
         except IOError:
             if self.log_fd:
                 self.log_fd.close()
@@ -415,7 +411,6 @@ class Deploy():
         status = 'P' if self._test_passed() else 'F'
 
         log.debug("Item %s has completed execution: %s", self.name, status)
-        Deploy.dispatch_counter -= 1
         self._on_finish(status)
 
         del self.process
