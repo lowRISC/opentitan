@@ -180,7 +180,7 @@ module prim_fifo_async #(
     logic [PTR_WIDTH-2:0] decval_in;
     logic                 unused_decval_msb;
 
-    decval_sub = Depth - {1'b0,decval[PTR_WIDTH-2:0]} - 1'b1;
+    decval_sub = (PTR_WIDTH)'(Depth) - {1'b0, decval[PTR_WIDTH-2:0]} - 1'b1;
 
     {unused_decval_msb, decval_in} = decval[PTR_WIDTH-1] ? decval_sub : decval;
     // Was done in two assigns for low bits and top bit
@@ -196,7 +196,7 @@ module prim_fifo_async #(
     dec_tmp[PTR_WIDTH-2] = grayval[PTR_WIDTH-2];
     for (int i = PTR_WIDTH-3; i >= 0; i--)
       dec_tmp[i] = dec_tmp[i+1]^grayval[i];
-    {unused_decsub_msb, dec_tmp_sub} = Depth - {1'b0,dec_tmp} - 1'b1;
+    {unused_decsub_msb, dec_tmp_sub} = (PTR_WIDTH-1)'(Depth) - {1'b0, dec_tmp} - 1'b1;
     if (grayval[PTR_WIDTH-1])
       gray2dec = {1'b1,dec_tmp_sub};
     else
