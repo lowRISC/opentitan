@@ -4,24 +4,29 @@
 
 // UVM speficic macros
 `ifndef gfn
+  // verilog_lint: waive macro-name-style
   `define gfn get_full_name()
 `endif
 
 `ifndef gtn
+  // verilog_lint: waive macro-name-style
   `define gtn get_type_name()
 `endif
 
 `ifndef gn
+  // verilog_lint: waive macro-name-style
   `define gn get_name()
 `endif
 
 `ifndef gmv
+  // verilog_lint: waive macro-name-style
   `define gmv(csr) csr.get_mirrored_value()
 `endif
 
 // cast base class obj holding extended class handle to extended class handle;
 // throw error if cast fails
 `ifndef downcast
+  // verilog_lint: waive macro-name-style
   `define downcast(EXT_, BASE_, MSG_="", SEV_=fatal, ID_=`gfn) \
     begin \
       if (!$cast(EXT_, BASE_)) begin \
