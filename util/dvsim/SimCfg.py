@@ -69,10 +69,6 @@ class Results:
         if item.target == "run":
             self._add_run(item)
 
-        # Recurse to any sub-items
-        for child in item.sub:
-            self._add_item(child)
-
     def _add_run(self, item):
         '''Add an entry to table for item'''
         row = self._name_to_row.get(item.name)
@@ -485,27 +481,27 @@ class SimCfg(FlowCfg):
         tests A, B with reseed values of 5 and 2, respectively, then the list
         will be ABABAAA).
 
-        build_map is a dictionary from build name to a CompileSim object. Each
-        test is added to the CompileSim item that it depends on (signifying
-        that the test should be built once the build on which it depends is
-        done).
+        build_map is either None or a dictionary from build name to a
+        CompileSim object. If None, this means that we're in "run only" mode,
+        so there are no builds involved at all. Otherwise, the build_mode of
+        each appears in the map to signify the test's dependency on its
+        corresponding CompileSim item (test cannot run until it has been
+        compiled).
+
         '''
         tagged = []
         for test in self.run_list:
+            build_job = (build_map[test.build_mode]
+                         if build_map is not None else None)
             for idx in range(test.reseed):
-                tagged.append((idx, test, RunTest(idx, test, self)))
+                tagged.append((idx, RunTest(idx, test, build_job, self)))
 
         # Stably sort the tagged list by the 1st coordinate
         tagged.sort(key=lambda x: x[0])
 
-        # Now iterate over it again, adding tests to build_map (in the
-        # interleaved order) and collecting up the RunTest objects.
-        runs = []
-        for _, test, run in tagged:
-            build_map[test.build_mode].sub.append(run)
-            runs.append(run)
-
-        return runs
+        # Return the sorted list of RunTest objects, discarding the indices by
+        # which we sorted it.
+        return [run for _, run in tagged]
 
     def _create_deploy_objects(self):
         '''Create deploy objects from the build and run lists.
@@ -514,44 +510,48 @@ class SimCfg(FlowCfg):
         # Create the build and run list first
         self._create_build_and_run_list()
 
-        self.builds = []
-        build_map = {}
-        for build_mode_obj in self.build_list:
-            new_build = CompileSim(build_mode_obj, self)
+        if self.run_only:
+            self.builds = []
+            self.runs = self._expand_run_list(None)
+        else:
+            self.builds = []
+            build_map = {}
+            for build_mode_obj in self.build_list:
+                new_build = CompileSim(build_mode_obj, self)
 
-            # It is possible for tests to supply different build modes, but
-            # those builds may differ only under specific circumstances, such
-            # as coverage being enabled. If coverage is not enabled, then they
-            # may be completely identical. In that case, we can save compute
-            # resources by removing the extra duplicated builds. We discard the
-            # new_build if it is equivalent to an existing one.
-            is_unique = True
-            for build in self.builds:
-                if build.is_equivalent_job(new_build):
-                    new_build = build
-                    is_unique = False
-                    break
+                # It is possible for tests to supply different build modes, but
+                # those builds may differ only under specific circumstances,
+                # such as coverage being enabled. If coverage is not enabled,
+                # then they may be completely identical. In that case, we can
+                # save compute resources by removing the extra duplicated
+                # builds. We discard the new_build if it is equivalent to an
+                # existing one.
+                is_unique = True
+                for build in self.builds:
+                    if build.is_equivalent_job(new_build):
+                        new_build = build
+                        is_unique = False
+                        break
 
-            if is_unique:
-                self.builds.append(new_build)
-            build_map[build_mode_obj] = new_build
+                if is_unique:
+                    self.builds.append(new_build)
+                build_map[build_mode_obj] = new_build
 
-        # Update all tests to use the updated (uniquified) build modes.
-        for test in self.run_list:
-            if test.build_mode.name != build_map[test.build_mode].name:
-                test.build_mode = Modes.find_mode(
-                    build_map[test.build_mode].name, self.build_modes)
+            # Update all tests to use the updated (uniquified) build modes.
+            for test in self.run_list:
+                if test.build_mode.name != build_map[test.build_mode].name:
+                    test.build_mode = Modes.find_mode(
+                        build_map[test.build_mode].name, self.build_modes)
 
-        self.runs = ([]
-                     if self.build_only else self._expand_run_list(build_map))
+            self.runs = ([] if self.build_only
+                         else self._expand_run_list(build_map))
 
-        self.deploy = self.runs if self.run_only else self.builds
+        self.deploy = self.builds + self.runs
 
         # Create cov_merge and cov_report objects
         if self.cov:
             self.cov_merge_deploy = CovMerge(self)
-            self.cov_report_deploy = CovReport(self)
-            self.cov_merge_deploy.sub.append(self.cov_report_deploy)
+            self.cov_report_deploy = CovReport(self.cov_merge_deploy, self)
 
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()
@@ -566,6 +566,7 @@ class SimCfg(FlowCfg):
             for item in self.cfgs:
                 if item.cov:
                     self.cov_deploys.append(item.cov_merge_deploy)
+                    self.cov_deploys.append(item.cov_report_deploy)
 
     # deploy additional commands as needed. We do this separated for coverage
     # since that needs to happen at the end.

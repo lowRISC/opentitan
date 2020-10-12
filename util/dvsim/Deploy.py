@@ -32,17 +32,10 @@ class Deploy():
     # be joined with '&&' instead of a space.
     cmds_list_vars = []
 
-    def __self_str__(self):
-        if log.getLogger().isEnabledFor(VERBOSE):
-            return pprint.pformat(self.__dict__)
-        else:
-            ret = self.cmd
-            if self.sub != []:
-                ret += "\nSub:\n" + str(self.sub)
-            return ret
-
     def __str__(self):
-        return self.__self_str__()
+        return (pprint.pformat(self.__dict__)
+                if log.getLogger().isEnabledFor(VERBOSE)
+                else self.cmd)
 
     def __init__(self, sim_cfg):
         '''Initialize common class members.'''
@@ -67,8 +60,8 @@ class Deploy():
         # List of vars required to be exported to sub-shell
         self.exports = None
 
-        # Deploy sub commands
-        self.sub = []
+        # A list of jobs on which this job depends
+        self.dependencies = []
 
         # Process
         self.process = None
@@ -382,12 +375,6 @@ class Deploy():
                     self.status = 'F'
                     break
 
-    # Recursively set sub-item's status if parent item fails
-    def set_sub_status(self, status):
-        for sub_item in self.sub:
-            sub_item.status = status
-            sub_item.set_sub_status(status)
-
     def link_odir(self):
         if self.status == '.':
             log.error("Method unexpectedly called!")
@@ -429,10 +416,6 @@ class Deploy():
             if self.log_fd:
                 self.log_fd.close()
             self.status = "K"
-        # recurisvely kill sub target
-        elif len(self.sub):
-            for item in self.sub:
-                item.kill()
 
     def kill_remote_job(self):
         '''
@@ -585,7 +568,7 @@ class RunTest(Deploy):
 
     cmds_list_vars = ["pre_run_cmds", "post_run_cmds"]
 
-    def __init__(self, index, test, sim_cfg):
+    def __init__(self, index, test, build_job, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
 
@@ -614,6 +597,9 @@ class RunTest(Deploy):
             "run_pass_patterns": False,
             "run_fail_patterns": False
         })
+
+        if build_job is not None:
+            self.dependencies.append(build_job)
 
         self.index = index
         self.seed = RunTest.get_seed()
@@ -810,9 +796,11 @@ class CovReport(Deploy):
     # Register all builds with the class
     items = []
 
-    def __init__(self, sim_cfg):
+    def __init__(self, merge_job, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
+
+        self.dependencies.append(merge_job)
 
         self.target = "cov_report"
         self.pass_patterns = []

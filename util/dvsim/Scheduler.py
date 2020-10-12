@@ -105,17 +105,11 @@ class Scheduler:
                 continue
 
             if item.status != "P":
-                # Kill its sub items if item did not pass.
-                item.set_sub_status("K")
                 log.error("[%s]: [%s]: [status] [%s: %s]",
                           hms, item.target, item.identifier, item.status)
             else:
                 log.log(VERBOSE, "[%s]: [%s]: [status] [%s: %s]",
                         hms, item.target, item.identifier, item.status)
-
-            # Queue items' sub-items if it is done.
-            for sub_item in item.sub:
-                self.add_item(sub_item)
 
         return status_changed
 
@@ -127,12 +121,48 @@ class Scheduler:
         if not num_slots:
             return
 
-        items = self.queued_items[0:num_slots]
-        self.queued_items = self.queued_items[num_slots:]
-        self.dispatched_items.extend(items)
+        # We only dispatch things for one target at once.
+        cur_tgt = None
+        for item in self.dispatched_items:
+            if item.status == 'D':
+                cur_tgt = item.target
+                break
+
+        to_dispatch = []
+        while len(to_dispatch) < num_slots and self.queued_items:
+            next_item = self.queued_items[0]
+
+            # Keep track of the current target to make sure we dispatch things
+            # in phases.
+            if cur_tgt is None:
+                cur_tgt = next_item.target
+            if next_item.target != cur_tgt:
+                break
+
+            self.queued_items = self.queued_items[1:]
+
+            # Does next_item have any dependencies? Since we dispatch jobs by
+            # "target", we can assume that each of those dependencies appears
+            # earlier in the list than we do.
+            has_failed_dep = False
+            for dep in next_item.dependencies:
+                assert dep.status in ['P', 'F', 'K']
+                if dep.status in ['F', 'K']:
+                    has_failed_dep = True
+                    break
+
+            # If has_failed_dep then at least one of the dependencies has been
+            # cancelled or has run and failed. Give up on this item too.
+            if has_failed_dep:
+                next_item.status = 'K'
+                continue
+
+            to_dispatch.append(next_item)
+
+        self.dispatched_items.extend(to_dispatch)
 
         tgt_names = OrderedDict()
-        for item in items:
+        for item in to_dispatch:
             if item.status is None:
                 tgt_names.setdefault(item.target, []).append(item.identifier)
                 item.dispatch_cmd()
@@ -155,20 +185,26 @@ class Scheduler:
         hms = self.timer.hms()
 
         all_done = True
+        printed_something = False
         for target, tgt_status in self.status.items():
             was_done = tgt_status.done
             tgt_status.check_if_done()
             is_done = tgt_status.done
+            all_queued = tgt_status.counters['Q'] == tgt_status.counters['T']
 
             all_done &= is_done
 
-            if print_status and not (was_done and is_done):
+            should_print = (print_status and
+                            not (was_done and is_done) and
+                            not (printed_something and all_queued))
+            if should_print:
                 stats = tgt_status.counters
                 width = "0{}d".format(len(str(stats["T"])))
                 msg = "["
                 for s in stats.keys():
                     msg += s + ": {:{}}, ".format(stats[s], width)
                 msg = msg[:-2] + "]"
+                printed_something = True
                 log.info("[%s]: [%s]: %s", hms, target, msg)
         return all_done
 
