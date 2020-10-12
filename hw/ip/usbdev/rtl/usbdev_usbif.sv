@@ -113,7 +113,7 @@ module usbdev_usbif  #(
   logic                              sof_valid;
 
   // Make sure out_endpoint_o can safely be used to index signals of NEndpoints width.
-  assign out_endpoint_val_o = out_ep_current < NEndpoints;
+  assign out_endpoint_val_o = int'(out_ep_current) < NEndpoints;
   assign out_endpoint_o     = out_endpoint_val_o ? out_ep_current : '0;
 
   assign link_reset_o   = link_reset;
@@ -128,9 +128,9 @@ module usbdev_usbif  #(
       // In the normal case <MaxPktSizeByte this is out_max_used_q <= out_ep_put_addr
       // Following all ones out_max_used_q will get 1,00..00 and 1,00..01 to cover
       // one and two bytes of the CRC overflowing, then stick at 1,00..01
-      if (out_max_used_q < MaxPktSizeByte - 1) begin
+      if (int'(out_max_used_q) < MaxPktSizeByte - 1) begin
         out_max_used_d = {1'b0, out_ep_put_addr};
-      end else if (out_max_used_q < MaxPktSizeByte + 1) begin
+      end else if (int'(out_max_used_q) < MaxPktSizeByte + 1) begin
         out_max_used_d = out_max_used_q + 1;
       end else begin
         out_max_used_d = out_max_used_q;
@@ -143,7 +143,7 @@ module usbdev_usbif  #(
 
   // don't write if the address has wrapped (happens for two CRC bytes after max data)
   logic std_write_d, std_write_q;
-  assign std_write_d = out_ep_data_put & ((out_max_used_q < MaxPktSizeByte - 1) &
+  assign std_write_d = out_ep_data_put & ((int'(out_max_used_q) < MaxPktSizeByte - 1) &
       (out_ep_put_addr[1:0] == 2'b11));
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
@@ -230,7 +230,7 @@ module usbdev_usbif  #(
   logic [3:0]            in_ep_current;
 
   // Make sure in_endpoint_o can safely be used to index signals of NEndpoints width.
-  assign in_endpoint_val_o = in_ep_current < NEndpoints;
+  assign in_endpoint_val_o = int'(in_ep_current) < NEndpoints;
   assign in_endpoint_o     = in_endpoint_val_o ? in_ep_current : '0;
 
   // The protocol engine will automatically generate done for a full-length packet

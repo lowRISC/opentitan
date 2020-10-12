@@ -3,3 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for usbdev
+
+waive -rules HIER_NET_NOT_READ -regexp {Net 'reg_wdata\[[0-9]+:[0-9]+\]' is not read from in module 'usbdev_reg_top'} \
+      -comment "The TL-UL socket outputs the full 32 bits of write data to both the register interface and the SRAM window, but only the SRAM window uses the full width."
+waive -rules NOT_READ -regexp {Signal 'reg_wdata\[[0-9]+:[0-9]+\]' is not read from in module 'usbdev_reg_top'} \
+      -comment "The TL-UL socket outputs the full 32 bits of write data to both the register interface and the SRAM window, but only the SRAM window uses the full width."
