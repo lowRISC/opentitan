@@ -13,10 +13,9 @@ filesets:
       - lowrisc:dv:jtag_agent
       - lowrisc:dv:spi_agent
       - lowrisc:dv:mem_bkdr_if
+      - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
     files:
-      - sw_test_status_pkg.sv
-      - sw_test_status_if.sv
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
       - chip_env_cov.sv: {is_include_file: true}

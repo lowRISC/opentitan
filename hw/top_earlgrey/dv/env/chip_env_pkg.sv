@@ -29,9 +29,10 @@ package chip_env_pkg;
   parameter uint NUM_GPIOS = 16;
   parameter uint SPI_FRAME_BYTE_SIZE = 1024;
 
-  // SW constants
-  parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR = 32'h1000fffc;
-  parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR = 32'h1000fff8;
+  // SW constants - use unmapped address space with at least 32 bytes.
+  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = 32'h3000_0000;
+  parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR  = SW_DV_START_ADDR + 0;
+  parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual mem_bkdr_if           mem_bkdr_vif;
