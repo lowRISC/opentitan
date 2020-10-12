@@ -234,45 +234,48 @@ module top_earlgrey_verilator (
   assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
   assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
 
-  // monitor for termination
-`ifndef END_MON_PATH
-  `define END_MON_PATH top_earlgrey.u_ram1p_ram_main
-`endif
+  `define RV_CORE_IBEX      top_earlgrey.u_rv_core_ibex
+  `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
+  `define SW_TEST_STATUS_IF `SIM_SRAM_IF.u_sw_test_status_if
 
-  logic valid;
-  logic [31:0] addr;
-  logic end_valid;
+  // Detect SW test termination.
+  sim_sram u_sim_sram (
+    .clk_i    (`RV_CORE_IBEX.clk_i),
+    .rst_ni   (`RV_CORE_IBEX.rst_ni),
+    .tl_in_i  (`RV_CORE_IBEX.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (`RV_CORE_IBEX.tl_d_i)
+  );
 
-  // mem address in design is offset from base, re-create the full address here
-  assign addr = `VERILATOR_MEM_BASE + {`END_MON_PATH.addr_i, 2'h0};
-  assign valid = `END_MON_PATH.req_i & `END_MON_PATH.write_i & `END_MON_PATH.rst_ni;
-  assign end_valid = valid & (addr == `VERILATOR_END_SIM_ADDR);
+  // Connect the sim SRAM directly inside rv_core_ibex.
+  assign `RV_CORE_IBEX.tl_d_i_int = u_sim_sram.tl_in_o;
+  assign `RV_CORE_IBEX.tl_d_o     = u_sim_sram.tl_out_o;
 
-  always_ff @(posedge clk_i) begin
-    if (end_valid) begin
+  // Bind the SW test status interface directly to the sim SRAM interface.
+  bind sim_sram_if sw_test_status_if u_sw_test_status_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data[15:0]),
+    .*
+  );
+
+  // Set the start address of the simulation SRAM.
+  // Use offset 0 within the sim SRAM for SW test status indication.
+  initial begin
+    `SIM_SRAM_IF.start_addr = `VERILATOR_TEST_STATUS_ADDR;
+    `SW_TEST_STATUS_IF.sw_test_status_addr = `SIM_SRAM_IF.start_addr;
+  end
+
+  always @(posedge clk_i) begin
+    if (`SW_TEST_STATUS_IF.sw_test_done) begin
       $display("Verilator sim termination requested");
-      $display("Your simulation wrote to 0x%h", `VERILATOR_END_SIM_ADDR);
+      $display("Your simulation wrote to 0x%h", `SW_TEST_STATUS_IF.sw_test_status_addr);
       $finish;
     end
   end
 
-`ifdef RV_CORE_IBEX_SIM_SRAM
-  sim_sram u_sim_sram (
-    .clk_i    (top_earlgrey.u_rv_core_ibex.clk_i),
-    .rst_ni   (top_earlgrey.u_rv_core_ibex.rst_ni),
-    .tl_in_i  (top_earlgrey.u_rv_core_ibex.tl_d_o_int),
-    .tl_in_o  (),
-    .tl_out_o (),
-    .tl_out_i (top_earlgrey.u_rv_core_ibex.tl_d_i)
-  );
-
-  assign top_earlgrey.u_rv_core_ibex.tl_d_i_int = u_sim_sram.tl_in_o;
-  assign top_earlgrey.u_rv_core_ibex.tl_d_o     = u_sim_sram.tl_out_o;
-
-  initial begin
-    // Set the start address of the simulation SRAM.
-    u_sim_sram.u_sim_sram_if.start_addr = 32'h3000_0000;
-  end
-`endif
+  `undef RV_CORE_IBEX
+  `undef SIM_SRAM_IF
+  `undef SW_TEST_STATUS_IF
 
 endmodule
