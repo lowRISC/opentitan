@@ -52,24 +52,25 @@ class Results:
     self.fail_msgs is a list of error messages, one per failing run.
 
     '''
-    def __init__(self, items):
+    def __init__(self, items, results):
         self.table = []
         self.fail_msgs = []
 
         self._name_to_row = {}
         for item in items:
-            self._add_item(item)
+            self._add_item(item, results)
 
-    def _add_item(self, item):
+    def _add_item(self, item, results):
         '''Recursively add a single item to the table of results'''
-        if item.status == "F":
+        status = results[item]
+        if status == "F":
             self.fail_msgs.append(item.fail_msg)
 
         # Runs get added to the table directly
         if item.target == "run":
-            self._add_run(item)
+            self._add_run(item, status)
 
-    def _add_run(self, item):
+    def _add_run(self, item, status):
         '''Add an entry to table for item'''
         row = self._name_to_row.get(item.name)
         if row is None:
@@ -77,7 +78,7 @@ class Results:
             self.table.append(row)
             self._name_to_row[item.name] = row
 
-        if item.status == 'P':
+        if status == 'P':
             row.passing += 1
         row.total += 1
 
@@ -283,13 +284,6 @@ class SimCfg(FlowCfg):
             sys.exit(1)
 
         return self.waves
-
-    def kill(self):
-        '''kill running processes and jobs gracefully
-        '''
-        super().kill()
-        for item in self.cov_deploys:
-            item.kill()
 
     # Purge the output directories. This operates on self.
     def _purge(self):
@@ -574,11 +568,13 @@ class SimCfg(FlowCfg):
         '''This is a public facing API, so we use "self.cfgs" instead of self.
         '''
         # Invoke the base class method to run the regression.
-        super().deploy_objects()
+        results = super().deploy_objects()
 
         # If coverage is enabled, then deploy the coverage tasks.
         if self.cov:
-            Scheduler.run(self.cov_deploys)
+            results.update(Scheduler.run(self.cov_deploys))
+
+        return results
 
     def _cov_analyze(self):
         '''Use the last regression coverage data to open up the GUI tool to
@@ -616,7 +612,7 @@ class SimCfg(FlowCfg):
         for item in self.cfgs:
             item._cov_unr()
 
-    def _gen_results(self):
+    def _gen_results(self, run_results):
         '''
         The function is called after the regression has completed. It collates the
         status of all run targets and generates a dict. It parses the testplan and
@@ -630,7 +626,7 @@ class SimCfg(FlowCfg):
         if self.cov:
             deployed_items.append(self.cov_merge_deploy)
 
-        results = Results(deployed_items)
+        results = Results(deployed_items, run_results)
 
         # Set a flag if anything failed
         if results.fail_msgs:
@@ -670,7 +666,8 @@ class SimCfg(FlowCfg):
 
             # Append coverage results of coverage was enabled.
             if self.cov:
-                if self.cov_report_deploy.status == "P":
+                report_status = run_results[self.cov_report_deploy]
+                if report_status == "P":
                     results_str += "\n## Coverage Results\n"
                     # Link the dashboard page using "cov_report_page" value.
                     if hasattr(self, "cov_report_page"):

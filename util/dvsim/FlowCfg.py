@@ -380,24 +380,34 @@ class FlowCfg():
             self._create_deploy_objects()
 
     def deploy_objects(self):
-        '''Public facing API for deploying all available objects.'''
-        Scheduler.run(self.deploy)
+        '''Public facing API for deploying all available objects.
 
-    def _gen_results(self, fmt="md"):
+        Runs each job and returns a map from item to status.
+
+        '''
+        return Scheduler.run(self.deploy)
+
+    def _gen_results(self, results):
         '''
         The function is called after the regression has completed. It collates the
         status of all run targets and generates a dict. It parses the testplan and
         maps the generated result to the testplan entries to generate a final table
         (list). It also prints the full list of failures for debug / triage. The
         final result is in markdown format.
+
+        results should be a dictionary mapping deployed item to result.
+
         '''
         return
 
-    def gen_results(self):
+    def gen_results(self, results):
         '''Public facing API for _gen_results().
+
+        results should be a dictionary mapping deployed item to result.
+
         '''
         for item in self.cfgs:
-            result = item._gen_results()
+            result = item._gen_results(results)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             self.errors_seen |= item.errors_seen

@@ -28,7 +28,6 @@ import shlex
 import subprocess
 import sys
 import textwrap
-from signal import SIGINT, signal
 
 import Deploy
 from Scheduler import Scheduler
@@ -184,14 +183,6 @@ def resolve_proj_root(args):
         proj_root_dest = proj_root_src
 
     return proj_root_src, proj_root_dest
-
-
-def sigint_handler(signal_received, frame):
-    # Kill processes and background jobs.
-    log.debug('SIGINT or CTRL-C detected. Exiting gracefully')
-    cfg.kill()
-    log.info('Exit due to SIGINT or CTRL-C ')
-    exit(1)
 
 
 def copy_repo(src, dest, dry_run):
@@ -647,9 +638,6 @@ def main():
     global cfg
     cfg = make_cfg(args.cfg, args, proj_root)
 
-    # Handle Ctrl-C exit.
-    signal(SIGINT, sigint_handler)
-
     # List items available for run if --list switch is passed, and exit.
     if args.list is not None:
         cfg.print_list()
@@ -677,10 +665,10 @@ def main():
     if args.items != []:
         # Create deploy objects.
         cfg.create_deploy_objects()
-        cfg.deploy_objects()
+        results = cfg.deploy_objects()
 
         # Generate results.
-        cfg.gen_results()
+        cfg.gen_results(results)
 
         # Publish results
         if args.publish:
